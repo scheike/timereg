@@ -1,0 +1,165 @@
+
+useDynLib(timereg)
+
+import(survival)
+
+export("aalen",
+       "aalen.des",
+       "aalenBase",
+       "aalenBaseTest",
+       "aalen.test",
+       "additive.pls",
+       "additive.compSs",
+       "additive.plsR",
+       "check.missing",
+       "rm.missing",
+       "coefBase",
+       "comp.risk",
+       "const",       
+       "cox",
+       "cox.aalen",	
+       "cox.aalenBase",
+       "cum.residuals",
+       "Cpred",
+       "Csmooth2B",	
+       "CsmoothB",	
+       "cum.residuals",
+       "des.aalen",
+       "dynreg",   	
+       "dynregBase",	
+       "Gprop.odds",
+       "krylow.pls",
+       "localTimeReg",
+       "my.lars",
+       "myplot.lars",
+       "nameestimate",	
+       "namematrix",
+       "pe.sasieni",
+       "percen",
+       "pred.cum",
+       "pred.des",
+       "summary.pls",
+       "prop",	
+       "prop.excess",	
+       "prop.excessBase",
+       "prop.odds",
+       "pval",
+       "pava",
+       "read.design",
+       "read.surv",
+       "semiaalen",	
+       "semiaalenTest",
+       "semicox",	
+       "semiregBase",
+       "slaaop",
+       "surv.lars",
+       "surv.lars.cv",
+       "pls.surv.cv",
+       "mycoef.lars",
+       "mypredict.lars",	
+       "timecox",
+       "timecoxBase",
+       "timetest",
+       "two.stage",
+       "two.stageBase.reg")
+
+S3method(plot,aalen)
+S3method(plot,comprisk)
+S3method(plot,cum.residuals)
+S3method(plot,cox.aalen)
+S3method(plot,dynreg)
+S3method(plot,predictAalen)
+S3method(plot,predictComprisk)
+S3method(plot,predictCoxAalen)
+S3method(plot,prop.excess)
+S3method(plot,timecox)
+S3method(plot,two.stage)
+
+S3method(print,aalen)
+S3method(print,cox.aalen)
+S3method(print,comprisk)
+S3method(print,cum.residuals)
+S3method(print,dynreg)
+S3method(print,pe.sasieni)
+S3method(print,predictAalen)
+S3method(print,predictComprisk)
+S3method(print,predictCoxAalen)
+S3method(print,prop.excess)
+S3method(print,timecox)
+S3method(print,two.stage)
+S3method(print,pls)
+
+S3method(summary,aalen)
+S3method(summary,cox.aalen)
+S3method(summary,comprisk)
+S3method(summary,cum.residuals)
+S3method(summary,dynreg)
+S3method(summary,pe.sasieni)
+S3method(summary,predictAalen)
+S3method(summary,predictComprisk)
+S3method(summary,predictCoxAalen)
+S3method(summary,prop.excess)
+S3method(summary,timecox)
+S3method(summary,two.stage)
+S3method(summary,pls)
+
+S3method(predict,aalen)
+S3method(predict,comprisk)
+S3method(predict,cox.aalen)
+S3method(predict,pls)
+
+S3method(coef,aalen)
+S3method(coef,cox.aalen)
+S3method(coef,dynreg)
+S3method(coef,timecox)
+S3method(coef,two.stage)
+
+export("plot.aalen",
+       "plot.comprisk",
+       "plot.cum.residuals",
+       "plot.cox.aalen",
+       "plot.cums",
+       "plot.dynreg",
+       "plot.predictAalen",
+       "plot.predictComprisk",
+       "plot.predictCoxAalen",
+       "plot.prop.excess",
+       "plot.timecox",
+       "plot.two.stage",
+       "print.aalen",
+       "print.cox.aalen",
+       "print.comprisk",
+       "print.cum.residuals",
+       "print.dynreg",
+       "print.pe.sasieni",
+       "print.predictAalen",
+       "print.predictComprisk",
+       "print.predictCoxAalen",
+       "print.prop.excess",
+       "print.timecox",
+       "print.two.stage",
+       "print.pls",
+       "summary.aalen",
+       "summary.cox.aalen",
+       "summary.comprisk",
+       "summary.cum.residuals",
+       "summary.dynreg",
+       "summary.pe.sasieni",
+       "summary.pls",
+       "summary.predictAalen",
+       "summary.predictComprisk",
+       "summary.predictCoxAalen",
+       "summary.prop.excess",
+       "summary.timecox",
+       "summary.two.stage",
+       "predict.aalen",
+       "predict.pls",
+       "predict.comprisk",
+       "predict.cox.aalen",
+       "coef.aalen",
+       "coef.cox.aalen",
+       "coef.comprisk",
+       "coef.dynreg",
+       "coef.timecox",
+       "coef.two.stage")
+
