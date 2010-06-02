@@ -39,11 +39,13 @@ matrix **W4t;
     if (fabs(timepow[i])<0.01) { // timepow ca 0
       for (s=0;s<*Ntimes;s++)
       {  // time=times[s];dtime=times[s]-times[s-1];
+	 if (vcu[(i+1)*(*Ntimes)+s]>0) {
 	 cumweight[i]=cumweight[i]+(1/vcu[(i+1)*(*Ntimes)+s]);
 	 gamma[i]=gamma[i]+cu[(i+1)*(*Ntimes)+s]/vcu[(i+1)*(*Ntimes)+s];
 
 	 for (c=0;c<*antpers;c++) VE(gammai[c],i)=
 	     VE(gammai[c],i)+ME(W4t[c],s,i)/vcu[(i+1)*(*Ntimes)+s]; 
+	 }
       } 
       gamma[i]=gamma[i]/cumweight[i]; 
       VE(gammav,i)=gamma[i]; 
@@ -75,6 +77,7 @@ matrix **W4t;
   /* Computation of observed teststatistics */ 
   for (s=1;s<*Ntimes;s++)
     {
+ if (vcu[i*(*Ntimes)+s]>0) {
       time=times[s]-times[0];dtime=times[s]-times[s-1];
    
       for (i=1;i<=*px;i++) {
@@ -103,6 +106,7 @@ matrix **W4t;
         if ((s>*weighted) && (s<*Ntimes-*weighted))  
 	  testOBS[c]=testOBS[c]+VE(ssrow,i)*dtime; }
     } 
+    }
   /*  for (i=0;i<3*(*px);i++) printf(" %lf \n",testOBS[i]);  */
 
   /* simulation of testprocesses and teststatistics */ 
@@ -116,6 +120,7 @@ matrix **W4t;
       scl_vec_mult(1,tmpv1,tmpv1t); 
 
     for (s=1;s<*Ntimes;s++) { 
+    if (vcu[i*(*Ntimes)+s]>0) {
       time=times[s]-times[0]; dtime=times[s]-times[s-1]; 
       extract_row(Delta,s,rowX); 
 //      if (*line==1) scl_vec_mult(times[s],tmpv1,tmpv1t); 
@@ -139,7 +144,7 @@ matrix **W4t;
         if ((s>*weighted) && (s<*Ntimes-*weighted))  
 	  test[c*(*antsim)+k]=test[c*(*antsim)+k]+VE(ssrow,i)*dtime/vardif; 
       }
-    }  /* s=1..Ntimes */ 
+    } }  /* s=1..Ntimes */ 
   }  /* k=1..antsim */ 
 
   PutRNGstate();   /* to use R random normals */

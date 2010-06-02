@@ -46,7 +46,7 @@ In general p may be powers of the same length as z.
 comp.risk(formula,data=sys.parent(),cause,times,Nit=50,
 clusters=NULL,gamma=0,n.sim=500,weighted=0,model="additive",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
-cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1)
+cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6)
 }
 \arguments{
 \item{formula}{a formula object, with the response on the left of a '~'
@@ -80,6 +80,7 @@ if a coefficient function is consistent with the specified form
 A_l(t)=beta_l t^time.pow.test(l). Default is 1 for the additive model 
 and 0 for the proportional model.}
 \item{silent}{if 0 information on convergence problems due to non-invertible derviates of scores are printed.}
+\item{conv}{gives convergence criterie in terms of sum of absolute change of parameters of model}
 }
 \value{returns an object of type 'comprisk'. With the following arguments:
 \item{cum}{cumulative timevarying regression coefficient estimates are 
@@ -157,7 +158,7 @@ bmt,bmt$cause,times[-1],causeS=1,resample.iid=1,model="prop",n.sim=100)
 summary(fg.npar); 
 
 out<-predict(fg.npar,ndata,uniform=1,n.sim=100)
-head(out$P1); head(out$se.P1)
+head(out$P1[,1:5]); head(out$se.P1[,1:5])
 
 par(mfrow=c(2,2))
 plot(out,multiple=1,uniform=0,col=1:3,lty=1,se=0)

@@ -5,9 +5,10 @@
 void itfit(times,Ntimes,x,delta,cause,KMc,z,n,px,Nit,betaS,
 score,hess,est,var,sim,antsim,rani,test,testOBS,Ut,simUt,weighted,
 gamma,vargamma,semi,zsem,pg,trans,gamma2,CA,line,detail,biid,gamiid,resample,
-timepow,clusters,antclust,timepowtest,silent)
+timepow,clusters,antclust,timepowtest,silent,convc)
 double *times,*betaS,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
-*Ut,*simUt,*gamma,*zsem,*gamma2,*biid,*gamiid,*vargamma,*timepow,*timepowtest;
+*Ut,*simUt,*gamma,*zsem,*gamma2,*biid,*gamiid,*vargamma,*timepow,
+	*timepowtest,*convc;
 int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 *semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent;
 {
@@ -103,7 +104,7 @@ for (s=0;s<*Ntimes;s++)
       for (c=0;c<ps;c++) VE(beta,c)=betaS[c]; 
       for (c=0;c<*px;c++) VE(bet1,c)=betaS[c]; 
       sing=1;
-      if (*silent==0) printf(" non-invertible design at time %lf\n",time); 
+      if (*silent==0) printf("Non-invertible design at time %lf\n",time); 
       it=*Nit-1;  
     }
     if (sing==0) {
@@ -114,16 +115,16 @@ for (s=0;s<*Ntimes;s++)
 
       sumscore=0; 
       for (k=0;k<*px;k++) sumscore=sumscore+fabs(VE(difbeta,k)); 
-      if ((sumscore<0.000001) & (it<*Nit-2)) it=*Nit-2;
+      if ((sumscore<*convc) & (it<*Nit-2)) it=*Nit-2;
 
       if (isnan(vec_sum(SCORE))) {
 	printf("missing values in SCORE %ld \n",(long int) s); 
 	convproblems=1; 
 	for (i=0;i<*px;i++) VE(beta,i)=-99; sim[0]=0;
 	it=*Nit-1; 
-	for (c=0;c<ps;c++) VE(beta,c)=betaS[c]; 
+	for (c=0;c<ps;c++) VE(beta,c)=0; 
 	for (c=0;c<*px;c++) VE(bet1,c)=betaS[c]; 
-	break; }
+	}
     }
 
     if (*detail==1) { 
@@ -173,7 +174,7 @@ vec_zeros(VdB); mat_zeros(VAR);
     itfitsemi(times,Ntimes,x,delta,cause,KMc,z,n,px,Nit,
 	      score,hess,est,var,sim,antsim,rani,test,testOBS,Ut,simUt,weighted,
 	      gamma,vargamma,semi,zsem,pg,trans,gamma2,CA,line,detail,biid,
-	      gamiid,resample,timepow,clusters,antclust,timepowtest,silent);
+	      gamiid,resample,timepow,clusters,antclust,timepowtest,silent,convc);
   }
  
   if (convproblems==1) silent[0]=2; 
@@ -199,9 +200,10 @@ void itfitsemi(times,Ntimes,x,delta,cause,
 	       simUt,weighted,gamma,vargamma,semi,
 	       zsem,pg,trans,gamma2,CA,
 	       line,detail,biid,gamiid,resample,
-	       timepow,clusters,antclust,timepowtest,silent)
+	       timepow,clusters,antclust,timepowtest,silent,convc)
 double *times,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
-*Ut,*simUt,*gamma,*zsem,*vargamma,*gamma2,*biid,*gamiid,*timepow,*timepowtest;
+*Ut,*simUt,*gamma,*zsem,*vargamma,*gamma2,*biid,*gamiid,*timepow,*timepowtest,
+	*convc;
 int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 *semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent;
 {
@@ -215,7 +217,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
   vector *korG,*pghat,*rowG,*gam,*dgam,*ZGdN,*IZGdN,*ZGlamt,*IZGlamt;
   vector *covsx,*covsz,*qs,*Y,*rr,*bhatub,*xi,*rowX,*rowZ,*difX,*zi,*z1,
     *tmpv1,*tmpv2,*lrisk;
-  int itt,i,j,k,l,s,c,pmax,totrisk,convproblems=0, 
+  int sing,itt,i,j,k,l,s,c,pmax,totrisk,convproblems=0, 
       *n= calloc(1,sizeof(int)), *nx= calloc(1,sizeof(int)),
       *robust= calloc(1,sizeof(int));
   double time,dummy,dtime,timem;
@@ -265,7 +267,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 
       Mv(ldesignG,gam,pghat);
       for (s=0;s<*Ntimes;s++)
-	{
+      {
 	  time=times[s]; if (s==0) dtime=0; else dtime=time-times[s-1]; 
 
 	  for(j=1;j<=*px;j++) VE(bhatt,j-1)=est[j*(*Ntimes)+s];
@@ -338,14 +340,16 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	    else VE(Y,j)=(VE(Y,j)/KMc[j])-VE(plamt,j);
 	  }
 	  MtA(cdesignX,cdesignX,A); 
-	  invertS(A,AI,silent[0]); 
+	  invertS(A,AI,silent[0]); sing=0; 
 
           if (fabs(ME(AI,0,0))<.0000001) {
              convproblems=1; 
              if (*silent==0) printf("non-invertible design at time %lf\n",time); 
-             it=*Nit-1;  
+             itt=*Nit-1;  
+	     for (k=1;k<=*px;k++) inc[k*(*Ntimes)+s]=0; 
           }
 
+	  if (sing==0) { 
 	  vM(cdesignX,Y,xi); Mv(AI,xi,AIXdN); 
 	  MtA(cdesignG,cdesignG,ZZ); MtA(cdesignX,cdesignG,XZ);
 	  MxA(AI,XZ,XZAI); MtA(XZAI,XZ,tmpM2); 
@@ -359,8 +363,8 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	  C[s]=mat_copy(XZ,C[s]); 
 
 	  /* scl_mat_mult(dtime,XZAI,tmpM4);mat_add(tmpM4,Ct,Ct); */
-
 	  for (k=1;k<=*px;k++) inc[k*(*Ntimes)+s]=VE(AIXdN,k-1); 
+	  }
 
 	  if (itt==*Nit-1) {
 	    for (i=0;i<*antpers;i++) 
@@ -396,7 +400,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	  dummy=dummy+fabs(inc[k*(*Ntimes)+s]-VE(korG,k-1)); 
 	  /* printf(" %lf ",est[k*(*Ntimes)+s]); printf(" \n");*/ }
       } /* s=1,...Ntimes */
-      if (dummy<0.000001 && itt<*Nit-2) itt=*Nit-2; 
+      if (dummy<*convc && itt<*Nit-2) itt=*Nit-2; 
 
       if (*detail==1) { 
 	printf(" iteration %d %d \n",itt,*Nit); 
