@@ -1,0 +1,9 @@
+Package: nccMLE
+Version: 1.0-2
+Date: 2009-15-11
+Title: MLE for nested case cohort and case-cohort designs
+Author: Thomas Scheike 
+Maintainer: Thomas Scheike <ts@biostat.ku.dk>
+Description: MLE for nested case cohort and case-cohort designs for Cox's regression model by EM algorithm
+Depends: survival, R (>= 2.4.0)
+License: GPL (version 2 or later)
