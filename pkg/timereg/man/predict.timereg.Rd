@@ -63,10 +63,9 @@ models for survival data, Springer.
 \author{Thomas Scheike, Jeremy Silver}
 \examples{
 data(bmt); 
-times<-bmt$time[bmt$cause==1]; 
 
 add<-comp.risk(Surv(time,cause>0)~platelet+age+tcell,data=bmt,
-bmt$cause,times=times[-1],causeS=1,resample.iid=1)
+bmt$cause,causeS=1,resample.iid=1)
 
 ndata<-data.frame(platelet=c(1,0,0),age=c(0,1,0),tcell=c(0,0,1))
 out<-predict(add,newdata=ndata,uniform=1,n.sim=1000)

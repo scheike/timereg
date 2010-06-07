@@ -68,6 +68,10 @@ rate.sim=1,beta.fixed=0,theta=NULL,theta.des=NULL,var.link=0,step=1)
                 names(ud$theta.score)<-colnames(theta.des); } 
  else { names(ud$theta.score)<- rownames(ud$theta)<-"intercept" } 
 
+ if (beta.fixed==1) {
+    ud$gamma <- ud$var.gamma <- ud$robvar.gamma <- NULL
+ }
+
   attr(ud,"Call")<-sys.call(); 
   class(ud)<-"two.stage"
   attr(ud,"Formula")<-formula;
@@ -76,6 +80,7 @@ rate.sim=1,beta.fixed=0,theta=NULL,theta.des=NULL,var.link=0,step=1)
   attr(ud,"start")<-start.time; 
   attr(ud,"time2")<-time2; 
   attr(ud,"var.link")<-var.link
+  attr(ud,"beta.fixed")<-beta.fixed
 
   return(ud); 
 }
@@ -159,7 +164,6 @@ summary.two.stage<-function (object,digits = 3,...) {
   if (!(inherits(object, 'two.stage') )) stop("Must be a Two-Stage object")
   
   prop<-TRUE; 
-  if (is.null(object$gamma)==TRUE) stop(" No regression terms"); 
   if (is.null(object$prop.odds)==TRUE) p.o<-FALSE else p.o<-TRUE
     
   var.link<-attr(object,"var.link");
@@ -193,6 +197,7 @@ summary.two.stage<-function (object,digits = 3,...) {
                            "Kendall's tau")
   prmatrix(resdep); cat("   \n");  
 
+  if (attr(object,"beta.fixed")==0) {
   cat("Marginal Cox-Aalen model fit\n\n"); 
   if (sum(abs(object$score)>0.000001) && sum(object$gamma)!=0) 
     cat("Marginal model did not converge, allow more iterations\n\n"); 
@@ -201,8 +206,9 @@ summary.two.stage<-function (object,digits = 3,...) {
     if (p.o==FALSE) cat("Proportional Cox terms :  \n") else  cat("Covariate effects \n")
 
     coef.two.stage(object,digits=digits);
-    cat("   \n");  cat("  Call: \n"); dput(attr(object, "Call")); cat("\n");
   }
+  }
+   cat("   \n");  cat("  Call: \n"); dput(attr(object, "Call")); cat("\n");
 }
 
 print.two.stage <- function (x,digits = 3,...) {
@@ -211,7 +217,8 @@ print.two.stage <- function (x,digits = 3,...) {
   cat(" Marginals of Cox-Aalen form, dependence by variance of Gamma distribution\n\n");  
   object <- x; rm(x);
   
-  cat(" Nonparametric components : "); cat(colnames(object$cum)[-1]); cat("   \n");  
+  cat(" Nonparametric components : "); 
+  cat(colnames(object$cum)[-1]); cat("   \n");  
   if (!is.null(object$gamma)) {
     cat(" Parametric components :  "); cat(rownames(object$gamma)); 
     cat("   \n");

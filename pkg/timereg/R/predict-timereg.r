@@ -168,14 +168,14 @@ predict.comprisk<-function(object,newdata=NULL,X=NULL,
         P1=1-exp(-cumhaz-constant.part )
       }
       RR<-NULL; 
-    } else if (modelType == 'rcif') { # P1=exp(-x^T b(t) - z^t gamma) 
+    } else if (modelType == 'rcif') { # P1=exp(x^T b(t) + z^t t^p gamma) 
         if (semi==FALSE){
-           P1=exp(-cumhaz);
+           P1=exp(cumhaz);
          } else {
-         P1<-exp(-cumhaz-constant.part);
+         P1<-exp(cumhaz+constant.part);
        }
        RR<-1;
-    } else if (modelType == 'prop') {     #model proportional 
+    } else if (modelType == 'prop') {# model proportional 
         if (semi==FALSE){
         RR<-exp(cumhaz);
       } else {

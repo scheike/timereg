@@ -40,13 +40,12 @@ int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 
     for (c=0;c<ps;c++) VE(beta,c)=betaS[c]; 
     for (c=0;c<*px;c++) VE(bet1,c)=betaS[c]; 
-    if (*trans==0) {for (c=0;c<*pg;c++) VE(gam,c)=betaS[*px+c]; 
-      print_vec(gam);}
+//    if (*trans==0) {for (c=0;c<*pg;c++) VE(gam,c)=betaS[*px+c];}
 
     for (c=0;c<*n;c++) {VE(Gc,c)=KMc[c]; VE(DELTA,c)=delta[c]; 
       VE(CAUSE,c)=cause[c]; 
       for(j=0;j<*px;j++)  ME(X,c,j)=z[j*(*n)+c]; 
-      if (*trans==0) for(j=0;j<*pg;j++)  ME(Z,c,j)=zsem[j*(*n)+c];
+//      if (*trans==0) for(j=0;j<*pg;j++)  ME(Z,c,j)=zsem[j*(*n)+c];
     }
 
 	 
@@ -75,8 +74,8 @@ for (s=0;s<*Ntimes;s++)
       // VE(pbhat,j)=exp(-VE(bhat,j)); scl_vec_mult(-exp(-VE(pbhat,j)),xi,dp);
       }
       if (*trans==4) {
-         VE(pbhat,j)=exp(-VE(bhat,j)); 
-	 scl_vec_mult(-exp(-VE(pbhat,j)),xi,dp);
+         VE(pbhat,j)=exp(VE(bhat,j)); 
+	 scl_vec_mult(exp(VE(pbhat,j)),xi,dp);
       }
       if (*trans==8) { // not implemented 
 	extract_row(Z,j,zi); vec_star(zi,gam,zgam); zgamt=vec_sum(zgam); 
@@ -101,7 +100,7 @@ for (s=0;s<*Ntimes;s++)
 
     if (fabs(ME(AI,0,0))<.0000001) {
       convproblems=1; 
-      for (c=0;c<ps;c++) VE(beta,c)=betaS[c]; 
+      for (c=0;c<ps;c++) VE(beta,c)=0; 
       for (c=0;c<*px;c++) VE(bet1,c)=betaS[c]; 
       sing=1;
       if (*silent==0) printf("Non-invertible design at time %lf\n",time); 
@@ -120,7 +119,6 @@ for (s=0;s<*Ntimes;s++)
       if (isnan(vec_sum(SCORE))) {
 	printf("missing values in SCORE %ld \n",(long int) s); 
 	convproblems=1; 
-	for (i=0;i<*px;i++) VE(beta,i)=-99; sim[0]=0;
 	it=*Nit-1; 
 	for (c=0;c<ps;c++) VE(beta,c)=0; 
 	for (c=0;c<*px;c++) VE(bet1,c)=betaS[c]; 
@@ -321,9 +319,9 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	        for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
 //	   } else lrr=VE(pghat,j);  
 	      VE(rr,j)=lrr;  
-	      VE(plamt,j)=exp(-VE(pbhat,j)-lrr); 
-	      scl_vec_mult(-VE(plamt,j),xi,xi); 
-	      scl_vec_mult(-VE(plamt,j),zi,zi); 
+	      VE(plamt,j)=exp(VE(pbhat,j)+lrr); 
+	      scl_vec_mult(VE(plamt,j),xi,xi); 
+	      scl_vec_mult(VE(plamt,j),zi,zi); 
 //	      if (timem>0) 
 	      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
            }
@@ -386,9 +384,10 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
       invertS(CGam,ICGam,silent[0]); Mv(ICGam,IZGdN,dgam); vec_add(gam,dgam,gam); 
 
       if (isnan(vec_sum(dgam)) && *silent==0) {
-        convproblems=1; 
+        if (convproblems==1) convproblems=3;  else convproblems=2; 
 	printf("missing values in dgam %ld \n",(long int) s);
-	vec_zeros(gam); }
+	vec_zeros(gam); 
+      }
 
       dummy=0; for (k=0;k<*pg;k++)  dummy=dummy+fabs(VE(dgam,k)); 
 

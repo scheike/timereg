@@ -32,8 +32,8 @@ The FG model is obtained when \eqn{x=1}.
 g(t,x,z) = x^T A(t) + (diag(t^p) z)^T \beta
 }
 
-4) the "1-additive" model where
-\eqn{h(x)=\exp(-x)} and 
+4) the relative cumulative incidence function "rcif" model where
+\eqn{h(x)=\exp(x)} and 
 \deqn{
 g(t,x,z) = x^T A(t) + (diag(t^p) z)^T \beta
 }) 
@@ -43,7 +43,7 @@ the other models.
 In general p may be powers of the same length as z. 
 }
 \usage{
-comp.risk(formula,data=sys.parent(),cause,times,Nit=50,
+comp.risk(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 clusters=NULL,gamma=0,n.sim=500,weighted=0,model="additive",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6)
@@ -60,7 +60,7 @@ cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6)
 \item{cause}{specifies the causes  related to the death
 	times, the value 0 is the censoring value.}
 \item{times}{specifies the times at which the estimator is
-	considered. This is typically all cause "1" jump times.}
+	considered. The default is all cause "1" jump times.}
 \item{Nit}{number of iterations for Newton-Raphson algorithm.}
 \item{clusters}{specifies cluster structure, for backwards compability.}
 \item{gamma}{starting value for constant effects.}
@@ -116,10 +116,9 @@ models for survival data, Springer.
 \author{Thomas Scheike}
 \examples{
 data(bmt); 
-times<-bmt$time[bmt$cause==1]; 
 
-add<-comp.risk(Surv(time,cause>0)~platelet+age+tcell,bmt,
-bmt$cause,times[-1],causeS=1,resample.iid=1,n.sim=100)
+add<-comp.risk(Surv(time,cause>0)~platelet+age+tcell,data=bmt,
+bmt$cause,causeS=1,resample.iid=1,n.sim=100)
 summary(add)
 
 par(mfrow=c(2,4))
@@ -133,8 +132,8 @@ plot(out,multiple=0,uniform=1,col=1:3,lty=1,se=1)
 
 ## fits additive model with some constant effects 
 add.sem<-comp.risk(Surv(time,cause>0)~
-const(platelet)+const(age)+const(tcell),bmt,
-bmt$cause,times[-1],causeS=1,resample.iid=1,n.sim=100)
+const(platelet)+const(age)+const(tcell),data=bmt,
+bmt$cause,causeS=1,resample.iid=1,n.sim=100)
 summary(add.sem)
 
 out<-predict(add.sem,ndata,uniform=1,n.sim=100)
@@ -143,8 +142,8 @@ plot(out,multiple=0,uniform=1,col=1:3,lty=1,se=0)
 
 ## Fine & Gray model 
 fg<-comp.risk(Surv(time,cause>0)~
-const(platelet)+const(age)+const(tcell),bmt,
-bmt$cause,times[-1],causeS=1,resample.iid=1,model="prop",n.sim=100)
+const(platelet)+const(age)+const(tcell),data=bmt,
+bmt$cause,causeS=1,resample.iid=1,model="prop",n.sim=100)
 summary(fg)
 
 out<-predict(fg,ndata,uniform=1,n.sim=100)
@@ -154,7 +153,7 @@ plot(out,multiple=1,uniform=0,col=1:3,lty=1,se=0)
 
 ## extended model with time-varying effects
 fg.npar<-comp.risk(Surv(time,cause>0)~platelet+age+const(tcell),
-bmt,bmt$cause,times[-1],causeS=1,resample.iid=1,model="prop",n.sim=100)
+data=bmt,bmt$cause,causeS=1,resample.iid=1,model="prop",n.sim=100)
 summary(fg.npar); 
 
 out<-predict(fg.npar,ndata,uniform=1,n.sim=100)

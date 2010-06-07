@@ -2,11 +2,11 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 clusters=NULL,gamma=0,n.sim=500,weighted=0,model="additive",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6){
-# trans=1 P_1=1-exp(- ( x' b(b)+ z' gam t) ), 
+# trans=1 P_1=1-exp( - ( x' b(b)+ z' gam t) ), 
 # trans=2 P_1=1-exp(-exp(x a(t)+ z` b )
 # trans=not done P_1=1-exp(-x a(t) exp(z` b )) is not good numerically
 # trans=3 logit(P_1)=(x a(t)+ z` b)
-# trans=4 P_1=exp(- ( x' b(b)+ z' gam t) ), 
+# trans=4 P_1=exp( ( x' b(b)+ z' gam t) ), 
   if (model=="additive") trans<-1; 
   if (model=="prop")     trans<-2; 
   if (model=="logistic") trans<-3; 
@@ -60,7 +60,7 @@ cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6){
 
   if (is.null(times)) {times<-sort(unique(time2[cause==causeS])); 
                        ###times<-times[-c(1:5)];
-  }
+  } else times <- sort(times); 
 
   n<-nrow(X); ntimes<-length(times);
   if (npar==TRUE) {Z<-matrix(0,n,1); pg<-1; fixed<-0;} else {fixed<-1;pg<-pz;} 
