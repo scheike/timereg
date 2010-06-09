@@ -13,6 +13,7 @@ double *designX,*designG,*times,*betaS,*start,*stop,*cu,*Vbeta,*RVbeta,*vcu,*Rvc
 int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
 *clusters,*antclust,*betafixed,*inverse,*clustsize,*ptheta,*idiclust;
 {
+// {{{ defining variables
   matrix *ldesignX,*ldesG0,*ldesignG,*cdesX,*cdesX2,*cdesX3,*CtVUCt,*A,*AI;
   matrix *Vcov,*dYI,*Ct,*dM1M2,*M1M2t,*COV,*ZX,*ZP,*ZPX; 
   matrix *tmp1,*tmp2,*tmp3,*dS,*S1,*SI,*S2,*M1,*VU,*ZXAI,*VUI,*RobVbeta;
@@ -40,7 +41,6 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
 	 Dthetanu=1,DDthetanu=1; 
   int *ipers=calloc(*Ntimes,sizeof(int));
 
-
   for (j=0;j<*antclust;j++) { Nt[j]=0; NH[j]=0; 
     malloc_vec(*pg,dbetaNH[j]); malloc_vec(*px,dANH[j]);  malloc_vec(*ptheta,dAiid[j]); 
     malloc_vec(*ptheta,thetaiid[j]); malloc_mat(*ptheta,*ptheta,Sthetaiid[j]); 
@@ -62,7 +62,6 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
   malloc_vec(1,reszpbeta); malloc_vec(1,res1dim); 
 
   malloc_mats(*antpers,*px,&ldesignX,&cdesX,&cdesX2,&cdesX3,NULL); 
-  malloc_mats(*px,*antpers,NULL); 
   malloc_mats(*antpers,*pg,&ZP,&ldesignG,&ldesG0,NULL); 
   malloc_mats(*px,*px,&Vcov,&COV,&A,&AI,&M1,&CtVUCt,NULL); 
   malloc_mats(*pg,*pg,&RobVbeta,&tmp1,&tmp2,&dS,&S1,&S2,&SI,&VU,&VUI,NULL); 
@@ -81,6 +80,8 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
   if (*px>=*pg) pmax=*px; else pmax=*pg; ll=0; 
   for(j=0;j<*pg;j++) VE(beta,j)=betaS[j]; 
   for(j=0;j<*antpers;j++) {Hik[j]=0; VE(one,j)=1; VE(weight,j)=1; VE(offset,j)=1;} 
+  // }}}
+  
 
   for (it=0;it<*Nit;it++) // {{{ cox aalen it
     {
@@ -457,7 +458,8 @@ printf(" var(beta) : \n"); print_mat(RobVbeta);
       vartheta[k*(*ptheta)+j]=ME(varthetascore,j,k); 
     }
 
-
+  // {{{ freeing everything
+  
   if (*robust==1) {
     for (j=0;j<*antclust;j++) {
       free_mat(W3t[j]); free_mat(W4t[j]); free_mat(W2t[j]);free_vec(W2[j]); free_vec(W3[j]);}
@@ -488,5 +490,6 @@ printf(" var(beta) : \n"); print_mat(RobVbeta);
 
   free(Nt); free(Nti); free(thetaiidscale); free(NH); free(HeH); free(H2eH); 
   free(Rtheta); free(Hik); 
-  free(cluster); 
+  free(cluster);  free(ipers); 
+  // }}}
 }
