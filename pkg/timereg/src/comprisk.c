@@ -16,13 +16,13 @@ int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
   vector *VdB,*risk,*SCORE,*W,*Y,*Gc,*DELTA,*CAUSE,*bhat,*pbhat,*beta,*xi,
     *rr,*rowX,*difbeta,*qs,*bhatub,*betaub,*dcovs,*pcovs,*zi,*rowZ,*zgam; 
   vector *cumhatA[*antclust],*cumA[*antclust],*bet1,*gam,*dp,*dp1,*dp2; 
-  int ps,sing,sc,c,i,j,k,l,s,it,convproblems=0; 
+  int osilent,convt,ps,sing,sc,c,i,j,k,l,s,it,convproblems=0,pointswithconv=0; 
   double time,sumscore,totrisk,zgamt, 
 	 *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double));
   long idum;
   float gasdev(),expdev(),ran1();
-  idum=*rani;
-  ps=(*px); 
+  idum=*rani; ps=(*px); 
+  osilent=silent[0]; silent[0]=0; 
 
   if (*semi==0) { 
     malloc_mat(*n,*px,X); malloc_mat(*n,*px,cX); 
@@ -49,10 +49,11 @@ int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
     }
 
 	 
- sc=0;
+sc=0; pointswithconv=0; 
 for (s=0;s<*Ntimes;s++)
 {
    time=times[s]; est[s]=time; score[s]=time; var[s]=time;
+   convt=1; 
 
   for (it=0;it<*Nit;it++)
   {
@@ -95,15 +96,15 @@ for (s=0;s<*Ntimes;s++)
       else VE(Y,j)=(VE(Y,j)/KMc[j])-VE(pbhat,j);
     }
     totrisk=vec_sum(risk); MtA(cX,cX,A); 
-    invertS(A,AI,silent[0]); sing=0; 
+    invertS(A,AI,osilent); sing=0; 
     // head_matrix(cX); print_mat(A); print_mat(AI); 
 
     if (fabs(ME(AI,0,0))<.0000001) {
-      convproblems=1; 
+      convproblems=1; convt=0; silent[s]=1;
       for (c=0;c<ps;c++) VE(beta,c)=0; 
       for (c=0;c<*px;c++) VE(bet1,c)=betaS[c]; 
       sing=1;
-      if (*silent==0) printf("Non-invertible design at time %lf\n",time); 
+      if (osilent==0) printf("Non-invertible design at time %lf \n",time); 
       it=*Nit-1;  
     }
     if (sing==0) {
@@ -118,9 +119,10 @@ for (s=0;s<*Ntimes;s++)
 
       if (isnan(vec_sum(SCORE))) {
 	printf("missing values in SCORE %ld \n",(long int) s); 
-	convproblems=1; 
+	convproblems=1; convt=0; silent[s]=2;
 	it=*Nit-1; 
-	for (c=0;c<ps;c++) VE(beta,c)=0; 
+	for (c=0;c<ps;c++) { VE(beta,c)=0; VE(SCORE,c)=99; }
+	mat_zeros(VAR); 
 	for (c=0;c<*px;c++) VE(bet1,c)=betaS[c]; 
 	}
     }
@@ -135,6 +137,7 @@ for (s=0;s<*Ntimes;s++)
 
 vec_zeros(VdB); mat_zeros(VAR); 
 
+if (convt==1 ) {
    for (j=0;j<*antclust;j++) {vec_zeros(cumA[j]);vec_zeros(cumhatA[j]);}
    for (i=0;i<*n;i++) { 
       j=clusters[i]; 
@@ -157,6 +160,7 @@ vec_zeros(VdB); mat_zeros(VAR);
       if (*resample==1) 
       for (c=0;c<*px;c++) {l=j*(*px)+c; biid[l*(*Ntimes)+s]=VE(dp2,c);}
    }
+}
 
    for (i=1;i<ps+1;i++) {
       var[i*(*Ntimes)+s]=ME(VAR,i-1,i-1); 
@@ -175,7 +179,7 @@ vec_zeros(VdB); mat_zeros(VAR);
 	      gamiid,resample,timepow,clusters,antclust,timepowtest,silent,convc);
   }
  
-  if (convproblems==1) silent[0]=2; 
+  if (convproblems>0) convc[0]=1; 
   if (*semi==0) { 
     free_mats(&VAR,&X,&cX,&A,&AI,NULL); 
     if (*trans==2) {free_mats(&Z,NULL); free_vecs(&zgam,&gam,&zi,&rowZ,NULL);}
@@ -218,11 +222,12 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
   int sing,itt,i,j,k,l,s,c,pmax,totrisk,convproblems=0, 
       *n= calloc(1,sizeof(int)), *nx= calloc(1,sizeof(int)),
       *robust= calloc(1,sizeof(int));
+  int idum,fixedcov,osilent; 
   double time,dummy,dtime,timem;
   double *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
 	 *inc=calloc((*Ntimes)*(*px+1),sizeof(double));
   double lrr,fabs(), pow(); 
-  int idum,fixedcov; 
+  osilent=silent[0]; silent[0]=0; 
   // float gasdev(),expdev(),ran1();
   idum=*rani; robust[0]=1; fixedcov=1; 
   n[0]=antpers[0]; nx[0]=antpers[0];
@@ -338,13 +343,13 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	    else VE(Y,j)=(VE(Y,j)/KMc[j])-VE(plamt,j);
 	  }
 	  MtA(cdesignX,cdesignX,A); 
-	  invertS(A,AI,silent[0]); sing=0; 
+	  invertS(A,AI,osilent); sing=0; 
 
           if (fabs(ME(AI,0,0))<.0000001) {
-             convproblems=1; 
-             if (*silent==0) printf("non-invertible design at time %lf\n",time); 
-             itt=*Nit-1;  
+             convproblems=1;  silent[s]=1; 
+             if (osilent==0) printf("non-invertible design at time %lf\n",time); 
 	     for (k=1;k<=*px;k++) inc[k*(*Ntimes)+s]=0; 
+	     sing=1;
           }
 
 	  if (sing==0) { 
@@ -381,12 +386,12 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	 }
 	} /* s=1,...Ntimes */
 
-      invertS(CGam,ICGam,silent[0]); Mv(ICGam,IZGdN,dgam); vec_add(gam,dgam,gam); 
+      invertS(CGam,ICGam,osilent); Mv(ICGam,IZGdN,dgam); vec_add(gam,dgam,gam); 
 
-      if (isnan(vec_sum(dgam)) && *silent==0) {
-        if (convproblems==1) convproblems=3;  else convproblems=2; 
-	printf("missing values in dgam %ld \n",(long int) s);
-	vec_zeros(gam); 
+      if (isnan(vec_sum(dgam))) {
+         if (convproblems==1) convproblems=3;  else convproblems=2; 
+         if (osilent==1) printf("missing values in dgam %ld \n",(long int) s);
+	 vec_zeros(gam); 
       }
 
       dummy=0; for (k=0;k<*pg;k++)  dummy=dummy+fabs(VE(dgam,k)); 
@@ -394,7 +399,8 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
       for (s=0;s<*Ntimes;s++) {
 	vM(Acorb[s],dgam,korG); 
 	est[s]=times[s]; var[s]=times[s]; 
-	for (k=1;k<=*px;k++)  { est[k*(*Ntimes)+s]=
+	for (k=1;k<=*px;k++)  { 
+            est[k*(*Ntimes)+s]=
             est[k*(*Ntimes)+s]+inc[k*(*Ntimes)+s]-VE(korG,k-1); 
 	  dummy=dummy+fabs(inc[k*(*Ntimes)+s]-VE(korG,k-1)); 
 	  /* printf(" %lf ",est[k*(*Ntimes)+s]); printf(" \n");*/ }
@@ -403,9 +409,9 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 
       if (*detail==1) { 
 	printf(" iteration %d %d \n",itt,*Nit); 
-	printf("Total score %lf \n",dummy); 
-	printf(" gamma parmaeters \n"); print_vec(gam); 
-	printf(" change in gamma \n"); print_vec(dgam); }
+	printf("Total sum of changes %lf \n",dummy); 
+	printf("Gamma parameters \n"); print_vec(gam); 
+	printf("Change in Gamma \n"); print_vec(dgam); }
 
     } /*itt løkke */ 
 
@@ -443,7 +449,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
   for (j=0;j<*pg;j++) {gamma[j]=VE(gam,j);
     for (k=0;k<*pg;k++) {vargamma[k*(*pg)+j]=ME(RobVargam,j,k);}}
 
-  if (convproblems==1) silent[0]=2; 
+  if (convproblems>=1) convc[0]=convproblems; 
   if (*sim==1) {
     comptestfunc(times,Ntimes,px,est,var,vcudif,antsim,test,testOBS,Ut,simUt,W4t,weighted,antclust,gamma2,line,timepowtest);
   }

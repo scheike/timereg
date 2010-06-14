@@ -123,6 +123,7 @@ cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6){
   if (is.null(time.pow.test)==TRUE & model=="rcif" )     time.pow.test<-rep(1,px); 
   if (is.null(time.pow.test)==TRUE & model=="logistic" ) time.pow.test<-rep(0,px); 
 
+  silent <- c(silent,rep(0,ntimes-1));
 
   out<-.C("itfit",
           as.double(times),as.integer(ntimes),as.double(time2),
@@ -138,12 +139,15 @@ cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6){
           as.integer(causeS),as.integer(line),as.integer(detail),
           as.double(biid),as.double(gamiid),as.integer(resample.iid),
           as.double(time.pow),as.integer(clusters),as.integer(antclust),
-          as.double(time.pow.test),as.integer(silent),as.double(conv),
+          as.double(time.pow.test),silent=as.integer(silent),
+	  as.double(conv),
           PACKAGE="timereg")
 
   gamma<-matrix(out[[24]],pg,1); var.gamma<-matrix(out[[25]],pg,pg); 
   gamma2<-matrix(out[[30]],ps,1); 
   rownames(gamma2)<-covnamesX; 
+
+  conv <- list(convp=out[[41]],convd=out[[42]]); 
 
   if (fixed==0) gamma<-NULL; 
 
@@ -210,7 +214,7 @@ cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6){
            obs.testBeqC.is=obs.testBeqC.is,
            obs.testBeqC=obs.testBeqC,pval.testBeqC.is=pval.testBeqC.is,
            conf.band=unifCI,B.iid=B.iid,gamma.iid=gamiid,
-           test.procBeqC=Ut,sim.test.procBeqC=UIt)
+           test.procBeqC=Ut,sim.test.procBeqC=UIt,conv=conv)
 
   ud$call<-call; ud$model<-model; ud$n<-n; 
   ud$formula<-formula; class(ud)<-"comprisk"; 
@@ -236,10 +240,15 @@ print.comprisk <- function (x,...) {
     cat(rownames(object$gamma)); 
     cat("   \n");
   } 
+
+  if (object$conv$convd>=1) {
+       cat("Warning problem with convergence for time points:\n")
+       cat(object$cum[object$conv$convp>0,1])
+       cat("\nReadjust analyses by removing points\n") }
   cat("   \n");  
 }
 
-coef.comprisk <- function(object, digits=3,...) {
+coef.compriskT <- function(object, digits=3,...) {
 
    coefBase(object,digits=digits)
 }
