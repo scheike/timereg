@@ -11,7 +11,8 @@ double *times,*betaS,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
 	*timepowtest,*convc;
 int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 *semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent;
-{
+{ // {{{
+  // {{{ allocation and reading of data from R
   matrix *X,*cX,*A,*AI,*cumAt[*antclust],*VAR,*Z;
   vector *VdB,*risk,*SCORE,*W,*Y,*Gc,*DELTA,*CAUSE,*bhat,*pbhat,*beta,*xi,
     *rr,*rowX,*difbeta,*qs,*bhatub,*betaub,*dcovs,*pcovs,*zi,*rowZ,*zgam; 
@@ -22,9 +23,9 @@ int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
   long idum;
   float gasdev(),expdev(),ran1();
   idum=*rani; ps=(*px); 
-  osilent=silent[0]; silent[0]=0; 
 
   if (*semi==0) { 
+    osilent=silent[0]; silent[0]=0; 
     malloc_mat(*n,*px,X); malloc_mat(*n,*px,cX); 
     if (*trans==2) {malloc_mat(*n,*pg,Z);malloc_vecs(*pg,&zgam,&gam,&zi,&rowZ,NULL);}
     malloc_mats(ps,ps,&A,&AI,&VAR,NULL); 
@@ -48,6 +49,8 @@ int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 //      if (*trans==0) for(j=0;j<*pg;j++)  ME(Z,c,j)=zsem[j*(*n)+c];
     }
 
+    // }}}
+    
 	 
 sc=0; pointswithconv=0; 
 for (s=0;s<*Ntimes;s++)
@@ -58,17 +61,22 @@ for (s=0;s<*Ntimes;s++)
   for (it=0;it<*Nit;it++)
   {
     totrisk=0; 
-    for (j=0;j<*n;j++) { 
+
+    for (j=0;j<*n;j++) { // {{{ computation of P1 and DP1  and observed response 
       VE(risk,j)=(x[j]>=time); totrisk=totrisk+VE(risk,j);
       extract_row(X,j,xi); 
-
       VE(bhat,j)=vec_prod(xi,bet1); 
 
       if (*trans==1) {VE(pbhat,j)=1-exp(-VE(bhat,j));
 	scl_vec_mult(1-VE(pbhat,j),xi,dp);}
       if (*trans==2) {
 	VE(pbhat,j)=1-exp(-exp(VE(bhat,j))); 
-	scl_vec_mult((1-VE(pbhat,j))*exp(VE(bhat,j)),xi,dp); }
+	scl_vec_mult((1-VE(pbhat,j))*exp(VE(bhat,j)),xi,dp); 
+      }
+      if (*trans==6) {
+	VE(pbhat,j)=1-exp(-VE(bhat,j)); 
+	scl_vec_mult((1-VE(pbhat,j)),xi,dp); 
+      }
       if (*trans==3) {
 	    VE(pbhat,j)=exp(VE(bhat,j))/(1+exp(VE(bhat,j))); 
 	scl_vec_mult(exp(VE(bhat,j))/pow((1+exp(VE(bhat,j))),2),xi,dp);
@@ -78,14 +86,10 @@ for (s=0;s<*Ntimes;s++)
          VE(pbhat,j)=exp(VE(bhat,j)); 
 	 scl_vec_mult(exp(VE(pbhat,j)),xi,dp);
       }
-      if (*trans==8) { // not implemented 
-	extract_row(Z,j,zi); vec_star(zi,gam,zgam); zgamt=vec_sum(zgam); 
-	VE(rr,j)=exp(zgamt);  
-	VE(pbhat,j)=1-(VE(bhat,j)*VE(rr,j))/(1+(VE(bhat,j)*VE(rr,j))); 
-	scl_vec_mult((1-VE(pbhat,j))*VE(rr,j),xi,xi); 
-	scl_vec_mult((1-VE(pbhat,j))*VE(rr,j)*VE(bhat,j),zi,zi); 
-	for (c=0;c<*px;c++) VE(dp,c)=VE(xi,c); 
-	for (c=*px;c<ps;c++) VE(dp,c)=VE(zi,c-*px); }
+      if (*trans==5) {
+         VE(pbhat,j)=VE(bhat,j); 
+	 scl_vec_mult(1,xi,dp);
+      }
       replace_row(cX,j,dp); 
 
       VE(Y,j)=((x[j]<=time) & (cause[j]==*CA))*1;
@@ -94,7 +98,8 @@ for (s=0;s<*Ntimes;s++)
 	scl_vec_mult(VE(Y,j),dp,dp); vec_add(dp,qs,qs); }
       if (KMc[j]<0.001) VE(Y,j)=(VE(Y,j)/0.001)-VE(pbhat,j); 
       else VE(Y,j)=(VE(Y,j)/KMc[j])-VE(pbhat,j);
-    }
+    } // }}}
+
     totrisk=vec_sum(risk); MtA(cX,cX,A); 
     invertS(A,AI,osilent); sing=0; 
     // head_matrix(cX); print_mat(A); print_mat(AI); 
@@ -122,7 +127,6 @@ for (s=0;s<*Ntimes;s++)
 	convproblems=1; convt=0; silent[s]=2;
 	it=*Nit-1; 
 	for (c=0;c<ps;c++) { VE(beta,c)=0; VE(SCORE,c)=99; }
-	mat_zeros(VAR); 
 	for (c=0;c<*px;c++) VE(bet1,c)=betaS[c]; 
 	}
     }
@@ -157,8 +161,9 @@ if (convt==1 ) {
       for(k=0;k<ps;k++) 
       for(c=0;c<ps;c++) ME(VAR,k,c)=ME(VAR,k,c)+VE(dp2,k)*VE(dp2,c); 
 
-      if (*resample==1) 
+      if (*resample==1) {
       for (c=0;c<*px;c++) {l=j*(*px)+c; biid[l*(*Ntimes)+s]=VE(dp2,c);}
+      }
    }
 }
 
@@ -193,7 +198,8 @@ if (convt==1 ) {
 
   }
 free(vcudif); 
-}
+} // }}}
+
 
 void itfitsemi(times,Ntimes,x,delta,cause,
 	       KMc,z,antpers,px,Nit,
@@ -208,7 +214,8 @@ double *times,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
 	*convc;
 int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 *semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent;
-{
+{ 
+  // {{{ allocation and reading of data from R
   matrix *ldesignX,*A,*AI,*cdesignX,*ldesignG,*cdesignG;
   matrix *S,*dCGam,*CGam,*ICGam,*VarKorG,*dC,*XZ,*ZZ,*ZZI,*XZAI; 
   matrix *Ct,*C[*Ntimes],*Acorb[*Ntimes],*tmpM1,*tmpM2,*tmpM3,*tmpM4; 
@@ -257,6 +264,8 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 
   if (*px>=*pg) pmax=*px; else pmax=*pg; 
   for (j=0;j<*pg;j++) VE(gam,j)=gamma[j]; 
+  // }}}
+  
 
   if (fixedcov==1) {
     for (c=0;c<*antpers;c++) {
@@ -296,10 +305,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 //	      else scl_vec_mult(time,zi,zi); 
 	    }
 	    if (*trans==2) { 
-//	      if (timem>0)  { 
 		for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
-//	    } 
-//	      else lrr=VE(pghat,j);  
 	      VE(rr,j)=exp(lrr);  
 	      VE(plamt,j)=1-exp(-exp(VE(pbhat,j))*VE(rr,j)); 
 	      scl_vec_mult((1-VE(plamt,j))*exp(VE(pbhat,j))*VE(rr,j),xi,xi); 
@@ -330,6 +336,24 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 //	      if (timem>0) 
 	      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
            }
+	   if (*trans==5) {
+	      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
+	      VE(rr,j)=lrr;  
+	      VE(plamt,j)=VE(pbhat,j)*exp(lrr); 
+	      scl_vec_mult(exp(lrr),xi,xi); 
+	      scl_vec_mult(VE(plamt,j),zi,zi); 
+//	      if (timem>0) 
+	      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
+           }
+           if (*trans==6) { 
+	      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
+	      VE(rr,j)=exp(lrr);  
+	      VE(plamt,j)=1-exp(-VE(pbhat,j)*VE(rr,j)); 
+	      scl_vec_mult((1-VE(plamt,j))*VE(rr,j),xi,xi); 
+	      scl_vec_mult((1-VE(plamt,j))*(VE(pbhat,j))*VE(rr,j),zi,zi); 
+	      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
+	    }
+
 	   // }}}
 
 	    replace_row(cdesignX,j,xi); replace_row(cdesignG,j,zi); 
@@ -347,7 +371,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 
           if (fabs(ME(AI,0,0))<.0000001) {
              convproblems=1;  silent[s]=1; 
-             if (osilent==0) printf("non-invertible design at time %lf\n",time); 
+             if (osilent==0) printf("Iteration %d: non-invertible design at time %lf\n",itt,time); 
 	     for (k=1;k<=*px;k++) inc[k*(*Ntimes)+s]=0; 
 	     sing=1;
           }

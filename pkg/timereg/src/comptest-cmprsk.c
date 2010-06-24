@@ -32,12 +32,13 @@ matrix **W4t;
   tau=times[(*Ntimes-1)]-times[0]; Ut[0]=times[0]; 
   if (*weighted==0) {
     if (*line==0) for (i=0;i<*px;i++) cumweight[i]=tau;
-    else for (i=0;i<*px;i++) cumweight[i]=mtime*mtime*0.5-stime*stime*0.5;}
+    else for (i=0;i<*px;i++) cumweight[i]=mtime*mtime*0.5;}
 
   /* computation of constant effects */ 
   for (i=0;i<*px;i++) {
-    if (fabs(timepow[i])<0.01) { // timepow ca 0
+    if (fabs(timepow[i])<0.000001) { // timepow ca 0
       for (s=0;s<*Ntimes;s++)
+      if (vcu[i*(*Ntimes)+s]>0) 
       {  // time=times[s];dtime=times[s]-times[s-1];
 	 if (vcu[(i+1)*(*Ntimes)+s]>0) {
 	 cumweight[i]=cumweight[i]+(1/vcu[(i+1)*(*Ntimes)+s]);
@@ -73,40 +74,39 @@ matrix **W4t;
     } 
   */ /* weighted==1 */ 
 
-  scl_vec_mult(1,gammav,gammavt); 
   /* Computation of observed teststatistics */ 
   for (s=1;s<*Ntimes;s++)
-    {
- if (vcu[i*(*Ntimes)+s]>0) {
+  if (vcu[0*(*Ntimes)+s]>0)  
+  {
       time=times[s]-times[0];dtime=times[s]-times[s-1];
    
-      for (i=1;i<=*px;i++) {
-	xij=fabs(cu[i*(*Ntimes)+s])/sqrt(vcu[i*(*Ntimes)+s]);
+     for (i=1;i<=*px;i++) 
+	     {
+      xij=fabs(cu[i*(*Ntimes)+s])/sqrt(vcu[i*(*Ntimes)+s]);
+      if (xij>testOBS[i-1]) testOBS[i-1]=xij; }
 
-	if (xij>testOBS[i-1]) testOBS[i-1]=xij; } 
-
-      for (i=1;i<=*px;i++) VE(xi,i-1)=cu[i*(*Ntimes)+s];
+     for (i=1;i<=*px;i++) VE(xi,i-1)=cu[i*(*Ntimes)+s];
 //      if (*line==1) scl_vec_mult(time,gammav,gammavt); 
-      for (i=0;i<*px;i++) VE(gammavt,i)=VE(gammav,i)*pow(time,timepow[i]);; 
+      for (i=0;i<*px;i++) VE(gammavt,i)=VE(gammav,i)*pow(time,timepow[i]); 
       vec_subtr(xi,gammavt,difX); vec_star(difX,difX,ssrow); 
 
       Ut[s]=times[s]; 
 
       for (i=0;i<*px;i++) { 
-        if (*weighted>=2) vardif=vcudif[(i+1)*(*Ntimes)+s];  else vardif=1; 
-	if (*weighted>=2)  {
-	  if ((s>*weighted) && (s<*Ntimes-*weighted))  
-	    VE(difX,i)=VE(difX,i)/sqrt(vardif); else VE(difX,i)=0.0; 
-	} else VE(difX,i)=VE(difX,i); 
+//        if (*weighted>=2) vardif=vcudif[(i+1)*(*Ntimes)+s];  else vardif=1; 
+//	if (*weighted>=2)  {
+//	  if ((s>*weighted) && (s<*Ntimes-*weighted))  
+//	    VE(difX,i)=VE(difX,i)/sqrt(vardif); else VE(difX,i)=0.0; 
+//	} else VE(difX,i)=VE(difX,i); 
 
         Ut[(i+1)*(*Ntimes)+s]=VE(difX,i);
         c=(*px)+i;
 	if (fabs(VE(difX,i))>testOBS[c]) testOBS[c]=fabs(VE(difX,i));
         c=2*(*px)+i;
         if ((s>*weighted) && (s<*Ntimes-*weighted))  
-	  testOBS[c]=testOBS[c]+VE(ssrow,i)*dtime; }
-    } 
-    }
+	  testOBS[c]=testOBS[c]+VE(ssrow,i)*dtime; 
+      }
+  } 
   /*  for (i=0;i<3*(*px);i++) printf(" %lf \n",testOBS[i]);  */
 
   /* simulation of testprocesses and teststatistics */ 
@@ -116,11 +116,12 @@ matrix **W4t;
       /* random=gasdev(&idum);  */
       random=norm_rand();
       scl_mat_mult(random,W4t[i],tmpM1);mat_add(tmpM1,Delta,Delta); 
-      scl_vec_mult(random,gammai[i],xi); vec_add(xi,tmpv1,tmpv1);}
+      scl_vec_mult(random,gammai[i],xi); vec_add(xi,tmpv1,tmpv1);
+    }
       scl_vec_mult(1,tmpv1,tmpv1t); 
 
-    for (s=1;s<*Ntimes;s++) { 
-    if (vcu[i*(*Ntimes)+s]>0) {
+    for (s=1;s<*Ntimes;s++)  
+    if (vcu[0*(*Ntimes)+s]>0) {
       time=times[s]-times[0]; dtime=times[s]-times[s-1]; 
       extract_row(Delta,s,rowX); 
 //      if (*line==1) scl_vec_mult(times[s],tmpv1,tmpv1t); 
@@ -144,7 +145,7 @@ matrix **W4t;
         if ((s>*weighted) && (s<*Ntimes-*weighted))  
 	  test[c*(*antsim)+k]=test[c*(*antsim)+k]+VE(ssrow,i)*dtime/vardif; 
       }
-    } }  /* s=1..Ntimes */ 
+    }  /* s=1..Ntimes */ 
   }  /* k=1..antsim */ 
 
   PutRNGstate();   /* to use R random normals */

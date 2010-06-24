@@ -104,6 +104,7 @@ observed cumulative and estimate under null of constant effect.}
 \item{gamma.iid}{matrix of iid decomposition of parametric effects.}
 \item{test.procBeqC}{observed test process for testing of time-varying effects}
 \item{sim.test.procBeqC}{50 resample processes for for testing of time-varying effects}
+\item{conv}{information on convergence for time points used for estimation.}
 }
 \references{
 Scheike, Zhang and Gerds (2008), Predicting cumulativeincidence probability by direct binomial regression,Biometrika, 95, 205-220.           

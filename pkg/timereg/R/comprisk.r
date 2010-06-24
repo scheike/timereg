@@ -4,13 +4,16 @@ causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6){
 # trans=1 P_1=1-exp( - ( x' b(b)+ z' gam t) ), 
 # trans=2 P_1=1-exp(-exp(x a(t)+ z` b )
-# trans=not done P_1=1-exp(-x a(t) exp(z` b )) is not good numerically
+# trans=6 P_1=1-exp(-x a(t) exp(z` b )) is not good numerically
 # trans=3 logit(P_1)=(x a(t)+ z` b)
 # trans=4 P_1=exp( ( x' b(b)+ z' gam t) ), 
+# trans=5 P_1= (x' b(t)) exp( z' gam t), 
   if (model=="additive") trans<-1; 
   if (model=="prop")     trans<-2; 
   if (model=="logistic") trans<-3; 
   if (model=="rcif")     trans<-4; 
+  if (model=="rcif2")    trans<-5; 
+  if (model=="fg")       trans<-6; 
   line <- 0
   m<-match.call(expand = FALSE);
   m$gamma<-m$times<-m$cause<-m$Nit<-m$weighted<-m$n.sim<-
@@ -114,13 +117,17 @@ cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6){
   pred.covs.sem<-0
 
   if (is.null(time.pow)==TRUE & model=="prop" )     time.pow<-rep(0,pg); 
+  if (is.null(time.pow)==TRUE & model=="fg" )     time.pow<-rep(0,pg); 
   if (is.null(time.pow)==TRUE & model=="additive")  time.pow<-rep(1,pg); 
   if (is.null(time.pow)==TRUE & model=="rcif" )     time.pow<-rep(1,pg); 
+  if (is.null(time.pow)==TRUE & model=="rcif2" )     time.pow<-rep(1,pg); 
   if (is.null(time.pow)==TRUE & model=="logistic" ) time.pow<-rep(0,pg); 
 
   if (is.null(time.pow.test)==TRUE & model=="prop" )     time.pow.test<-rep(0,px); 
+  if (is.null(time.pow.test)==TRUE & model=="fg" )     time.pow.test<-rep(0,px); 
   if (is.null(time.pow.test)==TRUE & model=="additive")  time.pow.test<-rep(1,px); 
-  if (is.null(time.pow.test)==TRUE & model=="rcif" )     time.pow.test<-rep(1,px); 
+  if (is.null(time.pow.test)==TRUE & model=="rcif" )    time.pow.test<-rep(1,px); 
+  if (is.null(time.pow.test)==TRUE & model=="rcif2" )   time.pow.test<-rep(1,px); 
   if (is.null(time.pow.test)==TRUE & model=="logistic" ) time.pow.test<-rep(0,px); 
 
   silent <- c(silent,rep(0,ntimes-1));
@@ -139,7 +146,7 @@ cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6){
           as.integer(causeS),as.integer(line),as.integer(detail),
           as.double(biid),as.double(gamiid),as.integer(resample.iid),
           as.double(time.pow),as.integer(clusters),as.integer(antclust),
-          as.double(time.pow.test),silent=as.integer(silent),
+          as.double(time.pow.test),as.integer(silent),
 	  as.double(conv),
           PACKAGE="timereg")
 
@@ -192,12 +199,10 @@ cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6){
 
   if (sim>=1) {
     colnames(Ut)<- c("time",covnamesX)
-    names(unifCI)<-names(pval.testBeq0)<-
-      names(pval.testBeqC)<- names(pval.testBeqC.is)<-
-        names(obs.testBeq0)<-
-          names(obs.testBeqC)<- names(obs.testBeqC.is)<-
-            colnames(sim.testBeq0)<-
-              colnames(sim.testBeqC)<- colnames(sim.testBeqC.is)<- covnamesX;
+    names(unifCI)<-names(pval.testBeq0)<- names(pval.testBeqC)<- 
+    names(pval.testBeqC.is)<- names(obs.testBeq0)<- names(obs.testBeqC)<- 
+    names(obs.testBeqC.is)<- colnames(sim.testBeq0)<- colnames(sim.testBeqC)<- 
+    colnames(sim.testBeqC.is)<- covnamesX;
   }
 
   if (fixed==1) { rownames(gamma)<-c(covnamesZ);
@@ -248,8 +253,36 @@ print.comprisk <- function (x,...) {
   cat("   \n");  
 }
 
-coef.compriskT <- function(object, digits=3,...) {
+coef.comprisk <- function(object, digits=3,...) {
 
    coefBase(object,digits=digits)
 }
+
+summary.comprisk <- function (object,digits = 3,...) {
+  if (!inherits(object, 'comprisk')) stop ("Must be a comprisk object")
+  
+  if (is.null(object$gamma)==TRUE) semi<-FALSE else semi<-TRUE
+    
+  # We print information about object:  
+  cat("Competing risks Model \n\n")
+  
+  modelType<-object$model
+  #if (modelType=="additive" || modelType=="rcif") 
+ 
+  if (sum(object$obs.testBeq0)==FALSE) cat("No test for non-parametric terms\n") else
+  timetest(object,digits=digits); 
+
+  if (semi) { cat("Parametric terms : \n"); coef(object); cat("   \n"); }
+
+  if (object$conv$convd>=1) {
+       cat("WARNING problem with convergence for time points:\n")
+       cat(object$cum[object$conv$convp>0,1])
+       cat("\nReadjust analyses by removing points\n\n") }
+
+  cat("  Call: \n")
+  dput(attr(object, "Call"))
+  cat("\n")
+}
+
+
 
