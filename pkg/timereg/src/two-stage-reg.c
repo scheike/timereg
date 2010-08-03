@@ -382,7 +382,6 @@ printf(" var(beta) : \n"); print_mat(RobVbeta);
       if ((sumscore<0.0000000001) & (it<*Nit-1)) it=*Nit-1; 
     } /* it theta Newton-Raphson */  // }}}
 
-
   for (i=0;i<*ptheta;i++) { theta[i]=VE(vtheta1,i);
     thetascore[i]=VE(vthetascore,i); }
 
@@ -393,11 +392,14 @@ printf(" var(beta) : \n"); print_mat(RobVbeta);
       for (j=0;j<clustsize[k];j++) {
 	   i= idiclust[j*(*antclust)+k]; 
 	theta0=VE(lamtt,i); 
+        if (*inverse==1) theta0=exp(theta0); 
 	dummy=(1/(theta0*Rtheta[k]))*exp(theta0*Hik[i])-
 	  (1/theta0+Nt[k])*(1+theta0*Hik[i])*exp(theta0*Hik[i])
 	  /Rtheta[k]+Nti[i]+
 	  (1+theta0*Nt[k])*exp(theta0*Hik[i])*HeH[k]/pow(Rtheta[k],2);
         extract_row(ldesG0,i,zi); extract_row(destheta,i,vtheta1); 
+//printf("%ld %ld %ld \n",k,j,i); 
+//printf("%lf %lf %lf %lf %lf %lf \n",theta0,dummy,Hik[i],Nt[k],Hik[i],Rtheta[k]); 
         for (c=0;c<*ptheta;c++) for (l=0;l<*pg;l++) 
 	  ME(Gtilde,c,l)=ME(Gtilde,c,l)+ 
 	    VE(zi,l)*VE(vtheta1,c)*dummy*Hik[i];  }
@@ -436,10 +438,7 @@ printf(" var(beta) : \n"); print_mat(RobVbeta);
 
     for (j=0;j<*antclust;j++) if (clustsize[j]>=2) {
       if (*betafixed==1) vec_zeros(W2[j]); 
-
       Mv(Gtilde,W2[j],vtheta2); 
-/* printf(" %ld \n",j);print_vec(W2[j]);print_vec(vtheta2); print_vec(dAiid[j]);*/
-
       vec_add_mult(thetaiid[j],vtheta2,Dthetanu,thetaiid[j]);
       vec_add_mult(thetaiid[j],dAiid[j],Dthetanu,thetaiid[j]);
 
@@ -448,6 +447,7 @@ printf(" var(beta) : \n"); print_mat(RobVbeta);
 	  VE(thetaiid[j],i)*VE(thetaiid[j],k);
     }
   }
+
 
   MxA(d2UItheta,varthetascore,d2Utheta); 
   MxA(d2Utheta,d2UItheta,varthetascore);  

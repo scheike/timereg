@@ -18,7 +18,7 @@ int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
     *rr,*rowX,*difbeta,*qs,*bhatub,*betaub,*dcovs,*pcovs,*zi,*rowZ,*zgam; 
   vector *cumhatA[*antclust],*cumA[*antclust],*bet1,*gam,*dp,*dp1,*dp2; 
   int osilent,convt,ps,sing,sc,c,i,j,k,l,s,it,convproblems=0,pointswithconv=0; 
-  double time,sumscore,totrisk,zgamt, 
+  double time,sumscore,totrisk, 
 	 *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double));
   long idum;
   float gasdev(),expdev(),ran1();
