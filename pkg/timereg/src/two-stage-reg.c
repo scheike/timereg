@@ -414,6 +414,7 @@ printf(" var(beta) : \n"); print_mat(RobVbeta);
            if (VE(atrisk[i],s)!=0) {
 //	    for (i=0;i<*antpers;i++) if (cluster[i]==j && VE(atrisk[i],s)!=0) {
 	      theta0=VE(lamtt,i); 
+              if (*inverse==1) theta0=exp(theta0); 
 	      dummy=(1/(theta0*Rtheta[j]))*exp(theta0*Hik[i])-
 		(1/theta0+Nt[j])*(1+theta0*Hik[i])*exp(theta0*Hik[i])
 		/Rtheta[j]+Nti[i]+
