@@ -275,7 +275,8 @@ predict.comprisk<-function(object,newdata=NULL,X=NULL,
     } else uband<-NULL; 
   } else {
     uband<-NULL;
-  }
+  } ## }}}
+
 
   if(modelType == 'additive' || modelType == 'prop' || modelType=="logistic"
      || modelType=='rcif'){
@@ -327,7 +328,7 @@ pava = function(x, w=rep(1,length(x)))  # R interface to the compiled code
 } ## }}}
 
 
-plot.predictComprisk<-function(x,uniform=1,new=1,se=1,col=1,lty=1,lwd=2,multiple=0,specific.comps=0,
+plot.predictComprisk<-function(x,uniform=1,new=1,se=1,col=1,lty=1,lwd=2,multiple=0,specific.comps=0,ylim=c(0,1),
 xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...){
 ## {{{
   object <- x; rm(x);
@@ -371,7 +372,8 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...){
 
   for (i in comps) {
     if (new==1 & (multiple!=1 | i==comps[1])) {
-      plot(time,mainLine[i,],type="s",ylim=c(0,1),xlab=xlab,ylab=ylab,col=col[i],lty=lty[i],lwd=lwd[i],...)
+      plot(time,mainLine[i,],type="s",xlab=xlab,ylab=ylab,col=col[i],
+		      lty=lty[i],lwd=lwd[i],ylim=ylim,...)
     } else {
       lines(time,mainLine[i,],type="s",col=col[i],lty=lty[i],lwd=lwd[i])
     }

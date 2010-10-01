@@ -718,7 +718,7 @@ if (fixedcov==1) {
 	  for (k=1;k<=*dimxih;k++) inc[k*(*Ntimes)+s]=VE(AIXdN,k-1); 
 
 	  if (itt==*Nit-1) {
-	    for (i=0;i<*antclust;i++) 
+	    for (i=0;i<*antpers;i++) 
             { 
               j=clusters[i]; 	
 	      extract_row(cdesignX,i,xi);

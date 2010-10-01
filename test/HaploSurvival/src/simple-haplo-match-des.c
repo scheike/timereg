@@ -4,9 +4,8 @@
 #include <Rdefines.h>
 #include <R.h>
 #include "haplosurv.h" 
-                 
 
-  matrix *Fst[(2000)*(2000)]; 
+//matrix *Fst[(5000)*(5000)]; 
 
 //  scorequations for intensity given genotype match
 //  for donor patient  bmt data 
@@ -74,8 +73,11 @@ double tempSum;
 // }}}
 
 //if (*Ntimes>500) toolarge=1; 
-if (*Ntimes>900) printf("Many jump times: may cause memory problems %d \n",*Ntimes); 
-  //  matrix *Fst[(*Ntimes)*(*Ntimes)]; 
+//if (*Ntimes>5000) {
+//printf("Many jump times: may cause memory problems %d \n",*Ntimes); 
+//printf("May increase size of Fst in simple-haplo-match-des.c to %d\n",*Ntimes); 
+//}
+ matrix *Fst[(*Ntimes)*(*Ntimes)]; 
   // set up dimension of score 
 // {{{
   dimpar=0; nphm1=*nph-1; 
@@ -434,7 +436,9 @@ if (*Ntimes>900) printf("Many jump times: may cause memory problems %d \n",*Ntim
    phP=haplofreq[oh[c1P]]*haplofreq[oh[c1P+1]];
    ph=phD*phP; 
    sph=sph+ph; surv=exp(-xihAt*RR)*ph;
-   if (surv<0) printf(" it s i surv ph %d %d %d %lf %lf \n",it,s,i,surv,ph); 
+   if (surv<0)  { printf(" it s i surv ph %d %d %d %lf %lf \n",it,s,i,surv,ph); 
+	          surv=0.000001; 
+   }
    shaz=exp(-xihAt*RR)*RR*ph; naevn=naevn+surv; tael=tael+shaz; 
    vec_add_mult(rowXh,xih,shaz,rowXh); 
    if (pp==1) printf("shaz surv ===== %d %d %d %lf %lf %lf %lf %lf  \n",s,i,j,shaz,surv,naevn,tael,xihAt); 
@@ -1092,7 +1096,7 @@ print_vec(U);
     free_mat(C[j]); free_mat(M1M2[j]); free_mat(ZXAIs[j]); 
     free_mat(YIt[j]); free_mat(dYIt[j]); free_vec(dAt[j]); free_vec(ZXdA[j]);
     free_mat(St[j]); free_vec(varUthat[j]);
-    // for(i=0;i<*Ntimes;i++){ free_mat(Fst[j*(*Ntimes)+i]); }
+    for(i=0;i<*Ntimes;i++){ free_mat(Fst[j*(*Ntimes)+i]); }
   }
 
   for(j=0;j<*antpers;j++)  { free_vec(scorei[j]); free_vec(Xscorei[j]); }

@@ -147,8 +147,7 @@ cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6){
           as.double(biid),as.double(gamiid),as.integer(resample.iid),
           as.double(time.pow),as.integer(clusters),as.integer(antclust),
           as.double(time.pow.test),as.integer(silent),
-	  as.double(conv),
-          PACKAGE="timereg")
+	  as.double(conv),PACKAGE="timereg")
 
   gamma<-matrix(out[[24]],pg,1); var.gamma<-matrix(out[[25]],pg,pg); 
   gamma2<-matrix(out[[30]],ps,1); 

@@ -340,9 +340,14 @@ if (match==FALSE) {
            test.procBeqC=Ut,sim.test.procBeqC=UIt)
 ## }}}
 
+    ud$conv$convd <- 0 ### to make compatible with comp.risk output
+    if (model=="prop")      time.pow<-rep(0,pg); 
+    if (model=="additive")  time.pow<-rep(1,pg); 
+
     ud$call<-call; ud$model<-model; ud$n<-antpers; 
     ud$formula<-formula; class(ud)<-"comprisk"; 
     attr(ud, "Call") <- sys.call(); 
     attr(ud, "Formula") <- formula
+    attr(ud, "time.pow") <- time.pow
     return(ud); 
 }

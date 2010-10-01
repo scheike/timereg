@@ -182,15 +182,15 @@ return(x) # returns x so no nonpar haplotype effect
 sadd<-haplo.cif(Surv(time,cause>0)~const(platelet)+const(age)+const(tcell),bmt,
 bmt$cause,times[-c(1:5)],designX,designZ,geno.setup=setup,Nit=40,
 causeS=1,fit.haplofreq=out)
-summary(add)
+summary(sadd)
 
 par(mfrow=c(2,2))
 plot(sadd)
 
-pout<-predict(sadd, X=rbind(c(1),c(1)),
+pout<- predict(sadd, X=rbind(c(1),c(1)),
 Z=rbind( c(0,0,0,1), # with 1 haplotype 0
-         c(0,0,0,0)  # without haplotype 0
-))
+         c(0,0,0,0))  # without haplotype 0
+)
 
 plot(pout,multiple=1,uniform=0,col=1:2,lty=1,se=0)
 

@@ -281,6 +281,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
       for (s=0;s<*Ntimes;s++)
       {
 	  time=times[s]; if (s==0) dtime=0; else dtime=time-times[s-1]; 
+//	  dtime=1; 
 
 	  for(j=1;j<=*px;j++) VE(bhatt,j-1)=est[j*(*Ntimes)+s];
 	  Mv(ldesignX,bhatt,pbhat); 

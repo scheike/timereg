@@ -651,7 +651,7 @@ if (fixedcov==1) {
 	  for (k=1;k<=*dimxih;k++) inc[k*(*Ntimes)+s]=VE(AIXdN,k-1); 
 
 	  if (itt==*Nit-1) {
-	    for (i=0;i<*antclust;i++) 
+	    for (i=0;i<*antpers;i++) 
             { 
               j=clusters[i]; 	
 	      extract_row(cdesignX,i,xi);
@@ -659,7 +659,6 @@ if (fixedcov==1) {
 	      extract_row(cdesignG,i,zi); scl_vec_mult(VE(Y,i),zi,zi); 
 	      vM(C[s],rowX,tmpv2); vec_subtr(zi,tmpv2,rowZ); 
 	      scl_vec_mult(dtime,rowZ,rowZ); 
-	      // vec_add(rowZ,z1,z1); vec_add(rowX,tmpv1,tmpv1); }  
 	      vec_add(rowZ,W2[j],W2[j]); 
 	      for (k=0;k<*px;k++) ME(W3t[j],s,k)= ME(W3t[j],s,k)+VE(rowX,k); 
 	    }
@@ -695,6 +694,9 @@ if (fixedcov==1) {
     MxA(ICGam,DUgamma,DUgamma1); 
 
     for (i=0;i<*antclust;i++) {Mv(ICGam,W2[i],zi); scl_vec_mult(1,zi,W2[i]); 
+//	    printf("==================================== \n"); 
+//	    printf(" %d \n",i); print_vec(W2[i]);
+
    if (*fixhaplo==0) { // also correct for uncertainty in haplo-pars
            Mv(DUgamma1,hapiid[i],zi); // print_vec(zi); 
 	   vec_subtr(W2[i],zi,W2[i]); }
@@ -721,7 +723,7 @@ if (fixedcov==1) {
 	if (*resample==1) {
 	  if (s==1)
 	    for (c=0;c<*dimzih;c++)
-	    gamiid[c*(*antclust)+i]=gamiid[c*(*antclust)+i]+VE(tmpv2,c);
+	    gamiid[c*(*antclust)+i]=VE(W2[i],c);
 	    for (c=0;c<*dimxih;c++) {l=i*(*dimxih)+c; 
 	    biid[l*(*Ntimes)+s]=biid[l*(*Ntimes)+s]+VE(difX,c);} }
 
@@ -733,7 +735,6 @@ if (fixedcov==1) {
 
       } /* s=0..Ntimes*/
     }
-
 
   /* MxA(RobVargam,ICGam,tmpM2); MxA(ICGam,tmpM2,RobVargam);*/
 

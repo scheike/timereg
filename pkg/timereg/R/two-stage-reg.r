@@ -111,6 +111,8 @@ theta.des=NULL,inverse=0,step=1)
     if (is.null(theta.des)==TRUE) theta.des<-matrix(1,ng,ptheta) else
     theta.des<-as.matrix(theta.des); 
     ptheta<-ncol(theta.des); 
+    if (nrow(theta.des)!=nx) stop("Theta design does not have correct dim");
+
     if (is.null(theta)==TRUE) theta<-rep(0.1,ptheta); 
     if (length(theta)!=ptheta) theta<-rep(theta[1],ptheta); 
     theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 

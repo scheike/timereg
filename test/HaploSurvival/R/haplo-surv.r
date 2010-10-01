@@ -482,11 +482,11 @@ haplo.freqs<- function (geno.type, geno.setup=NULL,
   rho <- NULL
   if (is.null(rho)) {rho <- rep(0, nPeople)}
 
-  print(nHaps); 
-  print(haplo.freq[1:(nHaps - 1)]/haplo.freq[nHaps])
+###  print(nHaps); 
+###  print(haplo.freq[1:(nHaps - 1)]/haplo.freq[nHaps])
 
   haplo.pars<-log(haplo.freq[1:(nHaps - 1)]/haplo.freq[nHaps])
-  print(haplo.pars)
+###  print(haplo.pars)
 
   if (is.null(haplo.design)==TRUE)  {
     haplo.design<-diag(nph-1) 
