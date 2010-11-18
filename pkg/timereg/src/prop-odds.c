@@ -267,6 +267,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
     } /* it */
   loglike[0]=ll; 
 
+   R_CheckUserInterrupt();
 
 
   /* computation of q(t) ===================================== */ 
@@ -281,6 +282,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
     replace_row(qt,s,xi); 
   }
 
+   R_CheckUserInterrupt();
   /* terms for robust variances ============================ */
   if (robust==1) {
     for (s=1;s<*Ntimes;s++) {
@@ -330,6 +332,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
       */
     } /* s=1 ..Ntimes */ 
 
+   R_CheckUserInterrupt();
 
 
     /* ROBUST VARIANCES  Estimation   */
@@ -399,6 +402,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
       Vbeta[k*(*px)+j]=-ME(VU,j,k); 
       RVbeta[k*(*px)+j]=-ME(RobVbeta,j,k); } } 
 
+   R_CheckUserInterrupt();
 
   if (*sim==1) {
     // printf("Simulations start N= %d \n",*antsim);

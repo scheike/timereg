@@ -60,6 +60,7 @@ for (s=0;s<*Ntimes;s++)
 
   for (it=0;it<*Nit;it++)
   {
+   R_CheckUserInterrupt();
     totrisk=0; 
 
     for (j=0;j<*n;j++) { // {{{ computation of P1 and DP1  and observed response 
@@ -174,6 +175,7 @@ if (convt==1 ) {
 } /* s=1 ... *Ntimes */ 
 
 
+   R_CheckUserInterrupt();
     if (*sim==1)
       comptestfunc(times,Ntimes,px,est,var,vcudif,antsim,test,testOBS,Ut,
 		   simUt,cumAt,weighted,antclust,gamma2,line,timepowtest); 
@@ -275,6 +277,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 
   for (itt=0;itt<*Nit;itt++)
     {
+   R_CheckUserInterrupt();
       mat_zeros(Ct); mat_zeros(CGam); vec_zeros(IZGdN); vec_zeros(IZGlamt); 
 
       Mv(ldesignG,gam,pghat);
@@ -440,6 +443,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 
     } /*itt løkke */ 
 
+   R_CheckUserInterrupt();
   /* ROBUST VARIANCES   */ 
   if (*robust==1) 
     {
@@ -475,6 +479,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
     for (k=0;k<*pg;k++) {vargamma[k*(*pg)+j]=ME(RobVargam,j,k);}}
 
   if (convproblems>=1) convc[0]=convproblems; 
+   R_CheckUserInterrupt();
   if (*sim==1) {
     comptestfunc(times,Ntimes,px,est,var,vcudif,antsim,test,testOBS,Ut,simUt,W4t,weighted,antclust,gamma2,line,timepowtest);
   }

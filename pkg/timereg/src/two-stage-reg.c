@@ -82,9 +82,11 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
   for(j=0;j<*antpers;j++) {Hik[j]=0; VE(one,j)=1; VE(weight,j)=1; VE(offset,j)=1;} 
   // }}}
   
+   R_CheckUserInterrupt();
 
   for (it=0;it<*Nit;it++) // {{{ cox aalen it
     {
+     R_CheckUserInterrupt();
       vec_zeros(U); mat_zeros(S1);  sumscore=0;   
       for (s=1;s<*Ntimes;s++)
 	{
@@ -268,6 +270,9 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
       /* */
     } /* s=1 ..Ntimes */  // }}}
 
+   R_CheckUserInterrupt();
+
+
   ll=lle-llo; /* likelihood beregnes */
 
   if (*robust==1) { // {{{ /* ROBUST VARIANCES   */
@@ -312,6 +317,7 @@ printf(" var(beta) : \n"); print_mat(RobVbeta);
 
   for (it=0;it<*Nit;it++) // {{{ frailty parameter Newton-Raphson
   {
+   R_CheckUserInterrupt();
       for (j=0;j<*antclust;j++) {Rtheta[j]=1; HeH[j]=0;H2eH[j]=0;}
 
       vec_zeros(vthetascore); mat_zeros(d2Utheta); 
@@ -385,6 +391,7 @@ printf(" var(beta) : \n"); print_mat(RobVbeta);
   for (i=0;i<*ptheta;i++) { theta[i]=VE(vtheta1,i);
     thetascore[i]=VE(vthetascore,i); }
 
+   R_CheckUserInterrupt();
   /* terms for robust variances ============================ */
   if (*robust==1) {
     mat_zeros(Gtilde);   

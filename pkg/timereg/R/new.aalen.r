@@ -36,10 +36,10 @@ aalen<-function (formula = formula(data),
     cat("Covariance based on robust iid representation\n")
     covariance<-0;}
   if (sim==1 & robust==0) {
-    cat("When robust=0, No simulations \n"); cat("n.sim set to 0\n"); n.sim<-0;}
-#if (residuals==1 & robust==0) {
-#cat("When robust=0, no martingale residuals \n"); 
-#residuals<-0;}
+    cat("When robust=0, No simulations \n"); cat("n.sim set to 0\n"); n.sim<-0; sim<-0; }
+###if (residuals==1 & robust==0) {
+###cat("When robust=0, no martingale residuals \n"); 
+###residuals<-0;}
   if (n.sim>0 & n.sim<50) {n.sim<-50 ; cat("Minimum 50 simulations\n");}
   call <- match.call()
   m <- match.call(expand = FALSE)

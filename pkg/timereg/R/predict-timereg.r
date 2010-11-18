@@ -388,8 +388,8 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...){
         upper[upper<0]<-0; upper[upper>1]<-1; 
        }
 
-      lines(time,lower,type="s",col=col[i],lty=3,lwd=lwd[i]/2);
-      lines(time,upper,type="s",col=col[i],lty=3,lwd=lwd[i]/2);
+      lines(time,lower,type="s",col=col[i],lty=lty[i],lwd=lwd[i]/2);
+      lines(time,upper,type="s",col=col[i],lty=lty[i],lwd=lwd[i]/2);
     }
 
     if (uniform==1 & is.null(uband)==FALSE ) {
@@ -405,8 +405,8 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...){
           upper[upper<0]<-0; upper[upper>1]<-1; 
        }
       if (transparency==0 || transparency==2) {
-      lines(time,upper,type="s",col=col[i],lty=2,lwd=lwd[i]/2);
-      lines(time,lower,type="s",col=col[i],lty=2,lwd=lwd[i]/2);
+      lines(time,upper,type="s",col=col[i],lty=lty[i],lwd=lwd[i]/2);
+      lines(time,lower,type="s",col=col[i],lty=lty[i],lwd=lwd[i]/2);
       }
 
     ## Prediction polygons bandds ## {{{

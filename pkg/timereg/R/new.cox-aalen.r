@@ -21,7 +21,7 @@ rate.sim=1,beta.fixed=0)
   if (sim==1 & robust==0) {
     cat("When robust=0, No simulations \n"); 
     cat("n.sim set to 0\n"); 
-    sim<-0;}
+    n.sim <- 0; sim<-0;}
 #  if (residuals==1 & robust==0) {
 #    cat("When robust=0, no martingale residuals \n"); 
 #    residuals<-0;}

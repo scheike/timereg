@@ -189,6 +189,8 @@ int *nx,*p,*antpers,*Ntimes,*sim,*retur,*rani,*antsim,*status,*id,*covariance,
   } /* s = 1..Ntimes */ 
 
   tau=time; 
+ 
+    R_CheckUserInterrupt();
 
   if (*sim==1) {
     comptest(times,Ntimes,p,cu,robvcu,vcudif,antsim,test,testOBS,Ut,simUt,cumAt,weighted,antclust);
@@ -344,6 +346,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*rani,*robust,*
 	  extract_row(X,i,xi); Mv(AI,xi,rowX); replace_row(AIxit[i],s,rowX); 
 	}
       }
+    R_CheckUserInterrupt();
     } /* s =1...Ntimes */ 
 
 
@@ -377,6 +380,8 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*rani,*robust,*
       for (k=1;k<=*px;k++) { VE(dA,k-1)=cu[k*(*Ntimes)+l]; }
     } else { vec_zeros(dA); }
 
+
+    R_CheckUserInterrupt();
 
     /* terms for robust variance   */ 
     if (*robust==1 || *retur==1) 
@@ -447,6 +452,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*rani,*robust,*
 
   vec_star(IZHdN,gam,rowZ);    
 
+    R_CheckUserInterrupt();
   loglike[0]=loglike[0]-vec_sum(rowZ); 
 
   tau=time;
@@ -530,6 +536,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*rani,*robust,*
 
   cu[0]=times[0]; vcu[0]=times[0];
 
+    R_CheckUserInterrupt();
   if (*sim==1) {
     comptest(times,Ntimes,px,cu,Robvcu,vcudif,antsim,test,testOBS,Ut,simUt,W4t,weighted,antclust); 
   }

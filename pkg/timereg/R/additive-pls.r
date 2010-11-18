@@ -1,4 +1,4 @@
-additive.plsR<-function (formula = formula(data),
+additive.plsR<-function (formula = formula(data), ## {{{
                          data = sys.parent(), start.time = 0, max.time = NULL, 
                          robust=0, id=NULL, clusters=NULL, residuals = 0, n.sim = 0,  
                          weighted.test=0,
@@ -108,12 +108,13 @@ attr(ud, "Call") <- sys.call()
 attr(ud, "Formula") <- formula
 ud$call <- call
 return(ud)
-}
+} ## }}}
+
 
 additive.pls<-function (formula = formula(data), data = sys.parent(), 
 start.time=0,max.time=NULL,id=NULL,
 pls.dim=1, scale=FALSE,weighted.pls=0,silent=0) 
-{ 
+{  ## {{{
 semipls=1; deltaweight<-1; constant<-1; # always !  
 call <- match.call()
     m <- match.call(expand = FALSE)
@@ -200,7 +201,7 @@ call <- match.call()
 
     beta[j,]<-betapls; 
     pls.comp[,j]<-plscomp;
-    } ## }}}
+    }
 
     cnames<-c()
     for (j in 1:pls.dim) cnames<-c(cnames,paste("PLS-",j)); 
@@ -245,7 +246,8 @@ attr(ud, "Formula") <- formula
 ud$call <- call
 
 return(ud)
-}
+} ## }}}
+
 
 predict.pls<-function(object,Z=NULL,X=NULL,times=NULL,monotone=TRUE, ...)
 { ## {{{

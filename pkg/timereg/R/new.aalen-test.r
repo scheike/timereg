@@ -16,7 +16,7 @@ fix.gam=0,pseudo.score=0,approx="dt",gamma=0,silent=0)
     covariance<-0;}
   if (sim==1 & robust==0) {
     cat("When robust=0, No simulations \n"); 
-    cat("n.sim set to 0\n"); n.sim<-0;}
+    cat("n.sim set to 0\n"); n.sim<-0; sim <- 0; }
   if (resample.iid==0 & pseudo.score>=1) {
     cat("When pseudo.score>=1, resample.iid set to 1 \n"); 
     resample.iid<-1;}
