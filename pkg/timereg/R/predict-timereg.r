@@ -364,6 +364,8 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...){
   if (length(col)!=nobs){ col<-rep(col[1],nobs); }
   if (length(lty)!=nobs){ lty<-rep(lty[1],nobs); }
   if (length(lwd)!=nobs){ lwd<-rep(lwd[1],nobs); }
+  if (length(uniform)!=nobs){ uniform<-rep(uniform[1],nobs); }
+  if (length(se)!=nobs){ se <-rep(se[1],nobs); }
   if (sum(specific.comps)==0){
     comps<-1:nobs
   } else {
@@ -378,7 +380,7 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...){
       lines(time,mainLine[i,],type="s",col=col[i],lty=lty[i],lwd=lwd[i])
     }
 
-    if (se==1 & is.null(mainLine.se)==FALSE ) {
+    if (se[1]>=1 & is.null(mainLine.se)==FALSE ) {
       lower<-mainLine[i,]-qnorm(1-alpha/2)*mainLine.se[i,]
       upper<-mainLine[i,]+qnorm(1-alpha/2)*mainLine.se[i,]
        if (monotone==TRUE) { 
@@ -388,11 +390,11 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...){
         upper[upper<0]<-0; upper[upper>1]<-1; 
        }
 
-      lines(time,lower,type="s",col=col[i],lty=lty[i],lwd=lwd[i]/2);
-      lines(time,upper,type="s",col=col[i],lty=lty[i],lwd=lwd[i]/2);
+      lines(time,lower,type="s",col=col[i],lty=se[i],lwd=lwd[i]/2);
+      lines(time,upper,type="s",col=col[i],lty=se[i],lwd=lwd[i]/2);
     }
 
-    if (uniform==1 & is.null(uband)==FALSE ) {
+    if (uniform[1]>=1 & is.null(uband)==FALSE ) {
       #if (level!=0.05) c.alpha<-percen(object$sim.test[,i],1-level)
       #else c.alpha<-object$conf.band.cumz[i];
       c.alpha=uband[i]; 
@@ -405,8 +407,8 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...){
           upper[upper<0]<-0; upper[upper>1]<-1; 
        }
       if (transparency==0 || transparency==2) {
-      lines(time,upper,type="s",col=col[i],lty=lty[i],lwd=lwd[i]/2);
-      lines(time,lower,type="s",col=col[i],lty=lty[i],lwd=lwd[i]/2);
+      lines(time,upper,type="s",col=col[i],lty=uniform[i],lwd=lwd[i]/2);
+      lines(time,lower,type="s",col=col[i],lty=uniform[i],lwd=lwd[i]/2);
       }
 
     ## Prediction polygons bandds ## {{{

@@ -208,7 +208,7 @@ void itfitsemi(double *times,int *Ntimes,double *x,int *delta,int *cause,double 
 	       double *vargamma,int *semi,double *zsem,int *pg,int *trans,double *gamma2,
 	       int *CA,int *line,int *detail,double *biid,double *gamiid,int *resample,
 	       double *timepow,int *clusters,int *antclust,double *timepowtest,
-	       int *silent,double *convc);
+	       int *silent,double *convc,double *weights);
 
 
 void LevenbergMarquardt(matrix *S,matrix *SI,vector *U,vector *delta,double *lm,double *step); 

@@ -931,7 +931,7 @@ void mat_add(matrix *m1, matrix *m2, matrix *m3){
 
 // Performs Mout := t(M) %*% A, where M is an nRowM x nColM matrix, 
 // and A is an nRowM x nColA matrix, and Mout is a nColM x nColA matrix
-void MtA(matrix *M, matrix *A, matrix *Mout){
+void MtA(matrix *M, matrix *A, matrix *Mout){ // {{{
 
   char transa = 't';
   char transb = 'n';
@@ -969,9 +969,8 @@ void MtA(matrix *M, matrix *A, matrix *Mout){
     mat_copy(temp,Mout);    
     free_mat(temp);
   }
+} // }}}
 
-
-}
 
 // Performs Mout := M %*% t(A), where M is an nRowM x nColM matrix, 
 // and A is an nRowA x nColM matrix, and Mout is a nRowM x nRowA matrix

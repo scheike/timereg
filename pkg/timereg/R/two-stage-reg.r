@@ -5,6 +5,7 @@ beta=0,Nit=60,detail=0,start.time=0,max.time=NULL,id=NULL,
 clusters=NULL, robust=1,
 rate.sim=1,beta.fixed=0,theta=NULL,theta.des=NULL,var.link=0,step=1)
 {
+## {{{ Setting up things
   ratesim<-rate.sim; inverse<-var.link
   call <- match.call()
   m <- match.call(expand=FALSE)
@@ -48,6 +49,9 @@ rate.sim=1,beta.fixed=0,theta=NULL,theta.des=NULL,var.link=0,step=1)
 
   if ((sum(beta)==0) & (beta.fixed==0)) beta<-coxph(Surv(time,time2,status)~Z)$coef; 
 
+  ## }}}
+
+
   if (px==0) stop("No nonparametric terms (needs one!)");
   ud<-two.stageBase.reg(times,ldata,X,Z,
                         status,id,clusters,Nit=Nit,detail=detail,beta=beta,
@@ -55,6 +59,7 @@ rate.sim=1,beta.fixed=0,theta=NULL,theta.des=NULL,var.link=0,step=1)
    namesZ=covnamesZ,beta.fixed=beta.fixed,theta=theta,theta.des=theta.des,
    inverse=var.link,step=step);
 
+## {{{ output handling
   if (px>0) {
     colnames(ud$cum)<-colnames(ud$var.cum)<- c("time",covnamesX)
     if (robust==1) colnames(ud$robvar.cum)<- c("time",covnamesX) }
@@ -83,6 +88,7 @@ rate.sim=1,beta.fixed=0,theta=NULL,theta.des=NULL,var.link=0,step=1)
   attr(ud,"beta.fixed")<-beta.fixed
 
   return(ud); 
+  ## }}}
 }
 
 two.stageBase.reg<-function (times, fdata, designX, designG, status,
@@ -120,7 +126,12 @@ theta.des=NULL,inverse=0,step=1)
     cluster.size<-as.vector(table(clusters));
     maxclust<-max(cluster.size)
     idiclust<-matrix(0,fdata$antclust,maxclust); 
-    for (i in 1:fdata$antclust) { idiclust[i,]<- which( clusters %in% (i-1))-1 }
+    cs<- rep(1,fdata$antclust)
+    for (i in 1:fdata$antpers) { 
+        idiclust[clusters[i]+1,cs[clusters[i]+1]]<-i-1;
+        cs[clusters[i]+1]<- cs[clusters[i]+1]+1; 
+    } 
+    if (maxclust==1) stop("No clusters !, maxclust size=1\n"); 
 
     #dyn.load("two-stage-reg.so"); 
 

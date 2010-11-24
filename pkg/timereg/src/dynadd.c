@@ -42,6 +42,8 @@ int *sim,*antsim,*retur,*nxval,*nx,*px,*na,*pa,*antpers,*Ntimes,*mw,*rani,*statu
 
   if (*px>=*pa) pmax=*px; else pmax=*pa; 
   if (*nx>=*na) nmax=*nx; else nmax=*na; 
+   
+  R_CheckUserInterrupt();
 
   for (s=1;s<*Ntimes;s++)
     {
@@ -154,6 +156,8 @@ int *sim,*antsim,*retur,*nxval,*nx,*px,*na,*pa,*antpers,*Ntimes,*mw,*rani,*statu
     else smoothB(cuf,Ntimes,ps,bhatny,nxval,b,degree,coef); 
   } /* sing==1 */ 
 
+ R_CheckUserInterrupt();
+
   /* ====================SIMULATIONS ============================= */
   if (*sim==1) {
    comptest(times,Ntimes,px,cuf,robvcu,vcudif,antsim,test,testOBS,Ut,simUt,cumBt,weighted,antpers); 
@@ -243,6 +247,9 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
 	 
   /* Prelim. est. of gamma for var. est. loaded from  (B(t)/t */
   for(j=0;j<*pg;j++) {VE(gam,j)=gamma[j];VE(gamstart,j)=gamma[j];}
+
+
+  R_CheckUserInterrupt();
 
   for (s=1;s<*Ntimes;s++)
     {
@@ -389,6 +396,8 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
     }   /* for s in Ntimes -------------------------------------------   */
   /* if (*gamdt==1) {invert(CGam,CIdt); Mv(CIdt,IZHdp,gam2);}*/ 
 
+  R_CheckUserInterrupt();
+  
   invert(Cg,CI); 
   Mv(CI,IZHdp,gam);
   Mv(CI,gamly,korgamly);
@@ -416,6 +425,8 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
 
   /* =========================================================== */
   /* Robust variances and Estimates of cumulative reg. functions */ 
+
+  R_CheckUserInterrupt();
 
   if (robust==1) {
     for (s=1;s<*Ntimes;s++) {
@@ -482,7 +493,8 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
 
   } /* robust==1 */ 
 
-  /* =========================================================== */
+  R_CheckUserInterrupt();
+
   if (*sim==1) {
     comptest(times,Ntimes,px,cu,robvcu,vcudif,antsim,test,testOBS,Ut,simUt,W4t,weighted,antpers);
   } /* sim==1 */ 

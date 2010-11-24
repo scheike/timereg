@@ -46,7 +46,7 @@ In general p may be powers of the same length as z.
 comp.risk(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 clusters=NULL,gamma=0,n.sim=500,weighted=0,model="additive",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
-cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6)
+cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,weights=NULL)
 }
 \arguments{
 \item{formula}{a formula object, with the response on the left of a '~'
@@ -81,6 +81,7 @@ A_l(t)=beta_l t^time.pow.test(l). Default is 1 for the additive model
 and 0 for the proportional model.}
 \item{silent}{if 0 information on convergence problems due to non-invertible derviates of scores are printed.}
 \item{conv}{gives convergence criterie in terms of sum of absolute change of parameters of model}
+\item{weights}{weights for estimating equations.}
 }
 \value{returns an object of type 'comprisk'. With the following arguments:
 \item{cum}{cumulative timevarying regression coefficient estimates are 
@@ -109,10 +110,9 @@ observed cumulative and estimate under null of constant effect.}
 \references{
 Scheike, Zhang and Gerds (2008), Predicting cumulativeincidence probability by direct binomial regression,Biometrika, 95, 205-220.           
 
-Scheike and Zhang (2007), Flexible competing risks regression modelling and goodness of fit, LIDA, 14, 464-483 .     
+Scheike and Zhang (2007), Flexible competing risks regression modelling and goodness of fit, LIDA, 14, 464-483.
 
-Martinussen and Scheike (2006), Dynamic regression
-models for survival data, Springer.
+Martinussen and Scheike (2006), Dynamic regression models for survival data, Springer.
 }
 \author{Thomas Scheike}
 \examples{

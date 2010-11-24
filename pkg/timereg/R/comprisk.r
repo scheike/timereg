@@ -1,7 +1,8 @@
 comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 clusters=NULL,gamma=0,n.sim=500,weighted=0,model="additive",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
-cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6){
+cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,weights=NULL){
+## {{{
 # trans=1 P_1=1-exp( - ( x' b(b)+ z' gam t) ), 
 # trans=2 P_1=1-exp(-exp(x a(t)+ z` b )
 # trans=6 P_1=1-exp(-x a(t) exp(z` b )) is not good numerically
@@ -19,7 +20,7 @@ cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6){
   m$gamma<-m$times<-m$cause<-m$Nit<-m$weighted<-m$n.sim<-
     m$model<-m$causeS<- m$detail<- m$cens.model<-m$time.pow<-m$silent<- 
     m$cens.code<-m$interval<- m$clusters<-m$resample.iid<-
-    m$time.pow.test<-m$conv<-NULL
+    m$time.pow.test<-m$conv<- m$weights <- NULL
   special <- c("const","cluster")
   if (missing(data)) {
     Terms <- terms(formula, special)
@@ -69,6 +70,11 @@ cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6){
   if (npar==TRUE) {Z<-matrix(0,n,1); pg<-1; fixed<-0;} else {fixed<-1;pg<-pz;} 
   delta<-(cause!=cens.code)
 
+if (is.null(weights)==TRUE) weights <- rep(1,n); 
+## }}}
+
+## {{{ censoring models
+
   if (cens.model=="KM") {
     ud.cens<-survfit(Surv(time2,cause==cens.code)~+1); 
     Gfit<-cbind(ud.cens$time,ud.cens$surv)
@@ -95,6 +101,10 @@ cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6){
     } else { stop('Unknown censoring model') }
 
    times<-times[Gctimes>interval]; ntimes<-length(times); 
+
+## }}}
+
+## {{{ setting up more variables
 
   if (resample.iid == 1) {
     biid <- double(ntimes* antclust * px);
@@ -131,8 +141,9 @@ cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6){
   if (is.null(time.pow.test)==TRUE & model=="logistic" ) time.pow.test<-rep(0,px); 
 
   silent <- c(silent,rep(0,ntimes-1));
+  ## }}}
 
-  out<-.C("itfit",
+  out<-.C("itfit", ## {{{
           as.double(times),as.integer(ntimes),as.double(time2),
           as.integer(delta), as.integer(cause),as.double(Gcx),
           as.double(X),as.integer(n),as.integer(px),
@@ -147,7 +158,9 @@ cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6){
           as.double(biid),as.double(gamiid),as.integer(resample.iid),
           as.double(time.pow),as.integer(clusters),as.integer(antclust),
           as.double(time.pow.test),as.integer(silent),
-	  as.double(conv),PACKAGE="timereg")
+	  as.double(conv),as.double(weights), PACKAGE="timereg") ## }}}
+
+ ## {{{ handling output
 
   gamma<-matrix(out[[24]],pg,1); var.gamma<-matrix(out[[25]],pg,pg); 
   gamma2<-matrix(out[[30]],ps,1); 
@@ -227,7 +240,7 @@ cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6){
   attr(ud, "time.pow") <- time.pow
   attr(ud, "cause") <- cause
   attr(ud, "times") <- times
-  return(ud); 
+  return(ud);  ## }}}
 }
 
 print.comprisk <- function (x,...) {
@@ -282,6 +295,3 @@ summary.comprisk <- function (object,digits = 3,...) {
   dput(attr(object, "Call"))
   cat("\n")
 }
-
-
-
