@@ -25,9 +25,9 @@ for \eqn{i=1,...,p}
    and iterate. 
 }
 \usage{
-additive.pls(formula = formula(data), data =
-sys.parent(), start.time=0,max.time=NULL,id=NULL, pls.dim=1, 
-scale=FALSE, weighted.pls=0,silent=0)
+additive.pls(formula = formula(data), data = sys.parent(), 
+start.time=0,max.time=NULL,id=NULL, pls.dim=1, 
+silent=1)
 }
 \arguments{
 \item{formula}{
@@ -47,8 +47,6 @@ Estimates thus computed from [start.time, max.time]. Default is max of data.}
 \item{id}{For timevarying covariates the variable must 
 associate each record with the id of a subject.}
 \item{pls.dim}{number of pls components}
-\item{scale}{to center and scale the covariates}
-\item{weighted.pls}{Gartwaith weights if 1.}
 \item{silent}{set to 1 to avoid printing of warnings for non-inverible
 design-matrices for different timepoints, default is 0.}
 }

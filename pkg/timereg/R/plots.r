@@ -50,9 +50,7 @@ ylab ="Cumulative coefficients",...)
  }
 }
 
-plot.score<-function (object, 
-specific.comps=FALSE,mains=TRUE, xlab="Time",
-ylab ="Cumulative coefficients") 
+plotScore<-function (object,specific.comps=FALSE,mains=TRUE, xlab="Time",ylab ="Cumulative coefficients") 
 {
 if (ylab=="Cumulative regression function") ylab<-"Test process";
 

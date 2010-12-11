@@ -25,12 +25,15 @@ trace = FALSE, plot.it = FALSE , se = TRUE, silent=1,
    covnamesX<-des$covnamesX; covnamesZ<-des$covnamesZ
    clusters <- NULL
    pxz <- px + pz; 
-   Yorig<-X[,1]
-   X<-X[,-1]
    survs<-read.surv(m,id,npar,clusters,start.time,max.time)
    times<-survs$times;id<-id.call<-survs$id.cal;
    time2<-survs$stop
    status<-survs$status;
+   Yorig<-X[,1]
+   X<-X[,-1]
+
+   nobs <- nrow(X); 
+   weights <- rep(1,nrow(X)); 
 ## }}}
 
     antpers = nrow(X); 
@@ -46,11 +49,12 @@ trace = FALSE, plot.it = FALSE , se = TRUE, silent=1,
         datao=data.frame(tt=time2[omit],status=status[omit])
         nno<- length(omit); 
         if (npar==TRUE) 
-        outo<-additive.compSs(Surv(tt,status)~const(Xo),data=datao,
+        outo<-aalen(Surv(tt,status)~const(Xo),data=datao,robust=0,
             max.time=max.time,start.time=start.time,silent=silent)
         else 
-        outo<-additive.compSs(Surv(tt,status)~-1+Zo+const(Xo),data=datao,
+        outo<-aalen(Surv(tt,status)~-1+Zo+const(Xo),data=datao,robust=0,
             max.time=max.time,start.time=start.time,silent=silent)
+
         pfit<-c()
         for (j in pls.dims)
         {

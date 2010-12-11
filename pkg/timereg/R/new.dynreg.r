@@ -34,6 +34,7 @@ max.time=NULL,n.sim=500,meansub=1,weighted.test=0,resample=0)
   covarA<-data.matrix(udaal$X); status<-udaal$status; 
   pa<-ncol(covarA); 
 
+
 ####################################################################
   meanY<-mean(Y); 
   if (meansub==1) { Y<-Y-meanY;}

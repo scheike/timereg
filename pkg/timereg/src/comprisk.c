@@ -13,7 +13,7 @@ int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 *semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent;
 { // {{{
   // {{{ allocation and reading of data from R
-  matrix *X,*cX,*wcX,*A,*AI,*cumAt[*antclust],*VAR,*Z;
+  matrix *X,*cX,*A,*AI,*cumAt[*antclust],*VAR,*Z;
   vector *VdB,*risk,*SCORE,*W,*Y,*Gc,*DELTA,*CAUSE,*bhat,*pbhat,*beta,*xi,
     *rr,*rowX,*difbeta,*qs,*bhatub,*betaub,*dcovs,*pcovs,*zi,*rowZ,*zgam; 
   vector *cumhatA[*antclust],*cumA[*antclust],*bet1,*gam,*dp,*dp1,*dp2; 
@@ -26,7 +26,7 @@ int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 
   if (*semi==0) { 
     osilent=silent[0]; silent[0]=0; 
-    malloc_mat(*n,*px,X); malloc_mat(*n,*px,cX); malloc_mat(*n,*px,wcX); 
+    malloc_mat(*n,*px,X); malloc_mat(*n,*px,cX);
     if (*trans==2) {malloc_mat(*n,*pg,Z);malloc_vecs(*pg,&zgam,&gam,&zi,&rowZ,NULL);}
     malloc_mats(ps,ps,&A,&AI,&VAR,NULL); 
 
@@ -91,10 +91,9 @@ for (s=0;s<*Ntimes;s++)
          VE(pbhat,j)=VE(bhat,j); 
 	 scl_vec_mult(1,xi,dp);
       }
-//      scl_vec_mult(weights[j],dp,dp); 
+      scl_vec_mult(pow(weights[j],0.5),dp,dp); 
       replace_row(cX,j,dp); 
-      scl_vec_mult(weights[j],dp,dp); 
-      replace_row(wcX,j,dp); 
+//      replace_row(wcX,j,dp); 
 
       VE(Y,j)=((x[j]<=time) & (cause[j]==*CA))*1;
       if (it==*Nit-1) {
@@ -102,10 +101,11 @@ for (s=0;s<*Ntimes;s++)
 	scl_vec_mult(VE(Y,j),dp,dp); vec_add(dp,qs,qs); }
       if (KMc[j]<0.001) VE(Y,j)=((VE(Y,j)/0.001)-VE(pbhat,j)); 
       else VE(Y,j)=((VE(Y,j)/KMc[j])-VE(pbhat,j));
+      VE(Y,j)=pow(weights[j],0.5)*VE(Y,j); 
     } // }}}
 
     totrisk=vec_sum(risk); 
-    MtA(cX,wcX,A); 
+    MtM(cX,A); 
     invertS(A,AI,osilent); sing=0; 
     // head_matrix(cX); print_mat(A); print_mat(AI); 
 
@@ -119,7 +119,7 @@ for (s=0;s<*Ntimes;s++)
     }
     if (sing==0) {
       /* print_vec(Y); print_vec(SCORE); print_vec(difbeta); */ 
-      vM(wcX,Y,SCORE); 
+      vM(cX,Y,SCORE); 
       Mv(AI,SCORE,difbeta); vec_add(beta,difbeta,beta); 
       for (i=0;i<*px;i++) VE(bet1,i)=VE(beta,i); 
 
@@ -151,7 +151,7 @@ if (convt==1 ) {
    for (i=0;i<*n;i++) { 
       j=clusters[i]; 
       if (s<-1) printf("%d  %d %d \n",s,i,j);
-      extract_row(wcX,i,dp); scl_vec_mult(VE(Y,i),dp,dp); 
+      extract_row(cX,i,dp); scl_vec_mult(VE(Y,i),dp,dp); 
       vec_add(dp,cumA[j],cumA[j]); 
 
       if ((time==x[i])&(delta[i]==0))vec_add(qs,cumhatA[j],cumhatA[j]);  
@@ -191,7 +191,7 @@ if (convt==1 ) {
  
   if (convproblems>0) convc[0]=1; 
   if (*semi==0) { 
-    free_mats(&VAR,&X,&cX,&wcX,&A,&AI,NULL); 
+    free_mats(&VAR,&X,&cX,&A,&AI,NULL); 
     if (*trans==2) {free_mats(&Z,NULL); free_vecs(&zgam,&gam,&zi,&rowZ,NULL);}
 
     free_vecs(&rr,&bhatub,&risk,&W,&Y,&Gc,&DELTA,&CAUSE,&bhat,&pbhat,NULL); 
@@ -221,7 +221,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 *semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent;
 { 
   // {{{ allocation and reading of data from R
-  matrix *ldesignX,*A,*AI,*cdesignX,*ldesignG,*cdesignG,*wcX,*wcZ;
+  matrix *ldesignX,*A,*AI,*cdesignX,*ldesignG,*cdesignG; // *wcX,*wcZ;
   matrix *S,*dCGam,*CGam,*ICGam,*VarKorG,*dC,*XZ,*ZZ,*ZZI,*XZAI; 
   matrix *Ct,*C[*Ntimes],*Acorb[*Ntimes],*tmpM1,*tmpM2,*tmpM3,*tmpM4; 
   matrix *Vargam,*dVargam,*M1M2[*Ntimes],*Delta,*dM1M2,*M1M2t,*RobVargam;
@@ -252,8 +252,8 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
     malloc_mat(*Ntimes,*px,W4t[j]); malloc_vec(*pg,W2[j]); malloc_vec(*px,W3[j]);
     }
 
-  malloc_mats(*antpers,*px,&ldesignX,&cdesignX,&wcX,NULL);
-  malloc_mats(*antpers,*pg,&ldesignG,&cdesignG,&wcZ,NULL); 
+  malloc_mats(*antpers,*px,&ldesignX,&cdesignX,NULL);
+  malloc_mats(*antpers,*pg,&ldesignG,&cdesignG,NULL); 
   malloc_mats(*px,*px,&tmpM1,&A,&AI,NULL);
   malloc_mats(*pg,*pg,&dVargam,&Vargam,&RobVargam,&tmpM2,&ZZ,&VarKorG,&ICGam,&CGam,&dCGam,&S,&ZZI,NULL); 
   malloc_mats(*px,*pg,&XZAI,&tmpM3,&Ct,&dC,&XZ,&dM1M2,&M1M2t,NULL);
@@ -361,9 +361,13 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
 	    }
 	   // }}}
+	   
+           scl_vec_mult(pow(weights[j],0.5),xi,xi); 
+           scl_vec_mult(pow(weights[j],0.5),zi,zi); 
 	   replace_row(cdesignX,j,xi); replace_row(cdesignG,j,zi); 
-           scl_vec_mult(weights[j],xi,xi); scl_vec_mult(weights[j],zi,zi); 
-	   replace_row(wcX,j,xi); replace_row(wcZ,j,zi); 
+
+//           scl_vec_mult(weights[j],xi,xi); scl_vec_mult(weights[j],zi,zi); 
+//	     replace_row(wcX,j,xi); replace_row(wcZ,j,zi); 
 	    /*
 	      if (itt==*Nit-1) {
 	      if (KMc[j]<0.00001) vec_zeros(xi); else scl_vec_mult(1/KMc[j],xi,xi); 
@@ -372,8 +376,9 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	    VE(Y,j)=((x[j]<=time) & (cause[j]==*CA))*1;
 	    if (KMc[j]<0.001) VE(Y,j)=(VE(Y,j)/0.001)-VE(plamt,j); 
 	    else VE(Y,j)=(VE(Y,j)/KMc[j])-VE(plamt,j);
+            VE(Y,j)=pow(weights[j],0.5)*VE(Y,j); 
 	  }
-	  MtA(cdesignX,wcX,A); 
+	  MtM(cdesignX,A); 
 	  invertS(A,AI,osilent); sing=0; 
 
           if (fabs(ME(AI,0,0))<.0000001) {
@@ -384,8 +389,8 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
           }
 
 	  if (sing==0) { 
-	  vM(wcX,Y,xi); Mv(AI,xi,AIXdN); 
-	  MtA(wcZ,cdesignG,ZZ); MtA(wcX,cdesignG,XZ);
+	  vM(cdesignX,Y,xi); Mv(AI,xi,AIXdN); 
+	  MtM(cdesignG,ZZ); MtA(cdesignX,cdesignG,XZ);
 	  MxA(AI,XZ,XZAI); MtA(XZAI,XZ,tmpM2); 
 	  mat_subtr(ZZ,tmpM2,dCGam); 
 	  scl_mat_mult(dtime,dCGam,dCGam); mat_add(CGam,dCGam,CGam); 
@@ -404,9 +409,9 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	    for (i=0;i<*antpers;i++) 
             { // vec_zeros(tmpv1); vec_zeros(z1); 
               j=clusters[i]; 	
-	      extract_row(wcX,i,xi); scl_vec_mult(VE(Y,i),xi,xi); 
+	      extract_row(cdesignX,i,xi); scl_vec_mult(VE(Y,i),xi,xi); 
 	      Mv(AI,xi,rowX);
-	      extract_row(wcZ,i,zi); scl_vec_mult(VE(Y,i),zi,zi); 
+	      extract_row(cdesignG,i,zi); scl_vec_mult(VE(Y,i),zi,zi); 
 	      vM(C[s],rowX,tmpv2); vec_subtr(zi,tmpv2,rowZ); 
 	      scl_vec_mult(dtime,rowZ,rowZ); 
 	     // vec_add(rowZ,z1,z1); 
@@ -487,7 +492,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
     comptestfunc(times,Ntimes,px,est,var,vcudif,antsim,test,testOBS,Ut,simUt,W4t,weighted,antclust,gamma2,line,timepowtest);
   }
 
-  free_mats(&wcX,&wcZ,&ldesignX,&A,&AI,&cdesignX,&ldesignG,&cdesignG,
+  free_mats(&ldesignX,&A,&AI,&cdesignX,&ldesignG,&cdesignG,
 	      &S,&dCGam,&CGam,&ICGam,&VarKorG,&dC,&XZ,&ZZ,&ZZI,&XZAI, 
 	      &Ct,&tmpM1,&tmpM2,&tmpM3,&tmpM4,&Vargam,&dVargam,
 	      &Delta,&dM1M2,&M1M2t,&RobVargam,NULL); 

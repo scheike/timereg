@@ -1,5 +1,6 @@
 \name{pval}
 \alias{pval}
+\alias{cv.folds}
 \alias{additive.compSs}
 \alias{CsmoothB}
 \alias{mypbc}
@@ -12,14 +13,13 @@
 \alias{namematrix}
 \alias{aalen.des}
 \alias{aalenBase}
-\alias{aalenBaseTest}
+\alias{aalenBaseC}
 \alias{cox.aalenBase}
 \alias{prop.excessBase}
 \alias{read-design}
 \alias{dynregBase}
 \alias{timecoxBase}
 \alias{semiaalen}
-\alias{semiaalenTest}
 \alias{semicox}
 \alias{semiregBase}
 \alias{check.missing} 
@@ -33,7 +33,7 @@
 \alias{two.stageBase.reg}
 \alias{plot.cums}
 \alias{pava}
-\alias{plot.score}
+\alias{plotScore}
 \alias{summary.comprisk}
 \alias{pred.cum}
 \alias{slaaop}

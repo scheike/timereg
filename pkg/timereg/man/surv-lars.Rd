@@ -17,6 +17,8 @@ where \eqn{S=\int Z H Z dt} and  \eqn{s=\int Z H dN}.
 
 This is equivalent to an appropriate normal least squares
 problem on least squares data. 
+
+Much quicker implementaion in ahaz package that is recommended. 
 }
 \usage{
 surv.lars(S, s, n, l1.weights = NULL, ...)
@@ -32,14 +34,14 @@ surv.lars(S, s, n, l1.weights = NULL, ...)
 Modified version of standard lars program in the LARS package.
 Essentially all scalings are removed from the lars program. 
 
-The matrices S and S can be computed using the aalen.test() function. 
+The matrices S and S can be computed using the aalen() function. 
 }
 \value{
 see lars. 
 }
 \references{
 Martinussen and Scheike, Model selection for the the additive
-risks hazards model, submitted. 
+risks hazards model,  Scandinavian Journal of Statistics, 2008, pages . 
 
 Martinussen and Scheike, Dynamic Regression Models for
 Survival Data, Springer (2006).
@@ -60,7 +62,7 @@ covs<-scale(covs);
 ## computes the matrices needed for the least squares 
 ## criterion 
 
-out<-additive.compSs(Surv(time,status>=1)~const(covs),data=pbc)
+out<-aalen(Surv(time,status>=1)~const(covs),data=pbc,robust=0)
 S<-out$intZHZ; s<-out$intZHdN
 n<-nrow(pbc)
 
@@ -74,10 +76,9 @@ beta<-mypredict.lars(fit,cv$cv.frac,type="coefficients",mode = "fraction")$coef
 c(beta)
 
 ## fitting survival model with these coefficients
-out<-aalen.test(Surv(time,status>=1)~ const(covs),data=pbc,fix.gam=1,n.sim=0,robust=0,
-gamma=beta)
+out<-aalen(Surv(time,status>=1)~ const(covs),data=pbc,robust=0,gamma=beta)
 pout<-predict(out,Z=covs[1:20,],uniform=0,se=0)
-plot(pout,multiple=1,se=0,uniform=0); 
+plot(pout,multiple=1,se=0,uniform=0,main="Lars survival predictions"); 
 
 full<-fit$beta[nrow(fit$beta),] # least squares solution
 c(full)

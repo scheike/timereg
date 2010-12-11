@@ -249,7 +249,8 @@ coef.two.stage<-function(object,digits=3,d2logl=1,...) {
 plot.two.stage<-function(x,pointwise.ci=1,robust=0,specific.comps=FALSE,
 		level=0.05, 
 		start.time=0,stop.time=0,add.to.plot=FALSE,mains=TRUE,
-                xlab="Time",ylab ="Cumulative regression function",...) {
+                xlab="Time",ylab ="Cumulative regression function",...) 
+{
   if (!(inherits(x, 'two.stage'))) stop("Must be a Two-Stage object")
   object <- x; rm(x);  
  
@@ -281,7 +282,5 @@ plot.two.stage<-function(x,pointwise.ci=1,robust=0,specific.comps=FALSE,
       lines(B[,1],ul,lty=robust,type="s"); 
       lines(B[,1],nl,lty=robust,type="s"); }
     abline(h=0); 
-}
+  }
 }   
-
-

@@ -30,7 +30,7 @@ if (is.null(id) == TRUE) {
    clusters<-id; antclust<-antpers;
    fdata$antpers <- antpers; fdata$antclust <- antclust
 
-out.aalen<-aalenBase(times,fdata,designA,status,id,clusters); 
+out.aalen<-aalenBaseC(times,fdata,designA,status,id,clusters); 
 
 if (!is.null(bhat)) xval<-bhat[,1] else
 xval<-seq(times[2],times[Ntimes],length=30); 
@@ -151,7 +151,7 @@ if (is.null(id) == TRUE) {
    fdata$antpers <- antpers; fdata$antclust <- antclust
 
 
-out.aalen<-aalenBase(times,fdata,designA,status,id,clusters); 
+out.aalen<-aalenBaseC(times,fdata,designA,status,id,clusters); 
 xval<-seq(times[2],times[Ntimes],length=30); 
 smooth.aalen<-CsmoothB(out.aalen$cum,xval,b); 
 #print(smooth.aalen); 

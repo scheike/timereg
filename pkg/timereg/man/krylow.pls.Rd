@@ -41,7 +41,7 @@ covs<-cbind(covs[,c(1:6,16)],log(covs[,7:15]))
 
 ## computes the matrices needed for the least squares 
 ## criterion 
-out<-aalen.test(Surv(time,status>=1)~const(covs),pbc,robust=0,n.sim=0)
+out<-aalen(Surv(time,status>=1)~const(covs),pbc,robust=0,n.sim=0)
 S=out$intZHZ; s=out$intZHdN;
 
 out<-krylow.pls(S,s,2)

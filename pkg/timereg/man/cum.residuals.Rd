@@ -4,7 +4,7 @@
 \description{Computes cumulative residuals and
 	approximative p-values based on resampling techniques.}
 \usage{
-cum.residuals(object,data=sys.parent(),modelmatrix=0,cum.resid=0,
+cum.residuals(object,data=sys.parent(),modelmatrix=0,cum.resid=1,
 n.sim=500,weighted.test=1,start.design=1)
 	}
 \arguments{

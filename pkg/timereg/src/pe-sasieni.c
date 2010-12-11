@@ -79,17 +79,17 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
 
 	  vec_zeros(S1); mat_zeros(S2); S0=0; 
 	  for (j=0;j<count;j++)
-	    {dummy=exp(VE(pghat,j)); S0=S0+dummy; 
-	      extract_row(X,j,xi); scl_vec_mult(dummy,xi,rowX); replace_row(WX,j,rowX); 
-	      extract_row(Z,j,zi); scl_vec_mult(dummy,zi,rowZ); replace_row(WZ,j,rowZ); 
+	    {dummy=exp(VE(pghat,j)); S0=S0+dummy*weights[j]; 
+	      extract_row(X,j,xi); 
+	      scl_vec_mult(weights[j]*dummy,xi,rowX); replace_row(WX,j,rowX); 
+	      extract_row(Z,j,zi); 
+	      scl_vec_mult(weights[j]*dummy,zi,rowZ); replace_row(WZ,j,rowZ); 
 	      for (k=0;k<*pg;k++) for (i=0;i<*pg;i++) 
-		ME(S2,k,i)=
-		  ME(S2,k,i)+VE(zi,i)*VE(zi,k)*dummy;
+		ME(S2,k,i)= ME(S2,k,i)+VE(zi,i)*VE(zi,k)*dummy;
 	      vec_add_mult(S1,zi,dummy,S1); 
 	    }
 	  scl_vec_mult(1/S0,S1,S1); 
 	  scl_mat_mult(1/S0,S2,S2); 
-
 
 	  MtA(X,WX,A); invert(A,AI); 
 	  MtA(Z,WZ,ZWZ);MtA(WX,Z,XWZ);MxA(AI,XWZ,XWZAI);
@@ -117,6 +117,7 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
 	    extract_row(X,pers,tmpv1); Mv(AI,tmpv1,AIXWdN); 
 	    extract_row(Z,pers,zi); vM(XWZ,AIXWdN,tmpv2); 
 	    vec_subtr(zi,tmpv2,ZHdN);
+//	    scl_vec_mult(weights[pers],ZHdN,ZHdN); 
 	    vec_add(ZHdN,IZHdN,IZHdN); 
 
 	    scl_mat_mult(1/S0,XWZAI,XWZAI); 
@@ -169,29 +170,33 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
 
   l=0; 
   for (s=1;s<*Nalltimes;s++) {
-    time=alltimes[s]; vec_zeros(dN);dtime=time-alltimes[s-1]; 
-
-    mat_zeros(X); mat_zeros(Z); mat_zeros(WX); mat_zeros(WZ); stat=0; dMi=0; 
+//    time=alltimes[s]; vec_zeros(dN);dtime=time-alltimes[s-1]; 
+//    mat_zeros(X); mat_zeros(Z); mat_zeros(WX); mat_zeros(WZ); 
+    stat=0; dMi=0; 
     for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) 
-      {
+    {
 	if ((start[c]<time) && (stop[c]>=time)) {
 	  if (*mof==1) VE(offsets,count)=offset[c]; 
-	  if (*mw==1)  weights[count]=weight[c]; else weights[count]=1; 
+	  if (*mw==1) weights[count]=weight[c]; else weights[count]=1; 
 	  if (time==stop[c] && status[c]==1) {pers=count;stat=1;l=l+1;dMi=0;ghati=0;} 
-	  count=count+1; }
-      }
+	  count=count+1; 
+	}
+    }
 
-    if (stat==1) for (k=1;k<=*px;k++) VE(dA,k-1)=cu[k*(*Ntimes)+l]; else vec_zeros(dA); 
+    if (stat==1) 
+    for (k=1;k<=*px;k++) VE(dA,k-1)=cu[k*(*Ntimes)+l]; else vec_zeros(dA); 
     if (*mof==1) 
-      for (k=1;k<=*px;k++) VE(dA,k-1)=VE(dA,k-1)-cumoff[k*(*Nalltimes)+s];
+    for (k=1;k<=*px;k++) VE(dA,k-1)=VE(dA,k-1)-cumoff[k*(*Nalltimes)+s];
 
     if (*mof==1) 
       for (k=1;k<=*px;k++) cumoff[k*(*Ntimes)+s]=cumoff[k*(*Ntimes)+s-1]+
 	cumoff[k*(*Nalltimes)+s];
 
     if (stat==1) {
-      for (k=1;k<=*px;k++){cu[k*(*Ntimes)+l]=cu[k*(*Ntimes)+l-1]+cu[k*(*Ntimes)+l];
-	if (*mof==1) cu[k*(*Ntimes)+l]=cu[k*(*Ntimes)+l]-cumoff[k*(*Nalltimes)+s];}
+     for (k=1;k<=*px;k++){cu[k*(*Ntimes)+l]=
+	     cu[k*(*Ntimes)+l-1]+cu[k*(*Ntimes)+l];
+     if (*mof==1) cu[k*(*Ntimes)+l]=cu[k*(*Ntimes)+l]-
+	                            cumoff[k*(*Nalltimes)+s];}
 
       MxA(C[ls[l]],Vargam,tmpM4); MAt(tmpM4,C[ls[l]],VarKorG);
       MxA(M1M2[l],ICGam,tmpM4); MAt(C[ls[l]],tmpM4,GCdM1M2);
@@ -207,9 +212,8 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
       intZHZ[k*(*pg)+j]=ME(ICGam,j,k); }}
   cu[0]=times[0]; vcu[0]=times[0];
 
-
   if (*nsim>0) { 
-    printf(" simulation starts, no resampling = %d \n",*nsim); 
+//    printf(" simulation starts, no resampling = %d \n",*nsim); 
     GetRNGstate();  /* to use R random normals */
 
     for (s=1;s<*Ntimes;s++)  
@@ -217,19 +221,20 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
 	extract_row(Uti[i],s-1,gam); extract_row(Uti[i],s,ZHdN); 
 	vec_add(gam,ZHdN,IZHdN); replace_row(Uti[i],s,IZHdN); 
 	extract_row(Uti[i],s,ZHdN);  Mv(ICGam,IZHdN,ZHdN); 
-	Mv(dUt[s],ZHdN,IZHdN); replace_row(Utiid[i],s,IZHdN); }
+	Mv(dUt[s],ZHdN,IZHdN); replace_row(Utiid[i],s,IZHdN); 
+      }
 
     for (k=1;k<=*nsim;k++) {
       mat_zeros(Delta); 
       for (i=0;i<*antpers;i++) {
-	/* random=gasdev(&idum);  */ 
 	random=norm_rand();
 	scl_mat_mult(random,Utiid[i],tmpM1); mat_add(tmpM1,Delta,Delta); }
 
       for (s=1;s<*Ntimes;s++) { extract_row(Delta,s,zi); 
 	for (i=0;i<*pg;i++) {VE(zi,i)=fabs(VE(zi,i)); 
 	  if (VE(zi,i)>test[i*(*nsim)+k]) test[i*(*nsim)+k]=VE(zi,i); 
-	} }
+	} 
+      }
     } 
     PutRNGstate();  /* to use R random normals */
   } /* if nsim >0 */ 

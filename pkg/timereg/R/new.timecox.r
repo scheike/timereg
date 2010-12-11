@@ -194,7 +194,7 @@ from Cox-Aalen function")
         start.time = start.time, stop.time = stop.time,
         add.to.plot=add.to.plot,
         mains=mains, xlab=xlab, ylab =ylab)
-  else plot.score(object, specific.comps=specific.comps,
+  else plotScore(object, specific.comps=specific.comps,
                   mains=mains,
                   xlab=xlab,ylab =ylab);
 }

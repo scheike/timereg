@@ -46,7 +46,8 @@ In general p may be powers of the same length as z.
 comp.risk(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 clusters=NULL,gamma=0,n.sim=500,weighted=0,model="additive",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
-cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,weights=NULL)
+cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
+weights=NULL,max.clust=NULL)
 }
 \arguments{
 \item{formula}{a formula object, with the response on the left of a '~'
@@ -74,14 +75,17 @@ cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,weights=NULL
 \item{resample.iid}{to return the iid decomposition, that can be used to construct confidence bands for predictions}
 \item{cens.model}{specified which model to use for the ICPW, KM is Kaplan-Meier alternatively it may be "cox"}
 \item{time.pow}{specifies that the power at which the time-arguments  is transformed, for each of the arguments of the const() terms, default is 1 for the additive model and 0 for the proportional model.}
-\item{time.pow.test}{specifies that the power the time-arguments is transformed 
-for each of the arguments of the non-const() terms. This is relevant for testing
-if a coefficient function is consistent with the specified form 
-A_l(t)=beta_l t^time.pow.test(l). Default is 1 for the additive model 
-and 0 for the proportional model.}
+\item{time.pow.test}{specifies that the power the time-arguments is 
+transformed for each of the arguments of the non-const() terms. This is 
+relevant for testing if a coefficient function is consistent with the 
+specified form A_l(t)=beta_l t^time.pow.test(l). Default is 1 for the 
+additive model and 0 for the proportional model.}
 \item{silent}{if 0 information on convergence problems due to non-invertible derviates of scores are printed.}
 \item{conv}{gives convergence criterie in terms of sum of absolute change of parameters of model}
 \item{weights}{weights for estimating equations.}
+\item{max.clust}{sets the total number of i.i.d. terms in i.i.d. decompostition. This can limit the amount of memory used by coarsening 
+the clusters. When NULL then all clusters are used. 
+Default is 1000 to save memory and time. } 
 }
 \value{returns an object of type 'comprisk'. With the following arguments:
 \item{cum}{cumulative timevarying regression coefficient estimates are 

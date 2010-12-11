@@ -24,7 +24,7 @@ The modelling formula uses the standard survival modelling given in the
 cox.aalen(formula=formula(data),data=sys.parent(),beta=0,Nit=10,detail=0,
 start.time=0,max.time=NULL,id=NULL,clusters=NULL,n.sim=500,residuals=0,
 robust=1,weighted.test=0,covariance=0,resample.iid=0,weights=NULL,rate.sim=1,
-beta.fixed=0)
+beta.fixed=0,max.clust=1000)
 }
 \arguments{
 \item{formula}{
@@ -66,6 +66,8 @@ nonparametric and parametric terms.}
 martingales and thus valid in rate case, rate.sim=0 means that resampling is based 
 on counting processes and thus only valid in intensity case.}
 \item{beta.fixed}{option for computing score process for fixed relative risk parameter}
+  \item{max.clust}{sets the total number of i.i.d. terms in i.i.d. decompostition. This can 
+limit the amount of memory used by coarsening the clusters. When NULL then all clusters are used. Default is 1000 to save memory and time. }
 }
 \details{
 The data for a subject is presented as multiple rows or 'observations',

@@ -60,14 +60,12 @@ id=NULL,start.time=0,max.time=NULL,offsets=0,Nit=50,detail=0,n.sim=500)
   Nalltimes <- length(times);  
   Ntimes<-sum(status[(time2>times[1]) & (time2<=times[Nalltimes])])+1;
 
-                                        #print(Ntimes); print(Nalltimes); 
-                                        #print(times);  print(status);  print(cbind(time2,time,status))
   X<-as.matrix(X); Z<-as.matrix(Z); 
   px <- as.integer(dim(X)[2]); nx <- as.integer(dim(X)[1]);
   pg <- as.integer(dim(Z)[2]); ng <- as.integer(dim(Z)[1]);
 
   if (length(offsets)==1) mof<-0 else mof<-1;
-  mw<-0; weights<-0;  
+  mw<-0; weights<-rep(1,nx); 
 
   cum<-Vcum<-matrix(0,Ntimes,px+1); 
   Ut<-matrix(0,Nalltimes,pg+1); 
@@ -77,9 +75,9 @@ id=NULL,start.time=0,max.time=NULL,offsets=0,Nit=50,detail=0,n.sim=500)
   dUt<-matrix(0,Ntimes,pg*pg);
   if (n.sim >0) {testOBS<-rep(0,pg); test<-matrix(0,n.sim,pg);}
   else {testOBS<-0; test<-0;}
-  rani<--round(runif(1)*10000)
+  rani<- -round(runif(1)*10000)
 
-                                        #dyn.load("pes.so"); 
+  #dyn.load("pes.so"); 
 
   semiout<-.C("pes",
               as.double(times),as.integer(Nalltimes),as.integer(Ntimes),
@@ -100,8 +98,8 @@ id=NULL,start.time=0,max.time=NULL,offsets=0,Nit=50,detail=0,n.sim=500)
   intZHZ<-matrix(semiout[[19]],pg,pg); intZHdN<-matrix(semiout[[20]],pg,1); 
   Ut<-matrix(semiout[[18]],Nalltimes,pg+1); 
 
-                                        #dUt<-matrix(semiout[[27]],Ntimes,pg*pg); dUt.list<-list();
-                                        #for (i in 1:Ntimes) dUt.list[[i]]<-matrix(dUt[i,],pg,pg);
+  #dUt<-matrix(semiout[[27]],Ntimes,pg*pg); dUt.list<-list();
+  #for (i in 1:Ntimes) dUt.list[[i]]<-matrix(dUt[i,],pg,pg);
 
   if (n.sim>0) {test<-matrix(semiout[[29]],n.sim,pg);
                 testOBS<-apply(abs(Ut),2,max)[-1]; testval<-c(); 

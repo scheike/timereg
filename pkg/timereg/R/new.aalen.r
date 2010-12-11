@@ -1,52 +1,23 @@
-.packageName <- "timereg"
-
-.First.lib <- function(lib, pkg) {
-  library.dynam("timereg", pkg, lib)
-  cat("aalen.test    : semiparametric additive model with
-improved test for constant effects and offsets \n")
-  cat("aalen         : semiparametric additive model\n")
-  cat("timecox       : semiparametric multiplicative model\n")
-  cat("cox.aalen     : Cox-Aalen model\n")
-  cat("prop.excess   : proportional excess model\n")
-  cat("prop.odds     : semiparametric proportional odds-model\n")
-  cat("Gprop.odds    : generalized semiparametric proportional odds-model\n")
-  cat("pe.sasieni    : The proportional excess model by Peter Sasieni\n")
-  cat("dynreg        : longitudinal data model\n")
-  cat("cum.residuals : cumulative residuals for goodness-of-fit\n")
-  cat("two.stage     : Clayton-Oakes-Glidden Two-Stage estimation\n")
-  cat("comp.risk     : For flexible regression modellling for competing risks data\n"); 
-  cat(" plus more \n"); 
-}
-
-.Last.lib <- function(lib){
-  library.dynam.unload("timereg",lib)
-}
-
 aalen<-function (formula = formula(data),
-                 data = sys.parent(), start.time = 0, max.time = NULL, 
-                 robust=1, id=NULL, clusters=NULL, residuals = 0, n.sim = 1000, 
-                 weighted.test= 0,covariance=0,resample.iid=0,deltaweight=1,
-                 silent=0){
-###deltaweight<-1; # always default
+     data = sys.parent(), start.time = 0, max.time = NULL, 
+     robust=1, id=NULL, clusters=NULL, residuals = 0, n.sim = 1000,  
+     weighted.test= 0,covariance=0,resample.iid=0,
+     deltaweight=1,silent=0,weights=NULL,max.clust=1000,
+     gamma=NULL,offsets=0){
+## {{{ setting up variables 
   if (n.sim == 0) sim <- 0 else sim <- 1
-  if (resample.iid==1 & robust==0) {
-    cat("When robust=0 no iid representaion computed\n"); resample.iid<-0;}
-  if (covariance==1 & robust==0) {
-    cat("When robust=0 no covariance computed \n"); 
-    cat("Covariance based on robust iid representation\n")
-    covariance<-0;}
-  if (sim==1 & robust==0) {
-    cat("When robust=0, No simulations \n"); cat("n.sim set to 0\n"); n.sim<-0; sim<-0; }
-###if (residuals==1 & robust==0) {
-###cat("When robust=0, no martingale residuals \n"); 
-###residuals<-0;}
+  if (resample.iid==1 & robust==0) { resample.iid<-0;}
+  if (covariance==1 & robust==0) { covariance<-0;}
+  if (sim==1 & robust==0) { n.sim<-0;sim <- 0}
   if (n.sim>0 & n.sim<50) {n.sim<-50 ; cat("Minimum 50 simulations\n");}
   call <- match.call()
   m <- match.call(expand = FALSE)
-  m$start.time <- m$weighted.test <- m$max.time <- m$robust <- 
-  m$sim <- m$residuals <- m$n.sim <- m$id <- m$covariance <- 
-  m$resample.iid <- m$clusters <- m$deltaweight <- m$silent<- NULL
-  special <- c("const","cluster") ###########
+    m$start.time <- m$weighted.test <- m$max.time <- m$robust <- 
+    m$weights <- m$residuals <- m$n.sim <- m$id <- 
+    m$covariance <- 
+    m$resample.iid <- m$clusters <- m$deltaweight<-m$silent <- 
+    m$max.clust <- m$gamma <- m$offsets <- NULL
+  special <- c("const","cluster") 
   Terms <- if (missing(data)){
     terms(formula, special)
   } else {
@@ -63,48 +34,89 @@ aalen<-function (formula = formula(data),
   des<-read.design(m,Terms)
   X<-des$X; Z<-des$Z; npar<-des$npar; px<-des$px; pz<-des$pz;
   covnamesX<-des$covnamesX; covnamesZ<-des$covnamesZ
-
-  scale<-0;
-  if (scale==1) { X<-scale(as.matrix(X)); Z<-scale(as.matrix(Z)); 
-     sXscale<- attr(X,"scaled:scale"); sXcenter<- attr(X,"scaled:center") 
-     sZscale<- attr(Z,"scaled:scale"); sZcenter<- attr(Z,"scaled:center") 
-     X[,attr(X,"scaled:scale")==0]<-1; Z[,attr(Z,"scaled:scale")==0]<-1; 
-  }; 
-
   if(is.null(clusters)) clusters <- des$clusters ##########
-  
   pxz <- px + pz; 
 
   survs<-read.surv(m,id,npar,clusters,start.time,max.time)
-  times<-survs$times;id<-id.call<-survs$id.cal;
-  clusters<-cluster.call<-survs$clusters; time2<-survs$stop
+  times<-survs$times;
+  id<-survs$id.cal;
+  id.call<-id; 
+  clusters<-cluster.call<-survs$clusters; 
+  stop.call <- time2<-survs$stop
+  start.call <- survs$start
   status<-survs$status; 
-  ldata<-list(start=survs$start,stop=survs$stop,
-              antpers=survs$antpers,antclust=survs$antclust);
+  dtimes <- sort(survs$stop[survs$status==1])
 
-  if (npar== TRUE) { #cat("Nonparametric Additive Risk Model\n")
-    ud <- aalenBase(times, ldata, X, status, id, clusters, robust = robust, 
-                    sim = sim, retur = residuals, antsim = n.sim,
-                    weighted.test = weighted.test,covariance=covariance,
-                    resample.iid=resample.iid,namesX=covnamesX,silent=silent,scale=scale)
-    colnames(ud$cum) <- colnames(ud$var.cum) <- c("time", covnamesX)
+  nobs <- nrow(X); 
+
+  if (is.null(weights)) weights <- rep(1,nrow(X)); 
+
+  if ( (!is.null(max.clust)) )    if (max.clust < survs$antclust) {
+	qq <- quantile(clusters, probs = seq(0, 1, by = 1/max.clust)) 
+	qqc <- cut(clusters, breaks = qq, include.lowest = TRUE)    
+	clusters <- as.integer(factor(qqc, labels = 1:max.clust)) -1
+	survs$antclust <- max.clust    
+  }                                                         
+  cluster.call<-clusters; 
+
+  if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
+   ot <- order(-time2,status==1); 
+   time2<-time2[ot]; status<-status[ot]; 
+   X<-as.matrix(X[ot,])
+   if (npar==FALSE) Z<-as.matrix(Z[ot,])
+   survs$stop<-time2;
+   ###print(cbind(X,time2,status,id))
+   clusters<-clusters[ot]
+   id<-id[ot];
+   entry=rep(-1,nobs); 
+   if (sum(offsets)!=0) offsets <- offsets[ot]
+  } else {
+        eventtms <- c(survs$start,time2)
+        status <- c(rep(0, nobs), status)
+        ix <- order(-eventtms,status==1)
+        etimes    <- eventtms[ix]  # Entry/exit times
+	status <- status[ix]
+        survs$stop  <- etimes; 
+        survs$start <- c(survs$start,survs$start)[ix]; 
+        tdiff    <- c(-diff(etimes),start.time) # Event time differences
+        entry  <- c(rep(c(1, -1), each = nobs))[ix]
+	weights <- rep(weights, 2)[ix]
+	X        <- X[rep(1:nobs, 2)[ix],]
+	if (npar==FALSE) Z <- Z[rep(1:nobs,2)[ix],]
+	id <- rep(id,2)[ix]
+	clusters <- rep(clusters,2)[ix]
+	if (sum(offsets)!=0) offsets <- rep(offsets,2)[ix]
+} ## }}}
+
+ldata<-list(start=survs$start,stop=survs$stop,
+	antpers=survs$antpers,antclust=survs$antclust);
+
+## }}}
+
+  if (npar== TRUE) {
+   ud <- aalenBase(times, ldata, X, status, id, clusters, robust = robust, 
+   sim = sim, retur = residuals, antsim = n.sim,
+   weighted.test = weighted.test,covariance=covariance,
+   resample.iid=resample.iid,namesX=covnamesX,
+   silent=silent,weights=weights,entry=entry,offsets=offsets)
+
+    colnames(ud$cum) <- colnames(ud$var.cum) <- c("time",covnamesX)
     if (robust == 1) colnames(ud$robvar.cum) <- c("time", covnamesX)
     if (sim >= 1) {
       colnames(ud$test.procBeqC) <- c("time", covnamesX)
       names(ud$conf.band) <- names(ud$pval.testBeq0) <- names(ud$pval.testBeqC) <- names(ud$pval.testBeqC.is) <- names(ud$obs.testBeq0) <- names(ud$obs.testBeqC) <- names(ud$obs.testBeqC.is) <- colnames(ud$sim.testBeq0) <- colnames(ud$sim.testBeqC) <- colnames(ud$sim.testBeqC.is) <- covnamesX
       ud$sim.testBeqC.is <- ud$sim.testBeqC <- FALSE
     }
-
   }
-  else { #cat("Semiparametric Additive Risk Model\n")
-    if (px == 0) 
-      stop("No nonparametric terms (needs one!)")
-    ud <- semiaalen(times, ldata, X, Z, 
-                    status, id , clusters, robust = robust, sim = sim, antsim = n.sim, 
-                    weighted.test = weighted.test, retur =
-                    residuals,covariance=covariance,
-                    resample.iid=resample.iid,namesX=covnamesX,namesZ=covnamesZ,
-                    deltaweight=deltaweight,silent=silent,scale=scale)
+  else {
+    if (px == 0) stop("No nonparametric terms (needs one!)")
+    ud<-semiaalen(times, ldata, X, Z, 
+    status, id , clusters, robust = robust, sim = sim, antsim = n.sim, 
+    weighted.test = weighted.test, retur =
+	residuals,covariance=covariance,
+	resample.iid=resample.iid,namesX=covnamesX,namesZ=covnamesZ,
+	deltaweight=deltaweight,gamma=gamma,
+	silent=silent,weights=weights,entry=entry,offsets=offsets)
 
     if (px > 0) {
       colnames(ud$cum) <- colnames(ud$var.cum) <- c("time", covnamesX)
@@ -130,8 +142,9 @@ aalen<-function (formula = formula(data),
   attr(ud, "Formula") <- formula
   attr(ud, "id") <- id.call
   attr(ud, "cluster") <- cluster.call
-  attr(ud, "start") <- start.time
-  attr(ud, "time2") <- time2
+  attr(ud, "start.time") <- start.time
+  attr(ud, "stop") <- stop.call
+  attr(ud, "start") <- start.call
   class(ud) <- "aalen"
   ud$call<-call
   return(ud)
@@ -151,7 +164,7 @@ ylab ="Cumulative coefficients",score=FALSE,...)
         sim.ci=sim.ci, robust=robust, specific.comps=specific.comps,level=level, 
         start.time = start.time, stop.time = stop.time, add.to.plot=add.to.plot, 
         mains=mains, xlab=xlab, ylab =ylab) 
-  else plot.score(object, specific.comps=specific.comps, mains=mains,
+  else plotScore(object, specific.comps=specific.comps, mains=mains,
                   xlab=xlab,ylab =ylab); 
 }
 
@@ -187,9 +200,8 @@ function (object,digits = 3,...)
     
   # We print information about object:  
   cat("Additive Aalen Model \n\n")
-  #cat(paste("loglikelihood : ",round(aalen.object$deviance,3),"\n"))
-  #cat("Nonparametric terms : "); cat(colnames(aalen.object$cum)[-1]);
-  #cat("   \n");  
+ #cat("Nonparametric terms : "); cat(colnames(aalen.object$cum)[-1]);
+ #cat("   \n");  
 
   timetest(obj,digits=digits); 
 

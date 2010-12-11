@@ -1,31 +1,12 @@
 additive.plsR<-function (formula = formula(data), ## {{{
                          data = sys.parent(), start.time = 0, max.time = NULL, 
-                         robust=0, id=NULL, clusters=NULL, residuals = 0, n.sim = 0,  
-                         weighted.test=0,
-                         covariance=0,resample.iid=0,deltaweight=1,pls.dim=1,
-                         scale=FALSE,semi.pls=1,silent=0){
-###deltaweight<-1; # always default
-  if (n.sim == 0) sim <- 0 else sim <- 1
-  if (resample.iid==1 & robust==0) {
-    cat("When robust=0 no iid representaion computed\n"); 
-    resample.iid<-0;}
-  if (covariance==1 & robust==0) {
-    cat("When robust=0 no covariance computed \n"); 
-    cat("Covariance based on robust iid representation\n")
-    covariance<-0;}
-  if (sim==1 & robust==0) {
-    cat("When robust=0, No simulations \n"); 
-    cat("n.sim set to 0\n"); n.sim<-0;}
-  if (residuals==1 & robust==0) {
-    cat("When robust=0, no martingale residuals \n"); 
-    residuals<-0;}
-  if (n.sim>0 & n.sim<50) {n.sim<-50 ; cat("Minimum 50 simulations\n");}
+                         id=NULL, clusters=NULL,   
+                         pls.dim=1, semi.pls=1,silent=0){
+## {{{ setting up variables
   call <- match.call()
   m <- match.call(expand = FALSE)
-  m$start.time <- m$weighted.test <- m$max.time <- m$robust <- 
-    m$sim <- m$residuals <- m$n.sim <- m$id <- m$covariance <- 
-      m$resample.iid <- m$clusters <- m$deltaweight<-
-        m$pls.dim<- m$semipls<- m$silent<- NULL
+  m$start.time <-  m$max.time <- 
+  m$id <- m$clusters <- m$pls.dim<- m$semipls<- m$silent<- NULL
   special <- c("const","cluster")
   Terms <- if (missing(data)) terms(formula, special)
   else terms(formula, special, data = data)
@@ -57,10 +38,9 @@ additive.plsR<-function (formula = formula(data), ## {{{
   beta<-matrix(0,pls.dim,px); pls.comp<-matrix(0,nrow(X),pls.dim); 
 
   Yorig<-as.matrix(X[,1]); 
-  if (npar==FALSE) Z<-scale(Z,scale=scale); 
-  X<-scale(X,scale=scale); 
   pls.cov<-as.matrix(X[,-1]); Zorig<-Z; 
   Xorig<-as.matrix(X[,-1]); 
+  ## }}}
 
   pvals<-var.gamma<-c()
   for (j in 1:pls.dim)
@@ -76,11 +56,10 @@ additive.plsR<-function (formula = formula(data), ## {{{
             Z<-cbind(Xorig[,i],pls.comp[,1:(j-1)],Zorig); }
 
         ud <- semiaalen(times, ldata, Yorig , Z, 
-        status, id , clusters, robust = robust, sim = sim, antsim = n.sim, 
-        weighted.test = weighted.test, retur =
-        residuals,covariance=covariance,
-        resample.iid=resample.iid,namesX=covnamesX,namesZ=covnamesZ,
-                          deltaweight=deltaweight,silent=silent)
+        status, id , clusters, 
+	robust = 0, sim = 0, antsim = 0, weighted.test = 1, retur = 0,
+        covariance=0, resample.iid=0,namesX=covnamesX,namesZ=covnamesZ,
+                          deltaweight=1,silent=silent)
 
           pvals<-c(pvals,1-pchisq(ud$gamma[1]^2/ud$var.gamma,1))
           var.gamma<-c(var.gamma,ud$var.gamma)
@@ -95,11 +74,10 @@ additive.plsR<-function (formula = formula(data), ## {{{
 
   if (npar==TRUE) Z<-pls.comp else Z<-cbind(pls.comp,Zorig)
   udf <- semiaalen(times, ldata, Yorig , Z, 
-         status, id , clusters, robust = robust, sim = sim, antsim = n.sim, 
-         weighted.test = weighted.test, retur =
-         residuals,covariance=covariance,
-         resample.iid=resample.iid,namesX=covnamesX,namesZ=covnamesZ,
-         deltaweight=deltaweight)
+         status, id , clusters, 
+	robust = 0, sim = 0, antsim = 0, weighted.test = 1, retur = 0,
+        covariance=0, resample.iid=0,namesX=covnamesX,namesZ=covnamesZ,
+                          deltaweight=1,silent=silent)
 
 ud<-list(pls.comp=pls.comp,beta.pls=beta,
          beta=udf$gamma,baseline=udf$cum,pvals=pvals,var.gamma=var.gamma)
@@ -110,16 +88,15 @@ ud$call <- call
 return(ud)
 } ## }}}
 
-
 additive.pls<-function (formula = formula(data), data = sys.parent(), 
-start.time=0,max.time=NULL,id=NULL,
-pls.dim=1, scale=FALSE,weighted.pls=0,silent=0) 
+start.time=0,max.time=NULL,id=NULL,pls.dim=1,silent=1) 
 {  ## {{{
+## {{{ setting up variables
 semipls=1; deltaweight<-1; constant<-1; # always !  
+weighted.pls=0; 
 call <- match.call()
     m <- match.call(expand = FALSE)
-    m$start.time <- m$max.time <-  m$id <- m$pls.dim<- m$semipls<- m$scale<-
-    m$weighted.pls<- m$silent<- NULL
+    m$start.time <- m$max.time <-  m$id <- m$pls.dim<- m$weighted.pls<- m$silent<- NULL
     special <- c("const")
     Terms <- if (missing(data)) terms(formula, special)
     else terms(formula, special, data = data)
@@ -133,6 +110,7 @@ call <- match.call()
 
     des<-read.design(m,Terms)
     X<-des$X; Z<-des$Z; npar<-des$npar; px<-des$px; pz<-des$pz;
+    npar <- des$npar; 
     covnamesX<-des$covnamesX; covnamesZ<-des$covnamesZ
     pxz <- px + pz; 
 
@@ -142,17 +120,48 @@ call <- match.call()
     times<-survs$times;id<-id.call<-survs$id.cal;
     clusters<-cluster.call<-survs$clusters; time2<-survs$stop
     status<-survs$status; 
-    ldata<-list(start=survs$start,stop=survs$stop,
-                antpers=survs$antpers,antclust=survs$antclust);
+
+  nobs <- nrow(X); 
+  weights <- rep(1,nrow(X)); 
+
+if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
+   ot<-order(-time2,status==1); # order in time, status=0 first for ties
+   time2<-time2[ot]; status<-status[ot]; 
+   stop <- time2; 
+   start <- rep(0,nobs); 
+   X<-as.matrix(X[ot,])
+   if (npar==FALSE) Z<-as.matrix(Z[ot,])
+   clusters<-clusters[ot]
+   id<-id[ot];
+   weights <- weights[ot]; 
+   entry=rep(-1,nobs); 
+  } else {
+        stop("Left truncation not implemented, use additive.plsR"); 
+        eventtms <- c(survs$start,time2)
+        start <- c(survs$start,survs$start)
+        status <- c(rep(0, nobs), status)
+        ix <- order(-eventtms,status==1)
+        etimes    <- eventtms[ix]  # Entry/exit times
+        stop <- etimes 
+	status <- status[ix]
+	start <- start[ix]
+        tdiff    <- c(-diff(etimes),start.time) # Event time differences
+        entry  <- c(rep(c(1, -1), each = nobs))[ix]
+        weights <- rep(weights, 2)[ix]
+        X        <- X[rep(1:nobs, 2)[ix],]
+	if (npar==FALSE) Z <- Z[rep(1:nobs,2)[ix],]
+	id <- rep(id,2)[ix]
+	clusters <- rep(clusters,2)[ix]
+    } ## }}}
 
     px<-px-1; 
-    beta<-matrix(0,pls.dim,px); weights<-beta 
+    beta<-matrix(0,pls.dim,px); 
     pls.comp<-matrix(0,nrow(X),pls.dim); 
 
     Yorig<-as.matrix(X[,1]); colnames(Yorig)<-"Intercept"
-    X<-scale(X,scale=scale); 
     pls.cov<-as.matrix(X[,-1]); 
-    Zorig<-Z;  
+    Zorig<-Z;  Xorig<-as.matrix(X[,-1]); 
+ ## }}}
 
     if (pls.dim>0) { 
     for (j in 1:pls.dim)
@@ -182,39 +191,35 @@ call <- match.call()
     betapls<-rep(0,dimplscov); plscomp<-Yorig[,1]; 
 
     Nalltimes <- length(times);
-    Ntimes<-sum(status[(ldata$stop>times[1]) & 
-                (ldata$stop<=times[Nalltimes])])+1;
+    Ntimes<-sum(survs$status[(survs$stop>times[1]) & (survs$stop<=times[Nalltimes])])+1;
     cum<-matrix(0,Ntimes,px);  
 
-    semiout<-.C("plssemiadd",
+###    dyn.load("pls.so"); 
+
+    semiout<-.C("plssemiaddN",
     as.double(times),as.integer(Nalltimes),as.integer(Ntimes),
     as.double(Xmat),as.integer(nx),as.integer(px),
     as.double(Z),as.integer(nx),as.integer(pg),
-    as.integer(ldata$antpers),as.double(ldata$start),as.double(ldata$stop),
+    as.integer(survs$antpers),as.double(start),as.double(stop),
     as.integer(id),as.double(cum),as.integer(status),
     as.integer(deltaweight),as.double(pls.cov),
     as.integer(dimplscov),as.double(betapls),as.double(plscomp),
-    as.integer(semipls),as.integer(weighted.pls),as.integer(silent)
-    ,PACKAGE="timereg")
+    as.integer(semipls),as.integer(weighted.pls),as.integer(silent),as.double(weights),
+    as.integer(entry), PACKAGE="timereg")
 
-    plscomp<-semiout[[20]]; betapls<-semiout[[19]];
-
+    plscomp<-semiout[[20]]; 
+    betapls<-semiout[[19]];
     beta[j,]<-betapls; 
-    pls.comp[,j]<-plscomp;
+    pls.comp[,j]<-pls.comp[,j]+ Xorig  %*%  beta[j,]; 
     }
-
     cnames<-c()
     for (j in 1:pls.dim) cnames<-c(cnames,paste("PLS-",j)); 
-
     colnames(beta)<-covnamesX[-1]; 
     Z<-as.matrix(pls.comp) 
 
-    udf<-semiaalen(times, ldata, Xmat , Z, 
-        status, id , clusters, robust = 0, sim = 0, 
-        antsim = 0, weighted.test = 0 , retur = 0 ,
-        covariance= 0 , resample.iid=0 ,
-        namesX=covnamesXo,namesZ=covnamesZ, 
-        deltaweight=deltaweight,silent=silent);
+   if ( (attr(m[, 1], "type") == "right" ) )
+   udf <-  aalen(Surv(stop,status)~-1+Xmat+const(Z),robust=0,max.time=max.time)
+   else udf <-  aalen(Surv(start,stop,status)~-1+Xmat+const(Z),robust=0,max.time=max.time)
 
     betaf<-c(udf$gamma)
     tbeta.pls<-apply(beta*betaf[1:pls.dim],2,sum)
@@ -225,16 +230,10 @@ call <- match.call()
     tbeta.pls<-rep(0,px); 
     names(tbeta.pls)<-covnamesX[-1]; 
 
-    survs<-read.surv(m,id,TRUE,clusters,start.time,max.time)
-    times<-survs$times;id<-id.call<-survs$id.cal;
-    clusters<-cluster.call<-survs$clusters; time2<-survs$stop
-
-    udf<-aalenBase(times, ldata, Yorig ,
-        status, id , clusters, robust = 0, sim = 0,
-        antsim = 0, weighted.test = 0 , retur = 0 ,
-        covariance= 0 , resample.iid=0 ,
-        namesX=colnames(Yorig),silent=silent);
-        colnames(udf$cum)<-c("times","Intercept")
+if ( (attr(m[, 1], "type") == "right" ) )
+ udf <-  aalen(Surv(stop,status)~-1+Yorig,robust=0,weights=weights,max.time=max.time)
+else udf <-  aalen(Surv(start,stop,status)~-1+Yorig,robust=0,weights=weights,max.time=max.time)
+colnames(udf$cum)<-c("times","Intercept")
 } ## }}}
 
 
@@ -248,7 +247,6 @@ ud$call <- call
 return(ud)
 } ## }}}
 
-
 predict.pls<-function(object,Z=NULL,X=NULL,times=NULL,monotone=TRUE, ...)
 { ## {{{
 if(!(inherits(object,"pls")))stop("Must be output from additive.pls function")
@@ -257,7 +255,6 @@ if(!(inherits(object,"pls")))stop("Must be output from additive.pls function")
   if (is.null(Z))  stop("Must specify Z, and baseline covariates X if needed \n");
   if(!is.matrix(Z) && !is.data.frame(Z)){
     Z<-matrix(Z,ncol = ncol(object$beta.pls)); }
-    Z<-scale(Z);  
   nobs<-nrow(Z);
   if (is.null(X)) X <- matrix(1,nobs,1);
   if(!is.matrix(X) && !is.data.frame(X)){

@@ -1,7 +1,8 @@
 comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 clusters=NULL,gamma=0,n.sim=500,weighted=0,model="additive",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
-cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,weights=NULL){
+cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
+weights=NULL,max.clust=NULL){
 ## {{{
 # trans=1 P_1=1-exp( - ( x' b(b)+ z' gam t) ), 
 # trans=2 P_1=1-exp(-exp(x a(t)+ z` b )
@@ -20,7 +21,7 @@ cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,weights=NULL
   m$gamma<-m$times<-m$cause<-m$Nit<-m$weighted<-m$n.sim<-
     m$model<-m$causeS<- m$detail<- m$cens.model<-m$time.pow<-m$silent<- 
     m$cens.code<-m$interval<- m$clusters<-m$resample.iid<-
-    m$time.pow.test<-m$conv<- m$weights <- NULL
+    m$time.pow.test<-m$conv<- m$weights  <- m$max.clust <- NULL
   special <- c("const","cluster")
   if (missing(data)) {
     Terms <- terms(formula, special)
@@ -59,7 +60,17 @@ cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,weights=NULL
     clusters <- as.integer(factor(clusters))-1
     antclust <- length(unique(clusters))
   }
-    
+
+  if ( (!is.null(max.clust)) )  {  
+  if (max.clust < antclust)  {
+     qq <- quantile(clusters, probs = seq(0, 1, by = 1/max.clust))       
+     qqc <- cut(clusters, breaks = qq, include.lowest = TRUE)    
+     clusters <- as.integer(factor(qqc, labels = 1:max.clust)) -1
+     antclust <- max.clust    
+      }
+   }                                                         
+
+   
   pxz <-px+pz;
 
   if (is.null(times)) {times<-sort(unique(time2[cause==causeS])); 

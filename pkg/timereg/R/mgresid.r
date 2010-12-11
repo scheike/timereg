@@ -1,4 +1,4 @@
-cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=0,
+cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,
 n.sim=500,weighted.test=1,start.design=1)
 {
   if (!(class(object)!="aalen" | class(object)!="timecox" |
@@ -23,7 +23,7 @@ n.sim=500,weighted.test=1,start.design=1)
 
   id<-attr(object,"id"); cluster<-attr(object,"cluster"); 
   formula<-attr(object,"Formula"); 
-  start.time<-attr(object,"start"); 
+  start.time<-attr(object,"start.time"); 
   pers<-unique(id); antpers<-length(pers); 
   clust<-unique(cluster); antclust<-length(clust); 
 
@@ -33,7 +33,8 @@ if (class(object)=="cox.aalen")
   X<-ldata$X; 
   time<-ldata$time; time2<-ldata$time2; 
   covar<-X; 
-  time2<-attr(object,"time2"); 
+  time2<-attr(object,"stop"); 
+  time<-attr(object,"start"); 
 
   status<-ldata$status; 
   if (coxaalen==1) {
@@ -41,17 +42,12 @@ if (class(object)=="cox.aalen")
     pg<-ncol(designG); }
   Ntimes <- sum(status); 
 
-  if (sum(duplicated(time2[status==1]))>0) {
+  if (sum(duplicated(time2[status==1]))>0) 
     cat("Ties may cause difficulties, break them ! \n"); 
-  }
+  
 
-  if (ldata$type == "right") {
-#    cat("Cumulative martingale residuals for Right censored survival times\n");
-  } # else {cat("Counting process style data\n"); }
   times<-c(start.time,time2[status==1]); times<-sort(times);
-
   antpers=length(time); ntot<-nrow(X); px<-ldata$px
-
   lmgresids<-length(object$residuals$time); 
 
   if (coxaalen==1) gamma.iid<-object$residuals$gamma.iid else gamma.iid<-0;

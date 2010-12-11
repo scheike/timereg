@@ -17,7 +17,8 @@ The modelling formula uses the standard survival modelling given in the
 \usage{
 aalen(formula,data=sys.parent(),start.time=0,max.time=NULL,robust=1,
 id=NULL,clusters=NULL,residuals=0,n.sim=1000,weighted.test=0,
-covariance=0,resample.iid=0,deltaweight=1,silent=0)
+covariance=0,resample.iid=0,deltaweight=1,silent=0,weights=NULL,
+max.clust=1000, gamma=NULL, offsets=0)
 }
 \arguments{
   \item{formula}{ 
@@ -55,6 +56,12 @@ covariance=0,resample.iid=0,deltaweight=1,silent=0)
     construction, default=1 is standard least squares estimates}
   \item{silent}{set to 1 to avoid printing of warnings for non-inverible
  design-matrices for different timepoints, default is 0.}
+  \item{weights}{weights for estimating equations.}
+  \item{max.clust}{sets the total number of i.i.d. terms in i.i.d. decompostition. This can limit the amount of memory used by coarsening 
+the clusters. When NULL then all clusters are used. 
+Default is 1000 to save memory and time. } 
+\item{gamma}{fixes gamme at this value for estimation.}
+\item{offsets}{offsets for the additive model, to make excess risk modelling.}
 }
 \details{
 The data for a subject is presented as multiple rows or 'observations',
@@ -126,5 +133,23 @@ sTRACE,max.time=7,n.sim=100)
 summary(out)
 par(mfrow=c(2,3))
 plot(out)
+
+## Excess risk additive modelling 
+data(mela.pop)
+dummy<-rnorm(nrow(mela.pop));
+
+# Fits Aalen model  with offsets 
+out<-aalen(Surv(start,stop,status==1)~age+sex+const(dummy),
+mela.pop,max.time=7,n.sim=100,offsets=mela.pop$rate,id=mela.pop$id,
+gamma=0)
+summary(out)
+par(mfrow=c(2,3))
+plot(out,main="Additive excess riks model")
+
+# Fits semi-parametric additive hazards model  with offsets 
+out<-aalen(Surv(start,stop,status==1)~age+const(sex),
+mela.pop,max.time=7,n.sim=100,offsets=mela.pop$rate,id=mela.pop$id)
+summary(out)
+plot(out,main="Additive excess riks model")
 }
 \keyword{survival}
