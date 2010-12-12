@@ -1,5 +1,4 @@
-
-useDynLib(timereg)
+useDynLib(timereg) 
 
 import(survival)
 
