@@ -17,55 +17,51 @@ double *theta,*times,*x,*KMc,*z,*score,*hess,*est,*gamma,*zsem,*vartheta,*biid,*
 int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*CA2,*detail,*ptheta,
 *antclust,*cluster,*clustsize,*clusterindex,*maxclust,*inverse,
 	*pg2,*px2,*semi2,*dscore,*squarepar,*c1fc2;
-{
+{ // {{{
+// {{{ allocating and setting up memory
  matrix *ldesignX,*ldesignG,*X2,*Z2;
  matrix *DUeta[*Ntimes],*DUeta2[*Ntimes],*DUgamma2,*DUgamma;
  matrix *Biid[*antclust],*B2iid[*antclust]; 
- matrix *destheta,*d2UItheta,*d2Utheta,*varthetascore,*Sthetaiid[*antclust]; 
- vector *gamma2iid[*antclust],
-	*gammaiid[*antclust],*W2[*antclust],*W3[*antclust],*W4[*antclust];
- vector *dB,*VdB,*bhatt,*pbhat,*plamt,*lamtt;
- vector *pghat0,*pghat,*gam;
+ matrix *destheta,*d2UItheta,*d2Utheta,*varthetascore;//*Sthetaiid[*antclust]; 
+ vector *gamma2iid[*antclust],*gammaiid[*antclust],
+	*W2[*antclust],*W3[*antclust],*W4[*antclust];
+ vector *dB,*VdB,*bhatt,*pbhat,*plamt,*lamtt,*pghat0,*pghat,*gam;
  vector *xk,*xi,*rowX,*rowZ,*difX,*zk,*zi;
- vector *Utheta,*vthetascore,*vtheta1,*vtheta2,*dtheta,*thetaiid[*antclust]; 
+ vector *Utheta,*vthetascore,*vtheta1,*vtheta2,*dtheta;  
  vector *gam2,*bhatt2,*pbhat2,*pghat2,*pghat02,*rowX2,*xi2,*xk2,*zi2,*zk2,
 	*rowZ2; 
 
- int pmax;
- int v,itt,i,j,k,l,s,c;
- double Li2,Lk2,Li,Lk,ithetak,thetak,response,time,dtime,timem;
+ int l2,pmax,v,itt,i,j,k,l,s,c;
+ double Li2,Lk2,Li,Lk,ithetak,thetak,response,time,dtime;
  double fabs(),Dinverse,DDinverse,count24=0;
- double sumscore,sdj,pow(),
-	ckij[1],dckij[1],diff, ckij2[1],dckij2[1];
- long fixedcov, indc1fc2ik=0,indc1fc2ki=0;
+ double sumscore,sdj,pow(), diff, 
+        *ckij=calloc(1,sizeof(double)), *dckij=calloc(1,sizeof(double)),
+        *ckij2=calloc(1,sizeof(double)), *dckij2=calloc(1,sizeof(double));
+ long indc1fc2ik=0,indc1fc2ki=0;
  float gasdev(),expdev(),ran1();
  void ck(),DUetagamma(); 
-
-
-  fixedcov=1; timem=0;
 	
 //if (*trans==1) for (j=0;j<*pg;j++) if (timepow[j]!= 1) {timem=1;break;}
 //if (*trans==2) for (j=0;j<*pg;j++) if (timepow[j]!= 0) {timem=1;break;}
-//
 
   for (j=0;j<*Ntimes;j++) { 
-	  malloc_mat(*px,*ptheta,DUeta[j]); malloc_mat(*px2,*ptheta,DUeta2[j]); 
+    malloc_mat(*px,*ptheta,DUeta[j]); malloc_mat(*px2,*ptheta,DUeta2[j]); 
   }
   for (j=0;j<*antclust;j++) { 
      malloc_vec(*pg,gammaiid[j]); malloc_mat(*Ntimes,*px,Biid[j]); 
      malloc_vec(*pg2,gamma2iid[j]); malloc_mat(*Ntimes,*px2,B2iid[j]); 
      malloc_vec(*ptheta,W2[j]); malloc_vec(*ptheta,W3[j]); 
      malloc_vec(*ptheta,W4[j]); 
-     malloc_vec(*ptheta,thetaiid[j]); malloc_mat(*ptheta,*ptheta,Sthetaiid[j]); 
+//      malloc_mat(*ptheta,*ptheta,Sthetaiid[j]); 
   }
-  malloc_mat(*antpers,*ptheta,destheta); 
-  malloc_mats(*ptheta,*ptheta,&varthetascore,&d2Utheta,&d2UItheta,NULL); 
   malloc_mats(*antpers,*px,&ldesignX,NULL);
   malloc_mats(*antpers,*pg,&ldesignG,NULL); 
   malloc_mats(*antpers,*pg2,&Z2,NULL);
   malloc_mats(*antpers,*px2,&X2,NULL);
   malloc_mats(*pg,*ptheta,&DUgamma,NULL);
   malloc_mats(*pg2,*ptheta,&DUgamma2,NULL);
+  malloc_mats(*ptheta,*ptheta,&varthetascore,&d2Utheta,&d2UItheta,NULL); 
+  malloc_mat(*antpers,*ptheta,destheta); 
 
   malloc_vecs(*ptheta,&Utheta,&vthetascore,&vtheta1,&dtheta,&vtheta2,NULL);
   malloc_vecs(*antpers,&pbhat2,&pghat02,&pghat2,NULL);
@@ -74,8 +70,6 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*CA2,*detail,*ptheta,
   malloc_vecs(*px,&xk,&xi,&rowX,&difX,&dB,&VdB,&bhatt,NULL);
   malloc_vecs(*pg,&zk,&zi,&rowZ,&gam,NULL);
   malloc_vecs(*antpers,&pbhat,&pghat0,&pghat,&plamt,&lamtt,NULL);
-
-// printf("hej 7 \n"); 
 
   pmax=max(*px,*pg); pmax=max(pmax,*ptheta); 
   int pmax2=max(*px2,*pg2); 
@@ -88,11 +82,10 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*CA2,*detail,*ptheta,
   if (*semi2==1) for (i=0;i<*antclust;i++) for (j=0;j<*pg2;j++)
         VE(gamma2iid[i],j)=gam2iid[j*(*antclust)+i]; 
 
-   for (i=0;i<*antclust;i++) {
-   for (s=0;s<*Ntimes;s++) 
+   for (i=0;i<*antclust;i++) 
+   for (s=0;s<*Ntimes;s++) {
    for (c=0;c<*px;c++) {l=i*(*px)+c; ME(Biid[i],s,c)=biid[l*(*Ntimes)+s]; }
-   for (s=0;s<*Ntimes;s++) 
-   for (c=0;c<*px2;c++) {l=i*(*px2)+c; ME(B2iid[i],s,c)=b2iid[l*(*Ntimes)+s]; }
+   for (c=0;c<*px2;c++) {l2=i*(*px2)+c; ME(B2iid[i],s,c)=b2iid[l2*(*Ntimes)+s]; }
    }
 
     for (c=0;c<*antpers;c++) {
@@ -108,14 +101,14 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*CA2,*detail,*ptheta,
         } 
     }
 
- // print_mat(ldesignX); print_mat(ldesignG); print_mat(destheta); 
- // print_mat(X2); print_mat(Z2); print_mat(destheta); 
+    // }}}
 
 if (*semi==1) Mv(ldesignG,gam,pghat0);
 if (*CA1!=*CA2 && *semi2==1) Mv(Z2,gam2,pghat02);
 
-  for (itt=0;itt<*Nit;itt++)
-  {
+  for (itt=0;itt<*Nit;itt++) // {{{
+  { 
+     R_CheckUserInterrupt();
      sumscore=0; 
      mat_zeros(d2Utheta); vec_zeros(Utheta); Mv(destheta,vtheta1,lamtt);
 
@@ -243,8 +236,8 @@ if (*CA1!=*CA2 && *semi2==1) Mv(Z2,gam2,pghat02);
 
    for (k=0;k<*ptheta;k++) 
    for (c=0;c<*ptheta;c++) {
-     if (itt==*Nit-1) ME(Sthetaiid[j],k,c)=ME(Sthetaiid[j],k,c)+
-	               sdj*VE(vthetascore,k)*VE(vthetascore,c);  
+//     if (itt==*Nit-1) ME(Sthetaiid[j],k,c)=ME(Sthetaiid[j],k,c)+
+//	               sdj*VE(vthetascore,k)*VE(vthetascore,c);  
 	 ME(d2Utheta,k,c)= ME(d2Utheta,k,c)+ 
 	               sdj*VE(vthetascore,k)*VE(vthetascore,c);}
          scl_vec_mult(diff,vthetascore,vthetascore);  
@@ -287,38 +280,25 @@ if (*CA1!=*CA2 && *semi2==1) Mv(Z2,gam2,pghat02);
 
      vec_add(vtheta1,dtheta,vtheta1);
 
-} /*itt løkke */ 
+} // }}} /*itt løkke */ 
 
-
-//print_mat(DUgamma); 
-//printf("===============lomse lomse ==================== \n",itt);
-vec_zeros(dtheta); 
+   vec_zeros(dtheta); 
    for (j=0;j<*antclust;j++) 
    {
-   vec_add(dtheta,W2[j],dtheta); 
-// printf("===============lomse lomse ==================== \n",j);
-// print_vec(W2[j]); print_vec(W3[j]); 
-   vec_subtr(W2[j],W3[j],W2[j]); 
-   if (*semi==1) { //printf(" =W4======== \n"); print_vec(W4[j]); 
-                vM(DUgamma,gammaiid[j],dtheta); 
-		vec_subtr(W2[j],dtheta,W2[j]);
-		// printf(" semi 1 %d \n",j); print_vec(dtheta); 
-   }
-   if (*semi2==1) { //printf(" =W4======== \n"); print_vec(W4[j]); 
-                vM(DUgamma2,gamma2iid[j],dtheta); 
-		vec_subtr(W2[j],dtheta,W2[j]);
-		// printf(" semi 1 %d \n",j); print_vec(dtheta); 
-   }
+      vec_subtr(W2[j],W3[j],W2[j]); 
+      if (*semi==1) { //printf(" =W4======== \n"); print_vec(W4[j]); 
+                   vM(DUgamma,gammaiid[j],dtheta); 
+		   vec_subtr(W2[j],dtheta,W2[j]);
+      }
+      if (*semi2==1) { //printf(" =W4======== \n"); print_vec(W4[j]); 
+                   vM(DUgamma2,gamma2iid[j],dtheta); 
+		   vec_subtr(W2[j],dtheta,W2[j]);
+      }
     
-    for (k=0;k<*ptheta;k++) 
-    for (c=0;c<*ptheta;c++) 
-    ME(varthetascore,k,c)=ME(varthetascore,k,c)+VE(W2[j],c)*VE(W2[j],k); 
+       for (k=0;k<*ptheta;k++) 
+       for (c=0;c<*ptheta;c++) 
+       ME(varthetascore,k,c)=ME(varthetascore,k,c)+VE(W2[j],c)*VE(W2[j],k); 
    }
-
-//  printf("W2 sum ==== \n"); print_vec(dtheta); 
-//  printf("second derivative \n"); print_mat(d2UItheta); 
-
-//  printf("iid decomp variance \n"); print_mat(varthetascore); 
 
    MxA(varthetascore,d2UItheta,d2Utheta); 
    MxA(d2UItheta,d2Utheta,varthetascore);
@@ -328,30 +308,16 @@ vec_zeros(dtheta);
                              hess[k*(*ptheta)+j]=ME(d2UItheta,j,k);}}
 
    // {{{ freeing 
+  free(ckij); free(dckij); free(ckij2); free(dckij2); 
    
   for (j=0;j<*Ntimes;j++) { free_mat(DUeta[j]); free_mat(DUeta2[j]); }
 
-   /*
-   printf(" finalen hej med mig \n"); 
-   print_vec(gammaiid[0]); 
-   print_vec(gamma2iid[0]); 
-   head_matrix(Biid[0]); 
-   head_matrix(B2iid[0]); 
-   print_vec(W2[100]); 
-   print_vec(W3[100]); 
-   print_vec(W4[100]); 
-   print_vec(thetaiid[100]); 
-   print_mat(Sthetaiid[100]); 
-  */ 
-
   for (j=0;j<*antclust;j++) { 
      free_vec(gammaiid[j]); free_mat(Biid[j]); 
-     free_vec(gamma2iid[j]); 
-     free_mat(B2iid[j]); 
+     free_vec(gamma2iid[j]); free_mat(B2iid[j]); 
      free_vec(W2[j]); free_vec(W3[j]); free_vec(W4[j]); 
-     free_vec(thetaiid[j]); free_mat(Sthetaiid[j]); 
+//     free_mat(Sthetaiid[j]); 
   }
-
 
   free_mats(&ldesignX,&ldesignG,&Z2,&X2,&DUgamma,&DUgamma2,NULL);
   free_mats(&varthetascore,&d2Utheta,&d2UItheta,NULL); 
@@ -361,12 +327,9 @@ vec_zeros(dtheta);
   &Utheta,&vthetascore,&vtheta1,&dtheta,&vtheta2,
   &bhatt2,&rowX2,&xi2,&xk2,&gam2,&rowZ2,&zi2,&zk2,NULL); 
 
-
-   free_vecs(&xk,&xi,&rowX,&difX,&dB,&VdB,&bhatt,&zk,&zi,&rowZ,&gam,
-             &pbhat,&pghat0,&pghat,&plamt,&lamtt,NULL);
-
+  free_vecs(&xk,&xi,&rowX,&difX,&dB,&VdB,&bhatt,&zk,&zi,&rowZ,&gam,
+            &pbhat,&pghat0,&pghat,&plamt,&lamtt,NULL);
+// }}}
   // }}}
-
 }
-
 

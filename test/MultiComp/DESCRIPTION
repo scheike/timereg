@@ -1,5 +1,5 @@
 Package: MultiComp	
-Version: 0.0-4
+Version: 0.0-5
 Title: Dependence modelling for competing risks data
 Date: 2009-24-05
 Title: Modelling of dependence for multivariate competing risks data. Cross-odds-ratio regression modelling and random effects modelling.

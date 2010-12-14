@@ -49,7 +49,7 @@ see example below, but the default is that it is simply \eqn{\theta^T z}.
 \usage{
 cor.cif(cif,data=sys.parent(),cause,times=NULL,parfunc=NULL,dparfunc=NULL,
 cause1=1,cause2=1,cens.code=0, cens.model="KM",Nit=40,detail=0,
-clusters=NULL,theta=NULL,theta.des=NULL,step=1,sym=1,colnames=NULL,dimpar=NULL)
+clusters=NULL,theta=NULL,theta.des=NULL,step=1,sym=1,colnames=NULL,dimpar=NULL,weights=NULL,notaylor=0)
 }
 \arguments{
 \item{cif}{a model object from the comp.risk function with the 
@@ -75,6 +75,9 @@ the parameters.}
 \item{sym}{specifies if symmetry is used in the model.}
 \item{colnames}{specifies possible colnames to go with the parameters.}
 \item{dimpar}{number of parameters in case where functions specify the model.}
+\item{weights}{weights for estimating equations.}
+\item{notaylor}{if TRUE then the standard errors ignores the uncertainty 
+from the marginal cumulative incidence. This will speed things up considerably.} 
 }
 \value{returns an object of type 'cor'. With the following arguments:
 \item{theta}{estimate of proportional odds parameters of model.}
@@ -95,8 +98,9 @@ Scheike, Zhang, Sun, Jensen (2010), Biometrika.
 \examples{
 data(multcif) # simulated data with cross-odds-ratio 3
 
+times=seq(0.05,3,by=0.1) # to speed up computations use only these time-points
 add<-comp.risk(Surv(time,status>0)~const(X),data=multcif,
-               multcif$status,clusters=multcif$id,n.sim=0)
+               multcif$status,clusters=multcif$id,n.sim=0,times=times)
 
 out1<-cor.cif(add,data=multcif,multcif$cause,
 cause1=1,cause2=1,cens.model="KM",clusters=multcif$id,theta=log(2+1))
@@ -110,14 +114,13 @@ clusters=multcif$id,theta=log(2+1),theta.des=theta.des,sym=1)
 summary(out2)
 
 ## with multiple causes
-set.seed(2009)
 causesM<-multcif$status
 set.seed(2009)
 causesM[causesM==1]<-rbinom(sum(causesM),1,0.5)+1;
 table(causesM)
 
 add1<-comp.risk(Surv(time,status>0)~const(X),data=multcif,causeS=1,
-               multcif$status,clusters=multcif$id,n.sim=0)
+               causesM,clusters=multcif$id,n.sim=0,times=times)
 
 out3<-cor.cif(add1,data=multcif,causesM,
 cause1=1,cause2=2,cens.model="KM",clusters=multcif$id,theta=log(2+1))

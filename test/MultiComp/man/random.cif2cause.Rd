@@ -64,13 +64,13 @@ set.seed(2009)
 causesM[causesM==1]<-rbinom(sum(causesM),1,0.5)+1;
 table(causesM)
 
-times<-sort(multcif$time[multcif$status==1])
+times<-sort(multcif$time[multcif$status \%in\% c(1,2)])
 
 add1<-comp.risk(Surv(time,status>0)~const(X),data=multcif,causeS=1,
-               causesM,clusters=multcif$id,n.sim=0)
+               causesM,clusters=multcif$id,n.sim=0,times=times)
 
 add2<-comp.risk(Surv(time,status>0)~const(X),data=multcif,causeS=2,
-               causesM,clusters=multcif$id,n.sim=0)
+               causesM,clusters=multcif$id,n.sim=0,times=times)
 
 
 out1<-random.cif2cause(add1,data=multcif,causesM,

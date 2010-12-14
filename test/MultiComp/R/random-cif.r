@@ -34,25 +34,39 @@ clusters=NULL,theta=NULL,theta.des=NULL,step=1)
     Gfit<-rbind(c(0,1),cbind(time,Gcx)); 
     Gctimes<-Cpred(Gfit,times)[,2];
   }
+  if (cens.model == "aalen") { 
+	  if (npar == TRUE) XZ <- X[, -1] else XZ <- cbind(X, Z)[, -1]
+     ud.cens <- aalen(Surv(time, cause == cens.code) ~ XZ,n.sim = 0, robust = 0)
+     Gcx <- Cpred(ud.cens$cum, time)[, -1]
+     XZ <- cbind(1, XZ) 
+     Gcx <- exp(-apply(Gcx * XZ, 1, sum))
+     Gcx[Gcx < 0] <- 0
+     Gfit <- rbind(c(0, 1), cbind(time, Gcx))
+     Gctimes <- Cpred(Gfit, times)[, 2] 
+  }
   ntimes<-length(times); 
 ## }}}
 
 ## {{{ cluster + definining variables
-
   if (is.null(clusters)== TRUE) {clusters<-0:(antpers-1); antclust<-antpers;} else {
     clus<-unique(clusters); antclust<-length(clus);
-    clusters <- as.integer(factor(clusters, labels = 0:(antclust-1)));}
+    clusters <- as.integer(factor(clusters, labels = 1:(antclust)));
+  }
   clustsize<-as.vector(table(clusters));
   maxclust<-max(clustsize); clusterindex<-matrix(0,antclust,maxclust); 
-  if (antclust!=antpers) {
-  for (i in 1:antclust) { index<-(((1:antpers)[clusters==i])-1); 
-  clusterindex[i,1:length(index)]<-(((1:antpers)[clusters==i])-1) }
-  } else clusterindex<-(0:(antpers-1)); 
+
+ cs<- rep(1,antclust)
+ for (i in 1:antpers) { 
+     clusterindex[clusters[i],cs[clusters[i]]]<-i-1;
+     cs[clusters[i]]<- cs[clusters[i]]+1; 
+  } 
+
 ##################################################################
  if (is.null(theta.des)==TRUE) ptheta<-1;
  if (is.null(theta.des)==TRUE) theta.des<-matrix(1,antpers,ptheta) else 
  theta.des<-as.matrix(theta.des);
   ptheta<-ncol(theta.des);
+  if (nrow(theta.des)!=antpers) stop("Theta design does not have correct dim"); 
   if (is.null(theta)==TRUE) theta<-rep(0.5,ptheta);
   if (length(theta)!=ptheta) theta<-rep(theta[1],ptheta);
   est<-cif$cum; if (semi==1) gamma<-cif$gamma  else gamma<-0; 

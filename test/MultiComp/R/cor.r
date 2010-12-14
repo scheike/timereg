@@ -1,9 +1,10 @@
 cor.cif<-function(cif,data=sys.parent(),cause,times=NULL,parfunc=NULL,dparfunc=NULL,
-cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
-clusters=NULL,theta=NULL,theta.des=NULL,step=1,sym=1,colnames=NULL,dimpar=NULL)
+cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,clusters=NULL,
+theta=NULL,theta.des=NULL,step=1,sym=1,colnames=NULL,dimpar=NULL,weights=NULL,
+notaylor=0)
 { ## {{{
 ## {{{ set up data and design
-multi=0;inverse=0; cif2<-NULL
+multi=0; cif2<-NULL; dscore <- 1;  
  # trans=1 P_1=1-exp(- ( x' b(b)+ z' gam t) ), 
  formula<-attr(cif,"Formula"); 
  ldata<-aalen.des(formula,data,model="aalen");
@@ -31,12 +32,15 @@ if (is.null(cif2)==TRUE) stop("Must provide marginal model for both causes");
  est<-Cpred(est,times); 
  est2<-Cpred(est2,times);
 ####      print(est); print(est2)
-if (ncol(est)!=ncol(est2)) stop("Marginal models must be computed in same
-time points \n"); 
+if (nrow(cif$cum)!=nrow(cif2$cum)) 
+	stop("Marginal models must be computed in same time points"); 
 } else { 
 X2<-0; Z2<-0; pg2<-1; px2<-1;  semi2<-0; est2<-0; gamma2<-0; 
 npar2<-FALSE
 }
+
+if (is.null(weights)==TRUE) weights <- rep(1,antpers); 
+
 ## }}}
 
 ## {{{ censoring model stuff
@@ -61,13 +65,16 @@ npar2<-FALSE
 ## {{{ set up cluster + theta design + define iid variables 
   if (is.null(clusters)== TRUE) {clusters<-0:(antpers-1); antclust<-antpers;} else {
     clus<-unique(clusters); antclust<-length(clus);
-    clusters <- as.integer(factor(clusters, labels = 0:(antclust-1)));}
+    clusters <- as.integer(factor(clusters, labels = 1:(antclust)));
+  }
   clustsize<-as.vector(table(clusters));
   maxclust<-max(clustsize); clusterindex<-matrix(0,antclust,maxclust); 
-  if (antclust!=antpers) {
-  for (i in 1:antclust) { index<-(((1:antpers)[clusters==i])-1); 
-  clusterindex[i,1:length(index)]<-(((1:antpers)[clusters==i])-1) }
-  } else clusterindex<-(0:(antpers-1)); 
+
+ cs<- rep(1,antclust)
+ for (i in 1:antpers) { 
+     clusterindex[clusters[i],cs[clusters[i]]]<-i-1;
+     cs[clusters[i]]<- cs[clusters[i]]+1; 
+  } 
 
  if (is.null(theta.des)==TRUE) { ptheta<-1; theta.des<-matrix(1,antpers,ptheta);} else 
   theta.des<-as.matrix(theta.des); ptheta<-ncol(theta.des);
@@ -79,7 +86,8 @@ if ( (!is.null(parfunc)) && is.null(dimpar) )
   if (is.null(theta)==TRUE) theta<-rep(0.0,dimpar);
   if (length(theta)!=dimpar) theta<-rep(theta[1],dimpar);
   ##print(est); print(gamma); print(semi); 
-Biid<-c()
+Biid<-c(); gamma.iid <- 0; B2iid<-c(); gamma2.iid <- 0; 
+if (notaylor==0) {
 for (i in 1:antclust) Biid<-cbind(Biid,cif$B.iid[[i]]); 
 if (npar==TRUE) gamma.iid<-0 else gamma.iid<-cif$gamma.iid;
 if (cause1!=cause2)  {
@@ -87,6 +95,7 @@ B2iid<-c()
 for (i in 1:antclust) B2iid<-cbind(B2iid,cif2$B.iid[[i]]); 
 if (npar2==TRUE) gamma2.iid<-0 else  gamma2.iid<-cif2$gamma.iid;
 } else { B2iid<-Biid; gamma2.iid<-gamma.iid; }
+}
   var.theta<-hess<-matrix(0,dimpar,dimpar); score<-rep(0,dimpar); 
   time.pow<-attr(cif,"time.pow"); 
   #if (sum(time.pow)==0) time.pow<-rep(1,pg); 
@@ -122,10 +131,11 @@ else {
   as.double(hess), as.double(est), as.double(gamma), as.integer(semi),as.double(Z), as.integer(pg),
   as.integer(detail), as.double(Biid),as.double(gamma.iid), as.double(time.pow), as.double(theta), as.double(var.theta), 
   as.double(theta.des), as.integer(ptheta), as.integer(antclust), as.integer(clusters), as.integer(clustsize), as.integer(clusterindex),
-  as.integer(maxclust), as.double(step) , as.integer(inverse),as.integer(cause2) , as.double(X2),as.integer(px2),
+  as.integer(maxclust), as.double(step) , as.integer(dscore),as.integer(cause2) , as.double(X2),as.integer(px2),
 as.integer(semi2),as.double(Z2), as.integer(pg2), as.double(est2), as.double(gamma2),as.double(B2iid),
 as.double(gamma2.iid), body(htheta),body(dhtheta),new.env(),as.integer(dimpar),as.integer(flex.func),
-as.double(theta.iid),as.integer(sym) , PACKAGE="MultiComp")
+as.double(theta.iid),as.integer(sym) , as.double(weights), 
+as.integer(notaylor), PACKAGE="MultiComp")
 ## }}}
 
 ## {{{ output
@@ -164,10 +174,10 @@ return(ud);
 rr.cif<-function(cif,data=sys.parent(),cause,times=NULL,
 cause1=1,cause2=1,cens.code=0,cif2=NULL,cens.model="KM",Nit=40,detail=0,
 clusters=NULL,theta=NULL,theta.des=NULL,parfunc=NULL,dparfunc=NULL,
-step=1,sym=1,colnames=NULL,dimpar=NULL)
+step=1,sym=1,colnames=NULL,dimpar=NULL,weights=NULL,notaylor=0)
 { ## {{{
 ## {{{ set up data and design
-multi=0;inverse=0; 
+multi=0; dscore=0; 
  # trans=1 P_1=1-exp(- ( x' b(b)+ z' gam t) ), 
  formula<-attr(cif,"Formula"); 
  ldata<-aalen.des(formula,data,model="aalen");
@@ -195,12 +205,13 @@ if (is.null(cif2)==TRUE) stop("Must provide marginal model for both causes");
  est<-Cpred(est,times); 
  est2<-Cpred(est2,times);
 ####      print(est); print(est2)
-if (ncol(est)!=ncol(est2)) stop("Marginal models must be computed in same
-time points \n"); 
+if (nrow(cif$cum)!=nrow(cif2$cum)) 
+	stop("Marginal models must be computed in same time points \n"); 
 } else { 
 X2<-0; Z2<-0; pg2<-1; px2<-1;  semi2<-0; est2<-0; gamma2<-0; 
 npar2<-FALSE
 }
+if (is.null(weights)==TRUE) weights <- rep(1,antpers); 
 ## }}}
 
 ## {{{ censoring model stuff
@@ -225,25 +236,25 @@ npar2<-FALSE
 ## {{{ set up cluster + theta design + define iid variables 
   if (is.null(clusters)== TRUE) {clusters<-0:(antpers-1); antclust<-antpers;} else {
     clus<-unique(clusters); antclust<-length(clus);
-    clusters <- as.integer(factor(clusters, labels = 0:(antclust-1)));}
+    clusters <- as.integer(factor(clusters, labels = 1:(antclust)));
+  }
   clustsize<-as.vector(table(clusters));
   maxclust<-max(clustsize); clusterindex<-matrix(0,antclust,maxclust); 
-  if (antclust!=antpers) {
-  for (i in 1:antclust) { index<-(((1:antpers)[clusters==i])-1); 
-  clusterindex[i,1:length(index)]<-(((1:antpers)[clusters==i])-1) }
-  } else clusterindex<-(0:(antpers-1)); 
+ cs<- rep(1,antclust)
+ for (i in 1:antpers) { 
+     clusterindex[clusters[i],cs[clusters[i]]]<-i-1;
+     cs[clusters[i]]<- cs[clusters[i]]+1; 
+  } 
 
  if (is.null(theta.des)==TRUE) { ptheta<-1; theta.des<-matrix(1,antpers,ptheta);} else 
   theta.des<-as.matrix(theta.des); ptheta<-ncol(theta.des);
 if ( (!is.null(parfunc)) && is.null(dimpar) ) 
    stop("Must specify dimension of score when specifying R-functions\n")
   if (is.null(dimpar) && is.null(parfunc)) dimpar<-ptheta; 
-  ### if (!is.null(dparfunc)) dimpar<-length(dparfunc(
-
   if (is.null(theta)==TRUE) theta<-rep(0.0,dimpar);
   if (length(theta)!=dimpar) theta<-rep(theta[1],dimpar);
-  ##print(est); print(gamma); print(semi); 
-Biid<-c()
+Biid<-c(); gamma.iid <- 0; B2iid<-c(); gamma2.iid <- 0; 
+if (notaylor==0) {
 for (i in 1:antclust) Biid<-cbind(Biid,cif$B.iid[[i]]); 
 if (npar==TRUE) gamma.iid<-0 else gamma.iid<-cif$gamma.iid;
 if (cause1!=cause2)  {
@@ -251,6 +262,7 @@ B2iid<-c()
 for (i in 1:antclust) B2iid<-cbind(B2iid,cif2$B.iid[[i]]); 
 if (npar2==TRUE) gamma2.iid<-0 else  gamma2.iid<-cif2$gamma.iid;
 } else { B2iid<-Biid; gamma2.iid<-gamma.iid; }
+}
   var.theta<-hess<-matrix(0,dimpar,dimpar); score<-rep(0,dimpar); 
   time.pow<-attr(cif,"time.pow"); 
   #if (sum(time.pow)==0) time.pow<-rep(1,pg); 
@@ -286,10 +298,11 @@ else {
   as.double(hess), as.double(est), as.double(gamma), as.integer(semi),as.double(Z), as.integer(pg),
   as.integer(detail), as.double(Biid),as.double(gamma.iid), as.double(time.pow), as.double(theta), as.double(var.theta), 
   as.double(theta.des), as.integer(ptheta), as.integer(antclust), as.integer(clusters), as.integer(clustsize), as.integer(clusterindex),
-  as.integer(maxclust), as.double(step) , as.integer(inverse),as.integer(cause2) , as.double(X2),as.integer(px2),
+  as.integer(maxclust), as.double(step) , as.integer(dscore),as.integer(cause2) , as.double(X2),as.integer(px2),
 as.integer(semi2),as.double(Z2), as.integer(pg2), as.double(est2), as.double(gamma2),as.double(B2iid),
 as.double(gamma2.iid), body(htheta),body(dhtheta),new.env(),as.integer(dimpar),as.integer(flex.func),
-as.double(theta.iid),as.integer(sym) , PACKAGE="MultiComp")
+as.double(theta.iid),as.integer(sym) , as.double(weights), as.integer(notaylor),
+PACKAGE="MultiComp")
 ## }}}
 
 ## {{{ output

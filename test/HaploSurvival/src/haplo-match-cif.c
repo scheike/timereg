@@ -143,9 +143,11 @@ SEXP designfuncX,designfuncZ,rhoR;
   }
   // }}}
   
+   R_CheckUserInterrupt();
     sc=0;
     for (s=0;s<*Ntimes;s++)
       {
+   R_CheckUserInterrupt();
 	time=times[s]; est[s]=time; score[s]=time; var[s]=time;
 
        for (it=0;it<*Nit;it++)
@@ -551,6 +553,7 @@ if (fixedcov==1) {
 
   for (itt=0;itt<*Nit;itt++)
     {
+   R_CheckUserInterrupt();
       mat_zeros(Ct); mat_zeros(CGam); vec_zeros(IZGdN); vec_zeros(IZGlamt); 
 
       for (s=0;s<*Ntimes;s++)
@@ -769,6 +772,7 @@ if (fixedcov==1) {
     }
 
 
+   R_CheckUserInterrupt();
 
   /* ROBUST VARIANCES   */ 
   if (*robust==1) 

@@ -32,7 +32,7 @@ if (is.null(cif2)==TRUE) stop("Must provide marginal model for both causes");
  est<-Cpred(est,times); 
  est2<-Cpred(est2,times);
 ####      print(est); print(est2)
-if (ncol(est)!=ncol(est2)) stop("Marginal models must be computed in same
+if (nrow(cif$cum)!=nrow(cif2$cum)) stop("Marginal models must be computed in same
 time points \n"); 
 }
 ## }}}
@@ -56,33 +56,37 @@ time points \n");
   }
 ## }}}
 
+
 ## {{{ clusters and definition of variables
   if (is.null(clusters)== TRUE) {clusters<-0:(antpers-1); antclust<-antpers;} else {
     clus<-unique(clusters); antclust<-length(clus);
-    clusters <- as.integer(factor(clusters, labels = 0:(antclust-1)));}
+    clusters <- as.integer(factor(clusters, labels = 1:(antclust)));
+  }
   clustsize<-as.vector(table(clusters));
   maxclust<-max(clustsize); clusterindex<-matrix(0,antclust,maxclust); 
-  if (antclust!=antpers) {
-  for (i in 1:antclust) { index<-(((1:antpers)[clusters==i])-1); 
-  clusterindex[i,1:length(index)]<-(((1:antpers)[clusters==i])-1) }
-  } else clusterindex<-(0:(antpers-1)); 
-##################################################################
+
+ cs<- rep(1,antclust)
+ for (i in 1:antpers) { 
+     clusterindex[clusters[i],cs[clusters[i]]]<-i-1;
+     cs[clusters[i]]<- cs[clusters[i]]+1; 
+  } 
+
  if (is.null(theta.des)==TRUE) ptheta<-1;
  if (is.null(theta.des)==TRUE) theta.des<-matrix(1,antpers,ptheta) else 
  theta.des<-as.matrix(theta.des);
   ptheta<-ncol(theta.des);
+ if (nrow(theta.des)!=antpers) stop("Theta design does not have correct dim");
   if (is.null(theta)==TRUE) theta<-rep(0.5,ptheta);
   if (length(theta)!=ptheta) theta<-rep(theta[1],ptheta);
-Biid<-c()
-for (i in 1:antclust) Biid<-cbind(Biid,cif$B.iid[[i]]); 
-B2iid<-c()
-for (i in 1:antclust) B2iid<-cbind(B2iid,cif2$B.iid[[i]]); 
-   if (npar==TRUE) gamma.iid<-0 else gamma.iid<-cif$gamma.iid;
-   if (npar2==TRUE) gamma2.iid<-0 else gamma2.iid<-cif2$gamma.iid;
+  Biid<-c()
+  for (i in 1:antclust) Biid<-cbind(Biid,cif$B.iid[[i]]); 
+  B2iid<-c()
+  for (i in 1:antclust) B2iid<-cbind(B2iid,cif2$B.iid[[i]]); 
+  if (npar==TRUE) gamma.iid<-0 else gamma.iid<-cif$gamma.iid;
+  if (npar2==TRUE) gamma2.iid<-0 else gamma2.iid<-cif2$gamma.iid;
   var.theta<-hess<-matrix(0,ptheta,ptheta); score<-rep(0,ptheta); 
   time.pow<-attr(cif,"time.pow"); 
-  if (sum(time.pow)==0) time.pow<-rep(1,pg); 
- ##  dyn.load("random-cif.so");
+###  if (sum(time.pow)==0) time.pow<-rep(1,pg); 
 ## }}}
 
 ##dyn.load("random-cif.so");

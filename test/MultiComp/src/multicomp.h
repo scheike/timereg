@@ -12,7 +12,6 @@
 #include <R.h>
 #include <Rinternals.h>
 
-
 SEXP mkansvL(double *x,int dim);
 
 double evalh(vector *theta,double *t,vector *xih,SEXP f,SEXP rho); 
@@ -41,3 +40,31 @@ double Dlaplace(double theta,double t);
 
 double D2laplace(double theta,double t);
 
+void ckrvdes(vector *alphai,vector *alphak, 
+		double beta, double x,double y,double *ckij,
+		vector *dckij,vector *rvi,vector *rvk) ; 
+
+void funkdes2(vector *alphai,vector *alphak, 
+		double beta, double x,double y,double *ckij,
+		vector *dckij,vector *rvi,vector *rvk); 
+
+void ckrvdes2(vector *alphai,vector *alphak, 
+		double beta, double x,double y,double *ckij,
+		vector *dckij,vector *rvi,vector *rvk); 
+
+double lapgam(double alpha,double beta,double t); 
+
+double ilapgam(double alpha,double beta,double y); 
+
+double Dilapgam(double alpha,double beta,double y); 
+
+double Dbetailapgam(double alpha,double beta,double y);
+
+double Dalphalapgam(double alpha,double beta,double t);
+
+double Dbetalapgam(double alpha,double beta,double t);
+
+double Dtlapgam(double alpha,double beta,double t);
+ 
+void DUetagammarv(double t, double x,double y,
+		vector *xi,vector *xk); 

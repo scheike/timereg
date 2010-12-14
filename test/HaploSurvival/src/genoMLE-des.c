@@ -49,7 +49,9 @@ int *antpers,*Nit,*detail,*nph,*oh,*nphpp,*dimhap;
 
   /* Main procedure ================================== */
   for (it=0;it<*Nit;it++) {
+   R_CheckUserInterrupt();
   maxdelt=0; 
+   R_CheckUserInterrupt();
 
   // initializing {{{ score and haplopars 
   vec_zeros(U); mat_zeros(S1);  

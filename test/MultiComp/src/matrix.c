@@ -1451,7 +1451,7 @@ void LevenbergMarquardt(matrix *S,matrix *SI,vector *U,vector *delta,double *lm,
     invert(S2,SI); Mv(SI,U,delta);
   }
   if  (*step>0.0001) scl_vec_mult(*step,delta,delta); 
-  free(S2); 
+  free_mat(S2); 
 } // }}}
 
 void readXt2(int *antpers,int *nx,int *p,double *designX,

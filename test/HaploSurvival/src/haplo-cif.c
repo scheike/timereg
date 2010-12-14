@@ -139,6 +139,7 @@ sc=0;
 for (s=0;s<*Ntimes;s++)
 {
 	time=times[s]; est[s]=time; score[s]=time; var[s]=time;
+   R_CheckUserInterrupt();
 
        for (it=0;it<*Nit;it++)
        {
@@ -504,6 +505,7 @@ if (fixedcov==1) {
 
   for (itt=0;itt<*Nit;itt++)
     {
+   R_CheckUserInterrupt();
       mat_zeros(Ct); mat_zeros(CGam); vec_zeros(IZGdN); vec_zeros(IZGlamt); 
 
       for (s=0;s<*Ntimes;s++)

@@ -20,7 +20,7 @@ see example below, but the default is that it is simply \eqn{\theta^T z}.
 rr.cif(cif,data=sys.parent(),cause,times=NULL,
 cause1=1,cause2=1,cens.code=0,cif2=NULL,cens.model="KM",Nit=40,detail=0,
 clusters=NULL,theta=NULL,theta.des=NULL,parfunc=NULL,dparfunc=NULL,
-step=1,sym=1,colnames=NULL,dimpar=NULL)
+step=1,sym=1,colnames=NULL,dimpar=NULL,weights=NULL,notaylor=0)
 }
 \arguments{
 \item{cif}{a model object from the comp.risk function with the 
@@ -47,6 +47,9 @@ the parameters.}
 \item{sym}{specifies if symmetry is used in the model.}
 \item{colnames}{specifies possible colnames to go with the parameters.}
 \item{dimpar}{number of parameters in case where functions specify the model.}
+\item{weights}{weights for estimating equations.}
+\item{notaylor}{if TRUE then the standard errors ignores the uncertainty from the marginal
+cumulative incidence. This will speed things up considerably.} 
 }
 \value{returns an object of type 'cor'. With the following arguments:
 \item{theta}{estimate of proportional odds parameters of model.}

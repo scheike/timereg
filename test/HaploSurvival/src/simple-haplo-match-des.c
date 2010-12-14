@@ -5,7 +5,7 @@
 #include <R.h>
 #include "haplosurv.h" 
 
-//matrix *Fst[(5000)*(5000)]; 
+matrix *Fst[(5000)*(5000)]; 
 
 //  scorequations for intensity given genotype match
 //  for donor patient  bmt data 
@@ -72,13 +72,15 @@ int loopThroughAll;
 double tempSum;
 // }}}
 
-//if (*Ntimes>500) toolarge=1; 
-//if (*Ntimes>5000) {
-//printf("Many jump times: may cause memory problems %d \n",*Ntimes); 
-//printf("May increase size of Fst in simple-haplo-match-des.c to %d\n",*Ntimes); 
-//}
- matrix *Fst[(*Ntimes)*(*Ntimes)]; 
-  // set up dimension of score 
+if (*Ntimes>5000) toolarge=1; 
+if (*Ntimes>5000) {
+printf("Many jump times: may cause memory problems %d \n",*Ntimes); 
+printf("May increase size of Fst in simple-haplo-match-des.c to %d\n",*Ntimes);
+printf("then recompile %d\n",*Ntimes); 
+}
+
+// matrix *Fst[(*Ntimes)*(*Ntimes)]; 
+
 // {{{
   dimpar=0; nphm1=*nph-1; 
   if (*fixbeta==0) dimpar=*dimzih; 
@@ -105,8 +107,7 @@ double tempSum;
   //}}}
  
   // {{{ matrix allocation 1  
-  double tempArray[nphm1]; 
-  // matrix allocation 2  
+  double *tempArray=calloc(nphm1,sizeof(double));
   malloc_mat(*dimhap,*nph-1,AA); 
   for (j=0;j<*antpers;j++) { 
     malloc_vec(*Ntimes,dLamt[j]); malloc_mat(*Ntimes,*dimxih,W3t[j]);

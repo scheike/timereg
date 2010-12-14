@@ -23,17 +23,17 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,
  vector *xk,*xi,*rowX,*rowZ,*difX,*zk,*zi,*z1;
  vector *Utheta,*vthetascore,*vtheta1,*vtheta2,*dtheta,*thetaiid[*antclust]; 
 
- int pmax;
- int v,nb[1],itt,i,j,k,l,s,c,coef[1],ps[1],n[1],nx[1],retur[1];
+ int pmax,test=1,fixedcov=1;
+ int v,itt,i,j,k,l,s,c; // coef[1],ps[1],n[1],nx[1],retur[1];
  double Li,Lk,ithetak,thetak,response,time,dtime,timem;
  double fabs(),Dinverse,DDinverse;
- double sumscore,sdj,pow(),ckij[1],dckij[1],diff;
- long robust[1],fixedcov; 
+ double sumscore,sdj,pow(),diff,
+        *ckij=calloc(1,sizeof(double)),
+        *dckij=calloc(1,sizeof(double));
  float gasdev(),expdev(),ran1();
  void ck(),DUetagamma(); 
 
- robust[0]=2; fixedcov=1;
- n[0]=antpers[0]; retur[0]=0; nx[0]=antpers[0]; nb[0]=Ntimes[0]; timem=0;
+ timem=0;
 	
 //if (*trans==1) for (j=0;j<*pg;j++) if (timepow[j]!= 1) {timem=1;break;}
 //if (*trans==2) for (j=0;j<*pg;j++) if (timepow[j]!= 0) {timem=1;break;}
@@ -61,7 +61,6 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,
   malloc_vecs(*pg,&zk,&zi,&rowZ,&z1,&gam,NULL);
   malloc_vecs(*antpers,&pbhat,&pghat0,&pghat,&lamtt,NULL);
 
-  coef[0]=1; ps[0]=*px+1; 
   pmax=max(*px,*pg); pmax=max(pmax,*ptheta); 
 
   for (j=0;j<*pg;j++) VE(gam,j)=gamma[j]; 
@@ -89,6 +88,8 @@ if (*semi==1) Mv(ldesignG,gam,pghat0);
 
   for (itt=0;itt<*Nit;itt++)
     {
+    R_CheckUserInterrupt();
+
       mat_zeros(d2Utheta); vec_zeros(Utheta); Mv(destheta,vtheta1,lamtt);
       sumscore=0; 
 
@@ -127,12 +128,18 @@ if (*semi==1) Mv(ldesignG,gam,pghat0);
        if (*dscore==1) sdj=sdj+DDinverse*dckij[0]*dckij[0]; 
        else  sdj=sdj+DDinverse*dckij[0]; 
 
+if ((test<0) & (j==1) & (s==1)) {
+        printf(" %d %d %d %d %d %lf %lf \n",j,v,c,i,k,response,ckij[0]);
+        printf("  %lf %lf \n",Li,Lk);
+        printf("  %lf %lf \n",thetak,dckij[0]);
+        printf("=============================\n");
+      }
+
 
         if (isnan(response))   {
 	         printf(" %d %d %d \n",clustsize[j],i,k); 
                  printf(" %lf %lf %lf \n",x[i],x[k],time); 
 		 printf(" resp %lf  %lf %lf  \n",response,KMc[i],KMc[k]); 
-                 printf(" %d %d  \n",i,k); 
                  printf(" %lf %lf %lf \n",thetak,Li,Lk); 
                  printf(" %lf %lf \n",dckij[0],ckij[0]); 
 		 printf("============================== \n"); 
@@ -172,11 +179,14 @@ if (*semi==1) Mv(ldesignG,gam,pghat0);
 	               sdj*VE(vthetascore,k)*VE(vthetascore,c);}
 
          scl_vec_mult(diff,vthetascore,vthetascore);  
+	 
          vec_add(vthetascore,Utheta,Utheta); 
 
 	if (itt==*Nit-1) {vec_add(vthetascore,W2[j],W2[j]);}
 
-        } /* j in antclust */ 
+//	 printf(" %d \n",j); print_vec(Utheta);
+
+   } /* j in antclust */ 
 
    if (itt==(Nit[0]-1)) for (j=0;j<*antclust;j++) {
        extract_row(Biid[j],s,rowX); 
@@ -194,7 +204,8 @@ if (*semi==1) Mv(ldesignG,gam,pghat0);
  if (*detail==1) {
     printf("===============Iteration %d ==================== \n",itt);
      printf("Estimate theta \n"); print_vec(vtheta1);
-     printf("Score D l\n"); print_vec(Utheta);
+     printf("Score D l\n"); print_vec(Utheta);  
+     printf("D^2 l\n"); print_mat(d2Utheta); 
      printf("Information D^2 l\n"); print_mat(d2UItheta); }
 
     for (k=0;k<*ptheta;k++) sumscore= sumscore+fabs(VE(Utheta,k));
@@ -210,12 +221,12 @@ if (*semi==1) Mv(ldesignG,gam,pghat0);
 //print_mat(DUgamma); 
 //printf("===============lomse lomse ==================== \n",itt);
 
-vec_zeros(dtheta); 
+   vec_zeros(dtheta); 
    for (j=0;j<*antclust;j++) 
    {
   // printf("W2  ========= \n"); print_vec(W2[j]); 
   // printf("W3  ========= \n"); print_vec(W3[j]); 
-   // vec_star(W3[j],dtheta); 
+  // vec_star(W3[j],dtheta); 
     vec_subtr(W2[j],W3[j],W2[j]); 
 if (*semi==1) { //printf(" =W4======== \n"); print_vec(W4[j]); 
                vM(DUgamma,gammaiid[j],W4[j]); 
@@ -255,7 +266,7 @@ free_vecs(&xk,&xi,&rowX,&difX,&korG,&diag,&dB,&VdB,&AIXdN,&AIXlamt,&bhatt,
   &zk,&zi,&rowZ,&z1,&gam,
   &pbhat,&pghat0,&pghat,&lamtt,
   &Utheta,&vthetascore,&vtheta1,&dtheta,&vtheta2,NULL);
-
+free(ckij); free(dckij); 
 // }}}
 
 
@@ -296,20 +307,15 @@ double t,x;
 double val,val1; 
 val=(1+x*t); 
 if (val<0) oops(" val < 0 \n"); 
-
 //if (fabs(t)< 0.000000000000001) val1=0; else val1=exp(-log(val)*(1/t)); 
 val1=exp(-log(val)*(1/t)); 
-
 // printf("laplace %lf %lf  \n",val,val3); 
-
 return(val1); 
 }
-
 double ilaplace(t,y)
 double t,y;
 {
 double val,laplace(); 
-
 val=exp(-log(y)*t); val= (val-1)/t;  
 // printf("ilaplace y^(1/t)  %lf %lf  \n",exp(log(y)/t),pow(y,1.0/t)); 
 // printf("ilaplace  %lf %lf  \n",val,val1); 
