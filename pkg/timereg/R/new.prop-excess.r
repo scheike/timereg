@@ -6,7 +6,7 @@ tol=0.0001,max.time=NULL,n.sim=1000,alpha=1,frac=1)
     id<-NULL;detail<-0
     robust<-0;  
     call <- match.call()
-    m <- match.call(expand=FALSE)
+    m <- match.call(expand.dots=FALSE)
     if (n.sim>0 & n.sim<50) {n.sim<-50 ; cat("Minimum 50 simulations\n");}
     m$detail<-m$excess<-m$alpha<-m$frac<-m$id<-m$tol<-m$max.time<-
       m$n.sim<-NULL

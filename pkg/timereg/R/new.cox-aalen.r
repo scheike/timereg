@@ -8,7 +8,7 @@ rate.sim=1,beta.fixed=0,max.clust=1000)
 {
   ridge<-0; ratesim<-rate.sim; if (n.sim==0) sim<-0 else sim<-1; 
   call <- match.call()
-  m <- match.call(expand=FALSE)
+  m <- match.call(expand.dots=FALSE)
   m$robust<-m$start.time<-m$scaleLWY<-m$weighted.test<-m$beta<-m$Nit<-m$detail<-m$max.time<-m$residuals<-m$n.sim<-m$id<-m$covariance<-m$resample.iid<-m$clusters<-m$rate.sim<-m$beta.fixed<-m$max.clust <- NULL
 
   if (resample.iid==1 & robust==0) {

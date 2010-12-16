@@ -94,7 +94,7 @@ function (x, xvar = c("norm", "df", "arc.length"), breaks = TRUE,
             ylab = "Coefficients")
         title(object$type, line = 2.5)
         abline(h = 0, lty = 3)
-        axis(4, at = coef1[nrow(coef1), ], label = paste(cnums), 
+        axis(4, at = coef1[nrow(coef1), ], labels = paste(cnums), 
             cex = 0.8, adj = 0)
         if (breaks) {
             axis(3, at = s1, labels = paste(seq(s1) - 1), cex = 0.8)

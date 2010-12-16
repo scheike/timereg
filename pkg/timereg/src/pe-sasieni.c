@@ -18,7 +18,7 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
   int it,i,j,k,l,c,s,count,pers=0,pmax;
   int stat,maxtime,
       *ls=calloc(*Ntimes,sizeof(int)); 
-  double S0,sumscore,dptime,time,dummy,dtime,random,fabs(),sqrt();
+  double S0,sumscore,dptime,time=0,dummy,dtime,random,fabs(),sqrt();
   double ghati,dMi,*weights=calloc(*antpers,sizeof(double));
   double *times=calloc(*Ntimes,sizeof(double)),
 	 *cumoff=calloc((*Nalltimes)*(*px+1),sizeof(double));

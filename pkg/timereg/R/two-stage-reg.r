@@ -8,7 +8,7 @@ rate.sim=1,beta.fixed=0,theta=NULL,theta.des=NULL,var.link=0,step=1)
 ## {{{ Setting up things
   ratesim<-rate.sim; inverse<-var.link
   call <- match.call()
-  m <- match.call(expand=FALSE)
+  m <- match.call(expand.dots=FALSE)
   m$robust<-m$start.time<-m$beta<-m$Nit<-m$detail<-m$max.time<-m$clusters<-m$rate.sim<-m$beta.fixed<-m$theta<-m$theta.des<-m$var.link<-m$step<-NULL
 
   if (robust==0) cat("When robust=0 no variance estimate\n"); 

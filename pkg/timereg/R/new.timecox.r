@@ -26,7 +26,7 @@ method="basic",weighted.test=0,degree=1,covariance=0)
   if (n.sim>0 & n.sim<50) {n.sim<-50 ; cat("Minimum 50 simulations\n");}
 
   call <- match.call()
-  m <- match.call(expand=FALSE)
+  m <- match.call(expand.dots=FALSE)
   m$robust<-m$start.time<-m$degree<-m$weighted.test<-
     m$method<-m$Nit<-m$bandwidth<-m$max.time<-m$pers<-
       m$residuals<-m$n.sim<-m$id<-m$covariance<-NULL

@@ -8,7 +8,7 @@ pred.cum<-function(x,time,cum) {ud<-sapply(x,slaaop,time,cum);
 "pred.des"<-function(formula,data=sys.parent())
 { ## {{{
   call <- match.call();
-  m <- match.call(expand=FALSE);
+  m <- match.call(expand.dots=FALSE);
   special <- c("const")
   Terms <- if(missing(data)) terms(formula, special)
            else          terms(formula, special,data=data)
@@ -54,7 +54,7 @@ predict.cox.aalen <-  function(object,...){
 
 aalen.des2 <-  function(formula,data=sys.parent(),model=NULL,...){
   call <- match.call()
-  m <- match.call(expand=FALSE)
+  m <- match.call(expand.dots=FALSE)
   m$model <- NULL
 ###  special <- c("const","prop")
   Terms <- if(missing(data)) terms(formula )
