@@ -1,6 +1,6 @@
 prop<-function(x) x
 
-cox.aalenL<-function(formula=formula(data),data=sys.parent(),
+cox.aalen<-function(formula=formula(data),data=sys.parent(),
 beta=NULL,Nit=10,detail=0,start.time=0,max.time=NULL, id=NULL, 
 clusters=NULL, n.sim=500, residuals=0,robust=1,
 weighted.test=0,covariance=0,resample.iid=0,weights=NULL,
@@ -46,7 +46,9 @@ rate.sim=1,beta.fixed=0,max.clust=1000,offsets=0,exact.deriv=1)
               antpers=survs$antpers,antclust=survs$antclust);
 
   nobs <- nrow(X); 
-  if (is.null(weights)) weights <- rep(1,nrow(X)); 
+  if (is.null(weights)) weights <- rep(1,nrow(X));  
+  if (sum(abs(offsets))!=0) stop("no offsets in this version \n"); 
+  weights <- rep(1,nrow(X)); 
 
   if ( (!is.null(max.clust)) )  {  
      if (max.clust < survs$antclust)   {
@@ -69,7 +71,7 @@ if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
    clusters<-clusters[ot]
    id<-id[ot];
    weights <- weights[ot]
-   if (sum(offsets)!=0) offsets <- offsets[ot]
+   if (sum(abs(offsets))!=0) offsets <- offsets[ot]
    entry=rep(-1,nobs); 
   } else {
         eventtms <- c(survs$start,time2)
@@ -86,7 +88,7 @@ if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
 	if (npar==FALSE) Z <- Z[rep(1:nobs,2)[ix],]
 	id <- rep(id,2)[ix]
 	clusters <- rep(clusters,2)[ix]
-	if (sum(offsets)!=0) offsets <- rep(offsets,2)[ix]
+	if (sum(abs(offsets))!=0) offsets <- rep(offsets,2)[ix]
     } ## }}}
 
 ldata<-list(start=survs$start,stop=survs$stop,

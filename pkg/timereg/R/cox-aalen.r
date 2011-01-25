@@ -1,4 +1,4 @@
-cox.aalenBaseL<-function (times, fdata, designX, designG, status,
+cox.aalenBase<-function (times, fdata, designX, designG, status,
     id, clusters, Nit = 5, beta = 0, weights=NULL, detail = 0, 
     sim = 1, antsim = 1000, weighted.test= 0, robust = 1, 
     ratesim = 1, residuals = 0, covariance = 1,
@@ -17,17 +17,13 @@ cox.aalenBaseL<-function (times, fdata, designX, designG, status,
   if (sum(offsets)==0) mof <- 0 else mof <- 1; 
   nb <- 1
   aalen <- 1
-  if (covariance == 1) 
-    covs <- matrix(0, Ntimes, px * px)
-  else covs <- 0
-  dM.iid<-0    
+  if (covariance == 1) covs <- matrix(0, Ntimes, px * px) else covs <- 0
+  cumAi <- 0; dM.iid<-0; gammaiid <- matrix(0, pg, fdata$antclust * 1)
   if (residuals == 1) {
     cumAi <- matrix(0, Ntimes, fdata$antpers * 1)
-    gammaiid <- matrix(0, pg, fdata$antclust * 1)
   }
-  if (residuals == 2) {
+  if (residuals >= 2) {
     cumAi <- rep(0, fdata$antpers * 1)
-    gammaiid <- matrix(0, pg, fdata$antclust * 1)
   }
   cumint <- matrix(0, Ntimes, px + 1)
   vcum <- matrix(0, Ntimes, px + 1)
@@ -40,11 +36,8 @@ cox.aalenBaseL<-function (times, fdata, designX, designG, status,
   Varbeta <- matrix(0, pg, pg)
   Iinv <- matrix(0, pg, pg)
   RVarbeta <- matrix(0, pg, pg)
-  if (sim == 1) 
-    Uit <- matrix(0, Ntimes, 50 * pg)
-  else Uit <- NULL
-  if (additive.resamp == 1) 
-    baseproc <- matrix(0, Ntimes, 50 * px)
+  if (sim == 1) Uit <- matrix(0, Ntimes, 50 * pg) else Uit <- NULL
+  if (additive.resamp == 1) baseproc <- matrix(0, Ntimes, 50 * px)
   else baseproc <- NULL
   if (resample.iid == 1) {
     biid <- matrix(0, Ntimes, fdata$antclust * px); 
@@ -57,8 +50,6 @@ cox.aalenBaseL<-function (times, fdata, designX, designG, status,
   rani <- -round(runif(1) * 10000)
   Ut <- var.score<- matrix(0, Ntimes, pg + 1)
   simUt <- matrix(0, antsim, pg)
-
-  dyn.load("cox-aalen.so"); 
 
   nparout <- .C("score", as.double(times), as.integer(Ntimes), 
                 as.double(designX), as.integer(nx), as.integer(px), 
@@ -80,8 +71,8 @@ cox.aalenBaseL<-function (times, fdata, designX, designG, status,
                 as.double(baseproc), as.integer(resample.iid), as.double(gamiid), 
                 as.double(biid),as.integer(clusters),as.integer(fdata$antclust),
                 as.double(var.score),as.integer(beta.fixed),
-		as.double(weights),as.integer(entry) ,as.integer(exactderiv) )
-###                ,PACKAGE = "timereg")
+		as.double(weights),as.integer(entry) ,as.integer(exactderiv) 
+                ,PACKAGE = "timereg")
 
   Iinv <- matrix(nparout[[19]], pg, pg)
   RVarbeta <- -matrix(nparout[[28]], pg, pg)
@@ -104,17 +95,13 @@ cox.aalenBaseL<-function (times, fdata, designX, designG, status,
     cov.list <- list()
     for (i in 1:Ntimes) cov.list[[i]] <- matrix(covit[i,], px, px) } else 
   cov.list <- NULL
-  cumAi <- NULL
+  gammaiid <- matrix(nparout[[44]],pg,fdata$antclust * 1)
   if (residuals == 1) {
     cumAi <- matrix(nparout[[43]],Ntimes,fdata$antpers * 1)
-    gammaiid <- matrix(nparout[[44]],pg,fdata$antclust * 1)
-    cumAi <- list(time = times, dM = cumAi, gamma.iid = gammaiid)
   }
-  if (residuals == 2) {
-    cumAi <- nparout[[43]]
-    gammaiid <- matrix(nparout[[44]],pg,fdata$antclust * 1)
-    cumAi <- list(time = times, dM = cumAi, gamma.iid = gammaiid)
-  }
+  if (residuals >= 2) cumAi <- nparout[[43]]
+  cumAi <- list(time = times, dM = cumAi, gamma.iid = gammaiid)
+	               
   if (sim == 1) {
     Uit <- matrix(nparout[[33]], Ntimes, 50 * pg)
     UIt <- list()
@@ -164,6 +151,6 @@ cox.aalenBaseL<-function (times, fdata, designX, designG, status,
              sim.testBeq0 = sim.testBeq0, sim.testBeqC = sim.testBeqC, 
              conf.band = unifCI, test.procProp = Ut, sim.test.procProp = UIt,
              pval.Prop = testUt, sim.supProp = sim.supUt, covariance = cov.list, 
-             B.iid=B.iid,gamma.iid=gamiid)
+             B.iid=B.iid,gamma.iid=gammaiid)
   return(ud)
 }
