@@ -4,7 +4,7 @@ two.stage<-function(formula=formula(data),data=sys.parent(),
 beta=0,Nit=60,detail=0,start.time=0,max.time=NULL,id=NULL, 
 clusters=NULL, robust=1,
 rate.sim=1,beta.fixed=0,theta=NULL,theta.des=NULL,var.link=0,step=1)
-{
+{ ## {{{
 ## {{{ Setting up things
   ratesim<-rate.sim; inverse<-var.link
   call <- match.call()
@@ -51,7 +51,6 @@ rate.sim=1,beta.fixed=0,theta=NULL,theta.des=NULL,var.link=0,step=1)
 
   ## }}}
 
-
   if (px==0) stop("No nonparametric terms (needs one!)");
   ud<-two.stageBase.reg(times,ldata,X,Z,
                         status,id,clusters,Nit=Nit,detail=detail,beta=beta,
@@ -89,13 +88,13 @@ rate.sim=1,beta.fixed=0,theta=NULL,theta.des=NULL,var.link=0,step=1)
 
   return(ud); 
   ## }}}
-}
-
+} ## }}}
+ 
 two.stageBase.reg<-function (times, fdata, designX, designG, status,
 id, clusters, Nit = 5, beta = 0, detail = 0, robust = 1, 
 ratesim = 1, namesZ=NULL,namesX=NULL,beta.fixed=0,theta=NULL,
 theta.des=NULL,inverse=0,step=1) 
-{
+{ ## {{{
     additive.resamp <-0; ridge <- 0; XligZ <- 0;
     Ntimes <- length(times)
     designX <- as.matrix(designX); designG <- as.matrix(designG)
@@ -171,9 +170,9 @@ theta.des=NULL,inverse=0,step=1)
        D2linv = Iinv, score = score,  theta=theta,var.theta=var.theta,
        S.theta=Stheta,theta.score=theta.score)
    return(ud)
-}
+} ## }}}
 
-summary.two.stage<-function (object,digits = 3,...) {
+summary.two.stage<-function (object,digits = 3,...) { ## {{{
   if (!(inherits(object, 'two.stage') )) stop("Must be a Two-Stage object")
   
   prop<-TRUE; 
@@ -222,9 +221,10 @@ summary.two.stage<-function (object,digits = 3,...) {
   }
   }
    cat("   \n");  cat("  Call: \n"); dput(attr(object, "Call")); cat("\n");
-}
+} ## }}}
 
-print.two.stage <- function (x,digits = 3,...) {
+
+print.two.stage <- function (x,digits = 3,...) { ## {{{
   if (!(inherits(x, 'two.stage') )) stop("Must be a Two-Stage object")
   cat(" Two-stage estimation for Clayton-Oakes-Glidden  model\n"); 
   cat(" Marginals of Cox-Aalen form, dependence by variance of Gamma distribution\n\n");  
@@ -240,7 +240,8 @@ print.two.stage <- function (x,digits = 3,...) {
 
   cat(" Call: \n");
   print(attr(object,'Call'))
-}
+} ## }}}
+
 
 coef.two.stage<-function(object,digits=3,d2logl=1,...) {
    coefBase(object,digits=digits,d2logl=d2logl,...)
@@ -250,7 +251,7 @@ plot.two.stage<-function(x,pointwise.ci=1,robust=0,specific.comps=FALSE,
 		level=0.05, 
 		start.time=0,stop.time=0,add.to.plot=FALSE,mains=TRUE,
                 xlab="Time",ylab ="Cumulative regression function",...) 
-{
+{ ## {{{
   if (!(inherits(x, 'two.stage'))) stop("Must be a Two-Stage object")
   object <- x; rm(x);  
  
@@ -283,4 +284,5 @@ plot.two.stage<-function(x,pointwise.ci=1,robust=0,specific.comps=FALSE,
       lines(B[,1],nl,lty=robust,type="s"); }
     abline(h=0); 
   }
-}   
+}  ## }}}
+

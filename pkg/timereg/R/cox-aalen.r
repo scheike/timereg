@@ -23,18 +23,11 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   offset <- rep(1, nx)
   nb <- 1
   aalen <- 1
-  if (covariance == 1) 
-    covs <- matrix(0, Ntimes, px * px)
-  else covs <- 0
-  if (residuals == 1) {
-    cumAi <- matrix(0, Ntimes, fdata$antpers * 1)
-    gammaiid <- matrix(0, pg, fdata$antclust * 1)
-                                        #dM.iid <- matrix(0, Ntimes, fdata$antpers * 1)
-    dM.iid<-0                           # not used in this version
-  }
-  else {
-    cumAi <- 0; gammaiid <- 0; dM.iid <- 0;
-  }
+  if (covariance == 1) covs <- matrix(0, Ntimes, px * px) else covs <- 0
+  cumAi <- 0; gammaiid <- 0; dM.iid <- 0;
+  if (residuals >= 1) gammaiid <- matrix(0,fdata$antpers,pg); 
+  if (residuals == 1) cumAi <- matrix(0, Ntimes, fdata$antpers * 1);
+  if (residuals == 2) cumAi <- rep(0, fdata$antpers * 1)
   cumint <- matrix(0, Ntimes, px + 1)
   vcum <- matrix(0, Ntimes, px + 1)
   Rvcu <- matrix(0, Ntimes, px + 1)
@@ -64,7 +57,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   Ut <- var.score<- matrix(0, Ntimes, pg + 1)
   simUt <- matrix(0, antsim, pg)
 
-                                        #dyn.load("lincox-aalen.so"); 
+ #dyn.load("lincox-aalen.so"); 
 
   nparout <- .C("score", as.double(times), as.integer(Ntimes), 
                 as.double(designX), as.integer(nx), as.integer(px), 
@@ -109,12 +102,19 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
     cov.list <- list()
     for (i in 1:Ntimes) cov.list[[i]] <- matrix(covit[i,], px, px) } else 
   cov.list <- NULL
+
+  cumAi <- NULL
   if (residuals == 1) {
     cumAi <- matrix(nparout[[43]],Ntimes,fdata$antpers * 1)
     gammaiid <- matrix(nparout[[44]],pg,fdata$antclust * 1)
     cumAi <- list(time = times, dM = cumAi, gamma.iid = gammaiid)
   }
-  else cumAi <- NULL
+  if (residuals == 2) {
+    cumAi <- nparout[[43]]
+    gammaiid <- matrix(nparout[[44]],pg,fdata$antclust * 1)
+    cumAi <- list(time = times, dM = cumAi, gamma.iid = gammaiid)
+  } 
+  
   if (sim == 1) {
     Uit <- matrix(nparout[[33]], Ntimes, 50 * pg)
     UIt <- list()
@@ -154,6 +154,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
     testUt <- test <- unifCI <- supUtOBS <- UIt <- testOBS <- testval <- pval.testBeq0 <- pval.testBeqC <- obs.testBeq0 <- obs.testBeqC <- sim.testBeq0 <- sim.testBeqC <- testUt <- sim.supUt <- NULL 
   }
   if (robust==0 & beta.fixed==0) var.score<-NULL;
+
 
   ud <- list(cum = cumint, var.cum = vcum, robvar.cum = Rvcu, 
              gamma = gamma, var.gamma = Varbeta, robvar.gamma = RVarbeta, 

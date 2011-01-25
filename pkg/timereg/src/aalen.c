@@ -110,9 +110,11 @@ for (s=1;s<*Ntimes;s++){
 	  ME(ldesignX,id[c],j) = designX[j*(*nx)+c]; 
 	  ME(wX,id[c],j) = weights[c]*designX[j*(*nx)+c]; }
 	if (time==stop[c] && status[c]==1) { pers=id[c]; }
-	count=count+1; } 
+        for(j=0;j<*p;j++)for(k=0;k<*p;k++) ME(A,j,k)+=designX[j*(*nx)+c]*designX[k*(*nx)+c]*weights[c]; 
+	count=count+1; 
+      } 
     }
-    MtA(ldesignX,wX,A); 
+//    MtA(ldesignX,wX,A); 
     ci=*nx-1; 
     while ((stop[ci]<time)  & (ci>=0) )  ci=ci-1; 
     } // }}}
@@ -129,9 +131,7 @@ for (s=1;s<*Ntimes;s++){
 		    replace_row(wX,id[ci],vtmp); }
 	      else { replace_row(ldesignX,id[ci],dB); 
 		     replace_row(wX,id[ci],dB);  }
-            for(j=0;j<*p;j++) 
-	    for(k=0;k<*p;k++) ME(A,j,k)=
-	        ME(A,j,k)+entry[ci]*VE(xi,k)*VE(xi,j)*weights[ci]; 
+            for(j=0;j<*p;j++) for(k=0;k<*p;k++) ME(A,j,k)+=entry[ci]*VE(xi,k)*VE(xi,j)*weights[ci]; 
 	    ci=ci-1; 
             pers=id[ci]; 
     }
@@ -162,7 +162,7 @@ for (s=1;s<*Ntimes;s++){
 
 //   for (k=1;k<*p+1;k++) printf(" %lf ",cu[k*(*Ntimes)+s]);printf(" \n"); 
 
-    if (*robust==1 || *retur==1) { // {{{
+    if ((*robust==1) || (*retur>=1)) { // {{{
       vec_zeros(VdB); mat_zeros(Vcov);
 
 	for (i=0;i<*antpers;i++)
@@ -176,9 +176,9 @@ for (s=1;s<*Ntimes;s++){
 	    vec_add(rowX,cumA[cin],cumA[cin]);
 	  }
 
-	  if (*retur==1){ 
-	     cumAit[i*(*Ntimes)+s]= cumAit[i*(*Ntimes)+s]+1*(i==pers)-ahati;  
-	  }
+	  if (*retur==1) cumAit[i*(*Ntimes)+s]= cumAit[i*(*Ntimes)+s]+1*(i==pers)-ahati;  
+	  if (*retur==2) cumAit[i]= cumAit[i]+1*(i==pers)-ahati;  
+	  
        }
 
        if (*robust==1) {
@@ -241,8 +241,8 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
   matrix *C[*Nalltimes],*dM1M2,*M1M2t,*RobVargam; 
   matrix *tmpM2,*tmpM3,*tmpM4;
   matrix *W3t[*antclust],*W4t[*antclust];
+  matrix *AIs[*Nalltimes]; 
   vector *W2[*antclust],*W3[*antclust];
-  matrix *AIxit[*antpers]; 
   vector *VdB,*difX,*xi,*tmpv1,*tmpv2; 
   vector *dAoff,*dA,*rowX,*dN,*AIXWdN,*bhatt,*pbhat,*plamt;
   vector *korG,*pghat,*rowZ,*gam,*gamoff,*dgam,*ZHdN,*IZHdN,*zi,*offset;
@@ -284,9 +284,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 	  for (j=0;j<*antclust;j++) { malloc_mat(*Ntimes,*px,W3t[j]);
 		  malloc_mat(*Ntimes,*px,W4t[j]); malloc_vec(*pg,W2[j]); 
 		  malloc_vec(*px,W3[j]); }
-    for (j=0;j<*antpers;j++){ 
-      malloc_mat(*Nalltimes,*px,AIxit[j]);
-    }; 
+         for (j=0;j<*Nalltimes;j++) malloc_mat(*px,*px,AIs[j]);  
   }
 
   pmax=max(*pg,*px); 
@@ -296,143 +294,140 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 
   for (c=0;c<*nx;c++) cluster[id[c]]=clusters[c]; 
   for (c=0;c<*nx;c++) idd[id[c]]=id[c]; 
- // }}}
-  
-//     for (c=0;(c<*nx);c++) printf(" %lf \n",weights[c]); 
-//     for (c=0;(c<*nx);c++) printf(" %lf \n",offsets[c]); 
-//     printf(" entry \n"); 
-//     for (c=0;(c<*nx);c++) printf(" %d \n",entry[c]); 
+  // }}}
+
+  //     for (c=0;(c<*nx);c++) printf(" %lf \n",weights[c]); 
+  //     for (c=0;(c<*nx);c++) printf(" %lf \n",offsets[c]); 
+  //     printf(" entry \n"); 
+  //     for (c=0;(c<*nx);c++) printf(" %d \n",entry[c]); 
 
   for (s=1;s<*Nalltimes;s++){
-      time=alltimes[s]; dtime=time-alltimes[s-1]; 
-//      mat_zeros(X); mat_zeros(Z); mat_zeros(WX); mat_zeros(WZ);
-      vec_zeros(rowX); vec_zeros(rowZ); stat=0;  
+	  time=alltimes[s]; dtime=time-alltimes[s-1]; 
+	  //      mat_zeros(X); mat_zeros(Z); mat_zeros(WX); mat_zeros(WZ);
+	  vec_zeros(rowX); vec_zeros(rowZ); stat=0;  
 
-  // {{{ reading design and making matrix products
-   if (s==1)  { // {{{ reading start design 
-     for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) {
-	if ((start[c]<time) && (stop[c]>=time)) {
-	  if (*mof==1) VE(offset,id[c])=offsets[c]; 
-	  for(j=0;j<pmax;j++) {
-	    if (j<*px) { ME(X,id[c],j)=designX[j*(*nx)+c]; }
-	    if (j<*px) { ME(WX,id[c],j) =weights[c]*designX[j*(*nx)+c]; }
-	    if (j<*pg) { ME(Z,id[c],j)=designG[j*(*ng)+c]; }
-	    if (j<*pg) { ME(WZ,id[c],j)=weights[c]*designG[j*(*ng)+c]; } 
+	  // {{{ reading design and making matrix products
+	  if (s==1)  { // {{{ reading start design 
+		  for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) {
+			  if ((start[c]<time) && (stop[c]>=time)) {
+				  if (*mof==1) VE(offset,id[c])=offsets[c]; 
+				  for(j=0;j<pmax;j++) {
+					  if (j<*px) { ME(X,id[c],j)=designX[j*(*nx)+c]; }
+					  if (j<*px) { ME(WX,id[c],j) =weights[c]*designX[j*(*nx)+c]; }
+					  if (j<*pg) { ME(Z,id[c],j)=designG[j*(*ng)+c]; }
+					  if (j<*pg) { ME(WZ,id[c],j)=weights[c]*designG[j*(*ng)+c]; } 
+				  }
+				  for(j=0;j<pmax;j++) for(k=0;k<pmax;k++) {
+					  if ((j<*px) & (k<*px)) ME(A,j,k)+= ME(X,id[c],j)*ME(X,id[c],k)*weights[c]; 
+					  if ((j<*px) & (k<*pg)) ME(XWZ,j,k)+=ME(X,id[c],j)*ME(Z,id[c],k)*weights[c]; 
+					  if ((j<*pg) & (k<*pg)) ME(ZWZ,j,k)+= ME(Z,id[c],j)*ME(Z,id[c],k)*weights[c]; 
+				  }
+				  if (time==stop[c] && status[c]==1) { pers=id[c];stat=1;l=l+1; ls[l]=s; }
+				  count=count+1; 
+			  }
+		  }
+		  //    MtA(X,WX,A); MtA(Z,WZ,ZWZ); MtA(X,WZ,XWZ); 
+		  ci=*nx-1; 
+		  while ((stop[ci]<time)  & (ci>=0) )  ci=ci-1; 
+	  } // }}}
+
+	  //   print_mat(X); print_mat(Z);  print_mat(WX); print_mat(WZ); 
+	  // printf(" (((((((((((((((((((((((((((((((((((((((((((( \n"); 
+	  // printf("%d %d %d %lf %lf %lf \n",s,ci,id[ci],start[ci],stop[ci],time); 
+
+	  vec_zeros(rowX); vec_zeros(rowZ); 
+	  if (s>1)  // {{{ modifying design for next time points
+		  while ((stop[ci]<time)  & (ci>=0) ) {
+			  // printf("ww %d %d  %lf %lf %d \n",ci,id[ci],stop[ci],time,entry[ci]); 
+			  for(j=0;j<*px;j++) VE(xi,j)=designX[j*(*nx)+ci]; 
+			  for(j=0;j<*pg;j++) VE(zi,j)=designG[j*(*nx)+ci]; 
+			  //            print_vec(xi); print_vec(zi); 
+			  if (entry[ci]==1)  {
+				  VE(offset,id[ci])=offsets[ci]; 
+				  replace_row(X,id[ci],xi); replace_row(Z,id[ci],zi); 
+				  scl_vec_mult(weights[ci],xi,tmpv1); 
+				  replace_row(WX,id[ci],tmpv1); 
+				  scl_vec_mult(weights[ci],zi,tmpv2); 
+				  replace_row(WZ,id[ci],tmpv2); 
+			  } 
+			  else {
+				  VE(offset,id[ci])=0; 
+				  replace_row(X,id[ci],rowX);replace_row(Z,id[ci],rowZ);
+				  replace_row(WX,id[ci],rowX);replace_row(WZ,id[ci],rowZ);
+			  }
+			  //	    printf(" hej \n"); 
+			  for(j=0;j<pmax;j++) for(k=0;k<pmax;k++)  {
+				  if ((j<*px) & (k<*px)) ME(A,j,k)+= entry[ci]*VE(xi,k)*VE(xi,j)*weights[ci]; 
+				  if ((j<*px) & (k<*pg)) ME(XWZ,j,k)+= entry[ci]*VE(zi,k)*VE(xi,j)*weights[ci]; 
+				  if ((j<*pg) & (k<*pg)) ME(ZWZ,j,k)+= entry[ci]*VE(zi,k)*VE(zi,j)*weights[ci]; 
+			  }
+			  ci=ci-1; 
+		  }
+
+	  // printf("ci ci ci  %lf %lf %ld \n",time,stop[ci],status[ci]); 
+	  if ((s>1) & (time==stop[ci]) & (status[ci]==1)) {
+		  pers=id[ci]; stat=1;l=l+1; ls[l]=s;
 	  }
-	  if (time==stop[c] && status[c]==1) {
-	    pers=id[c];stat=1;l=l+1; ls[l]=s;
+
+	  // }}}
+
+	  // }}}
+
+	  //   printf(" hej mig \n"); 
+	  // printf("lllllllllll %lf %lf %d %d %d \n",time,dtime,pers,stat,l); 
+	  //   print_mat(X); print_mat(Z); 
+	  //   print_mat(A); print_mat(ZWZ); print_mat(XWZ); 
+	  //   printf("========================================== \n"); 
+	  //readXZt(antpers,nx,px,designX,pg,designG,start,stop,status,pers,X,WX,Z,WZ,time,
+	  //	clusters,cluster,ls,stat,l,id,s,1);
+
+	  invertS(A,AI,silent[0]);
+	  if (ME(AI,0,0)==0.0 && *silent==0){ 
+		  printf(" X'X not invertible at time %lf \n",time);
 	  }
-	  count=count+1; 
-	}
-      }
-    MtA(X,WX,A); MtA(Z, WZ,ZWZ); MtA(X,WZ,XWZ); 
-    ci=*nx-1; 
-    while ((stop[ci]<time)  & (ci>=0) )  ci=ci-1; 
-    } // }}}
+	  MxA(AI,XWZ,XWZAI); MtA(XWZAI,XWZ,tmpM2);
+	  mat_subtr(ZWZ,tmpM2,dCGam);
+	  scl_mat_mult(dtime,dCGam,dCGam);
+	  if (*deltaweight==0) {scl_mat_mult(dtime,dCGam,dCGam); }
+	  mat_add(CGam,dCGam,CGam);
+	  //      print_mat(CGam); 
 
-//   print_mat(X); print_mat(Z); 
-//   print_mat(WX); print_mat(WZ); 
-// printf(" (((((((((((((((((((((((((((((((((((((((((((( \n"); 
-// printf("%d %d %d %lf %lf %lf \n",s,ci,id[ci],start[ci],stop[ci],time); 
-
-     vec_zeros(rowX); vec_zeros(rowZ); 
-    if (s>1)  // {{{ modifying design for next time points
-    while ((stop[ci]<time)  & (ci>=0) ) {
-// printf("ww %d %d  %lf %lf %d \n",ci,id[ci],stop[ci],time,entry[ci]); 
-            for(j=0;j<*px;j++) VE(xi,j)=designX[j*(*nx)+ci]; 
-            for(j=0;j<*pg;j++) VE(zi,j)=designG[j*(*nx)+ci]; 
-//            print_vec(xi); print_vec(zi); 
-	    if (entry[ci]==1)  {
-                VE(offset,id[ci])=offsets[ci]; 
-	        replace_row(X,id[ci],xi); replace_row(Z,id[ci],zi); 
-	        scl_vec_mult(weights[ci],xi,tmpv1); 
-	        replace_row(WX,id[ci],tmpv1); 
-	        scl_vec_mult(weights[ci],zi,tmpv2); 
-	        replace_row(WZ,id[ci],tmpv2); 
-	    } 
-	    else {
-                  VE(offset,id[ci])=0; 
-		  replace_row(X,id[ci],rowX);replace_row(Z,id[ci],rowZ);
-		  replace_row(WX,id[ci],rowX);replace_row(WZ,id[ci],rowZ);
-	    }
-//	    printf(" hej \n"); 
-	  for(j=0;j<pmax;j++) 
-	  for(k=0;k<pmax;k++)  {
-//		  printf(" %d %d %d \n",j,k,pmax); 
-              if ((j<*px) & (k<*px)) ME(A,j,k)=
-		      ME(A,j,k)+entry[ci]*VE(xi,k)*VE(xi,j)*weights[ci]; 
-              if ((j<*px) & (k<*pg)) ME(XWZ,j,k)=
-		      ME(XWZ,j,k)+entry[ci]*VE(zi,k)*VE(xi,j)*weights[ci]; 
-              if ((j<*pg) & (k<*pg)) ME(ZWZ,j,k)=
-		      ME(ZWZ,j,k)+entry[ci]*VE(zi,k)*VE(zi,j)*weights[ci]; 
+	  if (stat==1) {
+		  extract_row(WX,pers,tmpv1); Mv(AI,tmpv1,AIXWdN);
+		  extract_row(WZ,pers,zi);
+		  vM(XWZ,AIXWdN,tmpv2); vec_subtr(zi,tmpv2,ZHdN);
+		  if (*deltaweight==0){ scl_vec_mult(dtime,ZHdN,ZHdN); }
+		  vec_add(ZHdN,IZHdN,IZHdN);
 	  }
-	  ci=ci-1; 
-    }
+	  mat_copy(XWZAI,Acorb[s]);
 
-// printf("ci ci ci  %lf %lf %ld \n",time,stop[ci],status[ci]); 
-    if ((s>1) & (time==stop[ci]) & (status[ci]==1)) {
-         pers=id[ci]; stat=1;l=l+1; ls[l]=s;
-    }
+	  /* correction from offsets calculated here */
+	  if (*mof==1)  {vM(WX,offset,rowX); Mv(AI,rowX,tmpv1); 
+		  scl_vec_mult(dtime,tmpv1,tmpv1); // vec_subtr(AIXWdN,tmpv1,dB); 
+		  vM(WZ,offset,rowZ);  vM(XWZAI,rowX,dgam); 
+		  vec_subtr(rowZ,dgam,dgam); 
+		  vec_add_mult(gamoff,dgam,dtime,gamoff); 
+		  for (k=1;k<=*px;k++) cumoff[k*(*Nalltimes)+s]=VE(tmpv1,k-1); 
+		  //	printf("==================================== %d \n",s); 
+		  //	print_vec(offset); 
+		  //	print_vec(gamoff); 
+		  //	print_vec(tmpv1); 
+	  } 
 
-    // }}}
-    
-    // }}}
 
-//   printf(" hej mig \n"); 
-// printf("lllllllllll %lf %lf %d %d %d \n",time,dtime,pers,stat,l); 
-//   print_mat(X); print_mat(Z); 
-//   print_mat(A); print_mat(ZWZ); print_mat(XWZ); 
-//   printf("========================================== \n"); 
-//readXZt(antpers,nx,px,designX,pg,designG,start,stop,status,pers,X,WX,Z,WZ,time,
-//	clusters,cluster,ls,stat,l,id,s,1);
+	  scl_mat_mult(dtime,XWZAI,tmpM4);
+	  mat_add(tmpM4,Ct,Ct); mat_copy(Ct,C[s]);
 
-      invertS(A,AI,silent[0]);
-      if (ME(AI,0,0)==0.0 && *silent==0){ 
-	printf(" X'X not invertible at time %lf \n",time);
-      }
-      MxA(AI,XWZ,XWZAI); MtA(XWZAI,XWZ,tmpM2);
-      mat_subtr(ZWZ,tmpM2,dCGam);
-      scl_mat_mult(dtime,dCGam,dCGam);
-      if (*deltaweight==0) {scl_mat_mult(dtime,dCGam,dCGam); }
-      mat_add(CGam,dCGam,CGam);
-//      print_mat(CGam); 
+	  if (stat==1) {
+		  vcu[l]=time; cu[l]=time; times[l]=time; 
 
-      if (stat==1) {
-	extract_row(WX,pers,tmpv1); Mv(AI,tmpv1,AIXWdN);
-	extract_row(WZ,pers,zi);
-	vM(XWZ,AIXWdN,tmpv2); vec_subtr(zi,tmpv2,ZHdN);
-	if (*deltaweight==0){ scl_vec_mult(dtime,ZHdN,ZHdN); }
-	vec_add(ZHdN,IZHdN,IZHdN);
-      }
-      mat_copy(XWZAI,Acorb[s]);
-
-      /* correction from offsets calculated here */
-      if (*mof==1)  {vM(WX,offset,rowX); Mv(AI,rowX,tmpv1); 
-        scl_vec_mult(dtime,tmpv1,tmpv1); // vec_subtr(AIXWdN,tmpv1,dB); 
-	vM(WZ,offset,rowZ);  vM(XWZAI,rowX,dgam); 
-	vec_subtr(rowZ,dgam,dgam); 
-	vec_add_mult(gamoff,dgam,dtime,gamoff); 
-	for (k=1;k<=*px;k++) cumoff[k*(*Nalltimes)+s]=VE(tmpv1,k-1); 
-//	printf("==================================== %d \n",s); 
-//	print_vec(offset); 
-//	print_vec(gamoff); 
-//	print_vec(tmpv1); 
-      } 
- 
-
-      scl_mat_mult(dtime,XWZAI,tmpM4);
-      mat_add(tmpM4,Ct,Ct); mat_copy(Ct,C[s]);
-
-      if (stat==1) {
-	vcu[l]=time; cu[l]=time; times[l]=time; 
-
-	for (k=0;k<*pg;k++){ 
-	  for (j=0;j<*pg;j++) ME(dVargam,k,j)= VE(ZHdN,j)*VE(ZHdN,k);
-	  for (j=0;j<*px;j++) ME(dM1M2,j,k)=VE(ZHdN,k)*VE(AIXWdN,j);
-	}
-	mat_add(dVargam,Vargam,Vargam);
-	mat_add(dM1M2,M1M2t,M1M2t);
-	mat_copy(M1M2t,M1M2[l]);
+		  for (k=0;k<*pg;k++){ 
+			  for (j=0;j<*pg;j++) ME(dVargam,k,j)= VE(ZHdN,j)*VE(ZHdN,k);
+			  for (j=0;j<*px;j++) ME(dM1M2,j,k)=VE(ZHdN,k)*VE(AIXWdN,j);
+		  }
+		  mat_add(dVargam,Vargam,Vargam);
+		  mat_add(dM1M2,M1M2t,M1M2t);
+		  mat_copy(M1M2t,M1M2[l]);
 
 	for (k=1;k<=*px;k++) {
 	  cu[k*(*Ntimes)+l]=VE(AIXWdN,k-1); 
@@ -440,11 +435,11 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 	}
       }
 
-      if (*robust==1) {
-	for (i=0;i<*antpers;i++) {
-	 extract_row(WX,i,xi);Mv(AI,xi,rowX);replace_row(AIxit[i],s,rowX); 
-	}
-      }
+      if (*robust==1)  mat_copy(AI,AIs[s]);
+//	for (i=0;i<*antpers;i++) {
+//	 extract_row(WX,i,xi);Mv(AI,xi,rowX);replace_row(AIxit[i],s,rowX); 
+//	}
+
     } /* s =1...Ntimes */ 
 
   invertS(CGam,ICGam,silent[0]);
@@ -567,7 +562,10 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 	  if (i==pers && stat==1) vec_add(tmpv2,W2[cin],W2[cin]); 
 	  scl_vec_mult(hati,tmpv2,rowZ); 
 	  vec_subtr(W2[cin],rowZ,W2[cin]); 
-	  extract_row(AIxit[i],s,rowX); 
+
+//	  extract_row(AIxit[i],s,rowX); 
+          Mv(AIs[s],xi,rowX);
+
 	  if (i==pers && stat==1) { vec_add(rowX,W3[cin],W3[cin]); }
 	  scl_vec_mult(hati,rowX,rowX); 
 	  vec_subtr(W3[cin],rowX,W3[cin]); 
@@ -694,10 +692,10 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
   free_vec(dAoff); free_vec(gamoff); 
   free_vec(dN); free_vec(pbhat); free_vec(pghat); free_vec(plamt); 
   free_vec(offset); 
-  for (j=0;j<*Ntimes;j++) { free_mat(M1M2[j]); }
+  for (j=0;j<*Ntimes;j++) { free_mat(M1M2[j]);  }
   for (j=0;j<*Nalltimes;j++) { free_mat(Acorb[j]); free_mat(C[j]); }
-  if (*robust==1) { 
-    for (j=0;j<*antpers;j++) { free_mat(AIxit[j]); }
+  if (*robust==1) {
+    for (j=0;j<*Nalltimes;j++) free_mat(AIs[j]); 
     for (j=0;j<*antclust;j++) { 
       free_mat(W3t[j]); free_mat(W4t[j]); free_vec(W2[j]); free_vec(W3[j]);    } 
   }

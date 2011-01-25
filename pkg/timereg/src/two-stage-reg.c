@@ -28,7 +28,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
   vector *W2[*antclust],*W3[*antclust],*reszpbeta,*res1dim,*dAt[*Ntimes]; 
   vector *vthetascore,*vtheta1,*vtheta2,*dtheta,*thetaiid[*antclust]; 
   vector *dAiid[*antclust]; 
-  int c,pers=0,i,j,k,l,s,it,count,sing,pmax,v,
+  int itstart,c,pers=0,i,j,k,l,s,it,count,sing,pmax,v,
       *cluster=calloc(*antpers,sizeof(int));
   double *Nt=calloc(*antclust,sizeof(double)),dtime,time,dummy,ll,lle,llo;
   double tau,hati,scale,sumscore=999,*Nti=calloc(*antpers,sizeof(double)), theta0=0;
@@ -84,7 +84,14 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
   
    R_CheckUserInterrupt();
 
-  for (it=0;it<*Nit;it++) // {{{ cox aalen it
+  for (c=0;(c<*nx);c++) cluster[id[c]]=clusters[c];
+  // assuming that destheta is on this form: antpers x ptheta
+  for(i=0;i<*antpers;i++) 
+  for(j=0;j<*ptheta;j++) ME(destheta,i,j)=desthetaI[j*(*antpers)+i];
+
+
+  if (*betafixed==1) itstart=*Nit-1; else  itstart=0;
+  for (it=itstart;it<*Nit;it++) // {{{ cox aalen it
     {
      R_CheckUserInterrupt();
       vec_zeros(U); mat_zeros(S1);  sumscore=0;   
@@ -95,12 +102,12 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
 	  for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) 
 	    {
 	      if ((start[c]<time) && (stop[c]>=time))  {
-		cluster[id[c]]=clusters[c];
+//		cluster[id[c]]=clusters[c];
 		for(j=0;j<pmax;j++) {
 		  if (j<*px) ME(ldesignX,id[c],j)=designX[j*(*nx)+c];
 		  if (j<*pg) ME(ldesignG,id[c],j)=designG[j*(*ng)+c]; } 
-		if (s==1 && it==0) for(j=0;j<*ptheta;j++)
-		  ME(destheta,id[c],j)=desthetaI[j*(*ng)+c];
+//		if ((s==1) && (it==itstart)) 
+                for(j=0;j<*ptheta;j++) ME(destheta,id[c],j)=desthetaI[j*(*ng)+c];
 		if (time==stop[c] && status[c]==1) {VE(dN,id[c])=1; pers=id[c];} 
 		if (it==*Nit-1) VE(atrisk[id[c]],s)=1; 
 		count=count+1; }
@@ -216,7 +223,6 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
       for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) 
 	{
 	  if ((start[c]<time) && (stop[c]>=time))  {
-	    cluster[id[c]]=clusters[c];
 	    for(j=0;j<pmax;j++) {
 	      if (j<*px) ME(ldesignX,id[c],j)=designX[j*(*nx)+c];
 	      if (j<*pg) ME(ldesignG,id[c],j)=designG[j*(*ng)+c]; } 
@@ -325,21 +331,29 @@ printf(" var(beta) : \n"); print_mat(RobVbeta);
 
       for (j=0;j<*antclust;j++) if (clustsize[j]>=2) {
       for (k=0;k<clustsize[j];k++) {
-	   i= idiclust[k*(*antclust)+j]; 
+	   i=idiclust[k*(*antclust)+j]; 
 	    theta0=VE(lamtt,i); 
+//	   printf(" %d %d %d %lf %lf %lf \n",j,k,i,Hik[i],theta0,Nt[j]); 
             if (*inverse==1) theta0=exp(theta0); 
+	    if (theta0<=0.00) printf(" %lf %d %d %d \n",theta0,j,k,i); 
 	    Rtheta[j]=Rtheta[j]+exp(theta0*Hik[i])-1; 
 	    HeH[j]=HeH[j]+Hik[i]*exp(theta0*Hik[i]); 
 	    H2eH[j]=H2eH[j]+pow(Hik[i],2)*exp(theta0*Hik[i]); } }
 	
 
       for (j=0;j<*antclust;j++)  if (clustsize[j]>=2) {
+
          for (k=0;k<clustsize[j];k++) {
-	      i= idiclust[k*(*antclust)+j]; 
+	      i=idiclust[k*(*antclust)+j]; 
               extract_row(destheta,i,vtheta2); theta0=VE(lamtt,i); 
               if (*inverse==1){theta0=exp(VE(lamtt,i));Dthetanu=theta0;
 		               DDthetanu=pow(theta0,1);}
+	      if (theta0<=0.00){  printf("==== %lf %d %d %d \n",theta0,j,k,i); 
+                    print_vec(vtheta2); 
+	      }
          }
+
+//      if (it==0) printf(" %d %d %d %lf %lf %lf \n",j,k,i,Hik[i],theta0,Nt[j]); 
 
 	 sumscore=0;  ll=0; 
 	 if (Nt[j]>=2) 
@@ -353,14 +367,17 @@ printf(" var(beta) : \n"); print_mat(RobVbeta);
 
 	  scl_vec_mult(thetaiidscale[j]*Dthetanu,vtheta2,thetaiid[j]); 
 
+  if (isnan(vec_sum(thetaiid[j]))) 
+  printf(" %d %lf %lf %lf %lf %lf \n",j,theta0,Nt[j],NH[j],HeH[j],Rtheta[j]); 
+  if (isnan(vec_sum(thetaiid[j]))) vec_zeros(thetaiid[j]); 
+
 	  vec_add(vthetascore,thetaiid[j],vthetascore); 
 
-	  for (i=0;i<*ptheta;i++)
-	    for (k=0;k<*ptheta;k++)
+	  for (i=0;i<*ptheta;i++) for (k=0;k<*ptheta;k++)
 	      ME(Sthetaiid[j],i,k)=VE(vtheta2,i)*VE(vtheta2,k)*pow(Dthetanu,2)*
-		(ll+(2/pow(theta0,2))*HeH[j]/Rtheta[j]
-		 -(2/pow(theta0,3))*log(Rtheta[j])-(1/theta0+Nt[j])*
-		 (H2eH[j]*Rtheta[j]-HeH[j]*HeH[j])/pow(Rtheta[j],2));
+	(ll+(2/pow(theta0,2))*HeH[j]/Rtheta[j]-
+	 (2/pow(theta0,3))*log(Rtheta[j])-
+	 (1/theta0+Nt[j])*(H2eH[j]*Rtheta[j]-HeH[j]*HeH[j])/pow(Rtheta[j],2));
 
 	  mat_add(d2Utheta,Sthetaiid[j],d2Utheta); 
 	}
@@ -393,7 +410,7 @@ printf(" var(beta) : \n"); print_mat(RobVbeta);
 
    R_CheckUserInterrupt();
   /* terms for robust variances ============================ */
-  if (*robust==1) {
+  if (*robust==1) { // {{{
     mat_zeros(Gtilde);   
     for (k=0;k<*antclust;k++) if (clustsize[k]>=2) {
       for (j=0;j<clustsize[k];j++) {
@@ -411,7 +428,7 @@ printf(" var(beta) : \n"); print_mat(RobVbeta);
 	  ME(Gtilde,c,l)=ME(Gtilde,c,l)+ 
 	    VE(zi,l)*VE(vtheta1,c)*dummy*Hik[i];  }
 
-      for (s=1;s<*Ntimes;s++) {
+      for (s=1;s<*Ntimes;s++) { // {{{
 	if (k==0) {
 	  mat_zeros(Ftilde); 
 	  for (j=0;j<*antclust;j++) if (clustsize[j]>=2) {
@@ -439,7 +456,8 @@ printf(" var(beta) : \n"); print_mat(RobVbeta);
 	extract_row(W4t[k],s,tmpv1); extract_row(W4t[k],s-1,xi); 
 	vec_subtr(tmpv1,xi,xi); Mv(Ftilde,xi,vtheta2); 
 	vec_add(dAiid[k],vtheta2,dAiid[k]); 
-      } /* s=1..Ntimes */ 
+      } /* s=1..Ntimes */  // }}}
+
     } /* k=1..antclust */ 
 
     /* printf(" g er Gtilde \n"); print_mat(Gtilde);  */
@@ -454,8 +472,7 @@ printf(" var(beta) : \n"); print_mat(RobVbeta);
 	ME(varthetascore,i,k) = ME(varthetascore,i,k) +
 	  VE(thetaiid[j],i)*VE(thetaiid[j],k);
     }
-  }
-
+  } // }}} robust==1
 
   MxA(d2UItheta,varthetascore,d2Utheta); 
   MxA(d2Utheta,d2UItheta,varthetascore);  

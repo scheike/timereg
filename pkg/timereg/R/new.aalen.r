@@ -65,10 +65,10 @@ aalen<-function (formula = formula(data),
    X<-as.matrix(X[ot,])
    if (npar==FALSE) Z<-as.matrix(Z[ot,])
    survs$stop<-time2;
-   ###print(cbind(X,time2,status,id))
    clusters<-clusters[ot]
    id<-id[ot];
    entry=rep(-1,nobs); 
+   weights <- weights[ot]
    if (sum(offsets)!=0) offsets <- offsets[ot]
   } else {
         eventtms <- c(survs$start,time2)

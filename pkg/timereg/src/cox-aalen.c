@@ -248,11 +248,9 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 	 if (*ratesim==1) {scl_vec_mult(hati,rowX,rowX); vec_subtr(W3[ci],rowX,W3[ci]);}
 	 }
 
-	 if (*retur==1)  { 
-	    dhatMit[i*(*Ntimes)+s]= dhatMit[i*(*Ntimes)+s]+1*(i==pers)-hati;
-	      /*if ((i==pers) | (hati>0)) 
-		printf(" %ld %ld %ld %lf \n",i,s,(i==pers),hati); */
-	 }
+	 if (*retur==1)dhatMit[i*(*Ntimes)+s]=
+		         dhatMit[i*(*Ntimes)+s]+1*(i==pers)-hati;
+	 if (*retur==2)dhatMit[i]= dhatMit[i]+1*(i==pers)-hati;
 
        } /* i 1.. antpers */
 

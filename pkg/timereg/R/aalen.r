@@ -7,7 +7,9 @@ if(is.matrix(designX) == TRUE) nx <- as.integer(dim(designX)[1])
 
 if (robust==0 & sim>=1)  robust<-1;  
 cumint<-matrix(0,Ntimes,p+1); Vcumint<-cumint; robVar<-Vcumint; 
-if (retur==1) cumAi<-matrix(0,Ntimes,fdata$antpers) else cumAi<-0;
+cumAi<-0;
+if (retur==1) cumAi<-matrix(0,Ntimes,fdata$antpers) 
+if (retur==2) cumAi<-rep(0,fdata$antpers); 
 test<-matrix(0,antsim,3*p); testOBS<-rep(0,3*p); testval<-c(); 
 unifCI<-c(); 
 
@@ -55,12 +57,12 @@ B.iid[[i/p+1]]<-as.matrix(covit[,i+(1:p)]);
 colnames(B.iid[[i/p+1]])<-namesX; } 
 }
 
+cumAi<-NULL; 
 if (retur==1) {
 cumAi<-matrix(aalenout[[15]],Ntimes,fdata$antpers*1); 
 cumAi<-list(time=times,dM=cumAi,dM.iid=cumAi); 
-#cumAI<-list(); 
-#for (i in (0:(fdata$antpers-1))*p) cumAI[[i/p+1]]<-cumAi[,i+(1:p)]
-} else cumAi<-NULL; 
+} 
+if (retur==2)   cumAi<-aalenout[[15]]; cumAi<-list(dM=cumAi); 
 
 if (sim>=1) {
 Uit<-matrix(aalenout[[20]],Ntimes,50*p); 

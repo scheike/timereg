@@ -1,7 +1,7 @@
 prop<-function(x) x
 
 cox.aalen<-function(formula=formula(data),data=sys.parent(),
-beta=0,Nit=10,detail=0,start.time=0,max.time=NULL, id=NULL, 
+beta=NULL,Nit=10,detail=0,start.time=0,max.time=NULL, id=NULL, 
 clusters=NULL, n.sim=500, residuals=0,robust=1,
 weighted.test=0,covariance=0,resample.iid=0,weights=NULL,
 rate.sim=1,beta.fixed=0,max.clust=1000)
@@ -64,7 +64,10 @@ rate.sim=1,beta.fixed=0,max.clust=1000)
   stop("Both multiplicative and additive model needed");
   Ntimes <- sum(status); 
 
-  if ((sum(beta)==0) & (beta.fixed==0)) beta<-coxph(Surv(time,time2,status)~Z)$coef; 
+
+  if ((length(beta)!=pz) || (is.null(beta)==FALSE)) beta <- rep(beta[1],pz);
+  if ((is.null(beta))) beta<-coxph(Surv(time,time2,status)~Z)$coef;
+
 
   #cat("Cox-Aalen Survival Model"); cat("\n")
   if (px==0) stop("No nonparametric terms (needs one!)");
