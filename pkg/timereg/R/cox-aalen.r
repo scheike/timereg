@@ -1,39 +1,40 @@
-cox.aalenBase<-function (times, fdata, designX, designG, status,
-                         id, clusters, Nit = 5, beta = 0, weights=NULL, detail = 0, 
-                         sim = 1, antsim = 1000, weighted.test= 0, robust = 1, 
-                         ratesim = 1, residuals = 0, covariance = 1,
-                         resample.iid=0,namesZ=NULL,namesX=NULL,beta.fixed=0) 
+cox.aalenBaseL<-function (times, fdata, designX, designG, status,
+    id, clusters, Nit = 5, beta = 0, weights=NULL, detail = 0, 
+    sim = 1, antsim = 1000, weighted.test= 0, robust = 1, 
+    ratesim = 1, residuals = 0, covariance = 1,
+    resample.iid=0,namesZ=NULL,namesX=NULL,beta.fixed=0,
+    entry=NULL,offsets=0,exactderiv=1) 
 {
   additive.resamp <-0; ridge <- 0; XligZ <- 0;
   Ntimes <- length(times)
-  designX <- as.matrix(designX)
-  designG <- as.matrix(designG)
-  if (is.matrix(designX) == TRUE) 
-    px <- as.integer(dim(designX)[2])
-  if (is.matrix(designX) == TRUE) 
-    nx <- as.integer(dim(designX)[1])
-  if (is.matrix(designG) == TRUE) 
-    pg <- as.integer(dim(designG)[2])
-  if (is.matrix(designG) == TRUE) 
-    ng <- as.integer(dim(designG)[1])
-  if (nx != ng) 
-    print(" A design og B designs er ikke ens\n")
+  designX <- as.matrix(designX); designG <- as.matrix(designG)
+  if (is.matrix(designX) == TRUE) px <- as.integer(dim(designX)[2])
+  if (is.matrix(designX) == TRUE) nx <- as.integer(dim(designX)[1])
+  if (is.matrix(designG) == TRUE) pg <- as.integer(dim(designG)[2])
+  if (is.matrix(designG) == TRUE) ng <- as.integer(dim(designG)[1])
+  if (nx != ng) print(" X design and Z not same number of rows\n")
   if (is.null(weights)==FALSE) mw<-1 else { mw <- 0; weights <- rep(1, nx);}
-  moff <- 0
-  offset <- rep(1, nx)
+  if (sum(offsets)==0) mof <- 0 else mof <- 1; 
   nb <- 1
   aalen <- 1
-  if (covariance == 1) covs <- matrix(0, Ntimes, px * px) else covs <- 0
-  cumAi <- 0; gammaiid <- 0; dM.iid <- 0;
-  if (residuals >= 1) gammaiid <- matrix(0,fdata$antpers,pg); 
-  if (residuals == 1) cumAi <- matrix(0, Ntimes, fdata$antpers * 1);
-  if (residuals == 2) cumAi <- rep(0, fdata$antpers * 1)
+  if (covariance == 1) 
+    covs <- matrix(0, Ntimes, px * px)
+  else covs <- 0
+  dM.iid<-0    
+  if (residuals == 1) {
+    cumAi <- matrix(0, Ntimes, fdata$antpers * 1)
+    gammaiid <- matrix(0, pg, fdata$antclust * 1)
+  }
+  if (residuals == 2) {
+    cumAi <- rep(0, fdata$antpers * 1)
+    gammaiid <- matrix(0, pg, fdata$antclust * 1)
+  }
   cumint <- matrix(0, Ntimes, px + 1)
   vcum <- matrix(0, Ntimes, px + 1)
   Rvcu <- matrix(0, Ntimes, px + 1)
-  if (sum(abs(beta)) == 0) 
-    betaS <- rep(0, pg)
+  if (sum(abs(beta)) == 0) betaS <- rep(0, pg)
   else betaS <- beta
+  if (length(betaS)!=pg) betaS <- rep(betaS[1],pg); 
   score <- betaS
   loglike <- rep(0,2); 
   Varbeta <- matrix(0, pg, pg)
@@ -57,7 +58,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   Ut <- var.score<- matrix(0, Ntimes, pg + 1)
   simUt <- matrix(0, antsim, pg)
 
- #dyn.load("lincox-aalen.so"); 
+  dyn.load("cox-aalen.so"); 
 
   nparout <- .C("score", as.double(times), as.integer(Ntimes), 
                 as.double(designX), as.integer(nx), as.integer(px), 
@@ -66,7 +67,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
                 as.double(betaS), as.integer(Nit), as.double(cumint), 
                 as.double(vcum), as.double(weights), as.integer(mw), 
                 as.double(loglike), as.double(Iinv), as.double(Varbeta), 
-                as.integer(detail), as.double(offset), as.integer(moff), 
+                as.integer(detail), as.double(offsets), as.integer(mof), 
                 as.integer(sim), as.integer(antsim), as.integer(rani), 
                 as.double(Rvcu), as.double(RVarbeta), as.double(test), 
                 as.double(testOBS), as.double(Ut), as.double(simUt), 
@@ -78,8 +79,9 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
                 as.integer(covariance), as.double(covs), as.integer(additive.resamp),
                 as.double(baseproc), as.integer(resample.iid), as.double(gamiid), 
                 as.double(biid),as.integer(clusters),as.integer(fdata$antclust),
-                as.double(var.score),as.integer(beta.fixed)
-                ,PACKAGE = "timereg")
+                as.double(var.score),as.integer(beta.fixed),
+		as.double(weights),as.integer(entry) ,as.integer(exactderiv) )
+###                ,PACKAGE = "timereg")
 
   Iinv <- matrix(nparout[[19]], pg, pg)
   RVarbeta <- -matrix(nparout[[28]], pg, pg)
@@ -102,7 +104,6 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
     cov.list <- list()
     for (i in 1:Ntimes) cov.list[[i]] <- matrix(covit[i,], px, px) } else 
   cov.list <- NULL
-
   cumAi <- NULL
   if (residuals == 1) {
     cumAi <- matrix(nparout[[43]],Ntimes,fdata$antpers * 1)
@@ -113,8 +114,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
     cumAi <- nparout[[43]]
     gammaiid <- matrix(nparout[[44]],pg,fdata$antclust * 1)
     cumAi <- list(time = times, dM = cumAi, gamma.iid = gammaiid)
-  } 
-  
+  }
   if (sim == 1) {
     Uit <- matrix(nparout[[33]], Ntimes, 50 * pg)
     UIt <- list()
@@ -154,7 +154,6 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
     testUt <- test <- unifCI <- supUtOBS <- UIt <- testOBS <- testval <- pval.testBeq0 <- pval.testBeqC <- obs.testBeq0 <- obs.testBeqC <- sim.testBeq0 <- sim.testBeqC <- testUt <- sim.supUt <- NULL 
   }
   if (robust==0 & beta.fixed==0) var.score<-NULL;
-
 
   ud <- list(cum = cumint, var.cum = vcum, robvar.cum = Rvcu, 
              gamma = gamma, var.gamma = Varbeta, robvar.gamma = RVarbeta, 
