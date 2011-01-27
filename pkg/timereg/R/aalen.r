@@ -61,8 +61,8 @@ cumAi<-NULL;
 if (retur==1) {
 cumAi<-matrix(aalenout[[15]],Ntimes,fdata$antpers*1); 
 cumAi<-list(time=times,dM=cumAi,dM.iid=cumAi); 
-} 
-if (retur==2)   cumAi<-aalenout[[15]]; cumAi<-list(dM=cumAi); 
+}
+if (retur==2)  {cumAi<-aalenout[[15]]; cumAi<-list(dM=cumAi); }
 
 if (sim>=1) {
 Uit<-matrix(aalenout[[20]],Ntimes,50*p); 

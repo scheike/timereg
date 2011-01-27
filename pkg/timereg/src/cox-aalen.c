@@ -440,6 +440,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     } /* if robust==1 */  // }}}
 
     // always compute robust se and return iid of gamma iid
+    if (*betafixed==0) 
     for (j=0;j<*antclust;j++) {
       Mv(SI,W2[j],tmpv2); 
       for (c=0;c<*pg;c++) for (k=0;k<*pg;k++)

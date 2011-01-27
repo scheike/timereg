@@ -19,12 +19,8 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   aalen <- 1
   if (covariance == 1) covs <- matrix(0, Ntimes, px * px) else covs <- 0
   cumAi <- 0; dM.iid<-0; gammaiid <- matrix(0, pg, fdata$antclust * 1)
-  if (residuals == 1) {
-    cumAi <- matrix(0, Ntimes, fdata$antpers * 1)
-  }
-  if (residuals >= 2) {
-    cumAi <- rep(0, fdata$antpers * 1)
-  }
+  if (residuals == 1) { cumAi <- matrix(0, Ntimes, fdata$antpers * 1) }
+  if (residuals >= 2) { cumAi <- rep(0, fdata$antpers * 1) }
   cumint <- matrix(0, Ntimes, px + 1)
   vcum <- matrix(0, Ntimes, px + 1)
   Rvcu <- matrix(0, Ntimes, px + 1)
@@ -95,10 +91,8 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
     cov.list <- list()
     for (i in 1:Ntimes) cov.list[[i]] <- matrix(covit[i,], px, px) } else 
   cov.list <- NULL
-  gammaiid <- matrix(nparout[[44]],pg,fdata$antclust * 1)
-  if (residuals == 1) {
-    cumAi <- matrix(nparout[[43]],Ntimes,fdata$antpers * 1)
-  }
+  gammaiid <-t( matrix(nparout[[44]],pg,fdata$antclust * 1))
+  if (residuals == 1) cumAi <- matrix(nparout[[43]],Ntimes,fdata$antpers * 1)
   if (residuals >= 2) cumAi <- nparout[[43]]
   cumAi <- list(time = times, dM = cumAi, gamma.iid = gammaiid)
 	               

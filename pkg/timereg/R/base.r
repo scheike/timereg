@@ -8,6 +8,7 @@ coefBase<- function(object, digits=3, d2logl=0) {
   res <- as.matrix(cbind(res, wald, waldp))
   if (d2logl==1) colnames(res) <- c("Coef.", "SE", "Robust SE","D2log(L)^-1","z","P-val") else colnames(res) <- c("Coef.", "SE", "Robust SE", "z", "P-val")
   prmatrix(signif(res, digits))
+  cat("\n")
 }
 
 timetest<-function(object,digits=3,hyp.label="p-value H_0:constant effect")

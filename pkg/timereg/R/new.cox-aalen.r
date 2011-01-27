@@ -4,20 +4,21 @@ cox.aalen<-function(formula=formula(data),data=sys.parent(),
 beta=NULL,Nit=10,detail=0,start.time=0,max.time=NULL, id=NULL, 
 clusters=NULL, n.sim=500, residuals=0,robust=1,
 weighted.test=0,covariance=0,resample.iid=0,weights=NULL,
-rate.sim=1,beta.fixed=0,max.clust=1000,offsets=0,exact.deriv=1)
+rate.sim=1,beta.fixed=0,max.clust=1000,exact.deriv=1)
 { ## {{{
+	offsets=0; 
 ## {{{ set up variables 
   call <- match.call()
   m <- match.call(expand=FALSE)
   m$robust<-m$start.time<-m$scaleLWY<-m$weighted.test<-m$beta<-m$Nit<-m$detail<-m$max.time<-m$residuals<-m$n.sim<-m$id<-m$covariance<-m$resample.iid<-m$clusters<-m$rate.sim<-m$beta.fixed<-
-  m$max.clust <- m$offsets <- m$exact.deriv <- NULL
+  m$max.clust <- m$exact.deriv <- NULL
 
   if (n.sim == 0) sim <- 0 else sim <- 1
   if (resample.iid==1 & robust==0) { resample.iid<-0;}
   if (covariance==1 & robust==0) { covariance<-0;}
   if (sim==1 & robust==0) { n.sim <- 0; sim<-0;}
   if (n.sim>0 & n.sim<50) {n.sim<-50 ; cat("Minimum 50 simulations\n");}
-###  if (beta.fixed==1) Nit<-1; 
+  if (beta.fixed==1) Nit<-1; 
 
   special <- c("prop","cluster")
   Terms <- if(missing(data)) terms(formula, special)
@@ -103,7 +104,7 @@ ldata<-list(start=survs$start,stop=survs$stop,
 
   #cat("Cox-Aalen Survival Model"); cat("\n")
   if (px==0) stop("No nonparametric terms (needs one!)");
-  ud<-cox.aalenBaseL(times,ldata,X,Z,
+  ud<-cox.aalenBase(times,ldata,X,Z,
             status,id,clusters,Nit=Nit,detail=detail,beta=beta,weights=weights,
             sim=sim,antsim=n.sim,residuals=residuals,robust=robust,
             weighted.test=weighted.test,ratesim=rate.sim,
@@ -141,6 +142,9 @@ ldata<-list(start=survs$start,stop=survs$stop,
   attr(ud,"cluster")<-cluster.call;
   attr(ud,"start")<-start.time; 
   attr(ud,"time2")<-time2; 
+  attr(ud,"beta.fixed")<-beta.fixed
+  attr(ud,"status")<-status; 
+  attr(ud,"residuals")<-residuals; 
   ud$call<-call
 
   return(ud); 
