@@ -37,7 +37,7 @@ aalen<-function (formula = formula(data),
   if(is.null(clusters)) clusters <- des$clusters ##########
   pxz <- px + pz; 
 
-  survs<-read.surv(m,id,npar,clusters,start.time,max.time)
+  survs<-read.surv(m,id,npar,clusters,start.time,max.time,silent=silent)
   times<-survs$times;
   id<-survs$id.cal;
   id.call<-id; 
@@ -145,6 +145,7 @@ ldata<-list(start=survs$start,stop=survs$stop,
   attr(ud, "start.time") <- start.time
   attr(ud, "stop") <- stop.call
   attr(ud, "start") <- start.call
+  attr(ud, "residuals") <- residuals
   class(ud) <- "aalen"
   ud$call<-call
   return(ud)

@@ -1,4 +1,4 @@
-prop<-function(x) x
+Gprop<-function(x) x
 
 two.stage<-function(margsurv,data=sys.parent(),
 Nit=60,detail=0,start.time=0,max.time=NULL,id=NULL,clusters=NULL,
@@ -12,7 +12,7 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=1,notaylor=0)
  ldata<-aalen.des(formula,data=data,model="cox.aalen");
  id <- attr(margsurv,"id"); clusters <- attr(margsurv,"cluster")
  X<-ldata$X; time<-ldata$time2; Z<-ldata$Z;  status<-ldata$status;
- time2 <- attr(margsurv,"time")
+ time2 <- attr(margsurv,"stop")
  start <- attr(margsurv,"start")
  antpers<-nrow(X);
   if (is.null(Z)==TRUE) {npar<-TRUE; semi<-0;}  else {
@@ -21,20 +21,33 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=1,notaylor=0)
   px<-ncol(X);
   antclust <- length(unique(clusters))
 
-  if (attr(margsurv,"residuals")!=2) stop("residuals=2  for  marginal model\n"); 
-  residuals <- margsurv$residuals$dM
+  if (sum(abs(start))>0) lefttrunk <- 1  else lefttrunk <- 0;  cumhazleft <- 0; 
+
+  if (npar==TRUE) RR <-  rep(1,antpers); 
+  if (npar==FALSE) RR <- exp(Z %*% margsurv$gamma); 
+  if ((attr(margsurv,"residuals")!=2) || (lefttrunk==1)) { ### compute cum hazards in time point infty; 
+	  nn <- nrow(margsurv$cum) 
+	  cum <- Cpred(margsurv$cum,time2)[,-1]
+	  if (npar==TRUE) cumhaz <- apply(cum*X,1,sum)
+	  if (npar==FALSE) cumhaz <- apply(cum*X,1,sum)*exp( Z %*% margsurv$gamma)
+	  if (lefttrunk==1) {
+		  cum <- Cpred(margsurv$cum,start)[,-1]
+		  cumhazleft <- apply(cum*X,1,sum)
+	  if (npar==TRUE) cumhazleft <-  cumhazleft
+	  if (npar==FALSE) cumhazleft <- cumhazleft * exp( Z %*% margsurv$gamma)
+	  } 
+  } else { residuals <- margsurv$residuals$dM; cumhaz <- status-residuals; }
 
   Biid<-c(); gamma.iid <- 0; 
   if (notaylor==0) {
     if (!is.null(margsurv$B.iid))
     for (i in 1:antclust) Biid<-cbind(Biid,margsurv$B.iid[[i]]); 
     if (!is.null(margsurv$gamma.iid)) gamma.iid<-margsurv$gamma.iid;
-    if ((is.null(margsurv$B.iid))||(is.null(margsurv$gamma.iid)))cat("missing iid for marginal model\n")
+    if ((is.null(margsurv$B.iid))) notaylor <- 1; 
   }
 
   ratesim<-rate.sim; inverse<-var.link
   pxz <- px + pz;
-
   times<-c(start.time,time2[status==1]); times<-sort(times);
   if (is.null(max.time)==TRUE) maxtimes<-max(times)+0.1 else maxtimes<-max.time; 
   times<-times[times<maxtimes]
@@ -61,8 +74,6 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=1,notaylor=0)
     if (maxclust==1) stop("No clusters !, maxclust size=1\n"); 
   ## }}}
 
-###    dyn.load("two-stage-reg.so"); 
-
     nparout <- .C("twostagereg", 
         as.double(times), as.integer(Ntimes), as.double(X),
        	as.integer(antpers), as.integer(px), as.double(Z), 
@@ -75,8 +86,8 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=1,notaylor=0)
 	as.integer(cluster.size), 
 	as.double(theta.des), as.integer(ptheta), as.double(Stheta),
 	as.double(step), as.integer(idiclust), as.integer(notaylor),
-	as.double(gamma.iid),as.double(Biid),as.integer(semi), as.double(residuals)
-        ,PACKAGE = "timereg")
+	as.double(gamma.iid),as.double(Biid),as.integer(semi), as.double(cumhaz) ,
+	as.double(cumhazleft),as.integer(lefttrunk),as.double(RR),PACKAGE = "timereg")
 
 ## {{{ handling output
    gamma <- margsurv$gamma
@@ -228,4 +239,35 @@ plot.two.stage<-function(x,pointwise.ci=1,robust=0,specific.comps=FALSE,
     abline(h=0); 
   }
 }  ## }}}
+
+
+predict.two.stage <- function(object,X=NULL,Z=NULL,times=NULL,times2=NULL,theta.des=NULL,diag=TRUE,...)
+{
+time.coef <- data.frame(object$cum)
+if (!is.null(times)) {
+cum <- Cpred(object$cum,times)
+} else cum <- object$cum
+
+if (is.null(X) & (!is.null(Z))) { Z <- as.matrix(Z);  X <- matrix(1,nrow(Z),1)}
+if (is.null(Z) & (!is.null(X)))  {X <- as.matrix(X);  Z <- matrix(0,nrow(X),1); gamma <- 0}
+
+if (diag==FALSE) {
+   time.part <-  X %*% t(cum[,-1]) 
+   if (!is.null(object$gamma)) { RR <- exp( Z %*% gamma ); cumhaz <- t( t(time.part) * RR )}
+	    else cumhaz <- time.part;  
+} else time.part <-  apply(as.matrix(X*cum[,-1]),1,sum) 
+
+if (!is.null(object$gamma)) {
+	RR<- exp(Z%*%gamma); cumhaz <- t( t(time.part) * RR )} else cumhaz <- time.part;  
+S1 <- exp(- cumhaz); S2 <- exp(- cumhaz)
+theta <- object$theta
+if (!is.null(theta.des)) theta <- c(theta.des %*% object$theta)
+
+if (diag==FALSE) 
+St1t2<- (outer(c(S1)^{-1/c(theta)},c(S2)^{-1/c(theta)},FUN="+") - 1)^(-c(theta)) else 
+St1t2<- ((S1^{-1/theta}+S2^{-1/theta})-1)^(-theta)
+
+out=list(St1t2=St1t2,S1=S1,times=times,theta=theta)
+return(out)
+}
 

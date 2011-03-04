@@ -12,17 +12,6 @@ various cumulative residual processes.}
 }
 \author{Thomas Scheike}
 \examples{
-library(survival)
-data(sTRACE)
-# Fits Aalen model and returns residuals
-out<-aalen(Surv(time,status==9)~age+sex+diabetes+chf+vf,
-sTRACE,max.time=7,n.sim=0,residuals=1)
-
-# constructs and simulates cumulative residuals versus age groups
-# and versus covariates of model
-out.mg<-cum.residuals(out,sTRACE,
-modelmatrix=model.matrix(~-1+factor(cut(age,4)),sTRACE),cum.resid=1,n.sim=100)
-
-summary(out.mg)
+# see cum.residuals for examples
 }
 \keyword{survival}

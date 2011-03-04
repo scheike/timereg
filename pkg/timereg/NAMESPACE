@@ -103,6 +103,7 @@ S3method(summary,pls)
 S3method(predict,aalen)
 S3method(predict,comprisk)
 S3method(predict,cox.aalen)
+S3method(predict,two.stage)
 S3method(predict,pls)
 
 S3method(coef,aalen)
@@ -154,6 +155,7 @@ export("plot.aalen",
        "predict.pls",
        "predict.comprisk",
        "predict.cox.aalen",
+       "predict.two.stage",
        "coef.aalen",
        "coef.cox.aalen",
        "coef.comprisk",

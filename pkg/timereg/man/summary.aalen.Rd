@@ -25,12 +25,6 @@ Martinussen and Scheike,
 }
 \author{Thomas Scheike}
 \examples{
-library(survival)
-data(sTRACE)
-# Fits Aalen model 
-out<-aalen(Surv(time,status==9)~age+sex+diabetes+chf+vf,
-sTRACE,max.time=7,n.sim=100)
-
-summary(out)
+### see help(aalen)
 }
 \keyword{survival}

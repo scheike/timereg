@@ -53,7 +53,7 @@ is equivalent to just one theta and the design with only a baseline.}
 variances is without a link, and "1" uses the link function exp. }
 \item{step}{step size for Newton-Raphson.}
 \item{notaylor}{if 1 then ignores variation due to survival model, this is quicker
-and then resample.iid=0 is ok for margninal survival model.}
+and then resample.iid=0 and residuals=0 is ok for marginal survival model that then is much quicker.}
 }
 \details{
 The data for a subject is presented as multiple rows or 'observations',
@@ -120,9 +120,9 @@ theta.des<-model.matrix(~factor(adult),diabetes);
 fit.s3<-two.stage(marg,data=diabetes,Nit=40,theta=1,theta.des=theta.des)
 summary(fit.s3)
 
-# to fit model without covariates, beta.fixed=1, but still need prop term !
-marg <- cox.aalen(Surv(time,status) ~ prop(treat) + cluster(id),
-	 data=diabetes,beta.fixed=1,residuals=2,resample.iid=1,n.sim=0)
+# to fit model without covariates, use beta.fixed=1 and prop or aalen function
+marg <- aalen(Surv(time,status) ~+1+ cluster(id),
+	 data=diabetes,residuals=2,resample.iid=1,n.sim=0)
 fit<-two.stage(marg,data=diabetes,theta=0.95,detail=0)
 summary(fit)
 }

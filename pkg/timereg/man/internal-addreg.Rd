@@ -28,9 +28,7 @@
 \alias{rm.missing}
 \alias{plot.two.stage}
 \alias{summary.two.stage}
-\alias{summary.two.stage.reg}
-\alias{two.stageBase}
-\alias{two.stageBase.reg}
+\alias{predict.two.stage}
 \alias{plot.cums}
 \alias{pava}
 \alias{plotScore}
@@ -61,7 +59,6 @@
 \alias{print.predictComprisk} 
 \alias{print.predictCoxAalen}
 \alias{print.two.stage}
-\alias{print.two.stage.reg} 
 \alias{summary.pe.sasieni}
 \alias{summary.predictAalen}
 \alias{summary.predictComprisk} 

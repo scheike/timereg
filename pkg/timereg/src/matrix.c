@@ -931,7 +931,7 @@ void mat_add(matrix *m1, matrix *m2, matrix *m3){
 
 // Performs Mout := t(M) %*% A, where M is an nRowM x nColM matrix, 
 // and A is an nRowM x nColA matrix, and Mout is a nColM x nColA matrix
-void MtA(matrix *M, matrix *A, matrix *Mout){ // {{{
+void MtA(matrix *M, matrix *A, matrix *Mout){
 
   char transa = 't';
   char transb = 'n';
@@ -969,8 +969,9 @@ void MtA(matrix *M, matrix *A, matrix *Mout){ // {{{
     mat_copy(temp,Mout);    
     free_mat(temp);
   }
-} // }}}
 
+
+}
 
 // Performs Mout := M %*% t(A), where M is an nRowM x nColM matrix, 
 // and A is an nRowA x nColM matrix, and Mout is a nRowM x nRowA matrix
@@ -1136,7 +1137,7 @@ void invertUnsafe(matrix *A, matrix *Ainv){
 
     if (fabs(ME(Ainv,0,0))>99999999999999)  { // TS 23-10
       print_mat(Ainv);
-      printf("Inversion unstable, large elements  \n");
+      printf("Inversion, unstable large elements  \n");
       mat_zeros(Ainv);
     }
   }
@@ -1214,7 +1215,7 @@ void invertUnsafeS(matrix *A, matrix *Ainv,int silent){
     }
 
     if (fabs(ME(Ainv,0,0))>99999999999999 )  { // TS 23-10
-      if (silent==0) printf("Inversion unstable, large elements  \n");
+      if (silent==0) printf("Inversion, unstable large elements  \n");
       mat_zeros(Ainv);
     }
   }
@@ -1441,10 +1442,9 @@ void LevenbergMarquardt(matrix *S,matrix *SI,vector *U,vector *delta,double *lm,
 
   mat_copy(S,S2); 
 
-  if  (ss> 5/(*step)) {
+  if  (ss > *lm ) {
      MxA(S,S,S2);
-     x=1;
-     for (i=0;i<nrow;i++) ME(S2,i,i)=ME(S2,i,i)+x*VE(U,i)*VE(U,i);
+     for (i=0;i<nrow;i++) ME(S2,i,i)=ME(S2,i,i)+min(VE(U,i)*VE(U,i),100);
      invert(S2,SI); MxA(SI,S,S2); Mv(S2,U,delta);
   } else {
     invert(S2,SI); Mv(SI,U,delta);

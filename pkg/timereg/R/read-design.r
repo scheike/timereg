@@ -67,14 +67,14 @@ Zterms<-semicov # ts 25-6-2008
    return(ud)
 }
 
-read.surv<-function(m,id,npar,clusters,start.time,max.time,model="aalen"){
+read.surv<-function(m,id,npar,clusters,start.time,max.time,model="aalen",silent=0){
 
   if (attr(m[, 1], "type") == "right") {
     time2 <- m[, 1][, "time"]; time <- rep(0, length(time2))
     status <- m[, 1][, "status"]
   }
   else if (attr(m[, 1], "type") == "counting") {
-    if (is.null(id)==TRUE) 
+    if ((is.null(id)==TRUE) && (silent==0)) 
       cat("For counting process data, with multiple records the id variable must be set to get correct robust standard errors and simulations\n");
     time <- m[, 1][, 1];time2 <- m[, 1][, 2];status <- m[, 1][, 3];
   }

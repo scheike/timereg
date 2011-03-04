@@ -51,16 +51,6 @@ Springer (2006).
 }
 \author{Thomas Scheike}
 \examples{
-library(survival)
-data(sTRACE)
-# Fits Aalen model 
-out<-aalen(Surv(time,status==9)~age+sex+diabetes+chf+vf,
-sTRACE,max.time=7,n.sim=100)
-
-par(mfrow=c(2,3))
-# plots estimates 
-plot(out)
-# plots tests-processes for time-varying effects 
-plot(out,score=TRUE)
+# see help(aalen) 
 }
 \keyword{survival}
