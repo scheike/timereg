@@ -1429,7 +1429,7 @@ void replace_col(matrix *M, int col_to_set, vector *v){
 void LevenbergMarquardt(matrix *S,matrix *SI,vector *U,vector *delta,double *lm,double *step)
 { // {{{
   int i,nrow;
-  double x=0,ss=0;
+  double ss=0;
   matrix *S2; 
 
   if(!(length_vector(U) == nrow_matrix(S))){ oops("Error: LM : S and U not consistent\n"); }

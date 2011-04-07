@@ -176,7 +176,7 @@ for (s=1;s<*Ntimes;s++){
 	    vec_add(rowX,cumA[cin],cumA[cin]);
 	  }
 
-	  if (*retur==1) cumAit[i*(*Ntimes)+s]= cumAit[i*(*Ntimes)+s]+1*(i==pers)-ahati;  
+	  if (*retur==1) cumAit[i*(*Ntimes)+s]= 1*(i==pers)-ahati;  
 	  if (*retur==2) cumAit[i]= cumAit[i]+1*(i==pers)-ahati;  
 	  
        }
@@ -542,7 +542,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 
 
     /* terms for robust variance   */ 
-    if (*robust==1 || *retur==1)  // {{{
+    if (*robust==1 )  // {{{
     { 
 	mat_subtr(C[s],C[s-1],tmpM4); Mv(tmpM4,gam,korG); 
 
@@ -571,13 +571,14 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 	  vec_subtr(W3[cin],rowX,W3[cin]); 
 	  }
 
-	  if (*retur==1) { 
-		if (stat==0){
-		  cumAit[i*(*Ntimes)+l+1]=cumAit[i*(*Ntimes)+l+1]-hati;
-		} else {
-		  cumAit[i*(*Ntimes)+l]=cumAit[i*(*Ntimes)+l]+1*(i==pers)-hati;
-		}
-	  }
+//	  if (*retur==1) { 
+//		if (stat==0){
+//		  cumAit[i*(*Ntimes)+l+1]=
+//			  cumAit[i*(*Ntimes)+l+1]-hati;
+//		} else {
+//		  cumAit[i*(*Ntimes)+l]=cumAit[i*(*Ntimes)+l]+1*(i==pers)-hati;
+//		}
+//	  }
 	  if (stat==1)  replace_row(W3t[cin],l,W3[cin]);   
 	} /* i=1..antpers */ 
     } // }}} /* robust ==1 */

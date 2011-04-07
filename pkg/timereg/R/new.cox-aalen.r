@@ -42,7 +42,10 @@ rate.sim=1,beta.fixed=0,max.clust=1000,exact.deriv=1,silent=0)
   survs<-read.surv(m,id,npar,clusters,start.time,max.time,model="cox.aalen",silent=silent)
   times<-survs$times;id<-id.call<-survs$id.cal;
   clusters<-cluster.call<-survs$clusters; 
-  start<-survs$start; time2<-survs$stop; status<-survs$status;
+  start.call <- start <-  survs$start; 
+  stop.call <- time2 <- survs$stop; 
+  status<-survs$status;
+
   ldata<-list(start=survs$start,stop=survs$stop,
               antpers=survs$antpers,antclust=survs$antclust);
 
@@ -95,8 +98,7 @@ if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
 	if (sum(abs(offsets))!=0) offsets <- rep(offsets,2)[ix]
     } ## }}}
 
-ldata<-list(start=start,stop=stop,
-	antpers=survs$antpers,antclust=survs$antclust);
+ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust);
 
   if (npar==FALSE) covar<-data.matrix(cbind(X,Z)) else 
   stop("Both multiplicative and additive model needed");
@@ -142,8 +144,9 @@ ldata<-list(start=start,stop=stop,
   attr(ud,"id")<-id.call;
   attr(ud,"cluster")<-cluster.call;
   attr(ud,"time2")<-time2; 
-  attr(ud,"start")<-survs$start; 
-  attr(ud,"stop")<-survs$stop; 
+  attr(ud,"start.time")<-start.time; 
+  attr(ud,"start")<-start.call; 
+  attr(ud,"stop")<-stop.call; 
   attr(ud,"beta.fixed")<-beta.fixed
   attr(ud,"status")<-survs$status; 
   attr(ud,"residuals")<-residuals; 

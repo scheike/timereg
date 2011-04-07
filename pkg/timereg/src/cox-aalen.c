@@ -360,9 +360,8 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 		              vec_subtr(W3[cin],rowX,W3[cin]);}
 	 }
 
-	 if (*retur==1) dhatMit[i*(*Ntimes)+s]= 
-		           dhatMit[i*(*Ntimes)+s]+1*(i==pers)-hati;
-	 if (*retur>=2) dhatMit[i]= dhatMit[i]+1*(i==pers)-hati;
+	 if (*retur==1) dhatMit[i*(*Ntimes)+s]=1*(i==pers)-hati;
+	 if (*retur==2) dhatMit[i]= dhatMit[i]+1*(i==pers)-hati;
 
        } /* i 1.. antpers */
 

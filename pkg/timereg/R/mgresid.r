@@ -30,21 +30,20 @@ n.sim=500,weighted.test=1,start.design=1)
 if (class(object)=="cox.aalen") 
   ldata<-aalen.des(formula,data,model="cox.aalen") else ldata<-aalen.des(formula,data) 
 
-  X<-ldata$X; 
-  time<-ldata$time; time2<-ldata$time2; 
-  covar<-X; 
-  time2<-attr(object,"stop"); 
-  time<-attr(object,"start"); 
+  X<-ldata$X; covar<-X; 
+  timel<-ldata$time; time2l<-ldata$time2; 
+  time<-attr(object,"start"); time2<-attr(object,"stop"); 
+  statusl<-ldata$status; 
+  status<-attr(object,"status");  
 
-  status<-ldata$status; 
   if (coxaalen==1) {
     designG<-ldata$Z;  covnamesZ<-ldata$covnamesZ; 
-    pg<-ncol(designG); }
+    pg<-ncol(designG); 
+  } else {designG <- 0}
   Ntimes <- sum(status); 
 
   if (sum(duplicated(time2[status==1]))>0) 
     cat("Ties may cause difficulties, break them ! \n"); 
-  
 
   times<-c(start.time,time2[status==1]); times<-sort(times);
   antpers=length(time); ntot<-nrow(X); px<-ldata$px
@@ -170,11 +169,8 @@ if (class(object)=="cox.aalen")
 
   if (cum.resid>=1) {
     univar.p<-matrix(mgout[[16]],maxval,pcumz)
-    #print(univar.p)
     robvarcumz<-matrix(mgout[[47]],maxval,pcumz)
-    #print(robvarcumz)
     simcumz<-matrix(mgout[[48]],n.sim,pcumz)
-    #print(sim.cumz); 
     univar.proc<-list(); 
     for (i in 1:pcumz) {
       univar.proc[[i]]<-cbind(xvals[[i]],univar.p[1:ant[i],i]); 
