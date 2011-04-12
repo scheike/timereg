@@ -68,7 +68,7 @@ if ( type == "right" )  {  ## {{{
 ###   if (sum(offsets)!=0) offsets <- offsets[ot]
    entry=rep(-1,ntot); 
   } else {
-        eventtms <- c(survs$start,time2)
+        eventtms <- c(time,time2)
         status <- c(rep(0, ntot), status)
         ix <- order(-eventtms,status==1)
         etimes    <- eventtms[ix]  # Entry/exit times
