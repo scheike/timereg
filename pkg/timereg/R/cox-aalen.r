@@ -89,12 +89,12 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   if (covariance == 1) {
     covit <- matrix(nparout[[49]], Ntimes, px * px)
     cov.list <- list()
-    for (i in 1:Ntimes) cov.list[[i]] <- matrix(covit[i,], px, px) } else 
-  cov.list <- NULL
+    for (i in 1:Ntimes) cov.list[[i]] <- matrix(covit[i,], px, px) 
+  } else cov.list <- NULL
   gammaiid <-t( matrix(nparout[[44]],pg,fdata$antclust * 1))
   if (residuals == 1) cumAi <- matrix(nparout[[43]],Ntimes,fdata$antpers * 1)
   if (residuals == 2) cumAi <- nparout[[43]]
-  cumAi <- list(time = times, dM = cumAi, gamma.iid = 0* gammaiid)
+  cumAi <- list(time = times, dM = cumAi)
 	               
   if (sim == 1) {
     Uit <- matrix(nparout[[33]], Ntimes, 50 * pg)
