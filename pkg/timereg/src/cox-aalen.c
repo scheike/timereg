@@ -489,6 +489,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     } /*s=1..Ntimes Beregning af obs teststørrelser */
 
     for (k=1;k<=*antsim;k++) {
+    R_CheckUserInterrupt();
       mat_zeros(Delta); mat_zeros(Delta2); vec_zeros(tmpv1);
       for (i=0;i<*antclust;i++) { /* random=gasdev(&idum); */ 
 	random=norm_rand();

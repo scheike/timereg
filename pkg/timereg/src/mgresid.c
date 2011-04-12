@@ -73,6 +73,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 
 //  printf("ppppppppppppppppppp %d %d %d %d \n",*px,*pg,*pm,*coxaalen); 
 
+  R_CheckUserInterrupt();
   /*  cumulative martingales Aalen type */ 
   if (*model==1) { // {{{
       pmax=*px; 
@@ -82,6 +83,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
       for (s=1;s<*nmgt;s++)
       {
        time=mgtimes[s]; dtime=mgtimes[s]-mgtimes[s-1]; 
+       R_CheckUserInterrupt();
 
 //     mat_zeros(X);mat_zeros(cummat);vec_zeros(risk);mat_zeros(Z);
 
@@ -212,8 +214,9 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 	    Ut[i*(*nmgt)+s]=xij; c=(*pm)+i-1; testOBS[c]=testOBS[c]+xij*xij*dtime; } } // }}} 
 
 //	for (i=0;i<*antclust;i++) { head_matrix(modelMGT[i]); }
+ 
 
-
+       R_CheckUserInterrupt();
       /* simulation of processes under the model */ 
       for (k=0;k<*sim;k++) { // {{{
 	mat_zeros(Delta); 
@@ -246,6 +249,8 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 
     mat_zeros(X);mat_zeros(cummat);vec_zeros(risk);mat_zeros(Z);
 
+       R_CheckUserInterrupt();
+
 //  /* LWY cumulative residuals versus covariates */ 
   if (*cumresid>0) { // {{{
 
@@ -253,6 +258,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 //      printf(" %d %d %d %d ================ \n",ptot,ant[l],inXorZ[l],inXZ[l]); 
 //      for (j=0;j<ant[l];j++)  printf(" %lf \n",xval[(*maxval)*l+j]);
 
+       R_CheckUserInterrupt();
  // {{{ allokering
  malloc_mat(ant[l],*pg,dS1);   malloc_mat(ant[l],*pg,S1);
  malloc_mat(ant[l],*px,cumX1);
@@ -423,10 +429,12 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
       if (fabs(xij)>unitimetestOBS[l]) unitimetestOBS[l]=fabs(xij); 
     } // }}}
 
+       R_CheckUserInterrupt();
     /* simulation of testprocesses and teststatistics */ // {{{
    //  printf("Simulations start N= %d \n",*sim);
 
     for (k=0;k<*sim;k++) {
+    R_CheckUserInterrupt();
       for (i=0;i<*antclust;i++) VE(rvec,i)=norm_rand(); 
 	vM(modMGz,rvec,Deltaz); vM(modMGzosdt,rvec,Deltazsd); 
 
@@ -442,6 +450,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 
     // }}}
 
+       R_CheckUserInterrupt();
 // {{{ free allokering local allocation LWY style cum res
 free_mats(&S1,&dS1,&cumX1, &cumXAI1, &cumZP1,&tmp21,&cummat1,&modMGz,&modMGzosdt,NULL); 
 free_vecs(&vtmp1,&cumdB1,&VdB1,&respm1,&Deltaz,&Deltazsd,&tmpM1z,NULL);
