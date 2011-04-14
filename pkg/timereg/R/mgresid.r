@@ -1,7 +1,8 @@
-cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,
-n.sim=500,weighted.test=1,start.design=1)
+cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim=500,
+	weighted.test=1,max.point.func=50)
 { ## {{{
 ## {{{ setting up
+  start.design<-1
   if (!(class(object)!="aalen" | class(object)!="timecox" | class(object)!="cox.aalen" ))
     stop ("Must be output from aalen() timecox() or cox.aalen() functions\n") 
   if (class(object)=="timecox") if (object$method!="basic") 
@@ -52,9 +53,6 @@ n.sim=500,weighted.test=1,start.design=1)
   antpers=length(unique(id)); ntot<-nrow(X); 
   lmgresids<-length(object$residuals$time); 
 
-###  if (sum(duplicated(time2[status==1]))>0) 
-###    cat("Ties may cause difficulties, break them ! \n"); 
-
 if ( type == "right" )  {  ## {{{
    ot<-order(-time2,status==1); # order in time, status=0 first for ties
    time2<-time2[ot]; status<-status[ot]; 
@@ -77,12 +75,12 @@ if ( type == "right" )  {  ## {{{
         start <- c(start,start)[ix]; 
         tdiff    <- c(-diff(etimes),start.time) # Event time differences
         entry  <- c(rep(c(1, -1), each = ntot))[ix]
-###        weights <- rep(weights, 2)[ix]
         X        <- X[rep(1:ntot, 2)[ix],]
 	if (coxaalen==1) Z <- Z[rep(1:ntot,2)[ix],]
         if (model==1) modelmatrix<-as.matrix(modelmatrix[rep(1:ntot,2)[ix],])
 	id <- rep(id,2)[ix]
 	cluster <- rep(cluster,2)[ix]
+###        weights <- rep(weights, 2)[ix]
 ###	if (sum(offsets)!=0) offsets <- rep(offsets,2)[ix]
     } ## }}}
 
@@ -99,6 +97,7 @@ if ( type == "right" )  {  ## {{{
   keepcumz<-c(); k<-0
   for (j in 1:ptot) { 
     z<-unique(covar[,j]); z<-sort(z); 
+    if (length(z)> max.point.func) z <- quantile(z,probs=seq(0,1,length=max.point.func))
     antal<-antal+1; ant[j]<-length(z); 
     if (ant[j]>2) { k<-k+1; keepcumz<-c(keepcumz,j); xvals[[k]]<-z;
         maxval<-max(maxval,length(z)); }
@@ -107,9 +106,7 @@ if ( type == "right" )  {  ## {{{
   if (sum(keepcumz)==0 && cum.resid==1) 
     stop(" No continous covariates given to cumulate residuals \n"); 
 
-  pcumz<-length(keepcumz); 
-  test<-matrix(0,n.sim,2*pcumz); uni.test<-matrix(0,n.sim,pcumz); 
-  testOBS<-rep(0,4*pcumz); 
+  pcumz<-length(keepcumz); uni.test<-matrix(0,n.sim,pcumz); 
   univar.proc<-matrix(0,maxval,pcumz);robvarcumz<-matrix(0,maxval,pcumz);
   sim.univar.proc<-matrix(0,maxval,50*pcumz); 
   time.proc<-matrix(0,lmgresids,2); sim.time.proc<-matrix(0,lmgresids,50); 
@@ -118,9 +115,9 @@ if ( type == "right" )  {  ## {{{
   for (i in keepcumz) {xval[1:ant[i],k]<-xvals[[k]]; k<-k+1;}
 
   # testOBS size and location of supremum, test simulated sup's
-  unitime.test<-time.test<-mult.test<-multtime.test<-test
+  unitime.test<-time.test<-mult.test<-multtime.test<- matrix(0,n.sim,2*pcumz); 
   unitime.testOBS<-uni.testOBS<-time.testOBS<-mult.testOBS<-
-  multtime.testOBS<-testOBS
+  multtime.testOBS<-rep(0,pcumz); 
 
   inXorZ<-rep(0,pcumz); 
 
@@ -133,9 +130,9 @@ if ( type == "right" )  {  ## {{{
   } else {inXZ<-0; inXorZ<-0} 
   ant<-ant[keepcumz]; 
 
-  Ut<-cummgt<-robvarcum <- matrix(0,lmgresids,pm+1); 
-  simUt<-matrix(0,lmgresids,pm*50); 
-  test<-matrix(0,n.sim,3*pm); 
+  Ut<- cummgt<- robvarcum <- matrix(0,lmgresids,pm+1); 
+  simUt<-matrix(0,lmgresids,pm*50); test<-matrix(0,n.sim,3*pm); 
+  testOBS <- rep(0,3*pm); 
   ## }}}
 
 ###dyn.load("mgresid.so");
@@ -150,7 +147,7 @@ if ( type == "right" )  {  ## {{{
      as.double(uni.test),as.double(uni.testOBS), as.double(time.test),
      as.double(time.testOBS),as.double(unitime.test), as.double(unitime.testOBS),
      as.double(modelmatrix),as.integer(model), as.integer(pm),
-     as.double(cummgt),as.double(0), as.double(robvarcum),
+     as.double(cummgt),as.double(0), as.double(robvarcum),  # 10 
      as.double(testOBS),as.double(test), as.double(simUt),
      as.double(Ut),as.integer(cum.resid), as.integer(maxval),
      as.integer(start.design),as.integer(coxaalen), as.double(dcum),
@@ -169,10 +166,11 @@ if ( type == "right" )  {  ## {{{
     colnames(Ut)<-colnames(cum)<-colnames(var.cum)<- colnames(robvar.cum)<- c("time",covnames)
     test.procBeq0<-Ut; 
 
-    sim<-1; 
-    if (sim>=1) {
-      Uit<-matrix(mgout[[33]],lmgresids,50*pm);
-      UIt<-list(); for (i in (0:49)*pm) UIt[[i/pm+1]]<-as.matrix(Uit[,i+(1:pm)]);
+      simUt<-matrix(mgout[[33]],lmgresids,50*pm);
+      UIt<-list(); 
+      for (i in (0:49)*pm) {
+	UIt[[i/pm+1]]<-as.matrix(simUt[,i+(1:pm)]);
+      }
       testOBS<-mgout[[31]];
       test<-matrix(mgout[[32]],n.sim,3*pm);
       testval<-c(); unifCI<-c(); 
@@ -187,9 +185,6 @@ if ( type == "right" )  {  ## {{{
       sim.test.procBeq0<-UIt; 
       names(unifCI)<- names(pval.testBeq0)<- names(obs.testBeq0)<- 
         names(pval.testBeq0.is)<- names(obs.testBeq0.is)<- covnames
-    } else {
-      test<-unifCI<-Ut<-UIt<-pval.testBeq0<-pval.testBeq0.is<-obs.testBeq0<-
-        obs.testBeq0.is<-sim.testBeq0<-NULL; }
   } else {
     cum<-robvar.cum<-test<-unifCI<-Ut<-UIt<-pval.testBeq0<-
       pval.testBeq0.is<-obs.testBeq0<-obs.testBeq0.is<-sim.testBeq0<-NULL; 
@@ -314,15 +309,13 @@ if ( type == "right" )  {  ## {{{
     } ## }}}
   } else if (score==1)  ## {{{
     {
-                                        # plot score proces
       dim1<-ncol(object$procBeq0)
       if (sum(specific.comps)==FALSE) comp<-2:dim1 else comp<-specific.comps+1
 
       for (i in comp)
         {
           ranyl<-range(object$procBeq0[,i]);
-          for (j in 1:50) ranyl<-range(c(ranyl,
-                                         (object$sim.test.procBeq0[[j]])[,i-1]));
+          for (j in 1:50) ranyl<-range(c(ranyl, (object$sim.test.procBeq0[[j]])[,i-1]));
           mr<-max(abs(ranyl));
 
           if (add.to.plot==FALSE)

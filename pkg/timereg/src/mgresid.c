@@ -23,16 +23,16 @@ double *designG,*dcum,*beta,*designX,*start,*stop,*mgtimes,
 int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
     *status,*id,*model,*pm,*cumresid,*maxval,*startdesign,*clusters,*antclust,
     *inXZ,*inXorZ,*iptot,*entry; 
-{
+{ // {{{
 // {{{ // memory allocation
   matrix *Delta,*tmpM1,*X,*cummat,*modelMGT[*antclust],*modMGz,*modMGzosdt;
   matrix *A,*AI,*cumX,*cumXAI,*cumZP,*XPZ,*tmp2,*dS,*S; // ,*St[*nmgt]; 
   matrix *Z,*dS1,*S1,*cumX1,*cumXAI1,*cumZP1,*tmp21,*cummat1;
   vector *Deltazsd,*Deltaz,*tmpM1z,*vtmp1,*cumdB1,*VdB1,*respm1;
-  vector *dMGt[*nmgt],*cumdB,*diag,*dB,*VdB,*xi,*rowX,*rowcum,*difX,*vtmp,*respm,*gamma;
-  vector *risk,*cumA[*antclust],*cum,*vecX,*MGt,*MGtiid;
-  vector *lamt,*Gbeta,*dA,*xtilde,*zi,*gammaiid[*antclust];
-  vector *tmpv1,*rowZ,*rvec,*covlesszi,*dB1[*antclust];
+  vector *dMGt[*nmgt],*cumdB,*dB,*VdB,*xi,*rowX,*rowcum,*difX,*vtmp,*respm,*gamma;
+  vector *risk,*cumA[*antclust],*cum,*vecX;
+  vector *Gbeta,*dA,*xtilde,*zi,*gammaiid[*antclust];
+  vector *tmpv1,*rowZ,*rvec,*dB1[*antclust];
   int ci=0,pmax,m,i,j,k,l,s,c=0,count,pers;
   int ptot,weighted,*cluster=calloc(*antpers,sizeof(int));
   double lamti=1,time,RR=1,vardiv;
@@ -59,9 +59,9 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
   malloc_mats(*pm,*pg,&tmp2,&dS,&S,NULL); 
 
   malloc_vecs(*pm,&vtmp,&cumdB,&dB,&VdB,&respm,NULL);
-  malloc_vecs(*px,&tmpv1,&cum,&dA,&diag,&xtilde,&xi,&rowX,&rowcum,&difX,NULL);
+  malloc_vecs(*px,&tmpv1,&cum,&dA,&xtilde,&xi,&rowX,&rowcum,&difX,NULL);
   malloc_vecs(*pg,&zi,&gamma,&rowZ,NULL); 
-  malloc_vecs(*antpers,&vecX,&risk,&Gbeta,&lamt,&covlesszi,&MGt,&MGtiid,NULL); 
+  malloc_vecs(*antpers,&vecX,&risk,&Gbeta,NULL); 
   malloc_vecs(*antclust,&rvec,NULL); 
   // }}}
 
@@ -211,10 +211,11 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 	    if (weighted==1) vardiv=sqrt(robvarcum[i*(*nmgt)+s]); else vardiv=1; 
 	    xij=cummgt[i*(*nmgt)+s]/vardiv;
 	    if (fabs(xij)>testOBS[i-1]) testOBS[i-1]=fabs(xij);
-	    Ut[i*(*nmgt)+s]=xij; c=(*pm)+i-1; testOBS[c]=testOBS[c]+xij*xij*dtime; } } // }}} 
+	    Ut[i*(*nmgt)+s]=xij; 
+	    c=(*pm)+i-1; testOBS[c]=testOBS[c]+xij*xij*dtime; 
+	  } } // }}} 
 
 //	for (i=0;i<*antclust;i++) { head_matrix(modelMGT[i]); }
- 
 
        R_CheckUserInterrupt();
       /* simulation of processes under the model */ 
@@ -249,7 +250,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 
     mat_zeros(X);mat_zeros(cummat);vec_zeros(risk);mat_zeros(Z);
 
-       R_CheckUserInterrupt();
+    R_CheckUserInterrupt();
 
 //  /* LWY cumulative residuals versus covariates */ 
   if (*cumresid>0) { // {{{
@@ -265,12 +266,11 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
  malloc_mat(ant[l],*px,cumXAI1); 
  malloc_mat(ant[l],*pg,cumZP1);
  malloc_mat(ant[l],*pg,tmp21);malloc_mat(*antpers,ant[l],cummat1); 
+ malloc_mat(*antclust,ant[l],modMGz); malloc_mat(*antclust,ant[l],modMGzosdt); 
  malloc_vecs(ant[l],&vtmp1,&cumdB1,&VdB1,&respm1,NULL);
- for (k=0;k<*antclust;k++) malloc_vec(ant[l],dB1[k]); 
- malloc_mat(*antclust,ant[l],modMGz); 
- malloc_mat(*antclust,ant[l],modMGzosdt); 
  malloc_vec(ant[l],Deltaz); malloc_vec(ant[l],Deltazsd);
  malloc_vec(ant[l],tmpM1z);  
+ for (k=0;k<*antclust;k++) malloc_vec(ant[l],dB1[k]); 
  // }}}
 
     pm[0]=ant[l]; pmax=ant[l]; pmax=max(pmax,*px); 
@@ -427,9 +427,9 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
     {
       xij=univarproc[(*maxval)*l+j]; 
       if (fabs(xij)>unitimetestOBS[l]) unitimetestOBS[l]=fabs(xij); 
-    } // }}}
+    } 
 
-       R_CheckUserInterrupt();
+    R_CheckUserInterrupt();
     /* simulation of testprocesses and teststatistics */ // {{{
    //  printf("Simulations start N= %d \n",*sim);
 
@@ -464,22 +464,16 @@ for (k=0;k<*antclust;k++) free_vec(dB1[k]);
   PutRNGstate();  /* to use R random normals */
 
 // {{{ // freeing variables
-  
-//  for (i=0;i<*nmgt;i++) { printf(" %d \n",i); head_vector(dMGt[i]); }
+  for (i=0;i<*nmgt;i++) free_vec(dMGt[i]); 
 
-for (i=0;i<*nmgt;i++) free_vec(dMGt[i]); 
-
-  for (i=0;i<*antclust;i++) {free_mat(modelMGT[i]); free_vec(gammaiid[i]); free_vec(cumA[i]); }
+  for (i=0;i<*antclust;i++) {
+	  free_mat(modelMGT[i]); free_vec(gammaiid[i]); free_vec(cumA[i]); 
+  }
   free_mats(&Delta,&tmpM1,&Z,&X,&A,&AI,&cumXAI,&cumZP,&XPZ,&tmp2,&dS,&S,&cummat,NULL); 
-//  malloc_mat(*antpers,*px,WX); 
-//  malloc_mat(*pg,*px,ZX); 
-//  malloc_mat(*pg,*pg,ZPZ); 
-//  malloc_mat(*antpers,*pg,WZ); 
-//  malloc_mat(*antpers,*pg,ZP); 
 
-  free_vecs(&vtmp,&cumdB,&dB,&VdB,&respm,&tmpv1,&cum,&dA,&diag,&xtilde,&xi,&rowX,&rowcum,&difX,
-      &zi,&gamma,&rowZ,&vecX,&risk,&Gbeta,&lamt,&covlesszi,&MGt,&MGtiid,&rvec,NULL); 
+  free_vecs(&vtmp,&cumdB,&dB,&VdB,&respm,&tmpv1,&cum,&dA,&xtilde,&xi,&rowX,
+            &rowcum,&difX,&zi,&gamma,&rowZ,&vecX,&risk,&Gbeta,&rvec,NULL); 
 free(cluster); 
-  // }}}
+// }}}
   
-}
+} // }}}

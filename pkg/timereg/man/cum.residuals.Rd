@@ -5,23 +5,21 @@
 	approximative p-values based on resampling techniques.}
 \usage{
 cum.residuals(object,data=sys.parent(),modelmatrix=0,cum.resid=1,
-n.sim=500,weighted.test=1,start.design=1)
-	}
+              n.sim=500,weighted.test=1,max.point.func=50)
+}
 \arguments{
 \item{object}{an object of class 'aalen', 'timecox', 'cox.aalen' where
 the residuals are returned ('residuals=1')}
 \item{data}{data frame based on which residuals are computed.}
 \item{modelmatrix}{specifies a grouping of the data that 
-is used for cumulating residuals. Must have same size as data and be
-ordered in the same way.}
+is used for cumulating residuals. Must have same size as data and be ordered in the same way.}
 \item{n.sim}{number of simulations in resampling.}
 \item{weighted.test}{to compute a variance weighted version of the
 test-processes used for testing constant effects of covariates.}
 \item{cum.resid}{to compute residuals versus each of
 the continuous covariates in the model.}
-\item{start.design}{if '1' the groupings specified in modelmatrix
-changes over time, i.e. in the case with time-dependent 
-covariates.}
+\item{max.point.func}{limits the amount of computations, only considers a max of  50 points 
+on the covariate scales.}
 }
 \value{
 returns an object of type "cum.residuals" with the following arguments:
