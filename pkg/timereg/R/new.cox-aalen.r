@@ -175,7 +175,6 @@ ylab ="Cumulative coefficients",score=FALSE)
 } ## }}}
 
 
-
 "print.cox.aalen" <-
 function (x,...) 
 { ## {{{
@@ -201,7 +200,6 @@ if (is.null(cox.aalen.object$gamma)==TRUE) prop<-FALSE else prop<-TRUE
   dput(attr(cox.aalen.object,"Call"))
   cat("\n")
 } ## }}}
-
 
 
 "summary.cox.aalen" <-

@@ -347,31 +347,30 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     lle=lle+log(hati);
 
     /* terms for robust variance   */ 
-	for (i=0;i<*antpers;i++)   // {{{
-	{
-         cin=cluster[i]; 
-	 extract_row(WX,i,rowX); extract_row(Z,i,zi); extract_row(X,i,xi); 
-	 hati=vec_prod(rowX,dAt[s]); 
+    for (i=0;i<*antpers;i++)   // {{{
+    {
+      cin=cluster[i]; 
+      extract_row(WX,i,rowX); extract_row(Z,i,zi); extract_row(X,i,xi); 
+      hati=vec_prod(rowX,dAt[s]); 
 
-	 Mv(ZXAIs[s],xi,tmpv2);  vec_subtr(zi,tmpv2,tmpv2); 
-	 scl_vec_mult(VE(weight,i),tmpv2,tmpv2); 
+      Mv(ZXAIs[s],xi,tmpv2);  vec_subtr(zi,tmpv2,tmpv2); 
+      scl_vec_mult(VE(weight,i),tmpv2,tmpv2); 
 
-	 if (i==pers) vec_add(tmpv2,W2[cin],W2[cin]);
-	 if (*ratesim==1) {scl_vec_mult(hati,tmpv2,rowZ); vec_subtr(W2[cin],rowZ,W2[cin]); }
+      if (i==pers) vec_add(tmpv2,W2[cin],W2[cin]);
+      if (*ratesim==1) {scl_vec_mult(hati,tmpv2,rowZ); vec_subtr(W2[cin],rowZ,W2[cin]); }
 
-	 if (*robust==1) {
-	    Mv(AIs[s],xi,rowX); scl_vec_mult(VE(weight,i),rowX,rowX); 
+      if (*robust==1) 
+      {
+	 Mv(AIs[s],xi,rowX); scl_vec_mult(VE(weight,i),rowX,rowX); 
+	 if (i==pers) {vec_add(rowX,W3[cin],W3[cin]); }
+	 llo=llo+hati;
+	 if (*ratesim==1) {scl_vec_mult(hati,rowX,rowX); vec_subtr(W3[cin],rowX,W3[cin]);}
+      }
 
-	    if (i==pers) {vec_add(rowX,W3[cin],W3[cin]); }
-	    llo=llo+hati;
+      if (*retur==1) dhatMit[i*(*Ntimes)+s]=1*(i==pers)-hati;
+      if (*retur==2) dhatMit[i]= dhatMit[i]+1*(i==pers)-hati;
 
-	    if (*ratesim==1) {scl_vec_mult(hati,rowX,rowX); vec_subtr(W3[cin],rowX,W3[cin]);}
-	 }
-
-	 if (*retur==1) dhatMit[i*(*Ntimes)+s]=1*(i==pers)-hati;
-	 if (*retur==2) dhatMit[i]= dhatMit[i]+1*(i==pers)-hati;
-
-       } /* i 1.. antpers */ // }}}
+    } /* i 1.. antpers */ // }}}
 
     if (*robust==1) 
     for (j=0;j<*antclust;j++) 
@@ -418,7 +417,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 		for (c=0;c<*pg;c++) gamiid[c*(*antclust)+j]=
 		  gamiid[c*(*antclust)+j]+VE(tmpv2,c); }
 	    for (c=0;c<*px;c++) {l=j*(*px)+c; 
-	      biid[l*(*Ntimes)+s]=biid[l*(*Ntimes)+s]+VE(difX,c);} }
+	      biid[l*(*maxtimepoint)+s]=biid[l*(*maxtimepoint)+s]+VE(difX,c);} }
 
 	  if (*covariance==1) {
 	    for (k=0;k<*px;k++) for (c=0;c<*px;c++) 
