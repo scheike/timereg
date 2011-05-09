@@ -2,7 +2,7 @@ des.aalen<-function (formula = formula(data),
 data = sys.parent(), start.time = 0, max.time = NULL, 
 id=NULL, clusters=NULL, deltaweight=1,approx="dt")
 {
-  m <- match.call(expand = FALSE)
+  m <- match.call(expand.dots = FALSE)
   m$start.time <- m$max.time <-m$id <-
     m$clusters <- m$deltaweight<-m$approx<-NULL
   special <- c("const","cluster")

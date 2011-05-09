@@ -11,14 +11,12 @@ int *nx,*p,*antpers,*Ntimes,*sim,*retur,*rani,*antsim,*status,*id,*covariance,
   vector *diag,*dB,*dN,*VdB,*xi,*rowX,*rowcum,*difX,*vtmp,*cum,*offsets; 
   vector *vrisk,*cumhatA[*antclust],*cumA[*antclust];
   int i,j,k,l,s,c,count,pers=0;
-  int stat,nap,*cluster=calloc(*antpers,sizeof(int));
+  int stat,*cluster=calloc(*antpers,sizeof(int));
   double time,ahati,dt,dtime;
   double tau,*vcudif=calloc((*Ntimes)*(*p+1),sizeof(double)),
 	 *weights=calloc(*antpers,sizeof(double)); 
   double fabs(),sqrt();
-  long idum; idum=*rani; 
 
-  nap=floor(*antsim/50); 
   dt=times[*Ntimes-1]-times[0]; 
 
   if (*robust==1) {
@@ -157,20 +155,18 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*rani,*robust,*
   vector *dB,*VdB,*difX,*xi,*tmpv1,*tmpv2,*gamoff,*vrisk;
   vector *dAoff,*dA,*rowX,*dN,*AIXWdN,*bhatt,*pbhat,*plamt; 
   vector *korG,*pghat,*rowZ,*gam,*dgam,*ZHdN,*VZHdN,*IZHdN,*zi,*offsets;
-  int m,i,j,k,l,c,s,count,pers=0,pmax,
+  int m,i,j,k,l,c,s,count,pers=0,pmax,stat,
         *cluster=calloc(*antpers,sizeof(int)),
         *ipers=calloc(*Ntimes,sizeof(int)),
         *ls=calloc(*Ntimes,sizeof(int));
-  int stat,maxtime;
   double dptime,ddtime,time,dtime,random,fabs(),sqrt();
-  double ahati,ghati,hati,tau,dMi;
+  double ahati,ghati,hati;
   double *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
          *times=calloc((*Ntimes),sizeof(double)),
          *cumoff=calloc((*Nalltimes)*(*px+1),sizeof(double)),
          *cuL=calloc((*Nalltimes)*(*px+1),sizeof(double)),
          *weights=calloc((*antpers),sizeof(double));
   double norm_rand(); 
-  long idum; idum=*rani; 
   dptime=alltimes[0]; 
 
   for (j=0;j<=*px;j++) cuL[j*(*Nalltimes)+0]=0.0; 
@@ -202,7 +198,6 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*rani,*robust,*
 
   if (*px>=*pg) pmax=*px; else pmax=*pg; 
   mat_zeros(Ct); mat_zeros(CGam); vec_zeros(IZHdN); times[0]=alltimes[0]; l=0; 
-  maxtime=alltimes[*Nalltimes]; 
   for (s=0;s<*pg;s++) VE(gam,s)=gamma[s]; 
   for (j=0;j<*antpers;j++) cluster[j]=0;
 
@@ -313,7 +308,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*rani,*robust,*
   l=0; vec_zeros(dAoff); 
   for (s=1;s<*Nalltimes;s++) {
     time=alltimes[s]; vec_zeros(dN);dtime=time-alltimes[s-1]; 
-    mat_zeros(X); mat_zeros(Z); mat_zeros(WX); mat_zeros(WZ); stat=0; dMi=0; 
+    mat_zeros(X); mat_zeros(Z); mat_zeros(WX); mat_zeros(WZ); stat=0; 
     for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) 
       {
 	if ((start[c]<time) && (stop[c]>=time)) {
@@ -323,7 +318,8 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*rani,*robust,*
 	  for(j=0;j<pmax;j++) {
 	    if (j<*px) ME(X,id[c],j)=designX[j*(*nx)+c];
 	    if (j<*pg) ME(Z,id[c],j)=designG[j*(*ng)+c];  }
-	  if (time==stop[c] && status[c]==1) {pers=id[c];stat=1;l=l+1;dMi=0;ghati=0;} 
+	  if (time==stop[c] && status[c]==1) {pers=id[c];stat=1;l=l+1;
+		  ghati=0;} 
 	  count=count+1; }
       }
     vec_zeros(dA); 
@@ -405,7 +401,6 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*rani,*robust,*
 
   loglike[1]=loglike[1]-vec_sum(rowZ); 
 
-  tau=time;
   for (s=1;s<*Ntimes;s++) {
 
     Mv(C[ls[s]],gam,korG); 

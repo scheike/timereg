@@ -3,7 +3,7 @@ additive.compSs<-function (formula = formula(data), data = sys.parent(),
 start.time=0,max.time=NULL,id=NULL,scale=FALSE,silent=0,omit=NULL) 
 { ## {{{
    call <- match.call()
-    m <- match.call(expand = FALSE)
+    m <- match.call(expand.dots = FALSE)
     m$start.time <- m$max.time <-  m$id <- m$scale<- m$silent<- m$omit<-NULL
     special <- c("const")
     Terms <- if (missing(data)) terms(formula, special)

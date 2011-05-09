@@ -2,7 +2,7 @@ pe.sasieni<-function (formula = formula(data),data = sys.parent(),
 id=NULL,start.time=0,max.time=NULL,offsets=0,Nit=50,detail=0,n.sim=500)
 {
   call <- match.call()
-  m <- match.call(expand = FALSE)
+  m <- match.call(expand.dots = FALSE)
   m$id<-m$Nit<-m$detail<-m$start.time <- m$max.time <-
     m$offsets<-m$n.sim <- NULL 
   Terms <- if (missing(data)) 

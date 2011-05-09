@@ -6,7 +6,7 @@ trace = FALSE, plot.it = FALSE , se = TRUE, silent=1,
 { ## {{{
 ## {{{ reads design and survival times
     call <- match.call()
-    m <- match.call(expand = FALSE)
+    m <- match.call(expand.dots = FALSE)
     m$start.time <- m$max.time <-  m$id <-
     m$K<-m$pls.dims<-m$trace<-m$plot.it<-m$se<- m$silent<- NULL
     special <- c("const")

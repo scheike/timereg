@@ -4,7 +4,7 @@ additive.plsR<-function (formula = formula(data), ## {{{
                          pls.dim=1, semi.pls=1,silent=0){
 ## {{{ setting up variables
   call <- match.call()
-  m <- match.call(expand = FALSE)
+  m <- match.call(expand.dots = FALSE)
   m$start.time <-  m$max.time <- 
   m$id <- m$clusters <- m$pls.dim<- m$semipls<- m$silent<- NULL
   special <- c("const","cluster")
@@ -95,7 +95,7 @@ start.time=0,max.time=NULL,id=NULL,pls.dim=1,silent=1)
 semipls=1; deltaweight<-1; constant<-1; # always !  
 weighted.pls=0; 
 call <- match.call()
-    m <- match.call(expand = FALSE)
+    m <- match.call(expand.dots = FALSE)
     m$start.time <- m$max.time <-  m$id <- m$pls.dim<- m$weighted.pls<- m$silent<- NULL
     special <- c("const")
     Terms <- if (missing(data)) terms(formula, special)

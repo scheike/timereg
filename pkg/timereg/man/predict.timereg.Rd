@@ -1,8 +1,9 @@
-\name{predict.comprisk}
+\name{predict.timereg}
+\alias{predict.timereg}
 \alias{predict.aalen}
 \alias{predict.comprisk}
 \alias{predict.cox.aalen}
-\title{Predictions for Survival and Competings Risks Regression} 
+\title{Predictions for Survival and Competings Risks Regression for timereg} 
 \description{
 Make predictions based on the survival models 
 (Aalen and Cox-Aalen) and the competing risks
@@ -11,7 +12,7 @@ models for the cumulative incidence function
 confidence bands based on resampling. 
 }
 \usage{
-\method{predict}{comprisk}(object,newdata=NULL,X=NULL,Z=NULL,
+\method{predict}{timereg}(object,newdata=NULL,X=NULL,Z=NULL,
 n.sim=500,uniform=TRUE,se=TRUE,alpha=0.05,...)
 }
 \arguments{

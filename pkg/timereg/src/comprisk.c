@@ -17,12 +17,11 @@ int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
   vector *VdB,*risk,*SCORE,*W,*Y,*Gc,*DELTA,*CAUSE,*bhat,*pbhat,*beta,*xi,
     *rr,*rowX,*difbeta,*qs,*bhatub,*betaub,*dcovs,*pcovs,*zi,*rowZ,*zgam; 
   vector *cumhatA[*antclust],*cumA[*antclust],*bet1,*gam,*dp,*dp1,*dp2; 
-  int osilent,convt,ps,sing,sc,c,i,j,k,l,s,it,convproblems=0,pointswithconv=0; 
+  int osilent,convt,ps,sing,c,i,j,k,l,s,it,convproblems=0; 
   double time,sumscore,totrisk, 
 	 *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double));
-  long idum;
   float gasdev(),expdev(),ran1();
-  idum=*rani; ps=(*px); 
+  ps=(*px); 
 
   if (*semi==0) { 
     osilent=silent[0]; silent[0]=0; 
@@ -52,7 +51,6 @@ int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
     // }}}
     
 	 
-sc=0; pointswithconv=0; 
 for (s=0;s<*Ntimes;s++)
 {
    time=times[s]; est[s]=time; score[s]=time; var[s]=time;
@@ -234,16 +232,15 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
   int sing,itt,i,j,k,l,s,c,pmax,totrisk,convproblems=0, 
       *n= calloc(1,sizeof(int)), *nx= calloc(1,sizeof(int)),
       *robust= calloc(1,sizeof(int));
-  int idum,fixedcov,osilent; 
-  double time,dummy,dtime,timem;
+  int fixedcov,osilent; 
+  double time,dummy,dtime;
   double *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
 	 *inc=calloc((*Ntimes)*(*px+1),sizeof(double));
   double lrr,fabs(), pow(); 
   osilent=silent[0]; silent[0]=0; 
   // float gasdev(),expdev(),ran1();
-  idum=*rani; robust[0]=1; fixedcov=1; 
+  robust[0]=1; fixedcov=1; 
   n[0]=antpers[0]; nx[0]=antpers[0];
-  timem=0; 
 
 //if (*trans==1) for (j=0;j<*pg;j++) if (fabs(timepow[j]-1)>0.0001) {timem=1;break;}
 //if (*trans==2) for (j=0;j<*pg;j++) if (fabs(timepow[j])>0.0001) {timem=1;break;}

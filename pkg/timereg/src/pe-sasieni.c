@@ -16,16 +16,13 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
   vector *dA,*rowX,*dN,*AIXWdN,*bhatt,*pbhat,*plamt;
   vector *S1,*korG,*pghat,*rowZ,*gam,*dgam,*ZHdN,*VZHdN,*IZHdN,*zi,*offsets;
   int it,i,j,k,l,c,s,count,pers=0,pmax;
-  int stat,maxtime,
-      *ls=calloc(*Ntimes,sizeof(int)); 
-  double S0,sumscore,dptime,time=0,dummy,dtime,random,fabs(),sqrt();
-  double ghati,dMi,*weights=calloc(*antpers,sizeof(double));
+  int stat, *ls=calloc(*Ntimes,sizeof(int)); 
+  double S0,sumscore,time=0,dummy,dtime,random,fabs(),sqrt();
+  double *weights=calloc(*antpers,sizeof(double));
   double *times=calloc(*Ntimes,sizeof(double)),
 	 *cumoff=calloc((*Nalltimes)*(*px+1),sizeof(double));
-  long idum;  idum=*rani; 
   double norm_rand(); 
   void GetRNGstate(),PutRNGstate();  
-  dptime=alltimes[0]; 
 
   malloc_mats(*antpers,*px,&X,&WX,NULL);
   malloc_mats(*antpers,*pg,&Z,&WZ,NULL); 
@@ -49,7 +46,7 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
   malloc_vecs(*antpers,&offsets,&dN,&pbhat,&pghat,&plamt,NULL);
 
   if (*px>=*pg) pmax=*px; else pmax=*pg; 
-  times[0]=alltimes[0]; maxtime=alltimes[*Nalltimes]; 
+  times[0]=alltimes[0]; 
   for (s=0;s<*pg;s++) VE(gam,s)=gamma[s]; 
 
 
@@ -172,13 +169,13 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
   for (s=1;s<*Nalltimes;s++) {
 //    time=alltimes[s]; vec_zeros(dN);dtime=time-alltimes[s-1]; 
 //    mat_zeros(X); mat_zeros(Z); mat_zeros(WX); mat_zeros(WZ); 
-    stat=0; dMi=0; 
+    stat=0;  
     for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) 
     {
 	if ((start[c]<time) && (stop[c]>=time)) {
 	  if (*mof==1) VE(offsets,count)=offset[c]; 
 	  if (*mw==1) weights[count]=weight[c]; else weights[count]=1; 
-	  if (time==stop[c] && status[c]==1) {pers=count;stat=1;l=l+1;dMi=0;ghati=0;} 
+	  if (time==stop[c] && status[c]==1) {pers=count;stat=1;l=l+1;} 
 	  count=count+1; 
 	}
     }

@@ -33,7 +33,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
    *HeHleft=calloc(*antclust,sizeof(double)),
    *H2eH=calloc(*antclust,sizeof(double)), *H2eHleft=calloc(*antclust,sizeof(double)), 
    *Rtheta=calloc(*antclust,sizeof(double)), *Rthetaleft=calloc(*antclust,sizeof(double)),
-   *Hik=calloc(*antpers,sizeof(double)), Dthetanu=1,DDthetanu=1; 
+   *Hik=calloc(*antpers,sizeof(double)), Dthetanu=1; 
   int *ipers=calloc(*Ntimes,sizeof(int));
 
   for (j=0;j<*antclust;j++) { Nt[j]=0; NH[j]=0; 
@@ -139,7 +139,8 @@ for(j=0;j<pmax;j++) {
       for (k=0;k<clustsize[j];k++) {
 	      i=idiclust[k*(*antclust)+j]; 
               extract_row(destheta,i,vtheta2); theta0=VE(lamtt,i); 
-              if (*inverse==1){theta0=exp(VE(lamtt,i));Dthetanu=theta0; DDthetanu=pow(theta0,1);}
+              if (*inverse==1){theta0=exp(VE(lamtt,i));Dthetanu=theta0; 
+	      }
 //	      if (theta0<=0.00){  printf("==== %lf %d %d %d \n",theta0,j,k,i); print_vec(vtheta2); }
      }
 

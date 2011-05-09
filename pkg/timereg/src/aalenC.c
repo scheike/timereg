@@ -16,13 +16,9 @@ int *nx,*p,*antpers,*Ntimes,*sim,*retur,*rani,*antsim,*status,*id,*covariance,
   vector  *diag,*dB,*dN,*VdB,*xi,*rowX,*rowcum,*difX,*vtmp;
   vector *cumhatA[*antclust],*cumA[*antclust],*cum;
   int ci,i,j,k,l,s,c,count,pers=0,*cluster=calloc(*antpers,sizeof(int));
-  int var1,var2;
-  double time,ahati,dt,tau,*vcudif=calloc((*Ntimes)*(*p+1),sizeof(double));
+  double time,ahati,*vcudif=calloc((*Ntimes)*(*p+1),sizeof(double));
   double fabs(),sqrt();
-  long idum; 
   
-  *rani = -8021; idum=*rani; 
-  dt=times[*Ntimes-1]-times[0]; var1=1; var2=0; 
 
   if (*robust==1) {
     for (i=0;i<*antclust;i++) { malloc_vec(*p,cumhatA[i]); 
@@ -132,9 +128,7 @@ int *nx,*p,*antpers,*Ntimes,*sim,*retur,*rani,*antsim,*status,*id,*covariance,
 
   } /* s = 1..Ntimes */ 
 
-  tau=time; 
- 
-    R_CheckUserInterrupt();
+  R_CheckUserInterrupt();
 
   if (*sim==1) {
     comptest(times,Ntimes,p,cu,robvcu,vcudif,antsim,test,testOBS,Ut,simUt,cumAt,weighted,antclust);

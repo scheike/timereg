@@ -21,9 +21,7 @@ int *sim,*antsim,*retur,*nxval,*nx,*px,*na,*pa,*antpers,*Ntimes,*mw,*rani,*statu
   int *coef=calloc(1,sizeof(int)),*imin=calloc(1,sizeof(int)),
       *ps=calloc(1,sizeof(int)),*degree=calloc(1,sizeof(int));
   double time,dummy,zpers=0,dif,dtime,YoneN,kia;
-  FILE *fp; int VERBOSE=0;
   double *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double));
-  if (VERBOSE==1) fp=fopen("dump.dout","a");
 
   for (i=0;i<*antpers;i++) { malloc_vec(*px,cumhatB[i]); malloc_vec(*px,cumB[i]);
     malloc_mat(*Ntimes,*px,cumBt[i]); }
@@ -209,8 +207,8 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
   int l,i,j,k,s,c,count,sing,pmax,nmax,pers=0;
   int robust=1,*ipers=calloc(*Ntimes,sizeof(int)), 
       *imin=calloc(1,sizeof(int)); 
-  double time,dummy,dtime,zpers,risk,YoneN,dif,dif2,ctime;
-  double tau,*C=calloc((*pg)*(*pg),sizeof(double));
+  double time,dtime,zpers,risk,YoneN,dif,dif2,ctime;
+  double *C=calloc((*pg)*(*pg),sizeof(double));
   double *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double));
   void comptest(); 
   ctime=0;  
@@ -275,12 +273,10 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
       ipers[s]=pers; YoneN=vec_sum(dR);  YoneN=YoneN/risk; /* LY korrektion */
 
       for(j=0;j<*naval;j++) VE(xta,j)=fabs(ahat[j]-time);
-      dummy=vec_min(xta,imin);
       for(j=1;j<=*pa;j++) VE(ahatt,j-1)=ahat[j*(*naval)+(*imin)];
       Mv(ldesignA,ahatt,pahat);
 
       for(j=0;j<*nxval;j++) VE(xtb,j)=fabs(bhat[j]-time);
-      dummy=vec_min(xtb,imin);
       for(j=1;j<=*px;j++) VE(bhatt,j-1)=bhat[j*(*nxval)+(*imin)];
       Mv(ldesignX,bhatt,pbhat); 
       Mv(ldesignG,gam,pghat);
@@ -483,7 +479,6 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
       for (k=1;k<*px+1;k++) robvcue[k*(*Ntimes)+s]=VE(VdBe,k-1);
       robvcu[s]=times[s]; robvcue[s]=times[s];
     } /* s=1 ..Ntimes */ 
-    tau=time;
 
     MxA(Robvar,CI,tmpM2); MxA(CI,tmpM2,Robvar); 
 

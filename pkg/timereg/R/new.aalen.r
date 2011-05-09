@@ -11,7 +11,7 @@ aalen<-function (formula = formula(data),
   if (sim==1 & robust==0) { n.sim<-0;sim <- 0}
   if (n.sim>0 & n.sim<50) {n.sim<-50 ; cat("Minimum 50 simulations\n");}
   call <- match.call()
-  m <- match.call(expand = FALSE)
+  m <- match.call(expand.dots = FALSE)
     m$start.time <- m$weighted.test <- m$max.time <- m$robust <- 
     m$weights <- m$residuals <- m$n.sim <- m$id <- 
     m$covariance <- 

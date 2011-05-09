@@ -22,10 +22,10 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
   vector *ahatt,*risk,*tmpv1,*tmpv2,*rowX,*rowZ,*difX,*VdB; 
   vector *W2[*antpers],*W3[*antpers],*reszpbeta,*res1dim,*dAt[*Ntimes]; 
   vector *dLamt[*antpers];
-  int *pg=calloc(1,sizeof(int)),c,robust=1,pers=0,i,j,k,l,s,t,it,count,sing;
-  double S0p,S0star,dtime,time,dummy,ll;
+  int *pg=calloc(1,sizeof(int)),c,robust=1,pers=0,i,j,k,l,s,t,it,count;
+  double S0p,S0star,time,dummy,ll;
   double S0cox,S0,tau,random,scale,sumscore;
-  int idum,*ipers=calloc(*Ntimes,sizeof(int)),nap;
+  int *ipers=calloc(*Ntimes,sizeof(int));
   double norm_rand();
   void GetRNGstate(),PutRNGstate();
 
@@ -47,7 +47,6 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
   malloc_vec(*Ntimes,S0start); malloc_vec(*Ntimes,lht); 
   malloc_vec(1,reszpbeta); malloc_vec(1,res1dim); 
 
-  idum=*rani; nap=floor(*antsim/50);
 
   malloc_mats(*antpers,*px,&ldesignX,NULL); 
   malloc_mats(*antpers,*pg,&ZP,&ldesignG,NULL); 
@@ -78,7 +77,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 
       for (s=1;s<*Ntimes;s++)
 	{
-	  time=times[s]; vec_zeros(dN); sing=0; mat_zeros(ldesignX); vec_zeros(risk); 
+	  time=times[s]; vec_zeros(dN); mat_zeros(ldesignX); vec_zeros(risk); 
 	  vec_zeros(dS0);  mat_zeros(d2S0);  mat_zeros(dS1);  vec_zeros(S1star);
 	  S0star=0; S0=0; S0p=0; 
 	  vec_zeros(S1); S0cox=0; 
@@ -286,7 +285,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
   /* terms for robust variances ============================ */
   if (robust==1) {
     for (s=1;s<*Ntimes;s++) {
-      time=times[s]; vec_zeros(dN);dtime=time-times[s-1]; 
+      time=times[s]; vec_zeros(dN);
       cu[s]=times[s]; vcu[s]=times[s]; Rvcu[s]=times[s]; Ut[s]=times[s]; 
 
       extract_row(qt,s,tmpv1); extract_row(et,s,xtilde); 

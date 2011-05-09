@@ -4,7 +4,7 @@ profile=1,sym=0)
 {
 id.call<-id; call<-match.call(); residuals<-0;  
 robust<-0; ratesim<-0; # profile<-0; 
-m<-match.call(expand = FALSE);
+m<-match.call(expand.dots = FALSE);
 m$sym<-m$profile<-m$max.time<-m$start.time<-m$weighted.test<-m$n.sim<-
 m$id<-m$Nit<-m$detail<-m$beta<-NULL
 if (n.sim==0) sim<-0 else sim<-1; 

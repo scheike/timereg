@@ -4,14 +4,15 @@ cox.aalen<-function(formula=formula(data),data=sys.parent(),
 beta=NULL,Nit=10,detail=0,start.time=0,max.time=NULL, id=NULL, 
 clusters=NULL, n.sim=500, residuals=0,robust=1,
 weighted.test=0,covariance=0,resample.iid=0,weights=NULL,
-rate.sim=1,beta.fixed=0,max.clust=1000,exact.deriv=1,silent=0)
+rate.sim=1,beta.fixed=0,max.clust=1000,exact.deriv=1,silent=0,
+max.timepoint.sim=100)
 { ## {{{
 	offsets=0; 
 ## {{{ set up variables 
   call <- match.call()
-  m <- match.call(expand=FALSE)
+  m <- match.call(expand.dots=FALSE)
   m$robust<-m$start.time<-m$scaleLWY<-m$weighted.test<-m$beta<-m$Nit<-m$detail<-m$max.time<-m$residuals<-m$n.sim<-m$id<-m$covariance<-m$resample.iid<-m$clusters<-m$rate.sim<-m$beta.fixed<-
-  m$max.clust <- m$exact.deriv <- m$silent <- NULL
+  m$max.clust <- m$exact.deriv <- m$silent <- m$max.timepoint.sim <- NULL
 
   if (n.sim == 0) sim <- 0 else sim <- 1
   if (resample.iid==1 & robust==0) { resample.iid<-0;}
@@ -104,15 +105,14 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
   stop("Both multiplicative and additive model needed");
   Ntimes <- sum(status); 
 
-
-  #cat("Cox-Aalen Survival Model"); cat("\n")
   if (px==0) stop("No nonparametric terms (needs one!)");
   ud<-cox.aalenBase(times,ldata,X,Z,
             status,id,clusters,Nit=Nit,detail=detail,beta=beta,weights=weights,
             sim=sim,antsim=n.sim,residuals=residuals,robust=robust,
             weighted.test=weighted.test,ratesim=rate.sim,
             covariance=covariance,resample.iid=resample.iid,namesX=covnamesX,
-	    namesZ=covnamesZ,beta.fixed=beta.fixed,entry=entry,offsets=0,exactderiv=exact.deriv);
+	    namesZ=covnamesZ,beta.fixed=beta.fixed,entry=entry,
+	    offsets=0,exactderiv=exact.deriv,max.timepoint.sim=max.timepoint.sim);
 
   colnames(ud$test.procProp)<-c("time",covnamesZ)
   if (beta.fixed==1) colnames(ud$var.score)<-c("time",covnamesZ)
@@ -150,6 +150,7 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
   attr(ud,"beta.fixed")<-beta.fixed
   attr(ud,"status")<-survs$status; 
   attr(ud,"residuals")<-residuals; 
+  attr(ud,"max.timepoint.sim")<-max.timepoint.sim; 
   ud$call<-call
 
   return(ud); 
@@ -160,7 +161,7 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
 sim.ci=0, robust=0, specific.comps=FALSE,level=0.05, start.time = 0,
 stop.time = 0, add.to.plot=FALSE, mains=TRUE, xlab="Time",
 ylab ="Cumulative coefficients",score=FALSE)
-{
+{ ## {{{
   object <- x; rm(x);  
   if (!inherits(object,'cox.aalen') ) stop ("Must be output from Cox-Aalen function")
 
@@ -171,13 +172,14 @@ ylab ="Cumulative coefficients",score=FALSE)
         mains=mains, xlab=xlab, ylab =ylab)
   else plotScore(object, specific.comps=specific.comps, mains=mains,
                   xlab=xlab,ylab =ylab);
-}
+} ## }}}
+
 
 
 "print.cox.aalen" <-
 function (x,...) 
-{
-    cox.aalen.object <- x; rm(x);
+{ ## {{{
+  cox.aalen.object <- x; rm(x);
   if (!inherits(cox.aalen.object, 'cox.aalen')) 
     stop ("Must be an aalen object")
 
@@ -198,12 +200,13 @@ if (is.null(cox.aalen.object$gamma)==TRUE) prop<-FALSE else prop<-TRUE
   cat("  Call: \n")
   dput(attr(cox.aalen.object,"Call"))
   cat("\n")
-}
+} ## }}}
+
 
 
 "summary.cox.aalen" <-
 function (object,digits = 3,...) 
-{
+{ ## {{{
   cox.aalen.object <- object; rm(object);
   obj<-cox.aalen.object
   if (!inherits(cox.aalen.object, 'cox.aalen')) 
@@ -248,7 +251,8 @@ function (object,digits = 3,...)
   cat("  Call: \n")
   dput(attr(obj, "Call"))
   cat("\n")
-}
+} ## }}}
+
 
 coef.cox.aalen<-function(object,...,digits=3,d2logl=1) {
    coefBase(object,digits=digits, d2logl=d2logl)

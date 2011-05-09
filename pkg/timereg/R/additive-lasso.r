@@ -17,7 +17,7 @@ trace = FALSE, plot.it = FALSE , se = TRUE, silent=1, ...)
    if (!require("lars")) stop("package Lars not available")
 ## {{{ reads design and survival times
     call <- match.call()
-    m <- match.call(expand = FALSE)
+    m <- match.call(expand.dots = FALSE)
     m$start.time <- m$max.time <-  m$id <-m$silent <- 
     m$covs<-m$l1.weight<-m$K<-m$fraction<-m$trace<-m$plot.it<-m$se<- NULL
     special <- c("const")

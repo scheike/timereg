@@ -34,8 +34,8 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
           *excess,*phi,*stid,*beta,*tol,*alpha,*Psiinp,*CoVarPsiinp,
           *VarPsiinp,*testinp,*testinpHW,*testinpCM,*testinpGOFCM,*Scoreinp;
    int *n,*p,*q,*k,*rani,*k1, *antsim ;
-{ int i,j,l,l1,l2,it,init_it,nummer,kny;
-  double alpha_tmp,y[*n], y1[*n], y2[*n],tmp1_sc,del,del_old,betaZ[*n],eps,tau,b,beta_tmp[*q],random,testOBSGOFCM,dum,dum1;
+{ int i,j,l,l1,l2,it,init_it,nummer;
+  double alpha_tmp,y[*n], y1[*n], y2[*n],tmp1_sc,del,del_old,betaZ[*n],tau,b,beta_tmp[*q],random,testOBSGOFCM,dum,dum1;
 
   vector *vtmp1,*vtmp2,*vtmp3,*vtmp4,*vtmp5,*vtmp6,*vtmp7,*vtmp8;
   vector *testOBS, *testOBSHW, *testOBSCM, *testtmp,*testtmpHW,*testtmpCM,*testtmp1,
@@ -63,11 +63,9 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
   matrix *M1M2,*M2, *M1,*M1tmp1,*M1tmp2, *C1M1M2,*dC1M1M2,*tC1M1M2 ,*C1M1, *C1M1tC1,
     *VarPsi,*VarPsi1,*VarPsi2,*VarPsi_out;
   matrix *W1,*W2t[*n],*Ut[*n],*Ui[*k],*Utm[*n],*dU_dbeta_i[*k],*dW2,*Delta,*Delta1,*tmpM1,*Delta2,*tmpM2;
-  long idum;
   double norm_rand();
   void GetRNGstate(),PutRNGstate();
   
-  idum=*rani; 
 
   malloc_vecs((*p+1),&vtmp1,&vtmp3,&testOBS,&testtmp,&testOBSHW,&testOBSCM,
 	     &testtmpHW,&testtmpCM,&testtmp1,&testtmp2,&pKS,NULL);  
@@ -121,14 +119,14 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
   /** Newton-iteration **/
 
   for (l=0;l<*q;++l){beta_tmp[l]=beta[l];} /* beta_0 */
-  eps=0.01;
+//  eps=0.01;
   tau=0;
   dum=1;dum1=0;
   nummer=50; /* Antal iterationer der højst udføres */
   del=1000;
   del_old=10000;
   it=0;  
-  kny=0; /* max(tau_i) for hvilket at design ej sing. */
+//  kny=0; /* max(tau_i) for hvilket at design ej sing. */
   alpha_tmp=(*alpha);
   init_it=2;
 

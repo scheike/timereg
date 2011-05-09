@@ -27,10 +27,10 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
   vector *Lplamt,*ta,*ahatt,*risk; 
   vector *tmpv1,*tmpv2,*rowX,*rowZ,*difX,*VdB,*lht; 
   vector *W2[*antpers],*W3[*antpers],*reszpbeta,*res1dim,*dAt[*Ntimes]; 
-  int t,c,robust=1,pers=0,i,j,k,l,s,it,count,sing,pmax; 
-  double dtime,time=0,dummy,ll,lle,llo; 
-  double S0,tau,hati=0,random,sumscore; 
-  int idum,*ipers=calloc(*Ntimes,sizeof(int)),nap; 
+  int t,c,robust=1,pers=0,i,j,k,l,s,it,count,pmax; 
+  double time=0,dummy,ll; 
+  double tau,hati=0,random,sumscore; 
+  int *ipers=calloc(*Ntimes,sizeof(int)); 
   double norm_rand(); 
   void GetRNGstate(),PutRNGstate();  
 
@@ -44,8 +44,6 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
   malloc_mat(*Ntimes,*px,Delta); malloc_mat(*Ntimes,*px,tmpM1);
   malloc_mat(*Ntimes,*pg,Delta2); malloc_mat(*Ntimes,*pg,tmpM2); malloc_mat(*Ntimes,*pg,Utt);
   malloc_vec(1,reszpbeta); malloc_vec(1,res1dim);
-
-  idum=*rani; nap=floor(*antsim/50);
 
   malloc_vec(*Ntimes,lht);
   malloc_mats(*antpers,*px,&ldesignX,&cdesX,&cdesX2,&cdesX3,&cdesX4,NULL);
@@ -80,10 +78,10 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 
   /* Main procedure ================================== */
   for (it=0;it<*Nit;it++){
-    vec_zeros(U); mat_zeros(S1);  sumscore=0; lle=0; llo=0;  S0=0; 
+    vec_zeros(U); mat_zeros(S1);  sumscore=0; 
 
     for (s=1;s<*Ntimes;s++){
-      time=times[s]; sing=0; 
+      time=times[s]; 
       mat_zeros(ldesignX); mat_zeros(ldesignG); vec_zeros(risk); 
 
       for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) {
@@ -340,12 +338,10 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
     }
   }
 
-  lle=0; llo=0;
   /* terms for robust variances ============================ */
   if (robust==1) {
     for (s=1;s<*Ntimes;s++) {
       time=times[s]; 
-      dtime=time-times[s-1]; 
       cu[s]=times[s]; vcu[s]=times[s]; Rvcu[s]=times[s]; Ut[s]=times[s]; 
 
       /* terms for robust variance   */ 

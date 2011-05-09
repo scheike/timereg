@@ -167,7 +167,7 @@ int
   int itt,i,j,k,l,s,c,count,pers=0,pmax,
       *coef=calloc(1,sizeof(int)),*ps=calloc(1,sizeof(int)),
       *imin=calloc(1,sizeof(int));;
-  double time,dummy,dtime,hati,tau;
+  double time,dtime,hati;
   double *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double));
   int *ipers=calloc(*Ntimes,sizeof(int));
   long idum; idum=*rani;
@@ -221,7 +221,6 @@ int
 
 
 	  for(j=0;j<*nb;j++) VE(ta,j)=fabs(bhat[j]-time);
-	  dummy=vec_min(ta,imin);
 	  for(j=1;j<=*px;j++) VE(bhatt,j-1)=bhat[j*(*nb)+(*imin)];
 	  Mv(ldesignX,bhatt,pbhat); Mv(ldesignG,gam,pghat);
 
@@ -311,7 +310,6 @@ int
 	  }
 
 	for(j=0;j<*nb;j++) VE(ta,j)=fabs(bhat[j]-time);
-	dummy=vec_min(ta,imin);
 	for(j=1;j<=*px;j++) VE(bhatt,j-1)=bhat[j*(*nb)+(*imin)];
 	Mv(ldesignX,bhatt,pbhat); Mv(ldesignG,gam,pghat);
 
@@ -347,7 +345,6 @@ int
        vcu[k*(*Ntimes)+s]+ME(VarKorG,k-1,k-1)-2*ME(GCdM1M2,k-1,k-1);} 
     */
   } /* s=1 ..Ntimes */ 
-  tau=time;
 
 
   /* ROBUST VARIANCES   */ 

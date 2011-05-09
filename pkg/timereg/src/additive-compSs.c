@@ -10,7 +10,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
   vector *xi,*tmpv2,*tmpv1,*PLScomp,*Xi,*dA,*rowX,*AIXWdN,*korG,*rowZ,*gam,*ZHdN,
     *IZHdN,*zi;
   int j,k,l,c,s,count,pers=0,pmax,*ipers=calloc(*Ntimes,sizeof(int)); 
-  int stat,maxtime,*ls=calloc(*Ntimes,sizeof(int)); 
+  int stat,*ls=calloc(*Ntimes,sizeof(int)); 
   double time,dtime,fabs(),sqrt();
 
   malloc_mats(*antpers,*px,&X,NULL);
@@ -25,7 +25,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
   malloc_vecs(*pg,&zi,&tmpv2,&rowZ,&gam,&ZHdN,&IZHdN,NULL);
   malloc_vecs(*antpers,&PLScomp,&Xi,NULL);
 
-  if (*px>=*pg) pmax=*px; else pmax=*pg; maxtime=alltimes[*Nalltimes]; 
+  if (*px>=*pg) pmax=*px; else pmax=*pg; 
 
     mat_zeros(Ct); mat_zeros(CGam); vec_zeros(IZHdN);  
 
@@ -115,7 +115,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
   vector *xi,*tmpv2,*tmpv1,*PLScomp,*Xi,*dA,*rowX,*AIXWdN,*korG,*rowZ,*gam,*ZHdN,
     *IZHdN,*zi;
   int sstop,j,k,l,c,s,count,pers=0,pmax,*ipers=calloc(*Ntimes,sizeof(int)); 
-  int stat,maxtime,*ls=calloc(*Ntimes,sizeof(int)); 
+  int stat,*ls=calloc(*Ntimes,sizeof(int)); 
   double time,dtime,fabs(),sqrt();
 
   malloc_mats(*antpers,*px,&X,NULL);
@@ -131,7 +131,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
   malloc_vecs(*antpers,&PLScomp,&Xi,NULL);
   // }}}
 
-  if (*px>=*pg) pmax=*px; else pmax=*pg; maxtime=alltimes[*Nalltimes]; 
+  if (*px>=*pg) pmax=*px; else pmax=*pg; 
 
     //mat_zeros(Ct); mat_zeros(CGam); vec_zeros(IZHdN);  
     //mat_zeros(A); mat_zeros(ZWZ); mat_zeros(XWZ); 
@@ -248,7 +248,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
   vector *xi,*tmpv2,*tmpv1,*PLScomp,*Xi,*dA,*rowX,*AIXWdN,*korG,*rowZ,*gam,*ZHdN,
     *IZHdN,*zi;
   int sstop,j,k,l,c,s,count,pers=0,pmax,*ipers=calloc(*Ntimes,sizeof(int)); 
-  int stat,maxtime,*ls=calloc(*Ntimes,sizeof(int)); 
+  int stat,*ls=calloc(*Ntimes,sizeof(int)); 
   double time,dtime,fabs(),sqrt();
 
   malloc_mats(*antpers,*px,&X,NULL);
@@ -263,7 +263,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
   malloc_vecs(*pg,&zi,&tmpv2,&rowZ,&gam,&ZHdN,&IZHdN,NULL);
   malloc_vecs(*antpers,&PLScomp,&Xi,NULL);
 
-  if (*px>=*pg) pmax=*px; else pmax=*pg; maxtime=alltimes[*Nalltimes]; 
+  if (*px>=*pg) pmax=*px; else pmax=*pg; 
 
     //mat_zeros(Ct); mat_zeros(CGam); vec_zeros(IZHdN);  
     //mat_zeros(A); mat_zeros(ZWZ); mat_zeros(XWZ); 
@@ -384,7 +384,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
   vector *xi,*tmpv2,*tmpv1,*PLScomp,*Xi,*dA,*rowX,*AIXWdN,*korG,*rowZ,*gam,*ZHdN,
     *IZHdN,*zi;
   int sstop,j,k,l,c,s,count,pers=0,pmax,*ipers=calloc(*Ntimes,sizeof(int)); 
-  int stat,maxtime,*ls=calloc(*Ntimes,sizeof(int)); 
+  int stat,*ls=calloc(*Ntimes,sizeof(int)); 
   double time,dtime,fabs(),sqrt();
 
   malloc_mats(*antpers,*px,&X,NULL);
@@ -400,7 +400,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
   malloc_vecs(*antpers,&PLScomp,&Xi,NULL);
   // }}}
 
-  if (*px>=*pg) pmax=*px; else pmax=*pg; maxtime=alltimes[*Nalltimes]; 
+  if (*px>=*pg) pmax=*px; else pmax=*pg; 
 
     //mat_zeros(Ct); mat_zeros(CGam); vec_zeros(IZHdN);  
     //mat_zeros(A); mat_zeros(ZWZ); mat_zeros(XWZ); 

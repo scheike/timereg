@@ -40,23 +40,10 @@ pred.cum<-function(x,time,cum) {ud<-sapply(x,slaaop,time,cum);
   return(list(covarX=X,covarZ=Z))
 } ## }}}
 
-predict.aalen <-  function(object,...){
-
-  predict.comprisk(object,...)
-
-}
-
-predict.cox.aalen <-  function(object,...){
-
-  predict.comprisk(object,...)
-
-}
-
-aalen.des2 <-  function(formula,data=sys.parent(),model=NULL,...){
+aalen.des2 <-  function(formula,data=sys.parent(),model=NULL,...){ ## {{{
   call <- match.call()
   m <- match.call(expand.dots=FALSE)
   m$model <- NULL
-###  special <- c("const","prop")
   Terms <- if(missing(data)) terms(formula )
   else              terms(formula, data=data)
   m$formula <- Terms
@@ -69,12 +56,16 @@ aalen.des2 <-  function(formula,data=sys.parent(),model=NULL,...){
   if (model=="cox.aalen") modela <- "cox.aalen" else modela <- "aalen"
   des<-read.design(m,Terms,model=modela)
   return(des) 
-}
+} ## }}}
 
-###pred2<-function(object,newdata=NULL,X=NULL,
-predict.comprisk<-function(object,newdata=NULL,X=NULL,
+predict.cox.aalen <- function(object,...) predict.timereg(object,...)
+predict.aalen <- function(object,...) predict.timereg(object,...)
+predict.comprisk <- function(object,...) predict.timereg(object,...)
+
+predict.timereg<-function(object,newdata=NULL,X=NULL,
                            Z=NULL,n.sim=500, uniform=TRUE,
-                           se=TRUE,alpha=0.05,...){
+                           se=TRUE,alpha=0.05,...)
+{
 ## {{{
   if (!(inherits(object,'comprisk') || inherits(object,'aalen')
         || inherits(object,'cox.aalen')))
@@ -298,25 +289,12 @@ predict.comprisk<-function(object,newdata=NULL,X=NULL,
   }
    # e.g. for an compound risk model, className = predictComprisk
   className <- switch(class(object),aalen='predictAalen',cox.aalen='predictCoxAalen',comprisk='predictComprisk')
-  class(out) <- className
+  class(out) <- "predict.timereg"
 
   return(out)
 } ## }}}
 
-
-plot.predictAalen <-  function(x,...){
-
-  plot.predictComprisk(x,...)
-
-}
-
-plot.predictCoxAalen <-  function(x,...){
-
-  plot.predictComprisk(x,...)
-
-}
-
-pava = function(x, w=rep(1,length(x)))  # R interface to the compiled code
+pava <- function(x, w=rep(1,length(x)))  # R interface to the compiled code
 { ## {{{
   n = length(x)
   if (n != length(w)) return (0)    # error
@@ -327,10 +305,9 @@ pava = function(x, w=rep(1,length(x)))  # R interface to the compiled code
   result[["y"]]
 } ## }}}
 
-
-plot.predictComprisk<-function(x,uniform=1,new=1,se=1,col=1,lty=1,lwd=2,multiple=0,specific.comps=0,ylim=c(0,1),
-xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...){
-## {{{
+plot.predict.timereg<-function(x,uniform=1,new=1,se=1,col=1,lty=1,lwd=2,multiple=0,specific.comps=0,ylim=c(0,1),
+xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
+{ ## {{{
   object <- x; rm(x);
   modelType <- object$model;
   time<-object$time;
@@ -437,23 +414,14 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...){
   }
 } ## }}}
 
-print.predictAalen <- function(x,...){
-  print.predictComprisk(x,...)
-}
-
-print.predictCoxAalen <- function(x,...){
-  print.predictComprisk(x,...)
-}
-
-print.predictComprisk <- function(x,...){
+print.predict.timereg <- function(x,...){ ## {{{
 
   object <- x; rm(x);
-  
-  if(!(inherits(object,'predictAalen') ||
-       inherits(object,'predictCoxAalen') ||
-       inherits(object,'predictComprisk'))){
-    stop('Wrong class of object');
-  }
+  if(!(inherits(object,'timereg') )) stop('Wrong class of object');
+###	  || inherits(object,'predictCoxAalen') ||
+###       inherits(object,'predictComprisk'))){
+###    stop('Wrong class of object');
+###  }
 
   if (is.null(object$newdata$Z)==TRUE) semi<-FALSE else semi<-TRUE
   
@@ -480,22 +448,16 @@ print.predictComprisk <- function(x,...){
   cat('Initial call:',fill=TRUE);
   print(call)
     
-}
+} ## }}}
 
-summary.predictAalen <- function(object,...){
-  summary.predictComprisk(object,...)
-}
+summary.predict.timereg <- function(object,...){ ## {{{
 
-summary.predictCoxAalen <- function(object,...){
-  summary.predictComprisk(object,...)
-}
-
-summary.predictComprisk <- function(object,...){
-  if(!(inherits(object,'predictAalen') ||
-       inherits(object,'predictCoxAalen') ||
-       inherits(object,'predictComprisk'))){
-    stop('Wrong class of object');
-  }
+  if(!(inherits(object,'timereg') )) stop('Wrong class of object');
+###  if(!(inherits(object,'predictAalen') ||
+###       inherits(object,'predictCoxAalen') ||
+###       inherits(object,'predictComprisk'))){
+###    stop('Wrong class of object');
+###  }
 
   modelClass <- class(object)
   modelType <- object$model;
@@ -535,117 +497,5 @@ summary.predictComprisk <- function(object,...){
   cat('Call:',fill=TRUE);
   print(call)
   
-}
-
-plot.comprisk <-  function (x, pointwise.ci=1, hw.ci=0,
-                            sim.ci=0, specific.comps=FALSE,level=0.05, start.time = 0,
-                            stop.time = 0, add.to.plot=FALSE, mains=TRUE, xlab="Time",
-                            ylab ="Coefficients",score=FALSE,...){
-## {{{
-  object <- x; rm(x);
-
-  if (!inherits(object,'comprisk') ){
-    stop ("Must be output from comp.risk function")
-  }
-
-  if (score==FALSE) {
-    B<-object$cum;
-    V<-object$var.cum;
-    p<-dim(B)[[2]]; 
-
-    if (sum(specific.comps)==FALSE){
-      comp<-2:p
-    } else {
-      comp<-specific.comps+1
-    }
-    if (stop.time==0) {
-      stop.time<-max(B[,1]);
-    }
-
-    med<-B[,1]<=stop.time & B[,1]>=start.time
-    B<-B[med,];
-    V<-V[med,]; 
-
-    c.alpha<- qnorm(1-level/2)
-    for (v in comp) { 
-      c.alpha<- qnorm(1-level/2)
-      est<-B[,v];
-      ul<-B[,v]+c.alpha*V[,v]^.5;
-      nl<-B[,v]-c.alpha*V[,v]^.5;
-      if (add.to.plot==FALSE) {
-        plot(B[,1],est,ylim=1.05*range(ul,nl),type="s",xlab=xlab,ylab=ylab,...) 
-        if (mains==TRUE) title(main=colnames(B)[v]);
-      } else {
-        lines(B[,1],est,type="s");
-      }
-      if (pointwise.ci>=1) {
-        lines(B[,1],ul,lty=pointwise.ci,type="s");
-        lines(B[,1],nl,lty=pointwise.ci,type="s");
-      }
-      if (hw.ci>=1) {
-        if (level!=0.05){
-          cat("Hall-Wellner bands only 95 % \n");
-        }
-        tau<-length(B[,1])
-        nl<-B[,v]-1.13*V[tau,v]^.5*(1+V[,v]/V[tau,v])
-        ul<-B[,v]+1.13*V[tau,v]^.5*(1+V[,v]/V[tau,v])
-        lines(B[,1],ul,lty=hw.ci,type="s"); 
-        lines(B[,1],nl,lty=hw.ci,type="s");
-      }
-      if (sim.ci>=1) {
-        if (is.null(object$conf.band)==TRUE){
-          cat("Uniform simulation based bands only computed for n.sim> 0\n")
-        }
-        if (level!=0.05){
-          c.alpha<-percen(object$sim.testBeq0[,v-1],1-level)
-        } else {
-          c.alpha<-object$conf.band[v-1];
-        }
-        nl<-B[,v]-c.alpha*V[,v]^.5;
-        ul<-B[,v]+c.alpha*V[,v]^.5;
-        lines(B[,1],ul,lty=sim.ci,type="s"); 
-        lines(B[,1],nl,lty=sim.ci,type="s");
-      }
-      abline(h = 0)
-    }
-  } else {
-    # plot score proces
-    if (is.null(object$pval.testBeqC)==TRUE) {
-      cat("Simulations not done \n"); 
-      cat("To construct p-values and score processes under null n.sim>0 \n"); 
-    } else {
-      if (ylab=="Cumulative regression function"){ 
-        ylab<-"Test process";
-      }
-      dim1<-ncol(object$test.procBeqC)
-      if (sum(specific.comps)==FALSE){
-        comp<-2:dim1
-      } else {
-        comp<-specific.comps+1
-      }
-
-      for (i in comp){
-          ranyl<-range(object$test.procBeqC[,i]);
-          for (j in 1:50){
-            ranyl<-range(c(ranyl,(object$sim.test.procBeqC[[j]])[,i-1]));
-          }
-          mr<-max(abs(ranyl));
-
-          plot(object$test.procBeqC[,1],
-               object$test.procBeqC[,i],
-               ylim=c(-mr,mr),lwd=2,xlab=xlab,ylab=ylab,type="s",...)
-          if (mains==TRUE){
-            title(main=colnames(object$test.procBeqC)[i]);
-          }
-          for (j in 1:50){
-            lines(object$test.procBeqC[,1],
-                  as.matrix(object$sim.test.procBeqC[[j]])[,i-1],col="grey",lwd=1,lty=1,type="s")
-          }
-          lines(object$test.procBeqC[,1],object$test.procBeqC[,i],lwd=2,type="s")
-        }
-    }
-  }
 } ## }}}
-
-
 

@@ -65,12 +65,11 @@ S3method(plot,comprisk)
 S3method(plot,cum.residuals)
 S3method(plot,cox.aalen)
 S3method(plot,dynreg)
-S3method(plot,predictAalen)
-S3method(plot,predictComprisk)
-S3method(plot,predictCoxAalen)
+S3method(plot,predict.timereg)
 S3method(plot,prop.excess)
 S3method(plot,timecox)
 S3method(plot,two.stage)
+S3method(plot,predict.timereg)
 
 S3method(print,aalen)
 S3method(print,cox.aalen)
@@ -78,9 +77,7 @@ S3method(print,comprisk)
 S3method(print,cum.residuals)
 S3method(print,dynreg)
 S3method(print,pe.sasieni)
-S3method(print,predictAalen)
-S3method(print,predictComprisk)
-S3method(print,predictCoxAalen)
+S3method(print,predict.timereg)
 S3method(print,prop.excess)
 S3method(print,timecox)
 S3method(print,two.stage)
@@ -92,9 +89,7 @@ S3method(summary,comprisk)
 S3method(summary,cum.residuals)
 S3method(summary,dynreg)
 S3method(summary,pe.sasieni)
-S3method(summary,predictAalen)
-S3method(summary,predictComprisk)
-S3method(summary,predictCoxAalen)
+S3method(summary,predict.timereg)
 S3method(summary,prop.excess)
 S3method(summary,timecox)
 S3method(summary,two.stage)
@@ -119,9 +114,7 @@ export("plot.aalen",
        "plot.cums",
        "plotScore",
        "plot.dynreg",
-       "plot.predictAalen",
-       "plot.predictComprisk",
-       "plot.predictCoxAalen",
+       "plot.predict.timereg",
        "plot.prop.excess",
        "plot.timecox",
        "plot.two.stage",
@@ -131,9 +124,7 @@ export("plot.aalen",
        "print.cum.residuals",
        "print.dynreg",
        "print.pe.sasieni",
-       "print.predictAalen",
-       "print.predictComprisk",
-       "print.predictCoxAalen",
+       "print.predict.timereg",
        "print.prop.excess",
        "print.timecox",
        "print.two.stage",
@@ -145,15 +136,14 @@ export("plot.aalen",
        "summary.dynreg",
        "summary.pe.sasieni",
        "summary.pls",
-       "summary.predictAalen",
-       "summary.predictComprisk",
-       "summary.predictCoxAalen",
+       "summary.predict.timereg",
        "summary.prop.excess",
        "summary.timecox",
        "summary.two.stage",
        "predict.aalen",
        "predict.pls",
        "predict.comprisk",
+       "predict.timereg",
        "predict.cox.aalen",
        "predict.two.stage",
        "coef.aalen",

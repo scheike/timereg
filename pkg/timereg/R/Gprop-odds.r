@@ -2,7 +2,7 @@ Gprop.odds<-function(formula=formula(data),data=sys.parent(),beta=0,Nit=50,detai
 {
 id.call<-id; call<-match.call(); residuals<-0;  
 robust<-0; ratesim<-0; profile<-0; exppar<-0; 
-m<-match.call(expand = FALSE); 
+m<-match.call(expand.dots = FALSE); 
 m$max.time<-m$start.time<-m$weighted.test<-m$n.sim<-m$id<-m$Nit<-m$detail<-m$beta<-m$sym<-m$mle.start<-NULL
 if (n.sim==0) sim<-0 else sim<-1; 
 antsim<-n.sim; 
