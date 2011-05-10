@@ -12,11 +12,9 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=1,notaylor=0)
  ldata<-aalen.des(formula,data=data,model="cox.aalen");
  id <- attr(margsurv,"id"); clusters <- attr(margsurv,"cluster")
  X<-ldata$X; time<-ldata$time2; Z<-ldata$Z;  status<-ldata$status;
- time2 <- attr(margsurv,"stop")
- start <- attr(margsurv,"start")
+ time2 <- attr(margsurv,"stop"); start <- attr(margsurv,"start")
  antpers<-nrow(X);
-  if (is.null(Z)==TRUE) {npar<-TRUE; semi<-0;}  else {
-		 Z<-as.matrix(Z); npar<-FALSE; semi<-1;}
+ if (is.null(Z)==TRUE) {npar<-TRUE; semi<-0;}  else { Z<-as.matrix(Z); npar<-FALSE; semi<-1;}
   if (npar==TRUE) {Z<-matrix(0,antpers,1); pz<-1; fixed<-0;} else {fixed<-1;pz<-ncol(Z);}
   px<-ncol(X);
   antclust <- length(unique(clusters))
@@ -25,7 +23,7 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=1,notaylor=0)
 
   if (npar==TRUE) RR <-  rep(1,antpers); 
   if (npar==FALSE) RR <- exp(Z %*% margsurv$gamma); 
-  if ((attr(margsurv,"residuals")!=2) || (lefttrunk==1)) { ### compute cum hazards in time point infty; 
+  if ((attr(margsurv,"residuals")!=2) || (lefttrunk==1)) {### compute cum hazards in time point infty; 
 	  nn <- nrow(margsurv$cum) 
 	  cum <- Cpred(margsurv$cum,time2)[,-1]
 	  if (npar==TRUE) cumhaz <- apply(cum*X,1,sum)
@@ -38,56 +36,65 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=1,notaylor=0)
 	  } 
   } else { residuals <- margsurv$residuals$dM; cumhaz <- status-residuals; }
 
+  ratesim<-rate.sim; inverse<-var.link
+  pxz <- px + pz;
+  times<-c(start.time,time2[status==1]); times<-sort(times);
+  if (is.null(max.time)==TRUE) maxtimes<-max(times)+0.1 else maxtimes<-max.time; 
+  times<-times[times<maxtimes]
+  Ntimes <- sum(status[time2<maxtimes])+1; 
+
   Biid<-c(); gamma.iid <- 0; 
   if (notaylor==0) {
     if (!is.null(margsurv$B.iid))
     for (i in 1:antclust) Biid<-cbind(Biid,margsurv$B.iid[[i]]); 
     if (!is.null(margsurv$gamma.iid)) gamma.iid<-margsurv$gamma.iid;
     if ((is.null(margsurv$B.iid))) notaylor <- 1; 
-  }
-
-  ratesim<-rate.sim; inverse<-var.link
-  pxz <- px + pz;
-  times<-c(start.time,time2[status==1]); times<-sort(times);
-  if (is.null(max.time)==TRUE) maxtimes<-max(times)+0.1 else maxtimes<-max.time; 
-  times<-times[times<maxtimes]
-  Ntimes <- sum(status); 
-
-    if (is.null(theta.des)==TRUE) ptheta<-1; 
-    if (is.null(theta.des)==TRUE) theta.des<-matrix(1,antpers,ptheta) else
-    theta.des<-as.matrix(theta.des); 
-    ptheta<-ncol(theta.des); 
-    if (nrow(theta.des)!=antpers) stop("Theta design does not have correct dim");
-
-    if (is.null(theta)==TRUE) theta<-rep(0.1,ptheta); 
-    if (length(theta)!=ptheta) theta<-rep(theta[1],ptheta); 
-    theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
-
-    cluster.size<-as.vector(table(clusters));
-    maxclust<-max(cluster.size)
-    idiclust<-matrix(0,antclust,maxclust); 
-    cs<- rep(1,antclust)
-    for (i in 1:antpers) { 
-        idiclust[clusters[i]+1,cs[clusters[i]+1]]<-i-1;
-        cs[clusters[i]+1]<- cs[clusters[i]+1]+1; 
+    if (is.null(margsurv$time.sim.resolution)) { 
+	   time.group <- 1:nrow(Biid); 
+           maxtimesim <- Ntimes+1; }  
+    else {
+       qqc <- cut(times, breaks = margsurv$time.sim.resolution, include.lowest = TRUE)    
+       time.group <- as.integer(factor(qqc, labels = 1:(nrow(Biid)-1)))
+       maxtimesim <- nrow(Biid); 
     } 
-    if (maxclust==1) stop("No clusters !, maxclust size=1\n"); 
+  } else {time.group <- 1; maxtimesim <- 1;}
+
+  if (is.null(theta.des)==TRUE) ptheta<-1; 
+  if (is.null(theta.des)==TRUE) theta.des<-matrix(1,antpers,ptheta) else
+  theta.des<-as.matrix(theta.des); 
+  ptheta<-ncol(theta.des); 
+  if (nrow(theta.des)!=antpers) stop("Theta design does not have correct dim");
+
+  if (is.null(theta)==TRUE) theta<-rep(0.1,ptheta); 
+  if (length(theta)!=ptheta) theta<-rep(theta[1],ptheta); 
+  theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
+
+  cluster.size<-as.vector(table(clusters));
+  maxclust<-max(cluster.size)
+  idiclust<-matrix(0,antclust,maxclust); 
+  cs<- rep(1,antclust)
+  for (i in 1:antpers) { 
+      idiclust[clusters[i]+1,cs[clusters[i]+1]]<-i-1;
+      cs[clusters[i]+1]<- cs[clusters[i]+1]+1; 
+  } 
+  if (maxclust==1) stop("No clusters !, maxclust size=1\n"); 
   ## }}}
 
-    nparout <- .C("twostagereg", 
-        as.double(times), as.integer(Ntimes), as.double(X),
-       	as.integer(antpers), as.integer(px), as.double(Z), 
-	as.integer(antpers), as.integer(pz), as.integer(antpers),
+  nparout <- .C("twostagereg", 
+      as.double(times), as.integer(Ntimes), as.double(X),
+   	as.integer(antpers), as.integer(px), as.double(Z), 
+	as.integer(antpers), as.integer(pz), as.integer(antpers),         ## 9 
 	as.double(start),as.double(time2), as.integer(Nit), 
-	as.integer(detail), as.integer(id), as.integer(status), 
-	as.integer(ratesim), as.integer(robust), as.integer(clusters), 
+	as.integer(detail), as.integer(id), as.integer(status),           ## 15
+	as.integer(ratesim), as.integer(robust), as.integer(clusters),    
 	as.integer(antclust), as.integer(beta.fixed), as.double(theta),
 	as.double(var.theta), as.double(theta.score), as.integer(inverse), 
-	as.integer(cluster.size), 
+	as.integer(cluster.size),                                          ## 25
 	as.double(theta.des), as.integer(ptheta), as.double(Stheta),
 	as.double(step), as.integer(idiclust), as.integer(notaylor),
 	as.double(gamma.iid),as.double(Biid),as.integer(semi), as.double(cumhaz) ,
-	as.double(cumhazleft),as.integer(lefttrunk),as.double(RR),PACKAGE = "timereg")
+	as.double(cumhazleft),as.integer(lefttrunk),as.double(RR),
+	as.integer(maxtimesim),as.integer(time.group),PACKAGE = "timereg")
 
 ## {{{ handling output
    gamma <- margsurv$gamma
@@ -240,9 +247,8 @@ plot.two.stage<-function(x,pointwise.ci=1,robust=0,specific.comps=FALSE,
   }
 }  ## }}}
 
-
 predict.two.stage <- function(object,X=NULL,Z=NULL,times=NULL,times2=NULL,theta.des=NULL,diag=TRUE,...)
-{
+{ ## {{{
 time.coef <- data.frame(object$cum)
 if (!is.null(times)) {
 cum <- Cpred(object$cum,times)
@@ -269,5 +275,6 @@ St1t2<- ((S1^{-1/theta}+S2^{-1/theta})-1)^(-theta)
 
 out=list(St1t2=St1t2,S1=S1,times=times,theta=theta)
 return(out)
-}
+} ## }}}
+
 
