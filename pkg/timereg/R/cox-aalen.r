@@ -4,17 +4,16 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
     ratesim = 1, residuals = 0, covariance = 1,
     resample.iid=0,namesZ=NULL,namesX=NULL,beta.fixed=0,
     entry=NULL,offsets=0,exactderiv=1,max.timepoint.sim=100) 
-{
+{ ## {{{
   additive.resamp <-0; ridge <- 0; XligZ <- 0; 
   Ntimes <- length(times)
   if ( max.timepoint.sim< Ntimes)  {  
-       qq <- quantile(times, probs = seq(0, 1, length=max.timepoint.sim+1))  
+       qq <- quantile(times, probs = seq(0, 1, length=max.timepoint.sim))  
        qqc <- cut(times, breaks = qq, include.lowest = TRUE)    
-       time.group <- as.integer(factor(qqc, labels = 1:(max.timepoint.sim)))-1
+       time.group <- as.integer(factor(qqc, labels = 1:(max.timepoint.sim-1)))
        time.resolution <- qq
-  } else time.resolution <- times; 
-  mts <- max.timepoint.sim; 
-###  print(mts); print(cbind(times,time.group)); 
+       mts <- max.timepoint.sim; 
+  } else { time.resolution <- qq <- times; time.group <- 0:(Ntimes-1); mts <- Ntimes;}
 
   designX <- as.matrix(designX); designG <- as.matrix(designG)
   if (is.matrix(designX) == TRUE) px <- as.integer(dim(designX)[2])
@@ -43,8 +42,6 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   Ut <- matrix(0, mts , pg + 1); simUt <- matrix(0, antsim, pg)
   var.score<- matrix(0, Ntimes , pg + 1); 
 
-###  dyn.load("cox-aalen.so")
-
   nparout <- .C("score", as.double(times), as.integer(Ntimes), 
                 as.double(designX), as.integer(nx), as.integer(px), 
                 as.double(designG), as.integer(ng), as.integer(pg), 
@@ -66,12 +63,12 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
                 as.double(biid),as.integer(clusters),as.integer(fdata$antclust),
                 as.double(var.score),as.integer(beta.fixed),
 		as.double(weights),as.integer(entry) ,as.integer(exactderiv),
-	        as.integer(time.group), as.integer(max.timepoint.sim),PACKAGE = "timereg")
+	        as.integer(time.group), as.integer(max.timepoint.sim)
+                ,PACKAGE = "timereg")
 
   Iinv <- matrix(nparout[[19]], pg, pg); RVarbeta <- -matrix(nparout[[28]], pg, pg)
 
   rvcu <- matrix(nparout[[27]], mts , px + 1); ## convert to approx for times 
-  rvcu <- rbind(rep(0,px+1),rvcu)
   Rvcu <- times; 
   for (i  in 2:(px+1)) Rvcu <- cbind(Rvcu,approx(rvcu[,1],rvcu[,i],times,f=0.5)$y)
 
@@ -151,4 +148,6 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
              pval.Prop = testUt, sim.supProp = sim.supUt, covariance = cov.list, 
              B.iid=B.iid,gamma.iid=gammaiid,time.sim.resolution=qq)
   return(ud)
-}
+} ## }}}
+
+

@@ -18,7 +18,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   matrix *RobVbeta,*Delta,*tmpM1,*Utt,*Delta2,*tmpM2;
 //  matrix *St[*maxtimepoint],*M1M2[*Ntimes],*C[*maxtimepoint],*ZXAIs[*Ntimes],*dYIt[*Ntimes]; 
   matrix *St[*Ntimes],*M1M2[*Ntimes],*C[*Ntimes],*ZXAIs[*Ntimes],*dYIt[*Ntimes]; 
-  matrix *Stg[*Ntimes],*Cg[*Ntimes]; 
+  matrix *Stg[*maxtimepoint],*Cg[*maxtimepoint]; 
   matrix *W3t[*antclust],*W4t[*antclust],*W2t[*antclust],*AIs[*Ntimes],*Uti[*antclust]; 
   matrix *ZPX1,*ZPZ1,*ZPXo,*ZPZo; 
   vector *dA,*VdA,*MdA,*delta,*zav,*lamt,*lamtt;
@@ -399,7 +399,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 
   if ((*robust==1)) // {{{ robust variances 
   {
-      for (s=0;s<*maxtimepoint;s++) {
+      for (s=1;s<*maxtimepoint;s++) {
 	vec_zeros(VdB); mat_zeros(Vcov);
 
 	for (j=0;j<*antclust;j++) {
@@ -473,7 +473,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     for (i=1;i<=*px;i++) VE(rowX,i-1)=cug[i*(*maxtimepoint)+(*maxtimepoint-1)];
 
     /* Beregning af OBS teststørrelser */
-    for (s=0;s<*maxtimepoint;s++) { 
+    for (s=1;s<*maxtimepoint;s++) { 
       time=timesg[s]-times[0];  //  FIX 
 
       for (i=1;i<=*px;i++) {

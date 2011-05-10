@@ -34,9 +34,7 @@ beta.fixed=0,max.clust=1000,exact.deriv=1,silent=0,max.timepoint.sim=100)
   proportional effect are specified by the wrapper prop(), and cluster
   variables (for computing robust variances) by the wrapper cluster().
 }
-\item{data}{
-a data.frame with the variables.
-}
+\item{data}{ a data.frame with the variables.}
 \item{start.time}{start of observation period where estimates are computed.}
 \item{max.time}{end of observation period where estimates are computed. 
 Estimates thus computed from [start.time, max.time]. Default is max of data.}
@@ -52,8 +50,7 @@ test-processes used for testing
 time-varying effects.}
 \item{residuals}{to returns residuals that can be used for
 model validation in the function cum.residuals. Estimated martingale increments (dM)
-and corresponding time vector (time).
-}
+and corresponding time vector (time).}
 \item{covariance}{to compute covariance estimates for
 nonparametric terms rather than just the variances.}
 \item{resample.iid}{to return i.i.d. representation for
@@ -132,7 +129,8 @@ test-processes for proportionality under the model based on resampling.}
 }
 \references{
 Martinussen and Scheike, Dynamic Regression Models for Survival Data, 
-Springer (2006).  }
+Springer (2006).  
+}
 \author{Thomas Scheike}
 \examples{
 library(survival)
