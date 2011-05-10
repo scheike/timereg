@@ -105,7 +105,7 @@ predict.timereg<-function(object,newdata=NULL,X=NULL,
     ## Then extract the time-varying effects
 ###    time.coef <- data.frame(object$cum)
     time.coef <- as.matrix(object$cum)
-    if (modelType=="cox.aalen") time.coef <- Cpred(object$cum,object$time.sim.resolution)
+    if (modelType=="cox.aalen" && (!is.null(object$time.sim.resolution))) time.coef <- Cpred(object$cum,object$time.sim.resolution)
     ntime <- nrow(time.coef)
     fittime <- time.coef[,1,drop=TRUE]
     ntimevars <- ncol(time.coef)-2
@@ -132,11 +132,12 @@ predict.timereg<-function(object,newdata=NULL,X=NULL,
     ## extract the time-varying effects
 ###    time.coef <- data.frame(object$cum)
     time.coef <- as.matrix(object$cum)
-    if (modelType=="cox.aalen") time.coef <- Cpred(object$cum,object$time.sim.resolution)
+    if (modelType=="cox.aalen" && (!is.null(object$time.sim.resolution))) time.coef <- Cpred(object$cum,object$time.sim.resolution)
     ntime <- nrow(time.coef)
   } else {
     stop("Must specify either newdata or X, Z\n");
   }
+
   ## }}}
 
   ## {{{ predictions for competing risks and survival data
@@ -194,8 +195,6 @@ predict.timereg<-function(object,newdata=NULL,X=NULL,
     } ## }}}
 
     ## }}}
-
-  print(dim(RR))
 
   se.P1 <- NULL
   se.S0 <- NULL
@@ -404,12 +403,15 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
       else
       col.trans <- sapply(col.ci, FUN=function(x) do.call(rgb,as.list(c(col2rgb(x)/255,col.alpha))))
 
+      #print(t); print(ci)
       n<-length(time)
       tt<-seq(time[1],time[n],length=n*10); 
       ud<-Cpred(cbind(time,upper,lower),tt)[,2:3]
       tt <- c(tt, rev(tt))
       yy <- c(upper, rev(lower))
-      yy <- c(ud[,1], rev(ud[,2]))
+#      tt <- c(time, rev(time))
+#      yy <- c(upper, rev(lower))
+     yy <- c(ud[,1], rev(ud[,2]))
       polygon(tt,yy, col=col.trans, lty=0)      
   } ## }}}
 
