@@ -13,7 +13,8 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
        time.group <- as.integer(factor(qqc, labels = 1:(max.timepoint.sim-1)))
        time.resolution <- qq
        mts <- max.timepoint.sim; 
-  } else { time.resolution <- qq <- times; time.group <- 0:(Ntimes-1); mts <- Ntimes;}
+  } else { time.resolution <- qq <- times; time.group <- 0:(Ntimes-1); 
+            max.timepoint.sim <- mts <- Ntimes;}
 
   designX <- as.matrix(designX); designG <- as.matrix(designG)
   if (is.matrix(designX) == TRUE) px <- as.integer(dim(designX)[2])

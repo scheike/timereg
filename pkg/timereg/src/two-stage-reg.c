@@ -8,21 +8,21 @@ antpers,start,stop, Nit,
 detail, id,status, ratesim, robust, clusters,
 antclust,betafixed, theta, vartheta,thetascore, inverse,
 clustsize,desthetaI, ptheta,SthetaI,step,idiclust,notaylor,gamiid,biid,semi,cumhaz,
-cumhazleft,lefttrunk,rr)
+cumhazleft,lefttrunk,rr,maxtimesim,timegroup)
 double *designX,*designG,*times,*start,*stop,*theta,*vartheta,*thetascore,*desthetaI,*SthetaI,*step,*gamiid,*biid,*cumhaz,*cumhazleft,*rr;
 int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
-*clusters,*antclust,*betafixed,*inverse,*clustsize,*ptheta,*idiclust,*notaylor,*semi,*lefttrunk;
+*clusters,*antclust,*betafixed,*inverse,*clustsize,*ptheta,*idiclust,*notaylor,*semi,*lefttrunk,*maxtimesim,*timegroup;
 {
 // {{{ defining variables
   matrix *ldesG0,*cdesX2;
   matrix *destheta,*d2UItheta,*d2Utheta,*varthetascore,*Sthetaiid[*antclust],*Stheta; 
   matrix *Ftilde,*Gtilde;
+  matrix *Biid[*antclust]; 
   vector *lamt,*lamtt,*offset,*weight,*one;
   vector *tmpv1,*xi,*zi,*reszpbeta,*res1dim; 
   vector *vthetascore,*vtheta1,*vtheta2,*dtheta,*thetaiid[*antclust]; 
   vector *dbetaNH[*antclust],*dANH[*antclust]; 
   vector *dAiid[*antclust],*gammaiid[*antclust]; 
-  matrix *Biid[*antclust]; 
   int c,i,j,k,l,s,it,pmax,v,
       *cluster=calloc(*antpers,sizeof(int));
   double *Nt=calloc(*antclust,sizeof(double)),dummy,ll,lle;
@@ -37,7 +37,8 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
   int *ipers=calloc(*Ntimes,sizeof(int));
 
   for (j=0;j<*antclust;j++) { Nt[j]=0; NH[j]=0; 
-   if (*notaylor==0) { malloc_vec(*pg,gammaiid[j]); malloc_mat(*Ntimes,*px,Biid[j]);}
+   if (*notaylor==0) { malloc_vec(*pg,gammaiid[j]); 
+	   malloc_mat(*maxtimesim,*px,Biid[j]);}
     malloc_vec(*pg,dbetaNH[j]); malloc_vec(*px,dANH[j]);  malloc_vec(*ptheta,dAiid[j]); 
     malloc_vec(*ptheta,thetaiid[j]); malloc_mat(*ptheta,*ptheta,Sthetaiid[j]); 
   }
@@ -70,8 +71,8 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
   if (*notaylor==0) {
   for (i=0;i<*antclust;i++) for (j=0;j<*pg;j++) VE(gammaiid[i],j)=gamiid[j*(*antclust)+i]; 
 
-   for (i=0;i<*antclust;i++) for (s=0;s<*Ntimes;s++) 
-   for (c=0;c<*px;c++) {l=i*(*px)+c; ME(Biid[i],s,c)=biid[l*(*Ntimes)+s]; }
+   for (i=0;i<*antclust;i++) for (s=0;s<*maxtimesim;s++) 
+   for (c=0;c<*px;c++) {l=i*(*px)+c; ME(Biid[i],s,c)=biid[l*(*maxtimesim)+s]; }
     }
  
 
@@ -265,7 +266,8 @@ for(j=0;j<pmax;j++) {
 	  }
 	}  
 	}
-	extract_row(Biid[k],s,tmpv1); extract_row(Biid[k],s-1,xi); 
+	extract_row(Biid[k],timegroup[s],tmpv1); 
+	extract_row(Biid[k],timegroup[s]-1,xi); 
 	vec_subtr(tmpv1,xi,xi); Mv(Ftilde,xi,vtheta2); 
 	vec_add(dAiid[k],vtheta2,dAiid[k]); 
       }  // }}}
