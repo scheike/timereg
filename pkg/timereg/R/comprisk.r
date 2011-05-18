@@ -8,8 +8,9 @@ weights=NULL,max.clust=NULL){
 # trans=2 P_1=1-exp(-exp(x a(t)+ z` b )
 # trans=6 P_1=1-exp(-x a(t) exp(z` b )) is not good numerically
 # trans=3 logit(P_1)=(x a(t)+ z` b)
-# trans=4 P_1=exp( ( x' b(b)+ z' gam t) ), 
-# trans=5 P_1= (x' b(t)) exp( z' gam t), 
+# trans=4 P_1=exp( ( x' b(b)+ z' gam ) ), 
+# trans=5 P_1= (x' b(t)) exp( z' gam ), 
+# trans=6 P_1=1-exp(-x a(t) exp(z` b )
   if (model=="additive") trans<-1; 
   if (model=="prop")     trans<-2; 
   if (model=="logistic") trans<-3; 
@@ -147,8 +148,8 @@ if (is.null(weights)==TRUE) weights <- rep(1,n);
   if (is.null(time.pow.test)==TRUE & model=="prop" )     time.pow.test<-rep(0,px); 
   if (is.null(time.pow.test)==TRUE & model=="fg" )     time.pow.test<-rep(0,px); 
   if (is.null(time.pow.test)==TRUE & model=="additive")  time.pow.test<-rep(1,px); 
-  if (is.null(time.pow.test)==TRUE & model=="rcif" )    time.pow.test<-rep(1,px); 
-  if (is.null(time.pow.test)==TRUE & model=="rcif2" )   time.pow.test<-rep(1,px); 
+  if (is.null(time.pow.test)==TRUE & model=="rcif" )    time.pow.test<-rep(0,px); 
+  if (is.null(time.pow.test)==TRUE & model=="rcif2" )   time.pow.test<-rep(0,px); 
   if (is.null(time.pow.test)==TRUE & model=="logistic" ) time.pow.test<-rep(0,px); 
 
   silent <- c(silent,rep(0,ntimes-1));
