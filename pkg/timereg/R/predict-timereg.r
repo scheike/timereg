@@ -204,7 +204,6 @@ predict.timereg<-function(object,newdata=NULL,X=NULL,
     delta<-c();
     for (i in 1:n) {
        tmp<- as.matrix(time.vars) %*% t(object$B.iid[[i]]) 
-       if (i==1) print(dim(tmp))
 
        if (semi==TRUE) {
 ###       if (inherits(object,'comprisk')) {
@@ -422,7 +421,7 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
 print.predict.timereg <- function(x,...){ ## {{{
 
   object <- x; rm(x);
-  if(!(inherits(object,'timereg') )) stop('Wrong class of object');
+  if(!(inherits(object,'predict.timereg') )) stop('Wrong class of object');
 ###	  || inherits(object,'predictCoxAalen') ||
 ###       inherits(object,'predictComprisk'))){
 ###    stop('Wrong class of object');
@@ -457,7 +456,7 @@ print.predict.timereg <- function(x,...){ ## {{{
 
 summary.predict.timereg <- function(object,...){ ## {{{
 
-  if(!(inherits(object,'timereg') )) stop('Wrong class of object');
+  if(!(inherits(object,'predict.timereg') )) stop('Wrong class of object');
 ###  if(!(inherits(object,'predictAalen') ||
 ###       inherits(object,'predictCoxAalen') ||
 ###       inherits(object,'predictComprisk'))){

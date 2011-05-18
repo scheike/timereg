@@ -30,6 +30,9 @@
 \alias{summary.two.stage}
 \alias{predict.two.stage}
 \alias{plot.cums}
+\alias{plot.comprisk}
+\alias{plot.predict.comprisk}
+\alias{plot.predict.timereg}
 \alias{pava}
 \alias{plotScore}
 \alias{summary.comprisk}

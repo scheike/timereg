@@ -5,8 +5,11 @@
 \alias{mycoef.lars}
 \alias{mypredict.lars}
 \title{Fits LASSO model for  additive hazards model by Lars
-algorithm}
+algorithm. Use ahazpen package instead !
+}
 \description{
+Use ahazpen package instead !
+
 Fits the LASSO estimator for the additive risk
 model based on the least squares fitting criterion
 
