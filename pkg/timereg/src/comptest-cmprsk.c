@@ -28,11 +28,14 @@ matrix **W4t;
   GetRNGstate();  /* to use R random normals */
 
   stime=times[0];
+  stime=0;
   mtime=times[(*Ntimes-1)]-stime; 
-  tau=times[(*Ntimes-1)]-times[0]; Ut[0]=times[0]; 
-  if (*weighted==0) {
+  tau=times[(*Ntimes-1)]-stime; 
+  Ut[0]=times[0]; 
+  if (*weighted==3) {
     if (*line==0) for (i=0;i<*px;i++) cumweight[i]=tau;
-    else for (i=0;i<*px;i++) cumweight[i]=mtime*mtime*0.5;}
+    else for (i=0;i<*px;i++) cumweight[i]=mtime*mtime*0.5;
+  }
 
   /* computation of constant effects */ 
   for (i=0;i<*px;i++) {
@@ -78,7 +81,7 @@ matrix **W4t;
   for (s=1;s<*Ntimes;s++)
   if (vcu[0*(*Ntimes)+s]>0)  
   {
-      time=times[s]-times[0];dtime=times[s]-times[s-1];
+      time=times[s]-stime; dtime=times[s]-times[s-1];
    
      for (i=1;i<=*px;i++) 
 	     {
@@ -122,7 +125,7 @@ matrix **W4t;
 
     for (s=1;s<*Ntimes;s++)  
     if (vcu[0*(*Ntimes)+s]>0) {
-      time=times[s]-times[0]; dtime=times[s]-times[s-1]; 
+      time=times[s]-stime; dtime=times[s]-times[s-1]; 
       extract_row(Delta,s,rowX); 
 //      if (*line==1) scl_vec_mult(times[s],tmpv1,tmpv1t); 
       for (i=0;i<*px;i++) VE(tmpv1t,i)=VE(tmpv1,i)*pow(time,timepow[i]);; 

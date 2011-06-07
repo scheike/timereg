@@ -18,7 +18,7 @@ We consider the following models :
 g(t,x,z) = x^T A(t) + (diag(t^p) z)^T \beta
 }
 2)  
-the proportional setting that includes the Fine & Gray (FG) model and
+the proportional setting that includes the Fine & Gray (FG) "prop" model and
 some extensions where 
 \eqn{h(x)=1-\exp(-\exp(x))} and 
 \deqn{
@@ -26,7 +26,7 @@ g(t,x,z) = \exp(x^T A(t) + (diag(t^p) z)^T \beta)
 }
 The FG model is obtained when \eqn{x=1}. 
 
-3) a logistic model where 
+3) a "logistic" model where 
 \eqn{h(x)=\exp(x)/( 1+\exp(x))} and 
 \deqn{
 g(t,x,z) = x^T A(t) + (diag(t^p) z)^T \beta
@@ -37,7 +37,6 @@ g(t,x,z) = x^T A(t) + (diag(t^p) z)^T \beta
 \deqn{
 g(t,x,z) = x^T A(t) + (diag(t^p) z)^T \beta
 }) 
-
 Where p by default is 1 for the additive model and 0 for 
 the other models.
 In general p may be powers of the same length as z. 
@@ -61,13 +60,14 @@ weights=NULL,max.clust=NULL)
 \item{cause}{specifies the causes  related to the death
 	times, the value 0 is the censoring value.}
 \item{times}{specifies the times at which the estimator is
-	considered. The default is all cause "1" jump times.}
+	considered. The default is cause "1" jump times, with the first 
+ 10 percent or max 20 jump points removed for numerical stability in simulations.}
 \item{Nit}{number of iterations for Newton-Raphson algorithm.}
 \item{clusters}{specifies cluster structure, for backwards compability.}
 \item{gamma}{starting value for constant effects.}
 \item{n.sim}{number of simulations in resampling.}
 \item{weighted}{Not implemented. To compute a variance weighted version of the test-processes used for testing time-varying effects.}
-\item{model}{"additive", "prop"ortional or "logistic".}
+\item{model}{"additive", "prop"ortional, "rcif", or "logistic".}
 \item{causeS}{specificies which cause we consider.}
 \item{cens.code}{specificies the code for the censoring.}
 \item{detail}{if 0 no details are printed during iterations, if 1 details are given.}

@@ -8,9 +8,8 @@ weights=NULL,max.clust=NULL){
 # trans=2 P_1=1-exp(-exp(x a(t)+ z` b )
 # trans=6 P_1=1-exp(-x a(t) exp(z` b )) is not good numerically
 # trans=3 logit(P_1)=(x a(t)+ z` b)
-# trans=4 P_1=exp( ( x' b(b)+ z' gam ) ), 
-# trans=5 P_1= (x' b(t)) exp( z' gam ), 
-# trans=6 P_1=1-exp(-x a(t) exp(z` b )
+# trans=4 P_1=exp( ( x' b(b)+ z' gam t) ), 
+# trans=5 P_1= (x' b(t)) exp( z' gam t), 
   if (model=="additive") trans<-1; 
   if (model=="prop")     trans<-2; 
   if (model=="logistic") trans<-3; 
@@ -18,7 +17,7 @@ weights=NULL,max.clust=NULL){
   if (model=="rcif2")    trans<-5; 
   if (model=="fg")       trans<-6; 
   line <- 0
-  m<-match.call(expand.dots = FALSE);
+  m<-match.call(expand = FALSE);
   m$gamma<-m$times<-m$cause<-m$Nit<-m$weighted<-m$n.sim<-
     m$model<-m$causeS<- m$detail<- m$cens.model<-m$time.pow<-m$silent<- 
     m$cens.code<-m$interval<- m$clusters<-m$resample.iid<-
@@ -75,7 +74,9 @@ weights=NULL,max.clust=NULL){
   pxz <-px+pz;
 
   if (is.null(times)) {times<-sort(unique(time2[cause==causeS])); 
-                       ###times<-times[-c(1:5)];
+                       remove.early <- round(sum(cause==causeS)/(1/0.01))
+                       remove.early <- min(remove.early,20); 
+                       times<-times[-c(1:remove.early)];
   } else times <- sort(times); 
 
   n<-nrow(X); ntimes<-length(times);
@@ -148,8 +149,8 @@ if (is.null(weights)==TRUE) weights <- rep(1,n);
   if (is.null(time.pow.test)==TRUE & model=="prop" )     time.pow.test<-rep(0,px); 
   if (is.null(time.pow.test)==TRUE & model=="fg" )     time.pow.test<-rep(0,px); 
   if (is.null(time.pow.test)==TRUE & model=="additive")  time.pow.test<-rep(1,px); 
-  if (is.null(time.pow.test)==TRUE & model=="rcif" )    time.pow.test<-rep(0,px); 
-  if (is.null(time.pow.test)==TRUE & model=="rcif2" )   time.pow.test<-rep(0,px); 
+  if (is.null(time.pow.test)==TRUE & model=="rcif" )    time.pow.test<-rep(1,px); 
+  if (is.null(time.pow.test)==TRUE & model=="rcif2" )   time.pow.test<-rep(1,px); 
   if (is.null(time.pow.test)==TRUE & model=="logistic" ) time.pow.test<-rep(0,px); 
 
   silent <- c(silent,rep(0,ntimes-1));

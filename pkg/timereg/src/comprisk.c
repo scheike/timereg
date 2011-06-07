@@ -66,7 +66,8 @@ for (s=0;s<*Ntimes;s++)
       extract_row(X,j,xi); 
       VE(bhat,j)=vec_prod(xi,bet1); 
 
-      if (*trans==1) {VE(pbhat,j)=1-exp(-VE(bhat,j));
+      if (*trans==1) {
+	VE(pbhat,j)=1-exp(-VE(bhat,j));
 	scl_vec_mult(1-VE(pbhat,j),xi,dp);}
       if (*trans==2) {
 	VE(pbhat,j)=1-exp(-exp(VE(bhat,j))); 
@@ -152,8 +153,7 @@ if (convt==1 ) {
       extract_row(cX,i,dp); scl_vec_mult(VE(Y,i),dp,dp); 
       vec_add(dp,cumA[j],cumA[j]); 
 
-      if ((time==x[i])&(delta[i]==0))vec_add(qs,cumhatA[j],cumhatA[j]);  
-
+//      if ((time==x[i])&(delta[i]==0))vec_add(qs,cumhatA[j],cumhatA[j]);  
       if (s<-1) print_vec(dp2); 
    }
 
@@ -331,31 +331,31 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
            }
 	   if (*trans==4) {
 //             if (timem>0)  { 
-	        for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
+	      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
+	      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l); // *pow(time,timepow[l]); 
 //	   } else lrr=VE(pghat,j);  
 	      VE(rr,j)=lrr;  
 	      VE(plamt,j)=exp(VE(pbhat,j)+lrr); 
 	      scl_vec_mult(VE(plamt,j),xi,xi); 
 	      scl_vec_mult(VE(plamt,j),zi,zi); 
 //	      if (timem>0) 
-	      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
            }
 	   if (*trans==5) {
-	      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
+	      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
+	      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l); // *pow(time,timepow[l]); 
 	      VE(rr,j)=lrr;  
 	      VE(plamt,j)=VE(pbhat,j)*exp(lrr); 
 	      scl_vec_mult(exp(lrr),xi,xi); 
 	      scl_vec_mult(VE(plamt,j),zi,zi); 
 //	      if (timem>0) 
-	      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
            }
            if (*trans==6) { 
-	      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
+	      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
+	      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l); // *pow(time,timepow[l]); 
 	      VE(rr,j)=exp(lrr);  
 	      VE(plamt,j)=1-exp(-VE(pbhat,j)*VE(rr,j)); 
 	      scl_vec_mult((1-VE(plamt,j))*VE(rr,j),xi,xi); 
 	      scl_vec_mult((1-VE(plamt,j))*(VE(pbhat,j))*VE(rr,j),zi,zi); 
-	      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
 	    }
 	   // }}}
 	   
