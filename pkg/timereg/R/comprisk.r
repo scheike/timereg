@@ -2,7 +2,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 clusters=NULL,gamma=0,n.sim=500,weighted=0,model="additive",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
-weights=NULL,max.clust=NULL){
+weights=NULL,max.clust=NULL,n.times=50,p.start=0.05){
 ## {{{
 # trans=1 P_1=1-exp( - ( x' b(b)+ z' gam t) ), 
 # trans=2 P_1=1-exp(-exp(x a(t)+ z` b )
@@ -18,10 +18,10 @@ weights=NULL,max.clust=NULL){
   if (model=="fg")       trans<-6; 
   line <- 0
   m<-match.call(expand = FALSE);
-  m$gamma<-m$times<-m$cause<-m$Nit<-m$weighted<-m$n.sim<-
+  m$gamma<-m$times<-m$n.times<-m$cause<-m$Nit<-m$weighted<-m$n.sim<-
     m$model<-m$causeS<- m$detail<- m$cens.model<-m$time.pow<-m$silent<- 
     m$cens.code<-m$interval<- m$clusters<-m$resample.iid<-
-    m$time.pow.test<-m$conv<- m$weights  <- m$max.clust <- NULL
+    m$time.pow.test<-m$conv<- m$weights  <- m$max.clust <- m$p.start <- NULL
   special <- c("const","cluster")
   if (missing(data)) {
     Terms <- terms(formula, special)
@@ -70,13 +70,13 @@ weights=NULL,max.clust=NULL){
       }
    }                                                         
 
-   
   pxz <-px+pz;
 
-  if (is.null(times)) {times<-sort(unique(time2[cause==causeS])); 
-                       remove.early <- round(sum(cause==causeS)/(1/0.01))
-                       remove.early <- min(remove.early,20); 
-                       times<-times[-c(1:remove.early)];
+  if (is.null(times)) {
+          timesc<-sort(unique(time2[cause==causeS])); 
+	  if ((!is.null(n.times))) {
+	  if (length(timesc)> n.times) times <- quantile(timesc,prob=seq(p.start,1,length=n.times)) 
+	  } else {times<-timesc; times<-times[times> quantile(timesc,prob=p.start)]; }
   } else times <- sort(times); 
 
   n<-nrow(X); ntimes<-length(times);

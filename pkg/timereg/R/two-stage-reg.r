@@ -44,11 +44,11 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=1,notaylor=0)
   Ntimes <- sum(status[time2<maxtimes])+1; 
 
   Biid<-c(); gamma.iid <- 0; 
+  if (is.null(margsurv$B.iid)) notaylor <- 1; 
   if (notaylor==0) {
     if (!is.null(margsurv$B.iid))
     for (i in 1:antclust) Biid<-cbind(Biid,margsurv$B.iid[[i]]); 
     if (!is.null(margsurv$gamma.iid)) gamma.iid<-margsurv$gamma.iid;
-    if ((is.null(margsurv$B.iid))) notaylor <- 1; 
     if (is.null(margsurv$time.sim.resolution)) { 
 	   time.group <- 1:nrow(Biid); 
            maxtimesim <- Ntimes+1; }  

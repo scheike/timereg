@@ -44,6 +44,7 @@ aalen<-function (formula = formula(data),
   start.call <- survs$start
   status<-survs$status; 
   dtimes <- sort(survs$stop[survs$status==1])
+  orig.clust <- survs$antclust
 
   nobs <- nrow(X); 
 
