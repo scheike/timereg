@@ -146,8 +146,8 @@ ldata<-list(start=survs$start,stop=survs$stop,
   attr(ud, "start") <- start.call
   attr(ud, "status") <- survs$status
   attr(ud, "residuals") <- residuals
-  attr(ud,"max.clust")<-max.clust; 
-  attr(ud,"orig.max.clust")<- orig.max.clust 
+  attr(ud, "max.clust") <- max.clust; 
+  attr(ud, "orig.max.clust") <- orig.max.clust 
   class(ud) <- "aalen"
   ud$call<-call
   return(ud)
