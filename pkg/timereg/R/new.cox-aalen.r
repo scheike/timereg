@@ -46,9 +46,9 @@ max.timepoint.sim=100)
   start.call <- start <-  survs$start; 
   stop.call <- time2 <- survs$stop; 
   status<-survs$status;
+  orig.max.clust <- survs$antclust
 
-  ldata<-list(start=survs$start,stop=survs$stop,
-              antpers=survs$antpers,antclust=survs$antclust);
+  ldata<-list(start=survs$start,stop=survs$stop,antpers=survs$antpers,antclust=survs$antclust);
 
   nobs <- nrow(X); 
   if (is.null(weights)) weights <- rep(1,nrow(X));  
@@ -150,6 +150,8 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
   attr(ud,"beta.fixed")<-beta.fixed
   attr(ud,"status")<-survs$status; 
   attr(ud,"residuals")<-residuals; 
+  attr(ud,"max.clust")<-max.clust; 
+  attr(ud,"orig.max.clust")<- orig.max.clust 
   attr(ud,"max.timepoint.sim")<-max.timepoint.sim; 
   ud$call<-call
 

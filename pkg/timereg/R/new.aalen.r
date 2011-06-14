@@ -44,7 +44,7 @@ aalen<-function (formula = formula(data),
   start.call <- survs$start
   status<-survs$status; 
   dtimes <- sort(survs$stop[survs$status==1])
-  orig.clust <- survs$antclust
+  orig.max.clust <- survs$antclust
 
   nobs <- nrow(X); 
 
@@ -146,6 +146,8 @@ ldata<-list(start=survs$start,stop=survs$stop,
   attr(ud, "start") <- start.call
   attr(ud, "status") <- survs$status
   attr(ud, "residuals") <- residuals
+  attr(ud,"max.clust")<-max.clust; 
+  attr(ud,"orig.max.clust")<- orig.max.clust 
   class(ud) <- "aalen"
   ud$call<-call
   return(ud)
