@@ -19,7 +19,7 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=1,notaylor=0)
   px<-ncol(X);
   antclust <- length(unique(clusters))
 
-  if (!is.na(attr(margsurv,"max.clust")))
+  if (!is.null(attr(margsurv,"max.clust")))
   if (attr(margsurv,"max.clust")< attr(margsurv,"orig.max.clust")) 
 	  cat("Probably want to estimate marginal model with max.clust=NULL\n"); 
 
