@@ -142,16 +142,18 @@ if (is.null(weights)==TRUE) weights <- rep(1,n);
   if (is.null(time.pow)==TRUE & model=="prop" )     time.pow<-rep(0,pg); 
   if (is.null(time.pow)==TRUE & model=="fg" )     time.pow<-rep(0,pg); 
   if (is.null(time.pow)==TRUE & model=="additive")  time.pow<-rep(1,pg); 
-  if (is.null(time.pow)==TRUE & model=="rcif" )     time.pow<-rep(1,pg); 
-  if (is.null(time.pow)==TRUE & model=="rcif2" )     time.pow<-rep(1,pg); 
+  if (is.null(time.pow)==TRUE & model=="rcif" )     time.pow<-rep(0,pg); 
+  if (is.null(time.pow)==TRUE & model=="rcif2" )     time.pow<-rep(0,pg); 
   if (is.null(time.pow)==TRUE & model=="logistic" ) time.pow<-rep(0,pg); 
+  if (length(time.pow)!=pg) time.pow <- rep(time.pow[1],pg); 
 
   if (is.null(time.pow.test)==TRUE & model=="prop" )     time.pow.test<-rep(0,px); 
   if (is.null(time.pow.test)==TRUE & model=="fg" )     time.pow.test<-rep(0,px); 
   if (is.null(time.pow.test)==TRUE & model=="additive")  time.pow.test<-rep(1,px); 
-  if (is.null(time.pow.test)==TRUE & model=="rcif" )    time.pow.test<-rep(1,px); 
-  if (is.null(time.pow.test)==TRUE & model=="rcif2" )   time.pow.test<-rep(1,px); 
+  if (is.null(time.pow.test)==TRUE & model=="rcif" )    time.pow.test<-rep(0,px); 
+  if (is.null(time.pow.test)==TRUE & model=="rcif2" )   time.pow.test<-rep(0,px); 
   if (is.null(time.pow.test)==TRUE & model=="logistic" ) time.pow.test<-rep(0,px); 
+  if (length(time.pow)!=px) time.pow <- rep(time.pow.test[1],px); 
 
   silent <- c(silent,rep(0,ntimes-1));
   ## }}}
