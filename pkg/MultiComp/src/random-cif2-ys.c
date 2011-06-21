@@ -117,10 +117,9 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,*antc
           for (c=0;c<clustsize[j];c++) for (v=0;v<clustsize[j];v++) 
 	  if (v!=c) { 
 	    i=clusterindex[c*(*antclust)+j]; k=clusterindex[v*(*antclust)+j];
-            response=(((x[i]<=time) & (cause[i]==*CA1))*1*
-	              ((x[k]<=time) & (cause[k]==*CA1))*1); 
+            response=(((x[i]<=time) & (cause[i]==*CA1))*1*((x[k]<=time) & (cause[k]==*CA1))*1); 
 
-       if ((entryage[i] < time) && (entryage[k]< time)) {
+       if ((entryage[i] < time) && (entryage[k]< time)) { 
 
 	 if (*samecens==1) response=response/min(KMc[i],KMc[k]); else
 	 {response=response/(KMc[i]*KMc[k]);}

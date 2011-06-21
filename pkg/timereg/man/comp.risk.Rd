@@ -46,7 +46,8 @@ comp.risk(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 clusters=NULL,gamma=0,n.sim=500,weighted=0,model="additive",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
-weights=NULL,max.clust=NULL,p.start=0.05,n.times=50)
+weights=NULL,max.clust=NULL,n.times=50,first.time.p=0.05,
+trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL)
 }
 \arguments{
 \item{formula}{a formula object, with the response on the left of a '~'
@@ -86,8 +87,12 @@ additive model and 0 for the proportional model.}
 \item{max.clust}{sets the total number of i.i.d. terms in i.i.d. decompostition. This can limit the amount of memory used by coarsening 
 the clusters. When NULL then all clusters are used. 
 Default is 1000 to save memory and time. } 
-\item{p.start}{first point for estimation is 5th percentile of causeS jump times.}
+\item{first.time.p}{first point for estimation is pth percentile of causeS jump times.}
 \item{n.times}{only uses 50 points for estimation, if NULL then uses all points, subject to p.start condition.}
+\item{trunc.p}{truncation weight for delayed entry, P(T > entry.time).}
+\item{entry.time}{entry times}
+\item{cens.weight}{censoring weights can be given here rather than calculated using the KM, cox or aalen models.}
+\item{admin.cens}{censoring times for the administrative censoring}
 }
 \value{returns an object of type 'comprisk'. With the following arguments:
 \item{cum}{cumulative timevarying regression coefficient estimates are 

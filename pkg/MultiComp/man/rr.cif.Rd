@@ -20,8 +20,9 @@ see example below, but the default is that it is simply \eqn{\theta^T z}.
 rr.cif(cif,data=sys.parent(),cause,times=NULL,
 cause1=1,cause2=1,cens.code=0,cif2=NULL,cens.model="KM",Nit=40,detail=0,
 clusters=NULL,theta=NULL,theta.des=NULL,parfunc=NULL,dparfunc=NULL,
-step=1,sym=1,colnames=NULL,dimpar=NULL,weights=NULL,
-notaylor=0,same.cens=FALSE,stab.cens=FALSE,entry=NULL,estimator=1,trunkp=1)
+step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,
+notaylor=0,same.cens=FALSE,stab.cens=FALSE,entry=NULL,estimator=1,trunkp=1,
+admin.cens=NULL)
 }
 \arguments{
 \item{cif}{a model object from the comp.risk function with the 
@@ -45,7 +46,7 @@ odds the comparision is made with respect to}
 \item{dparfunc}{R-function to specify the derivative of the parfunc function with respect to
 the parameters.}
 \item{step}{specifies the step size for the Newton-Raphson algorithm.}
-\item{sym}{specifies if symmetry is used in the model.}
+\item{sym}{specifies if symmetry is used in the model, for sym=0 uses only pairs i<j for concordance.}
 \item{colnames}{specifies possible colnames to go with the parameters.}
 \item{dimpar}{number of parameters in case where functions specify the model.}
 \item{weights}{weights for estimating equations.}
@@ -58,6 +59,7 @@ equations, and to restrict attention to those s where Gc() is positive.}
 \item{entry}{entry-age in case of delayed entry. Then two causes must be given.} 
 \item{estimator}{gives a design to fit models for each strata (cause combinations).} 
 \item{trunkp}{gives probability of survival for delayed entry, and related to entry-ages given above.}
+\item{admin.cens}{censoring times for administrative censoring.}
 }
 \value{returns an object of type 'cor'. With the following arguments:
 \item{theta}{estimate of proportional odds parameters of model.}

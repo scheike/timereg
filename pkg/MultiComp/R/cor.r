@@ -199,8 +199,8 @@ return(ud);
 rr.cif<-function(cif,data=sys.parent(),cause,times=NULL,
 cause1=1,cause2=1,cens.code=0,cif2=NULL,cens.model="KM",Nit=40,detail=0,
 clusters=NULL,theta=NULL,theta.des=NULL,parfunc=NULL,dparfunc=NULL,
-step=1,sym=1,colnames=NULL,dimpar=NULL,weights=NULL,notaylor=0,
-same.cens=FALSE,stab.cens=FALSE,entry=NULL,estimator=1,trunkp=1)
+step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,notaylor=0,
+same.cens=FALSE,stab.cens=FALSE,entry=NULL,estimator=1,trunkp=1,admin.cens=NULL)
 { ## {{{
 ## {{{ set up data and design
  multi=0; dscore=0; 
@@ -235,7 +235,6 @@ X2<-0; Z2<-0; pg2<-1; px2<-1;  semi2<-0; est2<-0; gamma2<-0;
 npar2<-FALSE; est2 <- 0; 
 }
 
-if (is.null(weights)==TRUE) weights <- rep(1,antpers); 
 if (is.null(entry)) entry.call <- NULL else entry.call <- 0
 if (is.null(entry)) entry <- rep(0,antpers); 
 cum1<-Cpred(rbind(rep(0,px+1),cif$cum),entry)[,-1];
@@ -244,35 +243,62 @@ if (cause1!=cause2) {
 cum2<-Cpred(rbind(rep(0,px2+1),cif2$cum),entry)[,-1];
 cif2entry  <-  1-exp(-apply(X2*cum2,1,sum)- (Z2 %*% gamma2 )*entry)
 } else {cum2 <- cum1; cif2entry <- cif1entry;}
-Gcxe <- 1; 
 ## }}}
 
 ## {{{ censoring model stuff
-  if (cens.model=="KM") {
+cens.weight <- cif$cens.weight ### censoring weights from cif function
+Gcxe <- 1; 
+
+if ((estimator<=1)) {
+if (is.null(cens.weight)) {
+  if (cens.model=="KM") { ## {{{
     ud.cens<-survfit(Surv(time,cause==cens.code)~+1); 
     Gfit<-cbind(ud.cens$time,ud.cens$surv)
     Gfit<-rbind(c(0,1),Gfit); 
     Gcx<-Cpred(Gfit,time)[,2];
     if (is.null(entry.call)==FALSE) Gcxe<-Cpred(Gfit,entry)[,2];
-    if (min(Gcx)< 0.00001) { 
-	    cat("Censoring dist. zero for some points, summary cens:\n");
-	    print(summary(Gcx)) 
-    }
      Gcx <- Gcx/Gcxe; 
-     Gctimes<-Cpred(Gfit,times)[,2];
-  }
-  if (cens.model=="cox") {
+     Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
+  } else if (cens.model=="cox") { ## {{{
     if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
     ud.cens<-cox.aalen(Surv(time,cause==cens.code)~prop(XZ),n.sim=0,robust=0);
     Gcx<-Cpred(ud.cens$cum,time)[,2];
     RR<-exp(XZ %*% ud.cens$gamma)
     Gcx<-exp(-Gcx*RR)
     Gfit<-rbind(c(0,1),cbind(time,Gcx)); 
-    Gctimes<-Cpred(Gfit,times)[,2];
-  }
+    if (is.null(entry.call)==FALSE) {
+	    Gcxe<-Cpred(Gfit,entry)[,2];
+            Gcxe<-exp(-Gcxe*RR)
+    }
+    Gcx <- Gcx/Gcxe; 
+    Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
+  } else if (cens.model=="aalen") {  ## {{{
+    if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
+    ud.cens<-aalen(Surv(time,cause==cens.code)~XZ,n.sim=0,robust=0);
+    Gcx<-Cpred(ud.cens$cum,time)[,-1];
+    XZ<-cbind(1,XZ); 
+    Gcx<-exp(-apply(Gcx*XZ,1,sum))
+    Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
+    Gfit<-rbind(c(0,1),cbind(time,Gcx)); 
+    if (is.null(entry.call)==FALSE) {
+	    Gcxe<-Cpred(Gfit,entry)[,-1];
+            Gcxe<-exp(-apply(Gcxe*XZ,1,sum))
+            Gcxe[Gcxe>1]<-1; Gcxe[Gcxe<0]<-0
+    }
+    Gcx <- Gcx/Gcxe; 
+    Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
+    } else { stop('Unknown censoring model') }
+    if (min(Gcx)< 0.00001) { 
+	    cat("Censoring dist. zero for some points, summary cens:\n");
+	    print(summary(Gcx)) 
+    }
+} else Gcx <- cif$cens.weight
+} else if (estimator==2) { 
+    if (is.null(admin.cens)) stop("admin.cens must give to administrative censoring\n") else Gcx <- admin.cens 
+} else stop("estimator is either 0,1,2, see help \n")
 ## }}}
 
-###print(head(Gcx)); print(head(Gcxe)); 
+###print(head(Gcx)); print(head(Gcxe)); print(head(Gcx)); print(head(Gcxe)); print(length(Gcx)); print(antpers); print(length(entry))
 
 ## {{{ set up cluster + theta design + define iid variables 
   if (is.null(clusters)== TRUE) {clusters<-0:(antpers-1); antclust<-antpers;} else {
@@ -310,6 +336,9 @@ if (npar2==TRUE) gamma2.iid<-0 else  gamma2.iid<-cif2$gamma.iid;
   theta.iid<-matrix(0,antclust,dimpar); 
 
   if (nrow(theta.des)!=nrow(X)) stop("log(RR) design not consistent with data\n"); 
+
+ if (is.null(weights)==TRUE) weights <- rep(1,antclust); 
+ if (length(trunkp)!=antpers) trunkp <- rep(1,antpers)
 ## }}}
 
 ## {{{ function and derivative
@@ -333,8 +362,7 @@ else {
 } 
 ## }}}
 
-if (length(trunkp)==1) trunkp <- rep(1,antpers)
-###dyn.load("cor.so");
+##g#dyn.load("cor.so");
 
  out<-.C("mcifrr", ## {{{
   as.double(times),as.integer(ntimes),as.double(time), as.integer(delta), as.integer(cause), as.integer(cause1),
@@ -343,11 +371,11 @@ if (length(trunkp)==1) trunkp <- rep(1,antpers)
   as.integer(detail), as.double(Biid),as.double(gamma.iid), as.double(time.pow), as.double(theta), as.double(var.theta), 
   as.double(theta.des), as.integer(ptheta), as.integer(antclust), as.integer(clusters), as.integer(clustsize), as.integer(clusterindex),
   as.integer(maxclust), as.double(step) , as.integer(dscore),as.integer(cause2) , as.double(X2),as.integer(px2),
-as.integer(semi2),as.double(Z2), as.integer(pg2), as.double(est2), as.double(gamma2),as.double(B2iid),
-as.double(gamma2.iid), body(htheta),body(dhtheta),new.env(),as.integer(dimpar),as.integer(flex.func),
-as.double(theta.iid),as.integer(sym) , as.double(weights), as.integer(notaylor),
-as.integer(same.cens),as.integer(estimator), 
-as.integer(entry),as.double(cif1entry),as.double(cif2entry),as.double(trunkp),
+ as.integer(semi2),as.double(Z2), as.integer(pg2), as.double(est2), as.double(gamma2),as.double(B2iid),
+ as.double(gamma2.iid), body(htheta),body(dhtheta),new.env(),as.integer(dimpar),as.integer(flex.func),
+ as.double(theta.iid),as.integer(sym),as.double(weights), as.integer(notaylor),
+ as.integer(same.cens),as.integer(estimator), 
+ as.double(entry),as.double(cif1entry),as.double(cif2entry),as.double(trunkp),
 PACKAGE="MultiComp") 
 ## }}}
 

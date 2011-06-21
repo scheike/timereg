@@ -2,7 +2,8 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 clusters=NULL,gamma=0,n.sim=500,weighted=0,model="additive",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
-weights=NULL,max.clust=NULL,n.times=50,p.start=0.05){
+weights=NULL,max.clust=NULL,n.times=50,first.time.p=0.05,
+trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL){
 ## {{{
 # trans=1 P_1=1-exp( - ( x' b(b)+ z' gam t) ), 
 # trans=2 P_1=1-exp(-exp(x a(t)+ z` b )
@@ -21,7 +22,8 @@ weights=NULL,max.clust=NULL,n.times=50,p.start=0.05){
   m$gamma<-m$times<-m$n.times<-m$cause<-m$Nit<-m$weighted<-m$n.sim<-
     m$model<-m$causeS<- m$detail<- m$cens.model<-m$time.pow<-m$silent<- 
     m$cens.code<-m$interval<- m$clusters<-m$resample.iid<-
-    m$time.pow.test<-m$conv<- m$weights  <- m$max.clust <- m$p.start <- NULL
+    m$time.pow.test<-m$conv<- m$weights  <- m$max.clust <- m$first.time.p<- m$trunc.p <- 
+    m$entry.time <- m$cens.weight <- m$admin.cens <- NULL
   special <- c("const","cluster")
   if (missing(data)) {
     Terms <- terms(formula, special)
@@ -75,34 +77,46 @@ weights=NULL,max.clust=NULL,n.times=50,p.start=0.05){
   if (is.null(times)) {
           timesc<-sort(unique(time2[cause==causeS])); 
 	  if ((!is.null(n.times))) {
-	  if (length(timesc)> n.times) times <- quantile(timesc,prob=seq(p.start,1,length=n.times)) 
-	  } else {times<-timesc; times<-times[times> quantile(timesc,prob=p.start)]; }
+	  if (length(timesc)> n.times) times <- quantile(timesc,prob=seq(first.time.p,1,length=n.times)) 
+	  } else {times<-timesc; times<-times[times> quantile(timesc,prob=first.time.p)]; }
   } else times <- sort(times); 
 
   n<-nrow(X); ntimes<-length(times);
   if (npar==TRUE) {Z<-matrix(0,n,1); pg<-1; fixed<-0;} else {fixed<-1;pg<-pz;} 
   delta<-(cause!=cens.code)
 
+if (is.null(entry.time)) entry.call <- NULL else entry.call <- 0
+if (is.null(entry.time)) entry <- rep(0,n) else entry <- entry.time
 if (is.null(weights)==TRUE) weights <- rep(1,n); 
 ## }}}
 
-## {{{ censoring models
-
-  if (cens.model=="KM") {
+## {{{ censoring and estimator
+if (is.null(admin.cens)) estimator <- 1 else estimator  <- 2
+Gcxe <- 1; 
+if (estimator==1) {
+if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncation
+  if (cens.model=="KM") { ## {{{
     ud.cens<-survfit(Surv(time2,cause==cens.code)~+1); 
     Gfit<-cbind(ud.cens$time,ud.cens$surv)
     Gfit<-rbind(c(0,1),Gfit); 
     Gcx<-Cpred(Gfit,time2)[,2];
-    Gctimes<-Cpred(Gfit,times)[,2];
-  } else if (cens.model=="cox") { 
+    if (is.null(entry.time)==FALSE) Gcxe<-Cpred(Gfit,entry)[,2];
+    Gcx <- Gcx/Gcxe; 
+    Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
+  } else if (cens.model=="cox") { ## {{{
     if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
     ud.cens<-cox.aalen(Surv(time2,cause==cens.code)~prop(XZ),n.sim=0,robust=0);
     Gcx<-Cpred(ud.cens$cum,time2)[,2];
     RR<-exp(XZ %*% ud.cens$gamma)
     Gcx<-exp(-Gcx*RR)
     Gfit<-rbind(c(0,1),cbind(time2,Gcx)); 
-    Gctimes<-Cpred(Gfit,times)[,2];
-    } else if (cens.model=="aalen") { 
+    if (is.null(entry.call)==FALSE) {
+	    Gcxe<-Cpred(Gfit,entry)[,2];
+            Gcxe<-exp(-Gcxe*RR)
+    }
+    Gcx <- Gcx/Gcxe; 
+    Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
+  } else if (cens.model=="aalen") {  ## {{{
     if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
     ud.cens<-aalen(Surv(time2,cause==cens.code)~XZ,n.sim=0,robust=0);
     Gcx<-Cpred(ud.cens$cum,time2)[,-1];
@@ -110,11 +124,34 @@ if (is.null(weights)==TRUE) weights <- rep(1,n);
     Gcx<-exp(-apply(Gcx*XZ,1,sum))
     Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
     Gfit<-rbind(c(0,1),cbind(time2,Gcx)); 
-    Gctimes<-Cpred(Gfit,times)[,2];
-    } else { stop('Unknown censoring model') }
+    if (is.null(entry.call)==FALSE) {
+	    Gcxe<-Cpred(Gfit,entry)[,-1];
+            Gcxe<-exp(-apply(Gcxe*XZ,1,sum))
+            Gcxe[Gcxe>1]<-1; Gcxe[Gcxe<0]<-0
+    }
+    Gcx <- Gcx/Gcxe; 
+    Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
+    } else  stop('Unknown censoring model') 
+    cens.weight <- Gcx
+    if ((min(Gcx)< 0.00001) && (silent==0)) { 
+	    cat("Censoring dist. zero for some points, summary cens:\n");
+	    print(summary(Gcx)) 
+    }
+## }}}
+} else { 
+    if (length(cens.weight)!=n) stop("censoring weights must have length equal to nrow in data\n");  
+    Gcx <- cens.weight
+    Gctimes <- rep(1,length(times)); 
+   }
+} else { 
+    if (length(admin.cens)!=n) stop("censoring weights must have length equal to nrow in data\n");  
+    Gcx <- admin.cens
+    Gctimes <- rep(1,length(times)); 
+}
 
+   if (is.null(trunc.p)) trunc.p <- rep(1,n);  
+   if (length(trunc.p)!=n) stop("truncation weights must have same length as data\n"); 
    times<-times[Gctimes>interval]; ntimes<-length(times); 
-
 ## }}}
 
 ## {{{ setting up more variables
@@ -153,7 +190,7 @@ if (is.null(weights)==TRUE) weights <- rep(1,n);
   if (is.null(time.pow.test)==TRUE & model=="rcif" )    time.pow.test<-rep(0,px); 
   if (is.null(time.pow.test)==TRUE & model=="rcif2" )   time.pow.test<-rep(0,px); 
   if (is.null(time.pow.test)==TRUE & model=="logistic" ) time.pow.test<-rep(0,px); 
-  if (length(time.pow)!=px) time.pow <- rep(time.pow.test[1],px); 
+  if (length(time.pow.test)!=px) time.pow.test <- rep(time.pow.test[1],px); 
 
   silent <- c(silent,rep(0,ntimes-1));
   ## }}}
@@ -173,10 +210,10 @@ if (is.null(weights)==TRUE) weights <- rep(1,n);
           as.double(biid),as.double(gamiid),as.integer(resample.iid),
           as.double(time.pow),as.integer(clusters),as.integer(antclust),
           as.double(time.pow.test),as.integer(silent),
-	  as.double(conv),as.double(weights), PACKAGE="timereg") ## }}}
+	  as.double(conv),as.double(weights), as.double(entry),
+	  as.double(trunc.p), as.integer(estimator), PACKAGE="timereg") ## }}}
 
  ## {{{ handling output
-
   gamma<-matrix(out[[24]],pg,1); var.gamma<-matrix(out[[25]],pg,pg); 
   gamma2<-matrix(out[[30]],ps,1); 
   rownames(gamma2)<-covnamesX; 
@@ -217,7 +254,7 @@ if (is.null(weights)==TRUE) weights <- rep(1,n);
           obs.testBeqC<- sim.testBeq0<-sim.testBeqC<-
           sim.testBeqC.is<- pval.testBeqC.is<-
           obs.testBeqC.is<-NULL;
-        }
+  }
 
   est<-matrix(out[[14]],ntimes,ps+1); 
   score<-matrix(out[[12]],ntimes,ps+1); 
@@ -246,7 +283,7 @@ if (is.null(weights)==TRUE) weights <- rep(1,n);
            obs.testBeqC.is=obs.testBeqC.is,
            obs.testBeqC=obs.testBeqC,pval.testBeqC.is=pval.testBeqC.is,
            conf.band=unifCI,B.iid=B.iid,gamma.iid=gamiid,
-           test.procBeqC=Ut,sim.test.procBeqC=UIt,conv=conv)
+           test.procBeqC=Ut,sim.test.procBeqC=UIt,conv=conv,cens.weight=cens.weight)
 
   ud$call<-call; ud$model<-model; ud$n<-n; 
   ud$formula<-formula; class(ud)<-"comprisk"; 
