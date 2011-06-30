@@ -133,7 +133,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,*antc
           ck(ithetak,Li,cifentrylin[k],ckijtv,dckijtv); 
           ck(ithetak,cifentrylin[i],Lk,ckijvt,dckijvt); 
 	  ddd=(dckij[0]+dckijvv[0]-dckijtv[0]-dckijvt[0])/trunkp[i]; 
-	  edd=(ckij[0]+dckijvv[0]-dckijtv[0]-dckijvt[0])/trunkp[i]; 
+	  edd=(ckij[0]+ckijvv[0]-ckijtv[0]-ckijvt[0])/trunkp[i]; 
           if (*dscore==1) response=ddd*Dinverse*(response-edd); 
           else  response=Dinverse*(response-edd); 
           diff=diff+response; 

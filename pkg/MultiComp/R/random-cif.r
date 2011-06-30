@@ -1,7 +1,6 @@
 random.cif<-function(cif,data=sys.parent(),cause,
 causeS=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
-clusters=NULL,theta=NULL,theta.des=NULL,step=1,same.cens=FALSE,
-entry=NULL,trunkp=1,notaylor=0)
+clusters=NULL,theta=NULL,theta.des=NULL,step=1,same.cens=FALSE,entry=NULL,trunkp=1,notaylor=0)
 {
 ## {{{ setting up variables
  multi<-0; inverse<-0; sdscore=1; 
@@ -16,11 +15,12 @@ entry=NULL,trunkp=1,notaylor=0)
   ng<-antpers;px<-ncol(X);  
  #print(dim(X)); print(dim(Z)); 
   times<-cif$cum[,1]; delta<-(cause!=cens.code)
- if (semi==1) gamma<-cif$gamma  else gamma<-0; 
+ if (semi==1) gamma<-c(cif$gamma)  else gamma<-0; 
 if (is.null(entry)) entry.call <- NULL else entry.call <- 0
-if (is.null(entry)) entry <- rep(0,antpers); 
-cum1<-Cpred(rbind(rep(0,px+1),cif$cum),entry)[,-1];
-cif1lin  <-  apply(X*cum1,1,sum) + (Z %*% gamma )*entry
+if (is.null(entry)) { entry <- rep(0,antpers);  cif1lin <- entry;} else {
+   cum1<-Cpred(rbind(rep(0,px+1),cif$cum),entry)[,-1];
+   cif1lin  <-  (Z %*% gamma )*entry + apply(X*cum1,1,sum) 
+}
 Gcxe <- 1; 
 if (length(trunkp)==1) trunkp <- rep(1,antpers)
 ## }}}

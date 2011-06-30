@@ -1,7 +1,7 @@
 Grandom.cif<-function(cif,data=sys.parent(),cause,
 causeS=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
 clusters=NULL,theta=NULL,theta.des=NULL,step=1,design.rv=NULL,link=0,
-notaylor=1,same.cens=FALSE)
+notaylor=1,same.cens=FALSE,entry=NULL,trunkp=1)
 {
 if (is.null(clusters)) stop("Clusters must be specified to estimate correlation\n");
 ### link=1 uses
@@ -18,6 +18,15 @@ if (is.null(clusters)) stop("Clusters must be specified to estimate correlation\
   ng<-antpers;px<-ncol(X);  
  #print(dim(X)); print(dim(Z)); 
   times<-cif$cum[,1]; delta<-(cause!=cens.code)
+ if (semi==1) gamma<-c(cif$gamma)  else gamma<-0; 
+
+if (is.null(entry)) entry.call <- NULL else entry.call <- 0
+if (is.null(entry)) { entry <- rep(0,antpers);  cif1lin <- entry;} else {
+   cum1<-Cpred(rbind(rep(0,px+1),cif$cum),entry)[,-1];
+   cif1lin  <-  (Z %*% gamma )*entry + apply(X*cum1,1,sum) 
+}
+Gcxe <- 1; 
+if (length(trunkp)==1) trunkp <- rep(1,antpers)
 ## }}}
 
 if (is.null(design.rv)==TRUE) design.rv <- matrix(1,antpers,1); 
@@ -30,6 +39,12 @@ dim.rv <- ncol(design.rv);
     Gfit<-cbind(ud.cens$time,ud.cens$surv)
     Gfit<-rbind(c(0,1),Gfit); 
     Gcx<-Cpred(Gfit,time)[,2];
+    if (is.null(entry.call)==FALSE) Gcxe<-Cpred(Gfit,entry)[,2];
+    if (min(Gcx)< 0.00001) { 
+	    cat("Censoring dist. zero for some points, summary cens:\n");
+	    print(summary(Gcx)) 
+    }
+    Gcx <- Gcx/Gcxe; 
     Gctimes<-Cpred(Gfit,times)[,2];
   }
   if (cens.model=="cox") {
@@ -41,8 +56,39 @@ dim.rv <- ncol(design.rv);
     Gfit<-rbind(c(0,1),cbind(time,Gcx)); 
     Gctimes<-Cpred(Gfit,times)[,2];
   }
+  if (cens.model == "aalen") { 
+	  if (npar == TRUE) XZ <- X[, -1] else XZ <- cbind(X, Z)[, -1]
+     ud.cens <- aalen(Surv(time, cause == cens.code) ~ XZ,n.sim = 0, robust = 0)
+     Gcx <- Cpred(ud.cens$cum, time)[, -1]
+     XZ <- cbind(1, XZ) 
+     Gcx <- exp(-apply(Gcx * XZ, 1, sum))
+     Gcx[Gcx < 0] <- 0
+     Gfit <- rbind(c(0, 1), cbind(time, Gcx))
+     Gctimes <- Cpred(Gfit, times)[, 2] 
+  }
   ntimes<-length(times); 
 ## }}}
+###
+##### {{{ censoring weights
+###  if (cens.model=="KM") {
+###    ud.cens<-survfit(Surv(time,cause==cens.code)~+1); 
+###    Gfit<-cbind(ud.cens$time,ud.cens$surv)
+###    Gfit<-rbind(c(0,1),Gfit); 
+###    Gcx<-Cpred(Gfit,time)[,2];
+###    Gctimes<-Cpred(Gfit,times)[,2];
+###  }
+###  if (cens.model=="cox") {
+###    if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
+###    ud.cens<-cox.aalen(Surv(time,cause==cens.code)~prop(XZ),n.sim=0,robust=0);
+###    Gcx<-Cpred(ud.cens$cum,time)[,2];
+###    RR<-exp(XZ %*% ud.cens$gamma)
+###    Gcx<-exp(-Gcx*RR)
+###    Gfit<-rbind(c(0,1),cbind(time,Gcx)); 
+###    Gctimes<-Cpred(Gfit,times)[,2];
+###  }
+###  ntimes<-length(times); 
+##### }}}
+###
 
 ## {{{ cluster + definining variables
   if (is.null(clusters)== TRUE) {clusters<-0:(antpers-1); antclust<-antpers;} else {
@@ -89,6 +135,7 @@ dim.rv <- ncol(design.rv);
   as.integer(inverse), as.integer(sdscore),
   as.double(design.rv),as.integer(dim.rv),as.integer(notaylor),
   as.integer(same.cens),
+  as.double(trunkp), as.double(entry),as.double(cif1lin), 
   PACKAGE="MultiComp") ## }}}
 
 ## {{{ output 
@@ -121,7 +168,7 @@ summary.randomcifrv<-function (object, ...)
 { ## {{{
     if (!inherits(object, "randomcifrv")) 
         stop("Must be a random.cifrv  object")
-    cat("Random effect variances \n\n")
+    cat("Random effect parameters for additive gamma random effects \n\n")
     cat("Cause", attr(object, "cause1"), "and cause", attr(object, 
         "cause2"), fill = TRUE)
     cat("\n")
@@ -142,12 +189,31 @@ coef.randomcifrv<- function (object, digits = 3, ...)
     res <- as.matrix(cbind(res, wald, waldp))
     if (elog==0)  colnames(res) <- c("Coef.", "SE", "z", "P-val")
     if (elog==1) res <- cbind(res,exp(object$theta), exp(object$theta)^2*se)  
-    if (elog==1) colnames(res) <- c("log-parameter","SE","z","P-val",
-	                                "exp(theta)","SE")
+    if (elog==1) colnames(res) <- c("log-parameter","SE","z","P-val","exp(theta)","SE")
 
-    if (is.null((rownames(res))) == TRUE) 
-	    rownames(res) <- rep(" ", nrow(res))
+    if (is.null((rownames(res))) == TRUE) rownames(res) <- rep(" ", nrow(res))
     prmatrix(signif(res, digits))
+
+    cat("\n\n Random effect variances for gamma random effects \n\n")
+    varpar <- theta/sum(theta)^2 
+    res <- as.matrix(varpar); 
+    if (elog==0)  { var.theta <-   object$var.theta; 
+                    df <- 0*var.theta; 
+                    for (i in 1:nrow(var.theta))
+                    df[i,] <- -theta[i]*2*theta; 
+		    diag(df) <- diag(df)+sum(theta)^2
+		    df <- df/sum(theta)^4
+		    var.varpar <- df %*% var.theta %*% df
+                  }
+    if (elog==1)  { 
+	            var.theta <-   object$var.theta; 
+                    var.varpar <- var.theta
+                  }
+    res <- cbind(res,diag(var.varpar)^.5)  
+    colnames(res) <- c("variance","SE")
+    if (is.null((rownames(res))) == TRUE) rownames(res) <- rep(" ", nrow(res))
+    prmatrix(signif(res, digits))
+
 } ## }}}
 
 print.randomcifrv<- function (x , digits = 3, ...) 

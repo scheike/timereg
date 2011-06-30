@@ -39,7 +39,7 @@ with the (k) underlying \eqn{\theta} parameters
 Grandom.cif(cif,data=sys.parent(),cause,
 causeS=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
 clusters=NULL,theta=NULL,theta.des=NULL,step=1,design.rv=NULL,link=0,
-notaylor=1,same.cens=FALSE)
+notaylor=1,same.cens=FALSE,entry=NULL,trunkp=1)
 }
 \arguments{
 \item{cif}{a model object from the comp.risk function with the 
@@ -64,6 +64,8 @@ that is identity matrices of dimension equivalent to number of random effects.}
 \item{notaylor}{if TRUE then the standard errors ignores the uncertainty 
 from the marginal cumulative incidence. This will speed things up considerably.} 
 \item{same.cens}{if true then censoring within clusters are assumed to be the same variable, default is independent censoring.}
+\item{entry}{entryage for delayed entry.}
+\item{trunkp}{truncation probabilities, ie P(T > entryage) estimated from other model.}
 }
 \value{returns an object of type 'cor'. With the following arguments:
 \item{theta}{estimate of parameters of model.}

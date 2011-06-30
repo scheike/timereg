@@ -17,9 +17,11 @@ int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
   vector *VdB,*risk,*SCORE,*W,*Y,*Gc,*DELTA,*CAUSE,*bhat,*pbhat,*beta,*xi,
     *rr,*rowX,*difbeta,*qs,*bhatub,*betaub,*dcovs,*pcovs,*zi,*rowZ,*zgam; 
   vector *cumhatA[*antclust],*cumA[*antclust],*bet1,*gam,*dp,*dp1,*dp2; 
-  int osilent,convt,ps,sing,c,i,j,k,l,s,it,convproblems=0; 
-  double eweight,time,sumscore,totrisk, 
-	 *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double));
+  int osilent,convt,ps,sing,c,i,j,k,l,s,it,convproblems=0,withtrunc=0; 
+  double time,sumscore,totrisk, 
+	 *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
+	 *cifentry=calloc((*n),sizeof(double)),
+	 *cumentry=calloc((*n)*(*px+1),sizeof(double));
   float gasdev(),expdev(),ran1();
   ps=(*px); 
 
@@ -43,8 +45,9 @@ int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 //    if (*trans==0) {for (c=0;c<*pg;c++) VE(gam,c)=betaS[*px+c];}
 
     for (c=0;c<*n;c++) {VE(Gc,c)=KMc[c]; VE(DELTA,c)=delta[c]; 
-      VE(CAUSE,c)=cause[c]; 
-      for(j=0;j<*px;j++)  ME(X,c,j)=z[j*(*n)+c]; 
+	 if (trunkp[c]<1) withtrunc=1; 
+         VE(CAUSE,c)=cause[c]; 
+         for(j=0;j<*px;j++)  ME(X,c,j)=z[j*(*n)+c]; 
 //      if (*trans==0) for(j=0;j<*pg;j++)  ME(Z,c,j)=zsem[j*(*n)+c];
     }
 
@@ -56,6 +59,10 @@ for (s=0;s<*Ntimes;s++)
    time=times[s]; est[s]=time; score[s]=time; var[s]=time;
    convt=1; 
 
+    if (withtrunc==1) { 
+	    Cpred(est,Ntimes,px,entry,n,cumentry); 
+    }
+	
   for (it=0;it<*Nit;it++)
   {
    R_CheckUserInterrupt();
@@ -86,7 +93,7 @@ for (s=0;s<*Ntimes;s++)
       }
       if (*trans==4) {
          VE(pbhat,j)=exp(VE(bhat,j)); 
-	 scl_vec_mult(exp(VE(pbhat,j)),xi,dp);
+	 scl_vec_mult(exp(VE(bhat,j)),xi,dp);
       }
       if (*trans==5) {
          VE(pbhat,j)=VE(bhat,j); 
@@ -148,7 +155,7 @@ for (s=0;s<*Ntimes;s++)
     if (it==*Nit-1) scl_vec_mult(1/totrisk,qs,qs); 
   } /* it */
 
-vec_zeros(VdB); mat_zeros(VAR); 
+	vec_zeros(VdB); mat_zeros(VAR); 
 
 if (convt==1 ) {
    for (j=0;j<*antclust;j++) {vec_zeros(cumA[j]);vec_zeros(cumhatA[j]);}
@@ -205,7 +212,7 @@ if (convt==1 ) {
     free_mat(cumAt[i]);}
 
   }
-free(vcudif); 
+free(vcudif); free(cumentry); free(cifentry);  
 } // }}}
 
 

@@ -5,8 +5,11 @@
                  
 void rcifdes(times,Ntimes,x,delta,cause,CA1,KMc,z,antpers,px,Nit,score,hess,est,
 gamma,semi,zsem,pg,detail,biid,gamiid,timepow,theta,vartheta,thetades,ptheta,antclust,
-cluster,clustsize,clusterindex,maxclust,step,inverse,dscore,rvdes,prv,notaylor,samecens)
-double *theta,*times,*x,*KMc,*z,*score,*hess,*est,*gamma,*zsem,*vartheta,*biid,*gamiid,*timepow,*thetades,*step,*rvdes;
+cluster,clustsize,clusterindex,maxclust,step,inverse,dscore,rvdes,prv,notaylor,samecens,
+trunkp, entryage,cif1lin 
+)
+double *theta,*times,*x,*KMc,*z,*score,*hess,*est,*gamma,*zsem,*vartheta,*biid,*gamiid,*timepow,*thetades,*step,*rvdes, 
+       *trunkp, *entryage,*cif1lin ; 
 int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,
 *antclust,*cluster,*clustsize,*clusterindex,*maxclust,*inverse,*dscore,*prv,*notaylor,*samecens;
 { // {{{
@@ -24,14 +27,17 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,
  vector *korG,*pghat0,*pghat,*gam;
  vector *xk,*xi,*rowX,*rowZ,*difX,*zk,*zi,*z1;
  vector *Utheta,*vthetascore,*vtheta1,*vtheta2,*vtheta3,*dtheta; //*thetaiid[*antclust]; 
- vector *alphai,*alphaj,*alphatot,*rvvec,*rvvec1,*rvvec2;
+ vector *alphai,*alphaj,*alphatot,*rvvec,*rvvec1,
+	*rvvec2, *rvvec2vt, *rvvec2tv,
+	*rvvec2vv;
 
  int naprint=0,pmax,v,itt,i,j,k,l,l1,s,c;
  double Li,Lk,ithetak=0,thetak=0,response,time,dtime;
- double test,fabs(),Dinverse,DDinverse;
+ double edd,test,fabs(),Dinverse,DDinverse;
  double sumscore,sdj,pow(),diff,
         *ckij=calloc(1,sizeof(double)),
-        *dckij=calloc(1,sizeof(double));
+        *ckijvv=calloc(1,sizeof(double)), *ckijtv=calloc(1,sizeof(double)),
+        *ckijvt=calloc(1,sizeof(double)), *dckij=calloc(1,sizeof(double));
  void LevenbergMarquardt(),ckrvdes2(),DUetagammarv(); 
 
  test=1; 
@@ -40,7 +46,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,
 //if (*trans==2) for (j=0;j<*pg;j++) if (timepow[j]!= 0) {timem=1;break;}
 
   malloc_mat(*antpers,*prv,RVdes); 
-  malloc_vecs(*prv,&rvvec,&rvvec1,&rvvec2,&alphai,&alphaj,&alphatot,NULL); 
+  malloc_vecs(*prv,&rvvec,&rvvec1,&rvvec2,&rvvec2vv,&rvvec2vt,&rvvec2tv,&alphai,&alphaj,&alphatot,NULL); 
 
 //printf("m1 hej med mig \n"); 
 
@@ -140,8 +146,10 @@ if (test<0) {
           for (c=0;c<clustsize[j];c++) for (v=0;v<clustsize[j];v++) 
 	  if (v!=c) { 
 	    vec_zeros(rvvec2); 
+	    vec_zeros(rvvec2vv); vec_zeros(rvvec2tv); vec_zeros(rvvec2vt); 
 	    i=clusterindex[c*(*antclust)+j]; k=clusterindex[v*(*antclust)+j];
 
+ if ((entryage[i] < time) && (entryage[k]< time)) { 
             Mv(pardes[i],vtheta2,alphai); Mv(pardes[k],vtheta2,alphaj); 
 
        if ((test<0) & (j==1) & (s==1)) {
@@ -159,14 +167,36 @@ if (test<0) {
        Li=VE(pbhat,i); Lk=VE(pbhat,k); 
        extract_row(RVdes,i,rvvec); extract_row(RVdes,k,rvvec1); 
 
+
+if (trunkp[i]<1) {
+       ckrvdes2(alphai,alphaj,1.0,Li,Lk,ckij,rvvec2,rvvec,rvvec1); 
+       ckrvdes2(alphai,alphaj,1.0,cif1lin[i],cif1lin[k],ckijvv,rvvec2vv,rvvec,rvvec1); 
+       ckrvdes2(alphai,alphaj,1.0,Li,cif1lin[k],ckijtv,rvvec2tv,rvvec,rvvec1); 
+       ckrvdes2(alphai,alphaj,1.0,cif1lin[i],Lk,ckijvt,rvvec2vt,rvvec,rvvec1); 
+       vec_zeros(rvvec); 
+//	  ddd=(dckij[0]+dckijvv[0]-dckijtv[0]-dckijvt[0])/trunkp[i]; 
+	  edd=(ckij[0]+ckijvv[0]-ckijtv[0]-ckijvt[0])/trunkp[i]; 
+	  vec_add(rvvec2vv,rvvec2,rvvec2); 
+	  vec_subtr(rvvec2,rvvec2tv,rvvec2); 
+	  vec_subtr(rvvec2,rvvec2vt,rvvec2); 
+          diff=(response-edd); 
+         vM(pardes[i],rvvec2,vthetascore); 
+        } else {
        ckrvdes2(alphai,alphaj,1.0,Li,Lk,ckij,rvvec2,rvvec,rvvec1); 
        diff=(response-ckij[0]); 
+       vM(pardes[i],rvvec2,vthetascore); 
+       }
+
+
+
+//       ckrvdes2(alphai,alphaj,1.0,Li,Lk,ckij,rvvec2,rvvec,rvvec1); 
+//       diff=(response-ckij[0]); 
+//       vM(pardes[i],rvvec2,vthetascore); 
 
 	if (isnan(response))   { // removes these from score equations
 	   diff=0; sdj=0; 
 	}
 
-       vM(pardes[i],rvvec2,vthetascore); 
 
        if (*inverse==1)  
 //  for (l1=0;l1<*ptheta;l1++) VE(vthetascore,l1)=VE(vthetascore,l1)*2*VE(vtheta1,l1); 
@@ -222,6 +252,7 @@ for (l1=0;l1<*ptheta;l1++) VE(vthetascore,l1)=VE(vthetascore,l1)*VE(vtheta2,l1);
 //      if (itt==*Nit-1) ME(Sthetaiid[j],l,l1)+=VE(vthetascore,k)*VE(vthetascore,l1);  
 	 ME(d2Utheta,l,l1)+= VE(vthetascore,l)*VE(vthetascore,l1);
       }
+ } // entryage
   } /* for (c=0....... */  
  } /* j in antclust */ 
 
@@ -316,9 +347,10 @@ free_vecs(&xk,&xi,&rowX,&difX,&korG,&diag,&dB,&VdB,&AIXdN,&AIXlamt,&bhatt,
   &zk,&zi,&rowZ,&z1,&gam,
   &pbhat,&pghat0,&pghat,&lamtt,
   &Utheta,&vthetascore,&vtheta1,&dtheta,&vtheta2,&vtheta3,NULL);
-  free_vecs(&rvvec2,&rvvec,&rvvec1,&alphai,&alphaj,&alphatot,NULL); 
+  free_vecs(&rvvec2tv,&rvvec2vt,&rvvec2vv,&rvvec2,&rvvec,&rvvec1,&alphai,&alphaj,&alphatot,NULL); 
 
-  free(ckij); free(dckij); // }}}
+  free(ckij); free(ckijvv); free(ckijtv); free(ckijvt); 
+  free(dckij); // }}}
 } // }}}
 
 void ckrvdes(vector *alphai,vector *alphak, // {{{
