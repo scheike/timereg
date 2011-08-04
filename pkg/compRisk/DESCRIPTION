@@ -1,0 +1,11 @@
+Package: compRisk
+Type: Package
+Title: Cumulative incidence regression
+Version: 1.1.1
+Date: 2010-10-19
+Author: Thomas Alexander Gerds, Thomas Harder Scheike
+Depends: R (>= 1.9.1), prodlim
+Maintainer: Thomas Alexander Gerds <tag@biostat.ku.dk>
+Description: Cumulative incidence regression for competing risk analysis
+License: GPL (>= 2)
+Packaged: Thu Oct 19 10:58:39 2010 ;tag
