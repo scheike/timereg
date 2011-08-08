@@ -1,29 +1,31 @@
 comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
-clusters=NULL,gamma=0,n.sim=500,weighted=0,model="additive",
+clusters=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="additive",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
 weights=NULL,max.clust=NULL,n.times=50,first.time.p=0.05,
 trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL){
 ## {{{
 # trans=1 P_1=1-exp( - ( x' b(b)+ z' gam t) ), 
-# trans=2 P_1=1-exp(-exp(x a(t)+ z` b )
-# trans=6 P_1=1-exp(-x a(t) exp(z` b )) is not good numerically
-# trans=3 logit(P_1)=(x a(t)+ z` b)
-# trans=4 P_1=exp( ( x' b(b)+ z' gam t) ), 
-# trans=5 P_1= (x' b(t)) exp( z' gam t), 
-  if (model=="additive") trans<-1; 
-  if (model=="prop")     trans<-2; 
-  if (model=="logistic") trans<-3; 
-  if (model=="rcif")     trans<-4; 
-  if (model=="rcif2")    trans<-5; 
-  if (model=="fg")       trans<-6; 
+# trans=2 P_1=1-exp(-exp(x a(t)+ z` b )  Fine-Gray model 
+# trans=3 P_1= exp(x a(t)+ z` b)/( exp(x a(t) + z' b) +1 );  logistic
+# trans=4 P_1=exp( ( x' b(b)+ z' gam ) ), 
+# trans=5 P_1= (x' b(t)) exp( z' gam ), 
+# trans=6 P_1=1-exp(-(x a(t)) exp(z` b )) is not good numerically, Fine-Gray 
+# trans=7 P_1= (x a(t)) exp( z` b)/( (x a(t) ) exp(z' b) +1 ); logistic2
+  if (model=="additive")  trans<-1; 
+  if (model=="prop")      trans<-2; 
+  if (model=="logistic")  trans<-3; 
+  if (model=="rcif")      trans<-4; 
+  if (model=="rcif2")     trans<-5; 
+  if (model=="fg")        trans<-6; 
+  if (model=="logistic2") trans<-7; 
   line <- 0
   m<-match.call(expand = FALSE);
   m$gamma<-m$times<-m$n.times<-m$cause<-m$Nit<-m$weighted<-m$n.sim<-
     m$model<-m$causeS<- m$detail<- m$cens.model<-m$time.pow<-m$silent<- 
     m$cens.code<-m$interval<- m$clusters<-m$resample.iid<-
     m$time.pow.test<-m$conv<- m$weights  <- m$max.clust <- m$first.time.p<- m$trunc.p <- 
-    m$entry.time <- m$cens.weight <- m$admin.cens <- NULL
+    m$entry.time <- m$cens.weight <- m$admin.cens <- m$fix.gamma <- NULL
   special <- c("const","cluster")
   if (missing(data)) {
     Terms <- terms(formula, special)
@@ -76,8 +78,9 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL){
 
   if (is.null(times)) {
           timesc<-sort(unique(time2[cause==causeS])); 
-	  if ((!is.null(n.times))) {
+	  if (!is.null(n.times)) {
 	  if (length(timesc)> n.times) times <- quantile(timesc,prob=seq(first.time.p,1,length=n.times)) 
+	  else times <- timesc
 	  } else {times<-timesc; times<-times[times> quantile(timesc,prob=first.time.p)]; }
   } else times <- sort(times); 
 
@@ -151,7 +154,8 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
 
    if (is.null(trunc.p)) trunc.p <- rep(1,n);  
    if (length(trunc.p)!=n) stop("truncation weights must have same length as data\n"); 
-   times<-times[Gctimes>interval]; ntimes<-length(times); 
+   times<-times[Gctimes>interval]; 
+   ntimes<-length(times); 
 ## }}}
 
 ## {{{ setting up more variables
@@ -165,8 +169,8 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
 
   ps<-px; betaS<-rep(0,ps); 
 
-  if (model=="additive") est<-matrix(1/sum(cause==causeS),ntimes,ps+1) 
-  else est<-matrix(0,ntimes,ps+1) 
+###  if (model=="additive") est<-matrix(1/sum(cause==causeS),ntimes,ps+1) else 
+  est<-matrix(0,ntimes,px+1); est[,1] <- times; 
 
   hess<-matrix(0,ps,ps); var<-score<-matrix(0,ntimes,ps+1); 
   if (sum(gamma)==0) gamma<-rep(0,pg); gamma2<-rep(0,ps); 
@@ -182,6 +186,7 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
   if (is.null(time.pow)==TRUE & model=="rcif" )     time.pow<-rep(0,pg); 
   if (is.null(time.pow)==TRUE & model=="rcif2" )     time.pow<-rep(0,pg); 
   if (is.null(time.pow)==TRUE & model=="logistic" ) time.pow<-rep(0,pg); 
+  if (is.null(time.pow)==TRUE & model=="logistic2" ) time.pow<-rep(0,pg); 
   if (length(time.pow)!=pg) time.pow <- rep(time.pow[1],pg); 
 
   if (is.null(time.pow.test)==TRUE & model=="prop" )     time.pow.test<-rep(0,px); 
@@ -190,10 +195,13 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
   if (is.null(time.pow.test)==TRUE & model=="rcif" )    time.pow.test<-rep(0,px); 
   if (is.null(time.pow.test)==TRUE & model=="rcif2" )   time.pow.test<-rep(0,px); 
   if (is.null(time.pow.test)==TRUE & model=="logistic" ) time.pow.test<-rep(0,px); 
+  if (is.null(time.pow.test)==TRUE & model=="logistic2" ) time.pow.test<-rep(0,px); 
   if (length(time.pow.test)!=px) time.pow.test <- rep(time.pow.test[1],px); 
 
   silent <- c(silent,rep(0,ntimes-1));
   ## }}}
+
+###  dyn.load("comprisk.so")
 
   out<-.C("itfit", ## {{{
           as.double(times),as.integer(ntimes),as.double(time2),
@@ -211,7 +219,7 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
           as.double(time.pow),as.integer(clusters),as.integer(antclust),
           as.double(time.pow.test),as.integer(silent),
 	  as.double(conv),as.double(weights), as.double(entry),
-	  as.double(trunc.p), as.integer(estimator), PACKAGE="timereg") ## }}}
+	  as.double(trunc.p), as.integer(estimator), as.integer(fix.gamma)) ### , PACKAGE="timereg") ## }}}
 
  ## {{{ handling output
   gamma<-matrix(out[[24]],pg,1); var.gamma<-matrix(out[[25]],pg,pg); 

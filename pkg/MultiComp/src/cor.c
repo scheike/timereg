@@ -260,9 +260,9 @@ SEXP htheta,dhtheta,rhoR;
     } /* s=1,...Ntimes */
 
 vtime[0]=500; 
-LevenbergMarquardt(d2Utheta,d2UItheta,Utheta,dtheta,vtime,step);
-//invert(d2Utheta,d2UItheta); Mv(d2UItheta,Utheta,dtheta);
-//scl_vec_mult(step[0],dtheta,dtheta); 
+//LevenbergMarquardt(d2Utheta,d2UItheta,Utheta,dtheta,vtime,step);
+invert(d2Utheta,d2UItheta); Mv(d2UItheta,Utheta,dtheta);
+scl_vec_mult(step[0],dtheta,dtheta); 
 
 if (*detail==1) { // {{{
 printf("===============Iteration %d ==================== \n",itt);

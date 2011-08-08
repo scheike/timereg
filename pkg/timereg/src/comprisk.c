@@ -17,7 +17,7 @@ int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
   vector *VdB,*risk,*SCORE,*W,*Y,*Gc,*DELTA,*CAUSE,*bhat,*pbhat,*beta,*xi,
     *rr,*rowX,*difbeta,*qs,*bhatub,*betaub,*dcovs,*pcovs,*zi,*rowZ,*zgam,*vcumentry; 
   vector *cumhatA[*antclust],*cumA[*antclust],*bet1,*gam,*dp,*dp1,*dp2; 
-  int osilent,convt,ps,sing,c,i,j,k,l,s,it,convproblems=0,withtrunc=0; 
+  int osilent,convt,ps,sing,c,i,j,k,l,s,it,convproblems=0; 
   double time,sumscore,totrisk, 
 	 *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
 	 *cifentry=calloc((*n),sizeof(double)),
@@ -235,29 +235,32 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
   matrix *Vargam,*dVargam,*M1M2[*Ntimes],*Delta,*dM1M2,*M1M2t,*RobVargam;
   matrix *W3t[*antclust],*W4t[*antclust];
   vector *W2[*antclust],*W3[*antclust];
-  vector *diag,*dB,*dN,*VdB,*AIXdN,*AIXlamt,*bhatt,*pbhat,*plamt,*ciftrunk;
+  vector *diag,*dB,*dN,*VdB,*AIXdN,*AIXlamt,*bhatt,*truncbhatt,*pbhat,*plamt,*ciftrunk;
   vector *korG,*pghat,*rowG,*gam,*dgam,*ZGdN,*IZGdN,*ZGlamt,*IZGlamt;
-  vector *covsx,*covsz,*qs,*Y,*rr,*bhatub,*xi,*rowX,*rowZ,*difX,*zi,*z1,
+  vector *covsx,*covsz,*qs,*Y,*rr,*bhatub,*xi,*xit,*zit,*rowX,*rowZ,*difX,*zi,*z1,
     *tmpv1,*tmpv2,*lrisk;
   int sing,itt,i,j,k,l,s,c,pmax,totrisk,convproblems=0, 
       *n= calloc(1,sizeof(int)), *nx= calloc(1,sizeof(int)),
-      *robust= calloc(1,sizeof(int));
-  int fixedcov,osilent; 
-  double time,dummy,dtime;
+      *robust= calloc(1,sizeof(int)),
+      *px1= calloc(1,sizeof(int));
+  int fixedcov,osilent,withtrunc=0; 
+  double time,dummy,dtime,phattrunc,lrr,lrrt;
   double *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
-	 *inc=calloc((*Ntimes)*(*px+1),sizeof(double));
-  double lrr,fabs(), pow(); 
+	 *inc=calloc((*Ntimes)*(*px+1),sizeof(double)),
+	 *cifentry=calloc((*antpers),sizeof(double)),
+	 *cumentry=calloc((*antpers)*(*px+1),sizeof(double));
   osilent=silent[0]; silent[0]=0; 
   // float gasdev(),expdev(),ran1();
-  robust[0]=1; fixedcov=1; 
-  n[0]=antpers[0]; nx[0]=antpers[0];
+  robust[0]=1; fixedcov=1; n[0]=antpers[0]; nx[0]=antpers[0];
 
 //if (*trans==1) for (j=0;j<*pg;j++) if (fabs(timepow[j]-1)>0.0001) {timem=1;break;}
 //if (*trans==2) for (j=0;j<*pg;j++) if (fabs(timepow[j])>0.0001) {timem=1;break;}
 
-  for (j=0;j<*antclust;j++) { malloc_mat(*Ntimes,*px,W3t[j]);
-    malloc_mat(*Ntimes,*px,W4t[j]); malloc_vec(*pg,W2[j]); malloc_vec(*px,W3[j]);
-    }
+  for (j=0;j<*antclust;j++) { 
+    malloc_mat(*Ntimes,*px,W3t[j]);
+    malloc_mat(*Ntimes,*px,W4t[j]); malloc_vec(*pg,W2[j]); 
+    malloc_vec(*px,W3[j]);
+  }
 
   malloc_mats(*antpers,*px,&ldesignX,&cdesignX,NULL);
   malloc_mats(*antpers,*pg,&ldesignG,&cdesignG,NULL); 
@@ -269,16 +272,18 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
     malloc_mat(*px,*pg,C[j]); malloc_mat(*px,*pg,M1M2[j]);}
   malloc_mat(*Ntimes,*px,Delta); malloc_mat(*Ntimes,*px,tmpM1);
 
-  malloc_vecs(*px,&covsx,&xi,&rowX,&difX,&tmpv1,&korG,&diag,&dB,&VdB,&AIXdN,&AIXlamt,&bhatt,NULL);
-  malloc_vecs(*pg,&covsz,&zi,&rowZ,&tmpv2,&zi,&z1,&rowG,&gam,&dgam,&ZGdN,&IZGdN,&ZGlamt,&IZGlamt,NULL);
+  malloc_vecs(*px,&covsx,&xit,&xi,&rowX,&difX,&tmpv1,&korG,&diag,&dB,&VdB,&AIXdN,&AIXlamt,&truncbhatt,&bhatt,NULL);
+  malloc_vecs(*pg,&covsz,&zit,&zi,&rowZ,&tmpv2,&zi,&z1,&rowG,&gam,&dgam,&ZGdN,&IZGdN,&ZGlamt,&IZGlamt,NULL);
   malloc_vecs(*antpers,&Y,&bhatub,&rr,&lrisk,&dN,&pbhat,&pghat,&plamt,&ciftrunk,NULL);
   malloc_vec((*px)+(*pg),qs); 
 
   if (*px>=*pg) pmax=*px; else pmax=*pg; 
   for (j=0;j<*pg;j++) VE(gam,j)=gamma[j]; 
+  px1[0]=*px+1; 
+  for (c=0;c<*antpers;c++) if (entry[c]>0) {withtrunc=1; break;}
+  for(j=0;j<*antpers;j++)  for(i=0;i<=*px;i++) cumentry[i*(*antpers)+j]=0; 
   // }}}
   
-
   if (fixedcov==1) {
     for (c=0;c<*antpers;c++) {
       for(j=0;j<pmax;j++)  {
@@ -289,6 +294,20 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
     {
    R_CheckUserInterrupt();
       mat_zeros(Ct); mat_zeros(CGam); vec_zeros(IZGdN); vec_zeros(IZGlamt); 
+
+if (withtrunc==1)  Cpred(est,Ntimes,px1,entry,antpers,cumentry); 
+
+//      for(j=0;j<*Ntimes;j++)  {
+//      for(i=0;i<=*px;i++) printf(" %lf ",est[i*(*Ntimes)+j]);
+//	      printf("\n");
+//      }
+//	      printf("=======================================\n");
+//      for(j=0;j<*antpers;j++)  printf(" %lf ",entry[j]); printf("\n");
+//
+//      for(j=0;j<*antpers;j++)  {
+//      for(i=0;i<=*px;i++) printf(" %lf ",cumentry[i*(*antpers)+j]);
+//	      printf("\n");
+//      }
 
       Mv(ldesignG,gam,pghat);
       for (s=0;s<*Ntimes;s++)
@@ -304,34 +323,73 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	    VE(lrisk,j)=(x[j]>=time); totrisk=totrisk+VE(lrisk,j);
 	    extract_row(ldesignX,j,xi); extract_row(ldesignG,j,zi); 
 
-	    lrr=0; 
+	    lrr=0;  lrrt=0; 
 	    // {{{ compute P_1 and DP_1 
 	    if (*trans==1) {
-//	      if (timem>0)
-		for (l=0;l<*pg;l++)
-		  lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
-//	      else lrr=time*VE(pghat,j);   
+	      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
 	      VE(plamt,j)=1-exp(-VE(pbhat,j)-lrr); 
 	      scl_vec_mult(1-VE(plamt,j),xi,xi);
-	      scl_vec_mult((1-VE(plamt,j)),zi,zi);  
-//	      if (timem>0) 
+	      scl_vec_mult(1-VE(plamt,j),zi,zi);  
               for (l=0;l<*pg;l++) VE(zi,l)=pow(time,timepow[l])*VE(zi,l); 
-//	      else scl_vec_mult(time,zi,zi); 
-//	      if (trunkp[1]<1) VE(ciftrunk,j)
+              if ((entry[j]>0)) { 
+	              extract_row(ldesignG,j,zit); extract_row(ldesignX,j,xit); 
+	              for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*antpers)+j];
+//		      bhattrunc=vec_prod(xi,truncbhatt); 
+	              for (l=0;l<*pg;l++) lrrt=lrrt+VE(gam,l)*VE(zit,l)*pow(entry[j],timepow[l]); 
+		      phattrunc=1-exp(-vec_prod(xit,truncbhatt)-lrrt); 
+//	              scl_vec_mult(1-phattrunc,xi,xit);
+//	              scl_vec_mult(1-phattrunc,zi,zit);  
+//	              scl_vec_mult(1-VE(plamt,j),xi,xi);
+//	              scl_vec_mult(1-VE(plamt,j),zi,zi);  
+//                      for (l=0;l<*pg;l++) { VE(zi,l)=pow(time,timepow[l])*VE(zi,l); 
+//                         VE(zit,l)=pow(entry[j],timepow[l])*VE(zit,l);  
+//		      }
+	              scl_vec_mult(1/trunkp[j],xi,xi); scl_vec_mult(1/trunkp[j],zi,zi);  
+	              VE(plamt,j)=VE(plamt,j)-phattrunc;
+//	              vec_subtr(xi,xit,xi);
+//	              vec_subtr(zi,zit,zi);
+//	      } else { 
+//	         scl_vec_mult(1-VE(plamt,j),xi,xi);
+//	         scl_vec_mult((1-VE(plamt,j)),zi,zi);  
+//                 for (l=0;l<*pg;l++) VE(zi,l)=pow(time,timepow[l])*VE(zi,l); 
+            }
 	    }
-	    if (*trans==2) { 
-		for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
+	    if (*trans==2) {  // FG-prop-model
+	      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
 	      VE(rr,j)=exp(lrr);  
 	      VE(plamt,j)=1-exp(-exp(VE(pbhat,j))*VE(rr,j)); 
 	      scl_vec_mult((1-VE(plamt,j))*exp(VE(pbhat,j))*VE(rr,j),xi,xi); 
 	      scl_vec_mult((1-VE(plamt,j))*exp(VE(pbhat,j))*VE(rr,j),zi,zi); 
-//	      if (timem>0) 
 	      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
+              if ((entry[j]>0)) { 
+	         extract_row(ldesignG,j,zit); extract_row(ldesignX,j,xit); 
+	         for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*antpers)+j];
+	         for (l=0;l<*pg;l++) lrrt=lrrt+VE(gam,l)*VE(zit,l)*pow(entry[j],timepow[l]); 
+	         phattrunc=1-exp(-exp(vec_prod(xit,truncbhatt))*exp(lrrt)); 
+//		 if (itt==(*Nit-1)) printf(" %d %lf %lf %lf %lf \n",j,entry[j],VE(truncbhatt,0),phattrunc,trunkp[j]); 
+	         scl_vec_mult(1/trunkp[j],xi,xi); scl_vec_mult(1/trunkp[j],zi,zi);  
+	         VE(plamt,j)=VE(plamt,j)-phattrunc;
+	      } 
+	   }
+           if (*trans==6) { // FG-parametrization 
+	      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
+	      VE(rr,j)=exp(lrr);  
+	      VE(plamt,j)=1-exp(-VE(pbhat,j)*VE(rr,j)); 
+	      scl_vec_mult((1-VE(plamt,j))*VE(rr,j),xi,xi); 
+	      scl_vec_mult((1-VE(plamt,j))*VE(pbhat,j)*VE(rr,j),zi,zi); 
+	      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
+	      if ((entry[j]>0)) { 
+	         extract_row(ldesignG,j,zit); extract_row(ldesignX,j,xit); 
+	         for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*antpers)+j];
+	         for (l=0;l<*pg;l++) lrrt=lrrt+VE(gam,l)*VE(zit,l)*pow(entry[j],timepow[l]); 
+	         phattrunc=1-exp(-vec_prod(xit,truncbhatt)*exp(lrrt)); 
+	         scl_vec_mult(1/trunkp[j],xi,xi);
+	         scl_vec_mult(1/trunkp[j],zi,zi);  
+	         VE(plamt,j)=VE(plamt,j)-phattrunc;
+	      } 
 	    }
             if (*trans==3) {
-//              if (timem>0)  { 
-	        for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
-//	    } else lrr=VE(pghat,j);  
+	      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
 	      VE(rr,j)=exp(lrr);  
 	      VE(plamt,j)=exp(VE(pbhat,j)+lrr)/(1+exp(VE(pbhat,j)+lrr)); 
 	      dummy=VE(plamt,j)/(1+exp(VE(pbhat,j)+lrr)); 
@@ -340,16 +398,22 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 //	      if (timem>0) 
    	    for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
            }
+           if (*trans==7) {
+	      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
+	      VE(rr,j)=exp(lrr);  
+	      VE(plamt,j)=VE(pbhat,j)*exp(lrr)/(1+VE(pbhat,j)*exp(lrr)); 
+	      dummy=exp(lrr)/pow(1+VE(pbhat,j)*exp(lrr),2); 
+	      scl_vec_mult(dummy,xi,xi); 
+	      scl_vec_mult(VE(pbhat,j)*dummy,zi,zi); 
+   	    for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
+           }
 	   if (*trans==4) {
-//             if (timem>0)  { 
 	      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
 	      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l); // *pow(time,timepow[l]); 
-//	   } else lrr=VE(pghat,j);  
 	      VE(rr,j)=lrr;  
 	      VE(plamt,j)=exp(VE(pbhat,j)+lrr); 
 	      scl_vec_mult(VE(plamt,j),xi,xi); 
 	      scl_vec_mult(VE(plamt,j),zi,zi); 
-//	      if (timem>0) 
            }
 	   if (*trans==5) {
 	      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
@@ -360,14 +424,6 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	      scl_vec_mult(VE(plamt,j),zi,zi); 
 //	      if (timem>0) 
            }
-           if (*trans==6) { 
-	      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
-	      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l); // *pow(time,timepow[l]); 
-	      VE(rr,j)=exp(lrr);  
-	      VE(plamt,j)=1-exp(-VE(pbhat,j)*VE(rr,j)); 
-	      scl_vec_mult((1-VE(plamt,j))*VE(rr,j),xi,xi); 
-	      scl_vec_mult((1-VE(plamt,j))*(VE(pbhat,j))*VE(rr,j),zi,zi); 
-	    }
 	   // }}}
 	   
 	   if (*estimator==1) scl_vec_mult(pow(weights[j],0.5)*(time>entry[j]),xi,xi); 
@@ -426,6 +482,16 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
               j=clusters[i]; 	
 	      extract_row(cdesignX,i,xi); scl_vec_mult(VE(Y,i),xi,xi); 
 	      Mv(AI,xi,rowX);
+<<<<<<< .mine
+	     if (*fixgamma==0) {
+	         extract_row(cdesignG,i,zi); scl_vec_mult(VE(Y,i),zi,zi); 
+	         vM(C[s],rowX,tmpv2); vec_subtr(zi,tmpv2,rowZ); 
+	         scl_vec_mult(dtime,rowZ,rowZ); 
+	     // vec_add(rowZ,z1,z1);  vec_add(rowX,tmpv1,tmpv1); 
+	         vec_add(rowZ,W2[j],W2[j]); 
+	     }
+	     for (k=0;k<*px;k++) ME(W3t[j],s,k)= ME(W3t[j],s,k)+VE(rowX,k); 
+=======
 	     if (*fixgamma==0) {
 
 	         extract_row(cdesignG,i,zi); scl_vec_mult(VE(Y,i),zi,zi); 
@@ -436,11 +502,17 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	         vec_add(rowZ,W2[j],W2[j]); 
 	     }
 	     for (k=0;k<*px;k++) ME(W3t[j],s,k)= ME(W3t[j],s,k)+VE(rowX,k); 
+>>>>>>> .r62
 	    }  
 	 }
 	} /* s=1,...Ntimes */
 
+<<<<<<< .mine
+      dummy=0; 
       if (*fixgamma==0) {
+=======
+      if (*fixgamma==0) {
+>>>>>>> .r62
       invertS(CGam,ICGam,osilent); Mv(ICGam,IZGdN,dgam); vec_add(gam,dgam,gam); 
 
       if (isnan(vec_sum(dgam))) {
@@ -449,15 +521,15 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	 vec_zeros(gam); 
       }
 
-      dummy=0; for (k=0;k<*pg;k++)  dummy=dummy+fabs(VE(dgam,k)); 
+      for (k=0;k<*pg;k++)  dummy=dummy+fabs(VE(dgam,k)); 
+      }
       }
 
       for (s=0;s<*Ntimes;s++) {
       if (*fixgamma==0) vM(Acorb[s],dgam,korG); 
 	est[s]=times[s]; var[s]=times[s]; 
 	for (k=1;k<=*px;k++)  { 
-            est[k*(*Ntimes)+s]=
-            est[k*(*Ntimes)+s]+inc[k*(*Ntimes)+s]-VE(korG,k-1); 
+            est[k*(*Ntimes)+s]= est[k*(*Ntimes)+s]+inc[k*(*Ntimes)+s]-VE(korG,k-1); 
 	  dummy=dummy+fabs(inc[k*(*Ntimes)+s]-VE(korG,k-1)); 
 	  /* printf(" %lf ",est[k*(*Ntimes)+s]); printf(" \n");*/ }
       } /* s=1,...Ntimes */
@@ -467,7 +539,9 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	printf(" iteration %d %d \n",itt,*Nit); 
 	printf("Total sum of changes %lf \n",dummy); 
 	printf("Gamma parameters \n"); print_vec(gam); 
-	printf("Change in Gamma \n"); print_vec(dgam); }
+	printf("Change in Gamma \n"); print_vec(dgam); 
+	printf("===========================================================\n"); 
+      }
 
     } /*itt løkke */ 
 
@@ -478,9 +552,15 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
       for (s=0;s<*Ntimes;s++) {
 	vec_zeros(VdB); 
 	 for (i=0;i<*antclust;i++) {
+<<<<<<< .mine
+          if (*fixgamma==0) { 
+	     Mv(ICGam,W2[i],tmpv2); vM(Acorb[s],tmpv2,rowX); 
+	  } else vec_zeros(rowX); 
+=======
 
           if (*fixgamma==0) { 
 	  Mv(ICGam,W2[i],tmpv2); vM(Acorb[s],tmpv2,rowX); 
+>>>>>>> .r62
 	  } else vec_zeros(rowZ); 
 	  extract_row(W3t[i],s,tmpv1); vec_subtr(tmpv1,rowX,difX); 
 	  replace_row(W4t[i],s,difX); vec_star(difX,difX,tmpv1); 
@@ -488,14 +568,24 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	  }
 
 	  if (*resample==1) {
+<<<<<<< .mine
+	  if ((s==1) & (*fixgamma==0)) for (c=0;c<*pg;c++) gamiid[c*(*antclust)+i]=gamiid[c*(*antclust)+i]+VE(tmpv2,c);
+	    for (c=0;c<*px;c++) {l=i*(*px)+c; biid[l*(*Ntimes)+s]=biid[l*(*Ntimes)+s]+VE(difX,c);} 
+	  }
+=======
 	    if (s==1)
           if (*fixgamma==0)  for (c=0;c<*pg;c++)
 	      gamiid[c*(*antclust)+i]=gamiid[c*(*antclust)+i]+VE(tmpv2,c);
 	    for (c=0;c<*px;c++) {l=i*(*px)+c; 
 	      biid[l*(*Ntimes)+s]=biid[l*(*Ntimes)+s]+VE(difX,c);} }
+>>>>>>> .r62
 
+<<<<<<< .mine
+          if (*fixgamma==0)  if (s==0) { for (j=0;j<*pg;j++) for (k=0;k<*pg;k++) 
+=======
 
           if (*fixgamma==0)  if (s==0) { for (j=0;j<*pg;j++) for (k=0;k<*pg;k++) 
+>>>>>>> .r62
 			ME(RobVargam,j,k)=ME(RobVargam,j,k)+VE(tmpv2,j)*VE(tmpv2,k);} 
 	}  /* for (i=0;i<*antclust;i++) */ 
 	for (k=1;k<*px+1;k++) var[k*(*Ntimes)+s]=VE(VdB,k-1); 
@@ -524,14 +614,14 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 
   free_vecs(&qs,&Y,&rr,&bhatub,&diag,&dB,&dN,&VdB,&AIXdN,&AIXlamt,
 	      &bhatt,&pbhat,&plamt,&korG,&pghat,&rowG,&gam,&dgam,&ZGdN,&IZGdN,
-	      &ZGlamt,&IZGlamt,&xi,&rowX,&rowZ,&difX,&zi,&z1,&tmpv1,&tmpv2,&lrisk,&ciftrunk,
+	      &ZGlamt,&IZGlamt,&xit,&xi,&rowX,&rowZ,&difX,&zit,&zi,&z1,&tmpv1,&tmpv2,&lrisk,&ciftrunk,&truncbhatt,
 	      NULL); 
 
   for (j=0;j<*Ntimes;j++) {free_mat(Acorb[j]);free_mat(C[j]);free_mat(M1M2[j]);}
   for (j=0;j<*antclust;j++) {free_mat(W3t[j]); free_mat(W4t[j]);
     free_vec(W2[j]); free_vec(W3[j]); }
-  free(vcudif); free(inc); 
-  free(n); free(nx);  free(robust); 
+  free(vcudif); free(inc); free(n); free(nx);  free(robust); free(cumentry); free(px1); 
+  free(cifentry); 
 }
 
 double mypow(double x,double p)

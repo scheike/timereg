@@ -26,8 +26,7 @@ admin.cens=NULL)
 }
 \arguments{
 \item{cif}{a model object from the comp.risk function with the 
-marginal cumulative incidence of cause2, i.e., the event that is conditioned on, and whose
-odds the comparision is made with respect to}
+marginal cumulative incidence of cause1, i.e., the event of interest.}
 \item{data}{a data.frame with the variables.}
 \item{cause}{specifies the causes  related to the death
 	times, the value cens.code is the censoring value.}
