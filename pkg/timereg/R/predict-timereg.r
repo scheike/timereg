@@ -62,7 +62,7 @@ predict.cox.aalen <- function(object,...) predict.timereg(object,...)
 predict.aalen <- function(object,...) predict.timereg(object,...)
 predict.comprisk <- function(object,...) predict.timereg(object,...)
 
-predict.timereg<-function(object,newdata=NULL,X=NULL,
+predict.timereg <-function(object,newdata=NULL,X=NULL,
                            Z=NULL,n.sim=500, uniform=TRUE,
                            se=TRUE,alpha=0.05,...)
 {
@@ -87,8 +87,7 @@ predict.timereg<-function(object,newdata=NULL,X=NULL,
   ## this accounts for the different number of characters
   if(inherits(object,'cox.aalen')){ indexOfFirstChar <- 6; } else { indexOfFirstChar <- 7; }
   
-  constant.covs <- NULL
-  if (!is.null(newdata)) {
+  if (!is.null(newdata)) { 
     ##  The time-constant effects first
     formulao <- attr(object,"Formula")
     des <- aalen.des2(formula(delete.response(terms(formulao))),
@@ -96,41 +95,35 @@ predict.timereg<-function(object,newdata=NULL,X=NULL,
     time.vars <- des$X 
 
     if (semi==TRUE) {
-      constant.covs <- des$Z 
-      const <- c(object$gamma)
-      names(const) <-substr(dimnames(object$gamma)[[1]],indexOfFirstChar,
-                            nchar(dimnames(object$gamma)[[1]])-1)
-    }
+      constant.covs <- des$Z; const <- c(object$gamma)
+      names(const) <-substr(dimnames(object$gamma)[[1]],indexOfFirstChar, nchar(dimnames(object$gamma)[[1]])-1)
+    } else constant.covs <- NULL
 
     ## Then extract the time-varying effects
-###    time.coef <- data.frame(object$cum)
+    ###    time.coef <- data.frame(object$cum)
     time.coef <- as.matrix(object$cum)
     if (modelType=="cox.aalen" && (!is.null(object$time.sim.resolution))) time.coef <- Cpred(object$cum,object$time.sim.resolution)
     ntime <- nrow(time.coef)
     fittime <- time.coef[,1,drop=TRUE]
     ntimevars <- ncol(time.coef)-2
     nobs <- nrow(newdata)
-  } else if ((is.null(Z)==FALSE) || (is.null(X)==FALSE)){
+  } else if ((is.null(Z)==FALSE) || (is.null(X)==FALSE)){ 
 
-  if(is.null(Z) || is.matrix(Z) || is.data.frame(Z)){
-    constant.covs<-Z;
-    } else { constant.covs<-matrix(Z,ncol = nrow(object$gamma)); }
-
-  if ((is.null(Z)==FALSE) && is.null(X))
-  {
-   if (ncol(object$cum)==2) X<-time.vars<-matrix(1,nrow(Z),1) else
-   stop("When X is not specified we assume that it an intercept terms\n");
-  }
-      
-    ## Allow for the possibility that X is a vector 
-    if(!is.matrix(X) && !is.data.frame(X)){
-      time.vars<-matrix(X,ncol = ncol(object$cum)-1);
-    } else {
-      time.vars<-X;
+    xcol=ncol(object$cum)-1
+    if (semi) zcol=nrow(object$gamma)
+    if (!is.null(X)) X <- as.matrix(X,ncol=xcol)
+    else {
+      if (xcol==1) X<-time.vars<-matrix(1,xcol,1) 
+      else stop("When X is not specified we assume that it an intercept terms\n");
     }
+    if (!is.null(Z)) Z <- matrix(Z,ncol=zcol)
+    if (semi & is.null(Z)) Z <- matrix(0,nrow=nrow(X),ncol=zcol); 
+
+    time.vars <- X
+    if (semi) constant.covs <- Z else constant.covs <- NULL
+
     nobs<-nrow(time.vars);
     ## extract the time-varying effects
-###    time.coef <- data.frame(object$cum)
     time.coef <- as.matrix(object$cum)
     if (modelType=="cox.aalen" && (!is.null(object$time.sim.resolution))) time.coef <- Cpred(object$cum,object$time.sim.resolution)
     ntime <- nrow(time.coef)
@@ -144,7 +137,7 @@ predict.timereg<-function(object,newdata=NULL,X=NULL,
 
   cumhaz<-as.matrix(time.vars) %*% t(time.coef[,-1])
   time<-time.coef[,1]; 
-  if (semi==TRUE) pg <- ncol(constant.covs); 
+  if (semi==TRUE) pg <- nrow(object$gamma); 
   nt<-length(time);
 
   ### set up articial time.pow for aalen  and cox.aalen to make unified code for 
@@ -171,15 +164,32 @@ predict.timereg<-function(object,newdata=NULL,X=NULL,
          P1<-exp(cumhaz+constant.part);
        }
        RR<-1;
-    } else if (modelType == 'prop') {# model proportional 
+    } else if (modelType == 'rcif2') { # P1=x^T b(t) exp( z^t t^p gamma) 
+        if (semi==FALSE){
+           P1=cumhaz;
+         } else {
+         P1<-cumhaz*exp(constant.part);
+       }
+       RR<-1;
+    } else if (modelType == 'prop') {# model proportional , Fine Gray extension
         if (semi==FALSE){
         RR<-exp(cumhaz);
       } else {
         RR<-exp(cumhaz+constant.part);
     }
     P1<-1-exp(-RR);
+    } else if (modelType == 'fg') {# model proportional, Fine-Gray parametrization 
+        if (semi==FALSE){
+        RR<-cumhaz;
+      } else {
+        RR<-cumhaz*exp(constant.part);
+    }
+    P1<-1-exp(-RR);
     } else if (modelType == 'logistic') { #model logistic
       if (semi==FALSE){ RR<-exp(cumhaz); }   else { RR<-exp(cumhaz+constant.part); }
+      P1<-RR/(1+RR);
+    } else if (modelType == 'logistic2') { #model logistic, baseline-par
+      if (semi==FALSE){ RR<-cumhaz; }   else { RR<-cumhaz*exp(constant.part); }
       P1<-RR/(1+RR);
     } ## }}}
     } else {  # survival model  ## {{{
@@ -206,14 +216,11 @@ predict.timereg<-function(object,newdata=NULL,X=NULL,
        tmp<- as.matrix(time.vars) %*% t(object$B.iid[[i]]) 
 
        if (semi==TRUE) {
-###       if (inherits(object,'comprisk')) {
              gammai <- matrix(object$gamma.iid[i,],pg,1); 
-             tmp.const<-constant.covs %*% (matrix( rep(time,pg)^timepow,pg,nt)*c(gammai) )
-###          if (semi==TRUE) { tmp.const <- constant.covs %*% gammai; }
+             tmp.const<-constant.covs %*% (matrix( rep(c(time),pg)^timepow,pg,nt)*c(gammai) )
        } 
-###       else { }
 
-      if (i==0) {
+      if (i==0) { ## {{{ test print stuff
         print(tmp.const);
         if (modelType=="additive" || modelType == 'aalen'){ 
           print(tmp.const %*% matrix(time,1,nt))
@@ -222,49 +229,32 @@ predict.timereg<-function(object,newdata=NULL,X=NULL,
         } else if (modelType=="cox.aalen") {
           tmp <- RR * tmp + RR * cumhaz * matrix(tmp.const,nobs,nt);
         }
-      }
+      } ## }}}
 
       if (semi==TRUE){
-        if(modelType=="additive" || modelType == "aalen") {
-           # || modelType=="rcif") {
-          tmp<-tmp+ tmp.const ## %*% matrix(time,1,nt)
-        } else if (modelType=="prop" || modelType=="rcif") {
-###          tmp<-RR*tmp+RR*matrix(tmp.const,nobs,nt);
-          tmp<-RR*tmp+RR*tmp.const;
-	  ## modification of jeremy's code RR
-        } else if (modelType=="cox.aalen") {
-###          tmp <- RR * tmp + RR * cumhaz * matrix(tmp.const,nobs,nt);
-          tmp <- RR * tmp + RR * cumhaz * tmp.const
-        }
+        if(modelType=="additive" || modelType == "aalen") { tmp<-tmp+ tmp.const } 
+	else if (modelType=="prop" || modelType=="rcif") { tmp<-RR*tmp+RR*tmp.const; } 
+	else if (modelType=="logistic" || modelType=="rcif2") { tmp<-RR*tmp+RR*tmp.const; } 
+	else if (modelType=="logistic2") { tmp<-RR*tmp+RR*tmp.const; } 
+	else if (modelType=="cox.aalen") { tmp <- RR * tmp + RR * cumhaz * tmp.const }
       }
       delta<-cbind(delta,c(tmp)); 
     }
     se<-apply(delta^2,1,sum)^.5
-    if(modelType == 'additive' || modelType == 'prop'){
-      se.P1<-matrix(se,nobs,nt)*(1-P1) 
-    } 
-    else if(modelType == 'rcif'){
-      se.P1<-matrix(se,nobs,nt)*(P1) 
-    } 
-    else if (modelType == 'logistic'){
-      se.P1<-matrix(se,nobs,nt)*P1/(1+RR)
-    } 
-    else if (modelType == 'aalen' || modelType == 'cox.aalen'){
-      se.S0<-matrix(se,nobs,nt)*S0
-    }
+    if(modelType == 'additive' || modelType == 'prop' || modelType=="fg"){ se.P1<-matrix(se,nobs,nt)*(1-P1) } 
+    else if(modelType == 'rcif'){ se.P1<-matrix(se,nobs,nt)*(P1) } 
+    else if(modelType == 'rcif2'){ se.P1<-matrix(se,nobs,nt)*(P1) } 
+    else if (modelType == 'logistic'){ se.P1<-matrix(se,nobs,nt)*P1/(1+RR) } 
+    else if (modelType == 'logistic2'){ se.P1<-matrix(se,nobs,nt)*P1/(1+RR) } 
+    else if (modelType == 'aalen' || modelType == 'cox.aalen'){ se.S0<-matrix(se,nobs,nt)*S0 }
     ## }}}
 
     ### uniform confidence bands, based on resampling  ## {{{
     if (uniform==1) {
       mpt <- .C('confBandBasePredict',
-                delta = as.double(delta),
-                nObs = as.integer(nobs),
-                nt = as.integer(nt),
-                n = as.integer(n),
-                se = as.double(se),
-                mpt = double(n.sim*nobs),
-                nSims = as.integer(n.sim),
-		PACKAGE="timereg")$mpt;
+                delta = as.double(delta), nObs = as.integer(nobs), nt = as.integer(nt),
+                n = as.integer(n), se = as.double(se), mpt = double(n.sim*nobs),
+                nSims = as.integer(n.sim), PACKAGE="timereg")$mpt;
   
       mpt <- matrix(mpt,n.sim,nobs,byrow = TRUE);
       uband <- apply(mpt,2,percen,per=1-alpha);
@@ -274,7 +264,7 @@ predict.timereg<-function(object,newdata=NULL,X=NULL,
   } ## }}}
 
   if(modelType == 'additive' || modelType == 'prop' || modelType=="logistic"
-     || modelType=='rcif'){
+     || modelType=='rcif2' || modelType=='rcif' || modelType=='fg' || modelType=='logistic2'){
     P1<-matrix(P1,nrow=nobs);
   } else if (modelType == 'aalen' || modelType == 'cox.aalen'){
     S0<-matrix(S0,nrow=nobs);
@@ -284,7 +274,7 @@ predict.timereg<-function(object,newdata=NULL,X=NULL,
             newdata=list(X = time.vars, Z = constant.covs),RR=RR,
             call=sys.calls()[[1]], initial.call = attr(object,'Call'));
   if(modelType == 'additive' || modelType == 'prop' || modelType=="logistic"
-     || modelType=='rcif'){
+     || modelType=='rcif2' || modelType=='rcif' || modelType=='fg' || modelType=='logistic2'){
     out$P1 <- P1;
     out$se.P1 <- se.P1;    
   } else if (modelType == 'aalen' || modelType == 'cox.aalen'){
@@ -332,7 +322,8 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
     mainLine[mainLine>1]<-1; 
     }
     mainLine.se <- object$se.S0;    
-  } else if(modelType == 'additive' || modelType == 'prop' || modelType=="logistic" || modelType=="rcif"){
+  } else if(modelType == 'additive' || modelType == 'prop' || modelType=="logistic"
+     || modelType=='rcif2' || modelType=='rcif' || modelType=='fg' || modelType=='logistic2'){
     type<-"cif"
     mainLine <- object$P1;
     if (monotone==TRUE) { mainLine<-t(apply(as.matrix(mainLine),1,pava)); 
@@ -432,9 +423,14 @@ print.predict.timereg <- function(x,...){ ## {{{
   modelType <- object$model;
   modelAnnouncement <- ' Predicted survival for'
   addTo <- switch(modelType,
-                  cox.aalen = 'a Cox-Aalen',
-                  aalen = 'an Aalen',
-                  prop = 'a proportional competing risks',
+                  cox.aalen = 'a Cox-Aalen hazard model',
+                  aalen     = 'an Aalen hazard model',
+                  prop = 'a proportional competing risks (Fine-Gray type)',
+                  fg    =  'a proportional competing risks (Fine-Gray type)',
+                  rcif  = 'a proportional risk competing risks',
+                  rcif2 = 'a proportional risk competing risks',
+                  logistic = 'a logistic competing risks',
+                  logistic2 = 'a logistic competing risks',
                   additive = 'an additive competing risks')
   modelAnnouncement <- paste(modelAnnouncement,addTo,'model',sep = ' ')
   cat(modelAnnouncement,fill=TRUE)
@@ -479,10 +475,15 @@ summary.predict.timereg <- function(object,...){ ## {{{
   
   modelAnnouncement <- 'Predicted survival for'
     addTo <- switch(modelType,
-                    cox.aalen = 'a Cox-Aalen',
-                    aalen = 'an Aalen',
-                    prop = 'a proportional competing risks',
-                    additive = 'an additive competing risks')
+                  cox.aalen = 'a Cox-Aalen hazard model',
+                  aalen     = 'an Aalen hazard model',
+                  prop = 'a proportional competing risks (Fine-Gray type)',
+                  fg    =  'a proportional competing risks (Fine-Gray type)',
+                  rcif  = 'a proportional risk competing risks',
+                  rcif2 = 'a proportional risk competing risks',
+                  logistic = 'a logistic competing risks',
+                  logistic2 = 'a logistic competing risks',
+                  additive = 'an additive competing risks')
   modelAnnouncement <- paste(modelAnnouncement,addTo,'model',sep = ' ')
   cat(modelAnnouncement,fill=TRUE)
   timeStatement <- paste('At',length(time),'times:',paste(c(head(time),''),collapse = ', '),'...,',time[length(time)])

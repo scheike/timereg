@@ -43,7 +43,7 @@ In general p may be powers of the same length as z.
 }
 \usage{
 comp.risk(formula,data=sys.parent(),cause,times=NULL,Nit=50,
-clusters=NULL,gamma=0,n.sim=500,weighted=0,model="additive",
+clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="additive",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
 weights=NULL,max.clust=NULL,n.times=50,first.time.p=0.05,
@@ -65,6 +65,8 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL)
  10 percent or max 20 jump points removed for numerical stability in simulations.}
 \item{Nit}{number of iterations for Newton-Raphson algorithm.}
 \item{clusters}{specifies cluster structure, for backwards compability.}
+\item{est}{possible starting value for nonparametric component of model.}
+\item{fix.gamma}{to keep gamma fixed, possibly at 0.}
 \item{gamma}{starting value for constant effects.}
 \item{n.sim}{number of simulations in resampling.}
 \item{weighted}{Not implemented. To compute a variance weighted version of the test-processes used for testing time-varying effects.}
@@ -89,7 +91,7 @@ the clusters. When NULL then all clusters are used.
 Default is 1000 to save memory and time. } 
 \item{first.time.p}{first point for estimation is pth percentile of causeS jump times.}
 \item{n.times}{only uses 50 points for estimation, if NULL then uses all points, subject to p.start condition.}
-\item{trunc.p}{truncation weight for delayed entry, P(T > entry.time).}
+\item{trunc.p}{truncation weight for delayed entry, P(T > entry.time | Z_i), typically Cox model.}
 \item{entry.time}{entry times}
 \item{cens.weight}{censoring weights can be given here rather than calculated using the KM, cox or aalen models.}
 \item{admin.cens}{censoring times for the administrative censoring}
@@ -127,6 +129,7 @@ Martinussen and Scheike (2006), Dynamic regression models for survival data, Spr
 }
 \author{Thomas Scheike}
 \examples{
+library(timereg)
 data(bmt); 
 
 add<-comp.risk(Surv(time,cause>0)~platelet+age+tcell,data=bmt,
@@ -173,5 +176,36 @@ head(out$P1[,1:5]); head(out$se.P1[,1:5])
 
 par(mfrow=c(2,2))
 plot(out,multiple=1,uniform=0,col=1:3,lty=1,se=0)
+
+## Fine & Gray model with alternative parametrization
+fg<-comp.risk(Surv(time,cause>0)~
+const(platelet)+const(age)+const(tcell),data=bmt,
+bmt$cause,causeS=1,resample.iid=1,model="fg",n.sim=100)
+summary(fg)
+
+## Left truncated cumulative incidence estimation 
+tt <- runif(408)*bmt$time*rbinom(408,1,0.5)*0.5
+## truncation weights  computed first, by Cox model
+fgt<- cox.aalen(Surv(tt,time,cause>0)~prop(platelet)+prop(age)+prop(tcell),data=bmt,n.sim=0,robust=0,silent=0)
+cumt <- Cpred(fgt$cum,tt)[,2]  
+psurv <- exp(-cumt); 
+
+
+fgt<-comp.risk(Surv(time,cause>0)~ const(platelet)+const(age)+const(tcell),data=bmt,
+bmt$cause,causeS=1,model="fg",n.sim=0,trunc.p=psurv,entry.time=tt)
+summary(fgt)
+pfgt <- predict(fgt,X=1,Z=c(0,0,0))
+pfgt <- predict(fgt,X=1)
+plot(pfgt)
+
+## Left truncated cumulative incidence estimation 
+## without covariates but using dummy covariate, equivalent with Aalen-Johansen estimator
+fgt<- aalen(Surv(tt,time,cause>0)~+1,data=bmt,n.sim=0,robust=0)
+cumt <- Cpred(fgt$cum,tt)[,2]
+psurv <- exp(-cumt); 
+
+pcif<-comp.risk(Surv(time,cause>0)~const(platelet),data=bmt,
+bmt$cause,fix.gamma=1,causeS=1,model="fg",n.sim=0,trunc.p=psurv,entry.time=tt)
+pout <- predict(pcif,X=1)
 }
 \keyword{survival}

@@ -1,5 +1,5 @@
 comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
-clusters=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="additive",
+clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="additive",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
 weights=NULL,max.clust=NULL,n.times=50,first.time.p=0.05,
@@ -25,7 +25,7 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL){
     m$model<-m$causeS<- m$detail<- m$cens.model<-m$time.pow<-m$silent<- 
     m$cens.code<-m$interval<- m$clusters<-m$resample.iid<-
     m$time.pow.test<-m$conv<- m$weights  <- m$max.clust <- m$first.time.p<- m$trunc.p <- 
-    m$entry.time <- m$cens.weight <- m$admin.cens <- m$fix.gamma <- NULL
+    m$entry.time <- m$cens.weight <- m$admin.cens <- m$fix.gamma <- m$est <- NULL
   special <- c("const","cluster")
   if (missing(data)) {
     Terms <- terms(formula, special)
@@ -56,7 +56,6 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL){
   covnamesX<-des$covnamesX; covnamesZ<-des$covnamesZ;
 
   if(is.null(clusters)){ clusters <- des$clusters}
-
   if(is.null(clusters)){
     clusters <- 0:(nrow(X) - 1)
     antclust <- nrow(X)
@@ -64,7 +63,6 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL){
     clusters <- as.integer(factor(clusters))-1
     antclust <- length(unique(clusters))
   }
-
   if ( (!is.null(max.clust)) )  {  
   if (max.clust < antclust)  {
      qq <- quantile(clusters, probs = seq(0, 1, by = 1/max.clust))       
@@ -99,7 +97,8 @@ Gcxe <- 1;
 if (estimator==1) {
 if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncation
   if (cens.model=="KM") { ## {{{
-    ud.cens<-survfit(Surv(time2,cause==cens.code)~+1); 
+    if (is.null(entry.time)) ud.cens<-survfit(Surv(time2,cause==cens.code)~+1) 
+    else ud.cens<-survfit(Surv(entry,time2,cause==cens.code)~+1); 
     Gfit<-cbind(ud.cens$time,ud.cens$surv)
     Gfit<-rbind(c(0,1),Gfit); 
     Gcx<-Cpred(Gfit,time2)[,2];
@@ -108,20 +107,19 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
     Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
   } else if (cens.model=="cox") { ## {{{
     if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
-    ud.cens<-cox.aalen(Surv(time2,cause==cens.code)~prop(XZ),n.sim=0,robust=0);
+    if (is.null(entry.time)) ud.cens<-cox.aalen(Surv(time2,cause==cens.code)~prop(XZ),n.sim=0,robust=0)
+    else ud.cens<-cox.aalen(Surv(entry,time2,cause==cens.code)~prop(XZ),n.sim=0,robust=0);
     Gcx<-Cpred(ud.cens$cum,time2)[,2];
     RR<-exp(XZ %*% ud.cens$gamma)
     Gcx<-exp(-Gcx*RR)
     Gfit<-rbind(c(0,1),cbind(time2,Gcx)); 
-    if (is.null(entry.call)==FALSE) {
-	    Gcxe<-Cpred(Gfit,entry)[,2];
-            Gcxe<-exp(-Gcxe*RR)
-    }
+    if (is.null(entry.call)==FALSE) { Gcxe<-Cpred(Gfit,entry)[,2]; Gcxe<-exp(-Gcxe*RR); }
     Gcx <- Gcx/Gcxe; 
     Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
   } else if (cens.model=="aalen") {  ## {{{
     if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
-    ud.cens<-aalen(Surv(time2,cause==cens.code)~XZ,n.sim=0,robust=0);
+    if (is.null(entry.time)) ud.cens<-aalen(Surv(time2,cause==cens.code)~XZ,n.sim=0,robust=0)
+    else ud.cens<-aalen(Surv(entry,time2,cause==cens.code)~XZ,n.sim=0,robust=0);
     Gcx<-Cpred(ud.cens$cum,time2)[,-1];
     XZ<-cbind(1,XZ); 
     Gcx<-exp(-apply(Gcx*XZ,1,sum))
@@ -169,8 +167,9 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
 
   ps<-px; betaS<-rep(0,ps); 
 
-###  if (model=="additive") est<-matrix(1/sum(cause==causeS),ntimes,ps+1) else 
-  est<-matrix(0,ntimes,px+1); est[,1] <- times; 
+  ## possible starting value for nonparametric components
+  if (is.null(est)) { est<-matrix(0,ntimes,px+1); est[,1] <- times; }  
+  if (nrow(est)!=length(times)) est <- Cpred(est,times); 
 
   hess<-matrix(0,ps,ps); var<-score<-matrix(0,ntimes,ps+1); 
   if (sum(gamma)==0) gamma<-rep(0,pg); gamma2<-rep(0,ps); 
