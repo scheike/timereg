@@ -64,7 +64,7 @@ predict.comprisk <- function(object,...) predict.timereg(object,...)
 
 predict.timereg <-function(object,newdata=NULL,X=NULL,
                            Z=NULL,n.sim=500, uniform=TRUE,
-                           se=TRUE,alpha=0.05,...)
+                           se=TRUE,alpha=0.05,resample.iid=0,...)
 {
 ## {{{
   if (!(inherits(object,'comprisk') || inherits(object,'aalen')
@@ -111,7 +111,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,
 
     xcol=ncol(object$cum)-1
     if (semi) zcol=nrow(object$gamma)
-    if (!is.null(X)) X <- as.matrix(X,ncol=xcol)
+    if (!is.null(X)) X <- matrix(X,ncol=xcol)
     else {
       if (xcol==1) X<-time.vars<-matrix(1,xcol,1) 
       else stop("When X is not specified we assume that it an intercept terms\n");
@@ -208,6 +208,9 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,
 
   se.P1 <- NULL
   se.S0 <- NULL
+  P1.iid <- NULL
+  S0.iid <- NULL
+  uband <- NULL
   ## i.i.d decomposition for computation of standard errors  ## {{{
   if (se==1) {
     pg<-length(object$gamma); 
@@ -229,7 +232,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,
         } else if (modelType=="cox.aalen") {
           tmp <- RR * tmp + RR * cumhaz * matrix(tmp.const,nobs,nt);
         }
-      } ## }}}
+      } ## }}} 
 
       if (semi==TRUE){
         if(modelType=="additive" || modelType == "aalen") { tmp<-tmp+ tmp.const } 
@@ -241,12 +244,20 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,
       delta<-cbind(delta,c(tmp)); 
     }
     se<-apply(delta^2,1,sum)^.5
-    if(modelType == 'additive' || modelType == 'prop' || modelType=="fg"){ se.P1<-matrix(se,nobs,nt)*(1-P1) } 
-    else if(modelType == 'rcif'){ se.P1<-matrix(se,nobs,nt)*(P1) } 
-    else if(modelType == 'rcif2'){ se.P1<-matrix(se,nobs,nt)*(P1) } 
-    else if (modelType == 'logistic'){ se.P1<-matrix(se,nobs,nt)*P1/(1+RR) } 
-    else if (modelType == 'logistic2'){ se.P1<-matrix(se,nobs,nt)*P1/(1+RR) } 
-    else if (modelType == 'aalen' || modelType == 'cox.aalen'){ se.S0<-matrix(se,nobs,nt)*S0 }
+
+    if(modelType == 'additive' || modelType == 'prop' || modelType=="fg"){ se.P1<-matrix(se,nobs,nt)*(1-P1); 
+       if (resample.iid==1)  P1.iid <- array(delta*c(1-P1),c(nobs,nt,n));   
+    } 
+    else if(modelType == 'rcif' || modelType== 'rcif2'){ se.P1<-matrix(se,nobs,nt)*(P1) 
+       if (resample.iid==1) P1.iid <- array(delta*c(P1),c(nobs,nt,n));   
+    } 
+    else if (modelType == 'logistic' || modelType == 'logistic2'){ se.P1<-matrix(se,nobs,nt)*P1/(1+RR) 
+       if (resample.iid==1) P1.iid <- array(delta*c(P1/(1+RR),c(nobs,nt,n)));   
+    } 
+    else if (modelType == 'aalen' || modelType == 'cox.aalen'){ se.S0<-matrix(se,nobs,nt)*S0 
+       if (resample.iid==1) S0.iid <- array(delta*c(S0),c(nobs,nt,n));   
+    }
+    }
     ## }}}
 
     ### uniform confidence bands, based on resampling  ## {{{
@@ -259,9 +270,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,
       mpt <- matrix(mpt,n.sim,nobs,byrow = TRUE);
       uband <- apply(mpt,2,percen,per=1-alpha);
     } else uband<-NULL; 
-  } else {
-    uband<-NULL;
-  } ## }}}
+   ## }}}
 
   if(modelType == 'additive' || modelType == 'prop' || modelType=="logistic"
      || modelType=='rcif2' || modelType=='rcif' || modelType=='fg' || modelType=='logistic2'){
@@ -277,9 +286,11 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,
      || modelType=='rcif2' || modelType=='rcif' || modelType=='fg' || modelType=='logistic2'){
     out$P1 <- P1;
     out$se.P1 <- se.P1;    
+    if (resample.iid==1) out$P1.iid <- P1.iid
   } else if (modelType == 'aalen' || modelType == 'cox.aalen'){
     out$S0 <- S0;
     out$se.S0 <- se.S0;    
+    if (resample.iid==1) out$S0.iid <- S0.iid
   }
    # e.g. for an compound risk model, className = predictComprisk
   className <- switch(class(object),aalen='predictAalen',cox.aalen='predictCoxAalen',comprisk='predictComprisk')

@@ -4,6 +4,8 @@ import(survival, timereg)
 
 export("rr.cif",
        "cor.cif",
+       "or.cif",
+       "plack.cif",
        "random.cif",
        "Grandom.cif",
        "random.cif2cause")

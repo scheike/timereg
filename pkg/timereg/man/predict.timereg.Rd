@@ -13,7 +13,7 @@ confidence bands based on resampling.
 }
 \usage{
 \method{predict}{timereg}(object,newdata=NULL,X=NULL,Z=NULL,
-n.sim=500,uniform=TRUE,se=TRUE,alpha=0.05,...)
+n.sim=500,uniform=TRUE,se=TRUE,alpha=0.05,resample.iid,...)
 }
 \arguments{
   \item{object}{an object belonging to one of the following
@@ -29,6 +29,7 @@ n.sim=500,uniform=TRUE,se=TRUE,alpha=0.05,...)
     confidence bands.}
   \item{se}{computes pointwise standard errors}
   \item{alpha}{specificies the significance levelwhich cause we consider.}
+  \item{resample.iid}{set to 1 to return iid decomposition of estimates, 3-dim matrix (predictions x times x subjects)}
   \item{...}{unused arguments - for S3 compatability}
 }
 \value{

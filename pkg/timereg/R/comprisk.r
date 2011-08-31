@@ -63,6 +63,7 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL){
     clusters <- as.integer(factor(clusters))-1
     antclust <- length(unique(clusters))
   }
+  if (is.null(max.clust)) max.clust <- 1000
   if ( (!is.null(max.clust)) )  {  
   if (max.clust < antclust)  {
      qq <- quantile(clusters, probs = seq(0, 1, by = 1/max.clust))       
