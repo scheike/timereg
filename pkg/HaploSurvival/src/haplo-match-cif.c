@@ -215,9 +215,10 @@ SEXP designfuncX,designfuncZ,rhoR;
          if (*trans==1) {VE(pbhat,j)+=ph*(1-exp(-VE(bhat,j)));
                          vec_add_mult(dph,xih,exp(-VE(bhat,j))*ph,dph);
 	 }
-	    if (*trans==2) {
+	 if (*trans==2) {
 	       VE(pbhat,j)+=ph*(1-exp(-exp(VE(bhat,j)))); 
-	       vec_add_mult(dph,xih,ph*exp(-exp(VE(bhat,j)))*exp(VE(bhat,j)),dph); }
+	       vec_add_mult(dph,xih,ph*exp(-exp(VE(bhat,j)))*exp(VE(bhat,j)),dph); 
+	 }
          if (*trans==3) {
 	     VE(pbhat,j)+=ph*exp(VE(bhat,j))/(1+exp(VE(bhat,j))); 
 	    //ved_add_mult(dph,xih,ph*exp(VE(bhat,j))/pow((1+exp(VE(bhat,j))),2),dph);
@@ -731,7 +732,7 @@ if (fixedcov==1) {
 	      scl_vec_mult(dtime,rowZ,rowZ); 
 	      //vec_add(rowZ,z1,z1); vec_add(rowX,tmpv1,tmpv1); }  
 	      vec_add(rowZ,W2[j],W2[j]); 
-	      for (k=0;k<*px;k++) ME(W3t[j],s,k)= ME(W3t[j],s,k)+VE(rowX,k); 
+	      for (k=0;k<*dimxih;k++) ME(W3t[j],s,k)= ME(W3t[j],s,k)+VE(rowX,k); 
 	      //replace_row(W3t[j],s,tmpv1); vec_add(z1,W2[j],W2[j]); } 
 	    }
           }

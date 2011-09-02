@@ -662,7 +662,7 @@ if (fixedcov==1) {
 	      vM(C[s],rowX,tmpv2); vec_subtr(zi,tmpv2,rowZ); 
 	      scl_vec_mult(dtime,rowZ,rowZ); 
 	      vec_add(rowZ,W2[j],W2[j]); 
-	      for (k=0;k<*px;k++) ME(W3t[j],s,k)= ME(W3t[j],s,k)+VE(rowX,k); 
+	      for (k=0;k<*dimxih;k++) ME(W3t[j],s,k)= ME(W3t[j],s,k)+VE(rowX,k); 
 	    }
           }
 	} /* s=1,...Ntimes */
