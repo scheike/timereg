@@ -3,7 +3,8 @@ clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="additive"
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
 weights=NULL,max.clust=NULL,n.times=50,first.time.p=0.05,
-trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL){
+trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL)
+{ ## {{{
 ## {{{
 # trans=1 P_1=1-exp( - ( x' b(b)+ z' gam t) ), 
 # trans=2 P_1=1-exp(-exp(x a(t)+ z` b )  Fine-Gray model 
@@ -63,7 +64,8 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL){
     clusters <- as.integer(factor(clusters))-1
     antclust <- length(unique(clusters))
   }
-  if (is.null(max.clust)) max.clust <- 1000
+
+  if (is.null(max.clust)) max.clust <- antclust
   if ( (!is.null(max.clust)) )  {  
   if (max.clust < antclust)  {
      qq <- quantile(clusters, probs = seq(0, 1, by = 1/max.clust))       
@@ -153,8 +155,6 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
 
    if (is.null(trunc.p)) trunc.p <- rep(1,n);  
    if (length(trunc.p)!=n) stop("truncation weights must have same length as data\n"); 
-   times<-times[Gctimes>interval]; 
-   ntimes<-length(times); 
 ## }}}
 
 ## {{{ setting up more variables
@@ -198,7 +198,7 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
   if (is.null(time.pow.test)==TRUE & model=="logistic2" ) time.pow.test<-rep(0,px); 
   if (length(time.pow.test)!=px) time.pow.test <- rep(time.pow.test[1],px); 
 
-  silent <- c(silent,rep(0,ntimes-1));
+  if (ntimes>1) silent <- c(silent,rep(0,ntimes-1)) else silent <- c(silent,rep(0,1)) 
   ## }}}
 
 ###  dyn.load("comprisk.so")
@@ -301,7 +301,8 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
   attr(ud, "cause") <- cause
   attr(ud, "times") <- times
   return(ud);  ## }}}
-}
+} ## }}}
+
 
 print.comprisk <- function (x,...) { ## {{{
   object <- x; rm(x);
@@ -464,6 +465,4 @@ plot.comprisk <-  function (x, pointwise.ci=1, hw.ci=0,
     }
   }
 } ## }}}
-
-
 
