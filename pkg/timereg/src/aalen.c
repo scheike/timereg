@@ -57,10 +57,10 @@ int *nx,*p,*antpers,*Ntimes,*status;
 void robaalen(times,Ntimes,designX,nx,p,antpers,start,stop,cu,vcu,
 	      robvcu,sim,antsim,retur,cumAit,test,testOBS,status,
 	      Ut,simUt,id,weighted,robust,covariance,covs,resample,
-	      Biid,clusters,antclust,silent,weights,entry,mof,offsets) 
+	      Biid,clusters,antclust,silent,weights,entry,mof,offsets,strata) 
 double *designX,*times,*start,*stop,*cu,*vcu,*robvcu,*cumAit,*test,*testOBS,*Ut,*simUt,*covs,*Biid,*weights,*offsets; 
 int *nx,*p,*antpers,*Ntimes,*sim,*retur,*antsim,*status,*id,*covariance,
-    *weighted,*robust,*resample,*clusters,*antclust,*silent,*entry,*mof;
+    *weighted,*robust,*resample,*clusters,*antclust,*silent,*entry,*mof,*strata;
 { // {{{
  // {{{ setting up variables and allocating
   matrix *ldesignX,*wX,*A,*AI,*Vcov;
@@ -141,9 +141,10 @@ for (s=1;s<*Ntimes;s++){
 //    MtM(ldesignX,AI); print_mat(AI); 
 
     invertS(A,AI,silent[0]); 
-    if (ME(AI,0,0)==0.0 && *silent==0){ 
+    if (ME(AI,0,0)==0.0 && *silent==0 && *strata==1){ 
        printf(" X'X not invertible at time %lf \n",time); }
-       if (s < -1) { print_mat(AI); print_mat(A);	}
+    if (*strata==1)  {for (k=0;k<*p;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);  }
+    if (s < -1) { print_mat(AI); print_mat(A);	}
 
     extract_row(wX,pers,xi);
 //    scl_vec_mult(weights[ci],xi,xi); 

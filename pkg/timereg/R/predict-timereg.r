@@ -135,7 +135,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,
 
   ## {{{ predictions for competing risks and survival data
 
-  cumhaz<-as.matrix(time.vars) %*% t(time.coef[,-1])
+  cumhaz<-as.matrix(time.vars) %*% t(matrix(time.coef[,-1],ncol=(ncol(time.coef)-1)))
   time<-time.coef[,1]; 
   if (semi==TRUE) pg <- nrow(object$gamma); 
   nt<-length(time);

@@ -36,3 +36,15 @@ timetest<-function(object,digits=3,hyp.label="p-value H_0:constant effect")
   cat("\n")
 }
 }
+
+is.diag <- function(m)
+{
+p <- nrow(m)
+adiag <- min(diag(m)*1)
+if (adiag==0) ud <- FALSE else ud <- TRUE
+dm <- diag(p); diag(dm) <- diag(m); 
+ndiag <- sum(abs(c(m - dm)))
+if (ndiag>0.0000001) ud <- FALSE;
+return(ud)
+}
+

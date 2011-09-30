@@ -2,7 +2,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="additive",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
-weights=NULL,max.clust=NULL,n.times=50,first.time.p=0.05,
+weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,
 trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL)
 { ## {{{
 ## {{{
@@ -108,21 +108,34 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
     if (is.null(entry.time)==FALSE) Gcxe<-Cpred(Gfit,entry)[,2];
     Gcx <- Gcx/Gcxe; 
     Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
+  } else if (cens.model=="strat-KM") { ## {{{
+    if (is.null(entry.time)) ud.cens<-survfit(Surv(time2,cause==cens.code)~XZ) 
+    else ud.cens<-survfit(Surv(entry,time2,cause==cens.code)~+XZ); 
+    stop("survfit based predictions strat-KM, under construction\n");
+    Gfit<-cbind(ud.cens$time,ud.cens$surv)
+    Gfit<-rbind(c(0,1),Gfit); 
+    Gcx<-Cpred(Gfit,time2)[,2];
+    if (is.null(entry.time)==FALSE) Gcxe<-Cpred(Gfit,entry)[,2];
+    Gcx <- Gcx/Gcxe; 
+    Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
   } else if (cens.model=="cox") { ## {{{
     if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
-    if (is.null(entry.time)) ud.cens<-cox.aalen(Surv(time2,cause==cens.code)~prop(XZ),n.sim=0,robust=0)
-    else ud.cens<-cox.aalen(Surv(entry,time2,cause==cens.code)~prop(XZ),n.sim=0,robust=0);
-    Gcx<-Cpred(ud.cens$cum,time2)[,2];
-    RR<-exp(XZ %*% ud.cens$gamma)
+    if (is.null(entry.time)) ud.cens<-coxph(Surv(time2,cause==cens.code)~XZ)
+    else ud.cens<-coxph(Surv(entry,time2,cause==cens.code)~XZ);
+    baseout <- basehaz(ud.cens,centered=FALSE); 
+    baseout <- cbind(baseout$time,baseout$hazard)
+    Gcx<-Cpred(baseout,time2)[,2];
+    RR<-exp(XZ %*% coef(ud.cens))
     Gcx<-exp(-Gcx*RR)
     Gfit<-rbind(c(0,1),cbind(time2,Gcx)); 
     if (is.null(entry.call)==FALSE) { Gcxe<-Cpred(Gfit,entry)[,2]; Gcxe<-exp(-Gcxe*RR); }
     Gcx <- Gcx/Gcxe; 
-    Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
+    Gctimes<-Cpred(Gfit,times)[,2]; 
+    ## }}}
   } else if (cens.model=="aalen") {  ## {{{
     if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
-    if (is.null(entry.time)) ud.cens<-aalen(Surv(time2,cause==cens.code)~XZ,n.sim=0,robust=0)
-    else ud.cens<-aalen(Surv(entry,time2,cause==cens.code)~XZ,n.sim=0,robust=0);
+    if (is.null(entry.time)) ud.cens<-aalen(Surv(time2,cause==cens.code)~XZ,n.sim=0,robust=0,silent=1)
+    else ud.cens<-aalen(Surv(entry,time2,cause==cens.code)~XZ,n.sim=0,robust=0,silent=1);
     Gcx<-Cpred(ud.cens$cum,time2)[,-1];
     XZ<-cbind(1,XZ); 
     Gcx<-exp(-apply(Gcx*XZ,1,sum))

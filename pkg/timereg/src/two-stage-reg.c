@@ -163,6 +163,7 @@ for(j=0;j<pmax;j++) {
   scl_vec_mult(thetaiidscale[j]*Dthetanu,vtheta2,thetaiid[j]); 
 
   if (isnan(thetaiidscale[j])) {
+  if (theta0<0) printf("negative value of random effect variances causes problems, try step.size=0.1\n"); 
   printf("nan i score subject=%d %lf %lf %lf %lf %lf %lf %lf %lf %lf \n",j,theta0,Nt[j],NH[j],HeH[j],Rtheta[j],Rthetaleft[j],HeHleft[j],Dthetanu,thetaiidscale[j]); 
   print_vec(vtheta2); 
   oops("missing varlue\n"); 

@@ -43,6 +43,8 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   Ut <- matrix(0, mts , pg + 1); simUt <- matrix(0, antsim, pg)
   var.score<- matrix(0, Ntimes , pg + 1); 
 
+  if (is.diag(  t(designX) %*% designX  )==TRUE) stratum <- 1 else stratum <- 0
+
   nparout <- .C("score", as.double(times), as.integer(Ntimes), 
                 as.double(designX), as.integer(nx), as.integer(px), 
                 as.double(designG), as.integer(ng), as.integer(pg), 
@@ -64,7 +66,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
                 as.double(biid),as.integer(clusters),as.integer(fdata$antclust),
                 as.double(var.score),as.integer(beta.fixed),
 		as.double(weights),as.integer(entry) ,as.integer(exactderiv),
-	        as.integer(time.group), as.integer(max.timepoint.sim)
+	        as.integer(time.group), as.integer(max.timepoint.sim),as.integer(stratum)
                 ,PACKAGE = "timereg")
 
   Iinv <- matrix(nparout[[19]], pg, pg); RVarbeta <- -matrix(nparout[[28]], pg, pg)

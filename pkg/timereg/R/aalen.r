@@ -5,6 +5,8 @@ Ntimes<-length(times); designX<-as.matrix(designX);
 if(is.matrix(designX) == TRUE) p <- as.integer(dim(designX)[2])
 if(is.matrix(designX) == TRUE) nx <- as.integer(dim(designX)[1])
 
+if (is.diag(  t(designX) %*% designX  )==TRUE) stratum <- 1 else stratum <- 0
+
 if (robust==0 & sim>=1)  robust<-1;  
 cumint<-matrix(0,Ntimes,p+1); Vcumint<-cumint; robVar<-Vcumint; 
 cumAi<-0;
@@ -34,7 +36,7 @@ as.integer(weighted.test),as.integer(robust),as.integer(covariance),
 as.double(covs),as.integer(resample.iid),as.double(B.iid),      # 9
 as.integer(clusters),as.integer(fdata$antclust),
 as.integer(silent),as.double(weights),as.integer(entry),      # 11
-as.integer(mof),as.double(offsets)
+as.integer(mof),as.double(offsets),as.integer(stratum)
 ,PACKAGE="timereg")
 ## }}}
 
