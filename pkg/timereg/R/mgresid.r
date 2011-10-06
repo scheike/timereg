@@ -1,4 +1,4 @@
-cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim=500,
+cum.residualsL<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim=500,
 	weighted.test=1,max.point.func=50)
 { ## {{{
 ## {{{ setting up
@@ -90,6 +90,7 @@ if ( type == "right" )  {  ## {{{
   } else { covar<-covar; ptot<-px; gamma.iid<-0; }
 
   covnames0<-colnames(covar); 
+  if (is.null(covnames0)) covnames0  <- rep("",ptot); 
   antal<-0;  maxval<-0; intercept<-0; antal2<-0;  maxval2<-0; 
   xvals<-list();  ant<-rep(0,ptot);  
   for (i in 1:ptot) xvals[[i]]<-c(); 

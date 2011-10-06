@@ -69,8 +69,7 @@ for (j in 1:50)
 ranyl<-range(c(ranyl,as.matrix(simProc[[j]])[,i-1]));
 mr<-max(abs(ranyl)); 
 
-plot(obsProc[,1],obsProc[,i],ylim=c(-mr,mr),
-     lwd=2,xlab=xlab,ylab=ylab,type="s")
+plot(obsProc[,1],obsProc[,i],ylim=c(-mr,mr),lwd=2,xlab=xlab,ylab=ylab,type="s")
 if (mains==TRUE) title(main=colnames(obsProc)[i]); 
 for (j in 1:50)
 lines(obsProc[,1],as.matrix(simProc[[j]])[,i-1],

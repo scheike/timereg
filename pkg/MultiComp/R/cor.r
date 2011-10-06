@@ -1,7 +1,7 @@
 cor.cif<-function(cif,data=sys.parent(),cause,times=NULL,parfunc=NULL,dparfunc=NULL,
 cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,clusters=NULL,
 theta=NULL,theta.des=NULL,step=1,sym=1,colnames=NULL,dimpar=NULL,weights=NULL,
-notaylor=0,same.cens=FALSE,stab.cens=FALSE)
+notaylor=0,same.cens=FALSE,stab.cens=FALSE,censoring.probs=NULL)
 { ## {{{
 ## {{{ set up data and design
 multi=0; dscore <- 1;  trunkp <- 1; 
@@ -49,6 +49,7 @@ Gcxe <- 1;
 ## }}}
 
 ## {{{ censoring models
+Gctimes <- rep(1,ntimes); 
   if (cens.model=="KM") {
     ud.cens<-survfit(Surv(time,cause==cens.code)~+1); 
     Gfit<-cbind(ud.cens$time,ud.cens$surv)
@@ -60,7 +61,9 @@ Gcxe <- 1;
 	    print(summary(Gcx)) 
     }
 ###    Gcx <- Gcx/Gcxe; 
-    Gctimes<-Cpred(Gfit,times)[,2];
+###    Gctimes<-Cpred(Gfit,times)[,2];
+    Gctimes <- Gcx
+    print(Gctimes)
   } else if (cens.model=="cox") { 
     if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
     ud.cens<-cox.aalen(Surv(time,cause==cens.code)~prop(XZ),n.sim=0,robust=0);
@@ -68,6 +71,8 @@ Gcxe <- 1;
     RR<-exp(XZ %*% ud.cens$gamma)
     Gcx<-exp(-Gcx*RR)
     Gfit<-rbind(c(0,1),cbind(time,Gcx)); 
+    Gctimes<-Cpred(Gfit,times)[,2];
+    Gctimes <- Gcx
     } else if (cens.model=="aalen") { 
     if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
     ud.cens<-aalen(Surv(time,cause==cens.code)~XZ,n.sim=0,robust=0);
@@ -75,7 +80,22 @@ Gcxe <- 1;
     XZ<-cbind(1,XZ); 
     Gcx<-exp(-apply(Gcx*XZ,1,sum))
     Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
-    } else { stop('Unknown censoring model') }
+    Gctimes <- Gcx
+    } else if (cens.model=="user.weights") { 
+    if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
+    ud.cens<-aalen(Surv(time,cause==cens.code)~XZ,n.sim=0,robust=0);
+    Gcx<-Cpred(ud.cens$cum,time)[,-1];
+    XZ<-cbind(1,XZ); 
+    Gcx<-exp(-apply(Gcx*XZ,1,sum))
+    Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
+###    ud.cens<-survfit(Surv(time,cause==cens.code)~+1); 
+###    Gfit<-cbind(ud.cens$time,ud.cens$surv)
+###    Gfit<-rbind(c(0,1),Gfit); 
+###    Gcx<-Cpred(Gfit,time)[,2];
+    Gctimes <- Gcx
+    Gcx <- censoring.probs
+    }
+    else stop('Unknown censoring model') 
 
    ntimes<-length(times); 
 ## }}}

@@ -127,7 +127,7 @@ SEXP htheta,dhtheta,rhoR;
     R_CheckUserInterrupt();
     sumscore=0; mat_zeros(d2Utheta); vec_zeros(Utheta); 
 
-      for (s=0;s<*Ntimes;s++) if (KMtimes[s]>0) 
+      for (s=0;s<*Ntimes;s++) //	      if (KMtimes[s]>0) 
       {
 	  time=times[s]; if (s==0) dtime=0; else dtime=time-times[s-1]; 
 	  vtime[0]=time; 
@@ -154,8 +154,7 @@ SEXP htheta,dhtheta,rhoR;
 //if ((entryage[i] < time) && (entryage[k]< time)) {
 
 	    resp1= ((x[k]<=time) && (cause[k]==*CA2));
-	    resp2= ((x[i]<=time) && (cause[i]==*CA1))*
-		   ((x[k]<=time) && (cause[k]==*CA2));
+	    resp2= ((x[i]<=time) && (cause[i]==*CA1))* ((x[k]<=time) && (cause[k]==*CA2));
          
 	   extract_row(destheta,clusterindex[j],pthetavec); 
 
@@ -164,9 +163,9 @@ SEXP htheta,dhtheta,rhoR;
          Li=VE(pbhat,i); ormarg=(1-exp(-Li))/(exp(-Li)); 
 
 	 if (*stabcens==0) {
-	    if (*samecens==1) resp2=resp2/min(KMc[i],KMc[k]); 
-	                 else resp2=resp2/(KMc[i]*KMc[k]);
-	    resp1=resp1/KMc[k];
+	    if (*samecens==1) resp2=resp2/min(KMc[i],KMc[k]); else resp2=resp2/(KMc[i]*KMc[k]);
+//	    resp1=resp1/KMc[k];
+	    resp1=resp1/KMtimes[k];
 	 } else {
 	    cweight1= max(KMtimes[s],KMc[k]); cweight2= max(KMtimes[s],KMc[i]);  
 	    if (*samecens==1) resp2=resp2/min(cweight2,cweight2); 

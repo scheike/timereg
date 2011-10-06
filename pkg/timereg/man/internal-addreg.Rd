@@ -17,6 +17,7 @@
 \alias{cox.aalenBase}
 \alias{prop.excessBase}
 \alias{read-design}
+\alias{is.diag}
 \alias{dynregBase}
 \alias{timecoxBase}
 \alias{semiaalen}
