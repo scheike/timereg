@@ -1,4 +1,4 @@
-cum.residualsL<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim=500,
+cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim=500,
 	weighted.test=1,max.point.func=50)
 { ## {{{
 ## {{{ setting up
