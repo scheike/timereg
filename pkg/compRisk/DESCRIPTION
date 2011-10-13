@@ -1,7 +1,7 @@
 Package: compRisk
 Type: Package
 Title: Cumulative incidence regression
-Version: 1.1.1
+Version: 1.1.2
 Date: 2010-10-19
 Author: Thomas Alexander Gerds, Thomas Harder Scheike
 Depends: R (>= 1.9.1), prodlim
