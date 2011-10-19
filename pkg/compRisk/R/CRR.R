@@ -1,5 +1,4 @@
 CRR <- function(formula,data,cause=1,...){
-
   # {{{ check if formula has the form Hist(time,event)~X1+X2+...
 
   formula.names <- try(all.names(formula),silent=TRUE)
@@ -20,7 +19,10 @@ CRR <- function(formula,data,cause=1,...){
   m <- m[match(c("","formula","data","subset","na.action"),names(m),nomatch = 0)]
   m[[1]]  <-  as.name("model.frame")
   if (missing(data)) stop("Argument 'data' is missing")
-  formList <- readFormula(formula,specials=c("cov2"),specialArgumentNames=list("cov2"="tf"),unspecified="cov1")
+  formList <- readFormula(formula,
+                          specials=c("cov2","cov1"),
+                          specialArgumentNames=list("cov2"="tf"),
+                          unspecified="cov1")
   m$formula <- formList$allVars
   theData <- eval(m, parent.frame()) 
   if ((nMiss <- (NROW(data)-NROW(theData)))>0)
@@ -47,7 +49,6 @@ CRR <- function(formula,data,cause=1,...){
     else
       cause <- foundCause
   }  
-
   # }}}
   # {{{ covariate design matrices
   cov1 <- modelMatrix(formula=formList$cov1$formula,
@@ -62,11 +63,35 @@ CRR <- function(formula,data,cause=1,...){
     class(cov2) <- "matrix"
   # }}}
   # {{{ call crr
-  
-  args <- list(ftime=Y,fstatus=event,cov1=cov1,cov2=cov2,failcode=cause,cencode=length(states)+1,tf=function(x)x)
+  args <- list(ftime=Y,
+               fstatus=event,
+               cov1=cov1,
+               cov2=cov2,
+               failcode=cause,
+               cencode=length(states)+1)
+  if (NCOL(cov2)>0){
+    if (all(this <- sapply(formList$cov2$specialArguments,is.null)))
+      args$tf <- function(x){matrix(x,ncol=NCOL(cov2),byrow=FALSE)}
+    else{
+      tf.temp <- lapply(formList$cov2$specialArguments,function(a)a$tf)
+      if (any(this)){
+        id <- function(x)x
+        tf.temp[this] <- "id" 
+      }
+      args$tf <- function(x){
+        do.call("cbind",lapply(tf.temp,function(f){
+          do.call(f,list(x))
+        }))
+      }
+    }
+  }
+  else{
+    args$tf <- function(x){matrix(x,ncol=NCOL(cov2),byrow=FALSE)}
+  }
+  ## print(args$tf(1:10))
   args <- args[!sapply(args,is.null)]
   fit <- do.call("crr",args)
-  out <- list(crrFit=fit)
+  out <- list(crrFit=fit,response=response,cause=cause)
   # }}}
   # {{{ clean up
   out$call <- match.call()

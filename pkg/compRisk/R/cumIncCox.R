@@ -1,7 +1,7 @@
 # -----------------------------cumIncCox-----------------------------
 # fits a cox regression for the cause specific hazards for cause of
-#  interest and a cox regression for total hazard (to the overall
-#   survival)
+# interest and a cox regression for total hazard (to the overall
+# survival)
 
 cumIncCox <- function (formula,data,cause){
   require(survival)
