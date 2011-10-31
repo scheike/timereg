@@ -1,5 +1,5 @@
 cor.cif<-function(cif,data=sys.parent(),cause,times=NULL,parfunc=NULL,dparfunc=NULL,
-cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,clusters=NULL,
+cause1=1,cause2=1,cens.code=0,cens.model="aalen",Nit=40,detail=0,clusters=NULL,
 theta=NULL,theta.des=NULL,step=1,sym=1,colnames=NULL,dimpar=NULL,weights=NULL,
 notaylor=0,same.cens=FALSE,stab.cens=FALSE,censoring.probs=NULL)
 { ## {{{
@@ -56,14 +56,13 @@ Gctimes <- rep(1,ntimes);
     Gfit<-rbind(c(0,1),Gfit); 
     Gcx<-Cpred(Gfit,time)[,2];
 ###    if (is.null(entry.call)==FALSE) Gcxe<-Cpred(Gfit,entry)[,2];
-    if (min(Gcx)< 0.00001) { 
+    if (min(Gcx[cause==cause1 | cause==cause2] )< 0.00001) { 
 	    cat("Censoring dist. zero for some points, summary cens:\n");
 	    print(summary(Gcx)) 
     }
 ###    Gcx <- Gcx/Gcxe; 
 ###    Gctimes<-Cpred(Gfit,times)[,2];
     Gctimes <- Gcx
-    print(Gctimes)
   } else if (cens.model=="cox") { 
     if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
     ud.cens<-cox.aalen(Surv(time,cause==cens.code)~prop(XZ),n.sim=0,robust=0);
@@ -74,10 +73,9 @@ Gctimes <- rep(1,ntimes);
     Gctimes<-Cpred(Gfit,times)[,2];
     Gctimes <- Gcx
     } else if (cens.model=="aalen") { 
-    if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
-    ud.cens<-aalen(Surv(time,cause==cens.code)~XZ,n.sim=0,robust=0);
+    if (npar==TRUE) XZ<-X else XZ<-cbind(X,Z);
+    ud.cens<-aalen(Surv(time,cause==cens.code)~-1+XZ,n.sim=0,robust=0);
     Gcx<-Cpred(ud.cens$cum,time)[,-1];
-    XZ<-cbind(1,XZ); 
     Gcx<-exp(-apply(Gcx*XZ,1,sum))
     Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
     Gctimes <- Gcx

@@ -195,7 +195,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 	  print_mat(A);  print_mat(ZPZ); 
           }
 
-   invert(A,AI); 
+   invertS(A,AI,1); 
    if (ME(AI,0,0)==0 && *stratum==0) { printf(" X'X not invertible at time %d %lf \n",s,time); print_mat(A); }
    if (*stratum==1)  {for (k=0;k<*px;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);}
 

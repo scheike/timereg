@@ -5,12 +5,12 @@
 void itfit(times,Ntimes,x,delta,cause,KMc,z,n,px,Nit,betaS,
 score,hess,est,var,sim,antsim,rani,test,testOBS,Ut,simUt,weighted,
 gamma,vargamma,semi,zsem,pg,trans,gamma2,CA,line,detail,biid,gamiid,resample,
-timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,estimator,fixgamma)
+timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,estimator,fixgamma,stratum)
 double *times,*betaS,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
 *Ut,*simUt,*gamma,*zsem,*gamma2,*biid,*gamiid,*vargamma,*timepow,
 	*timepowtest,*convc,*weights,*entry,*trunkp;
 int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
-*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma;
+*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum;
 { // {{{
   // {{{ allocation and reading of data from R
   matrix *X,*cX,*A,*AI,*cumAt[*antclust],*VAR,*Z;
@@ -109,7 +109,7 @@ for (s=0;s<*Ntimes;s++)
 	scl_vec_mult(VE(Y,j),dp,dp); vec_add(dp,qs,qs); }
       if (*estimator==1) {
       if (KMc[j]<0.001) VE(Y,j)=((VE(Y,j)/0.001)-VE(pbhat,j)/trunkp[j])*(time>entry[j]); 
-      else VE(Y,j)=((VE(Y,j)/KMc[j])-VE(pbhat,j)/trunkp[j])*(time>entry[j]);
+      else VE(Y,j)=( (VE(Y,j)/KMc[j])-VE(pbhat,j)/trunkp[j])*(time>entry[j]);
       } else VE(Y,j)=(VE(Y,j)-VE(pbhat,j)/trunkp[j])*(time<KMc[j])*(time>entry[j]);;
       VE(Y,j)=pow(weights[j],0.5)*VE(Y,j); 
     } // }}}
@@ -118,8 +118,16 @@ for (s=0;s<*Ntimes;s++)
     MtM(cX,A); 
     invertS(A,AI,osilent); sing=0; 
     // head_matrix(cX); print_mat(A); print_mat(AI); 
+   if (ME(AI,0,0)==0 && *stratum==0) {
+	  printf(" X'X not invertible at time %d %lf \n",s,time); 
+	  print_mat(A); 
+   }
+   if (*stratum==1)  {
+	for (k=0;k<*px;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);
+   }
 
-    if (fabs(ME(AI,0,0))<.0000001) {
+
+    if (( fabs(ME(AI,0,0))<.0000001) && (*stratum==0)) {
       convproblems=1; convt=0; silent[s]=1;
       for (c=0;c<ps;c++) VE(beta,c)=0; 
       for (c=0;c<*px;c++) VE(bet1,c)=betaS[c]; 
@@ -195,7 +203,7 @@ if (convt==1 ) {
     itfitsemi(times,Ntimes,x,delta,cause,KMc,z,n,px,Nit,
 	      score,hess,est,var,sim,antsim,rani,test,testOBS,Ut,simUt,weighted,
 	      gamma,vargamma,semi,zsem,pg,trans,gamma2,CA,line,detail,biid,
-	      gamiid,resample,timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,estimator,fixgamma);
+	      gamiid,resample,timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,estimator,fixgamma,stratum);
   }
  
   if (convproblems>0) convc[0]=1; 
@@ -222,11 +230,11 @@ void itfitsemi(times,Ntimes,x,delta,cause,
 	       simUt,weighted,gamma,vargamma,semi,
 	       zsem,pg,trans,gamma2,CA,
 	       line,detail,biid,gamiid,resample,
-	       timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,estimator,fixgamma)
+	       timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,estimator,fixgamma,stratum)
 double *times,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,*Ut,*simUt,*gamma,*zsem,
        *vargamma,*gamma2,*biid,*gamiid,*timepow,*timepowtest,*entry,*trunkp,*convc,*weights;
 int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
-*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma;
+*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum;
 { 
   // {{{ allocation and reading of data from R
   matrix *ldesignX,*A,*AI,*cdesignX,*ldesignG,*cdesignG; // *wcX,*wcZ;
@@ -457,8 +465,16 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 
 	  MtM(cdesignX,A); 
 	  invertS(A,AI,osilent); sing=0; 
+          if (ME(AI,0,0)==0 && *stratum==0) {
+	     printf(" X'X not invertible at time %d %lf \n",s,time); 
+	     print_mat(A); 
+          }
+          if (*stratum==1)  {
+	     for (k=0;k<*px;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);
+          }
 
-          if (fabs(ME(AI,0,0))<.0000001) {
+
+          if (( fabs(ME(AI,0,0))<.0000001) && (*stratum==0)) {
              convproblems=1;  silent[s]=1; 
              if (osilent==0) printf("Iteration %d: non-invertible design at time %lf\n",itt,time); 
 	     for (k=1;k<=*px;k++) inc[k*(*Ntimes)+s]=0; 

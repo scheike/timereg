@@ -62,8 +62,6 @@
 \alias{summary.pls}
 \alias{print.pls}
 \alias{predict.pls}
-\alias{my.lars}
-\alias{myplot.lars}
 \title{For internal use}
 \description{for internal use}
 \author{Thomas Scheike}

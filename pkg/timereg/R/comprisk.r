@@ -1,7 +1,7 @@
 comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="additive",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
-cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
+cens.model="aalen",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
 weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,
 trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL)
 { ## {{{
@@ -55,6 +55,8 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL)
   des<-read.design(m,Terms)
   X<-des$X; Z<-des$Z; npar<-des$npar; px<-des$px; pz<-des$pz;
   covnamesX<-des$covnamesX; covnamesZ<-des$covnamesZ;
+
+  if (is.diag(t(X) %*% X)==TRUE) stratum <- 1 else stratum <- 0; 
 
   if(is.null(clusters)){ clusters <- des$clusters}
   if(is.null(clusters)){
@@ -133,11 +135,10 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
     Gctimes<-Cpred(Gfit,times)[,2]; 
     ## }}}
   } else if (cens.model=="aalen") {  ## {{{
-    if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
-    if (is.null(entry.time)) ud.cens<-aalen(Surv(time2,cause==cens.code)~XZ,n.sim=0,robust=0,silent=1)
-    else ud.cens<-aalen(Surv(entry,time2,cause==cens.code)~XZ,n.sim=0,robust=0,silent=1);
+    if (npar==TRUE) XZ<-X else XZ<-cbind(X,Z);
+    if (is.null(entry.time)) ud.cens<-aalen(Surv(time2,cause==cens.code)~-1+XZ,n.sim=0,robust=0,silent=1)
+    else ud.cens<-aalen(Surv(entry,time2,cause==cens.code)~-1+XZ,n.sim=0,robust=0,silent=1);
     Gcx<-Cpred(ud.cens$cum,time2)[,-1];
-    XZ<-cbind(1,XZ); 
     Gcx<-exp(-apply(Gcx*XZ,1,sum))
     Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
     Gfit<-rbind(c(0,1),cbind(time2,Gcx)); 
@@ -150,7 +151,7 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
     Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
     } else  stop('Unknown censoring model') 
     cens.weight <- Gcx
-    if ((min(Gcx)< 0.00001) && (silent==0)) { 
+    if ((min(Gcx[cause==causeS])< 0.00001) && (silent==0)) { 
 	    cat("Censoring dist. zero for some points, summary cens:\n");
 	    print(summary(Gcx)) 
     }
@@ -232,7 +233,8 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
           as.double(time.pow),as.integer(clusters),as.integer(antclust),
           as.double(time.pow.test),as.integer(silent),
 	  as.double(conv),as.double(weights), as.double(entry),
-	  as.double(trunc.p), as.integer(estimator), as.integer(fix.gamma)) ### , PACKAGE="timereg") ## }}}
+	  as.double(trunc.p), as.integer(estimator), as.integer(fix.gamma),
+	  as.integer(stratum) ) ### , PACKAGE="timereg") ## }}}
 
  ## {{{ handling output
   gamma<-matrix(out[[24]],pg,1); var.gamma<-matrix(out[[25]],pg,pg); 

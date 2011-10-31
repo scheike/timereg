@@ -263,6 +263,8 @@ vtime[0]=500;
 invert(d2Utheta,d2UItheta); Mv(d2UItheta,Utheta,dtheta);
 scl_vec_mult(step[0],dtheta,dtheta); 
 
+if (fabs(ME(d2UItheta,0,0))<0.0000000001) itt=*Nit-1; 
+
 if (*detail==1) { // {{{
 printf("===============Iteration %d ==================== \n",itt);
 
