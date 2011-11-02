@@ -1,4 +1,4 @@
-coefBase<- function(object, digits=3, d2logl=0) {
+coefBase<- function(object, digits=3, d2logl=0,out=0) {
   res <- cbind(object$gamma,
                diag(object$var.gamma)^0.5,
                diag(object$robvar.gamma)^0.5)
@@ -9,9 +9,10 @@ coefBase<- function(object, digits=3, d2logl=0) {
   if (d2logl==1) colnames(res) <- c("Coef.", "SE", "Robust SE","D2log(L)^-1","z","P-val") else colnames(res) <- c("Coef.", "SE", "Robust SE", "z", "P-val")
   prmatrix(signif(res, digits))
   cat("\n")
+  if (out==1) return(res); 
 }
 
-timetest<-function(object,digits=3,hyp.label="p-value H_0:constant effect")
+timetest<-function(object,digits=3,hyp.label="p-value H_0:constant effect",out=0)
 { 
   cat("Test for nonparametric terms \n")
   if (is.null(object$conf.band)==TRUE)  mtest<-FALSE else mtest<-TRUE;
@@ -34,6 +35,7 @@ timetest<-function(object,digits=3,hyp.label="p-value H_0:constant effect")
   prmatrix(signif(testC,digits))
   if (is.null(object$obs.testBeqC.is)!=TRUE)  prmatrix(signif(testCis,digits))
   cat("\n")
+  if (out==1) return(cbind(test0,testC)); 
 }
 }
 

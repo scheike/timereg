@@ -1,7 +1,7 @@
 comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="additive",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
-cens.model="aalen",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
+cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
 weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,
 trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL)
 { ## {{{
@@ -317,7 +317,6 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
   attr(ud, "times") <- times
   return(ud);  ## }}}
 } ## }}}
-
 
 print.comprisk <- function (x,...) { ## {{{
   object <- x; rm(x);

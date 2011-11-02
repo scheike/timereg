@@ -207,7 +207,6 @@ print.two.stage <- function (x,digits = 3,...) { ## {{{
   print(attr(object,'Call'))
 } ## }}}
 
-
 coef.two.stage<-function(object,digits=3,d2logl=1,...) {
    coefBase(object,digits=digits,d2logl=d2logl,...)
 }
@@ -270,7 +269,7 @@ if (diag==FALSE) {
 if (!is.null(object$gamma)) {
 	RR<- exp(Z%*%gamma); cumhaz <- t( t(time.part) * RR )} else cumhaz <- time.part;  
 S1 <- exp(- cumhaz); S2 <- exp(- cumhaz)
-theta <- object$theta
+if (attr(object,"var.link")==1) theta  <- exp(object$theta) else theta <- object$theta
 if (!is.null(theta.des)) theta <- c(theta.des %*% object$theta)
 
 if (diag==FALSE) 
