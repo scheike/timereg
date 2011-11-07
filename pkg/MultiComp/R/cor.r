@@ -1,20 +1,21 @@
+
 cor.cif<-function(cif,data=sys.parent(),cause,times=NULL,parfunc=NULL,dparfunc=NULL,
-cause1=1,cause2=1,cens.code=0,cens.model="aalen",Nit=40,detail=0,clusters=NULL,
-theta=NULL,theta.des=NULL,step=1,sym=1,colnames=NULL,dimpar=NULL,weights=NULL,
-notaylor=0,same.cens=FALSE,stab.cens=FALSE,censoring.probs=NULL)
+cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,clusters=NULL,
+theta=NULL,theta.des=NULL,step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,
+notaylor=0,same.cens=FALSE,censoring.probs=NULL)
 { ## {{{
 ## {{{ set up data and design
-multi=0; dscore <- 1;  trunkp <- 1; 
+multi=0; dscore <- 1;  trunkp <- 1; stab.cens=FALSE;
+entry.call <- NULL
  # trans=1 P_1=1-exp(- ( x' b(b)+ z' gam t) ), 
  formula<-attr(cif,"Formula"); 
  ldata<-aalen.des(formula,data,model="aalen");
- X<-ldata$X; time<-ldata$time2; Z<-ldata$Z;  status<-ldata$status;
+ X<-ldata$X; time <- time2<-ldata$time2; Z<-ldata$Z;  status<-ldata$status;
  #print(dim(X)); print(dim(Z)); 
   antpers<-nrow(X); 
   if (is.null(Z)==TRUE) {npar<-TRUE; semi<-0;}  else {Z<-as.matrix(Z); npar<-FALSE; semi<-1;}
   if (npar==TRUE) {Z<-matrix(0,antpers,1); pg<-1; fixed<-0;} else {fixed<-1;pg<-ncol(Z);} 
   ng<-antpers;px<-ncol(X);  
- #print(dim(X)); print(dim(Z)); 
  if (is.null(times)) times<-cif$cum[,1]; 
  delta<-(cause!=cens.code)
  est<-cif$cum; if (semi==1) gamma<-cif$gamma  else gamma<-0; 
@@ -48,53 +49,56 @@ Gcxe <- 1;
 ###if (length(trunkp)==1) trunkp <- rep(1,antpers)
 ## }}}
 
-## {{{ censoring models
-Gctimes <- rep(1,ntimes); 
-  if (cens.model=="KM") {
+## {{{ censoring model stuff
+cens.weight <- cif$cens.weight ### censoring weights from cif function
+Gcxe <- 1; 
+if (cens.model!="user.weights") {
+   if (is.null(cens.weight) ) {
+   if (cens.model=="KM") { ## {{{
     ud.cens<-survfit(Surv(time,cause==cens.code)~+1); 
     Gfit<-cbind(ud.cens$time,ud.cens$surv)
     Gfit<-rbind(c(0,1),Gfit); 
     Gcx<-Cpred(Gfit,time)[,2];
-###    if (is.null(entry.call)==FALSE) Gcxe<-Cpred(Gfit,entry)[,2];
-    if (min(Gcx[cause==cause1 | cause==cause2] )< 0.00001) { 
-	    cat("Censoring dist. zero for some points, summary cens:\n");
-	    print(summary(Gcx)) 
-    }
-###    Gcx <- Gcx/Gcxe; 
-###    Gctimes<-Cpred(Gfit,times)[,2];
-    Gctimes <- Gcx
-  } else if (cens.model=="cox") { 
+    if (is.null(entry.call)==FALSE) Gcxe<-Cpred(Gfit,entry)[,2];
+     Gcx <- Gcx/Gcxe; 
+###  Gctimes<-Cpred(Gfit,times)[,2];
+     Gctimes<- Gcx ## }}}
+  } else if (cens.model=="cox") { ## {{{
     if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
     ud.cens<-cox.aalen(Surv(time,cause==cens.code)~prop(XZ),n.sim=0,robust=0);
     Gcx<-Cpred(ud.cens$cum,time)[,2];
     RR<-exp(XZ %*% ud.cens$gamma)
     Gcx<-exp(-Gcx*RR)
     Gfit<-rbind(c(0,1),cbind(time,Gcx)); 
-    Gctimes<-Cpred(Gfit,times)[,2];
-    Gctimes <- Gcx
-    } else if (cens.model=="aalen") { 
-    if (npar==TRUE) XZ<-X else XZ<-cbind(X,Z);
-    ud.cens<-aalen(Surv(time,cause==cens.code)~-1+XZ,n.sim=0,robust=0);
-    Gcx<-Cpred(ud.cens$cum,time)[,-1];
-    Gcx<-exp(-apply(Gcx*XZ,1,sum))
-    Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
-    Gctimes <- Gcx
-    } else if (cens.model=="user.weights") { 
+    if (is.null(entry.call)==FALSE) {
+	    Gcxe<-Cpred(Gfit,entry)[,2];
+            Gcxe<-exp(-Gcxe*RR)
+    }
+    Gcx <- Gcx/Gcxe; 
+###  Gctimes<-Cpred(Gfit,times)[,2];
+     Gctimes<- Gcx  ## }}}
+  } else if (cens.model=="aalen") {  ## {{{
     if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
     ud.cens<-aalen(Surv(time,cause==cens.code)~XZ,n.sim=0,robust=0);
     Gcx<-Cpred(ud.cens$cum,time)[,-1];
     XZ<-cbind(1,XZ); 
     Gcx<-exp(-apply(Gcx*XZ,1,sum))
     Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
-###    ud.cens<-survfit(Surv(time,cause==cens.code)~+1); 
-###    Gfit<-cbind(ud.cens$time,ud.cens$surv)
-###    Gfit<-rbind(c(0,1),Gfit); 
-###    Gcx<-Cpred(Gfit,time)[,2];
-    Gctimes <- Gcx
-    Gcx <- censoring.probs
+    Gfit<-rbind(c(0,1),cbind(time,Gcx)); 
+    if (is.null(entry.call)==FALSE) {
+	    Gcxe<-Cpred(Gfit,entry)[,-1];
+            Gcxe<-exp(-apply(Gcxe*XZ,1,sum))
+            Gcxe[Gcxe>1]<-1; Gcxe[Gcxe<0]<-0
     }
-    else stop('Unknown censoring model') 
-
+    Gcx <- Gcx/Gcxe; 
+###  Gctimes<-Cpred(Gfit,times)[,2];
+     Gctimes<- Gcx  ## }}}
+   }
+   } else { Gcx <- cens.weight; Gctimes <- cens.weight;} 
+} else {
+    Gcx <- censoring.probs
+    Gctimes <- cens.weight
+} 
    ntimes<-length(times); 
 ## }}}
 
@@ -174,9 +178,9 @@ as.integer(semi2),as.double(Z2), as.integer(pg2), as.double(est2), as.double(gam
 as.double(gamma2.iid), body(htheta),body(dhtheta),new.env(),as.integer(dimpar),as.integer(flex.func),
 as.double(theta.iid),as.integer(sym) , as.double(weights), 
 as.integer(notaylor), 
-as.integer(same.cens),as.integer(stab.cens), as.double(Gctimes),
+as.integer(same.cens),as.integer(stab.cens), as.double(Gctimes),PACKAGE="MultiComp") 
 ###as.integer(entryage),as.double(cifentry),as.double(trunkp),
-PACKAGE="MultiComp") 
+
 ## }}}
 
 ## {{{ output
@@ -380,7 +384,7 @@ else {
 } 
 ## }}}
 
-##g#dyn.load("cor.so");
+###dyn.load("cor.so");
 
  out<-.C("mcifrr", ## {{{
   as.double(times),as.integer(ntimes),as.double(time), as.integer(delta), as.integer(cause), as.integer(cause1),
@@ -433,23 +437,72 @@ return(ud);
 ## }}}
 } ## }}}
 
-summary.cor<-function(object,digits=3,...)
+summary.cor<-function(object,digits=3,marg.cif=NULL,return=0,...)
 { ## {{{
 if (!inherits(object, "cor")) stop("Must be a cor.cif  object")
 
 if (attr(object,"Type")=="cor") {
 cat("Cross odds ratio dependence for competing risks\n\n")
-cat("Effect of cause2=",attr(object,"cause2")," on cause1=",attr(object,"cause1"),
+cat("Effect of cause1=",attr(object,"cause1")," on cause2=",attr(object,"cause2"),
 " under symmetry=",attr(object,"sym"),fill=TRUE,sep="")
-} else {
+} else if (attr(object,"Type")=="RR") {
 cat("Ratio of joint and product of marginals for competing risks\n\n")
-cat("Ratio of cumulative incidence for cause1=",attr(object,"cause1")
-	," and cause2=",attr(object,"cause2"),sep=" ")
+cat("Ratio of cumulative incidence for cause1=",attr(object,"cause1")," and cause2=",attr(object,"cause2"),sep=" ")
+} else if (attr(object,"Type")=="OR-cif") {
+cat("OR for dependence for competing risks\n\n")
+cat("OR of cumulative incidence for cause1=",attr(object,"cause1")," and cause2=",attr(object,"cause2"),sep=" ")
 }
 cat("\n")
 if (sum(abs(object$score))>0.000001) cat("WARNING: check score for convergence")
 cat("\n")
-prmatrix(signif(coef.cor(object,...),digits))
+coefs <- coef.cor(object,...);
+prmatrix(signif(coefs,digits))
+
+if (is.null(marg.cif)==FALSE) {
+marg.cif <- max(marg.cif)
+## {{{
+if (attr(object,"Type")=="cor") {
+concordance <- exp(coefs[,1])*marg.cif^2/((1-marg.cif)+exp(coefs[,1])*marg.cif)
+conclower  <- exp(coefs[,1]-1.96*coefs[,2])*marg.cif^2/((1-marg.cif)+exp(coefs[,1]-1.96*coefs[,2])*marg.cif)
+concup  <- exp(coefs[,1]+1.96*coefs[,2])*marg.cif^2/((1-marg.cif)+exp(coefs[,1]+1.96*coefs[,2])*marg.cif)
+casewise <- concordance/marg.cif
+caselower  <- conclower/marg.cif
+caseup     <- concup/marg.cif
+} else if (attr(object,"Type")=="RR") {
+casewise<- exp(coefs[,1])*c(marg.cif)
+concordance <- exp(coefs[,1])*marg.cif^2
+caselower  <- marg.cif*exp(coefs[,1]-1.96*coefs[,2])
+caseup     <- marg.cif*exp(coefs[,1]+1.96*coefs[,2])
+conclower  <- marg.cif^2* exp(coefs[,1]-1.96*coefs[,2])
+concup     <- marg.cif^2*exp(coefs[,1]+1.96*coefs[,2])
+} else if (attr(object,"Type")=="OR-cif") {
+thetal <-  coefs[,1]-1.96*coefs[,2]
+thetau <-  coefs[,1]+1.96*coefs[,2]
+casewise<- plack.cif2(marg.cif,marg.cif,c(coefs[,1]))/marg.cif
+concordance <- plack.cif2(marg.cif,marg.cif,c(coefs[,1]))
+caselower  <- plack.cif2(marg.cif,marg.cif,thetal)/marg.cif
+caseup  <- plack.cif2(marg.cif,marg.cif,thetau)/marg.cif
+conclower  <- plack.cif2(marg.cif,marg.cif,thetal)
+concup     <- plack.cif2(marg.cif,marg.cif,thetau)
+}
+cat("\n")
+
+cat(paste("Marginal cumulative incidencen",signif(marg.cif,digits),"\n"))
+
+cat("\n")
+outcase <- cbind(casewise,caselower,caseup)
+outconc <- cbind(concordance,conclower,concup)
+rownames(outcase) <- rownames(outconc)  <-  rownames(coefs)
+colnames(outcase) <- c("casewise concordance","2.5 %","97.5%")
+prmatrix(signif(outcase,digits))
+cat("\n")
+colnames(outconc) <- c("concordance","2.5 %","97.5%")
+prmatrix(signif(outconc,digits))
+cat("\n")
+## }}}
+}
+
+if (return==1) return(list(casewise=outcase,concordance=outconc,estimates=coefs,marg=marg.cif))
 } ## }}}
 
 coef.cor<-function(object,...)
@@ -475,11 +528,10 @@ cat("\n\n")
 summary(x); 
 } ## }}}
 
-
 or.cif<-function(cif,data=sys.parent(),cause,cif2=NULL,times=NULL,
 parfunc=NULL,dparfunc=NULL,
 cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,clusters=NULL,
-theta=NULL,theta.des=NULL,step=1,sym=1,colnames=NULL,dimpar=NULL,weights=NULL,
+theta=NULL,theta.des=NULL,step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,
 notaylor=0,same.cens=FALSE,stab.cens=FALSE,entry=NULL,trunkp=1,
 stratdes=NULL,estimator=1)
 { ## {{{
@@ -528,37 +580,92 @@ cif2entry  <-  1-exp(- apply(X * cum2,1,sum)- (Z2 %*% gamma2 )*entry)
 Gcxe <- 1; 
 ## }}}
 
-## {{{ censoring models
-  if (cens.model=="KM") {
+## {{{ censoring model stuff
+cens.weight <- cif$cens.weight ### censoring weights from cif function
+Gcxe <- 1; 
+
+if ((estimator<=1)) {
+if (is.null(cens.weight)) {
+  if (cens.model=="KM") { ## {{{
     ud.cens<-survfit(Surv(time,cause==cens.code)~+1); 
     Gfit<-cbind(ud.cens$time,ud.cens$surv)
     Gfit<-rbind(c(0,1),Gfit); 
     Gcx<-Cpred(Gfit,time)[,2];
     if (is.null(entry.call)==FALSE) Gcxe<-Cpred(Gfit,entry)[,2];
-    if (min(Gcx)< 0.00001) { 
-	    cat("Censoring dist. zero for some points, summary cens:\n");
-	    print(summary(Gcx)) 
-    }
-    Gcx <- Gcx/Gcxe; 
-    Gctimes<-Cpred(Gfit,times)[,2];
-  } else if (cens.model=="cox") { 
+     Gcx <- Gcx/Gcxe; 
+     Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
+  } else if (cens.model=="cox") { ## {{{
     if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
     ud.cens<-cox.aalen(Surv(time,cause==cens.code)~prop(XZ),n.sim=0,robust=0);
     Gcx<-Cpred(ud.cens$cum,time)[,2];
     RR<-exp(XZ %*% ud.cens$gamma)
     Gcx<-exp(-Gcx*RR)
     Gfit<-rbind(c(0,1),cbind(time,Gcx)); 
-    } else if (cens.model=="aalen") { 
+    if (is.null(entry.call)==FALSE) {
+	    Gcxe<-Cpred(Gfit,entry)[,2];
+            Gcxe<-exp(-Gcxe*RR)
+    }
+    Gcx <- Gcx/Gcxe; 
+    Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
+  } else if (cens.model=="aalen") {  ## {{{
     if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
     ud.cens<-aalen(Surv(time,cause==cens.code)~XZ,n.sim=0,robust=0);
     Gcx<-Cpred(ud.cens$cum,time)[,-1];
     XZ<-cbind(1,XZ); 
     Gcx<-exp(-apply(Gcx*XZ,1,sum))
     Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
+    Gfit<-rbind(c(0,1),cbind(time,Gcx)); 
+    if (is.null(entry.call)==FALSE) {
+	    Gcxe<-Cpred(Gfit,entry)[,-1];
+            Gcxe<-exp(-apply(Gcxe*XZ,1,sum))
+            Gcxe[Gcxe>1]<-1; Gcxe[Gcxe<0]<-0
+    }
+    Gcx <- Gcx/Gcxe; 
+    Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
     } else { stop('Unknown censoring model') }
-
-   ntimes<-length(times); 
+    if (min(Gcx)< 0.00001) { 
+	    cat("Censoring dist. zero for some points, summary cens:\n");
+	    print(summary(Gcx)) 
+    }
+} else Gcx <- cif$cens.weight
+} else if (estimator==2) { 
+    if (is.null(admin.cens)) stop("admin.cens must give to administrative censoring\n") else Gcx <- admin.cens 
+} else stop("estimator is either 0,1,2, see help \n")
 ## }}}
+
+###
+##### {{{ censoring models
+###  if (cens.model=="KM") {
+###    ud.cens<-survfit(Surv(time,cause==cens.code)~+1); 
+###    Gfit<-cbind(ud.cens$time,ud.cens$surv)
+###    Gfit<-rbind(c(0,1),Gfit); 
+###    Gcx<-Cpred(Gfit,time)[,2];
+###    if (is.null(entry.call)==FALSE) Gcxe<-Cpred(Gfit,entry)[,2];
+###    if (min(Gcx)< 0.00001) { 
+###	    cat("Censoring dist. zero for some points, summary cens:\n");
+###	    print(summary(Gcx)) 
+###    }
+###    Gcx <- Gcx/Gcxe; 
+###    Gctimes<-Cpred(Gfit,times)[,2];
+###  } else if (cens.model=="cox") { 
+###    if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
+###    ud.cens<-cox.aalen(Surv(time,cause==cens.code)~prop(XZ),n.sim=0,robust=0);
+###    Gcx<-Cpred(ud.cens$cum,time)[,2];
+###    RR<-exp(XZ %*% ud.cens$gamma)
+###    Gcx<-exp(-Gcx*RR)
+###    Gfit<-rbind(c(0,1),cbind(time,Gcx)); 
+###    } else if (cens.model=="aalen") { 
+###    if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
+###    ud.cens<-aalen(Surv(time,cause==cens.code)~XZ,n.sim=0,robust=0);
+###    Gcx<-Cpred(ud.cens$cum,time)[,-1];
+###    XZ<-cbind(1,XZ); 
+###    Gcx<-exp(-apply(Gcx*XZ,1,sum))
+###    Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
+###    } else { stop('Unknown censoring model') }
+###
+###   ntimes<-length(times); 
+##### }}}
+###
 
 ## {{{ set up cluster + theta design + define iid variables 
   if (is.null(clusters)== TRUE) {clusters<-0:(antpers-1); antclust<-antpers;} else {
@@ -637,7 +744,7 @@ as.integer(semi2),as.double(Z2), as.integer(pg2), as.double(est2), as.double(gam
 as.double(gamma2.iid), body(htheta),body(dhtheta),new.env(),as.integer(dimpar),as.integer(flex.func),
 as.double(theta.iid),as.integer(sym) , as.double(weights), as.integer(notaylor),
 as.integer(same.cens),as.integer(estimator), 
-as.integer(entry),as.double(cif1entry),as.double(cif2entry),as.double(trunkp),PACKAGE="MultiComp") 
+as.double(entry),as.double(cif1entry),as.double(cif2entry),as.double(trunkp),PACKAGE="MultiComp") 
 ## }}}
 
 ## {{{ output
@@ -675,26 +782,83 @@ return(ud);
 ## }}}
 } ## }}}
 
-plack.cif <- function(cif1,cif2,theta,X=1) 
+concordance <- function(cif1,cif2,object,...)
 { ## {{{
-###ntheta <- nrow(orcif$theta)
-###theta <- matrix(X,ncol=ntheta) %*%  c(orcif$theta)
-theta <- c(theta); 
-cif1 <- c(cif1); cif2 <- c(cif2)
+if (!inherits(object, "cor")) stop("Must be a rr.cif, cor.cif or or.cif object")
+coefs <- coef(object)
+out <- list()
 
-cifs=cif1+cif2; 
-
-if (theta!=1) {
-	valn=2*(theta-1); 
-	val1=(1+(theta-1)*(cifs))-( ((1+(theta-1)*cifs))^2-4*cif1*cif2*theta*(theta-1))^0.5; 
-	valr=val1/valn; 
-} else {
-	valr=cif1*cif2;
+for (k in 1:nrow(coefs)) {
+## {{{
+if (attr(object,"Type")=="cor") {
+concordance <- exp(coefs[k,1])*cif1*cif2/((1-cif1)+exp(coefs[k,1])*cif1)
+conclower  <- exp(coefs[k,1]-1.96*coefs[k,2])*cif1*cif2/((1-cif1)+exp(coefs[k,1]-1.96*coefs[k,2])*cif1)
+concup  <- exp(coefs[k,1]+1.96*coefs[k,2])*cif1*cif2/((1-cif1)+exp(coefs[k,1]+1.96*coefs[k,2])*cif1)
+casewise <- concordance/cif1
+caselower  <- conclower/cif1
+caseup     <- concup/cif1
+} else if (attr(object,"Type")=="RR") {
+casewise<- exp(coefs[k,1])*c(cif2)
+concordance <- exp(coefs[k,1])*cif1*cif2
+caselower  <- cif2*exp(coefs[k,1]-1.96*coefs[k,2])
+caseup     <- cif2*exp(coefs[k,1]+1.96*coefs[k,2])
+conclower  <- cif1*cif2* exp(coefs[k,1]-1.96*coefs[k,2])
+concup     <- cif1*cif2*exp(coefs[k,1]+1.96*coefs[k,2])
+} else if (attr(object,"Type")=="OR-cif") {
+thetal <-  coefs[k,1]-1.96*coefs[k,2]
+thetau <-  coefs[k,1]+1.96*coefs[k,2]
+casewise<- plack.cif2(cif1,cif2,c(coefs[k,1]))/cif1
+concordance <- plack.cif2(cif1,cif2,c(coefs[k,1]))
+caselower  <- plack.cif2(cif1,cif2,thetal)/cif1
+caseup  <- plack.cif2(cif1,cif2,thetau)/cif1
+conclower  <- plack.cif2(cif1,cif2,thetal)
+concup     <- plack.cif2(cif1,cif2,thetau)
 }
 
+outcase <- cbind(c(casewise),c(caselower),c(caseup))
+outconc <- cbind(c(concordance),c(conclower),c(concup))
+colnames(outcase) <- c("casewise concordance","2.5 %","97.5%")
+colnames(outconc) <- c("concordance","2.5 %","97.5%")
+## }}}
+
+out[[k]] <- list(concordance=outconc,casewise.concordance=outcase)
+names(out)[k] <- rownames(coefs)[k]
+###k <- k+1
+}
+
+return(out)
+} ## }}}
+
+plack.cif <- function(cif1,cif2,object,X=1) 
+{ ## {{{
+coefs <- coef(object)
+theta <- exp(object$theta); 
+cif1 <- c(cif1); cif2 <- c(cif2)
+cifs=cif1+cif2; 
+
+valn=2*(theta-1); 
+val1=(1+(theta-1)*(cifs))-( ((1+(theta-1)*cifs))^2-4*cif1*cif2*theta*(theta-1))^0.5; 
+vali=cif1*cif2;
+valr <- vali;
+valr[valn!=0] <- val1/valn; 
+
+valr <- matrix(valr,length(c(theta)),1)
+rownames(valr)=colnames(coefs)
 return(valr); 
 } ## }}}
 
+plack.cif2 <- function(cif1,cif2,theta,X=1) 
+{ ## {{{
+theta <- exp(c(theta))
+cif1 <- c(cif1); cif2 <- c(cif2)
+cifs=cif1+cif2; 
 
+valn=2*(theta-1); 
+val1=(1+(theta-1)*(cifs))-( ((1+(theta-1)*cifs))^2-4*cif1*cif2*theta*(theta-1))^0.5; 
+vali=cif1*cif2;
 
+valr <- vali;
+valr[valn!=0] <- val1/valn; 
 
+return(valr); 
+} ## }}}

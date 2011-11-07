@@ -9,6 +9,8 @@
 \alias{coef.randomcifrv}
 \alias{print.randomcifrv}
 \alias{multcif}
+\alias{plack.cif}
+\alias{plack.cif2}
 \title{For internal use}
 \description{for internal use}
 \author{Thomas Scheike}

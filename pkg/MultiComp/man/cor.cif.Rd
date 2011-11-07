@@ -49,8 +49,8 @@ see example below, but the default is that it is simply \eqn{\theta^T z}.
 \usage{
 cor.cif(cif,data=sys.parent(),cause,times=NULL,parfunc=NULL,dparfunc=NULL,
 cause1=1,cause2=1,cens.code=0, cens.model="KM",Nit=40,detail=0,
-clusters=NULL,theta=NULL,theta.des=NULL,step=1,sym=1,colnames=NULL,
-dimpar=NULL,weights=NULL,notaylor=0,same.cens=FALSE,stab.cens=FALSE)
+clusters=NULL,theta=NULL,theta.des=NULL,step=1,sym=0,colnames=NULL,
+dimpar=NULL,weights=NULL,notaylor=0,same.cens=FALSE,censoring.probs=NULL)
 }
 \arguments{
 \item{cif}{a model object from the comp.risk function with the 
@@ -80,9 +80,7 @@ the parameters.}
 \item{notaylor}{if TRUE then the standard errors ignores the uncertainty 
 from the marginal cumulative incidence. This will speed things up considerably.} 
 \item{same.cens}{if true then censoring within clusters are assumed to be the same variable, default is independent censoring.}
-\item{stab.cens}{when the censoring weights are 0 in some places, it may
-be useful to use modified censoring weights Gc(min(T,s)) in the score 
-equations, and to restrict attention to those s where Gc() is positive.}
+\item{censoring.probs}{if cens.model is "user.weights" these probabilities are used for the bivariate censoring dist.}
 }
 \value{returns an object of type 'cor'. With the following arguments:
 \item{theta}{estimate of proportional odds parameters of model.}

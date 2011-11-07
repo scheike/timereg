@@ -44,8 +44,7 @@ time points \n");
     Gfit<-rbind(c(0,1),Gfit); 
     Gcx<-Cpred(Gfit,time)[,2];
     Gctimes<-Cpred(Gfit,times)[,2];
-  }
-  if (cens.model=="cox") {
+  } else if (cens.model=="cox") {
     if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
     ud.cens<-cox.aalen(Surv(time,cause==cens.code)~prop(XZ),n.sim=0,robust=0);
     Gcx<-Cpred(ud.cens$cum,time)[,2];
@@ -53,7 +52,7 @@ time points \n");
     Gcx<-exp(-Gcx*RR)
     Gfit<-rbind(c(0,1),cbind(time,Gcx)); 
     Gctimes<-Cpred(Gfit,times)[,2];
-  }
+  } else stop("Censoring model not specified for this function \n"); 
 ## }}}
 
 

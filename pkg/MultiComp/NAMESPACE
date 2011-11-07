@@ -6,7 +6,9 @@ export("rr.cif",
        "cor.cif",
        "or.cif",
        "plack.cif",
+       "plack.cif2",
        "random.cif",
+       "concordance",
        "Grandom.cif",
        "random.cif2cause")
 

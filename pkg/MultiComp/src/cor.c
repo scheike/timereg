@@ -83,11 +83,10 @@ SEXP htheta,dhtheta,rhoR;
 
   pmax=max(*px,*pg); pmax=max(pmax,*ptheta); 
   // int pmax2=max(*px2,*pg2); 
-
   for (j=0;j<*pg;j++) VE(gam,j)=gamma[j]; 
   for (j=0;j<*dimpar;j++) VE(vtheta1,j)=theta[j]; 
 
-  if (*notaylor==0) {
+  if (*notaylor==0) { // {{{
   if (*semi==1) for (i=0;i<*antclust;i++) for (j=0;j<*pg;j++)
         VE(gammaiid[i],j)=gamiid[j*(*antclust)+i]; 
   /*
@@ -101,8 +100,7 @@ SEXP htheta,dhtheta,rhoR;
 // for (s=0;s<*Ntimes;s++) 
 // for (c=0;c<*px2;c++) {l=i*(*px2)+c; ME(B2iid[i],s,c)=b2iid[l*(*Ntimes)+s];}
    }
-  }
-
+  } // }}}
 
     for (c=0;c<*antpers;c++) {
       for(j=0;j<pmax;j++)  {
@@ -142,13 +140,12 @@ SEXP htheta,dhtheta,rhoR;
 	  } // }}}
 
     for (j=0;j<*antclust;j++) 
-		    if (clustsize[j]>=2) { 
-         // if (itt==0) printf(" %d \n",j); 
+        if (clustsize[j]>=2) { 
+          vec_zeros(vtheta2);diff=0;sdj=0; 
+	  vec_zeros(rowX);vec_zeros(rowZ); 
 
-          vec_zeros(vtheta2);diff=0;sdj=0; vec_zeros(rowX);vec_zeros(rowZ); 
-
-          for (c=0;c<clustsize[j];c++) for (v=0;v<clustsize[j];v++) 
-	  if ((*sym==1 && c!=v) || (*sym==0 && c<v)) { // {{{
+          for (c=0;c<clustsize[j];c++) for (v=0;v<clustsize[j];v++) // {{{
+	  if ((*sym==1 && c!=v) || (*sym==0 && c<v)) { 
 	    i=clusterindex[c*(*antclust)+j]; k=clusterindex[v*(*antclust)+j];
 
 //if ((entryage[i] < time) && (entryage[k]< time)) {
@@ -159,17 +156,17 @@ SEXP htheta,dhtheta,rhoR;
 	   extract_row(destheta,clusterindex[j],pthetavec); 
 
          if (*flexfunc==0) thetak=vec_prod(pthetavec,vtheta1); 
-	    else { thetak=evalh(vtheta1,vtime,pthetavec,htheta,rhoR); }
-         Li=VE(pbhat,i); ormarg=(1-exp(-Li))/(exp(-Li)); 
+	 else { thetak=evalh(vtheta1,vtime,pthetavec,htheta,rhoR); }
+         Li=VE(pbhat,i); 
+	 ormarg=(1-exp(-Li))/(exp(-Li)); 
 
 	 if (*stabcens==0) {
 	    if (*samecens==1) resp2=resp2/min(KMc[i],KMc[k]); else resp2=resp2/(KMc[i]*KMc[k]);
-//	    resp1=resp1/KMc[k];
 	    resp1=resp1/KMtimes[k];
 	 } else {
 	    cweight1= max(KMtimes[s],KMc[k]); cweight2= max(KMtimes[s],KMc[i]);  
 	    if (*samecens==1) resp2=resp2/min(cweight2,cweight2); 
-	    resp1=resp1/KMtimes[s];
+	    resp1=resp1/KMtimes[k];
 	 }
 
 	if (*inverse==0) {
@@ -194,6 +191,7 @@ SEXP htheta,dhtheta,rhoR;
 	printf(" %lf %lf %lf \n",response,resp1,resp2); 
 	print_vec(pthetavec); 
 	}
+	
 
 	if (isnan(response))   { // removes these from score equations
 	   diff=0; sdj=0;  resp3=0; 
@@ -212,8 +210,8 @@ SEXP htheta,dhtheta,rhoR;
 	printf("============================== \n"); 
 	} // }}}
 
-        if (*notaylor==0) 
-	if (itt==*Nit-1) { // {{{
+        if (*notaylor==0) // {{{
+	if (itt==*Nit-1) { 
 	  extract_row(ldesignX,i,xi); 
 	  scl_vec_mult(resp3,xi,xi); vec_add(xi,rowX,rowX); 
 
@@ -224,8 +222,8 @@ SEXP htheta,dhtheta,rhoR;
 
         } // }}}
 
-        } /* for (c=0....... */   // }}}
 //  } // entryage
+        } /* for (c=0....... */   // }}}
 	
         if (*flexfunc==0) scl_vec_mult(1,pthetavec,vtheta2);  
         else { evaldh(vtheta1,vtime,pthetavec,vtheta2,dhtheta,rhoR);}
@@ -245,8 +243,6 @@ SEXP htheta,dhtheta,rhoR;
          ME(DUgamma,k,c)+= VE(rowZ,k)*VE(vtheta2,c);  
 	 }
          vec_add(vthetascore,W2[j],W2[j]);
-//          for (k=0;k<*dimpar;k++) for (c=0;c<*dimpar;c++) 
-//          ME(Sthetaiid[j],k,c)+= sdj*VE(vtheta2,k)*VE(vtheta2,c); 
       } // }}}
 
    } /* j in antclust */ 
@@ -287,28 +283,20 @@ vec_subtr(vtheta1,dtheta,vtheta1);
 vec_zeros(dtheta); 
 for (j=0;j<*antclust;j++) 
 {
-//vec_add(dtheta,W2[j],dtheta); 
-// printf("===============lomse lomse ==================== \n",j);
-// print_vec(W2[j]); print_vec(W3[j]); 
  if (*notaylor==0) {
     vec_add(W2[j],W3[j],W2[j]); 
-     if (*semi==1) { //printf(" =W4======== \n"); print_vec(W4[j]); 
-         vM(DUgamma,gammaiid[j],vtheta3); vec_add(W2[j],vtheta3,W2[j]);
- // printf(" semi 1 %d \n",j); print_vec(dtheta); 
+     if (*semi==1) { 
+         vM(DUgamma,gammaiid[j],vtheta3); 
+	 vec_add(W2[j],vtheta3,W2[j]);
       }
   }
 
-for (k=0;k<*dimpar;k++) for (c=0;c<*dimpar;c++) 
-ME(varthetascore,k,c)=ME(varthetascore,k,c)+VE(W2[j],c)*VE(W2[j],k); 
+  for (k=0;k<*dimpar;k++) for (c=0;c<*dimpar;c++) 
+   ME(varthetascore,k,c)=ME(varthetascore,k,c)+VE(W2[j],c)*VE(W2[j],k); 
 
-Mv(d2UItheta,W2[j],vtheta2);
-// print_mat(d2UItheta); print_vec(W2[j]); print_vec(vtheta2); 
-for (k=0;k<*dimpar;k++) thetiid[k*(*antclust)+j]=VE(vtheta2,k);
+   Mv(d2UItheta,W2[j],vtheta2);
+   for (k=0;k<*dimpar;k++) thetiid[k*(*antclust)+j]=VE(vtheta2,k);
 }
-
-//  printf("W2 sum ==== \n"); print_vec(dtheta); 
-//  printf("second derivative \n"); print_mat(d2UItheta); 
-//  printf("iid decomp variance \n"); print_mat(varthetascore); 
 
    MxA(varthetascore,d2UItheta,d2Utheta); 
    MxA(d2UItheta,d2Utheta,varthetascore);
@@ -549,7 +537,8 @@ for (s=0;s<*Ntimes;s++) // {{{
     for (j=0;j<*antclust;j++) 
     if (clustsize[j]>=2) { // {{{
          // if (itt==0) printf(" %d \n",j); 
-          diff=0;sdj=0; vec_zeros(rowX);vec_zeros(rowZ); 
+          diff=0;sdj=0; 
+	  vec_zeros(rowX); vec_zeros(rowZ); 
 	  vec_zeros(rowX2);vec_zeros(rowZ2); 
 
           for (c=0;c<clustsize[j];c++) for (v=0;v<clustsize[j];v++) // {{{
@@ -586,8 +575,7 @@ for (s=0;s<*Ntimes;s++) // {{{
 
         if (trunkp[i]<1) {	
            stpart=respst/trunkp[i]; 
-	   response=weight*(resp2-
-	   exp(thetak)*(ormarg+cif1entry[i]*cif2entry[k]
+	   response=weight*(resp2- exp(thetak)*(ormarg+cif1entry[i]*cif2entry[k]
 		   -(1-exp(-Li))*cif2entry[k]-(1-exp(-Lk))*cif1entry[i])/trunkp[i]);
 	   diff=diff+response; 
 	   sdj=sdj- weight*exp(thetak)*(ormarg+cif1entry[i]*cif2entry[k]- 
@@ -661,10 +649,6 @@ for (s=0;s<*Ntimes;s++) // {{{
        scl_vec_mult(weights[j],vthetascore,vthetascore);  
        vec_add(vthetascore,Utheta,Utheta); 
 
-// scl_vec_mult(exp(thetak)*diff,vthetascore,vthetascore);  
-// printf(" %lf %lf %lf \n",thetak,ormarg,diff); 
-//  print_vec(Utheta); 
-
       if (itt==*Nit-1) { // {{{
 	 if (*notaylor==0) {
          for (k=0;k<*px;k++) for (c=0;c<*dimpar;c++) 
@@ -679,10 +663,7 @@ for (s=0;s<*Ntimes;s++) // {{{
       }
       }
       vec_add(vthetascore,W2[j],W2[j]);
-
-//      for (k=0;k<*dimpar;k++) for (c=0;c<*dimpar;c++) 
-//          ME(Sthetaiid[j],k,c)=ME(Sthetaiid[j],k,c)+sdj*VE(vtheta2,k)*VE(vtheta2,c); 
-      } // }}}
+   } // }}}
 
    } /* j in antclust */  // }}}
 
@@ -706,6 +687,8 @@ for (s=0;s<*Ntimes;s++) // {{{
 invert(d2Utheta,d2UItheta); Mv(d2UItheta,Utheta,dtheta);
 scl_vec_mult(-1*step[0],dtheta,dtheta); 
 
+if (fabs(ME(d2UItheta,0,0))<0.0000000001) itt=*Nit-1; 
+
 if (*detail==1) { // {{{
 printf("===============Iteration %d ==================== \n",itt);
 
@@ -727,18 +710,17 @@ vec_add(vtheta1,dtheta,vtheta1);
 
 for (j=0;j<*antclust;j++) 
 {
-//vec_add(dtheta,W2[j],dtheta); 
-// printf("===============lomse lomse ==================== \n",j);
-// print_vec(W2[j]); print_vec(W3[j]); 
 if  (*notaylor==0) {
  vec_add(W2[j],W3[j],W2[j]); 
-if (*semi==1) { //printf(" =W4======== \n"); print_vec(W4[j]); 
+if (*semi==1) { 
+//printf(" =W4======== \n"); print_vec(W4[j]); 
    vM(DUgamma,gammaiid[j],vtheta12); 
   vec_add(W2[j],vtheta12,W2[j]);
  // printf(" semi 1 %d \n",j); print_vec(dtheta); 
 }
 
-if (*CA1!=*CA2 && *semi2==1) { //printf(" =W4======== \n"); print_vec(W4[j]); 
+if (*CA1!=*CA2 && *semi2==1) { 
+//printf(" =W4======== \n"); print_vec(W4[j]); 
   vM(DUgamma2,gamma2iid[j],vtheta12); 
   vec_add(W2[j],vtheta12,W2[j]);
  // printf(" semi 1 %d \n",j); print_vec(dtheta); 
@@ -826,8 +808,8 @@ SEXP htheta,dhtheta,rhoR;
  vector *gam2,*bhatt2,*pbhat2,*pghat2,*pghat02,*rowX2,*xi2,*xk2,*zi2,*zk2,*rowZ2; 
  int nocens,naprint=0,pmax,v,itt,i,j,k,l,s,c;
  double weight,Li,Lk,thetak,response,time,dtime,fabs(),diff,plack();
- double respst,stpart,sumscore,sdj,resp3,resp2,ormarg,
-	*vtime=calloc(1,sizeof(double)),*dplack=calloc(1,sizeof(double));
+ double respst,stpart,sumscore,sdj,resp3,resp2,ormarg,p11t,
+	*vtime=calloc(1,sizeof(double)),*dplack=calloc(4,sizeof(double));
 	
   if (*notaylor==0) 
   for (j=0;j<*Ntimes;j++) { 
@@ -866,10 +848,8 @@ SEXP htheta,dhtheta,rhoR;
   for (j=0;j<*dimpar;j++) VE(vtheta1,j)=theta[j]; 
 
   if (*notaylor==0)  {
-  if (*semi==1) for (i=0;i<*antclust;i++) for (j=0;j<*pg;j++)
-        VE(gammaiid[i],j)=gamiid[j*(*antclust)+i]; 
-  if (*semi2==1) for (i=0;i<*antclust;i++) for (j=0;j<*pg2;j++)
-        VE(gamma2iid[i],j)=gam2iid[j*(*antclust)+i]; 
+  if (*semi==1) for (i=0;i<*antclust;i++) for (j=0;j<*pg;j++) VE(gammaiid[i],j)=gamiid[j*(*antclust)+i]; 
+  if (*semi2==1) for (i=0;i<*antclust;i++) for (j=0;j<*pg2;j++) VE(gamma2iid[i],j)=gam2iid[j*(*antclust)+i]; 
 
    for (i=0;i<*antclust;i++) {
    for (s=0;s<*Ntimes;s++) 
@@ -904,12 +884,13 @@ for (itt=0;itt<*Nit;itt++)
 
 for (s=0;s<*Ntimes;s++) // {{{
 {
-    time=times[s]; if (s==0) dtime=0; else dtime=time-times[s-1];  // {{{
+    time=times[s]; if (s==0) dtime=0; else dtime=time-times[s-1];  
     vtime[0]=time; 
     for(j=1;j<=*px;j++) VE(bhatt,j-1)=est[j*(*Ntimes)+s];
     Mv(ldesignX,bhatt,pbhat); 
     if (*semi==1) {scl_vec_mult(time,pghat0,pghat);vec_add(pbhat,pghat,pbhat);}
-    if (*CA1!=*CA2) {
+
+    if (*CA1!=*CA2) { // {{{
        for(j=1;j<=*px2;j++) {VE(bhatt2,j-1)=est2[j*(*Ntimes)+s];}
        Mv(X2,bhatt2,pbhat2); 
        if (*semi2==1) {scl_vec_mult(time,pghat02,pghat2);vec_add(pbhat2,pghat2,pbhat2);}
@@ -918,18 +899,21 @@ for (s=0;s<*Ntimes;s++) // {{{
 
     for (j=0;j<*antclust;j++) 
     if (clustsize[j]>=2) { // {{{
-         // if (itt==0) printf(" %d \n",j); 
-          diff=0;sdj=0; vec_zeros(rowX);vec_zeros(rowZ); 
-	  vec_zeros(rowX2);vec_zeros(rowZ2); 
+	 diff=0;sdj=0; 
+	 vec_zeros(rowX);vec_zeros(rowZ); 
+	 vec_zeros(rowX2);vec_zeros(rowZ2); 
 
           for (c=0;c<clustsize[j];c++) for (v=0;v<clustsize[j];v++) // {{{
 	  if ((*sym==1 && c!=v) || (*sym==0 && c<v)) { 
 	    i=clusterindex[c*(*antclust)+j]; k=clusterindex[v*(*antclust)+j];
 
-       if ((entryage[i] < time) && (entryage[k]< time)) {
+//printf("%lf %lf %lf \n",entryage[i],entryage[k],time);
+//printf("%d %d %d \n",j,i,k); 
+
+    if ((entryage[i] < time) && (entryage[k]< time)) {
  
-	   nocens= (cause[i]!=0)+(cause[k]!=0); 
-	   nocens=min(nocens,2); 
+        nocens= (cause[i]!=0)+(cause[k]!=0); 
+        nocens=min(nocens,2); 
 
         if ((*estimator==1)  || ((*estimator==0) && (nocens==2)) || (*estimator==2) )
         {
@@ -937,18 +921,19 @@ for (s=0;s<*Ntimes;s++) // {{{
 	    respst=((x[i]<=entryage[i]) && (cause[i]==*CA1))* ((x[k]<=time) && (cause[k]==*CA2)) + 
 		    ((x[i]<=time) && (cause[i]==*CA1))* ((x[k]<=entryage[k]) && (cause[k]==*CA2)) ;
          
-	   extract_row(destheta,clusterindex[j],pthetavec); 
+   extract_row(destheta,clusterindex[j],pthetavec); 
 
-         if (*flexfunc==0) thetak=vec_prod(pthetavec,vtheta1); 
-	 else  thetak=evalh(vtheta1,vtime,pthetavec,htheta,rhoR); 
-	 Li=VE(pbhat,i); 
-         if (*CA1!=*CA2 ) Lk=VE(pbhat2,k); else Lk=VE(pbhat,k); 
-	 ormarg=(1-exp(-Li))*(1-exp(-Lk)); 
-	 weight=1; 
+  if (*flexfunc==0) thetak=vec_prod(pthetavec,vtheta1); 
+  else  thetak=evalh(vtheta1,vtime,pthetavec,htheta,rhoR); 
+   Li=VE(pbhat,i); 
+   if (*CA1!=*CA2 ) Lk=VE(pbhat2,k); else Lk=VE(pbhat,k); 
+   ormarg=(1-exp(-Li))*(1-exp(-Lk)); 
+   weight=1; 
 
 	 if (*estimator==1) {
 	    if (*samecens==1) { resp2=resp2/min(KMc[i],KMc[k]); respst=respst/min(KMc[i],KMc[k]); } 
 	    else { resp2=resp2/(KMc[i]*KMc[k]); respst=respst/(KMc[i]*KMc[k]); }
+
 	    weight=1; 
 	 } else if (*estimator==0){ 
 	    if (*samecens==1) weight=1/min(KMc[i],KMc[k]); else weight=1/(KMc[i]*KMc[k]);
@@ -956,17 +941,17 @@ for (s=0;s<*Ntimes;s++) // {{{
 
         if (trunkp[i]<1) {	
            stpart=respst/trunkp[i]; 
-	   response=weight*(resp2-
-	   exp(thetak)*(ormarg+cif1entry[i]*cif2entry[k] -(1-exp(-Li))*cif2entry[k]-(1-exp(-Lk))*cif1entry[i])/trunkp[i]);
+           p11t=plack(exp(thetak),(1-exp(-Li)),(1-exp(-Lk)),dplack);
+	   response=weight*dplack[0]*exp(thetak)*(resp2-p11t);
 	   diff=diff+response; 
-	   sdj=sdj- weight*
-		   exp(thetak)*(ormarg+cif1entry[i]*cif2entry[k]- (1-exp(-Li))*cif2entry[k]- (1-exp(-Lk))*cif1entry[i])/trunkp[i];
-	   resp3=-exp(thetak);
+	   sdj=sdj-weight*dplack[0]*dplack[0]*exp(2*thetak); 
+	   resp3=0;
 	} else {
-	   response=weight*(resp2-plack(thetak,(1-exp(-Li)),(1-exp(-Lk)),dplack)); 
+           p11t=plack(exp(thetak),(1-exp(-Li)),(1-exp(-Lk)),dplack);
+	   response=weight*dplack[0]*exp(thetak)*(resp2-p11t);
 	   diff=diff+response; 
-	   sdj=sdj-weight*dplack[0];
-	   resp3=-exp(thetak);
+	   sdj=sdj-2*weight*exp(2*thetak)*pow(dplack[0],2);
+	   resp3=-dplack[0]*exp(thetak);
 	}
 
 	if (isnan(response))   { // removes these from score equations
@@ -990,34 +975,37 @@ for (s=0;s<*Ntimes;s++) // {{{
        if(*notaylor==0) { // {{{
 	if (itt==*Nit-1) { 
 	    extract_row(ldesignX,i,xi); 
-	    scl_vec_mult(resp3*exp(-Li)*(1-exp(-Lk)),xi,xi); vec_add(xi,rowX,rowX); 
+	    scl_vec_mult(resp3*dplack[1],xi,xi); 
+	    vec_add(xi,rowX,rowX); 
 
 	if (*CA1!=*CA2 ) {
 	    extract_row(X2,k,xk);
-	    scl_vec_mult(resp3*exp(-Lk)*(1-exp(-Li)),xk,xk); vec_add(xk,rowX2,rowX2); 
+	    scl_vec_mult(resp3*dplack[2],xk,xk); vec_add(xk,rowX2,rowX2); 
 	   } else {
 	    extract_row(ldesignX,k,xk); 
-	    scl_vec_mult(resp3*exp(-Lk)*(1-exp(-Li)),xk,xk); vec_add(xk,rowX,rowX); 
+	    scl_vec_mult(resp3*dplack[2],xk,xk); 
+	    vec_add(xk,rowX,rowX); 
 	   }
 
 	if (*semi==1)  { // {{{
 	   extract_row(ldesignG,i,zi); 
-	   scl_vec_mult(resp3*exp(-Li)*(1-exp(-Lk))*time,zi,zi); vec_add(zi,rowZ,rowZ); 
+	   scl_vec_mult(resp3*dplack[1]*time,zi,zi); 
+	   vec_add(zi,rowZ,rowZ); 
 
 	   if (*CA1!=*CA2 ) {
 	      extract_row(Z2,k,zk);
-	      scl_vec_mult(resp3*exp(-Lk)*(1-exp(-Li))*time,zk,zk); vec_add(zk,rowZ2,rowZ2); 
+	      scl_vec_mult(resp3*dplack[2]*time,zk,zk); vec_add(zk,rowZ2,rowZ2); 
 	   } else {
 	      extract_row(ldesignG,k,zk);
-	      scl_vec_mult(resp3*exp(-Lk)*(1-exp(-Li))*time,zk,zk); vec_add(zk,rowZ,rowZ); 
+	      scl_vec_mult(resp3*dplack[2]*time,zk,zk); vec_add(zk,rowZ,rowZ); 
 	   }
 	    
         } 
 	} // }}}
 
-
 	} // }}}
-} // left truncated 
+
+        } // left truncated 
         } /* for (c=0....... */   // }}}
 	
         if (*flexfunc==0) scl_vec_mult(1,pthetavec,vtheta22);  
@@ -1026,13 +1014,9 @@ for (s=0;s<*Ntimes;s++) // {{{
        for (k=0;k<*dimpar;k++) for (c=0;c<*dimpar;c++) 
 	 ME(d2Utheta,k,c)= ME(d2Utheta,k,c)+weights[j]*sdj*VE(vtheta22,k)*VE(vtheta22,c);
 
-       scl_vec_mult(diff,vtheta22,vthetascore);  
-       scl_vec_mult(weights[j],vthetascore,vthetascore);  
-       vec_add(vthetascore,Utheta,Utheta); 
-
-// scl_vec_mult(exp(thetak)*diff,vthetascore,vthetascore);  
-// printf(" %lf %lf %lf \n",thetak,ormarg,diff); 
-//  print_vec(Utheta); 
+     scl_vec_mult(diff,vtheta22,vthetascore);  
+     scl_vec_mult(weights[j],vthetascore,vthetascore);  
+     vec_add(vthetascore,Utheta,Utheta); 
 
       if (itt==*Nit-1) { // {{{
 	 if (*notaylor==0) {
@@ -1046,12 +1030,9 @@ for (s=0;s<*Ntimes;s++) // {{{
          if (*semi==1) for (k=0;k<*pg2;k++) for (c=0;c<*dimpar;c++) 
          ME(DUgamma2,k,c)= ME(DUgamma2,k,c)+VE(rowZ2,k)*VE(vtheta22,c);  
       }
-      }
-      vec_add(vthetascore,W2[j],W2[j]);
-
-//      for (k=0;k<*dimpar;k++) for (c=0;c<*dimpar;c++) 
-//          ME(Sthetaiid[j],k,c)=ME(Sthetaiid[j],k,c)+sdj*VE(vtheta2,k)*VE(vtheta2,c); 
-      } // }}}
+         }
+         vec_add(vthetascore,W2[j],W2[j]);
+    } // }}}
 
    } /* j in antclust */  // }}}
 
@@ -1068,12 +1049,10 @@ for (s=0;s<*Ntimes;s++) // {{{
 
 } /* s=1,...Ntimes */ // }}}
 
-
-//   printf(" %ld \n",*inverse); 
-// print_mat(d2Utheta);  print_vec(Utheta); 
-
 invert(d2Utheta,d2UItheta); Mv(d2UItheta,Utheta,dtheta);
 scl_vec_mult(-1*step[0],dtheta,dtheta); 
+
+if (fabs(ME(d2UItheta,0,0))<0.0000000001) itt=*Nit-1; 
 
 if (*detail==1) { // {{{
 printf("===============Iteration %d ==================== \n",itt);
@@ -1092,40 +1071,27 @@ vec_add(vtheta1,dtheta,vtheta1);
 
 } /*itt løkke */ 
 
-//print_mat(DUgamma); 
-
 for (j=0;j<*antclust;j++) 
 {
-//vec_add(dtheta,W2[j],dtheta); 
-// printf("===============lomse lomse ==================== \n",j);
-// print_vec(W2[j]); print_vec(W3[j]); 
-if  (*notaylor==0) {
- vec_add(W2[j],W3[j],W2[j]); 
-if (*semi==1) { //printf(" =W4======== \n"); print_vec(W4[j]); 
-   vM(DUgamma,gammaiid[j],vtheta12); 
-  vec_add(W2[j],vtheta12,W2[j]);
- // printf(" semi 1 %d \n",j); print_vec(dtheta); 
+   if  (*notaylor==0) { // {{{
+     vec_add(W2[j],W3[j],W2[j]); 
+     if (*semi==1){
+        vM(DUgamma,gammaiid[j],vtheta12); 
+        vec_add(W2[j],vtheta12,W2[j]);
+     }
+
+     if (*CA1!=*CA2 && *semi2==1) { 
+        vM(DUgamma2,gamma2iid[j],vtheta12); 
+        vec_add(W2[j],vtheta12,W2[j]);
+     }
+   } // }}}
+
+   for (k=0;k<*dimpar;k++) for (c=0;c<*dimpar;c++) 
+   ME(varthetascore,k,c)=ME(varthetascore,k,c)+VE(W2[j],c)*VE(W2[j],k); 
+
+   Mv(d2UItheta,W2[j],vtheta22);
+   for (k=0;k<*dimpar;k++) thetiid[k*(*antclust)+j]=VE(vtheta22,k);
 }
-
-if (*CA1!=*CA2 && *semi2==1) { //printf(" =W4======== \n"); print_vec(W4[j]); 
-  vM(DUgamma2,gamma2iid[j],vtheta12); 
-  vec_add(W2[j],vtheta12,W2[j]);
- // printf(" semi 1 %d \n",j); print_vec(dtheta); 
-}
-}
-
-for (k=0;k<*dimpar;k++) for (c=0;c<*dimpar;c++) 
-ME(varthetascore,k,c)=ME(varthetascore,k,c)+VE(W2[j],c)*VE(W2[j],k); 
-
-Mv(d2UItheta,W2[j],vtheta22);
-// print_mat(d2UItheta); print_vec(W2[j]); print_vec(vtheta2); 
-for (k=0;k<*dimpar;k++) thetiid[k*(*antclust)+j]=VE(vtheta22,k);
-
-}
-
-//  printf("W2 sum ==== \n"); print_vec(dtheta); 
-//  printf("second derivative \n"); print_mat(d2UItheta); 
-//  printf("iid decomp variance \n"); print_mat(varthetascore); 
 
    MxA(varthetascore,d2UItheta,d2Utheta); 
    MxA(d2UItheta,d2Utheta,varthetascore);
@@ -1164,28 +1130,59 @@ free(vtime); free(dplack);
 } // }}}
 
 double plack(double theta,double cif1,double cif2,double *dp) 
-{
-double dval1,valr,valn,val,val1,cifs;
+{ // {{{
+double dval1,valr,valn,val,val1,cifs,
+       thetad,val1d,valnd,valrd,d,
+       cif1d, cif2d, cifsd;
 
-cifs=cif1+cif2; 
-
+cifs=cif1+cif2; // {{{
 if (theta!=1) {
 valn=2*(theta-1); 
 val1=(1+(theta-1)*(cifs))-pow( pow((1+(theta-1)*cifs),2)-4*cif1*cif2*theta*(theta-1),0.5); 
 valr=val1/valn; 
 } else {
 valr=cif1*cif2;
-}
+} // }}}
 
-if (theta!=1) {
-dval1= cifs-(2*(1+(theta-1)*cifs)*cifs-4*2*cif1*cif2*theta+4*cif1*cif2)/
-	(2*pow( pow((1+(theta-1)*cifs),2)-4*cif1*cif2*theta*(theta-1),0.5)); 
-val=valn*dval1-val1*2; 
-dp[0]= val/pow(valn,2); 
+d=0.000001; thetad=theta+d; // {{{
+if (thetad!=1) {
+valnd=2*(thetad-1); 
+val1d=(1+(thetad-1)*(cifs))-pow( pow((1+(thetad-1)*cifs),2)-4*cif1*cif2*thetad*(thetad-1),0.5); 
+valrd=val1d/valnd; 
 } else {
-dp[0]=1; 
-}
+valrd=cif1*cif2;
+} // }}}
+dp[0]=(valrd-valr)/d;  
+
+cif1d=cif1+d; cifsd=cif1d+cif2; // {{{
+if (theta!=1) {
+valnd=2*(theta-1); 
+val1d=(1+(theta-1)*(cifsd))-pow( pow((1+(theta-1)*cifsd),2)-4*cif1d*cif2*theta*(theta-1),0.5); 
+valrd=val1d/valnd; 
+} else {
+valrd=cif1d*cif2;
+} // }}}
+dp[1]=(valrd-valr)/d;  
+
+cif2d=cif2+d; cifsd=cif1+cif2d; // {{{
+if (theta!=1) {
+valnd=2*(theta-1); 
+val1d=(1+(theta-1)*(cifsd))-pow( pow((1+(theta-1)*cifsd),2)-4*cif1d*cif2*theta*(theta-1),0.5); 
+valrd=val1d/valnd; 
+} else {
+valrd=cif1d*cif2;
+} // }}}
+dp[2]=(valrd-valr)/d;  
+
+//if (theta!=1) {
+//dval1= cifs-(2*(1+(theta-1)*cifs)*cifs-4*2*cif1*cif2*theta+4*cif1*cif2)/
+//	(2*pow( pow((1+(theta-1)*cifs),2)-4*cif1*cif2*theta*(theta-1),0.5)); 
+//val=valn*dval1-val1*2; 
+//dp[0]= val/pow(valn,2); 
+//dp[0]=(valrd-valr)/0.000001; 
+//} else {
+//dp[0]=1; 
+//}
 
 return(valr); 
-}
-
+} // }}}
