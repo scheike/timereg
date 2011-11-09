@@ -1,6 +1,5 @@
 \name{coef.cor}
 \alias{coef.cor}
-\alias{summary.cor}
 \alias{print.cor}
 \alias{summary.randomcif}
 \alias{coef.randomcif}

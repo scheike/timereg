@@ -68,3 +68,6 @@ double Dtlapgam(double alpha,double beta,double t);
  
 void DUetagammarv(double t, double x,double y,
 		vector *xi,vector *xk); 
+
+double plack(double theta,double cif1,double cif2,double *dp);
+

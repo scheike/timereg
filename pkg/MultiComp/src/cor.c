@@ -443,8 +443,8 @@ SEXP htheta,dhtheta,rhoR;
  vector *Utheta,*vthetascore,*vtheta1,*vtheta11,*vtheta22,*vtheta12,*dtheta; 
  vector *gam2,*bhatt2,*pbhat2,*pghat2,*pghat02,*rowX2,*xi2,*xk2,*zi2,*zk2,*rowZ2; 
  int nocens,naprint=0,pmax,v,itt,i,j,k,l,s,c;
- double weight,Li,Lk,thetak,response,time,dtime,fabs(),diff;
- double respst,stpart,sumscore,sdj,resp3,resp2,ormarg,*vtime=calloc(1,sizeof(double));
+ double weight,Li=0,Lk=0,thetak=0,response=0,time,dtime,fabs(),diff;
+ double respst,stpart,sumscore,sdj,resp3=0,resp2=0,ormarg=0,*vtime=calloc(1,sizeof(double));
 	
   if (*notaylor==0) 
   for (j=0;j<*Ntimes;j++) { 
@@ -806,8 +806,8 @@ SEXP htheta,dhtheta,rhoR;
  vector *Utheta,*vthetascore,*vtheta1,*vtheta11,*vtheta22,*vtheta12,*dtheta; 
  vector *gam2,*bhatt2,*pbhat2,*pghat2,*pghat02,*rowX2,*xi2,*xk2,*zi2,*zk2,*rowZ2; 
  int nocens,naprint=0,pmax,v,itt,i,j,k,l,s,c;
- double weight,Li,Lk,thetak,response,time,dtime,fabs(),diff,plack();
- double respst,stpart,sumscore,sdj,resp3,resp2,ormarg,p11t,
+ double weight,Li,Lk,thetak=0,response=0,time,dtime,fabs(),diff,plack();
+ double respst,stpart,sumscore,sdj,resp3=0,resp2=0,ormarg=0,p11t,
 	*vtime=calloc(1,sizeof(double)),*dplack=calloc(4,sizeof(double));
 	
   if (*notaylor==0) 
@@ -1130,7 +1130,7 @@ free(vtime); free(dplack);
 
 double plack(double theta,double cif1,double cif2,double *dp) 
 { // {{{
-double dval1,valr,valn,val,val1,cifs,
+double valr,valn,val1,cifs,
        thetad,val1d,valnd,valrd,d,
        cif1d, cif2d, cifsd;
 
