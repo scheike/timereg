@@ -48,7 +48,7 @@ int *nx,*p,*antpers,*Ntimes,*sim,*retur,*rani,*antsim,*status,*id,*covariance,
       }
 
       if (*mof==1 || stat==1) {MtA(ldesignX,WX,A); invertS(A,AI,silent[0]);
-      if (ME(AI,0,0)==0 && *silent==0) printf("X'X not invertible at time %lf \n",time);
+      if (ME(AI,0,0)==0 && *silent==0) Rprintf("X'X not invertible at time %lf \n",time);
       if (s<-1) {print_mat(AI); print_mat(A);} }
 
       if (stat==1) {extract_row(WX,pers,xi); Mv(AI,xi,dB);} 
@@ -70,12 +70,12 @@ int *nx,*p,*antpers,*Ntimes,*sim,*retur,*rani,*antsim,*status,*id,*covariance,
 	VE(cum,k-1)=cu[k*(*Ntimes)+s];}
 
 /*
-      printf(" %lf %lf  \n",time,dtime); 
-      printf(" %lf \n",vec_sum(offsets)); 
+      Rprintf(" %lf %lf  \n",time,dtime); 
+      Rprintf(" %lf \n",vec_sum(offsets)); 
       print_mat(AI); print_vec(rowX); print_vec(xi); print_vec(dB);  
       print_vec(diag); 
-      for (k=1;k<*p+1;k++) { printf(" %lf  ",cu[k*(*Ntimes)+s]);  } 
-      printf(" \n "); 
+      for (k=1;k<*p+1;k++) { Rprintf(" %lf  ",cu[k*(*Ntimes)+s]);  } 
+      Rprintf(" \n "); 
       */
 
      robvcu[s]=time; cu[s]=time; vcu[s]=time;  
@@ -264,16 +264,16 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*rani,*robust,*
       } 
       
 /*
-      printf(" %lf %lf \n",time,dtime); 
-      printf(" %lf \n",vec_sum(offsets)); 
+      Rprintf(" %lf %lf \n",time,dtime); 
+      Rprintf(" %lf \n",vec_sum(offsets)); 
       print_mat(AI); print_vec(rowX); 
       extract_row(WX,pers,rowX); 
       print_vec(rowX); 
       print_vec(dB);  
       print_vec(tmpv1); 
       for (k=1;k<*px+1;k++) {cuL[k*(*Nalltimes)+s]=cuL[k*(*Nalltimes)+s-1]+VE(dB,k-1); 
-      printf(" %lf  ",cuL[k*(*Nalltimes)+s]);  }
-      printf(" \n "); 
+      Rprintf(" %lf  ",cuL[k*(*Nalltimes)+s]);  }
+      Rprintf(" \n "); 
       */
 
       Acorb[s]=mat_copy(XWZAI,Acorb[s]); 

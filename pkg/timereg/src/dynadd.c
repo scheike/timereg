@@ -65,13 +65,13 @@ int *sim,*antsim,*retur,*nxval,*nx,*px,*na,*pa,*antpers,*Ntimes,*mw,*rani,*statu
 	    VE(dR,id[c])=y[c];  
 	    if (status[c]==1) risk=risk+1; 
 	    if (time==stop[c] && status[c]==1) {pers=id[c]; zpers=y[c];
-	      /* printf(" %ld %lf %ld \n",s,zpers,pers); */  }
+	      /* Rprintf(" %ld %lf %ld \n",s,zpers,pers); */  }
 	    count=count+1;} 
 	}
 
       MtA(ldesignA,ldesignA,Aa); invert(Aa,AaI);
       if (ME(AaI,0,0)==0.0) 
-	printf("Dynadd: Aalen design not invertible at time %lf",time); 
+	Rprintf("Dynadd: Aalen design not invertible at time %lf",time); 
       extract_row(ldesignA,pers,xai); 
       Mv(AaI,xai,dA); Mv(ldesignA,dA,pdA);
 
@@ -91,14 +91,14 @@ int *sim,*antsim,*retur,*nxval,*nx,*px,*na,*pa,*antpers,*Ntimes,*mw,*rani,*statu
 
       MtA(cdesignX,ldesignX,A); invert(A,AI);
       if (ME(AI,0,0)==0.0) 
-	printf("Dynadd: Regression design not invertible at time %lf",time); 
+	Rprintf("Dynadd: Regression design not invertible at time %lf",time); 
       extract_row(ldesignX,pers,tmpv); Mv(AI,tmpv,tmpv1); 
       scl_vec_mult(zpers,tmpv1,dB); 
 
       /* korrektions faktor ================================= */ 
       dif=(zpers-VE(pbhat,pers)); 
 
-      /* printf(" %lf %lf %lf \n",dif,zpers,VE(pbhat,pers));  */ 
+      /* Rprintf(" %lf %lf %lf \n",dif,zpers,VE(pbhat,pers));  */ 
 
       scl_vec_mult(dtime,bhatt,tmpv4); scl_vec_mult(dif,tmpv1,tmpv2); 
       vec_add(tmpv2,tmpv4,dkorB); 
@@ -284,7 +284,7 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
 
       MtA(ldesignA,ldesignA,A); invert(A,AI);
       if (ME(AI,0,0)==0.0) 
-	printf("Dynadd: Aalen design not invertible at time %lf\n",time); 
+	Rprintf("Dynadd: Aalen design not invertible at time %lf\n",time); 
       extract_row(ldesignA,pers,ai); 
       Mv(AI,ai,dA);
       Mv(ldesignA,dA,pdA);
@@ -300,7 +300,7 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
 
       MtA(ldesignX,cdesignX,XX); invert(XX,XXI); 
       if (ME(XXI,0,0)==0.0) 
-	printf("Dynadd: Regression design not invertible at time %lf\n",time); 
+	Rprintf("Dynadd: Regression design not invertible at time %lf\n",time); 
       MtA(ldesignG,ldesignX,ZX); MtA(cdesignG,ldesignX,cZX); 
       MtA(ldesignG,cdesignG,ZZ); 
       MxA(cZX,XXI,tmpM1); MAt(tmpM1,cZX,tmpM2);
@@ -315,7 +315,7 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
 
       Mv(tmpM1,xi,tmpv3); vec_subtr(zi,tmpv3,ZHdN); 
       scl_vec_mult(zpers,ZHdN,ZHdp); vec_add(ZHdp,IZHdp,IZHdp); 
-      if (s<0) { printf(" %d %d ±n",pers,s);print_vec(zi);print_vec(xi);} 
+      if (s<0) { Rprintf(" %d %d ±n",pers,s);print_vec(zi);print_vec(xi);} 
 
       /* LY korrektion */ 
       scl_vec_mult(zpers-YoneN,ZHdN,korgamly); 
@@ -341,7 +341,7 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
 	if (problems==0) { 
 	invert(dCGam,tmpM3); 
 	if (ME(tmpM3,0,0)==0.0) {problems=1; vec_zeros(gamef);
-	printf("Semi-Dynadd: gamma.ef contains non-invertible\n");} 
+	Rprintf("Semi-Dynadd: gamma.ef contains non-invertible\n");} 
 	Mv(tmpM3,gamkor,dgamef); vec_add(dgamef,gamef,gamef); 
 	}
 	vec_add(gamkor,zi,zi);  Mv(tmpM3,zi,rowZ); 

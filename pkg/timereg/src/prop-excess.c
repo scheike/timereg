@@ -135,7 +135,7 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
 
     *alpha=(it<init_it) ? 0.3:alpha_tmp;
 
-    /* printf("%2d    \n",it);*/
+    /* Rprintf("%2d    \n",it);*/
 
     /** Beregning af U, dU og [U] **/
 
@@ -224,7 +224,7 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
       for (l=0;l<*q;++l){ 
 	Uinp[l]+=ME(Ubeta_tilv,l,0);}
 
-      /* printf("%2d %6.4f   \n",i,Uinp[0]);*/
+      /* Rprintf("%2d %6.4f   \n",i,Uinp[0]);*/
 
       /******* Slut beregning af score U_beta ************/
 
@@ -301,7 +301,7 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
   
 
                                                             
-      /*if (i<1){printf("%6.4f   \n",Uinp[0]);print_mat(opt);}*/
+      /*if (i<1){Rprintf("%6.4f   \n",Uinp[0]);print_mat(opt);}*/
   
       /***** Slut beregning af [Ubeta] ************/
 
@@ -333,7 +333,7 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
 
 
     for (l=0;l<*q;++l){ME(beta_m,l,0)=beta[l];}
-    /*printf("%6.4f   \n",beta[0]);*/
+    /*Rprintf("%6.4f   \n",beta[0]);*/
     for (l=0;l<*q;++l){ME(Ubeta,l,0)=Uinp[l];}
     for (l=0;l<*q;++l){for (l1=0;l1<*q;++l1){
 	dUinp[l*(*q)+l1]=ME(dU_dbeta,l1,l);}}/* dU_dbeta */
@@ -347,7 +347,7 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
        c=sqrt(a*a); 
        if (c>eps){*/
     invert(dU_dbeta,dU_dbeta_I);invert(dU_dbeta1,dU_dbeta_I1);
-    /*printf("%6.4f   \n",c);*/
+    /*Rprintf("%6.4f   \n",c);*/
     /*print_mat(dU_dbeta_I1);  print_mat(dU_dbeta_I);*/
     for (i=0;i<*k;++i){
       VE(Ufunkdim1,i)=0; VE(Ufunkdim12,i)=0;
@@ -385,12 +385,12 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
     del=sqrt(del);
    
     for (l=0;l<*q;++l){beta[l]=ME(beta_m1,l,0);}
-    /*if (it<7){ printf("  it alpha beta del \t");
-      printf("%2d %6.4f  %6.4f %6.4f   \n",it,*alpha,beta[0],del);
+    /*if (it<7){ Rprintf("  it alpha beta del \t");
+      Rprintf("%2d %6.4f  %6.4f %6.4f   \n",it,*alpha,beta[0],del);
       }*/
     if (del<*tol){for (l=0;l<*q;++l){beta[l]=ME(beta_m,l,0);}}
-    /* printf("  it alpha beta del \t");
-       printf("%2d %6.4f  %6.4f %6.4f   \n",it,*alpha,beta[0],del);*/
+    /* Rprintf("  it alpha beta del \t");
+       Rprintf("%2d %6.4f  %6.4f %6.4f   \n",it,*alpha,beta[0],del);*/
     if ((del_old<del)&&(it>init_it) ){ 
       alpha_tmp=0.67*(*alpha);
       for (l=0;l<*q;++l){beta[l]=beta_tmp[l];}}
@@ -699,11 +699,11 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
       testOBSGOFCM:sqrt(VE(Ufunkdim1,i)*VE(Ufunkdim1,i));
   }
 
-  /*  printf("%6.4f   \n",testOBSGOFCM);*/
+  /*  Rprintf("%6.4f   \n",testOBSGOFCM);*/
 
   /***  Start simulationer   ***/
-  printf("Simulations start N=\t");
-  printf("%2d    \n",*antsim);
+  Rprintf("Simulations start N=\t");
+  Rprintf("%2d    \n",*antsim);
   GetRNGstate();  /* to use R random normals */
 
 

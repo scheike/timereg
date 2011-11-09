@@ -437,14 +437,15 @@ return(ud);
 ## }}}
 } ## }}}
 
-summary.cor<-function(object,digits=3,marg.cif=NULL,return=0,...)
+summary.cor<-function(object,marg.cif=NULL,marg.cif2=NULL,digits=3,return=0,...)
 { ## {{{
 if (!inherits(object, "cor")) stop("Must be a cor.cif  object")
 
 if (attr(object,"Type")=="cor") {
 cat("Cross odds ratio dependence for competing risks\n\n")
-cat("Effect of cause1=",attr(object,"cause1")," on cause2=",attr(object,"cause2"),
-" under symmetry=",attr(object,"sym"),fill=TRUE,sep="")
+cat("Odds of cause1=",attr(object,"cause1")," given cause2=",attr(object,"cause2")
+," relative to Odds of cause1=",attr(object,"cause1"),"\n",
+fill=TRUE,sep="")
 } else if (attr(object,"Type")=="RR") {
 cat("Ratio of joint and product of marginals for competing risks\n\n")
 cat("Ratio of cumulative incidence for cause1=",attr(object,"cause1")," and cause2=",attr(object,"cause2"),sep=" ")
@@ -460,39 +461,47 @@ prmatrix(signif(coefs,digits))
 
 if (is.null(marg.cif)==FALSE) {
 marg.cif <- max(marg.cif)
+if (attr(object,"cause2")==attr(object,"cause1")) marg.cif2=marg.cif
+marg.cif2 <- max(marg.cif2)
+
 ## {{{
 if (attr(object,"Type")=="cor") {
-concordance <- exp(coefs[,1])*marg.cif^2/((1-marg.cif)+exp(coefs[,1])*marg.cif)
+concordance <- exp(coefs[,1])*marg.cif*marg.cif2/((1-marg.cif)+exp(coefs[,1])*marg.cif)
 conclower  <- exp(coefs[,1]-1.96*coefs[,2])*marg.cif^2/((1-marg.cif)+exp(coefs[,1]-1.96*coefs[,2])*marg.cif)
 concup  <- exp(coefs[,1]+1.96*coefs[,2])*marg.cif^2/((1-marg.cif)+exp(coefs[,1]+1.96*coefs[,2])*marg.cif)
 casewise <- concordance/marg.cif
 caselower  <- conclower/marg.cif
 caseup     <- concup/marg.cif
 } else if (attr(object,"Type")=="RR") {
-casewise<- exp(coefs[,1])*c(marg.cif)
-concordance <- exp(coefs[,1])*marg.cif^2
+casewise<- exp(coefs[,1])*c(marg.cif2)
+concordance <- exp(coefs[,1])*marg.cif*marg.cif2
 caselower  <- marg.cif*exp(coefs[,1]-1.96*coefs[,2])
 caseup     <- marg.cif*exp(coefs[,1]+1.96*coefs[,2])
-conclower  <- marg.cif^2* exp(coefs[,1]-1.96*coefs[,2])
-concup     <- marg.cif^2*exp(coefs[,1]+1.96*coefs[,2])
+conclower  <- marg.cif*marg.cif2* exp(coefs[,1]-1.96*coefs[,2])
+concup     <- marg.cif*marg.cif2*exp(coefs[,1]+1.96*coefs[,2])
 } else if (attr(object,"Type")=="OR-cif") {
 thetal <-  coefs[,1]-1.96*coefs[,2]
 thetau <-  coefs[,1]+1.96*coefs[,2]
-casewise<- plack.cif2(marg.cif,marg.cif,c(coefs[,1]))/marg.cif
-concordance <- plack.cif2(marg.cif,marg.cif,c(coefs[,1]))
-caselower  <- plack.cif2(marg.cif,marg.cif,thetal)/marg.cif
-caseup  <- plack.cif2(marg.cif,marg.cif,thetau)/marg.cif
-conclower  <- plack.cif2(marg.cif,marg.cif,thetal)
-concup     <- plack.cif2(marg.cif,marg.cif,thetau)
+casewise<- plack.cif2(marg.cif2,marg.cif,c(coefs[,1]))/marg.cif
+concordance <- plack.cif2(marg.cif2,marg.cif,c(coefs[,1]))
+caselower  <- plack.cif2(marg.cif2,marg.cif,thetal)/marg.cif
+caseup  <- plack.cif2(marg.cif2,marg.cif,thetau)/marg.cif
+conclower  <- plack.cif2(marg.cif2,marg.cif,thetal)
+concup     <- plack.cif2(marg.cif2,marg.cif,thetau)
 }
 cat("\n")
 
-cat(paste("Marginal cumulative incidencen",signif(marg.cif,digits),"\n"))
+cat("Cumulative incidence for cause1=",
+    attr(object,"cause1 "), signif(marg.cif,digits),"\n")
+cat("Cumulative incidence for cause2=",
+    attr(object,"cause2 "), signif(marg.cif2,digits),"\n")
 
 cat("\n")
 outcase <- cbind(casewise,caselower,caseup)
 outconc <- cbind(concordance,conclower,concup)
 rownames(outcase) <- rownames(outconc)  <-  rownames(coefs)
+cat("Casewise concordance for  cause ",
+    attr(object,"cause2"), "given", attr(object,"cause1"),"\n") 
 colnames(outcase) <- c("casewise concordance","2.5 %","97.5%")
 prmatrix(signif(outcase,digits))
 cat("\n")
@@ -782,10 +791,26 @@ return(ud);
 ## }}}
 } ## }}}
 
-concordance <- function(cif1,cif2,object,...)
+concordance <- function(object,cif1,cif2=NULL,...)
 { ## {{{
 if (!inherits(object, "cor")) stop("Must be a rr.cif, cor.cif or or.cif object")
 coefs <- coef(object)
+
+if (is.null(cif2)==TRUE) cif2 <- cif1; 
+if (attr(object,"cause2")==attr(object,"cause1")) cif2 <- cif1
+
+if (attr(object,"Type")=="cor") { ## {{{
+cat("Cross odds ratio dependence for competing risks\n\n")
+cat("Odds of cause1=",attr(object,"cause1")," given cause2=",attr(object,"cause2")
+," relative to Odds of cause1=",attr(object,"cause1"),"\n",fill=TRUE,sep="")
+} else if (attr(object,"Type")=="RR") {
+cat("Ratio of joint and product of marginals for competing risks\n\n")
+cat("Ratio of cumulative incidence for cause1=",attr(object,"cause1")," and cause2=",attr(object,"cause2"),sep=" ")
+} else if (attr(object,"Type")=="OR-cif") {
+cat("OR for dependence for competing risks\n\n")
+cat("OR of cumulative incidence for cause1=",attr(object,"cause1")," and cause2=",attr(object,"cause2"),sep=" ")
+} ## }}}
+
 out <- list()
 
 for (k in 1:nrow(coefs)) {

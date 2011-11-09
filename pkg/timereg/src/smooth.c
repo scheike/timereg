@@ -42,11 +42,11 @@ int *coef,*nx,*p,*degree,*nb;
       count=0; 
       vec_zeros(RES); 
       band=b[(k-1)*(*nb)+s]; 
-      /* printf("band %lf %ld \n",band,k);  */
+      /* Rprintf("band %lf %ld \n",band,k);  */
 
       for (j=0;j<*nx;j++) {
 	if (fabs(designX[j]-x)<band) {
-	  /* printf("smooth %lf %lf \n",band,designX[k*(*nx)+j]);  */
+	  /* Rprintf("smooth %lf %lf \n",band,designX[k*(*nx)+j]);  */
 	  w=tukey(designX[j]-x,band); 
 	  ME(mat1,count,0)=1.0; 
 	  ME(mat2,count,0)=w; 
@@ -95,7 +95,7 @@ int *nx,*p,*nb,*lin;
   malloc_vec(j,XY);
   malloc_vec(j,res);
 
-  /* printf("enters Local Time Regression \n");  */
+  /* Rprintf("enters Local Time Regression \n");  */
   for (s=0;s<*nb;s++){
     x=bhat[s]; 
     for (c=0;c<*nx;c++){
@@ -117,7 +117,7 @@ int *nx,*p,*nb,*lin;
     MtA(X,X,A); 
     invert(A,AI); 
     if (ME(AI,0,0)==0.0){
-      printf("Non-invertible design in local smoothing at time %lf \n",x); 
+      Rprintf("Non-invertible design in local smoothing at time %lf \n",x); 
     }
     vM(X,Y,XY); 
     Mv(AI,XY,res); 

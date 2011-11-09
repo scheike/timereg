@@ -314,6 +314,8 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
   attr(ud, "Formula") <- formula
   attr(ud, "time.pow") <- time.pow
   attr(ud, "cause") <- cause
+  attr(ud, "causeS") <- causeS
+  attr(ud, "cens.code") <- cens.code
   attr(ud, "times") <- times
   return(ud);  ## }}}
 } ## }}}

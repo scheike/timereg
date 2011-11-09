@@ -66,7 +66,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
 	  Hik[j]=cumhaz[j]; Nti[j]=Nti[j]+status[j]; Nt[cluster[j]]= Nt[cluster[j]]+status[j]; 
   }
 
-//  for (j=0;j<*antpers;j++)  printf("%d %lf %lf %lf  \n",j,cumhaz[j],Nti[j],cumhazleft[j]); 
+//  for (j=0;j<*antpers;j++)  Rprintf("%d %lf %lf %lf  \n",j,cumhaz[j],Nti[j],cumhazleft[j]); 
 
   if (*notaylor==0) {
   for (i=0;i<*antclust;i++) for (j=0;j<*pg;j++) VE(gammaiid[i],j)=gamiid[j*(*antclust)+i]; 
@@ -101,10 +101,10 @@ for(j=0;j<pmax;j++) {
 
    R_CheckUserInterrupt();
 
-//  for (j=0;j<*antpers;j++)  printf("%d %lf %lf %lf  \n",j,Hik[j],Nti[j],cumhazleft[i]); 
-//  printf(" test =============\n");  
-//  for (j=0;j<*antclust;j++)  printf("%d %lf %lf \n",j,Nt[j],NH[j]); 
-//  printf(" test =============\n");  
+//  for (j=0;j<*antpers;j++)  Rprintf("%d %lf %lf %lf  \n",j,Hik[j],Nti[j],cumhazleft[i]); 
+//  Rprintf(" test =============\n");  
+//  for (j=0;j<*antclust;j++)  Rprintf("%d %lf %lf \n",j,Nt[j],NH[j]); 
+//  Rprintf(" test =============\n");  
 //
 /*===================Estimates theta, two stage approach of glidden ==== */
 
@@ -124,9 +124,9 @@ for(j=0;j<pmax;j++) {
       for (k=0;k<clustsize[j];k++) {
 	   i=idiclust[k*(*antclust)+j]; 
 	    theta0=VE(lamtt,i); 
-//	   printf(" %d %d %d  %lf %lf %lf \n",j,k,i,Hik[i],theta0,Nt[j]); 
+//	   Rprintf(" %d %d %d  %lf %lf %lf \n",j,k,i,Hik[i],theta0,Nt[j]); 
             if (*inverse==1) theta0=exp(theta0); 
-//	    if (theta0<=0.00) printf(" %lf %d %d %d \n",theta0,j,k,i); 
+//	    if (theta0<=0.00) Rprintf(" %lf %d %d %d \n",theta0,j,k,i); 
 	    Rtheta[j]=Rtheta[j]+exp(theta0*Hik[i])-1; 
 	    if (*lefttrunk==1) Rthetaleft[j]=Rthetaleft[j]+exp(theta0*cumhazleft[i])-1; 
 	    HeH[j]=HeH[j]+Hik[i]*exp(theta0*Hik[i]); 
@@ -142,10 +142,10 @@ for(j=0;j<pmax;j++) {
               extract_row(destheta,i,vtheta2); theta0=VE(lamtt,i); 
               if (*inverse==1){theta0=exp(VE(lamtt,i));Dthetanu=theta0; 
 	      }
-//	      if (theta0<=0.00){  printf("==== %lf %d %d %d \n",theta0,j,k,i); print_vec(vtheta2); }
+//	      if (theta0<=0.00){  Rprintf("==== %lf %d %d %d \n",theta0,j,k,i); print_vec(vtheta2); }
      }
 
-//      if (it==0) printf(" %d %d %d %lf %lf %lf \n",j,k,i,Hik[i],theta0,Nt[j]); 
+//      if (it==0) Rprintf(" %d %d %d %lf %lf %lf \n",j,k,i,Hik[i],theta0,Nt[j]); 
 
 	 sumscore=0;  ll=0; 
 	 if (Nt[j]>=2) 
@@ -163,8 +163,8 @@ for(j=0;j<pmax;j++) {
   scl_vec_mult(thetaiidscale[j]*Dthetanu,vtheta2,thetaiid[j]); 
 
   if (isnan(thetaiidscale[j])) {
-  if (theta0<0) printf("negative value of random effect variances causes problems, try step.size=0.1\n"); 
-  printf("nan i score subject=%d %lf %lf %lf %lf %lf %lf %lf %lf %lf \n",j,theta0,Nt[j],NH[j],HeH[j],Rtheta[j],Rthetaleft[j],HeHleft[j],Dthetanu,thetaiidscale[j]); 
+  if (theta0<0) Rprintf("negative value of random effect variances causes problems, try step.size=0.1\n"); 
+  Rprintf("nan i score subject=%d %lf %lf %lf %lf %lf %lf %lf %lf %lf \n",j,theta0,Nt[j],NH[j],HeH[j],Rtheta[j],Rthetaleft[j],HeHleft[j],Dthetanu,thetaiidscale[j]); 
   print_vec(vtheta2); 
   oops("missing varlue\n"); 
   }
@@ -192,10 +192,10 @@ for(j=0;j<pmax;j++) {
 // invert(d2Utheta,d2UItheta); 
 
       if (*detail==1) { 
-	printf("====================Iteration %d ==================== \n",it);
-	printf("Estimate theta \n"); print_vec(vtheta1); 
-	printf("Score D l\n");  print_vec(vthetascore); 
-	printf("Information D^2 l\n"); print_mat(d2UItheta); 
+	Rprintf("====================Iteration %d ==================== \n",it);
+	Rprintf("Estimate theta \n"); print_vec(vtheta1); 
+	Rprintf("Score D l\n");  print_vec(vthetascore); 
+	Rprintf("Information D^2 l\n"); print_mat(d2UItheta); 
       }
 
 //    Mv(d2UItheta,vthetascore,dtheta); scl_vec_mult(*step,dtheta,dthetaa); 

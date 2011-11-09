@@ -23,7 +23,7 @@ matrix **W4t;
   malloc_mat(*Ntimes,*px,Delta); malloc_mat(*Ntimes,*px,tmpM1);
   for (i=0;i<*antpers;i++) malloc_vec(*px,gammai[i]); 
 
-  /* printf("Simulations start N= %ld \n",*antsim);  */
+  /* Rprintf("Simulations start N= %ld \n",*antsim);  */
 
   GetRNGstate();  /* to use R random normals */
 
@@ -110,7 +110,7 @@ matrix **W4t;
 	  testOBS[c]=testOBS[c]+VE(ssrow,i)*dtime; 
       }
   } 
-  /*  for (i=0;i<3*(*px);i++) printf(" %lf \n",testOBS[i]);  */
+  /*  for (i=0;i<3*(*px);i++) Rprintf(" %lf \n",testOBS[i]);  */
 
   /* simulation of testprocesses and teststatistics */ 
   for (k=1;k<*antsim;k++) { 

@@ -109,7 +109,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	      replace_row(dotwitowit[j],s,xi); else replace_row(dotwitowit[j],s,dA); 
   
 	    scl_vec_mult(VE(plamt,j),dA,tmpv1); vec_add(tmpv1,dS0,dS0); 
-	    if (s<0 && j<5 ) {printf(" %d %d \n",s,j); print_vec(tmpv1); }
+	    if (s<0 && j<5 ) {Rprintf(" %d %d \n",s,j); print_vec(tmpv1); }
 
 	    if (*profile==0) scl_vec_mult(-VE(dlamt,j),xi,dA); 
 	    else scl_vec_mult(-VE(dlamt,j),dA,dA); 
@@ -132,7 +132,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	  VE(S0start,s)=S0star; replace_row(S1start,s,S1star); 
 	  VE(lht,s)=VE(lht,s-1)-S0star/(S0*S0); 
 
-	  /* printf(" %ld %lf %lf \n",s,VE(lht,s),ME(AI,0,0)); */
+	  /* Rprintf(" %ld %lf %lf \n",s,VE(lht,s),ME(AI,0,0)); */
 
 	  scl_vec_mult(S0star,dS0,tmpv1); scl_vec_mult(S0,S1star,dA); 
 	  vec_subtr(tmpv1,dA,dA); scl_vec_mult(1/S0,dA,dA); 
@@ -140,7 +140,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 
 
 	  scl_vec_mult(-1/(S0*S0),dS0,tmpv1); vec_add(dG[s-1],tmpv1,dG[s]); 
-	  if (s<0) { printf(" %lf \n",S0); 
+	  if (s<0) { Rprintf(" %lf \n",S0); 
 	    print_vec(scl_vec_mult(1/S0,dS0,NULL)); 
 	    print_vec(tmpv1); 
 	    print_vec(dG[s]); }
@@ -152,7 +152,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 
 	  /* baseline is computed */ 
 	  cu[1*(*Ntimes)+s]=cu[1*(*Ntimes)+s-1]+(1/S0); 
-	  if (s<0) printf(" %lf \n",cu[1*(*Ntimes)+s]); 
+	  if (s<0) Rprintf(" %lf \n",cu[1*(*Ntimes)+s]); 
 
 	  /* First derivative of U ========================================  */ 
 	  extract_row(ldesignX,pers,xi); 
@@ -196,7 +196,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	  scl_mat_mult(S0,dS1,M1); 
 
 	  /* */
-	  if (s<0) { printf("======================== %lf \n",S0); 
+	  if (s<0) { Rprintf("======================== %lf \n",S0); 
 	    print_mat(scl_mat_mult(1/(S0*S0),M1,NULL)); 
 	    print_mat(scl_mat_mult(1/(S0*S0),dS2,NULL)); 
 	  }
@@ -248,15 +248,15 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
       vec_add(beta,delta,beta); 
 
       if (*detail==1) { 
-	printf("====================Iteration %d ==================== \n",it); 
-	printf("log-likelihood "); printf(" %lf \n",ll); 
-	printf("Estimate beta "); print_vec(beta); 
+	Rprintf("====================Iteration %d ==================== \n",it); 
+	Rprintf("log-likelihood "); Rprintf(" %lf \n",ll); 
+	Rprintf("Estimate beta "); print_vec(beta); 
 	if (*profile==1) {
-	  printf("modified partial likelihood Score D l"); print_vec(Upl); }
-	if (*profile==0) {printf("simple Score D l"); print_vec(U);  }
-	printf("Information -D^2 l\n"); print_mat(SI); 
-	if (*profile==1) {printf("simple D2 l");  print_mat(S2pl); }
-	if (*profile==0) {printf("simple D2 l");  print_mat(S2); }
+	  Rprintf("modified partial likelihood Score D l"); print_vec(Upl); }
+	if (*profile==0) {Rprintf("simple Score D l"); print_vec(U);  }
+	Rprintf("Information -D^2 l\n"); print_mat(SI); 
+	if (*profile==1) {Rprintf("simple D2 l");  print_mat(S2pl); }
+	if (*profile==0) {Rprintf("simple D2 l");  print_mat(S2); }
       };
 
       for (k=0;k<*px;k++) sumscore= sumscore+
@@ -274,7 +274,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
     vec_zeros(xi); 
     for (t=s;t<*Ntimes;t++) {
       extract_row(gt,t,dA); scl_vec_mult(exp(VE(lht,t))/VE(S0t,t),dA,dA); 
-      if (s<0) {printf("exp %d %d %lf \n",s,t,exp(-VE(lht,t)+VE(lht,s))); 
+      if (s<0) {Rprintf("exp %d %d %lf \n",s,t,exp(-VE(lht,t)+VE(lht,s))); 
 	print_vec(dA);}
       vec_add(dA,xi,xi); }
     scl_vec_mult(exp(-VE(lht,s))/VE(S0t,s),xi,xi); 
@@ -404,7 +404,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
    R_CheckUserInterrupt();
 
   if (*sim==1) {
-    // printf("Simulations start N= %d \n",*antsim);
+    // Rprintf("Simulations start N= %d \n",*antsim);
     GetRNGstate();  /* to use R random normals */
 
     tau=times[*Ntimes-1]-times[0];

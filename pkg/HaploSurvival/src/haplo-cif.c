@@ -113,15 +113,15 @@ if (*semi==0) {
        Fhaplodes(xi,haplotypeD,xih,designfuncX,rhoR);; 
 
        if (*detail>=3) { // print test {{{
-	  printf("======Design =================== \n"); 
-          printf(" person %d  \n",i); 
-          printf(" haplotypes hap1 hap2 %d %d  \n",oh[c1D],oh[c1D+1]);  
-          printf(" design, x \n");  
+	  Rprintf("======Design =================== \n"); 
+          Rprintf(" person %d  \n",i); 
+          Rprintf(" haplotypes hap1 hap2 %d %d  \n",oh[c1D],oh[c1D+1]);  
+          Rprintf(" design, x \n");  
           print_vec(xi); // print_vec(ziI); 
-          printf(" design, x(h) \n");  
+          Rprintf(" design, x(h) \n");  
 	  print_vec(xih); // print_vec(zih);
           ph=haplofreq[oh[c1D]]*haplofreq[oh[c1D+1]];
-          printf("probability for haplotype pair Donor %lf %d %d \n",ph,oh[c1D],oh[c1D+1]); 
+          Rprintf("probability for haplotype pair Donor %lf %d %d \n",ph,oh[c1D],oh[c1D+1]); 
        } // }}}
      
        
@@ -129,7 +129,7 @@ if (*semi==0) {
        if (first==0) {indexpersallH[i]=k; first=1;}
        c1D+=2; k+=1; 
     }
-   // printf(" %d %d %d \n",i,indexpersallH[i],indexpersnph[i]); 
+   // Rprintf(" %d %d %d \n",i,indexpersallH[i],indexpersnph[i]); 
   }
   // }}}
 
@@ -148,8 +148,8 @@ for (s=0;s<*Ntimes;s++)
 	
        for (j=0;j<*n;j++) { 
             ih=indexpersallH[j]; 
-// printf("================================= \n"); 
-// printf(" %lf %lf %d %d %d %d %d \n",x[j],time,cause[j],*CA,*n,j,*antclust); 
+// Rprintf("================================= \n"); 
+// Rprintf(" %lf %lf %d %d %d %d %d \n",x[j],time,cause[j],*CA,*n,j,*antclust); 
 	    risk[j]=(x[j]>=time); totrisk=totrisk+risk[j];
 	    VE(riskV,j)=risk[j]; 
 	    // extract_row(X,j,xi); 
@@ -161,7 +161,7 @@ for (s=0;s<*Ntimes;s++)
 
 	  VE(Y,j)=((x[j]<=time) & (cause[j]==*CA))*1;
 
-    // printf("it er %d %d %d  %d \n",it,j,nphpp[j],c1); 
+    // Rprintf("it er %d %d %d  %d \n",it,j,nphpp[j],c1); 
 	  
       for (iD=0;iD<nphpp[j];iD++) { 
 
@@ -181,9 +181,9 @@ for (s=0;s<*Ntimes;s++)
          vec_star(xih,bet1,rowXh); VE(bhat,j)=vec_sum(rowXh); 
 
 	 if (j<*designtest && it==0) { // print test {{{
-	    printf("timepoint=%d person=%d #haplotype-pairs=%d \n",s,j,nphpp[j]); 
-	    printf("Donor haplotype1=%d haplotype2=%d  \n",oh[c1D],oh[c1D+1]);  
-	    printf("input x and f(x,h) design depending on haplotype \n"); 
+	    Rprintf("timepoint=%d person=%d #haplotype-pairs=%d \n",s,j,nphpp[j]); 
+	    Rprintf("Donor haplotype1=%d haplotype2=%d  \n",oh[c1D],oh[c1D+1]);  
+	    Rprintf("input x and f(x,h) design depending on haplotype \n"); 
 	    print_vec(xi); print_vec(xih);
 	 }
 	   // print test }}}
@@ -234,7 +234,7 @@ for (s=0;s<*Ntimes;s++)
    } // j in 1...antpers
 
     if (0<*designtest && it==0 && s==0) { // print test {{{
-       printf(" Designmatrix first iteration step \n"); 
+       Rprintf(" Designmatrix first iteration step \n"); 
        print_mat(cX); 
     } // }}}
 
@@ -244,7 +244,7 @@ for (s=0;s<*Ntimes;s++)
 
     for (i=0;i<*px;i++) if (fabs(ME(AI,i,i))<.0000001) {sing=1;}
 
-    if (sing==1) {printf(" non-invertible design time %lf\n",time); 
+    if (sing==1) {Rprintf(" non-invertible design time %lf\n",time); 
       it=*Nit-1;  
       for (c=0;c<ps;c++) VE(beta,c)=betaS[c]; 
       for (c=0;c<ps;c++) VE(bet1,c)=betaS[c]; 
@@ -263,7 +263,7 @@ for (s=0;s<*Ntimes;s++)
       if ((sumscore<0.000001) & (it<*Nit-2)) it=*Nit-2;
 
       if (isnan(vec_sum(SCORE))) {
-	printf("missing values in SCORE %ld \n",(long int) s); 
+	Rprintf("missing values in SCORE %ld \n",(long int) s); 
 	for (i=0;i<ps;i++) VE(beta,i)=-99; sim[0]=0;
 	it=*Nit-1; 
 	for (c=0;c<ps;c++) VE(beta,c)=betaS[c]; 
@@ -273,9 +273,9 @@ for (s=0;s<*Ntimes;s++)
 
 
   if (*detail==1) { 
-    printf(" s er %ld,Estimate beta \n",(long int) s); print_vec(beta); 
-    printf("Score D l\n"); print_vec(difbeta); 
-    printf("Information -D^2 l\n"); print_mat(AI); };
+    Rprintf(" s er %ld,Estimate beta \n",(long int) s); print_vec(beta); 
+    Rprintf("Score D l\n"); print_vec(difbeta); 
+    Rprintf("Information -D^2 l\n"); print_mat(AI); };
 
     if (it==*Nit-1) scl_vec_mult(1/totrisk,qs,qs); 
 
@@ -289,7 +289,7 @@ for (s=0;s<*Ntimes;s++)
 	vec_add(dp,cumA[j],cumA[j]); 
 
 	if (*fixhaplo==0) { // also correct for uncertainty in haplo-pars
-	    // if (j==0) { printf("==============\n"); print_mat(DUeta[s]);}
+	    // if (j==0) { Rprintf("==============\n"); print_mat(DUeta[s]);}
            Mv(DUeta[s],hapiid[j],xih); 
 	   vec_subtr(cumA[j],xih,cumA[j]); }
 
@@ -468,15 +468,15 @@ if (fixedcov==1) {
        FhaplodesMM(xiI,ziI,haplotypeD,zih,designfuncZ,rhoR); 
 
        if (*detail>=3) { // print test {{{
-	  printf("======Design =================== \n"); 
-          printf(" person %d  \n",i); 
-          printf(" haplotypes hap1 hap2 %d %d  \n",oh[c1D],oh[c1D+1]);  
-          printf(" design, x,z \n");  
+	  Rprintf("======Design =================== \n"); 
+          Rprintf(" person %d  \n",i); 
+          Rprintf(" haplotypes hap1 hap2 %d %d  \n",oh[c1D],oh[c1D+1]);  
+          Rprintf(" design, x,z \n");  
           print_vec(xiI);  print_vec(ziI); 
-          printf(" design, x(h),z(h) \n");  
+          Rprintf(" design, x(h),z(h) \n");  
 	  print_vec(xih); print_vec(zih);
           ph=haplofreq[oh[c1D]]*haplofreq[oh[c1D+1]];
-          printf("probability for haplotype pair Donor %lf %d %d \n",ph,oh[c1D],oh[c1D+1]); 
+          Rprintf("probability for haplotype pair Donor %lf %d %d \n",ph,oh[c1D],oh[c1D+1]); 
        } // }}}
        
        replace_row(XallH,k,xih); 
@@ -484,12 +484,12 @@ if (fixedcov==1) {
        if (first==0) {indexpersallH[i]=k; first=1;}
        c1D+=2; k+=1; 
     }
-   // printf(" %d %d %d \n",i,indexpersallH[i],indexpersnph[i]); 
+   // Rprintf(" %d %d %d \n",i,indexpersallH[i],indexpersnph[i]); 
   }
   // }}}
   
  if (2<*designtest) { // print test {{{
-  printf(" Original designmatrices (x,z) \n"); 
+  Rprintf(" Original designmatrices (x,z) \n"); 
   print_mat(ldesignX); print_mat(ldesignG); 
  } // }}}
 
@@ -544,11 +544,11 @@ if (fixedcov==1) {
            vec_star(zih,gam,rowZ);   VE(pghat,j)=vec_sum(rowZ); 
 
 	   if (1==*designtest && itt==0 && s==0) { // print test {{{
-	      printf("timepoint=%d person=%d #haplotype-pairs=%d \n",s,j,nphpp[j]); 
-	      printf("Donor haplotype1=%d haplotype2=%d  \n",oh[c1D],oh[c1D+1]);  
-	      printf("input x and f(x,h) design depending on haplotype \n"); 
+	      Rprintf("timepoint=%d person=%d #haplotype-pairs=%d \n",s,j,nphpp[j]); 
+	      Rprintf("Donor haplotype1=%d haplotype2=%d  \n",oh[c1D],oh[c1D+1]);  
+	      Rprintf("input x and f(x,h) design depending on haplotype \n"); 
 	      print_vec(xiI); print_vec(xih);
-	      printf("input z and f(z,h) design depending on haplotype \n"); 
+	      Rprintf("input z and f(z,h) design depending on haplotype \n"); 
 	      print_vec(ziI); print_vec(zih);
 	   }
 	   // print test }}}
@@ -617,7 +617,7 @@ if (fixedcov==1) {
    } // j in 1..antpers 
 
 	 if (0<*designtest && itt==0 && s==0) { // print test {{{
-          printf(" Designmatrices first iteration step \n"); 
+          Rprintf(" Designmatrices first iteration step \n"); 
 	  print_mat(cdesignX); print_mat(cdesignG); 
 	 } // }}}
 
@@ -669,7 +669,7 @@ if (fixedcov==1) {
 
       invert(CGam,ICGam); Mv(ICGam,IZGdN,dgam); vec_add(gam,dgam,gam); 
 
-      if (isnan(vec_sum(dgam))) {printf("missing values in dgam %d \n",s);
+      if (isnan(vec_sum(dgam))) {Rprintf("missing values in dgam %d \n",s);
 	vec_zeros(gam); }
 
       dummy=0; for (k=0;k<*dimzih;k++)  dummy=dummy+fabs(VE(dgam,k)); 
@@ -681,14 +681,14 @@ if (fixedcov==1) {
 	for (k=1;k<=*dimxih;k++)  { est[k*(*Ntimes)+s]=
             est[k*(*Ntimes)+s]+inc[k*(*Ntimes)+s]-VE(korG,k-1); 
 	  dummy=dummy+fabs(inc[k*(*Ntimes)+s]-VE(korG,k-1)); 
-	  /* printf(" %lf ",est[k*(*Ntimes)+s]); printf(" \n");*/ }
+	  /* Rprintf(" %lf ",est[k*(*Ntimes)+s]); printf(" \n");*/ }
       } /* s=1,...Ntimes */
       if ((dummy<0.000001) & (itt<*Nit-2)) itt=*Nit-2; 
 
       if (*detail==1) { 
-	printf(" iteration %d %d \n",itt,*Nit); 
-	printf("Total score %lf \n",dummy); 
-	printf("gamma change \n"); print_vec(dgam); }
+	Rprintf(" iteration %d %d \n",itt,*Nit); 
+	Rprintf("Total score %lf \n",dummy); 
+	Rprintf("gamma change \n"); print_vec(dgam); }
 
 
     } /*itt løkke */ 
@@ -696,8 +696,8 @@ if (fixedcov==1) {
     MxA(ICGam,DUgamma,DUgamma1); 
 
     for (i=0;i<*antclust;i++) {Mv(ICGam,W2[i],zi); scl_vec_mult(1,zi,W2[i]); 
-//	    printf("==================================== \n"); 
-//	    printf(" %d \n",i); print_vec(W2[i]);
+//	    Rprintf("==================================== \n"); 
+//	    Rprintf(" %d \n",i); print_vec(W2[i]);
 
    if (*fixhaplo==0) { // also correct for uncertainty in haplo-pars
            Mv(DUgamma1,hapiid[i],zi); // print_vec(zi); 
@@ -819,7 +819,7 @@ double tempSum,tempArray[nphm1];
          VE(tempScore,k) = haplofreq[k]*(tempArray[k] - tempSum);
        }
 
-//for(k = 0; k < nphm1; k++) printf(" %lf %lf -----\n",tempArray[k],haplofreq[k]); 
+//for(k = 0; k < nphm1; k++) Rprintf(" %lf %lf -----\n",tempArray[k],haplofreq[k]); 
 
      tempSum=vec_sum(tempScore);  
      vM(hapDes,tempScore,etascore); 

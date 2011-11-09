@@ -35,16 +35,16 @@ int *px,*detail,*Nit;
       fdL=fabs(VE(dL,i)); 
       if (fdL>dummy)  {dummy=fdL; index=i; }
     }
-    if (*detail==1) printf(" %ld \n",(long int) index); 
+    if (*detail==1) Rprintf(" %ld \n",(long int) index); 
 
     if (VE(dL,index)<0) lg=-1*(*lambda); else lg=*lambda; 
 
     if (fabs(VE(dL,index))<.00000000001) {it=*Nit-1; break;}
 
     k=(VE(Db,index)*lg-bDb+bd-lg*d[index]) /(-bDb-lg*lg*ME(iD,index,index)+2*lg*VE(Db,index)); 
-    if (*detail==1) printf(" %lf %lf \n",k,lg); 
-    if (*detail==1) printf(" %lf %lf \n",bDb,bd); 
-    if (*detail==1) printf(" %lf %lf %lf %lf %lf %lf %lf %lf \n",
+    if (*detail==1) Rprintf(" %lf %lf \n",k,lg); 
+    if (*detail==1) Rprintf(" %lf %lf \n",bDb,bd); 
+    if (*detail==1) Rprintf(" %lf %lf %lf %lf %lf %lf %lf %lf \n",
 			   lg,ME(iD,index,index),d[index],
 			   0.5*lg*lg*ME(iD,index,index)-lg*d[index],
 			   0.5*lg*lg*ME(iD,index,index),
@@ -57,7 +57,7 @@ int *px,*detail,*Nit;
 
     if (L0<=Lk && L0<=L1) k=0; if (L1<=Lk && L1<=L0) k=1; 
 
-    if (*detail==1) printf(" %lf %lf %lf %lf \n",L0,L1,Lk,k); 
+    if (*detail==1) Rprintf(" %lf %lf %lf %lf \n",L0,L1,Lk,k); 
 
     for (i=0;i<*px;i++) VE(betav,i)*=(1-k); 
     VE(betav,index)+=k*lg;

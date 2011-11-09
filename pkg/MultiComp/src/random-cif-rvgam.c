@@ -48,7 +48,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,
   malloc_mat(*antpers,*prv,RVdes); 
   malloc_vecs(*prv,&rvvec,&rvvec1,&rvvec2,&rvvec2vv,&rvvec2vt,&rvvec2tv,&alphai,&alphaj,&alphatot,NULL); 
 
-//printf("m1 hej med mig \n"); 
+//Rprintf("m1 hej med mig \n"); 
 
   if ((*notaylor==1)) 
   for (j=0;j<*Ntimes;j++) { malloc_mat(*px,*ptheta,DUeta[j]); }
@@ -63,7 +63,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,
 //   malloc_vec(*ptheta,thetaiid[j]); malloc_mat(*ptheta,*ptheta,Sthetaiid[j]); 
    }
 
-//printf("m2 hej med mig \n"); 
+//Rprintf("m2 hej med mig \n"); 
 
   malloc_mat(*antpers,*ptheta,destheta); malloc_mat(*ptheta,*ptheta,Stheta); 
   malloc_mats(*ptheta,*ptheta,&varthetascore,&d2Utheta,&d2UItheta,NULL); 
@@ -116,7 +116,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,
 if (*semi==1) Mv(ldesignG,gam,pghat0);
 
 if (test<0) {
-    printf(" theta \n"); print_vec(vtheta1); 
+    Rprintf(" theta \n"); print_vec(vtheta1); 
     head_matrix(RVdes); 
     for (c=0;c<10;c++) print_mat(pardes[c]); 
 }
@@ -134,7 +134,7 @@ if (test<0) {
 
       for (s=0;s<*Ntimes;s++)
       {
-     // printf("times  s %d %d %d \n",s,*Ntimes,*antclust); 
+     // Rprintf("times  s %d %d %d \n",s,*Ntimes,*antclust); 
 	  time=times[s]; if (s==0) dtime=0; else dtime=time-times[s-1]; 
 	  for(j=1;j<=*px;j++) {VE(bhatt,j-1)=est[j*(*Ntimes)+s];}
 	  Mv(ldesignX,bhatt,pbhat); 
@@ -153,7 +153,7 @@ if (test<0) {
             Mv(pardes[i],vtheta2,alphai); Mv(pardes[k],vtheta2,alphaj); 
 
        if ((test<0) & (j==1) & (s==1)) {
-	  printf(" pars =========================\n"); 
+	  Rprintf(" pars =========================\n"); 
           print_vec(vtheta1); print_vec(vtheta2); 
 	  print_mat(pardes[i]); 
           print_vec(alphai); print_vec(alphaj); 
@@ -202,21 +202,21 @@ if (trunkp[i]<1) {
 //  for (l1=0;l1<*ptheta;l1++) VE(vthetascore,l1)=VE(vthetascore,l1)*2*VE(vtheta1,l1); 
 for (l1=0;l1<*ptheta;l1++) VE(vthetascore,l1)=VE(vthetascore,l1)*VE(vtheta2,l1); 
 
-       if (test<0) {printf("thomas lomas lomas \n"); 
+       if (test<0) {Rprintf("thomas lomas lomas \n"); 
        print_vec(rvvec2); print_mat(pardes[i]); print_vec(vthetascore); 
        }
 
 	if ((isnan(response)) && (naprint==0))   { // {{{ print diverse na information
-	  	 printf(" Missing values, probably censoring dist. problems\n"); 
-	         printf(" %d %d %d %d \n",j,clustsize[j],i,k); 
-                 printf(" %lf %lf %lf \n",x[i],x[k],time); 
-		 printf(" resp %lf  %lf %lf  \n",response,KMc[i],KMc[k]); 
-                 printf(" %d %d  \n",i,k); 
-                 printf(" %lf %lf %lf \n",thetak,Li,Lk); 
-                 printf(" %lf %lf \n",dckij[0],ckij[0]); 
+	  	 Rprintf(" Missing values, probably censoring dist. problems\n"); 
+	         Rprintf(" %d %d %d %d \n",j,clustsize[j],i,k); 
+                 Rprintf(" %lf %lf %lf \n",x[i],x[k],time); 
+		 Rprintf(" resp %lf  %lf %lf  \n",response,KMc[i],KMc[k]); 
+                 Rprintf(" %d %d  \n",i,k); 
+                 Rprintf(" %lf %lf %lf \n",thetak,Li,Lk); 
+                 Rprintf(" %lf %lf \n",dckij[0],ckij[0]); 
 		 print_vec(rvvec2); 
 		 naprint=1; 
-		 printf("============================== \n"); 
+		 Rprintf("============================== \n"); 
 	 } // }}}
 
 	    
@@ -259,19 +259,19 @@ for (l1=0;l1<*ptheta;l1++) VE(vthetascore,l1)=VE(vthetascore,l1)*VE(vtheta2,l1);
     if ((itt==*Nit-1) & (*notaylor==1)) {
         for (j=0;j<*antclust;j++) {
        extract_row(Biid[j],s,rowX); 
-       //printf(" %ld %ld  \n",s,j); print_vec(rowX); 
+       //Rprintf(" %ld %ld  \n",s,j); print_vec(rowX); 
        vM(DUeta[s],rowX,dtheta); vec_add(dtheta,W3[j],W3[j]);}
     }
 
 
  } /* s=1,...Ntimes */
 
-//   printf("Score D l\n"); print_vec(Utheta);
+//   Rprintf("Score D l\n"); print_vec(Utheta);
 ckij[0]=1000; 
    LevenbergMarquardt(d2Utheta,d2UItheta,Utheta,dtheta,step,step);
 
   if (ME(d2UItheta,0,0)==0.0 ){ 
-       printf(" second derivative not invertible at iteration %d \n",itt); 
+       Rprintf(" second derivative not invertible at iteration %d \n",itt); 
        itt=*Nit; 
   }
 
@@ -280,11 +280,11 @@ ckij[0]=1000;
 //  scl_vec_mult(step[0],dtheta,dtheta); 
 
  if (*detail==1) {
-    printf("===============Iteration %d ==================== \n",itt);
-     printf("Estimate theta \n"); print_vec(vtheta1);
-     printf("Score D l\n"); print_vec(Utheta);
-     printf("D Score \n"); print_mat(d2Utheta);
-     printf("Information D^2 l\n"); print_mat(d2UItheta); }
+    Rprintf("===============Iteration %d ==================== \n",itt);
+     Rprintf("Estimate theta \n"); print_vec(vtheta1);
+     Rprintf("Score D l\n"); print_vec(Utheta);
+     Rprintf("D Score \n"); print_mat(d2Utheta);
+     Rprintf("Information D^2 l\n"); print_mat(d2UItheta); }
 
     for (k=0;k<*ptheta;k++) sumscore= sumscore+fabs(VE(Utheta,k));
 
@@ -302,11 +302,11 @@ ckij[0]=1000;
    {
 	   
    if ((*notaylor==1)) {
-  // printf("W2  ========= \n"); print_vec(W2[j]); 
-  // printf("W3  ========= \n"); print_vec(W3[j]); 
+  // Rprintf("W2  ========= \n"); print_vec(W2[j]); 
+  // Rprintf("W3  ========= \n"); print_vec(W3[j]); 
    // vec_star(W3[j],dtheta); 
 //    vec_subtr(W2[j],W3[j],W2[j]); 
-if (*semi==1) { //printf(" =W4======== \n"); print_vec(W4[j]); 
+if (*semi==1) { //Rprintf(" =W4======== \n"); print_vec(W4[j]); 
                vM(DUgamma,gammaiid[j],W4[j]); 
 //               vec_subtr(W2[j],W4[j],W2[j]);
               }
@@ -363,13 +363,13 @@ int prv,k;
 vector *Dphi,*Dphk;
 
 if (test<1) {
-printf("ckr \n"); 
+Rprintf("ckr \n"); 
 print_vec(dckij); print_vec(rvk); print_vec(rvi); print_vec(alphai); print_vec(alphak); 
 }
 
 alphi=vec_prod(rvi,alphai); alphk=vec_prod(rvk,alphak); 
 
-if (test<1) printf("=============================ckr %lf %lf \n",alphi,alphk); 
+if (test<1) Rprintf("=============================ckr %lf %lf \n",alphi,alphk); 
 
 prv=length_vector(rvi); 
 malloc_vec(prv,Dphi); malloc_vec(prv,Dphk); 
@@ -385,7 +385,7 @@ val=val*val1;
 }
 ckij[0]=1-exp(-x)-exp(-y)+val; 
 
-if (test<1) printf(" %lf ckij \n",ckij[0]); 
+if (test<1) Rprintf(" %lf ckij \n",ckij[0]); 
 
 val1=0;
 for (k=0;k<prv;k++) if (VE(rvi,k)+VE(rvk,k)>0) 
@@ -420,7 +420,7 @@ scl_vec_mult(val,dckij,dckij);
 
 if (test<1) print_vec(dckij); 
 free_vecs(&Dphi,&Dphk,NULL); 
-if (test<1) printf("=============================================== ude af cvrks \n");
+if (test<1) Rprintf("=============================================== ude af cvrks \n");
 } // }}}
 
 void funkdes2(vector *alphai,vector *alphak, // {{{
@@ -434,14 +434,14 @@ int prv,k;
 vector *Dphi,*Dphk;
 
 if (test<1) {
-printf("ckr \n"); 
+Rprintf("ckr \n"); 
 print_vec(dckij); print_vec(rvk); print_vec(rvi); print_vec(alphai); print_vec(alphak); 
 }
 
 alphi=vec_prod(rvi,alphai); alphk=vec_prod(rvk,alphak); 
 betai=alphi; betak=alphk;
 
-if (test<1) printf("=============================ckr %lf %lf \n",alphi,alphk); 
+if (test<1) Rprintf("=============================ckr %lf %lf \n",alphi,alphk); 
 
 prv=length_vector(rvi); 
 malloc_vec(prv,Dphi); malloc_vec(prv,Dphk); 
@@ -472,7 +472,7 @@ vector *Dphi,*Dphk;
 void funkdes2(); 
 
 if (test<1) {
-printf("ckr \n"); 
+Rprintf("ckr \n"); 
 print_vec(dckij); print_vec(rvk); print_vec(rvi); print_vec(alphai); print_vec(alphak); 
 }
 

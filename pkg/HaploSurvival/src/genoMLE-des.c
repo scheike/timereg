@@ -78,40 +78,40 @@ int *antpers,*Nit,*detail,*nph,*oh,*nphpp,*dimhap;
    for (j=0;j<nphm1;j++) VE(Uf,j)=scoregenoC[j];
    for (j=0;j<nphm1;j++) for (l=0;l<nphm1;l++) ME(S1f,j,l)=-d2lgenoC[j*(nphm1)+l]; 
 
-    //  printf(" for ================== \n"); 
+    //  Rprintf(" for ================== \n"); 
     //  print_vec(Uf); print_mat(hapDes); 
 
     vM(hapDes,Uf,U); MtA(hapDes,S1f,AA); MxA(AA,hapDes,S1);
 
     // print_vec(U); print_mat(S1); 
-    //  printf("================== \n"); 
+    //  Rprintf("================== \n"); 
 // }}}
     
       if (*lm>0) { /* Levenberg-Marquardt algorithm */ 
-if (*detail>=1) printf("Levenberg-Marquardt steps, sumscore %d %lf \n",it,sumscore); 
+if (*detail>=1) Rprintf("Levenberg-Marquardt steps, sumscore %d %lf \n",it,sumscore); 
          mat_transp(S1,S2); MxA(S1,S1,S2); 
          for (k=0;k<*dimhap;k++) ME(S2,k,k)=ME(S2,k,k)+lm[0]; // *ME(S2,k,k); 
          invert(S2,SI); MxA(SI,S1,S2); Mv(S2,U,delta); 
        }
       else {
       /* Newton-Raphson step */ 
-     if (*detail>=1)  printf(" Newton-Raphson steps, sumscore %d %lf \n",it,sumscore); 
+     if (*detail>=1)  Rprintf(" Newton-Raphson steps, sumscore %d %lf \n",it,sumscore); 
         invert(S1,SI); Mv(SI,U,delta); 
       }
        scl_vec_mult(step[0],delta,delta); 
 
       for (k=0;k<*dimhap;k++) {if (maxdelt<fabs(VE(delta,k))) maxdelt=fabs(VE(delta,k));}
-     if (*detail>=1)  printf(" maximum delta value  %d %lf \n",it,maxdelt); 
+     if (*detail>=1)  Rprintf(" maximum delta value  %d %lf \n",it,maxdelt); 
 
        if (sumscore<2.05) lm[0]=minlm[0]; 
 
        if (*detail>=2) { 
-         printf("====================Iteration %d ==================== \n",it);
-         printf("Estimate beta \n"); print_vec(pars); 
-         printf("Score D l\n"); print_vec(U); 
-         printf("Information D^2 l\n"); print_mat(SI); 
-         printf("simple D2 l\n");  print_mat(S1); 
-         printf("delta \n"); print_vec(delta); 
+         Rprintf("====================Iteration %d ==================== \n",it);
+         Rprintf("Estimate beta \n"); print_vec(pars); 
+         Rprintf("Score D l\n"); print_vec(U); 
+         Rprintf("Information D^2 l\n"); print_mat(SI); 
+         Rprintf("simple D2 l\n");  print_mat(S1); 
+         Rprintf("delta \n"); print_vec(delta); 
        }
        vec_add(pars,delta,pars); 
        sumscore=0; 

@@ -71,7 +71,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
      for (j=0;j<*pg;j++) VE(gammaiid[i],j)=Ogammaiid[i*(*pg)+j]; 
   }
 
-//  printf("ppppppppppppppppppp %d %d %d %d \n",*px,*pg,*pm,*coxaalen); 
+//  Rprintf("ppppppppppppppppppp %d %d %d %d \n",*px,*pg,*pm,*coxaalen); 
 
   R_CheckUserInterrupt();
   /*  cumulative martingales Aalen type */ 
@@ -130,7 +130,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
            while ((stop[ci]<time)  & (ci>=0) )  ci=ci-1; 
 	  } // }}}
 
-//printf("%d %d %d %lf %lf %lf \n",s,ci,id[ci],start[ci],stop[ci],time); 
+//Rprintf("%d %d %d %lf %lf %lf \n",s,ci,id[ci],start[ci],stop[ci],time); 
      vec_zeros(rowX); vec_zeros(rowZ); vec_zeros(dB); 
     if (s>1)  // {{{ modifying design for next time points
     while ((stop[ci]<time)  & (ci>=0) ) {
@@ -174,7 +174,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
      for (k=1;k<=*pm;k++) cummgt[k*(*nmgt)+s]=cummgt[k*(*nmgt)+s-1]+VE(respm,k-1);
 
      invert(A,AI);
-     if (ME(AI,0,0)==0) printf(" X'X not invertible at time %lf \n",time);
+     if (ME(AI,0,0)==0) Rprintf(" X'X not invertible at time %lf \n",time);
 
      MxA(cumX,AI,cumXAI);
 
@@ -256,8 +256,8 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
   if (*cumresid>0) { // {{{
 
   for (l=0;l<ptot;l++) if (ant[l]>2) {
-//      printf(" %d %d %d %d ================ \n",ptot,ant[l],inXorZ[l],inXZ[l]); 
-//      for (j=0;j<ant[l];j++)  printf(" %lf \n",xval[(*maxval)*l+j]);
+//      Rprintf(" %d %d %d %d ================ \n",ptot,ant[l],inXorZ[l],inXZ[l]); 
+//      for (j=0;j<ant[l];j++)  Rprintf(" %lf \n",xval[(*maxval)*l+j]);
 
        R_CheckUserInterrupt();
  // {{{ allokering
@@ -328,7 +328,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
            while ((stop[ci]<time)  & (ci>=0) )  ci=ci-1; 
      } // }}}
 
-//printf("%d %d %d %lf %lf %lf \n",s,ci,id[ci],start[ci],stop[ci],time); 
+//Rprintf("%d %d %d %lf %lf %lf \n",s,ci,id[ci],start[ci],stop[ci],time); 
      vec_zeros(rowX); vec_zeros(rowZ); vec_zeros(vtmp1); 
     if (s>1)  // {{{ modifying design for next time points
     while ((stop[ci]<time)  & (ci>=0) ) {
@@ -364,13 +364,13 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 //   ipers[s]=pers;
    } // }}}
 
-    if (s < -2) {printf(" %d \n",s);head_matrix(X);head_matrix(cummat1);head_matrix(A);}
+    if (s < -2) {Rprintf(" %d \n",s);head_matrix(X);head_matrix(cummat1);head_matrix(A);}
 
     if (*model==0) 
     for (i=0;i<*antpers;i++) VE(dMGt[s],i)=dmgresid[i*(*nmgt)+s];  
 
     invert(A,AI);
-    if (ME(AI,0,0)==0) printf("X'X not invertible at time %lf \n",time);
+    if (ME(AI,0,0)==0) Rprintf("X'X not invertible at time %lf \n",time);
     MxA(cumX1,AI,cumXAI1);
 
     /* observed increment */ 
@@ -413,7 +413,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 
     } /* s=1... *Ntimes */ 
 
-    //for (j=0;j<ant[l];j++)  printf("%d %lf  \n",l,univarproc[(*maxval)*l+j]);
+    //for (j=0;j<ant[l];j++)  Rprintf("%d %lf  \n",l,univarproc[(*maxval)*l+j]);
 
     /* robust variance */
 
@@ -431,7 +431,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 
     R_CheckUserInterrupt();
     /* simulation of testprocesses and teststatistics */ // {{{
-   //  printf("Simulations start N= %d \n",*sim);
+   //  Rprintf("Simulations start N= %d \n",*sim);
 
     for (k=0;k<*sim;k++) {
     R_CheckUserInterrupt();

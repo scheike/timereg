@@ -62,7 +62,7 @@ int *nx,*p,*antpers,*Ntimes,*nb,*it,*degree,*id,*status,*sim,*antsim,*rani,*retu
 				
 	  MtA(cdesignX,ldesignX,A); invert(A,AI); 
 	  if (ME(AI,0,0)==0)
-	    printf(" X'X not invertible at time %lf \n",time);
+	    Rprintf(" X'X not invertible at time %lf \n",time);
 
 	  extract_row(ldesignX,pers,xi); Mv(AI,xi,AIXdN); 
 	  vM(ldesignX,plamt,vtmp1); Mv(AI,vtmp1,AIXlamt); 
@@ -83,8 +83,8 @@ int *nx,*p,*antpers,*Ntimes,*nb,*it,*degree,*id,*status,*sim,*antsim,*rani,*retu
 	    sbhat[k*(*Ntimes)+s-1]=bhat[k*(*Ntimes)+s-1]+VE(AIXdM,k-1); 
 	    /*
 	     ssscore[s]=time;
-	      printf(" %lf %lf ",sbhat[k*(*Ntimes)+s-1]-bhat[k*(*Ntimes)+s-1],
-	      ssscore[k*(*Ntimes)+s-1]); printf("\n"); 
+	      Rprintf(" %lf %lf ",sbhat[k*(*Ntimes)+s-1]-bhat[k*(*Ntimes)+s-1],
+	      ssscore[k*(*Ntimes)+s-1]); Rprintf("\n"); 
 	    */
 	    vcu[k*(*Ntimes)+s]=vcu[k*(*Ntimes)+(s-1)]+dtime*ME(AI,k-1,k-1);}
 
@@ -199,7 +199,7 @@ int
     {
       mat_zeros(Ct); mat_zeros(CGam); vec_zeros(IZGdN); vec_zeros(IZGlamt); 
       /*
-	printf("Itteration, it loop, Number Jumps %ld %ld %ld \n",*it,itt,*Ntimes); 
+	Rprintf("Itteration, it loop, Number Jumps %ld %ld %ld \n",*it,itt,*Ntimes); 
       */
 
       for (s=1;s<*Ntimes;s++)
@@ -234,7 +234,7 @@ int
 				
 	  MtA(cdesignX,ldesignX,A); invert(A,AI); 
 	  if (ME(AI,0,0)==0)
-	    printf(" X'X not invertible at time %lf \n",time);
+	    Rprintf(" X'X not invertible at time %lf \n",time);
 
 	  extract_row(ldesignX,pers,xi); Mv(AI,xi,AIXdN);
 

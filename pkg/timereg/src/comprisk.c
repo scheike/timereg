@@ -119,7 +119,7 @@ for (s=0;s<*Ntimes;s++)
     invertS(A,AI,osilent); sing=0; 
     // head_matrix(cX); print_mat(A); print_mat(AI); 
    if (ME(AI,0,0)==0 && *stratum==0) {
-	  printf(" X'X not invertible at time %d %lf \n",s,time); 
+	  Rprintf(" X'X not invertible at time %d %lf \n",s,time); 
 	  print_mat(A); 
    }
    if (*stratum==1)  {
@@ -132,7 +132,7 @@ for (s=0;s<*Ntimes;s++)
       for (c=0;c<ps;c++) VE(beta,c)=0; 
       for (c=0;c<*px;c++) VE(bet1,c)=betaS[c]; 
       sing=1;
-      if (osilent==0) printf("Non-invertible design at time %lf \n",time); 
+      if (osilent==0) Rprintf("Non-invertible design at time %lf \n",time); 
       it=*Nit-1;  
     }
     if (sing==0) {
@@ -146,7 +146,7 @@ for (s=0;s<*Ntimes;s++)
       if ((sumscore<*convc) & (it<*Nit-2)) it=*Nit-2;
 
       if (isnan(vec_sum(SCORE))) {
-	printf("missing values in SCORE %ld \n",(long int) s); 
+	Rprintf("missing values in SCORE %ld \n",(long int) s); 
 	convproblems=1; convt=0; silent[s]=2;
 	it=*Nit-1; 
 	for (c=0;c<ps;c++) { VE(beta,c)=0; VE(SCORE,c)=99; }
@@ -155,9 +155,9 @@ for (s=0;s<*Ntimes;s++)
     }
 
     if (*detail==1) { 
-      printf(" s er %ld, Estimate beta \n",(long int) s); print_vec(beta); 
-      printf("Score D l\n"); print_vec(difbeta); 
-      printf("Information -D^2 l\n"); print_mat(AI); };
+      Rprintf(" s er %ld, Estimate beta \n",(long int) s); print_vec(beta); 
+      Rprintf("Score D l\n"); print_vec(difbeta); 
+      Rprintf("Information -D^2 l\n"); print_mat(AI); };
 
     if (it==*Nit-1) scl_vec_mult(1/totrisk,qs,qs); 
   } /* it */
@@ -168,7 +168,7 @@ if (convt==1 ) {
    for (j=0;j<*antclust;j++) {vec_zeros(cumA[j]);vec_zeros(cumhatA[j]);}
    for (i=0;i<*n;i++) { 
       j=clusters[i]; 
-      if (s<-1) printf("%d  %d %d \n",s,i,j);
+      if (s<-1) Rprintf("%d  %d %d \n",s,i,j);
       extract_row(cX,i,dp); scl_vec_mult(VE(Y,i),dp,dp); 
       vec_add(dp,cumA[j],cumA[j]); 
 
@@ -466,7 +466,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	  MtM(cdesignX,A); 
 	  invertS(A,AI,osilent); sing=0; 
           if (ME(AI,0,0)==0 && *stratum==0) {
-	     printf(" X'X not invertible at time %d %lf \n",s,time); 
+	     Rprintf(" X'X not invertible at time %d %lf \n",s,time); 
 	     print_mat(A); 
           }
           if (*stratum==1)  {
@@ -476,7 +476,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 
           if (( fabs(ME(AI,0,0))<.0000001) && (*stratum==0)) {
              convproblems=1;  silent[s]=1; 
-             if (osilent==0) printf("Iteration %d: non-invertible design at time %lf\n",itt,time); 
+             if (osilent==0) Rprintf("Iteration %d: non-invertible design at time %lf\n",itt,time); 
 	     for (k=1;k<=*px;k++) inc[k*(*Ntimes)+s]=0; 
 	     sing=1;
           }
@@ -524,7 +524,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 
       if (isnan(vec_sum(dgam))) {
          if (convproblems==1) convproblems=3;  else convproblems=2; 
-         if (osilent==1) printf("missing values in dgam %ld \n",(long int) s);
+         if (osilent==1) Rprintf("missing values in dgam %ld \n",(long int) s);
 	 vec_zeros(gam); 
       }
 
@@ -537,16 +537,16 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	for (k=1;k<=*px;k++)  { 
             est[k*(*Ntimes)+s]= est[k*(*Ntimes)+s]+inc[k*(*Ntimes)+s]-VE(korG,k-1); 
 	  dummy=dummy+fabs(inc[k*(*Ntimes)+s]-VE(korG,k-1)); 
-	  /* printf(" %lf ",est[k*(*Ntimes)+s]); printf(" \n");*/ }
+	  /* Rprintf(" %lf ",est[k*(*Ntimes)+s]); Rprintf(" \n");*/ }
       } /* s=1,...Ntimes */
       if (dummy<*convc && itt<*Nit-2) itt=*Nit-2; 
 
       if (*detail==1) { 
-	printf(" iteration %d %d \n",itt,*Nit); 
-	printf("Total sum of changes %lf \n",dummy); 
-	printf("Gamma parameters \n"); print_vec(gam); 
-	printf("Change in Gamma \n"); print_vec(dgam); 
-	printf("===========================================================\n"); 
+	Rprintf(" iteration %d %d \n",itt,*Nit); 
+	Rprintf("Total sum of changes %lf \n",dummy); 
+	Rprintf("Gamma parameters \n"); print_vec(gam); 
+	Rprintf("Change in Gamma \n"); print_vec(dgam); 
+	Rprintf("===========================================================\n"); 
       }
 
     } /*itt løkke */ 

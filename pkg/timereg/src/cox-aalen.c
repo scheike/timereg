@@ -92,7 +92,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   
   R_CheckUserInterrupt();
 
-//  for (j=0;j<*antclust;j++) { printf("0 w2w2 %d \n",j); print_vec(W2[j]); }
+//  for (j=0;j<*antclust;j++) { Rprintf("0 w2w2 %d \n",j); print_vec(W2[j]); }
 
   cu[0]=times[0]; 
   for (it=0;it<*Nit;it++) // {{{ iterations start for cox-aalen model
@@ -151,7 +151,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
            while ((stop[ci]<time)  & (ci>=0) )  ci=ci-1; 
 	  } // }}}
 
-// printf("___________ %d %d %d %lf %lf %lf \n",s,ci,id[ci],start[ci],stop[ci],time); 
+// Rprintf("___________ %d %d %d %lf %lf %lf \n",s,ci,id[ci],start[ci],stop[ci],time); 
      vec_zeros(rowX); vec_zeros(rowZ); 
     if (s>1)  // {{{ modifying design for next time points
     while ((stop[ci]<time)  & (ci>=0) ) {
@@ -190,13 +190,13 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
    scl_mat_mult(1/S0,ZPZ,ZPZo); scl_mat_mult(1/S0,ZPX,ZPXo);
    // }}}
 
-  if (s<0) { printf("======================================================= %d \n",s);
+  if (s<0) { Rprintf("======================================================= %d \n",s);
 	  print_mat(A); print_mat(ZPX); print_mat(ZX); 
 	  print_mat(A);  print_mat(ZPZ); 
           }
 
    invertS(A,AI,1); 
-   if (ME(AI,0,0)==0 && *stratum==0) { printf(" X'X not invertible at time %d %lf \n",s,time); print_mat(A); }
+   if (ME(AI,0,0)==0 && *stratum==0) { Rprintf(" X'X not invertible at time %d %lf \n",s,time); print_mat(A); }
    if (*stratum==1)  {for (k=0;k<*px;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);}
 
     scale=VE(weight,pers); 
@@ -211,7 +211,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   extract_row(Z,pers,zi);  scl_vec_mult(scale,zi,zi); 
   Mv(ZX, dA, zav); vec_subtr(zi,zav,difzzav); vec_add(difzzav,U,U); 
 
-  if (s<0) { printf(" %d \n",pers); 
+  if (s<0) { Rprintf(" %d \n",pers); 
 	     print_vec(xi); 
 	     print_vec(zi); print_vec(zav); print_vec(difzzav);}
 
@@ -269,11 +269,11 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   }
 
       if (*detail==1) { 
-        printf("=============Iteration %d =============== \n",it);
-	printf("Estimate beta \n"); print_vec(beta); 
-	printf("delta beta \n"); print_vec(delta); 
-	printf("Score D l\n"); print_vec(U); 
-	printf("Information -D^2 l\n"); print_mat(SI); };
+        Rprintf("=============Iteration %d =============== \n",it);
+	Rprintf("Estimate beta \n"); print_vec(beta); 
+	Rprintf("delta beta \n"); print_vec(delta); 
+	Rprintf("Score D l\n"); print_vec(U); 
+	Rprintf("Information -D^2 l\n"); print_mat(SI); };
 
       if (*betafixed==0) vec_add(beta,delta,beta); 
 
@@ -396,7 +396,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   R_CheckUserInterrupt();
 
   ll=lle-llo; /* likelihood beregnes */
-  if (*detail==1) printf("loglike is  %lf \n",ll);  
+  if (*detail==1) Rprintf("loglike is  %lf \n",ll);  
 
   if ((*robust==1)) // {{{ robust variances 
   {
@@ -468,7 +468,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   R_CheckUserInterrupt();
 
   if (*sim==1) { // {{{ score process simulations
-    // printf("Simulations start N= %ld \n",(long int) *antsim);
+    // Rprintf("Simulations start N= %ld \n",(long int) *antsim);
 
     tau=times[*Ntimes-1]-times[0];
     for (i=1;i<=*px;i++) VE(rowX,i-1)=cug[i*(*maxtimepoint)+(*maxtimepoint-1)];

@@ -23,7 +23,7 @@ int *coef,*nx,*p,*degree,*nb;
       if ((designX[j]>x-(*b)) && (med==0)) {med=1; starti=j;}
 
       if (fabs(designX[j]-x)<*b) {
-	w=tukey(designX[j]-x,*b);/*printf("%lf %lf \n",designX[j]-x,w);*/ 
+	w=tukey(designX[j]-x,*b);/*Rprintf("%lf %lf \n",designX[j]-x,w);*/ 
 	ME(mat1,count,0)=1.0; 
 	ME(mat2,count,0)=w; 
 	for (d=1;d<=*degree;d++) {

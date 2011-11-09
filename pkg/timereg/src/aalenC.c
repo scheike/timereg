@@ -58,7 +58,7 @@ int *nx,*p,*antpers,*Ntimes,*sim,*retur,*rani,*antsim,*status,*id,*covariance,
     invertS(A,AI,silent[0]); 
 
     if (ME(AI,0,0)==0.0 && *silent==0){ 
-       printf(" X'X not invertible at time %lf \n",time); }
+       Rprintf(" X'X not invertible at time %lf \n",time); }
        if (s < -1) { print_mat(AI); print_mat(A);	}
 
     extract_row(ldesignX,pers,xi);

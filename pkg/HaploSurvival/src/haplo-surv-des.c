@@ -77,7 +77,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*id,*status,
   if (*fixhaplofreq==0) dimpar=dimpar+*dimhap;
   // if (*fixbeta==1 && *fixhaplofreq==1) dimpar=1; 
 
-  //printf(" %d %d %d %d \n",dimpar,*pg,*dimzih,*dimhap); 
+  //Rprintf(" %d %d %d %d \n",dimpar,*pg,*dimzih,*dimhap); 
 
   vector *rowZnu1,*rowZnu2,*rowZnu,*DnurowXh,*DbetarowXh; 
   vector *DbetarowXh1[*dimzih],*DbetarowXh2[*dimzih]; 
@@ -222,7 +222,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*id,*status,
 	    for (l=0;l<*nph-1;l++) d2lgenoC[j*(*nph-1)+l]=0; } 
     //genoLogLike(oh,nphpp,nph,antpers,haplofreq,rho,LogLikegeno,scoregeno,d2lgeno); 
     amount[0]=3; 
- //    printf(" genolog \n"); 
+ //    Rprintf(" genolog \n"); 
     genoLogLikeHp(oh,nphpp,nph,amount,antpers,haplopars,rho,LogLikegeno,scoregenoC,scorei,d2lgenoC); 
 
    for (j=0;j<*nph-1;j++) {VE(Uf,j)=scoregenoC[j];}
@@ -238,17 +238,17 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*id,*status,
     } 
 
     if (*detail>=3) {  
-       printf(" Relative risk parameters beta \n"); print_vec(beta); 
-       printf("haplo-parameters \n"); 
-       for (j=0;j<*dimhap;j++) printf(" %lf ",VE(pars,(*fixbeta==0)*(*dimzih)+j)); 
-       printf(" \n"); 
-       printf("haplo-frequencies \n"); 
-       for(k=0;k<*nph;k++)  printf(" %lf ",haplofreq[k]); printf("\n"); 
-       printf("haplo-parameters \n"); 
-       for(k=0;k<*nph-1;k++)  printf(" %lf ",haplopars[k]); printf("\n"); 
-       printf("score geno \n"); 
-       for (j=0;j<*dimhap;j++)  printf(" %lf ",VE(U,j));  printf("\n"); 
-       printf("D2loglike geno  \n"); print_mat(S1); 
+       Rprintf(" Relative risk parameters beta \n"); print_vec(beta); 
+       Rprintf("haplo-parameters \n"); 
+       for (j=0;j<*dimhap;j++) Rprintf(" %lf ",VE(pars,(*fixbeta==0)*(*dimzih)+j)); 
+       Rprintf(" \n"); 
+       Rprintf("haplo-frequencies \n"); 
+       for(k=0;k<*nph;k++)  Rprintf(" %lf ",haplofreq[k]); printf("\n"); 
+       Rprintf("haplo-parameters \n"); 
+       for(k=0;k<*nph-1;k++)  Rprintf(" %lf ",haplopars[k]); printf("\n"); 
+       Rprintf("score geno \n"); 
+       for (j=0;j<*dimhap;j++)  Rprintf(" %lf ",VE(U,j));  printf("\n"); 
+       Rprintf("D2loglike geno  \n"); print_mat(S1); 
     }
  // }}}
 
@@ -345,12 +345,12 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*id,*status,
      // }}}
      
    if ( s==0) { // print test {{{
-      printf(" %d %d %d \n",s,i,j); 
-      printf(" hap1 hap2 %d %d  \n",oh[c1],oh[c1+1]);  
+      Rprintf(" %d %d %d \n",s,i,j); 
+      Rprintf(" hap1 hap2 %d %d  \n",oh[c1],oh[c1+1]);  
       print_vec(zi); print_vec(zih);
       print_vec(xi); print_vec(xih);
       ph=haplofreq[oh[c1]]*haplofreq[oh[c1+1]]*risk[i];
-      printf(" %lf %d %d \n",ph,oh[c1],oh[c1+1]); 
+      Rprintf(" %lf %d %d \n",ph,oh[c1],oh[c1+1]); 
    }
    // print test }}}
 
@@ -359,12 +359,12 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*id,*status,
 
 
    if ( s==0) { // print test {{{
-      printf(" %d %d %d \n",s,i,j); 
-      printf(" hap1 hap2 %d %d  \n",oh[c1],oh[c1+1]);  
+      Rprintf(" %d %d %d \n",s,i,j); 
+      Rprintf(" hap1 hap2 %d %d  \n",oh[c1],oh[c1+1]);  
       print_vec(zi); print_vec(zih);
       print_vec(xi); print_vec(xih);
       ph=haplofreq[oh[c1]]*haplofreq[oh[c1+1]]*risk[i];
-      printf(" %lf %d %d \n",ph,oh[c1],oh[c1+1]); 
+      Rprintf(" %lf %d %d \n",ph,oh[c1],oh[c1+1]); 
    }
    // print test }}}
 
@@ -374,11 +374,11 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*id,*status,
    RR=exp(zihbeta);  VE(RRv,i)=RR; 
    ph=haplofreq[oh[c1]]*haplofreq[oh[c1+1]]*risk[i];
    sph=sph+ph; surv=exp(-xihAt*RR)*ph;
-   if (surv<0) printf(" it s i surv ph %d %d %d %lf %lf \n",it,s,i,surv,ph); 
+   if (surv<0) Rprintf(" it s i surv ph %d %d %d %lf %lf \n",it,s,i,surv,ph); 
    shaz=exp(-xihAt*RR)*exp(zihbeta)*ph; naevn=naevn+surv; tael=tael+shaz; 
    vec_add_mult(rowXh,xih,shaz,rowXh); 
-   if (pp==1) printf("shaz surv ===== %d %d %d %lf %lf %lf %lf %lf  \n",s,i,j,shaz,surv,naevn,tael,xihAt); 
-   if (pp==1) { printf("%lf %d %lf \n",ph,risk[i],exp(zihbeta));  print_vec(xih); print_vec(rowXh); }
+   if (pp==1) Rprintf("shaz surv ===== %d %d %d %lf %lf %lf %lf %lf  \n",s,i,j,shaz,surv,naevn,tael,xihAt); 
+   if (pp==1) { Rprintf("%lf %d %lf \n",ph,risk[i],exp(zihbeta));  print_vec(xih); print_vec(rowXh); }
    // }}}
 
    // matrices are set up {{{ 
@@ -399,7 +399,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*id,*status,
 
    // part of the tilde Z matrix  with nu scores 
    if (*fixhaplofreq==0 && *twostage==0 && risk[i]==1 ) {
-   if (pp==1) printf("i j shaz surv  %d %d %lf %lf \n",i,j,shaz,surv); 
+   if (pp==1) Rprintf("i j shaz surv  %d %d %lf %lf \n",i,j,shaz,surv); 
    if (pp==1) print_vec(XtempScore); 
         vec_add_mult(rowZnu1,XtempScore,shaz,rowZnu1);     // D_nu T 
         vec_add_mult(rowZnu2,XtempScore,surv,rowZnu2);     // D_nu N 
@@ -535,8 +535,8 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*id,*status,
 
     // print test {{{
       if (pp==2 && s ==1) {  
-	       printf("X matrix er  \n"); print_mat(cdesX); 
-	      printf("Z matrix er  \n"); print_mat(Z);
+	       Rprintf("X matrix er  \n"); print_mat(cdesX); 
+	      Rprintf("Z matrix er  \n"); print_mat(Z);
       }
       // }}}
       
@@ -580,11 +580,11 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*id,*status,
 	  vec_add(xih1,rowXh,rowXh); 
 	  Mv(ZXAIs[s],rowXh,vtheta3);  // NY verssion med W
           vec_add(vtheta1,vtheta3,vtheta3); 
-	  // printf(" D2 %d %d \n",s,k); print_vec(vtheta3); 
+	  // Rprintf(" D2 %d %d \n",s,k); print_vec(vtheta3); 
           vec_subtr(vtheta2,vtheta3,vtheta2); 
 	  if (*fixbeta==-1 && k<*dimzih) { // kun anden afledet mht beta 
              Mv(DthetaZY[k],dA,zih1); vec_subtr(DthetaZdN[k],zih1,zih2); 
-	     // printf(" s k %d %d \n",s,k); print_vec(zih1); print_vec(zih2); 
+	     // Rprintf(" s k %d %d \n",s,k); print_vec(zih1); print_vec(zih2); 
 	     for (j=0;j<*dimzih;j++)  VE(vtheta2,j)+=VE(zih2,j); 
 	  }
 	  scl_vec_mult(1,vtheta2,vtheta2); 
@@ -617,7 +617,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*id,*status,
         // computation of YIt  
 	if (*fixbeta==0 || *fixhaplofreq==0) {
 	   for (j=0;j<dimpar;j++)  {
-	   //   printf(" YIt %d \n",j); print_mat(S0tI[s]); print_mat(DthetaS0[j]); 
+	   //   Rprintf(" YIt %d \n",j); print_mat(S0tI[s]); print_mat(DthetaS0[j]); 
               MxA(S0tI[s],DthetaS0[j],tmp4); Mv(tmp4,dA,xih2);  
               extract_row(DthetaX[j],pers,xih1); 
 	      scl_vec_mult(weight[pers],xih1,xih1); // NY version med W 
@@ -629,9 +629,9 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*id,*status,
 	      vec_subtr(xih1,xih2,xih1); 
 	      replace_col(dYIt[s],j,xih1); extract_col(YIt[s-1],j,xih2); 
 	      vec_add(xih2,xih1,xih1); replace_col(YIt[s],j,xih1); 
-	  //     printf(" %d %d \n",s,j); Mv(ZX,xih1,vtheta1); print_vec(vtheta1); 
+	  //     Rprintf(" %d %d \n",s,j); Mv(ZX,xih1,vtheta1); print_vec(vtheta1); 
 	   }
-	   // printf(" %d \n",s); print_mat(YIt[s]); 
+	   // Rprintf(" %d \n",s); print_mat(YIt[s]); 
         } 
         // computation of q1(t) and dLam_i(t) (cumulative increments of compensator) 
 	for (j=0;j<*antpers;j++){
@@ -653,7 +653,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*id,*status,
     // Newton-Raphson step  {{{
      if (*fixbeta==0 || *fixhaplofreq==0) {
      if (*lm>0) { // Levenberg-Marquards algorithm 
-        if (*detail>=1)  printf(" Levenberg-Marquardt steps, sumscore, maxdelt %d %lf %lf \n",
+        if (*detail>=1)  Rprintf(" Levenberg-Marquardt steps, sumscore, maxdelt %d %lf %lf \n",
 			it,sumscore,maxdelt);
          mat_transp(S1,S2); MxA(S1,S1,S2);
          for (k=0;k<dimpar;k++) ME(S2,k,k)=ME(S2,k,k)+lm[0];
@@ -661,7 +661,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*id,*status,
          if (maxdelt<step[0]) {lm[0]=minlm[0]; step[0]=1;}
      }
      else { // Newton-Raphson step 
-      if (*detail>=1)  printf(" Newton-Raphson steps, sumscore %d %lf %lf \n",it,sumscore,maxdelt);
+      if (*detail>=1)  Rprintf(" Newton-Raphson steps, sumscore %d %lf %lf \n",it,sumscore,maxdelt);
        invert(S1,SI); Mv(SI,U,delta);
      }
 
@@ -671,12 +671,12 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*id,*status,
    if (*lm==0)  scl_vec_mult(step[0],delta,delta);
 
     if (*detail>=2) { 
-        printf("====================Iteration %d ==================== \n",it);
-        printf("Estimate beta \n"); print_vec(pars); 
-        printf("Score D l\n"); print_vec(U); 
-        printf("Information D^2 l\n"); print_mat(SI); 
-        printf("simple D2 l\n");  print_mat(S1); 
-        printf("delta \n"); print_vec(delta); 
+        Rprintf("====================Iteration %d ==================== \n",it);
+        Rprintf("Estimate beta \n"); print_vec(pars); 
+        Rprintf("Score D l\n"); print_vec(U); 
+        Rprintf("Information D^2 l\n"); print_mat(SI); 
+        Rprintf("simple D2 l\n");  print_mat(S1); 
+        Rprintf("delta \n"); print_vec(delta); 
     }
     vec_add(pars,delta,pars); 
     sumscore=0; 
@@ -720,7 +720,7 @@ if (robust==1) {
         if (*fixbeta==0 || (*fixhaplofreq==0 && twostage==0)) {
            Mv(q2t[s],xih,vtheta1);  
 	   extract_row(q1t[i],s,vtheta2); 
-//	    printf(" %ld %ld %lf \n",s,i,VE(dLamt[i],s)); 
+//	    Rprintf(" %ld %ld %lf \n",s,i,VE(dLamt[i],s)); 
 //	    print_vec(vtheta1); print_vec(vtheta2); 
 	   vec_add(vtheta2,vtheta1,vtheta1); 
 
@@ -765,7 +765,7 @@ if (robust==1) {
 	}
 
 	replace_row(W3t[i],s,W3[i]);  
-//	printf("W3  %ld %ld \n",s,i); 
+//	Rprintf("W3  %ld %ld \n",s,i); 
 ////	print_vec(W3[i]); 
 //	extract_row(AIxit[i],s,xih); 
 //	print_vec(xih); 
@@ -787,15 +787,15 @@ if (robust==1) {
 // print test {{{ 
 /*
     for (i=0;i<*antpers;i++) {
-      printf(" %ld \n",i); 
+      Rprintf(" %ld \n",i); 
       print_vec(W2[i]); 
     }
     vec_zeros(delta); 	
     for (i=0;i<*antpers;i++) {
-     // printf(" %ld \n",i); 
+     // Rprintf(" %ld \n",i); 
      // print_vec(Xscorei[i]); 
      vec_add(Xscorei[i],delta,delta); }
-printf(" individual scores added \n"); 
+Rprintf(" individual scores added \n"); 
 print_vec(delta); 
 print_vec(U); 
 */
@@ -908,7 +908,7 @@ print_vec(U);
 // }}}
 
   if (*sim==1) { // {{{
-    // printf("Simulations start N= %d \n",*antsim);
+    // Rprintf("Simulations start N= %d \n",*antsim);
     GetRNGstate();  // to use R random normals 
     tau=times[*Ntimes-1]-times[0];
     for (i=1;i<=*dimxih;i++) VE(rowXh,i-1)=cu[i*(*Ntimes)+(*Ntimes-1)];
@@ -1032,7 +1032,7 @@ print_vec(U);
   free_vecs(&pars,&Uhap,&Vhaplopars,&Uf,&U,&vtheta1,&vtheta2,&vtheta3,&delta,&zav,&difzzav,&Uprofile,NULL); 
   free_vecs(&rowZtheta1dN,&rowZtheta2dN, &rowZtheta1,&rowZtheta2,NULL); 
   free_vec(xi); free_vec(zi); 
-// printf(" hje mig \n") ; 
+// Rprintf(" hje mig \n") ; 
   for(j=0;j<*Ntimes;j++) {
     free_mat(dFt[j]); free_mat(gt[j]); free_mat(dGt[j]);
     free_mat(q2t[j]); free_mat(S0tI[j]); free_mat(dG[j]);

@@ -142,7 +142,7 @@ if (*CA1!=*CA2 && *semi2==1) Mv(Z2,gam2,pghat02);
             ((x[i]<=time) && (x[k]<=time) && ((cause[k]==*CA1) && (cause[i]==*CA2)))* 
 	    indc1fc2ki); 
  
-//    printf(" s j %d  %d\n",s,j); 
+//    Rprintf(" s j %d  %d\n",s,j); 
      if (*samecens==1) response=response/min(KMc[i],KMc[k]); else response=response/(KMc[i]*KMc[k]);
 
        thetak=VE(lamtt,i); 
@@ -157,10 +157,10 @@ if (*CA1!=*CA2 && *semi2==1) Mv(Z2,gam2,pghat02);
        ck(ithetak,Li,Lk2,ckij,dckij); 
        ck(ithetak,Li2,Lk,ckij2,dckij2); 
 
-//   printf(" %d %d %d %d %d \n",s,j,clustsize[j],i,k); 
-//   printf(" %lf %lf %lf \n",thetak,Li,Lk); 
-//   printf(" %lf %lf %lf \n",thetak,Li2,Lk2); 
-//  printf(" %lf %lf %lf %lf \n",ckij[0],ckij2[0],dckij[0],dckij2[0]); 
+//   Rprintf(" %d %d %d %d %d \n",s,j,clustsize[j],i,k); 
+//   Rprintf(" %lf %lf %lf \n",thetak,Li,Lk); 
+//   Rprintf(" %lf %lf %lf \n",thetak,Li2,Lk2); 
+//  Rprintf(" %lf %lf %lf %lf \n",ckij[0],ckij2[0],dckij[0],dckij2[0]); 
 
 
        if (*dscore==1) response=(indc1fc2ik*dckij[0]+indc1fc2ki*dckij2[0])*
@@ -175,14 +175,14 @@ if (*CA1!=*CA2 && *semi2==1) Mv(Z2,gam2,pghat02);
 	}
 
 	if ((isnan(response)) && (naprint==0))   { // {{{ print diverse na information
-	         printf(" %d %d %d \n",clustsize[j],i,k); 
-                 printf(" %lf %lf %lf \n",x[i],x[k],time); 
-		 printf(" resp, cens1, cens2  %lf  %lf %lf  \n",response,KMc[i],KMc[k]); 
-                 printf(" %lf %lf %lf \n",thetak,Li,Lk); 
-                 printf(" %lf %lf %lf \n",thetak,Li2,Lk2); 
-                 printf(" %lf %lf %lf %lf \n",
+	         Rprintf(" %d %d %d \n",clustsize[j],i,k); 
+                 Rprintf(" %lf %lf %lf \n",x[i],x[k],time); 
+		 Rprintf(" resp, cens1, cens2  %lf  %lf %lf  \n",response,KMc[i],KMc[k]); 
+                 Rprintf(" %lf %lf %lf \n",thetak,Li,Lk); 
+                 Rprintf(" %lf %lf %lf \n",thetak,Li2,Lk2); 
+                 Rprintf(" %lf %lf %lf %lf \n",
 				 ckij[0],ckij2[0],dckij[0],dckij2[0]); 
-		 printf("============================== \n"); 
+		 Rprintf("============================== \n"); 
 		 naprint=1; 
 	 } // }}}
 
@@ -250,7 +250,7 @@ if (*CA1!=*CA2 && *semi2==1) Mv(Z2,gam2,pghat02);
    } /* j in antclust */ 
 
 
-   if (itt==*Nit-1 && *detail==2) { printf(" s er %d \n",s); print_mat(DUeta[s]);  }
+   if (itt==*Nit-1 && *detail==2) { Rprintf(" s er %d \n",s); print_mat(DUeta[s]);  }
 
    if (itt==*Nit) for (j=0;j<*antclust;j++) {
        extract_row(Biid[j],s,rowX); 
@@ -261,7 +261,7 @@ if (*CA1!=*CA2 && *semi2==1) Mv(Z2,gam2,pghat02);
 
       } /* s=1,...Ntimes */
 
-  //   printf(" %ld \n",*inverse); 
+  //   Rprintf(" %ld \n",*inverse); 
   // print_mat(d2Utheta); // print_vec(Utheta); 
 
 
@@ -269,11 +269,11 @@ if (*CA1!=*CA2 && *semi2==1) Mv(Z2,gam2,pghat02);
   scl_vec_mult(step[0],dtheta,dtheta); 
 
  if (*detail==1) {
-    printf("===============Iteration %d ==================== \n",itt);
-    printf(" %lf \n",count24); 
-     printf("Estimate theta \n"); print_vec(vtheta1);
-     printf("Score D l\n"); print_vec(Utheta);
-     printf("Information D^2 l\n"); print_mat(d2UItheta); }
+    Rprintf("===============Iteration %d ==================== \n",itt);
+    Rprintf(" %lf \n",count24); 
+     Rprintf("Estimate theta \n"); print_vec(vtheta1);
+     Rprintf("Score D l\n"); print_vec(Utheta);
+     Rprintf("Information D^2 l\n"); print_mat(d2UItheta); }
 
      for (k=0;k<*ptheta;k++) sumscore= sumscore+fabs(VE(Utheta,k));
 
@@ -288,11 +288,11 @@ if (*CA1!=*CA2 && *semi2==1) Mv(Z2,gam2,pghat02);
    for (j=0;j<*antclust;j++) 
    {
       vec_subtr(W2[j],W3[j],W2[j]); 
-      if (*semi==1) { //printf(" =W4======== \n"); print_vec(W4[j]); 
+      if (*semi==1) { //Rprintf(" =W4======== \n"); print_vec(W4[j]); 
                    vM(DUgamma,gammaiid[j],dtheta); 
 		   vec_subtr(W2[j],dtheta,W2[j]);
       }
-      if (*semi2==1) { //printf(" =W4======== \n"); print_vec(W4[j]); 
+      if (*semi2==1) { //Rprintf(" =W4======== \n"); print_vec(W4[j]); 
                    vM(DUgamma2,gamma2iid[j],dtheta); 
 		   vec_subtr(W2[j],dtheta,W2[j]);
       }

@@ -18,9 +18,9 @@ for (s=0;s<*nxval;s++)
    for(j=1;j<*px;j++) pred[j*(*nxval)+s]=0; 
    else {
    while ((!((timex<sc2) && (timex>=sc1))) && (c>=0)) {
-   /* printf(" %lf %lf %lf %ld \n",timex,sc2,sc1,c); */ 
+   /* Rprintf(" %lf %lf %lf %ld \n",timex,sc2,sc1,c); */ 
    sc1=cum[c-1];sc2=cum[c];c=c-1; } 
-   /* printf("før pred  %lf %lf %lf %ld \n",timex,sc2,sc1,c); */
+   /* Rprintf("før pred  %lf %lf %lf %ld \n",timex,sc2,sc1,c); */
    for(j=1;j<*px;j++) pred[j*(*nxval)+s]=cum[j*(*nx)+c]; 
    }
 }

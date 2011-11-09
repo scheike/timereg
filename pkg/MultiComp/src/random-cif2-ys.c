@@ -103,7 +103,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,*antc
       Dinverse=1; DDinverse=1; 
       for (s=0;s<*Ntimes;s++)
       {
-     // printf("times  s %d %d %d \n",s,*Ntimes,*antclust); 
+     // Rprintf("times  s %d %d %d \n",s,*Ntimes,*antclust); 
 
 	  time=times[s]; if (s==0) dtime=0; else dtime=time-times[s-1]; 
 	  for(j=1;j<=*px;j++) {VE(bhatt,j-1)=est[j*(*Ntimes)+s];}
@@ -152,12 +152,12 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,*antc
 	}
 
 	if ((isnan(response)) && (naprint==0))   { // {{{ print diverse na information
-	         printf(" %d %d %d \n",clustsize[j],i,k); 
-                 printf(" %lf %lf %lf \n",x[i],x[k],time); 
-		 printf(" resp %lf  %lf %lf  \n",response,KMc[i],KMc[k]); 
-                 printf(" %lf %lf %lf \n",thetak,Li,Lk); 
-                 printf(" %lf %lf \n",dckij[0],ckij[0]); 
-		 printf("============================== \n"); 
+	         Rprintf(" %d %d %d \n",clustsize[j],i,k); 
+                 Rprintf(" %lf %lf %lf \n",x[i],x[k],time); 
+		 Rprintf(" resp %lf  %lf %lf  \n",response,KMc[i],KMc[k]); 
+                 Rprintf(" %lf %lf %lf \n",thetak,Li,Lk); 
+                 Rprintf(" %lf %lf \n",dckij[0],ckij[0]); 
+		 Rprintf("============================== \n"); 
 		 naprint=1; 
 	 } // }}}
 	    
@@ -165,7 +165,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,*antc
        	if (itt==*Nit-1) { // {{{
 	   extract_row(ldesignX,i,xi);extract_row(ldesignX,k,xk); 
            DUetagamma(ithetak,Li,Lk,xi,xk); 
-	   // printf(" ===================== \n"); print_vec(xi); 
+	   // Rprintf(" ===================== \n"); print_vec(xi); 
 	   if (*dscore==1) scl_vec_mult(dckij[0],xi,xi); 
 	   vec_add(xi,rowX,rowX); 
            if (*semi==1)  
@@ -204,31 +204,31 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,*antc
 
 	if (itt==*Nit-1) {vec_add(vthetascore,W2[j],W2[j]);}
 
-//	 printf(" %d \n",j); print_vec(Utheta);
+//	 Rprintf(" %d \n",j); print_vec(Utheta);
 
    } /* j in antclust */ 
 
    if (*notaylor==0)
    if (itt==(Nit[0]-1)) for (j=0;j<*antclust;j++) {
        extract_row(Biid[j],s,rowX); 
-       //printf(" %ld %ld  \n",s,j); print_vec(rowX); 
+       //Rprintf(" %ld %ld  \n",s,j); print_vec(rowX); 
        vM(DUeta[s],rowX,dtheta); vec_add(dtheta,W3[j],W3[j]);
    }
 
 } /* s=1,...Ntimes */
 
-//   printf(" %ld \n",*inverse); 
+//   Rprintf(" %ld \n",*inverse); 
 // print_mat(d2Utheta); // print_vec(Utheta); 
 
   invert(d2Utheta,d2UItheta); Mv(d2UItheta,Utheta,dtheta);
   scl_vec_mult(step[0],dtheta,dtheta); 
 
  if (*detail==1) {
-    printf("===============Iteration %d ==================== \n",itt);
-     printf("Estimate theta \n"); print_vec(vtheta1);
-     printf("Score D l\n"); print_vec(Utheta);  
-     printf("D^2 l\n"); print_mat(d2Utheta); 
-     printf("Information D^2 l\n"); print_mat(d2UItheta); }
+    Rprintf("===============Iteration %d ==================== \n",itt);
+     Rprintf("Estimate theta \n"); print_vec(vtheta1);
+     Rprintf("Score D l\n"); print_vec(Utheta);  
+     Rprintf("D^2 l\n"); print_mat(d2Utheta); 
+     Rprintf("Information D^2 l\n"); print_mat(d2UItheta); }
 
     for (k=0;k<*ptheta;k++) sumscore= sumscore+fabs(VE(Utheta,k));
 
@@ -241,17 +241,17 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,*antc
 
 
 //print_mat(DUgamma); 
-//printf("===============lomse lomse ==================== \n",itt);
+//Rprintf("===============lomse lomse ==================== \n",itt);
 
    vec_zeros(dtheta); 
    for (j=0;j<*antclust;j++) 
    {
-  // printf("W2  ========= \n"); print_vec(W2[j]); 
-  // printf("W3  ========= \n"); print_vec(W3[j]); 
+  // Rprintf("W2  ========= \n"); print_vec(W2[j]); 
+  // Rprintf("W3  ========= \n"); print_vec(W3[j]); 
   // vec_star(W3[j],dtheta); 
    if (*notaylor==0) {
     vec_subtr(W2[j],W3[j],W2[j]); 
-    if (*semi==1) { //printf(" =W4======== \n"); print_vec(W4[j]); 
+    if (*semi==1) { //Rprintf(" =W4======== \n"); print_vec(W4[j]); 
                vM(DUgamma,gammaiid[j],W4[j]); 
                vec_subtr(W2[j],W4[j],W2[j]);
     }
@@ -306,7 +306,7 @@ double mypow(double x,double p)
 double val,log(),exp();
 
 val=exp(log(x)*p);
-/* printf(" i mypow %lf %lf %lf  \n",x,p,val); */
+/* Rprintf(" i mypow %lf %lf %lf  \n",x,p,val); */
 return(val);
 }
 
@@ -338,7 +338,7 @@ val=(1+x*t);
 if (val<0) oops(" val < 0 \n"); 
 //if (fabs(t)< 0.000000000000001) val1=0; else val1=exp(-log(val)*(1/t)); 
 val1=exp(-log(val)*(1/t)); 
-// printf("laplace %lf %lf  \n",val,val3); 
+// Rprintf("laplace %lf %lf  \n",val,val3); 
 return(val1); 
 }
 
@@ -347,8 +347,8 @@ double t,y;
 {
 double val,laplace(); 
 val=exp(-log(y)*t); val= (val-1)/t;  
-// printf("ilaplace y^(1/t)  %lf %lf  \n",exp(log(y)/t),pow(y,1.0/t)); 
-// printf("ilaplace  %lf %lf  \n",val,val1); 
+// Rprintf("ilaplace y^(1/t)  %lf %lf  \n",exp(log(y)/t),pow(y,1.0/t)); 
+// Rprintf("ilaplace  %lf %lf  \n",val,val1); 
 return(val); 
 }
 
@@ -393,8 +393,8 @@ val4 =exp(log(val3)*(-1/t));
 
 t1=val4/(val3); 
 if (isnan(t1)) {
-printf(" missing values in DUetagamma \n"); 
-printf(" t x y val3=exp(x*t)+exp(y*t)-1 %lf %lf %lf %lf  \n",t,x,y,val3); 
+Rprintf(" missing values in DUetagamma \n"); 
+Rprintf(" t x y val3=exp(x*t)+exp(y*t)-1 %lf %lf %lf %lf  \n",t,x,y,val3); 
 print_vec(xi); 
 print_vec(xk); 
 }; 

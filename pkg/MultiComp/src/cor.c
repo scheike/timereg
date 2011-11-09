@@ -183,15 +183,14 @@ SEXP htheta,dhtheta,rhoR;
 	   resp3=exp(2*thetak)*(resp1-resp2)*exp(Li);
 	}
 
-	if (VE(pthetavec,3)==1) {
-	printf(" %lf %lf %lf \n",response,resp1,resp2); 
-	print_vec(pthetavec); 
-	}
-	if (VE(pthetavec,4)==1) {
-	printf(" %lf %lf %lf \n",response,resp1,resp2); 
-	print_vec(pthetavec); 
-	}
-	
+//	if (VE(pthetavec,3)==1) {
+//	Rprintf(" %lf %lf %lf \n",response,resp1,resp2); 
+//	print_vec(pthetavec); 
+//	}
+//	if (VE(pthetavec,4)==1) {
+//	Rprintf(" %lf %lf %lf \n",response,resp1,resp2); 
+//	print_vec(pthetavec); 
+//	}
 
 	if (isnan(response))   { // removes these from score equations
 	   diff=0; sdj=0;  resp3=0; 
@@ -199,15 +198,15 @@ SEXP htheta,dhtheta,rhoR;
 //}
 
 	if ((isnan(response)) && (naprint==0))   { // {{{ print diverse na information
-	printf("Missing values for response \n");   
-	printf("removed from estimation, but check size of problem \n\n\n");   
-	printf(" %d %d %d %d %d \n",s,j,clustsize[j],i,k);  
-	printf(" %lf %lf %lf %lf %lf %lf \n",exp(thetak),resp1,resp2,resp3,ormarg,response); 
-	printf(" %lf %lf %lf \n",x[i],x[k],time); 
-	printf(" resp censi censk %lf  %lf %lf  \n",response,KMc[i],KMc[k]); 
-	printf(" %d %d  \n",i,k); 
+	Rprintf("Missing values for response \n");   
+	Rprintf("removed from estimation, but check size of problem \n\n\n");   
+	Rprintf(" %d %d %d %d %d \n",s,j,clustsize[j],i,k);  
+	Rprintf(" %lf %lf %lf %lf %lf %lf \n",exp(thetak),resp1,resp2,resp3,ormarg,response); 
+	Rprintf(" %lf %lf %lf \n",x[i],x[k],time); 
+	Rprintf(" resp censi censk %lf  %lf %lf  \n",response,KMc[i],KMc[k]); 
+	Rprintf(" %d %d  \n",i,k); 
 	naprint=1; 
-	printf("============================== \n"); 
+	Rprintf("============================== \n"); 
 	} // }}}
 
         if (*notaylor==0) // {{{
@@ -262,12 +261,12 @@ scl_vec_mult(step[0],dtheta,dtheta);
 if (fabs(ME(d2UItheta,0,0))<0.0000000001) itt=*Nit-1; 
 
 if (*detail==1) { // {{{
-printf("===============Iteration %d ==================== \n",itt);
+Rprintf("===============Iteration %d ==================== \n",itt);
 
-printf("Theta \n"); print_vec(vtheta1);
-printf("delta theta \n"); print_vec(dtheta);
-printf("Score D l\n"); print_vec(Utheta);
-printf("Information D^2 l\n"); print_mat(d2UItheta); 
+Rprintf("Theta \n"); print_vec(vtheta1);
+Rprintf("delta theta \n"); print_vec(dtheta);
+Rprintf("Score D l\n"); print_vec(Utheta);
+Rprintf("Information D^2 l\n"); print_mat(d2UItheta); 
 } // }}}
 
 for (k=0;k<*dimpar;k++) sumscore= sumscore+fabs(VE(Utheta,k));
@@ -360,7 +359,7 @@ double evalh(vector *theta,double *t,vector *xih,SEXP f,SEXP rho)
    for (j=0;j<dimtheta;j++) thet[j]=VE(theta,j); ; 
    double res[1]; 
    void funcevalh(); 
-//   printf(" ============================ \n"); printf(" %lf \n",t[0]); 
+//   Rprintf(" ============================ \n"); printf(" %lf \n",t[0]); 
 //  print_vec(theta); print_vec(xih); 
    funcevalh(thet,t,xx, f ,rho,res, dimtheta, dimxih);
    return(res[0]); 
@@ -536,7 +535,7 @@ for (s=0;s<*Ntimes;s++) // {{{
 
     for (j=0;j<*antclust;j++) 
     if (clustsize[j]>=2) { // {{{
-         // if (itt==0) printf(" %d \n",j); 
+         // if (itt==0) Rprintf(" %d \n",j); 
           diff=0;sdj=0; 
 	  vec_zeros(rowX); vec_zeros(rowZ); 
 	  vec_zeros(rowX2);vec_zeros(rowZ2); 
@@ -594,16 +593,16 @@ for (s=0;s<*Ntimes;s++) // {{{
 } // reponses for the two different estimators 
 
 	if ((isnan(response)) && (naprint==0))   { // {{{ print diverse na information
-	printf("Missing values for response \n");   
-	printf("removed from estimation, but check size of problem \n\n\n");   
-	printf(" %d %d %d %d %d \n",s,j,clustsize[j],i,k);  
-	printf("  %lf %lf %lf %lf %lf \n",exp(thetak),resp2,resp3,ormarg,response); 
-	printf(" %lf %lf %lf \n",x[i],x[k],time); 
-	printf(" resp censi censk %lf  %lf %lf  \n",response,KMc[i],KMc[k]); 
-	printf(" %d %d  \n",i,k); 
+	Rprintf("Missing values for response \n");   
+	Rprintf("removed from estimation, but check size of problem \n\n\n");   
+	Rprintf(" %d %d %d %d %d \n",s,j,clustsize[j],i,k);  
+	Rprintf("  %lf %lf %lf %lf %lf \n",exp(thetak),resp2,resp3,ormarg,response); 
+	Rprintf(" %lf %lf %lf \n",x[i],x[k],time); 
+	Rprintf(" resp censi censk %lf  %lf %lf  \n",response,KMc[i],KMc[k]); 
+	Rprintf(" %d %d  \n",i,k); 
         R_CheckUserInterrupt();
 	naprint=1; 
-	printf("============================== \n"); 
+	Rprintf("============================== \n"); 
 	} // }}}
 
        if(*notaylor==0) { // {{{
@@ -681,7 +680,7 @@ for (s=0;s<*Ntimes;s++) // {{{
 } /* s=1,...Ntimes */ // }}}
 
 
-//   printf(" %ld \n",*inverse); 
+//   Rprintf(" %ld \n",*inverse); 
 // print_mat(d2Utheta);  print_vec(Utheta); 
 
 invert(d2Utheta,d2UItheta); Mv(d2UItheta,Utheta,dtheta);
@@ -690,12 +689,12 @@ scl_vec_mult(-1*step[0],dtheta,dtheta);
 if (fabs(ME(d2UItheta,0,0))<0.0000000001) itt=*Nit-1; 
 
 if (*detail==1) { // {{{
-printf("===============Iteration %d ==================== \n",itt);
+Rprintf("===============Iteration %d ==================== \n",itt);
 
-printf("Theta \n"); print_vec(vtheta1);
-printf("delta theta \n"); print_vec(dtheta);
-printf("Score D l\n"); print_vec(Utheta);
-printf("Information D^2 l\n"); print_mat(d2UItheta); 
+Rprintf("Theta \n"); print_vec(vtheta1);
+Rprintf("delta theta \n"); print_vec(dtheta);
+Rprintf("Score D l\n"); print_vec(Utheta);
+Rprintf("Information D^2 l\n"); print_mat(d2UItheta); 
 } // }}}
 
 for (k=0;k<*dimpar;k++) sumscore= sumscore+fabs(VE(Utheta,k));
@@ -713,17 +712,17 @@ for (j=0;j<*antclust;j++)
 if  (*notaylor==0) {
  vec_add(W2[j],W3[j],W2[j]); 
 if (*semi==1) { 
-//printf(" =W4======== \n"); print_vec(W4[j]); 
+//Rprintf(" =W4======== \n"); print_vec(W4[j]); 
    vM(DUgamma,gammaiid[j],vtheta12); 
   vec_add(W2[j],vtheta12,W2[j]);
- // printf(" semi 1 %d \n",j); print_vec(dtheta); 
+ // Rprintf(" semi 1 %d \n",j); print_vec(dtheta); 
 }
 
 if (*CA1!=*CA2 && *semi2==1) { 
-//printf(" =W4======== \n"); print_vec(W4[j]); 
+//Rprintf(" =W4======== \n"); print_vec(W4[j]); 
   vM(DUgamma2,gamma2iid[j],vtheta12); 
   vec_add(W2[j],vtheta12,W2[j]);
- // printf(" semi 1 %d \n",j); print_vec(dtheta); 
+ // Rprintf(" semi 1 %d \n",j); print_vec(dtheta); 
 }
 }
 
@@ -736,9 +735,9 @@ for (k=0;k<*dimpar;k++) thetiid[k*(*antclust)+j]=VE(vtheta22,k);
 
 }
 
-//  printf("W2 sum ==== \n"); print_vec(dtheta); 
-//  printf("second derivative \n"); print_mat(d2UItheta); 
-//  printf("iid decomp variance \n"); print_mat(varthetascore); 
+//  Rprintf("W2 sum ==== \n"); print_vec(dtheta); 
+//  Rprintf("second derivative \n"); print_mat(d2UItheta); 
+//  Rprintf("iid decomp variance \n"); print_mat(varthetascore); 
 
    MxA(varthetascore,d2UItheta,d2Utheta); 
    MxA(d2UItheta,d2Utheta,varthetascore);
@@ -907,8 +906,8 @@ for (s=0;s<*Ntimes;s++) // {{{
 	  if ((*sym==1 && c!=v) || (*sym==0 && c<v)) { 
 	    i=clusterindex[c*(*antclust)+j]; k=clusterindex[v*(*antclust)+j];
 
-//printf("%lf %lf %lf \n",entryage[i],entryage[k],time);
-//printf("%d %d %d \n",j,i,k); 
+//Rprintf("%lf %lf %lf \n",entryage[i],entryage[k],time);
+//Rprintf("%d %d %d \n",j,i,k); 
 
     if ((entryage[i] < time) && (entryage[k]< time)) {
  
@@ -960,16 +959,16 @@ for (s=0;s<*Ntimes;s++) // {{{
 } // reponses for the two different estimators 
 
 	if ((isnan(response)) && (naprint==0))   { // {{{ print diverse na information
-	printf("Missing values for response \n");   
-	printf("removed from estimation, but check size of problem \n\n\n");   
-	printf(" %d %d %d %d %d \n",s,j,clustsize[j],i,k);  
-	printf("  %lf %lf %lf %lf %lf \n",exp(thetak),resp2,resp3,ormarg,response); 
-	printf(" %lf %lf %lf \n",x[i],x[k],time); 
-	printf(" resp censi censk %lf  %lf %lf  \n",response,KMc[i],KMc[k]); 
-	printf(" %d %d  \n",i,k); 
+	Rprintf("Missing values for response \n");   
+	Rprintf("removed from estimation, but check size of problem \n\n\n");   
+	Rprintf(" %d %d %d %d %d \n",s,j,clustsize[j],i,k);  
+	Rprintf("  %lf %lf %lf %lf %lf \n",exp(thetak),resp2,resp3,ormarg,response); 
+	Rprintf(" %lf %lf %lf \n",x[i],x[k],time); 
+	Rprintf(" resp censi censk %lf  %lf %lf  \n",response,KMc[i],KMc[k]); 
+	Rprintf(" %d %d  \n",i,k); 
         R_CheckUserInterrupt();
 	naprint=1; 
-	printf("============================== \n"); 
+	Rprintf("============================== \n"); 
 	} // }}}
 
        if(*notaylor==0) { // {{{
@@ -1055,12 +1054,12 @@ scl_vec_mult(-1*step[0],dtheta,dtheta);
 if (fabs(ME(d2UItheta,0,0))<0.0000000001) itt=*Nit-1; 
 
 if (*detail==1) { // {{{
-printf("===============Iteration %d ==================== \n",itt);
+Rprintf("===============Iteration %d ==================== \n",itt);
 
-printf("Theta \n"); print_vec(vtheta1);
-printf("delta theta \n"); print_vec(dtheta);
-printf("Score D l\n"); print_vec(Utheta);
-printf("Information D^2 l\n"); print_mat(d2UItheta); 
+Rprintf("Theta \n"); print_vec(vtheta1);
+Rprintf("delta theta \n"); print_vec(dtheta);
+Rprintf("Score D l\n"); print_vec(Utheta);
+Rprintf("Information D^2 l\n"); print_mat(d2UItheta); 
 } // }}}
 
 for (k=0;k<*dimpar;k++) sumscore= sumscore+fabs(VE(Utheta,k));

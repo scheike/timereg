@@ -38,7 +38,7 @@ int *nx,*p,*antpers,*Ntimes,*status;
     Mv(AI,xi,dB); vec_star(dB,dB,VdB); 
       
     if (vec_sum(dB)==0.0){
-      printf("Aalen:Singular matrix for time=%lf \n",time); 
+      Rprintf("Aalen:Singular matrix for time=%lf \n",time); 
     }
    
     cu[s]=time; 
@@ -93,9 +93,9 @@ int *nx,*p,*antpers,*Ntimes,*sim,*retur,*antsim,*status,*id,*covariance,
   for (c=0;c<*nx;c++) idd[id[c]]=id[c]; 
   // }}}
 
-//     for (c=0;(c<*nx);c++) printf(" %lf \n",weights[c]); 
-//     printf(" entry \n"); 
-//     for (c=0;(c<*nx);c++) printf(" %d \n",entry[c]); 
+//     for (c=0;(c<*nx);c++) Rprintf(" %lf \n",weights[c]); 
+//     Rprintf(" entry \n"); 
+//     for (c=0;(c<*nx);c++) Rprintf(" %d \n",entry[c]); 
 
 for (s=1;s<*Ntimes;s++){
     time=times[s]; vec_zeros(dB); 
@@ -117,11 +117,11 @@ for (s=1;s<*Ntimes;s++){
     while ((stop[ci]<time)  & (ci>=0) )  ci=ci-1; 
     } // }}}
 
-// printf("%d %d %d %lf %lf %lf \n",s,ci,id[ci],start[ci],stop[ci],time); 
+// Rprintf("%d %d %d %lf %lf %lf \n",s,ci,id[ci],start[ci],stop[ci],time); 
 
     if (s>1) 
     while ((stop[ci]<time)  & (ci>=0) ) {
-// printf("ww %d %d  %lf %lf %d \n",ci,id[ci],stop[ci],time,entry[ci]); 
+// Rprintf("ww %d %d  %lf %lf %d \n",ci,id[ci],stop[ci],time,entry[ci]); 
             for(j=0;j<*p;j++) VE(xi,j)=designX[j*(*nx)+ci]; 
 	    if (entry[ci]==1) { 
 		    replace_row(ldesignX,id[ci],xi); 
@@ -137,12 +137,12 @@ for (s=1;s<*Ntimes;s++){
     
 //    print_mat(ldesignX); print_mat(A); 
 //    print_mat(wX); 
-//    printf("==================================\n"); 
+//    Rprintf("==================================\n"); 
 //    MtM(ldesignX,AI); print_mat(AI); 
 
     invertS(A,AI,silent[0]); 
     if (ME(AI,0,0)==0.0 && *silent==0 && *strata==1){ 
-       printf(" X'X not invertible at time %lf \n",time); }
+       Rprintf(" X'X not invertible at time %lf \n",time); }
     if (*strata==1)  {for (k=0;k<*p;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);  }
     if (s < -1) { print_mat(AI); print_mat(A);	}
 
@@ -159,7 +159,7 @@ for (s=1;s<*Ntimes;s++){
     }
     cu[s]=time; vcu[s]=time; robvcu[s]=time; 
 
-//   for (k=1;k<*p+1;k++) printf(" %lf ",cu[k*(*Ntimes)+s]);printf(" \n"); 
+//   for (k=1;k<*p+1;k++) Rprintf(" %lf ",cu[k*(*Ntimes)+s]);Rprintf(" \n"); 
 
     if ((*robust==1) || (*retur>=1)) { // {{{
       vec_zeros(VdB); mat_zeros(Vcov);
@@ -293,10 +293,10 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
   for (c=0;c<*nx;c++) idd[id[c]]=id[c]; 
   // }}}
 
-  //     for (c=0;(c<*nx);c++) printf(" %lf \n",weights[c]); 
-  //     for (c=0;(c<*nx);c++) printf(" %lf \n",offsets[c]); 
-  //     printf(" entry \n"); 
-  //     for (c=0;(c<*nx);c++) printf(" %d \n",entry[c]); 
+  //     for (c=0;(c<*nx);c++) Rprintf(" %lf \n",weights[c]); 
+  //     for (c=0;(c<*nx);c++) Rprintf(" %lf \n",offsets[c]); 
+  //     Rprintf(" entry \n"); 
+  //     for (c=0;(c<*nx);c++) Rprintf(" %d \n",entry[c]); 
 
   for (s=1;s<*Nalltimes;s++){
 	  time=alltimes[s]; dtime=time-alltimes[s-1]; 
@@ -329,13 +329,13 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 	  } // }}}
 
 	  //   print_mat(X); print_mat(Z);  print_mat(WX); print_mat(WZ); 
-	  // printf(" (((((((((((((((((((((((((((((((((((((((((((( \n"); 
-	  // printf("%d %d %d %lf %lf %lf \n",s,ci,id[ci],start[ci],stop[ci],time); 
+	  // Rprintf(" (((((((((((((((((((((((((((((((((((((((((((( \n"); 
+	  // Rprintf("%d %d %d %lf %lf %lf \n",s,ci,id[ci],start[ci],stop[ci],time); 
 
 	  vec_zeros(rowX); vec_zeros(rowZ); 
 	  if (s>1)  // {{{ modifying design for next time points
 		  while ((stop[ci]<time)  & (ci>=0) ) {
-			  // printf("ww %d %d  %lf %lf %d \n",ci,id[ci],stop[ci],time,entry[ci]); 
+			  // Rprintf("ww %d %d  %lf %lf %d \n",ci,id[ci],stop[ci],time,entry[ci]); 
 			  for(j=0;j<*px;j++) VE(xi,j)=designX[j*(*nx)+ci]; 
 			  for(j=0;j<*pg;j++) VE(zi,j)=designG[j*(*nx)+ci]; 
 			  //            print_vec(xi); print_vec(zi); 
@@ -352,7 +352,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 				  replace_row(X,id[ci],rowX);replace_row(Z,id[ci],rowZ);
 				  replace_row(WX,id[ci],rowX);replace_row(WZ,id[ci],rowZ);
 			  }
-			  //	    printf(" hej \n"); 
+			  //	    Rprintf(" hej \n"); 
 			  for(j=0;j<pmax;j++) for(k=0;k<pmax;k++)  {
 				  if ((j<*px) & (k<*px)) ME(A,j,k)+= entry[ci]*VE(xi,k)*VE(xi,j)*weights[ci]; 
 				  if ((j<*px) & (k<*pg)) ME(XWZ,j,k)+= entry[ci]*VE(zi,k)*VE(xi,j)*weights[ci]; 
@@ -361,7 +361,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 			  ci=ci-1; 
 		  }
 
-	  // printf("ci ci ci  %lf %lf %ld \n",time,stop[ci],status[ci]); 
+	  // Rprintf("ci ci ci  %lf %lf %ld \n",time,stop[ci],status[ci]); 
 	  if ((s>1) & (time==stop[ci]) & (status[ci]==1)) {
 		  pers=id[ci]; stat=1;l=l+1; ls[l]=s;
 	  }
@@ -370,17 +370,17 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 
 	  // }}}
 
-	  //   printf(" hej mig \n"); 
-	  // printf("lllllllllll %lf %lf %d %d %d \n",time,dtime,pers,stat,l); 
+	  //   Rprintf(" hej mig \n"); 
+	  // Rprintf("lllllllllll %lf %lf %d %d %d \n",time,dtime,pers,stat,l); 
 	  //   print_mat(X); print_mat(Z); 
 	  //   print_mat(A); print_mat(ZWZ); print_mat(XWZ); 
-	  //   printf("========================================== \n"); 
+	  //   Rprintf("========================================== \n"); 
 	  //readXZt(antpers,nx,px,designX,pg,designG,start,stop,status,pers,X,WX,Z,WZ,time,
 	  //	clusters,cluster,ls,stat,l,id,s,1);
 
 	  invertS(A,AI,silent[0]);
 	  if (ME(AI,0,0)==0.0 && *silent==0){ 
-		  printf(" X'X not invertible at time %lf \n",time);
+		  Rprintf(" X'X not invertible at time %lf \n",time);
 	  }
 	  MxA(AI,XWZ,XWZAI); MtA(XWZAI,XWZ,tmpM2);
 	  mat_subtr(ZWZ,tmpM2,dCGam);
@@ -405,7 +405,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 		  vec_subtr(rowZ,dgam,dgam); 
 		  vec_add_mult(gamoff,dgam,dtime,gamoff); 
 		  for (k=1;k<=*px;k++) cumoff[k*(*Nalltimes)+s]=VE(tmpv1,k-1); 
-		  //	printf("==================================== %d \n",s); 
+		  //	Rprintf("==================================== %d \n",s); 
 		  //	print_vec(offset); 
 		  //	print_vec(gamoff); 
 		  //	print_vec(tmpv1); 
@@ -446,7 +446,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
   }
 
  
-  if (ME(ICGam,0,0)==0 && *silent==0) printf(" intZHZ  singular\n"); 
+  if (ME(ICGam,0,0)==0 && *silent==0) Rprintf(" intZHZ  singular\n"); 
 //  Mv(ICGam,IZHdN,gam); 
   MxA(Vargam,ICGam,tmpM2); 
   MxA(ICGam,tmpM2,Vargam); 
@@ -482,13 +482,13 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 
 //   print_mat(X); print_mat(Z); 
 //   print_mat(WX); print_mat(WZ); 
-// printf(" (((((((((((((((((((((((((((((((((((((((((((( \n"); 
-// printf("%d %d %d %lf %lf %lf \n",s,ci,id[ci],start[ci],stop[ci],time); 
+// Rprintf(" (((((((((((((((((((((((((((((((((((((((((((( \n"); 
+// Rprintf("%d %d %d %lf %lf %lf \n",s,ci,id[ci],start[ci],stop[ci],time); 
 
      vec_zeros(rowX); vec_zeros(rowZ); 
     if (s>1)  // {{{ modifying design for next time points
     while ((stop[ci]<time)  & (ci>=0) ) {
-// printf("ww %d %d  %lf %lf %d \n",ci,id[ci],stop[ci],time,entry[ci]); 
+// Rprintf("ww %d %d  %lf %lf %d \n",ci,id[ci],stop[ci],time,entry[ci]); 
             for(j=0;j<*px;j++) VE(xi,j)=designX[j*(*nx)+ci]; 
             for(j=0;j<*pg;j++) VE(zi,j)=designG[j*(*nx)+ci]; 
 //            print_vec(xi); print_vec(zi); 
@@ -517,7 +517,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 	  ci=ci-1; 
     }
 
-// printf("ci ci ci  %lf %lf %ld \n",time,stop[ci],status[ci]); 
+// Rprintf("ci ci ci  %lf %lf %ld \n",time,stop[ci],status[ci]); 
     if ((s>1) & (time==stop[ci]) & (status[ci]==1)) {
          pers=id[ci]; stat=1;l=l+1; ls[l]=s;
     }

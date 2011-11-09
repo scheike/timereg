@@ -155,7 +155,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
       for (k=1;k<=*px;k++) {
 	cu[k*(*Ntimes)+s]=cu[k*(*Ntimes)+s-1]+VE(dA,k-1);
       }
-      if (s<0) printf(" %lf \n",cu[1*(*Ntimes)+s]);
+      if (s<0) Rprintf(" %lf \n",cu[1*(*Ntimes)+s]);
 
       /* First derivative U and Second derivative S  */ 
       extract_row(ldesignG,pers,zi); 
@@ -167,7 +167,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
       for (j=0;j<*antpers;j++){
 	extract_row(ddesG,j,zi); 
 	if (s<0 && j<5 ) {
-	  printf(" %ld %ld \n",(long int) s, (long int)j); 
+	  Rprintf(" %ld %ld \n",(long int) s, (long int)j); 
 	  print_vec(zi); 
 	}
 	scl_vec_mult(VE(lamt,j),zi,zi); 
@@ -179,7 +179,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
       MxA(AI,ZPX,tmp6); // Note the use of tmp6 here, instead of tmp3 
       mat_subtr(dG[s-1],tmp6,dG[s]); // Note the use of tmp6 here, instead of tmp3 
       if (s<0) { 
-	printf(" %lf \n",ME(A,0,0)); 
+	Rprintf(" %lf \n",ME(A,0,0)); 
 	print_mat(ZPX); 
 	print_mat(tmp3); 
 	print_mat(dG[s]); 
@@ -191,7 +191,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
       mat_subtr( tmp1,tmp2, dS); 
 
       if (s<0) { 
-	printf("=================== %lf \n",ME(A,0,0)); 
+	Rprintf("=================== %lf \n",ME(A,0,0)); 
 	print_mat(tmp1); 
 	print_mat(tmp2); 
 	print_mat(dS); 
@@ -230,7 +230,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 	  VE(lht,s)=VE(lht,s-1)-ME(A,0,0)*(ME(AI,0,0)*ME(AI,0,0));
 
 
-	  /* printf(" %ld %lf %lf \n",s,lht->ve[s],AI->me[0][0]); */
+	  /* Rprintf(" %ld %lf %lf \n",s,lht->ve[s],AI->me[0][0]); */
 
 	  MtA(ldesignG,cdesX3,ZcX2[s]); 
 	  /* m_mlt(ZcX2[s],AI,ZcX2AIs[s]);  */
@@ -276,16 +276,16 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
     vec_add(beta,delta,beta); 
 
     if (*detail>=1) { 
-      printf("====================Iteration %ld ==================== \n",(long int) it);
-      printf("delta \n"); 
+      Rprintf("====================Iteration %ld ==================== \n",(long int) it);
+      Rprintf("delta \n"); 
       print_vec(delta); 
-      printf("Estimate beta \n"); 
+      Rprintf("Estimate beta \n"); 
       print_vec(beta); 
-      printf("Score D l\n"); 
+      Rprintf("Score D l\n"); 
       print_vec(U); 
-      printf("Information -D^2 l\n"); 
+      Rprintf("Information -D^2 l\n"); 
       print_mat(SI); 
-      printf("simple D2 l\n");  
+      Rprintf("simple D2 l\n");  
       print_mat(S1); 
     }
 
@@ -317,7 +317,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 	MxA(tmp4,A,M1); 
       }
       if (s<0) { 
-	printf(" %ld %ld %lf \n",(long int) s,(long int) t,ME(M1,0,0));
+	Rprintf(" %ld %ld %lf \n",(long int) s,(long int) t,ME(M1,0,0));
 	matrix *tempTranspose;
 	malloc_mat(ncol_matrix(G1mG2t[t]),
 		      nrow_matrix(G1mG2t[t]),tempTranspose);
@@ -515,7 +515,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
   } 
 
   if (*sim==1) {
-    printf("Simulations start N= %ld \n",(long int) *antsim);
+    Rprintf("Simulations start N= %ld \n",(long int) *antsim);
     GetRNGstate();  /* to use R random normals */
 
     tau=times[*Ntimes-1]-times[0];

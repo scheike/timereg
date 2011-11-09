@@ -29,18 +29,18 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
 
     mat_zeros(Ct); mat_zeros(CGam); vec_zeros(IZHdN);  
 
-    // printf(" test \n"); 
+    // Rprintf(" test \n"); 
     for (s=1;s<*Nalltimes;s++){
-    // printf(" test %d %d %d  \n",s,*antpers,*nx); 
+    // Rprintf(" test %d %d %d  \n",s,*antpers,*nx); 
       time=alltimes[s]; 
       dtime=time-alltimes[s-1]; mat_zeros(A); stat=0;  
       mat_zeros(ZWZ); mat_zeros(XWZ); 
 
       l=0; stat=0; 
       for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) {
-//		printf("times  %lf  %lf %lf \n",time,start[c],stop[c]); 
+//		Rprintf("times  %lf  %lf %lf \n",time,start[c],stop[c]); 
 	if ((start[c]<time) && (stop[c]>=time)) {
-//		printf("under risk %d %d %d \n",c,id[c],count); 
+//		Rprintf("under risk %d %d %d \n",c,id[c],count); 
 	    for(j=0;j<pmax;j++)  {
 	    if (j<*px) { 
 	    for(k=0;k<*px;k++) 
@@ -61,12 +61,12 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
 	  count=count+1; 
       } }
 
-      //printf(" s er %d \n",s); 
+      //Rprintf(" s er %d \n",s); 
       //print_mat(A); print_mat(ZWZ); print_mat(XWZ); 
 
      // MtA(X,X,A); 
       invertS(A,AI,silent[0]); 
-      if (ME(AI,0,0)==0 && *silent==0) printf("time %lf X'X singular \n",time); 
+      if (ME(AI,0,0)==0 && *silent==0) Rprintf("time %lf X'X singular \n",time); 
      // MtA(Z,Z,ZWZ);MtA(X,Z,XWZ);
       MxA(AI,XWZ,XWZAI);
 
@@ -88,7 +88,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
     } /* s =1...Ntimes */ 
 
     // invertS(CGam,ICGam,silent[0]); Mv(ICGam,IZHdN,gam); 
-    //if (ME(ICGam,0,0)==0 && *silent==0) printf(" intZHZ  singular\n"); 
+    //if (ME(ICGam,0,0)==0 && *silent==0) Rprintf(" intZHZ  singular\n"); 
     //  print_mat(CGam); print_vec(IZHdN); 
 
     for(k=0;k<*pg;k++)  {
@@ -139,15 +139,15 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
     count=nx[0]-1; 
     for (s=(*Nalltimes)-1;s>0;s=s-1){
       sstop=0; 
-    // printf(" test %d %d %d  \n",s,*antpers,*nx); 
+    // Rprintf(" test %d %d %d  \n",s,*antpers,*nx); 
       time=alltimes[s]; dtime=time-alltimes[s-1]; stat=0;  
 
       l=0; stat=0;  
       if (1==0) {
       for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) { // {{{
-//		printf("times  %lf  %lf %lf \n",time,start[c],stop[c]); 
+//		Rprintf("times  %lf  %lf %lf \n",time,start[c],stop[c]); 
 	if ((start[c]<time) && (stop[c]>=time)) {
-//		printf("under risk %d %d %d \n",c,id[c],count); 
+//		Rprintf("under risk %d %d %d \n",c,id[c],count); 
 	    for(j=0;j<pmax;j++)  {
 	    if (j<*px) { 
 	    for(k=0;k<*px;k++) 
@@ -168,11 +168,11 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
 	  count=count+1; 
       } } // }}}
       } else {
-//	      printf("=============== %d \n",count); 
+//	      Rprintf("=============== %d \n",count); 
       for (c=count;sstop==0 && c>=0;c=c-1) { // {{{
-// printf("times %d %lf  %lf %lf %d %d %d \n",s,time,start[c],stop[c],c,sstop,count); 
+// Rprintf("times %d %lf  %lf %lf %d %d %d \n",s,time,start[c],stop[c],c,sstop,count); 
 	if ((start[c]<time) && (stop[c]>=time)) {
-	// printf("under risk %d %d %d \n",c,id[c],count); 
+	// Rprintf("under risk %d %d %d \n",c,id[c],count); 
 	    for(j=0;j<pmax;j++)  {
 	    if (j<*px) { 
 	    for(k=0;k<*px;k++) 
@@ -197,12 +197,12 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
       }
 
 
-      //printf(" s er %d \n",s); 
+      //Rprintf(" s er %d \n",s); 
       //print_mat(A); print_mat(ZWZ); print_mat(XWZ); 
 
      // MtA(X,X,A); 
       invertS(A,AI,silent[0]); 
-      if (ME(AI,0,0)==0 && *silent==0) printf("time %lf X'X singular \n",time); 
+      if (ME(AI,0,0)==0 && *silent==0) Rprintf("time %lf X'X singular \n",time); 
      // MtA(Z,Z,ZWZ);MtA(X,Z,XWZ);
       MxA(AI,XWZ,XWZAI);
 
@@ -224,7 +224,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
     } /* s =1...Ntimes */ 
 
     // invertS(CGam,ICGam,silent[0]); Mv(ICGam,IZHdN,gam); 
-    //if (ME(ICGam,0,0)==0 && *silent==0) printf(" intZHZ  singular\n"); 
+    //if (ME(ICGam,0,0)==0 && *silent==0) Rprintf(" intZHZ  singular\n"); 
     //  print_mat(CGam); print_vec(IZHdN); 
 
     for(k=0;k<*pg;k++)  {
@@ -271,7 +271,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
     count=nx[0]-1; 
     for (s=(*Nalltimes)-1;s>0;s=s-1){
       sstop=0; 
-    // printf(" test %d %d %d  \n",s,*antpers,*nx); 
+    // Rprintf(" test %d %d %d  \n",s,*antpers,*nx); 
       time=alltimes[s]; 
       dtime=time-alltimes[s-1]; 
       stat=0;  
@@ -279,9 +279,9 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
       l=0; stat=0;  
       if (1==0) {
       for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) { // {{{
-//		printf("times  %lf  %lf %lf \n",time,start[c],stop[c]); 
+//		Rprintf("times  %lf  %lf %lf \n",time,start[c],stop[c]); 
 	if ((start[c]<time) && (stop[c]>=time)) {
-//		printf("under risk %d %d %d \n",c,id[c],count); 
+//		Rprintf("under risk %d %d %d \n",c,id[c],count); 
 	    for(j=0;j<pmax;j++)  {
 	    if (j<*px) { 
 	    for(k=0;k<*px;k++) 
@@ -302,11 +302,11 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
 	  count=count+1; 
       } } // }}}
       } else {
-//	      printf("=============== %d \n",count); 
+//	      Rprintf("=============== %d \n",count); 
       for (c=count;sstop==0 && c>=0;c=c-1) { // {{{
-// printf("times %d %lf  %lf %lf %d %d %d \n",s,time,start[c],stop[c],c,sstop,count); 
+// Rprintf("times %d %lf  %lf %lf %d %d %d \n",s,time,start[c],stop[c],c,sstop,count); 
 	if ((start[c]<time) && (stop[c]>=time)) {
-	// printf("under risk %d %d %d \n",c,id[c],count); 
+	// Rprintf("under risk %d %d %d \n",c,id[c],count); 
 	    for(j=0;j<pmax;j++)  {
 	    if (j<*px) { 
 	    for(k=0;k<*px;k++) 
@@ -331,12 +331,12 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
       }
 
 
-      //printf(" s er %d \n",s); 
+      //Rprintf(" s er %d \n",s); 
       //print_mat(A); print_mat(ZWZ); print_mat(XWZ); 
 
      // MtA(X,X,A); 
       invertS(A,AI,silent[0]); 
-      if (ME(AI,0,0)==0 && *silent==0) printf("time %lf X'X singular \n",time); 
+      if (ME(AI,0,0)==0 && *silent==0) Rprintf("time %lf X'X singular \n",time); 
      // MtA(Z,Z,ZWZ);MtA(X,Z,XWZ);
       MxA(AI,XWZ,XWZAI);
 
@@ -358,7 +358,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
     } /* s =1...Ntimes */ 
 
     // invertS(CGam,ICGam,silent[0]); Mv(ICGam,IZHdN,gam); 
-    //if (ME(ICGam,0,0)==0 && *silent==0) printf(" intZHZ  singular\n"); 
+    //if (ME(ICGam,0,0)==0 && *silent==0) Rprintf(" intZHZ  singular\n"); 
     //  print_mat(CGam); print_vec(IZHdN); 
 
     for(k=0;k<*pg;k++)  {
@@ -407,7 +407,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
 
     count=0; sstop=0; 
     for (s=1;s<*Nalltimes;s++){
-    // printf(" test %d %d %d  \n",s,*antpers,*nx); 
+    // Rprintf(" test %d %d %d  \n",s,*antpers,*nx); 
       time=alltimes[s]; dtime=time-alltimes[s-1]; stat=0;  
 
       l=0; stat=0;   sstop=0; 
@@ -430,11 +430,11 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
 	    }
       } } // }}}
       } else {
-//	      printf("=============== %d \n",count); 
+//	      Rprintf("=============== %d \n",count); 
       for (c=count;sstop==0 && c<*nx;c++) { // {{{
-// printf("times %d %lf  %lf %lf %d %d %d \n",s,time,start[c],stop[c],c,sstop,count); 
+// Rprintf("times %d %lf  %lf %lf %d %d %d \n",s,time,start[c],stop[c],c,sstop,count); 
 	if ((start[c]>time) || (stop[c]<time)) {
-//	 printf("not risk %d %d %d \n",c,id[c],count); 
+//	 Rprintf("not risk %d %d %d \n",c,id[c],count); 
 	    for(j=0;j<pmax;j++)  {
 	    if (j<*px) { 
 	    for(k=0;k<*px;k++) 
@@ -462,12 +462,12 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
 
       }
 
-      // printf(" s er %d \n",s); 
+      // Rprintf(" s er %d \n",s); 
       //print_mat(A); print_mat(ZWZ); print_mat(XWZ); 
      // MtA(X,X,A); 
      
       invertS(A,AI,silent[0]); 
-      if (ME(AI,0,0)==0 && *silent==0) printf("time %lf X'X singular \n",time); 
+      if (ME(AI,0,0)==0 && *silent==0) Rprintf("time %lf X'X singular \n",time); 
      // MtA(Z,Z,ZWZ);MtA(X,Z,XWZ);
       MxA(AI,XWZ,XWZAI);
 
@@ -489,7 +489,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*deltaweight,*id,*silent
     } /* s =1...Ntimes */ 
 
     // invertS(CGam,ICGam,silent[0]); Mv(ICGam,IZHdN,gam); 
-    //if (ME(ICGam,0,0)==0 && *silent==0) printf(" intZHZ  singular\n"); 
+    //if (ME(ICGam,0,0)==0 && *silent==0) Rprintf(" intZHZ  singular\n"); 
     //  print_mat(CGam); print_vec(IZHdN); 
 
     for(k=0;k<*pg;k++)  {

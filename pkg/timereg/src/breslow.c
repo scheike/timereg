@@ -141,7 +141,7 @@ int
 	  vcu[k*(*Ntimes)+s]=vcu[k*(*Ntimes)+s-1]+(dtime/lam0t)*ME(AI,k-2,k-2); 
 	}
       }
-      /* printf(" \n");   */
+      /* Rprintf(" \n");   */
 
       if (itt==(*it-1)) {
 	if (*robust==1) {
@@ -252,8 +252,8 @@ int
 	       cumB,weighted,antpers);
       /*
 	for (s=0;s<*Ntimes;s++) {
-	for(j=0;j<(*p)+2;j++)  printf(" %lf ",cu[j*(*Ntimes)+s]); 
-	printf(" \n"); }
+	for(j=0;j<(*p)+2;j++)  Rprintf(" %lf ",cu[j*(*Ntimes)+s]); 
+	Rprintf(" \n"); }
       */
     } else {
       for (i=2;i<=*p+1;i++){ 
@@ -320,11 +320,11 @@ int
       } /*s=1..Ntimes Beregning af obs teststørrelser */ 
 
 
-      printf(" Simulations start N= %ld \n",(long int) *antsim); 
+      Rprintf(" Simulations start N= %ld \n",(long int) *antsim); 
       GetRNGstate();  /* to use R random normals */
 
       for (k=1;k<*antsim;k++) {
-	if (k%50==0)  printf(" %ld Simulations \n",(long int) k); 
+	if (k%50==0)  Rprintf(" %ld Simulations \n",(long int) k); 
 	mat_zeros(Delta); 
 	mat_zeros(Delta2); 
 	vec_zeros(vtmp); 
@@ -768,7 +768,7 @@ int *nx,*px,*antpers,*Ntimes,*nb,*ng,*pg,*it,*degree,*sim,*antsim,
 	    for (k=0;k<*pg;k++){
 	      ME(RobVargam,j,k)=ME(RobVargam,j,k)+VE(W2[i],j)*VE(W2[i],k);
 	    }
-	    /* printf(" %ld %lf %lf \n",i,W2[i]->ve[0],RobVargam->me[0][0]); */ 
+	    /* Rprintf(" %ld %lf %lf \n",i,W2[i]->ve[0],RobVargam->me[0][0]); */ 
 	  }
 	}
       } /* i =1 ..Antpers */

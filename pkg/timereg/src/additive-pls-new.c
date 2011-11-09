@@ -73,7 +73,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*weighted,*deltaweight,*
      vec_zeros(rowX); vec_zeros(rowZ); 
     if (s>1)  // {{{ modifying design for next time points
     while ((stop[ci]<time)  & (ci>=0) ) {
-// printf("ww %d %d  %lf %lf %d \n",ci,id[ci],stop[ci],time,entry[ci]); 
+// Rprintf("ww %d %d  %lf %lf %d \n",ci,id[ci],stop[ci],time,entry[ci]); 
             for(j=0;j<*px;j++) VE(xi,j)=designX[j*(*nx)+ci]; 
             for(j=0;j<*pg;j++) VE(zi,j)=designG[j*(*nx)+ci]; 
 	  if (*semipls==1) VE(zi,(*pg)-1)=plscov[pls*(*ng)+ci];
@@ -83,10 +83,10 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*weighted,*deltaweight,*
 	           replace_row(X,id[ci],xi); replace_row(Z,id[ci],zi); 
 	    } 
 	    else {replace_row(X,id[ci],rowX);replace_row(Z,id[ci],rowZ);}
-//	    printf(" hej \n"); 
+//	    Rprintf(" hej \n"); 
 	  for(j=0;j<pmax;j++) 
 	  for(k=0;k<pmax;k++)  {
-//		  printf(" %d %d %d \n",j,k,pmax); 
+//		  Rprintf(" %d %d %d \n",j,k,pmax); 
               if ((j<*px) & (k<*px)) ME(A,j,k)=
 		      ME(A,j,k)+entry[ci]*VE(xi,k)*VE(xi,j)*weights[ci]; 
               if ((j<*px) & (k<*pg)) ME(XWZ,j,k)=
@@ -97,7 +97,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*weighted,*deltaweight,*
 	  ci=ci-1; 
     }
 
-// printf("ci ci ci  %lf %lf %ld \n",time,stop[ci],status[ci]); 
+// Rprintf("ci ci ci  %lf %lf %ld \n",time,stop[ci],status[ci]); 
     if ((s>1) & (time==stop[ci]) & (status[ci]==1)) {
          pers=id[ci]; stat=1;l=l+1; ls[l]=s;
     }
@@ -107,11 +107,11 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*weighted,*deltaweight,*
 
       if (s==0) { print_vec(Xi); 
 	for (k=0;k<500;k++) {
-	  for (c=0;c<*pg;c++) printf(" %lf ",ME(Z,k,c));  printf("\n"); }
-	if (*pg==0) for (k=0;k<0;k++) printf(" %lf \n",ME(Z,k,0)); }
+	  for (c=0;c<*pg;c++) Rprintf(" %lf ",ME(Z,k,c));  Rprintf("\n"); }
+	if (*pg==0) for (k=0;k<0;k++) Rprintf(" %lf \n",ME(Z,k,0)); }
 
       invertS(A,AI,silent[0]); 
-      if (ME(AI,0,0)==0 && *silent==0) printf("time %lf X'X singular \n",time); 
+      if (ME(AI,0,0)==0 && *silent==0) Rprintf("time %lf X'X singular \n",time); 
       MxA(AI,XWZ,XWZAI);
 
       MtA(XWZAI,XWZ,tmpM2); mat_subtr(ZWZ,tmpM2,dCGam); 
@@ -132,7 +132,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*weighted,*deltaweight,*
     } /* s =1...Ntimes */ 
 
     invertS(CGam,ICGam,silent[0]); Mv(ICGam,IZHdN,gam); 
-    if (ME(ICGam,0,0)==0 && *silent==0) printf(" intZHZ  singular\n"); 
+    if (ME(ICGam,0,0)==0 && *silent==0) Rprintf(" intZHZ  singular\n"); 
 
     if (*semipls==1) {
       if (*weighted==0) betapls[pls]=VE(gam,*pg-1); else betapls[pls]=VE(IZHdN,*pg-1);

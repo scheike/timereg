@@ -27,7 +27,7 @@ void comptest(times,Ntimes,px,cu,vcu,vcudif,antsim,test,testOBS,Ut,
   malloc_mat(*Ntimes,*px,Delta);
   malloc_mat(*Ntimes,*px,tmpM1); 
 
-// printf("Simulations start N= %ld \n",(long int) *antsim); 
+// Rprintf("Simulations start N= %ld \n",(long int) *antsim); 
 
   GetRNGstate();  /* to use R random normals */ 
 
@@ -63,8 +63,8 @@ void comptest(times,Ntimes,px,cu,vcu,vcudif,antsim,test,testOBS,Ut,
     for (i=1;i<=*px;i++) {
       xij=fabs(cu[i*(*Ntimes)+s])/sqrt(vcu[i*(*Ntimes)+s]);
       /*
-	printf(" %lf %lf %ld \n",xij,testOBS[i-1],i);  
-	printf(" %lf %lf \n",cu[i*(*Ntimes)+s],vcu[i*(*Ntimes)+s]);  
+	Rprintf(" %lf %lf %ld \n",xij,testOBS[i-1],i);  
+	Rprintf(" %lf %lf \n",cu[i*(*Ntimes)+s],vcu[i*(*Ntimes)+s]);  
       */
 
       if (xij>testOBS[i-1]) {
@@ -111,7 +111,7 @@ void comptest(times,Ntimes,px,cu,vcu,vcudif,antsim,test,testOBS,Ut,
     }
   } 
 
-  /* for (i=0;i<3*(*px);i++) printf(" %lf \n",testOBS[i]);  */
+  /* for (i=0;i<3*(*px);i++) Rprintf(" %lf \n",testOBS[i]);  */
 
 
 
@@ -223,7 +223,7 @@ matrix  *W4t[];
   malloc_mat(*Ntimes,*px,Delta); 
   malloc_mat(*Ntimes,*px,tmpM1);
 
-  printf("Simulations start N= %ld \n",(long int) *antsim); 
+  Rprintf("Simulations start N= %ld \n",(long int) *antsim); 
 
   GetRNGstate();  /* to use R random normals */
 
@@ -267,7 +267,7 @@ matrix  *W4t[];
 
       c=3*(*px);
       testOBS[c]=testOBS[c]+cu[i*(*Ntimes)+s]*cu[i*(*Ntimes)+s]*dtime; 
-      /* printf(" %lf \n",testOBS[c]);  */
+      /* Rprintf(" %lf \n",testOBS[c]);  */
     } 
 
     for (i=1;i<=*px;i++){ 
@@ -325,7 +325,7 @@ matrix  *W4t[];
 	    c=3*(*px);
 	    if (fabs(xij)>testOBS[c])  { 
 	      testOBS[c]=fabs(xij); 
-	      /* printf(" %lf %lf %lf %lf \n",ts,tt,tu,xij);   */ 
+	      /* Rprintf(" %lf %lf %lf %lf \n",ts,tt,tu,xij);   */ 
 	    }
 	    ixij=ixij+dtime*xij*xij; 
 
@@ -428,7 +428,7 @@ matrix  *W4t[];
 	    c=3*(*px);
 	    if (fabs(xij)>test[c*(*antsim)+k]) { 
 	      test[c*(*antsim)+k]=fabs(xij); 
-	      /* printf("local %lf %lf %lf %lf \n",ts,tt,tu,xij); */  
+	      /* Rprintf("local %lf %lf %lf %lf \n",ts,tt,tu,xij); */  
 	    }
 	    ixij=ixij+dtime*xij*xij; 
 	    dmus=cu0[i*(*Ntimes)+u]- cu0[i*(*Ntimes)+s];
@@ -438,7 +438,7 @@ matrix  *W4t[];
 	    c=5*(*px);
 	    if (xij>test[c*(*antsim)+k]) { 
 	      test[c*(*antsim)+k]=xij; 
-	      /* printf("conveks %lf %lf %lf %lf \n",ts,tt,tu,xij); */  
+	      /* Rprintf("conveks %lf %lf %lf %lf \n",ts,tt,tu,xij); */  
 	    }
 	    icxij=icxij+dtime*xij; 
 	  } 

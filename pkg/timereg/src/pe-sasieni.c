@@ -154,10 +154,10 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
       Mv(ICGam,IZHdN,rowZ); vec_add(gam,rowZ,gam);
 
       if (*detail==1) {
-	printf("====================Iteration %d ==================== \n",it);
-	printf("Estimate beta \n"); print_vec(gam);
-	printf("Score D l\n"); print_vec(IZHdN);
-	printf("Information -D^2 l\n");  print_mat(ICGam); };
+	Rprintf("====================Iteration %d ==================== \n",it);
+	Rprintf("Estimate beta \n"); print_vec(gam);
+	Rprintf("Score D l\n"); print_vec(IZHdN);
+	Rprintf("Information -D^2 l\n");  print_mat(ICGam); };
 
       for (k=0;k<*pg;k++) sumscore=sumscore+fabs(VE(IZHdN,k));
 
@@ -210,7 +210,7 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
   cu[0]=times[0]; vcu[0]=times[0];
 
   if (*nsim>0) { 
-//    printf(" simulation starts, no resampling = %d \n",*nsim); 
+//    Rprintf(" simulation starts, no resampling = %d \n",*nsim); 
     GetRNGstate();  /* to use R random normals */
 
     for (s=1;s<*Ntimes;s++)  
