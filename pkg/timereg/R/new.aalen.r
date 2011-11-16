@@ -3,10 +3,10 @@ aalen<-function (formula = formula(data),
      robust=1, id=NULL, clusters=NULL, residuals = 0, n.sim = 1000,  
      weighted.test= 0,covariance=0,resample.iid=0,
      deltaweight=1,silent=1,weights=NULL,max.clust=1000,
-     gamma=NULL,offsets=0){
+     gamma=NULL,offsets=0){ ## {{{
 ## {{{ setting up variables 
   if (n.sim == 0) sim <- 0 else sim <- 1
-  if (resample.iid==1) { robust <- 1; }
+  if (resample.iid==1 & robust==0) { robust <- 1;}
   if (covariance==1 & robust==0) { covariance<-0;}
   if (sim==1 & robust==0) { n.sim<-0;sim <- 0}
   if (n.sim>0 & n.sim<50) {n.sim<-50 ; cat("Minimum 50 simulations\n");}
@@ -42,11 +42,9 @@ aalen<-function (formula = formula(data),
   stop.call <- time2<-survs$stop
   start.call <- survs$start
   status<-survs$status; 
-  dtimes <- sort(survs$stop[survs$status==1])
   orig.max.clust <- survs$antclust
-
+  dtimes <- sort(survs$stop[survs$status==1])
   nobs <- nrow(X); 
-
   if (is.null(weights)) weights <- rep(1,nrow(X)); 
 
   if ( (!is.null(max.clust)) )    if (max.clust < survs$antclust) {
@@ -91,7 +89,7 @@ ldata<-list(start=survs$start,stop=survs$stop,
 
 ## }}}
 
-  if (npar== TRUE) {
+  if (npar== TRUE) { ## {{{ Aalen model 
    ud <- aalenBase(times, ldata, X, status, id, clusters, robust = robust, 
    sim = sim, retur = residuals, antsim = n.sim,
    weighted.test = weighted.test,covariance=covariance,
@@ -105,8 +103,8 @@ ldata<-list(start=survs$start,stop=survs$stop,
       names(ud$conf.band) <- names(ud$pval.testBeq0) <- names(ud$pval.testBeqC) <- names(ud$pval.testBeqC.is) <- names(ud$obs.testBeq0) <- names(ud$obs.testBeqC) <- names(ud$obs.testBeqC.is) <- colnames(ud$sim.testBeq0) <- colnames(ud$sim.testBeqC) <- colnames(ud$sim.testBeqC.is) <- covnamesX
       ud$sim.testBeqC.is <- ud$sim.testBeqC <- FALSE
     }
-  }
-  else {
+  } ## }}}
+  else { ## {{{ Semiparametric additive risk model 
     if (px == 0) stop("No nonparametric terms (needs one!)")
     ud<-semiaalen(times, ldata, X, Z, 
     status, id , clusters, robust = robust, sim = sim, antsim = n.sim, 
@@ -135,7 +133,8 @@ ldata<-list(start=survs$start,stop=survs$stop,
     colnames(ud$robvar.gamma) <- c(covnamesZ)
     colnames(ud$intZHZ) <- c(covnamesZ)
     rownames(ud$var.gamma) <- c(covnamesZ)
-  }
+  } ## }}}
+
   attr(ud, "Call") <- sys.call()
   attr(ud, "Formula") <- formula
   attr(ud, "id") <- id.call
@@ -150,13 +149,13 @@ ldata<-list(start=survs$start,stop=survs$stop,
   class(ud) <- "aalen"
   ud$call<-call
   return(ud)
-}
+} ## }}}
 
 plot.aalen <-  function (x, pointwise.ci=1, hw.ci=0,
 sim.ci=0, robust=0, specific.comps=FALSE,level=0.05, start.time = 0, 
 stop.time = 0, add.to.plot=FALSE, mains=TRUE, xlab="Time",
 ylab ="Cumulative coefficients",score=FALSE,...) 
-{
+{ ## {{{
   object <- x; rm(x);
   if (!inherits(object,'aalen') ) 
     stop ("Must be output from Aalen function") 
@@ -168,10 +167,10 @@ ylab ="Cumulative coefficients",score=FALSE,...)
         mains=mains, xlab=xlab, ylab =ylab) 
   else plotScore(object, specific.comps=specific.comps, mains=mains,
                   xlab=xlab,ylab =ylab); 
-}
+} ## }}}
 
 "print.aalen" <- function (x,...) 
-{
+{ ## {{{
   object <- x; rm(x);
   if (!inherits(object, 'aalen')) stop ("Must be an aalen object")
 
@@ -187,12 +186,11 @@ ylab ="Cumulative coefficients",score=FALSE,...)
   cat("   \n");  
 
   cat("  Call: \n"); dput(attr(object, "Call")); cat("\n"); 
-}
-
+} ## }}}
 
 "summary.aalen" <-
 function (object,digits = 3,...) 
-{
+{ ## {{{
   aalen.object <- object; rm(object);
   
   obj<-aalen.object
@@ -228,9 +226,8 @@ function (object,digits = 3,...)
   cat("  Call: \n")
   dput(attr(aalen.object, "Call"))
   cat("\n")
-}
+} ## }}}
 
 coef.aalen <- function(object, digits=3,...) {
-  
-   coefBase(object,digits=digits)
+   coefBase(object,digits=digits,...)
 }

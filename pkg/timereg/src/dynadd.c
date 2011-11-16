@@ -17,10 +17,10 @@ int *sim,*antsim,*retur,*nxval,*nx,*px,*na,*pa,*antpers,*Ntimes,*mw,*rani,*statu
   vector *dAt[*Ntimes];
   matrix *cumBt[*antpers];
   vector *cumhatB[*antpers],*cumB[*antpers],*cum;
-  int pers=0,i,j,k,s,c,count,sing=1,pmax,nmax,risk;
+  int pers=0,i,j,k,s,c,count,pmax,nmax,risk;
   int *coef=calloc(1,sizeof(int)),*imin=calloc(1,sizeof(int)),
       *ps=calloc(1,sizeof(int)),*degree=calloc(1,sizeof(int));
-  double time,dummy,zpers=0,dif,dtime,YoneN,kia;
+  double time,zpers=0,dif,dtime,YoneN,kia;
   double *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double));
 
   for (i=0;i<*antpers;i++) { malloc_vec(*px,cumhatB[i]); malloc_vec(*px,cumB[i]);
@@ -78,7 +78,6 @@ int *sim,*antsim,*retur,*nxval,*nx,*px,*na,*pa,*antpers,*Ntimes,*mw,*rani,*statu
       for (k=0;k<*pa;k++) VE(dAt[s],k)=VE(dA,k); 
 
       for(j=0;j<*nxval;j++) VE(xt,j)=fabs(ahat[j]-time);
-      dummy=vec_min(xt,imin);
       for(j=1;j<=*pa;j++) VE(ahatt,j-1)=ahat[j*(*nxval)+(*imin)];
       Mv(ldesignA,ahatt,pahat);
 
@@ -147,12 +146,12 @@ int *sim,*antsim,*retur,*nxval,*nx,*px,*na,*pa,*antpers,*Ntimes,*mw,*rani,*statu
     }
 
   /* variance comp done based on preliminary estimate of bhat */
-  sing=0; 
-  if (sing==1) { degree[0]=1; coef[0]=1; ps[0]=(*px)+1; 
-    if (vec_sum(pbhat)==0) 
-      smoothB(cumly,Ntimes,ps,bhatny,nxval,b,degree,coef); 
-    else smoothB(cuf,Ntimes,ps,bhatny,nxval,b,degree,coef); 
-  } /* sing==1 */ 
+//  sing=0; 
+//  if (sing==1) { degree[0]=1; coef[0]=1; ps[0]=(*px)+1; 
+//    if (vec_sum(pbhat)==0) 
+//      smoothB(cumly,Ntimes,ps,bhatny,nxval,b,degree,coef); 
+//    else smoothB(cuf,Ntimes,ps,bhatny,nxval,b,degree,coef); 
+//  } /* sing==1 */ 
 
  R_CheckUserInterrupt();
 

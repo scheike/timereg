@@ -52,7 +52,8 @@ export("aalen",
        "timecox",
        "timecoxBase",
        "timetest",
-       "two.stage"
+       "two.stage",
+       "wald.test"
        )
 
 S3method(plot,aalen)

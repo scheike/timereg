@@ -62,6 +62,7 @@
 \alias{summary.pls}
 \alias{print.pls}
 \alias{predict.pls}
+\alias{wald.test}
 \title{For internal use}
 \description{for internal use}
 \author{Thomas Scheike}

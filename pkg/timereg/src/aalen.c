@@ -249,7 +249,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
       *idd=calloc(*antpers,sizeof(int)),
       *ls=calloc(*Ntimes,sizeof(int)); 
   double time,dtime,fabs(),sqrt();
-  double ahati,ghati,hati,tau;
+  double ahati,ghati,hati;
   double *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
 	 *times=calloc(*Ntimes,sizeof(double)),
          *cumoff=calloc((*Nalltimes)*(*px+1),sizeof(double)); 
@@ -606,7 +606,6 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 
 //  loglike[0]=loglike[0]-vec_sum(rowZ); 
 
-  tau=time;
   for (s=1;s<*Ntimes;s++) {
 
     Mv(C[ls[s]],gam,korG); 

@@ -1,4 +1,3 @@
-
 cor.cif<-function(cif,data=sys.parent(),cause,times=NULL,parfunc=NULL,dparfunc=NULL,
 cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,clusters=NULL,
 theta=NULL,theta.des=NULL,step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,
@@ -508,7 +507,6 @@ summary.cor<-function(object,digits=3,marg.cif=NULL,...)
   class(res) <- "summary.cor"
   res
 } ## }}}
-
 coef.cor<-function(object,...)
 { ## {{{
  res <- cbind(object$theta, diag(object$var.theta)^0.5)
@@ -523,6 +521,57 @@ else colnames(res) <- c("log-ratio Coef.", "SE", "z", "P-val","Ratio","SE")
  if (is.null((rownames(res)))==TRUE) rownames(res)<-rep(" ",nrow(res))
 
 return(res)
+} ## }}}
+
+summary.cor<-function(object,marg.cif=NULL,marg.cif2=NULL,digits=3,...)
+{ ## {{{
+  if (!inherits(object, "cor")) stop("Must be a cor.cif  object")
+  if (sum(abs(object$score))>0.000001) warning("WARNING: check score for convergence\n")
+  coefs <- coef.cor(object,...);
+
+  outcase <- outconc <- NULL
+  if (is.null(marg.cif)==FALSE) {
+      marg.cif <- max(marg.cif)
+      if (attr(object,"cause2")==attr(object,"cause1")) marg.cif2=marg.cif 
+      marg.cif2 <- max(marg.cif2)
+      pmarg.cif <- marg.cif*marg.cif2
+    ## {{{
+    if (attr(object,"Type")=="cor") {
+      concordance <- exp(coefs[,1])*pmarg.cif/((1-marg.cif)+exp(coefs[,1])*marg.cif)
+      conclower  <- exp(coefs[,1]-1.96*coefs[,2])*pmarg.cif/((1-marg.cif)+exp(coefs[,1]-1.96*coefs[,2])*marg.cif)
+      concup  <- exp(coefs[,1]+1.96*coefs[,2])*pmarg.cif/((1-marg.cif)+exp(coefs[,1]+1.96*coefs[,2])*marg.cif)
+      casewise <- concordance/marg.cif
+      caselower  <- conclower/marg.cif
+      caseup     <- concup/marg.cif
+    } else if (attr(object,"Type")=="RR") {
+      casewise<- exp(coefs[,1])*c(marg.cif2)
+      concordance <- exp(coefs[,1])*pmarg.cif
+      caselower  <- marg.cif2*exp(coefs[,1]-1.96*coefs[,2])
+      caseup     <- marg.cif2*exp(coefs[,1]+1.96*coefs[,2])
+      conclower  <- pmarg.cif* exp(coefs[,1]-1.96*coefs[,2])
+      concup     <- pmarg.cif*exp(coefs[,1]+1.96*coefs[,2])
+    } else if (attr(object,"Type")=="OR-cif") {
+      thetal <-  coefs[,1]-1.96*coefs[,2]
+      thetau <-  coefs[,1]+1.96*coefs[,2]
+      casewise<- plack.cif2(marg.cif,marg.cif,c(coefs[,1]))/marg.cif
+      concordance <- plack.cif2(marg.cif,marg.cif,c(coefs[,1]))
+      caselower  <- plack.cif2(marg.cif,marg.cif,thetal)/marg.cif
+      caseup  <- plack.cif2(marg.cif,marg.cif,thetau)/marg.cif
+      conclower  <- plack.cif2(marg.cif,marg.cif,thetal)
+      concup     <- plack.cif2(marg.cif,marg.cif,thetau)
+    }
+    outcase <- cbind(casewise,caselower,caseup)
+    outconc <- cbind(concordance,conclower,concup)
+    rownames(outcase) <- rownames(outconc)  <-  rownames(coefs)
+    colnames(outcase) <- c("casewise concordance","2.5 %","97.5%")
+    colnames(outconc) <- c("concordance","2.5 %","97.5%")
+  }
+  ## }}}
+  res <- list(casewise=outcase,concordance=outconc,estimates=coefs,
+	      marg.cif=marg.cif, marg.cif2=marg.cif2,type=attr(object,"Type"),
+	      sym=attr(object,"sym"),cause1=attr(object,"cause1"),cause2=attr(object,"cause2"))
+  class(res) <- "summary.cor"
+  res
 } ## }}}
 
 coef.cor<-function(object,...)

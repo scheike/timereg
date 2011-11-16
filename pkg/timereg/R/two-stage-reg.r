@@ -188,7 +188,6 @@ summary.two.stage<-function (object,digits = 3,...) { ## {{{
    cat("   \n");  cat("  Call: \n"); dput(attr(object, "Call")); cat("\n");
 } ## }}}
 
-
 print.two.stage <- function (x,digits = 3,...) { ## {{{
   if (!(inherits(x, 'two.stage') )) stop("Must be a Two-Stage object")
   cat(" Two-stage estimation for Clayton-Oakes-Glidden  model\n"); 

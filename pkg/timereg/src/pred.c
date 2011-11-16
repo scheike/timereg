@@ -14,8 +14,8 @@ for (s=0;s<*nxval;s++)
    timex=xval[s]; pred[s]=timex; c=*nx-1; 
    sc1=cum[*nx-1];  sc2=smax+xval[*nxval-1];  
 
-   if (timex< cum[0]) 
-   for(j=1;j<*px;j++) pred[j*(*nxval)+s]=0; 
+   if (timex< cum[0])  { for(j=1;j<*px;j++) pred[j*(*nxval)+s]=0; }
+   else if (timex> cum[*nx-1]) { for(j=1;j<*px;j++) pred[j*(*nxval)+s]=cum[j*(*nx)+(*nx-1)]; }
    else {
    while ((!((timex<sc2) && (timex>=sc1))) && (c>=0)) {
    /* Rprintf(" %lf %lf %lf %ld \n",timex,sc2,sc1,c); */ 

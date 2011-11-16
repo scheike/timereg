@@ -18,8 +18,6 @@ int *nx,*p,*antpers,*Ntimes,*nb,*it,*degree,*id,*status,*sim,*antsim,*rani,*retu
   double *vcudif=calloc((*Ntimes)*(*p+1),sizeof(double)),
 	 *sbhat=calloc((*Ntimes)*(*p+1),sizeof(double)),
          *sscore=calloc((*Ntimes)*(*p+1),sizeof(double)); 
-  long idum; idum=*rani;
-
 
   malloc_mats(*antpers,*p,&ldesignX,&cdesignX,NULL);
   malloc_mats(*p,*p,&Vcov,&A,&AI,NULL);
@@ -170,7 +168,6 @@ int
   double time,dtime,hati;
   double *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double));
   int *ipers=calloc(*Ntimes,sizeof(int));
-  long idum; idum=*rani;
 
   if (*robust==1) 
     for (j=0;j<*antpers;j++) { malloc_mat(*Ntimes,*px,W3t[j]);

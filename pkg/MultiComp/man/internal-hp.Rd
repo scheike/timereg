@@ -1,7 +1,9 @@
 \name{coef.cor}
 \alias{coef.cor}
+\alias{or.cif}
 \alias{print.cor}
 \alias{summary.randomcif}
+\alias{print.summary.cor}
 \alias{coef.randomcif}
 \alias{print.randomcif}
 \alias{summary.randomcifrv}

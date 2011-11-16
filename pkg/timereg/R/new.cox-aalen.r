@@ -7,20 +7,19 @@ weighted.test=0,covariance=0,resample.iid=0,weights=NULL,
 rate.sim=1,beta.fixed=0,max.clust=1000,exact.deriv=1,silent=0,
 max.timepoint.sim=100)
 { ## {{{
-	offsets=0; 
+offsets=0; 
 ## {{{ set up variables 
-  call <- match.call()
-  m <- match.call(expand.dots=FALSE)
-  m$robust<-m$start.time<-m$scaleLWY<-m$weighted.test<-m$beta<-m$Nit<-m$detail<-m$max.time<-m$residuals<-m$n.sim<-m$id<-m$covariance<-m$resample.iid<-m$clusters<-m$rate.sim<-m$beta.fixed<-
-  m$max.clust <- m$exact.deriv <- m$silent <- m$max.timepoint.sim <- NULL
-
   if (n.sim == 0) sim <- 0 else sim <- 1
-  if (resample.iid==1 & robust==0) { resample.iid<-0;}
+  if (resample.iid==1 & robust==0) { robust <- 1;}
   if (covariance==1 & robust==0) { covariance<-0;}
   if (sim==1 & robust==0) { n.sim <- 0; sim<-0;}
   if (n.sim>0 & n.sim<50) {n.sim<-50 ; cat("Minimum 50 simulations\n");}
   if (beta.fixed==1) Nit<-1; 
-
+  call <- match.call()
+  m <- match.call(expand.dots=FALSE)
+  m$robust<-m$start.time<- m$scaleLWY<-m$weighted.test<-m$beta<-m$Nit<-m$detail<-m$max.time<-m$residuals<-m$n.sim<-m$id<-
+	                   m$covariance<-m$resample.iid<-m$clusters<-m$rate.sim<-m$beta.fixed<-
+                           m$max.clust <- m$exact.deriv <- m$silent <- m$max.timepoint.sim <- NULL
   special <- c("prop","cluster")
   Terms <- if(missing(data)) terms(formula, special)
   else          terms(formula, special, data=data)
@@ -35,9 +34,7 @@ max.timepoint.sim=100)
   des<-read.design(m,Terms,model="cox.aalen")
   X<-des$X; Z<-des$Z; npar<-des$npar; px<-des$px; pz<-des$pz;
   covnamesX<-des$covnamesX; covnamesZ<-des$covnamesZ
-
   if(is.null(clusters)) clusters <- des$clusters  
-  
   pxz <- px + pz;
 
   survs<-read.surv(m,id,npar,clusters,start.time,max.time,model="cox.aalen",silent=silent)
@@ -47,13 +44,10 @@ max.timepoint.sim=100)
   stop.call <- time2 <- survs$stop; 
   status<-survs$status;
   orig.max.clust <- survs$antclust
-
-  ldata<-list(start=survs$start,stop=survs$stop,antpers=survs$antpers,antclust=survs$antclust);
-
   nobs <- nrow(X); 
   if (is.null(weights)) weights <- rep(1,nrow(X));  
-  if (sum(abs(offsets))!=0) stop("no offsets in this version \n"); 
   weights <- rep(1,nrow(X)); 
+  if (sum(abs(offsets))!=0) stop("no offsets in this version \n"); 
 
   if ( (!is.null(max.clust)) )  {  
      if (max.clust < survs$antclust)   {
@@ -61,14 +55,12 @@ max.timepoint.sim=100)
        qqc <- cut(clusters, breaks = qq, include.lowest = TRUE)    
        clusters <- as.integer(factor(qqc, labels = 1:max.clust)) -1
        survs$antclust <- max.clust    
-       ldata$antclust <- max.clust
      }
   }                                                         
   cluster.call<-clusters; 
 
   if ((length(beta)!=pz) && (is.null(beta)==FALSE)) beta <- rep(beta[1],pz); 
   if ((is.null(beta))) beta<-coxph(Surv(survs$start,survs$stop,survs$status)~Z)$coef; 
-## }}}
 
 if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
    ot<-order(-time2,status==1); # order in time, status=0 first for ties
@@ -99,7 +91,8 @@ if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
 	if (sum(abs(offsets))!=0) offsets <- rep(offsets,2)[ix]
     } ## }}}
 
-ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust);
+ldata<-list(start=start,stop=stop, antpers=survs$antpers,antclust=survs$antclust);
+## }}}
 
   if (npar==FALSE) covar<-data.matrix(cbind(X,Z)) else 
   stop("Both multiplicative and additive model needed");
@@ -135,7 +128,8 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
   namematrix(ud$var.gamma,covnamesZ); 
   namematrix(ud$robvar.gamma,covnamesZ); 
   if (beta.fixed==1) {ud$var.gamma<-matrix(0,pz,pz); 
-                      ud$robvar.gamma<-matrix(0,pz,pz);}
+                      ud$robvar.gamma<-matrix(0,pz,pz);
+  }
   namematrix(ud$D2linv,covnamesZ); 
 
   attr(ud,"Call")<-sys.call(); 
@@ -158,11 +152,10 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
   return(ud); 
 } ## }}}
 
-
-"plot.cox.aalen" <-  function (x,..., pointwise.ci=1, hw.ci=0,
+"plot.cox.aalen" <-  function (x,pointwise.ci=1, hw.ci=0,
 sim.ci=0, robust=0, specific.comps=FALSE,level=0.05, start.time = 0,
 stop.time = 0, add.to.plot=FALSE, mains=TRUE, xlab="Time",
-ylab ="Cumulative coefficients",score=FALSE)
+ylab ="Cumulative coefficients",score=FALSE,...)
 { ## {{{
   object <- x; rm(x);  
   if (!inherits(object,'cox.aalen') ) stop ("Must be output from Cox-Aalen function")
@@ -176,9 +169,7 @@ ylab ="Cumulative coefficients",score=FALSE)
                   xlab=xlab,ylab =ylab);
 } ## }}}
 
-
-"print.cox.aalen" <-
-function (x,...) 
+"print.cox.aalen" <- function (x,...) 
 { ## {{{
   cox.aalen.object <- x; rm(x);
   if (!inherits(cox.aalen.object, 'cox.aalen')) 
@@ -203,9 +194,7 @@ if (is.null(cox.aalen.object$gamma)==TRUE) prop<-FALSE else prop<-TRUE
   cat("\n")
 } ## }}}
 
-
-"summary.cox.aalen" <-
-function (object,digits = 3,...) 
+"summary.cox.aalen" <- function (object,digits = 3,...) 
 { ## {{{
   cox.aalen.object <- object; rm(object);
   obj<-cox.aalen.object
@@ -253,7 +242,6 @@ function (object,digits = 3,...)
   cat("\n")
 } ## }}}
 
-
-coef.cox.aalen<-function(object,...,digits=3,d2logl=1) {
-   coefBase(object,digits=digits, d2logl=d2logl)
+coef.cox.aalen<-function(object,digits=3,d2logl=1,...) {
+   coefBase(object,digits=digits, d2logl=d2logl,...)
 }

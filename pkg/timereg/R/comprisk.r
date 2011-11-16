@@ -21,7 +21,7 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL)
   if (model=="fg")        trans<-6; 
   if (model=="logistic2") trans<-7; 
   line <- 0
-  m<-match.call(expand = FALSE);
+  m<-match.call(expand.dots=FALSE);
   m$gamma<-m$times<-m$n.times<-m$cause<-m$Nit<-m$weighted<-m$n.sim<-
     m$model<-m$causeS<- m$detail<- m$cens.model<-m$time.pow<-m$silent<- 
     m$cens.code<-m$interval<- m$clusters<-m$resample.iid<-

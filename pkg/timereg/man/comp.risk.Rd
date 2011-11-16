@@ -184,12 +184,11 @@ bmt$cause,causeS=1,resample.iid=1,model="fg",n.sim=100)
 summary(fg)
 
 ## Left truncated cumulative incidence estimation 
-tt <- runif(408)*bmt$time*rbinom(408,1,0.5)*0.5
 ## truncation weights  computed first, by Cox model
-fgt<- cox.aalen(Surv(tt,time,cause>0)~prop(platelet)+prop(age)+prop(tcell),data=bmt,n.sim=0,robust=0,silent=0)
+tt <- runif(408)*bmt$time*rbinom(408,1,0.5)*0.5
+fgt<- cox.aalen(Surv(tt,time,cause>0)~prop(platelet)+prop(age)+prop(tcell),data=bmt,n.sim=0,robust=0)
 cumt <- Cpred(fgt$cum,tt)[,2]  
 psurv <- exp(-cumt); 
-
 
 fgt<-comp.risk(Surv(time,cause>0)~ const(platelet)+const(age)+const(tcell),data=bmt,
 bmt$cause,causeS=1,model="fg",n.sim=0,trunc.p=psurv,entry.time=tt)

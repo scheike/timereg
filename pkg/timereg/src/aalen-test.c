@@ -12,12 +12,10 @@ int *nx,*p,*antpers,*Ntimes,*sim,*retur,*rani,*antsim,*status,*id,*covariance,
   vector *vrisk,*cumhatA[*antclust],*cumA[*antclust];
   int i,j,k,l,s,c,count,pers=0;
   int stat,*cluster=calloc(*antpers,sizeof(int));
-  double time,ahati,dt,dtime;
-  double tau,*vcudif=calloc((*Ntimes)*(*p+1),sizeof(double)),
+  double time,ahati,dtime;
+  double *vcudif=calloc((*Ntimes)*(*p+1),sizeof(double)),
 	 *weights=calloc(*antpers,sizeof(double)); 
   double fabs(),sqrt();
-
-  dt=times[*Ntimes-1]-times[0]; 
 
   if (*robust==1) {
     for (i=0;i<*antclust;i++) {
@@ -125,7 +123,6 @@ int *nx,*p,*antpers,*Ntimes,*sim,*retur,*rani,*antsim,*status,*id,*covariance,
     }
 
     } /* s = 1..Ntimes */ 
-  tau=time; 
 
   if (*sim==1) {
     comptest(times,Ntimes,p,cu,robvcu,vcudif,antsim,test,testOBS,Ut,simUt,cumAt,weighted,antclust);

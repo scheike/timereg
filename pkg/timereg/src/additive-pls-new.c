@@ -12,7 +12,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*weighted,*deltaweight,*
   vector *xi,*tmpv2,*tmpv1,*PLScomp,*Xi,*dA,*rowX,*AIXWdN,*korG,*rowZ,*gam,*ZHdN,
     *IZHdN,*zi;
   int ci=0,i,j,k,l,c,s,count,pers=0,pmax,*ipers=calloc(*Ntimes,sizeof(int)); 
-  int stat,maxtime,*ls=calloc(*Ntimes,sizeof(int)),pls; 
+  int stat,*ls=calloc(*Ntimes,sizeof(int)),pls; 
   double time,dtime,fabs(),sqrt();
 
   if (*semipls==0) px[0]=px[0]+1; 
@@ -30,7 +30,6 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*weighted,*deltaweight,*
   malloc_vecs(*antpers,&PLScomp,&Xi,NULL);
 
   if (*px>=*pg) pmax=*px; else pmax=*pg; 
-  maxtime=alltimes[*Nalltimes]; 
   // }}}
 
   for (pls=0;pls<*dimplscov;pls++){

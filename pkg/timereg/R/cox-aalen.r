@@ -7,14 +7,21 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
 { ## {{{
   additive.resamp <-0; ridge <- 0; XligZ <- 0; 
   Ntimes <- length(times)
-  if ( max.timepoint.sim< Ntimes)  {  
+
+  if (is.null(max.timepoint.sim)) max.timepoint.sim <- Ntimes; 
+  if (max.timepoint.sim< Ntimes)  {   ## {{{
        qq <- quantile(times, probs = seq(0, 1, length=max.timepoint.sim))  
        qqc <- cut(times, breaks = qq, include.lowest = TRUE)    
        time.group <- as.integer(factor(qqc, labels = 1:(max.timepoint.sim-1)))
        time.resolution <- qq
        mts <- max.timepoint.sim; 
   } else { time.resolution <- qq <- times; time.group <- 0:(Ntimes-1); 
-            max.timepoint.sim <- mts <- Ntimes;}
+            max.timepoint.sim <- mts <- Ntimes;
+  } ## }}}
+
+###  print(cbind(times,time.group)); 
+###  print(length(unique(time.group))); 
+
 
   designX <- as.matrix(designX); designG <- as.matrix(designG)
   if (is.matrix(designX) == TRUE) px <- as.integer(dim(designX)[2])
@@ -22,6 +29,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   if (is.matrix(designG) == TRUE) pg <- as.integer(dim(designG)[2])
   if (is.matrix(designG) == TRUE) ng <- as.integer(dim(designG)[1])
   if (nx != ng) print(" X design and Z not same number of rows\n")
+
   if (is.null(weights)==FALSE) mw<-1 else { mw <- 0; weights <- rep(1, nx);}
   if (sum(offsets)==0) mof <- 0 else mof <- 1; nb <- 1; aalen <- 1
   if (covariance == 1) covs <- matrix(0, mts, px * px) else covs <- 0
@@ -70,7 +78,6 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
                 ,PACKAGE = "timereg")
 
   Iinv <- matrix(nparout[[19]], pg, pg); RVarbeta <- -matrix(nparout[[28]], pg, pg)
-
   rvcu <- matrix(nparout[[27]], mts , px + 1); ## convert to approx for times 
   Rvcu <- times; 
   for (i  in 2:(px+1)) Rvcu <- cbind(Rvcu,approx(rvcu[,1],rvcu[,i],times,f=0.5)$y)
@@ -78,7 +85,8 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   Varbeta <- -matrix(nparout[[20]], pg, pg); 
   cumint <- matrix(nparout[[14]], Ntimes, px + 1); 
   vcum <- matrix(nparout[[15]], Ntimes, px + 1)
-  gamma <- matrix(nparout[[12]], pg, 1); score <- matrix(nparout[[42]], pg, 1)
+  gamma <- matrix(nparout[[12]], pg, 1); 
+  score <- matrix(nparout[[42]], pg, 1)
 
   Ut <- matrix(nparout[[31]], mts , pg + 1)
   if (beta.fixed==1) var.score<-matrix(nparout[[57]],Ntimes,pg+1)
@@ -111,13 +119,10 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
     test <- matrix(nparout[[29]], antsim, 2 * px)
     testOBS <- nparout[[30]]
     supUtOBS <- apply(abs(as.matrix(Ut[, -1])), 2, max)
-    for (i in 1:(2 * px)) testval <- c(testval, pval(test[, 
-                                                          i], testOBS[i]))
-    for (i in 1:px) unifCI <- c(unifCI, percen(test[, i], 
-                                               0.95))
+    for (i in 1:(2 * px)) testval <- c(testval, pval(test[, i], testOBS[i]))
+    for (i in 1:px) unifCI <- c(unifCI, percen(test[, i], 0.95))
     testUt <- c()
-    for (i in 1:pg) testUt <- c(testUt, pval(simUt[, i], 
-                                             supUtOBS[i]))
+    for (i in 1:pg) testUt <- c(testUt, pval(simUt[, i], supUtOBS[i]))
     pval.testBeq0 <- as.vector(testval[1:px])
     pval.testBeqC <- as.vector(testval[(px + 1):(2 * px)])
     obs.testBeq0 <- as.vector(testOBS[1:px])
@@ -152,5 +157,3 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
              B.iid=B.iid,gamma.iid=gammaiid,time.sim.resolution=qq)
   return(ud)
 } ## }}}
-
-
