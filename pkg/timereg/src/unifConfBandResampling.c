@@ -1,4 +1,4 @@
-#include <stdio.h>
+//#include <stdio.h>
 #include <stdlib.h>     /* declares malloc() */
 #include <math.h>
 #include <R_ext/BLAS.h>

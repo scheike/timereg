@@ -254,7 +254,11 @@ function (object,..., digits = 3)
   }
   cat("   \n");  
 
-  if (semi) { coef.timecox(timecox.object,digits=digits); }
+  if (semi) { 
+    out=coef.timecox(timecox.object,digits=digits); 
+    out=signif(out,digits=digits)
+    print(out)
+  }
   cat("   \n");  
 
   cat("  Call: \n")

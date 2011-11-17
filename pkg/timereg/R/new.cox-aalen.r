@@ -222,7 +222,9 @@ if (is.null(cox.aalen.object$gamma)==TRUE) prop<-FALSE else prop<-TRUE
   if (prop) {
     if (p.o==FALSE) cat("Proportional Cox terms :  \n") else  cat("Covariate effects \n")
 
-    coef.cox.aalen(obj); 
+    out=coef.cox.aalen(obj); 
+    out=signif(out,digits=digits)
+    print(out)
 
     if (p.o==FALSE) cat("Test for Proportionality \n") else  
     cat("Test for Goodness-of-fit \n")

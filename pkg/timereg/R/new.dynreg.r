@@ -295,8 +295,11 @@ if (is.null(dynreg.object$gamma0)==TRUE) semi<-FALSE else semi<-TRUE
   if (semi) {
     cat(" Parametric terms :  "); cat(rownames(dynreg.object$gamma0)); 
     cat("   \n");  
-    coef.dynreg(dynreg.object,digits=digits); }
-  cat("   \n");  
+    out=coef.dynreg(dynreg.object); 
+    out=signif(out,digits=digits)
+    print(out)
+    cat("   \n");  
+  }
 
   cat("  Call: \n")
   dput(attr(dynreg.object, "Call"))

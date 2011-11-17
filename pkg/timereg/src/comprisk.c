@@ -1,4 +1,4 @@
-#include <stdio.h>
+//#include <stdio.h>
 #include <math.h>
 #include "matrix.h"
 	 
@@ -438,6 +438,23 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	         scl_vec_mult(1/trunkp[j],zi,zi);  
 	         VE(plamt,j)=VE(plamt,j)-phattrunc;
 	      } 
+	   if (*trans==8) { // log-relative risk,
+	      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
+	      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l); // *pow(time,timepow[l]); 
+	      VE(rr,j)=lrr;  
+	      VE(plamt,j)=VE(pbhat,j)*exp(exp(lrr)); 
+	      scl_vec_mult(exp(exp(lrr)),xi,xi); 
+	      scl_vec_mult(VE(plamt,j)*exp(lrr),zi,zi); 
+	      if ((entry[j]>0)) { 
+	         extract_row(ldesignG,j,zit); extract_row(ldesignX,j,xit); 
+	         for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*antpers)+j];
+	         for (l=0;l<*pg;l++) lrrt=lrrt+VE(gam,l)*VE(zit,l)*pow(entry[j],timepow[l]); 
+	         phattrunc= vec_prod(xit,truncbhatt)*exp(exp(lrrt));
+	         scl_vec_mult(1/trunkp[j],xi,xi);
+	         scl_vec_mult(1/trunkp[j],zi,zi);  
+	         VE(plamt,j)=VE(plamt,j)-phattrunc;
+	      } 
+	   }
            }
 	   // }}}
 	   

@@ -211,7 +211,9 @@ function (object,digits = 3,...)
   cat("   \n");  
 
   if (semi) {
-    coef.aalen(aalen.object,digits=digits); 
+    out=coef.aalen(aalen.object,digits=digits); 
+    out=signif(out,digits=digits)
+    print(out)
 
     if (is.null(aalen.object$pstest.pval)==FALSE) {
       res<-cbind(aalen.object$sup.pscore,aalen.object$pstest.pval);
