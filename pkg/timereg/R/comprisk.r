@@ -13,7 +13,6 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL)
 # trans=5 P_1= (x' b(t)) exp( z' gam ), 
 # trans=6 P_1=1-exp(-(x a(t)) exp(z` b )) is not good numerically, Fine-Gray 
 # trans=7 P_1= (x a(t)) exp( z` b)/( (x a(t) ) exp(z' b) +1 ); logistic2
-# trans=8 P_1= (x' b(t)) exp( exp( z' gam )), 
   if (model=="additive")  trans<-1; 
   if (model=="prop")      trans<-2; 
   if (model=="logistic")  trans<-3; 
@@ -21,7 +20,6 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL)
   if (model=="rcif2")     trans<-5; 
   if (model=="fg")        trans<-6; 
   if (model=="logistic2") trans<-7; 
-  if (model=="log-rcif")  trans<-8; 
   line <- 0
   m<-match.call(expand.dots=FALSE);
   m$gamma<-m$times<-m$n.times<-m$cause<-m$Nit<-m$weighted<-m$n.sim<-
@@ -200,7 +198,6 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
   if (is.null(time.pow)==TRUE & model=="fg" )     time.pow<-rep(0,pg); 
   if (is.null(time.pow)==TRUE & model=="additive")  time.pow<-rep(1,pg); 
   if (is.null(time.pow)==TRUE & model=="rcif" )     time.pow<-rep(0,pg); 
-  if (is.null(time.pow)==TRUE & model=="log-rcif" )     time.pow<-rep(0,pg); 
   if (is.null(time.pow)==TRUE & model=="rcif2" )     time.pow<-rep(0,pg); 
   if (is.null(time.pow)==TRUE & model=="logistic" ) time.pow<-rep(0,pg); 
   if (is.null(time.pow)==TRUE & model=="logistic2" ) time.pow<-rep(0,pg); 
@@ -210,7 +207,6 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
   if (is.null(time.pow.test)==TRUE & model=="fg" )     time.pow.test<-rep(0,px); 
   if (is.null(time.pow.test)==TRUE & model=="additive")  time.pow.test<-rep(1,px); 
   if (is.null(time.pow.test)==TRUE & model=="rcif" )    time.pow.test<-rep(0,px); 
-  if (is.null(time.pow.test)==TRUE & model=="log-rcif" )    time.pow.test<-rep(0,px); 
   if (is.null(time.pow.test)==TRUE & model=="rcif2" )   time.pow.test<-rep(0,px); 
   if (is.null(time.pow.test)==TRUE & model=="logistic" ) time.pow.test<-rep(0,px); 
   if (is.null(time.pow.test)==TRUE & model=="logistic2" ) time.pow.test<-rep(0,px); 
