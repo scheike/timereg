@@ -34,7 +34,7 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
           *VarPsiinp,*testinp,*testinpHW,*testinpCM,*testinpGOFCM,*Scoreinp;
    int *n,*p,*q,*k,*rani,*k1, *antsim ;
 { int i,j,l,l1,l2,it,init_it,nummer;
-  double alpha_tmp,y[*n], y1[*n], y2[*n],tmp1_sc,del,del_old,betaZ[*n],tau,b,beta_tmp[*q],random,testOBSGOFCM,dum,dum1;
+  double alpha_tmp,y[*n], y1[*n], y2[*n],tmp1_sc,del,del_old,betaZ[*n],tau,b,beta_tmp[*q],random,testOBSGOFCM,dum1;
 
   vector *vtmp1,*vtmp2,*vtmp3,*vtmp4,*vtmp5,*vtmp6,*vtmp7,*vtmp8;
   vector *testOBS, *testOBSHW, *testOBSCM, *testtmp,*testtmpHW,*testtmpCM,*testtmp1,
@@ -120,7 +120,7 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
   for (l=0;l<*q;++l){beta_tmp[l]=beta[l];} /* beta_0 */
 //  eps=0.01;
   tau=0;
-  dum=1;dum1=0; dum1=dum1+0; 
+  dum1=0; dum1=dum1+0; 
   nummer=50; /* Antal iterationer der højst udføres */
   del=1000;
   del_old=10000;

@@ -203,7 +203,7 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
   vector *tmpv,*tmpv1,*tmpv2,*tmpv3,*tmpv4,*zi,*xi,*ZHdp,*IZHdp,*IZHdN,*ZHdN;
   vector *korgamly,*korgam,*gamstart;
   vector *rowX,*rowZ,*difX,*dgamef,*gammsd,*ai; 
-  int l,i,j,k,s,c,count,sing,pmax,nmax,pers=0;
+  int l,i,j,k,s,c,count,pmax,nmax,pers=0;
   int robust=1,*ipers=calloc(*Ntimes,sizeof(int)), 
       *imin=calloc(1,sizeof(int)); 
   double time,dtime,zpers,risk,YoneN,dif,dif2,ctime;
@@ -250,7 +250,7 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
 
   for (s=1;s<*Ntimes;s++)
     {
-      vec_zeros(dR); sing=0; zpers=0; risk=0;
+      vec_zeros(dR); zpers=0; risk=0;
       time=times[s]; dtime=time-times[s-1];
       mat_zeros(ldesignX); mat_zeros(ldesignG); mat_zeros(ldesignA); 
       ctime=dtime+ctime; 

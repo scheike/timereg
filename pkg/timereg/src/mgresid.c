@@ -39,6 +39,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
   double random,fabs(),sqrt(),xij,dtime,norm_rand();
   void smoothB(),comptest(); 
   void GetRNGstate(),PutRNGstate();
+  pers=pers+0; 
 
   weighted=0; ptot=*px+*pg; ptot=*iptot; 
 
