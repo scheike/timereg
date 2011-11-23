@@ -34,7 +34,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
   vector *Gbeta,*dA,*xtilde,*zi,*gammaiid[*antclust];
   vector *tmpv1,*rowZ,*rvec,*dB1[*antclust];
   int ci=0,pmax,m,i,j,k,l,s,c=0,count;
-  int ptot,weighted,pers,*cluster=calloc(*antpers,sizeof(int));
+  int ptot,weighted,pers=0,*cluster=calloc(*antpers,sizeof(int));
   double lamti=1,time,RR=1,vardiv;
   double random,fabs(),sqrt(),xij,dtime,norm_rand();
   void smoothB(),comptest(); 
