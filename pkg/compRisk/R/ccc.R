@@ -1,10 +1,10 @@
-.packageName <- "compRisk"
+.packageName <- "riskRegression"
 
 .First.lib <- function(lib, pkg) {
-  library.dynam("compRisk", pkg, lib)
+  library.dynam("riskRegression", pkg, lib)
 }
 
 .Last.lib <- function(lib){
-  library.dynam.unload("compRisk",lib)
+  library.dynam.unload("riskRegression",lib)
 }
 

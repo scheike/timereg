@@ -1,4 +1,4 @@
-plot.compRisk <- function(x,
+plot.riskRegression <- function(x,
                           what,
                           newdata,
                           add=FALSE,

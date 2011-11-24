@@ -1,4 +1,4 @@
-coef.compRisk <- function(object,digits=3,eps=10^-4,...){
+coef.riskRegression <- function(object,digits=3,eps=10^-4,...){
   cvars <- all.vars(object$design$const$formula)
   Flevels <- object$factorLevels
   cat("\nTime constant regression coefficients:\n\n")

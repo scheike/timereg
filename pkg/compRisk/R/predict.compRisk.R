@@ -1,4 +1,4 @@
-predict.compRisk <- function(object,
+predict.riskRegression <- function(object,
                              newdata,
                              n.sim=500,
                              uniform=TRUE,
@@ -125,7 +125,7 @@ predict.compRisk <- function(object,
   ##                   se = as.double(se),
   ##                   mpt = double(n.sim*nobs),
   ##                   nSims = as.integer(n.sim),
-  ##                   PACKAGE="compRisk")$mpt;
+  ##                   PACKAGE="riskRegression")$mpt;
   ##       mpt  <-  matrix(mpt,n.sim,nobs,byrow = TRUE);
   ##       uband  <-  apply(mpt,2,percen,per=1-alpha);
   ##     } else uband <- NULL; 

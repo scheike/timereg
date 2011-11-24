@@ -3,7 +3,7 @@ print.modelMatrix <- function(x,...){
   refs <- attr(x,"refLevels")
   sargs <- attr(x,"specialArguments")
   varnames <- attr(x,"variableNames")
-  cat("\nModel matrix for compRisk regression models\n")
+  cat("\nModel matrix for riskRegression regression models\n")
   numvars <- varnames[!match(varnames,names(levs),nomatch=FALSE)]
   facvars <- names(levs)
   cat("\nNumeric variables:\n")

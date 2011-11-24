@@ -1,4 +1,4 @@
-summary.compRisk <- function(object,
+summary.riskRegression <- function(object,
                              times,
                              digits=3,
                              eps=10^-4,
@@ -6,7 +6,7 @@ summary.compRisk <- function(object,
                              ...) {
   # {{{ echo model type, IPCW and link function
   
-  cat("\ncompRisk: Competing risks regression model \n")
+  cat("\nriskRegression: Competing risks regression model \n")
   cat("\nIPCW estimation. The weights are based on\n",
       switch(object$censModel,
              "KM"={"the Kaplan-Meier estimate" },
@@ -22,7 +22,7 @@ summary.compRisk <- function(object,
              "logistic"="logistic",
              "additive"="additive",
              "relative"="relative"),
-      "\', see help(compRisk)\n",
+      "\', see help(riskRegression)\n",
       sep="")
 
   # }}}
@@ -56,7 +56,7 @@ summary.compRisk <- function(object,
   showMat <- signif(exp(object$timeVaryingEffects$coef[showTimes,-1,drop=FALSE]),digits)
   rownames(showMat) <- signif(object$timeVaryingEffects$coef[showTimes,1],2)
   print(showMat)
-  cat("\nShown are selected time points, use\n\nplot.compRisk\n\nto investigate the full shape.\n\n")
+  cat("\nShown are selected time points, use\n\nplot.riskRegression\n\nto investigate the full shape.\n\n")
 
   # }}}
   # {{{ time constant coefs

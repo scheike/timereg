@@ -1,5 +1,5 @@
-\name{compRisk}
-\alias{compRisk}
+\name{riskRegression}
+\alias{riskRegression}
 \title{Competings Risks Regression} 
 \description{
 Fits a semiparametric regression model for the cumulative incidence function:
@@ -49,7 +49,7 @@ the other models.
 In general p may be powers of the same length as z. 
 }
 \usage{
-compRisk(formula,
+riskRegression(formula,
 	 data = sys.parent(),
 	 times = NULL,
 	 link = "relative",

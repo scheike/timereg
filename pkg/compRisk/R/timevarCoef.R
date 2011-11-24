@@ -1,4 +1,4 @@
-timevarCoef.compRisk <- function(object,times,...){
+timevarCoef.riskRegression <- function(object,times,...){
   tvars <- all.vars(object$design$timevar$formula)
   Flevels <- object$factorLevels
   if (length(tvars)==0){

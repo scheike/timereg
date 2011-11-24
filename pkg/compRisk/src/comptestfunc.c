@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <math.h>
-#include "matrix.h"
+#include "riskregression.h"
 
 
 void comptestfunc(times,Ntimes,px,cu,vcu,vcudif,antsim,test,testOBS,Ut,simUt,W4t,weighted,antpers,gamma,line,timepow)
