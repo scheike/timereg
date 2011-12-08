@@ -137,7 +137,8 @@ bmt$cause,causeS=1,resample.iid=1,n.sim=100)
 summary(add)
 
 par(mfrow=c(2,4))
-plot(add); plot(add,score=1)
+plot(add); 
+### plot(add,score=1) ### to plot score functions for test
 
 ndata<-data.frame(platelet=c(1,0,0),age=c(0,1,0),tcell=c(0,0,1))
 par(mfrow=c(2,3))

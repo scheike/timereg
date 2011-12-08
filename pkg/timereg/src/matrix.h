@@ -190,6 +190,12 @@ vector *extract_col(matrix *M, int col_to_get, vector *v);
 
 void Cpred(double *cum,int *nx,int *px,double *xval,int *nxval,double *pred); 
 
+void sindex(int *index, double *jump, double *eval, int *njump, int *neval);
+
+void nclusters(int *npers,int *clusters, int *nclust, int *mclust);
+
+void clusterindex(int *clusters, int *nclust,int *npers,int *idclust, int *clustsize); 
+ 
 void comptest(double *times,int *Ntimes,int *px,double *cu,double *vcu,
 	      double *vcudif,int *antsim,double *test,double *testOBS,
 	      double *Ut,double *simUt,matrix **W4t,int *weighted,int *antpers); 

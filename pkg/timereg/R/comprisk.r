@@ -63,8 +63,8 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL)
     clusters <- 0:(nrow(X) - 1)
     antclust <- nrow(X)
   } else {
-    clusters <- as.integer(factor(clusters))-1
     antclust <- length(unique(clusters))
+    clusters <- as.integer(factor(clusters,labels=1:antclust))-1
   }
 
   if (is.null(max.clust)) max.clust <- antclust
@@ -234,7 +234,7 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
           as.double(time.pow.test),as.integer(silent),
 	  as.double(conv),as.double(weights), as.double(entry),
 	  as.double(trunc.p), as.integer(estimator), as.integer(fix.gamma),
-	  as.integer(stratum) ) ### , PACKAGE="timereg") ## }}}
+	  as.integer(stratum), PACKAGE="timereg") ## }}}
 
  ## {{{ handling output
   gamma<-matrix(out[[24]],pg,1); var.gamma<-matrix(out[[25]],pg,pg); 

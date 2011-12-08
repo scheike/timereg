@@ -11,10 +11,9 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
     stop("Residuals available only for timecox model with no const terms\n")
   if (class(object)=="aalen") if (is.null(object$gamma)==FALSE) 
     stop("Residuals available only for Aalen model with no const terms\n")
-  if (is.null(object$residuals$dM)==TRUE) 
-    stop("Residuals not computed, add option residuals=1\n");
+  if (is.null(object$residuals$dM)==TRUE) stop("Residuals not computed, add option residuals=1\n");
   if (sum(modelmatrix)==0 && cum.resid==0) 
-    stop("No modelmatrix or continous covariates given to cumulate residuals\n"); 
+	  stop("No modelmatrix or continous covariates given to cumulate residuals\n"); 
 
   if (class(object)=="cox.aalen") {
     dcum<-apply(as.matrix(object$cum[,-1]),2,diff); 
@@ -24,7 +23,6 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   id<-attr(object,"id"); cluster<-attr(object,"cluster"); 
   formula<-attr(object,"Formula"); 
   start.time<-attr(object,"start.time"); 
-  if (sum(start.time)==0) type <- "right" else type <- "counting"
   pers<-unique(id); antpers<-length(pers); 
   clust<-unique(cluster); antclust<-length(clust); 
 
@@ -34,6 +32,7 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   X<-ldata$X; covar<-X; px<-ldata$px; 
   timel<-ldata$time; time2l<-ldata$time2; 
   time<-attr(object,"start"); time2<-attr(object,"stop"); 
+  if (sum(time)==0) type <- "right" else type <- "counting"
   statusl<-ldata$status; 
   status<-attr(object,"status");  
 
@@ -59,6 +58,7 @@ if ( type == "right" )  {  ## {{{
    X<-as.matrix(X[ot,])
    if (coxaalen==1) Z<-as.matrix(Z[ot,])
    if (model==1) modelmatrix<-as.matrix(modelmatrix[ot,])
+   start <- rep(0,length(time2))
    stop<-time2;
    cluster<-cluster[ot]
    id<-id[ot];
@@ -72,17 +72,18 @@ if ( type == "right" )  {  ## {{{
         etimes    <- eventtms[ix]  # Entry/exit times
 	status <- status[ix]
         stop  <- etimes; 
-        start <- c(start,start)[ix]; 
+        start <- c(time,time)[ix]; 
         tdiff    <- c(-diff(etimes),start.time) # Event time differences
         entry  <- c(rep(c(1, -1), each = ntot))[ix]
-        X        <- X[rep(1:ntot, 2)[ix],]
-	if (coxaalen==1) Z <- Z[rep(1:ntot,2)[ix],]
+        X        <- as.matrix(X[rep(1:ntot, 2)[ix],])
+	if (coxaalen==1) Z <- as.matrix(Z[rep(1:ntot,2)[ix],])
         if (model==1) modelmatrix<-as.matrix(modelmatrix[rep(1:ntot,2)[ix],])
 	id <- rep(id,2)[ix]
 	cluster <- rep(cluster,2)[ix]
 ###        weights <- rep(weights, 2)[ix]
 ###	if (sum(offsets)!=0) offsets <- rep(offsets,2)[ix]
     } ## }}}
+  ntot <- nrow(X); 
 
   if (coxaalen==1) { gamma.iid<-object$gamma.iid 
                      covar<-cbind(X,Z);
@@ -140,7 +141,7 @@ if ( type == "right" )  {  ## {{{
 
   mgout<- .C("mgresid", ## {{{
      as.double(X),as.integer(ntot),as.integer(px), 
-     as.integer(antpers),as.double(time),as.double(time2),
+     as.integer(antpers),as.double(start),as.double(stop),
      as.integer(status),as.integer(id),as.double(object$residuals$time),
      as.integer(lmgresids),as.double(object$residuals$dM),as.integer(n.sim),
      as.double(xval), as.integer(ant), as.double(univar.proc),

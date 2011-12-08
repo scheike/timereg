@@ -51,6 +51,7 @@
 \alias{coef.dynreg}
 \alias{coef.timecox}
 \alias{coef.two.stage}
+\alias{cluster.index}
 \alias{coefBase}
 \alias{des.aalen}
 \alias{timetest}
@@ -60,6 +61,7 @@
 \alias{summary.pe.sasieni}
 \alias{summary.predict.timereg}
 \alias{summary.pls}
+\alias{sindex.prodlim}
 \alias{print.pls}
 \alias{predict.pls}
 \alias{wald.test}

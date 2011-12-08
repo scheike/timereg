@@ -28,18 +28,17 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
   matrix *Delta,*tmpM1,*X,*cummat,*modelMGT[*antclust],*modMGz,*modMGzosdt;
   matrix *A,*AI,*cumX,*cumXAI,*cumZP,*XPZ,*tmp2,*dS,*S; // ,*St[*nmgt]; 
   matrix *Z,*dS1,*S1,*cumX1,*cumXAI1,*cumZP1,*tmp21,*cummat1;
-  vector *Deltazsd,*Deltaz,*tmpM1z,*vtmp1,*cumdB1,*VdB1,*respm1;
+  vector *Deltazsd,*Deltaz,*tmpM1z,*vtmp2,*vtmp1,*cumdB1,*VdB1,*respm1;
   vector *dMGt[*nmgt],*cumdB,*dB,*VdB,*xi,*rowX,*rowcum,*difX,*vtmp,*respm,*gamma;
   vector *risk,*cumA[*antclust],*cum,*vecX;
   vector *Gbeta,*dA,*xtilde,*zi,*gammaiid[*antclust];
   vector *tmpv1,*rowZ,*rvec,*dB1[*antclust];
   int ci=0,pmax,m,i,j,k,l,s,c=0,count;
-  int ptot,weighted,pers=0,*cluster=calloc(*antpers,sizeof(int));
+  int ptot,weighted,*cluster=calloc(*antpers,sizeof(int));
   double lamti=1,time,RR=1,vardiv;
   double random,fabs(),sqrt(),xij,dtime,norm_rand();
   void smoothB(),comptest(); 
   void GetRNGstate(),PutRNGstate();
-  pers=pers+0; 
 
   weighted=0; ptot=*px+*pg; ptot=*iptot; 
 
@@ -114,7 +113,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 	                            lamti=RR*vec_prod(xi,dA);
 		 } 
 //                for(j=0;j<*px;j++) { ME(WX,id[c],j) =RR*designX[j*(*nx)+c]; }
-		if (time==stop[c] && status[c]==1) {pers=id[c];} 
+//		if (time==stop[c] && status[c]==1) {pers=id[c];} 
 
 	    for(j=0;j<pmax;j++) for(k=0;k<pmax;k++)  {
               if ((j<*px) & (k<*px)) ME(A,j,k)+=VE(xi,k)*VE(xi,j)*RR; 
@@ -163,7 +162,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 	      }
 	  }
 	  ci=ci-1; 
-	  pers=id[ci]; 
+//	  pers=id[ci]; 
     // }}}
 //   ipers[s]=pers;
    } // }}}
@@ -250,6 +249,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
   } //  modelmatrix loop }}}
 
     mat_zeros(X);mat_zeros(cummat);vec_zeros(risk);mat_zeros(Z);
+    mat_zeros(XPZ); 
 
     R_CheckUserInterrupt();
 
@@ -258,9 +258,11 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 
   for (l=0;l<ptot;l++) if (ant[l]>2) {
 //      Rprintf(" %d %d %d %d ================ \n",ptot,ant[l],inXorZ[l],inXZ[l]); 
-//      for (j=0;j<ant[l];j++)  Rprintf(" %lf \n",xval[(*maxval)*l+j]);
+// for (j=0;j<ant[l];j++)  Rprintf(" %lf \n",xval[(*maxval)*l+j]);
 
-       R_CheckUserInterrupt();
+    mat_zeros(X);mat_zeros(Z); mat_zeros(A); 
+
+    R_CheckUserInterrupt();
  // {{{ allokering
  malloc_mat(ant[l],*pg,dS1);   malloc_mat(ant[l],*pg,S1);
  malloc_mat(ant[l],*px,cumX1);
@@ -268,7 +270,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
  malloc_mat(ant[l],*pg,cumZP1);
  malloc_mat(ant[l],*pg,tmp21);malloc_mat(*antpers,ant[l],cummat1); 
  malloc_mat(*antclust,ant[l],modMGz); malloc_mat(*antclust,ant[l],modMGzosdt); 
- malloc_vecs(ant[l],&vtmp1,&cumdB1,&VdB1,&respm1,NULL);
+ malloc_vecs(ant[l],&vtmp2,&vtmp1,&cumdB1,&VdB1,&respm1,NULL);
  malloc_vec(ant[l],Deltaz); malloc_vec(ant[l],Deltazsd);
  malloc_vec(ant[l],tmpM1z);  
  for (k=0;k<*antclust;k++) malloc_vec(ant[l],dB1[k]); 
@@ -282,27 +284,26 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 	time=mgtimes[s]; dtime=mgtimes[s]-mgtimes[s-1]; 
 	cummgt[s]=time; robvarcum[s]=time; 
 
-   for (j=0;j<*px;j++) VE(dA,j)=dcum[j*(*nmgt-1)+s-1]; 
+        for (j=0;j<*px;j++) VE(dA,j)=dcum[j*(*nmgt-1)+s-1]; 
 
     // {{{ reading design and computing matrix products
 	  if (s==1) { // {{{
 	  for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) 
 	  {
 	   if ((start[c]<time) && (stop[c]>=time)) 
+//	   if ( ( (start[c]<time) && (stop[c]>=time))  || ((stop[c]-start[c]<0.0000001) & (stop[c]-time<0.0000001)) )
 	   {
                 for(j=0;j<pmax;j++) {
-                   if (*coxaalen==1)
-                   if (j<*pg) {   
+                   if (*coxaalen==1) if (j<*pg) { 
 			   VE(zi,j)=designG[j*(*nx)+c]; 
+	                   ME(Z,id[c],j)=designG[j*(*nx)+c]; 
 		   }
 	           if (j<*px) {ME(X,id[c],j)=designX[j*(*nx)+c]; 
 			       VE(xi,j)=designX[j*(*nx)+c]; 
 		   }
 	           if (j<*pm) {
-                   if (inXorZ[l]==0) ME(cummat1,id[c],j)=
-		      ((designG[inXZ[l]*(*nx)+c])<=xval[(*maxval)*l+j]);
-                    else ME(cummat1,id[c],j)=
-		      ((designX[inXZ[l]*(*nx)+c])<=xval[(*maxval)*l+j]);
+                   if (inXorZ[l]==0) ME(cummat1,id[c],j)=((designG[inXZ[l]*(*nx)+c])<=xval[(*maxval)*l+j]);
+                                else ME(cummat1,id[c],j)=((designX[inXZ[l]*(*nx)+c])<=xval[(*maxval)*l+j]);
 		    VE(vtmp1,j)=ME(cummat1,id[c],j); 
 		   }
 		}
@@ -310,7 +311,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 		                    RR=exp(VE(Gbeta,id[c]));
 	                            lamti=RR*vec_prod(xi,dA);
 		} 
-		if (time==stop[c] && status[c]==1) {pers=id[c];} 
+//		if (time==stop[c] && status[c]==1) {pers=id[c];} 
 //		if (*mof==1) VE(offset,id[c])=offs[c];  
 //		if (*mw==1) VE(weight,id[c])=weights[c]; 
 
@@ -330,27 +331,30 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
      } // }}}
 
 //Rprintf("%d %d %d %lf %lf %lf \n",s,ci,id[ci],start[ci],stop[ci],time); 
-     vec_zeros(rowX); vec_zeros(rowZ); vec_zeros(vtmp1); 
+     vec_zeros(rowX); vec_zeros(rowZ); vec_zeros(vtmp2); 
     if (s>1)  // {{{ modifying design for next time points
     while ((stop[ci]<time)  & (ci>=0) ) {
-            for(j=0;j<*px;j++) VE(xi,j)=designX[j*(*nx)+ci]; 
-	    if (*coxaalen==1) for(j=0;j<*pg;j++) VE(zi,j)=designG[j*(*nx)+ci]; 
-            for(j=0;j<*pm;j++) 
-            if (inXorZ[l]==0) 
-		    VE(vtmp1,j)=((designG[inXZ[l]*(*nx)+ci])<=xval[(*maxval)*l+j]);
-                    else VE(vtmp1,j)=((designX[inXZ[l]*(*nx)+ci])<=xval[(*maxval)*l+j]);
-	    if (*coxaalen==1) {
-		VE(Gbeta,id[ci])=vec_prod(zi,gamma); 
-		RR=exp(VE(Gbeta,id[ci]));
-	        lamti=RR*vec_prod(xi,dA);
+            for(j=0;j<pmax;j++) {
+	       if (j<*px) VE(xi,j)=designX[j*(*nx)+ci]; 
+               if (*coxaalen==1) if (j<*pg) VE(zi,j)=designG[j*(*nx)+c]; 
 	    }
+               for(j=0;j<*pm;j++) 
+                  if (inXorZ[l]==0) VE(vtmp1,j)=((designG[inXZ[l]*(*nx)+ci])<=xval[(*maxval)*l+j]); else VE(vtmp1,j)=((designX[inXZ[l]*(*nx)+ci])<=xval[(*maxval)*l+j]);
+	          if (*coxaalen==1) {
+		      VE(Gbeta,id[ci])=vec_prod(zi,gamma); 
+		      RR=exp(VE(Gbeta,id[ci]));
+	              lamti=RR*vec_prod(xi,dA);
+	          }
 	    if (entry[ci]==1)  {
 	         replace_row(X,id[ci],xi); 
+	         replace_row(Z,id[ci],zi); 
+		 replace_row(cummat1,id[ci],vtmp1);
 	    } 
 	    else { 
 		    replace_row(X,id[ci],rowX);
+	            replace_row(Z,id[ci],rowZ); 
+		    replace_row(cummat1,id[ci],vtmp2);
 	    }
-	   
 	  for(j=0;j<pmax;j++) for(k=0;k<pmax;k++)  {
               if ((j<*px)&(k<*px)) ME(A,j,k)+=entry[ci]*VE(xi,k)*VE(xi,j)*RR; 
               if ((j<*px)&(k<*pm)) ME(cumX1,k,j)+=entry[ci]*VE(xi,j)*VE(vtmp1,k)*RR; 
@@ -360,7 +364,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 	      }
 	  }
 	  ci=ci-1; 
-	  pers=id[ci]; 
+//	  pers=id[ci]; 
     // }}}
 //   ipers[s]=pers;
    } // }}}
@@ -368,11 +372,14 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
     if (s < -2) {Rprintf(" %d \n",s);head_matrix(X);head_matrix(cummat1);head_matrix(A);}
 
     if (*model==0) 
-    for (i=0;i<*antpers;i++) VE(dMGt[s],i)=dmgresid[i*(*nmgt)+s];  
+	    for (i=0;i<*antpers;i++) VE(dMGt[s],i)=dmgresid[i*(*nmgt)+s];  
 
     invert(A,AI);
     if (ME(AI,0,0)==0) Rprintf("X'X not invertible at time %lf \n",time);
     MxA(cumX1,AI,cumXAI1);
+
+//    Rprintf(" _______________  %d %d %lf \n",l,s,time); 
+//    print_mat(X); print_mat(Z); print_mat(cummat1); print_vec(dMGt[s]); 
 
     /* observed increment */ 
     vM(cummat1,dMGt[s],respm1); 
@@ -414,14 +421,14 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 
     } /* s=1... *Ntimes */ 
 
-    //for (j=0;j<ant[l];j++)  Rprintf("%d %lf  \n",l,univarproc[(*maxval)*l+j]);
+//for (j=0;j<ant[l];j++)  Rprintf("%d %lf  \n",l,univarproc[(*maxval)*l+j]);
 
     /* robust variance */
 
     for (j=0;j<ant[l];j++) robvarcumz[l*(*maxval)+j]=VE(VdB1,j); 
     for (m=0;m<*antclust;m++)  { 
     for (j=0;j<ant[l];j++) 
-    ME(modMGzosdt,m,j)=ME(modMGz,m,j)/sqrt(robvarcumz[l*(*maxval)+j]); 
+       ME(modMGzosdt,m,j)=ME(modMGz,m,j)/sqrt(robvarcumz[l*(*maxval)+j]); 
     }
 
     for (j=0;j<ant[l];j++) 
@@ -454,7 +461,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
        R_CheckUserInterrupt();
 // {{{ free allokering local allocation LWY style cum res
 free_mats(&S1,&dS1,&cumX1, &cumXAI1, &cumZP1,&tmp21,&cummat1,&modMGz,&modMGzosdt,NULL); 
-free_vecs(&vtmp1,&cumdB1,&VdB1,&respm1,&Deltaz,&Deltazsd,&tmpM1z,NULL);
+free_vecs(&vtmp2,&vtmp1,&cumdB1,&VdB1,&respm1,&Deltaz,&Deltazsd,&tmpM1z,NULL);
 for (k=0;k<*antclust;k++) free_vec(dB1[k]); 
 // }}}
      

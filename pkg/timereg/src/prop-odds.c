@@ -23,7 +23,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
   vector *W2[*antpers],*W3[*antpers],*reszpbeta,*res1dim,*dAt[*Ntimes]; 
   vector *dLamt[*antpers];
   int *pg=calloc(1,sizeof(int)),c,robust=1,pers=0,i,j,k,l,s,t,it,count;
-  double S0p,S0star,time,dummy,ll;
+  double RR,S0p,S0star,time,dummy,ll;
   double S0cox,S0,tau,random,scale,sumscore;
   int *ipers=calloc(*Ntimes,sizeof(int));
   double norm_rand();
@@ -35,18 +35,14 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
     malloc_vec(*Ntimes,dLamt[j]); malloc_mat(*Ntimes,*px,dotwitowit[j]); 
     malloc_mat(*Ntimes,*pg,W3t[j]); malloc_mat(*Ntimes,*pg,W4t[j]); 
     malloc_mat(*Ntimes,*px,W2t[j]); malloc_mat(*Ntimes,*px,Uti[j]); 
-    malloc_vec(*px,W2[j]); malloc_vec(*pg,W3[j]); malloc_mat(*Ntimes,*px,AIxit[j]); }
-  malloc_vec(*Ntimes,S0t);  
+    malloc_vec(*px,W2[j]); malloc_vec(*pg,W3[j]); malloc_mat(*Ntimes,*px,AIxit[j]); 
+  }
   malloc_mat(*Ntimes,*pg,tmpM1); 
   malloc_mat(*Ntimes,*px,S1t); malloc_mat(*Ntimes,*px,tmpM2); 
   malloc_mat(*Ntimes,*px,S1start); 
   malloc_mat(*Ntimes,*px,et); malloc_mat(*Ntimes,*px,gt); malloc_mat(*Ntimes,*px,qt); 
   malloc_mat(*Ntimes,*px,Utt); 
   malloc_mat(*Ntimes,*pg,Delta); malloc_mat(*Ntimes,*px,Delta2); 
-
-  malloc_vec(*Ntimes,S0start); malloc_vec(*Ntimes,lht); 
-  malloc_vec(1,reszpbeta); malloc_vec(1,res1dim); 
-
 
   malloc_mats(*antpers,*px,&ldesignX,NULL); 
   malloc_mats(*antpers,*pg,&ZP,&ldesignG,NULL); 
@@ -55,10 +51,13 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
   malloc_mats(*pg,*px,&ZXAI,&ZX,&dM1M2,&M1M2t,NULL); 
   malloc_mats(*px,*pg,&tmp3,&ZPX,&dYI,&Ct,NULL); 
 
+  malloc_vec(*Ntimes,S0t);  
+  malloc_vec(*Ntimes,S0start); malloc_vec(*Ntimes,lht); 
+  malloc_vec(1,reszpbeta); malloc_vec(1,res1dim); 
   malloc_vecs(*antpers,&risk,&weight,&plamt,&dlamt,&dN,&zcol,&Gbeta,&one,&offset,NULL); 
   malloc_vecs(*px,&Ctt,&ahatt,&tmpv1,&difX,&rowX,&xi,&dA,&VdA,&MdA,NULL); 
   malloc_vecs(*px,&S1,&dS0,&S1star,&xtilde,&xav,&difxxav,NULL); 
-  malloc_vecs(*px,&U,&Upl,&beta,&delta,&zav,&difzzav,&Uprofile,NULL); 
+  malloc_vecs(*px,&U,&Upl,&beta,&delta,&difzzav,&Uprofile,NULL); 
   malloc_vecs(*pg,&tmpv2,&rowZ,&zi,&difZ,&zav,&VdB,NULL); 
 
   for(j=0;j<*Ntimes;j++) {
@@ -76,58 +75,98 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
       mat_zeros(COV); 
 
       for (s=1;s<*Ntimes;s++)
-	{
+      { 
 	  time=times[s]; vec_zeros(dN); mat_zeros(ldesignX); vec_zeros(risk); 
 	  vec_zeros(dS0);  mat_zeros(d2S0);  mat_zeros(dS1);  vec_zeros(S1star);
 	  S0star=0; S0=0; S0p=0; 
+	  vec_zeros(Gbeta); vec_zeros(plamt); vec_zeros(dlamt); 
 	  vec_zeros(S1); S0cox=0; 
 
-	  for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) {
+	  for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) { // {{{ reading data and computing things 
 	    if ((start[c]<time) && (stop[c]>=time))  {
 	      VE(risk,id[c])=1; 
-	      for(j=0;j<*px;j++) ME(ldesignX,id[c],j)=designX[j*(*nx)+c];  
+	      for(j=0;j<*px;j++) { ME(ldesignX,id[c],j)=designX[j*(*nx)+c];  
+	                           VE(xi,j)= designX[j*(*nx)+c];  
+	      }
 	      if (time==stop[c] && status[c]==1) {VE(dN,id[c])=1; pers=id[c];} 
-	      count=count+1; } 
-	  }
+	      count=count+1; 
+	      j=id[c];
+              VE(Gbeta,j)=vec_prod(xi,beta); 
+	      RR=exp(-VE(Gbeta,j));
+
+		    scale=(RR+cu[1*(*Ntimes)+s-1]); 
+		    dummy=1/scale; 
+		    VE(plamt,j)=VE(risk,j)*dummy; 
+		    VE(dlamt,j)=VE(risk,j)*dummy*dummy; 
+		    S0star=S0star-VE(dlamt,j); 
+		    S0=S0+VE(plamt,j);
+//		    S0p=S0p+VE(risk,j)/(RR+cu[1*(*Ntimes)+s]);
+//		    S0cox=S0cox+exp(VE(Gbeta,j)); 
+
+		    scl_vec_mult(-RR,xi,tmpv1); vec_add(tmpv1,dG[s-1],dA); 
+		    scl_vec_mult(-VE(plamt,j),dA,dA); 
+		    if (it==(*Nit-1)) { if (*profile==0) 
+		      replace_row(dotwitowit[j],s,xi); else replace_row(dotwitowit[j],s,dA); 
+		    }
+		    scl_vec_mult(VE(plamt,j),dA,tmpv1); vec_add(tmpv1,dS0,dS0); 
+		    if (s<0 && j<5 ) {Rprintf(" %d %d \n",s,j); print_vec(tmpv1); }
+
+		    if (*profile==0) scl_vec_mult(-VE(dlamt,j),xi,dA); 
+		    else scl_vec_mult(-VE(dlamt,j),dA,dA); 
+		    vec_add(dA,S1star,S1star); 
+
+		    for (i=0;i<*px;i++) for (k=0;k<*px;k++) ME(dS1,i,k)=ME(dS1,i,k)+VE(xi,i)*VE(tmpv1,k); 
+		    for (i=0;i<*px;i++) for (k=0;k<*px;k++) ME(tmp1,i,k)=(VE(xi,i)*VE(xi,k))*exp(-VE(Gbeta,j));
+		    mat_add(tmp1,d2G[s-1],tmp1);
+		    scl_mat_mult(-VE(dlamt,j),tmp1,tmp1); 
+
+		    for (i=0;i<*px;i++) for (k=0;k<*px;k++) 
+			    ME(d2S0,i,k)=ME(d2S0,i,k)+ME(tmp1,i,k)+2*scale*(VE(tmpv1,i)*VE(tmpv1,k)); 
+		    scl_vec_mult(VE(plamt,j),xi,xi); vec_add(S1,xi,S1); 
+	    } 
+	  } // }}}
 	  ipers[s]=pers;
-	  Mv(ldesignX,beta,Gbeta); 
 
-	  for (j=0;j<*antpers;j++) { 
-	    extract_row(ldesignX,j,xi); 
-	    scale=(exp(-VE(Gbeta,j))+cu[1*(*Ntimes)+s-1]); 
-	    dummy=1/scale; 
-	    VE(plamt,j)=VE(risk,j)*dummy; 
-	    VE(dlamt,j)=VE(risk,j)*dummy*dummy; 
-	    S0star=S0star-VE(dlamt,j); 
-	    S0=S0+VE(plamt,j);
-	    S0p=S0p+VE(risk,j)/(exp(-VE(Gbeta,j))+cu[1*(*Ntimes)+s]);
-	    S0cox=S0cox+exp(VE(Gbeta,j)); 
 
-	    scl_vec_mult(-exp(-VE(Gbeta,j)),xi,tmpv1); vec_add(tmpv1,dG[s-1],dA); 
-	    scl_vec_mult(-VE(plamt,j),dA,dA); 
-	    if (*profile==0) 
-	      replace_row(dotwitowit[j],s,xi); else replace_row(dotwitowit[j],s,dA); 
-  
-	    scl_vec_mult(VE(plamt,j),dA,tmpv1); vec_add(tmpv1,dS0,dS0); 
-	    if (s<0 && j<5 ) {Rprintf(" %d %d \n",s,j); print_vec(tmpv1); }
+//	  Mv(ldesignX,beta,Gbeta); 
+//
+//	  for (j=0;j<*antpers;j++) { 
+//	    extract_row(ldesignX,j,xi); 
+//	    scale=(exp(-VE(Gbeta,j))+cu[1*(*Ntimes)+s-1]); 
+//	    dummy=1/scale; 
+//	    VE(plamt,j)=VE(risk,j)*dummy; 
+//	    VE(dlamt,j)=VE(risk,j)*dummy*dummy; 
+//	    S0star=S0star-VE(dlamt,j); 
+//	    S0=S0+VE(plamt,j);
+//	    S0p=S0p+VE(risk,j)/(exp(-VE(Gbeta,j))+cu[1*(*Ntimes)+s]);
+//	    S0cox=S0cox+exp(VE(Gbeta,j)); 
+//
+//	    scl_vec_mult(-exp(-VE(Gbeta,j)),xi,tmpv1); vec_add(tmpv1,dG[s-1],dA); 
+//	    scl_vec_mult(-VE(plamt,j),dA,dA); 
+//	    if (*profile==0) 
+//	      replace_row(dotwitowit[j],s,xi); else replace_row(dotwitowit[j],s,dA); 
+//  
+//	    scl_vec_mult(VE(plamt,j),dA,tmpv1); vec_add(tmpv1,dS0,dS0); 
+//	    if (s<0 && j<5 ) {Rprintf(" %d %d \n",s,j); print_vec(tmpv1); }
+//
+//	    if (*profile==0) scl_vec_mult(-VE(dlamt,j),xi,dA); 
+//	    else scl_vec_mult(-VE(dlamt,j),dA,dA); 
+//	    vec_add(dA,S1star,S1star); 
+//
+//	    for (i=0;i<*px;i++) for (k=0;k<*px;k++) 
+//	      ME(dS1,i,k)=ME(dS1,i,k)+VE(xi,i)*VE(tmpv1,k); 
+//
+//	    for (i=0;i<*px;i++) for (k=0;k<*px;k++) 
+//	      ME(tmp1,i,k)=(VE(xi,i)*VE(xi,k))*exp(-VE(Gbeta,j));
+//	    mat_add(tmp1,d2G[s-1],tmp1);
+//	    scl_mat_mult(-VE(dlamt,j),tmp1,tmp1); 
+//
+//	    for (i=0;i<*px;i++) for (k=0;k<*px;k++) 
+//	      ME(d2S0,i,k)=ME(d2S0,i,k)+ME(tmp1,i,k)+2*scale*(VE(tmpv1,i)*VE(tmpv1,k)); 
+//   
+//	    scl_vec_mult(VE(plamt,j),xi,xi); vec_add(S1,xi,S1); 
+//	  }
 
-	    if (*profile==0) scl_vec_mult(-VE(dlamt,j),xi,dA); 
-	    else scl_vec_mult(-VE(dlamt,j),dA,dA); 
-	    vec_add(dA,S1star,S1star); 
-
-	    for (i=0;i<*px;i++) for (k=0;k<*px;k++) 
-	      ME(dS1,i,k)=ME(dS1,i,k)+VE(xi,i)*VE(tmpv1,k); 
-
-	    for (i=0;i<*px;i++) for (k=0;k<*px;k++) 
-	      ME(tmp1,i,k)=(VE(xi,i)*VE(xi,k))*exp(-VE(Gbeta,j));
-	    mat_add(tmp1,d2G[s-1],tmp1);
-	    scl_mat_mult(-VE(dlamt,j),tmp1,tmp1); 
-
-	    for (i=0;i<*px;i++) for (k=0;k<*px;k++) 
-	      ME(d2S0,i,k)=ME(d2S0,i,k)+ME(tmp1,i,k)+2*scale*(VE(tmpv1,i)*VE(tmpv1,k)); 
-   
-	    scl_vec_mult(VE(plamt,j),xi,xi); vec_add(S1,xi,S1); 
-	  }
 	  VE(S0t,s)=S0; replace_row(S1t,s,dS0); 
 	  VE(S0start,s)=S0star; replace_row(S1start,s,S1star); 
 	  VE(lht,s)=VE(lht,s-1)-S0star/(S0*S0); 
@@ -137,7 +176,6 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	  scl_vec_mult(S0star,dS0,tmpv1); scl_vec_mult(S0,S1star,dA); 
 	  vec_subtr(tmpv1,dA,dA); scl_vec_mult(1/S0,dA,dA); 
 	  replace_row(gt,s,dA); 
-
 
 	  scl_vec_mult(-1/(S0*S0),dS0,tmpv1); vec_add(dG[s-1],tmpv1,dG[s]); 
 	  if (s<0) { Rprintf(" %lf \n",S0); 
@@ -268,9 +306,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 
    R_CheckUserInterrupt();
 
-
-  /* computation of q(t) ===================================== */ 
-  for (s=1;s<*Ntimes;s++) {
+  for (s=1;s<*Ntimes;s++) { // {{{ /* computation of q(t) ===================================== */ 
     vec_zeros(xi); 
     for (t=s;t<*Ntimes;t++) {
       extract_row(gt,t,dA); scl_vec_mult(exp(VE(lht,t))/VE(S0t,t),dA,dA); 
@@ -279,11 +315,11 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
       vec_add(dA,xi,xi); }
     scl_vec_mult(exp(-VE(lht,s))/VE(S0t,s),xi,xi); 
     replace_row(qt,s,xi); 
-  }
+  } // }}}
+
 
    R_CheckUserInterrupt();
-  /* terms for robust variances ============================ */
-  if (robust==1) {
+  if (robust==1) { // {{{ terms for robust variances ============================ 
     for (s=1;s<*Ntimes;s++) {
       time=times[s]; vec_zeros(dN);
       cu[s]=times[s]; vcu[s]=times[s]; Rvcu[s]=times[s]; Ut[s]=times[s]; 
@@ -389,7 +425,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
     }  /*  s=1 ..Ntimes */ 
 
     MxA(RobVbeta,SI,tmp1); MxA(SI,tmp1,RobVbeta);
-  } /* Robust =1 , default */ 
+  } // }}} /* Robust =1 , default */ 
 
 
   MxA(VU,SI,tmp1); MxA(SI,tmp1,VU);
@@ -403,8 +439,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 
    R_CheckUserInterrupt();
 
-  if (*sim==1) {
-    // Rprintf("Simulations start N= %d \n",*antsim);
+  if (*sim==1) { // {{{ // Rprintf("Simulations start N= %d \n",*antsim);
     GetRNGstate();  /* to use R random normals */
 
     tau=times[*Ntimes-1]-times[0];
@@ -482,21 +517,28 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
       }  /* s=1..Ntims */
     }  /* k=1..antsim */
     PutRNGstate();  /* to use R random normals */
-  } /* sim==1 */
+  } // }}} sim==1 
 
+  // {{{ freeing 
+  free_mats(&tmpM1,&S1t,&tmpM2,&S1start,&et,&gt,&qt,&Utt,&Delta,&Delta2,&ldesignX,&ZP,&ldesignG,&COV,&A,&AI,&M1,&CtVUCt
+  ,&d2S0,&RobVbeta,&tmp1,&tmp2,&dS1,&S2,&dS2,&S2pl,&dS2pl,&SI,&VU,&VUI, &ZXAI,&ZX,&dM1M2,&M1M2t
+  ,&tmp3,&ZPX,&dYI,&Ct,NULL); 
 
-  /*
-    free_mats(&Delta,&Delta2,&et,&gt,&qt,&S1start,&d2S0,&Utt,&tmpM2,&VU,&ZX,&COV,&dM1M2,&AI,&A,&ZXAI,&tmp1,&tmp2,&tmp3,&ldesignX,&ldesignG,&M1,&dS1,&SI,&dS2,&S2,&S2pl,&dS2pl,&VUI,&ZP,&ZPX,&dYI,&Ct,&M1M2t,&RobVbeta,&S1t,&tmpM1,&CtVUCt,NULL); 
-    free_vecs(&Ctt,&risk,&difZ,&S1star,&lht,&S0start,&S0t,&S1,&dS0,&xav,&difxxav,&ta,&ahatt,&Uprofile,&plamt,&dlamt,&dN,&one,&xi,&zcol,&Gbeta,&VdA,&dA,&MdA,&xtilde,&zi,&U,&Upl,&beta,&delta,&zav,&difzzav,&weight,&offset,&tmpv1,&tmpv2,&rowX,&rowZ,&difX,&VdB,&reszpbeta,&res1dim,NULL); 
-  */
+ free_vecs(&S0t  ,&S0start,&lht ,&reszpbeta,&res1dim, &risk,&weight,&plamt,&dlamt,&dN,&zcol,&Gbeta,&one,&offset
+  ,&Ctt,&ahatt,&tmpv1,&difX,&rowX,&xi,&dA,&VdA,&MdA,&S1,&dS0,&S1star,&xtilde,&xav,&difxxav
+  ,&U,&Upl,&beta,&delta,&difzzav,&Uprofile, &tmpv2,&rowZ,&zi,&difZ,&zav,&VdB,NULL); 
 
   for (j=0;j<*antpers;j++) {
     free_vec(dLamt[j]); free_mat(dotwitowit[j]); free_mat(W3t[j]); free_mat(W4t[j]); 
-    free_mat(W2t[j]);free_vec(W2[j]); free_vec(W3[j]); free_mat(AIxit[j]); free_mat(Uti[j]); }
+    free_mat(W2t[j]);free_vec(W2[j]); free_vec(W3[j]); free_mat(AIxit[j]); free_mat(Uti[j]); 
+  }
   for (j=0;j<*Ntimes;j++) {
     free_mat(dYIt[j]); free_vec(dAt[j]); free_mat(C[j]);free_mat(M1M2[j]);free_mat(ZXAIs[j]);
     free_vec(ZXdA[j]); free_mat(St[j]); free_mat(d2G[j]); free_vec(dG[j]);  
-    free_vec(varUthat[j]);} 
+    free_vec(varUthat[j]);
+  } 
     free(ipers); 
     free(pg); 
+    // }}}
+    
 }

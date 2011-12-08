@@ -17,11 +17,16 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=1,notaylor=0)
  if (is.null(Z)==TRUE) {npar<-TRUE; semi<-0;}  else { Z<-as.matrix(Z); npar<-FALSE; semi<-1;}
   if (npar==TRUE) {Z<-matrix(0,antpers,1); pz<-1; fixed<-0;} else {fixed<-1;pz<-ncol(Z);}
   px<-ncol(X);
-  antclust <- length(unique(clusters))
 
   if (!is.null(attr(margsurv,"max.clust")))
   if (attr(margsurv,"max.clust")< attr(margsurv,"orig.max.clust")) 
 	  cat("Probably want to estimate marginal model with max.clust=NULL\n"); 
+
+  out.clust <- cluster.index(clusters);  
+  maxclust <- out.clust$maxclust 
+  antclust <- out.clust$antclust
+  idiclust <- out.clust$idclust
+  cluster.size <- out.clust$cluster.size
 
   if (sum(abs(start))>0) lefttrunk <- 1  else lefttrunk <- 0;  cumhazleft <- 0; 
 
@@ -73,14 +78,28 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=1,notaylor=0)
   if (length(theta)!=ptheta) theta<-rep(theta[1],ptheta); 
   theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
 
-  cluster.size<-as.vector(table(clusters));
-  maxclust<-max(cluster.size)
-  idiclust<-matrix(0,antclust,maxclust); 
-  cs<- rep(1,antclust)
-  for (i in 1:antpers) { 
-      idiclust[clusters[i]+1,cs[clusters[i]+1]]<-i-1;
-      cs[clusters[i]+1]<- cs[clusters[i]+1]+1; 
-  } 
+  out.clust <- cluster.index(clusters);  
+  maxclust <- out.clust$maxclust 
+  antclust <- out.clust$antclust
+  idiclust <- out.clust$idclust
+
+###  nclust <- .C("nclusters",
+###		as.integer(antpers), as.integer(clusters), as.integer(rep(0,antpers)), 
+###		as.integer(0), as.integer(0), package="timereg")
+###  clustud <- .C("clusterindex",as.integer(clusters),
+###		as.integer(antclust),as.integer(antpers),
+###                as.integer(rep(0,antclust*maxclust)),as.integer(rep(0,antclust)),
+###	  package="timereg")
+###idiclust <- matrix(clustud[[4]],antclust,maxclust)
+
+###  cluster.size<-as.vector(table(clusters));
+###  maxclust<-max(cluster.size)
+###  idiclust<-matrix(0,antclust,maxclust); 
+###  cs<- rep(1,antclust)
+###  for (i in 1:antpers) { 
+###      idiclust[clusters[i]+1,cs[clusters[i]+1]]<-i-1;
+###      cs[clusters[i]+1]<- cs[clusters[i]+1]+1; 
+###  } 
   if (maxclust==1) stop("No clusters !, maxclust size=1\n"); 
   ## }}}
 

@@ -89,7 +89,7 @@ Martinussen and Scheike, Dynamic Regression Models for Survival Data,
 Springer (2006).}
 \author{Thomas Scheike}
 \examples{
-library(survival)
+library(timereg)
 data(diabetes)
 # Marginal Cox model  with treat as covariate, residuals=2, resample.iid=1 !
 marg <- cox.aalen(Surv(time,status) ~ prop(treat) + cluster(id),

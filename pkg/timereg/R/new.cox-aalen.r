@@ -80,16 +80,17 @@ if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
         etimes    <- eventtms[ix]  # Entry/exit times
 	status <- status[ix]
         stop  <- etimes; 
-        start <- c(survs$start,survs$start)[ix]; 
+        start <- rep(survs$start,2)[ix]; 
         tdiff    <- c(-diff(etimes),start.time) # Event time differences
         entry  <- c(rep(c(1, -1), each = nobs))[ix]
         weights <- rep(weights, 2)[ix]
-        X        <- X[rep(1:nobs, 2)[ix],]
+        X  <- X[rep(1:nobs, 2)[ix],]
 	if (npar==FALSE) Z <- Z[rep(1:nobs,2)[ix],]
 	id <- rep(id,2)[ix]
 	clusters <- rep(clusters,2)[ix]
 	if (sum(abs(offsets))!=0) offsets <- rep(offsets,2)[ix]
     } ## }}}
+###  print(cbind(Z,start,stop,etimes,id,entry))
 
 ldata<-list(start=start,stop=stop, antpers=survs$antpers,antclust=survs$antclust);
 ## }}}

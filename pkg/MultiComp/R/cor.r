@@ -104,16 +104,25 @@ if (cens.model!="user.weights") {
 ## {{{ set up cluster + theta design + define iid variables 
   if (is.null(clusters)== TRUE) {clusters<-0:(antpers-1); antclust<-antpers;} else {
     clus<-unique(clusters); antclust<-length(clus);
-    clusters <- as.integer(factor(clusters, labels = 1:(antclust)));
+    clusters <- as.integer(factor(clusters, labels = 1:(antclust)))-1;
   }
-  clustsize<-as.vector(table(clusters));
-  maxclust<-max(clustsize); clusterindex<-matrix(0,antclust,maxclust); 
 
- cs<- rep(1,antclust)
- for (i in 1:antpers) { 
-     clusterindex[clusters[i],cs[clusters[i]]]<-i-1;
-     cs[clusters[i]]<- cs[clusters[i]]+1; 
-  } 
+###  clustsize<-as.vector(table(clusters));
+###  maxclust<-max(clustsize); clusterindex<-matrix(0,antclust,maxclust); 
+### cs<- rep(1,antclust)
+### for (i in 1:antpers) { 
+###     clusterindex[clusters[i],cs[clusters[i]]]<-i-1;
+###     cs[clusters[i]]<- cs[clusters[i]]+1; 
+###  } 
+###print(c(maxclust,clustsize))
+###print(clusterindex)
+###print(clusters)
+
+  outc <- cluster.index(clusters); 
+  clustsize <- outc$cluster.size
+  maxclust <- outc$maxclust
+  clusterindex <- outc$idclust
+  if (maxclust==1) stop("No clusters given \n"); 
 
  if (is.null(theta.des)==TRUE) { ptheta<-1; theta.des<-matrix(1,antpers,ptheta);} else 
   theta.des<-as.matrix(theta.des); ptheta<-ncol(theta.des);
@@ -324,15 +333,22 @@ if (is.null(cens.weight)) {
 ## {{{ set up cluster + theta design + define iid variables 
   if (is.null(clusters)== TRUE) {clusters<-0:(antpers-1); antclust<-antpers;} else {
     clus<-unique(clusters); antclust<-length(clus);
-    clusters <- as.integer(factor(clusters, labels = 1:(antclust)));
+    clusters <- as.integer(factor(clusters, labels = 1:(antclust)))-1;
   }
-  clustsize<-as.vector(table(clusters));
-  maxclust<-max(clustsize); clusterindex<-matrix(0,antclust,maxclust); 
- cs<- rep(1,antclust)
- for (i in 1:antpers) { 
-     clusterindex[clusters[i],cs[clusters[i]]]<-i-1;
-     cs[clusters[i]]<- cs[clusters[i]]+1; 
-  } 
+
+  out <- cluster.index(clusters); 
+  clustsize <- out$cluster.size
+  maxclust <- out$maxclust
+  clusterindex <- out$idclust
+  if (maxclust==1) stop("No clusters given \n"); 
+
+###  clustsize<-as.vector(table(clusters));
+###  maxclust<-max(clustsize); clusterindex<-matrix(0,antclust,maxclust); 
+### cs<- rep(1,antclust)
+### for (i in 1:antpers) { 
+###     clusterindex[clusters[i],cs[clusters[i]]]<-i-1;
+###     cs[clusters[i]]<- cs[clusters[i]]+1; 
+###  } 
 
  if (is.null(theta.des)==TRUE) { ptheta<-1; theta.des<-matrix(1,antpers,ptheta);} else 
   theta.des<-as.matrix(theta.des); ptheta<-ncol(theta.des);
@@ -739,16 +755,22 @@ if (is.null(cens.weight)) {
 ## {{{ set up cluster + theta design + define iid variables 
   if (is.null(clusters)== TRUE) {clusters<-0:(antpers-1); antclust<-antpers;} else {
     clus<-unique(clusters); antclust<-length(clus);
-    clusters <- as.integer(factor(clusters, labels = 1:(antclust)));
+    clusters <- as.integer(factor(clusters, labels = 1:(antclust)))-1;
   }
-  clustsize<-as.vector(table(clusters));
-  maxclust<-max(clustsize); clusterindex<-matrix(0,antclust,maxclust); 
 
- cs<- rep(1,antclust)
- for (i in 1:antpers) { 
-     clusterindex[clusters[i],cs[clusters[i]]]<-i-1;
-     cs[clusters[i]]<- cs[clusters[i]]+1; 
-  } 
+  out <- cluster.index(clusters); 
+  clustsize <- out$cluster.size
+  maxclust <- out$maxclust
+  clusterindex <- out$idclust
+  if (maxclust==1) stop("No clusters given \n"); 
+
+###  clustsize<-as.vector(table(clusters));
+###  maxclust<-max(clustsize); clusterindex<-matrix(0,antclust,maxclust); 
+### cs<- rep(1,antclust)
+### for (i in 1:antpers) { 
+###     clusterindex[clusters[i],cs[clusters[i]]]<-i-1;
+###     cs[clusters[i]]<- cs[clusters[i]]+1; 
+###  } 
 
  if (is.null(theta.des)==TRUE) { ptheta<-1; theta.des<-matrix(1,antpers,ptheta);} else 
   theta.des<-as.matrix(theta.des); ptheta<-ncol(theta.des);
@@ -851,47 +873,54 @@ return(ud);
 ## }}}
 } ## }}}
 
-concordance <- function(object,cif1,cif2=NULL,messages=TRUE,...)
+concordance <- function(object,cif1,cif2=NULL,messages=TRUE,model=NULL,coefs=NULL,...)
 { ## {{{
+
+if (is.null(model)) { 
 if (!inherits(object, "cor")) stop("Must be a rr.cif, cor.cif or or.cif object")
-coefs <- coef(object)
+model <- attr(object,"Type")
+} 
+if (is.null(coefs)) coefs <- coef(object)
+if (is.null(coefs)) stop("Must give dependence parameters\n"); 
+
+if (!is.null(object)) { 
+	cause1 <-  attr(object,"cause1");
+	cause2 <-  attr(object,"cause2"); 
+} else cause1 <- cause2 <- 1
 
 if (is.null(cif2)==TRUE) cif2 <- cif1; 
-if (attr(object,"cause2")==attr(object,"cause1")) cif2 <- cif1
 
 if (messages) {
-if (attr(object,"Type")=="cor") { ## {{{
+if (model=="cor") { ## {{{
 message("Cross odds ratio dependence for competing risks\n\n")
-message("Odds of cause1=",attr(object,"cause1")," given cause2=",attr(object,"cause2")
-," relative to Odds of cause1=",attr(object,"cause1"),"\n",fill=TRUE,sep="")
-} else if (attr(object,"Type")=="RR") {
+message("Odds of cause1=",cause1," given cause2=",cause2," relative to Odds of cause1=",cause1,"\n",fill=TRUE,sep="")
+} else if (model=="RR") {
 message("Ratio of joint and product of marginals for competing risks\n\n")
-message("Ratio of cumulative incidence for cause1=",attr(object,"cause1")," and cause2=",attr(object,"cause2"),sep=" ")
-} else if (attr(object,"Type")=="OR-cif") {
+message("Ratio of cumulative incidence for cause1=",cause1," and cause2=",cause2,sep=" ")
+} else if (model=="OR-cif") {
 message("OR for dependence for competing risks\n\n")
-message("OR of cumulative incidence for cause1=",attr(object,"cause1")," and cause2=",attr(object,"cause2"),sep=" ")
+message("OR of cumulative incidence for cause1=",cause1," and cause2=",cause2,sep=" ")
 } ## }}}
 }
 
 out <- list()
-
 for (k in 1:nrow(coefs)) {
 ## {{{
-if (attr(object,"Type")=="cor") {
+if (model=="cor") {
 concordance <- exp(coefs[k,1])*cif1*cif2/((1-cif1)+exp(coefs[k,1])*cif1)
 conclower  <- exp(coefs[k,1]-1.96*coefs[k,2])*cif1*cif2/((1-cif1)+exp(coefs[k,1]-1.96*coefs[k,2])*cif1)
 concup  <- exp(coefs[k,1]+1.96*coefs[k,2])*cif1*cif2/((1-cif1)+exp(coefs[k,1]+1.96*coefs[k,2])*cif1)
 casewise <- concordance/cif1
 caselower  <- conclower/cif1
 caseup     <- concup/cif1
-} else if (attr(object,"Type")=="RR") {
+} else if (model=="RR") {
 casewise<- exp(coefs[k,1])*c(cif2)
 concordance <- exp(coefs[k,1])*cif1*cif2
 caselower  <- cif2*exp(coefs[k,1]-1.96*coefs[k,2])
 caseup     <- cif2*exp(coefs[k,1]+1.96*coefs[k,2])
 conclower  <- cif1*cif2* exp(coefs[k,1]-1.96*coefs[k,2])
 concup     <- cif1*cif2*exp(coefs[k,1]+1.96*coefs[k,2])
-} else if (attr(object,"Type")=="OR-cif") {
+} else if (model=="OR-cif") {
 thetal <-  coefs[k,1]-1.96*coefs[k,2]
 thetau <-  coefs[k,1]+1.96*coefs[k,2]
 casewise<- plack.cif2(cif1,cif2,c(coefs[k,1]))/cif1

@@ -4,13 +4,15 @@ import(survival, timereg)
 
 export("rr.cif",
        "cor.cif",
+       "bicomprisk",
        "or.cif",
        "plack.cif",
        "plack.cif2",
        "random.cif",
        "concordance",
        "Grandom.cif",
-       "random.cif2cause")
+       "random.cif2cause",
+       "Specials")
 
 S3method(summary,cor)
 S3method(summary,randomcif)

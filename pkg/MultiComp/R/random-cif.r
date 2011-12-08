@@ -64,16 +64,22 @@ if (length(trunkp)==1) trunkp <- rep(1,antpers)
 ## {{{ cluster + definining variables
   if (is.null(clusters)== TRUE) {clusters<-0:(antpers-1); antclust<-antpers;} else {
     clus<-unique(clusters); antclust<-length(clus);
-    clusters <- as.integer(factor(clusters, labels = 1:(antclust)));
+    clusters <- as.integer(factor(clusters, labels = 1:(antclust)))-1;
   }
-  clustsize<-as.vector(table(clusters));
-  maxclust<-max(clustsize); clusterindex<-matrix(0,antclust,maxclust); 
 
- cs<- rep(1,antclust)
- for (i in 1:antpers) { 
-     clusterindex[clusters[i],cs[clusters[i]]]<-i-1;
-     cs[clusters[i]]<- cs[clusters[i]]+1; 
-  } 
+  out <- cluster.index(clusters); 
+  clustsize <- out$cluster.size
+  maxclust <- out$maxclust
+  clusterindex <- out$idclust
+  if (maxclust==1) stop("No clusters given \n"); 
+
+###  clustsize<-as.vector(table(clusters));
+###  maxclust<-max(clustsize); clusterindex<-matrix(0,antclust,maxclust); 
+### cs<- rep(1,antclust)
+### for (i in 1:antpers) { 
+###     clusterindex[clusters[i],cs[clusters[i]]]<-i-1;
+###     cs[clusters[i]]<- cs[clusters[i]]+1; 
+###  } 
 
 ##################################################################
  if (is.null(theta.des)==TRUE) ptheta<-1;
