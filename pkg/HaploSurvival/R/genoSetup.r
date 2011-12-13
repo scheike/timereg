@@ -1,4 +1,5 @@
-geno.setup <- function(G,returnNames=TRUE,haplo.baseline=NULL){
+geno.setup <- function(G,returnNames=TRUE,haplo.baseline=NULL)
+{
   orderedAlleles <- apply(G,2,unique)
   unorderedAlleles <- list()
   nLoci <- ncol(G)/2
@@ -77,6 +78,7 @@ geno.setup <- function(G,returnNames=TRUE,haplo.baseline=NULL){
   # Record all unique possible haplotypes  
   uniqueHaplos <- sort(unique(unlist(HPI)))
   if(returnNames == TRUE){
+###    uniqueHaploNames <- unique(unlist(HPN))
     uniqueHaploNames <- sort(unique(unlist(HPN)))
   } else {
     uniqueHaploNames <- NULL

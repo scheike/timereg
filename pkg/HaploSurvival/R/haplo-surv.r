@@ -136,12 +136,12 @@ dimzih<-length(zih)
 ## {{{ setup haplo-design 
 smdesXcheck<- function(x,z,hd,hp) {
     out <- designfuncX(x,z,hd,hp)
-    if(!is.numeric(out)) stop("Need a numeric result")
+    if(!is.numeric(out)) stop("haplo-design: Need a numeric result")
     as.double(out)
 }
 smdesZcheck<- function(x,z,hd,hp) {
     out <- designfuncZ(x,z,hd,hp)
-    if(!is.numeric(out)) stop("Need a numeric result")
+    if(!is.numeric(out)) stop("haplo-design: Need a numeric result")
     as.double(out)
 }
 
