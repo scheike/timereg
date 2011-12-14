@@ -96,15 +96,19 @@ if (ndiag>0.0000001) ud <- FALSE;
 return(ud)
 }
 
-cluster.index <- function(clusters)
+cluster.index <- function(clusters,index.type=FALSE)
 { ## {{{
  antpers <- length(clusters)
+if (index.type==FALSE)  {
+	max.clust <- length(unique(clusters))
+	clusters <- as.integer(factor(clusters, labels = 1:max.clust)) -1
+}
  nclust <- .C("nclusters",
 	as.integer(antpers), as.integer(clusters), as.integer(rep(0,antpers)), 
 	as.integer(0), as.integer(0), package="timereg")
   maxclust <- nclust[[5]]
   antclust <- nclust[[4]]
-  cluster.size <- nclust[[3]]
+  cluster.size <- nclust[[3]][1:antclust]
   clustud <- .C("clusterindex",as.integer(clusters),
 		as.integer(antclust),as.integer(antpers),
                 as.integer(rep(0,antclust*maxclust)),as.integer(rep(0,antclust)),

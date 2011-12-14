@@ -78,7 +78,7 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=1,notaylor=0)
   if (length(theta)!=ptheta) theta<-rep(theta[1],ptheta); 
   theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
 
-  out.clust <- cluster.index(clusters);  
+  out.clust <- cluster.index(clusters,index.type=TRUE);  
   maxclust <- out.clust$maxclust 
   antclust <- out.clust$antclust
   idiclust <- out.clust$idclust
