@@ -1,5 +1,8 @@
 \name{coef.cor}
 \alias{coef.cor}
+\alias{conc2case}
+\alias{test.conc}
+\alias{back2timereg}
 \alias{or.cif}
 \alias{print.cor}
 \alias{summary.randomcif}

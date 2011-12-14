@@ -4,6 +4,9 @@ import(survival, timereg)
 
 export("rr.cif",
        "cor.cif",
+       "back2timereg",
+       "conc2case",
+       "test.conc",
        "bicomprisk",
        "or.cif",
        "plack.cif",

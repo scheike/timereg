@@ -51,7 +51,6 @@ int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
     }
 
     // }}}
-    
 	 
 for (s=0;s<*Ntimes;s++)
 {
@@ -106,7 +105,8 @@ for (s=0;s<*Ntimes;s++)
       VE(Y,j)=((x[j]<=time) & (cause[j]==*CA))*1;
       if (it==*Nit-1) {
 	if (KMc[j]<0.00001) vec_zeros(dp); else scl_vec_mult(1/KMc[j],dp,dp); 
-	scl_vec_mult(VE(Y,j),dp,dp); vec_add(dp,qs,qs); }
+	scl_vec_mult(VE(Y,j),dp,dp); vec_add(dp,qs,qs); 
+      }
       if (*estimator==1) {
       if (KMc[j]<0.001) VE(Y,j)=((VE(Y,j)/0.001)-VE(pbhat,j)/trunkp[j])*(time>entry[j]); 
       else VE(Y,j)=( (VE(Y,j)/KMc[j])-VE(pbhat,j)/trunkp[j])*(time>entry[j]);
