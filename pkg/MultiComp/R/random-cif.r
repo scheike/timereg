@@ -67,7 +67,7 @@ if (length(trunkp)==1) trunkp <- rep(1,antpers)
     clusters <- as.integer(factor(clusters, labels = 1:(antclust)))-1;
   }
 
-  out <- cluster.index(clusters); 
+  out <- cluster.index(clusters,index.type=TRUE); 
   clustsize <- out$cluster.size
   maxclust <- out$maxclust
   clusterindex <- out$idclust

@@ -107,18 +107,7 @@ if (cens.model!="user.weights") {
     clusters <- as.integer(factor(clusters, labels = 1:(antclust)))-1;
   }
 
-###  clustsize<-as.vector(table(clusters));
-###  maxclust<-max(clustsize); clusterindex<-matrix(0,antclust,maxclust); 
-### cs<- rep(1,antclust)
-### for (i in 1:antpers) { 
-###     clusterindex[clusters[i],cs[clusters[i]]]<-i-1;
-###     cs[clusters[i]]<- cs[clusters[i]]+1; 
-###  } 
-###print(c(maxclust,clustsize))
-###print(clusterindex)
-###print(clusters)
-
-  outc <- cluster.index(clusters); 
+  outc <- cluster.index(clusters,index.type=TRUE); 
   clustsize <- outc$cluster.size
   maxclust <- outc$maxclust
   clusterindex <- outc$idclust
@@ -336,7 +325,7 @@ if (is.null(cens.weight)) {
     clusters <- as.integer(factor(clusters, labels = 1:(antclust)))-1;
   }
 
-  out <- cluster.index(clusters); 
+  out <- cluster.index(clusters,index.type=TRUE); 
   clustsize <- out$cluster.size
   maxclust <- out$maxclust
   clusterindex <- out$idclust
@@ -758,7 +747,7 @@ if (is.null(cens.weight)) {
     clusters <- as.integer(factor(clusters, labels = 1:(antclust)))-1;
   }
 
-  out <- cluster.index(clusters); 
+  out <- cluster.index(clusters,index.type=TRUE); 
   clustsize <- out$cluster.size
   maxclust <- out$maxclust
   clusterindex <- out$idclust
