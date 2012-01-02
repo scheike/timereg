@@ -166,7 +166,7 @@ for(j=0;j<pmax;j++) {
   if (theta0<0) Rprintf("negative value of random effect variances causes problems, try step.size=0.1\n"); 
   Rprintf("nan i score subject=%d %lf %lf %lf %lf %lf %lf %lf %lf %lf \n",j,theta0,Nt[j],NH[j],HeH[j],Rtheta[j],Rthetaleft[j],HeHleft[j],Dthetanu,thetaiidscale[j]); 
   print_vec(vtheta2); 
-  oops("missing varlue\n"); 
+  oops("missing value\n"); 
   }
   if (isnan(thetaiidscale[j])) vec_zeros(thetaiid[j]); 
 

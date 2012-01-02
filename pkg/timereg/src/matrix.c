@@ -591,7 +591,7 @@ void print_mat(matrix *M){
     }
     Rprintf("\n");
   }  
-
+    Rprintf("\n");
 }
 
 // Simple I/O function that prints the top of a matrix
@@ -607,7 +607,7 @@ void head_matrix(matrix *M){
     }
     Rprintf("\n");
   }  
-
+    Rprintf("\n");
 }
 
 // Simple I/O function that prints the first few entries of a vector
@@ -633,7 +633,7 @@ void print_vec(vector *v){
   for(j=0; j < length_vector(v); j++){
     Rprintf("%lf ", VE(v,j));
   }  
-  Rprintf("\n");
+  Rprintf("\n\n");
   
 }
 

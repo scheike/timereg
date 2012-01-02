@@ -30,8 +30,7 @@ The modelling formula uses the standard survival modelling given in the
 \usage{
 two.stage(margsurv,data=sys.parent(),Nit=60, detail=0,
 start.time=0,max.time=NULL,id=NULL,clusters=NULL,robust=1,
-theta=NULL,theta.des=NULL,var.link=0,step=1,
-notaylor=0)
+theta=NULL,theta.des=NULL,var.link=0,step=0.5,notaylor=0)
 }
 \arguments{
 \item{margsurv}{fit of marginal survival cox.aalen model with residuals=2, and

@@ -2,7 +2,7 @@ Gprop<-function(x) x
 
 two.stage<-function(margsurv,data=sys.parent(),
 Nit=60,detail=0,start.time=0,max.time=NULL,id=NULL,clusters=NULL,
-robust=1,theta=NULL,theta.des=NULL,var.link=0,step=1,notaylor=0)
+robust=1,theta=NULL,theta.des=NULL,var.link=0,step=0.5,notaylor=0)
 { ## {{{
 ## {{{ seting up design and variables
  rate.sim <- 1; 
@@ -12,6 +12,8 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=1,notaylor=0)
  ldata<-aalen.des(formula,data=data,model="cox.aalen");
  id <- attr(margsurv,"id"); clusters <- attr(margsurv,"cluster")
  X<-ldata$X; time<-ldata$time2; Z<-ldata$Z;  status<-ldata$status;
+ if (nrow(X)!=length(clusters)) 
+stop("Length of margsurv data not consistent with nrow of data\n"); 
  time2 <- attr(margsurv,"stop"); start <- attr(margsurv,"start")
  antpers<-nrow(X);
  if (is.null(Z)==TRUE) {npar<-TRUE; semi<-0;}  else { Z<-as.matrix(Z); npar<-FALSE; semi<-1;}

@@ -3,8 +3,9 @@ clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="additive"
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
 weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,
-trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL)
-{ ## {{{
+trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL) 
+# {{{
+{ 
 ## {{{
 # trans=1 P_1=1-exp( - ( x' b(b)+ z' gam t) ), 
 # trans=2 P_1=1-exp(-exp(x a(t)+ z` b )  Fine-Gray model 
@@ -98,15 +99,24 @@ if (is.null(weights)==TRUE) weights <- rep(1,n);
 
 ## {{{ censoring and estimator
 if (is.null(admin.cens)) estimator <- 1 else estimator  <- 2
-Gcxe <- 1; 
+Gcxe <- 1;  ordertime <- order(time2); 
+###dcumhazcens <- rep(0,n); 
+
 if (estimator==1) {
 if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncation
   if (cens.model=="KM") { ## {{{
-    if (is.null(entry.time)) ud.cens<-survfit(Surv(time2,cause==cens.code)~+1) 
-    else ud.cens<-survfit(Surv(entry,time2,cause==cens.code)~+1); 
+    if (is.null(entry.time)) { ud.cens<-survfit(Surv(time2,cause==cens.code)~+1);
+###                               ud.censcum <- aalen(Surv(time2,cause==cens.code)~+1,n.sim=0,robust=0)
+    }
+    else {
+	    ud.cens<-survfit(Surv(entry,time2,cause==cens.code)~+1); 
+###            ud.censcum <- aalen(Surv(entry,time2,cause==cens.code)~+1,n.sim=0,robust=0)
+    }
     Gfit<-cbind(ud.cens$time,ud.cens$surv)
     Gfit<-rbind(c(0,1),Gfit); 
     Gcx<-Cpred(Gfit,time2)[,2];
+###    cumhazcens<-Cpred(ud.censcum$cum,time2[ordertime])[,2];
+###    dcumhazcens <- diff(c(0,cumhazcens));
     if (is.null(entry.time)==FALSE) Gcxe<-Cpred(Gfit,entry)[,2];
     Gcx <- Gcx/Gcxe; 
     Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
@@ -136,9 +146,14 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
     ## }}}
   } else if (cens.model=="aalen") {  ## {{{
     if (npar==TRUE) XZ<-X else XZ<-cbind(X,Z);
-    if (is.null(entry.time)) ud.cens<-aalen(Surv(time2,cause==cens.code)~-1+XZ,n.sim=0,robust=0,silent=1)
-    else ud.cens<-aalen(Surv(entry,time2,cause==cens.code)~-1+XZ,n.sim=0,robust=0,silent=1);
-    Gcx<-Cpred(ud.cens$cum,time2)[,-1];
+    if (is.null(entry.time)) ud.cens<-aalen(Surv(time2,cause==cens.code)~-1+XZ+cluster(clusters),
+					    n.sim=0,residuals=0,robust=0,silent=1)
+    else ud.cens<-aalen(Surv(entry,time2,cause==cens.code)~-1+XZ+cluster(clusters),n.sim=0,silent=1,
+			robust=0,residuals=0);
+    Gcx <- Cpred(ud.cens$cum,time2)[,-1];
+###    dcumhazcens <- diff(c(0,Gcx[ordertime]));
+###    print(ud.cens$cum[,2]); 
+###    print(cumsum(dcumhazcens)); 
     Gcx<-exp(-apply(Gcx*XZ,1,sum))
     Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
     Gfit<-rbind(c(0,1),cbind(time2,Gcx)); 
@@ -219,7 +234,7 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
 
   out<-.C("itfit", ## {{{
           as.double(times),as.integer(ntimes),as.double(time2),
-          as.integer(delta), as.integer(cause),as.double(Gcx),
+          as.integer(cens.code), as.integer(cause),as.double(Gcx),
           as.double(X),as.integer(n),as.integer(px),
           as.integer(Nit), as.double(betaS), as.double(score),
           as.double(hess), as.double(est), as.double(var),
@@ -234,7 +249,7 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
           as.double(time.pow.test),as.integer(silent),
 	  as.double(conv),as.double(weights), as.double(entry),
 	  as.double(trunc.p), as.integer(estimator), as.integer(fix.gamma),
-	  as.integer(stratum), PACKAGE="timereg") ## }}}
+	  as.integer(stratum),  as.integer(ordertime-1), PACKAGE="timereg") ## }}}
 
  ## {{{ handling output
   gamma<-matrix(out[[24]],pg,1); var.gamma<-matrix(out[[25]],pg,pg); 
