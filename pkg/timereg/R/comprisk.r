@@ -1,9 +1,9 @@
 comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="additive",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
-cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
+cens.model="KM",cens.formula=NULL,time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
 weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,
-trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL) 
+trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=0) 
 # {{{
 { 
 ## {{{
@@ -25,9 +25,9 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL)
   m<-match.call(expand.dots=FALSE);
   m$gamma<-m$times<-m$n.times<-m$cause<-m$Nit<-m$weighted<-m$n.sim<-
     m$model<-m$causeS<- m$detail<- m$cens.model<-m$time.pow<-m$silent<- 
-    m$cens.code<-m$interval<- m$clusters<-m$resample.iid<-
+    m$cens.code<-m$cens.formula <- m$interval<- m$clusters<-m$resample.iid<-
     m$time.pow.test<-m$conv<- m$weights  <- m$max.clust <- m$first.time.p<- m$trunc.p <- 
-    m$entry.time <- m$cens.weight <- m$admin.cens <- m$fix.gamma <- m$est <- NULL
+    m$entry.time <- m$cens.weight <- m$admin.cens <- m$fix.gamma <- m$est  <- m$conservative <- NULL
   special <- c("const","cluster")
   if (missing(data)) {
     Terms <- terms(formula, special)
@@ -97,8 +97,8 @@ if (is.null(entry.time)) entry <- rep(0,n) else entry <- entry.time
 if (is.null(weights)==TRUE) weights <- rep(1,n); 
 ## }}}
 
-## {{{ censoring and estimator
-if (is.null(admin.cens)) estimator <- 1 else estimator  <- 2
+## {{{ censoring and estimator 
+if (is.null(admin.cens)) estimator <- 1 else estimator  <- 2;
 Gcxe <- 1;  ordertime <- order(time2); 
 ###dcumhazcens <- rep(0,n); 
 
@@ -131,7 +131,11 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
     Gcx <- Gcx/Gcxe; 
     Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
   } else if (cens.model=="cox") { ## {{{
-    if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
+    if (!is.null(cens.formula)) { XZ <- model.matrix(cens.formula,data=data); 
+    if (sum(XZ[,1])==nrow(XZ)) XZ <- as.matrix(XZ[,-1])
+    } else {
+    if (npar==TRUE) XZ<-X[,-1] else XZ <-cbind(X,Z)[,-1];
+    }
     if (is.null(entry.time)) ud.cens<-coxph(Surv(time2,cause==cens.code)~XZ)
     else ud.cens<-coxph(Surv(entry,time2,cause==cens.code)~XZ);
     baseout <- basehaz(ud.cens,centered=FALSE); 
@@ -145,15 +149,15 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
     Gctimes<-Cpred(Gfit,times)[,2]; 
     ## }}}
   } else if (cens.model=="aalen") {  ## {{{
-    if (npar==TRUE) XZ<-X else XZ<-cbind(X,Z);
+    if (!is.null(cens.formula)) { XZ <- model.matrix(cens.formula,data=data); 
+    } else {
+    if (npar==TRUE) XZ <-X else XZ <-cbind(X,Z);
+    }
     if (is.null(entry.time)) ud.cens<-aalen(Surv(time2,cause==cens.code)~-1+XZ+cluster(clusters),
 					    n.sim=0,residuals=0,robust=0,silent=1)
     else ud.cens<-aalen(Surv(entry,time2,cause==cens.code)~-1+XZ+cluster(clusters),n.sim=0,silent=1,
 			robust=0,residuals=0);
     Gcx <- Cpred(ud.cens$cum,time2)[,-1];
-###    dcumhazcens <- diff(c(0,Gcx[ordertime]));
-###    print(ud.cens$cum[,2]); 
-###    print(cumsum(dcumhazcens)); 
     Gcx<-exp(-apply(Gcx*XZ,1,sum))
     Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
     Gfit<-rbind(c(0,1),cbind(time2,Gcx)); 
@@ -249,7 +253,7 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
           as.double(time.pow.test),as.integer(silent),
 	  as.double(conv),as.double(weights), as.double(entry),
 	  as.double(trunc.p), as.integer(estimator), as.integer(fix.gamma),
-	  as.integer(stratum),  as.integer(ordertime-1), PACKAGE="timereg") ## }}}
+	  as.integer(stratum),  as.integer(ordertime-1), as.integer(conservative), PACKAGE="timereg") ## }}}
 
  ## {{{ handling output
   gamma<-matrix(out[[24]],pg,1); var.gamma<-matrix(out[[25]],pg,pg); 

@@ -5,19 +5,19 @@
 void itfit(times,Ntimes,x,censcode,cause,KMc,z,n,px,Nit,betaS,
 score,hess,est,var,sim,antsim,rani,test,testOBS,Ut,simUt,weighted,
 gamma,vargamma,semi,zsem,pg,trans,gamma2,CA,line,detail,biid,gamiid,resample,
-timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,estimator,fixgamma,stratum,ordertime)
+timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,estimator,fixgamma,stratum,ordertime,robust)
 double *times,*betaS,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
 *Ut,*simUt,*gamma,*zsem,*gamma2,*biid,*gamiid,*vargamma,*timepow,
 	*timepowtest,*convc,*weights,*entry,*trunkp;
 int *n,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
-*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum,*ordertime;
+*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum,*ordertime,*robust;
 { // {{{
   // {{{ allocation and reading of data from R
   matrix *X,*cX,*A,*AI,*cumAt[*antclust],*VAR,*Z,*censX;
   vector *VdB,*risk,*SCORE,*W,*Y,*Gc,*CAUSE,*bhat,*pbhat,*beta,*xi,*censXv,
     *rr,*rowX,*difbeta,*qs,*bhatub,*betaub,*dcovs,*pcovs,*zi,*rowZ,*zgam,*vcumentry; 
   vector *cumhatA[*antclust],*cumA[*antclust],*bet1,*gam,*dp,*dp1,*dp2; 
-  int indexs,clusterj,osilent,convt,ps,sing,c,i,j,k,l,s,it,convproblems=0; 
+  int clusterj,osilent,convt,ps,sing,c,i,j,k,l,s,it,convproblems=0; 
   double nrisk,time,sumscore,totrisk, 
 	 *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
 	 *cifentry=calloc((*n),sizeof(double)),
@@ -169,24 +169,25 @@ for (s=0;s<*Ntimes;s++)
       Rprintf("Score D l\n"); print_vec(difbeta); 
       Rprintf("Information -D^2 l\n"); print_mat(AI); 
     };
-
-    if ((it==(*Nit-1)) && (convt==1)) { // {{{ censoring terms for variance 
-	    for (j=0;j<*n;j++) { // sum from t->0 in cens times
-		k=ordertime[j];
-		nrisk=(*n)-j; 
-		clusterj=clusters[k]; 
-		if (cause[k]==(*censcode)) { 
-		   vec_add_mult(cumhatA[clusterj],censXv,1/nrisk,cumhatA[clusterj]);  
-	           for (i=j;i<*n;i++) {
-	                clusterj=clusters[ordertime[i]]; 	
-			vec_add_mult(cumhatA[clusterj],censXv,-1/pow(nrisk,2),cumhatA[clusterj]); 
-		   }
-		}
-                // fewer where I(s <= T_i) , because s is increasing
-                extract_row(censX,k,xi); 
-                vec_subtr(censXv,xi,censXv);  
-            }
-    } // }}} if (it==*Nit-1) if (convt==1 ) 
+//
+//    if ((it==(*Nit-1)) && (convt==1) && (*robust==0)) { // {{{ censoring terms for variance 
+//	    for (j=0;j<*n;j++) { // sum from t->0 in cens times
+//		k=ordertime[j];
+//		nrisk=(*n)-j; 
+//		clusterj=clusters[k]; 
+//		if (cause[k]==(*censcode)) { 
+//		   vec_add_mult(cumhatA[clusterj],censXv,1/nrisk,cumhatA[clusterj]);  
+//	           for (i=j;i<*n;i++) {
+//	                clusterj=clusters[ordertime[i]]; 	
+//			vec_add_mult(cumhatA[clusterj],censXv,-1/pow(nrisk,2),cumhatA[clusterj]); 
+//		   }
+//		}
+//                // fewer where I(s <= T_i) , because s is increasing
+//                extract_row(censX,k,xi); 
+//                vec_subtr(censXv,xi,censXv);  
+//            }
+//    } // }}} if (it==*Nit-1) if (convt==1 ) 
+//
 
   } /* it */
 
@@ -196,10 +197,32 @@ for (s=0;s<*Ntimes;s++)
 
 if (convt==1 ) {
    for (i=0;i<*n;i++) { 
+      R_CheckUserInterrupt();
       j=clusters[i]; 
       if (s<-1) Rprintf("%d  %d %d \n",s,i,j);
-      extract_row(cX,i,dp); scl_vec_mult(VE(Y,i),dp,dp); 
-      vec_add(dp,cumA[j],cumA[j]); 
+      for(k=0;k<ps;k++) VE(cumA[j],k)+= VE(Y,i)*ME(cX,i,k); 
+      //  extract_row(cX,i,dp); 
+      // scl_vec_mult(VE(Y,i),dp,dp); 
+      //  vec_add(dp,cumA[j],cumA[j]); 
+
+    if ((*robust==0)) { // {{{ censoring terms for variance 
+		k=ordertime[i];
+		nrisk=(*n)-i; 
+		clusterj=clusters[k]; 
+		if (cause[k]==(*censcode)) { 
+                   for(k=0;k<ps;k++) VE(cumhatA[clusterj],k)+= VE(censXv,k)/nrisk; 
+//		   vec_add_mult(cumhatA[clusterj],censXv,1/nrisk,cumhatA[clusterj]);  
+		   scl_vec_mult(-1/pow(nrisk,2),censXv,rowX); 
+	           for (j=i;j<*n;j++) {
+	                clusterj=clusters[ordertime[j]]; 	
+                        for(k=0;k<ps;k++) VE(cumhatA[clusterj],k)+= VE(rowX,k); 
+//			vec_add(rowX,cumhatA[clusterj],cumhatA[clusterj]); 
+		   }
+		}
+                // fewer where I(s <= T_i) , because s is increasing
+                extract_row(censX,k,xi); 
+                vec_subtr(censXv,xi,censXv);  
+    } // }}}
    }
 
    for (j=0;j<*antclust;j++) { 
@@ -214,7 +237,7 @@ if (convt==1 ) {
       for (c=0;c<*px;c++) {l=j*(*px)+c; biid[l*(*Ntimes)+s]=VE(dp2,c);}
       }
    }
-}
+  }
 
    for (i=1;i<ps+1;i++) {
       var[i*(*Ntimes)+s]=ME(VAR,i-1,i-1); 
@@ -231,7 +254,7 @@ if (convt==1 ) {
 	      score,hess,est,var,sim,antsim,rani,test,testOBS,Ut,simUt,weighted,
 	      gamma,vargamma,semi,zsem,pg,trans,gamma2,CA,line,detail,biid,
 	      gamiid,resample,timepow,clusters,antclust,timepowtest,silent,convc,weights,
-	      entry,trunkp,estimator,fixgamma,stratum,ordertime);
+	      entry,trunkp,estimator,fixgamma,stratum,ordertime,robust);
   }
  
   if (convproblems>0) convc[0]=1; 
@@ -258,11 +281,11 @@ void itfitsemi(times,Ntimes,x,censcode,cause,
 	       zsem,pg,trans,gamma2,CA,
 	       line,detail,biid,gamiid,resample,
 	       timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,
-	       estimator,fixgamma,stratum,ordertime)
+	       estimator,fixgamma,stratum,ordertime,robust)
 double *times,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,*Ut,*simUt,*gamma,*zsem,
        *vargamma,*gamma2,*biid,*gamiid,*timepow,*timepowtest,*entry,*trunkp,*convc,*weights;
 int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
-*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum,*ordertime;
+*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum,*ordertime,*robust;
 { 
   // {{{ allocation and reading of data from R
   matrix *ldesignX,*A,*AI,*cdesignX,*ldesignG,*cdesignG,*censX,*censZ;
@@ -270,16 +293,16 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
   matrix *Ct,*C[*Ntimes],*Acorb[*Ntimes],*tmpM1,*tmpM2,*tmpM3,*tmpM4; 
   matrix *Vargam,*dVargam,*M1M2[*Ntimes],*Delta,*dM1M2,*M1M2t,*RobVargam;
   matrix *W3t[*antclust],*W4t[*antclust];
-  matrix *W3tcens[*antclust],*W4tcens[*antclust];
+//  matrix *W3tcens[*antclust],*W4tcens[*antclust];
   vector *W2[*antclust],*W3[*antclust];
-  vector *W2cens[*antclust],*W3cens[*antclust];
+//  vector *W2cens[*antclust],*W3cens[*antclust];
   vector *diag,*dB,*dN,*VdB,*AIXdN,*AIXlamt,*bhatt,*truncbhatt,*pbhat,*plamt,*ciftrunk;
   vector *korG,*pghat,*rowG,*gam,*dgam,*ZGdN,*IZGdN,*ZGlamt,*IZGlamt,*censZv,*censXv;
   vector *covsx,*covsz,*qs,*Y,*rr,*bhatub,*xi,*xit,*zit,*rowX,*rowZ,*difX,*zi,*z1,
     *tmpv1,*tmpv2,*lrisk;
   int sing,itt,i,j,k,l,s,c,pmax,totrisk,convproblems=0, 
       *n= calloc(1,sizeof(int)), *nx= calloc(1,sizeof(int)),
-      *robust= calloc(1,sizeof(int)),
+//      *robust= calloc(1,sizeof(int)),
       *px1= calloc(1,sizeof(int));
   int clusterj,fixedcov,osilent,withtrunc=0; 
   double nrisk,time,dummy,dtime,phattrunc,lrr,lrrt;
@@ -289,7 +312,8 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	 *cumentry=calloc((*antpers)*(*px+1),sizeof(double));
   osilent=silent[0]; silent[0]=0; 
   // float gasdev(),expdev(),ran1();
-  robust[0]=1; fixedcov=1; n[0]=antpers[0]; nx[0]=antpers[0];
+//  robust[0]=1; 
+  fixedcov=1; n[0]=antpers[0]; nx[0]=antpers[0];
 
 //if (*trans==1) for (j=0;j<*pg;j++) if (fabs(timepow[j]-1)>0.0001) {timem=1;break;}
 //if (*trans==2) for (j=0;j<*pg;j++) if (fabs(timepow[j])>0.0001) {timem=1;break;}
@@ -491,7 +515,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	   
 	    VE(Y,j)=((x[j]<=time) & (cause[j]==*CA))*1;
 
-           if (itt==(*Nit-1)) { // {{{ for censoring distribution correction 
+           if ((itt==(*Nit-1)) && (*robust==0)) { // {{{ for censoring distribution correction 
               if (KMc[j]>0.001) scl_vec_mult(weights[j]*VE(Y,j)*1/KMc[j],xi,rowX); 
 	      else scl_vec_mult(weights[j]*VE(Y,j)*1/0.001,xi,rowX); 
               vec_add(censXv,rowX,censXv); 
@@ -566,7 +590,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	         vec_add(rowZ,W2[j],W2[j]); 
 	      }
 
-//	      censuring terms  {
+	      if (*robust==0) { // {{{ censuring terms  
               k=ordertime[i]; nrisk=(*antpers)-i; 
 	      clusterj=clusters[k]; 
 	      if (cause[k]==(*censcode)) { 
@@ -575,21 +599,23 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 		 if (*fixgamma==0) {
 	         vM(C[s],rowX,tmpv2); vec_subtr(censZv,tmpv2,rowZ); 
 	         scl_vec_mult(dtime/nrisk,rowZ,rowZ); 
-	         vec_add(rowZ,W2[clusterj],W2[clusterj]); 
+	         for (l=0;l<*pg;l++) VE(W2[clusterj],l)+=VE(rowZ,l)/nrisk; 
 	         }
 	         for (j=i;j<*antpers;j++) {
 	            clusterj=clusters[ordertime[j]]; 	
 	            for (l=0;l<*px;l++) ME(W3t[clusterj],s,l)-=VE(rowX,l)/pow(nrisk,2); 
 		    if (*fixgamma==0) {
-	               scl_vec_mult(-1/(nrisk),rowZ,rowZ); 
-	               vec_add(rowZ,W2[clusterj],W2[clusterj]); 
+	               for (l=0;l<*pg;l++) VE(W2[clusterj],l)+=VE(rowZ,l)/nrisk; 
+//	               scl_vec_mult(-1/(nrisk),rowZ,rowZ); 
+//	               vec_add(rowZ,W2[clusterj],W2[clusterj]); 
 	            }
 	         } 
 	      } 
              // fewer where I(s <= T_i) , because s is increasing
              extract_row(censX,k,xi); vec_subtr(censXv,xi,censXv);  
              extract_row(censZ,k,zi); vec_subtr(censZv,zi,censZv);  
-//	     }
+           }     // robust==0 }}}
+
 	   } // if (itt==(*Nit-1)) for (i=0;i<*antpers;i++) 
 
 	  } // sing=0
@@ -631,8 +657,8 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 
    R_CheckUserInterrupt();
   /* ROBUST VARIANCES   */ 
-  if (*robust==1) 
-    {
+//  if (*robust==1) 
+//    {
       for (s=0;s<*Ntimes;s++) {
 	vec_zeros(VdB); 
 	 for (i=0;i<*antclust;i++) {
@@ -654,7 +680,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	for (k=1;k<*px+1;k++) var[k*(*Ntimes)+s]=VE(VdB,k-1); 
 
       } /* s=0..Ntimes*/
-    }
+//    }
 
   /* MxA(RobVargam,ICGam,tmpM2); MxA(ICGam,tmpM2,RobVargam);*/
   /* print_mat(RobVargam);  */ 
@@ -684,7 +710,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
   for (j=0;j<*Ntimes;j++) {free_mat(Acorb[j]);free_mat(C[j]);free_mat(M1M2[j]);}
   for (j=0;j<*antclust;j++) {free_mat(W3t[j]); free_mat(W4t[j]);
     free_vec(W2[j]); free_vec(W3[j]); }
-  free(vcudif); free(inc); free(n); free(nx);  free(robust); free(cumentry); free(px1); 
+  free(vcudif); free(inc); free(n); free(nx);  free(cumentry); free(px1); 
   free(cifentry); 
   // }}}
 }

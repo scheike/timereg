@@ -512,6 +512,7 @@ summary.cor<-function(object,digits=3,marg.cif=NULL,...)
   class(res) <- "summary.cor"
   res
 } ## }}}
+
 coef.cor<-function(object,...)
 { ## {{{
  res <- cbind(object$theta, diag(object$var.theta)^0.5)

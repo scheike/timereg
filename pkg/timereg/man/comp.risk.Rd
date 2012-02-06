@@ -45,9 +45,10 @@ In general p may be powers of the same length as z.
 comp.risk(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="additive",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
-cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
+cens.model="KM",cens.formula=NULL,
+time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
 weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,
-trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL)
+trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=0)
 }
 \arguments{
 \item{formula}{a formula object, with the response on the left of a '~'
@@ -77,6 +78,9 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL)
 \item{interval}{specifies that we only consider timepoints where the Kaplan-Meier of the censoring distribution  is larger than this value.}
 \item{resample.iid}{to return the iid decomposition, that can be used to construct confidence bands for predictions}
 \item{cens.model}{specified which model to use for the ICPW, KM is Kaplan-Meier alternatively it may be "cox"}
+\item{cens.formula}{specifies the regression terms used for the regression model for chosen regression model. When cens.model is specified, the default
+is to use the same design as specified for the competing risks model.
+}
 \item{time.pow}{specifies that the power at which the time-arguments  is transformed, for each of the arguments of the const() terms, default is 1 for the additive model and 0 for the proportional model.}
 \item{time.pow.test}{specifies that the power the time-arguments is 
 transformed for each of the arguments of the non-const() terms. This is 
@@ -95,6 +99,8 @@ Default is 1000 to save memory and time. }
 \item{entry.time}{entry times}
 \item{cens.weight}{censoring weights can be given here rather than calculated using the KM, cox or aalen models.}
 \item{admin.cens}{censoring times for the administrative censoring}
+\item{conservative}{set to 1 to compute only conservative variance that ignores that the censoring weights are estimated. 
+This can speed up tings considerably for large data-sets.}
 }
 \value{returns an object of type 'comprisk'. With the following arguments:
 \item{cum}{cumulative timevarying regression coefficient estimates are 
@@ -145,6 +151,14 @@ par(mfrow=c(2,3))
 out<-predict(add,ndata,uniform=1,n.sim=100)
 par(mfrow=c(2,2))
 plot(out,multiple=0,uniform=1,col=1:3,lty=1,se=1)
+
+add<-comp.risk(Surv(time,cause>0)~platelet+age+tcell,data=bmt,
+bmt$cause,causeS=1,resample.iid=0,n.sim=0,cens.model="cox",
+cens.formula=~factor(platelet))
+
+out<-predict(add,ndata,se=0,uniform=0)
+par(mfrow=c(2,2))
+plot(out,multiple=0,se=0,uniform=0,col=1:3,lty=1)
 
 ## fits additive model with some constant effects 
 add.sem<-comp.risk(Surv(time,cause>0)~

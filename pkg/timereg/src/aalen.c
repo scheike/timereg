@@ -244,10 +244,10 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
   vector *VdB,*difX,*xi,*tmpv1,*tmpv2; 
   vector *dAoff,*dA,*rowX,*dN,*AIXWdN,*bhatt,*pbhat,*plamt;
   vector *korG,*pghat,*rowZ,*gam,*gamoff,*dgam,*ZHdN,*IZHdN,*zi,*offset;
-  int cin,ci=0,i,j,k,l,c,s,count,pers=0,pmax,stat,
+  int l1,cin,ci=0,i,j,k,l,c,s,count,pers=0,pmax,stat,
       *cluster=calloc(*antpers,sizeof(int)),
-      *idd=calloc(*antpers,sizeof(int)),
-      *ls=calloc(*Ntimes,sizeof(int)); 
+      *stats=calloc(*Nalltimes,sizeof(int)), *idd=calloc(*antpers,sizeof(int)),
+      *ls=calloc(*Ntimes,sizeof(int)),detail=1; 
   double time,dtime,fabs(),sqrt();
   double ahati,ghati,hati;
   double *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
@@ -264,7 +264,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
   malloc_mats(*px,*pg,&tmpM3,&Ct,&dC,&XWZ,&XWZAI,&dM1M2,&M1M2t,NULL);
   malloc_mat(*px,*pg,tmpM4);
   for (j=0;j<*Nalltimes;j++) {
-	  malloc_mat(*px,*pg,Acorb[j]); malloc_mat(*px,*pg,C[j]);
+	  malloc_mat(*px,*pg,Acorb[j]); malloc_mat(*px,*pg,C[j]);stats[j]=0; 
   }
   for (j=0;j<*Ntimes;j++) { malloc_mat(*px,*pg,M1M2[j]); }
 
@@ -319,7 +319,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 					  if ((j<*px) & (k<*pg)) ME(XWZ,j,k)+=ME(X,id[c],j)*ME(Z,id[c],k)*weights[c]; 
 					  if ((j<*pg) & (k<*pg)) ME(ZWZ,j,k)+= ME(Z,id[c],j)*ME(Z,id[c],k)*weights[c]; 
 				  }
-				  if (time==stop[c] && status[c]==1) { pers=id[c];stat=1;l=l+1; ls[l]=s; }
+				  if (time==stop[c] && status[c]==1) { pers=id[c];stat=1;l=l+1; ls[l]=s;stats[s]=stat; }
 				  count=count+1; 
 			  }
 		  }
@@ -363,20 +363,12 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 
 	  // Rprintf("ci ci ci  %lf %lf %ld \n",time,stop[ci],status[ci]); 
 	  if ((s>1) & (time==stop[ci]) & (status[ci]==1)) {
-		  pers=id[ci]; stat=1;l=l+1; ls[l]=s;
+		  pers=id[ci]; stat=1;l=l+1; ls[l]=s;stats[s]=stat; 
 	  }
 
 	  // }}}
 
 	  // }}}
-
-	  //   Rprintf(" hej mig \n"); 
-	  // Rprintf("lllllllllll %lf %lf %d %d %d \n",time,dtime,pers,stat,l); 
-	  //   print_mat(X); print_mat(Z); 
-	  //   print_mat(A); print_mat(ZWZ); print_mat(XWZ); 
-	  //   Rprintf("========================================== \n"); 
-	  //readXZt(antpers,nx,px,designX,pg,designG,start,stop,status,pers,X,WX,Z,WZ,time,
-	  //	clusters,cluster,ls,stat,l,id,s,1);
 
 	  invertS(A,AI,silent[0]);
 	  if (ME(AI,0,0)==0.0 && *silent==0){ 
@@ -411,7 +403,6 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 		  //	print_vec(tmpv1); 
 	  } 
 
-
 	  scl_mat_mult(dtime,XWZAI,tmpM4);
 	  mat_add(tmpM4,Ct,Ct); mat_copy(Ct,C[s]);
 
@@ -439,25 +430,24 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 
     } /* s =1...Ntimes */ 
 
+ if (detail>=2) Rprintf("Fitting done \n"); 
   invertS(CGam,ICGam,silent[0]);
   if (*fixedgamma==0) Mv(ICGam,IZHdN,gam); 
   if ((*mof==1) & (*fixedgamma==0)) {
       Mv(ICGam,gamoff,dgam); vec_subtr(gam,dgam,gam);
   }
-
  
   if (ME(ICGam,0,0)==0 && *silent==0) Rprintf(" intZHZ  singular\n"); 
 //  Mv(ICGam,IZHdN,gam); 
   MxA(Vargam,ICGam,tmpM2); 
   MxA(ICGam,tmpM2,Vargam); 
 
-
   mat_zeros(X); mat_zeros(Z); mat_zeros(WX); mat_zeros(WZ);
-  l=0; 
+  l=0; l1=0; 
   for (s=1;s<*Nalltimes;s++) {
-    time=alltimes[s]; vec_zeros(dN); dtime=time-alltimes[s-1]; 
-    stat=0; 
+    time=alltimes[s]; dtime=time-alltimes[s-1]; stat=0; 
 
+    if (*robust==1) { 
   // {{{ reading design and making matrix products
    if (s==1)  { // {{{ reading start design 
      for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) {
@@ -470,7 +460,8 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 	    if (j<*pg) { ME(WZ,id[c],j)=weights[c]*designG[j*(*ng)+c]; } 
 	  }
 	  if (time==stop[c] && status[c]==1) {
-	    pers=id[c];stat=1;l=l+1; ls[l]=s;
+	    pers=id[c];stat=1; l1=l1+1; 
+//	    ls[l1]=s;
 	  }
 	  count=count+1; 
 	}
@@ -480,18 +471,11 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
     while ((stop[ci]<time)  & (ci>=0) )  ci=ci-1; 
     } // }}}
 
-//   print_mat(X); print_mat(Z); 
-//   print_mat(WX); print_mat(WZ); 
-// Rprintf(" (((((((((((((((((((((((((((((((((((((((((((( \n"); 
-// Rprintf("%d %d %d %lf %lf %lf \n",s,ci,id[ci],start[ci],stop[ci],time); 
-
      vec_zeros(rowX); vec_zeros(rowZ); 
     if (s>1)  // {{{ modifying design for next time points
     while ((stop[ci]<time)  & (ci>=0) ) {
-// Rprintf("ww %d %d  %lf %lf %d \n",ci,id[ci],stop[ci],time,entry[ci]); 
             for(j=0;j<*px;j++) VE(xi,j)=designX[j*(*nx)+ci]; 
             for(j=0;j<*pg;j++) VE(zi,j)=designG[j*(*nx)+ci]; 
-//            print_vec(xi); print_vec(zi); 
 	    if (entry[ci]==1)  {
                 VE(offset,id[ci])=offsets[ci]; 
 	        replace_row(X,id[ci],xi); replace_row(Z,id[ci],zi); 
@@ -517,26 +501,26 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 	  ci=ci-1; 
     }
 
-// Rprintf("ci ci ci  %lf %lf %ld \n",time,stop[ci],status[ci]); 
     if ((s>1) & (time==stop[ci]) & (status[ci]==1)) {
-         pers=id[ci]; stat=1;l=l+1; ls[l]=s;
+         pers=id[ci]; stat=1; l1=l1+1; 
+//       ls[l]=s;
+    }
+    // }}}
+    // }}}
     }
 
-    // }}}
-    
-    // }}}
+    if (stats[s]==1) l=l+1; 
+    if (stats[s]==1) for (k=1;k<=*px;k++) VE(dA,k-1)=cu[k*(*Ntimes)+l]; else vec_zeros(dA);
 
-    if (stat==1) for (k=1;k<=*px;k++) VE(dA,k-1)=cu[k*(*Ntimes)+l]; 
-    else vec_zeros(dA);
-    
+//    Rprintf(" %d %d %d %d %d %d \n",s,l,l1,ls[l],stats[s],stat);
 
-    if (*mof==1) for (k=1;k<=*px;k++) {
-	      VE(dA,k-1)=VE(dA,k-1)-cumoff[k*(*Nalltimes)+s];
-              VE(dAoff,k-1)=VE(dAoff,k-1)-cumoff[k*(*Nalltimes)+s];
-              cumoff[k*(*Nalltimes)+s]=cumoff[k*(*Nalltimes)+s-1]+
-		                       cumoff[k*(*Nalltimes)+s];
+    if (*mof==1) {
+          for (k=1;k<=*px;k++) {
+	  VE(dA,k-1)=VE(dA,k-1)-cumoff[k*(*Nalltimes)+s];
+          VE(dAoff,k-1)= -cumoff[k*(*Nalltimes)+s];
+          cumoff[k*(*Nalltimes)+s]=cumoff[k*(*Nalltimes)+s-1]+cumoff[k*(*Nalltimes)+s];
+          }
     }
-
 
     /* terms for robust variance   */ 
     if (*robust==1 )  // {{{
@@ -580,38 +564,30 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 	} /* i=1..antpers */ 
     } // }}} /* robust ==1 */
 
-    if (stat==1) {
+    if (stats[s]==1) {
 //      extract_row(X,pers,xi); ahati=vec_prod(xi,dA); 
-//      extract_row(WX,pers,xi);
-//      vec_star(xi,dA,rowX); 
+//      extract_row(WX,pers,xi); vec_star(xi,dA,rowX); 
 
-      for (k=1;k<=*px;k++) 
-	      cu[k*(*Ntimes)+l]=cu[k*(*Ntimes)+l-1]+cu[k*(*Ntimes)+l]+VE(dAoff,k-1); 
-     vec_zeros(dAoff); 
+      for (k=1;k<=*px;k++) cu[k*(*Ntimes)+l]=cu[k*(*Ntimes)+l-1]+cu[k*(*Ntimes)+l]+VE(dAoff,k-1); 
 
       MxA(C[ls[l]],Vargam,tmpM4); 
       MAt(tmpM4,C[ls[l]],VarKorG);
       MxA(M1M2[l],ICGam,tmpM4); 
       MAt(C[ls[l]],tmpM4,GCdM1M2);
 
-      for (k=1;k<=*px;k++) {
-	vcu[k*(*Ntimes)+l]= vcu[k*(*Ntimes)+l]+ME(VarKorG,k-1,k-1)-2.0*ME(GCdM1M2,k-1,k-1); 
-      } 
+     for (k=1;k<=*px;k++) vcu[k*(*Ntimes)+l]+= ME(VarKorG,k-1,k-1)-2.0*ME(GCdM1M2,k-1,k-1); 
     }
-
-
   } /* s=1 ..Ntimes */ 
 
   vec_star(IZHdN,gam,rowZ);    
 
+ if (detail>=2) Rprintf("Offsets adjustment and MG variances for gamma \n"); 
 //  loglike[0]=loglike[0]-vec_sum(rowZ); 
 
   for (s=1;s<*Ntimes;s++) {
 
     Mv(C[ls[s]],gam,korG); 
-    for (k=1;k<=*px;k++) {
-      cu[k*(*Ntimes)+s]=cu[k*(*Ntimes)+s]-VE(korG,k-1); 
-    }
+    for (k=1;k<=*px;k++) cu[k*(*Ntimes)+s]=cu[k*(*Ntimes)+s]-VE(korG,k-1); 
 
     if (*robust==1) { // {{{ ROBUST VARIANCES  
       vec_zeros(VdB); mat_zeros(Vcov); 
@@ -653,6 +629,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
     }
   }  /*  s=1 ..Ntimes */ 
 
+ if (detail>=2) Rprintf("Baseline corrected for gamma and robust variances \n"); 
 
   if (*robust==1) {
     MxA(RobVargam,ICGam,tmpM2); 
@@ -696,7 +673,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
       free_mat(W3t[j]); free_mat(W4t[j]); free_vec(W2[j]); free_vec(W3[j]);    } 
   }
   free(ls); free(vcudif); free(times); free(cluster); 
-  free(cumoff); 
+  free(cumoff); free(stats); 
   // }}}
 } // }}}
 

@@ -285,6 +285,8 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
       if ((sumscore<0.0000001) & (it<(*Nit)-2)) {  it=*Nit-2; }
  } /* it */ // }}}
 
+  if (*detail>=2) Rprintf("Fitting done \n"); 
+
   R_CheckUserInterrupt();
 
   mat_zeros(X); mat_zeros(Z); mat_zeros(WX); mat_zeros(WZ); vec_zeros(Gbeta); 
@@ -301,6 +303,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     cug[timegroup[s]]=times[s]; timesg[timegroup[s]]=times[s]; 
     Ut[timegroup[s]]=times[s]; 
 
+    if (*robust==1) {
     // {{{ reading design and computing matrix products
 	  if (s==1) { // {{{
 	  for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) 
@@ -388,15 +391,16 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     // }}}
 	  ipers[s]=pers;
    // }}}
+    }
    
-//	  print_mat(WX); print_mat(X); print_mat(Z); 
-
+//  print_mat(WX); print_mat(X); print_mat(Z); 
 // Rprintf("=============== %d  %lf %d \n",s,time,pers); print_mat(Z); print_mat(X); 
 
     extract_row(WX,pers,xi); hati=vec_prod(xi,dAt[s]); 
     lle=lle+log(hati);
 
     /* terms for robust variance   */ 
+    if (*robust==1) {
     for (i=0;i<*antpers;i++)   // {{{
     {
       cin=cluster[i]; 
@@ -422,6 +426,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
       if (*retur==2) dhatMit[i]=dhatMit[i]+1*(i==pers)-hati;
 
     } /* i 1.. antpers */ // }}}
+    }
 
     if (*robust==1) 
     for (j=0;j<*antclust;j++) 
@@ -435,11 +440,13 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 
     for (k=1;k<=*px;k++) {
       if (*betafixed==0) 
-	vcu[k*(*Ntimes)+s]=vcu[k*(*Ntimes)+s]+ME(CtVUCt,k-1,k-1)
-	  +2*ME(COV,k-1,k-1); else vcu[k*(*Ntimes)+s]=vcu[k*(*Ntimes)+s];
+	vcu[k*(*Ntimes)+s]+=ME(CtVUCt,k-1,k-1) +2*ME(COV,k-1,k-1); 
+//      else vcu[k*(*Ntimes)+s]=vcu[k*(*Ntimes)+s];
     }
     for (k=1;k<=*pg;k++) Ut[k*(*maxtimepoint)+timegroup[s]]=ME(Utt,timegroup[s],k-1);
   }   // }}}
+
+  if (*detail>=2) Rprintf("Robust variances \n"); 
 
   R_CheckUserInterrupt();
 
@@ -496,6 +503,8 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
       }  /*  s=1 ..Ntimes */ 
 
     } /* if robust==1 */  // }}}
+
+  if (*detail>=2) Rprintf("Robust variances \n"); 
 
     // always compute robust se and return iid of gamma iid
     if (*betafixed==0) 
@@ -609,8 +618,6 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   } /* sim==1 */ // }}}
 
   PutRNGstate();  /* to use R random normals */
-
-//  Rprintf(" klar sim \n"); 
 
   // {{{ freeing 
   if (*sim==1) free_mats(&Delta,&Delta2,&tmpM2,&tmpM1,NULL); 

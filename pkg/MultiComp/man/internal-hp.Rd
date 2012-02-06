@@ -1,6 +1,7 @@
 \name{coef.cor}
 \alias{coef.cor}
 \alias{conc2case}
+\alias{bicomprisk}
 \alias{test.conc}
 \alias{back2timereg}
 \alias{or.cif}
