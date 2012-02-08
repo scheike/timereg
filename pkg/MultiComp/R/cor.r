@@ -1,7 +1,7 @@
 cor.cif<-function(cif,data=sys.parent(),cause,times=NULL,parfunc=NULL,dparfunc=NULL,
 cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,clusters=NULL,
 theta=NULL,theta.des=NULL,step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,
-notaylor=0,same.cens=FALSE,censoring.probs=NULL)
+notaylor=0,same.cens=FALSE,censoring.probs=NULL,silent=1)
 { ## {{{
 ## {{{ set up data and design
 multi=0; dscore <- 1;  trunkp <- 1; stab.cens=FALSE;
@@ -175,7 +175,8 @@ as.integer(semi2),as.double(Z2), as.integer(pg2), as.double(est2), as.double(gam
 as.double(gamma2.iid), body(htheta),body(dhtheta),new.env(),as.integer(dimpar),as.integer(flex.func),
 as.double(theta.iid),as.integer(sym) , as.double(weights), 
 as.integer(notaylor), 
-as.integer(same.cens),as.integer(stab.cens), as.double(Gctimes),PACKAGE="MultiComp") 
+as.integer(same.cens),as.integer(stab.cens), as.double(Gctimes),
+as.integer(silent),PACKAGE="MultiComp") 
 ###as.integer(entryage),as.double(cifentry),as.double(trunkp),
 
 ## }}}
@@ -219,7 +220,7 @@ rr.cif<-function(cif,data=sys.parent(),cause,times=NULL,
 cause1=1,cause2=1,cens.code=0,cif2=NULL,cens.model="KM",Nit=40,detail=0,
 clusters=NULL,theta=NULL,theta.des=NULL,parfunc=NULL,dparfunc=NULL,
 step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,notaylor=0,
-same.cens=FALSE,stab.cens=FALSE,entry=NULL,estimator=1,trunkp=1,admin.cens=NULL)
+same.cens=FALSE,stab.cens=FALSE,entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,silent=1)
 { ## {{{
 ## {{{ set up data and design
  multi=0; dscore=0; 
@@ -402,7 +403,7 @@ else {
  as.double(theta.iid),as.integer(sym),as.double(weights), as.integer(notaylor),
  as.integer(same.cens),as.integer(estimator), 
  as.double(entry),as.double(cif1entry),as.double(cif2entry),as.double(trunkp),
-PACKAGE="MultiComp") 
+as.integer(silent), PACKAGE="MultiComp") 
 ## }}}
 
 ## {{{ output
@@ -608,7 +609,7 @@ parfunc=NULL,dparfunc=NULL,
 cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,clusters=NULL,
 theta=NULL,theta.des=NULL,step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,
 notaylor=0,same.cens=FALSE,stab.cens=FALSE,entry=NULL,trunkp=1,
-stratdes=NULL,estimator=1)
+stratdes=NULL,estimator=1,silent=1)
 { ## {{{
 ## {{{ set up data and design
  multi=0; dscore <- 1;  
@@ -825,7 +826,8 @@ as.integer(semi2),as.double(Z2), as.integer(pg2), as.double(est2), as.double(gam
 as.double(gamma2.iid), body(htheta),body(dhtheta),new.env(),as.integer(dimpar),as.integer(flex.func),
 as.double(theta.iid),as.integer(sym) , as.double(weights), as.integer(notaylor),
 as.integer(same.cens),as.integer(estimator), 
-as.double(entry),as.double(cif1entry),as.double(cif2entry),as.double(trunkp),PACKAGE="MultiComp") 
+as.double(entry),as.double(cif1entry),as.double(cif2entry),as.double(trunkp),
+as.integer(silent),PACKAGE="MultiComp") 
 ## }}}
 
 ## {{{ output

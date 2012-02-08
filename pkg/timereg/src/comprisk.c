@@ -128,7 +128,7 @@ for (s=0;s<*Ntimes;s++)
     MtM(cX,A); 
     invertS(A,AI,osilent); sing=0; 
     // head_matrix(cX); print_mat(A); print_mat(AI); 
-   if (ME(AI,0,0)==0 && *stratum==0) {
+   if (ME(AI,0,0)==0 && *stratum==0 && (osilent==0)) {
 	  Rprintf(" X'X not invertible at time %d %lf \n",s,time); 
 	  print_mat(A); 
    }
@@ -542,8 +542,8 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 
 	  MtM(cdesignX,A); 
 	  invertS(A,AI,osilent); sing=0; 
-          if (ME(AI,0,0)==0 && *stratum==0) {
-	     Rprintf(" X'X not invertible at time %d %lf \n",s,time); 
+          if (ME(AI,0,0)==0 && *stratum==0 && (osilent==0)) {
+	     Rprintf(" X'X not invertible at time %d %lf %d \n",s,time,osilent); 
 	     print_mat(A); 
           }
           if (*stratum==1)  {

@@ -109,8 +109,8 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,
     nobs <- nrow(newdata)
   } else if ((is.null(Z)==FALSE) || (is.null(X)==FALSE)){ 
 
-    xcol=ncol(object$cum)-1
-    if (semi) zcol=nrow(object$gamma)
+    xcol<-ncol(object$cum)-1
+    if (semi) zcol <- length(c(object$gamma))
     if (!is.null(X)) X <- matrix(X,ncol=xcol)
     else {
       if (xcol==1) X<-time.vars<-matrix(1,xcol,1) 

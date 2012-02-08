@@ -13,14 +13,14 @@ void cor(times,Ntimes,x, delta,cause,CA1,
 		maxclust,step,inverse,CA2,x2,px2,
 		semi2,z2,pg2,est2,gamma2,b2iid,
 		gam2iid, htheta,dhtheta,rhoR,dimpar,flexfunc,
-		thetiid, sym, weights, notaylor, samecens, stabcens, KMtimes
+		thetiid, sym, weights, notaylor, samecens, stabcens, KMtimes,silent
 //                entryage,cifentry,trunkp
 ) // {{{
 double *theta,*times,*x,*KMc,*z,*score,*hess,*est,*gamma,*zsem,*vartheta,*biid,*gamiid,*timepow,*thetades,*step,*x2,*z2,*est2,*gamma2,*b2iid,*gam2iid,*thetiid,*weights,
        *KMtimes; // *entryage,*cifentry,*trunkp;
 int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*CA2,*detail,*ptheta,
 *antclust,*cluster,*clustsize,*clusterindex,*maxclust,*inverse,
-	*pg2,*px2,*semi2,*dimpar,*flexfunc,*sym,*notaylor,*samecens,*stabcens;
+	*pg2,*px2,*semi2,*dimpar,*flexfunc,*sym,*notaylor,*samecens,*stabcens,*silent;
 SEXP htheta,dhtheta,rhoR; 
 {
 // {{{ allocation and def's
@@ -197,7 +197,7 @@ SEXP htheta,dhtheta,rhoR;
 	}
 //}
 
-	if ((isnan(response)) && (naprint==0))   { // {{{ print diverse na information
+	if ((isnan(response)) && (naprint==0) && (*silent==0))   { // {{{ print diverse na information
 	Rprintf("Missing values for response \n");   
 	Rprintf("removed from estimation, but check size of problem \n\n\n");   
 	Rprintf(" %d %d %d %d %d \n",s,j,clustsize[j],i,k);  
@@ -422,13 +422,13 @@ void mcifrr(times,Ntimes,x, delta,cause,CA1,
 		semi2,z2,pg2,est2,gamma2,b2iid,
 		gam2iid, htheta,dhtheta,rhoR,dimpar,flexfunc,
 		thetiid, sym, weights, notaylor, samecens, estimator,
-                entryage,cif1entry,cif2entry,trunkp
+                entryage,cif1entry,cif2entry,trunkp,silent
 ) // {{{
 double *theta,*times,*x,*KMc,*z,*score,*hess,*est,*gamma,*zsem,*vartheta,*biid,*gamiid,*timepow,*thetades,*step,*x2,*z2,*est2,
        *gamma2,*b2iid,*gam2iid,*thetiid,*weights,*entryage,*cif1entry,*cif2entry,*trunkp;
 int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*CA2,*detail,*ptheta,
     *antclust,*cluster,*clustsize,*clusterindex,*maxclust,*inverse,
-    *pg2,*px2,*semi2,*dimpar,*flexfunc,*sym,*notaylor,*samecens,*estimator;
+    *pg2,*px2,*semi2,*dimpar,*flexfunc,*sym,*notaylor,*samecens,*estimator,*silent;
 SEXP htheta,dhtheta,rhoR; 
 {
 // {{{ allocation and def's
@@ -592,7 +592,7 @@ for (s=0;s<*Ntimes;s++) // {{{
 	}
 } // reponses for the two different estimators 
 
-	if ((isnan(response)) && (naprint==0))   { // {{{ print diverse na information
+	if ((isnan(response)) && (naprint==0) && (*silent==0))   { // {{{ print diverse na information
 	Rprintf("Missing values for response \n");   
 	Rprintf("removed from estimation, but check size of problem \n\n\n");   
 	Rprintf(" %d %d %d %d %d \n",s,j,clustsize[j],i,k);  
@@ -785,13 +785,13 @@ void plackor(times,Ntimes,x, delta,cause,CA1,
 		semi2,z2,pg2,est2,gamma2,b2iid,
 		gam2iid, htheta,dhtheta,rhoR,dimpar,flexfunc,
 		thetiid, sym, weights, notaylor, samecens, estimator,
-                entryage,cif1entry,cif2entry,trunkp
+                entryage,cif1entry,cif2entry,trunkp,silent
 ) // {{{
 double *theta,*times,*x,*KMc,*z,*score,*hess,*est,*gamma,*zsem,*vartheta,*biid,*gamiid,*timepow,*thetades,*step,*x2,*z2,*est2,
        *gamma2,*b2iid,*gam2iid,*thetiid,*weights,*entryage,*cif1entry,*cif2entry,*trunkp;
 int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*CA2,*detail,*ptheta,
     *antclust,*cluster,*clustsize,*clusterindex,*maxclust,*inverse,
-    *pg2,*px2,*semi2,*dimpar,*flexfunc,*sym,*notaylor,*samecens,*estimator;
+    *pg2,*px2,*semi2,*dimpar,*flexfunc,*sym,*notaylor,*samecens,*estimator,*silent;
 SEXP htheta,dhtheta,rhoR; 
 {
 // {{{ allocation and def's
@@ -958,7 +958,7 @@ for (s=0;s<*Ntimes;s++) // {{{
 	}
 } // reponses for the two different estimators 
 
-	if ((isnan(response)) && (naprint==0))   { // {{{ print diverse na information
+	if ((isnan(response)) && (naprint==0) && (*silent==0))   { // {{{ print diverse na information
 	Rprintf("Missing values for response \n");   
 	Rprintf("removed from estimation, but check size of problem \n\n\n");   
 	Rprintf(" %d %d %d %d %d \n",s,j,clustsize[j],i,k);  
