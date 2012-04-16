@@ -4,7 +4,8 @@
                  
 void score(times,Ntimes,designX,nx,px,designG,ng,pg,antpers,start,stop,
 betaS,Nit,cu,vcu,w,mw,loglike,Iinv,Vbeta,detail,offs,mof,sim,antsim,
-rani,Rvcu,RVbeta,test,testOBS,Ut,simUt,Uit,XligZ,aalen,nb,id,status,wscore,ridge,ratesim,score,dhatMit,gammaiid,dmgiid,
+rani,Rvcu,RVbeta,
+test,testOBS,Ut,simUt,Uit,XligZ,aalen,nb,id,status,wscore,ridge,ratesim,score,dhatMit,gammaiid,dmgiid,
 retur,robust,covariance,Vcovs,addresamp,addproc,
 resample,gamiid,biid,clusters,antclust,vscore,betafixed,weights,entry,exactderiv,
 timegroup,maxtimepoint,stratum)
@@ -128,7 +129,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 		RR=exp(VE(Gbeta,id[c]));
 		S0+=RR*weights[c]; 
                 for(j=0;j<pmax;j++) {
-	        if (j<*px) {ME(WX,id[c],j) =weights[c]*RR*designX[j*(*nx)+c];}
+	        if (j<*px) {ME(WX,id[c],j)=weights[c]*RR*designX[j*(*nx)+c];}
 	        if (j<*pg) {ME(WZ,id[c],j)=weights[c]*designG[j*(*ng)+c];} 
 		}
 		if (time==stop[c] && status[c]==1) {pers=id[c];} 
@@ -198,7 +199,10 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 
    invertS(A,AI,1); 
    if (ME(AI,0,0)==0 && *stratum==0) {Rprintf(" X'X not invertible at time %d %lf \n",s,time); print_mat(A);}
-   if (*stratum==1)  {for (k=0;k<*px;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);}
+   if (*stratum==1)  {
+    for (k=0;k<*px;k++) 
+    if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);
+   }
 
     scale=VE(weight,pers); 
     extract_row(X,pers,xi); scl_vec_mult(scale,xi,xi); 
@@ -585,9 +589,10 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 	for (i=0;i<*px;i++) {
 	  VE(difX,i)=fabs(VE(difX,i));
 	  l=(*px+i);
-	  if (VE(difX,i)>test[l*(*antsim)+k]) test[l*(*antsim)+k]=VE(difX,i);
+	  if (VE(difX,i)>test[l*(*antsim)+k-1]) test[l*(*antsim)+k-1]=VE(difX,i);
 	  VE(xi,i)=fabs(ME(Delta,s,i))/sqrt(Rvcu[(i+1)*(*maxtimepoint)+s]);
-	  if (VE(xi,i)>test[i*(*antsim)+k]) test[i*(*antsim)+k]=VE(xi,i); }
+	  if (VE(xi,i)>test[i*((*antsim))+k-1]) test[i*((*antsim))+k-1]=VE(xi,i); 
+	}
 
 	if (*wscore>=1) {
 	  extract_row(Delta2,s,zi); 

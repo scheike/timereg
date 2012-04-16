@@ -13,9 +13,11 @@
 \alias{summary.randomcifrv}
 \alias{coef.randomcifrv}
 \alias{print.randomcifrv}
+\alias{print.testconc}
 \alias{multcif}
 \alias{plack.cif}
 \alias{plack.cif2}
+\alias{Specials}
 \title{For internal use}
 \description{for internal use}
 \author{Thomas Scheike}

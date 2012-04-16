@@ -146,8 +146,8 @@ void comptest(times,Ntimes,px,cu,vcu,vcudif,antsim,test,testOBS,Ut,
       for (i=0;i<*px;i++) { 
 	VE(xi,i)=fabs(ME(Delta,s,i))/sqrt(vcu[(i+1)*(*Ntimes)+s]);
 
-	if (VE(xi,i)>test[i*(*antsim)+k]){ 
-	  test[i*(*antsim)+k]=VE(xi,i);
+	if (VE(xi,i)>test[i*(*antsim)+k-1]){ 
+	  test[i*(*antsim)+k-1]=VE(xi,i);
 	}
 
 	if (*weighted>=1) {
@@ -173,13 +173,12 @@ void comptest(times,Ntimes,px,cu,vcu,vcudif,antsim,test,testOBS,Ut,
 
 	c=(*px+i);   
 	VE(difX,i)=fabs(VE(difX,i));
-	if (VE(difX,i)>test[c*(*antsim)+k]) {
-	  test[c*(*antsim)+k]=VE(difX,i);
+	if (VE(difX,i)>test[c*(*antsim)+k-1]) {
+	  test[c*(*antsim)+k-1]=VE(difX,i);
 	}
 	c=2*(*px)+i; 
 	if ((s>*weighted) && (s<*Ntimes-*weighted)) {
-
-	  test[c*(*antsim)+k]=test[c*(*antsim)+k]+VE(ssrow,i)*dtime/vardif; 
+	  test[c*(*antsim)+k-1]+=VE(ssrow,i)*dtime/vardif; 
 	}
 
       }
@@ -374,11 +373,11 @@ matrix  *W4t[];
 
       for (i=0;i<*px;i++) { 
 	VE(xi,i)=fabs(ME(Delta,s,i))/sqrt(vcu[(i+1)*(*Ntimes)+s]);
-	if (VE(xi,i)>test[i*(*antsim)+k]){ 
-	  test[i*(*antsim)+k]=VE(xi,i); 
+	if (VE(xi,i)>test[i*(*antsim)+k-1]){ 
+	  test[i*(*antsim)+k-1]=VE(xi,i); 
 	}
 	c=3*(*px);
-	test[c*(*antsim)+k]=test[c*(*antsim)+k]+ME(Delta,s,i)*ME(Delta,s,i)*dtime; 
+	test[c*(*antsim)+k-1]=test[c*(*antsim)+k-1]+ME(Delta,s,i)*ME(Delta,s,i)*dtime; 
 
 	if (*weighted>=1){ 
 	  vardif=vcudif[(i+1)*(*Ntimes)+s];
@@ -402,12 +401,12 @@ matrix  *W4t[];
 
 	c=(*px+i);   
 	VE(difX,i)=fabs(VE(difX,i));
-	if (VE(difX,i)>test[c*(*antsim)+k]){ 
-	  test[c*(*antsim)+k]=VE(difX,i);
+	if (VE(difX,i)>test[c*(*antsim)+k-1]){ 
+	  test[c*(*antsim)+k-1]=VE(difX,i);
 	}
 	c=2*(*px)+i; 
 	if ((s>*weighted) && (s<*Ntimes-*weighted)){
-	  test[c*(*antsim)+k]=test[c*(*antsim)+k]+VE(ssrow,i)*dtime/vardif; 
+	  test[c*(*antsim)+k-1]=test[c*(*antsim)+k-1]+VE(ssrow,i)*dtime/vardif; 
 	}
       }
 
@@ -426,8 +425,8 @@ matrix  *W4t[];
 
 	    xij=(mu-ms)-uhat*(tu-ts); 
 	    c=3*(*px);
-	    if (fabs(xij)>test[c*(*antsim)+k]) { 
-	      test[c*(*antsim)+k]=fabs(xij); 
+	    if (fabs(xij)>test[c*(*antsim)+k-1]) { 
+	      test[c*(*antsim)+k-1]=fabs(xij); 
 	      /* Rprintf("local %lf %lf %lf %lf \n",ts,tt,tu,xij); */  
 	    }
 	    ixij=ixij+dtime*xij*xij; 
@@ -436,19 +435,19 @@ matrix  *W4t[];
 	    xij=(mu-ms)-(mt-ms)*(tu-ts)/(tt-ts);  
 	    xij=dmus+(mu-ms)-(dmts+mt-ms)*(tu-ts)/(tt-ts);  
 	    c=5*(*px);
-	    if (xij>test[c*(*antsim)+k]) { 
-	      test[c*(*antsim)+k]=xij; 
+	    if (xij>test[c*(*antsim)+k-1]) { 
+	      test[c*(*antsim)+k-1]=xij; 
 	      /* Rprintf("conveks %lf %lf %lf %lf \n",ts,tt,tu,xij); */  
 	    }
 	    icxij=icxij+dtime*xij; 
 	  } 
 	  c=4*(*px);
-	  if (ixij>test[c*(*antsim)+k]){  
-	    test[c*(*antsim)+k]=ixij; 
+	  if (ixij>test[c*(*antsim)+k-1]){  
+	    test[c*(*antsim)+k-1]=ixij; 
 	  }
 	  c=6*(*px);
-	  if (icxij>test[c*(*antsim)+k]){  
-	    test[c*(*antsim)+k]=icxij; 
+	  if (icxij>test[c*(*antsim)+k-1]){  
+	    test[c*(*antsim)+k-1]=icxij; 
 	  }
 	} 
       }

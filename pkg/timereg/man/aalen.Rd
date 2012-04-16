@@ -116,7 +116,6 @@ Springer (2006).
 }
 \author{Thomas Scheike}
 \examples{
-library(survival)
 data(sTRACE)
 # Fits Aalen model 
 out<-aalen(Surv(time,status==9)~age+sex+diabetes+chf+vf,

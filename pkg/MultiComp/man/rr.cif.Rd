@@ -22,7 +22,7 @@ cause1=1,cause2=1,cens.code=0,cif2=NULL,cens.model="KM",Nit=40,detail=0,
 clusters=NULL,theta=NULL,theta.des=NULL,parfunc=NULL,dparfunc=NULL,
 step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,
 notaylor=0,same.cens=FALSE,stab.cens=FALSE,entry=NULL,estimator=1,trunkp=1,
-admin.cens=NULL)
+admin.cens=NULL,silent=1)
 }
 \arguments{
 \item{cif}{a model object from the comp.risk function with the 
@@ -59,6 +59,7 @@ equations, and to restrict attention to those s where Gc() is positive.}
 \item{estimator}{gives a design to fit models for each strata (cause combinations).} 
 \item{trunkp}{gives probability of survival for delayed entry, and related to entry-ages given above.}
 \item{admin.cens}{censoring times for administrative censoring.}
+\item{silent}{1 to suppress output about convergence related issues.}
 }
 \value{returns an object of type 'cor'. With the following arguments:
 \item{theta}{estimate of proportional odds parameters of model.}

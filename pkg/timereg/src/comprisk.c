@@ -103,7 +103,8 @@ for (s=0;s<*Ntimes;s++)
 	 scl_vec_mult(1,xi,dp);
       }
       scl_vec_mult(1,dp,dp1); 
-      if (*estimator==1) scl_vec_mult(pow(weights[j],0.5)*(time>entry[j]),dp,dp); 
+
+      if (*estimator<=2) scl_vec_mult(pow(weights[j],0.5)*(time>entry[j]),dp,dp); 
       else scl_vec_mult(pow(weights[j],0.5)*(time< KMc[j])*(time>entry[j]),dp,dp); 
       replace_row(cX,j,dp); 
 //    replace_row(wcX,j,dp); 
@@ -119,6 +120,10 @@ for (s=0;s<*Ntimes;s++)
       if (*estimator==1) {
           if (KMc[j]<0.001) VE(Y,j)=((VE(Y,j)/0.001)-VE(pbhat,j)/trunkp[j])*(time>entry[j]); 
           else VE(Y,j)=( (VE(Y,j)/KMc[j])-VE(pbhat,j)/trunkp[j])*(time>entry[j]);
+      } else if (*estimator==2) 
+      {
+          if (KMc[j]<0.001) VE(Y,j)=(1/0.001)*(VE(Y,j)-VE(pbhat,j)/trunkp[j])*(time>entry[j]); 
+          else VE(Y,j)=(1/KMc[j])*(VE(Y,j)-VE(pbhat,j)/trunkp[j])*(time>entry[j]);
       } else VE(Y,j)=(VE(Y,j)-VE(pbhat,j)/trunkp[j])*(time<KMc[j])*(time>entry[j]);;
       VE(Y,j)=pow(weights[j],0.5)*VE(Y,j); 
 

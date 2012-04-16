@@ -73,7 +73,6 @@ int *nx,*p,*antpers,*Ntimes,*sim,*retur,*antsim,*status,*id,*covariance,
 //  int *int0=calloc(*antpers,sizeof(int));
   double time,ahati,*vcudif=calloc((*Ntimes)*(*p+1),sizeof(double));
   double fabs(),sqrt();
-  
 
   if (*robust==1) {
     for (i=0;i<*antclust;i++) { malloc_vec(*p,cumhatA[i]); 
@@ -143,7 +142,7 @@ for (s=1;s<*Ntimes;s++){
     invertS(A,AI,silent[0]); 
     if (ME(AI,0,0)==0.0 && *silent==0 && *strata==1){ 
        Rprintf(" X'X not invertible at time %lf \n",time); }
-    if (*strata==1)  {for (k=0;k<*p;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);  }
+    if (*strata==1)  { for (k=0;k<*p;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);  }
     if (s < -1) { print_mat(AI); print_mat(A);	}
 
     extract_row(wX,pers,xi);

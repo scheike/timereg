@@ -127,8 +127,10 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 	scl_vec_mult(VE(dlamt,j),xi,xtilde); 
 	replace_row(cdesX2,j,xtilde); 
 
-	scl_vec_mult(-exp(-VE(Gbeta,j)),zi,tmpv2); 
+//	scl_vec_mult(-exp(-VE(Gbeta,j)),zi,tmpv2);  // update 27-2-2012
+	scl_vec_mult(-exp(-VE(Gbeta,j)),zi,tmpv2); // update 27-2-2012
 	vM(dG[s-1],xi,rowZ); 
+//	scl_vec_mult(-exp(-VE(Gbeta,j)),rowZ,rowZ);  // update 27-2-2012
 	vec_add(tmpv2,rowZ,rowZ); 
 	scl_vec_mult(VE(dlamt,j),rowZ,rowZ); 
 	replace_row(ddesG,j,rowZ); 

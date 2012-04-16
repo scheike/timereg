@@ -98,7 +98,7 @@ if (is.null(weights)==TRUE) weights <- rep(1,n);
 ## }}}
 
 ## {{{ censoring and estimator 
-if (is.null(admin.cens)) estimator <- 1 else estimator  <- 2;
+if (is.null(admin.cens)) estimator <- 1 else estimator  <- 3;
 Gcxe <- 1;  ordertime <- order(time2); 
 ###dcumhazcens <- rep(0,n); 
 

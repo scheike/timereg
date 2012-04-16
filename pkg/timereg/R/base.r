@@ -17,7 +17,7 @@ wald.test <- function(object,contrast,coef.null=NULL,
 		      Sigma=NULL,null=NULL)
 { ## {{{
   if (is.null(Sigma)) {
-     if (attr(object,"Type")=="cor") Sigma <- object$var.theta else Sigma <- object$var.gamma;
+     if (class(object)=="cor") Sigma <- object$var.theta else Sigma <- object$var.gamma;
   }
   coefs <- coefBase(object)[,1]
   nl <- length(coefs)

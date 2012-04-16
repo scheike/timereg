@@ -50,7 +50,7 @@ see example below, but the default is that it is simply \eqn{\theta^T z}.
 cor.cif(cif,data=sys.parent(),cause,times=NULL,parfunc=NULL,dparfunc=NULL,
 cause1=1,cause2=1,cens.code=0, cens.model="KM",Nit=40,detail=0,
 clusters=NULL,theta=NULL,theta.des=NULL,step=1,sym=0,colnames=NULL,
-dimpar=NULL,weights=NULL,notaylor=0,same.cens=FALSE,censoring.probs=NULL)
+dimpar=NULL,weights=NULL,notaylor=0,same.cens=FALSE,censoring.probs=NULL,silent=1)
 }
 \arguments{
 \item{cif}{a model object from the comp.risk function with the 
@@ -81,6 +81,7 @@ the parameters.}
 from the marginal cumulative incidence. This will speed things up considerably.} 
 \item{same.cens}{if true then censoring within clusters are assumed to be the same variable, default is independent censoring.}
 \item{censoring.probs}{if cens.model is "user.weights" these probabilities are used for the bivariate censoring dist.}
+\item{silent}{1 to suppress output about convergence related issues.}
 }
 \value{returns an object of type 'cor'. With the following arguments:
 \item{theta}{estimate of proportional odds parameters of model.}
