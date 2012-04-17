@@ -29,8 +29,9 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   vector *ta,*ahatt,*vrisk,*tmpv1,*tmpv2,*rowX,*rowZ,*difX,*VdB; 
   vector *W2[*antclust],*W3[*antclust],*reszpbeta,*res1dim,*dAt[*Ntimes]; 
   int cin=0,ci=0,c,pers=0,i=0,j,k,l,s,it,count,pmax,
-      *imin=calloc(1,sizeof(int)),*cluster=calloc(*antpers,sizeof(int));
-  int *ipers=calloc(*Ntimes,sizeof(int)); 
+      *imin=calloc(1,sizeof(int)),
+      *cluster=calloc(*antpers,sizeof(int)),
+      *ipers=calloc(*Ntimes,sizeof(int)); 
   double S0,RR=1,time=0,ll,lle,llo;
   double tau,hati,random,scale,sumscore;
   double *cug=calloc((*maxtimepoint)*(*px+1),sizeof(double)),
@@ -46,12 +47,11 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     for (j=0;j<*antclust;j++) { malloc_mat(*maxtimepoint,*px,W3t[j]); 
       malloc_mat(*maxtimepoint,*px,W4t[j]); malloc_mat(*maxtimepoint,*pg,W2t[j]); 
       malloc_mat(*maxtimepoint,*pg,Uti[j]);  malloc_vec(*px,W3[j]); 
-      malloc_vec(*pg,W2[j]);
     }
     for (j=0;j<*Ntimes;j++) {malloc_mat(*px,*px,AIs[j]); }
     for(j=0;j<*maxtimepoint;j++) malloc_vec(*pg,varUthat[j]);
   }
-  if (*robust==0) for (j=0;j<*antclust;j++) malloc_vec(*pg,W2[j]);
+  for (j=0;j<*antclust;j++) malloc_vec(*pg,W2[j]);
   for (c=0;c<*nx;c++) cluster[id[c]]=clusters[c]; 
 
   if (*sim==1) {
@@ -598,7 +598,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 	  extract_row(Delta2,s,zi); 
 	  if ((s>*wscore) && (s<*maxtimepoint-*wscore))  {
 	    for (i=0;i<*pg;i++) {VE(zi,i)=fabs(ME(Delta2,s,i))/sqrt(VE(varUthat[s],i));
-	      if (VE(zi,i)>simUt[i*(*antsim)+k]) simUt[i*(*antsim)+k]=VE(zi,i); }
+	      if (VE(zi,i)>simUt[i*(*antsim)+k-1]) simUt[i*(*antsim)+k-1]=VE(zi,i); }
 
 	    if (k<50) { 
 	      for (i=0;i<*pg;i++) { l=(k-1)*(*pg)+i;
@@ -608,7 +608,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 	else {
 	  extract_row(Delta2,s,zi); 
 	  for (i=0;i<*pg;i++) {
-	    if (fabs(VE(zi,i))>simUt[i*(*antsim)+k]) simUt[i*(*antsim)+k]=fabs(VE(zi,i)); 
+	    if (fabs(VE(zi,i))>simUt[i*(*antsim)+k-1]) simUt[i*(*antsim)+k-1]=fabs(VE(zi,i)); 
 	  }
 
 	  if (k<50) { 

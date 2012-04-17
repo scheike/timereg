@@ -22,10 +22,9 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
   vector *ahatt,*risk,*tmpv1,*tmpv2,*rowX,*rowZ,*difX,*VdB; 
   vector *W2[*antpers],*W3[*antpers],*reszpbeta,*res1dim,*dAt[*Ntimes]; 
   vector *dLamt[*antpers];
-  int *pg=calloc(1,sizeof(int)),c,robust=1,pers=0,i,j,k,l,s,t,it,count;
+  int *pg=calloc(1,sizeof(int)),c,robust=1,pers=0,i,j,k,l,s,t,it,count,*ipers=calloc(*Ntimes,sizeof(int));
   double RR,S0p,S0star,time,dummy,ll;
   double S0cox,S0,tau,random,scale,sumscore;
-  int *ipers=calloc(*Ntimes,sizeof(int));
   double norm_rand();
   void GetRNGstate(),PutRNGstate();
 
@@ -488,15 +487,15 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	for (i=0;i<*pg;i++) {
 	  VE(difZ,i)=fabs(VE(difZ,i));
 	  l=(*pg+i);
-	  if (VE(difZ,i)>test[l*(*antsim)+k]) test[l*(*antsim)+k]=VE(difZ,i);
+	  if (VE(difZ,i)>test[l*(*antsim)+k-1]) test[l*(*antsim)+k-1]=VE(difZ,i);
 	  VE(zi,i)=fabs(ME(Delta,s,i))/sqrt(Rvcu[(i+1)*(*Ntimes)+s]);
-	  if (VE(zi,i)>test[i*(*antsim)+k]) test[i*(*antsim)+k]=VE(zi,i); }
+	  if (VE(zi,i)>test[i*(*antsim)+k-1]) test[i*(*antsim)+k-1]=VE(zi,i); }
 
 	if (*weighted>=1) {
 	  extract_row(Delta2,s,xi); 
 	  if ((s>*weighted) && (s<*Ntimes-*weighted))  {
 	    for (i=0;i<*px;i++) {VE(xi,i)=fabs(ME(Delta2,s,i))/sqrt(VE(varUthat[s],i));
-	      if (VE(xi,i)>simUt[i*(*antsim)+k]) simUt[i*(*antsim)+k]=VE(xi,i); }
+	      if (VE(xi,i)>simUt[i*(*antsim)+k-1]) simUt[i*(*antsim)+k-1]=VE(xi,i); }
 
 	    if (k<50) { 
 	      for (i=0;i<*px;i++) { l=(k-1)*(*px)+i;
@@ -506,8 +505,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	else {
 	  extract_row(Delta2,s,xi); 
 	  for (i=0;i<*px;i++) {
-	    if (fabs(VE(xi,i))>simUt[i*(*antsim)+k]) 
-	      simUt[i*(*antsim)+k]=fabs(VE(xi,i)); }
+	    if (fabs(VE(xi,i))>simUt[i*(*antsim)+k-1]) simUt[i*(*antsim)+k-1]=fabs(VE(xi,i)); }
 
 	  if (k<50) { 
 	    for (i=0;i<*px;i++) { l=(k-1)*(*px)+i;
@@ -537,8 +535,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
     free_vec(ZXdA[j]); free_mat(St[j]); free_mat(d2G[j]); free_vec(dG[j]);  
     free_vec(varUthat[j]);
   } 
-    free(ipers); 
-    free(pg); 
+    free(ipers); free(pg); 
     // }}}
     
 }

@@ -18,8 +18,8 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
   int it,i,j,k,l,c,s,count,pers=0,pmax;
   int stat, *ls=calloc(*Ntimes,sizeof(int)); 
   double S0,sumscore,time=0,dummy,dtime,random,fabs(),sqrt();
-  double *weights=calloc(*antpers,sizeof(double));
-  double *times=calloc(*Ntimes,sizeof(double)),
+  double *weights=calloc(*antpers,sizeof(double)),
+         *times=calloc(*Ntimes,sizeof(double)),
 	 *cumoff=calloc((*Nalltimes)*(*px+1),sizeof(double));
   double norm_rand(); 
   void GetRNGstate(),PutRNGstate();  
@@ -32,7 +32,8 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
   malloc_mats(*px,*pg,&tmpM4,&tmpM3,&Ct,&dC,&XWZ,&XWZAI,&dM1M2,&M1M2t,NULL);
 
   for (j=0;j<*antpers;j++) { 
-    malloc_mat(*Ntimes,*pg,Uti[j]); malloc_mat(*Ntimes,*pg,Utiid[j]); }
+    malloc_mat(*Ntimes,*pg,Uti[j]); malloc_mat(*Ntimes,*pg,Utiid[j]); 
+  }
   malloc_mat(*Ntimes,*pg,tmpM1); 
   malloc_mat(*Ntimes,*pg,Delta); 
 
@@ -229,21 +230,19 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
 
       for (s=1;s<*Ntimes;s++) { extract_row(Delta,s,zi); 
 	for (i=0;i<*pg;i++) {VE(zi,i)=fabs(VE(zi,i)); 
-	  if (VE(zi,i)>test[i*(*nsim)+k]) test[i*(*nsim)+k]=VE(zi,i); 
+	  if (VE(zi,i)>test[i*(*nsim)+k-1]) test[i*(*nsim)+k-1]=VE(zi,i); 
 	} 
       }
     } 
     PutRNGstate();  /* to use R random normals */
   } /* if nsim >0 */ 
 
-  free_mats(&X,&WX,
-	      &Z,&WZ,&Vcov,&A,&AI,&GCdM1M2,&S2,&S2I,&tmpM2,&ZWZ,&VarKorG,&Vargam,&dVargam,&ICGam,&CGam,&dCGam,&AIXW,&tmpM4,&tmpM3,&Ct,&dC,&XWZ,&XWZAI,&dM1M2,&M1M2t,&tmpM1,&Delta,NULL);
+  free_mats(&X,&WX,&Z,&WZ,&Vcov,&A,&AI,&GCdM1M2,&S2,&S2I,&tmpM2,&ZWZ,&VarKorG,&Vargam,&dVargam,&ICGam,&CGam,&dCGam,&AIXW,&tmpM4,&tmpM3,&Ct,&dC,&XWZ,&XWZAI,&dM1M2,&M1M2t,&tmpM1,&Delta,NULL);
 
   for (j=0;j<*Nalltimes;j++) { free_mat(Acorb[j]); free_mat(C[j]);}
   for (j=0;j<*Ntimes;j++) {free_mat(M1M2[j]); free_mat(dUt[j]); }
   for (j=0;j<*antpers;j++) { free_mat(Uti[j]);  free_mat(Utiid[j]); }
 
   free_vecs(&dA,&VdB,&difX,&xi,&tmpv1,&korG,&rowX,&AIXWdN,&bhatt,&S1,&gamoff,&zi,&tmpv2,&rowZ,&gam,&dgam,&ZHdN,&IZHdN,&VZHdN,&offsets,&dN,&pbhat,&pghat,&plamt,NULL);
-  free(ls); free(times); free(cumoff); 
-  free(weights); 
+  free(ls); free(times); free(cumoff); free(weights); 
 }
