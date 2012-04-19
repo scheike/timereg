@@ -36,6 +36,7 @@ npar2<-FALSE; est2 <- 0;
 ###}
 
 if (is.null(weights)==TRUE) weights <- rep(1,antpers); 
+entry <- entry.call
 ###if (is.null(entry)) entry.call <- NULL else entry.call <- 0
 ###if (is.null(entry)) entry <- rep(0,antpers); 
 ###cum1<-Cpred(rbind(rep(0,px+1),cif$cum),entry)[,-1];
@@ -655,6 +656,7 @@ cif1entry  <-  1-exp(- apply(X * cum1,1,sum)- (Z %*% gamma )*entry)
 cif2entry  <-  1-exp(- apply(X * cum2,1,sum)- (Z2 %*% gamma2 )*entry)
 Gcxe <- 1; 
 ## }}}
+admin.cens <- NULL
 
 ## {{{ censoring model stuff
 cens.weight <- cif$cens.weight ### censoring weights from cif function

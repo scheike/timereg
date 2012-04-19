@@ -8,4 +8,4 @@ Maintainer: Thomas Scheike <ts@biostat.ku.dk>
 Description: Modelling of dependence for multivariate competing risks data. Cross-odds-ratio regression modelling and random effects modelling.
 Depends: survival, timereg, R (>= 2.4.0) 
 LazyLoad: yes
-License: GPL (version 2 or later)
+License: GPL (>= 2)

@@ -273,7 +273,6 @@ if (convt==1 ) {
 
     for (i=0;i<*antclust;i++) {free_vec(cumhatA[i]); free_vec(cumA[i]); 
     free_mat(cumAt[i]);}
-
   }
 free(vcudif); free(cumentry); free(cifentry);  
 } // }}}
