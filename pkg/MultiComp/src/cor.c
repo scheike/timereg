@@ -38,9 +38,9 @@ SEXP htheta,dhtheta,rhoR;
 	*rowZ2; 
 
  int naprint=0,pmax,v,itt,i,j,k,l,s,c;
- double Li,thetak,response=0,time,dtime;
+ double Li,thetak,response=0,time;
  double fabs(),diff;// Dinverse,DDinverse; 
- double sumscore,sdj,resp3=0,resp1,resp2,ormarg,cweight1,cweight2,
+ double sumscore,sdj,resp3=0,resp1,resp2,ormarg,cweight2,
 	*vtime=calloc(1,sizeof(double));
 	
 //if (*trans==1) for (j=0;j<*pg;j++) if (timepow[j]!= 1) {timem=1;break;}
@@ -127,7 +127,8 @@ SEXP htheta,dhtheta,rhoR;
 
       for (s=0;s<*Ntimes;s++) //	      if (KMtimes[s]>0) 
       {
-	  time=times[s]; if (s==0) dtime=0; else dtime=time-times[s-1]; 
+	  time=times[s]; 
+//	  if (s==0) dtime=0; else dtime=time-times[s-1]; 
 	  vtime[0]=time; 
 	  for(j=1;j<=*px;j++) VE(bhatt,j-1)=est[j*(*Ntimes)+s];
 	  Mv(ldesignX,bhatt,pbhat); 
@@ -164,7 +165,8 @@ SEXP htheta,dhtheta,rhoR;
 	    if (*samecens==1) resp2=resp2/min(KMc[i],KMc[k]); else resp2=resp2/(KMc[i]*KMc[k]);
 	    resp1=resp1/KMtimes[k];
 	 } else {
-	    cweight1= max(KMtimes[s],KMc[k]); cweight2= max(KMtimes[s],KMc[i]);  
+//	    cweight1= max(KMtimes[s],KMc[k]); 
+	    cweight2= max(KMtimes[s],KMc[i]);  
 	    if (*samecens==1) resp2=resp2/min(cweight2,cweight2); 
 	    resp1=resp1/KMtimes[k];
 	 }
@@ -443,8 +445,8 @@ SEXP htheta,dhtheta,rhoR;
  vector *Utheta,*vthetascore,*vtheta1,*vtheta11,*vtheta22,*vtheta12,*dtheta; 
  vector *gam2,*bhatt2,*pbhat2,*pghat2,*pghat02,*rowX2,*xi2,*xk2,*zi2,*zk2,*rowZ2; 
  int nocens,naprint=0,pmax,v,itt,i,j,k,l,s,c;
- double weight,Li=0,Lk=0,thetak=0,response=0,time,dtime,fabs(),diff;
- double respst,stpart,sumscore,sdj,resp3=0,resp2=0,ormarg=0,*vtime=calloc(1,sizeof(double));
+ double weight,Li=0,Lk=0,thetak=0,response=0,time,fabs(),diff;
+ double respst,sumscore,sdj,resp3=0,resp2=0,ormarg=0,*vtime=calloc(1,sizeof(double));
 	
   if (*notaylor==0) 
   for (j=0;j<*Ntimes;j++) { 
@@ -521,7 +523,8 @@ for (itt=0;itt<*Nit;itt++)
 
 for (s=0;s<*Ntimes;s++) // {{{
 {
-    time=times[s]; if (s==0) dtime=0; else dtime=time-times[s-1];  // {{{
+    time=times[s]; //    if (s==0) dtime=0; else dtime=time-times[s-1];  
+    // {{{
     vtime[0]=time; 
     for(j=1;j<=*px;j++) VE(bhatt,j-1)=est[j*(*Ntimes)+s];
     Mv(ldesignX,bhatt,pbhat); 
@@ -573,7 +576,7 @@ for (s=0;s<*Ntimes;s++) // {{{
 	 } else { weight=(time<KMc[i])*(time<KMc[k])*1; }
 
         if (trunkp[i]<1) {	
-           stpart=respst/trunkp[i]; 
+//           stpart=respst/trunkp[i]; 
 	   response=weight*(resp2- exp(thetak)*(ormarg+cif1entry[i]*cif2entry[k]
 		   -(1-exp(-Li))*cif2entry[k]-(1-exp(-Lk))*cif1entry[i])/trunkp[i]);
 	   diff=diff+response; 
@@ -806,8 +809,8 @@ SEXP htheta,dhtheta,rhoR;
  vector *Utheta,*vthetascore,*vtheta1,*vtheta11,*vtheta22,*vtheta12,*dtheta; 
  vector *gam2,*bhatt2,*pbhat2,*pghat2,*pghat02,*rowX2,*xi2,*xk2,*zi2,*zk2,*rowZ2; 
  int nocens,naprint=0,pmax,v,itt,i,j,k,l,s,c;
- double weight,Li,Lk,thetak=0,response=0,time,dtime,fabs(),diff,plack();
- double respst,stpart,sumscore,sdj,resp3=0,resp2=0,ormarg=0,p11t,
+ double weight,Li,Lk,thetak=0,response=0,time,fabs(),diff,plack();
+ double respst,sumscore,sdj,resp3=0,resp2=0,ormarg=0,p11t,
 	*vtime=calloc(1,sizeof(double)),*dplack=calloc(4,sizeof(double));
 	
   if (*notaylor==0) 
@@ -883,7 +886,8 @@ for (itt=0;itt<*Nit;itt++)
 
 for (s=0;s<*Ntimes;s++) // {{{
 {
-    time=times[s]; if (s==0) dtime=0; else dtime=time-times[s-1];  
+    time=times[s]; 
+//    if (s==0) dtime=0; else dtime=time-times[s-1];  
     vtime[0]=time; 
     for(j=1;j<=*px;j++) VE(bhatt,j-1)=est[j*(*Ntimes)+s];
     Mv(ldesignX,bhatt,pbhat); 
@@ -939,7 +943,7 @@ for (s=0;s<*Ntimes;s++) // {{{
 	 } else { weight=(time<KMc[i])*(time<KMc[k])*1; }
 
         if (trunkp[i]<1) {	
-           stpart=respst/trunkp[i]; 
+//           stpart=respst/trunkp[i]; 
            p11t=plack(exp(thetak),(1-exp(-Li)),(1-exp(-Lk)),dplack);
 	   response=weight*dplack[0]*exp(thetak)*(resp2-p11t);
 	   diff=diff+response; 

@@ -26,7 +26,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,*antc
 
  int pmax,naprint=0;
  int v,itt,i,j,k,l,s,c; // coef[1],ps[1],n[1],nx[1],retur[1];
- double Li,Lk,ithetak,thetak,response,time,dtime,timem;
+ double Li,Lk,ithetak,thetak,response,time; // ,dtime,timem;
  double fabs(),Dinverse,DDinverse,ddd,edd;
  double sumscore,sdj,pow(),diff,
         *ckij=calloc(1,sizeof(double)), *dckij=calloc(1,sizeof(double)),
@@ -37,7 +37,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,*antc
  float gasdev(),expdev(),ran1();
  void ck(),DUetagamma(); 
 
- timem=0;
+// timem=0;
 	
 //if (*trans==1) for (j=0;j<*pg;j++) if (timepow[j]!= 1) {timem=1;break;}
 //if (*trans==2) for (j=0;j<*pg;j++) if (timepow[j]!= 0) {timem=1;break;}
@@ -105,7 +105,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,*antc
       {
      // Rprintf("times  s %d %d %d \n",s,*Ntimes,*antclust); 
 
-	  time=times[s]; if (s==0) dtime=0; else dtime=time-times[s-1]; 
+	  time=times[s]; // if (s==0) dtime=0; else dtime=time-times[s-1]; 
 	  for(j=1;j<=*px;j++) {VE(bhatt,j-1)=est[j*(*Ntimes)+s];}
 	  Mv(ldesignX,bhatt,pbhat); 
 	  if (*semi==1) {scl_vec_mult(time,pghat0,pghat);vec_add(pbhat,pghat,pbhat);}
