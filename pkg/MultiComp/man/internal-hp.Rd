@@ -5,7 +5,7 @@
 \alias{bicomprisk}
 \alias{back2timereg}
 \alias{multcif}
-\alias{nordicprostate}
+\alias{np}
 \alias{or.cif}
 \alias{print.cor}
 \alias{summary.randomcif}

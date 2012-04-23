@@ -7,9 +7,9 @@ incidence curves for subjects within a cluster.  Given the gamma distributed
 random effects it is assumed that the cumulative incidence curves are indpendent, and
 that the marginal cumulative incidence curves are on additive form
 for two different causes: 
-\deqn{ P(T_1 \leq t, cause=i | x,z) = P_1(t,x,z) = 1- exp( -x_i^T A_i(t) + - (t z_i)^T \beta_i) }
+\deqn{ P(T_1 \leq t, cause=i | x,z) = P_1(t,x,z) = 1- exp( -x_i^T A_i(t) exp(z_i^T \beta_i)) }
 and 
-\deqn{ P(T_2 \leq t, cause=k | x,z) = P_1(t,x,z) = 1- exp( -x_k^T A_k(t) + - (t z_k)^T \beta_k) }
+\deqn{ P(T_2 \leq t, cause=k | x,z) = P_1(t,x,z) = 1- exp( -x_k^T A_k(t) exp(z_k^T \beta_k)) }
 These models are specified by fitting two separate marginals models in the same
 time-points (using the times argument of the comp.risk function).
 

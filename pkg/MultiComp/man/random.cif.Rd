@@ -7,7 +7,7 @@ incidence curves for subjects within a cluster.  Given the gamma distributed
 random effects it is assumed that the cumulative incidence curves are indpendent, and
 that the marginal cumulative incidence curves are on additive form
 \deqn{
-P(T \leq t, cause=1 | x,z) = P_1(t,x,z) = 1- exp( -x^T A(t) - t z^T \beta)
+P(T \leq t, cause=1 | x,z) = P_1(t,x,z) = 1- exp( -x^T A(t) exp(z^T \beta))
 }
 
 We allow a regression structure for the random effects variances that may depend on
