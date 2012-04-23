@@ -59,19 +59,19 @@ Multivariate Competing Risks Data, Scheike and Sun (2009), work in progress.
 }
 \author{Thomas Scheike}
 \examples{
-data(multcif)
-multcif$cause[multcif$cause==0] <- 2
-
-times<-sort(multcif$time[multcif$status \%in\% c(1,2)])
-
-add1<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,causeS=1,
-                multcif$cause,n.sim=0,times=times)
-
-add2<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,causeS=2,
-                multcif$cause,n.sim=0,times=times)
-
-out1<-random.cif2cause(add1,data=multcif,cause1=1,cause2=2,cif2=add2,
-                       cens.model="KM",theta=1,theta.des=NULL,step=1.0)
-summary(out1)
+ data(multcif)
+ multcif$cause[multcif$cause==0] <- 2
+ 
+ times<-sort(multcif$time[multcif$status \%in\% c(1,2)])
+ 
+ add1<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,causeS=1,
+		  multcif$cause,n.sim=0,times=times)
+ 
+ add2<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,causeS=2,
+		  multcif$cause,n.sim=0,times=times)
+ 
+ out1<-random.cif2cause(add1,data=multcif,cause1=1,cause2=2,cif2=add2,
+                        cens.model="KM",theta=1,theta.des=NULL,step=1.0)
+ summary(out1)
 }
 \keyword{survival}
