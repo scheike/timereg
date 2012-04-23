@@ -13,14 +13,14 @@ void cor(times,Ntimes,x, delta,cause,CA1,
 		maxclust,step,inverse,CA2,x2,px2,
 		semi2,z2,pg2,est2,gamma2,b2iid,
 		gam2iid, htheta,dhtheta,rhoR,dimpar,flexfunc,
-		thetiid, sym, weights, notaylor, samecens, stabcens, KMtimes,silent
+		thetiid, sym, weights, notaylor, samecens, stabcens, KMtimes,silent,cifmodel
 //                entryage,cifentry,trunkp
 ) // {{{
 double *theta,*times,*x,*KMc,*z,*score,*hess,*est,*gamma,*zsem,*vartheta,*biid,*gamiid,*timepow,*thetades,*step,*x2,*z2,*est2,*gamma2,*b2iid,*gam2iid,*thetiid,*weights,
        *KMtimes; // *entryage,*cifentry,*trunkp;
 int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*CA2,*detail,*ptheta,
 *antclust,*cluster,*clustsize,*clusterindex,*maxclust,*inverse,
-	*pg2,*px2,*semi2,*dimpar,*flexfunc,*sym,*notaylor,*samecens,*stabcens,*silent;
+	*pg2,*px2,*semi2,*dimpar,*flexfunc,*sym,*notaylor,*samecens,*stabcens,*silent,*cifmodel;
 SEXP htheta,dhtheta,rhoR; 
 {
 // {{{ allocation and def's
@@ -132,12 +132,14 @@ SEXP htheta,dhtheta,rhoR;
 	  vtime[0]=time; 
 	  for(j=1;j<=*px;j++) VE(bhatt,j-1)=est[j*(*Ntimes)+s];
 	  Mv(ldesignX,bhatt,pbhat); 
-	  if (*semi==1) {scl_vec_mult(time,pghat0,pghat);vec_add(pbhat,pghat,pbhat);}
+	  if ((*semi==1) & (*cifmodel==1)) {scl_vec_mult(time,pghat0,pghat);vec_add(pbhat,pghat,pbhat);}
+	  if ((*semi==1) & (*cifmodel==2)) for (c=0;c<*antpers;c++)  VE(pbhat,c)=VE(pbhat,c)*exp(VE(pghat,c)); 
 
           if (*CA1!=*CA2 && 3==2) { // {{{
-	     for(j=1;j<=*px2;j++) {VE(bhatt2,j-1)=est2[j*(*Ntimes)+s];}
+	     for(j=1;j<=*px2;j++) VE(bhatt2,j-1)=est2[j*(*Ntimes)+s];
 	     Mv(X2,bhatt2,pbhat2); 
-	     if (*semi2==1) {scl_vec_mult(time,pghat02,pghat2);vec_add(pbhat2,pghat2,pbhat2);}
+	     if ((*semi2==1) && (*cifmodel==1)) {scl_vec_mult(time,pghat02,pghat2);vec_add(pbhat2,pghat2,pbhat2);}
+	     if ((*semi2==1) && (*cifmodel==2)) for(c=0;c<*antpers;c++) VE(pbhat2,c)=VE(pbhat2,c)*exp(VE(pghat2,c)); 
 	  } // }}}
 
     for (j=0;j<*antclust;j++) 
@@ -213,14 +215,11 @@ SEXP htheta,dhtheta,rhoR;
 
         if (*notaylor==0) // {{{
 	if (itt==*Nit-1) { 
-	  extract_row(ldesignX,i,xi); 
-	  scl_vec_mult(resp3,xi,xi); vec_add(xi,rowX,rowX); 
+	  extract_row(ldesignX,i,xi); scl_vec_mult(resp3,xi,xi); vec_add(xi,rowX,rowX); 
 
 	  if (*semi==1)  { 
-	     extract_row(ldesignG,i,zi); 
-	     scl_vec_mult(resp3*time,zi,zi); vec_add(zi,rowZ,rowZ); 
+	     extract_row(ldesignG,i,zi); scl_vec_mult(resp3*time,zi,zi); vec_add(zi,rowZ,rowZ); 
 	  }
-
         } // }}}
 
 //  } // entryage
@@ -424,13 +423,13 @@ void mcifrr(times,Ntimes,x, delta,cause,CA1,
 		semi2,z2,pg2,est2,gamma2,b2iid,
 		gam2iid, htheta,dhtheta,rhoR,dimpar,flexfunc,
 		thetiid, sym, weights, notaylor, samecens, estimator,
-                entryage,cif1entry,cif2entry,trunkp,silent
+                entryage,cif1entry,cif2entry,trunkp,silent,cifmodel
 ) // {{{
 double *theta,*times,*x,*KMc,*z,*score,*hess,*est,*gamma,*zsem,*vartheta,*biid,*gamiid,*timepow,*thetades,*step,*x2,*z2,*est2,
        *gamma2,*b2iid,*gam2iid,*thetiid,*weights,*entryage,*cif1entry,*cif2entry,*trunkp;
 int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*CA2,*detail,*ptheta,
     *antclust,*cluster,*clustsize,*clusterindex,*maxclust,*inverse,
-    *pg2,*px2,*semi2,*dimpar,*flexfunc,*sym,*notaylor,*samecens,*estimator,*silent;
+    *pg2,*px2,*semi2,*dimpar,*flexfunc,*sym,*notaylor,*samecens,*estimator,*silent,*cifmodel;
 SEXP htheta,dhtheta,rhoR; 
 {
 // {{{ allocation and def's
@@ -528,11 +527,13 @@ for (s=0;s<*Ntimes;s++) // {{{
     vtime[0]=time; 
     for(j=1;j<=*px;j++) VE(bhatt,j-1)=est[j*(*Ntimes)+s];
     Mv(ldesignX,bhatt,pbhat); 
-    if (*semi==1) {scl_vec_mult(time,pghat0,pghat);vec_add(pbhat,pghat,pbhat);}
+    if ((*semi==1) & (*cifmodel==1)) {scl_vec_mult(time,pghat0,pghat);vec_add(pbhat,pghat,pbhat);}
+    if ((*semi==1) & (*cifmodel==2)) for (c=0;c<*antpers;c++)  VE(pbhat,c)=VE(pbhat,c)*exp(VE(pghat,c)); 
     if (*CA1!=*CA2) {
        for(j=1;j<=*px2;j++) {VE(bhatt2,j-1)=est2[j*(*Ntimes)+s];}
        Mv(X2,bhatt2,pbhat2); 
-       if (*semi2==1) {scl_vec_mult(time,pghat02,pghat2);vec_add(pbhat2,pghat2,pbhat2);}
+       if ((*semi2==1) && (*cifmodel==1)) {scl_vec_mult(time,pghat02,pghat2);vec_add(pbhat2,pghat2,pbhat2);}
+       if ((*semi2==1) && (*cifmodel==2)) for(c=0;c<*antpers;c++) VE(pbhat2,c)=VE(pbhat2,c)*exp(VE(pghat2,c)); 
     } // }}}
 	
 
@@ -788,13 +789,13 @@ void plackor(times,Ntimes,x, delta,cause,CA1,
 		semi2,z2,pg2,est2,gamma2,b2iid,
 		gam2iid, htheta,dhtheta,rhoR,dimpar,flexfunc,
 		thetiid, sym, weights, notaylor, samecens, estimator,
-                entryage,cif1entry,cif2entry,trunkp,silent
+                entryage,cif1entry,cif2entry,trunkp,silent,cifmodel
 ) // {{{
 double *theta,*times,*x,*KMc,*z,*score,*hess,*est,*gamma,*zsem,*vartheta,*biid,*gamiid,*timepow,*thetades,*step,*x2,*z2,*est2,
        *gamma2,*b2iid,*gam2iid,*thetiid,*weights,*entryage,*cif1entry,*cif2entry,*trunkp;
 int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*CA2,*detail,*ptheta,
     *antclust,*cluster,*clustsize,*clusterindex,*maxclust,*inverse,
-    *pg2,*px2,*semi2,*dimpar,*flexfunc,*sym,*notaylor,*samecens,*estimator,*silent;
+    *pg2,*px2,*semi2,*dimpar,*flexfunc,*sym,*notaylor,*samecens,*estimator,*silent,*cifmodel;
 SEXP htheta,dhtheta,rhoR; 
 {
 // {{{ allocation and def's
@@ -891,12 +892,14 @@ for (s=0;s<*Ntimes;s++) // {{{
     vtime[0]=time; 
     for(j=1;j<=*px;j++) VE(bhatt,j-1)=est[j*(*Ntimes)+s];
     Mv(ldesignX,bhatt,pbhat); 
-    if (*semi==1) {scl_vec_mult(time,pghat0,pghat);vec_add(pbhat,pghat,pbhat);}
+    if ((*semi==1) & (*cifmodel==1)) {scl_vec_mult(time,pghat0,pghat);vec_add(pbhat,pghat,pbhat);}
+    if ((*semi==1) & (*cifmodel==2)) for (c=0;c<*antpers;c++)  VE(pbhat,c)=VE(pbhat,c)*exp(VE(pghat0,c)); 
 
     if (*CA1!=*CA2) { // {{{
        for(j=1;j<=*px2;j++) {VE(bhatt2,j-1)=est2[j*(*Ntimes)+s];}
        Mv(X2,bhatt2,pbhat2); 
-       if (*semi2==1) {scl_vec_mult(time,pghat02,pghat2);vec_add(pbhat2,pghat2,pbhat2);}
+       if ((*semi2==1) && (*cifmodel==1)) {scl_vec_mult(time,pghat02,pghat2);vec_add(pbhat2,pghat2,pbhat2);}
+       if ((*semi2==1) && (*cifmodel==2)) for(c=0;c<*antpers;c++) VE(pbhat2,c)=VE(pbhat2,c)*exp(VE(pghat02,c)); 
     } // }}}
 	
 

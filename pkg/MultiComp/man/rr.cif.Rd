@@ -17,19 +17,18 @@ the joint probabilty divided by the product.
 see example below, but the default is that it is simply \eqn{\theta^T z}.
 }
 \usage{
-rr.cif(cif,data=sys.parent(),cause,times=NULL,
-cause1=1,cause2=1,cens.code=0,cif2=NULL,cens.model="KM",Nit=40,detail=0,
-clusters=NULL,theta=NULL,theta.des=NULL,parfunc=NULL,dparfunc=NULL,
-step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,
-notaylor=0,same.cens=FALSE,stab.cens=FALSE,entry=NULL,estimator=1,trunkp=1,
-admin.cens=NULL,silent=1)
+rr.cif(cif,data,cause,cif2=NULL,times=NULL,
+cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
+clusters=NULL, theta=NULL,theta.des=NULL,parfunc=NULL,dparfunc=NULL,
+step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,notaylor=1,
+same.cens=FALSE,censoring.probs=NULL,silent=1,
+entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,...)
 }
 \arguments{
 \item{cif}{a model object from the comp.risk function with the 
 marginal cumulative incidence of cause1, i.e., the event of interest.}
 \item{data}{a data.frame with the variables.}
-\item{cause}{specifies the causes  related to the death
-	times, the value cens.code is the censoring value.}
+\item{cause}{specifies the causes  related to the death times, the value cens.code is the censoring value.}
 \item{times}{time-vector that specifies the times used for the estimating euqations for the cross-odds-ratio estimation.}
 \item{cause1}{specificies the cause considered.}
 \item{cause2}{specificies the cause that is conditioned on.}
@@ -52,14 +51,13 @@ the parameters.}
 \item{notaylor}{if TRUE then the standard errors ignores the uncertainty from the marginal
 cumulative incidence. This will speed things up considerably.} 
 \item{same.cens}{if true then censoring within clusters are assumed to be the same variable, default is independent censoring.}
-\item{stab.cens}{when the censoring weights are 0 in some places, it may
-be useful to use modified censoring weights Gc(min(T,s)) in the score 
-equations, and to restrict attention to those s where Gc() is positive.}
+\item{censoring.probs}{No function, yet.}
 \item{entry}{entry-age in case of delayed entry. Then two causes must be given.} 
 \item{estimator}{gives a design to fit models for each strata (cause combinations).} 
 \item{trunkp}{gives probability of survival for delayed entry, and related to entry-ages given above.}
 \item{admin.cens}{censoring times for administrative censoring.}
 \item{silent}{1 to suppress output about convergence related issues.}
+\item{...}{Not used.}
 }
 \value{returns an object of type 'cor'. With the following arguments:
 \item{theta}{estimate of proportional odds parameters of model.}
@@ -84,14 +82,13 @@ multcif$cause[multcif$cause==0] <- 2
 
 times12<-sort(multcif$time[multcif$status \%in\% c(1,2)])[-(1:10)]
 
-add1<-comp.risk(Surv(time,status>0)~const(X),data=multcif,times=times12,
-                causeS=1,multcif$cause,clusters=multcif$id,n.sim=0)
+add1<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,times=times12,
+                causeS=1,multcif$cause,n.sim=0)
 
-add2<-comp.risk(Surv(time,status>0)~const(X),data=multcif,times=times12,
-                causeS=2,multcif$cause,clusters=multcif$id,n.sim=0)
+add2<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,times=times12,
+                causeS=2,multcif$cause,n.sim=0)
 
-out12<-rr.cif(add1,data=multcif,multcif$cause,cif2=add2,cens.code=0,cause1=1,cause2=2,
-               cens.model="KM",Nit=10,clusters=multcif$id)
+out12<-rr.cif(add1,data=multcif,cif2=add2,cens.code=0,cause1=1,cause2=2,Nit=10)
 summary(out12)
 }
 \keyword{survival}

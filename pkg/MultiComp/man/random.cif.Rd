@@ -51,30 +51,27 @@ from the marginal cumulative incidence. This will speed things up considerably.}
 }
 \references{
 A Semiparametric Random Effects Model for Multivariate Competing Risks Data,
-Scheike, Zhang, Sun, Jensen (2009), under review. 
+Scheike, Zhang, Sun, Jensen (2010), Biometrika. 
 
 Cross odds ratio Modelling of dependence for
-Multivariate Competing Risks Data, Scheike and Sun (2009), work in progress.
+Multivariate Competing Risks Data, Scheike and Sun (2012), work in progress.
 }
 \author{Thomas Scheike}
 \examples{
-library(MultiComp)
 data(multcif)
 multcif$cause[multcif$cause==0] <- 2
 
-add<-comp.risk(Surv(time,status>0)~const(X),data=multcif,
-               multcif$status,clusters=multcif$id,n.sim=0)
+add<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,
+               multcif$status,n.sim=0)
 
-out1<-random.cif(add,data=multcif,multcif$cause,
-causeS=1,cens.model="KM",Nit=15,detail=0,
-clusters=multcif$id,theta=1,theta.des=NULL,step=1.0)
+out1<-random.cif(add,data=multcif,causeS=1,cens.model="KM",Nit=15,detail=0,
+                 theta=1,theta.des=NULL,step=1.0)
 summary(out1)
 
 theta.des<-cbind(1,rep(rbinom(200,1,0.5),rep(2,200)))
 
-out2<-random.cif(add,data=multcif,multcif$cause,
-causeS=1,cens.model="KM",Nit=15,detail=0,
-clusters=multcif$id,theta=1,theta.des=theta.des,step=1.0)
+out2<-random.cif(add,data=multcif,causeS=1,cens.model="KM",Nit=15,detail=0,
+                 theta=1,theta.des=theta.des,step=1.0)
 summary(out2)
 }
 \keyword{survival}

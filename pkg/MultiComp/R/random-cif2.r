@@ -17,7 +17,9 @@ if (is.null(cif2)==TRUE) stop("must give both marginal estimates");
   if (npar==TRUE) {Z<-matrix(0,antpers,1); pg<-1; fixed<-0;} else {fixed<-1;pg<-ncol(Z);} 
   ng<-antpers;px<-ncol(X);  
  #print(dim(X)); print(dim(Z)); 
-  times<-cif$cum[,1]; delta<-(cause!=cens.code)
+  times<-cif$cum[,1]; 
+ if (missing(cause)) cause <- attr(cif,"cause"); 
+ delta<-(cause!=cens.code)
   est<-cif$cum; if (semi==1) gamma<-cif$gamma  else gamma<-0; 
 if (cause1!=cause2) {
 if (is.null(cif2)==TRUE) stop("Must provide marginal model for both causes"); 
@@ -56,7 +58,11 @@ time points \n");
 ## }}}
 
 ## {{{ clusters and definition of variables
-  if (is.null(clusters)== TRUE) {clusters<-0:(antpers-1); antclust<-antpers;} else {
+  if (is.null(clusters)== TRUE) {
+	  ## take clusters from cif model 
+	  clusters <- attr(cif,"clusters"); 
+	  antclust<- length(unique(clusters)); 
+  } else {
     clus<-unique(clusters); antclust<-length(clus);
     clusters <- as.integer(factor(clusters, labels = 1:(antclust)))-1;
   }

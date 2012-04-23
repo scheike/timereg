@@ -3,7 +3,6 @@ causeS=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
 clusters=NULL,theta=NULL,theta.des=NULL,step=1,design.rv=NULL,link=0,
 notaylor=1,same.cens=FALSE,entry=NULL,trunkp=1)
 {
-if (is.null(clusters)) stop("Clusters must be specified to estimate correlation\n");
 ### link=1 uses
 ## {{{ setting up variables
  multi<-0; inverse<-link; sdscore=1; 
@@ -17,13 +16,17 @@ if (is.null(clusters)) stop("Clusters must be specified to estimate correlation\
   if (npar==TRUE) {Z<-matrix(0,antpers,1); pg<-1; fixed<-0;} else {fixed<-1;pg<-ncol(Z);} 
   ng<-antpers;px<-ncol(X);  
  #print(dim(X)); print(dim(Z)); 
-  times<-cif$cum[,1]; delta<-(cause!=cens.code)
+  times<-cif$cum[,1]; 
+ if (missing(cause)) cause <- attr(cif,"cause"); 
+ delta<-(cause!=cens.code)
  if (semi==1) gamma<-c(cif$gamma)  else gamma<-0; 
-
+ if (cif$model=="additive") cif.model <- 1
+ else if (cif$model=="fg") cif.model <- 2
 if (is.null(entry)) entry.call <- NULL else entry.call <- 0
 if (is.null(entry)) { entry <- rep(0,antpers);  cif1lin <- entry;} else {
    cum1<-Cpred(rbind(rep(0,px+1),cif$cum),entry)[,-1];
-   cif1lin  <-  (Z %*% gamma )*entry + apply(X*cum1,1,sum) 
+   if (cif.model==1) cif1lin  <-  (Z %*% gamma )*entry + apply(X*cum1,1,sum) 
+   else if (cif.model==2) exp((Z %*% gamma ))* apply(X*cum1,1,sum) 
 }
 Gcxe <- 1; 
 if (length(trunkp)==1) trunkp <- rep(1,antpers)
@@ -91,10 +94,15 @@ dim.rv <- ncol(design.rv);
 ###
 
 ## {{{ cluster + definining variables
-  if (is.null(clusters)== TRUE) {clusters<-0:(antpers-1); antclust<-antpers;} else {
+  if (is.null(clusters)== TRUE) {
+	  ## take clusters from cif model 
+	  clusters <- attr(cif,"clusters"); 
+	  antclust<- length(unique(clusters)); 
+  } else {
      clus<-unique(clusters); antclust<-length(clus);
      clusters <- as.integer(factor(clusters, labels = 1:(antclust)))-1; 
   }
+  if (is.null(clusters)) stop("Clusters must be specified to estimate correlation\n");
 
   out <- cluster.index(clusters,index.type=TRUE); 
   clustsize <- out$cluster.size
@@ -142,7 +150,7 @@ dim.rv <- ncol(design.rv);
   as.integer(inverse), as.integer(sdscore),
   as.double(design.rv),as.integer(dim.rv),as.integer(notaylor),
   as.integer(same.cens),
-  as.double(trunkp), as.double(entry),as.double(cif1lin), 
+  as.double(trunkp), as.double(entry),as.double(cif1lin),as.integer(cif.model),
   PACKAGE="MultiComp") ## }}}
 
 ## {{{ output 

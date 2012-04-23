@@ -47,10 +47,11 @@ as might be the case with mothers and daughters (sym=0).
 see example below, but the default is that it is simply \eqn{\theta^T z}.
 }
 \usage{
-cor.cif(cif,data=sys.parent(),cause,times=NULL,parfunc=NULL,dparfunc=NULL,
-cause1=1,cause2=1,cens.code=0, cens.model="KM",Nit=40,detail=0,
-clusters=NULL,theta=NULL,theta.des=NULL,step=1,sym=0,colnames=NULL,
-dimpar=NULL,weights=NULL,notaylor=0,same.cens=FALSE,censoring.probs=NULL,silent=1)
+cor.cif(cif,data,cause,times=NULL,
+cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
+clusters=NULL, theta=NULL,theta.des=NULL,parfunc=NULL,dparfunc=NULL,
+step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,notaylor=1,
+same.cens=FALSE,censoring.probs=NULL,silent=1,...)
 }
 \arguments{
 \item{cif}{a model object from the comp.risk function with the 
@@ -58,7 +59,7 @@ marginal cumulative incidence of cause1, i.e., the event of interest, and whose
 odds the comparision is compared to the conditional odds given cause2}
 \item{data}{a data.frame with the variables.}
 \item{cause}{specifies the causes  related to the death
-	times, the value cens.code is the censoring value.}
+	times, the value cens.code is the censoring value. When missing it comes from marginal cif.}
 \item{times}{time-vector that specifies the times used for the estimating euqations for the cross-odds-ratio estimation.}
 \item{parfunc}{R-function to specify any relationship for the parameters of the cross-odds-ratio.}
 \item{dparfunc}{R-function to specify the derivative of the parfunc function with respect to
@@ -82,6 +83,7 @@ from the marginal cumulative incidence. This will speed things up considerably.}
 \item{same.cens}{if true then censoring within clusters are assumed to be the same variable, default is independent censoring.}
 \item{censoring.probs}{if cens.model is "user.weights" these probabilities are used for the bivariate censoring dist.}
 \item{silent}{1 to suppress output about convergence related issues.}
+\item{...}{Not used.}
 }
 \value{returns an object of type 'cor'. With the following arguments:
 \item{theta}{estimate of proportional odds parameters of model.}
@@ -104,24 +106,18 @@ data(multcif) # simulated data
 multcif$cause[multcif$cause==0] <- 2
 
 times=seq(0.05,3,by=0.1) # to speed up computations use only these time-points
-add<-comp.risk(Surv(time,status>0)~const(X),data=multcif,
-               multcif$cause,clusters=multcif$id,n.sim=0,times=times)
+add<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,causeS=1,
+               multcif$cause,n.sim=0,times=times,model="fg")
 
-out1<-cor.cif(add,data=multcif,multcif$cause,
-cause1=1,cause2=1,cens.model="KM",clusters=multcif$id,theta=log(2+1))
+out1<-cor.cif(add,data=multcif,cause1=1,cause2=1,cens.model="KM",theta=log(2+1))
 summary(out1)
 
 theta.des<-cbind(1,rep(rbinom(200,1,0.5),rep(2,200)))
-out2<-cor.cif(add,data=multcif,multcif$cause,
-cause1=1,cause2=1,cens.model="KM",
-clusters=multcif$id,theta=log(2+1),theta.des=theta.des,sym=1)
+out2<-cor.cif(add,data=multcif,cause1=1,cause2=1,cens.model="KM",
+              theta=log(2+1),theta.des=theta.des,sym=1)
 summary(out2)
 
-add1<-comp.risk(Surv(time,status>0)~const(X),data=multcif,causeS=1,
-               multcif$cause,clusters=multcif$id,n.sim=0,times=times)
-
-out3<-cor.cif(add1,data=multcif,multcif$cause,
-cause1=1,cause2=2,cens.model="KM",clusters=multcif$id,theta=log(2+1))
+out3<-cor.cif(add,data=multcif,cause1=1,cause2=2,cens.model="KM",theta=log(2+1))
 summary(out3)
 ###########################################################
 # investigating further models using parfunc and dparfunc
@@ -138,10 +134,9 @@ dfunctd<-function(theta,t,x) { return(c(x[1],(t-0.5))) };
 #theta.des=theta.des,colnames=c("intercept","slope"))
 #summary(out4)
 
-out4<-cor.cif(add,data=multcif,multcif$cause,
-parfunc=functd,dparfunc=dfunctd,
-cause1=1,cause2=1,cens.model="KM",clusters=multcif$id,theta=log(2+1),
-theta.des=theta.des,colnames=c("intercept","slope"),dimpar=2)
+out4<-cor.cif(add,data=multcif,parfunc=functd,dparfunc=dfunctd,
+             cause1=1,cause2=1,cens.model="KM",theta=log(2+1),
+             theta.des=theta.des,colnames=c("intercept","slope"),dimpar=2)
 summary(out4)
 ## no indication of timetrend in cross-odds-ratio
 }

@@ -86,27 +86,24 @@ Scheike, Holst, Hjelmborg (2010),
 }
 \author{Thomas Scheike}
 \examples{
-#library(timereg)
 data(multcif)
 multcif$cause[multcif$cause==0] <- 2
 
-addm<-comp.risk(Surv(time,status>0)~const(X),data=multcif,
-               multcif$cause,clusters=multcif$id,n.sim=0)
+addm<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,
+               multcif$cause,n.sim=0)
 
 ### making group indidcator 
 g.des<-data.frame(group2=rep(rbinom(200,1,0.5),rep(2,200)))
 theta.des <- model.matrix(~-1+factor(group2),g.des)
 
-out1m<-random.cif(addm,data=multcif,multcif$cause,
-causeS=1,cens.model="KM",Nit=15,detail=0,
-clusters=multcif$id,theta=2,theta.des=theta.des,step=1.0)
+out1m<-random.cif(addm,data=multcif,causeS=1,Nit=15,detail=0,
+theta=2,theta.des=theta.des,step=1.0)
 summary(out1m)
 
 ## this model can also be formulated as a random effects model 
 ## but different parameters
-out2m<-Grandom.cif(addm,data=multcif,multcif$cause,
-causeS=1,cens.model="KM",Nit=10,detail=0,
-clusters=multcif$id,theta=1/c(4.84,0.79),design.rv=theta.des,step=1.0)
+out2m<-Grandom.cif(addm,data=multcif,causeS=1,Nit=10,detail=0,
+theta=1/c(4.84,0.79),design.rv=theta.des,step=1.0)
 summary(out2m)
 1/out2m$theta
 out1m$theta
@@ -125,8 +122,7 @@ des.rv <- cbind(theta.des,(zygbin==1)*rep(c(1,0)),(zygbin==1)*rep(c(0,1)),1)
 pard <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0), c(0,1))
 pardes <- matrix(pard,n,10,byrow=TRUE)
 
-outacem <-Grandom.cif(addm,data=multcif,multcif$cause,causeS=1,
-          cens.model="KM",Nit=30,detail=0,clusters=multcif$id,
+outacem <-Grandom.cif(addm,data=multcif,causeS=1,Nit=30,detail=0,
           theta=c(-1.21,2.1),theta.des=pardes,step=1.0,design.rv=des.rv,
           link=0,notaylor=1)
 summary(outacem)

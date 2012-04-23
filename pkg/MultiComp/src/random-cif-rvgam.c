@@ -6,12 +6,12 @@
 void rcifdes(times,Ntimes,x,delta,cause,CA1,KMc,z,antpers,px,Nit,score,hess,est,
 gamma,semi,zsem,pg,detail,biid,gamiid,timepow,theta,vartheta,thetades,ptheta,antclust,
 cluster,clustsize,clusterindex,maxclust,step,inverse,dscore,rvdes,prv,notaylor,samecens,
-trunkp, entryage,cif1lin 
+trunkp, entryage,cif1lin,cifmodel 
 )
 double *theta,*times,*x,*KMc,*z,*score,*hess,*est,*gamma,*zsem,*vartheta,*biid,*gamiid,*timepow,*thetades,*step,*rvdes, 
        *trunkp, *entryage,*cif1lin ; 
 int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,
-*antclust,*cluster,*clustsize,*clusterindex,*maxclust,*inverse,*dscore,*prv,*notaylor,*samecens;
+*antclust,*cluster,*clustsize,*clusterindex,*maxclust,*inverse,*dscore,*prv,*notaylor,*samecens,*cifmodel;
 { // {{{
 // {{{
  matrix *ldesignX,*A,*AI,*cdesignX,*ldesignG,*cdesignG;
@@ -138,7 +138,8 @@ if (test<0) {
 	  time=times[s]; // if (s==0) dtime=0; else dtime=time-times[s-1]; 
 	  for(j=1;j<=*px;j++) {VE(bhatt,j-1)=est[j*(*Ntimes)+s];}
 	  Mv(ldesignX,bhatt,pbhat); 
-	  if (*semi==1) {scl_vec_mult(time,pghat0,pghat);vec_add(pbhat,pghat,pbhat);}
+	  if ((*semi==1) & (*cifmodel==1)) {scl_vec_mult(time,pghat0,pghat);vec_add(pbhat,pghat,pbhat);}
+	  if ((*semi==1) & (*cifmodel==2)) for (c=0;c<*antpers;c++)  VE(pbhat,c)=VE(pbhat,c)*exp(VE(pghat,c)); 
 	
     for (j=0;j<*antclust;j++) if (clustsize[j]>=2) {
           diff=0;vec_zeros(rowX);vec_zeros(rowZ); 
@@ -166,7 +167,6 @@ if (test<0) {
 
        Li=VE(pbhat,i); Lk=VE(pbhat,k); 
        extract_row(RVdes,i,rvvec); extract_row(RVdes,k,rvvec1); 
-
 
 if (trunkp[i]<1) {
        ckrvdes2(alphai,alphaj,1.0,Li,Lk,ckij,rvvec2,rvvec,rvvec1); 

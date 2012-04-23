@@ -1,5 +1,5 @@
 comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
-clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="additive",
+clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="fg",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",cens.formula=NULL,time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
 weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,
@@ -8,19 +8,16 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=0)
 { 
 ## {{{
 # trans=1 P_1=1-exp( - ( x' b(b)+ z' gam t) ), 
-# trans=2 P_1=1-exp(-exp(x a(t)+ z` b )  Fine-Gray model 
+# trans=2 P_1=1-exp(-exp(x a(t)+ z` b )  Fine-Gray model, with baseline exp(x a(t)) 
 # trans=3 P_1= exp(x a(t)+ z` b)/( exp(x a(t) + z' b) +1 );  logistic
 # trans=4 P_1=exp( ( x' b(b)+ z' gam ) ), 
 # trans=5 P_1= (x' b(t)) exp( z' gam ), 
-# trans=6 P_1=1-exp(-(x a(t)) exp(z` b )) is not good numerically, Fine-Gray 
+# trans=6 P_1=1-exp(-(x a(t)) exp(z` b )) Fine-Gray model, with baseline x a(t) 
 # trans=7 P_1= (x a(t)) exp( z` b)/( (x a(t) ) exp(z' b) +1 ); logistic2
-  if (model=="additive")  trans<-1; 
-  if (model=="prop")      trans<-2; 
-  if (model=="logistic")  trans<-3; 
-  if (model=="rcif")      trans<-4; 
-  if (model=="rcif2")     trans<-5; 
-  if (model=="fg")        trans<-6; 
-  if (model=="logistic2") trans<-7; 
+  trans <- switch(model,additive=1,prop=2,logistic=3,rcif=4,rcif2=5,fg=6,logistic2=7)
+###  if (model=="additive")  trans<-1; if (model=="prop")      trans<-2; if (model=="logistic")  trans<-3; 
+###  if (model=="rcif")      trans<-4; if (model=="rcif2")     trans<-5; if (model=="fg")        trans<-6; 
+###  if (model=="logistic2") trans<-7; 
   line <- 0
   m<-match.call(expand.dots=FALSE);
   m$gamma<-m$times<-m$n.times<-m$cause<-m$Nit<-m$weighted<-m$n.sim<-
@@ -327,12 +324,17 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
            conf.band=unifCI,B.iid=B.iid,gamma.iid=gamiid,
            test.procBeqC=Ut,sim.test.procBeqC=UIt,conv=conv,cens.weight=cens.weight)
 
-  ud$call<-call; ud$model<-model; ud$n<-n; 
-  ud$formula<-formula; class(ud)<-"comprisk"; 
+  ud$call<-call; 
+  ud$model<-model; 
+  ud$n<-n; 
+  ud$formula<-formula; 
+  class(ud)<-"comprisk"; 
   attr(ud, "Call") <- sys.call()
   attr(ud, "Formula") <- formula
   attr(ud, "time.pow") <- time.pow
   attr(ud, "cause") <- cause
+  attr(ud, "clusters") <- clusters
+  attr(ud, "max.clust") <- max.clust
   attr(ud, "causeS") <- causeS
   attr(ud, "cens.code") <- cens.code
   attr(ud, "times") <- times
