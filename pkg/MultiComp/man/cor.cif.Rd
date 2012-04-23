@@ -102,22 +102,21 @@ Scheike, Zhang, Sun, Jensen (2010), Biometrika.
 }
 \author{Thomas Scheike}
 \examples{
-data(multcif) # simulated data 
-multcif$cause[multcif$cause==0] <- 2
+data(np) # simulated data 
 
-times=seq(0.05,3,by=0.1) # to speed up computations use only these time-points
-add<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,causeS=1,
-               multcif$cause,n.sim=0,times=times,model="fg")
+times=seq(0.05,1,by=0.05) # to speed up computations use only these time-points
+add<-comp.risk(Surv(time,cause>0)~const(country)+cluster(id),data=np,causeS=1,
+               np$cause,n.sim=0,times=times,model="fg")
 
-out1<-cor.cif(add,data=multcif,cause1=1,cause2=1,cens.model="KM",theta=log(2+1))
+out1<-cor.cif(add,data=np,cause1=1,cause2=1,cens.model="KM",theta=log(2+1))
 summary(out1)
 
-theta.des<-cbind(1,rep(rbinom(200,1,0.5),rep(2,200)))
-out2<-cor.cif(add,data=multcif,cause1=1,cause2=1,cens.model="KM",
+theta.des<-model.matrix(~-1+factor(zyg),data=np);
+out2<-cor.cif(add,data=np,cause1=1,cause2=1,cens.model="KM",
               theta=log(2+1),theta.des=theta.des,sym=1)
 summary(out2)
 
-out3<-cor.cif(add,data=multcif,cause1=1,cause2=2,cens.model="KM",theta=log(2+1))
+out3<-cor.cif(add,data=np,cause1=1,cause2=2,cens.model="KM",theta=log(2+1))
 summary(out3)
 ###########################################################
 # investigating further models using parfunc and dparfunc
@@ -134,10 +133,10 @@ dfunctd<-function(theta,t,x) { return(c(x[1],(t-0.5))) };
 #theta.des=theta.des,colnames=c("intercept","slope"))
 #summary(out4)
 
-out4<-cor.cif(add,data=multcif,parfunc=functd,dparfunc=dfunctd,
-             cause1=1,cause2=1,cens.model="KM",theta=log(2+1),
-             theta.des=theta.des,colnames=c("intercept","slope"),dimpar=2)
-summary(out4)
+###out4<-cor.cif(add,data=multcif,parfunc=functd,dparfunc=dfunctd,
+###             cause1=1,cause2=1,cens.model="KM",theta=log(2+1),
+###             theta.des=theta.des,colnames=c("intercept","slope"),dimpar=2)
+###summary(out4)
 ## no indication of timetrend in cross-odds-ratio
 }
 \keyword{survival}

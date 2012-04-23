@@ -37,7 +37,7 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=0.5,notaylor=0)
 
   if (npar==TRUE) RR <-  rep(1,antpers); 
   if (npar==FALSE) RR <- exp(Z %*% margsurv$gamma); 
-  if ((attr(margsurv,"residuals")!=2) || (lefttrunk==1)) {### compute cum hazards in time point infty; 
+  if ((attr(margsurv,"residuals")!=2) || (lefttrunk==1)) { ### compute cum hazards in time point infty; 
 	  nn <- nrow(margsurv$cum) 
 	  cum <- Cpred(margsurv$cum,time2)[,-1]
 	  if (npar==TRUE) cumhaz <- apply(cum*X,1,sum)

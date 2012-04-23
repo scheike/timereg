@@ -892,12 +892,12 @@ out<-.C("plackor", ## {{{
   as.integer(detail), as.double(Biid),as.double(gamma.iid), as.double(time.pow), as.double(theta), as.double(var.theta), 
   as.double(theta.des), as.integer(ptheta), as.integer(antclust), as.integer(clusters), as.integer(clustsize), as.integer(clusterindex),
   as.integer(maxclust), as.double(step) , as.integer(dscore),as.integer(cause2) , as.double(X2),as.integer(px2),
-as.integer(semi2),as.double(Z2), as.integer(pg2), as.double(est2), as.double(gamma2),as.double(B2iid),
-as.double(gamma2.iid), body(htheta),body(dhtheta),new.env(),as.integer(dimpar),as.integer(flex.func),
-as.double(theta.iid),as.integer(sym) , as.double(weights), as.integer(notaylor),
-as.integer(same.cens),as.integer(estimator), 
-as.double(entry),as.double(cif1entry),as.double(cif2entry),as.double(trunkp),
-as.integer(silent),as.integer(cif.model),PACKAGE="MultiComp") 
+  as.integer(semi2),as.double(Z2), as.integer(pg2), as.double(est2), as.double(gamma2),as.double(B2iid),
+  as.double(gamma2.iid), body(htheta),body(dhtheta),new.env(),as.integer(dimpar),as.integer(flex.func),
+  as.double(theta.iid),as.integer(sym) , as.double(weights), as.integer(notaylor),
+  as.integer(same.cens),as.integer(estimator), 
+  as.double(entry),as.double(cif1entry),as.double(cif2entry),as.double(trunkp),
+  as.integer(silent),as.integer(cif.model),PACKAGE="MultiComp") 
 ## }}}
 
 ## {{{ output
