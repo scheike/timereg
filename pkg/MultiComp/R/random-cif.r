@@ -25,7 +25,7 @@ if (is.null(entry)) entry.call <- NULL else entry.call <- 0
 if (is.null(entry)) { entry <- rep(0,antpers);  cif1lin <- entry;} else {
    cum1<-Cpred(rbind(rep(0,px+1),cif$cum),entry)[,-1];
 if (cif.model==1) cif1lin  <-  (Z %*% gamma )*entry + apply(X*cum1,1,sum) 
-else if (cif.model==2) exp((Z %*% gamma ))* apply(X*cum1,1,sum) 
+else if (cif.model==2) cif1lin <- exp((Z %*% gamma ))* apply(X*cum1,1,sum) 
 }
 Gcxe <- 1; 
 if (length(trunkp)==1) trunkp <- rep(1,antpers)
