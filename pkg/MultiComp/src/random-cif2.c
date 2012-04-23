@@ -119,12 +119,12 @@ if (*CA1!=*CA2 && *semi2==1) Mv(Z2,gam2,pghat02);
 	  for(j=1;j<=*px;j++) VE(bhatt,j-1)=est[j*(*Ntimes)+s];
 	  Mv(ldesignX,bhatt,pbhat); 
 	  if ((*semi==1) & (*cifmodel==1)) {scl_vec_mult(time,pghat0,pghat);vec_add(pbhat,pghat,pbhat);}
-	  if ((*semi==1) & (*cifmodel==2)) for (c=0;c<*antpers;c++)  VE(pbhat,c)=VE(pbhat,c)*exp(VE(pghat,c)); 
+	  if ((*semi==1) & (*cifmodel==2)) for (c=0;c<*antpers;c++)  VE(pbhat,c)=VE(pbhat,c)*exp(VE(pghat0,c)); 
           if (*CA1!=*CA2) {
 	     for(j=1;j<=*px2;j++) {VE(bhatt2,j-1)=est2[j*(*Ntimes)+s];}
 	     Mv(X2,bhatt2,pbhat2); 
 	  if ((*semi2==1) & (*cifmodel==1)) {scl_vec_mult(time,pghat02,pghat2);vec_add(pbhat2,pghat2,pbhat2);}
-	  if ((*semi2==1) & (*cifmodel==2)) for(c=0;c<*antpers;c++)  VE(pbhat2,c)=VE(pbhat2,c)*exp(VE(pghat2,c)); 
+	  if ((*semi2==1) & (*cifmodel==2)) for(c=0;c<*antpers;c++)  VE(pbhat2,c)=VE(pbhat2,c)*exp(VE(pghat02,c)); 
 
 	  }
 

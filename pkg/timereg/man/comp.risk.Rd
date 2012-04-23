@@ -43,7 +43,7 @@ In general p may be powers of the same length as z.
 }
 \usage{
 comp.risk(formula,data=sys.parent(),cause,times=NULL,Nit=50,
-clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="additive",
+clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="fg",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",cens.formula=NULL,
 time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,

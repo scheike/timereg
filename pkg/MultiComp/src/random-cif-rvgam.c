@@ -139,7 +139,7 @@ if (test<0) {
 	  for(j=1;j<=*px;j++) {VE(bhatt,j-1)=est[j*(*Ntimes)+s];}
 	  Mv(ldesignX,bhatt,pbhat); 
 	  if ((*semi==1) & (*cifmodel==1)) {scl_vec_mult(time,pghat0,pghat);vec_add(pbhat,pghat,pbhat);}
-	  if ((*semi==1) & (*cifmodel==2)) for (c=0;c<*antpers;c++)  VE(pbhat,c)=VE(pbhat,c)*exp(VE(pghat,c)); 
+	  if ((*semi==1) & (*cifmodel==2)) for (c=0;c<*antpers;c++)  VE(pbhat,c)=VE(pbhat,c)*exp(VE(pghat0,c)); 
 	
     for (j=0;j<*antclust;j++) if (clustsize[j]>=2) {
           diff=0;vec_zeros(rowX);vec_zeros(rowZ); 

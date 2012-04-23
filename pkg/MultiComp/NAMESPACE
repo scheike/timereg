@@ -18,8 +18,8 @@ export("rr.cif",
        "random.cif",
        "concordance",
        "Grandom.cif",
-       "random.cif2cause",
-       "Specials")
+       "random.cif2cause"
+)
 
 S3method(summary,cor)
 S3method(summary,randomcif)
