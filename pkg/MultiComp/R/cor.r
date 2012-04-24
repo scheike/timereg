@@ -174,6 +174,8 @@ else {
 } 
 ## }}}
 
+print(clustsize)
+print(clusters)
 ###dyn.load("cor.so");
 if (model=="COR")
 out<-.C("cor", ## {{{

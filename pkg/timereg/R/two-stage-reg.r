@@ -194,21 +194,22 @@ summary.two.stage<-function (object,digits = 3,...) { ## {{{
 } ## }}}
 
 print.two.stage <- function (x,digits = 3,...) { ## {{{
-  if (!(inherits(x, 'two.stage') )) stop("Must be a Two-Stage object")
-  cat(" Two-stage estimation for Clayton-Oakes-Glidden  model\n"); 
-  cat(" Marginals of Cox-Aalen form, dependence by variance of Gamma distribution\n\n");  
-  object <- x; rm(x);
-  
-  cat(" Nonparametric components : "); 
-  cat(colnames(object$cum)[-1]); cat("   \n");  
-  if (!is.null(object$gamma)) {
-    cat(" Parametric components :  "); cat(rownames(object$gamma)); 
-    cat("   \n");
-  } 
-  cat("   \n");  
-
-  cat(" Call: \n");
-  print(attr(object,'Call'))
+	summary.two.stage(x,digits=digits,...)
+###  if (!(inherits(x, 'two.stage') )) stop("Must be a Two-Stage object")
+###  cat(" Two-stage estimation for Clayton-Oakes-Glidden  model\n"); 
+###  cat(" Marginals of Cox-Aalen form, dependence by variance of Gamma distribution\n\n");  
+###  object <- x; rm(x);
+###  
+###  cat(" Nonparametric components : "); 
+###  cat(colnames(object$cum)[-1]); cat("   \n");  
+###  if (!is.null(object$gamma)) {
+###    cat(" Parametric components :  "); cat(rownames(object$gamma)); 
+###    cat("   \n");
+###  } 
+###  cat("   \n");  
+###
+###  cat(" Call: \n");
+###  print(attr(object,'Call'))
 } ## }}}
 
 coef.two.stage<-function(object,digits=3,d2logl=1,...) {
