@@ -65,9 +65,11 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=0)
     clusters <- as.integer(factor(clusters,labels=1:antclust))-1
   }
 
+  coarse.clust <- FALSE; 
   if (is.null(max.clust)) max.clust <- antclust
   if ( (!is.null(max.clust)) )  {  
   if (max.clust < antclust)  {
+     coarse.clust <- TRUE
      qq <- quantile(clusters, probs = seq(0, 1, by = 1/max.clust))       
      qqc <- cut(clusters, breaks = qq, include.lowest = TRUE)    
      clusters <- as.integer(factor(qqc, labels = 1:max.clust)) -1
@@ -334,6 +336,7 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
   attr(ud, "time.pow") <- time.pow
   attr(ud, "cause") <- cause
   attr(ud, "clusters") <- clusters
+  attr(ud, "coarse.clust") <- coarse.clust
   attr(ud, "max.clust") <- max.clust
   attr(ud, "causeS") <- causeS
   attr(ud, "cens.code") <- cens.code

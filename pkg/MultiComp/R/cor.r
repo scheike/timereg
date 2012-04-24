@@ -113,8 +113,8 @@ if (cens.model!="user.weights") {
      clusters <- attr(cif,"clusters"); 
      antclust<- length(unique(clusters)); 
      max.clust <- attr(cif,"max.clust")
-     if (!is.null(max.clust)) 
-     cat("Max.clust should be NULL in marginal model if there are more than 1000 clusterss, or given at call \n"); 
+     if (attr(cif,"coarse.clust")) 
+     stop("Max.clust should be NULL in marginal model, or clusters should be given at call \n"); 
   } else {
     clus<-unique(clusters); antclust<-length(clus);
     clusters <- as.integer(factor(clusters, labels = 1:(antclust)))-1;
