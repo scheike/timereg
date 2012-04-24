@@ -58,16 +58,16 @@ Multivariate Competing Risks Data, Scheike and Sun (2012), work in progress.
 }
 \author{Thomas Scheike}
 \examples{
-data(np)
+data(np) ## Nordic twin cancer data with prostate cancer as 1, 2 as deaths
 
-add<-comp.risk(Surv(time,cause>0)~const(country)+cluster(id),data=np,np$cause,n.sim=0)
+times <- seq(0.3,1,length=10)
+add<-comp.risk(Surv(time,cause>0)~const(country)+cluster(id),data=np,np$cause,n.sim=0,conservative=1,times=times)
 
-out1<-random.cif(add,data=np,causeS=1,cens.model="KM",Nit=15,detail=0,theta=1,theta.des=NULL,step=1.0)
+out1<-random.cif(add,data=np,causeS=1,cens.model="KM",Nit=15,detail=0,theta=1,theta.des=NULL,step=1.0,notaylor=1)
 summary(out1)
 
 theta.des<-model.matrix(~-1+factor(zyg),data=np)
-
-out2<-random.cif(add,data=np,causeS=1,cens.model="KM",Nit=15,detail=0,theta=1,theta.des=theta.des,step=1.0)
+out2<-random.cif(add,data=np,causeS=1,cens.model="KM",Nit=15,detail=0,theta=1,theta.des=theta.des,step=1.0,notaylor=1)
 summary(out2)
 }
 \keyword{survival}
