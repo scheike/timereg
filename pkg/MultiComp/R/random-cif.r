@@ -18,9 +18,9 @@ clusters=NULL,theta=NULL,theta.des=NULL,step=1,same.cens=FALSE,entry=NULL,trunkp
  if (missing(cause)) cause <- attr(cif,"cause"); 
  delta<-(cause!=cens.code)
  if (semi==1) gamma<-c(cif$gamma)  else gamma<-0; 
- if (cif$model=="additive") cif.model <- 1
- else if (cif$model=="fg") cif.model <- 2
- else stop("Cif model must be either additive or an extended Fine-Gray model"); 
+ if ((cif$model!="additive") && (cif$model!="fg")) 
+ stop("Marginal Cumulative incidence model, must be either additive or extended Fine-Gray model\n")
+ cif.model <- switch(cif$model,additive=1,fg=2)
 if (is.null(entry)) entry.call <- NULL else entry.call <- 0
 if (is.null(entry)) { entry <- rep(0,antpers);  cif1lin <- entry;} else {
    cum1<-Cpred(rbind(rep(0,px+1),cif$cum),entry)[,-1];

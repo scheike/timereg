@@ -20,7 +20,11 @@ if (is.null(cif2)==TRUE) stop("must give both marginal estimates");
   times<-cif$cum[,1]; 
  if (missing(cause)) cause <- attr(cif,"cause"); 
  delta<-(cause!=cens.code)
-  est<-cif$cum; if (semi==1) gamma<-cif$gamma  else gamma<-0; 
+ if ((cif$model!="additive") && (cif$model!="fg")) 
+ stop("Marginal Cumulative incidence model, must be either additive or extended Fine-Gray model\n")
+ cif.model <- switch(cif$model,additive=1,fg=2)
+  est<-cif$cum; if 
+ (semi==1) gamma<-cif$gamma  else gamma<-0; 
 if (cause1!=cause2) {
 if (is.null(cif2)==TRUE) stop("Must provide marginal model for both causes"); 
  formula2<-attr(cif2,"Formula"); 
@@ -57,6 +61,24 @@ time points \n");
   } else stop("Censoring model not specified for this function \n"); 
 ## }}}
 
+## {{{ censoring weights
+  if (cens.model=="KM") {
+    ud.cens<-survfit(Surv(time,cause==cens.code)~+1); 
+    Gfit<-cbind(ud.cens$time,ud.cens$surv)
+    Gfit<-rbind(c(0,1),Gfit); 
+    Gcx<-Cpred(Gfit,time)[,2];
+    Gctimes<-Cpred(Gfit,times)[,2];
+  } else if (cens.model=="cox") {
+    if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
+    ud.cens<-cox.aalen(Surv(time,cause==cens.code)~prop(XZ),n.sim=0,robust=0);
+    Gcx<-Cpred(ud.cens$cum,time)[,2];
+    RR<-exp(XZ %*% ud.cens$gamma)
+    Gcx<-exp(-Gcx*RR)
+    Gfit<-rbind(c(0,1),cbind(time,Gcx)); 
+    Gctimes<-Cpred(Gfit,times)[,2];
+  } else stop("Censoring model not specified for this function \n"); 
+## }}}
+ 
 ## {{{ clusters and definition of variables
   if (is.null(clusters)== TRUE) {
 	  ## take clusters from cif model 
@@ -100,6 +122,23 @@ time points \n");
 ###  if (sum(time.pow)==0) time.pow<-rep(1,pg); 
 ## }}}
 
+## {{{ censoring weights
+  if (cens.model=="KM") {
+    ud.cens<-survfit(Surv(time,cause==cens.code)~+1); 
+    Gfit<-cbind(ud.cens$time,ud.cens$surv)
+    Gfit<-rbind(c(0,1),Gfit); 
+    Gcx<-Cpred(Gfit,time)[,2];
+    Gctimes<-Cpred(Gfit,times)[,2];
+  } else if (cens.model=="cox") {
+    if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
+    ud.cens<-cox.aalen(Surv(time,cause==cens.code)~prop(XZ),n.sim=0,robust=0);
+    Gcx<-Cpred(ud.cens$cum,time)[,2];
+    RR<-exp(XZ %*% ud.cens$gamma)
+    Gcx<-exp(-Gcx*RR)
+    Gfit<-rbind(c(0,1),cbind(time,Gcx)); 
+    Gctimes<-Cpred(Gfit,times)[,2];
+  } else stop("Censoring model not specified for this function \n"); 
+## }}}
 ##dyn.load("random-cif.so");
 
   out<-.C("randomcif2cause", ## {{{
@@ -110,8 +149,8 @@ time points \n");
   as.double(theta.des), as.integer(ptheta), as.integer(antclust), as.integer(clusters), as.integer(clustsize), as.integer(clusterindex),
   as.integer(maxclust), as.double(step) , as.integer(inverse),as.integer(cause2) , as.double(X2),as.integer(px2),
   as.integer(semi2),as.double(Z2), as.integer(pg2), as.double(est2), as.double(gamma2),as.double(B2iid),
-as.double(gamma2.iid),as.integer(sdscore),as.integer(squarepar),
-as.integer(1-sym),as.integer(same.cens),PACKAGE="MultiComp") 
+  as.double(gamma2.iid),as.integer(sdscore),as.integer(squarepar),
+  as.integer(1-sym),as.integer(same.cens), as.integer(cif.model), PACKAGE="MultiComp") 
 ## }}}
 
 ## {{{ output
@@ -141,5 +180,3 @@ return(ud);
 ## }}}
 
 }
-
-
