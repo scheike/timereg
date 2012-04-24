@@ -109,9 +109,12 @@ if (cens.model!="user.weights") {
 
 ## {{{ set up cluster + theta design + define iid variables 
   if (is.null(clusters)== TRUE) {
-	  ## take clusters from cif model 
-	  clusters <- attr(cif,"clusters"); 
-	  antclust<- length(unique(clusters)); 
+      ## take clusters from cif model 
+     clusters <- attr(cif,"clusters"); 
+     antclust<- length(unique(clusters)); 
+     max.clust <- attr(cif,"max.clust")
+     if (!is.null(max.clust)) 
+     cat("Max.clust should be NULL in marginal model if there are more than 1000 clusterss, or given at call \n"); 
   } else {
     clus<-unique(clusters); antclust<-length(clus);
     clusters <- as.integer(factor(clusters, labels = 1:(antclust)))-1;
@@ -174,8 +177,6 @@ else {
 } 
 ## }}}
 
-print(clustsize)
-print(clusters)
 ###dyn.load("cor.so");
 if (model=="COR")
 out<-.C("cor", ## {{{

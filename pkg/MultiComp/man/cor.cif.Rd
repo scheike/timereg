@@ -106,7 +106,7 @@ data(np) # simulated data
 
 times=seq(0.05,1,by=0.05) # to speed up computations use only these time-points
 add<-comp.risk(Surv(time,cause>0)~const(country)+cluster(id),data=np,causeS=1,
-               np$cause,n.sim=0,times=times,model="fg")
+               np$cause,n.sim=0,times=times,model="fg",max.clust=NULL)
 
 out1<-cor.cif(add,data=np,cause1=1,cause2=1,cens.model="KM",theta=log(2+1))
 summary(out1)
