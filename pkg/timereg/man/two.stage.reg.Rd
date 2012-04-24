@@ -91,8 +91,7 @@ Springer (2006).}
 library(timereg)
 data(diabetes)
 # Marginal Cox model  with treat as covariate, residuals=2, resample.iid=1 !
-marg <- cox.aalen(Surv(time,status) ~ prop(treat) + cluster(id),
-	 data=diabetes,residuals=2,resample.iid=1,n.sim=0)
+marg <- cox.aalen(Surv(time,status)~prop(treat)+cluster(id),data=diabetes,robust=0,n.sim=0)
 
 fit<-two.stage(marg,data=diabetes,theta=1.0,detail=0,Nit=40)
 summary(fit)

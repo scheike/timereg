@@ -15,8 +15,8 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=0.5,notaylor=0)
  time2 <- attr(margsurv,"stop"); start <- attr(margsurv,"start")
  antpers<-nrow(X);
  if (is.null(Z)==TRUE) {npar<-TRUE; semi<-0;}  else { Z<-as.matrix(Z); npar<-FALSE; semi<-1;}
-  if (npar==TRUE) {Z<-matrix(0,antpers,1); pz<-1; fixed<-0;} else {fixed<-1;pz<-ncol(Z);}
-  px<-ncol(X);
+ if (npar==TRUE) {Z<-matrix(0,antpers,1); pz<-1; fixed<-0;} else {fixed<-1;pz<-ncol(Z);}
+ px<-ncol(X);
 
   if (is.null(clusters))  clusters <- mclusters else if (sum(abs(clusters-mclusters))>0) 
 	  cat("Warning: Clusters for marginal model different than those specified for two.stage\n"); 
