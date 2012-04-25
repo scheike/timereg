@@ -495,19 +495,20 @@ bptwin <- function(formula, data, id, zyg, DZ, DZos,
                ucminf=,
                quasi=,
                gradient=ucminf(p0,fn=f0,gr=g0,control=control[ucminfopt],hessian=0,...),
-               bhhh={
-                 controlnr <- list(stabil=FALSE,
-                                   gamma=0.1,
-                                   gamma2=1,
-                                   ngamma=5,
-                                   iter.max=200,
-                                   epsilon=1e-12,
-                                   tol=1e-9,
-                                   trace=1,
-                                   stabil=FALSE)
-                 controlnr[names(control)] <- control
-                 lava:::NR(start=p0,NULL,g0, h0,control=controlnr)
-               },
+               ## ,
+               ## bhhh={
+               ##   controlnr <- list(stabil=FALSE,
+               ##                     gamma=0.1,
+               ##                     gamma2=1,
+               ##                     ngamma=5,
+               ##                     iter.max=200,
+               ##                     epsilon=1e-12,
+               ##                     tol=1e-9,
+               ##                     trace=1,
+               ##                     stabil=FALSE)
+               ##   controlnr[names(control)] <- control
+               ##   lava:::NR(start=p0,NULL,g0, h0,control=controlnr)
+##               },
                ##                 op <- switch(mycontrol$method,
                ##                              ucminf=ucminf(p0,f,control=mycontrol[ucminfopt],hessian=F,...),
                ##                optim=optim(p0,f,control=mycontrol[ucminfopt],...),
@@ -542,6 +543,7 @@ bptwin <- function(formula, data, id, zyg, DZ, DZos,
     UU <- matrix(NA,ncol=length(op$par),nrow=1)
     I <- J <- V <- matrix(NA,ncol=length(op$par),nrow=length(op$par))
   }
+
   ###}}} optim
 
 ###{{{ return

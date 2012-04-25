@@ -246,18 +246,19 @@ biprobit <- function(formula, data, id, time, strata=NULL, eqmarg=TRUE,
   } else if (control$method=="quasi") {
     control$method <- NULL
     op <- nlminb(p0,f0,gradient=g0,control=control,...)
-  } else if (control$method=="bhhh") {
-    controlnr <- list(stabil=FALSE,
-                      gamma=0.1,
-                      gamma2=1,
-                      ngamma=5,
-                      iter.max=200,
-                      epsilon=1e-12,
-                      tol=1e-9,
-                      trace=1,
-                      stabil=FALSE)
-    controlnr[names(control)] <- control
-    op <- lava:::NR(start=p0,NULL,g0, h0,control=controlnr)
+  ## }
+  ## else if (control$method=="bhhh") {
+  ##   controlnr <- list(stabil=FALSE,
+  ##                     gamma=0.1,
+  ##                     gamma2=1,
+  ##                     ngamma=5,
+  ##                     iter.max=200,
+  ##                     epsilon=1e-12,
+  ##                     tol=1e-9,
+  ##                     trace=1,
+  ##                     stabil=FALSE)
+  ##   controlnr[names(control)] <- control
+  ##   op <- lava:::NR(start=p0,NULL,g0, h0,control=controlnr)
   } else {
     control$method <- NULL
     op <- nlminb(p0,f0,control=control,...)

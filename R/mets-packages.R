@@ -8,11 +8,14 @@
 ##' @name mets-package
 ##' @docType package
 ##' @author Klaus K. Holst and Thomas Scheike
-##' @import lava
 ##' @useDynLib mets
+##' @import stats
 ##' @keywords package
 ##' @examples
 ##' 
 ##' ## To appear
 ##' 
 NULL
+
+##' @export
+`score` <- function(x,...) UseMethod("score")

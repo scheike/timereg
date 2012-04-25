@@ -1,4 +1,4 @@
-##' @S3method sim bptwin
-sim.bptwin <- function(x,n=100,p,...) {
-  return(x)
+##' @S3method simulate bptwin
+simulate.bptwin <- function(object,nsim=100,seed=NULL,P,...) {
+  return(object)
 }
