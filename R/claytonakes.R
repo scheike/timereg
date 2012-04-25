@@ -12,6 +12,10 @@
 ##' @param control 
 ##' @param ... 
 ##' @author Klaus K. Holst
+##' @examples
+##' d <- simClaytonOakes(2000,4,2,1,stoptime=2,left=0.5)
+##' e <- ClaytonOakes(Surv(lefttime,time,status)~x1+id(~1,cluster),data=subset(d,!truncated))
+##' plot(e,add=FALSE)
 ##' @export
 ClaytonOakes <- function(formula,data=parent.frame(),id,var.formula=~1,cuts=NULL,type="co",start,control=list(),...) {
   
@@ -119,7 +123,7 @@ ClaytonOakes <- function(formula,data=parent.frame(),id,var.formula=~1,cuts=NULL
 
 ##################################################
 
-##' @S3method print biprobit
+##' @S3method print claytonoakes
 print.claytonoakes <- function(x,...) {
   print(summary(x))
 }
