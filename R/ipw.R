@@ -1,6 +1,6 @@
-##' .. content for \description{} (no empty lines) ..
+##' .. content for description (no empty lines) ..
 ##'
-##' .. content for \details{} ..
+##' .. content for details ..
 ##' @title Inverse Probability of Censoring Weights
 ##' @param formula 
 ##' @param data 
@@ -10,7 +10,7 @@
 ##' @param weightname 
 ##' @param pairs 
 ##' @param response 
-##' @author Klaus Kähler Holst
+##' @author Klaus K. Holst
 ##' @export
 ipw <- function(formula,data,cluster,samecens=FALSE,obsonly=TRUE,weightname="w",
                 pairs=FALSE,response) {

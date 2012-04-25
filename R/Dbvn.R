@@ -1,11 +1,11 @@
-##' .. content for \description{} (no empty lines) ..
+##' .. content for description (no empty lines) ..
 ##'
-##' .. content for \details{} ..
+##' .. content for details ..
 ##' @title Derivatives of the bivariate normal cumulative distribution function
 ##' @param p 
 ##' @param design 
 ##' @param Y 
-##' @author Klaus Kähler Holst
+##' @author Klaus K. Holst
 ##' @export
 Dbvn <- function(p,design=function(p,...) {
                  return(list(mu=cbind(p[1],p[1]),

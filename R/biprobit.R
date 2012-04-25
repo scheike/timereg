@@ -1,6 +1,6 @@
 ##' Bivariate Probit model
 ##'
-##' .. content for \details{} ..
+##' .. content for details ..
 ##' @title Bivariate Probit model
 ##' @param formula 
 ##' @param data 

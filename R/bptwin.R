@@ -1,6 +1,6 @@
-##' .. content for \description{} (no empty lines) ..
+##' .. content for description (no empty lines) ..
 ##'
-##' .. content for \details{} ..
+##' .. content for details ..
 ##' @title Liability model for twin data
 ##' @param formula 
 ##' @param data 
@@ -27,7 +27,7 @@
 ##' @param bound 
 ##' @param debug 
 ##' @param ... 
-##' @author Klaus Kähler Holst
+##' @author Klaus K. Holst
 ##' @export
 bptwin <- function(formula, data, id, zyg, DZ, DZos,
                    weight=NULL,
@@ -490,7 +490,7 @@ bptwin <- function(formula, data, id, zyg, DZ, DZos,
 
   if (debug) browser()
   op <- switch(tolower(control$method),
-               nlminb=nlminb(p0,f0,grad=g0,control=control[nlminbopt],...),
+               nlminb=nlminb(p0,f0,gradient=g0,control=control[nlminbopt],...),
                optim=optim(p0,fn=f0,gr=g0,control=control[ucminfopt],...),
                ucminf=,
                quasi=,

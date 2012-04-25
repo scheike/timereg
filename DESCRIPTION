@@ -43,7 +43,6 @@ Collate:
     'plotcr.R'
     'print.biprobit.R'
     'print.summary.biprobit.R'
-    'profile.R'
     'score.biprobit.R'
     'sim.bptwin.R'
     'simcif.R'

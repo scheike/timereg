@@ -1,6 +1,6 @@
-##' .. content for \description{} (no empty lines) ..
+##' .. content for description (no empty lines) ..
 ##'
-##' .. content for \details{} ..
+##' .. content for details ..
 ##' @title Clayton-Oakes model with piece-wise constant hazards
 ##' @param formula 
 ##' @param data 
@@ -11,7 +11,7 @@
 ##' @param start 
 ##' @param control 
 ##' @param ... 
-##' @author Klaus Kähler Holst
+##' @author Klaus K. Holst
 ##' @export
 ClaytonOakes <- function(formula,data=parent.frame(),id,var.formula=~1,cuts=NULL,type="co",start,control=list(),...) {
   
@@ -65,9 +65,9 @@ ClaytonOakes <- function(formula,data=parent.frame(),id,var.formula=~1,cuts=NULL
       mydata$entry <- data[,entry]
     }
   } else {
-    mydata <- data.frame(T=get(timevar,env=data),status=get(causes,env=data),cluster=get(id,env=data),entry=0)
+    mydata <- data.frame(T=get(timevar,envir=data),status=get(causes,envir=data),cluster=get(id,envir=data),entry=0)
     if (!is.null(entry))      
-      mydata$entry <- get(entry,env=data)
+      mydata$entry <- get(entry,envir=data)
   }
   if (is.null(cuts)) {
     cuts <- c(0,max(mydata$T))

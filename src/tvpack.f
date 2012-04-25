@@ -22,61 +22,61 @@
 *       Original source available from
 *       http://www.math.wsu.edu/faculty/genz/software/fort77/tvpack.f
 *
-      PROGRAM TVTST
-      INTEGER I, J, NU, NT
-      PARAMETER ( NT = 20 )
-      DOUBLE PRECISION TVTL, LIMIT(3,NT), SIGMA(3,NT), EPS, V
-      DATA ( LIMIT(I,1), I = 1, 3 ), ( SIGMA(I,1), I = 1, 3 )
-     &     / .5D0, .5D0, .8D0, .1D0, .6D0, .8D0 /
-      DATA ( LIMIT(I,2), I = 1, 3 ), ( SIGMA(I,2), I = 1, 3 )
-     &     / -2.5D0, .5D0, .8D0, .1D0, -.6D0, -.8D0 /
-      DATA ( LIMIT(I,3), I = 1, 3 ), ( SIGMA(I,3), I = 1, 3 )
-     &     / 1.5D0, .5D0, .8D0, .1D0, .6D0, .8D0 /
-      DATA ( LIMIT(I,4), I = 1, 3 ), ( SIGMA(I,4), I = 1, 3 )
-     &     / .5D0, .5D0, .8D0, .1D0, -.6D0, -.8D0 /
-      DATA ( LIMIT(I,5), I = 1, 3 ), ( SIGMA(I,5), I = 1, 3 )
-     &     / .5D0, .5D0, .8D0, .1D0, -.5D0, .5D0 /
-      DATA ( LIMIT(I,6), I = 1, 3 ), ( SIGMA(I,6), I = 1, 3 )
-     &     / -1.5D0, .5D0, .8D0, .1D0, -.5D0, .5D0 /
-      DATA ( LIMIT(I,7), I = 1, 3 ), ( SIGMA(I,7), I = 1, 3 )
-     &     / 1.5D0, .5D0, .8D0, .1D0, .5D0, -.5D0 /
-      DATA ( LIMIT(I,8), I = 1, 3 ), ( SIGMA(I,8), I = 1, 3 )
-     &     / -.5D0, 1D0, 1.2D0, -.4D0, .2D0, .7D0 /
-      DATA ( LIMIT(I,9), I = 1, 3 ), ( SIGMA(I,9), I = 1, 3 )
-     &     / 1D0, 1D0, 2D0, .4D0, .8D0, .8D0 /
-      DATA ( LIMIT(I,10), I = 1, 3 ), ( SIGMA(I,10), I = 1, 3 )
-     &     / 1D0, 2D0, 1D0, .4D0, .8D0, .8D0 /
-      DATA ( LIMIT(I,11), I = 1, 3 ), ( SIGMA(I,11), I = 1, 3 )
-     &     / -2D0, -2D0, -2D0, .4D0, .8D0, .8D0 /
-      DATA ( LIMIT(I,12), I = 1, 3 ), ( SIGMA(I,12), I = 1, 3 )
-     *     / 1D0, 2D0, 3D0, -.998D0, -0.248D0, 0.248D0 /
-      DATA ( LIMIT(I,13), I = 1, 3 ), ( SIGMA(I,13), I = 1, 3 )
-     *     / -1D0, 2D0, 3D0, .25D0, 0.25D0, 0.25D0 /
-      DATA ( LIMIT(I,14), I = 1, 3 ), ( SIGMA(I,14), I = 1, 3 )
-     *     /  1D0, 1D0, 3D0, .998D0, 0.2482D0, 0.2487D0 /
-      DATA ( LIMIT(I,15), I = 1, 3 ), ( SIGMA(I,15), I = 1, 3 )
-     *     /  1D0, 1D0, 3D0, .998D0, 0.5D0, 0.5D0 /
-      DATA ( LIMIT(I,16), I = 1, 3 ), ( SIGMA(I,16), I = 1, 3 )
-     *     /  1D0, 1D0, 3D0, .99D0, 0.99D0, 0.99D0 /
-      DATA ( LIMIT(I,17), I = 1, 3 ), ( SIGMA(I,17), I = 1, 3 )
-     *     /  1D0, 2D0, 3D0, -1D0, -.99D0, .99D0 /
-      DATA ( LIMIT(I,18), I = 1, 3 ), ( SIGMA(I,18), I = 1, 3 )
-     *     /  1D0, 2D0, 3D0, 1D0, -.99D0, -.99D0 /
-      DATA ( LIMIT(I,19), I = 1, 3 ), ( SIGMA(I,19), I = 1, 3 )
-     *     /  1D0, -1D0, 1D0, .998D0, -0.2482D0, -0.2482D0 /
-      DATA ( LIMIT(I,NT), I = 1, 3 ), ( SIGMA(I,NT), I = 1, 3 )
-     *     /  1D0, -1D0, 2D0, .99992D0, 0.64627D0, 0.63975D0 /
-      EPS = 1D-6
-      PRINT '(''      Trivariate t Test with EPS ='', E10.1)', EPS
-      DO NU = 0, 12, 3
-         PRINT '(''NU   B1   B2   B3    R21      R31      R32    TVT'')'
-         DO J = 1, NT 
-            V = TVTL( NU, LIMIT(1,J), SIGMA(1,J), EPS )
-            PRINT '(I2,3F5.1,3F9.5,F13.10)', NU, 
-     &           ( LIMIT(I,J), I = 1, 3 ), ( SIGMA(I,J), I = 1, 3 ), V
-         END DO
-      END DO
-      END
+c$$$      PROGRAM TVTST
+c$$$      INTEGER I, J, NU, NT
+c$$$      PARAMETER ( NT = 20 )
+c$$$      DOUBLE PRECISION TVTL, LIMIT(3,NT), SIGMA(3,NT), EPS, V
+c$$$      DATA ( LIMIT(I,1), I = 1, 3 ), ( SIGMA(I,1), I = 1, 3 )
+c$$$     &     / .5D0, .5D0, .8D0, .1D0, .6D0, .8D0 /
+c$$$      DATA ( LIMIT(I,2), I = 1, 3 ), ( SIGMA(I,2), I = 1, 3 )
+c$$$     &     / -2.5D0, .5D0, .8D0, .1D0, -.6D0, -.8D0 /
+c$$$      DATA ( LIMIT(I,3), I = 1, 3 ), ( SIGMA(I,3), I = 1, 3 )
+c$$$     &     / 1.5D0, .5D0, .8D0, .1D0, .6D0, .8D0 /
+c$$$      DATA ( LIMIT(I,4), I = 1, 3 ), ( SIGMA(I,4), I = 1, 3 )
+c$$$     &     / .5D0, .5D0, .8D0, .1D0, -.6D0, -.8D0 /
+c$$$      DATA ( LIMIT(I,5), I = 1, 3 ), ( SIGMA(I,5), I = 1, 3 )
+c$$$     &     / .5D0, .5D0, .8D0, .1D0, -.5D0, .5D0 /
+c$$$      DATA ( LIMIT(I,6), I = 1, 3 ), ( SIGMA(I,6), I = 1, 3 )
+c$$$     &     / -1.5D0, .5D0, .8D0, .1D0, -.5D0, .5D0 /
+c$$$      DATA ( LIMIT(I,7), I = 1, 3 ), ( SIGMA(I,7), I = 1, 3 )
+c$$$     &     / 1.5D0, .5D0, .8D0, .1D0, .5D0, -.5D0 /
+c$$$      DATA ( LIMIT(I,8), I = 1, 3 ), ( SIGMA(I,8), I = 1, 3 )
+c$$$     &     / -.5D0, 1D0, 1.2D0, -.4D0, .2D0, .7D0 /
+c$$$      DATA ( LIMIT(I,9), I = 1, 3 ), ( SIGMA(I,9), I = 1, 3 )
+c$$$     &     / 1D0, 1D0, 2D0, .4D0, .8D0, .8D0 /
+c$$$      DATA ( LIMIT(I,10), I = 1, 3 ), ( SIGMA(I,10), I = 1, 3 )
+c$$$     &     / 1D0, 2D0, 1D0, .4D0, .8D0, .8D0 /
+c$$$      DATA ( LIMIT(I,11), I = 1, 3 ), ( SIGMA(I,11), I = 1, 3 )
+c$$$     &     / -2D0, -2D0, -2D0, .4D0, .8D0, .8D0 /
+c$$$      DATA ( LIMIT(I,12), I = 1, 3 ), ( SIGMA(I,12), I = 1, 3 )
+c$$$     *     / 1D0, 2D0, 3D0, -.998D0, -0.248D0, 0.248D0 /
+c$$$      DATA ( LIMIT(I,13), I = 1, 3 ), ( SIGMA(I,13), I = 1, 3 )
+c$$$     *     / -1D0, 2D0, 3D0, .25D0, 0.25D0, 0.25D0 /
+c$$$      DATA ( LIMIT(I,14), I = 1, 3 ), ( SIGMA(I,14), I = 1, 3 )
+c$$$     *     /  1D0, 1D0, 3D0, .998D0, 0.2482D0, 0.2487D0 /
+c$$$      DATA ( LIMIT(I,15), I = 1, 3 ), ( SIGMA(I,15), I = 1, 3 )
+c$$$     *     /  1D0, 1D0, 3D0, .998D0, 0.5D0, 0.5D0 /
+c$$$      DATA ( LIMIT(I,16), I = 1, 3 ), ( SIGMA(I,16), I = 1, 3 )
+c$$$     *     /  1D0, 1D0, 3D0, .99D0, 0.99D0, 0.99D0 /
+c$$$      DATA ( LIMIT(I,17), I = 1, 3 ), ( SIGMA(I,17), I = 1, 3 )
+c$$$     *     /  1D0, 2D0, 3D0, -1D0, -.99D0, .99D0 /
+c$$$      DATA ( LIMIT(I,18), I = 1, 3 ), ( SIGMA(I,18), I = 1, 3 )
+c$$$     *     /  1D0, 2D0, 3D0, 1D0, -.99D0, -.99D0 /
+c$$$      DATA ( LIMIT(I,19), I = 1, 3 ), ( SIGMA(I,19), I = 1, 3 )
+c$$$     *     /  1D0, -1D0, 1D0, .998D0, -0.2482D0, -0.2482D0 /
+c$$$      DATA ( LIMIT(I,NT), I = 1, 3 ), ( SIGMA(I,NT), I = 1, 3 )
+c$$$     *     /  1D0, -1D0, 2D0, .99992D0, 0.64627D0, 0.63975D0 /
+c$$$      EPS = 1D-6
+c$$$      PRINT '(''      Trivariate t Test with EPS ='', E10.1)', EPS
+c$$$      DO NU = 0, 12, 3
+c$$$         PRINT '(''NU   B1   B2   B3    R21      R31      R32    TVT'')'
+c$$$         DO J = 1, NT 
+c$$$            V = TVTL( NU, LIMIT(1,J), SIGMA(1,J), EPS )
+c$$$            PRINT '(I2,3F5.1,3F9.5,F13.10)', NU, 
+c$$$     &           ( LIMIT(I,J), I = 1, 3 ), ( SIGMA(I,J), I = 1, 3 ), V
+c$$$         END DO
+c$$$      END DO
+c$$$      END
 *
       DOUBLE PRECISION FUNCTION TVTL( NU, H, R, EPSI )
 *    

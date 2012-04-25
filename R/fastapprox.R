@@ -1,11 +1,11 @@
-##' .. content for \description{} (no empty lines) ..
+##' .. content for description (no empty lines) ..
 ##'
-##' .. content for \details{} ..
+##' .. content for details ..
 ##' @title Fast approximation
 ##' @param t1 
 ##' @param t2 
 ##' @param y1 
-##' @author Klaus Kähler Holst
+##' @author Klaus K. Holst
 ##' @export
 fastapprox <- function(t1,t2,y1) {
   if (is.matrix(t1)) {

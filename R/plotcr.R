@@ -1,6 +1,6 @@
-##' .. content for \description{} (no empty lines) ..
+##' .. content for description (no empty lines) ..
 ##'
-##' .. content for \details{} ..
+##' .. content for details ..
 ##' @title Plot bivariate competing risks data
 ##' @param x 
 ##' @param col 
@@ -9,7 +9,7 @@
 ##' @param which 
 ##' @param ask 
 ##' @param ... 
-##' @author Klaus Kähler Holst
+##' @author Klaus K. Holst
 ##' @export
 plotcr <- function(x,col,lty,legend=TRUE,which=1:2,
                    ask = prod(par("mfcol")) < length(which) && dev.interactive(), ...) {

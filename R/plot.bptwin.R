@@ -1,6 +1,6 @@
-##' ##' .. content for \description{} (no empty lines) ..
+##' ##' .. content for description (no empty lines) ..
 ##'
-##' .. content for \details{} ..
+##' .. content for details ..
 ##' @title Plot function for bptwin
 ##' @param x 
 ##' @param n 
@@ -9,7 +9,7 @@
 ##' @param ylab 
 ##' @param ...
 ##' @method plot bptwin
-##' @author Klaus Kähler Holst
+##' @author Klaus K. Holst
 ##' @export
 plot.bptwin <- function(x,n=50,rg=range(x$B[,1]),xlab="Time",ylab="Concordance",...) {
   require(mvtnorm)

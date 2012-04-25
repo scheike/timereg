@@ -8,6 +8,8 @@
 ##' @name mets-package
 ##' @docType package
 ##' @author Klaus K. Holst and Thomas Scheike
+##' @import lava
+##' @useDynLib mets
 ##' @keywords package
 ##' @examples
 ##' 
