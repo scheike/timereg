@@ -22,7 +22,8 @@ Depends:
     ucminf,
     prodlim
 Suggests:
-    foreach
+    foreach,
+    testthat
 LinkingTo: Rcpp, RcppArmadillo
 Collate:
     'biprobit.R'
@@ -52,3 +53,6 @@ Collate:
     'uniprobit.R'
     'utils.R'
     'vcov.biprobit.R'
+    'profile.R'
+    'bicomprisk.R'
+    'event.R'

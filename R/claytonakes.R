@@ -119,28 +119,32 @@ ClaytonOakes <- function(formula,data=parent.frame(),id,var.formula=~1,cuts=NULL
 
 ##################################################
 
+##' @S3method print biprobit
 print.claytonoakes <- function(x,...) {
   print(summary(x))
 }
 
+##' @S3method print summary.claytonoakes
 print.summary.claytonoakes <- function(x,...) {
   print(x$coef[,c(1,3,4)])
 }
 
-summary.claytonoakes <- function(obj,...) {
-  mycoef <- matrix(nrow=length(obj$coef),ncol=4)
-  mycoef[,1:2] <- cbind(obj$coef,sqrt(diag(obj$vcov)))
+##' @S3method summary claytonoakes
+summary.claytonoakes <- function(object,...) {
+  mycoef <- matrix(nrow=length(object$coef),ncol=4)
+  mycoef[,1:2] <- cbind(object$coef,sqrt(diag(object$vcov)))
   mycoef[,3:4] <- cbind(mycoef[,1]-qnorm(0.975)*mycoef[,2],mycoef[,1]+qnorm(0.975)*mycoef[,2])
   colnames(mycoef) <- c("Estimate","Std.Err","2.5%","97.5%")
-  if (length(obj$cuts))
-  cutnames <- levels(cut(0,breaks=obj$cuts))
-  rownames(mycoef) <- c(paste("log-Var:",obj$gammanames,sep=""),obj$betanames,cutnames)
-  mycoef[-seq(obj$ngamma),] <- exp(mycoef[-seq(obj$ngamma),])
+  if (length(object$cuts))
+  cutnames <- levels(cut(0,breaks=object$cuts))
+  rownames(mycoef) <- c(paste("log-Var:",object$gammanames,sep=""),object$betanames,cutnames)
+  mycoef[-seq(object$ngamma),] <- exp(mycoef[-seq(object$ngamma),])
   res <- list(coef=mycoef)
   class(res) <- "summary.claytonoakes"
   res
 }
 
+##' @S3method plot claytonoakes
 plot.claytonoakes <- function(x,chaz=TRUE,add=!is.null(dev.list()),col="darkblue",...) {
   haz <- summary(x)$coef[-seq(x$nbeta+x$ngamma),,drop=FALSE]
   t <- x$cuts
