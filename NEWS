@@ -1,0 +1,8 @@
+* Version 0.1 <2011-04-25>
+
+- Initialization of the new package 'mets' with implementation of the
+  Clayton-Oakes model with piecewise constant marginal hazards, and
+  the bivariate probit random effects model (Liability model) for
+  twin-data.
+
+

@@ -1,0 +1,55 @@
+Package: mets
+Type: Package
+Title: Analysis of Multivariate Events
+Version: 0.1
+Date: 2012-04-25
+Author: Thomas Scheike, Klaus K. Holst,
+Maintainer: Klaus K. Holst <k.k.holst@biostat.ku.dk>
+Description: Implementation of various statistical models for multivariate
+    event history data. Including multivariate cumulative incidence models, and
+    bivariate random effects probit models (Liability models)
+License: GPL (>=2)
+LazyLoad: yes
+URL: http://r-forge.r-project.org/projects/lava/
+Depends:
+    Rcpp (>= 0.9.2),
+    RcppArmadillo (>= 0.2.17),
+    mvtnorm,
+    lava (>= 1.0),
+    numDeriv,
+    splines,
+    timereg,
+    ucminf,
+    prodlim
+Suggests:
+    foreach
+LinkingTo: Rcpp, RcppArmadillo
+Collate:
+    'biprobit.R'
+    'biprobit.strata.R'
+    'bpnd.R'
+    'bptwin.R'
+    'claytonakes.R'
+    'coef.biprobit.R'
+    'cumh.R'
+    'Dbvn.R'
+    'fastapprox.R'
+    'ipw.R'
+    'logLik.biprobit.R'
+    'mets-packages.R'
+    'npc.R'
+    'onload.R'
+    'plot.bptwin.R'
+    'plotcr.R'
+    'print.biprobit.R'
+    'print.summary.biprobit.R'
+    'profile.R'
+    'score.biprobit.R'
+    'sim.bptwin.R'
+    'simcif.R'
+    'sim.clayton.oakes.R'
+    'summary.biprobit.R'
+    'summary.bptwin.R'
+    'uniprobit.R'
+    'utils.R'
+    'vcov.biprobit.R'
