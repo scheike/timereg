@@ -1,4 +1,4 @@
-mdep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
+dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
 clusters=NULL, theta=NULL,theta.des=NULL,parfunc=NULL,dparfunc=NULL,
 step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,notaylor=1,
@@ -314,7 +314,7 @@ clusters=NULL, theta=NULL,theta.des=NULL,parfunc=NULL,dparfunc=NULL,
 step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,notaylor=1,
 same.cens=FALSE,censoring.probs=NULL,silent=1,...)
 { ## {{{
-fit <- mdep.cif(cif=cif,data=data,cause=cause,model="COR",times=times,
+fit <- dep.cif(cif=cif,data=data,cause=cause,model="COR",times=times,
          cause1=cause1,cause2=cause2,cens.code=cens.code,cens.model=cens.model,Nit=Nit,detail=detail,
          clusters=clusters,theta=theta,theta.des=theta.des,parfunc=NULL,dparfunc=dparfunc,
          step=step,sym=sym,colnames=colnames,dimpar=dimpar,weights=weights,notaylor=notaylor,
@@ -330,7 +330,7 @@ step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,notaylor=1,
 same.cens=FALSE,censoring.probs=NULL,silent=1,
 entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,...)
 { ## {{{
-fit <- mdep.cif(cif=cif,data=data,cause=cause,model="RR",cif2=cif2,times=times,
+fit <- dep.cif(cif=cif,data=data,cause=cause,model="RR",cif2=cif2,times=times,
          cause1=cause1,cause2=cause2,cens.code=cens.code,cens.model=cens.model,Nit=Nit,detail=detail,
          clusters=clusters,theta=theta,theta.des=theta.des,parfunc=NULL,dparfunc=dparfunc,
          step=step,sym=sym,colnames=colnames,dimpar=dimpar,weights=weights,notaylor=notaylor,
@@ -347,7 +347,7 @@ step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,notaylor=1,
 same.cens=FALSE,censoring.probs=NULL,silent=1,
 entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,...)
 { ## {{{
-fit <- mdep.cif(cif=cif,data=data,cause=cause,model="OR",cif2=cif2,times=times,
+fit <- dep.cif(cif=cif,data=data,cause=cause,model="OR",cif2=cif2,times=times,
          cause1=cause1,cause2=cause2,cens.code=cens.code,cens.model=cens.model,Nit=Nit,detail=detail,
          clusters=clusters,theta=theta,theta.des=theta.des,parfunc=NULL,dparfunc=dparfunc,
          step=step,sym=sym,colnames=colnames,dimpar=dimpar,weights=weights,notaylor=notaylor,
