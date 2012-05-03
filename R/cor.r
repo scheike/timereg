@@ -3,10 +3,11 @@ cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
 clusters=NULL, theta=NULL,theta.des=NULL,parfunc=NULL,dparfunc=NULL,
 step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,notaylor=1,
 same.cens=FALSE,censoring.probs=NULL,silent=1,
-entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,control=list(),...)
+entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,control=list(),
+score.method="fisher.scoring",random.design=NULL,exp.link=1,...)
 { ## {{{
 ## {{{ set up data and design
- multi=0; dscore=1; stab.cens <- FALSE; entry.call <- entry; inverse <- 1
+ multi=0; dscore=1; stab.cens <- FALSE; entry.call <- entry; inverse <- exp.link
  formula<-attr(cif,"Formula"); 
  ldata<-aalen.des(formula,data,model="aalen");
  X<-ldata$X; time<-ldata$time2; Z<-ldata$Z;  status<-ldata$status;
@@ -133,7 +134,7 @@ if ( (!is.null(parfunc)) && is.null(dimpar) )
   if (is.null(dimpar) && is.null(parfunc)) dimpar<-ptheta; 
   ### if (!is.null(dparfunc)) dimpar<-length(dparfunc(
 
-  if (is.null(theta)==TRUE) theta<-rep(0.0,dimpar);
+  if (is.null(theta)==TRUE) theta<-rep(0.1,dimpar);
   if (length(theta)!=dimpar) theta<-rep(theta[1],dimpar);
   ##print(est); print(gamma); print(semi); 
 Biid<-c(); gamma.iid <- 0; B2iid<-c(); gamma2.iid <- 0; 
@@ -151,7 +152,7 @@ if (npar2==TRUE) gamma2.iid<-0 else  gamma2.iid<-cif2$gamma.iid;
   #if (sum(time.pow)==0) time.pow<-rep(1,pg); 
   theta.iid<-matrix(0,antclust,dimpar); 
 
-  if (nrow(theta.des)!=nrow(X)) stop("Dependence design not consistent with data\n"); 
+  if ((nrow(theta.des)!=nrow(X)) && (model!="ARANCIF")) stop("Dependence design not consistent with data\n"); 
  if (length(trunkp)!=antpers) trunkp <- rep(1,antpers)
 if (is.null(weights)==TRUE) weights <- rep(1,antpers); 
 ## }}}
@@ -179,10 +180,17 @@ else {
 
    Zgamma <-  Z %*% gamma; Z2gamma2 <-  Z2 %*% gamma2
    dep.model <- 0;  
-   dep.model <- switch(model,COR=1,RR=2,OR=3)
-   if (dep.model==0) stop("model must be COR, OR, RR\n"); 
+   dep.model <- switch(model,COR=1,RR=2,OR=3,RANCIF=4,ARANCIF=5)
+   if (dep.model==0) stop("model must be COR, OR, RR, RANCIF, ARANCIF \n"); 
+###   if (dep.model==4)  theta <- exp(theta); 
+   if (dep.model<=4) rvdes <- matrix(0,1,1); 
 
-obj <- function(p,score=1) 
+   if (is.null(random.design)==TRUE) rvdes <- matrix(1,antpers,1) else rvdes <- random.design; 
+
+   if (!is.null(control$score)) score <- control$score
+   oout <- 0;  ### for sum of squares for object function
+
+obj <- function(p) 
 { ## {{{
 Xtheta <-  theta.des %*% p; 
 out<-.Call("cor", ## {{{
@@ -199,58 +207,69 @@ out<-.Call("cor", ## {{{
    isamecens=same.cens,istabcens=stab.cens,iKMtimes=Gctimes,isilent=silent,
    icifmodel=cif.model, idepmodel=dep.model,
    iestimator=estimator, ientryage=entry,icif1entry=cif1entry,
-   icif2entry=cif2entry,itrunkp=trunkp, DUP=FALSE) 
+   icif2entry=cif2entry,itrunkp=trunkp,irvdes=rvdes,DUP=FALSE) 
 ## }}}
 
-f <- sum(out$score^2)
+###f <- sum(out$score^2)
 ###print(c(p,f)); 
-if (score==1) return(f) else return(out)
+if (oout==0) return(out$ssf) else if (oout==1) return(sum(out$score^2)) else return(out)
 } ## }}}
 
-iid <- 0;  ###no-iid representation for iterations
-if (control$method=="fisher.scoring") {
-p <- theta
-   for (i in 1:Nit)
-   {
-      out <- obj(p,score=0)
-      if (detail==1) {
-        print(paste("Fisher-Scoring ===================: it=",i)); 
-        cat("theta:");print(c(p))
-        cat("score:");print(c(out$score)); 
-        cat("Dscore:");print(c(out$Dscore)); 
-      }
-      hessi <- solve(out$Dscore); 
-      delta <- hessi %*% out$score *step 
-      p <- p-delta* step
-###      print(hessi); 
-###      print(delta); 
-      if (sum(abs(out$score))<0.000001) break;
-   }
-   theta <- p
-   iid <- 1; 
-   out <- obj(p,score=0)
-} else {
- iid <- 0; 
- tryCatch(opt <- nlminb(theta,obj,control=control),error=function(x) NA)
- iid <- 1; 
-###print(opt)
-###library(numDeriv)
-###I <- jacobian(obj,opt$par,score=0)
-###print(I)
-###info <- solve(I); 
-theta <- opt$par
-out <- obj(opt$par,score=0)
-hessi <- solve(out$Dscore)
-}
+  iid <- 0;  ###no-iid representation for iterations
+   if (score.method=="fisher.scoring") { ## {{{
+	p <- theta
+	   for (i in 1:Nit)
+	   {
+              oout <- 2; 
+	      out <- obj(p)
+	      if (detail==1) {
+		print(paste("Fisher-Scoring ===================: it=",i)); 
+		cat("theta:");print(c(p))
+		cat("score:");print(c(out$score)); 
+		cat("Dscore:");print(c(out$Dscore)); 
+	      }
+	      hessi <- solve(out$Dscore); 
+	      delta <- hessi %*% out$score *step 
+	      p <- p-delta* step
+	###      print(hessi); 
+	###      print(delta); 
+	      if (sum(abs(out$score))<0.000001) break;
+	   }
+	   theta <- p
+	   iid <- 1; 
+	   out <- obj(p) 
+	   score <- out$score
+	   score1 <- score
+	   ## }}}
+   } else { ## {{{
+	 iid <- 0; 
+	 oout <- 0; 
+	 tryCatch(opt <- nlminb(theta,obj,control=control),error=function(x) NA)
+	 iid <- 1; 
+         library(numDeriv)
+         hess <- hessian(obj,opt$par)
+         score <- jacobian(obj,opt$par)
+	 hessi <- solve(hess); 
+         theta <- opt$par
+         oout <- 2; 
+         out <- obj(opt$par)
+	 score1 <- out$score
+    } ## }}}
+
 
 theta.iid <- out$theta.iid %*% hessi
 var.theta  <- t(theta.iid) %*% theta.iid 
-ud <- list(theta=theta,score=out$score,hess=out$Dscore,hessi=hessi,var.theta=var.theta,theta.iid=theta.iid); 
-class(ud)<-"cor"; 
+ud <- list(theta=theta,score=score,hess=out$Dscore,hessi=hessi,var.theta=var.theta,
+	   theta.iid=theta.iid,score1=c(score1)); 
+if (dep.model<=3) class(ud)<-"cor" 
+else if (dep.model==4) class(ud) <- "randomcif" 
+else if (dep.model==5) class(ud) <- "randomcifrv" 
+else if (dep.model==6) class(ud) <- "randomcif" 
 attr(ud, "Formula") <- formula
 attr(ud, "Clusters") <- clusters
 attr(ud,"cause1")<-cause1; attr(ud,"cause2")<-cause2
 attr(ud,"sym")<-sym; 
+attr(ud,"inverse")<-inverse; 
 attr(ud,"antpers")<-antpers; 
 attr(ud,"antclust")<-antclust; 
 if (model=="COR") attr(ud, "Type") <- "cor"
@@ -269,7 +288,6 @@ return(ud);
 ###  V <- with(ee, vectors%*%diag(values)%*%t(vectors))
 ###  res <- list(coef=opt$par,vcov=V,cuts=cuts,nbeta=nbeta,ngamma=ngamma,betanames=colnames(X),gammanames=colnames(Z),opt=opt) 
 ###
-
 
 ##### {{{ output
 ###theta<-matrix(out[[23]],dimpar,1);var.theta<-matrix(out[[24]],dimpar,dimpar); 
@@ -353,6 +371,42 @@ fit <- dep.cif(cif=cif,data=data,cause=cause,model="OR",cif2=cif2,times=times,
          step=step,sym=sym,colnames=colnames,dimpar=dimpar,weights=weights,notaylor=notaylor,
          same.cens=same.cens,censoring.probs=censoring.probs,silent=silent,
 	 entry=entry,estimator=estimator,trunkp=trunkp,admin.cens=admin.cens,...)
+    fit$call <- match.call()
+    fit
+} ## }}}
+
+random.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
+cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
+clusters=NULL, theta=NULL,theta.des=NULL,parfunc=NULL,dparfunc=NULL,
+step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,notaylor=1,
+same.cens=FALSE,censoring.probs=NULL,silent=1,exp.link=0,score.method="fisher.scoring",
+entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,...)
+{ ## {{{
+fit <- dep.cif(cif=cif,data=data,cause=cause,model="RANCIF",cif2=cif2,times=times,
+         cause1=cause1,cause2=cause2,cens.code=cens.code,cens.model=cens.model,Nit=Nit,detail=detail,
+         clusters=clusters,theta=theta,theta.des=theta.des,parfunc=NULL,dparfunc=dparfunc,
+         step=step,sym=sym,colnames=colnames,dimpar=dimpar,weights=weights,notaylor=notaylor,
+         same.cens=same.cens,censoring.probs=censoring.probs,silent=silent,exp.link=exp.link,
+	 score.method=score.method,entry=entry,estimator=estimator,
+	 trunkp=trunkp,admin.cens=admin.cens,...)
+    fit$call <- match.call()
+    fit
+} ## }}}
+
+Grandom.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
+cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
+clusters=NULL, theta=NULL,theta.des=NULL,parfunc=NULL,dparfunc=NULL,
+step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,notaylor=1,
+same.cens=FALSE,censoring.probs=NULL,silent=1,exp.link=0,score.method="nlminb",
+entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,random.design=NULL,...)
+{ ## {{{
+fit <- dep.cif(cif=cif,data=data,cause=cause,model="ARANCIF",cif2=cif2,times=times,
+         cause1=cause1,cause2=cause2,cens.code=cens.code,cens.model=cens.model,Nit=Nit,detail=detail,
+         clusters=clusters,theta=theta,theta.des=theta.des,parfunc=NULL,dparfunc=dparfunc,
+         step=step,sym=sym,colnames=colnames,dimpar=dimpar,weights=weights,notaylor=notaylor,
+         same.cens=same.cens,censoring.probs=censoring.probs,silent=silent,exp.link=exp.link,
+	 score.method=score.method,entry=entry,estimator=estimator,
+	 random.design=random.design, trunkp=trunkp,admin.cens=admin.cens,...)
     fit$call <- match.call()
     fit
 } ## }}}
@@ -623,3 +677,94 @@ valr[valn!=0] <- val1/valn;
 
 return(valr); 
 } ## }}}
+
+summary.randomcif<-function (object, ...) 
+{ ## {{{
+    if (!inherits(object, "randomcif")) 
+	    stop("Must be a random.cif  object")
+    cat("Random effect variance for variation due to clusters\n\n")
+    cat("Cause", attr(object, "cause1"), "and cause", attr(object, 
+        "cause2"), fill = TRUE)
+    cat("\n")
+    if (sum(abs(object$score)) > 1e-06) 
+        cat("WARNING: check score for convergence")
+    cat("\n")
+    coef.randomcif(object, ...)
+} ## }}}
+
+coef.randomcif<- function (object, digits = 3, ...) 
+{ ## {{{
+    res <- cbind(object$theta, diag(object$var.theta)^0.5)
+    se <- diag(object$var.theta)^0.5
+    wald <- object$theta/se
+    waldp <- (1 - pnorm(abs(wald))) * 2
+    cor <- object$theta + 1
+    res <- as.matrix(cbind(res, wald, waldp, cor, se))
+    colnames(res) <- c("Coef.", "SE", "z", "P-val", "Cross odds ratio", 
+        "SE")
+    if (is.null((rownames(res))) == TRUE) 
+        rownames(res) <- rep(" ", nrow(res))
+    prmatrix(signif(res, digits))
+} ## }}}
+
+print.randomcif<- function (x , digits = 3, ...) 
+{ ## {{{
+} ## }}}
+
+summary.randomcifrv<-function (object, ...) 
+{ ## {{{
+    if (!inherits(object, "randomcifrv")) 
+        stop("Must be a random.cifrv  object")
+    cat("Random effect parameters for additive gamma random effects \n\n")
+    cat("Cause", attr(object, "cause1"), "and cause", attr(object, 
+        "cause2"), fill = TRUE)
+    cat("\n")
+    if (sum(abs(object$score)) > 1e-06) 
+        cat("WARNING: check score for convergence")
+    cat("\n")
+    coef.randomcifrv(object, ...)
+} ## }}}
+
+coef.randomcifrv<- function (object, digits = 3, ...) 
+{ ## {{{
+    if (attr(object,"inverse")==1) elog <- 1 else elog  <- 0; 
+    if (elog==1) theta <- exp(object$theta) else theta <- object$theta 
+    se <- diag(object$var.theta)^0.5
+    res <- cbind(object$theta, se)
+    wald <- object$theta/se
+    waldp <- (1 - pnorm(abs(wald))) * 2
+    res <- as.matrix(cbind(res, wald, waldp))
+    if (elog==0)  colnames(res) <- c("Coef.", "SE", "z", "P-val")
+    if (elog==1) res <- cbind(res,exp(object$theta), exp(object$theta)^2*se)  
+    if (elog==1) colnames(res) <- c("log-parameter","SE","z","P-val","exp(theta)","SE")
+
+    if (is.null((rownames(res))) == TRUE) rownames(res) <- rep(" ", nrow(res))
+    prmatrix(signif(res, digits))
+
+    cat("\n\n Random effect variances for gamma random effects \n\n")
+    varpar <- theta/sum(theta)^2 
+    res <- as.matrix(varpar); 
+    if (elog==0)  { var.theta <-   object$var.theta; 
+                    df <- 0*var.theta; 
+                    for (i in 1:nrow(var.theta))
+                    df[i,] <- -theta[i]*2*theta; 
+		    diag(df) <- diag(df)+sum(theta)^2
+		    df <- df/sum(theta)^4
+		    var.varpar <- df %*% var.theta %*% df
+                  }
+    if (elog==1)  { 
+	            var.theta <-   object$var.theta; 
+                    var.varpar <- var.theta
+                  }
+    res <- cbind(res,diag(var.varpar)^.5)  
+    colnames(res) <- c("variance","SE")
+    if (is.null((rownames(res))) == TRUE) rownames(res) <- rep(" ", nrow(res))
+    prmatrix(signif(res, digits))
+
+} ## }}}
+
+print.randomcifrv<- function (x , digits = 3, ...) 
+{ ## {{{
+ summary(x, ...)
+} ## }}}
+
