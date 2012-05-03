@@ -36,6 +36,7 @@ ClaytonOakes <- function(formula,data=parent.frame(),id,var.formula=~1,cuts=NULL
     id <- formulaId
     mycall$id <- id
   }
+  
   if (!is.null(formulaStrata)) {
     strata <- formulaStrata
     mycall$strata <- strata
@@ -55,9 +56,10 @@ ClaytonOakes <- function(formula,data=parent.frame(),id,var.formula=~1,cuts=NULL
   causes <- as.character(causes)
   covars <- as.character(attributes(terms(formula))$variables)[-(1:2)]
   X <- NULL
-  nbeta <- 0
+  nbeta <- 0  
   if (length(covars)>0) {
-    X <- model.matrix(as.formula(paste("~-1+",covars)),data)
+##    X <- model.matrix(as.formula(paste("~-1+",paste(covars,collapse="+"))),data)
+    X <- model.matrix(formula,data)
     nbeta <- ncol(X)
   }
   ngamma <- 0

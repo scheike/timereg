@@ -1,6 +1,6 @@
 Package: mets
 Type: Package
-Title: Analysis of Multivariate Events
+Title: Analysis of Multivariate Event Times
 Version: 0.1
 Date: 2012-04-25
 Author: Thomas Scheike, Klaus K. Holst,
@@ -51,3 +51,4 @@ Collate:
     'vcov.biprobit.R'
     'bicomprisk.R'
     'event.R'
+    'procformula.R'

@@ -54,8 +54,10 @@ summary.bptwin <- function(object,level=0.05,...) {
     Ki <- seq_len(K)
     corMZ <- sum(cc[Ki]); corDZ <- sum(cc[Ki]*dzsc)
     i1 <- seq_len(length(dzsc))
-    h <- function(x) 2*(sum(x[i1])-sum(x[i1]*dzsc))
-    dh <- function(x) 2*(1-dzsc)
+    h <- function(x) sum(x[i1])
+    dh <- function(x) { res <- rep(0,length(x)); res[i1] <- 1; res }
+    ##    h <- function(x) 2*(sum(x[i1])-sum(x[i1]*dzsc))
+    ##    dh <- function(x) 2*(1-dzsc)
     
   }
   Vc <- D%*%V%*%t(D)
@@ -79,7 +81,7 @@ summary.bptwin <- function(object,level=0.05,...) {
   ##  CIs <- rbind(CIs,c(NA,NA),c(NA,NA))
   ##  newcoef <- cbind(newcoef,CIs)
   colnames(newcoef) <- c("Estimate","Std.Err",CIlab)
-  logith <- function(x) logit(h(x))
+  logith <- function(x) logit(h(x))  
   dlogith <- function(x) dlogit(h(x))*dh(x)
   Dlh <- dlogith(cc[i1])
   sdlh <- (t(Dlh)%*%Vc[i1,i1]%*%(Dlh))[1]^0.5
