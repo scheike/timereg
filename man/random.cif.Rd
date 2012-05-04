@@ -1,0 +1,96 @@
+\name{random.cif}
+\alias{random.cif}
+\title{Random effects model for competing risks data} 
+\description{
+Fits a random effects  model describing the dependence in the cumulative 
+incidence curves for subjects within a cluster.  Given the gamma distributed
+random effects it is assumed that the cumulative incidence curves are indpendent, and
+that the marginal cumulative incidence curves are on the form
+\deqn{
+P(T \leq t, cause=1 | x,z) = P_1(t,x,z) = 1- exp( -x^T A(t) exp(z^T \beta))
+}
+We allow a regression structure for the random effects variances that may depend on
+cluster covariates.
+}
+\usage{
+random.cif(cif,data,cause,cif2=NULL,
+cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
+clusters=NULL, theta=NULL,theta.des=NULL,
+step=1,same.cens=FALSE,exp.link=0,score.method="nlminb",
+entry=NULL,trunkp=1,...)
+}
+\arguments{
+\item{cif}{a model object from the comp.risk function with the 
+marginal cumulative incidence of cause2, i.e., the event that is conditioned on, and whose
+odds the comparision is made with respect to}
+\item{data}{a data.frame with the variables.}
+\item{cause}{specifies the causes  related to the death
+	times, the value cens.code is the censoring value.}
+\item{cause1}{cause of first coordinate.}
+\item{cause2}{cause of second coordinate.}
+\item{cens.code}{specificies the code for the censoring.}
+\item{cif2}{specificies model for cause2 if different from cause1.}
+\item{cens.model}{specified which model to use for the ICPW, KM is Kaplan-Meier alternatively it may be "cox"}
+\item{Nit}{number of iterations for Newton-Raphson algorithm.}
+\item{detail}{if 0 no details are printed during iterations, if 1 details are given.}
+\item{clusters}{specifies the cluster structure.}
+\item{exp.link}{if exp.link=1 then var is on log-scale.}
+\item{score.method}{default uses "nlminb" optimzer, alternatively, use the "fisher-scoring" algorithm.}
+\item{theta}{specifies starting values for the cross-odds-ratio parameters of the model.}
+\item{theta.des}{specifies a regression design for the cross-odds-ratio parameters.}
+\item{step}{specifies the step size for the Newton-Raphson algorithm.}
+\item{same.cens}{if true then censoring within clusters are assumed to be the same variable, default is independent censoring.}
+\item{entry}{entry-age in case of delayed entry. Then two causes must be given.} 
+\item{trunkp}{gives probability of survival for delayed entry, and related to entry-ages given above.}
+}
+\value{returns an object of type 'cor'. With the following arguments:
+\item{theta}{estimate of proportional odds parameters of model.}
+\item{var.theta}{variance for gamma.  }
+\item{hess}{the derivative of the used score.}
+\item{score}{scores at final stage.}
+\item{score}{scores at final stage.}
+\item{theta.iid}{matrix of iid decomposition of parametric effects.}
+item{...}{extra arguments.}
+}
+\references{
+A Semiparametric Random Effects Model for Multivariate Competing Risks Data,
+Scheike, Zhang, Sun, Jensen (2010), Biometrika. 
+
+Cross odds ratio Modelling of dependence for
+Multivariate Competing Risks Data, Scheike and Sun (2012), work in progress.
+}
+\author{Thomas Scheike}
+\examples{
+data(multcif)
+
+times <- seq(0.3,1,length=4)
+add<-comp.risk(Surv(time,cause>0)~+1+cluster(id),data=multcif,multcif$cause,n.sim=0,causeS=1,
+              times=times,max.clust=NULL)
+
+out1<-random.cif(add,data=multcif,cause1=1,cause2=1)
+summary(out1)
+
+zyg <- rep(rbinom(200,1,0.5),each=2)
+theta.des <- model.matrix(~-1+factor(zyg))
+###theta.des<-model.matrix(~-1+factor(zyg),data=np)
+out2<-random.cif(add,data=multcif,cause1=1,cause2=1,theta.des=theta.des)
+summary(out2)
+#########################################
+##### 2 different causes 
+#########################################
+
+multcif$cause[multcif$cause==0] <- 2
+ 
+###times<-sort(multcif$time[multcif$status \%in\% c(1,2)])
+add1<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,causeS=1,
+		  multcif$cause,n.sim=0,times=times)
+add2<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,causeS=2,
+		  multcif$cause,n.sim=0,times=times)
+ 
+out1<-random.cif(add1,data=multcif,cause1=1,cause2=2,cif2=add2)
+summary(out1) ## negative dependence
+
+out1g<-random.cif(add1,data=multcif,cause1=1,cause2=2,cif2=add2,theta.des=theta.des)
+summary(out1g)
+}
+\keyword{survival}
