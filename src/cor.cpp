@@ -171,7 +171,7 @@ void ckrvdes2(vec &alphai,vec &alphak, // {{{
 		double beta, double x,double y,
 		vec &ckij, vec &dckij,vec &rvi,vec &rvk)
 {
-double val,val1,val2,val3,alphi,alphk,alph,betai,betak;
+double val,val1,val2,val3,alphi=0,alphk=0,alph,betai,betak;
 double test=1; //lapgam(),ilapgam(),Dtlapgam(), Dalphalapgam(),Dilapgam(),Dbetalapgam(),Dbetailapgam();
 int prv,k; 
 //void funkdes2(); 
@@ -184,7 +184,12 @@ Rprintf("ckr \n");
 // fix denne i CPP version
 //rvi.print("ckrv rvi"); 
 //alphai.print("alph ckrv rvi"); 
-alphi=sum(rvi % alphai); alphk=sum(rvk% alphak); 
+for (k=0;k<rvi.n_rows;k++) {
+	alphi=alphi+rvi(k)*alphai(k); 
+	alphk=alphi+rvk(k)*alphak(k); 
+}
+//alphi=sum(rvi % alphai); alphk=sum(rvk% alphak); 
+//alphi=trans(rvi) * alphai; alphk=trans(rvk) * alphak; 
 betai=alphi; betak=alphk;
 
 prv=rvi.n_rows;
@@ -463,12 +468,18 @@ int antclust = clusterindex.n_rows;
   colvec pbhat2(z.n_rows); 
 
   // depmodel=5 
+//  rvdes.print("rvdes"); 
+//  thetades.print("ttt"); 
+
   nr=rvdes.n_cols; 
   vec alphaj(nr),alphai(nr),alpha(nr),
       rvvec(nr),rvvec1(nr),rvvec2vv(nr),rvvec2vt(nr),rvvec2tv(nr);
   vec  rvvec2(nr); 
 
 //  rvvec.print("rvv"); 
+//  theta.print("tt"); 
+//  Rprintf(" %d %d \n",pt,nr); 
+
 //  rvdes.print("rff"); 
 //  Xtheta.print("XT"); 
 
@@ -493,7 +504,6 @@ int antclust = clusterindex.n_rows;
 
 	  if ((CA1!=CA2)) {
 		  bhatt2 = est2.row(s); 
-//		  bhatt2.print("est2"); 
 		  pbhat2 = z2 * bhatt2; 
 	     if ((semi2==1) & (cifmodel==1)) pbhat2 = pbhat2 + Z2gamma2*time;
 	     if ((semi2==1) & (cifmodel==2)) pbhat2=pbhat2%exp(Z2gamma2); 
@@ -501,15 +511,15 @@ int antclust = clusterindex.n_rows;
 
     for (j=0;j<antclust;j++) if (clustsize(j)>=2) { 
 	  diff=0; sdj=0; 
-//	 printf("0 mig \n"); 
 
-	  if (depmodel==5) {
+	  if (depmodel==5) { // {{{
 //	     if (j< 2) {  vtheta2.print("================================= theta"); }
              if (inverse==1)  vtheta2=exp(theta); else vtheta2=theta;
 //	     if (j< 2) {  printf(" %d %d \n",depmodel,inverse); vtheta2.print(" theta"); }
              alphai= thetades * vtheta2;
 	     alphaj= thetades * vtheta2;
-	  }
+	  } // }}}
+
 //	 printf("00 mig \n"); 
 
           for (c=0;c<clustsize[j];c++) for (v=0;v<clustsize[j];v++) // {{{
@@ -531,8 +541,6 @@ int antclust = clusterindex.n_rows;
               if (flexfunc==0) thetak= Xtheta(i); else thetak=Xtheta(s,i); 
 	      pthetavec= trans(thetades.row(i)); 
 	 }
-//	 printf("mig \n"); 
-//	 else { thetak=evalh(vtheta1,vtime,pthetavec,htheta,rhoR); }
          Li=pbhat(i); Lk=pbhat(k); 
          if (CA1!=CA2) Lk=pbhat2(k); 
 
@@ -540,7 +548,7 @@ int antclust = clusterindex.n_rows;
 	 else if (depmodel==2) ormarg=(1-exp(-Li))*(1-exp(-Lk)); 
 	 else if (depmodel==3) ormarg=(1-exp(-Li))*(1-exp(-Lk)); 
 
-if (j<0) printf("mmmm  %lf %lf %lf %lf %lf %lf \n",pbhat(i),pbhat2(k),pbhat(k),Li,Lk,ormarg); 
+if (j<0) Rprintf("mmmm  %lf %lf %lf %lf %lf %lf \n",pbhat(i),pbhat2(k),pbhat(k),Li,Lk,ormarg); 
 
 	 int nocens= (ci!=0)+(ck!=0); 
 	 nocens=min(nocens,2); 
@@ -570,15 +578,22 @@ if (j<0) printf("mmmm  %lf %lf %lf %lf %lf %lf \n",pbhat(i),pbhat2(k),pbhat(k),L
 	    	   -(1-exp(-Li))*cif2entry[k]-(1-exp(-Lk))*cif1entry[i])/trunkp[i]);
 	       diff=diff+response; 
 	       sdj=sdj- weight*exp(thetak)*(ormarg+cif1entry[i]*cif2entry[k]- 
-	 (1-exp(-Li))*cif2entry[k]- (1-exp(-Lk))*cif1entry[i])/trunkp[i];
+                	 (1-exp(-Li))*cif2entry[k]- (1-exp(-Lk))*cif1entry[i])/trunkp[i];
 	       resp3=-exp(thetak);
 	   } else {
+	     double nn=(exp(-Li)+exp(thetak)*(1-exp(-Li)));
+	     p11t=(1-exp(-Li))*(1-exp(-Lk))*exp(thetak)/nn; 
+	     ssf+=pow(resp2-p11t,2); 
+	     if (inverse==1) {
+	     response= ((1-exp(-Li))*(1-exp(-Lk))*exp(-Li)/pow(nn,2))*(resp2-p11t); 
+	     sdj=sdj+pow(((1-exp(-Li))*(1-exp(-Lk))*exp(-Li)/pow(nn,2)),2); 
+	     resp3=0; 
+	     } else {
 	     response=exp(thetak)*(exp(thetak)*ormarg*(resp1-resp2)-resp2); 
 	     sdj=sdj+2*exp(2*thetak)*ormarg*(resp1-resp2)-exp(thetak)*resp2;
-	     diff=diff+response; 
 	     resp3=exp(2*thetak)*(resp1-resp2)*exp(Li);
-	     p11t=(1-exp(-Li))*(1-exp(-Lk))*exp(thetak)/(exp(-Li)+exp(thetak)*exp(-Li));
-	     ssf+=pow(resp2-p11t,2); 
+	     }
+	     diff=diff+response; 
 	    } // }}}
 	} else if (depmodel==2) { // RR model  // {{{
 	 if (estimator==1) {
@@ -598,9 +613,9 @@ if (j<0) printf("mmmm  %lf %lf %lf %lf %lf %lf \n",pbhat(i),pbhat2(k),pbhat(k),L
 	 (1-exp(-Li))*cif2entry[k]- (1-exp(-Lk))*cif1entry[i])/trunkp[i];
 	   resp3=-exp(thetak);
 	} else {
-	   response=weight*(resp2-exp(thetak)*ormarg); 
+	   response=weight*exp(thetak)*ormarg*(resp2-exp(thetak)*ormarg); 
 	   diff=diff+response; 
-	   sdj=sdj-exp(thetak)*ormarg*weight;
+	   sdj=sdj-exp(2*thetak)*ormarg*ormarg*weight;
 	   resp3=-exp(thetak);
 	   ssf+=weight*pow((resp2-exp(thetak)*ormarg),2); 
 	}
@@ -705,8 +720,8 @@ if (j<0) printf("mmmm  %lf %lf %lf %lf %lf %lf \n",pbhat(i),pbhat2(k),pbhat(k),L
 
               if (inverse==1)  vthetascore=vthetascore%vtheta2;
 
-//              DUtheta=DUtheta+weights[j]*(vhetascore*trans(vthetascore));
-	      vthetascore = (weights[j]*diff)*vthetascore; 
+              DUtheta=DUtheta+weights[j]*(vthetascore*trans(vthetascore));
+	      vthetascore=(weights[j]*diff)*vthetascore; 
 	      Utheta=Utheta+vthetascore; 
 
 	      if (iid==1) for (c=0;c<pt;c++) thetiid(j,c)+=vthetascore(c); 
@@ -736,14 +751,14 @@ if (j<0) printf("mmmm  %lf %lf %lf %lf %lf %lf \n",pbhat(i),pbhat2(k),pbhat(k),L
        } // }}}
 
 //if (j<10) printf("uu %d %d %d %lf %lf %lf %lf %lf %lf \n",j,i,k,time,resp1,resp2,y[i],y[k],response); 
-//if (j<10) printf("uu2 %lf %lf %lf %lf %lf %lf %d %d \n",pbhat(i),pbhat(k),0*pbhat2(k),response,thetak,ormarg,ci,ck);
+//if (j<10) Rprintf("uu2 %lf %lf %lf %lf %lf %lf %d %d \n",pbhat(i),pbhat(k),0*pbhat2(k),response,thetak,ormarg,ci,ck);
 }
         } /* for (c=0....... */   // }}}
 	
 //        if (flexfunc==0) vtheta2=pthetavec;  
 //        else  evaldh(vtheta1,vtime,pthetavec,vtheta2,dhtheta,rhoR);
 
-//if (j<10)  printf("%ld %ld %lf %lf\n",s,j,diff,sdj); 
+//if (j<10)  Rprintf("%ld %ld %lf %lf\n",s,j,diff,sdj); 
 //pthetavec.print("ptvec"); 
 //Utheta.print("Utthetavec"); 
 //DUtheta.print("DUtvec"); 
