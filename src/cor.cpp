@@ -497,14 +497,14 @@ int antclust = clusterindex.n_rows;
           R_CheckUserInterrupt();
 	  time=times(s); 
           rowvec bhatt = est.row(s); 
-          vec pbhat = z * bhatt; 
+          vec pbhat = z * trans(bhatt); 
 	  if ((semi==1) & (cifmodel==1)) pbhat = pbhat + Zgamma*time;
 	  if ((semi==1) & (cifmodel==2))  pbhat=pbhat%exp(Zgamma); 
 //	  bhatt.print("bhatt");  pbhat.print("pbhatt"); 
 
 	  if ((CA1!=CA2)) {
 		  bhatt2 = est2.row(s); 
-		  pbhat2 = z2 * bhatt2; 
+		  pbhat2 = z2 * trans(bhatt2); 
 	     if ((semi2==1) & (cifmodel==1)) pbhat2 = pbhat2 + Z2gamma2*time;
 	     if ((semi2==1) & (cifmodel==2)) pbhat2=pbhat2%exp(Z2gamma2); 
 	  }

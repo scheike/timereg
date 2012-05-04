@@ -4,7 +4,7 @@ clusters=NULL, theta=NULL,theta.des=NULL,parfunc=NULL,dparfunc=NULL,
 step=1,sym=1,colnames=NULL,dimpar=NULL,weights=NULL,
 same.cens=FALSE,censoring.probs=NULL,silent=1,
 entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,control=list(),
-score.method="fisher.scoring",random.design=NULL,exp.link=1,...)
+score.method="nlminb",random.design=NULL,exp.link=1,...)
 { ## {{{
 ## {{{ set up data and design
  multi=0; dscore=1; stab.cens <- FALSE; entry.call <- entry; inverse <- exp.link
@@ -442,7 +442,7 @@ print.summary.cor <- function(x,digits=3,...)
 summary.cor<-function(object,digits=3,marg.cif=NULL,...)
 { ## {{{
   if (!inherits(object, "cor")) stop("Must be a cor.cif  object")
-  if (sum(abs(object$score))>0.0001) warning("WARNING: check score for convergence\n")
+  if (sum(abs(object$score))>0.001) warning("WARNING: check score for convergence\n")
   coefs <- coef.cor(object,...);
 
   outcase <- outconc <- NULL
@@ -504,7 +504,7 @@ return(res)
 summary.cor<-function(object,marg.cif=NULL,marg.cif2=NULL,digits=3,...)
 { ## {{{
   if (!inherits(object, "cor")) stop("Must be a cor.cif  object")
-  if (sum(abs(object$score))>0.0001) warning("WARNING: check score for convergence\n")
+  if (sum(abs(object$score))>0.001) warning("WARNING: check score for convergence\n")
   coefs <- coef.cor(object,...);
 
   outcase <- outconc <- NULL
@@ -689,8 +689,7 @@ summary.randomcif<-function (object, ...)
     cat("Cause", attr(object, "cause1"), "and cause", attr(object, 
         "cause2"), fill = TRUE)
     cat("\n")
-    if (sum(abs(object$score)) > 1e-06) 
-        cat("WARNING: check score for convergence")
+    if (sum(abs(object$score)) > 0.001) cat("WARNING: check score for convergence")
     cat("\n")
     coef.randomcif(object, ...)
 } ## }}}
