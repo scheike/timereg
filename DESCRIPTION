@@ -52,3 +52,5 @@ Collate:
     'bicomprisk.R'
     'event.R'
     'procformula.R'
+    'concordance-scripts.R'
+    'cor.R'

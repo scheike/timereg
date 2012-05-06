@@ -21,22 +21,23 @@
 ClaytonOakes <- function(formula,data=parent.frame(),id,var.formula=~1,cuts=NULL,type="co",start,control=list(),...) {
   
   mycall <- match.call()
-  formulaId <- Specials(formula,"id")
-  
+  formulaId <- Specials(formula,"id") 
   formulaStrata <- Specials(formula,"strata")
-  formulaSt <- paste("~.-id(",formulaId,")",
-                     "-strata(",paste(formulaStrata,collapse="+"),")")
-  formula <- update(formula,formulaSt)
+  formulaSt <- "~."
   if (!is.null(formulaId)) {
-    decompId <- decomp.specials(formulaId)
-    if (length(decompId)>1) {
-      var.formula <- as.formula(decompId[1])
-      formulaId <- decompId[2]
-    }    
+    var.formulaId <- ~1
+    if (length(formulaId)>1) {
+      var.formula <- as.formula(formulaId[[1]])
+      formulaId <- formulaId[[2]]
+    }
     id <- formulaId
     mycall$id <- id
+    formulaSt <- paste(formulaSt,paste("-id(",paste(var.formula,collapse=""),
+                                       ",",formulaId,")"))
   }
-  
+  formulaSt <- paste(formulaSt,paste("-strata(",paste(formulaStrata,collapse="+"),")"))
+  formula <- update(formula,formulaSt)
+
   if (!is.null(formulaStrata)) {
     strata <- formulaStrata
     mycall$strata <- strata

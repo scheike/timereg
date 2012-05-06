@@ -68,6 +68,9 @@ ExMarg <- function(Y0,XX0,W0,dS0,midx1=seq(ncol(XX0)/2),midx2=seq(ncol(XX0)/2)+n
 
 RoundMat <- function(cc,digits = max(3, getOption("digits") - 2),...) format(round(cc,max(1,digits)),digits=digits)
 
+###}}} RoundMat
+
+###{{{ trMean
 trMean <- function(b,blen) {
 ##  mytr <- function(x) x^2; dmytr <- function(x) 2*x
   mytr <- dmytr <- exp
@@ -85,8 +88,7 @@ trMean <- function(b,blen) {
   attributes(b)$idx <- Bidx
   return(b)
 }
-
-###}}} RoundMat
+###}}} trMean
 
 ###{{{ multinomlogit
 
@@ -144,20 +146,6 @@ blockdiag <- function(x,...,pad=0) {
   return(res)
 }
 ###}}} blockdiag
-
-###{{{ Specials
-
-Specials <- function(f,spec,split2="+",...) {
-  tt <- terms(f,spec)
-  pos <- attributes(tt)$specials[[spec]]
-  if (is.null(pos)) return(NULL)
-  x <- rownames(attributes(tt)$factors)[pos]
-  st <- gsub(" ","",x)
-  res <- unlist(strsplit(st,"[()]"))[2]
-  if (is.null(split2)) return(res)
-  unlist(strsplit(res,"+",fixed=TRUE))
-}
-###}}} Specials
 
 ###{{{ decomp.specials
 decomp.specials <- function (x, pattern = "[()]", sep = ",", ...) 

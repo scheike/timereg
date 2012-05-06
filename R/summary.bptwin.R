@@ -22,7 +22,7 @@ summary.bptwin <- function(object,level=0.05,...) {
     dz <- multinomlogit(coef(object)[idx2[2]]); names(dz) <- c("U","E")
     cc <- tanh(arho)
   ##    cc <- c(mz[1],dz[1]) ##,mz[2],dz[2])
-    names(cc) <- c("Correlation MZ","Correlation DZ")
+    names(cc) <- c("Tetrachoric correlation MZ","Tetrachoric correlation DZ")
 ##    corMZ <- mz[1]; corDZ <- dz[1]
     corMZ <- cc[1]; corDZ <- cc[2]
 ##    D <- (cbind(c(attributes(mz)$gradient[1],0),c(0,attributes(dz)$gradient[1])))
@@ -71,7 +71,7 @@ summary.bptwin <- function(object,level=0.05,...) {
     zrho <- atanh(corr[,1])
     zrho.var <- datanh(corr[,1])^2*corr[,2]^2
     corr <- cbind(corr, tanh(zrho%x%cbind(1,1)+zrho.var^0.5%x%cbind(-1,1)*qnorm(1-alpha)))
-    rownames(corr) <- c("Correlation MZ","Correlation DZ")    
+    rownames(corr) <- c("MZ Tetrachoric Cor","DZ Tetrachoric Cor")    
   } else {   
     zrho <- atanh(cc)
     zrho.var <- datanh(cc)^2*diag(Vc)
@@ -130,7 +130,7 @@ summary.bptwin <- function(object,level=0.05,...) {
   sprobDZ <- diag((Dp1)%*%vcov(object)%*%t(Dp1))^0.5
   probMZ <- tigol(cbind(probMZ,probMZ-qnorm(1-alpha)*sprobMZ,probMZ+qnorm(1-alpha)*sprobMZ))
   probDZ <- tigol(cbind(probDZ,probDZ-qnorm(1-alpha)*sprobDZ,probDZ+qnorm(1-alpha)*sprobDZ))
-  rownames(probMZ) <- rownames(probDZ) <- c("Concordance","Conditional","Marginal")
+  rownames(probMZ) <- rownames(probDZ) <- c("Concordance","Probandwise Concordance","Marginal")
   colnames(probMZ) <- colnames(probDZ) <- c("Estimate",CIlab)
  
   ## mu <- coef(object)[c(object$bidx0[1],object$bidx1[1])]
@@ -150,7 +150,7 @@ summary.bptwin <- function(object,level=0.05,...) {
   hval <- rbind(c(H,hstd^0.5,ci)); colnames(hval) <- c("Estimate","Std.Err",CIlab); 
 
   hval <- rbind(hval, tigol(c(hp,NA,hp-qnorm(1-alpha)*shp,hp+qnorm(1-alpha)*shp)))
-  rownames(hval) <- c("Heritability","h^2 pr")
+  rownames(hval) <- c("Broad-sense Heritability","Risk-scale Heritability")
   
   Nstr <- object$N
   nN <- ncol(object$N)
