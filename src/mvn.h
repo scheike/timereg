@@ -3,10 +3,10 @@
 
 #include <RcppArmadillo.h>
 #include <Rmath.h>
-#include <iostream>
 #include <cmath>
-#include <sstream>
-#include <cstring>
+/* #include <iostream> */
+/* #include <sstream> */
+/* #include <cstring> */
 
 
 using namespace std;
@@ -32,12 +32,12 @@ vecmat Dbvn(double y1, double y2, double R);
 double dbvnorm(double y1, double y2, double R);
 RcppExport SEXP FastApprox(const SEXP a, const SEXP t, const SEXP z);
 
-template <class T>
-string numStr(T x) {
-  ostringstream nmbstr; nmbstr << x;
-  string ss = nmbstr.str();    
-  return ss;
-}
+/* template <class T> */
+/* string numStr(T x) { */
+/*   ostringstream nmbstr; nmbstr << x; */
+/*   string ss = nmbstr.str();     */
+/*   return ss; */
+/* } */
 
 
 
