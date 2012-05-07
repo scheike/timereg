@@ -167,6 +167,7 @@ summary.bptwin <- function(object,level=0.05,...) {
   res
 }
 
+##' @S3method print summary.bptwin
 print.summary.bptwin <- function(x,digits = max(3, getOption("digits") - 2),...) {
   cat("\n")
   print(x$object,digits=digits,...)

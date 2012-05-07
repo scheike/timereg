@@ -8,7 +8,7 @@
 ##' @examples
 ##' ## Simulate data
 ##' set.seed(1)
-##' d <- twinsim(2000,b1=c(1,-1),b2=c(),acde=c(1,1,0,1))
+##' d <- twinsim(1000,b1=c(1,-1),b2=c(),acde=c(1,1,0,1))
 ##' ## E(y|z1,z2) = z1 - z2. var(A) = var(C) = var(E) = 1
 ##' 
 ##' ## E.g to fit the data to an ACE-model without any confounders we simply write
@@ -48,7 +48,7 @@
 ##'     corresponding to the dyzogitic twins. If this argument is missing,
 ##'     the reference level (i.e. the first level) will be interpreted as
 ##'     the dyzogitic twins.
-##' @param DZos Optional. Character defining the level in the zyg variable
+##' @param OS Optional. Character defining the level in the zyg variable
 ##'     corresponding to the oppposite sex dyzogitic twins.
 ##' @param weight Weight matrix if needed by the chosen estimator. For use
 ##'     with Inverse Probability Weights
@@ -64,9 +64,10 @@
 ##'     specified in \code{formula}, to be added to data.frame of the SEM
 ##' @param estimator Choice of estimator/model.
 ##' @param ... Additional arguments parsed on to lower-level functions
-twinlm <- function(formula, data, id, zyg, DZ, DZos, weight=NULL, type=c("ace"), twinnum="twinnum", binary=FALSE,keep=weight,estimator="gaussian",...) {
+twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), twinnum="twinnum", binary=FALSE,keep=weight,estimator="gaussian",...) {
 
   cl <- match.call(expand.dots=TRUE)
+  opt <- options(na.action="na.pass")
   mf <- model.frame(formula,data)
   mt <- attr(mf, "terms")
   y <- model.response(mf, "any")
@@ -80,7 +81,7 @@ twinlm <- function(formula, data, id, zyg, DZ, DZos, weight=NULL, type=c("ace"),
   }
   
   type <- tolower(type)
-  if ("u" %in% type) type <- c("ue")
+  ## if ("u" %in% type) type <- c("ue")
   
   varnames <- all.vars(formula)
   latentnames <- c("a1","a2","c1","c2","d1","d2","e1","e2")
@@ -88,7 +89,6 @@ twinlm <- function(formula, data, id, zyg, DZ, DZos, weight=NULL, type=c("ace"),
     stop(paste(paste(latentnames,collapse=",")," reserved for names of latent variables.",sep=""))
   
   
-  opt <- options(na.action="na.pass")
   mm <- model.matrix(formula,mf)
   options(opt)
   
@@ -102,29 +102,44 @@ twinlm <- function(formula, data, id, zyg, DZ, DZos, weight=NULL, type=c("ace"),
     zygstat <- as.factor(zygstat)
   }
   zyglev <- levels(zygstat)
-  if (length(zyglev)>2) stop("Only support for two zygosity levels")
+  if (length(zyglev)>2 & missing(OS)) stop("More than two zygosity levels and no opposite sex (OS) group specified")
+  
   ## Get data on wide format and divide into two groups by zygosity
   if (!twinnum%in%names(data)) {
     mynum <- rep(1,nrow(data))
     mynum[zygstat==zyglev[1]][duplicated(data[zygstat==zyglev[1],id])] <- 2
     mynum[zygstat==zyglev[2]][duplicated(data[zygstat==zyglev[2],id])] <- 2
+    if (!missing(OS)) {
+      mynum[zygstat==zyglev[3]][duplicated(data[zygstat==zyglev[3],id])] <- 2
+    }
     data[,twinnum] <- mynum
   }
-  
+
   cur <- cbind(data[,c(yvar,keep)],as.numeric(data[,twinnum]),as.numeric(data[,id]),as.numeric(zygstat));
   colnames(cur) <- c(yvar,keep,twinnum,id,zyg)
   mydata <- cbind(cur,mm)
+  
   if (missing(DZ)) {
     warning("Using first level, `",zyglev[1],"', in status variable as indicator for 'dizygotic'", sep="")
     DZ <- zyglev[1]
   }
   myDZ <- which(levels(zygstat)==DZ)
-  myMZ <- setdiff(1:2,myDZ)
+  myOS <- NULL
+  if (!missing(OS)) myOS <- which(levels(zygstat)==OS)
+  numlev <- seq(2+!missing(OS))
+  myMZ <- setdiff(numlev,c(myDZ,myOS))
 
+ 
   data1 <- mydata[mydata[,zyg]==myMZ,,drop=FALSE]
   data2 <- mydata[mydata[,zyg]==myDZ,,drop=FALSE]
-    
-  data1.1 <- data1[which(data1[,twinnum]==1),c(id,zyg,yvar,keep,covars)]; colnames(data1.1) <- c(id,zyg,paste(colnames(data1.1)[-c(1,2)],".1",sep=""))
+  data3 <- NULL
+  if (!missing(OS)) {
+    data3 <- mydata[mydata[,zyg]==myOS,,drop=FALSE]
+  }
+
+
+  ## Monozygotic
+  data1.1 <- data1[which(data1[,twinnum]==1),c(id,zyg,yvar,keep,covars)]; colnames(data1.1) <- c(id,zyg,paste(colnames(data1.1)[-c(1,2)],".1",sep=""))  
   data1.2 <- data1[which(data1[,twinnum]==2),c(id,yvar,keep,covars),drop=FALSE]; colnames(data1.2) <- c(id, paste(colnames(data1.2)[-1],".2",sep=""))
 
   ##Missing data?
@@ -143,6 +158,8 @@ twinlm <- function(formula, data, id, zyg, DZ, DZos, weight=NULL, type=c("ace"),
     data1.2 <- rbind(data1.2,d.temp)
   } 
 
+
+  ## Dizygotic 
   data2.1 <- data2[data2[,twinnum]==1,c(id,zyg,yvar,keep,covars)]; colnames(data2.1) <- c(id,zyg,paste(colnames(data2.1)[-c(1,2)],".1",sep=""))
   data2.2 <- data2[data2[,twinnum]==2,c(id,yvar,keep,covars),drop=FALSE]; colnames(data2.2) <- c(id, paste(colnames(data2.2)[-1],".2",sep=""))
 
@@ -159,20 +176,44 @@ twinlm <- function(formula, data, id, zyg, DZ, DZos, weight=NULL, type=c("ace"),
     d.temp <- matrix(NA,ncol= ncol(data2.2), nrow=length(d2.mis))
     d.temp[,1] <- d2.mis; colnames(d.temp) <- colnames(data2.2)
     data2.2 <- rbind(data2.2,d.temp)
-  }  
+  }
 
   wide1 <- merge(x=data1.1,y=data1.2, by=id); wide1[,zyg] <- myMZ
   wide2 <- merge(x=data2.1,y=data2.2, by=id); wide2[,zyg] <- myDZ
-    
+  wide3 <- NULL
+
+  if (!missing(OS)) {
+    ## Opposite sex
+    data3.1 <- data3[which(data3[,twinnum]==1),c(id,zyg,yvar,keep,covars)]; colnames(data3.1) <- c(id,zyg,paste(colnames(data3.1)[-c(1,2)],".1",sep=""))
+    data3.2 <- data3[which(data3[,twinnum]==2),c(id,yvar,keep,covars),drop=FALSE]; colnames(data3.2) <- c(id, paste(colnames(data3.2)[-1],".2",sep=""))
+
+    id1 <- data3.1[,id]
+    id2 <- data3.2[,id]
+    d1.mis <- setdiff(id2,id1) # Id's not in data3.1
+    d2.mis <- setdiff(id1,id2) # Id's not in data3.2
+    if (length(d1.mis)>0) {
+      d.temp <- matrix(NA,ncol= ncol(data3.1), nrow=length(d1.mis))
+      d.temp[,1] <- d1.mis; colnames(d.temp) <- colnames(data3.1)
+      data3.1 <- rbind(data3.1,d.temp)
+    }
+    if (length(d2.mis)>0) {
+      d.temp <- matrix(NA,ncol= ncol(data3.2), nrow=length(d2.mis))
+      d.temp[,1] <- d2.mis; colnames(d.temp) <- colnames(data3.2)
+      datta3.2 <- rbind(data3.2,d.temp)
+    }
+    wide3 <- merge(x=data3.1,y=data3.2, by=id); wide3[,zyg] <- myOS
+
+  }
+
   ## ###### The SEM
   outcomes <- paste(yvar,".",1:2,sep="")
   model1<-lvm(outcomes,silent=TRUE)
   f1 <- as.formula(paste(outcomes[1]," ~ ."))
   f2 <- as.formula(paste(outcomes[2]," ~ ."))
 ##  parameter(model1) <- ~sdu1+sdu2
-  regression(model1,silent=TRUE) <- update(f1, . ~ f(a1,lambda[a])+f(c1,lambda[c])+f(d1,lambda[d]) + f(e1,lambda[e]) + f(u,sdu1))
-  regression(model1,silent=TRUE) <- update(f2, . ~ f(a1,lambda[a])+f(c1,lambda[c])+f(d1,lambda[d]) + f(e2,lambda[e]) + f(u,sdu1))
-  latent(model1) <- ~ a1+c1+d1+e1+e2+u
+  regression(model1,silent=TRUE) <- update(f1, . ~ f(a1,lambda[a])+f(c1,lambda[c])+f(d1,lambda[d]) + f(e1,lambda[e])) ## + f(u,sdu1))
+  regression(model1,silent=TRUE) <- update(f2, . ~ f(a1,lambda[a])+f(c1,lambda[c])+f(d1,lambda[d]) + f(e2,lambda[e]))## + f(u,sdu1))
+  latent(model1) <- ~ a1+c1+d1+e1+e2##+u
   intercept(model1,latent(model1)) <- 0
   if (!is.null(covars))
     for (i in 1:length(covars)) {
@@ -182,11 +223,22 @@ twinlm <- function(formula, data, id, zyg, DZ, DZos, weight=NULL, type=c("ace"),
   covariance(model1) <- update(f1, . ~  v(0))
   covariance(model1) <- update(f2, . ~  v(0))
   covfix(model1, latent(model1), var2=NULL) <- 1
-  intfix(model1,outcomes) <- "mu1"
+  if (!type%in%c("sat","flex")) {    
+    intercept(model1,outcomes) <- "mu"
+  }
+  if (type%in%c("u","flex","sat")) {
+    kill(model1) <- ~e1+e2
+    if (type=="sat")  covariance(model1,outcomes) <- NA
+    else covariance(model1,outcomes) <- "v"
+    covariance(model1) <- outcomes
+    if (type=="sat") {
+      
+    }      
+  }
   model2 <- model1
 ##  parameter(model2) <- ~sdu1+sdu2
-  regression(model2) <- update(f1,.~f(u,sdu2))
-  regression(model2) <- update(f2,.~f(u,sdu2))
+##  regression(model2) <- update(f1,.~f(u,sdu2))
+##  regression(model2) <- update(f2,.~f(u,sdu2))
   cancel(model2) <- update(f2, . ~ a1)
   cancel(model2) <- update(f2, . ~ d1)
   regression(model2,silent=TRUE) <- update(f2, . ~ f(a2,lambda[a]))
@@ -197,37 +249,71 @@ twinlm <- function(formula, data, id, zyg, DZ, DZos, weight=NULL, type=c("ace"),
   latent(model2) <- ~ a2+d2
   intercept(model2, ~ a2+d2) <- 0
   covariance(model2) <- c(a2,d2) ~ v(1)
-  full <- list(model1,model2)
+  model3 <- model2
+  covariance(model3) <- a1 ~ f(a2,r1)
+  suppressMessages(constrain(model3, r1 ~ ra) <- lava:::range.lvm())
+  covariance(model3) <- d1 ~ f(d2,r2)
+  suppressMessages(constrain(model3, r2 ~ rd) <- lava:::range.lvm())
+  if (type=="flex") {
+     intercept(model1,outcomes) <- "mu1"
+     intercept(model2,outcomes) <- "mu2"
+     intercept(model3,outcomes) <- "mu3"
+     covariance(model1,outcomes) <- "v1"
+     covariance(model2,outcomes) <- "v2"
+     covariance(model3,outcomes) <- "v3"
+   }
+  if (!is.null(covars) & type%in%c("flex","sat")) {
+    sta <- ""
+    if (type=="sat") sta <- "b"
+       for (i in 1:length(covars)) {
+         regfix(model1, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta1[",i,"]",sep="")         
+         regfix(model1, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta1",sta,"[",i,"]",sep="")
+         regfix(model2, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta2[",i,"]",sep="")
+         regfix(model2, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta2",sta,"[",i,"]",sep="")
+         regfix(model3, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta3[",i,"]",sep="")
+         regfix(model3, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta3",sta,"[",i,"]",sep="")
+       }
+  }
+
+  
+  full <- list(MZ=model1,DZ=model2,OS=model3)
   ## #######
-  isA <- length(grep("a",type))>0
+  isA <- length(grep("a",type))>0 & type!="sat"
   isC <- length(grep("c",type))>0
   isD <- length(grep("d",type))>0
-  isE <- length(grep("e",type))>0
-  isU <- length(grep("u",type))>0
+  isE <- length(grep("e",type))>0 | type=="sat" | type=="u"
+  ##  isU <- length(grep("e",type))>0
   if (!isA) {
     kill(model1) <- ~ a1 + a2
     kill(model2) <- ~ a1 + a2
+    kill(model3) <- ~ a1 + a2 + ra
+    constrain(model3,r1~1) <- NULL
   }
   if (!isD) {
     kill(model1) <- ~ d1 + d2
     kill(model2) <- ~ d1 + d2
+    kill(model3) <- ~ d1 + d2 + rd
+    constrain(model3,r2~1) <- NULL
   }
   if (!isC) {
     kill(model1) <- ~ c1 + c2
     kill(model2) <- ~ c1 + c2
+    kill(model3) <- ~ c1 + c2
   }
   if (!isE) {
     kill(model1) <- ~ e1 + e2
     kill(model2) <- ~ e1 + e2
+    kill(model3) <- ~ e1 + e2
   }
-  if (!isU) {
-    kill(model1) <- ~ u##+sdu2
-    kill(model2) <- ~ u##+sdu1
-  }
-  if (isU & isE) {
-    regression(model1,outcomes[1],"e1") <- "lambda[e2]"
-    regression(model1,outcomes[2],"e2") <- "lambda[e2]"
-  }
+  ## if (!isU) {
+  ##   kill(model1) <- ~ u##+sdu2
+  ##   kill(model2) <- ~ u##+sdu1
+  ##   kill(model3) <- ~ u##+sdu1
+  ## }
+  ## if (isU & isE) {
+  ##   regression(model1,outcomes[1],"e1") <- "lambda[e2]"
+  ##   regression(model1,outcomes[2],"e2") <- "lambda[e2]"
+  ## }
 
   ## Full rank covariate/design matrix?
   for (i in covars) {
@@ -253,6 +339,19 @@ twinlm <- function(formula, data, id, zyg, DZ, DZos, weight=NULL, type=c("ace"),
       regression(model2, to=outcomes[2], from=mykeep) <- regfix(model2)$label[trash,outcomes[2]]
       kill(model2) <- trash
     }
+
+    if (!missing(OS)) {
+      dif <- wide3[,myvars[1]]-wide2[,myvars[2]]   
+      mykeep <- myvars
+      if (all(na.omit(dif)==00)) {
+        mykeep <- mykeep[-2]
+      }  
+      trash <- setdiff(myvars,mykeep)
+      if (length(mykeep)==1) {
+        regression(model3, to=outcomes[2], from=mykeep) <- regfix(model3)$label[trash,outcomes[2]]
+        kill(model3) <- trash
+      }      
+    }
   }
 
   if (!is.null(weight)) {
@@ -271,11 +370,18 @@ twinlm <- function(formula, data, id, zyg, DZ, DZos, weight=NULL, type=c("ace"),
 
   ## Estimate
   newkeep <- unlist(sapply(keep, function(x) paste(x,1:2,sep=".")))
-  suppressWarnings(mg <- multigroup(list(model1,model2), list(wide1,wide2), missing=TRUE,fix=FALSE,keep=newkeep))
+  mm <- list(MZ=model1,DZ=model2)
+  dd <- list(wide1,wide2)
+  if (!missing(OS)) {
+    mm <- c(mm,OS=list(model3))
+    dd <- c(dd,list(wide3))
+  }  
+  suppressWarnings(mg <- multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep))
   if (is.null(estimator)) return(mg)
-
+  
   e <- estimate(mg,weight=weight,estimator=estimator,fix=FALSE,...)
-  res <- list(coefficients=e$opt$estimate, vcov=e$vcov, estimate=e, model=mg, full=full, call=cl, data=data, zyg=zyg, id=id, twinnum=twinnum, type=type, model.mz=model1, model.dz=model2, data.mz=wide1, data.dz=wide2)
+  ##  suppressMessages(browser())
+  res <- list(coefficients=e$opt$estimate, vcov=Inverse(information(e)), estimate=e, model=mg, full=full, call=cl, data=data, zyg=zyg, id=id, twinnum=twinnum, type=type, model.mz=model1, model.dz=model2, model.dzos=model3, data.mz=wide1, data.dz=wide2, data.os=wide3, OS=!missing(OS))
   class(res) <- "twinlm"
   return(res)
 }

@@ -2,7 +2,7 @@
 \alias{twinlm}
 \title{Classic twin model for quantitative traits}
 \usage{
-  twinlm(formula, data, id, zyg, DZ, DZos, weight = NULL,
+  twinlm(formula, data, id, zyg, DZ, OS, weight = NULL,
     type = c("ace"), twinnum = "twinnum", binary = FALSE,
     keep = weight, estimator = "gaussian", ...)
 }
@@ -27,7 +27,7 @@
   argument is missing, the reference level (i.e. the first
   level) will be interpreted as the dyzogitic twins.}
 
-  \item{DZos}{Optional. Character defining the level in the
+  \item{OS}{Optional. Character defining the level in the
   zyg variable corresponding to the oppposite sex dyzogitic
   twins.}
 
@@ -63,7 +63,7 @@
 \examples{
 ## Simulate data
 set.seed(1)
-d <- twinsim(2000,b1=c(1,-1),b2=c(),acde=c(1,1,0,1))
+d <- twinsim(1000,b1=c(1,-1),b2=c(),acde=c(1,1,0,1))
 ## E(y|z1,z2) = z1 - z2. var(A) = var(C) = var(E) = 1
 
 ## E.g to fit the data to an ACE-model without any confounders we simply write

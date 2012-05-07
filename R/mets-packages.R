@@ -32,6 +32,23 @@ NULL
 ##' @keywords data
 NULL
 
+##' stutter data set
+##'
+##' @name twinstut
+##' @docType data
+##' @references \url{data_blah.com}
+##' @keywords data
+NULL
+
+##' bmi data set
+##'
+##' @name twinbmi
+##' @docType data
+##' @references \url{data_blah.com}
+##' @keywords data
+NULL
+
+
 ## ##' Method for extracting score of model object
 ## ##'
 ## ##' @title Method for extracting score of model object

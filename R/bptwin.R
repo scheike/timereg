@@ -7,7 +7,7 @@
 ##' @param id 
 ##' @param zyg 
 ##' @param DZ 
-##' @param DZos 
+##' @param OS 
 ##' @param weight 
 ##' @param biweight 
 ##' @param strata 
@@ -29,7 +29,7 @@
 ##' @param ... 
 ##' @author Klaus K. Holst
 ##' @export
-bptwin <- function(formula, data, id, zyg, DZ, DZos,
+bptwin <- function(formula, data, id, zyg, DZ, OS,
                    weight=NULL,
                    biweight=function(x) 1/min(x),
                    strata=NULL,
@@ -38,7 +38,7 @@ bptwin <- function(formula, data, id, zyg, DZ, DZos,
                    type="ace",
                    eqmean=TRUE,
                    param=0,
-                   pairsonly=FALSE,
+                   pairsonly=TRUE,
                    stderr=TRUE,                  
                    robustvar=TRUE,                   
                    p, indiv=FALSE,
@@ -133,13 +133,13 @@ bptwin <- function(formula, data, id, zyg, DZ, DZos,
   ##  data0 <- data[ii0,]  
   idx2 <- NULL
   if (!missing(DZ)) {
-    if (!missing(DZos))
-      idx2 <- data[,zyg]==DZos
+    if (!missing(OS))
+      idx2 <- data[,zyg]==OS
     idx1 <- data[,zyg]==DZ
     idx0 <- data[,zyg]!=DZ
     data[,zyg] <- (data[,zyg]!=DZ)*1
   } else {
-    if (!missing(DZos))
+    if (!missing(OS))
       idx2 <- (as.factor(data[,zyg])==levels(as.factor(data[,zyg]))[3]) # DZos
     DZlev <- levels(as.factor(data[,zyg]))[1]
     idx1 <- (as.factor(data[,zyg])==DZlev) # DZ
@@ -252,7 +252,7 @@ bptwin <- function(formula, data, id, zyg, DZ, DZos,
   MyData0 <- ExMarg(Y0,XX0,W0,dS0,eqmarg=TRUE,allmarg=allmarg)
   MyData1 <- ExMarg(Y1,XX1,W1,dS1,eqmarg=TRUE,allmarg=allmarg) 
   N <- cbind(sum(idx0),sum(idx1),sum(idx2)); 
-  if (missing(DZos)) N <- N[,-3,drop=FALSE]
+  if (missing(OS)) N <- N[,-3,drop=FALSE]
   N <- cbind(N,
              2*nrow(MyData0$Y0)+nrow(MyData0$Y0_marg),
              2*nrow(MyData1$Y0)+nrow(MyData1$Y0_marg),

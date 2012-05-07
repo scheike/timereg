@@ -2,10 +2,10 @@
 \alias{bptwin}
 \title{Liability model for twin data}
 \usage{
-  bptwin(formula, data, id, zyg, DZ, DZos, weight = NULL,
+  bptwin(formula, data, id, zyg, DZ, OS, weight = NULL,
     biweight = function(x) 1/min(x), strata = NULL,
     messages = 1, control = list(trace = 0), type = "ace",
-    eqmean = TRUE, param = 0, pairsonly = FALSE,
+    eqmean = TRUE, param = 0, pairsonly = TRUE,
     stderr = TRUE, robustvar = TRUE, p, indiv = FALSE,
     constrain, samecens = TRUE,
     allmarg = samecens & !is.null(weight), bound = FALSE,
@@ -22,7 +22,7 @@
 
   \item{DZ}{}
 
-  \item{DZos}{}
+  \item{OS}{}
 
   \item{weight}{}
 
