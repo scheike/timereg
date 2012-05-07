@@ -146,8 +146,9 @@ summary.bptwin <- function(object,level=0.05,...) {
   ##   conditional <- c(conditional,cc0/px)
   ## }
   ## names(concordance) <- names(conditional) <- c("MZ","DZ")
-
-  hval <- rbind(c(H,hstd^0.5,ci)); colnames(hval) <- c("Estimate","Std.Err",CIlab); 
+  
+  hval <- rbind(c(H,hstd^0.5,ci)); colnames(hval) <- c("Estimate","Std.Err",CIlab);
+  if (hval[1]>1) hval[1,] <- c(1,NaN,NaN,NaN)
 
   hval <- rbind(hval, tigol(c(hp,NA,hp-qnorm(1-alpha)*shp,hp+qnorm(1-alpha)*shp)))
   rownames(hval) <- c("Broad-sense Heritability","Risk-scale Heritability")

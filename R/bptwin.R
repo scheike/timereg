@@ -490,11 +490,11 @@ bptwin <- function(formula, data, id, zyg, DZ, DZos,
 
   if (debug) browser()
   op <- switch(tolower(control$method),
-               nlminb=nlminb(p0,f0,gradient=g0,control=control[nlminbopt],...),
-               optim=optim(p0,fn=f0,gr=g0,control=control[ucminfopt],...),
+               nlminb=nlminb(p0,f0,gradient=g0,control=control[nlminbopt]),
+               optim=optim(p0,fn=f0,gr=g0,control=control[ucminfopt]),
                ucminf=,
                quasi=,
-               gradient=ucminf(p0,fn=f0,gr=g0,control=control[ucminfopt],hessian=0,...),
+               gradient=ucminf(p0,fn=f0,gr=g0,control=control[ucminfopt],hessian=0),
                ## ,
                ## bhhh={
                ##   controlnr <- list(stabil=FALSE,
@@ -510,11 +510,11 @@ bptwin <- function(formula, data, id, zyg, DZ, DZos,
                ##   lava:::NR(start=p0,NULL,g0, h0,control=controlnr)
 ##               },
                ##                 op <- switch(mycontrol$method,
-               ##                              ucminf=ucminf(p0,f,control=mycontrol[ucminfopt],hessian=F,...),
+               ##                              ucminf=ucminf(p0,f,control=mycontrol[ucminfopt],hessian=F),
                ##                optim=optim(p0,f,control=mycontrol[ucminfopt],...),
-                 nlminb(p0,f,control=control[nlminbopt],...))
+                 nlminb(p0,f,control=control[nlminbopt]))
   ##  op <- nlm(f,p0,print.level=2)
-  ##  op <- spg(p0,f,control=control,...)
+  ##  op <- spg(p0,f,control=control)
   
 
   if (stderr) {

@@ -8,7 +8,7 @@
 ##' @docType package
 ##' @author Klaus K. Holst and Thomas Scheike
 ##' @useDynLib mets
-##' @import stats
+##' @import stats lava
 ##' @keywords package
 ##' @examples
 ##' 
@@ -32,11 +32,11 @@ NULL
 ##' @keywords data
 NULL
 
-##' Method for extracting score of model object
-##'
-##' @title Method for extracting score of model object
-##' @param x Model object
-##' @param ... Additional arguments
-##' @author Klaus K. Holst
-##' @export
-score <- function(x,...) UseMethod("score")
+## ##' Method for extracting score of model object
+## ##'
+## ##' @title Method for extracting score of model object
+## ##' @param x Model object
+## ##' @param ... Additional arguments
+## ##' @author Klaus K. Holst
+## ##' @export
+## score <- function(x,...) UseMethod("score")
