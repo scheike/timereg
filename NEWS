@@ -1,14 +1,21 @@
+* Version 0.1-3 < 2011-05-07>
+  - twinlm moved to mets package, and wraps the bptwin function
+  - new datasets:  
+
+* Version 0.1-2 < 2011-05-06>
+  - code clean-up and minor bug-fixes
+
 * Version 0.1-1 <2011-05-06>
 
-- Random effects CIF models moved from MultiComp to mets
-- Documentation via roxygen2
-- bug fixes
+  - Random effects CIF models moved from MultiComp to mets
+  - new data sets: np, multcif
+  - Documentation via roxygen2
+  - bug fixes
 
 * Version 0.1-0 <2011-04-25>
 
-- Initialization of the new package 'mets' with implementation of the
-  Clayton-Oakes model with piecewise constant marginal hazards, and
-  the bivariate probit random effects model (Liability model) for
-  twin-data.
-
+  - Initialization of the new package 'mets' with implementation of the
+    Clayton-Oakes model with piecewise constant marginal hazards, and
+    the bivariate probit random effects model (Liability model) for
+    twin-data.
 
