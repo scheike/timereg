@@ -217,12 +217,12 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
   intercept(model1,latent(model1)) <- 0
   if (!is.null(covars))
     for (i in 1:length(covars)) {
-      regfix(model1, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta[",i,"]",sep="")
-      regfix(model1, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta[",i,"]",sep="")
+      lava:::regfix(model1, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta[",i,"]",sep="")
+      lava:::regfix(model1, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta[",i,"]",sep="")
     }
   covariance(model1) <- update(f1, . ~  v(0))
   covariance(model1) <- update(f2, . ~  v(0))
-  covfix(model1, latent(model1), var2=NULL) <- 1
+  lava:::covfix(model1, latent(model1), var2=NULL) <- 1
   if (!type%in%c("sat","flex")) {    
     intercept(model1,outcomes) <- "mu"
   }
@@ -251,9 +251,9 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
   covariance(model2) <- c(a2,d2) ~ v(1)
   model3 <- model2
   covariance(model3) <- a1 ~ f(a2,r1)
-  suppressMessages(constrain(model3, r1 ~ ra) <- lava:::range.lvm())
+  suppressMessages(constrain(model3, r1 ~ ra) <- lava:::Range.lvm())
   covariance(model3) <- d1 ~ f(d2,r2)
-  suppressMessages(constrain(model3, r2 ~ rd) <- lava:::range.lvm())
+  suppressMessages(constrain(model3, r2 ~ rd) <- lava:::Range.lvm())
   if (type=="flex") {
      intercept(model1,outcomes) <- "mu1"
      intercept(model2,outcomes) <- "mu2"
@@ -266,12 +266,12 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
     sta <- ""
     if (type=="sat") sta <- "b"
        for (i in 1:length(covars)) {
-         regfix(model1, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta1[",i,"]",sep="")         
-         regfix(model1, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta1",sta,"[",i,"]",sep="")
-         regfix(model2, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta2[",i,"]",sep="")
-         regfix(model2, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta2",sta,"[",i,"]",sep="")
-         regfix(model3, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta3[",i,"]",sep="")
-         regfix(model3, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta3",sta,"[",i,"]",sep="")
+         lava:::regfix(model1, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta1[",i,"]",sep="")         
+         lava:::regfix(model1, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta1",sta,"[",i,"]",sep="")
+         lava:::regfix(model2, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta2[",i,"]",sep="")
+         lava:::regfix(model2, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta2",sta,"[",i,"]",sep="")
+         lava:::regfix(model3, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta3[",i,"]",sep="")
+         lava:::regfix(model3, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta3",sta,"[",i,"]",sep="")
        }
   }
 
@@ -325,7 +325,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
     }   
     trash <- setdiff(myvars,mykeep)
     if (length(mykeep)==1) {
-      regression(model1, to=outcomes[2], from=mykeep) <- regfix(model1)$label[trash,outcomes[2]]
+      regression(model1, to=outcomes[2], from=mykeep) <- lava:::regfix(model1)$label[trash,outcomes[2]]
       kill(model1) <- trash
     }
 
@@ -336,7 +336,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
     }  
     trash <- setdiff(myvars,mykeep)
     if (length(mykeep)==1) {
-      regression(model2, to=outcomes[2], from=mykeep) <- regfix(model2)$label[trash,outcomes[2]]
+      regression(model2, to=outcomes[2], from=mykeep) <- lava:::regfix(model2)$label[trash,outcomes[2]]
       kill(model2) <- trash
     }
 
@@ -348,7 +348,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
       }  
       trash <- setdiff(myvars,mykeep)
       if (length(mykeep)==1) {
-        regression(model3, to=outcomes[2], from=mykeep) <- regfix(model3)$label[trash,outcomes[2]]
+        regression(model3, to=outcomes[2], from=mykeep) <- lava:::regfix(model3)$label[trash,outcomes[2]]
         kill(model3) <- trash
       }      
     }
