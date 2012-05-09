@@ -92,9 +92,9 @@ if (rvi(k)>0) alph=alphai(k); else alph=alphak(k);
 val1=lapgam(alph,beta,val1); 
 val=val*val1; 
 }
-ckij[0]=1-exp(-x)-exp(-y)+val; 
+ckij(0)=1-exp(-x)-exp(-y)+val; 
 
-if (test<1) Rprintf(" %lf ckij \n",ckij[0]); 
+if (test<1) Rprintf(" %lf ckij \n",ckij(0)); 
 
 val1=0;
 for (k=0;k<prv;k++) if (rvi(k)+rvk(k)>0) 
@@ -117,14 +117,14 @@ dckij=dckij+Dphi+Dphk;
 dckij=val*dckij; 
 //scl_vec_mult(val,dckij,dckij); 
 
-val2=rvi[k]*ilapgam(alphi,beta,exp(-x))+rvk[k]*ilapgam(alphk,beta,exp(-y)); 
+val2=rvi(k)*ilapgam(alphi,beta,exp(-x))+rvk(k)*ilapgam(alphk,beta,exp(-y)); 
 val1= Dtlapgam(alph,beta,val2);
 val3= lapgam(alph,beta,val2);
 
-dckij[k]=dckij[k]+Dalphalapgam(alph,beta,val2)/val3;
+dckij(k)=dckij(k)+Dalphalapgam(alph,beta,val2)/val3;
 
-Dphi=val1*rvi*rvi[k]*Dilapgam(alphi,beta,exp(-x))/val3; 
-Dphk=val1*rvk*rvk[k]*Dilapgam(alphk,beta,exp(-y))/val3; 
+Dphi=val1*rvi*rvi(k)*Dilapgam(alphi,beta,exp(-x))/val3; 
+Dphk=val1*rvk*rvk(k)*Dilapgam(alphk,beta,exp(-y))/val3; 
 
 dckij=(dckij+Dphi+Dphk);
 dckij=val*dckij; 
@@ -164,7 +164,7 @@ if (rvi(k)>0) alph=alphai(k); else alph=alphak(k);
 val1=lapgam(alph,betai,val1); 
 val=val*val1; 
 }
-ckij[0]=1-exp(-x)-exp(-y)+val; 
+ckij(0)=1-exp(-x)-exp(-y)+val; 
 } // }}}
 
 void ckrvdes2(vec &alphai,vec &alphak, // {{{
@@ -205,7 +205,7 @@ if (rvi(k)>0) alph=alphai(k); else alph=alphak(k);
 val1=lapgam(alph,betai,val1); 
 val=val*val1; 
 }
-ckij[0]=1-exp(-x)-exp(-y)+val; 
+ckij(0)=1-exp(-x)-exp(-y)+val; 
 
 for (k=0;k<prv;k++) if (rvi(k)+rvk(k)>0) 
 {
@@ -290,7 +290,7 @@ double t0;
 if (x<0) x=0.0001; if (y<0) y=0.0001; 
 
 val=ilaplace(t,exp(-x))+ilaplace(t,exp(-y)); val2=laplace(t,val); 
-ckij[0]=1-exp(-x)-exp(-y)+val2; 
+ckij(0)=1-exp(-x)-exp(-y)+val2; 
 
 val3=exp(x*t)+exp(y*t)-1; 
 val4=val3*log(val3)+exp(x*t)*(-x*t)+exp(y*t)*(-y*t); 
@@ -298,7 +298,7 @@ val4=val3*log(val3)+exp(x*t)*(-x*t)+exp(y*t)*(-y*t);
 // t0 =exp(-log(t)*2)*exp(log(val3)*(-1/t-1))*val4; 
 t0 =pow(1/t,2)*exp(log(val3)*(-1/t-1))*val4; 
 
-dckij[0]=t0; 
+dckij(0)=t0; 
 } // }}}
 
 void DUetagamma(double t, double x,double y,vec &xi,vec &xk) 
@@ -346,7 +346,7 @@ valrd=val1d/valnd;
 } else {
 valrd=cif1*cif2;
 } // }}}
-dp[0]=(valrd-valr)/d;  
+dp(0)=(valrd-valr)/d;  
 
 cif1d=cif1+d; cifsd=cif1d+cif2; // {{{
 if (theta!=1) {
@@ -356,7 +356,7 @@ valrd=val1d/valnd;
 } else {
 valrd=cif1d*cif2;
 } // }}}
-dp[1]=(valrd-valr)/d;  
+dp(1)=(valrd-valr)/d;  
 
 cif2d=cif2+d; cifsd=cif1+cif2d; // {{{
 if (theta!=1) {
@@ -366,16 +366,16 @@ valrd=val1d/valnd;
 } else {
 valrd=cif1d*cif2;
 } // }}}
-dp[2]=(valrd-valr)/d;  
+dp(2)=(valrd-valr)/d;  
 
 //if (theta!=1) {
 //dval1= cifs-(2*(1+(theta-1)*cifs)*cifs-4*2*cif1*cif2*theta+4*cif1*cif2)/
 //	(2*pow( pow((1+(theta-1)*cifs),2)-4*cif1*cif2*theta*(theta-1),0.5)); 
 //val=valn*dval1-val1*2; 
-//dp[0]= val/pow(valn,2); 
-//dp[0]=(valrd-valr)/0.000001; 
+//dp(0)= val/pow(valn,2); 
+//dp(0)=(valrd-valr)/0.000001; 
 //} else {
-//dp[0]=1; 
+//dp(0)=1; 
 //}
 
 return(valr); 
@@ -398,22 +398,20 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 ) // {{{
 {
 // {{{ setting matrices and vectors, and exporting to armadillo matrices
-//      NumericMatrix zz(z); 
-//	mat mz(zz.begin(),zz.nrow(),zz.ncol(),false); 
 //mat z2 = Rcpp::as<mat>(iz2);
-mat est = Rcpp::as<mat>(iest);
-mat est2 = Rcpp::as<mat>(iest2);
-mat z = Rcpp::as<mat>(iz);
-mat zsem = Rcpp::as<mat>(izsem);
-mat z2 = Rcpp::as<mat>(ix2);
-mat thetades = Rcpp::as<mat>(ithetades); // thetades muligvis anderledes for random-cif-des, check
-mat clusterindex = Rcpp::as<mat>(iclusterindex);
-mat rvdes= Rcpp::as<mat>(irvdes); 
-colvec theta = Rcpp::as<colvec>(itheta);
-colvec Xtheta = Rcpp::as<colvec>(iXtheta);
-colvec y = Rcpp::as<colvec>(iy);
-colvec clustsize = Rcpp::as<colvec>(iclustsize);
-int antclust = clusterindex.n_rows; 
+ mat est = Rcpp::as<mat>(iest);
+ mat est2 = Rcpp::as<mat>(iest2);
+ mat z = Rcpp::as<mat>(iz);
+ mat zsem = Rcpp::as<mat>(izsem);
+ mat z2 = Rcpp::as<mat>(ix2);
+ mat thetades = Rcpp::as<mat>(ithetades); 
+ mat clusterindex = Rcpp::as<mat>(iclusterindex);
+ mat rvdes= Rcpp::as<mat>(irvdes); 
+ colvec theta = Rcpp::as<colvec>(itheta);
+ colvec Xtheta = Rcpp::as<colvec>(iXtheta);
+ colvec y = Rcpp::as<colvec>(iy);
+ colvec clustsize = Rcpp::as<colvec>(iclustsize);
+ int antclust = clusterindex.n_rows; 
  colvec times = Rcpp::as<colvec>(itimes);
  int Ntimes=times.n_rows; 
  colvec cause = Rcpp::as<colvec>(icause);
@@ -429,20 +427,80 @@ int antclust = clusterindex.n_rows;
  colvec trunkp = Rcpp::as<colvec>(itrunkp);
  vec cif1lin=-log(1-cif1entry); 
 
-  int samecens = Rcpp::as<int>(isamecens);
-  int inverse= Rcpp::as<int>(iinverse);
-  int semi = Rcpp::as<int>(isemi);
-  int semi2 = Rcpp::as<int>(isemi2);
-  int flexfunc = Rcpp::as<int>(iflexfunc);
-  int stabcens = Rcpp::as<int>(istabcens);
-  int silent = Rcpp::as<int>(isilent);
-  int cifmodel = Rcpp::as<int>(icifmodel);
-  int CA1 = Rcpp::as<int>(iCA1); 
-  int CA2 = Rcpp::as<int>(iCA2);
-  int sym = Rcpp::as<int>(isym); 
-  int depmodel= Rcpp::as<int>(idepmodel); 
-  int estimator= Rcpp::as<int>(iestimator); 
-  int iid= Rcpp::as<int>(iiid); 
+ int samecens = Rcpp::as<int>(isamecens);
+ int inverse= Rcpp::as<int>(iinverse);
+ int semi = Rcpp::as<int>(isemi);
+ int semi2 = Rcpp::as<int>(isemi2);
+ int flexfunc = Rcpp::as<int>(iflexfunc);
+ int stabcens = Rcpp::as<int>(istabcens);
+ int silent = Rcpp::as<int>(isilent);
+ int cifmodel = Rcpp::as<int>(icifmodel);
+ int CA1 = Rcpp::as<int>(iCA1); 
+ int CA2 = Rcpp::as<int>(iCA2);
+ int sym = Rcpp::as<int>(isym); 
+ int depmodel= Rcpp::as<int>(idepmodel); 
+ int estimator= Rcpp::as<int>(iestimator); 
+ int iid= Rcpp::as<int>(iiid); 
+
+  int udtest=0; 
+  if (udtest==1) { // {{{
+      Rprintf(" %d %d %d %d %d %d %d \n",samecens,inverse,semi,semi2,flexfunc,stabcens,silent); 
+      Rprintf(" %d %d %d %d %d %d %d \n",cifmodel,CA1,CA2,sym,depmodel,estimator,iid); 
+        est.print("est"); 
+	est2.print("est2"); 
+        z.print("z"); 
+	zsem.print("zsemi"); 
+	z2.print("z2"); 
+        thetades.print("theta.des"); 
+        clusterindex.print("clusterindex"); 
+        rvdes.print("rvdes"); 
+	theta.print("theta"); 
+	  Xtheta.print("Xtheta"); 
+	  y.print("y-times"); 
+	  clustsize.print("clustsize"); 
+	  times.print("times"); 
+	  cause.print("cause"); 
+	  cluster.print("cluster"); 
+	  Zgamma.print("zgam"); 
+	  Z2gamma2.print("zgam2"); 
+	  KMtimes.print("KMtimes"); 
+	  KMc.print("KMc"); 
+	  weights.print("weights"); 
+	  entryage.print("entryage"); 
+	  cif1entry.print("cif1entry"); 
+	  cif2entry.print("cif2entry"); 
+	  trunkp.print("trunkp"); 
+  } else if (udtest==2) 
+  {
+      Rprintf(" %d %d %d %d %d %d %d \n",samecens,inverse,semi,semi2,flexfunc,stabcens,silent); 
+      Rprintf(" %d %d %d %d %d %d %d \n",cifmodel,CA1,CA2,sym,depmodel,estimator,iid); 
+      Rprintf("est %lf \n",mean(mean(est))); 
+      Rprintf("est2 %lf \n",mean(mean(est2))); 
+      Rprintf("z %lf \n",mean(mean(z))); 
+      Rprintf("zsem %lf \n",mean(mean(zsem))); 
+      Rprintf("z2 %lf \n",mean(mean(z2))); 
+      mat mt=mean(thetades); 
+      mt.print("meancol thetades"); 
+//      Rprintf("theatdes %lf \n",mean(mean(thetades))); 
+      Rprintf("ci %lf \n",mean(mean(clusterindex))); 
+      Rprintf("rvdes %lf \n",mean(mean(rvdes))); 
+      Rprintf("theta %lf \n",mean(theta)); 
+      Rprintf("Xtheta %lf \n",mean(Xtheta)); 
+      Rprintf("y %lf \n",mean(y)); 
+      Rprintf("ci %lf \n",mean(clustsize)); 
+      Rprintf("times %lf \n",mean(times)); 
+      Rprintf("cause %lf \n",mean(cause)); 
+      Rprintf("cluster %lf \n",mean(cluster)); 
+      Rprintf("Zgamma %lf \n",mean(Zgamma)); 
+      Rprintf("Z2gamma2 %lf \n",mean(Z2gamma2)); 
+      Rprintf("KMtimes %lf \n",mean(KMtimes)); 
+      Rprintf("KMc %lf \n",mean(KMc)); 
+      Rprintf("weights %lf \n",mean(weights)); 
+      Rprintf("entry %lf \n",mean(entryage)); 
+      Rprintf("cif1entry %lf \n",mean(cif1entry)); 
+      Rprintf("cif2entry %lf \n",mean(cif2entry)); 
+      Rprintf("trunkp %lf \n",mean(trunkp)); 
+  } // }}}
 
   int nr,ci,ck,i,j,c,s,k,v; 
   double Li,Lk,weight=0,p11t,ormarg=0,sdj,diff,cweight2,resp3,time,resp1,resp2;
@@ -463,6 +521,7 @@ int antclust = clusterindex.n_rows;
   vec vtheta2(pt); 
   mat DUtheta(pt,pt); 
   DUtheta=0*DUtheta; 
+  Utheta=0*Utheta; 
 
   rowvec bhatt2 = est.row(est2.n_cols); 
   colvec pbhat2(z.n_rows); 
@@ -520,25 +579,23 @@ int antclust = clusterindex.n_rows;
 	     alphaj= thetades * vtheta2;
 	  } // }}}
 
-//	 printf("00 mig \n"); 
-
-          for (c=0;c<clustsize[j];c++) for (v=0;v<clustsize[j];v++) // {{{
+          for (c=0;c<clustsize(j);c++) for (v=0;v<clustsize(j);v++) // {{{
 	  if ((sym==1 && c!=v) || (sym==0 && c<v)) { 
 	    i=clusterindex(j,c); k=clusterindex(j,v); 
 	    response=0; 
 
-     if ((entryage[i] < time) && (entryage[k]< time)) 
-     if ((KMc[i] > 0) && (KMc[k] > 0)) {
+     if ((entryage(i) < time) && (entryage(k)< time)) 
+     if ((KMc(i) > 0) && (KMc(k) > 0)) {
 	 ci=cause(i); ck=cause(k); 
-	 resp1= ((y[k]<=time) && (ck==CA2));
-	 resp2= ((y[i]<=time) && (ci==CA1))* ((y[k]<=time) && (ck==CA2));
+	 resp1= ((y(k)<=time) && (ck==CA2));
+	 resp2= ((y(i)<=time) && (ci==CA1))* ((y(k)<=time) && (ck==CA2));
          
-	respst=((y[i]<=entryage[i]) && (ci==CA1))* ((y[k]<=time) && (ck==CA2)) + 
-	       ((y[i]<=time) && (ci==CA1))* ((y[k]<=entryage[k]) && (ck==CA2)) ;
+	respst=((y(i)<=entryage(i)) && (ci==CA1))* ((y(k)<=time) && (ck==CA2)) + 
+	       ((y(i)<=time) && (ci==CA1))* ((y(k)<=entryage(k)) && (ck==CA2)) ;
 //	  Rprintf(" %d %d %d %d %d \n",j,i,k,ci,ck); 
 
 	 if (depmodel!=5)  {
-              if (flexfunc==0) thetak= Xtheta(i); else thetak=Xtheta(s,i); 
+              if (flexfunc==0) thetak=Xtheta(i); else thetak=Xtheta(s,i); 
 	      pthetavec= trans(thetades.row(i)); 
 	 }
          Li=pbhat(i); Lk=pbhat(k); 
@@ -548,37 +605,35 @@ int antclust = clusterindex.n_rows;
 	 else if (depmodel==2) ormarg=(1-exp(-Li))*(1-exp(-Lk)); 
 	 else if (depmodel==3) ormarg=(1-exp(-Li))*(1-exp(-Lk)); 
 
-if (j<0) Rprintf("mmmm  %lf %lf %lf %lf %lf %lf \n",pbhat(i),pbhat2(k),pbhat(k),Li,Lk,ormarg); 
-
 	 int nocens= (ci!=0)+(ck!=0); 
 	 nocens=min(nocens,2); 
 
 	if (depmodel==1) { // cor model  // {{{
 
 	 if (stabcens==0) { // {{{ responses 
-	    if (samecens==1) { resp2=resp2/min(KMc[i],KMc[k]); 
-		                respst=respst/min(KMc[i],KMc[k]); 
+	    if (samecens==1) { resp2=resp2/min(KMc(i),KMc(k)); 
+		                respst=respst/min(KMc(i),KMc(k)); 
 	    } 
-	    else { resp2=resp2/(KMc[i]*KMc[k]); respst=respst/(KMc[i]*KMc[k]); 
+	    else { resp2=resp2/(KMc(i)*KMc(k)); respst=respst/(KMc(i)*KMc(k)); 
 	    }
-	    resp1=resp1/KMtimes[k];
+	    resp1=resp1/KMtimes(k);
 	 } else {
-//	    cweight1= max(KMtimes[s],KMc[k]); 
-	    cweight2= max(KMtimes[s],KMc[i]);  
+//	    cweight1= max(KMtimes[s],KMc(k)); 
+	    cweight2= max(KMtimes[s],KMc(i));  
 	    if (samecens==1) {
 		    resp2=resp2/min(cweight2,cweight2); 
 		    respst=respst/min(cweight2,cweight2); 
 	    }
-	    resp1=resp1/KMtimes[k];
+	    resp1=resp1/KMtimes(k);
 	 } // }}}
 
-           if (trunkp[i]<1) {	
+           if (trunkp(i)<1) {	
 	      // DENNE skal tilpasse COR modellen FIXES
-	      response=weight*(resp2- exp(thetak)*(ormarg+cif1entry[i]*cif2entry[k]
-	    	   -(1-exp(-Li))*cif2entry[k]-(1-exp(-Lk))*cif1entry[i])/trunkp[i]);
+	      response=weight*(resp2- exp(thetak)*(ormarg+cif1entry(i)*cif2entry(k)
+	    	   -(1-exp(-Li))*cif2entry(k)-(1-exp(-Lk))*cif1entry(i))/trunkp(i));
 	       diff=diff+response; 
-	       sdj=sdj- weight*exp(thetak)*(ormarg+cif1entry[i]*cif2entry[k]- 
-                	 (1-exp(-Li))*cif2entry[k]- (1-exp(-Lk))*cif1entry[i])/trunkp[i];
+	       sdj=sdj- weight*exp(thetak)*(ormarg+cif1entry(i)*cif2entry(k)- 
+                	 (1-exp(-Li))*cif2entry(k)- (1-exp(-Lk))*cif1entry(i))/trunkp(i);
 	       resp3=-exp(thetak);
 	   } else {
 	     double nn=(exp(-Li)+exp(thetak)*(1-exp(-Li)));
@@ -597,20 +652,20 @@ if (j<0) Rprintf("mmmm  %lf %lf %lf %lf %lf %lf \n",pbhat(i),pbhat2(k),pbhat(k),
 	    } // }}}
 	} else if (depmodel==2) { // RR model  // {{{
 	 if (estimator==1) {
-	    if (samecens==1) { resp2=resp2/min(KMc[i],KMc[k]); respst=respst/min(KMc[i],KMc[k]); } 
-	    else { resp2=resp2/(KMc[i]*KMc[k]); respst=respst/(KMc[i]*KMc[k]); }
+	    if (samecens==1) { resp2=resp2/min(KMc(i),KMc(k)); respst=respst/min(KMc(i),KMc(k)); } 
+	    else { resp2=resp2/(KMc(i)*KMc(k)); respst=respst/(KMc(i)*KMc(k)); }
 	    weight=1; 
 	 } else if (estimator==0){ 
-	    if (samecens==1) weight=1/min(KMc[i],KMc[k]); else weight=1/(KMc[i]*KMc[k]);
-	 } else { weight=(time<KMc[i])*(time<KMc[k])*1; }
+	    if (samecens==1) weight=1/min(KMc(i),KMc(k)); else weight=1/(KMc(i)*KMc(k));
+	 } else { weight=(time<KMc(i))*(time<KMc(k))*1; }
 
-        if (trunkp[i]<1) {	
-//           stpart=respst/trunkp[i]; 
-	   response=weight*(resp2- exp(thetak)*(ormarg+cif1entry[i]*cif2entry[k]
-		   -(1-exp(-Li))*cif2entry[k]-(1-exp(-Lk))*cif1entry[i])/trunkp[i]);
+        if (trunkp(i)<1) {	
+//           stpart=respst/trunkp(i); 
+	   response=weight*(resp2- exp(thetak)*(ormarg+cif1entry(i)*cif2entry(k)
+		   -(1-exp(-Li))*cif2entry(k)-(1-exp(-Lk))*cif1entry(i))/trunkp(i));
 	   diff=diff+response; 
-	   sdj=sdj- weight*exp(thetak)*(ormarg+cif1entry[i]*cif2entry[k]- 
-	 (1-exp(-Li))*cif2entry[k]- (1-exp(-Lk))*cif1entry[i])/trunkp[i];
+	   sdj=sdj- weight*exp(thetak)*(ormarg+cif1entry(i)*cif2entry(k)- 
+	 (1-exp(-Li))*cif2entry(k)- (1-exp(-Lk))*cif1entry(i))/trunkp(i);
 	   resp3=-exp(thetak);
 	} else {
 	   response=weight*exp(thetak)*ormarg*(resp2-exp(thetak)*ormarg); 
@@ -622,36 +677,38 @@ if (j<0) Rprintf("mmmm  %lf %lf %lf %lf %lf %lf \n",pbhat(i),pbhat2(k),pbhat(k),
 	} // }}}
 	else if (depmodel==3) { // OR model  // {{{
 	 if (estimator==1) {
-	    if (samecens==1) { resp2=resp2/min(KMc[i],KMc[k]); 
-		                 respst=respst/min(KMc[i],KMc[k]); 
+	    if (samecens==1) { resp2=resp2/min(KMc(i),KMc(k)); 
+		                 respst=respst/min(KMc(i),KMc(k)); 
 	    } 
-	    else { resp2=resp2/(KMc[i]*KMc[k]); respst=respst/(KMc[i]*KMc[k]); 
+	    else { resp2=resp2/(KMc(i)*KMc(k)); respst=respst/(KMc(i)*KMc(k)); 
 	    }
 	    weight=1; 
 	 } else if (estimator==0){ 
-	    if (samecens==1) weight=1/min(KMc[i],KMc[k]); else weight=1/(KMc[i]*KMc[k]);
-	 } else { weight=(time<KMc[i])*(time<KMc[k])*1; }
+	    if (samecens==1) weight=1/min(KMc(i),KMc(k)); else weight=1/(KMc(i)*KMc(k));
+	 } else { weight=(time<KMc(i))*(time<KMc(k))*1; }
 
-        if (trunkp[i]<1) {	
-//           stpart=respst/trunkp[i]; 
+        if (trunkp(i)<1) {	
+//           stpart=respst/trunkp(i); 
            p11t=plack(exp(thetak),(1-exp(-Li)),(1-exp(-Lk)),dplack);
-	   response=weight*dplack[0]*exp(thetak)*(resp2-p11t);
+	   response=weight*dplack(0)*exp(thetak)*(resp2-p11t);
 	   diff=diff+response; 
-	   sdj=sdj-weight*dplack[0]*dplack[0]*exp(2*thetak); 
+	   sdj=sdj-weight*dplack(0)*dplack(0)*exp(2*thetak); 
 	   resp3=0;
 	} else {
            p11t=plack(exp(thetak),(1-exp(-Li)),(1-exp(-Lk)),dplack);
-	   response=weight*dplack[0]*exp(thetak)*(resp2-p11t);
+	   response=weight*dplack(0)*exp(thetak)*(resp2-p11t);
 	   diff=diff+response; 
-	   sdj=sdj-2*weight*exp(2*thetak)*pow(dplack[0],2);
-	   resp3=-dplack[0]*exp(thetak);
+	   sdj=sdj-2*weight*exp(2*thetak)*pow(dplack(0),2);
+	   resp3=-dplack(0)*exp(thetak);
 	   ssf+=weight*pow(resp2-p11t,2); 
+// printf("mm %d %d %d %lf %lf %lf %lf %lf %lf \n",j,i,k,KMc(i),KMc(k),response,resp2,p11t,dplack(0)); 
+// printf("mmm %lf %lf %lf  \n",Li,Lk,ssf); 
 	}
 	} // }}}
 	else if (depmodel==4) { // random effects model // {{{
 
-	 if (samecens==1) response=resp2/min(KMc[i],KMc[k]); else
-	 {response=resp2/(KMc[i]*KMc[k]);}
+	 if (samecens==1) response=resp2/min(KMc(i),KMc(k)); else
+	 {response=resp2/(KMc(i)*KMc(k));}
 
 	 double ithetak=0; 
 	 if (inverse==1) { ithetak=exp(thetak); Dinverse=ithetak; DDinverse=exp(2*thetak); }
@@ -660,40 +717,40 @@ if (j<0) Rprintf("mmmm  %lf %lf %lf %lf %lf %lf \n",pbhat(i),pbhat2(k),pbhat(k),
 
             ckf(ithetak,Li,Lk,ckij,dckij); 
 //if (j<10) printf("aaa %d %d %d %d %lf %lf %lf %lf %lf %lf \n",s,j,i,k,thetak,ckij(0),dckij(0),Li,Lk,response); 
-            if (trunkp[i]<1) { // {{{
-               ckf(ithetak,cif1lin[i],cif1lin[k],ckijvv,dckijvv); 
-               ckf(ithetak,Li,cif1lin[k],ckijtv,dckijtv); 
-               ckf(ithetak,cif1lin[i],Lk,ckijvt,dckijvt); 
-	       ddd=(dckij[0]+dckijvv[0]-dckijtv[0]-dckijvt[0])/trunkp[i]; 
-	       edd=(ckij[0]+ckijvv[0]-ckijtv[0]-ckijvt[0])/trunkp[i]; 
+            if (trunkp(i)<1) { // {{{
+               ckf(ithetak,cif1lin(i),cif1lin(k),ckijvv,dckijvv); 
+               ckf(ithetak,Li,cif1lin(k),ckijtv,dckijtv); 
+               ckf(ithetak,cif1lin(i),Lk,ckijvt,dckijvt); 
+	       ddd=(dckij(0)+dckijvv(0)-dckijtv(0)-dckijvt(0))/trunkp(i); 
+	       edd=(ckij(0)+ckijvv(0)-ckijtv(0)-ckijvt(0))/trunkp(i); 
                if (inverse==1) response=ddd*Dinverse*(response-edd);   
 	       else  response=Dinverse*(response-edd); 
                diff=diff+response; 
                if (inverse==1) sdj=sdj+DDinverse*ddd*ddd; 
                else  sdj=sdj+DDinverse*ddd; 
-	       ssf+=pow(response-ckij[0],2);  // }}}
+	       ssf+=pow(response-ckij(0),2);  // }}}
             } else {
-	     ssf=ssf+pow(response-ckij[0],2); 
-            response=dckij[0]*Dinverse*(response-ckij[0]); 
-//            else  response=Dinverse*(response-ckij[0]); 
+	     ssf=ssf+pow(response-ckij(0),2); 
+            response=dckij(0)*Dinverse*(response-ckij(0)); 
+//            else  response=Dinverse*(response-ckij(0)); 
              diff=diff+response; 
-             sdj=sdj-DDinverse*dckij[0]*dckij[0]; 
-//             else  sdj=sdj-DDinverse*dckij[0]; 
+             sdj=sdj-DDinverse*dckij(0)*dckij(0); 
+//             else  sdj=sdj-DDinverse*dckij(0); 
            }
        } // }}}
 	else if (depmodel==5) { // structured random effects model // {{{
 
-	  if (samecens==1) response=resp2/min(KMc[i],KMc[k]); else response=resp2/(KMc[i]*KMc[k]);
+	  if (samecens==1) response=resp2/min(KMc(i),KMc(k)); else response=resp2/(KMc(i)*KMc(k));
 	   rvvec=trans(rvdes.row(i)); rvvec1=trans(rvdes.row(k)); 
 
-	if (trunkp[i]<1) { // {{{
+	if (trunkp(i)<1) { // {{{
 	       ckrvdes2(alphai,alphaj,1.0,Li,Lk,ckij,rvvec2,rvvec,rvvec1); 
-	       ckrvdes2(alphai,alphaj,1.0,cif1lin[i],cif1lin[k],ckijvv,rvvec2vv,rvvec,rvvec1); 
-	       ckrvdes2(alphai,alphaj,1.0,Li,cif1lin[k],ckijtv,rvvec2tv,rvvec,rvvec1); 
-	       ckrvdes2(alphai,alphaj,1.0,cif1lin[i],Lk,ckijvt,rvvec2vt,rvvec,rvvec1); 
+	       ckrvdes2(alphai,alphaj,1.0,cif1lin(i),cif1lin(k),ckijvv,rvvec2vv,rvvec,rvvec1); 
+	       ckrvdes2(alphai,alphaj,1.0,Li,cif1lin(k),ckijtv,rvvec2tv,rvvec,rvvec1); 
+	       ckrvdes2(alphai,alphaj,1.0,cif1lin(i),Lk,ckijvt,rvvec2vt,rvvec,rvvec1); 
 	       rvvec=0*rvvec; 
-	//	  ddd=(dckij[0]+dckijvv[0]-dckijtv[0]-dckijvt[0])/trunkp[i]; 
-		  edd=(ckij[0]+ckijvv[0]-ckijtv[0]-ckijvt[0])/trunkp[i]; 
+	//	  ddd=(dckij(0)+dckijvv(0)-dckijtv(0)-dckijvt(0))/trunkp(i); 
+		  edd=(ckij(0)+ckijvv(0)-ckijtv(0)-ckijvt(0))/trunkp(i); 
 		  rvvec2=rvvec2+rvvec2vv;
 //		  vec_add(rvvec2vv,rvvec2,rvvec2); 
 		  rvvec2=rvvec2+rvvec2tv;
@@ -702,85 +759,79 @@ if (j<0) Rprintf("mmmm  %lf %lf %lf %lf %lf %lf \n",pbhat(i),pbhat2(k),pbhat(k),
 		  rvvec2=rvvec2-rvvec2vt;
 		  diff=(response-edd); 
 		 vthetascore= thetades * rvvec2; 
-//		 vM(pardes[i],rvvec2,vthetascore);  // }}}
+//		 vM(pardes(i),rvvec2,vthetascore);  // }}}
 		} else {
 //		printf("2 %d \n",j); 
 	       ckrvdes2(alphai,alphaj,1.0,Li,Lk,ckij,rvvec2,rvvec,rvvec1); 
 //		printf("3 %d \n",j); 
-	       diff=(response-ckij[0]); 
+	       diff=(response-ckij(0)); 
 //	       rvvec2.print("rvv2"); 
 //	       thetades.print("td"); 
 	       vthetascore= trans(thetades) * rvvec2; 
 //	       vthetascore.print("vthetascore"); 
-//	       vM(pardes[i],rvvec2,vthetascore); 
-	       ssf=ssf+pow(response-ckij[0],2); 
+//	       vM(pardes(i),rvvec2,vthetascore); 
+	       ssf=ssf+pow(response-ckij(0),2); 
 	       }
 //	vthetascore.print("vt s"); 
 //	vtheta2.print("vt 2"); 
 
               if (inverse==1)  vthetascore=vthetascore%vtheta2;
 
-              DUtheta=DUtheta+weights[j]*(vthetascore*trans(vthetascore));
-	      vthetascore=(weights[j]*diff)*vthetascore; 
+              DUtheta=DUtheta+weights(j)*(vthetascore*trans(vthetascore));
+	      vthetascore=(weights(j)*diff)*vthetascore; 
 	      Utheta=Utheta+vthetascore; 
 
 	      if (iid==1) for (c=0;c<pt;c++) thetiid(j,c)+=vthetascore(c); 
 	} // }}}
 	else if (depmodel==6) { // random effects model two causes // {{{
             ckf(thetak,Li,Lk,ckij,dckij); 
-            if (trunkp[i]<1) {
-               ckf(thetak,cif1lin[i],cif1lin[k],ckijvv,dckijvv); 
-               ckf(thetak,Li,cif1lin[k],ckijtv,dckijtv); 
-               ckf(thetak,cif1lin[i],Lk,ckijvt,dckijvt); 
-	       ddd=(dckij[0]+dckijvv[0]-dckijtv[0]-dckijvt[0])/trunkp[i]; 
-	       edd=(ckij[0]+ckijvv[0]-ckijtv[0]-ckijvt[0])/trunkp[i]; 
+            if (trunkp(i)<1) {
+               ckf(thetak,cif1lin(i),cif1lin(k),ckijvv,dckijvv); 
+               ckf(thetak,Li,cif1lin(k),ckijtv,dckijtv); 
+               ckf(thetak,cif1lin(i),Lk,ckijvt,dckijvt); 
+	       ddd=(dckij(0)+dckijvv(0)-dckijtv(0)-dckijvt(0))/trunkp(i); 
+	       edd=(ckij(0)+ckijvv(0)-ckijtv(0)-ckijvt(0))/trunkp(i); 
                if (inverse==1) response=ddd*Dinverse*(response-edd);   
 	       else  response=Dinverse*(response-edd); 
                diff=diff+response; 
                if (inverse==1) sdj=sdj+DDinverse*ddd*ddd; 
                else  sdj=sdj+DDinverse*ddd; 
-	       ssf+=pow(response-ckij[0],2); 
+	       ssf+=pow(response-ckij(0),2); 
             } else {
-            if (inverse==1) response=dckij[0]*Dinverse*(response-ckij[0]); 
-            else  response=Dinverse*(response-ckij[0]); 
+            if (inverse==1) response=dckij(0)*Dinverse*(response-ckij(0)); 
+            else  response=Dinverse*(response-ckij(0)); 
             diff=diff+response; 
-             if (inverse==1) sdj=sdj+DDinverse*dckij[0]*dckij[0]; 
-             else  sdj=sdj+DDinverse*dckij[0]; 
-	     ssf=ssf+pow(response-ckij[0],2); 
+             if (inverse==1) sdj=sdj+DDinverse*dckij(0)*dckij(0); 
+             else  sdj=sdj+DDinverse*dckij(0); 
+	     ssf=ssf+pow(response-ckij(0),2); 
            }
        } // }}}
 
-//if (j<10) printf("uu %d %d %d %lf %lf %lf %lf %lf %lf \n",j,i,k,time,resp1,resp2,y[i],y[k],response); 
-//if (j<10) Rprintf("uu2 %lf %lf %lf %lf %lf %lf %d %d \n",pbhat(i),pbhat(k),0*pbhat2(k),response,thetak,ormarg,ci,ck);
+if (j<0) printf("uu %d %d %d %lf %lf %lf %lf %lf %lf \n",j,i,k,time,resp1,resp2,y(i),y(k),response); 
+if (j<0) Rprintf("uu2 %lf %lf %lf %lf %lf %lf %d %d \n",pbhat(i),pbhat(k),0*pbhat2(k),response,thetak,ormarg,ci,ck);
 }
         } /* for (c=0....... */   // }}}
 	
 //        if (flexfunc==0) vtheta2=pthetavec;  
 //        else  evaldh(vtheta1,vtime,pthetavec,vtheta2,dhtheta,rhoR);
 
-//if (j<10)  Rprintf("%ld %ld %lf %lf\n",s,j,diff,sdj); 
-//pthetavec.print("ptvec"); 
-//Utheta.print("Utthetavec"); 
-//DUtheta.print("DUtvec"); 
    if (depmodel!=5) {
-       DUtheta=DUtheta+sdj*weights[j]*(pthetavec*trans(pthetavec));
-       vthetascore = (weights[j]*diff)*pthetavec; 
+       DUtheta=DUtheta+sdj*weights(j)*(pthetavec*trans(pthetavec));
+       vthetascore = (weights(j)*diff)*pthetavec; 
        Utheta=Utheta+vthetascore; 
 
        if (iid==1) for (c=0;c<pt;c++) thetiid(j,c)+=vthetascore(c); 
    }
 
-//DUtheta.print("DUtvec"); 
-//vthetascore.print("vs"); 
-//vthetascore.print("vs"); 
-//Utheta.print("Utvec"); 
-   } /* j in antclust */ 
+ } /* j in antclust */ 
  } // s < Ntimes
 
-List res; 
+//printf("Sum of squares %lf \n",ssf); 
 //theta.print("theta"); 
-//printf(" %lf \n",ssf); 
+//Utheta.print("Utheta"); 
+//DUtheta.print("DUtheta"); 
 
+List res; 
 res["ssf"]=ssf; 
 res["score"]=Utheta; 
 res["Dscore"]=DUtheta; 

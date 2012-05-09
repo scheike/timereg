@@ -1,9 +1,9 @@
 \docType{data}
 \name{twinbmi}
 \alias{twinbmi}
-\title{bmi data set}
+\title{BMI data set}
 \description{
-  bmi data set
+  BMI data set
 }
 \references{
   \url{data_blah.com}
