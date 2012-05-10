@@ -155,13 +155,23 @@ add2<-comp.risk(Surv(time,cause>0)~+1+cluster(id),data=multcif,causeS=2,
                multcif$cause,n.sim=0,times=times,model="fg",max.clust=NULL)
 
 \dontrun{
-out1<-cor.cif(add,data=multcif,cause1=1,cause2=1)
+out1<-or.cif(add,data=multcif,cause1=1,cause2=1)
 summary(out1)
 
-out2<-cor.cif(add,data=multcif,cause1=1,cause2=1,theta.des=theta.des)
+out2<-or.cif(add,data=multcif,cause1=1,cause2=1,theta.des=theta.des)
 summary(out2)
 
-out3<-cor.cif(add,data=multcif,cause1=1,cause2=2,cif2=add2)
+source("../../R/cor.r")
+out2 <- mdep.cif(add,data=multcif,cause1=1,cause2=1,theta.des=theta.des,model="OR",
+        score.method="fisher.scoring",detail=0,Nit=10)
+out2$score
+
+
+summary(out2)
+
+
+
+out3<-or.cif(add,data=multcif,cause1=1,cause2=2,cif2=add2)
 summary(out3)
 }
 ###########################################################
