@@ -534,21 +534,6 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
   vec alphaj(nr),alphai(nr),alpha(nr),
       rvvec(nr),rvvec1(nr),rvvec2vv(nr),rvvec2vt(nr),rvvec2tv(nr);
   vec  rvvec2(nr); 
-
-//  rvvec.print("rvv"); 
-//  theta.print("tt"); 
-//  Rprintf(" %d %d \n",pt,nr); 
-
-//  rvdes.print("rff"); 
-//  Xtheta.print("XT"); 
-
-//  Rprintf("semi2 pt depm %d %d %d %d %d \n",semi2,pt,depmodel,CA1,CA2); 
-//  est2.print("est2"); 
-//  est.print("est"); 
-//  z2.print("z2"); 
-//  thetades.print("pp"); 
-//  Rprintf(" pt depm %d %d \n",pt,depmodel); 
-
   // }}}
 
   for (s=0;s<Ntimes;s++) //   if (KMtimes[s]>0) 
@@ -572,9 +557,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	  diff=0; sdj=0; 
 
 	  if (depmodel==5) { // {{{
-//	     if (j< 2) {  vtheta2.print("================================= theta"); }
              if (inverse==1)  vtheta2=exp(theta); else vtheta2=theta;
-//	     if (j< 2) {  printf(" %d %d \n",depmodel,inverse); vtheta2.print(" theta"); }
              alphai= thetades * vtheta2;
 	     alphaj= thetades * vtheta2;
 	  } // }}}
@@ -592,7 +575,6 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
          
 	respst=((y(i)<=entryage(i)) && (ci==CA1))* ((y(k)<=time) && (ck==CA2)) + 
 	       ((y(i)<=time) && (ci==CA1))* ((y(k)<=entryage(k)) && (ck==CA2)) ;
-//	  Rprintf(" %d %d %d %d %d \n",j,i,k,ci,ck); 
 
 	 if (depmodel!=5)  {
               if (flexfunc==0) thetak=Xtheta(i); else thetak=Xtheta(s,i); 
@@ -807,7 +789,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
            }
        } // }}}
 
-if (j<0) printf("uu %d %d %d %lf %lf %lf %lf %lf %lf \n",j,i,k,time,resp1,resp2,y(i),y(k),response); 
+if (j<0) Rprintf("uu %d %d %d %lf %lf %lf %lf %lf %lf \n",j,i,k,time,resp1,resp2,y(i),y(k),response); 
 if (j<0) Rprintf("uu2 %lf %lf %lf %lf %lf %lf %d %d \n",pbhat(i),pbhat(k),0*pbhat2(k),response,thetak,ormarg,ci,ck);
 }
         } /* for (c=0....... */   // }}}
