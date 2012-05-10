@@ -48,12 +48,13 @@ prt <- transform(prt, cancer=(status==2)*1) ## Observed cancer indicator
 ## Estimation of cumulative incidence
 ###############################
 ## {{{
-times <- seq(30,100,by=1)
+times <- seq(60,100,by=1)
 cifmod <- comp.risk(Surv(time,status>0)~+1+cluster(id),data=prt,prt$status,causeS=2,n.sim=0,
                   times=times,conservative=1,max.clust=NULL,model="fg")
 
 theta.des <- model.matrix(~-1+factor(zyg),data=prt) ## design for MZ/DZ status
-or1 <- or.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des,detail=1)
+or1 <- or.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des,
+	      score.method="fisher.scoring")
 summary(or1)
 or1$score
 
@@ -70,7 +71,7 @@ table(prt$land)
 prt$country <- prt$land
 par(mfrow=c(1,2))
 
-times <- seq(30,100,by=1)
+times <- seq(60,100,by=1)
 cifmodl <-comp.risk(Surv(time,status>0)~-1+factor(country)+cluster(id),data=prt,
                     prt$status,causeS=2,n.sim=0,times=times,conservative=1,
 		    max.clust=NULL,cens.model="aalen")
@@ -82,6 +83,7 @@ theta.des <- model.matrix(~-1+factor(zyg),data=prt) ## design for MZ/DZ status
 or.country <- or.cif(cifmodl,data=prt,cause1=2,cause2=2,theta.des=theta.des,
 		     theta=c(2.8,6.9),score.method="fisher.scoring")
 summary(or.country)
+or.country$score
 
 cifmodlr <-comp.risk(Surv(time,status>0)~+1+const(factor(country))+cluster(id),data=prt,
                     prt$status,causeS=2,n.sim=0,times=times,conservative=1,max.clust=NULL,model="fg",
@@ -94,14 +96,17 @@ legend("topleft",levels(prt$country),col=1:4,lty=1)
 or.countryr <- or.cif(cifmodlr,data=prt,cause1=2,cause2=2,theta.des=theta.des,
 		     theta=c(2.8,6.9),score.method="fisher.scoring")
 summary(or.countryr)
+### compare with uncorrected analyses
+summary(or1)
 ## }}}
-
+ 
 ###############################
 ## Concordance estimation
 ###############################
+###library(MultiComp)
 
 ### ignoring country 
-p33=MultiComp::bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2),return.data=1,robust=1)
+p33=bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2),return.data=1,robust=1)
 
 p33dz <- p33$model$"DZ"$comp.risk
 p33mz <- p33$model$"MZ"$comp.risk
@@ -146,7 +151,7 @@ plot(case33dz$casewise,se=0)
 ## Effect of zygosity correcting for country
 ###############################
 
-p33l <- MultiComp::bicomprisk(Hist(time,status)~country+strata(zyg)+id(id),
+p33l <- bicomprisk(Hist(time,status)~country+strata(zyg)+id(id),
                 data=prt,cause=c(2,2),return.data=1,robust=1)
 
 data33mz <- p33l$model$"MZ"$data
