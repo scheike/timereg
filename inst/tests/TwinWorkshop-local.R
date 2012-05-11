@@ -104,6 +104,7 @@ summary(or1)
 ## Concordance estimation
 ###############################
 ###library(MultiComp)
+## {{{
 
 ### ignoring country 
 p33=bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2),return.data=1,robust=1)
@@ -146,11 +147,12 @@ case33dz <- conc2case(p33dz,pcif)
 plot(case33mz$casewise,se=0,col=2)
 par(new=TRUE)
 plot(case33dz$casewise,se=0)
+## }}}
 
 ###############################
 ## Effect of zygosity correcting for country
 ###############################
-
+## {{{
 p33l <- bicomprisk(Hist(time,status)~country+strata(zyg)+id(id),
                 data=prt,cause=c(2,2),return.data=1,robust=1)
 
@@ -174,6 +176,37 @@ zygeffectll <- comp.risk(Surv(time,status==0)~country+const(zyg),
                          data=data33,data33$status,causeS=1,
                          cens.model="aalen",model="logistic",conservative=1)
 summary(zygeffectll)
+## }}}
+
+###############################
+## Incidence and concordance, ignoring censoring
+###############################
+
+bcancer <- prt$status==2
+prt$bcancer <- bcancer
+
+times <- seq(60,100,by=1)
+cifmodnc <- comp.risk(Surv(time,bcancer)~+1+cluster(id),data=prt,prt$bcancer,causeS=1,n.sim=0,
+		    cens.code=2,times=times,conservative=1,max.clust=NULL,model="fg")
+pcifnc <- predict(cifmodnc,X=1,se=0,uniform=0)
+
+theta.des <- model.matrix(~-1+factor(zyg),data=prt) ## design for MZ/DZ status
+or1nc <- or.cif(cifmodnc,data=prt,cause1=1,cause2=1,theta.des=theta.des,
+	      score.method="fisher.scoring")
+summary(or1nc)
+summary(or1) ### correct
+
+p33nc=bicomprisk(Hist(time,bcancer)~strata(zyg)+id(id),data=prt,cause=c(1,1),
+		 return.data=1,robust=1,cens=2)
+
+p33dznc <- p33$model$"DZ"$comp.risk
+p33mznc <- p33$model$"MZ"$comp.risk
+
+plot(p33dznc,ylim=c(0,0.1))
+par(new=TRUE)
+plot(p33mznc,ylim=c(0,0.1),col=3)
+lines(pcifnc$time,pcifnc$P1^2,col=2)
+
 
 ###############################
 ## Liability model, ignoring censoring

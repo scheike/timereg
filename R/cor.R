@@ -394,7 +394,6 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' add2<-comp.risk(Surv(time,cause>0)~+1+cluster(id),data=multcif,causeS=2,
 ##'                multcif$cause,n.sim=0,times=times,model="fg",max.clust=NULL)
 ##' 
-##' \dontrun{
 ##' out1<-cor.cif(add,data=multcif,cause1=1,cause2=1)
 ##' summary(out1)
 ##' 
@@ -403,12 +402,11 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' 
 ##' out3<-cor.cif(add,data=multcif,cause1=1,cause2=2,cif2=add2)
 ##' summary(out3)
-##' }
 ##' ###########################################################
 ##' # investigating further models using parfunc and dparfunc
 ##' ###########################################################
-##' functd<-function(theta,t,x) { xt=theta[1]+theta[2]*(t-0.5); return(xt) };
-##' dfunctd<-function(theta,t,x) { return(c(x[1],(t-0.5))) };
+##' #functd<-function(theta,t,x) { xt=theta[1]+theta[2]*(t-0.5); return(xt) };
+##' #dfunctd<-function(theta,t,x) { return(c(x[1],(t-0.5))) };
 ##' 
 ##' #library(compiler) # using the compiler library to speed up things
 ##' #f=cmpfun(functd)
@@ -526,7 +524,6 @@ or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 ##' add<-comp.risk(Surv(time,cause>0)~+1+cluster(id),data=multcif,multcif$cause,n.sim=0,causeS=1,
 ##'               times=times,max.clust=NULL)
 ##' 
-##' \dontrun{
 ##' out1<-random.cif(add,data=multcif,cause1=1,cause2=1)
 ##' summary(out1)
 ##' 
@@ -552,7 +549,6 @@ or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 ##' 
 ##' out1g<-random.cif(add1,data=multcif,cause1=1,cause2=2,cif2=add2,theta.des=theta.des)
 ##' summary(out1g)
-##' }
 ##' @keywords survival
 ##' @author Thomas Scheike
 random.cif<-function(cif,data,cause,cif2=NULL,
@@ -648,13 +644,11 @@ print.summary.cor <- function(x,digits=3,...)
 ##' add<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,
 ##'                multcif$cause,n.sim=0,times=times)
 ##' ###
-##' \dontrun{
 ##' out1<-cor.cif(add,data=multcif,cause1=1,cause2=1,theta=log(2+1))
 ##' summary(out1)
 ##' 
 ##' pad <- predict(add,X=1,Z=0,se=0,uniform=0)$P1
 ##' summary(out1,marg.cif=pad)
-##' }
 ##' @method summary cor
 ##' @export
 summary.cor <- function(object,marg.cif=NULL,marg.cif2=NULL,digits=3,...) { ## {{{

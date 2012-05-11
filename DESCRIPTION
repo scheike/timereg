@@ -57,3 +57,4 @@ Collate:
     'twinlm.R'
     'twinsim.R'
     'methodstwinlm.R'
+    'sim-nordic-twin.R'
