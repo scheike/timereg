@@ -21,7 +21,7 @@
   \item{...}{}
 }
 \description{
-  Concoradance
+  Concordance
 }
 \author{
   Thomas Scheike

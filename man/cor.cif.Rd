@@ -7,11 +7,9 @@
   cor.cif(cif, data, cause, times = NULL, cause1 = 1,
     cause2 = 1, cens.code = 0, cens.model = "KM", Nit = 40,
     detail = 0, clusters = NULL, theta = NULL,
-    theta.des = NULL, parfunc = NULL, dparfunc = NULL,
-    step = 1, sym = 0, colnames = NULL, dimpar = NULL,
-    weights = NULL, score.method = "nlminb",
-    same.cens = FALSE, censoring.probs = NULL, silent = 1,
-    ...)
+    theta.des = NULL, step = 1, sym = 0, weights = NULL,
+    score.method = "nlminb", same.cens = FALSE,
+    censoring.probs = NULL, silent = 1, ...)
 }
 \arguments{
   \item{cif}{a model object from the comp.risk function
@@ -53,22 +51,10 @@
   \item{theta.des}{specifies a regression design for the
   cross-odds-ratio parameters.}
 
-  \item{parfunc}{R-function to specify any relationship for
-  the parameters of the cross-odds-ratio.}
-
-  \item{dparfunc}{R-function to specify the derivative of
-  the parfunc function with respect to the parameters.}
-
   \item{step}{specifies the step size for the
   Newton-Raphson algorithm.}
 
   \item{sym}{specifies if symmetry is used in the model.}
-
-  \item{colnames}{specifies possible colnames to go with
-  the parameters.}
-
-  \item{dimpar}{number of parameters in case where
-  functions specify the model.}
 
   \item{weights}{weights for estimating equations.}
 
@@ -155,23 +141,13 @@ add2<-comp.risk(Surv(time,cause>0)~+1+cluster(id),data=multcif,causeS=2,
                multcif$cause,n.sim=0,times=times,model="fg",max.clust=NULL)
 
 \dontrun{
-out1<-or.cif(add,data=multcif,cause1=1,cause2=1)
+out1<-cor.cif(add,data=multcif,cause1=1,cause2=1)
 summary(out1)
 
-out2<-or.cif(add,data=multcif,cause1=1,cause2=1,theta.des=theta.des)
+out2<-cor.cif(add,data=multcif,cause1=1,cause2=1,theta.des=theta.des)
 summary(out2)
 
-source("../../R/cor.r")
-out2 <- mdep.cif(add,data=multcif,cause1=1,cause2=1,theta.des=theta.des,model="OR",
-        score.method="fisher.scoring",detail=0,Nit=10)
-out2$score
-
-
-summary(out2)
-
-
-
-out3<-or.cif(add,data=multcif,cause1=1,cause2=2,cif2=add2)
+out3<-cor.cif(add,data=multcif,cause1=1,cause2=2,cif2=add2)
 summary(out3)
 }
 ###########################################################
