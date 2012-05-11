@@ -1,9 +1,9 @@
 ##' .. content for description (no empty lines) ..
 ##'
 ##' @title Concordance to casewise
-##' @param conc 
-##' @param marg 
-##' @param test 
+##' @param conc Concordance 
+##' @param marg Marginal estimate
+##' @param test Type of test for independence assumption. "conc" makes test on concordance scale  and "case" means a test on the probandwise concordance
 ##' @author Thomas Scheike
 ##' @export
 conc2case <- function(conc,marg,test="conc")
@@ -78,10 +78,10 @@ print.testconc <- function(x,digits=3,...)
 
 ##' .. content for description (no empty lines) ..
 ##'
-##' @title Concordance test
-##' @param conc1 
-##' @param conc2 
-##' @param same.cluster 
+##' @title Concordance test Compares two concordance estimates
+##' @param conc1 Concordance estimate of group 1
+##' @param conc2 Concordance estimate of group 2
+##' @param same.cluster if FALSE then groups are independent, otherwise estimates are based on same data. 
 ##' @author Thomas Scheike
 ##' @export
 test.conc <- function(conc1,conc2,same.cluster=FALSE)
@@ -135,7 +135,7 @@ test.conc <- function(conc1,conc2,same.cluster=FALSE)
 ##' convert to timereg object
 ##'
 ##' @title Convert to timereg object
-##' @param obj 
+##' @param obj no use
 ##' @author Thomas Scheike
 ##' @export
 back2timereg <- function(obj)

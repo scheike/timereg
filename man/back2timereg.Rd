@@ -5,7 +5,7 @@
   back2timereg(obj)
 }
 \arguments{
-  \item{obj}{}
+  \item{obj}{no use}
 }
 \description{
   convert to timereg object

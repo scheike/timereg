@@ -440,7 +440,7 @@ cor.cif<-function(cif,data,cause,times=NULL,
   fit$call <- match.call()
   fit
 } ## }}}
-
+##' @export
 rr.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
                  cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
                  clusters=NULL, theta=NULL,theta.des=NULL, step=1,sym=0,weights=NULL,
@@ -455,7 +455,7 @@ rr.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
   fit$call <- match.call()
   fit
 } ## }}}
-
+##' @export
 or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
                  cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
                  clusters=NULL, theta=NULL,theta.des=NULL, step=1,sym=0, weights=NULL,
@@ -735,14 +735,14 @@ print.cor<-function(x,digits=3,...)
 
 ##' Concordance
 ##'
-##' @title Concordance
-##' @param object 
-##' @param cif1 
-##' @param cif2 
-##' @param messages 
-##' @param model 
-##' @param coefs 
-##' @param ... 
+##' @title Concordance Computes concordance and probandwise concordance
+##' @param object Output from the cor.cif, rr.cif or or.cif function
+##' @param cif1 Marginal cumulative incidence
+##' @param cif2 Marginal cumulative incidence of other cause (cause2) if  it is different from cause1
+##' @param messages  To print messages
+##' @param model  Specfifies wich model that is considered if object not given.
+##' @param coefs Specfifies  dependence parameters if object is not given.
+##' @param ...  Extra arguments, not used.
 ##' @author Thomas Scheike
 ##' @export
 concordance <- function(object,cif1,cif2=NULL,messages=TRUE,model=NULL,coefs=NULL,...)
@@ -819,15 +819,14 @@ concordance <- function(object,cif1,cif2=NULL,messages=TRUE,model=NULL,coefs=NUL
 
 ##' .. content for description (no empty lines) ..
 ##'
-##' @title plack
+##' @title plack Computes concordance for or.cif based model, that is Plackett random effects model 
 ##' @aliases plack.cif2
 ##' @export
-##' @param cif1 
-##' @param cif2 
-##' @param object 
-##' @param X 
+##' @param cif1 Cumulative incidence of first argument.
+##' @param cif2 Cumulative incidence of second argument.
+##' @param object or.cif object with dependence parameters.
 ##' @author Thomas Scheike
-plack.cif <- function(cif1,cif2,object,X=1) 
+plack.cif <- function(cif1,cif2,object) 
 { ## {{{
   coefs <- coef(object)
   theta <- exp(object$theta); 
@@ -845,7 +844,7 @@ plack.cif <- function(cif1,cif2,object,X=1)
   return(valr); 
 } ## }}}
 
-plack.cif2 <- function(cif1,cif2,theta,X=1) 
+plack.cif2 <- function(cif1,cif2,theta) 
 { ## {{{
   theta <- exp(c(theta))
   cif1 <- c(cif1); cif2 <- c(cif2)

@@ -1,15 +1,16 @@
 \name{test.conc}
 \alias{test.conc}
-\title{Concordance test}
+\title{Concordance test Compares two concordance estimates}
 \usage{
   test.conc(conc1, conc2, same.cluster = FALSE)
 }
 \arguments{
-  \item{conc1}{}
+  \item{conc1}{Concordance estimate of group 1}
 
-  \item{conc2}{}
+  \item{conc2}{Concordance estimate of group 2}
 
-  \item{same.cluster}{}
+  \item{same.cluster}{if FALSE then groups are independent,
+  otherwise estimates are based on same data.}
 }
 \description{
   .. content for description (no empty lines) ..

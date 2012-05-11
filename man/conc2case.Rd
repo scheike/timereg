@@ -5,11 +5,13 @@
   conc2case(conc, marg, test = "conc")
 }
 \arguments{
-  \item{conc}{}
+  \item{conc}{Concordance}
 
-  \item{marg}{}
+  \item{marg}{Marginal estimate}
 
-  \item{test}{}
+  \item{test}{Type of test for independence assumption.
+  "conc" makes test on concordance scale and "case" means a
+  test on the probandwise concordance}
 }
 \description{
   .. content for description (no empty lines) ..
