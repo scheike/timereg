@@ -87,7 +87,7 @@ summary.bptwin <- function(object,level=0.05,...) {
   sdlh <- (t(Dlh)%*%Vc[i1,i1]%*%(Dlh))[1]^0.5
   H <- h(cc[i1])
   hstd <- t(dh(cc[i1]))%*%Vc[i1,i1]%*%dh(cc[i1])
-  ci <- tigol(logith(cc[i1]) + qnorm(1-alpha)*c(-1,1)*sdlh)  
+  suppressWarnings(ci <- tigol(logith(cc[i1]) + qnorm(1-alpha)*c(-1,1)*sdlh))
   
   concordance <-  conditional <- marg <- c()
 
@@ -150,8 +150,8 @@ summary.bptwin <- function(object,level=0.05,...) {
   hval <- rbind(c(H,hstd^0.5,ci)); colnames(hval) <- c("Estimate","Std.Err",CIlab);
   if (hval[1]>1) hval[1,] <- c(1,NaN,NaN,NaN)
 
-  hval <- rbind(hval, tigol(c(hp,NA,hp-qnorm(1-alpha)*shp,hp+qnorm(1-alpha)*shp)))
-  rownames(hval) <- c("Broad-sense Heritability","Risk-scale Heritability")
+##  hval <- rbind(hval, tigol(c(hp,NA,hp-qnorm(1-alpha)*shp,hp+qnorm(1-alpha)*shp)))
+  rownames(hval) <- c("Broad-sense Heritability")##,"Risk-scale Heritability")
   
   Nstr <- object$N
   nN <- ncol(object$N)

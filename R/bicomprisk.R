@@ -21,10 +21,11 @@
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
 bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv, strata=NULL, id,num,prodlim=FALSE,messages=TRUE,model,return.data=0,uniform=0,robust=0,...) {
+
   mycall <- match.call()
-  formulaId <- Specials(formula,"id")
+  formulaId <- unlist(Specials(formula,"id"))
   formulaIndiv <- Specials(formula,"indiv")
-  formulaStrata <- Specials(formula,"strata")
+  formulaStrata <- unlist(Specials(formula,"strata"))
   formulaSt <- paste("~.-id(",formulaId,")",
                      "-strata(",paste(formulaStrata,collapse="+"),")",
                      "-indiv(",paste(formulaIndiv,collapse="+"),")")
@@ -59,6 +60,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv, strat
     if (length(dd)>1) {
       fit <- lapply(seq_len(length(dd)),function(i) {
         if (messages>0) message("Strata '",names(dd)[i],"'")
+        mycall$formula <- formula
         mycall$data <- dd[[i]]
         eval(mycall)
       })
@@ -72,6 +74,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv, strat
 
   covars <- as.character(attributes(terms(formula))$variables)[-(1:2)]
   indiv2 <- covars2 <- NULL 
+  ##  suppressMessages(browser())
   
   data <- data[order(data[,id]),]
   idtab <- table(data[,id])

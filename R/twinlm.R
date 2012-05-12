@@ -30,7 +30,7 @@
 ##' d2 <- transform(d,x12cat=cut(x12,3,labels=c("Low","Med","High")))
 ##' ace4 <- twinlm(y1 ~ x11+x12cat, data=d2, DZ="DZ", zyg="zyg", id="id", type="ace")
 ##' ## plot the model structure
-##' \donttest{
+##' \dontrun{
 ##' plot(ace4)
 ##' }
 ##' @keywords models
@@ -64,7 +64,7 @@
 ##'     specified in \code{formula}, to be added to data.frame of the SEM
 ##' @param estimator Choice of estimator/model.
 ##' @param ... Additional arguments parsed on to lower-level functions
-twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), twinnum="twinnum", binary=FALSE,keep=weight,estimator="gaussian",...) {
+twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), twinnum="twinnum", binary=FALSE,keep=weight,estimator="gaussian",constrain=FALSE,...) {
 
   cl <- match.call(expand.dots=TRUE)
   opt <- options(na.action="na.pass")
@@ -228,12 +228,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
   }
   if (type%in%c("u","flex","sat")) {
     kill(model1) <- ~e1+e2
-    if (type=="sat")  covariance(model1,outcomes) <- NA
-    else covariance(model1,outcomes) <- "v"
-    covariance(model1) <- outcomes
-    if (type=="sat") {
-      
-    }      
+    covariance(model1,outcomes) <- "v1"
   }
   model2 <- model1
 ##  parameter(model2) <- ~sdu1+sdu2
@@ -254,6 +249,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
   suppressMessages(constrain(model3, r1 ~ ra) <- lava:::Range.lvm())
   covariance(model3) <- d1 ~ f(d2,r2)
   suppressMessages(constrain(model3, r2 ~ rd) <- lava:::Range.lvm())
+
   if (type=="flex") {
      intercept(model1,outcomes) <- "mu1"
      intercept(model2,outcomes) <- "mu2"
@@ -262,6 +258,23 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
      covariance(model2,outcomes) <- "v2"
      covariance(model3,outcomes) <- "v3"
    }
+  if (type=="sat") {
+     covariance(model1,outcomes) <- c("v11","v12")
+     covariance(model2,outcomes) <- c("v21","v22")
+     covariance(model3,outcomes) <- c("v31","v32")
+  }
+  if (type%in%c("u","flex","sat")) {
+    if (constrain) {
+      model1 <- covariance(model1,outcomes,constrain=TRUE,rname="r1",cname="c1",logv="l1")
+      model2 <- covariance(model2,outcomes,constrain=TRUE,rname="r2",cname="c2",logv="l2")
+      model3 <- covariance(model3,outcomes,constrain=TRUE,rname="r3",cname="c3",logv="l3")
+    } else {
+      model1 <- covariance(model1,outcomes)
+      model2 <- covariance(model2,outcomes)
+      model3 <- covariance(model3,outcomes)
+    }
+  }
+  
   if (!is.null(covars) & type%in%c("flex","sat")) {
     sta <- ""
     if (type=="sat") sta <- "b"

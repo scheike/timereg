@@ -21,10 +21,21 @@ summary.twinlm <- function(object,...) {
   
   if (object$type%in%c("u","flex","sat")) {
 
+    corMZ <- corDZ <- NULL
+    i1 <- which(lava:::parpos.multigroup(object$estimate$model,p="atanh(rhoMZ)")=="atanh(rhoMZ)")[1]
+    i2 <- which(lava:::parpos.multigroup(object$estimate$model,p="atanh(rhoDZ)")=="atanh(rhoDZ)")[1]
+    i3 <- which(lava:::parpos.multigroup(object$estimate$model,p="atanh(rhoOS)")=="atanh(rhoOS)")[1]
+    if (length(i1)>0) {
+      corest <- coef(object$estimate,level=0)[c(i1,i2,i3)]
+      sdest <- vcov(object$estimate)[cbind(c(i1,i2,i3),c(i1,i2,i3))]^0.5
+      ciest <- cbind(corest,corest)+qnorm(0.975)*cbind(-sdest,sdest)
+      corMZ <- c(corest[1],ciest[1,])
+      corDZ <- c(corest[2],ciest[2,])
+    }      
     aa <- capture.output(e)
     res <- list(estimate=aa, zyg=zygtab,
                 varEst=NULL, varSigma=NULL, heritability=NULL, hci=NULL,
-                corMZ=NULL, corDZ=NULL,##corMZ(b), corDZ=corDZ(b),
+                corMZ=corMZ, corDZ=corDZ,
                 logLik=logLik(e), AIC=AIC(e), BIC=BIC(e), type=object$type
                 )                
     class(res) <- "summary.twinlm"
@@ -179,10 +190,12 @@ print.summary.twinlm <- function(x,signif.stars=FALSE,...) {
     h <- na.omit(h)
     print(h)  
     cat("\n")
-  
-  cat("Correlation within MZ:", x$corMZ, "\n")
-  cat("Correlation within DZ:", x$corDZ, "\n")
   }
+  if (!is.na(x$corMZ)) {
+    cat("Correlation within MZ:", x$corMZ, "\n")
+    cat("Correlation within DZ:", x$corDZ, "\n")
+  }
+    
   cat("\n")
   print(x$logLik)
   cat("AIC:", x$AIC, "\n")

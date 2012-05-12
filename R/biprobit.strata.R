@@ -4,6 +4,8 @@ do.biprobit.strata <- function(x,fun,...) {
   class(res) <- "do.biprobit.strata"
   return(res)
 }
+
+##' @S3method print do.biprobit.strata
 print.do.biprobit.strata <- function(x,...) {
   for (i in seq_len(length(x))) {    
     message(rep("-",60),sep="")
@@ -17,14 +19,18 @@ print.do.biprobit.strata <- function(x,...) {
 ##' @S3method plot biprobit.strata
 plot.biprobit.strata <- function(x,...)
   suppressMessages(do.biprobit.strata(x,"plot",...))
+
 ##' @S3method print biprobit.strata
 print.biprobit.strata <- function(x,...)
   print.do.biprobit.strata(x$model,...)
+
 ##' @S3method summary biprobit.strata
 summary.biprobit.strata <- function(object,...)
   do.biprobit.strata(object,"summary",...)
+
 ##' @S3method coef biprobit.strata
 coef.biprobit.strata <- function(object,...) object$coef
+
 ##' @S3method logLik biprobit.strata
 logLik.biprobit.strata <- function(object,indiv=FALSE,list=FALSE,...) {
   ll <- lapply(object$model,function(x) logLik(x,indiv=indiv,...))
@@ -41,6 +47,7 @@ logLik.biprobit.strata <- function(object,indiv=FALSE,list=FALSE,...) {
   }
   return(unlist(ll))
 }
+
 ##' @S3method score biprobit.strata
 score.biprobit.strata <- function(x,...) {
   ss <- lapply(x$model,function(m) score(m,indiv=FALSE,...))

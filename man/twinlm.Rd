@@ -4,7 +4,8 @@
 \usage{
   twinlm(formula, data, id, zyg, DZ, OS, weight = NULL,
     type = c("ace"), twinnum = "twinnum", binary = FALSE,
-    keep = weight, estimator = "gaussian", ...)
+    keep = weight, estimator = "gaussian",
+    constrain = FALSE, ...)
 }
 \arguments{
   \item{formula}{Formula specifying effects of covariates
@@ -85,7 +86,7 @@ ace3 <- twinlm(y1 ~ x11+x12 + x11:I(x12<0), data=d, DZ="DZ", zyg="zyg", id="id",
 d2 <- transform(d,x12cat=cut(x12,3,labels=c("Low","Med","High")))
 ace4 <- twinlm(y1 ~ x11+x12cat, data=d2, DZ="DZ", zyg="zyg", id="id", type="ace")
 ## plot the model structure
-\donttest{
+\dontrun{
 plot(ace4)
 }
 }

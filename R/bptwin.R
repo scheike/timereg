@@ -38,7 +38,7 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
                    type="ace",
                    eqmean=TRUE,
                    param=0,
-                   pairsonly=TRUE,
+                   pairsonly=FALSE,
                    stderr=TRUE,                  
                    robustvar=TRUE,                   
                    p, indiv=FALSE,
@@ -51,8 +51,8 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
 ###{{{ setup
 
   mycall <- match.call()
-  formulaId <- Specials(formula,"cluster")
-  formulaStrata <- Specials(formula,"strata")
+  formulaId <- unlist(Specials(formula,"cluster"))
+  formulaStrata <- unlist(Specials(formula,"strata"))
   formulaSt <- paste("~.-cluster(",formulaId,")-strata(",paste(formulaStrata,collapse="+"),")")
   formula <- update(formula,formulaSt)
   if (!is.null(formulaId)) {

@@ -44,7 +44,7 @@ cumh <- function(formula,data,...,time,
       res[[i]] <-bptwin(formula,data=data[idx,],...)
     else
       res[[i]] <-bptwin(formula,data=data,...)
-    ht <- rbind(ht,c(t,summary(res[[i]])$h))
+    ht <- rbind(ht,c(t,summary(res[[i]])$h[1,]))
   }
   rownames(ht) <- timestrata
   colnames(ht) <- c("time","Heritability","Std.Err","2.5%","97.5%")
@@ -53,8 +53,10 @@ cumh <- function(formula,data,...,time,
   res
 }
 
+##' @S3method summary cumh
 summary.cumh <- function(object,...) object 
-  
+
+##' @S3method print cumh
 print.cumh <- function(x,...) {
   print(x$ht)
   invisible(x)
@@ -65,6 +67,7 @@ Col <- function (col, alpha = 0.2) {
         alpha))))
 }
 
+##' @S3method plot cumh
 plot.cumh <- function(x,...,idx=seq(nrow(x$ht)),lwd=2,col,fillcol,alpha=0.2,ylim=c(0,1),xlab="Time",ylab="Heritability",add=FALSE) {
 
   if (missing(col)) col <- "darkblue"

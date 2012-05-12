@@ -1,0 +1,1178 @@
+#+BEGIN_OPTIONS
+#+TITLE: Analyzing twin data with =mets=
+#+AUTHOR: Thomas Scheike and Klaus K. Holst
+#+DATE: <2012-05-20 Sun>   
+#+PROPERTY: session *R* 
+#+PROPERTY: cache yes
+#+PROPERTY: results output graphics 
+#+PROPERTY: exports both 
+#+PROPERTY: tangle yes
+#+STYLE: <link rel="stylesheet" type="text/css" href="http://www.biostat.ku.dk/~kkho/styles/orgmode.css">
+#+PROPERTY: tangle yes 
+#+STARTUP: hideall 
+#+OPTIONS: LaTeX:dvipng 
+#+END_OPTIONS
+
+* Installation
+
+Set repositories (see also =chooseCRANmirror=, =chooseBioCmirror=, =setRepositories=)
+and install dependencies (=R= >=2.12) 
+#+BEGIN_SRC R :exports none
+###############################
+## installation, R (>=2.12.0)
+###############################
+#+END_SRC
+
+#+RESULTS[2016d4b93d9665f9f2320d8f51221f5a51d56964]:
+
+#+BEGIN_SRC R :exports code :eval never
+install.packages("mets")
+#+END_SRC
+
+/OBS:/ At this point you might have to restart =R= to flush the cache
+of previously installed versions of the packages.
+
+* Load simulated data 
+#+BEGIN_SRC R :exports none
+###############################
+## Load simulated data
+###############################
+#+END_SRC
+
+#+RESULTS[02928e5bb0859e535f0f8436a7abb6f99589a14e]:
+
+#+NAME: Loading
+#+BEGIN_SRC R :exports code
+library(mets)
+data(prt)
+#+END_SRC
+
+#+RESULTS[0730985dabd01c07effb03743462a50b7362d1a6]: Loading
+
+#+RESULTS[1ac5ae8cf61c58ca9af113b15b7f062dfb3d7162]: Loading
+==* Estimation of cumulative incidence
+#+BEGIN_SRC R :exports none
+###############################
+## Estimation of cumulative incidence
+###############################
+#+END_SRC
+
+#+RESULTS[f112f393258523a6017aec5f028f0ca868ae8d18]:
+
+#+BEGIN_SRC R
+times <- seq(60,100,by=1)
+cifmod <- comp.risk(Surv(time,status>0)~+1+cluster(id),data=prt,prt$status,causeS=2,n.sim=0,
+                  times=times,conservative=1,max.clust=NULL,model="fg")
+
+theta.des <- model.matrix(~-1+factor(zyg),data=prt) ## design for MZ/DZ status
+or1 <- or.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des,
+	      score.method="fisher.scoring")
+summary(or1)
+or1$score
+
+pcif <- predict(cifmod,X=1,resample.iid=0,uniform=0,se=0)
+#+END_SRC
+
+#+RESULTS[d9ef5af9f10941c417ca243dd8bf8077f34f4d0e]:
+: OR for dependence for competing risks
+: 
+: OR of cumulative incidence for cause1= 2  and cause2= 2
+:   log-ratio Coef.    SE     z    P-val  Ratio      SE
+:              2.87 0.236 12.10 0.000000   17.6    4.16
+:              7.99 2.130  3.75 0.000175 2950.0 6270.00
+:              [,1]
+: [1,] 2.338399e-08
+: [2,] 1.565735e-04
+
+#+BEGIN_SRC R :file pcif.png
+plot(pcif,multiple=1,se=0,uniform=0,ylim=c(0,0.15))
+#+END_SRC
+
+#+RESULTS[5234604eb50e009ef23083db3cbabd66084b3ad0]:
+[[file:pcif.png]]
+
+  
+* Correcting for country
+#+BEGIN_SRC R :exports none
+###############################
+## Correcting for country
+###############################
+#+END_SRC
+
+#+RESULTS[68c4a7cd657ebc513b8b06ca5e33d302d5860d52]:
+
+#+BEGIN_SRC R :file pcifl.png
+table(prt$country)
+
+times <- seq(60,100,by=1)
+cifmodl <-comp.risk(Surv(time,status>0)~-1+factor(country)+cluster(id),data=prt,
+                    prt$status,causeS=2,n.sim=0,times=times,conservative=1,
+		    max.clust=NULL,cens.model="aalen")
+pcifl <- predict(cifmodl,X=diag(4),se=0,uniform=0)
+plot(pcifl,multiple=1,se=0,uniform=0,col=1:4,ylim=c(0,0.2))
+legend("topleft",levels(prt$country),col=1:4,lty=1)
+#+END_SRC
+
+#+RESULTS[3a9565317ffa0ac815d0b8676a289da2d10572ea]:
+[[file:pcifl.png]]
+
+#+BEGIN_SRC R
+theta.des <- model.matrix(~-1+factor(zyg),data=prt) ## design for MZ/DZ status
+or.country <- or.cif(cifmodl,data=prt,cause1=2,cause2=2,theta.des=theta.des,
+		     theta=c(2.8,6.9),score.method="fisher.scoring")
+summary(or.country)
+or.country$score
+#+END_SRC
+
+#+RESULTS[6759d10d3eb2944bc641dcdc48cfa765fdd145d1]:
+: OR for dependence for competing risks
+: 
+: OR of cumulative incidence for cause1= 2  and cause2= 2
+:   log-ratio Coef.    SE     z    P-val Ratio      SE
+:               2.8 0.251 11.10 0.00e+00  16.4    4.13
+:               6.9 1.330  5.19 2.09e-07 988.0 1310.00
+:               [,1]
+: [1,] -1.086339e-07
+: [2,] -2.498550e-05
+
+#+BEGIN_SRC R
+cifmodlr <-comp.risk(Surv(time,status>0)~+1+const(factor(country))+cluster(id),data=prt,
+                    prt$status,causeS=2,n.sim=0,times=times,conservative=1,max.clust=NULL,model="fg",
+                    cens.model="aalen",cens.formula=~~factor(country))
+pciflr <- predict(cifmodlr,X=rep(1,4),Z=rbind(c(0,0,0),c(1,0,0),c(0,1,0),c(0,0,1)),se=0,uniform=0)
+#+END_SRC
+
+#+RESULTS[b70ab6a063342157649738da4117457be713c6ca]:
+
+#+BEGIN_SRC R :file pcif2.png
+par(mfrow=c(1,2))
+plot(pcifl,multiple=1,se=0,uniform=0,col=1:4,ylim=c(0,0.2))
+legend("topleft",levels(prt$country),col=1:4,lty=1)
+plot(pciflr,multiple=1,se=0,uniform=0,col=1:4,ylim=c(0,0.2))
+legend("topleft",levels(prt$country),col=1:4,lty=1)
+#+END_SRC
+
+#+RESULTS[4e97b31907acfbd4f8064533912000ddedda8680]:
+[[file:pcif2.png]]
+
+#+BEGIN_SRC R
+or.countryr <- or.cif(cifmodlr,data=prt,cause1=2,cause2=2,theta.des=theta.des,
+		     theta=c(2.8,6.9),score.method="fisher.scoring")
+summary(or.countryr)
+#+END_SRC
+
+#+RESULTS[8a739653008c0ab0e866544328baaf1f6d85caa9]:
+: OR for dependence for competing risks
+: 
+: OR of cumulative incidence for cause1= 2  and cause2= 2
+:   log-ratio Coef.   SE     z    P-val  Ratio      SE
+:              2.79 0.25 11.20 0.00e+00   16.3    4.07
+:              6.92 1.34  5.16 2.51e-07 1010.0 1350.00
+
+
+  
+* Concordance estimation
+#+BEGIN_SRC R :exports none
+###############################
+## Concordance estimation
+###############################
+#+END_SRC
+
+#+RESULTS[427cc15fc9e022294eb2043a773da04da8e82118]:
+
+#+BEGIN_SRC R :exports code
+### ignoring country 
+p33 <- bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2),return.data=1,robust=1)
+
+p33dz <- p33$model$"DZ"$comp.risk
+p33mz <- p33$model$"MZ"$comp.risk
+#+END_SRC
+
+#+RESULTS[8932fd1ccf114ddeeeb0391df5ca2ba75cb4c370]:
+: Strata 'DZ'
+: Strata 'MZ'
+
+#+BEGIN_SRC R :file p33dz.png
+plot(p33dz,ylim=c(0,0.1))
+#+END_SRC
+
+#+RESULTS[40afe5653ff6cedb4ef866c3de3b0bcf146877ea]:
+[[file:p33dz.png]]
+
+#+BEGIN_SRC R :file pcaconc.png
+par(new=TRUE)
+plot(p33mz,ylim=c(0,0.1),col=3)
+title(main="Concordance Prostate cancer")
+lines(pcif$time,pcif$P1^2,col=2)
+#+END_SRC
+
+#+RESULTS[4e5291bbcb2553d5500493d123eb2149595852ff]:
+[[file:pcaconc.png]]
+
+#+BEGIN_SRC R
+### test for genetic effect 
+test.conc(p33dz,p33mz); 
+#+END_SRC
+
+#+RESULTS[9c9ec963fc3e9462696c88b0009dab02aa5f614b]:
+: 
+: Pepe-Mori type test for H_0: conc_1(t)= conc_2(t)
+: Assuming independence for estimators
+: Time.range = 60.9 -- 96.9 
+: 
+:           cum dif.     sd z     pval
+: pepe-mori    0.394 0.0984 4 6.31e-05
+
+#+BEGIN_SRC R
+data33mz <- p33$model$"MZ"$data
+data33mz$zyg <- 1
+data33dz <- p33$model$"DZ"$data
+data33dz$zyg <- 0
+data33 <- rbind(data33mz,data33dz)
+
+library(cmprsk)
+ftime <- data33$time
+fstatus <- data33$status
+table(fstatus)
+#+END_SRC
+
+#+RESULTS[628462f3bd06049b27328dc94b008d294734ae03]:
+: fstatus
+:    0    1    2 
+: 9597  106 4519
+
+#+BEGIN_SRC R
+group <- data33$zyg
+graytest <- cuminc(ftime,fstatus,group)
+graytest
+#+END_SRC
+
+#+RESULTS[26895e594e7441d7fe558b95a48a3e51d1fba2ae]:
+#+begin_example
+Tests:
+      stat           pv df
+1 28.82416 7.925617e-08  1
+2 33.79236 6.131919e-09  1
+Estimates and Variances:
+$est
+              20         40           60          80        100
+0 1 0.0000000000 0.00000000 0.0001741916 0.006741025 0.01880244
+1 1 0.0000000000 0.00000000 0.0006710172 0.017420360 0.05031415
+0 2 0.0006970762 0.01974882 0.1141800067 0.504364854 0.93797293
+1 2 0.0009363302 0.01655314 0.0948098327 0.443996722 0.90692430
+
+$var
+              20           40           60           80          100
+0 1 0.000000e+00 0.000000e+00 3.034323e-08 2.115863e-06 9.493584e-06
+1 1 0.000000e+00 0.000000e+00 2.250627e-07 9.173278e-06 5.102841e-05
+0 2 8.094463e-08 2.487399e-06 1.556735e-05 6.990685e-05 4.769058e-05
+1 2 1.752378e-07 3.424511e-06 2.388136e-05 1.271394e-04 1.171775e-04
+#+end_example
+
+#+BEGIN_SRC R
+zygeffect <- comp.risk(Surv(time,status==0)~const(zyg),
+		  data=data33,data33$status,causeS=1,
+		  cens.model="aalen",model="logistic",conservative=1)
+summary(zygeffect)
+#+END_SRC
+
+#+RESULTS[9558b1e3ed54d186ed8d2737a0b224b1c1e0cfa1]:
+#+begin_example
+Competing risks Model 
+
+Test for nonparametric terms 
+
+Test for non-significant effects 
+            Supremum-test of significance p-value H_0: B(t)=0
+(Intercept)                          25.5                   0
+
+Test for time invariant effects 
+                  Kolmogorov-Smirnov test p-value H_0:constant effect
+(Intercept)                          2.23                           0
+                    Cramer von Mises test p-value H_0:constant effect
+(Intercept)                          36.2                           0
+
+Parametric terms : 
+           Coef.   SE Robust SE    z    P-val
+const(zyg) 0.977 0.22      0.22 4.44 9.06e-06
+   
+  Call: 
+comp.risk(Surv(time, status == 0) ~ const(zyg), data = data33, 
+    data33$status, causeS = 1, cens.model = "aalen", model = "logistic", 
+    conservative = 1)
+#+end_example
+
+#+BEGIN_SRC R :file casewise.png
+case33mz <- conc2case(p33mz,pcif)
+case33dz <- conc2case(p33dz,pcif)
+
+plot(case33mz$casewise,se=0,col=2)
+par(new=TRUE)
+plot(case33dz$casewise,se=0)
+#+END_SRC
+
+#+RESULTS[73a31a054d4823d50e95e0ff8c0d0bba953e4bac]:
+[[file:casewise.png]]
+
+  
+* Effect of zygosity correcting for country
+#+BEGIN_SRC R :exports none
+###############################
+## Effect of zygosity correcting for country
+###############################
+#+END_SRC
+
+#+RESULTS[62c9e498baa4832188df750124c66a5a4c62ca39]:
+
+#+BEGIN_SRC R :exports code
+p33l <- bicomprisk(Hist(time,status)~country+strata(zyg)+id(id),
+                data=prt,cause=c(2,2),return.data=1,robust=1)
+
+data33mz <- p33l$model$"MZ"$data
+data33mz$zyg <- 1
+data33dz <- p33l$model$"DZ"$data
+data33dz$zyg <- 0
+data33 <- rbind(data33mz,data33dz)
+#+END_SRC
+
+#+RESULTS[57f0018902fc7413874798338801d0f077e6c1ff]:
+: Strata 'DZ'
+: Strata 'MZ'
+
+#+BEGIN_SRC R
+zygeffectl <- comp.risk(Surv(time,status==0)~const(country)+const(zyg),
+                  data=data33,data33$status,causeS=1,
+                  cens.model="aalen",model="logistic",conservative=1)
+summary(zygeffectl)
+#+END_SRC
+
+#+RESULTS[546357a033b899af074a09ad8835de2dbcaa1797]:
+#+begin_example
+Competing risks Model 
+
+Test for nonparametric terms 
+
+Test for non-significant effects 
+            Supremum-test of significance p-value H_0: B(t)=0
+(Intercept)                          16.1                   0
+
+Test for time invariant effects 
+                  Kolmogorov-Smirnov test p-value H_0:constant effect
+(Intercept)                          2.01                           0
+                    Cramer von Mises test p-value H_0:constant effect
+(Intercept)                          35.9                           0
+
+Parametric terms : 
+                      Coef.    SE Robust SE    z    P-val
+const(country)Finland 1.160 0.419     0.419 2.77 5.54e-03
+const(country)Norway  0.655 0.458     0.458 1.43 1.53e-01
+const(country)Sweden  0.796 0.372     0.372 2.14 3.23e-02
+const(zyg)            0.932 0.230     0.230 4.05 5.15e-05
+   
+  Call: 
+comp.risk(Surv(time, status == 0) ~ const(country) + const(zyg), 
+    data = data33, data33$status, causeS = 1, cens.model = "aalen", 
+    model = "logistic", conservative = 1)
+#+end_example
+
+#+BEGIN_SRC R
+zygeffectpl <- comp.risk(Surv(time,status==0)~const(country)+const(zyg),
+                  data=data33,data33$status,causeS=1,
+                  cens.model="aalen",model="fg",conservative=1)
+summary(zygeffectpl)
+#+END_SRC
+
+#+RESULTS[42713213e06af5039c122d9792ac8cb9627328c4]:
+#+begin_example
+Competing risks Model 
+
+Test for nonparametric terms 
+
+Test for non-significant effects 
+            Supremum-test of significance p-value H_0: B(t)=0
+(Intercept)                          2.83               0.024
+
+Test for time invariant effects 
+                  Kolmogorov-Smirnov test p-value H_0:constant effect
+(Intercept)                        0.0101                       0.002
+                    Cramer von Mises test p-value H_0:constant effect
+(Intercept)                       0.00115                       0.006
+
+Parametric terms : 
+                      Coef.    SE Robust SE    z    P-val
+const(country)Finland 1.140 0.412     0.412 2.77 5.63e-03
+const(country)Norway  0.646 0.452     0.452 1.43 1.53e-01
+const(country)Sweden  0.785 0.368     0.368 2.14 3.27e-02
+const(zyg)            0.916 0.226     0.226 4.05 5.22e-05
+   
+  Call: 
+comp.risk(Surv(time, status == 0) ~ const(country) + const(zyg), 
+    data = data33, data33$status, causeS = 1, cens.model = "aalen", 
+    model = "fg", conservative = 1)
+#+end_example
+
+#+BEGIN_SRC R
+zygeffectll <- comp.risk(Surv(time,status==0)~country+const(zyg),
+                         data=data33,data33$status,causeS=1,
+                         cens.model="aalen",model="logistic",conservative=1)
+summary(zygeffectll)
+#+END_SRC
+
+#+RESULTS[99f4bd9c5d0e9f6626401b7d7318fa26c5dbdd87]:
+#+begin_example
+Competing risks Model 
+
+Test for nonparametric terms 
+
+Test for non-significant effects 
+               Supremum-test of significance p-value H_0: B(t)=0
+(Intercept)                            75.70                   0
+countryFinland                        441.00                   0
+countryNorway                           6.09                   0
+countrySweden                         703.00                   0
+
+Test for time invariant effects 
+                     Kolmogorov-Smirnov test p-value H_0:constant effect
+(Intercept)                             6.59                       0.000
+countryFinland                          6.24                       0.000
+countryNorway                           1.31                       0.542
+countrySweden                           6.39                       0.000
+                       Cramer von Mises test p-value H_0:constant effect
+(Intercept)                            200.0                        0.00
+countryFinland                        1180.0                        0.00
+countryNorway                           17.6                        0.39
+countrySweden                         1300.0                        0.00
+
+Parametric terms : 
+           Coef.   SE Robust SE    z    P-val
+const(zyg) 0.939 0.23      0.23 4.08 4.58e-05
+   
+WARNING problem with convergence for time points:
+64.88587 66.74123
+Readjust analyses by removing points
+
+  Call: 
+comp.risk(Surv(time, status == 0) ~ country + const(zyg), data = data33, 
+    data33$status, causeS = 1, cens.model = "aalen", model = "logistic", 
+    conservative = 1)
+#+end_example
+
+* Liability model, ignoring censoring
+#+BEGIN_SRC R :exports none
+###############################
+## Liability model, ignoring censoring
+###############################
+#+END_SRC
+
+#+RESULTS[79d6ea3c279ccbefe06219e2e93330dd564c8160]:
+
+#+BEGIN_SRC R
+(M <- with(prt, table(cancer,zyg)))
+#+END_SRC
+
+#+RESULTS[e2894667fe2c2fb9593c7184f9069f9ff4c27ae7]:
+:       zyg
+: cancer    DZ    MZ
+:      0 17408 10872
+:      1   583   359
+
+#+BEGIN_SRC R
+coef(lm(cancer~-1+zyg,prt))
+#+END_SRC
+
+#+RESULTS[1fc2a1cec8eed946e93f4499c5bd2ce40cb55c4b]:
+:      zygDZ      zygMZ 
+: 0.03240509 0.03196510
+
+#+BEGIN_SRC R
+## Saturated model
+bpmz <- 
+    biprobit(cancer~1 + cluster(id), 
+             data=subset(prt,zyg=="MZ"), eqmarg=TRUE)
+
+logLik(bpmz) # Log-likelihood
+AIC(bpmz) # AIC
+coef(bpmz) # Parameter estimates
+vcov(bpmz) # Asymptotic covariance
+summary(bpmz) # concordance, case-wise, tetrachoric correlations, ...
+#+END_SRC R
+
+#+RESULTS[31dc25d5c08cc8e94c02d636645330df4012d49b]:
+#+begin_example
+'log Lik.' -1472.972 (df=2)
+[1] 2949.943
+(Intercept)  atanh(rho) 
+ -1.8539454   0.8756506
+             (Intercept)   atanh(rho)
+(Intercept) 0.0007089726 0.0003033296
+atanh(rho)  0.0003033296 0.0044023587
+
+              Estimate    Std.Err          Z p-value
+(Intercept)  -1.853945   0.026627 -69.627727       0
+atanh(rho)    0.875651   0.066350  13.197393       0
+
+    n pairs 
+11231  5473 
+Score: -3.453e-05 5.123e-06
+logLik: -1472.972 
+Variance of latent residual term = 1 (standard probit link) 
+
+                        Estimate 2.5%    97.5%  
+Tetrachoric correlation 0.70423  0.63252 0.76398
+Concordance             0.01131  0.00886 0.01443
+Case-wise/Conditional   0.35487  0.29391 0.42094
+Marginal                0.03187  0.02834 0.03583
+#+end_example
+
+#+BEGIN_SRC R :exports code
+bp0 <- biprobit(cancer~1 + cluster(id)+strata(zyg), data=prt)
+#+END_SRC
+
+#+RESULTS[cba00830834c35f753cf4cf64b245caf08303a97]:
+: Strata 'DZ'
+: Strata 'MZ'
+
+#+BEGIN_SRC R
+summary(bp0)
+#+END_SRC
+
+#+RESULTS[e5e3737a364b026de5dbf414098405e10fc58c7a]:
+#+begin_example
+------------------------------------------------------------
+Strata 'DZ'
+
+              Estimate    Std.Err          Z p-value
+(Intercept)  -1.846841   0.019247 -95.955243       0
+atanh(rho)    0.418065   0.050421   8.291446       0
+
+    n pairs 
+17991  8749 
+Score: -0.001841 -0.0006879
+logLik: -2536.242 
+Variance of latent residual term = 1 (standard probit link) 
+
+                        Estimate 2.5%    97.5%  
+Tetrachoric correlation 0.39530  0.30882 0.47529
+Concordance             0.00486  0.00361 0.00655
+Case-wise/Conditional   0.15019  0.11459 0.19443
+Marginal                0.03239  0.02976 0.03523
+
+------------------------------------------------------------
+Strata 'MZ'
+
+              Estimate    Std.Err          Z p-value
+(Intercept)  -1.853945   0.026627 -69.627727       0
+atanh(rho)    0.875651   0.066350  13.197393       0
+
+    n pairs 
+11231  5473 
+Score: -3.453e-05 5.123e-06
+logLik: -1472.972 
+Variance of latent residual term = 1 (standard probit link) 
+
+                        Estimate 2.5%    97.5%  
+Tetrachoric correlation 0.70423  0.63252 0.76398
+Concordance             0.01131  0.00886 0.01443
+Case-wise/Conditional   0.35487  0.29391 0.42094
+Marginal                0.03187  0.02834 0.03583
+#+end_example
+
+#+BEGIN_SRC R
+## Eq. marginals MZ/DZ
+bp1 <- bptwin(cancer~1,zyg="zyg",DZ="DZ",id="id",type="u",data=prt)
+summary(bp1) # Components (concordance,cor,...) can be extracted from returned list
+#+END_SRC
+
+#+RESULTS[cf616c979a103f0ee27e572ddbb94cb56851bdf4]:
+#+begin_example
+
+                 Estimate     Std.Err           Z p-value
+(Intercept)     -1.849284    0.015601 -118.539777       0
+atanh(rho) MZ    0.877667    0.065815   13.335456       0
+atanh(rho) DZ    0.417475    0.050276    8.303615       0
+
+ Total MZ/DZ Complete pairs MZ/DZ
+ 11231/17991 5473/8749           
+
+                           Estimate 2.5%    97.5%  
+Tetrachoric correlation MZ 0.70525  0.63436 0.76438
+Tetrachoric correlation DZ 0.39480  0.30854 0.47462
+
+MZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.01149  0.00942 0.01400
+Probandwise Concordance 0.35672  0.29764 0.42049
+Marginal                0.03221  0.03007 0.03449
+DZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.00482  0.00363 0.00640
+Probandwise Concordance 0.14956  0.11441 0.19315
+Marginal                0.03221  0.03007 0.03449
+
+                         Estimate 2.5%    97.5%  
+Broad-sense Heritability 0.62090  0.40145 0.79997
+#+end_example
+
+#+BEGIN_SRC R
+compare(bp0,bp1) # LRT
+#+END_SRC
+
+#+RESULTS[20e744f4568946d8acc1da67d03b4fd25a9e4707]:
+: 
+: 	Likelihood ratio test
+: 
+: data:  
+: chisq = 0.0468, df = 1, p-value = 0.8288
+: sample estimates:
+: log likelihood (model 1) log likelihood (model 2) 
+:                -4009.213                -4009.237
+
+
+Polygenic Libability model via te =bptwin= function (=type= can be a
+subset of "acde", or "flex" for stratitified, "u" for random effects
+model with same marginals for MZ and DZ)
+#+BEGIN_SRC R
+## Polygenic model
+args(bptwin)
+#+END_SRC R
+
+#+RESULTS[881d9a46f5fc9fcf8680ea466e5be3dd178d7ffc]:
+: function (formula, data, id, zyg, DZ, OS, weight = NULL, biweight = function(x) 1/min(x), 
+:     strata = NULL, messages = 1, control = list(trace = 0), type = "ace", 
+:     eqmean = TRUE, param = 0, pairsonly = FALSE, stderr = TRUE, 
+:     robustvar = TRUE, p, indiv = FALSE, constrain, samecens = TRUE, 
+:     allmarg = samecens & !is.null(weight), bound = FALSE, debug = FALSE, 
+:     ...) 
+: NULL
+
+#+BEGIN_SRC R 
+bp2 <- bptwin(cancer~1,zyg="zyg",DZ="DZ",id="id",type="ace",data=prt)
+summary(bp2)
+#+END_SRC
+
+#+RESULTS[457676d0740f60ff891c1d4eea5db64387cd72bc]:
+#+begin_example
+
+             Estimate   Std.Err         Z p-value
+(Intercept)  -3.40624   0.19032 -17.89736  0.0000
+log(var(A))   0.74503   0.25710   2.89787  0.0038
+log(var(C))  -1.25112   1.04238  -1.20024  0.2300
+
+ Total MZ/DZ Complete pairs MZ/DZ
+ 11231/17991 5473/8749           
+
+                   Estimate 2.5%    97.5%  
+A                  0.62090  0.40145 0.79997
+C                  0.08435  0.00910 0.48028
+E                  0.29475  0.23428 0.36343
+MZ Tetrachoric Cor 0.70525  0.63436 0.76438
+DZ Tetrachoric Cor 0.39480  0.30854 0.47462
+
+MZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.01149  0.00942 0.01400
+Probandwise Concordance 0.35672  0.29764 0.42049
+Marginal                0.03221  0.03007 0.03449
+DZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.00482  0.00363 0.00640
+Probandwise Concordance 0.14956  0.11441 0.19315
+Marginal                0.03221  0.03007 0.03449
+
+                         Estimate 2.5%    97.5%  
+Broad-sense Heritability 0.70525  0.63657 0.76572
+#+end_example
+
+  
+* Liability model, Inverse Probability Weighting
+#+BEGIN_SRC R :exports none
+###############################
+## Liability model, IPCW
+###############################
+#+END_SRC
+
+#+RESULTS[a7458abca3644831514dc5eacaefdcfc4be850de]:
+
+#+BEGIN_SRC R :file ipw.png
+## Probability weights based on Aalen's additive model 
+prtw <- ipw(Surv(time,status==0)~country, data=prt,
+            cluster="id",weightname="w") 
+plot(0,type="n",xlim=range(prtw$time),ylim=c(0,1),xlab="Age",ylab="Probability")
+count <- 0
+for (l in unique(prtw$country)) {
+    count <- count+1
+    prtw <- prtw[order(prtw$time),]
+    with(subset(prtw,country==l), 
+         lines(time,w,col=count,lwd=2))
+}
+legend("topright",legend=unique(prtw$country),col=1:4,pch=1)
+#+END_SRC
+
+#+RESULTS[561aef2bff0ca8538807fecb42f3fed7ca77963a]:
+[[file:ipw.png]]
+
+#+BEGIN_SRC R
+bpmzIPW <- 
+              biprobit(cancer~1 + cluster(id), 
+                       data=subset(prtw,zyg=="MZ"), 
+                       weight="w")
+(smz <- summary(bpmzIPW))
+#+END_SRC
+
+#+RESULTS[a9be545d61f59041c45cc4a0ac0c40f4f8d5148a]:
+#+begin_example
+
+              Estimate    Std.Err          Z p-value
+(Intercept)  -1.226276   0.043074 -28.469378       0
+atanh(rho)    0.912670   0.100316   9.097911       0
+
+    n pairs 
+ 2722   997 
+Score: 3.318e-05 -2.252e-05
+logLik: -6703.246 
+Variance of latent residual term = 1 (standard probit link) 
+
+                        Estimate 2.5%    97.5%  
+Tetrachoric correlation 0.72241  0.61446 0.80381
+Concordance             0.05490  0.04221 0.07113
+Case-wise/Conditional   0.49887  0.41321 0.58460
+Marginal                0.11005  0.09514 0.12696
+#+end_example
+
+#+BEGIN_SRC R :file cif2.png
+## CIF
+plot(pcif,multiple=1,se=0,uniform=0,ylim=c(0,0.15))
+abline(h=smz$prob["Marginal",],lwd=c(2,1,1))
+## Wrong estimates:
+abline(h=summary(bpmz)$prob["Marginal",],lwd=c(2,1,1),col="lightgray")
+#+END_SRC R
+
+#+RESULTS[602b617012ad757420b7e1fc22f655f028bb5224]:
+[[file:cif2.png]]
+
+#+BEGIN_SRC R :file conc2.png
+## Concordance
+plot(p33mz,ylim=c(0,0.1))
+abline(h=smz$prob["Concordance",],lwd=c(2,1,1))
+## Wrong estimates:
+abline(h=summary(bpmz)$prob["Concordance",],lwd=c(2,1,1),col="lightgray")
+#+END_SRC
+
+#+RESULTS[c116ced6b8d822fb4a49d794a8b485b139fdbecf]:
+[[file:conc2.png]]
+
+#+BEGIN_SRC R
+bp3 <- bptwin(cancer~1,zyg="zyg",DZ="DZ",id="id",
+              type="ace",data=prtw,weight="w")
+summary(bp3)
+#+END_SRC R
+
+#+RESULTS[d1eeda8bf7576f03d648b7052c5a778945ddfc31]:
+#+begin_example
+Warning message:
+In sqrt(diag(V)) : NaNs produced
+
+             Estimate   Std.Err         Z p-value
+(Intercept)  -2.31618   0.18673 -12.40359   0e+00
+log(var(A))   0.85390   0.22689   3.76347   2e-04
+log(var(C)) -29.43218        NA        NA      NA
+
+ Total MZ/DZ Complete pairs MZ/DZ
+ 2722/5217   997/1809            
+
+                   Estimate 2.5%    97.5%  
+A                  0.70138  0.60090 0.78560
+C                  0.00000  0.00000 0.00000
+E                  0.29862  0.21440 0.39910
+MZ Tetrachoric Cor 0.70138  0.59586 0.78310
+DZ Tetrachoric Cor 0.35069  0.30328 0.39637
+
+MZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.04857  0.03963 0.05940
+Probandwise Concordance 0.47238  0.39356 0.55260
+Marginal                0.10281  0.09463 0.11161
+DZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.02515  0.02131 0.02965
+Probandwise Concordance 0.24461  0.21892 0.27226
+Marginal                0.10281  0.09463 0.11161
+
+                         Estimate 2.5%    97.5%  
+Broad-sense Heritability 0.70138  0.60090 0.78560
+#+end_example
+
+#+BEGIN_SRC R
+bp4 <- bptwin(cancer~1,zyg="zyg",DZ="DZ",id="id",
+              type="u",data=prtw,weight="w")
+summary(bp4)
+#+END_SRC R
+
+#+RESULTS[11d7e07eac47a4b69cd26a683e8896afc28c7cdf]:
+#+begin_example
+
+                Estimate    Std.Err          Z p-value
+(Intercept)    -1.266427   0.024091 -52.568381       0
+atanh(rho) MZ   0.898548   0.098841   9.090866       0
+atanh(rho) DZ   0.312574   0.073668   4.243006       0
+
+ Total MZ/DZ Complete pairs MZ/DZ
+ 2722/5217   997/1809            
+
+                           Estimate 2.5%    97.5%  
+Tetrachoric correlation MZ 0.71559  0.60742 0.79771
+Tetrachoric correlation DZ 0.30278  0.16662 0.42760
+
+MZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.04974  0.04044 0.06104
+Probandwise Concordance 0.48442  0.40185 0.56785
+Marginal                0.10268  0.09453 0.11144
+DZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.02269  0.01667 0.03081
+Probandwise Concordance 0.22097  0.16448 0.29013
+Marginal                0.10268  0.09453 0.11144
+
+                         Estimate 2.5%    97.5%  
+Broad-sense Heritability 0.82563  0.33329 0.97819
+#+end_example
+
+#+BEGIN_SRC R
+score(bp4) ## Check convergence
+#+END_SRC
+
+#+RESULTS[7e7a3cdc22554b0e037a60127143f39ed6ab7644]:
+: [1]  2.729972e-07 -8.463680e-08 -5.013737e-09
+
+
+#+BEGIN_SRC R
+bp5 <- bptwin(cancer~1,zyg="zyg",DZ="DZ",id="id",
+              type="ade",data=prtw,weight="w")
+summary(bp5)
+#+END_SRC
+
+#+RESULTS[1ac29f4140a27d60b2657f9a43b50e1b10c8a785]:
+#+begin_example
+
+             Estimate   Std.Err         Z p-value
+(Intercept)  -2.37470   0.20268 -11.71665  0.0000
+log(var(A))   0.55519   0.54480   1.01905  0.3082
+log(var(D))  -0.25645   1.36092  -0.18844  0.8505
+
+ Total MZ/DZ Complete pairs MZ/DZ
+ 2722/5217   997/1809            
+
+                   Estimate 2.5%    97.5%  
+A                  0.49552  0.10422 0.89238
+D                  0.22007  0.01081 0.87931
+E                  0.28441  0.19987 0.38740
+MZ Tetrachoric Cor 0.71559  0.60742 0.79771
+DZ Tetrachoric Cor 0.30278  0.16662 0.42760
+
+MZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.04974  0.04044 0.06104
+Probandwise Concordance 0.48442  0.40185 0.56785
+Marginal                0.10268  0.09453 0.11144
+DZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.02269  0.01667 0.03081
+Probandwise Concordance 0.22097  0.16448 0.29013
+Marginal                0.10268  0.09453 0.11144
+
+                         Estimate 2.5%    97.5%  
+Broad-sense Heritability 0.71559  0.61260 0.80013
+#+end_example
+
+  
+* Liability model, adjusting for covariates
+#+BEGIN_SRC R :exports none
+###############################
+## Adjusting for covariates
+###############################
+#+END_SRC
+
+#+RESULTS[a3b0a6e83da2e17fa9c6d005008baa29b2dd935f]:
+
+Main effect of country
+#+BEGIN_SRC R
+bp6 <- bptwin(cancer~country,zyg="zyg",DZ="DZ",id="id",
+              type="ace",data=prtw,weight="w")
+summary(bp6)
+#+END_SRC
+
+#+RESULTS[872f7096d70f85e257b9f257d0ed18c2fc529d86]:
+#+begin_example
+Warning message:
+In sqrt(diag(V)) : NaNs produced
+
+                Estimate   Std.Err         Z p-value
+(Intercept)     -2.81553   0.23889 -11.78590   0e+00
+countryFinland   0.87558   0.16123   5.43061   0e+00
+countryNorway    0.68483   0.17762   3.85567   1e-04
+countrySweden    0.77248   0.12350   6.25468   0e+00
+log(var(A))      0.77724   0.23186   3.35220   8e-04
+log(var(C))    -28.96268        NA        NA      NA
+
+ Total MZ/DZ Complete pairs MZ/DZ
+ 2722/5217   997/1809            
+
+                   Estimate 2.5%    97.5%  
+A                  0.68509  0.58001 0.77411
+C                  0.00000  0.00000 0.00000
+E                  0.31491  0.22589 0.41999
+MZ Tetrachoric Cor 0.68509  0.57428 0.77124
+DZ Tetrachoric Cor 0.34254  0.29262 0.39060
+
+MZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.02236  0.01588 0.03141
+Probandwise Concordance 0.39194  0.30778 0.48305
+Marginal                0.05705  0.04654 0.06977
+DZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.00989  0.00700 0.01394
+Probandwise Concordance 0.17329  0.14505 0.20570
+Marginal                0.05705  0.04654 0.06977
+
+                         Estimate 2.5%    97.5%  
+Broad-sense Heritability 0.68509  0.58001 0.77411
+#+end_example
+
+Stratified analysis
+#+BEGIN_SRC R
+bp7 <- bptwin(cancer~country,zyg="zyg",DZ="DZ",id="id",
+              type="u",data=prtw,weight="w")
+summary(bp7)
+#+END_SRC
+
+#+RESULTS[41de52429860b59b7751a8d685e1b2019a40fdba]:
+#+begin_example
+
+                 Estimate    Std.Err          Z p-value
+(Intercept)     -1.581478   0.051318 -30.817030   0e+00
+countryFinland   0.491725   0.081517   6.032155   0e+00
+countryNorway    0.385830   0.094254   4.093497   0e+00
+countrySweden    0.433789   0.060648   7.152599   0e+00
+atanh(rho) MZ    0.884166   0.099366   8.898113   0e+00
+atanh(rho) DZ    0.271770   0.073240   3.710668   2e-04
+
+ Total MZ/DZ Complete pairs MZ/DZ
+ 2722/5217   997/1809            
+
+                           Estimate 2.5%    97.5%  
+Tetrachoric correlation MZ 0.70850  0.59760 0.79280
+Tetrachoric correlation DZ 0.26527  0.12752 0.39298
+
+MZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.02347  0.01664 0.03300
+Probandwise Concordance 0.41255  0.32395 0.50721
+Marginal                0.05688  0.04643 0.06953
+DZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.00794  0.00489 0.01287
+Probandwise Concordance 0.13966  0.09312 0.20421
+Marginal                0.05688  0.04643 0.06953
+
+                         Estimate 2.5%    97.5%  
+Broad-sense Heritability 0.88646  0.22665 0.99521
+#+end_example
+
+#+BEGIN_SRC R :exports code
+bp8 <- bptwin(cancer~strata(country),zyg="zyg",DZ="DZ",id="id",
+              type="u",data=prtw,weight="w")
+#+END_SRC
+
+#+RESULTS[7fa9adcc3baa465e73acf37b3d3cf5028ce25fe0]:
+: Strata 'Denmark'
+: Strata 'Finland'
+: Strata 'Norway'
+: Strata 'Sweden'
+
+#+BEGIN_SRC R
+summary(bp8)
+#+END_SRC
+
+#+RESULTS[f31101c27ef10245c1bafef45d4aefbafab0db9c]:
+#+begin_example
+------------------------------------------------------------
+Strata 'Denmark'
+
+                Estimate    Std.Err          Z p-value
+(Intercept)    -1.583608   0.051241 -30.904856  0.0000
+atanh(rho) MZ   0.992896   0.217349   4.568215  0.0000
+atanh(rho) DZ   0.070588   0.186956   0.377566  0.7058
+
+ Total MZ/DZ Complete pairs MZ/DZ
+ 760/1611    287/589             
+
+                           Estimate 2.5%     97.5%   
+Tetrachoric correlation MZ  0.75859  0.51308  0.88937
+Tetrachoric correlation DZ  0.07047 -0.28750  0.41117
+
+MZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.02611  0.01584 0.04274
+Probandwise Concordance 0.46093  0.28426 0.64799
+Marginal                0.05664  0.04623 0.06922
+DZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.00420  0.00110 0.01596
+Probandwise Concordance 0.07422  0.01888 0.25037
+Marginal                0.05664  0.04623 0.06922
+
+                         Estimate 2.5% 97.5%
+Broad-sense Heritability   1      NaN  NaN  
+
+------------------------------------------------------------
+Strata 'Finland'
+
+                Estimate    Std.Err          Z p-value
+(Intercept)    -1.087902   0.063221 -17.207912  0.0000
+atanh(rho) MZ   0.859335   0.302752   2.838410  0.0045
+atanh(rho) DZ   0.393145   0.179942   2.184840  0.0289
+
+ Total MZ/DZ Complete pairs MZ/DZ
+ 392/1001    134/316             
+
+                           Estimate 2.5%    97.5%  
+Tetrachoric correlation MZ 0.69592  0.25985 0.89623
+Tetrachoric correlation DZ 0.37407  0.04044 0.63265
+
+MZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.07008  0.03975 0.12064
+Probandwise Concordance 0.50666  0.27641 0.73412
+Marginal                0.13832  0.11316 0.16801
+DZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.04160  0.02237 0.07607
+Probandwise Concordance 0.30073  0.16558 0.48242
+Marginal                0.13832  0.11316 0.16801
+
+                         Estimate 2.5%    97.5%  
+Broad-sense Heritability 0.64369  0.04069 0.98717
+
+------------------------------------------------------------
+Strata 'Norway'
+
+                Estimate    Std.Err          Z p-value
+(Intercept)    -1.192293   0.079124 -15.068598  0.0000
+atanh(rho) MZ   0.916471   0.301133   3.043409  0.0023
+atanh(rho) DZ   0.533761   0.252070   2.117509  0.0342
+
+ Total MZ/DZ Complete pairs MZ/DZ
+ 387/618     115/155             
+
+                           Estimate 2.5%    97.5%  
+Tetrachoric correlation MZ 0.72422  0.31516 0.90635
+Tetrachoric correlation DZ 0.48825  0.03969 0.77303
+
+MZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.05918  0.03218 0.10633
+Probandwise Concordance 0.50764  0.27633 0.73572
+Marginal                0.11657  0.08945 0.15057
+DZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.03945  0.01840 0.08257
+Probandwise Concordance 0.33842  0.15583 0.58636
+Marginal                0.11657  0.08945 0.15057
+
+                         Estimate 2.5%    97.5%  
+Broad-sense Heritability 0.47195  0.01989 0.97522
+
+------------------------------------------------------------
+Strata 'Sweden'
+
+                Estimate    Std.Err          Z p-value
+(Intercept)    -1.149412   0.032155 -35.745836  0.0000
+atanh(rho) MZ   0.836864   0.125476   6.669520  0.0000
+atanh(rho) DZ   0.199677   0.092907   2.149202  0.0316
+
+ Total MZ/DZ Complete pairs MZ/DZ
+ 1183/1987   461/749             
+
+                           Estimate 2.5%    97.5%  
+Tetrachoric correlation MZ 0.68414  0.53057 0.79423
+Tetrachoric correlation DZ 0.19706  0.01758 0.36425
+
+MZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.06055  0.04659 0.07835
+Probandwise Concordance 0.48365  0.38001 0.58872
+Marginal                0.12519  0.11277 0.13877
+DZ:
+                        Estimate 2.5%    97.5%  
+Concordance             0.02515  0.01672 0.03766
+Probandwise Concordance 0.20088  0.13541 0.28746
+Marginal                0.12519  0.11277 0.13877
+
+                         Estimate 2.5%    97.5%  
+Broad-sense Heritability 0.97416  0.00000 1.00000
+#+end_example
+
+#+BEGIN_SRC R
+## Wald test
+B <- (lava::contrmat(3,4))[-(1:3),]
+compare(bp8,contrast=B)
+#+END_SRC
+
+#+RESULTS[9edfe2c630260ff8b73d31c834163fd28fe0b862]:
+: 
+: 	Wald test
+: 
+: data:  
+: chisq = 3.4972, df = 6, p-value = 0.7443
+
+* Cumulative heritability
+#+BEGIN_SRC R :exports none
+###############################
+## Cumulative heritability
+###############################
+#+END_SRC
+
+#+RESULTS[ea88384cdfd337305a3a4d37a3e08367283cddf2]:
+
+#+BEGIN_SRC R
+args(cumh)
+#+END_SRC
+
+#+RESULTS[64bc6b411e2b3bec2b118d7b3f47c4cb8d0487a0]:
+: function (formula, data, ..., time, timestrata = quantile(data[, 
+:     time], c(0.25, 0.5, 0.75, 1)), cumulative = TRUE, silent = FALSE) 
+: NULL
+
+#+BEGIN_SRC R :exports code
+ch1 <- cumh(cancer~1,time="time",zyg="zyg",DZ="DZ",id="id",
+            type="ace",data=prtw,weight="w")
+#+BEGIN_SRC R
+summary(ch1)
+#+END_SRC
+
+#+RESULTS[5350f69e609e55cc655e48592a8161412f26920a]:
+#+begin_example
+65.5691955406266
+76.4446739437236
+85.8807708995545
+117.622394945129
+Warning message:
+In sqrt(diag(V)) : NaNs produced
+                      time Heritability    Std.Err      2.5%     97.5%
+65.5691955406266  65.56920    0.7038287 0.10969596 0.4586430 0.8695517
+76.4446739437236  76.44467    0.6757445 0.06363440 0.5411756 0.7864218
+85.8807708995545  85.88077    0.6204174 0.05652481 0.5052219 0.7234726
+117.622394945129 117.62239    0.7013847 0.04752116 0.6008962 0.7855993
+#+end_example
+
+#+BEGIN_SRC R :file cumh.png
+plot(ch1)
+#+END_SRC
+
+#+RESULTS[db2530ffda6ac40a43b1e74724910f30bbeacf04]:
+[[file:cumh.png]]
+
+-----
+    

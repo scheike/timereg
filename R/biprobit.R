@@ -37,8 +37,8 @@ biprobit <- function(formula, data, id, time, strata=NULL, eqmarg=TRUE,
                      p,...) {
 
   mycall <- match.call()
-  formulaId <- Specials(formula,"cluster")
-  formulaStrata <- Specials(formula,"strata")
+  formulaId <- unlist(Specials(formula,"cluster"))
+  formulaStrata <- unlist(Specials(formula,"strata"))
   formulaSt <- paste("~.-cluster(",formulaId,")-strata(",paste(formulaStrata,collapse="+"),")")
   formula <- update(formula,formulaSt)
   if (!is.null(formulaId)) {

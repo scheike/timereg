@@ -2,109 +2,71 @@
 ###############################
 ## installation, R (>=2.12.0)
 ###############################
-komud<-function(){  ## {{{ 
 
-options(repos=
-        c(CRAN="http://mirrors.dotsrc.org/cran", 
-          BioCsoft="http://www.bioconductor.org/packages/2.9/bioc",
-          RForge="http://R-Forge.R-project.org"))
-install.packages(c("Rcpp","RcppArmadillo","mvtnorm","numDeriv",
-                   "ucminf","prodlim","graph"))
+##install.packages("mets")
 
-pkgURL <- "http://www.biostat.ku.dk/~kkho/NorTwinCan/"
-
-pkgpostfix <- "tgz"
-pkgfiles <- paste(c("MultiComp_0.5-4","timereg_1.6-3","bptwin_0.6-3","lava_0.9-43"),pkgpostfix,sep=".")
-for (p in pkgfiles) {
-  download.file(paste(pkgURL,"/pkg/",p,sep=""),destfile=p)
-  install.packages(p)
-}
-
-} ## }}}
 ###############################
 ## Load simulated data
 ###############################
 
-###pkgURL <- "http://www.biostat.ku.dk/~kkho/NorTwinCan/"
-###con <- url(paste(pkgURL,"prtsim.rda",sep=""))
-###prt <- get(load(con))
-###close(con)
-###str(prt)
-###prt <- transform(prt, cancer=(status==2)*1) ## Observed cancer indicator
-
-###library(multicif); 
-###install.packages("mets", repos="http://R-Forge.R-project.org",type="source")
-###install.packages("mets", repos="http://R-Forge.R-project.org")
-
 library(mets)
-
-prt <- get(load("prtsim.rda"))
-prt <- transform(prt, cancer=(status==2)*1) ## Observed cancer indicator
-
-###dyn.load("multicif.so")
-###source("../R/cor.r")
+data(prt)
 
 ###############################
 ## Estimation of cumulative incidence
 ###############################
-## {{{
+
 times <- seq(60,100,by=1)
 cifmod <- comp.risk(Surv(time,status>0)~+1+cluster(id),data=prt,prt$status,causeS=2,n.sim=0,
                   times=times,conservative=1,max.clust=NULL,model="fg")
 
 theta.des <- model.matrix(~-1+factor(zyg),data=prt) ## design for MZ/DZ status
 or1 <- or.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des,
-	      score.method="fisher.scoring")
+              score.method="fisher.scoring")
 summary(or1)
 or1$score
 
 pcif <- predict(cifmod,X=1,resample.iid=0,uniform=0,se=0)
 
 plot(pcif,multiple=1,se=0,uniform=0,ylim=c(0,0.15))
-## }}}
 
 ###############################
 ## Correcting for country
 ###############################
-## {{{
-table(prt$land)
-prt$country <- prt$land
+
+table(prt$country)
+
 par(mfrow=c(1,2))
 
 times <- seq(60,100,by=1)
 cifmodl <-comp.risk(Surv(time,status>0)~-1+factor(country)+cluster(id),data=prt,
                     prt$status,causeS=2,n.sim=0,times=times,conservative=1,
-		    max.clust=NULL,cens.model="aalen")
+                    max.clust=NULL,cens.model="aalen")
 pcifl <- predict(cifmodl,X=diag(4),se=0,uniform=0)
 plot(pcifl,multiple=1,se=0,uniform=0,col=1:4,ylim=c(0,0.2))
 legend("topleft",levels(prt$country),col=1:4,lty=1)
 
 theta.des <- model.matrix(~-1+factor(zyg),data=prt) ## design for MZ/DZ status
 or.country <- or.cif(cifmodl,data=prt,cause1=2,cause2=2,theta.des=theta.des,
-		     theta=c(2.8,6.9),score.method="fisher.scoring")
+                     theta=c(2.8,6.9),score.method="fisher.scoring")
 summary(or.country)
 or.country$score
 
 cifmodlr <-comp.risk(Surv(time,status>0)~+1+const(factor(country))+cluster(id),data=prt,
                     prt$status,causeS=2,n.sim=0,times=times,conservative=1,max.clust=NULL,model="fg",
                     cens.model="aalen",cens.formula=~~factor(country))
-###
 pciflr <- predict(cifmodlr,X=rep(1,4),Z=rbind(c(0,0,0),c(1,0,0),c(0,1,0),c(0,0,1)),se=0,uniform=0)
+
 plot(pciflr,multiple=1,se=0,uniform=0,col=1:4,ylim=c(0,0.2))
 legend("topleft",levels(prt$country),col=1:4,lty=1)
-###
+
 or.countryr <- or.cif(cifmodlr,data=prt,cause1=2,cause2=2,theta.des=theta.des,
-		     theta=c(2.8,6.9),score.method="fisher.scoring")
+                     theta=c(2.8,6.9),score.method="fisher.scoring")
 summary(or.countryr)
-### compare with uncorrected analyses
-summary(or1)
-## }}}
- 
+
 ###############################
 ## Concordance estimation
 ###############################
-###library(MultiComp)
-## {{{
 
 ### ignoring country 
 p33=bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2),return.data=1,robust=1)
@@ -147,12 +109,11 @@ case33dz <- conc2case(p33dz,pcif)
 plot(case33mz$casewise,se=0,col=2)
 par(new=TRUE)
 plot(case33dz$casewise,se=0)
-## }}}
 
 ###############################
 ## Effect of zygosity correcting for country
 ###############################
-## {{{
+
 p33l <- bicomprisk(Hist(time,status)~country+strata(zyg)+id(id),
                 data=prt,cause=c(2,2),return.data=1,robust=1)
 
@@ -176,43 +137,11 @@ zygeffectll <- comp.risk(Surv(time,status==0)~country+const(zyg),
                          data=data33,data33$status,causeS=1,
                          cens.model="aalen",model="logistic",conservative=1)
 summary(zygeffectll)
-## }}}
-
-###############################
-## Incidence and concordance, ignoring censoring
-###############################
-
-bcancer <- prt$status==2
-prt$bcancer <- bcancer
-
-times <- seq(60,100,by=1)
-cifmodnc <- comp.risk(Surv(time,bcancer)~+1+cluster(id),data=prt,prt$bcancer,causeS=1,n.sim=0,
-		    cens.code=2,times=times,conservative=1,max.clust=NULL,model="fg")
-pcifnc <- predict(cifmodnc,X=1,se=0,uniform=0)
-
-theta.des <- model.matrix(~-1+factor(zyg),data=prt) ## design for MZ/DZ status
-or1nc <- or.cif(cifmodnc,data=prt,cause1=1,cause2=1,theta.des=theta.des,
-	      score.method="fisher.scoring")
-summary(or1nc)
-summary(or1) ### correct
-
-p33nc=bicomprisk(Hist(time,bcancer)~strata(zyg)+id(id),data=prt,cause=c(1,1),
-		 return.data=1,robust=1,cens=2)
-
-p33dznc <- p33$model$"DZ"$comp.risk
-p33mznc <- p33$model$"MZ"$comp.risk
-
-plot(p33dznc,ylim=c(0,0.1))
-par(new=TRUE)
-plot(p33mznc,ylim=c(0,0.1),col=3)
-lines(pcifnc$time,pcifnc$P1^2,col=2)
-
 
 ###############################
 ## Liability model, ignoring censoring
 ###############################
 
-library(bptwin)
 
 (M <- with(prt, table(cancer,zyg)))
 coef(lm(cancer~-1+zyg,prt))

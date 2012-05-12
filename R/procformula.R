@@ -10,10 +10,10 @@
 ##   unlist(strsplit(res,"+",fixed=TRUE))
 ## }
 
-f <- Surv(lefttime,time,status)~x1+id(~1+z,cluster)
-spec <- "id"
-split1=","
-split2="+"
+## f <- Surv(lefttime,time,status)~x1+id(~1+z,cluster)
+## spec <- "id"
+## split1=","
+## split2="+"
 
 Specials <- function(f,spec,split1=",",split2=NULL,...) {
   tt <- terms(f,spec)
