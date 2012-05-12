@@ -68,7 +68,7 @@ RcppExport SEXP FastApprox(const SEXP a,
     newT[i] = T[pos];
   }
   List ans;
-  ans["t"] = newT;
+  ans["approx"] = newT;
   ans["pos"] = idx;
   return(ans);
 }

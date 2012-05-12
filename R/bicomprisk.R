@@ -1,23 +1,22 @@
-##' .. content for description (no empty lines) ..
+##' Estimation of concordance in bivariate competing risks data
 ##'
-##' .. content for details ..
-##' @title Bivariate Concordance Estimator
-##' @param formula 
-##' @param data 
-##' @param cause 
-##' @param cens 
-##' @param causes 
-##' @param indiv 
-##' @param strata 
-##' @param id 
-##' @param num 
-##' @param prodlim 
-##' @param messages 
-##' @param model 
-##' @param return.data 
-##' @param uniform 
-##' @param robust 
-##' @param ... 
+##' @title Estimation of concordance in bivariate competing risks data
+##' @param formula Formula with left-hand-side being a \code{Hist} object (see example below) and the left-hand-side specying the covariate structure
+##' @param data Data frame
+##' @param cause Causes (default (1,1)) for which to estimate the bivariate cumulative incidence
+##' @param cens The censoring code
+##' @param causes causes
+##' @param indiv indiv
+##' @param strata Strata
+##' @param id Clustering variable
+##' @param num num
+##' @param prodlim prodlim
+##' @param messages Control amount of output
+##' @param model Type of competing risk model 
+##' @param return.data Should data be returned (skipping modeling)
+##' @param uniform uniform
+##' @param robust robust
+##' @param ... Additional arguments to lower level functions
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
 bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv, strata=NULL, id,num,prodlim=FALSE,messages=TRUE,model,return.data=0,uniform=0,robust=0,...) {

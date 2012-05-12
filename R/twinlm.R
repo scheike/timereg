@@ -3,7 +3,7 @@
 ##' @title Classic twin model for quantitative traits
 ##' @return   Returns an object of class \code{twinlm}.
 ##' @author Klaus K. Holst
-##' @seealso \code{\link{twinsim}}
+##' @seealso \code{\link{bptwin}}, \code{\link{twinsim}}
 ##' @export
 ##' @examples
 ##' ## Simulate data
@@ -59,10 +59,11 @@
 ##' @param twinnum The name of the column in the dataset numbering the
 ##'     twins (1,2). If it does not exist in \code{data} it will
 ##'     automatically be created.
-##' @param binary If \code{TRUE} a liability model is fitted
+##' @param binary If \code{TRUE} a liability model is fitted. Note that if the right-hand-side of the formula is a factor, character vector, og logical variable, then the liability model is automatically chosen (wrapper of the \code{bptwin} function).
 ##' @param keep Vector of variables from \code{data} that are not
 ##'     specified in \code{formula}, to be added to data.frame of the SEM
 ##' @param estimator Choice of estimator/model.
+##' @param constrain not used in current version.
 ##' @param ... Additional arguments parsed on to lower-level functions
 twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), twinnum="twinnum", binary=FALSE,keep=weight,estimator="gaussian",constrain=FALSE,...) {
 

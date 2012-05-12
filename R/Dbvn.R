@@ -1,10 +1,9 @@
-##' .. content for description (no empty lines) ..
+##' Derivatives of the bivariate normal cumulative distribution function
 ##'
-##' .. content for details ..
 ##' @title Derivatives of the bivariate normal cumulative distribution function
-##' @param p 
-##' @param design 
-##' @param Y 
+##' @param p Parameter vector
+##' @param design Design function with defines mean, derivative of mean, variance, and derivative of variance with respect to the parameter p
+##' @param Y column vector where the CDF is evaluated
 ##' @author Klaus K. Holst
 ##' @export
 Dbvn <- function(p,design=function(p,...) {

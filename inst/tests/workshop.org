@@ -1,6 +1,6 @@
 #+BEGIN_OPTIONS
 #+TITLE: Analyzing twin data with =mets=
-#+AUTHOR: Thomas Scheike and Klaus K. Holst
+#+AUTHOR: Klaus K. Holst and Thomas Scheike
 #+DATE: <2012-05-20 Sun>   
 #+PROPERTY: session *R* 
 #+PROPERTY: cache yes
@@ -27,6 +27,7 @@ and install dependencies (=R= >=2.12)
 
 #+BEGIN_SRC R :exports code :eval never
 install.packages("mets")
+install.packages("cmprsk")
 #+END_SRC
 
 /OBS:/ At this point you might have to restart =R= to flush the cache

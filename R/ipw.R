@@ -1,19 +1,18 @@
-##' .. content for description (no empty lines) ..
+##' Calculates Inverse Probability of Censoring Weights (IPCW) and
+##' adds them to a data.frame
 ##'
-##' .. content for details ..
 ##' @title Inverse Probability of Censoring Weights
-##' @param formula 
-##' @param data 
-##' @param cluster 
-##' @param samecens 
-##' @param obsonly 
-##' @param weightname 
-##' @param pairs 
-##' @param response 
+##' @param formula Formula specifying the censoring model 
+##' @param data data frame
+##' @param cluster clustering variable
+##' @param samecens For clustered data, should same censoring be assumed (bivariate probability calculated as mininum of the marginal probabilities)
+##' @param obsonly Return data with uncensored observations only
+##' @param weightname Name of weight variable in the new data.frame
+##' @param pairs For paired data (e.g. twins) only the complete pairs are returned (With pairs=TRUE)
 ##' @author Klaus K. Holst
 ##' @export
 ipw <- function(formula,data,cluster,samecens=FALSE,obsonly=TRUE,weightname="w",
-                pairs=FALSE,response) {
+                pairs=FALSE) {
 
   timevar <- as.character(terms(formula)[[2]][[2]])
   otimes <- data[,timevar]

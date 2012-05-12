@@ -61,7 +61,9 @@ twinsim <- function(nMZ=100,nDZ=nMZ,b1=c(),b2=c(),mu=0,acde=c(1,1,0,1),randomslo
   colnames(d) <- sub(".","",colnames(d),fixed=TRUE)
   if (wide) return(d)
   dd <- reshape(d,direction="long",varying=vary)
-  dd <- transform(dd,y=(y1>threshold & y1<cens)*1,y0=(y1>threshold),status=y1<cens) 
+  dd$y <- (dd$y1>threshold & dd$y1<cens)*1
+  dd$y0 <- (dd$y1>threshold)
+  dd$status <- dd$y1<dd$cens
   ## S.MZ <- diag(2)*vE+vC+vA
   ## S.DZ <- diag(2)*(vE+vA) + rho*S2*vA + vC
   ## Mu <- (threshold-mu)

@@ -1,15 +1,3 @@
-##' .. content for description (no empty lines) ..
-##'
-##' .. content for details ..
-##' @title Calculate 
-##' @param formula 
-##' @param data 
-##' @param ... 
-##' @param time 
-##' @param timestrata 
-##' @param cumulative 
-##' @param silent 
-##' @author Klaus K. Holst and Thomas Scheike
 ##' @export
 cumh <- function(formula,data,...,time,
                  timestrata=quantile(data[,time],c(0.25,0.5,0.75,1)),

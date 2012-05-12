@@ -5,23 +5,21 @@
   simClaytonOakes(K, n, eta, beta, stoptime, left = 0)
 }
 \arguments{
-  \item{K}{}
+  \item{K}{Number of clusters}
 
-  \item{n}{}
+  \item{n}{Number of observations in each cluster}
 
-  \item{eta}{}
+  \item{eta}{1/variance}
 
-  \item{beta}{}
+  \item{beta}{Effect (log hazard ratio) of covariate}
 
-  \item{stoptime}{}
+  \item{stoptime}{Stopping time}
 
-  \item{left}{}
+  \item{left}{Left truncation}
 }
 \description{
-  .. content for description (no empty lines) ..
-}
-\details{
-  .. content for details ..
+  Simulate observations from the Clayton-Oakes copula model
+  with piecewise constant marginals.
 }
 \author{
   Klaus K. Holst

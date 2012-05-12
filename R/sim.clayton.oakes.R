@@ -1,13 +1,13 @@
-##' .. content for description (no empty lines) ..
+##' Simulate observations from the Clayton-Oakes copula model with
+##' piecewise constant marginals.
 ##'
-##' .. content for details ..
 ##' @title Simulate from the Clayton-Oakes frailty model
-##' @param K 
-##' @param n 
-##' @param eta 
-##' @param beta 
-##' @param stoptime 
-##' @param left 
+##' @param K Number of clusters
+##' @param n Number of observations in each cluster
+##' @param eta 1/variance
+##' @param beta Effect (log hazard ratio) of covariate
+##' @param stoptime Stopping time
+##' @param left Left truncation
 ##' @author Klaus K. Holst
 ##' @export
 simClaytonOakes <- function(K,n,eta,beta,stoptime,left=0) {

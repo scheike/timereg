@@ -1,29 +1,3 @@
-##' Bivariate Probit model
-##'
-##' .. content for details ..
-##' @title Bivariate Probit model
-##' @param formula 
-##' @param data 
-##' @param id 
-##' @param time 
-##' @param strata 
-##' @param eqmarg 
-##' @param indep 
-##' @param weight 
-##' @param biweight 
-##' @param samecens 
-##' @param randomeffect 
-##' @param vcov 
-##' @param pairsonly 
-##' @param allmarg 
-##' @param control 
-##' @param bound 
-##' @param messages 
-##' @param p 
-##' @param ... 
-##' @return \code{biprobit}
-##' @author Klaus K. Holst
-##' @keywords regression
 ##' @export
 biprobit <- function(formula, data, id, time, strata=NULL, eqmarg=TRUE,
                      indep=FALSE, weight=NULL,

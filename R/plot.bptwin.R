@@ -1,16 +1,4 @@
-##' ##' .. content for description (no empty lines) ..
-##'
-##' .. content for details ..
-##' @title Plot function for bptwin
-##' @param x 
-##' @param n 
-##' @param rg 
-##' @param xlab 
-##' @param ylab 
-##' @param ...
-##' @method plot bptwin
-##' @author Klaus K. Holst
-##' @export
+##' @S3method plot bptwin
 plot.bptwin <- function(x,n=50,rg=range(x$B[,1]),xlab="Time",ylab="Concordance",...) {
   require(mvtnorm)
   if (x$Blen>0) {

@@ -20,7 +20,6 @@ NULL
 ##'
 ##' @name np
 ##' @docType data
-##' @references \url{data_blah.com}
 ##' @keywords data
 NULL
 
@@ -28,7 +27,6 @@ NULL
 ##'
 ##' @name multcif
 ##' @docType data
-##' @references \url{data_blah.com}
 ##' @keywords data
 NULL
 
@@ -36,7 +34,6 @@ NULL
 ##'
 ##' @name twinstut
 ##' @docType data
-##' @references \url{data_blah.com}
 ##' @keywords data
 NULL
 
@@ -44,7 +41,6 @@ NULL
 ##'
 ##' @name twinbmi
 ##' @docType data
-##' @references \url{data_blah.com}
 ##' @keywords data
 NULL
 
@@ -52,16 +48,17 @@ NULL
 ##'
 ##' @name prt
 ##' @docType data
-##' @references \url{data_blah.com}
 ##' @keywords data
 NULL
 
+##' For internal use
+##' 
+##' @title For internal use
+##' @name npc
+##' @rdname internal
+##' @author Klaus K. Holst
+##' @keywords utilities
+##' @export
+##' @aliases plotcr npc nonparcuminc simnordic
+NULL
 
-## ##' Method for extracting score of model object
-## ##'
-## ##' @title Method for extracting score of model object
-## ##' @param x Model object
-## ##' @param ... Additional arguments
-## ##' @author Klaus K. Holst
-## ##' @export
-## score <- function(x,...) UseMethod("score")

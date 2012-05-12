@@ -7,17 +7,17 @@
     }, Y = cbind(0, 0))
 }
 \arguments{
-  \item{p}{}
+  \item{p}{Parameter vector}
 
-  \item{design}{}
+  \item{design}{Design function with defines mean,
+  derivative of mean, variance, and derivative of variance
+  with respect to the parameter p}
 
-  \item{Y}{}
+  \item{Y}{column vector where the CDF is evaluated}
 }
 \description{
-  .. content for description (no empty lines) ..
-}
-\details{
-  .. content for details ..
+  Derivatives of the bivariate normal cumulative
+  distribution function
 }
 \author{
   Klaus K. Holst

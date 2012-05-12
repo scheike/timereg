@@ -5,9 +5,6 @@
 \description{
   Prostate data set
 }
-\references{
-  \url{data_blah.com}
-}
 \keyword{data}
 \keyword{datasets}
 

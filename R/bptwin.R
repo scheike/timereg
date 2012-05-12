@@ -1,32 +1,45 @@
 ##' .. content for description (no empty lines) ..
 ##'
 ##' .. content for details ..
+##' @aliases cumh biprobit
 ##' @title Liability model for twin data
-##' @param formula 
-##' @param data 
-##' @param id 
-##' @param zyg 
-##' @param DZ 
-##' @param OS 
-##' @param weight 
-##' @param biweight 
-##' @param strata 
-##' @param messages 
-##' @param control 
-##' @param type 
-##' @param eqmean 
-##' @param param 
-##' @param pairsonly 
-##' @param stderr 
-##' @param robustvar 
-##' @param p 
-##' @param indiv 
-##' @param constrain 
-##' @param samecens 
-##' @param allmarg 
-##' @param bound 
-##' @param debug 
-##' @param ... 
+##' @param formula Formula specifying effects of covariates on the response.
+##' @param data \code{data.frame} with one observation pr row. In
+##'     addition a column with the zygosity (DZ or MZ given as a factor) of
+##'     each individual much be
+##'     specified as well as a twin id variable giving a unique pair of
+##'     numbers/factors to each twin pair.
+##' @param id The name of the column in the dataset containing the twin-id variable.
+##' @param zyg The name of the column in the dataset containing the
+##'     zygosity variable.
+##' @param DZ Character defining the level in the zyg variable
+##'     corresponding to the dyzogitic twins. If this argument is missing,
+##'     the reference level (i.e. the first level) will be interpreted as
+##'     the dyzogitic twins.
+##' @param OS Optional. Character defining the level in the zyg variable
+##'     corresponding to the oppposite sex dyzogitic twins.
+##' @param weight Weight matrix if needed by the chosen estimator. For use
+##'     with Inverse Probability Weights
+##' @param biweight Function defining the bivariate weight in each cluster
+##' @param strata Strata
+##' @param messages Control amount of messages shown 
+##' @param control Control argument parsed on to the optimization routine
+##' @param type Character defining the type of analysis to be
+##'     performed. Should be a subset of "aced" (additive genetic factors, common
+##'     environmental factors, unique environmental factors, dominant
+##'     genetic factors).
+##' @param eqmean Equal means (with type="u")?
+##' @param pairsonly Include complete pairs only?
+##' @param stderr Should standard errors be calculated?
+##' @param robustvar If TRUE robust (sandwich) variance estimates of the variance are used
+##' @param p Parameter vector p in which to evaluate log-Likelihood and score function
+##' @param indiv If TRUE the score and log-Likelihood contribution of each twin-pair
+##' @param constrain Development argument
+##' @param samecens Same censoring
+##' @param allmarg Should all marginal terms be included
+##' @param bound Development argument
+##' @param debug Development argument
+##' @param ... Additional arguments to lower level functions
 ##' @author Klaus K. Holst
 ##' @export
 bptwin <- function(formula, data, id, zyg, DZ, OS,
@@ -37,14 +50,13 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
                    control=list(trace=0),
                    type="ace",
                    eqmean=TRUE,
-                   param=0,
                    pairsonly=FALSE,
+                   samecens=TRUE,
+                   allmarg=samecens&!is.null(weight),
                    stderr=TRUE,                  
                    robustvar=TRUE,                   
                    p, indiv=FALSE,
                    constrain,
-                   samecens=TRUE,
-                   allmarg=samecens&!is.null(weight),
                    bound=FALSE,
                    debug=FALSE,...) {
 

@@ -1,6 +1,6 @@
 \name{bicomprisk}
 \alias{bicomprisk}
-\title{Bivariate Concordance Estimator}
+\title{Estimation of concordance in bivariate competing risks data}
 \usage{
   bicomprisk(formula, data, cause = c(1, 1), cens = 0,
     causes, indiv, strata = NULL, id, num, prodlim = FALSE,
@@ -8,43 +8,45 @@
     robust = 0, ...)
 }
 \arguments{
-  \item{formula}{}
+  \item{formula}{Formula with left-hand-side being a
+  \code{Hist} object (see example below) and the
+  left-hand-side specying the covariate structure}
 
-  \item{data}{}
+  \item{data}{Data frame}
 
-  \item{cause}{}
+  \item{cause}{Causes (default (1,1)) for which to estimate
+  the bivariate cumulative incidence}
 
-  \item{cens}{}
+  \item{cens}{The censoring code}
 
-  \item{causes}{}
+  \item{causes}{causes}
 
-  \item{indiv}{}
+  \item{indiv}{indiv}
 
-  \item{strata}{}
+  \item{strata}{Strata}
 
-  \item{id}{}
+  \item{id}{Clustering variable}
 
-  \item{num}{}
+  \item{num}{num}
 
-  \item{prodlim}{}
+  \item{prodlim}{prodlim}
 
-  \item{messages}{}
+  \item{messages}{Control amount of output}
 
-  \item{model}{}
+  \item{model}{Type of competing risk model}
 
-  \item{return.data}{}
+  \item{return.data}{Should data be returned (skipping
+  modeling)}
 
-  \item{uniform}{}
+  \item{uniform}{uniform}
 
-  \item{robust}{}
+  \item{robust}{robust}
 
-  \item{...}{}
+  \item{...}{Additional arguments to lower level functions}
 }
 \description{
-  .. content for description (no empty lines) ..
-}
-\details{
-  .. content for details ..
+  Estimation of concordance in bivariate competing risks
+  data
 }
 \author{
   Thomas Scheike, Klaus K. Holst

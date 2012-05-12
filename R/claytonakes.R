@@ -2,19 +2,20 @@
 ##'
 ##' .. content for details ..
 ##' @title Clayton-Oakes model with piece-wise constant hazards
-##' @param formula 
-##' @param data 
-##' @param id 
-##' @param var.formula 
-##' @param cuts 
-##' @param type 
-##' @param start 
-##' @param control 
-##' @param ... 
+##' @param formula formula specifying the marginal proportional (piecewise constant) hazard structure with the right-hand-side being a survival object (Surv) specifying the entry time (optional), the follow-up time, and event/censoring status at follow-up. The clustering can be specified using the special function \code{id} (see example below).
+##' @param data Data frame
+##' @param id Variable defining the clustering (if not given in the formula)
+##' @param var.formula Formula specifying the variance component structure (if not given via the id special function in the formula)
+##' @param cuts Cut points defining the piecewise constant hazard
+##' @param type Type of estimation (Clayton-Oakes or conditional frailty model)
+##' @param start Optional starting values
+##' @param control Control parameters to the optimization routine
+##' @param ... Additional arguments
 ##' @author Klaus K. Holst
 ##' @examples
 ##' d <- simClaytonOakes(2000,4,2,1,stoptime=2,left=0.5)
-##' e <- ClaytonOakes(Surv(lefttime,time,status)~x1+id(~1,cluster),cuts=c(0,0.5,1,2),data=subset(d,!truncated))
+##' d$z <- d$x1<0.5
+##' e <- ClaytonOakes(Surv(lefttime,time,status)~x1+id(~1+z,cluster),cuts=c(0,0.5,1,2),data=subset(d,!truncated))
 ##' e
 ##' plot(e,add=FALSE)
 ##' @export

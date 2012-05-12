@@ -44,13 +44,19 @@
   numbering the twins (1,2). If it does not exist in
   \code{data} it will automatically be created.}
 
-  \item{binary}{If \code{TRUE} a liability model is fitted}
+  \item{binary}{If \code{TRUE} a liability model is fitted.
+  Note that if the right-hand-side of the formula is a
+  factor, character vector, og logical variable, then the
+  liability model is automatically chosen (wrapper of the
+  \code{bptwin} function).}
 
   \item{keep}{Vector of variables from \code{data} that are
   not specified in \code{formula}, to be added to
   data.frame of the SEM}
 
   \item{estimator}{Choice of estimator/model.}
+
+  \item{constrain}{not used in current version.}
 
   \item{...}{Additional arguments parsed on to lower-level
   functions}
@@ -94,7 +100,7 @@ plot(ace4)
   Klaus K. Holst
 }
 \seealso{
-  \code{\link{twinsim}}
+  \code{\link{bptwin}}, \code{\link{twinsim}}
 }
 \keyword{models}
 \keyword{regression}

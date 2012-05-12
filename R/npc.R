@@ -1,12 +1,3 @@
-##' .. content for description (no empty lines) ..
-##'
-##' .. content for details ..
-##' @title IPCW based estimator of the bivariate cumulative incidence function
-##' @param T 
-##' @param cause 
-##' @param same.cens 
-##' @param sep 
-##' @author Klaus K. Holst
 ##' @export
 npc <- function(T,cause,same.cens=TRUE,sep=FALSE) {
   mtime <- apply(T[,1:2],1,max)
@@ -42,14 +33,6 @@ npc <- function(T,cause,same.cens=TRUE,sep=FALSE) {
   cbind(mtime,cumsum(conc)/length(conc))
 }
 
-##' .. content for description (no empty lines) ..
-##'
-##' .. content for details ..
-##' @title IPCW based estimator of the cumulative incidence function
-##' @param t 
-##' @param status 
-##' @param cens 
-##' @author Klaus K. Holst
 ##' @export
 nonparcuminc <- function(t,status,cens=0) {
   ord <- order(t); t <- t[ord]; status <- status[ord]
