@@ -140,7 +140,6 @@ add<-comp.risk(Surv(time,cause>0)~+1+cluster(id),data=multcif,causeS=1,
 add2<-comp.risk(Surv(time,cause>0)~+1+cluster(id),data=multcif,causeS=2,
                multcif$cause,n.sim=0,times=times,model="fg",max.clust=NULL)
 
-\dontrun{
 out1<-cor.cif(add,data=multcif,cause1=1,cause2=1)
 summary(out1)
 
@@ -149,12 +148,11 @@ summary(out2)
 
 out3<-cor.cif(add,data=multcif,cause1=1,cause2=2,cif2=add2)
 summary(out3)
-}
 ###########################################################
 # investigating further models using parfunc and dparfunc
 ###########################################################
-functd<-function(theta,t,x) { xt=theta[1]+theta[2]*(t-0.5); return(xt) };
-dfunctd<-function(theta,t,x) { return(c(x[1],(t-0.5))) };
+#functd<-function(theta,t,x) { xt=theta[1]+theta[2]*(t-0.5); return(xt) };
+#dfunctd<-function(theta,t,x) { return(c(x[1],(t-0.5))) };
 
 #library(compiler) # using the compiler library to speed up things
 #f=cmpfun(functd)
