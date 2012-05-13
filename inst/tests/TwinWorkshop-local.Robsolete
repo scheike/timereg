@@ -39,7 +39,12 @@ komud<-function(){  ## {{{
 
 library(mets)
 
-data(prt)
+###data(prt)
+
+prt<-simnordic(10000)
+prt$status <-prt$cause
+
+
 ## prt <- get(load("prtsim.rda"))
 ## prt <- transform(prt, cancer=(status==2)*1) ## Observed cancer indicator
 

@@ -132,8 +132,8 @@ simnordic <- function(n)
 { ## {{{
 outdz <- corsim.prostate(n,theta=1.7,crate=2,pcens=0.8,mt=1,same.cens=TRUE,test=0) 
 outmz <- corsim.prostate(n,theta=3,crate=2,pcens=0.8,mt=1,same.cens=TRUE,test=0) 
-outdz$zyg <- 0
-outmz$zyg <- 1
+outdz$zyg <- "DZ" 
+outmz$zyg <-  "MZ"
 outmz$id <- outmz$id+nrow(outdz)
 ###
 out <- rbind(outdz,outmz)
