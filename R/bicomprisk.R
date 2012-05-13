@@ -10,16 +10,16 @@
 ##' @param strata Strata
 ##' @param id Clustering variable
 ##' @param num num
-##' @param prodlim prodlim
+##' @param prodlim prodlim to use prodlim estimator (Aalen-Johansen) rather than IPCW weighted estimator based on comp.risk function.These are equivalent in the case of no covariates.
 ##' @param messages Control amount of output
-##' @param model Type of competing risk model 
+##' @param model Type of competing risk model (default is Fine-Gray model "fg", see comp.risk). 
 ##' @param return.data Should data be returned (skipping modeling)
-##' @param uniform uniform
-##' @param robust robust
+##' @param uniform to compute uniform standard errors for concordance estimates based on resampling.
+##' @param conservative for conservative standard errors, recommended for larger data-sets.
 ##' @param ... Additional arguments to lower level functions
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
-bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv, strata=NULL, id,num,prodlim=FALSE,messages=TRUE,model,return.data=0,uniform=0,robust=0,...) {
+bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv, strata=NULL, id,num,prodlim=FALSE,messages=TRUE,model,return.data=0,uniform=0,conservative=1,...) {
 
   mycall <- match.call()
   formulaId <- unlist(Specials(formula,"id"))
@@ -158,9 +158,9 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv, strat
       ff <- paste(c(ff,xx),collapse="+")
       if (missing(model)) model <- "fg"      
     }
-    if (missing(model)) model <- "additive"
+    if (missing(model)) model <- "fg"
     add<-comp.risk(as.formula(ff),data=mydata,
-                   status,causeS=1,n.sim=0,resample.iid=1,model=model,conservative=robust)
+                   status,causeS=1,n.sim=0,resample.iid=1,model=model,conservative=conservative)
     padd <- predict(add,X=1,se=1,uniform=uniform,resample.iid=1)
   } else {
     ff <- as.formula(paste("Hist(",timevar,",",causes,")~",paste(c("1",covars,indiv2),collapse="+")))
