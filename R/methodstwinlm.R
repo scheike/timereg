@@ -20,17 +20,19 @@ summary.twinlm <- function(object,...) {
   colnames(myest) <- c("Estimate","Std. Error", "Z value", "Pr(>|z|)")
   
   if (object$type%in%c("u","flex","sat")) {
-
     corMZ <- corDZ <- NULL
-    i1 <- which(lava:::parpos.multigroup(object$estimate$model,p="atanh(rhoMZ)")=="atanh(rhoMZ)")[1]
-    i2 <- which(lava:::parpos.multigroup(object$estimate$model,p="atanh(rhoDZ)")=="atanh(rhoDZ)")[1]
-    i3 <- which(lava:::parpos.multigroup(object$estimate$model,p="atanh(rhoOS)")=="atanh(rhoOS)")[1]
-    if (length(i1)>0) {
-      corest <- coef(object$estimate,level=0)[c(i1,i2,i3)]
-      sdest <- vcov(object$estimate)[cbind(c(i1,i2,i3),c(i1,i2,i3))]^0.5
-      ciest <- cbind(corest,corest)+qnorm(0.975)*cbind(-sdest,sdest)
-      corMZ <- c(corest[1],ciest[1,])
-      corDZ <- c(corest[2],ciest[2,])
+
+    if (object$constrain) {
+      i1 <- which(lava:::parpos.multigroup(object$estimate$model,p="atanh(rhoMZ)")=="atanh(rhoMZ)")[1]
+      i2 <- which(lava:::parpos.multigroup(object$estimate$model,p="atanh(rhoDZ)")=="atanh(rhoDZ)")[1]
+      i3 <- which(lava:::parpos.multigroup(object$estimate$model,p="atanh(rhoOS)")=="atanh(rhoOS)")[1]
+      if (length(i1)>0) {
+        corest <- coef(object$estimate,level=0)[c(i1,i2,i3)]
+        sdest <- vcov(object$estimate)[cbind(c(i1,i2,i3),c(i1,i2,i3))]^0.5
+        ciest <- cbind(corest,corest)+qnorm(0.975)*cbind(-sdest,sdest)
+        corMZ <- c(corest[1],ciest[1,])
+        corDZ <- c(corest[2],ciest[2,])
+      }
     }      
     aa <- capture.output(e)
     res <- list(estimate=aa, zyg=zygtab,
@@ -142,7 +144,7 @@ summary.twinlm <- function(object,...) {
   ci2 <- e2+qnorm(0.975)*c(-1,1)*s2
   
   ## corMZ <- sum(varEst[1:3]^2)/sum(varEst^2)
-  ## corDZ <- sum(varEst[1:3]^2*c(0.5,1,0.25))/sum(varEst^2)
+  ## corDZ <- sum(varEst[1:3]^2*c(0.5,1,0.25))/sum(varEst^2<)
   corMZ <- c(tanh(c(e1,ci1)))
   corDZ <- c(tanh(c(e2,ci2)))  
   
@@ -191,11 +193,13 @@ print.summary.twinlm <- function(x,signif.stars=FALSE,...) {
     print(h)  
     cat("\n")
   }
-  if (!is.na(x$corMZ)) {
-    cat("Correlation within MZ:", x$corMZ, "\n")
-    cat("Correlation within DZ:", x$corDZ, "\n")
+  if (!is.null(x$corMZ)) {
+    cc <- with(x, rbind(corMZ,corDZ))
+    rownames(cc) <- c("Correlation within MZ:","Correlation within DZ:")
+    colnames(cc) <- c("Estimate","2.5%","97.5%")
+    printCoefmat(cc,signif.stars=FALSE)
   }
-    
+  
   cat("\n")
   print(x$logLik)
   cat("AIC:", x$AIC, "\n")
@@ -245,6 +249,11 @@ vcov.twinlm <- function(object,...) {
 ##' @S3method logLik twinlm
 logLik.twinlm <- function(object,...) logLik(object$estimate,...)
 ###}}} logLik.twinlm
+
+###{{{ score.twinlm
+##' @S3method score twinlm
+score.twinlm <- function(x,...) score(x$estimate,...)
+###}}} score.twinlm
 
 ###{{{ model.frame.twinlm
 

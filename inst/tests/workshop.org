@@ -26,8 +26,7 @@ and install dependencies (=R= >=2.12)
 #+RESULTS[2016d4b93d9665f9f2320d8f51221f5a51d56964]:
 
 #+BEGIN_SRC R :exports code :eval never
-install.packages("mets")
-install.packages("cmprsk")
+install.packages(c("mets","cmprsk"))
 #+END_SRC
 
 /OBS:/ At this point you might have to restart =R= to flush the cache

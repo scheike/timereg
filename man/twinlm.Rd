@@ -5,7 +5,7 @@
   twinlm(formula, data, id, zyg, DZ, OS, weight = NULL,
     type = c("ace"), twinnum = "twinnum", binary = FALSE,
     keep = weight, estimator = "gaussian",
-    constrain = FALSE, ...)
+    constrain = TRUE, control = list(), ...)
 }
 \arguments{
   \item{formula}{Formula specifying effects of covariates
@@ -54,9 +54,12 @@
   not specified in \code{formula}, to be added to
   data.frame of the SEM}
 
-  \item{estimator}{Choice of estimator/model.}
+  \item{estimator}{Choice of estimator/model}
 
-  \item{constrain}{not used in current version.}
+  \item{control}{Control argument parsed on to the
+  optimization routine}
+
+  \item{constrain}{Development argument}
 
   \item{...}{Additional arguments parsed on to lower-level
   functions}

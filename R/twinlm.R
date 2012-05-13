@@ -62,11 +62,12 @@
 ##' @param binary If \code{TRUE} a liability model is fitted. Note that if the right-hand-side of the formula is a factor, character vector, og logical variable, then the liability model is automatically chosen (wrapper of the \code{bptwin} function).
 ##' @param keep Vector of variables from \code{data} that are not
 ##'     specified in \code{formula}, to be added to data.frame of the SEM
-##' @param estimator Choice of estimator/model.
-##' @param constrain not used in current version.
+##' @param estimator Choice of estimator/model
+##' @param control Control argument parsed on to the optimization routine
+##' @param constrain Development argument
 ##' @param ... Additional arguments parsed on to lower-level functions
-twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), twinnum="twinnum", binary=FALSE,keep=weight,estimator="gaussian",constrain=FALSE,...) {
-
+twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), twinnum="twinnum", binary=FALSE,keep=weight,estimator="gaussian",constrain=TRUE,control=list(),...) {
+  
   cl <- match.call(expand.dots=TRUE)
   opt <- options(na.action="na.pass")
   mf <- model.frame(formula,data)
@@ -231,6 +232,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
     kill(model1) <- ~e1+e2
     covariance(model1,outcomes) <- "v1"
   }
+  
   model2 <- model1
 ##  parameter(model2) <- ~sdu1+sdu2
 ##  regression(model2) <- update(f1,.~f(u,sdu2))
@@ -255,27 +257,32 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
      intercept(model1,outcomes) <- "mu1"
      intercept(model2,outcomes) <- "mu2"
      intercept(model3,outcomes) <- "mu3"
-     covariance(model1,outcomes) <- "v1"
-     covariance(model2,outcomes) <- "v2"
-     covariance(model3,outcomes) <- "v3"
+     covariance(model1,outcomes) <- "var(MZ)"
+     covariance(model2,outcomes) <- "var(DZ)"
+     covariance(model3,outcomes) <- "var(OS)"
    }
   if (type=="sat") {
-     covariance(model1,outcomes) <- c("v11","v12")
-     covariance(model2,outcomes) <- c("v21","v22")
-     covariance(model3,outcomes) <- c("v31","v32")
+     covariance(model1,outcomes) <- c("var(MZ)1","var(MZ)2")
+     covariance(model2,outcomes) <- c("var(DZ)1","var(DZ)2")
+     covariance(model3,outcomes) <- c("var(OS)1","var(OS)2")
   }
   if (type%in%c("u","flex","sat")) {
     if (constrain) {
-      model1 <- covariance(model1,outcomes,constrain=TRUE,rname="r1",cname="c1",logv="l1")
-      model2 <- covariance(model2,outcomes,constrain=TRUE,rname="r2",cname="c2",logv="l2")
-      model3 <- covariance(model3,outcomes,constrain=TRUE,rname="r3",cname="c3",logv="l3")
+      if (type=="sat") {
+        model1 <- covariance(model1,outcomes,constrain=TRUE,rname="atanh(rhoMZ)",cname="covMZ",lname="log(var(MZ)).1",l2name="log(var(MZ)).2")
+        model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var(DZ)).1",l2name="log(var(DZ)).2")
+        model3 <- covariance(model3,outcomes,constrain=TRUE,rname="atanh(rhoOS)",cname="covOS",lname="log(var(OS)).1",l2name="log(var(OS)).2")
+      } else {
+        model1 <- covariance(model1,outcomes,constrain=TRUE,rname="atanh(rhoMZ)",cname="covMZ",lname="log(var(MZ))")
+        model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var(DZ))")
+        model3 <- covariance(model3,outcomes,constrain=TRUE,rname="atanh(rhoOS)",cname="covOS",lname="log(var(OS))")
+      }     
     } else {
-      model1 <- covariance(model1,outcomes)
-      model2 <- covariance(model2,outcomes)
-      model3 <- covariance(model3,outcomes)
+      covariance(model1,outcomes[1],outcomes[2]) <- "covMZ"
+      covariance(model2,outcomes[1],outcomes[2]) <- "covDZ"
+      covariance(model3,outcomes[1],outcomes[2]) <- "covOS"
     }
   }
-  
   if (!is.null(covars) & type%in%c("flex","sat")) {
     sta <- ""
     if (type=="sat") sta <- "b"
@@ -370,14 +377,6 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
 
   if (!is.null(weight)) {
     weight <- paste(weight,1:2,sep=".")
-    ## wide1[which(is.na(wide1[,weight[1]])),weight[1]] <- 0
-    ## wide1[which(is.na(wide1[,weight[2]])),weight[2]] <- 0
-    ## wide2[which(is.na(wide2[,weight[1]])),weight[1]] <- 0
-    ## wide2[which(is.na(wide2[,weight[2]])),weight[2]] <- 0    
-    ## wide1[which(is.na(wide1[,outcomes[1]])),c(outcomes[1],weight[1])] <- 0
-    ## wide1[which(is.na(wide1[,outcomes[2]])),c(outcomes[2],weight[2])] <- 0
-    ## wide2[which(is.na(wide2[,outcomes[1]])),c(outcomes[1],weight[1])] <- 0
-    ## wide2[which(is.na(wide2[,outcomes[2]])),c(outcomes[2],weight[2])] <- 0
     estimator <- "weighted"
   }
 
@@ -389,13 +388,23 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
   if (!missing(OS)) {
     mm <- c(mm,OS=list(model3))
     dd <- c(dd,list(wide3))
-  }  
+  }
+  names(dd) <- names(mm)
   suppressWarnings(mg <- multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep))
   if (is.null(estimator)) return(mg)
   
-  e <- estimate(mg,weight=weight,estimator=estimator,fix=FALSE,...)
+  optim <- list(method="nlminb2",refit=FALSE,gamma=1)  
+  if (length(control)>0) {
+    optim[names(control)] <- control
+  }
+  e <- estimate(mg,weight=weight,estimator=estimator,fix=FALSE,control=optim,...)
+  if (!is.null(optim$refit) && optim$refit) {
+    optim$method <- "NR"
+    optim$start <- pars(e)
+    e <- estimate(mg,weight=weight,estimator=estimator,fix=FALSE,control=optim,...)
+  }
   ##  suppressMessages(browser())
-  res <- list(coefficients=e$opt$estimate, vcov=Inverse(information(e)), estimate=e, model=mg, full=full, call=cl, data=data, zyg=zyg, id=id, twinnum=twinnum, type=type, model.mz=model1, model.dz=model2, model.dzos=model3, data.mz=wide1, data.dz=wide2, data.os=wide3, OS=!missing(OS))
+  res <- list(coefficients=e$opt$estimate, vcov=Inverse(information(e)), estimate=e, model=mg, full=full, call=cl, data=data, zyg=zyg, id=id, twinnum=twinnum, type=type, model.mz=model1, model.dz=model2, model.dzos=model3, data.mz=wide1, data.dz=wide2, data.os=wide3, OS=!missing(OS), constrain=constrain)
   class(res) <- "twinlm"
   return(res)
 }

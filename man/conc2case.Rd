@@ -1,6 +1,6 @@
 \name{conc2case}
 \alias{conc2case}
-\title{Concordance to casewise}
+\title{Estimates the probandwise concordance based on Concordance and marginal estimate}
 \usage{
   conc2case(conc, marg, test = "conc")
 }

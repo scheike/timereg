@@ -3,7 +3,6 @@
 #
 
 library(mets)
-
 data(twinbmi)
 
 str(twinbmi)
@@ -21,43 +20,51 @@ plot( histogram( ~ bmi| gender, type="density", col="red", xlab="kg/m^2",
 # boxcox(bmi ~ age*gender, data = twinbmi)
 twinbmi$logbmi <- log(twinbmi$bmi)
 
-# Saturated model
-lnbmi.sat <- twinlm(logbmi~age*gender, id="tvparnr", DZ="DZ", zyg="zyg",data=twinbmi,
-			type="sat",control=list(method="NR"))
-lnbmi.sat$estimate$opt$message
-lnbmi.sat
+## Saturated model
+a <- twinlm(logbmi~age*gender, id="tvparnr", DZ="DZ", zyg="zyg",data=twinbmi,
+            type="sat")
+mean(score(a)^2)
+
+aa <- twinlm(logbmi~age*gender, id="tvparnr", DZ="DZ", zyg="zyg",data=twinbmi,
+             type="sat",control=list(method="NR",start=coef(a)))
+mean(score(aa)^2)
+mean((coef(a)-coef(aa))^2)
+
+## Ace model
+ace <- twinlm(logbmi~age*gender, id="tvparnr", DZ="DZ", zyg="zyg",data=twinbmi,
+			type="ace")
+mean(score(ace)^2) ## Convergence?
 
 #
 lnbmi.flex <- twinlm(logbmi~age*gender, id="tvparnr", DZ="DZ", zyg="zyg",data=twinbmi,
-			type="flex",control=list(method="NR"))
+			type="flex")
 lnbmi.flex$estimate$opt$message
-lnbmi.flex
+mean(score(lnbmi.flex)^2)
 
-compare(lnbmi.sat,lnbmi.flex)
+compare(a,lnbmi.flex)
 
 #
 lnbmi.u <- twinlm(logbmi~age*gender, id="tvparnr", DZ="DZ", zyg="zyg",data=twinbmi,
-			type="u",control=list(method="NR"))
+			type="u")
 lnbmi.u$estimate$opt$message
 lnbmi.u
+
+cl <- lnbmi.u$call
+cl$control <- list(method="NR",start=coef(lnbmi.u))
+aa <- eval(cl)
 
 compare(lnbmi.u,lnbmi.flex)
 
 #
 lnbmi.ace <- twinlm(logbmi~age*gender, id="tvparnr", DZ="DZ", zyg="zyg",data=twinbmi,
-			type="ae",control=list(trace=1))
-lnbmi.ace$estimate$opt$message
-score(lnbmi.ace$estimate)
-lnbmi.ace2 <- twinlm(logbmi~age*gender, id="tvparnr", DZ="DZ", zyg="zyg",data=twinbmi,
-			type="ace",control=list(method="NR",trace=1,lambda=0.1,constrain=TRUE))
+			type="ace")
 lnbmi.ace$estimate$opt$message
 lnbmi.ace   
 
 #
 lnbmi.ade <- twinlm(logbmi~age*gender, id="tvparnr", DZ="DZ", zyg="zyg",data=twinbmi,
-			type="ade",control=list(method="NR"))
-lnbmi.ade$estimate$opt$message
-lnbmi.ade  
+			type="ade")
+lnbmi.ade$estimate$opt
 
 AIC(lnbmi.ace,lnbmi.ade)
 
@@ -77,6 +84,11 @@ lnbmi.ce
 
 AIC(lnbmi.ace,lnbmi.ce)
 
+
+
+twinbmi$y <- twinbmi$bmi>25
+lnbmi.ae <- twinlm(y~age*gender, id="tvparnr", DZ="DZ", zyg="zyg",data=twinbmi,
+			type="ace",control=list(trace=1))
 
 # GOF-Table?
 # mx and openmx for same data

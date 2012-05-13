@@ -5,7 +5,7 @@
   bicomprisk(formula, data, cause = c(1, 1), cens = 0,
     causes, indiv, strata = NULL, id, num, prodlim = FALSE,
     messages = TRUE, model, return.data = 0, uniform = 0,
-    robust = 0, ...)
+    conservative = 1, ...)
 }
 \arguments{
   \item{formula}{Formula with left-hand-side being a
@@ -29,18 +29,24 @@
 
   \item{num}{num}
 
-  \item{prodlim}{prodlim}
+  \item{prodlim}{prodlim to use prodlim estimator
+  (Aalen-Johansen) rather than IPCW weighted estimator
+  based on comp.risk function.These are equivalent in the
+  case of no covariates.}
 
   \item{messages}{Control amount of output}
 
-  \item{model}{Type of competing risk model}
+  \item{model}{Type of competing risk model (default is
+  Fine-Gray model "fg", see comp.risk).}
 
   \item{return.data}{Should data be returned (skipping
   modeling)}
 
-  \item{uniform}{uniform}
+  \item{uniform}{to compute uniform standard errors for
+  concordance estimates based on resampling.}
 
-  \item{robust}{robust}
+  \item{conservative}{for conservative standard errors,
+  recommended for larger data-sets.}
 
   \item{...}{Additional arguments to lower level functions}
 }
