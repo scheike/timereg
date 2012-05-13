@@ -5,7 +5,7 @@
 ##' @param formula formula specifying the marginal proportional (piecewise constant) hazard structure with the right-hand-side being a survival object (Surv) specifying the entry time (optional), the follow-up time, and event/censoring status at follow-up. The clustering can be specified using the special function \code{id} (see example below).
 ##' @param data Data frame
 ##' @param id Variable defining the clustering (if not given in the formula)
-##' @param var.formula Formula specifying the variance component structure (if not given via the id special function in the formula)
+##' @param var.formula Formula specifying the variance component structure (if not given via the id special function in the formula) using a linear model with log-link.
 ##' @param cuts Cut points defining the piecewise constant hazard
 ##' @param type Type of estimation (Clayton-Oakes or conditional frailty model)
 ##' @param start Optional starting values
@@ -13,9 +13,9 @@
 ##' @param ... Additional arguments
 ##' @author Klaus K. Holst
 ##' @examples
+##' set.seed(1)
 ##' d <- simClaytonOakes(2000,4,2,1,stoptime=2,left=0.5)
-##' d$z <- d$x1<0.5
-##' e <- ClaytonOakes(Surv(lefttime,time,status)~x1+id(~1+z,cluster),cuts=c(0,0.5,1,2),data=subset(d,!truncated))
+##' e <- ClaytonOakes(Surv(lefttime,time,status)~x1+id(~1,cluster),cuts=c(0,0.5,1,2),data=subset(d,!truncated))
 ##' e
 ##' plot(e,add=FALSE)
 ##' @export
@@ -111,16 +111,24 @@ ClaytonOakes <- function(formula,data=parent.frame(),id,var.formula=~1,cuts=NULL
            var=theta0,DUP=FALSE)$logLik
     return(-res)
   }
-
-  tryCatch(opt <- nlminb(p0,obj,control=control),error=function(x) NA)
-  I <- hessian(obj,opt$par)
-  ee <- eigen(I);
-  threshold <- 1e-12
-  idx <- ee$values>threshold
-  ee$values[idx] <- 1/ee$values[idx];
-  if (!all(idx))
-    ee$values[!idx] <- 0
-  V <- with(ee, vectors%*%diag(values)%*%t(vectors))
+  opt <- tryCatch(nlminb(p0,obj,control=control),error=function(x) NULL)
+  if (is.null(opt)) stop("Critical optmization problem")
+  if (any(is.na(opt$par)) | any(!is.finite(opt$par)) | any(is.nan(opt$par)) ) {
+    V <- matrix(NA,length(p0),length(p0))
+  } else {    
+    I <- hessian(obj,opt$par)
+    ee <- tryCatch(eigen(I),error=function(x) NULL); 
+    if (!is.null(ee)) {
+      threshold <- 1e-12
+      idx <- ee$values>threshold
+      ee$values[idx] <- 1/ee$values[idx];
+      if (!all(idx))
+        ee$values[!idx] <- 0
+      V <- with(ee, vectors%*%diag(values)%*%t(vectors))
+    } else {
+      V <- matrix(NA,length(p0),length(p0))
+    }
+  }
   res <- list(coef=opt$par,vcov=V,cuts=cuts,nbeta=nbeta,ngamma=ngamma,betanames=colnames(X),gammanames=colnames(Z),opt=opt)
   class(res) <- "claytonoakes"
   return(res)

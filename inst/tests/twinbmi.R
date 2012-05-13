@@ -22,7 +22,7 @@ twinbmi$logbmi <- log(twinbmi$bmi)
 
 ## Saturated model
 a <- twinlm(logbmi~age*gender, id="tvparnr", DZ="DZ", zyg="zyg",data=twinbmi,
-            type="sat")
+            type="sat",control=list(refit=TRUE))
 mean(score(a)^2)
 
 aa <- twinlm(logbmi~age*gender, id="tvparnr", DZ="DZ", zyg="zyg",data=twinbmi,
@@ -58,6 +58,9 @@ compare(lnbmi.u,lnbmi.flex)
 #
 lnbmi.ace <- twinlm(logbmi~age*gender, id="tvparnr", DZ="DZ", zyg="zyg",data=twinbmi,
 			type="ace")
+mean(score(lnbmi.ace)^2) 
+lnbmi.ace$estimate$opt
+
 lnbmi.ace$estimate$opt$message
 lnbmi.ace   
 

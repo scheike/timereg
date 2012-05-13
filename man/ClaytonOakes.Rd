@@ -22,7 +22,8 @@
 
   \item{var.formula}{Formula specifying the variance
   component structure (if not given via the id special
-  function in the formula)}
+  function in the formula) using a linear model with
+  log-link.}
 
   \item{cuts}{Cut points defining the piecewise constant
   hazard}
@@ -44,9 +45,9 @@
   .. content for details ..
 }
 \examples{
+set.seed(1)
 d <- simClaytonOakes(2000,4,2,1,stoptime=2,left=0.5)
-d$z <- d$x1<0.5
-e <- ClaytonOakes(Surv(lefttime,time,status)~x1+id(~1+z,cluster),cuts=c(0,0.5,1,2),data=subset(d,!truncated))
+e <- ClaytonOakes(Surv(lefttime,time,status)~x1+id(~1,cluster),cuts=c(0,0.5,1,2),data=subset(d,!truncated))
 e
 plot(e,add=FALSE)
 }

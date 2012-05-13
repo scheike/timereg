@@ -1,10 +1,10 @@
 Package: mets
 Type: Package
 Title: Analysis of Multivariate Event Times
-Version: 0.1-6
-Date: 2012-05-12
+Version: 0.1-7
+Date: 2012-05-13
 Author: Klaus K. Holst and Thomas Scheike
-Maintainer: Klaus K. Holst <k.k.holst@biostat.ku.dk>
+Maintainer: Klaus K. Holst <kkho@biostat.ku.dk>
 Description: Implementation of various statistical models for multivariate
     event history data. Including multivariate cumulative incidence models, and
     bivariate random effects probit models (Liability models)
