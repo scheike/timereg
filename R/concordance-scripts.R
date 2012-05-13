@@ -1,6 +1,6 @@
 ##' .. content for description (no empty lines) ..
 ##'
-##' @title Concordance to casewise
+##' @title Estimates the probandwise concordance based on Concordance and marginal estimate 
 ##' @param conc Concordance 
 ##' @param marg Marginal estimate
 ##' @param test Type of test for independence assumption. "conc" makes test on concordance scale  and "case" means a test on the probandwise concordance
