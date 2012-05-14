@@ -5,7 +5,7 @@
   bicomprisk(formula, data, cause = c(1, 1), cens = 0,
     causes, indiv, strata = NULL, id, num, prodlim = FALSE,
     messages = TRUE, model, return.data = 0, uniform = 0,
-    conservative = 1, ...)
+    conservative = 1, resample.iid = 1, ...)
 }
 \arguments{
   \item{formula}{Formula with left-hand-side being a
@@ -47,6 +47,9 @@
 
   \item{conservative}{for conservative standard errors,
   recommended for larger data-sets.}
+
+  \item{resample.iid}{to return iid residual processes for
+  further computations such as tests.}
 
   \item{...}{Additional arguments to lower level functions}
 }
