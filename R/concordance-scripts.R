@@ -21,6 +21,7 @@ conc2case <- function(conc,marg,test="conc")
   margtime <- Cpred(cbind(marg$time,c(marg$P1)),timer)[,2]
   concP1 <- Cpred(cbind(conc$time,c(conc$P1)),timer)[,2]
   out$P1 <- concP1/margtime
+  outtest <- NULL
 
   if (!is.null(conc$se.P1) && !is.null(marg$se.P1) )
     {
@@ -58,10 +59,10 @@ conc2case <- function(conc,marg,test="conc")
     }
   else outtest <- NULL
 
-  outtest <- list(casewise=out,marg=cbind(timer,margtime),test=outtest,mintime=mintime,maxtime=maxtime,same.cluster=TRUE,
+  out <- list(casewise=out,marg=cbind(timer,margtime),test=outtest,mintime=mintime,maxtime=maxtime,same.cluster=TRUE,
                   test=test)
-  class(outtest) <- "testconc"
-  return(outtest)
+  class(out) <- "testconc"
+  return(out)
 } ## }}}
 
 ##' @S3method print testconc
@@ -95,8 +96,11 @@ test.conc <- function(conc1,conc2,same.cluster=FALSE)
 
   conc2timer <- Cpred(cbind(conc2$time,c(conc2$P1)),timer)[,2]
   conc1timer <- Cpred(cbind(conc1$time,c(conc1$P1)),timer)[,2]
+  outtest <- NULL
 
-  if (!is.null(conc1$P1.iid)) 
+  if (is.null(conc1$P1.iid) || is.null(conc2$P1.iid)) stop("Must give iid represenation for both estimators\n");  
+
+    if (!is.null(conc1$P1.iid)) 
     if (!is.null(conc2$P1.iid)) {
 ### iid version af integraler
       conc2P1.iid  <- Cpred(cbind(conc2$time,conc2$P1.iid[1,,]),timer)[,-1]

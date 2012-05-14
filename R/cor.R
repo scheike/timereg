@@ -878,10 +878,8 @@ coef.randomcif<- function (object, digits = 3, ...)
   waldp <- (1 - pnorm(abs(wald))) * 2
   cor <- object$theta + 1
   res <- as.matrix(cbind(res, wald, waldp, cor, se))
-  colnames(res) <- c("Coef.", "SE", "z", "P-val", "Cross odds ratio", 
-                     "SE")
-  if (is.null((rownames(res))) == TRUE) 
-    rownames(res) <- rep(" ", nrow(res))
+  colnames(res) <- c("Coef.", "SE", "z", "P-val", "Cross odds ratio", "SE")
+  if (!is.null(object$thetanames)) rownames(res)<-object$thetanames
   prmatrix(signif(res, digits))
 } ## }}}
 
@@ -919,8 +917,8 @@ coef.randomcifrv<- function (object, digits = 3, ...)
     if (elog==1) res <- cbind(res,exp(object$theta), exp(object$theta)^2*se)  
     if (elog==1) colnames(res) <- c("log-parameter","SE","z","P-val","exp(theta)","SE")
 
-    if (is.null((rownames(res))) == TRUE) rownames(res) <- rep(" ", nrow(res))
-    prmatrix(signif(res, digits))
+   if (!is.null(object$thetanames)) rownames(res)<-object$thetanames
+   prmatrix(signif(res, digits))
 
     cat("\n\n Random effect variances for gamma random effects \n\n")
     varpar <- theta/sum(theta)^2 

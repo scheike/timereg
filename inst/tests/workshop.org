@@ -56,7 +56,7 @@ cifmod <- comp.risk(Surv(time,status>0)~+1+cluster(id),data=prt,prt$status,cause
                   times=times,conservative=1,max.clust=NULL,model="fg")
 
 theta.des <- model.matrix(~-1+factor(zyg),data=prt) ## design for MZ/DZ status
-or1 <- or.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des,
+or1 <- or.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des,same.cens=TRUE,
 	      score.method="fisher.scoring")
 summary(or1)
 or1$score
@@ -90,7 +90,7 @@ legend("topleft",levels(prt$country),col=1:4,lty=1)
 
 #+BEGIN_SRC R
 theta.des <- model.matrix(~-1+factor(zyg),data=prt) ## design for MZ/DZ status
-or.country <- or.cif(cifmodl,data=prt,cause1=2,cause2=2,theta.des=theta.des,
+or.country <- or.cif(cifmodl,data=prt,cause1=2,cause2=2,theta.des=theta.des,same.cens=TRUE,
 		     theta=c(2.8,6.9),score.method="fisher.scoring")
 summary(or.country)
 or.country$score
@@ -112,7 +112,7 @@ legend("topleft",levels(prt$country),col=1:4,lty=1)
 #+END_SRC
 
 #+BEGIN_SRC R
-or.countryr <- or.cif(cifmodlr,data=prt,cause1=2,cause2=2,theta.des=theta.des,
+or.countryr <- or.cif(cifmodlr,data=prt,cause1=2,cause2=2,theta.des=theta.des,same.cens=TRUE,
 		     theta=c(2.8,6.9),score.method="fisher.scoring")
 summary(or.countryr)
 #+END_SRC
@@ -135,14 +135,11 @@ p33mz <- p33$model$"MZ"$comp.risk
 #+END_SRC
 
 #+BEGIN_SRC R :file p33dz.png
-plot(p33dz,ylim=c(0,0.1))
-#+END_SRC
-
-#+BEGIN_SRC R :file pcaconc.png
-par(new=TRUE)
-plot(p33mz,ylim=c(0,0.1),col=3)
+plot(p33dz,se=0,ylim=c(0,0.1))
+lines(p33mz$time,p33mz$P1,col=3)
 title(main="Concordance Prostate cancer")
 lines(pcif$time,pcif$P1^2,col=2)
+legend("topleft",c("DZ","MZ","Independence"),lty=rep(1,3),col=c(1,3,2))
 #+END_SRC
 
 #+BEGIN_SRC R
@@ -180,9 +177,11 @@ summary(zygeffect)
 case33mz <- conc2case(p33mz,pcif)
 case33dz <- conc2case(p33dz,pcif)
 
-plot(case33mz$casewise,se=0,col=2)
-par(new=TRUE)
-plot(case33dz$casewise,se=0)
+plot(case33mz$casewise,se=0,col=3)
+lines(case33dz$casewise$time,case33dz$casewise$P1)
+title(main="Probandwise concordance")
+legend("topleft",c("MZ","DZ","Independence"),lty=rep(1,3),col=c(3,1,2))
+lines(pcif$time,pcif$P1,col=2)
 #+END_SRC
 
   

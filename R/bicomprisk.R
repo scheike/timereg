@@ -16,10 +16,11 @@
 ##' @param return.data Should data be returned (skipping modeling)
 ##' @param uniform to compute uniform standard errors for concordance estimates based on resampling.
 ##' @param conservative for conservative standard errors, recommended for larger data-sets.
+##' @param resample.iid to return iid residual processes for further computations such as tests. 
 ##' @param ... Additional arguments to lower level functions
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
-bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv, strata=NULL, id,num,prodlim=FALSE,messages=TRUE,model,return.data=0,uniform=0,conservative=1,...) {
+bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv, strata=NULL, id,num,prodlim=FALSE,messages=TRUE,model,return.data=0,uniform=0,conservative=1,resample.iid=1,...) {
 
   mycall <- match.call()
   formulaId <- unlist(Specials(formula,"id"))
@@ -160,8 +161,9 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv, strat
     }
     if (missing(model)) model <- "fg"
     add<-comp.risk(as.formula(ff),data=mydata,
-                   status,causeS=1,n.sim=0,resample.iid=1,model=model,conservative=conservative)
-    padd <- predict(add,X=1,se=1,uniform=uniform,resample.iid=1)
+                   status,causeS=1,n.sim=0,resample.iid=resample.iid,model=model,conservative=conservative,
+		   max.clust=NULL)
+    padd <- predict(add,X=1,se=1,uniform=uniform,resample.iid=resample.iid)
   } else {
     ff <- as.formula(paste("Hist(",timevar,",",causes,")~",paste(c("1",covars,indiv2),collapse="+")))
     padd <- prodlim(ff,data=mydata)
