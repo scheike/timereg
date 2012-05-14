@@ -715,7 +715,7 @@ coef.cor <- function(object,...)
   if (attr(object,"Type")=="cor") 
     colnames(res) <- c("log-Coef.", "SE", "z", "P-val","Cross odds ratio","SE")
   else colnames(res) <- c("log-ratio Coef.", "SE", "z", "P-val","Ratio","SE")
-  if (is.null((rownames(res)))==TRUE) rownames(res)<-rep(" ",nrow(res))
+  if (!is.null(object$thetanames)) rownames(res)<-object$thetanames
 
   return(res)
 } ## }}}
@@ -949,7 +949,6 @@ print.randomcifrv<- function (x , digits = 3, ...)
 { ## {{{
  summary(x, ...)
 } ## }}}
-
 
 ## summary.cor<-function(object,digits=3,marg.cif=NULL,...)
 ## { ## {{{
