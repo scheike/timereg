@@ -16,7 +16,7 @@ data(prt)
 ## Estimation of cumulative incidence
 ###############################
 
-times <- seq(60,100,by=1)
+times <- seq(40,100,by=2)
 cifmod <- comp.risk(Surv(time,status>0)~+1+cluster(id),data=prt,prt$status,causeS=2,n.sim=0,
                   times=times,conservative=1,max.clust=NULL,model="fg")
 
@@ -39,7 +39,7 @@ dev.off()
 png(filename="pcifl.png")
 table(prt$country)
 
-times <- seq(60,100,by=1)
+times <- seq(40,100,by=2)
 cifmodl <-comp.risk(Surv(time,status>0)~-1+factor(country)+cluster(id),data=prt,
                     prt$status,causeS=2,n.sim=0,times=times,conservative=1,
                     max.clust=NULL,cens.model="aalen")
@@ -52,7 +52,6 @@ theta.des <- model.matrix(~-1+factor(zyg),data=prt) ## design for MZ/DZ status
 or.country <- or.cif(cifmodl,data=prt,cause1=2,cause2=2,theta.des=theta.des,
                      theta=c(2.8,6.9),score.method="fisher.scoring")
 summary(or.country)
-or.country$score
 
 cifmodlr <-comp.risk(Surv(time,status>0)~+1+const(factor(country))+cluster(id),data=prt,
                     prt$status,causeS=2,n.sim=0,times=times,conservative=1,max.clust=NULL,model="fg",
@@ -76,7 +75,7 @@ summary(or.countryr)
 ###############################
 
 ### ignoring country 
-p33 <- bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2),return.data=1,robust=1)
+p33 <- bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2),return.data=1)
 
 p33dz <- p33$model$"DZ"$comp.risk
 p33mz <- p33$model$"MZ"$comp.risk
@@ -93,6 +92,9 @@ lines(pcif$time,pcif$P1^2,col=2)
 dev.off()
 
 ### test for genetic effect 
+conc1 <- p33dz
+conc2 <- p33mz
+
 test.conc(p33dz,p33mz);
 
 data33mz <- p33$model$"MZ"$data

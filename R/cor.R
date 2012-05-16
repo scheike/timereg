@@ -230,6 +230,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
         delta <- hessi %*% out$score *step 
         p <- p-delta* step
         if (sum(abs(out$score))<0.00001) break; 
+        if (max(theta)>20) break; 
       }
     theta <- p
     iid <- 1; 

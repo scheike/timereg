@@ -2,7 +2,7 @@
 \alias{conc2case}
 \title{Estimates the probandwise concordance based on Concordance and marginal estimate}
 \usage{
-  conc2case(conc, marg, test = "conc")
+  conc2case(conc, marg, test = "no-test")
 }
 \arguments{
   \item{conc}{Concordance}

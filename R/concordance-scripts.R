@@ -6,7 +6,7 @@
 ##' @param test Type of test for independence assumption. "conc" makes test on concordance scale  and "case" means a test on the probandwise concordance
 ##' @author Thomas Scheike
 ##' @export
-conc2case <- function(conc,marg,test="conc")
+conc2case <- function(conc,marg,test="no-test")
 { ## {{{
   time1 <- conc$time
   time2 <- marg$time
@@ -23,14 +23,21 @@ conc2case <- function(conc,marg,test="conc")
   out$P1 <- concP1/margtime
   outtest <- NULL
 
-  if (!is.null(conc$se.P1) && !is.null(marg$se.P1) )
-    {
+  if (!is.null(conc$P1.iid) && !is.null(marg$P1.iid))  {
+  if ((ncol(conc1$P1.iid[1,,])-ncol(marg$P1.iid[1,,]))!=0)
+      cat("Warning, not same number of iid residuals for concordance and marginal estimate\n"); 
+      cat("Must be computed on same data\n"); 
+  }
 
-      if (!is.null(conc$se.P1)) out$se.P1 <- as.matrix(Cpred(cbind(conc$time,c(conc$se.P1)),timer)[,2]/margtime,ncol=100)
-      if (!is.null(conc$P1.iid)) out$P1.iid <- Cpred(cbind(conc$time,conc$P1.iid[1,,]),timer)[,-1]/margtime
-      if (test=="case") 
-        {
-          if (!is.null(conc$P1.iid)) {
+  if (test=="conc" || test=="case") 
+  if (!is.null(conc$se.P1) && !is.null(marg$se.P1) )
+  {
+   if (!is.null(conc$se.P1)) out$se.P1 <- as.matrix(Cpred(cbind(conc$time,c(conc$se.P1)),timer)[,2]/margtime,ncol=100)
+   if (!is.null(conc$P1.iid)) out$P1.iid <- Cpred(cbind(conc$time,conc$P1.iid[1,,]),timer)[,-1]/margtime
+    if (ncol(conc1$P1.iid[1,,])== ncol(marg$P1.iid[1,,])) {
+   if (test=="case") 
+   {
+    if (!is.null(conc$P1.iid)) {
             margP1.iid  <- Cpred(cbind(marg$time,marg$P1.iid[1,,]),timer)[,-1]
             diff.iid <- (apply(out$P1.iid,2,sum)-apply(margP1.iid,2,sum))*dtimer
             sd.pepem <- sum(diff.iid^2)^.5
@@ -54,13 +61,12 @@ conc2case <- function(conc,marg,test="conc")
             colnames(outtest) <- c("cum dif.","sd","z","pval") 			 
             rownames(outtest) <- "pepe-mori"
           } 
+       }
+   }
+   } 
 
-        }
-    }
-  else outtest <- NULL
-
-  out <- list(casewise=out,marg=cbind(timer,margtime),test=outtest,mintime=mintime,maxtime=maxtime,same.cluster=TRUE,
-                  test=test)
+  out <- list(casewise=out,marg=cbind(timer,margtime),test=outtest,
+	      mintime=mintime,maxtime=maxtime,same.cluster=TRUE,test=test)
   class(out) <- "testconc"
   return(out)
 } ## }}}
@@ -98,14 +104,19 @@ test.conc <- function(conc1,conc2,same.cluster=FALSE)
   conc1timer <- Cpred(cbind(conc1$time,c(conc1$P1)),timer)[,2]
   outtest <- NULL
 
-  if (is.null(conc1$P1.iid) || is.null(conc2$P1.iid)) stop("Must give iid represenation for both estimators\n");  
+  if (is.null(conc1$P1.iid) || is.null(conc2$P1.iid)) 
+	  stop("Must give iid represenation for both estimators\n");  
 
-    if (!is.null(conc1$P1.iid)) 
-    if (!is.null(conc2$P1.iid)) {
+    if (!is.null(conc1$P1.iid) && !is.null(conc2$P1.iid))  {
+    if ( ((ncol(conc1$P1.iid[1,,])-ncol(conc2$P1.iid[1,,]))!=0) && same.cluster==TRUE)
+       cat("Warning, not same number of iid residuals for concordance and marginal estimate\n"); 
+    }
+
+    if (!is.null(conc1$P1.iid)) if (!is.null(conc2$P1.iid)) {
 ### iid version af integraler
       conc2P1.iid  <- Cpred(cbind(conc2$time,conc2$P1.iid[1,,]),timer)[,-1]
       conc1P1.iid  <- Cpred(cbind(conc1$time,conc1$P1.iid[1,,]),timer)[,-1]
-      if (same.cluster==TRUE) {
+    if ( (ncol(conc1$P1.iid[1,,])==ncol(conc2$P1.iid[1,,])) && same.cluster==TRUE) {
 	diff.iid <- conc1P1.iid-conc2P1.iid
 	sdiff.iid <- apply(diff.iid,2,sum)*dtimer
 	sd.pepem <- sum(sdiff.iid^2)^.5
@@ -129,6 +140,7 @@ test.conc <- function(conc1,conc2,same.cluster=FALSE)
 ###	print(outtest,4)
 ###        prmatrix(outtest,3)			
     } 
+    
 
   outtest <- list(test=outtest,mintime=mintime,maxtime=maxtime,same.cluster=same.cluster)
 ###attr(out,"class") <- rev(attr(out,"class")) 
