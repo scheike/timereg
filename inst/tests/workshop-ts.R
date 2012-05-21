@@ -16,7 +16,7 @@ data(prt)
 ## Estimation of cumulative incidence
 ###############################
 
-times <- seq(60,100,by=1)
+times <- seq(40,100,by=2)
 cifmod <- comp.risk(Surv(time,status>0)~+1+cluster(id),data=prt,prt$status,causeS=2,n.sim=0,
                   times=times,conservative=1,max.clust=NULL,model="fg")
 
@@ -30,7 +30,26 @@ pcif <- predict(cifmod,X=1,resample.iid=0,uniform=0,se=0)
 
 png(filename="pcif.png")
 plot(pcif,multiple=1,se=0,uniform=0,ylim=c(0,0.15))
+abline(h=0.10143)
+abline(h=0.1105)
 dev.off()
+
+cifmodzyg <- comp.risk(Surv(time,status>0)~-1+factor(zyg)+cluster(id),
+		    data=prt,prt$status,causeS=2,n.sim=0,cens.model="aalen",
+                  times=times,conservative=1,max.clust=NULL,model="additive")
+pcifzyg <- predict(cifmodzyg,X=diag(2),resample.iid=0,uniform=0,se=0)
+plot(pcifzyg,multiple=1,se=0,uniform=0,ylim=c(0,0.15))
+abline(h=0.10143)
+abline(h=0.1105)
+
+out <- prodlim(Hist(time,status)~zyg,data=prt)
+poutmz <- predict(out,cause=2,time=times,newdata=data.frame(zyg="MZ"))
+poutdz <- predict(out,cause=2,time=times,newdata=data.frame(zyg="DZ"))
+###plot(out,cause=2,ylim=c(0,0.15),confInt=FALSE)
+lines(times,poutmz,type="s",col=2)
+lines(times,poutdz,type="s",col=2)
+###lines(times,c(pcifzyg$P1[1,]),col=4)
+###lines(times,c(pcifzyg$P1[2,]),col=4)
 
 ###############################
 ## Correcting for country
@@ -39,7 +58,7 @@ dev.off()
 png(filename="pcifl.png")
 table(prt$country)
 
-times <- seq(60,100,by=1)
+times <- seq(40,100,by=2)
 cifmodl <-comp.risk(Surv(time,status>0)~-1+factor(country)+cluster(id),data=prt,
                     prt$status,causeS=2,n.sim=0,times=times,conservative=1,
                     max.clust=NULL,cens.model="aalen")
@@ -163,8 +182,7 @@ summary(zygeffectll)
 coef(lm(cancer~-1+zyg,prt))
 
 ## Saturated model
-bpmz <- 
-    biprobit(cancer~1 + cluster(id), 
+bpmz <- biprobit(cancer~1 + cluster(id), 
              data=subset(prt,zyg=="MZ"), eqmarg=TRUE)
 
 logLik(bpmz) # Log-likelihood
@@ -195,7 +213,7 @@ summary(bp2)
 
 png(filename="ipw.png")
 ## Probability weights based on Aalen's additive model 
-prtw <- ipw(Surv(time,status==0)~country, data=prt,
+prtw <- ipw(Surv(time,status==0)~zyg, data=prt,
             cluster="id",weightname="w") 
 plot(0,type="n",xlim=range(prtw$time),ylim=c(0,1),xlab="Age",ylab="Probability")
 count <- 0
@@ -208,11 +226,16 @@ for (l in unique(prtw$country)) {
 legend("topright",legend=unique(prtw$country),col=1:4,pch=1)
 dev.off()
 
-bpmzIPW <- 
-              biprobit(cancer~1 + cluster(id), 
-                       data=subset(prtw,zyg=="MZ"), 
-                       weight="w")
+bpmzIPW <- biprobit(cancer~1 + cluster(id), 
+                       data=subset(prtw,zyg=="MZ"), weight="w")
 (smz <- summary(bpmzIPW))
+
+bpdzIPW <- biprobit(cancer~1 + cluster(id), 
+                       data=subset(prtw,zyg=="DZ"), weight="w")
+(sdz <- summary(bpdzIPW))
+abline(h=0.495)
+abline(h=0.21)
+
 
 png(filename="cif2.png")
 ## CIF
