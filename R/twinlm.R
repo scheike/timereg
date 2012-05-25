@@ -266,6 +266,11 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
      covariance(model2,outcomes) <- c("var(DZ)1","var(DZ)2")
      covariance(model3,outcomes) <- c("var(OS)1","var(OS)2")
   }
+  ## if (type=="u") {
+  ##   covariance(model1,outcomes) <- c("var","var")
+  ##   covariance(model2,outcomes) <- c("var","var")
+  ##   covariance(model3,outcomes) <- c("var","var")   
+  ## }
   if (type%in%c("u","flex","sat")) {
     if (constrain) {
       if (type=="sat") {
@@ -273,9 +278,15 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
         model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var(DZ)).1",l2name="log(var(DZ)).2")
         model3 <- covariance(model3,outcomes,constrain=TRUE,rname="atanh(rhoOS)",cname="covOS",lname="log(var(OS)).1",l2name="log(var(OS)).2")
       } else {
-        model1 <- covariance(model1,outcomes,constrain=TRUE,rname="atanh(rhoMZ)",cname="covMZ",lname="log(var(MZ))")
-        model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var(DZ))")
-        model3 <- covariance(model3,outcomes,constrain=TRUE,rname="atanh(rhoOS)",cname="covOS",lname="log(var(OS))")
+        if (type=="flex") {
+          model1 <- covariance(model1,outcomes,constrain=TRUE,rname="atanh(rhoMZ)",cname="covMZ",lname="log(var(MZ))")
+          model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var(DZ))")
+          model3 <- covariance(model3,outcomes,constrain=TRUE,rname="atanh(rhoOS)",cname="covOS",lname="log(var(OS))")
+        }  else {
+          model1 <- covariance(model1,outcomes,constrain=TRUE,rname="atanh(rhoMZ)",cname="covMZ",lname="log(var)")
+          model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var)")
+          model3 <- covariance(model3,outcomes,constrain=TRUE,rname="atanh(rhoOS)",cname="covOS",lname="log(var)")          
+        }        
       }     
     } else {
       covariance(model1,outcomes[1],outcomes[2]) <- "covMZ"
@@ -392,8 +403,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
   names(dd) <- names(mm)
   suppressWarnings(mg <- multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep))
   if (is.null(estimator)) return(mg)
-  
-  optim <- list(method="nlminb2",refit=FALSE,gamma=1)  
+  optim <- list(method="nlminb2",refit=FALSE,gamma=1,start=rep(0.1,with(mg,npar+npar.mean)))  
   if (length(control)>0) {
     optim[names(control)] <- control
   }

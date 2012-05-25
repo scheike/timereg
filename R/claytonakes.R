@@ -10,6 +10,7 @@
 ##' @param type Type of estimation (Clayton-Oakes or conditional frailty model)
 ##' @param start Optional starting values
 ##' @param control Control parameters to the optimization routine
+##' @param var.link Link function for variance structure
 ##' @param ... Additional arguments
 ##' @author Klaus K. Holst
 ##' @examples
@@ -19,7 +20,7 @@
 ##' e
 ##' plot(e,add=FALSE)
 ##' @export
-ClaytonOakes <- function(formula,data=parent.frame(),id,var.formula=~1,cuts=NULL,type="co",start,control=list(),...) {
+ClaytonOakes <- function(formula,data=parent.frame(),id,var.formula=~1,cuts=NULL,type="co",start,control=list(),var.link="log",...) {
   
   mycall <- match.call()
   formulaId <- Specials(formula,"id") 
@@ -61,7 +62,7 @@ ClaytonOakes <- function(formula,data=parent.frame(),id,var.formula=~1,cuts=NULL
   nbeta <- 0  
   if (length(covars)>0) {
 ##    X <- model.matrix(as.formula(paste("~-1+",paste(covars,collapse="+"))),data)
-    X <- model.matrix(formula,data)
+    X <- model.matrix(update(formula,.~.+1),data)[,-1,drop=FALSE]
     nbeta <- ncol(X)
   }
   ngamma <- 0
@@ -104,6 +105,7 @@ ClaytonOakes <- function(formula,data=parent.frame(),id,var.formula=~1,cuts=NULL
       p <- p[-seq(nbeta)]
       multhaz <- exp(X%*%beta)
     }
+    ##browser()
     res <- .Call("claytonoakes",
            ds=mydata$status,ts=mydata$T,es=mydata$entry,
            allcs=mydata$cluster,cs=ucluster,

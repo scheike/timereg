@@ -8,7 +8,7 @@
 <meta name="title" content="Analyzing twin data with <code>mets</code>"/>
 <meta name="generator" content="Org-mode"/>
 <meta name="generated" content="2012-05-20"/>
-<meta name="author" content="Thomas Scheike and Klaus K. Holst"/>
+<meta name="author" content="Klaus K. Holst and Thomas Scheike"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
 <style type="text/css">
@@ -124,20 +124,23 @@
 
 
 <p>
-Set repositories (see also <code>chooseCRANmirror</code>, <code>chooseBioCmirror</code>, <code>setRepositories</code>)
-and install dependencies (<code>R</code> &gt;=2.12) 
+Set repositories (see also <code>chooseCRANmirror</code>, <code>chooseBioCmirror</code>)
+and install dependencies (<code>R</code> &gt;=2.14) 
 </p>
 
 
 
 
-<pre class="src src-R">install.packages(<span class="org-string">"mets"</span>)
+<pre class="src src-R">setRepositories() <span class="org-comment-delimiter">## </span><span class="org-comment">Choose CRAN and BioC Software (BioConductor)</span>
+install.packages(c(<span class="org-string">"mets"</span>,<span class="org-string">"cmprsk"</span>))
 </pre>
 
 
 <p>
 <i>OBS:</i> At this point you might have to restart <code>R</code> to flush the cache
-of previously installed versions of the packages.
+of previously installed versions of the packages. If you have
+previously installed <code>timereg</code> and <code>lava</code>, make sure that you have the
+current versions installed (timereg: 1.6-5, lava: 1.0-5).
 </p>
 </div>
 
@@ -175,7 +178,7 @@ cifmod <span class="org-constant">&lt;-</span> comp.risk(Surv(time,status&gt;0)~
                   times=times,conservative=1,max.clust=<span class="org-type">NULL</span>,model=<span class="org-string">"fg"</span>)
 
 theta.des <span class="org-constant">&lt;-</span> model.matrix(~-1+factor(zyg),data=prt) <span class="org-comment-delimiter">## </span><span class="org-comment">design for MZ/DZ status</span>
-or1 <span class="org-constant">&lt;-</span> or.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des,
+or1 <span class="org-constant">&lt;-</span> or.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des,same.cens=<span class="org-type">TRUE</span>,
               score.method=<span class="org-string">"fisher.scoring"</span>)
 summary(or1)
 or1$score
@@ -188,12 +191,12 @@ pcif <span class="org-constant">&lt;-</span> predict(cifmod,X=1,resample.iid=0,u
 OR for dependence for competing risks
 
 OR of cumulative incidence for cause1= 2  and cause2= 2
-  log-ratio Coef.    SE     z    P-val  Ratio      SE
-             2.87 0.236 12.10 0.000000   17.6    4.16
-             7.99 2.130  3.75 0.000175 2950.0 6270.00
+              log-ratio Coef.    SE     z    P-val Ratio    SE
+factor(zyg)DZ            0.80 0.111  7.23 4.86e-13  2.22 0.246
+factor(zyg)MZ            2.09 0.138 15.10 0.00e+00  8.07 1.110
              [,1]
-[1,] 2.338399e-08
-[2,] 1.565735e-04
+[1,] 1.325225e-06
+[2,] 3.458932e-06
 </pre>
 
 
@@ -207,7 +210,6 @@ OR of cumulative incidence for cause1= 2  and cause2= 2
 <p>
 <img src="pcif.png"  alt="pcif.png" />
 </p>
-
 </div>
 
 </div>
@@ -239,8 +241,9 @@ legend(<span class="org-string">"topleft"</span>,levels(prt$country),col=1:4,lty
 
 
 
+
 <pre class="src src-R">theta.des <span class="org-constant">&lt;-</span> model.matrix(~-1+factor(zyg),data=prt) <span class="org-comment-delimiter">## </span><span class="org-comment">design for MZ/DZ status</span>
-or.country <span class="org-constant">&lt;-</span> or.cif(cifmodl,data=prt,cause1=2,cause2=2,theta.des=theta.des,
+or.country <span class="org-constant">&lt;-</span> or.cif(cifmodl,data=prt,cause1=2,cause2=2,theta.des=theta.des,same.cens=<span class="org-type">TRUE</span>,
                      theta=c(2.8,6.9),score.method=<span class="org-string">"fisher.scoring"</span>)
 summary(or.country)
 or.country$score
@@ -251,12 +254,12 @@ or.country$score
 OR for dependence for competing risks
 
 OR of cumulative incidence for cause1= 2  and cause2= 2
-  log-ratio Coef.    SE     z    P-val Ratio      SE
-              2.8 0.251 11.10 0.00e+00  16.4    4.13
-              6.9 1.330  5.19 2.09e-07 988.0 1310.00
+              log-ratio Coef.    SE     z    P-val Ratio    SE
+factor(zyg)DZ           0.754 0.117  6.43 1.26e-10  2.12 0.249
+factor(zyg)MZ           1.850 0.139 13.30 0.00e+00  6.36 0.883
               [,1]
-[1,] -1.086339e-07
-[2,] -2.498550e-05
+[1,] -1.201999e-06
+[2,]  1.558011e-06
 </pre>
 
 
@@ -286,7 +289,8 @@ legend(<span class="org-string">"topleft"</span>,levels(prt$country),col=1:4,lty
 
 
 
-<pre class="src src-R">or.countryr <span class="org-constant">&lt;-</span> or.cif(cifmodlr,data=prt,cause1=2,cause2=2,theta.des=theta.des,
+
+<pre class="src src-R">or.countryr <span class="org-constant">&lt;-</span> or.cif(cifmodlr,data=prt,cause1=2,cause2=2,theta.des=theta.des,same.cens=<span class="org-type">TRUE</span>,
                      theta=c(2.8,6.9),score.method=<span class="org-string">"fisher.scoring"</span>)
 summary(or.countryr)
 </pre>
@@ -296,11 +300,10 @@ summary(or.countryr)
 OR for dependence for competing risks
 
 OR of cumulative incidence for cause1= 2  and cause2= 2
-  log-ratio Coef.   SE     z    P-val  Ratio      SE
-             2.79 0.25 11.20 0.00e+00   16.3    4.07
-             6.92 1.34  5.16 2.51e-07 1010.0 1350.00
+              log-ratio Coef.    SE     z    P-val Ratio    SE
+factor(zyg)DZ           0.756 0.117  6.48 9.33e-11  2.13 0.249
+factor(zyg)MZ           1.850 0.139 13.40 0.00e+00  6.38 0.886
 </pre>
-
 
 
 
@@ -326,7 +329,11 @@ p33mz <span class="org-constant">&lt;-</span> p33$model$<span class="org-string"
 
 
 
-<pre class="src src-R">plot(p33dz,ylim=c(0,0.1))
+<pre class="src src-R">plot(p33dz,se=0,ylim=c(0,0.1))
+lines(p33mz$time,p33mz$P1,col=3)
+title(main=<span class="org-string">"Concordance Prostate cancer"</span>)
+lines(pcif$time,pcif$P1^2,col=2)
+legend(<span class="org-string">"topleft"</span>,c(<span class="org-string">"DZ"</span>,<span class="org-string">"MZ"</span>,<span class="org-string">"Independence"</span>),lty=rep(1,3),col=c(1,3,2))
 </pre>
 
 
@@ -334,18 +341,6 @@ p33mz <span class="org-constant">&lt;-</span> p33$model$<span class="org-string"
 <img src="p33dz.png"  alt="p33dz.png" />
 </p>
 
-
-
-<pre class="src src-R">par(new=<span class="org-type">TRUE</span>)
-plot(p33mz,ylim=c(0,0.1),col=3)
-title(main=<span class="org-string">"Concordance Prostate cancer"</span>)
-lines(pcif$time,pcif$P1^2,col=2)
-</pre>
-
-
-<p>
-<img src="pcaconc.png"  alt="pcaconc.png" />
-</p>
 
 
 
@@ -360,8 +355,8 @@ Pepe-Mori type test for H_0: conc_1(t)= conc_2(t)
 Assuming independence for estimators
 Time.range = 60.9 -- 96.9 
 
-          cum dif.     sd z     pval
-pepe-mori    0.394 0.0984 4 6.31e-05
+          cum dif.    sd    z     pval
+pepe-mori    0.394 0.095 4.15 3.39e-05
 </pre>
 
 
@@ -457,15 +452,18 @@ comp.risk(Surv(time, status == 0) ~ const(zyg), data = data33,
 <pre class="src src-R">case33mz <span class="org-constant">&lt;-</span> conc2case(p33mz,pcif)
 case33dz <span class="org-constant">&lt;-</span> conc2case(p33dz,pcif)
 
-plot(case33mz$casewise,se=0,col=2)
-par(new=<span class="org-type">TRUE</span>)
-plot(case33dz$casewise,se=0)
+plot(case33mz$casewise,se=0,col=3)
+lines(case33dz$casewise$time,case33dz$casewise$P1)
+title(main=<span class="org-string">"Probandwise concordance"</span>)
+legend(<span class="org-string">"topleft"</span>,c(<span class="org-string">"MZ"</span>,<span class="org-string">"DZ"</span>,<span class="org-string">"Independence"</span>),lty=rep(1,3),col=c(3,1,2))
+lines(pcif$time,pcif$P1,col=2)
 </pre>
 
 
 <p>
 <img src="casewise.png"  alt="casewise.png" />
 </p>
+
 
 </div>
 
@@ -532,7 +530,11 @@ comp.risk(Surv(time, status == 0) ~ const(country) + const(zyg),
 <pre class="src src-R">zygeffectpl <span class="org-constant">&lt;-</span> comp.risk(Surv(time,status==0)~const(country)+const(zyg),
                   data=data33,data33$status,causeS=1,
                   cens.model=<span class="org-string">"aalen"</span>,model=<span class="org-string">"fg"</span>,conservative=1)
-summary(zygeffectpl)
+</pre>
+
+
+
+<pre class="src src-R">print(summary(zygeffectpl))
 </pre>
 
 
@@ -543,13 +545,13 @@ Test for nonparametric terms
 
 Test for non-significant effects 
             Supremum-test of significance p-value H_0: B(t)=0
-(Intercept)                          2.83               0.024
+(Intercept)                          2.83               0.012
 
 Test for time invariant effects 
                   Kolmogorov-Smirnov test p-value H_0:constant effect
-(Intercept)                        0.0101                       0.002
+(Intercept)                        0.0101                           0
                     Cramer von Mises test p-value H_0:constant effect
-(Intercept)                       0.00115                       0.006
+(Intercept)                       0.00115                       0.004
 
 Parametric terms : 
                       Coef.    SE Robust SE    z    P-val
@@ -562,6 +564,8 @@ const(zyg)            0.916 0.226     0.226 4.05 5.22e-05
 comp.risk(Surv(time, status == 0) ~ const(country) + const(zyg), 
     data = data33, data33$status, causeS = 1, cens.model = "aalen", 
     model = "fg", conservative = 1)
+
+NULL
 </pre>
 
 
@@ -569,7 +573,12 @@ comp.risk(Surv(time, status == 0) ~ const(country) + const(zyg),
 <pre class="src src-R">zygeffectll <span class="org-constant">&lt;-</span> comp.risk(Surv(time,status==0)~country+const(zyg),
                          data=data33,data33$status,causeS=1,
                          cens.model=<span class="org-string">"aalen"</span>,model=<span class="org-string">"logistic"</span>,conservative=1)
-summary(zygeffectll)
+</pre>
+
+
+
+
+<pre class="src src-R">print(summary(zygeffectll))
 </pre>
 
 
@@ -589,13 +598,13 @@ Test for time invariant effects
                      Kolmogorov-Smirnov test p-value H_0:constant effect
 (Intercept)                             6.59                       0.000
 countryFinland                          6.24                       0.000
-countryNorway                           1.31                       0.542
+countryNorway                           1.31                       0.574
 countrySweden                           6.39                       0.000
                        Cramer von Mises test p-value H_0:constant effect
-(Intercept)                            200.0                        0.00
-countryFinland                        1180.0                        0.00
-countryNorway                           17.6                        0.39
-countrySweden                         1300.0                        0.00
+(Intercept)                            200.0                         0.0
+countryFinland                        1180.0                         0.0
+countryNorway                           17.6                         0.4
+countrySweden                         1300.0                         0.0
 
 Parametric terms : 
            Coef.   SE Robust SE    z    P-val
@@ -609,6 +618,8 @@ Readjust analyses by removing points
 comp.risk(Surv(time, status == 0) ~ country + const(zyg), data = data33, 
     data33$status, causeS = 1, cens.model = "aalen", model = "logistic", 
     conservative = 1)
+
+NULL
 </pre>
 
 
@@ -814,10 +825,9 @@ args(bptwin)
 <pre class="example">
 function (formula, data, id, zyg, DZ, OS, weight = NULL, biweight = function(x) 1/min(x), 
     strata = NULL, messages = 1, control = list(trace = 0), type = "ace", 
-    eqmean = TRUE, param = 0, pairsonly = FALSE, stderr = TRUE, 
-    robustvar = TRUE, p, indiv = FALSE, constrain, samecens = TRUE, 
-    allmarg = samecens &amp; !is.null(weight), bound = FALSE, debug = FALSE, 
-    ...) 
+    eqmean = TRUE, pairsonly = FALSE, samecens = TRUE, allmarg = samecens &amp; 
+        !is.null(weight), stderr = TRUE, robustvar = TRUE, p, 
+    indiv = FALSE, constrain, bound = FALSE, debug = FALSE, ...) 
 NULL
 </pre>
 
@@ -863,7 +873,6 @@ Broad-sense Heritability 0.70525  0.63657 0.76572
 </pre>
 
 
-
 </div>
 
 </div>
@@ -895,6 +904,7 @@ legend(<span class="org-string">"topright"</span>,legend=unique(prtw$country),co
 <p>
 <img src="ipw.png"  alt="ipw.png" />
 </p>
+
 
 
 
@@ -941,6 +951,7 @@ abline(h=summary(bpmz)$prob[<span class="org-string">"Marginal"</span>,],lwd=c(2
 
 
 
+
 <pre class="src src-R"><span class="org-comment-delimiter">## </span><span class="org-comment">Concordance</span>
 plot(p33mz,ylim=c(0,0.1))
 abline(h=smz$prob[<span class="org-string">"Concordance"</span>,],lwd=c(2,1,1))
@@ -955,6 +966,7 @@ abline(h=summary(bpmz)$prob[<span class="org-string">"Concordance"</span>,],lwd=
 
 
 
+
 <pre class="src src-R">bp3 <span class="org-constant">&lt;-</span> bptwin(cancer~1,zyg=<span class="org-string">"zyg"</span>,DZ=<span class="org-string">"DZ"</span>,id=<span class="org-string">"id"</span>,
               type=<span class="org-string">"ace"</span>,data=prtw,weight=<span class="org-string">"w"</span>)
 summary(bp3)
@@ -962,13 +974,11 @@ summary(bp3)
 
 
 
-<pre class="example">Warning message:
-In sqrt(diag(V)) : NaNs produced
-
+<pre class="example">
              Estimate   Std.Err         Z p-value
 (Intercept)  -2.31618   0.18673 -12.40359   0e+00
 log(var(A))   0.85390   0.22689   3.76347   2e-04
-log(var(C)) -29.43218        NA        NA      NA
+log(var(C)) -29.43218   1.13343 -25.96726   0e+00
 
  Total MZ/DZ Complete pairs MZ/DZ
  2722/5217   997/1809            
@@ -1039,7 +1049,7 @@ Broad-sense Heritability 0.82563  0.33329 0.97819
 
 
 <pre class="example">
-[1]  2.729972e-07 -8.463680e-08 -5.013737e-09
+[1]  2.729971e-07 -8.463577e-08 -5.014015e-09
 </pre>
 
 
@@ -1084,7 +1094,6 @@ Marginal                0.10268  0.09453 0.11144
                          Estimate 2.5%    97.5%  
 Broad-sense Heritability 0.71559  0.61260 0.80013
 </pre>
-
 
 
 </div>
@@ -1329,7 +1338,7 @@ compare(bp8,contrast=B)
 
 <pre class="example">
 
-	Wald test
+      Wald test
 
 data:  
 chisq = 3.4972, df = 6, p-value = 0.7443
@@ -1363,10 +1372,27 @@ NULL
 
 
 
+
 <pre class="src src-R">ch1 <span class="org-constant">&lt;-</span> cumh(cancer~1,time=<span class="org-string">"time"</span>,zyg=<span class="org-string">"zyg"</span>,DZ=<span class="org-string">"DZ"</span>,id=<span class="org-string">"id"</span>,
             type=<span class="org-string">"ace"</span>,data=prtw,weight=<span class="org-string">"w"</span>)
-summary(ch1)
 </pre>
+
+
+
+<pre class="src src-R">summary(ch1)
+</pre>
+
+
+<pre class="example">
+                      time Heritability    Std.Err      2.5%     97.5%
+65.5691955406266  65.56920    0.7038286 0.10969626 0.4586422 0.8695520
+76.4446739437236  76.44467    0.6757445 0.06363443 0.5411756 0.7864218
+85.8807708995545  85.88077    0.6204174 0.05652481 0.5052219 0.7234726
+117.622394945129 117.62239    0.7013847 0.04752116 0.6008962 0.7855993
+</pre>
+
+
+
 
 
 
@@ -1378,6 +1404,8 @@ summary(ch1)
 <img src="cumh.png"  alt="cumh.png" />
 </p>
 
+
+
 <hr/>
 
 </div>
@@ -1386,7 +1414,7 @@ summary(ch1)
 
 <div id="postamble">
 <p class="date">Date: 2012-05-20</p>
-<p class="author">Author: Thomas Scheike and Klaus K. Holst</p>
+<p class="author">Author: Klaus K. Holst and Thomas Scheike</p>
 
 
 </div>
