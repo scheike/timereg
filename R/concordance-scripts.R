@@ -6,7 +6,7 @@
 ##' @param test Type of test for independence assumption. "conc" makes test on concordance scale  and "case" means a test on the probandwise concordance
 ##' @author Thomas Scheike
 ##' @export
-conc2case <- function(conc,marg,test="no-test")
+conc2probandwise <- function(conc,marg,test="no-test")
 { ## {{{
   time1 <- conc$time
   time2 <- marg$time
@@ -24,7 +24,7 @@ conc2case <- function(conc,marg,test="no-test")
   outtest <- NULL
 
   if (!is.null(conc$P1.iid) && !is.null(marg$P1.iid))  {
-  if ((ncol(conc1$P1.iid[1,,])-ncol(marg$P1.iid[1,,]))!=0)
+  if ((ncol(conc$P1.iid[1,,])-ncol(marg$P1.iid[1,,]))!=0)
       cat("Warning, not same number of iid residuals for concordance and marginal estimate\n"); 
       cat("Must be computed on same data\n"); 
   }
@@ -65,7 +65,7 @@ conc2case <- function(conc,marg,test="no-test")
    }
    } 
 
-  out <- list(casewise=out,marg=cbind(timer,margtime),test=outtest,
+  out <- list(probandwise=out,marg=cbind(timer,margtime),test=outtest,
 	      mintime=mintime,maxtime=maxtime,same.cluster=TRUE,test=test)
   class(out) <- "testconc"
   return(out)

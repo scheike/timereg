@@ -21,10 +21,13 @@ cifmod <- comp.risk(Surv(time,status>0)~+1+cluster(id),data=prt,prt$status,cause
                   times=times,conservative=1,max.clust=NULL,model="fg")
 
 theta.des <- model.matrix(~-1+factor(zyg),data=prt) ## design for MZ/DZ status
-or1 <- or.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des,same.cens=TRUE,
+or1 <- mets::or.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des,same.cens=TRUE,
               score.method="fisher.scoring")
 summary(or1)
 or1$score
+
+rr1<-mets::rr.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des,same.cens=TRUE,score.method="fisher.scoring")
+summary(rr1)
 
 pcif <- predict(cifmod,X=1,resample.iid=0,uniform=0,se=0)
 
@@ -33,6 +36,7 @@ plot(pcif,multiple=1,se=0,uniform=0,ylim=c(0,0.15))
 abline(h=0.10143)
 abline(h=0.1105)
 dev.off()
+
 
 cifmodzyg <- comp.risk(Surv(time,status>0)~-1+factor(zyg)+cluster(id),
 		    data=prt,prt$status,causeS=2,n.sim=0,cens.model="aalen",
@@ -109,6 +113,7 @@ lines(pcif$time,pcif$P1^2,col=2)
 legend("topleft",c("DZ","MZ","Independence"),lty=rep(1,3),col=c(1,3,2))
 dev.off()
 
+
 ### test for genetic effect 
 test.conc(p33dz,p33mz);
 
@@ -144,6 +149,7 @@ title(main="Probandwise concordance")
 legend("topleft",c("MZ","DZ","Independence"),lty=rep(1,3),col=c(3,1,2))
 lines(pcif$time,pcif$P1,col=2)
 dev.off()
+
 
 ###############################
 ## Effect of zygosity correcting for country
