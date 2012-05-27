@@ -1,20 +1,10 @@
-\name{conc2case}
-\alias{conc2case}
+\name{conc2probandwise}
+\alias{conc2probandwise}
 \title{Estimates the probandwise concordance based on Concordance and marginal estimate}
 \usage{
-  conc2case(conc, marg, test = "no-test")
-
-  conc2case(conc, marg, test = "no-test")
+  conc2probandwise(conc, marg, test = "no-test")
 }
 \arguments{
-  \item{conc}{Concordance}
-
-  \item{marg}{Marginal estimate}
-
-  \item{test}{Type of test for independence assumption.
-  "conc" makes test on concordance scale and "case" means a
-  test on the probandwise concordance}
-
   \item{conc}{Concordance}
 
   \item{marg}{Marginal estimate}
@@ -25,12 +15,8 @@
 }
 \description{
   .. content for description (no empty lines) ..
-
-  .. content for description (no empty lines) ..
 }
 \author{
-  Thomas Scheike
-
   Thomas Scheike
 }
 

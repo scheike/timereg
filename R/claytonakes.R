@@ -168,7 +168,10 @@ print.claytonoakes <- function(x,...) {
 
 ##' @S3method print summary.claytonoakes
 print.summary.claytonoakes <- function(x,...) {
-  print(x$coef[,c(1,3,4)])
+  printCoefmat(x$coef[,c(1,3,4)],...)
+  cat("\n\nDependence parameters:\n")
+  printCoefmat(x$var,...)
+  invisible(x)
 }
 
 ##' @S3method summary claytonoakes
@@ -182,7 +185,11 @@ summary.claytonoakes <- function(object,...) {
   varname <- switch(object$invlinkname,exp="log-Var:",identity="Var:",paste("inv",object$invlinkname,"-Var:",sep=""))
   rownames(mycoef) <- c(paste(varname,object$gammanames,sep=""),object$betanames,cutnames)
   mycoef[-seq(object$ngamma),] <- exp(mycoef[-seq(object$ngamma),])
-  res <- list(coef=mycoef)
+  varcoef <- object$invlink(mycoef[seq(object$ngamma),c(1,3,4),drop=FALSE])
+  rownames(varcoef) <- object$gammanames
+  varcoef <- cbind(varcoef,1/(1+2/varcoef))
+  colnames(varcoef)[c(1,4)] <- c("Variance","Kendall's tau")  
+  res <- list(coef=mycoef,var=varcoef)
   class(res) <- "summary.claytonoakes"
   res
 }
