@@ -169,7 +169,7 @@ print.claytonoakes <- function(x,...) {
 ##' @S3method print summary.claytonoakes
 print.summary.claytonoakes <- function(x,...) {
   printCoefmat(x$coef[,c(1,3,4)],...)
-  cat("\n\nDependence parameters:\n")
+  cat("\nDependence parameters:\n")
   printCoefmat(x$var,...)
   invisible(x)
 }
