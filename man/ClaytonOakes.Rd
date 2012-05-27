@@ -2,9 +2,9 @@
 \alias{ClaytonOakes}
 \title{Clayton-Oakes model with piece-wise constant hazards}
 \usage{
-  ClaytonOakes(formula, data = parent.frame(), id,
-    var.formula = ~1, cuts = NULL, type = "co", start,
-    control = list(), ...)
+  ClaytonOakes(formula, data = parent.frame(), cluster,
+    var.formula = ~1, cuts = NULL, type = "piecewise",
+    start, control = list(), var.invlink = exp, ...)
 }
 \arguments{
   \item{formula}{formula specifying the marginal
@@ -12,44 +12,55 @@
   the right-hand-side being a survival object (Surv)
   specifying the entry time (optional), the follow-up time,
   and event/censoring status at follow-up. The clustering
-  can be specified using the special function \code{id}
-  (see example below).}
+  can be specified using the special function
+  \code{cluster} (see example below).}
 
   \item{data}{Data frame}
 
-  \item{id}{Variable defining the clustering (if not given
-  in the formula)}
+  \item{cluster}{Variable defining the clustering (if not
+  given in the formula)}
 
   \item{var.formula}{Formula specifying the variance
-  component structure (if not given via the id special
+  component structure (if not given via the cluster special
   function in the formula) using a linear model with
   log-link.}
 
   \item{cuts}{Cut points defining the piecewise constant
   hazard}
 
-  \item{type}{Type of estimation (Clayton-Oakes or
-  conditional frailty model)}
+  \item{type}{when equal to \code{two.stage}, the
+  Clayton-Oakes-Glidden estimator will be calculated via
+  the \code{timereg} package}
 
   \item{start}{Optional starting values}
 
   \item{control}{Control parameters to the optimization
   routine}
 
+  \item{var.invlink}{Inverse link function for variance
+  structure model}
+
   \item{...}{Additional arguments}
 }
 \description{
-  .. content for description (no empty lines) ..
-}
-\details{
-  .. content for details ..
+  Clayton-Oakes frailty model
 }
 \examples{
 set.seed(1)
-d <- simClaytonOakes(2000,4,2,1,stoptime=2,left=0.5)
-e <- ClaytonOakes(Surv(lefttime,time,status)~x1+id(~1,cluster),cuts=c(0,0.5,1,2),data=subset(d,!truncated))
+d <- subset(simClaytonOakes(2000,4,2,1,stoptime=2,left=2),!truncated)
+e <- ClaytonOakes(Surv(lefttime,time,status)~x1+cluster(~1,cluster),cuts=c(0,0.5,1,2),data=d)
 e
-plot(e,add=FALSE)
+
+d2 <- simClaytonOakes(2000,4,2,1,stoptime=2,left=0)
+d$z <- rep(1,nrow(d)); d$z[d$cluster\%in\%sample(d$cluster,500)] <- 0
+ts <- ClaytonOakes(Surv(time,status)~prop(x1)+cluster(~1,cluster),data=d,type="two.stage") ## Cox Proportional Hazards model
+ts2 <- ClaytonOakes(Surv(time,status)~x1+cluster(~1+factor(z),cluster),data=d,type="two.stage") ## Aalen's Additive model
+e2 <- ClaytonOakes(Surv(time,status)~x1+cluster(~-1+factor(z),cluster),cuts=c(0,0.5,1,2),data=d)
+e2
+plot(ts)
+plot(e2,add=TRUE)
+e3 <- ClaytonOakes(Surv(time,status)~x1+cluster(~1,cluster),cuts=c(0,0.5,1,2),data=d,var.invlink=identity)
+e3
 }
 \author{
   Klaus K. Holst

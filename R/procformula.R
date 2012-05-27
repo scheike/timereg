@@ -21,7 +21,9 @@ Specials <- function(f,spec,split1=",",split2=NULL,...) {
   if (is.null(pos)) return(NULL)
   x <- rownames(attributes(tt)$factors)[pos]
   st <- gsub(" ","",x) ## trim
-  res <- unlist(strsplit(st,"[()]"))[2]
+##  res <- unlist(strsplit(st,"[()]"))
+  spec <- unlist(strsplit(st,"[()]"))[[1]]
+  res <- substr(st,nchar(spec)+2,nchar(st)-1) 
   if (!is.null(split1))    
     res <- unlist(strsplit(res,split1))
   res <- as.list(res)
