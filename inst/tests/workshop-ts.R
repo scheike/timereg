@@ -148,6 +148,8 @@ lines(case33dz$casewise$time,case33dz$casewise$P1)
 title(main="Probandwise concordance")
 legend("topleft",c("MZ","DZ","Independence"),lty=rep(1,3),col=c(3,1,2))
 lines(pcif$time,pcif$P1,col=2)
+lines(pcif$time,pcif$P1*3.8,col=3)
+lines(pcif$time,pcif$P1*1.8,col=1)
 dev.off()
 
 
@@ -308,3 +310,25 @@ summary(ch1)
 png(filename="cumh.png")
 plot(ch1)
 dev.off()
+
+
+parfunc <- function(par,t,pardes)
+{
+par <- pardes %*% c(par[1],par[2]) + 
+       pardes %*% c( par[3]*(t-60)/12,par[4]*(t-60)/12)
+par
+}
+###parfunc(c(0.1,1,0.1,1),50,theta.des)
+
+names(prt)
+theta.des <- model.matrix(~-1+factor(zyg),data=prt)
+
+cor1 <- or.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des,same.cens=TRUE,
+	       score.method="fisher.scoring",detail=1)
+summary(cor1)
+
+corl <- or.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des,same.cens=TRUE,
+		par.func=parfunc,dimpar=4,control=list(trace=TRUE),detail=1)
+summary(corl)
+corl$score
+

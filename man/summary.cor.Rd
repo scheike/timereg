@@ -11,10 +11,10 @@
 
   \item{marg.cif}{a number that gives the cumulative
   incidence in one time point for which concordance and
-  casewise concordance are computed.}
+  probandwise concordance are computed.}
 
   \item{marg.cif2}{the cumulative incidence for cause 2 for
-  concordance and casewise concordance are computed.
+  concordance and probandwise concordance are computed.
   Default is that it is the same as marg.cif.}
 
   \item{digits}{digits in output.}
@@ -23,7 +23,7 @@
 }
 \value{
   prints summary for dependence model.
-  \item{casewise}{gives casewise concordance that is,
+  \item{probandwise}{gives probandwise concordance that is,
   probability of cause 2 (related to cif2) given that cause
   1 (related to cif1) has occured.}
   \item{concordance}{gives concordance that is, probability
@@ -32,7 +32,7 @@
   \item{cif2}{cumulative incidence for cause1.}
 }
 \description{
-  Computes concordance and casewise concordance for
+  Computes concordance and probandwise concordance for
   dependence models for competing risks models of the type
   cor.cif, rr.cif or or.cif for the given cumulative
   incidences and the different dependence measures in the

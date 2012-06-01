@@ -173,7 +173,7 @@ void ckrvdes2(vec &alphai,vec &alphak, // {{{
 {
 double val,val1,val2,val3,alphi=0,alphk=0,alph,betai,betak;
 double test=1; //lapgam(),ilapgam(),Dtlapgam(), Dalphalapgam(),Dilapgam(),Dbetalapgam(),Dbetailapgam();
-int prv,k; 
+int prv,k,nn; 
 //void funkdes2(); 
 
 if (test<1) {
@@ -184,7 +184,8 @@ Rprintf("ckr \n");
 // fix denne i CPP version
 //rvi.print("ckrv rvi"); 
 //alphai.print("alph ckrv rvi"); 
-for (k=0;k<rvi.n_rows;k++) {
+nn=rvi.n_rows; 
+for (k=0;k< nn;k++) {
 	alphi=alphi+rvi(k)*alphai(k); 
 	alphk=alphi+rvk(k)*alphak(k); 
 }
@@ -387,7 +388,8 @@ double max(double a, double b) { if (a>b) return(a); else return(b); }
 RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 		SEXP iz, SEXP iest,SEXP iZgamma, SEXP isemi,SEXP izsem,
 //		detail,biid,gamiid,timepow,theta,vartheta,
-		SEXP itheta, SEXP iXtheta, SEXP ithetades,
+		SEXP itheta, SEXP iXtheta, SEXP iDXtheta, SEXP idimDX, 
+		SEXP ithetades,
 		SEXP icluster,SEXP iclustsize,SEXP iclusterindex,
 		SEXP iinverse,SEXP iCA2, SEXP ix2, // SEXP iz2,
 		SEXP isemi2, SEXP iest2,SEXP iZ2gamma2,
@@ -408,7 +410,6 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
  mat clusterindex = Rcpp::as<mat>(iclusterindex);
  mat rvdes= Rcpp::as<mat>(irvdes); 
  colvec theta = Rcpp::as<colvec>(itheta);
- colvec Xtheta = Rcpp::as<colvec>(iXtheta);
  colvec y = Rcpp::as<colvec>(iy);
  colvec clustsize = Rcpp::as<colvec>(iclustsize);
  int antclust = clusterindex.n_rows; 
@@ -427,6 +428,11 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
  colvec trunkp = Rcpp::as<colvec>(itrunkp);
  vec cif1lin=-log(1-cif1entry); 
 
+// array for derivative of flexible design
+ NumericVector DXthetavec(iDXtheta);
+ IntegerVector arrayDims(idimDX);
+ arma::cube DXtheta(DXthetavec.begin(), arrayDims[0], arrayDims[1], arrayDims[2], false);
+
  int samecens = Rcpp::as<int>(isamecens);
  int inverse= Rcpp::as<int>(iinverse);
  int semi = Rcpp::as<int>(isemi);
@@ -442,6 +448,8 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
  int estimator= Rcpp::as<int>(iestimator); 
  int iid= Rcpp::as<int>(iiid); 
 
+ mat Xtheta = Rcpp::as<mat>(iXtheta);
+
   int udtest=0; 
   if (udtest==1) { // {{{
       Rprintf(" %d %d %d %d %d %d %d \n",samecens,inverse,semi,semi2,flexfunc,stabcens,silent); 
@@ -455,7 +463,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
         clusterindex.print("clusterindex"); 
         rvdes.print("rvdes"); 
 	theta.print("theta"); 
-	  Xtheta.print("Xtheta"); 
+	Xtheta.print("Xtheta"); 
 	  y.print("y-times"); 
 	  clustsize.print("clustsize"); 
 	  times.print("times"); 
@@ -485,7 +493,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
       Rprintf("ci %lf \n",mean(mean(clusterindex))); 
       Rprintf("rvdes %lf \n",mean(mean(rvdes))); 
       Rprintf("theta %lf \n",mean(theta)); 
-      Rprintf("Xtheta %lf \n",mean(Xtheta)); 
+      Rprintf("Xtheta %lf \n",mean(mean(Xtheta))); 
       Rprintf("y %lf \n",mean(y)); 
       Rprintf("ci %lf \n",mean(clustsize)); 
       Rprintf("times %lf \n",mean(times)); 
@@ -526,7 +534,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
   rowvec bhatt2 = est.row(est2.n_cols); 
   colvec pbhat2(z.n_rows); 
 
-  // depmodel=5 
+// depmodel=5 
 //  rvdes.print("rvdes"); 
 //  thetades.print("ttt"); 
 
@@ -577,8 +585,14 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	       ((y(i)<=time) && (ci==CA1))* ((y(k)<=entryage(k)) && (ck==CA2)) ;
 
 	 if (depmodel!=5)  {
-              if (flexfunc==0) thetak=Xtheta(i); else thetak=Xtheta(s,i); 
-	      pthetavec= trans(thetades.row(i)); 
+              if (flexfunc==0) {
+		      thetak=Xtheta(i,0);  
+	              pthetavec= trans(thetades.row(i)); 
+	      } else { 
+	          thetak=Xtheta(i,s); 
+		  pthetavec = DXtheta(span(s),span(i),span(0,pt-1)); 
+//		  pthetavec.print("pt"); 
+	      }
 	 }
          Li=pbhat(i); Lk=pbhat(k); 
          if (CA1!=CA2) Lk=pbhat2(k); 

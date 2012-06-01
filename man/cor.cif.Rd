@@ -8,6 +8,7 @@
     cause2 = 1, cens.code = 0, cens.model = "KM", Nit = 40,
     detail = 0, clusters = NULL, theta = NULL,
     theta.des = NULL, step = 1, sym = 0, weights = NULL,
+    par.func = NULL, dpar.func = NULL, dimpar = NULL,
     score.method = "nlminb", same.cens = FALSE,
     censoring.probs = NULL, silent = 1, ...)
 }
@@ -151,23 +152,40 @@ summary(out3)
 ###########################################################
 # investigating further models using parfunc and dparfunc
 ###########################################################
-#functd<-function(theta,t,x) { xt=theta[1]+theta[2]*(t-0.5); return(xt) };
-#dfunctd<-function(theta,t,x) { return(c(x[1],(t-0.5))) };
+set.seed(100)
+prt<-simnordic(5000,cordz=2,cormz=5)
+prt$status <-prt$cause
+table(prt$status)
 
-#library(compiler) # using the compiler library to speed up things
-#f=cmpfun(functd)
-#df=cmpfun(dfunctd)
-#out4<-cor.cif(add,data=multcif,multcif$cause,
-#parfunc=f,dparfunc=df,
-#cause1=1,cause2=1,cens.model="KM",clusters=multcif$id,theta=log(2+1),
-#theta.des=theta.des,colnames=c("intercept","slope"))
-#summary(out4)
+times <- seq(40,100,by=2)
+cifmod <- comp.risk(Surv(time,status>0)~+1+cluster(id),data=prt,prt$status,causeS=1,n.sim=0,
+                  times=times,conservative=1,max.clust=NULL,model="fg")
+theta.des <- model.matrix(~-1+factor(zyg),data=prt)
 
-###out4<-cor.cif(add,data=multcif,parfunc=functd,dparfunc=dfunctd,
-###             cause1=1,cause2=1,cens.model="KM",theta=log(2+1),
-###             theta.des=theta.des,colnames=c("intercept","slope"),dimpar=2)
-###summary(out4)
-## no indication of timetrend in cross-odds-ratio
+parfunc <- function(par,t,pardes)
+{
+par <- pardes \%*\% c(par[1],par[2]) +
+       pardes \%*\% c( par[3]*(t-60)/12,par[4]*(t-60)/12)
+par
+}
+head(parfunc(c(0.1,1,0.1,1),50,theta.des))
+
+dparfunc <- function(par,t,pardes)
+{
+dpar <- cbind(pardes, t(t(pardes) * c( (t-60)/12,(t-60)/12)) )
+dpar
+}
+head(dparfunc(c(0.1,1,0.1,1),50,theta.des))
+
+names(prt)
+
+or1 <- or.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,theta=c(0.6,1.7,0.1,0.1),
+       par.func=parfunc,dpar.func=dparfunc,dimpar=4,score.method="fisher.scoring",detail=1)
+summary(or1)
+
+ cor1 <- cor.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,theta=c(0.6,1.7,0.1,0.1),step=0.5,
+       par.func=parfunc,dpar.func=dparfunc,dimpar=4,control=list(trace=TRUE),detail=1)
+summary(cor1)
 }
 \author{
   Thomas Scheike

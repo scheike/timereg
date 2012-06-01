@@ -2,8 +2,8 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
                   cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
                   clusters=NULL,theta=NULL,theta.des=NULL,step=1,sym=1,weights=NULL,
 		  same.cens=FALSE,censoring.probs=NULL,silent=1,entry=NULL,estimator=1,
-		  trunkp=1,admin.cens=NULL,control=list(),
-                  score.method="nlminb",random.design=NULL,exp.link=1,...)
+		  trunkp=1,admin.cens=NULL,control=list(),par.func=NULL,dpar.func=NULL,dimpar=NULL,
+		  score.method="nlminb",random.design=NULL,exp.link=1,...)
 { ## {{{
   ## {{{ set up data and design
   multi<-0; dscore=1; stab.cens<-FALSE; entry.call<-entry; inverse<-exp.link
@@ -130,25 +130,22 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   if (is.null(theta.des)==TRUE) { ptheta<-1; theta.des<-matrix(1,antpers,ptheta);
   colnames(theta.des) <- "intercept"; } else theta.des<-as.matrix(theta.des); 
   ptheta<-ncol(theta.des);
-  dimpar<-ptheta; 
+  if (is.null(dimpar) & is.null(par.func)) dimpar<-ptheta; 
  }
 
  if (model=="ARANCIF") { ### different parameters for Additive random effects 
      if (is.null(random.design)) random.design <- matrix(1,antpers,1); 
      dim.rv <- ncol(random.design); 
      if (is.null(theta.des)==TRUE) theta.des<-diag(dim.rv);
-     print(head(theta.des)); 
-     print(head(random.design))
      dimpar <- ncol(theta.des); 
  
      if (nrow(theta.des)!=ncol(random.design)) stop("nrow(theta.des)!= ncol(random.design)"); 
      score.method <- "nlminb"
  } else {random.design <- matrix(0,1,1); }
 
-###  if ( (!is.null(parfunc)) && is.null(dimpar) ) 
-###    stop("Must specify dimension of score when specifying R-functions\n")
-###  if (is.null(dimpar) && is.null(parfunc)) 
-###  if (!is.null(dparfunc)) dimpar<-length(dparfunc(
+  if ( (!is.null(par.func)) && is.null(dimpar) ) 
+    stop("Must specify dimension of parameters when specifying R-functions\n")
+
   if (is.null(theta)==TRUE) theta<-rep(0.1,dimpar);
   if (length(theta)!=dimpar) theta<-rep(theta[1],dimpar);
 
@@ -173,26 +170,11 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   ## }}}
 
 ###  ## {{{ function and derivative
-###  parfunc=NULL,dparfunc=NULL,colnames=NULL,dimpar=NULL,
-###  if (is.null(parfunc)==FALSE)
-###    {
-###      flex.func<-1; # use flexible design
-###      htheta<- function(theta,t,x,...) {
-###        out <- parfunc(theta,t,x)
-###        if(!is.numeric(out)) stop("Need a numeric result")
-###        as.double(out)
-###      }
-###      dhtheta<- function(theta,t,x,...) {
-###        out <- dparfunc(theta,t,x)
-###        if(!is.numeric(out)) stop("Need a numeric result")
-###        as.double(out)
-###      }
-###    }
-###  else { 
-###    htheta<-function(theta,t,x,...) {return(1)}; dhtheta<-function(theta,t,x,...) {return(1)}; 
-###    dimpar<-ptheta; flex.func<-0; 
-###  } 
-###  ## }}}
+  if (is.null(par.func)==FALSE)
+  {
+      flex.func<-1; # use flexible design
+###      if (score.method=="fisher.scoring") cat("Score.method set to nlminb for flexible modelling \n"); 
+  } ## }}}
 
   Zgamma <-  c(Z %*% gamma); Z2gamma2 <- c(Z2 %*% gamma2); 
   dep.model <- 0;  
@@ -202,13 +184,29 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 
   obj <- function(par) 
     { ## {{{
-      Xtheta <- c( theta.des %*% par); 
+
+      if (is.null(par.func)==TRUE) {Xtheta <- theta.des %*% par; DXtheta <- array(0,c(1,1,1));} else {
+	  Xtheta <- c(); DXtheta <- array(0,c(length(times),antpers,dimpar));
+	  if (is.null(dpar.func)) stop("Must also provide derivative of function wrt to parameters")
+	  s <- 0
+	  for (t in times) {
+		  s <- 1+s
+		  Xttheta <- par.func(par,t,theta.des)
+		  if (length(Xttheta)!=antpers) stop("parfunc(par,t,theta.des) must length n"); 
+		  Xtheta <- cbind(Xtheta,Xttheta)
+		  Dttheta <- dparfunc(par,t,theta.des); 
+		  if (dim(Dttheta)[1]!=antpers || dim(Dttheta)[2]!=dimpar) 
+			  stop("dparfunc must return matrix n x dimpar when called on dparfunc(par,t,theta.des)"); 
+		  DXtheta[s,,] <- Dttheta
+	  }
+      }
 
       outl<-.Call("cor", ## {{{
                  itimes=times,iy=time,icause=cause,iCA1=cause1,iKMc=Gcx, 
                  iz=X,iest=as.matrix(est[,-1]),iZgamma=c(Zgamma),isemi=semi,izsem=Z, 
                  ### Biid,gamma.iid,time.pow, 
-                 itheta=c(par),iXtheta=c(Xtheta),ithetades=theta.des,
+                 itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),
+		 ithetades=theta.des,
                  icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
                  iinverse=inverse,iCA2=cause2,
                  ix2=X2,isemi2=semi2,iest2=as.matrix(est2[,-1]),iZgamma2=c(Z2gamma2),
@@ -249,9 +247,8 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
     score1 <- score
     ## }}}
   } else { ## {{{ nlminb optimizer
-    iid <- 0; 
-    oout <- 0; 
-    tryCatch(opt <- nlminb(theta,obj,control=control),error=function(x) NA)
+    iid <- 0; oout <- 0; 
+  tryCatch(opt <- nlminb(theta,obj,control=control),error=function(x) NA)
     iid <- 1; 
     library(numDeriv)
     hess <- hessian(obj,opt$par)
@@ -265,9 +262,12 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   } ## }}}
 
   theta.iid <- out$theta.iid %*% hessi
+  if (is.null(par.func)) var.theta  <- t(theta.iid) %*% theta.iid else var.theta <- hessi
   var.theta  <- t(theta.iid) %*% theta.iid 
+  if (is.null(par.func)) thetanames <- colnames(theta.des) else
+  thetanames <- rep("R-func",dimpar)
   ud <- list(theta=theta,score=score,hess=out$Dscore,hessi=hessi,var.theta=var.theta,
-             theta.iid=theta.iid,score1=c(score1),thetanames=colnames(theta.des)); 
+             theta.iid=theta.iid,score1=c(score1),thetanames=thetanames); 
   if (dep.model<=3) class(ud)<-"cor" 
   else if (dep.model==4) class(ud) <- "randomcif" 
   else if (dep.model==5) class(ud) <- "randomcifrv" 
@@ -417,34 +417,51 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' ###########################################################
 ##' # investigating further models using parfunc and dparfunc
 ##' ###########################################################
-##' #functd<-function(theta,t,x) { xt=theta[1]+theta[2]*(t-0.5); return(xt) };
-##' #dfunctd<-function(theta,t,x) { return(c(x[1],(t-0.5))) };
+##' set.seed(100)
+##' prt<-simnordic(5000,cordz=2,cormz=5)
+##' prt$status <-prt$cause
+##' table(prt$status)
 ##' 
-##' #library(compiler) # using the compiler library to speed up things
-##' #f=cmpfun(functd)
-##' #df=cmpfun(dfunctd)
-##' #out4<-cor.cif(add,data=multcif,multcif$cause,
-##' #parfunc=f,dparfunc=df,
-##' #cause1=1,cause2=1,cens.model="KM",clusters=multcif$id,theta=log(2+1),
-##' #theta.des=theta.des,colnames=c("intercept","slope"))
-##' #summary(out4)
+##' times <- seq(40,100,by=2)
+##' cifmod <- comp.risk(Surv(time,status>0)~+1+cluster(id),data=prt,prt$status,causeS=1,n.sim=0,
+##'                   times=times,conservative=1,max.clust=NULL,model="fg")
+##' theta.des <- model.matrix(~-1+factor(zyg),data=prt)
 ##' 
-##' ###out4<-cor.cif(add,data=multcif,parfunc=functd,dparfunc=dfunctd,
-##' ###             cause1=1,cause2=1,cens.model="KM",theta=log(2+1),
-##' ###             theta.des=theta.des,colnames=c("intercept","slope"),dimpar=2)
-##' ###summary(out4)
-##' ## no indication of timetrend in cross-odds-ratio
+##' parfunc <- function(par,t,pardes)
+##' {
+##' par <- pardes %*% c(par[1],par[2]) + 
+##'        pardes %*% c( par[3]*(t-60)/12,par[4]*(t-60)/12)
+##' par
+##' }
+##' head(parfunc(c(0.1,1,0.1,1),50,theta.des))
+##' 
+##' dparfunc <- function(par,t,pardes)
+##' {
+##' dpar <- cbind(pardes, t(t(pardes) * c( (t-60)/12,(t-60)/12)) )
+##' dpar
+##' }
+##' head(dparfunc(c(0.1,1,0.1,1),50,theta.des))
+##' 
+##' names(prt)
+##' 
+##' or1 <- or.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,theta=c(0.6,1.7,0.1,0.1),
+##'        par.func=parfunc,dpar.func=dparfunc,dimpar=4,score.method="fisher.scoring",detail=1)
+##' summary(or1)
+##' 
+##'  cor1 <- cor.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,theta=c(0.6,1.7,0.1,0.1),step=0.5,
+##'        par.func=parfunc,dpar.func=dparfunc,dimpar=4,control=list(trace=TRUE),detail=1)
+##' summary(cor1)
 ##' @export
 ##' @keywords survival
 cor.cif<-function(cif,data,cause,times=NULL,
                   cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
-                  clusters=NULL, theta=NULL,theta.des=NULL,
-                  step=1,sym=0,weights=NULL,score.method="nlminb",
-                  same.cens=FALSE,censoring.probs=NULL,silent=1,...)
+                  clusters=NULL, theta=NULL,theta.des=NULL,step=1,sym=0,weights=NULL, 
+		  par.func=NULL,dpar.func=NULL,dimpar=NULL,
+		  score.method="nlminb",same.cens=FALSE,censoring.probs=NULL,silent=1,...)
 { ## {{{
   fit <- dep.cif(cif=cif,data=data,cause=cause,model="COR",times=times,
                  cause1=cause1,cause2=cause2,cens.code=cens.code,cens.model=cens.model,Nit=Nit,detail=detail,
-                 clusters=clusters,theta=theta,theta.des=theta.des,
+                 clusters=clusters,theta=theta,theta.des=theta.des,par.func=par.func,dpar.func=dpar.func,dimpar=dimpar,
                  step=step,sym=sym,weights=weights,
                  score.method=score.method,same.cens=same.cens,censoring.probs=censoring.probs,silent=silent,...)
   fit$call <- match.call()
@@ -454,13 +471,14 @@ cor.cif<-function(cif,data,cause,times=NULL,
 rr.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
                  cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
                  clusters=NULL, theta=NULL,theta.des=NULL, step=1,sym=0,weights=NULL,
-                 same.cens=FALSE,censoring.probs=NULL,silent=1,
+                 same.cens=FALSE,censoring.probs=NULL,silent=1,par.func=NULL,dpar.func=NULL,dimpar=NULL,
                  entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,...)
 { ## {{{
   fit <- dep.cif(cif=cif,data=data,cause=cause,model="RR",cif2=cif2,times=times,
                  cause1=cause1,cause2=cause2,cens.code=cens.code,cens.model=cens.model,Nit=Nit,detail=detail,
                  clusters=clusters,theta=theta,theta.des=theta.des, step=step,sym=sym,weights=weights,
                  same.cens=same.cens,censoring.probs=censoring.probs,silent=silent,
+		 par.func=par.func,dpar.func=dpar.func,dimpar=dimpar,
                  entry=entry,estimator=estimator,trunkp=trunkp,admin.cens=admin.cens,...)
   fit$call <- match.call()
   fit
@@ -469,13 +487,14 @@ rr.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
                  cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
                  clusters=NULL, theta=NULL,theta.des=NULL, step=1,sym=0, weights=NULL,
-                 same.cens=FALSE,censoring.probs=NULL,silent=1,
+                 same.cens=FALSE,censoring.probs=NULL,silent=1,par.func=NULL,dpar.func=NULL,dimpar=NULL,
                  entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,...)
 { ## {{{
   fit <- dep.cif(cif=cif,data=data,cause=cause,model="OR",cif2=cif2,times=times,
                  cause1=cause1,cause2=cause2,cens.code=cens.code,cens.model=cens.model,Nit=Nit,detail=detail,
                  clusters=clusters,theta=theta,theta.des=theta.des, step=step,sym=sym,weights=weights,
                  same.cens=same.cens,censoring.probs=censoring.probs,silent=silent,
+		 par.func=par.func,dpar.func=dpar.func,dimpar=dimpar,
                  entry=entry,estimator=estimator,trunkp=trunkp,admin.cens=admin.cens,...)
   fit$call <- match.call()
   fit
@@ -749,27 +768,27 @@ print.summary.cor <- function(x,digits=3,...)
   cat("\n")
   if (!is.null(x$marg)) {
     cat(paste("Marginal cumulative incidencen",signif(x$marg,digits),"\n"))
-    prmatrix(signif(x$casewise,digits))
+    prmatrix(signif(x$probandwise,digits))
     prmatrix(signif(x$concordance,digits))
     cat("\n")
   }
   invisible(x)
 } ## }}}
 
-##' Computes concordance and casewise concordance for dependence models for competing risks 
+##' Computes concordance and probandwise concordance for dependence models for competing risks 
 ##' models of the type cor.cif, rr.cif or or.cif for the given cumulative incidences and the different dependence
 ##' measures in the object.
 ##'
 ##' @title Summary for dependence models for competing risks
 ##' @param object object from cor.cif rr.cif or or.cif for dependence between competing risks data for two causes.
 ##' @param marg.cif a number that gives the cumulative incidence in one time point for which concordance and 
-##' casewise concordance are computed.
+##' probandwise concordance are computed.
 ##' @param marg.cif2 the cumulative incidence for cause 2 for concordance and 
-##' casewise concordance are computed. Default is that it is the same as marg.cif.
+##' probandwise concordance are computed. Default is that it is the same as marg.cif.
 ##' @param digits digits in output.
 ##' @param ... Additional arguments.
 ##' @return prints summary for dependence model. 
-##' \item{casewise}{gives casewise concordance that is, probability of cause 2 (related to cif2) given that cause 1 (related to cif1)
+##' \item{probandwise}{gives probandwise concordance that is, probability of cause 2 (related to cif2) given that cause 1 (related to cif1)
 ##' 	has occured.}
 ##' \item{concordance}{gives concordance that is, probability of cause 2 (related to cif2) and cause 1 (related to cif1).}
 ##' \item{cif1}{cumulative incidence for cause1.}
@@ -813,11 +832,11 @@ summary.cor <- function(object,marg.cif=NULL,marg.cif2=NULL,digits=3,...) { ## {
       concordance <- exp(coefs[,1])*pmarg.cif/((1-marg.cif)+exp(coefs[,1])*marg.cif)
       conclower  <- exp(coefs[,1]-1.96*coefs[,2])*pmarg.cif/((1-marg.cif)+exp(coefs[,1]-1.96*coefs[,2])*marg.cif)
       concup  <- exp(coefs[,1]+1.96*coefs[,2])*pmarg.cif/((1-marg.cif)+exp(coefs[,1]+1.96*coefs[,2])*marg.cif)
-      casewise <- concordance/marg.cif
+      probandwise <- concordance/marg.cif
       caselower  <- conclower/marg.cif
       caseup     <- concup/marg.cif
     } else if (attr(object,"Type")=="RR") {
-      casewise<- exp(coefs[,1])*c(marg.cif2)
+      probandwise<- exp(coefs[,1])*c(marg.cif2)
       concordance <- exp(coefs[,1])*pmarg.cif
       caselower  <- marg.cif2*exp(coefs[,1]-1.96*coefs[,2])
       caseup     <- marg.cif2*exp(coefs[,1]+1.96*coefs[,2])
@@ -826,21 +845,21 @@ summary.cor <- function(object,marg.cif=NULL,marg.cif2=NULL,digits=3,...) { ## {
     } else if (attr(object,"Type")=="OR-cif") {
       thetal <-  coefs[,1]-1.96*coefs[,2]
       thetau <-  coefs[,1]+1.96*coefs[,2]
-      casewise<- plack.cif2(marg.cif,marg.cif,c(coefs[,1]))/marg.cif
+      probandwise<- plack.cif2(marg.cif,marg.cif,c(coefs[,1]))/marg.cif
       concordance <- plack.cif2(marg.cif,marg.cif,c(coefs[,1]))
       caselower  <- plack.cif2(marg.cif,marg.cif,thetal)/marg.cif
       caseup  <- plack.cif2(marg.cif,marg.cif,thetau)/marg.cif
       conclower  <- plack.cif2(marg.cif,marg.cif,thetal)
       concup     <- plack.cif2(marg.cif,marg.cif,thetau)
     }
-    outcase <- cbind(casewise,caselower,caseup)
+    outcase <- cbind(probandwise,caselower,caseup)
     outconc <- cbind(concordance,conclower,concup)
     rownames(outcase) <- rownames(outconc)  <-  rownames(coefs)
-    colnames(outcase) <- c("casewise concordance","2.5 %","97.5%")
+    colnames(outcase) <- c("probanwise concordance","2.5 %","97.5%")
     colnames(outconc) <- c("concordance","2.5 %","97.5%")
   }
   ## }}}
-  res <- list(casewise=outcase,concordance=outconc,estimates=coefs,
+  res <- list(probandwise=outcase,concordance=outconc,estimates=coefs,
 	      marg.cif=marg.cif, marg.cif2=marg.cif2,type=attr(object,"Type"),
 	      sym=attr(object,"sym"),cause1=attr(object,"cause1"),cause2=attr(object,"cause2"))
   class(res) <- "summary.cor"
@@ -922,11 +941,11 @@ concordance <- function(object,cif1,cif2=NULL,messages=TRUE,model=NULL,coefs=NUL
       concordance <- exp(coefs[k,1])*cif1*cif2/((1-cif1)+exp(coefs[k,1])*cif1)
       conclower  <- exp(coefs[k,1]-1.96*coefs[k,2])*cif1*cif2/((1-cif1)+exp(coefs[k,1]-1.96*coefs[k,2])*cif1)
       concup  <- exp(coefs[k,1]+1.96*coefs[k,2])*cif1*cif2/((1-cif1)+exp(coefs[k,1]+1.96*coefs[k,2])*cif1)
-      casewise <- concordance/cif1
+      probandwise <- concordance/cif1
       caselower  <- conclower/cif1
       caseup     <- concup/cif1
     } else if (model=="RR") {
-      casewise<- exp(coefs[k,1])*c(cif2)
+      probandwise<- exp(coefs[k,1])*c(cif2)
       concordance <- exp(coefs[k,1])*cif1*cif2
       caselower  <- cif2*exp(coefs[k,1]-1.96*coefs[k,2])
       caseup     <- cif2*exp(coefs[k,1]+1.96*coefs[k,2])
@@ -935,7 +954,7 @@ concordance <- function(object,cif1,cif2=NULL,messages=TRUE,model=NULL,coefs=NUL
     } else if (model=="OR-cif") {
       thetal <-  coefs[k,1]-1.96*coefs[k,2]
       thetau <-  coefs[k,1]+1.96*coefs[k,2]
-      casewise<- plack.cif2(cif1,cif2,c(coefs[k,1]))/cif1
+      probandwise<- plack.cif2(cif1,cif2,c(coefs[k,1]))/cif1
       concordance <- plack.cif2(cif1,cif2,c(coefs[k,1]))
       caselower  <- plack.cif2(cif1,cif2,thetal)/cif1
       caseup  <- plack.cif2(cif1,cif2,thetau)/cif1
@@ -943,13 +962,13 @@ concordance <- function(object,cif1,cif2=NULL,messages=TRUE,model=NULL,coefs=NUL
       concup     <- plack.cif2(cif1,cif2,thetau)
     }
 
-    outcase <- cbind(c(casewise),c(caselower),c(caseup))
+    outcase <- cbind(c(probandwise),c(caselower),c(caseup))
     outconc <- cbind(c(concordance),c(conclower),c(concup))
-    colnames(outcase) <- c("casewise concordance","2.5 %","97.5%")
+    colnames(outcase) <- c("probandwise concordance","2.5 %","97.5%")
     colnames(outconc) <- c("concordance","2.5 %","97.5%")
     ## }}}
 
-    out[[k]] <- list(concordance=outconc,casewise.concordance=outcase)
+    out[[k]] <- list(concordance=outconc,probandwise=outcase)
     names(out)[k] <- rownames(coefs)[k]
 ###k <- k+1
   }
@@ -984,6 +1003,7 @@ plack.cif <- function(cif1,cif2,object)
   return(valr); 
 } ## }}}
 
+##' @export
 plack.cif2 <- function(cif1,cif2,theta) 
 { ## {{{
   theta <- exp(c(theta))
@@ -1107,11 +1127,11 @@ print.randomcifrv<- function (x , digits = 3, ...)
 ##       concordance <- exp(coefs[,1])*marg.cif^2/((1-marg.cif)+exp(coefs[,1])*marg.cif)
 ##       conclower  <- exp(coefs[,1]-1.96*coefs[,2])*marg.cif^2/((1-marg.cif)+exp(coefs[,1]-1.96*coefs[,2])*marg.cif)
 ##       concup  <- exp(coefs[,1]+1.96*coefs[,2])*marg.cif^2/((1-marg.cif)+exp(coefs[,1]+1.96*coefs[,2])*marg.cif)
-##       casewise <- concordance/marg.cif
+##       probandwise <- concordance/marg.cif
 ##       caselower  <- conclower/marg.cif
 ##       caseup     <- concup/marg.cif
 ##     } else if (attr(object,"Type")=="RR") {
-##       casewise<- exp(coefs[,1])*c(marg.cif)
+##       probandwise<- exp(coefs[,1])*c(marg.cif)
 ##       concordance <- exp(coefs[,1])*marg.cif^2
 ##       caselower  <- marg.cif*exp(coefs[,1]-1.96*coefs[,2])
 ##       caseup     <- marg.cif*exp(coefs[,1]+1.96*coefs[,2])
@@ -1120,21 +1140,21 @@ print.randomcifrv<- function (x , digits = 3, ...)
 ##     } else if (attr(object,"Type")=="OR-cif") {
 ##       thetal <-  coefs[,1]-1.96*coefs[,2]
 ##       thetau <-  coefs[,1]+1.96*coefs[,2]
-##       casewise<- plack.cif2(marg.cif,marg.cif,c(coefs[,1]))/marg.cif
+##       probandwise<- plack.cif2(marg.cif,marg.cif,c(coefs[,1]))/marg.cif
 ##       concordance <- plack.cif2(marg.cif,marg.cif,c(coefs[,1]))
 ##       caselower  <- plack.cif2(marg.cif,marg.cif,thetal)/marg.cif
 ##       caseup  <- plack.cif2(marg.cif,marg.cif,thetau)/marg.cif
 ##       conclower  <- plack.cif2(marg.cif,marg.cif,thetal)
 ##       concup     <- plack.cif2(marg.cif,marg.cif,thetau)
 ##     }
-##     outcase <- cbind(casewise,caselower,caseup)
+##     outcase <- cbind(probandwise,caselower,caseup)
 ##     outconc <- cbind(concordance,conclower,concup)
 ##     rownames(outcase) <- rownames(outconc)  <-  rownames(coefs)
-##     colnames(outcase) <- c("casewise concordance","2.5 %","97.5%")
+##     colnames(outcase) <- c("probandwise concordance","2.5 %","97.5%")
 ##     colnames(outconc) <- c("concordance","2.5 %","97.5%")
 ##   }
 ##   ## }}}
-##   res <- list(casewise=outcase,concordance=outconc,estimates=coefs,marg=marg.cif,type=attr(object,"Type"),sym=attr(object,"sym"),cause1=attr(object,"cause1"),cause2=attr(object,"cause2"))
+##   res <- list(probandwise=outcase,concordance=outconc,estimates=coefs,marg=marg.cif,type=attr(object,"Type"),sym=attr(object,"sym"),cause1=attr(object,"cause1"),cause2=attr(object,"cause2"))
 ##   class(res) <- "summary.cor"
 ##   res
 ## } ## }}}

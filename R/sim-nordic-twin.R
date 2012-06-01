@@ -128,10 +128,10 @@ return(data)
 } ## }}}
 
 ##' @export 
-simnordic <- function(n) 
+simnordic <- function(n,cordz=2,cormz=3) 
 { ## {{{
-outdz <- corsim.prostate(n,theta=1.7,crate=2,pcens=0.8,mt=1,same.cens=TRUE,test=0) 
-outmz <- corsim.prostate(n,theta=3,crate=2,pcens=0.8,mt=1,same.cens=TRUE,test=0) 
+outdz <- corsim.prostate(n,theta=cordz,crate=2,pcens=0.8,mt=1,same.cens=TRUE,test=0) 
+outmz <- corsim.prostate(n,theta=cormz,crate=2,pcens=0.8,mt=1,same.cens=TRUE,test=0) 
 outdz$zyg <- "DZ" 
 outmz$zyg <-  "MZ"
 outmz$id <- outmz$id+nrow(outdz)
