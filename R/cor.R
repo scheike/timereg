@@ -418,7 +418,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' # investigating further models using parfunc and dparfunc
 ##' ###########################################################
 ##' set.seed(100)
-##' prt<-simnordic(5000,cordz=2,cormz=5)
+##' prt<-simnordic(1000,cordz=2,cormz=5)
 ##' prt$status <-prt$cause
 ##' table(prt$status)
 ##' 
@@ -444,11 +444,11 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' 
 ##' names(prt)
 ##' 
-##' or1 <- or.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,theta=c(0.6,1.7,0.1,0.1),
+##' or1 <- or.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,theta=c(0.6,1.1,0.1,0.1),
 ##'        par.func=parfunc,dpar.func=dparfunc,dimpar=4,score.method="fisher.scoring",detail=1)
 ##' summary(or1)
 ##' 
-##'  cor1 <- cor.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,theta=c(0.6,1.7,0.1,0.1),step=0.5,
+##'  cor1 <- cor.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,theta=c(0.5,1.0,0.1,0.1),step=0.5,
 ##'        par.func=parfunc,dpar.func=dparfunc,dimpar=4,control=list(trace=TRUE),detail=1)
 ##' summary(cor1)
 ##' @export
