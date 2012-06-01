@@ -194,7 +194,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 		  Xttheta <- par.func(par,t,theta.des)
 		  if (length(Xttheta)!=antpers) stop("parfunc(par,t,theta.des) must length n"); 
 		  Xtheta <- cbind(Xtheta,Xttheta)
-		  Dttheta <- dparfunc(par,t,theta.des); 
+		  Dttheta <- dpar.func(par,t,theta.des); 
 		  if (dim(Dttheta)[1]!=antpers || dim(Dttheta)[2]!=dimpar) 
 			  stop("dparfunc must return matrix n x dimpar when called on dparfunc(par,t,theta.des)"); 
 		  DXtheta[s,,] <- Dttheta

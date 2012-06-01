@@ -34,7 +34,7 @@ conc2probandwise <- function(conc,marg,test="no-test")
   {
    if (!is.null(conc$se.P1)) out$se.P1 <- as.matrix(Cpred(cbind(conc$time,c(conc$se.P1)),timer)[,2]/margtime,ncol=100)
    if (!is.null(conc$P1.iid)) out$P1.iid <- Cpred(cbind(conc$time,conc$P1.iid[1,,]),timer)[,-1]/margtime
-    if (ncol(conc1$P1.iid[1,,])== ncol(marg$P1.iid[1,,])) {
+    if (ncol(conc$P1.iid[1,,])== ncol(marg$P1.iid[1,,])) {
    if (test=="case") 
    {
     if (!is.null(conc$P1.iid)) {
