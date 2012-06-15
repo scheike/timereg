@@ -112,9 +112,11 @@ ClaytonOakes <- function(formula,data=parent.frame(),cluster,var.formula=~1,cuts
   npar <- npar+ncol(Z)
   p0 <- rep(0.1,npar)
   if (!missing(start)) p0 <- c(start,rep(0,max(0,length(npar)-length(start))))
- 
+  if (!is.null(dots$theta)) p0[1] <- dots$theta
+
   invlinkname <- as.character(substitute(var.invlink))
 
+  
   obj <- function(p) {
     varpar <- p[seq(ngamma)]
     p <- p[-seq(ngamma)]
@@ -128,6 +130,7 @@ ClaytonOakes <- function(formula,data=parent.frame(),cluster,var.formula=~1,cuts
       p <- p[-seq(nbeta)]
       multhaz <- exp(X%*%beta)
     }
+    if (!is.null(dots$theta)) theta0 <- cbind(rep(dots$theta,length(theta0)))
     ##browser()
     res <- .Call("claytonoakes",
            ds=mydata$status,ts=mydata$T,es=mydata$entry,
