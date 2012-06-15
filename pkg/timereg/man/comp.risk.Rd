@@ -48,7 +48,7 @@ causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",cens.formula=NULL,
 time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
 weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,
-trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=0)
+estimator=1,trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=0)
 }
 \arguments{
 \item{formula}{a formula object, with the response on the left of a '~'
@@ -95,6 +95,7 @@ the clusters. When NULL then all clusters are used.
 Default is 1000 to save memory and time. } 
 \item{first.time.p}{first point for estimation is pth percentile of causeS jump times.}
 \item{n.times}{only uses 50 points for estimation, if NULL then uses all points, subject to p.start condition.}
+\item{estimator}{default estimator is 1.}
 \item{trunc.p}{truncation weight for delayed entry, P(T > entry.time | Z_i), typically Cox model.}
 \item{entry.time}{entry times}
 \item{cens.weight}{censoring weights can be given here rather than calculated using the KM, cox or aalen models.}

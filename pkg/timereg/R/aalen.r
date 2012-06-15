@@ -141,8 +141,8 @@ if (retur==1) cumAi<-matrix(0,Ntimes,fdata$antpers) else cumAi<-0;
 if (nx!=ng) print(" A design og B designs er ikke ens\n");
 cum<-matrix(0,Ntimes,px+1); 
 Vcum<-cum; robVcum<-cum; 
-Vargam<-matrix(0,pg,pg); RobVargam<-matrix(0,pg,pg); 
-intZHZ<-matrix(0,pg,pg); intZHdN<-rep(0,pg); 
+Vargam2 <- Vargam<-matrix(0,pg,pg); RobVargam<-matrix(0,pg,pg); 
+intZHZ<-matrix(0,pg,pg); gamma2 <- intZHdN<-rep(0,pg); 
 
 test<-matrix(0,antsim,3*px); testOBS<-rep(0,3*px); testval<-c(); 
 
@@ -175,7 +175,8 @@ as.double(covs), as.integer(resample.iid),as.double(gamma.iid),   # 12
 as.double(B.iid), as.integer(clusters),as.integer(fdata$antclust),   # 13
 as.double(intZHZ),as.double(intZHdN),as.integer(deltaweight),        # 14
 as.integer(silent),as.double(weights),as.integer(entry),
-as.integer(fix.gamma),as.integer(mof),as.double(offsets)
+as.integer(fix.gamma),as.integer(mof),as.double(offsets),
+as.double(gamma2),as.double(Vargam2)
 ,PACKAGE="timereg"); 
 ## }}}
 
@@ -203,6 +204,7 @@ if (fix.gamma==0) gamma<-matrix(semiout[[18]],pg,1);
 Vargam<-matrix(semiout[[19]],pg,pg); 
 robVargam<-matrix(semiout[[20]],pg,pg); 
 intZHZ<-matrix(semiout[[40]],pg,pg); intZHdN<-matrix(semiout[[41]],pg,1); 
+Vargam2 <-matrix(semiout[[50]],pg,pg); gamma2<-matrix(semiout[[49]],pg,1); 
 
 if (retur==1) {
 cumAi<-matrix(semiout[[31]],Ntimes,fdata$antpers*1); 
@@ -237,6 +239,7 @@ sim.testBeqC.is<-NULL; pval.testBeqC.is<-NULL;
 obs.testBeqC.is<-NULL; 
 }
 
+tau=max(cum[,1])
 ## }}}
 
 ud<-list(cum=cum,var.cum=Vcum,robvar.cum=robVcum,
@@ -248,6 +251,6 @@ sim.testBeq0= sim.testBeq0,
 sim.testBeqC=sim.testBeqC,sim.testBeqC.is=sim.testBeqC.is,
 conf.band=unifCI,test.procBeqC=Ut,sim.test.procBeqC=UIt,
 covariance=cov.list,B.iid=B.iid,gamma.iid=gamma.iid,
-intZHZ=intZHZ,intZHdN=intZHdN)
+intZHZ=intZHZ,intZHdN=intZHdN); ### ,gamma2=gamma2/tau,var.gamma2=Vargam2/tau^2)
 return(ud);
 }

@@ -4,7 +4,6 @@ import(survival, timereg)
 
 export("rr.cif",
        "cor.cif",
-       "dep.cif",
        "back2timereg",
        "conc2case",
        "test.conc",
@@ -15,8 +14,8 @@ export("rr.cif",
        "random.cif",
        "concordance",
        "Grandom.cif",
-       "random.cif2cause"
-)
+       "random.cif2cause",
+       "Specials")
 
 S3method(summary,cor)
 S3method(summary,randomcif)

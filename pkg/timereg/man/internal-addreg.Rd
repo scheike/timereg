@@ -58,6 +58,7 @@
 \alias{print.pe.sasieni} 
 \alias{print.predict.timereg}
 \alias{print.two.stage}
+\alias{residualsTimereg}
 \alias{summary.pe.sasieni}
 \alias{summary.predict.timereg}
 \alias{summary.pls}

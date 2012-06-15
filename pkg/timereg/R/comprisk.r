@@ -2,7 +2,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="fg",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",cens.formula=NULL,time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
-weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,
+weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,estimator=1,
 trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=0) 
 # {{{
 { 
@@ -24,7 +24,7 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=0)
     m$model<-m$causeS<- m$detail<- m$cens.model<-m$time.pow<-m$silent<- 
     m$cens.code<-m$cens.formula <- m$interval<- m$clusters<-m$resample.iid<-
     m$time.pow.test<-m$conv<- m$weights  <- m$max.clust <- m$first.time.p<- m$trunc.p <- 
-    m$entry.time <- m$cens.weight <- m$admin.cens <- m$fix.gamma <- m$est  <- m$conservative <- NULL
+    m$entry.time <- m$cens.weight <- m$admin.cens <- m$fix.gamma <- m$est  <- m$conservative <-     m$estimator <- NULL
   special <- c("const","cluster")
   if (missing(data)) {
     Terms <- terms(formula, special)
@@ -97,11 +97,11 @@ if (is.null(weights)==TRUE) weights <- rep(1,n);
 ## }}}
 
 ## {{{ censoring and estimator 
-if (is.null(admin.cens)) estimator <- 1 else estimator  <- 3;
+if (!is.null(admin.cens)) estimator  <- 3;
 Gcxe <- 1;  ordertime <- order(time2); 
 ###dcumhazcens <- rep(0,n); 
 
-if (estimator==1) {
+if (estimator==1 || estimator==4) {
 if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncation
   if (cens.model=="KM") { ## {{{
     if (is.null(entry.time)) { ud.cens<-survfit(Surv(time2,cause==cens.code)~+1);
@@ -179,7 +179,7 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
     Gcx <- cens.weight
     Gctimes <- rep(1,length(times)); 
    }
-} else { 
+} else { ## estimator==3 admin.cens 
     if (length(admin.cens)!=n) stop("censoring weights must have length equal to nrow in data\n");  
     Gcx <- admin.cens
     Gctimes <- rep(1,length(times)); 

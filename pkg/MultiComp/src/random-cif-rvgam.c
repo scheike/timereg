@@ -6,12 +6,12 @@
 void rcifdes(times,Ntimes,x,delta,cause,CA1,KMc,z,antpers,px,Nit,score,hess,est,
 gamma,semi,zsem,pg,detail,biid,gamiid,timepow,theta,vartheta,thetades,ptheta,antclust,
 cluster,clustsize,clusterindex,maxclust,step,inverse,dscore,rvdes,prv,notaylor,samecens,
-trunkp, entryage,cif1lin,cifmodel 
+trunkp, entryage,cif1lin 
 )
 double *theta,*times,*x,*KMc,*z,*score,*hess,*est,*gamma,*zsem,*vartheta,*biid,*gamiid,*timepow,*thetades,*step,*rvdes, 
        *trunkp, *entryage,*cif1lin ; 
 int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,
-*antclust,*cluster,*clustsize,*clusterindex,*maxclust,*inverse,*dscore,*prv,*notaylor,*samecens,*cifmodel;
+*antclust,*cluster,*clustsize,*clusterindex,*maxclust,*inverse,*dscore,*prv,*notaylor,*samecens;
 { // {{{
 // {{{
  matrix *ldesignX,*A,*AI,*cdesignX,*ldesignG,*cdesignG;
@@ -32,9 +32,9 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*semi,*pg,*CA1,*detail,*ptheta,
 	*rvvec2vv;
 
  int naprint=0,pmax,v,itt,i,j,k,l,l1,s,c;
- double Li,Lk,ithetak=0,thetak=0,response,time;
- double edd,test,fabs(); // ,Dinverse,DDinverse;
- double sumscore,pow(),diff,
+ double Li,Lk,ithetak=0,thetak=0,response,time,dtime;
+ double edd,test,fabs(),Dinverse,DDinverse;
+ double sumscore,sdj,pow(),diff,
         *ckij=calloc(1,sizeof(double)),
         *ckijvv=calloc(1,sizeof(double)), *ckijtv=calloc(1,sizeof(double)),
         *ckijvt=calloc(1,sizeof(double)), *dckij=calloc(1,sizeof(double));
@@ -125,7 +125,7 @@ if (test<0) {
   { 
       R_CheckUserInterrupt();
       mat_zeros(d2Utheta); vec_zeros(Utheta); 
-      sumscore=0; // Dinverse=1; DDinverse=1; 
+      sumscore=0; Dinverse=1; DDinverse=1; 
 
       if (*inverse==1)  {
             for (l1=0;l1<*ptheta;l1++) VE(vtheta2,l1)= exp(VE(vtheta1,l1)); 
@@ -135,14 +135,13 @@ if (test<0) {
       for (s=0;s<*Ntimes;s++)
       {
      // Rprintf("times  s %d %d %d \n",s,*Ntimes,*antclust); 
-	  time=times[s]; // if (s==0) dtime=0; else dtime=time-times[s-1]; 
+	  time=times[s]; if (s==0) dtime=0; else dtime=time-times[s-1]; 
 	  for(j=1;j<=*px;j++) {VE(bhatt,j-1)=est[j*(*Ntimes)+s];}
 	  Mv(ldesignX,bhatt,pbhat); 
-	  if ((*semi==1) & (*cifmodel==1)) {scl_vec_mult(time,pghat0,pghat);vec_add(pbhat,pghat,pbhat);}
-	  if ((*semi==1) & (*cifmodel==2)) for (c=0;c<*antpers;c++)  VE(pbhat,c)=VE(pbhat,c)*exp(VE(pghat0,c)); 
+	  if (*semi==1) {scl_vec_mult(time,pghat0,pghat);vec_add(pbhat,pghat,pbhat);}
 	
     for (j=0;j<*antclust;j++) if (clustsize[j]>=2) {
-          diff=0;vec_zeros(rowX);vec_zeros(rowZ); 
+          diff=0;sdj=0; vec_zeros(rowX);vec_zeros(rowZ); 
 
           for (c=0;c<clustsize[j];c++) for (v=0;v<clustsize[j];v++) 
 	  if (v!=c) { 
@@ -167,6 +166,7 @@ if (test<0) {
 
        Li=VE(pbhat,i); Lk=VE(pbhat,k); 
        extract_row(RVdes,i,rvvec); extract_row(RVdes,k,rvvec1); 
+
 
 if (trunkp[i]<1) {
        ckrvdes2(alphai,alphaj,1.0,Li,Lk,ckij,rvvec2,rvvec,rvvec1); 
@@ -194,7 +194,7 @@ if (trunkp[i]<1) {
 //       vM(pardes[i],rvvec2,vthetascore); 
 
 	if (isnan(response))   { // removes these from score equations
-	   diff=0; 
+	   diff=0; sdj=0; 
 	}
 
 

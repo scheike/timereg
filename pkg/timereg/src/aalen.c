@@ -221,14 +221,14 @@ for (s=1;s<*Ntimes;s++){
   free(cluster);  free(idd); free(vcudif); 
 } // }}}
 
-void semiaalen(alltimes,Nalltimes,Ntimes,designX,nx,px,designG,ng,pg,antpers,start,stop,nb,bhat,cu,vcu,Robvcu,gamma,Vgamma,RobVgamma,sim,antsim,test,testOBS,robust,status,Ut,simUt,id,weighted,cumAit,retur,covariance,covs,resample,gammaiid,Biid,clusters,antclust,intZHZ,intZHdN,deltaweight,silent,weights,entry,fixedgamma,mof,offsets)
-double *designX,*alltimes,*start,*stop,*cu,*vcu,*bhat,*designG,*gamma,*Vgamma,*RobVgamma,*Robvcu,*test,*testOBS,*Ut,*simUt,*cumAit,*covs,*Biid,*gammaiid,*intZHZ,*intZHdN,*weights,*offsets; 
+void semiaalen(alltimes,Nalltimes,Ntimes,designX,nx,px,designG,ng,pg,antpers,start,stop,nb,bhat,cu,vcu,Robvcu,gamma,Vgamma,RobVgamma,sim,antsim,test,testOBS,robust,status,Ut,simUt,id,weighted,cumAit,retur,covariance,covs,resample,gammaiid,Biid,clusters,antclust,intZHZ,intZHdN,deltaweight,silent,weights,entry,fixedgamma,mof,offsets,gamma2,Vgamma2)
+double *designX,*alltimes,*start,*stop,*cu,*vcu,*bhat,*designG,*gamma,*Vgamma,*RobVgamma,*Robvcu,*test,*testOBS,*Ut,*simUt,*cumAit,*covs,*Biid,*gammaiid,*intZHZ,*intZHdN,*weights,*offsets,*gamma2,*Vgamma2; 
 int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status,*id,*weighted,*retur,*covariance,*resample,*clusters,*antclust,*deltaweight,*silent,*entry,*fixedgamma,*mof;
 { // {{{
 // {{{ setting up variables and allocating
   matrix *Vcov,*X,*WX,*A,*AI,*AIXW,*Z,*WZ;
-  matrix *dCGam,*CGam,*Ct,*ICGam,*VarKorG,*dC,*ZH,*XWZ,*ZWZ,*XWZAI;
-  matrix *Acorb[*Nalltimes],*Vargam,*dVargam,*M1M2[*Ntimes],*GCdM1M2;
+  matrix *IdCGam,*dCGam,*CGam,*Ct,*ICGam,*VarKorG,*dC,*ZH,*XWZ,*ZWZ,*XWZAI;
+  matrix *Acorb[*Nalltimes],*Vargam,*dVargam,*M1M2[*Ntimes],*GCdM1M2,*Vargam2;
   matrix *C[*Nalltimes],*dM1M2,*M1M2t,*RobVargam; 
   matrix *tmpM2,*tmpM3,*tmpM4;
   matrix *W3t[*antclust],*W4t[*antclust];
@@ -236,7 +236,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
   vector *W2[*antclust],*W3[*antclust];
   vector *VdB,*difX,*xi,*tmpv1,*tmpv2; 
   vector *dAoff,*dA,*rowX,*dN,*AIXWdN,*bhatt,*pbhat,*plamt;
-  vector *korG,*pghat,*rowZ,*gam,*gamoff,*dgam,*ZHdN,*IZHdN,*zi,*offset;
+  vector *dgam2,*gam2,*korG,*pghat,*rowZ,*gam,*gamoff,*dgam,*ZHdN,*IZHdN,*zi,*offset;
   int l1,cin,ci=0,i,j,k,l,c,s,count,pers=0,pmax,stat,
       *cluster=calloc(*antpers,sizeof(int)),
       *stats=calloc(*Nalltimes,sizeof(int)), 
@@ -252,12 +252,12 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
   malloc_mat(*antpers,*pg,Z); malloc_mat(*antpers,*pg,WZ); 
   malloc_mat(*px,*antpers,AIXW); malloc_mat(*pg,*antpers,ZH);
   malloc_mats(*px,*px,&Vcov,&A,&AI,&GCdM1M2,&VarKorG,NULL); 
-  malloc_mats(*pg,*pg,&tmpM2,&ZWZ,&RobVargam,&Vargam,&dVargam,&ICGam,&CGam,&dCGam,NULL); 
+  malloc_mats(*pg,*pg,&tmpM2,&ZWZ,&RobVargam,&Vargam,&dVargam,&Vargam2,&ICGam,&CGam,&IdCGam,&dCGam,NULL); 
   malloc_mats(*px,*pg,&tmpM3,&Ct,&dC,&XWZ,&XWZAI,&dM1M2,&M1M2t,NULL);
   malloc_mat(*px,*pg,tmpM4);
 
   malloc_vecs(*px,&dA,&dAoff,&VdB,&difX,&xi,&tmpv1,&korG,&rowX,&AIXWdN,&bhatt,NULL);
-  malloc_vecs(*pg,&zi,&tmpv2,&rowZ,&gam,&gamoff,&dgam,&ZHdN,&IZHdN,NULL);
+  malloc_vecs(*pg,&dgam2,&gam2,&zi,&tmpv2,&rowZ,&gam,&gamoff,&dgam,&ZHdN,&IZHdN,NULL);
   malloc_vecs(*antpers,&offset,&pbhat,&dN,&pghat,&plamt,NULL);
 
   for (j=0;j<*Nalltimes;j++) {
@@ -374,6 +374,10 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 		  vM(XWZ,AIXWdN,tmpv2); vec_subtr(zi,tmpv2,ZHdN);
 		  if (*deltaweight==0){ scl_vec_mult(dtime,ZHdN,ZHdN); }
 		  vec_add(ZHdN,IZHdN,IZHdN);
+//                invertS(dCGam,IdCGam,silent[0]);
+//		  Mv(IdCGam,ZHdN,dgam2);  
+//	          scl_vec_mult(dtime,dgam2,dgam2); 
+//		  vec_add(dgam2,gam2,gam2); 
 	  }
 	  mat_copy(XWZAI,Acorb[s]);
 
@@ -398,6 +402,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 
 		  for (k=0;k<*pg;k++){ 
 			  for (j=0;j<*pg;j++) ME(dVargam,k,j)= VE(ZHdN,j)*VE(ZHdN,k);
+			  for (j=0;j<*pg;j++) ME(Vargam2,k,j)+= VE(dgam2,j)*VE(dgam2,k);
 			  for (j=0;j<*px;j++) ME(dM1M2,j,k)=VE(ZHdN,k)*VE(AIXWdN,j);
 		  }
 		  mat_add(dVargam,Vargam,Vargam);
@@ -626,8 +631,10 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
   for (j=0;j<*pg;j++) {
     intZHdN[j]=VE(IZHdN,j); 
     gamma[j]=VE(gam,j); 
+    gamma2[j]=VE(gam2,j); 
     for (k=0;k<*pg;k++) {
       Vgamma[k*(*pg)+j]=ME(Vargam,j,k);
+      Vgamma2[k*(*pg)+j]=ME(Vargam2,j,k);
       RobVgamma[k*(*pg)+j]=ME(RobVargam,j,k);
       intZHZ[k*(*pg)+j]=ME(CGam,j,k); 
     } 
@@ -643,10 +650,10 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
   
   free_mat(X); free_mat(WX); free_mat(Z); free_mat(WZ); free_mat(AIXW); free_mat(ZH);
   free_mats(&Vcov,&A,&AI,&GCdM1M2,&VarKorG,NULL); 
-  free_mats(&tmpM2,&ZWZ,&RobVargam,&Vargam,&dVargam,&ICGam,&CGam,&dCGam,NULL); 
-  free_mats(&tmpM4,&tmpM3,&Ct,&dC,&XWZ,&XWZAI,&dM1M2,&M1M2t,NULL);
+  free_mats(&tmpM2,&ZWZ,&RobVargam,&Vargam,&dVargam,&ICGam,&CGam,&IdCGam,&dCGam,NULL); 
+  free_mats(&Vargam2,&tmpM4,&tmpM3,&Ct,&dC,&XWZ,&XWZAI,&dM1M2,&M1M2t,NULL);
 
-  free_vecs(&dA,&dAoff,&VdB,&difX,&xi,&tmpv1,&korG,&rowX,&AIXWdN,&bhatt,NULL);
+  free_vecs(&dgam2,&gam2,&dA,&dAoff,&VdB,&difX,&xi,&tmpv1,&korG,&rowX,&AIXWdN,&bhatt,NULL);
   free_vecs(&zi,&tmpv2,&rowZ,&gam,&gamoff,&dgam,&ZHdN,&IZHdN,NULL);
   free_vecs(&offset,&pbhat,&dN,&pghat,&plamt,NULL);
 

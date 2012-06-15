@@ -21,7 +21,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
   vector *lamt,*lamtt,*offset,*weight,*one;
   vector *tmpv1,*xi,*zi,*reszpbeta,*res1dim; 
   vector *vthetascore,*vtheta1,*vtheta2,*dtheta,*thetaiid[*antclust]; 
-  vector *dbetaNH[*antclust],*dANH[*antclust]; 
+//  vector *dbetaNH[*antclust],*dANH[*antclust]; 
   vector *dAiid[*antclust],*gammaiid[*antclust]; 
   int c,i,j,k,l,s,it,pmax,v,
       *cluster=calloc(*antpers,sizeof(int));
@@ -39,7 +39,8 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
   for (j=0;j<*antclust;j++) { Nt[j]=0; NH[j]=0; 
    if (*notaylor==0) { malloc_vec(*pg,gammaiid[j]); 
 	   malloc_mat(*maxtimesim,*px,Biid[j]);}
-    malloc_vec(*pg,dbetaNH[j]); malloc_vec(*px,dANH[j]);  malloc_vec(*ptheta,dAiid[j]); 
+//    malloc_vec(*pg,dbetaNH[j]); malloc_vec(*px,dANH[j]);  
+    malloc_vec(*ptheta,dAiid[j]); 
     malloc_vec(*ptheta,thetaiid[j]); malloc_mat(*ptheta,*ptheta,Sthetaiid[j]); 
   }
 
@@ -66,7 +67,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
 	  Hik[j]=cumhaz[j]; Nti[j]=Nti[j]+status[j]; Nt[cluster[j]]= Nt[cluster[j]]+status[j]; 
   }
 
-//  for (j=0;j<*antpers;j++)  Rprintf("%d %lf %lf %lf  \n",j,cumhaz[j],Nti[j],cumhazleft[j]); 
+// for (j=0;j<*antpers;j++) Rprintf("%d %d %d %lf %lf %lf  \n",j,id[j],cluster[id[j]],cumhaz[j],Nti[j],cumhazleft[j]); 
 
   if (*notaylor==0) {
   for (i=0;i<*antclust;i++) for (j=0;j<*pg;j++) VE(gammaiid[i],j)=gamiid[j*(*antclust)+i]; 
@@ -93,10 +94,10 @@ for(j=0;j<pmax;j++) {
   {
       j=cluster[i]; 
       NH[j]=NH[j]+Nti[i]*Hik[i]; 
-      extract_row(ldesG0,i,zi); extract_row(cdesX2,i,xi);
-      vec_add_mult(dbetaNH[j],zi,Nti[i]*Hik[i],dbetaNH[j]);  
-      vec_add_mult(dANH[j],xi,Nti[i]*Hik[i],dANH[j]);  
-      if (*betafixed==1) vec_zeros(dbetaNH[j]);  
+//      extract_row(ldesG0,i,zi); extract_row(cdesX2,i,xi);
+//      vec_add_mult(dbetaNH[j],zi,Nti[i]*Hik[i],dbetaNH[j]);  
+//      vec_add_mult(dANH[j],xi,Nti[i]*Hik[i],dANH[j]);  
+//      if (*betafixed==1) vec_zeros(dbetaNH[j]);  
   }
 
    R_CheckUserInterrupt();
@@ -233,9 +234,11 @@ for(j=0;j<pmax;j++) {
 	  (1/theta0)*(1+theta0*cumhazleft[i])*exp(theta0*cumhazleft[i])/Rthetaleft[k]+
 	  (1+theta0*Nt[k])*exp(theta0*cumhazleft[i])*HeHleft[k]/pow(Rthetaleft[k],2));
 	}
-        extract_row(ldesG0,i,zi); extract_row(destheta,i,vtheta1); 
-        for (c=0;c<*ptheta;c++) for (l=0;l<*pg;l++) 
-	  ME(Gtilde,c,l)=ME(Gtilde,c,l)+VE(zi,l)*VE(vtheta1,c)*(dummy+dummyleft);  
+	if (*notaylor==0) {
+           extract_row(ldesG0,i,zi); extract_row(destheta,i,vtheta1); 
+           for (c=0;c<*ptheta;c++) for (l=0;l<*pg;l++) 
+	      ME(Gtilde,c,l)=ME(Gtilde,c,l)+VE(zi,l)*VE(vtheta1,c)*(dummy+dummyleft);  
+	  }
 	}
       }
 
@@ -304,7 +307,8 @@ for(j=0;j<pmax;j++) {
   
   for (j=0;j<*antclust;j++) {
   if (notaylor==0) { free_vec(gammaiid[j]); free_mat(Biid[j]); }
-    free_vec(dbetaNH[j]); free_vec(dANH[j]);  free_vec(dAiid[j]); 
+//    free_vec(dbetaNH[j]); free_vec(dANH[j]);  
+    free_vec(dAiid[j]); 
     free_vec(thetaiid[j]); free_mat(Sthetaiid[j]); }
 
   free_mats(&destheta, &d2Utheta, &d2UItheta, &Stheta, &Ftilde, &Gtilde,

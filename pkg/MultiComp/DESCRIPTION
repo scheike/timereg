@@ -1,11 +1,13 @@
-Package: MultiComp	
+Package: MultiComp
 Version: 0.5-4
-Title: Dependence modelling for competing risks data
-Date: 2012-04-19
-Title: Modelling of dependence for multivariate competing risks data. Cross-odds-ratio regression modelling and random effects modelling.
+Title: Modelling of dependence for multivariate competing risks data.
+        Cross-odds-ratio regression modelling and random effects
+        modelling.
+Date: 2011-12-11
 Author: Thomas Scheike 
 Maintainer: Thomas Scheike <ts@biostat.ku.dk>
 Description: Modelling of dependence for multivariate competing risks data. Cross-odds-ratio regression modelling and random effects modelling.
-Depends: survival, timereg, R (>= 2.4.0) 
+Depends: survival, timereg, R (>= 2.4.0)
 LazyLoad: yes
-License: GPL (>= 2)
+License: GPL (version 2 or later)
+Packaged: 2012-01-26 15:55:48 UTC; Thomas

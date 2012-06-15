@@ -6,6 +6,7 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=0.5,notaylor=0)
 { ## {{{
 ## {{{ seting up design and variables
  rate.sim <- 1; 
+if (class(margsurv)!="coxph") {
  formula<-attr(margsurv,"Formula");
  beta.fixed <- attr(margsurv,"beta.fixed")
  if (is.null(beta.fixed)) beta.fixed <- 1; 
@@ -18,7 +19,7 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=0.5,notaylor=0)
  if (npar==TRUE) {Z<-matrix(0,antpers,1); pz<-1; fixed<-0;} else {fixed<-1;pz<-ncol(Z);}
  px<-ncol(X);
 
-  if (is.null(clusters))  clusters <- mclusters else if (sum(abs(clusters-mclusters))>0) 
+ if (is.null(clusters))  clusters <- mclusters else if (sum(abs(clusters-mclusters))>0) 
 	  cat("Warning: Clusters for marginal model different than those specified for two.stage\n"); 
 
   if (!is.null(attr(margsurv,"max.clust")))
@@ -27,32 +28,95 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=0.5,notaylor=0)
 
  if (nrow(X)!=length(clusters)) stop("Length of Marginal survival data not consistent with cluster length\n"); 
 
+} else { ### coxph
+   notaylor <- 1
+   antpers <- margsurv$n
+   id <- 0:(antpers-1)
+  mt <- model.frame(margsurv)
+  Y <- model.extract(mt, "response")
+  if (!inherits(Y, "Surv")) stop("Response must be a survival object")
+   if (attr(Y, "type") == "right") {
+        time2 <- Y[, "time"]; 
+        status <- Y[, "status"]
+	start <- rep(0,antpers);
+	} else {
+	 start <- Y[, 1]; time2 <- Y[, 2];status <- Y[, 3];
+        }
+   Z <- na.omit(model.matrix(margsurv)[,-1]) ## Discard intercept
+   Z <- matrix(1,antpers,length(coef(margsurv)));
+
+   if (is.null(clusters)) stop("must give clusters for coxph\n");
+   X <- matrix(1,antpers,1); ### Z <- matrix(0,antpers,1); ### no use for these
+   px <- 1; pz <- ncol(Z); 
+   start <- rep(0,antpers);
+   beta.fixed <- 0
+   semi <- 1
+   start.time <- 0
+}
+
   out.clust <- cluster.index(clusters);  
+  clusters <- out.clust$clusters
   maxclust <- out.clust$maxclust 
   antclust <- out.clust$antclust
   idiclust <- out.clust$idclust
   cluster.size <- out.clust$cluster.size
 
-  if (sum(abs(start))>0) lefttrunk <- 1  else lefttrunk <- 0;  cumhazleft <- 0; 
 
-  if (npar==TRUE) RR <-  rep(1,antpers); 
-  if (npar==FALSE) RR <- exp(Z %*% margsurv$gamma); 
+  if (sum(abs(start))>0) lefttrunk <- 1  else lefttrunk <- 0;  
+  cumhazleft <- 0; 
+  RR <-  rep(1,antpers); 
+
+  update <- 1;
+  if (update==0) {
   if ((attr(margsurv,"residuals")!=2) || (lefttrunk==1)) { ### compute cum hazards in time point infty; 
 	  nn <- nrow(margsurv$cum) 
 	  cum <- Cpred(margsurv$cum,time2)[,-1]
 	  if (npar==TRUE) cumhaz <- apply(cum*X,1,sum)
 	  if (npar==FALSE) cumhaz <- apply(cum*X,1,sum)*exp( Z %*% margsurv$gamma)
 	  if (lefttrunk==1) {
-		  cum <- Cpred(margsurv$cum,start)[,-1]
-		  cumhazleft <- apply(cum*X,1,sum)
-	  if (npar==TRUE) cumhazleft <-  cumhazleft
-	  if (npar==FALSE) cumhazleft <- cumhazleft * exp( Z %*% margsurv$gamma)
+	     cum <- Cpred(margsurv$cum,start)[,-1]
+	     cumhazleft <- apply(cum*X,1,sum)
+	     if (npar==TRUE) cumhazleft <-  cumhazleft
+	     if (npar==FALSE) cumhazleft <- cumhazleft * exp( Z %*% margsurv$gamma)
 	  } 
-  } else { residuals <- margsurv$residuals$dM; cumhaz <- status-residuals; }
+  } else { residuals<-margsurv$residuals$dM; cumhaz<-status-residuals; }
+  }
 
-  ratesim<-rate.sim; inverse<-var.link
+  if (update==1) 
+  if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen")  { ## {{{
+     if ((attr(margsurv,"residuals")!=2) || (lefttrunk==1)) { 
+         resi <- residualsTimereg(margsurv,data=data) 
+         residuals <- resi$residuals; 
+	 cumhaz <- resi$cumhaz; 
+	 cumhazleft <- resi$cumhazleft; 
+	 RR <- resi$RR
+     } else { residuals <- margsurv$residuals$dM; 
+              cumhaz <- status-residuals; 
+	      if (class(margsurv)=="cox.aalen") RR  <- exp( Z %*% margsurv$gamma)
+     }
+  }
+  else if (class(margsurv)=="coxph") {
+       notaylor <- 1
+       residuals <- residuals(margsurv)
+       cumhaz <- status-residuals
+       cumhazleft <- rep(0,antpers)
+###    RR<- exp(Z %*% coef(margsurv))
+       RR<- exp(margsurv$linear.predictors-margsurv$means*coef(margsurv))
+        if ((lefttrunk==1)) { 
+         baseout <- basehaz(margsurv,centered=FALSE); 
+         cum <- cbind(baseout$time,baseout$hazard)
+	 cum <- Cpred(cum,start)[,2]
+	 cumhazleft <- cum * RR 
+	}
+  } ## }}}
+
+###  print(head(cbind(residuals,cumhaz,RR,time2,status)))
+
+  ratesim<-rate.sim; 
+  inverse<-var.link
   pxz <- px + pz;
-  times<-c(start.time,time2[status==1]); times<-sort(times);
+  times<-c(start.time,time2[status==1]); 
+  times<-sort(times);
   if (is.null(max.time)==TRUE) maxtimes<-max(times)+0.1 else maxtimes<-max.time; 
   times<-times[times<maxtimes]
   Ntimes <- sum(status[time2<maxtimes])+1; 
@@ -87,7 +151,7 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=0.5,notaylor=0)
   ## }}}
 
   nparout <- .C("twostagereg", 
-      as.double(times), as.integer(Ntimes), as.double(X),
+        as.double(times), as.integer(Ntimes), as.double(X),
    	as.integer(antpers), as.integer(px), as.double(Z), 
 	as.integer(antpers), as.integer(pz), as.integer(antpers),         ## 9 
 	as.double(start),as.double(time2), as.integer(Nit), 
@@ -133,6 +197,7 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=0.5,notaylor=0)
   attr(ud,"time2")<-time2; 
   attr(ud,"var.link")<-var.link
   attr(ud,"beta.fixed")<-beta.fixed
+  attr(ud,"marg.model")<-class(margsurv)
 
   return(ud) 
   ## }}}
@@ -176,6 +241,7 @@ summary.two.stage<-function (object,digits = 3,...) { ## {{{
                            "Kendall's tau")
   prmatrix(resdep); cat("   \n");  
 
+  if (attr(object,"marg.model")!="coxph")
   if (attr(object,"beta.fixed")==0) {
   cat("Marginal Cox-Aalen model fit\n\n"); 
   if (sum(abs(object$score)>0.000001) && sum(object$gamma)!=0) 
@@ -290,8 +356,8 @@ S1 <- exp(-cumhaz); S2 <- exp(-cumhaz2)
 if (attr(object,"var.link")==1) theta  <- exp(object$theta) else theta <- object$theta
 if (!is.null(theta.des)) theta <- c(theta.des %*% object$theta)
 
-if (diag==FALSE) St1t2<- (outer(c(S1)^{-(theta)},c(S2)^{-(theta)},FUN="+") - 1)^(-1/(theta)) else 
-St1t2<- ((S1^{-(theta)}+S2^{-(theta)})-1)^(-1/(theta))
+if (diag==FALSE) St1t2<- (outer(c(S1)^{-(1/theta)},c(S2)^{-(1/theta)},FUN="+") - 1)^(-(theta)) else 
+St1t2<- ((S1^{-(1/theta)}+S2^{-(1/theta)})-1)^(-(theta))
 
 out=list(St1t2=St1t2,S1=S1,S2=S2,times=times,times2=times2,theta=theta)
 return(out)
