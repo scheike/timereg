@@ -138,18 +138,16 @@ zygeffect <- comp.risk(Surv(time,status==0)~const(zyg),
                   data=data33,data33$status,causeS=1,
                   cens.model="aalen",model="logistic",conservative=1)
 summary(zygeffect)
-
-case33mz <- conc2case(p33mz,pcif)
-case33dz <- conc2case(p33dz,pcif)
+ 
+case33mz <- conc2probandwise(p33mz,pcif)
+case33dz <- conc2probandwise(p33dz,pcif)
 
 png(filename="casewise.png")
-plot(case33mz$casewise,se=0,col=3)
-lines(case33dz$casewise$time,case33dz$casewise$P1)
+plot(case33mz$probandwise,se=0,col=3)
+lines(case33dz$probandwise$time,case33dz$probandwise$P1)
 title(main="Probandwise concordance")
 legend("topleft",c("MZ","DZ","Independence"),lty=rep(1,3),col=c(3,1,2))
 lines(pcif$time,pcif$P1,col=2)
-lines(pcif$time,pcif$P1*3.8,col=3)
-lines(pcif$time,pcif$P1*1.8,col=1)
 dev.off()
 
 

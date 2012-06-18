@@ -634,7 +634,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	   } else {
 	     double nn=(exp(-Li)+exp(thetak)*(1-exp(-Li)));
 	     p11t=(1-exp(-Li))*(1-exp(-Lk))*exp(thetak)/nn; 
-	     ssf+=pow(resp2-p11t,2); 
+	     ssf+=weights(i)*pow(resp2-p11t,2); 
 	     if (inverse==1) {
 	     response= ((1-exp(-Li))*(1-exp(-Lk))*exp(-Li)/pow(nn,2))*(resp2-p11t); 
 	     sdj=sdj+pow(((1-exp(-Li))*(1-exp(-Lk))*exp(-Li)/pow(nn,2)),2); 
@@ -668,7 +668,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	   diff=diff+response; 
 	   sdj=sdj-exp(2*thetak)*ormarg*ormarg*weight;
 	   resp3=-exp(thetak);
-	   ssf+=weight*pow((resp2-exp(thetak)*ormarg),2); 
+	   ssf+=weights(i)*weight*pow((resp2-exp(thetak)*ormarg),2); 
 	}
 	} // }}}
 	else if (depmodel==3) { // OR model  // {{{
@@ -696,7 +696,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	   diff=diff+response; 
 	   sdj=sdj-2*weight*exp(2*thetak)*pow(dplack(0),2);
 	   resp3=-dplack(0)*exp(thetak);
-	   ssf+=weight*pow(resp2-p11t,2); 
+	   ssf+=weights(i)*weight*pow(resp2-p11t,2); 
 // printf("mm %d %d %d %lf %lf %lf %lf %lf %lf \n",j,i,k,KMc(i),KMc(k),response,resp2,p11t,dplack(0)); 
 // printf("mmm %lf %lf %lf  \n",Li,Lk,ssf); 
 	}
@@ -724,9 +724,9 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
                diff=diff+response; 
                if (inverse==1) sdj=sdj+DDinverse*ddd*ddd; 
                else  sdj=sdj+DDinverse*ddd; 
-	       ssf+=pow(response-ckij(0),2);  // }}}
+	       ssf+=weights(i)*pow(response-ckij(0),2);  // }}}
             } else {
-	     ssf=ssf+pow(response-ckij(0),2); 
+	     ssf=ssf+weights(i)*pow(response-ckij(0),2); 
             response=dckij(0)*Dinverse*(response-ckij(0)); 
 //            else  response=Dinverse*(response-ckij(0)); 
              diff=diff+response; 
@@ -766,7 +766,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	       vthetascore= trans(thetades) * rvvec2; 
 //	       vthetascore.print("vthetascore"); 
 //	       vM(pardes(i),rvvec2,vthetascore); 
-	       ssf=ssf+pow(response-ckij(0),2); 
+	       ssf=ssf+weights(i)*pow(response-ckij(0),2); 
 	       }
 //	vthetascore.print("vt s"); 
 //	vtheta2.print("vt 2"); 
@@ -792,14 +792,14 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
                diff=diff+response; 
                if (inverse==1) sdj=sdj+DDinverse*ddd*ddd; 
                else  sdj=sdj+DDinverse*ddd; 
-	       ssf+=pow(response-ckij(0),2); 
+	       ssf+=weights(i)*pow(response-ckij(0),2); 
             } else {
             if (inverse==1) response=dckij(0)*Dinverse*(response-ckij(0)); 
             else  response=Dinverse*(response-ckij(0)); 
             diff=diff+response; 
              if (inverse==1) sdj=sdj+DDinverse*dckij(0)*dckij(0); 
              else  sdj=sdj+DDinverse*dckij(0); 
-	     ssf=ssf+pow(response-ckij(0),2); 
+	     ssf=ssf+weights(i)*pow(response-ckij(0),2); 
            }
        } // }}}
 
@@ -812,8 +812,8 @@ if (j<0) Rprintf("uu2 %lf %lf %lf %lf %lf %lf %d %d \n",pbhat(i),pbhat(k),0*pbha
 //        else  evaldh(vtheta1,vtime,pthetavec,vtheta2,dhtheta,rhoR);
 
    if (depmodel!=5) {
-       DUtheta=DUtheta+sdj*weights(j)*(pthetavec*trans(pthetavec));
-       vthetascore = (weights(j)*diff)*pthetavec; 
+       DUtheta=DUtheta+sdj*weights(i)*(pthetavec*trans(pthetavec));
+       vthetascore = (weights(i)*diff)*pthetavec; 
        Utheta=Utheta+vthetascore; 
 
        if (iid==1) for (c=0;c<pt;c++) thetiid(j,c)+=vthetascore(c); 
@@ -835,5 +835,3 @@ if (iid==1) res["theta.iid"]=thetiid;
 
 return(res); 
 } // }}}
-
-

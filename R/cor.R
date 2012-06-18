@@ -234,6 +234,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
           cat("theta:");print(c(p))
           cat("score:");print(c(out$score)); 
         }
+	hess <- out$Dscore
         hessi <- solve(out$Dscore); 
         delta <- hessi %*% out$score *step 
         p <- p-delta* step
@@ -248,7 +249,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
     ## }}}
   } else { ## {{{ nlminb optimizer
     iid <- 0; oout <- 0; 
-  tryCatch(opt <- nlminb(theta,obj,control=control),error=function(x) NA)
+    tryCatch(opt <- nlminb(theta,obj,control=control),error=function(x) NA)
     iid <- 1; 
     library(numDeriv)
     hess <- hessian(obj,opt$par)
@@ -266,7 +267,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   var.theta  <- t(theta.iid) %*% theta.iid 
   if (is.null(par.func)) thetanames <- colnames(theta.des) else
   thetanames <- rep("R-func",dimpar)
-  ud <- list(theta=theta,score=score,hess=out$Dscore,hessi=hessi,var.theta=var.theta,
+  ud <- list(theta=theta,score=score,hess=hess,hessi=hessi,var.theta=var.theta,
              theta.iid=theta.iid,score1=c(score1),thetanames=thetanames); 
   if (dep.model<=3) class(ud)<-"cor" 
   else if (dep.model==4) class(ud) <- "randomcif" 
@@ -451,6 +452,29 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##'  cor1 <- cor.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,theta=c(0.5,1.0,0.1,0.1),step=0.5,
 ##'        par.func=parfunc,dpar.func=dparfunc,dimpar=4,control=list(trace=TRUE),detail=1)
 ##' summary(cor1)
+##' ### piecwise contant OR model  
+##' gparfunc <- function(par,t,pardes)
+##' {
+##' 	cuts <- c(0,70,80,90,120)
+##' 	grop <- diff(t<cuts)
+##' par  <- (pardes[,1]==1) * sum(grop*par[1:4])+ (pardes[,2]==1) * sum(grop*par[5:8])
+##' par
+##' }
+##'
+##' dgparfunc <- function(par,t,pardes)
+##' {
+##'	cuts <- c(0,70,80,90,120)
+##'	grop <- diff(t<cuts)
+##' par1 <- matrix(c(grop),nrow(pardes),4,byrow=TRUE)
+##' parmz <- par1[,1:4]* (pardes[,1]==1) 
+##' pardz <- (pardes[,2]==1) * par1 
+##' dpar <- cbind( parmz,pardz)
+##' dpar
+##' }
+##' head(dgparfunc(c(0.1,1,0.1,1),50,theta.des))
+##' or1g <- or.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,
+##'        par.func=gparfunc,dpar.func=dgparfunc,dimpar=8,score.method="fisher.scoring",detail=1)
+##' summary(or1g)
 ##' @export
 ##' @keywords survival
 cor.cif<-function(cif,data,cause,times=NULL,
@@ -461,7 +485,8 @@ cor.cif<-function(cif,data,cause,times=NULL,
 { ## {{{
   fit <- dep.cif(cif=cif,data=data,cause=cause,model="COR",times=times,
                  cause1=cause1,cause2=cause2,cens.code=cens.code,cens.model=cens.model,Nit=Nit,detail=detail,
-                 clusters=clusters,theta=theta,theta.des=theta.des,par.func=par.func,dpar.func=dpar.func,dimpar=dimpar,
+                 clusters=clusters,theta=theta,theta.des=theta.des,par.func=par.func,dpar.func=dpar.func,
+		 dimpar=dimpar,
                  step=step,sym=sym,weights=weights,
                  score.method=score.method,same.cens=same.cens,censoring.probs=censoring.probs,silent=silent,...)
   fit$call <- match.call()
@@ -472,13 +497,13 @@ rr.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
                  cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
                  clusters=NULL, theta=NULL,theta.des=NULL, step=1,sym=0,weights=NULL,
                  same.cens=FALSE,censoring.probs=NULL,silent=1,par.func=NULL,dpar.func=NULL,dimpar=NULL,
-                 entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,...)
+		 score.method="nlminb",entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,...)
 { ## {{{
   fit <- dep.cif(cif=cif,data=data,cause=cause,model="RR",cif2=cif2,times=times,
                  cause1=cause1,cause2=cause2,cens.code=cens.code,cens.model=cens.model,Nit=Nit,detail=detail,
                  clusters=clusters,theta=theta,theta.des=theta.des, step=step,sym=sym,weights=weights,
                  same.cens=same.cens,censoring.probs=censoring.probs,silent=silent,
-		 par.func=par.func,dpar.func=dpar.func,dimpar=dimpar,
+		 par.func=par.func,dpar.func=dpar.func,dimpar=dimpar, score.method=score.method,
                  entry=entry,estimator=estimator,trunkp=trunkp,admin.cens=admin.cens,...)
   fit$call <- match.call()
   fit
@@ -488,13 +513,14 @@ or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
                  cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
                  clusters=NULL, theta=NULL,theta.des=NULL, step=1,sym=0, weights=NULL,
                  same.cens=FALSE,censoring.probs=NULL,silent=1,par.func=NULL,dpar.func=NULL,dimpar=NULL,
-                 entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,...)
+		 score.method="nlminb",entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,...)
 { ## {{{
   fit <- dep.cif(cif=cif,data=data,cause=cause,model="OR",cif2=cif2,times=times,
                  cause1=cause1,cause2=cause2,cens.code=cens.code,cens.model=cens.model,Nit=Nit,detail=detail,
                  clusters=clusters,theta=theta,theta.des=theta.des, step=step,sym=sym,weights=weights,
                  same.cens=same.cens,censoring.probs=censoring.probs,silent=silent,
 		 par.func=par.func,dpar.func=dpar.func,dimpar=dimpar,
+		 score.method=score.method,
                  entry=entry,estimator=estimator,trunkp=trunkp,admin.cens=admin.cens,...)
   fit$call <- match.call()
   fit
