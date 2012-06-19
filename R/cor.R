@@ -268,7 +268,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   if (is.null(par.func)) thetanames <- colnames(theta.des) else
   thetanames <- rep("R-func",dimpar)
   ud <- list(theta=theta,score=score,hess=hess,hessi=hessi,var.theta=var.theta,
-             theta.iid=theta.iid,score1=c(score1),thetanames=thetanames); 
+             theta.iid=theta.iid,score1=c(score1),thetanames=thetanames,brierscore=out$ssf); 
   if (dep.model<=3) class(ud)<-"cor" 
   else if (dep.model==4) class(ud) <- "randomcif" 
   else if (dep.model==5) class(ud) <- "randomcifrv" 
