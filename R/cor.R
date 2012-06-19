@@ -219,6 +219,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
                  icif2entry=cif2entry,itrunkp=trunkp,irvdes=random.design,DUP=FALSE) 
       ## }}}
 
+      attr(outl,"gradient") <-outl$score 
       if (oout==0) return(outl$ssf) else if (oout==1) return(sum(outl$score^2)) else return(outl)
     } ## }}}
 
@@ -247,7 +248,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
     score <- out$score
     score1 <- score
     ## }}}
-  } else { ## {{{ nlminb optimizer
+  } else if (score.method=="nlminb") { ## {{{ nlminb optimizer
     iid <- 0; oout <- 0; 
     tryCatch(opt <- nlminb(theta,obj,control=control),error=function(x) NA)
     iid <- 1; 
@@ -260,7 +261,22 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
     oout <- 2; 
     out <- obj(opt$par)
     score1 <- out$score
-  } ## }}}
+  ## }}}
+  } else if (score.method=="nlm") { ## {{{ nlm optimizer
+    iid <- 0; oout <- 0; 
+    tryCatch(opt <- nlm(obj,theta,hessian=TRUE,print.level=detail),error=function(x) NA)
+    iid <- 1; 
+###    library(numDeriv)
+    hess <- opt$hessian
+    score <- opt$gradient
+    if (detail==1) print(opt); 
+    hessi <- solve(hess); 
+    theta <- opt$estimate
+    oout <- 2; 
+    out <- obj(opt$estimate)
+    score1 <- out$score
+  ## }}}
+  }  else stop("score.methods = nlm nlminb fisher.scoring\n"); 
 
   theta.iid <- out$theta.iid %*% hessi
   if (is.null(par.func)) var.theta  <- t(theta.iid) %*% theta.iid else var.theta <- hessi
