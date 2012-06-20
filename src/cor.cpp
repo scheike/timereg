@@ -523,6 +523,8 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
   mat thetiid(antclust,pt); 
   if (iid==1) thetiid=0*thetiid; 
 
+//  colvec p11tvec(antclust); 
+//  p11tvec=0; 
   colvec Utheta(pt); 
   colvec vthetascore(pt); 
   colvec pthetavec(pt); 
@@ -635,6 +637,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	     double nn=(exp(-Li)+exp(thetak)*(1-exp(-Li)));
              double   nt=(1-exp(-Li))*(1-exp(-Lk))*exp(thetak);
              p11t=nt/nn; 
+//	     p11tvec(j)=p11t; 
 	     ssf+=weights(i)*pow(resp2-p11t,2); 
 	     if (inverse==1) {
                 double dp11t=(nn*(1-exp(-Li))*(1-exp(-Lk))*exp(thetak)-nt*exp(thetak)*(1-exp(-Li)))/pow(nn,2);
@@ -667,6 +670,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	   resp3=-exp(thetak);
 	} else {
            p11t=exp(thetak)*ormarg; 
+//	     p11tvec(j)=p11t; 
 	   response=2*weight*exp(thetak)*ormarg*(resp2-p11t); 
 	   diff=diff+response; 
 	   sdj=sdj-2*exp(2*thetak)*pow(ormarg,2)*weight;
@@ -694,6 +698,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	   resp3=0;
 	} else {
            p11t=plack(exp(thetak),(1-exp(-Li)),(1-exp(-Lk)),dplack);
+//	   p11tvec(j)=p11t; 
 	   response=2*weight*dplack(0)*exp(thetak)*(resp2-p11t);
 	   diff=diff+response; 
 	   sdj=sdj-2*weight*exp(2*thetak)*pow(dplack(0),2);
@@ -728,6 +733,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	       ssf+=weights(i)*pow(response-ckij(0),2);  // }}}
             } else {
 	    ssf=ssf+weights(i)*pow(response-ckij(0),2); 
+//	    p11tvec(j)=ckij(0); 
             response=2*dckij(0)*Dinverse*(response-ckij(0)); 
 	    //   else  response=Dinverse*(response-ckij(0)); 
              diff=diff+response; 
@@ -768,6 +774,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 //	       vthetascore.print("vthetascore"); 
 //	       vM(pardes(i),rvvec2,vthetascore); 
 	       ssf=ssf+weights(i)*pow(response-ckij(0),2); 
+//	       p11tvec(j)=ckij(0); 
 	       }
 //	vthetascore.print("vt s"); 
 //	vtheta2.print("vt 2"); 
@@ -798,9 +805,9 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
             if (inverse==1) response=dckij(0)*Dinverse*(response-ckij(0)); 
             else  response=Dinverse*(response-ckij(0)); 
             diff=diff+response; 
-             if (inverse==1) sdj=sdj+DDinverse*dckij(0)*dckij(0); 
-             else  sdj=sdj+DDinverse*dckij(0); 
-	     ssf=ssf+weights(i)*pow(response-ckij(0),2); 
+            if (inverse==1) sdj=sdj+DDinverse*dckij(0)*dckij(0); 
+            else  sdj=sdj+DDinverse*dckij(0); 
+	    ssf=ssf+weights(i)*pow(response-ckij(0),2); 
            }
        } // }}}
 

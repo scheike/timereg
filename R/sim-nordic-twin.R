@@ -6,7 +6,7 @@ xm <- matrix(x,ncol=3)
 return( 1 - exp(-baset*exp(xm %*% matrix(beta,3,1)))) 
 } ## }}}
 
-corsim.prostate <- function(n,theta=1,thetaslope=0,crate=2,test=0,pcens=0,mt=1, same.cens=TRUE) 
+corsim.prostate <- function(n,theta=1,thetaslope=0,crate=2,test=0,pcens=0,mt=1,same.cens=TRUE) 
 { ## {{{
 ###n <- 10; theta <- 1; thetaslope <- 0; mt <- 1
 xl <- sample(1:4,n,replace=TRUE)
@@ -100,11 +100,11 @@ cause <- c(t(causes))
 ###same.cens=TRUE
 if (same.cens==TRUE) {
 	ctime <- rep(rbinom(n/2,1,pcens),each=2) 
-        ctime[ctime==1] <- rep(runif(sum(ctime==1)/2),each=2)*(mt+2)
+        ctime[ctime==1] <- rep(runif(sum(ctime==1)/2),each=2)*crate
 }
 else {
 	ctime<- rbinom(n,1,pcens)
-        ctime[ctime==1] <- runif(sum(ctime==1))*(mt+2)
+        ctime[ctime==1] <- runif(sum(ctime==1))*crate
 }
 
 ctime[ctime==0] <- mt;
@@ -128,10 +128,10 @@ return(data)
 } ## }}}
 
 ##' @export 
-simnordic <- function(n,cordz=2,cormz=3) 
+simnordic <- function(n,cordz=2,cormz=3,cratemz=2,cratedz=2,pcensmz=0.8,pcensdz=0.8) 
 { ## {{{
-outdz <- corsim.prostate(n,theta=cordz,crate=2,pcens=0.8,mt=1,same.cens=TRUE,test=0) 
-outmz <- corsim.prostate(n,theta=cormz,crate=2,pcens=0.8,mt=1,same.cens=TRUE,test=0) 
+outdz <- corsim.prostate(n,theta=cordz,crate=cratedz,pcens=pcensmz,mt=1,same.cens=TRUE,test=0) 
+outmz <- corsim.prostate(n,theta=cormz,crate=cratemz,pcens=pcensdz,mt=1,same.cens=TRUE,test=0) 
 outdz$zyg <- "DZ" 
 outmz$zyg <-  "MZ"
 outmz$id <- outmz$id+nrow(outdz)

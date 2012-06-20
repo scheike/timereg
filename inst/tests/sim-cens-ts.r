@@ -42,9 +42,16 @@ gem
 
 
 gemmzdz <- c()
+gemmzdzc <- matrix(0,5,5)
+gemmzdza <- matrix(0,5,5)
+j <- i <- 0 
 for (pcensmz in seq(0,0.95,length=5))
+{
+i <- i+1
+j <- 0
 for (pcensdz in seq(0,0.95,length=5))
 {
+j <- j+1
 prt<-simnordic(7500,cordz=3,cormz=5,pcensmz=pcensmz,pcensdz=pcensdz,cratemz=1.0,cratedz=1.0)
 prt$status <-prt$cause
 tt <- table(prt$status)
@@ -54,8 +61,14 @@ prt$cancer <- (prt$status==1)
 bp3 <- bptwin(cancer~1,zyg="zyg",DZ="DZ",id="id",type="ace",data=prt)
 summary(bp3)
 ###
-gemmzdz <- rbind(gemmzdz,c(pcens,table(prt$status),coef(bp3)))
+gemmzdz <- rbind(gemmzdz,c(pcensmz,pcensdz,tt,coef(bp3)))
+print(c(i,j))
+gemmzdza[i,j] <- coef(bp3)[2]
+gemmzdzc[i,j] <- coef(bp3)[3]
 }
-
+}
+###
 gemmzdz
+gemmzdza
+gemmzdzc
 
