@@ -705,8 +705,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	} // }}}
 	else if (depmodel==4) { // random effects model // {{{
 
-	 if (samecens==1) response=resp2/min(KMc(i),KMc(k)); else
-	 {response=resp2/(KMc(i)*KMc(k));}
+	 if (samecens==1) response=resp2/min(KMc(i),KMc(k)); else response=resp2/(KMc(i)*KMc(k));
 
 	 double ithetak=0; 
 	 if (inverse==1) { ithetak=exp(thetak); Dinverse=ithetak; DDinverse=exp(2*thetak); }
@@ -728,12 +727,12 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
                else  sdj=sdj+DDinverse*ddd; 
 	       ssf+=weights(i)*pow(response-ckij(0),2);  // }}}
             } else {
-	     ssf=ssf+weights(i)*pow(response-ckij(0),2); 
-            response=dckij(0)*Dinverse*(response-ckij(0)); 
-//            else  response=Dinverse*(response-ckij(0)); 
+	    ssf=ssf+weights(i)*pow(response-ckij(0),2); 
+            response=2*dckij(0)*Dinverse*(response-ckij(0)); 
+	    //   else  response=Dinverse*(response-ckij(0)); 
              diff=diff+response; 
-             sdj=sdj-DDinverse*dckij(0)*dckij(0); 
-//             else  sdj=sdj-DDinverse*dckij(0); 
+             sdj=sdj-2*DDinverse*dckij(0)*dckij(0); 
+//           else  sdj=sdj-DDinverse*dckij(0); 
            }
        } // }}}
 	else if (depmodel==5) { // structured random effects model // {{{

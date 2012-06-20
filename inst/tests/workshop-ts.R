@@ -73,7 +73,7 @@ dev.off()
 
 theta.des <- model.matrix(~-1+factor(zyg),data=prt) ## design for MZ/DZ status
 or.country <- or.cif(cifmodl,data=prt,cause1=2,cause2=2,theta.des=theta.des,same.cens=TRUE,
-                     theta=c(2.8,6.9),score.method="fisher.scoring")
+                     theta=c(0.8,1.8),score.method="fisher.scoring",detail=1)
 summary(or.country)
 or.country$score
 
@@ -91,7 +91,7 @@ legend("topleft",levels(prt$country),col=1:4,lty=1)
 dev.off()
 
 or.countryr <- or.cif(cifmodlr,data=prt,cause1=2,cause2=2,theta.des=theta.des,same.cens=TRUE,
-                     theta=c(2.8,6.9),score.method="fisher.scoring")
+                     theta=c(0.8,1.9),score.method="fisher.scoring")
 summary(or.countryr)
 
 ###############################

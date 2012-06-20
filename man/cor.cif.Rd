@@ -186,6 +186,29 @@ summary(or1)
  cor1 <- cor.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,theta=c(0.5,1.0,0.1,0.1),step=0.5,
        par.func=parfunc,dpar.func=dparfunc,dimpar=4,control=list(trace=TRUE),detail=1)
 summary(cor1)
+### piecwise contant OR model
+gparfunc <- function(par,t,pardes)
+{
+	cuts <- c(0,70,80,90,120)
+	grop <- diff(t<cuts)
+par  <- (pardes[,1]==1) * sum(grop*par[1:4])+ (pardes[,2]==1) * sum(grop*par[5:8])
+par
+}
+
+dgparfunc <- function(par,t,pardes)
+{
+	cuts <- c(0,70,80,90,120)
+	grop <- diff(t<cuts)
+par1 <- matrix(c(grop),nrow(pardes),4,byrow=TRUE)
+parmz <- par1[,1:4]* (pardes[,1]==1)
+pardz <- (pardes[,2]==1) * par1
+dpar <- cbind( parmz,pardz)
+dpar
+}
+head(dgparfunc(c(0.1,1,0.1,1),50,theta.des))
+or1g <- or.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,
+       par.func=gparfunc,dpar.func=dgparfunc,dimpar=8,score.method="fisher.scoring",detail=1)
+summary(or1g)
 }
 \author{
   Thomas Scheike

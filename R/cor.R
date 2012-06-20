@@ -251,13 +251,14 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   } else if (score.method=="nlminb") { ## {{{ nlminb optimizer
     iid <- 0; oout <- 0; 
     tryCatch(opt <- nlminb(theta,obj,control=control),error=function(x) NA)
+    if (detail==1) print(opt); 
     iid <- 1; 
     library(numDeriv)
     hess <- hessian(obj,opt$par)
     score <- jacobian(obj,opt$par)
-    if (detail==1) print(opt); 
     hessi <- solve(hess); 
     theta <- opt$par
+    if (detail==1) cat("iid decomposition\n"); 
     oout <- 2; 
     out <- obj(opt$par)
     score1 <- out$score
@@ -631,10 +632,9 @@ random.cif<-function(cif,data,cause,cif2=NULL,
                      entry=NULL,trunkp=1,...)
 { ## {{{
   fit <- dep.cif(cif=cif,data=data,cause=cause,model="RANCIF",cif2=cif2,
-                 cause1=cause1,cause2=cause2,cens.code=cens.code,cens.model=cens.model,Nit=Nit,detail=detail,
-                 clusters=clusters,theta=theta,theta.des=theta.des,
-                 step=step, same.cens=same.cens,exp.link=exp.link,
-                 score.method=score.method,entry=entry,trunkp=trunkp,...)
+     cause1=cause1,cause2=cause2,cens.code=cens.code,cens.model=cens.model,Nit=Nit,detail=detail,
+     clusters=clusters,theta=theta,theta.des=theta.des,step=step,same.cens=same.cens,
+     exp.link=exp.link,score.method=score.method,entry=entry,trunkp=trunkp,...)
   fit$call <- match.call()
   fit
 } ## }}}
@@ -732,7 +732,7 @@ random.cif<-function(cif,data,cause,cif2=NULL,
 ##' ## this model can also be formulated as a random effects model 
 ##' ## but with different parameters
 ##' out2m<-Grandom.cif(addm,data=multcif,cause1=1,cause2=1,Nit=10,detail=0,
-##' theta=1/c(4.84,0.79),random.design=theta.des,step=1.0)
+##' random.design=theta.des,step=1.0)
 ##' summary(out2m)
 ##' 1/out2m$theta
 ##' out1m$theta
@@ -751,28 +751,25 @@ random.cif<-function(cif,data,cause,cif2=NULL,
 ##' pardes <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0), c(0,1))
 ##'
 ##' outacem <-Grandom.cif(addm,data=multcif,causeS=1,Nit=30,detail=0,
-##'           theta=c(-1.21,2.1),theta.des=pardes,step=1.0,random.design=des.rv,
-##'           link=0)
+##'           theta=c(-1.21,2.1),theta.des=pardes,step=1.0,random.design=des.rv)
 ##' summary(outacem)
 ##' ### genetic variance is 
-##' outacem$theta[1]/sum(outacem$theta)^2
-##' ### best if variances had been positive
+##' exp(outacem$theta[1])/sum(exp(outacem$theta))^2
 ##' @keywords survival
 ##' @author Thomas Scheike
 Grandom.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
 clusters=NULL, theta=NULL,theta.des=NULL,parfunc=NULL,dparfunc=NULL,
 step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,
-same.cens=FALSE,censoring.probs=NULL,silent=1,exp.link=0,score.method="nlminb",
+same.cens=FALSE,censoring.probs=NULL,silent=1,exp.link=1,score.method="nlminb",
 entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,random.design=NULL,...)
 { ## {{{
 fit <- dep.cif(cif=cif,data=data,cause=cause,model="ARANCIF",cif2=cif2,times=times,
          cause1=cause1,cause2=cause2,cens.code=cens.code,cens.model=cens.model,Nit=Nit,detail=detail,
-         clusters=clusters,theta=theta,theta.des=theta.des,
-         step=step,sym=sym,weights=weights,
+         clusters=clusters,theta=theta,theta.des=theta.des,step=step,sym=sym,weights=weights,
          same.cens=same.cens,censoring.probs=censoring.probs,silent=silent,exp.link=exp.link,
 	 score.method=score.method,entry=entry,estimator=estimator,
-	 random.design=random.design, trunkp=trunkp,admin.cens=admin.cens,...)
+	 random.design=random.design,trunkp=trunkp,admin.cens=admin.cens,...)
     fit$call <- match.call()
     fit
 } ## }}}
