@@ -140,12 +140,13 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
      dimpar <- ncol(theta.des); 
  
      if (nrow(theta.des)!=ncol(random.design)) stop("nrow(theta.des)!= ncol(random.design)"); 
-     score.method <- "nlminb"
- } else {random.design <- matrix(0,1,1); }
+###     score.method <- "nlminb"
+ } else random.design <- matrix(0,1,1); 
 
   if ( (!is.null(par.func)) && is.null(dimpar) ) 
     stop("Must specify dimension of parameters when specifying R-functions\n")
 
+  if ( (is.null(theta)==TRUE) && (model=="ARANCIF")) theta<-rep(0.5,dimpar);
   if (is.null(theta)==TRUE) theta<-rep(0.1,dimpar);
   if (length(theta)!=dimpar) theta<-rep(theta[1],dimpar);
 
@@ -164,7 +165,8 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
                                         #if (sum(time.pow)==0) time.pow<-rep(1,pg); 
   theta.iid<-matrix(0,antclust,dimpar); 
 
-  if ((nrow(theta.des)!=nrow(X)) && (model!="ARANCIF")) stop("Dependence design not consistent with data\n"); 
+  if ((nrow(theta.des)!=nrow(X)) && (model!="ARANCIF")) 
+	  stop("Dependence design not consistent with data\n"); 
   if (length(trunkp)!=antpers) trunkp <- rep(1,antpers)
   if (is.null(weights)==TRUE) weights <- rep(1,antpers); 
   ## }}}
@@ -173,7 +175,8 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   if (is.null(par.func)==FALSE)
   {
       flex.func<-1; # use flexible design
-###      if (score.method=="fisher.scoring") cat("Score.method set to nlminb for flexible modelling \n"); 
+###  if (score.method=="fisher.scoring") 
+###  cat("Score.method set to nlminb for flexible modelling \n"); 
   } ## }}}
 
   Zgamma <-  c(Z %*% gamma); Z2gamma2 <- c(Z2 %*% gamma2); 
@@ -185,9 +188,12 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   obj <- function(par) 
     { ## {{{
 
-      if (is.null(par.func)==TRUE) {Xtheta <- theta.des %*% par; DXtheta <- array(0,c(1,1,1));} else {
+    if (is.null(par.func)==TRUE) {
+	    Xtheta <- theta.des %*% par; DXtheta <- array(0,c(1,1,1));
+    } else {
 	  Xtheta <- c(); DXtheta <- array(0,c(length(times),antpers,dimpar));
-	  if (is.null(dpar.func)) stop("Must also provide derivative of function wrt to parameters")
+	  if (is.null(dpar.func))
+		  stop("Must also provide derivative of function wrt to parameters")
 	  s <- 0
 	  for (t in times) {
 		  s <- 1+s
@@ -199,7 +205,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 			  stop("dparfunc must return matrix n x dimpar when called on dparfunc(par,t,theta.des)"); 
 		  DXtheta[s,,] <- Dttheta
 	  }
-      }
+    }
 
       outl<-.Call("cor", ## {{{
                  itimes=times,iy=time,icause=cause,iCA1=cause1,iKMc=Gcx, 
@@ -226,27 +232,37 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   p <- theta
   iid <- 0;  ###no-iid representation for iterations
   if (score.method=="fisher.scoring") { ## {{{
+    oout <- 2;  ### output control for obj
+    if (Nit>0) 
     for (i in 1:Nit)
-      {
-        oout <- 2;  ### output control for obj
+    {
         out <- obj(p)
-        if (detail==1) {
+        if (detail==1) {## {{{
           print(paste("Fisher-Scoring ===================: it=",i)); 
           cat("theta:");print(c(p))
           cat("score:");print(c(out$score)); 
-        }
+	  cat("hess:"); print(hess); 
+        }## }}}
 	hess <- out$Dscore
-        hessi <- solve(out$Dscore); 
+	if (!is.na(sum(hess))) hessi <- solve(out$Dscore) else hessi <- hess 
         delta <- hessi %*% out$score *step 
         p <- p-delta* step
         if (sum(abs(out$score))<0.00001) break; 
         if (max(theta)>20) break; 
-      }
+    }
     theta <- p
     iid <- 1; 
     out <- obj(p) 
     score <- out$score
     score1 <- score
+    hess <- out$Dscore
+    if (detail==1 & Nit==0) {## {{{
+          print(paste("Fisher-Scoring ===================: final")); 
+          cat("theta:");print(c(p))
+          cat("score:");print(c(out$score)); 
+	  cat("hess:"); print(hess); 
+    }## }}}
+    if (!is.na(sum(hess))) hessi <- solve(out$Dscore) else hessi <- diag(nrow(hess))
     ## }}}
   } else if (score.method=="nlminb") { ## {{{ nlminb optimizer
     iid <- 0; oout <- 0; 
@@ -285,7 +301,8 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   if (is.null(par.func)) thetanames <- colnames(theta.des) else
   thetanames <- rep("R-func",dimpar)
   ud <- list(theta=theta,score=score,hess=hess,hessi=hessi,var.theta=var.theta,
-             theta.iid=theta.iid,score1=c(score1),thetanames=thetanames,brierscore=out$ssf); 
+             theta.iid=theta.iid,score1=c(score1),thetanames=thetanames,
+	     brierscore=out$ssf,p11=out$p11); 
   if (dep.model<=3) class(ud)<-"cor" 
   else if (dep.model==4) class(ud) <- "randomcif" 
   else if (dep.model==5) class(ud) <- "randomcifrv" 
