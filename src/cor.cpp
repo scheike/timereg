@@ -233,7 +233,7 @@ dckij=val*dckij;
 double ckrvdesp11t(vec &theta,mat &thetades,int inverse, // {{{
 		double x,double y, vec &rvi,vec &rvk)
 {
-double p11,val,val1,val2,val3,alphi=0,alphk=0,alph,betai,betak;
+double p11,val,val1,alphi=0,alphk=0,alph,betai,betak;
 double test=1; //lapgam(),ilapgam(),Dtlapgam(), Dalphalapgam(),Dilapgam(),Dbetalapgam(),Dbetailapgam();
 int prv,k,nn; 
 
@@ -279,9 +279,9 @@ void ckrvdes3(vec &theta,mat &thetades, // {{{
 		int inverse, double x,double y,
 		vec &ckij, vec &dckij,vec &rvi,vec &rvk)
 {
-double val,val1,val2,val3,alphi=0,alphk=0,alph,betai,betak;
+//double val,val1,val2,val3,alphi=0,alphk=0,alph,betai,betak;
 double test=1; //lapgam(),ilapgam(),Dtlapgam(), Dalphalapgam(),Dilapgam(),Dbetalapgam(),Dbetailapgam();
-int prv,k,nn; 
+int k,nn; 
 //void funkdes2(); 
 //
 ckij(0)= ckrvdesp11t(theta,thetades,inverse,x,y,rvi,rvk); 
