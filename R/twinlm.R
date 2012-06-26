@@ -410,6 +410,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
   }
 
   if (is.Surv(data[,yvar])) {
+    require("lava.tobit")
     estimator <- "tobit"
     optim$method <- "nlminb1"
     e <- estimate(mg,estimator=estimator,fix=FALSE,control=optim,...)
