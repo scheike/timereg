@@ -21,6 +21,8 @@ Depends:
     timereg,
     ucminf,
     prodlim
+Suggests:
+    lava.tobit
 LinkingTo: Rcpp, RcppArmadillo
 Collate:
     'biprobit.R'
