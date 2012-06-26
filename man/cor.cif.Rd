@@ -184,7 +184,7 @@ dpar
 head(dparfunc(c(0.1,1,0.1,1),50,theta.des))
 
 names(prt)
-
+\dontrun{
 or1 <- or.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,theta=c(0.6,1.1,0.1,0.1),
        par.func=parfunc,dpar.func=dparfunc,dimpar=4,score.method="fisher.scoring",detail=1)
 summary(or1)
@@ -215,6 +215,7 @@ head(dgparfunc(c(0.1,1,0.1,1),50,theta.des))
 or1g <- or.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,
        par.func=gparfunc,dpar.func=dgparfunc,dimpar=8,score.method="fisher.scoring",detail=1)
 summary(or1g)
+}
 }
 \author{
   Thomas Scheike
