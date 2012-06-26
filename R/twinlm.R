@@ -67,7 +67,7 @@
 ##' @param constrain Development argument
 ##' @param ... Additional arguments parsed on to lower-level functions
 twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), twinnum="twinnum", binary=FALSE,keep=weight,estimator="gaussian",constrain=TRUE,control=list(),...) {
-  
+
   cl <- match.call(expand.dots=TRUE)
   opt <- options(na.action="na.pass")
   mf <- model.frame(formula,data)
@@ -75,7 +75,9 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
   y <- model.response(mf, "any")
   formula <- update(formula, ~ . + 1)
   yvar <- getoutcome(formula)
-
+  if (missing(zyg)) stop("Zygosity variable not specified")
+  if (missing(id)) stop("Twin-pair variable not specified")
+  
   if (binary | is.factor(data[,yvar]) | is.character(data[,yvar]) | is.logical(data[,yvar])) {
     args <- as.list(cl)
     args[[1]] <- NULL
@@ -90,7 +92,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
   if (any(latentnames%in%varnames))
     stop(paste(paste(latentnames,collapse=",")," reserved for names of latent variables.",sep=""))
   
-  
+
   mm <- model.matrix(formula,mf)
   options(opt)
   
@@ -117,7 +119,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
     data[,twinnum] <- mynum
   }
 
-  cur <- cbind(data[,c(yvar,keep)],as.numeric(data[,twinnum]),as.numeric(data[,id]),as.numeric(zygstat));
+  cur <- cbind(data[,c(yvar,keep)],as.data.frame(cbind(as.numeric(data[,twinnum]),as.numeric(data[,id]),as.numeric(zygstat))));
   colnames(cur) <- c(yvar,keep,twinnum,id,zyg)
   mydata <- cbind(cur,mm)
   
@@ -391,7 +393,6 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
     estimator <- "weighted"
   }
 
-
   ## Estimate
   newkeep <- unlist(sapply(keep, function(x) paste(x,1:2,sep=".")))
   mm <- list(MZ=model1,DZ=model2)
@@ -408,13 +409,23 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
     optim[names(control)] <- control
   }
 
-  e <- estimate(mg,weight=weight,estimator=estimator,fix=FALSE,control=optim,...)
+  if (is.Surv(data[,yvar])) {
+    estimator <- "tobit"
+    optim$method <- "nlminb1"
+    e <- estimate(mg,estimator=estimator,fix=FALSE,control=optim,...)
+  } else {
+    e <- estimate(mg,weight=weight,estimator=estimator,fix=FALSE,control=optim,...)
+  }
   if (!is.null(optim$refit) && optim$refit) {
     optim$method <- "NR"
     optim$start <- pars(e)
-    e <- estimate(mg,weight=weight,estimator=estimator,fix=FALSE,control=optim,...)
+    if (is.Surv(data[,yvar])) {
+      e <- estimate(mg,estimator=estimator,fix=FALSE,control=optim,...)      
+    } else {
+      e <- estimate(mg,weight=weight,estimator=estimator,fix=FALSE,control=optim,...)
+    }
   }
-  res <- list(coefficients=e$opt$estimate, vcov=Inverse(information(e)), estimate=e, model=mg, full=full, call=cl, data=data, zyg=zyg, id=id, twinnum=twinnum, type=type, model.mz=model1, model.dz=model2, model.dzos=model3, data.mz=wide1, data.dz=wide2, data.os=wide3, OS=!missing(OS), constrain=constrain)
+  res <- list(coefficients=e$opt$estimate, vcov=Inverse(information(e)), estimate=e, model=mm, full=full, call=cl, data=data, zyg=zyg, id=id, twinnum=twinnum, type=type, model.mz=model1, model.dz=model2, model.dzos=model3, data.mz=wide1, data.dz=wide2, data.os=wide3, OS=!missing(OS), constrain=constrain)
   class(res) <- "twinlm"
   return(res)
 }
