@@ -407,7 +407,6 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
   if (length(control)>0) {
     optim[names(control)] <- control
   }
-  suppressMessages(browser())
 
   e <- estimate(mg,weight=weight,estimator=estimator,fix=FALSE,control=optim,...)
   if (!is.null(optim$refit) && optim$refit) {

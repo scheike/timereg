@@ -59,6 +59,12 @@
 
   \item{weights}{weights for estimating equations.}
 
+  \item{par.func}{parfunc}
+
+  \item{dpar.func}{dparfunc}
+
+  \item{dimpar}{dimpar}
+
   \item{score.method}{"nlminb", can also use
   "fisher-scoring".}
 

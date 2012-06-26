@@ -410,6 +410,9 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' @param step specifies the step size for the Newton-Raphson algorithm.
 ##' @param sym specifies if symmetry is used in the model.
 ##' @param weights weights for estimating equations.
+##' @param par.func parfunc
+##' @param dpar.func dparfunc
+##' @param dimpar dimpar
 ##' @param score.method "nlminb", can also use "fisher-scoring".
 ##' @param same.cens if true then censoring within clusters are assumed to be the same variable, default is independent censoring.
 ##' @param censoring.probs if cens.model is "user.weights" these probabilities are used for the bivariate censoring dist.
@@ -699,6 +702,7 @@ random.cif<-function(cif,data,cause,cif2=NULL,
 ##' @param cause specifies the causes  related to the death
 ##' times, the value cens.code is the censoring value.
 ##' @param cif2 specificies model for cause2 if different from cause1.
+##' @param times time points
 ##' @param cause1 cause of first coordinate.
 ##' @param cause2 cause of second coordinate.
 ##' @param cens.code specificies the code for the censoring.
@@ -708,14 +712,24 @@ random.cif<-function(cif,data,cause,cif2=NULL,
 ##' @param clusters specifies the cluster structure.
 ##' @param theta specifies starting values for the cross-odds-ratio parameters of the model.
 ##' @param theta.des specifies a regression design for the cross-odds-ratio parameters.
+##' @param parfunc parfunc
+##' @param dparfunc dparfunc
 ##' @param step specifies the step size for the Newton-Raphson algorith.m
+##' @param sym sym
+##' @param colnames colnames
+##' @param dimpar dimpar
+##' @param weights weights
 ##' @param same.cens if true then censoring within clusters are assumed to be the same variable, default is independent censoring.
+##' @param censoring.probs Censoring probabilities
+##' @param silent debug information 
 ##' @param exp.link if exp.link=1 then var is on log-scale.
 ##' @param score.method default uses "nlminb" optimzer, alternatively, use the "fisher-scoring" algorithm.
 ##' @param entry entry-age in case of delayed entry. Then two causes must be given.
+##' @param estimator estimator
 ##' @param trunkp gives probability of survival for delayed entry, and related to entry-ages given above.
-##' @param ... extra arguments.
+##' @param admin.cens Administrative censoring
 ##' @param random.design specifies a regression design of 0/1's for the random effects.
+##' @param ... extra arguments.
 ##' @return returns an object of type 'random.cif'. With the following arguments:
 ##'\item{theta}{estimate of parameters of model.}
 ##'\item{var.theta}{variance for gamma.  }
@@ -774,6 +788,7 @@ random.cif<-function(cif,data,cause,cif2=NULL,
 ##' exp(outacem$theta[1])/sum(exp(outacem$theta))^2
 ##' @keywords survival
 ##' @author Thomas Scheike
+##' @export
 Grandom.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
 clusters=NULL, theta=NULL,theta.des=NULL,parfunc=NULL,dparfunc=NULL,
