@@ -237,14 +237,14 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
     for (i in 1:Nit)
     {
         out <- obj(p)
+	hess <- out$Dscore
+	if (!is.na(sum(hess))) hessi <- solve(out$Dscore) else hessi <- hess 
         if (detail==1) {## {{{
           print(paste("Fisher-Scoring ===================: it=",i)); 
           cat("theta:");print(c(p))
           cat("score:");print(c(out$score)); 
 	  cat("hess:"); print(hess); 
         }## }}}
-	hess <- out$Dscore
-	if (!is.na(sum(hess))) hessi <- solve(out$Dscore) else hessi <- hess 
         delta <- hessi %*% out$score *step 
         p <- p-delta* step
         if (sum(abs(out$score))<0.00001) break; 

@@ -891,7 +891,7 @@ if (j<0) Rprintf("uu2 %lf %lf %lf %lf %lf %lf %d %d \n",pbhat(i),pbhat(k),0*pbha
 
    if (depmodel!=5) {
        DUtheta=DUtheta+sdj*weights(i)*(pthetavec*trans(pthetavec));
-       vthetascore = (weights(i)*diff)*pthetavec; 
+       vthetascore=(weights(i)*diff)*pthetavec; 
        Utheta=Utheta+vthetascore; 
 
        if (iid==1) for (c=0;c<pt;c++) thetiid(j,c)+=vthetascore(c); 
