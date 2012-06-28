@@ -590,6 +590,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 
   colvec p11tvec(antclust); 
 //  p11tvec=0; 
+//  Rprintf(" %d \n",pt); 
   colvec Utheta(pt); 
   colvec vthetascore(pt); 
   colvec pthetavec(pt); 
@@ -597,6 +598,8 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
   mat DUtheta(pt,pt); 
   DUtheta=0*DUtheta; 
   Utheta=0*Utheta; 
+  if (!Utheta.is_finite()) {  Rprintf(" NA's i def U\n"); Utheta.print("U"); }
+  if (!DUtheta.is_finite()) { Rprintf(" NA's i def DU\n"); DUtheta.print("DU");  }
 
   rowvec bhatt2 = est.row(est2.n_cols); 
   colvec pbhat2(z.n_rows); 
@@ -657,8 +660,9 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	              pthetavec= trans(thetades.row(i)); 
 	      } else { 
 	          thetak=Xtheta(i,s); 
-		  pthetavec = DXtheta(span(s),span(i),span(0,pt-1)); 
-//		  pthetavec.print("pt"); 
+//		  pthetavec = DXtheta(span(s),span(i),span(0,pt-1)); 
+		  pthetavec = DXtheta(span(s),span(i),span::all); 
+//		  if (j==1) { printf(" %lf %d \n",time,i); pthetavec.print("pt"); }
 	      }
 	 }
          Li=pbhat(i); Lk=pbhat(k); 
@@ -892,8 +896,13 @@ if (j<0) Rprintf("uu2 %lf %lf %lf %lf %lf %lf %d %d \n",pbhat(i),pbhat(k),0*pbha
    if (depmodel!=5) {
        DUtheta=DUtheta+sdj*weights(i)*(pthetavec*trans(pthetavec));
        vthetascore=(weights(i)*diff)*pthetavec; 
+//       Rprintf("pvectheta %d %d %d %lf %lf %lf \n",s,j,i,weights(i),diff,mean(pthetavec)); 
        Utheta=Utheta+vthetascore; 
-
+       if (!Utheta.is_finite()) { 
+	       Rprintf(" NA's i U, %d %d %lf %lf \n",j,i,diff,weights(i)); 
+	       Utheta.print("DU"); 
+	       vthetascore.print("vt"); 
+       }
        if (iid==1) for (c=0;c<pt;c++) thetiid(j,c)+=vthetascore(c); 
    }
  } /* j in antclust */ 

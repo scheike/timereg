@@ -1,4 +1,5 @@
 library(mets)
+library(vimcom)
 data(multcif);
 multcif$cause[multcif$cause==0] <- 2
 zyg <- rep(rbinom(200,1,0.5),each=2)
@@ -26,7 +27,7 @@ prt<-simnordic(1000,cordz=2,cormz=5)
 prt$status <-prt$cause
 table(prt$status)
 
-times <- seq(40,100,by=2)
+times <- seq(40,100,by=10)
 cifmod <- comp.risk(Surv(time,status>0)~+1+cluster(id),data=prt,prt$status,causeS=1,n.sim=0,
                   times=times,conservative=1,max.clust=NULL,model="fg")
 theta.des <- model.matrix(~-1+factor(zyg),data=prt)
@@ -51,29 +52,35 @@ or1 <- or.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TR
   par.func=parfunc,dpar.func=dparfunc,dimpar=4,score.method="fisher.scoring",detail=1)
 summary(or1)
 
- cor1 <- cor.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,theta=c(0.5,1.0,0.1,0.1),step=0.5,
+ cor1 <- cor.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,theta=c(0.5,1.0,0.1,0.1),
        par.func=parfunc,dpar.func=dparfunc,dimpar=4,control=list(trace=TRUE),detail=1)
 summary(cor1)
+
 ### piecwise contant OR model
 gparfunc <- function(par,t,pardes)
 {
-	cuts <- c(0,75,80,90,120)
+	cuts <- c(0,80,90,120)
 	grop <- diff(t<cuts)
-par  <- (pardes[,1]==1) * sum(grop*par[1:4])+ (pardes[,2]==1) * sum(grop*par[5:8])
-par
+paru  <- (pardes[,1]==1) * sum(grop*par[1:3])+ (pardes[,2]==1) * sum(grop*par[4:6])
+paru
 }
 
 dgparfunc <- function(par,t,pardes)
 {
-	cuts <- c(0,75,80,90,120)
+	cuts <- c(0,80,90,120)
 	grop <- diff(t<cuts)
-par1 <- matrix(c(grop),nrow(pardes),4,byrow=TRUE)
-parmz <- par1[,1:4]* (pardes[,1]==1)
+par1 <- matrix(c(grop),nrow(pardes),length(grop),byrow=TRUE)
+parmz <- par1* (pardes[,1]==1)
 pardz <- (pardes[,2]==1) * par1
 dpar <- cbind( parmz,pardz)
 dpar
 }
-head(dgparfunc(c(0.1,1,0.1,1),50,theta.des))
+head(dgparfunc(rep(0.1,6),50,theta.des))
+head(gparfunc(rep(0.1,6),50,theta.des))
+
 or1g <- or.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,
-       par.func=gparfunc,dpar.func=dgparfunc,dimpar=8,score.method="fisher.scoring",detail=1)
+       par.func=gparfunc,dpar.func=dgparfunc,dimpar=6,score.method="fisher.scoring",detail=1)
 summary(or1g)
+names(or1g)
+or1g$theta.iid
+

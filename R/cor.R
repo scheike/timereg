@@ -205,6 +205,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 			  stop("dparfunc must return matrix n x dimpar when called on dparfunc(par,t,theta.des)"); 
 		  DXtheta[s,,] <- Dttheta
 	  }
+###	  print(dim(Xtheta)); print(dim(DXtheta))
     }
 
       outl<-.Call("cor", ## {{{
@@ -247,15 +248,18 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
         }## }}}
         delta <- hessi %*% out$score *step 
         p <- p-delta* step
+	if (is.nan(sum(out$score))) break; 
         if (sum(abs(out$score))<0.00001) break; 
         if (max(theta)>20) break; 
     }
+    if (!is.nan(sum(p))) { 
     theta <- p
     iid <- 1; 
     out <- obj(p) 
     score <- out$score
     score1 <- score
     hess <- out$Dscore
+    }
     if (detail==1 & Nit==0) {## {{{
           print(paste("Fisher-Scoring ===================: final")); 
           cat("theta:");print(c(p))
@@ -289,6 +293,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
     if (detail==1) print(opt); 
     hessi <- solve(hess); 
     theta <- opt$estimate
+    if (detail==1) cat("iid decomposition\n"); 
     oout <- 2; 
     out <- obj(opt$estimate)
     score1 <- out$score
@@ -319,16 +324,18 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   return(ud);
 } ## }}}
 
-###  ee <- eigen(I);
-###  threshold <- 1e-12
-###  idx <- ee$values>threshold
-###  ee$values[idx] <- 1/ee$values[idx];
-###  if (!all(idx))
-###    ee$values[!idx] <- 0
-###  V <- with(ee, vectors%*%diag(values)%*%t(vectors))
-###  res <- list(coef=opt$par,vcov=V,cuts=cuts,nbeta=nbeta,ngamma=ngamma,betanames=colnames(X),gammanames=colnames(Z),opt=opt) 
-###
 
+mysolve <- function(A)
+{
+  ee <- eigen(A);
+  threshold <- 1e-12
+  idx <- ee$values>threshold
+  ee$values[idx] <- 1/ee$values[idx];
+  if (!all(idx))
+    ee$values[!idx] <- 0
+  V <- with(ee, vectors%*%diag(values)%*%t(vectors))
+  return(V)
+}
 
 ##' Fits a parametric model for the log-cross-odds-ratio for the 
 ##' predictive effect of for the cumulative incidence curves for \eqn{T_1} 
