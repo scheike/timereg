@@ -239,7 +239,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
     {
         out <- obj(p)
 	hess <- out$Dscore
-	if (!is.na(sum(hess))) hessi <- solve(out$Dscore) else hessi <- hess 
+	if (!is.na(sum(hess))) hessi <- lava::Inverse(out$Dscore) else hessi <- hess 
         if (detail==1) {## {{{
           print(paste("Fisher-Scoring ===================: it=",i)); 
           cat("theta:");print(c(p))
@@ -266,7 +266,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
           cat("score:");print(c(out$score)); 
 	  cat("hess:"); print(hess); 
     }## }}}
-    if (!is.na(sum(hess))) hessi <- solve(out$Dscore) else hessi <- diag(nrow(hess))
+    if (!is.na(sum(hess))) hessi <- lava::Inverse(out$Dscore) else hessi <- diag(nrow(hess))
     ## }}}
   } else if (score.method=="nlminb") { ## {{{ nlminb optimizer
     iid <- 0; oout <- 0; 
@@ -276,7 +276,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
     library(numDeriv)
     hess <- hessian(obj,opt$par)
     score <- jacobian(obj,opt$par)
-    hessi <- solve(hess); 
+    hessi <- lava::Inverse(hess); 
     theta <- opt$par
     if (detail==1) cat("iid decomposition\n"); 
     oout <- 2; 
@@ -291,7 +291,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
     hess <- opt$hessian
     score <- opt$gradient
     if (detail==1) print(opt); 
-    hessi <- solve(hess); 
+    hessi <- lava::Inverse(hess); 
     theta <- opt$estimate
     if (detail==1) cat("iid decomposition\n"); 
     oout <- 2; 
@@ -324,18 +324,17 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   return(ud);
 } ## }}}
 
-
-mysolve <- function(A)
-{
-  ee <- eigen(A);
-  threshold <- 1e-12
-  idx <- ee$values>threshold
-  ee$values[idx] <- 1/ee$values[idx];
-  if (!all(idx))
-    ee$values[!idx] <- 0
-  V <- with(ee, vectors%*%diag(values)%*%t(vectors))
-  return(V)
-}
+###mysolve <- function(A)
+###{
+###  ee <- eigen(A);
+###  threshold <- 1e-12
+###  idx <- ee$values>threshold
+###  ee$values[idx] <- 1/ee$values[idx];
+###  if (!all(idx))
+###    ee$values[!idx] <- 0
+###  V <- with(ee, vectors%*%diag(values)%*%t(vectors))
+###  return(V)
+###}
 
 ##' Fits a parametric model for the log-cross-odds-ratio for the 
 ##' predictive effect of for the cumulative incidence curves for \eqn{T_1} 
