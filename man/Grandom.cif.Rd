@@ -6,12 +6,11 @@
     cause1 = 1, cause2 = 1, cens.code = 0,
     cens.model = "KM", Nit = 40, detail = 0,
     clusters = NULL, theta = NULL, theta.des = NULL,
-    parfunc = NULL, dparfunc = NULL, step = 1, sym = 0,
-    colnames = NULL, dimpar = NULL, weights = NULL,
-    same.cens = FALSE, censoring.probs = NULL, silent = 1,
-    exp.link = 1, score.method = "nlminb", entry = NULL,
-    estimator = 1, trunkp = 1, admin.cens = NULL,
-    random.design = NULL, ...)
+    weights = NULL, step = 1, sym = 0, same.cens = FALSE,
+    censoring.probs = NULL, silent = 1, exp.link = 1,
+    score.method = "nlminb", entry = NULL, estimator = 1,
+    trunkp = 1, admin.cens = NULL, random.design = NULL,
+    ...)
 }
 \arguments{
   \item{cif}{a model object from the comp.risk function
@@ -52,20 +51,12 @@
   \item{theta.des}{specifies a regression design for the
   cross-odds-ratio parameters.}
 
-  \item{parfunc}{parfunc}
-
-  \item{dparfunc}{dparfunc}
-
   \item{step}{specifies the step size for the
   Newton-Raphson algorith.m}
 
-  \item{sym}{sym}
+  \item{sym}{1 for symmetri and 0 otherwise}
 
-  \item{colnames}{colnames}
-
-  \item{dimpar}{dimpar}
-
-  \item{weights}{weights}
+  \item{weights}{weights for score equations.}
 
   \item{same.cens}{if true then censoring within clusters
   are assumed to be the same variable, default is

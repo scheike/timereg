@@ -195,7 +195,7 @@ betai=alphi; betak=alphk;
 
 prv=rvi.n_rows;
 vec Dphi(prv),Dphk(prv);
-Dphi=0*Dphi; Dphk=0*Dphk; 
+Dphi.fill(0); Dphk.fill(0); 
 
 val=1; 
 for (k=0;k<prv;k++) if (rvi(k)+rvk(k)>0) 
@@ -259,7 +259,7 @@ betai=alphi; betak=alphk;
 
 prv=rvi.n_rows;
 vec Dphi(prv),Dphk(prv);
-Dphi=0*Dphi; Dphk=0*Dphk; 
+Dphi.fill(0); Dphk.fill(0);  
 
 val=1; 
 for (k=0;k<prv;k++) if (rvi(k)+rvk(k)>0) 
@@ -280,7 +280,7 @@ void ckrvdes3(vec &theta,mat &thetades, // {{{
 		vec &ckij, vec &dckij,vec &rvi,vec &rvk)
 {
 //double val,val1,val2,val3,alphi=0,alphk=0,alph,betai,betak;
-double test=1; //lapgam(),ilapgam(),Dtlapgam(), Dalphalapgam(),Dilapgam(),Dbetalapgam(),Dbetailapgam();
+//double lapgam(),ilapgam(),Dtlapgam(), Dalphalapgam(),Dilapgam(),Dbetalapgam(),Dbetailapgam();
 int k,nn; 
 //void funkdes2(); 
 //
@@ -580,13 +580,13 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
   double Dinverse=1,DDinverse=1,ddd,edd,ssf=0,response=0,thetak=0,respst=0; 
 //  double plack(); 
   vec dplack(4); 
-  dplack=0*dplack; 
+  dplack.fill(0);
   int pt=theta.n_rows; 
   vec ckij(4),dckij(4),ckijvv(4),dckijvv(4),ckijtv(4),dckijtv(4),ckijvt(4),dckijvt(4);
   i=silent+1; 
 
   mat thetiid(antclust,pt); 
-  if (iid==1) thetiid=0*thetiid; 
+  if (iid==1) thetiid.fill(0); 
 
   colvec p11tvec(antclust); 
 //  p11tvec=0; 
@@ -596,10 +596,10 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
   colvec pthetavec(pt); 
   vec vtheta2(pt); 
   mat DUtheta(pt,pt); 
-  DUtheta=0*DUtheta; 
-  Utheta=0*Utheta; 
+  DUtheta.fill(0); 
+  Utheta.fill(0); 
   if (!Utheta.is_finite()) {  Rprintf(" NA's i def U\n"); Utheta.print("U"); }
-  if (!DUtheta.is_finite()) { Rprintf(" NA's i def DU\n"); DUtheta.print("DU");  }
+  if (!DUtheta.is_finite()) { Rprintf(" NA's i def DU\n"); DUtheta.print("DU"); }
 
   rowvec bhatt2 = est.row(est2.n_cols); 
   colvec pbhat2(z.n_rows); 
@@ -820,7 +820,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	       ckrvdes2(alphai,alphaj,1.0,cif1lin(i),cif1lin(k),ckijvv,rvvec2vv,rvvec,rvvec1); 
 	       ckrvdes2(alphai,alphaj,1.0,Li,cif1lin(k),ckijtv,rvvec2tv,rvvec,rvvec1); 
 	       ckrvdes2(alphai,alphaj,1.0,cif1lin(i),Lk,ckijvt,rvvec2vt,rvvec,rvvec1); 
-	       rvvec=0*rvvec; 
+	       rvvec.fill(0); 
 	//	  ddd=(dckij(0)+dckijvv(0)-dckijtv(0)-dckijvt(0))/trunkp(i); 
 		  edd=(ckij(0)+ckijvv(0)-ckijtv(0)-ckijvt(0))/trunkp(i); 
 		  rvvec2=rvvec2+rvvec2vv;

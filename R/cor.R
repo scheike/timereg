@@ -720,13 +720,9 @@ random.cif<-function(cif,data,cause,cif2=NULL,
 ##' @param clusters specifies the cluster structure.
 ##' @param theta specifies starting values for the cross-odds-ratio parameters of the model.
 ##' @param theta.des specifies a regression design for the cross-odds-ratio parameters.
-##' @param parfunc parfunc
-##' @param dparfunc dparfunc
 ##' @param step specifies the step size for the Newton-Raphson algorith.m
-##' @param sym sym
-##' @param colnames colnames
-##' @param dimpar dimpar
-##' @param weights weights
+##' @param sym 1 for symmetri and 0 otherwise
+##' @param weights weights for score equations.
 ##' @param same.cens if true then censoring within clusters are assumed to be the same variable, default is independent censoring.
 ##' @param censoring.probs Censoring probabilities
 ##' @param silent debug information 
@@ -799,8 +795,7 @@ random.cif<-function(cif,data,cause,cif2=NULL,
 ##' @export
 Grandom.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
-clusters=NULL, theta=NULL,theta.des=NULL,parfunc=NULL,dparfunc=NULL,
-step=1,sym=0,colnames=NULL,dimpar=NULL,weights=NULL,
+clusters=NULL, theta=NULL,theta.des=NULL, weights=NULL, step=1,sym=0,
 same.cens=FALSE,censoring.probs=NULL,silent=1,exp.link=1,score.method="nlminb",
 entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,random.design=NULL,...)
 { ## {{{
