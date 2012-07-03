@@ -402,7 +402,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
     dd <- c(dd,list(wide3))
   }
   names(dd) <- names(mm)
-  suppressWarnings(mg <- multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep))
+  suppressWarnings(mg <- multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep,type=2))
   if (is.null(estimator)) return(mg)
   optim <- list(method="nlminb2",refit=FALSE,gamma=1,start=rep(0.1,with(mg,npar+npar.mean)))  
   if (length(control)>0) {
