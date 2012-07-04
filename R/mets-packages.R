@@ -59,6 +59,6 @@ NULL
 ##' @author Klaus K. Holst
 ##' @keywords utilities
 ##' @export
-##' @aliases plotcr npc nonparcuminc simnordic
+##' @aliases plotcr npc nonparcuminc simnordic corsim.prostate
 NULL
 

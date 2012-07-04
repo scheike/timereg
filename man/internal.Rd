@@ -1,4 +1,5 @@
 \name{npc}
+\alias{corsim.prostate}
 \alias{nonparcuminc}
 \alias{npc}
 \alias{plotcr}

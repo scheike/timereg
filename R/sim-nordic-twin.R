@@ -6,6 +6,7 @@ xm <- matrix(x,ncol=3)
 return( 1 - exp(-baset*exp(xm %*% matrix(beta,3,1)))) 
 } ## }}}
 
+##' @export 
 corsim.prostate <- function(n,theta=1,thetaslope=0,crate=2,test=0,pcens=0,mt=1,same.cens=TRUE) 
 { ## {{{
 ###n <- 10; theta <- 1; thetaslope <- 0; mt <- 1
