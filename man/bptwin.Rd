@@ -83,10 +83,12 @@
   \item{...}{Additional arguments to lower level functions}
 }
 \description{
-  .. content for description (no empty lines) ..
+  Liability-threshold model for twin data
 }
-\details{
-  .. content for details ..
+\examples{
+data(twinstut)
+b0 <- bptwin(stutter~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="u")
+summary(b0)
 }
 \author{
   Klaus K. Holst

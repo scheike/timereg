@@ -1,6 +1,5 @@
-##' .. content for description (no empty lines) ..
+##' Liability-threshold model for twin data
 ##'
-##' .. content for details ..
 ##' @aliases cumh biprobit
 ##' @title Liability model for twin data
 ##' @param formula Formula specifying effects of covariates on the response.
@@ -42,6 +41,10 @@
 ##' @param ... Additional arguments to lower level functions
 ##' @author Klaus K. Holst
 ##' @export
+##' @examples
+##' data(twinstut)
+##' b0 <- bptwin(stutter~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="u")
+##' summary(b0)
 bptwin <- function(formula, data, id, zyg, DZ, OS,
                    weight=NULL,
                    biweight=function(x) 1/min(x),

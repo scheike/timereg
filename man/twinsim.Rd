@@ -1,7 +1,6 @@
 \name{twinsim}
 \alias{twinsim}
-\title{Simulate twin data
-#}
+\title{Simulate twin data}
 \usage{
   twinsim(nMZ = 100, nDZ = nMZ, b1 = c(), b2 = c(), mu = 0,
     acde = c(1, 1, 0, 1), randomslope = NULL,
@@ -39,14 +38,6 @@
 
   \item{...}{Additional arguments parsed on to lower-level
   functions}
-}
-\value{
-  A \code{list} with the following elements #
-  \item{data}{Data in long format (one row for each
-  individual.} # \item{model}{The multigroup structural
-  equation model.} # \item{wide}{A list of data.frames (MZ
-  data and DZ data) in wide format # (one row for each
-  pair) eady for a structural equation model.}
 }
 \description{
   Simulate twin data from a linear normal ACE/ADE/AE model.
