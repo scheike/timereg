@@ -119,7 +119,8 @@ out <- list(clusters=clusters,maxclust=maxclust,antclust=antclust,idclust=idclus
 residualsTimereg <- function(object,data=data)
 { ## {{{
 
-if (class(object)!="cox.aalen" & class(object)!="aalen") stop("Computes residuals for Aalen or Cox.aalen object") 
+if (class(object)!="cox.aalen" & class(object)!="aalen") 
+	stop("Computes residuals for Aalen or Cox.aalen object") 
 else {
  formula<-attr(object,"Formula");
  beta.fixed <- attr(object,"beta.fixed")
@@ -177,9 +178,7 @@ if (class(object)=="aalen")
 	     cum <- Cpred(object$cum,start)[,-1]
 	     cumhazleft <- apply(cum*X,1,sum)
 	     if (npar==TRUE) cumhazleft <-  cumhazleft
-	     ex.haz <- (Z %*% object$gamma) * time2 ; 
           }
-
   }
 } #}}}
 

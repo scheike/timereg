@@ -66,16 +66,17 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=0)
   }
 
   coarse.clust <- FALSE; 
-  if (is.null(max.clust)) max.clust <- antclust
-  if ( (!is.null(max.clust)) )  {  
-  if (max.clust < antclust)  {
-     coarse.clust <- TRUE
-     qq <- quantile(clusters, probs = seq(0, 1, by = 1/max.clust))       
-     qqc <- cut(clusters, breaks = qq, include.lowest = TRUE)    
-     clusters <- as.integer(factor(qqc, labels = 1:max.clust)) -1
-     antclust <- max.clust    
-      }
-   }                                                         
+  if ((!is.null(max.clust))) if (max.clust< antclust) {
+        coarse.clust <- TRUE
+	qq <- unique(quantile(clusters, probs = seq(0, 1, by = 1/max.clust)))
+	qqc <- cut(clusters, breaks = qq, include.lowest = TRUE)    
+	clusters <- as.integer(qqc)-1
+	max.clusters <- length(unique(clusters))
+	antclust <- max.clust    
+  }                                                         
+  cluster.call<-clusters; 
+
+
 
   pxz <-px+pz;
 

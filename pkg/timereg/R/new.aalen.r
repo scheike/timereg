@@ -36,9 +36,10 @@ aalen<-function (formula = formula(data),
   if(is.null(clusters)) clusters <- des$clusters ##########
   pxz <- px + pz; 
 
+  cluster.call<-clusters; 
   survs<-read.surv(m,id,npar,clusters,start.time,max.time,silent=silent)
   times<-survs$times; id<-survs$id.cal; id.call<-id; 
-  clusters<-cluster.call<-survs$clusters; 
+  clusters<-survs$clusters; 
   stop.call <- time2<-survs$stop
   start.call <- survs$start
   status<-survs$status; 
@@ -47,13 +48,15 @@ aalen<-function (formula = formula(data),
   nobs <- nrow(X); 
   if (is.null(weights)) weights <- rep(1,nrow(X)); 
 
-  if ( (!is.null(max.clust)) )    if (max.clust < survs$antclust) {
-	qq <- quantile(clusters, probs = seq(0, 1, by = 1/max.clust)) 
+  if ((!is.null(max.clust))) if (max.clust<survs$antclust) {
+	qq <- unique(quantile(clusters, probs = seq(0, 1, by = 1/max.clust)))
 	qqc <- cut(clusters, breaks = qq, include.lowest = TRUE)    
-	clusters <- as.integer(factor(qqc, labels = 1:max.clust)) -1
+	clusters <- as.integer(qqc)-1
+	max.clusters <- length(unique(clusters))
+###	clusters <- as.integer(factor(qqc, labels = 1:max.clust)) -1
 	survs$antclust <- max.clust    
   }                                                         
-  cluster.call<-clusters; 
+
 
   if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
    ot <- order(-time2,status==1); 
@@ -84,8 +87,7 @@ aalen<-function (formula = formula(data),
 	if (sum(offsets)!=0) offsets <- rep(offsets,2)[ix]
 } ## }}}
 
-ldata<-list(start=survs$start,stop=survs$stop,
-	antpers=survs$antpers,antclust=survs$antclust);
+ldata<-list(start=survs$start,stop=survs$stop,antpers=survs$antpers,antclust=survs$antclust);
 
 ## }}}
 

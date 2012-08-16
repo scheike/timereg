@@ -19,7 +19,8 @@ if (class(margsurv)!="coxph") {
  if (npar==TRUE) {Z<-matrix(0,antpers,1); pz<-1; fixed<-0;} else {fixed<-1;pz<-ncol(Z);}
  px<-ncol(X);
 
- if (is.null(clusters))  clusters <- mclusters else if (sum(abs(clusters-mclusters))>0) 
+ if (is.null(clusters) && is.null(mclusters)) stop("No cluster variabel specified in marginal or twostage call \n"); 
+ if (is.null(clusters)) clusters <- mclusters else if (sum(abs(clusters-mclusters))>0) 
 	  cat("Warning: Clusters for marginal model different than those specified for two.stage\n"); 
 
   if (!is.null(attr(margsurv,"max.clust")))
@@ -29,9 +30,9 @@ if (class(margsurv)!="coxph") {
  if (nrow(X)!=length(clusters)) stop("Length of Marginal survival data not consistent with cluster length\n"); 
 
 } else { ### coxph
-   notaylor <- 1
-   antpers <- margsurv$n
-   id <- 0:(antpers-1)
+  notaylor <- 1
+  antpers <- margsurv$n
+  id <- 0:(antpers-1)
   mt <- model.frame(margsurv)
   Y <- model.extract(mt, "response")
   if (!inherits(Y, "Surv")) stop("Response must be a survival object")
@@ -42,7 +43,7 @@ if (class(margsurv)!="coxph") {
 	} else {
 	 start <- Y[, 1]; time2 <- Y[, 2];status <- Y[, 3];
         }
-   Z <- na.omit(model.matrix(margsurv)[,-1]) ## Discard intercept
+###   Z <- na.omit(model.matrix(margsurv)[,-1]) ## Discard intercept
    Z <- matrix(1,antpers,length(coef(margsurv)));
 
    if (is.null(clusters)) stop("must give clusters for coxph\n");
@@ -67,7 +68,7 @@ if (class(margsurv)!="coxph") {
   RR <-  rep(1,antpers); 
 
   update <- 1;
-  if (update==0) {
+  if (update==0) { ## {{{
   if ((attr(margsurv,"residuals")!=2) || (lefttrunk==1)) { ### compute cum hazards in time point infty; 
 	  nn <- nrow(margsurv$cum) 
 	  cum <- Cpred(margsurv$cum,time2)[,-1]
@@ -80,7 +81,7 @@ if (class(margsurv)!="coxph") {
 	     if (npar==FALSE) cumhazleft <- cumhazleft * exp( Z %*% margsurv$gamma)
 	  } 
   } else { residuals<-margsurv$residuals$dM; cumhaz<-status-residuals; }
-  }
+  } ## }}}
 
   if (update==1) 
   if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen")  { ## {{{
@@ -100,13 +101,12 @@ if (class(margsurv)!="coxph") {
        residuals <- residuals(margsurv)
        cumhaz <- status-residuals
        cumhazleft <- rep(0,antpers)
-###    RR<- exp(Z %*% coef(margsurv))
        RR<- exp(margsurv$linear.predictors-margsurv$means*coef(margsurv))
         if ((lefttrunk==1)) { 
-         baseout <- basehaz(margsurv,centered=FALSE); 
-         cum <- cbind(baseout$time,baseout$hazard)
-	 cum <- Cpred(cum,start)[,2]
-	 cumhazleft <- cum * RR 
+           baseout <- basehaz(margsurv,centered=FALSE); 
+           cum <- cbind(baseout$time,baseout$hazard)
+	   cum <- Cpred(cum,start)[,2]
+	   cumhazleft <- cum * RR 
 	}
   } ## }}}
 
