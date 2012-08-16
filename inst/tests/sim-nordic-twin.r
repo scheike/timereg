@@ -1,6 +1,4 @@
 
-library(timereg)
-
 F1addfg<-function(t,lam0=0.5,beta=c(-0.5,-0.005,-0.004),x=rep(0,3)) # FG
 { ## {{{
 baset <- 0.13*pnorm((t-.70)/.13)
@@ -8,7 +6,8 @@ xm <- matrix(x,ncol=3)
 return( 1 - exp(-baset*exp(xm %*% matrix(beta,3,1)))) 
 } ## }}}
 
-corsim.prostate <- function(n,theta=1,thetaslope=0,crate=2,test=0,pcens=0,mt=1, same.cens=TRUE) 
+##' @export 
+corsim.prostate <- function(n,theta=1,thetaslope=0,crate=2,test=0,pcens=0,mt=1,same.cens=TRUE) 
 { ## {{{
 ###n <- 10; theta <- 1; thetaslope <- 0; mt <- 1
 xl <- sample(1:4,n,replace=TRUE)
@@ -102,11 +101,11 @@ cause <- c(t(causes))
 ###same.cens=TRUE
 if (same.cens==TRUE) {
 	ctime <- rep(rbinom(n,1,pcens),each=2) 
-        ctime[ctime==1] <- rep(runif(sum(ctime==1)/2),each=2)*(mt+2)
+        ctime[ctime==1] <- rep(runif(sum(ctime==1)/2),each=2)*crate
 }
 else {
 	ctime<- rbinom(n,1,pcens)
-        ctime[ctime==1] <- runif(sum(ctime==1))*(mt+2)
+        ctime[ctime==1] <- runif(sum(ctime==1))*crate
 }
 
 ctime[ctime==0] <- mt;
@@ -129,15 +128,13 @@ data<-data.frame(time=time,cause=cause,xl=rep(xl,each=2),
 return(data)
 } ## }}}
 
-library(mets)
-
-simnordic <- function(n) 
-{
-
-outdz <- corsim.prostate(n,theta=1.7,crate=2,pcens=0.8,mt=1,same.cens=TRUE,test=0) 
-outmz <- corsim.prostate(n,theta=3,crate=2,pcens=0.8,mt=1,same.cens=TRUE,test=0) 
-outdz$zyg <- 0
-outmz$zyg <- 1
+##' @export 
+simnordic2 <- function(n,cordz=2,cormz=3,cratemz=2,cratedz=2,pcensmz=0.8,pcensdz=0.8) 
+{ ## {{{
+outdz <- corsim.prostate(n,theta=cordz,crate=cratedz,pcens=pcensmz,mt=1,same.cens=TRUE,test=0) 
+outmz <- corsim.prostate(n,theta=cormz,crate=cratemz,pcens=pcensdz,mt=1,same.cens=TRUE,test=0) 
+outdz$zyg <- "DZ" 
+outmz$zyg <-  "MZ"
 outmz$id <- outmz$id+nrow(outdz)
 ###
 out <- rbind(outdz,outmz)
@@ -152,20 +149,8 @@ table(outk$type,outk$country)
 table(outk$cause,outk$country)
 ###
 
-###times <- seq(40,100,length=30)
-###adds <- comp.risk(Surv(time,cause==0)~const(country)+cluster(id),data=outk,outk$cause,
-###	  causeS=1,conservative=1,times=times,max.clust=NULL,n.sim=0,cens.model="aalen",model="fg")
-###summary(adds)
-###plot(adds)
-######adds$cum
-######
-###padds <- predict(adds,X=rep(1,2),Z=rbind(c(1,0,0),rep(0,3)),se=0,uniform=0)
-###plot(padds,ylim=c(0,0.15),multiple=1,col=1:2)
-###padds$P1
 return(outk)
-}
+} ## }}}
 
-outk <- simnordic(5000)
-
-write.table(outk,"nordic-prostate.txt")
+###outk <- simnordic(2000)
 
