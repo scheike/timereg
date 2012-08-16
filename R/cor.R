@@ -174,7 +174,12 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ###  ## {{{ function and derivative
   if (is.null(par.func)==FALSE)
   {
-      flex.func<-1; # use flexible design
+     flex.func<-1; # use flexible design
+  if (is.null(dpar.func)) {
+	  cat("Must provide derivative that is used for iid decomposition for SE's\n"); 
+	  score.method <- "nlminb"
+	  dpar.func <- par.func
+  }
 ###  if (score.method=="fisher.scoring") 
 ###  cat("Score.method set to nlminb for flexible modelling \n"); 
   } ## }}}

@@ -575,7 +575,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
       Rprintf("trunkp %lf \n",mean(trunkp)); 
   } // }}}
 
-  int nr,ci,ck,i,j,c,s,k,v; 
+  int nr,ci,ck,i,j,c,s,k,v,c1,v1; 
   double Li,Lk,weight=0,p11t,ormarg=0,sdj,diff,cweight2,resp3,time,resp1,resp2;
   double Dinverse=1,DDinverse=1,ddd,edd,ssf=0,response=0,thetak=0,respst=0; 
 //  double plack(); 
@@ -852,8 +852,8 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 //	rvvec.print("rvec "); vthetascore.print("vt s"); vtheta2.print("vt 2"); 
 //      if (inverse==1)  vthetascore=vthetascore%vtheta2;
 
-	  for (c=0;c<pt;c++) 
-	  for (v=0;v<pt;v++) DUtheta(c,v)+=weights(i)*2*vthetascore(c)*vthetascore(v);
+	  for (c1=0;c1<pt;c1++) 
+	  for (v1=0;v1<pt;v1++) DUtheta(c1,v1)+=weights(i)*2*vthetascore(c1)*vthetascore(v1);
 // kkho   DUtheta=DUtheta+weights(i)*2*(vthetascore*trans(vthetascore));
 //        vthetascore.print("vtheta"); 
 	   vthetascore=weights(i)*2*diff*vthetascore; 
@@ -903,7 +903,7 @@ if (j<0) Rprintf("uu2 %lf %lf %lf %lf %lf %lf %d %d \n",pbhat(i),pbhat(k),0*pbha
 	       Utheta.print("DU"); 
 	       vthetascore.print("vt"); 
        }
-       if (iid==1) for (c=0;c<pt;c++) thetiid(j,c)+=vthetascore(c); 
+       if (iid==1) for (c1=0;c1<pt;c1++) thetiid(j,c1)+=vthetascore(c1); 
    }
  } /* j in antclust */ 
  } // s < Ntimes

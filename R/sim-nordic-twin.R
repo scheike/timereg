@@ -100,7 +100,7 @@ cause <- c(t(causes))
 
 ###same.cens=TRUE
 if (same.cens==TRUE) {
-	ctime <- rep(rbinom(n/2,1,pcens),each=2) 
+	ctime <- rep(rbinom(n,1,pcens),each=2) 
         ctime[ctime==1] <- rep(runif(sum(ctime==1)/2),each=2)*crate
 }
 else {

@@ -101,7 +101,7 @@ cause <- c(t(causes))
 
 ###same.cens=TRUE
 if (same.cens==TRUE) {
-	ctime <- rep(rbinom(n/2,1,pcens),each=2) 
+	ctime <- rep(rbinom(n,1,pcens),each=2) 
         ctime[ctime==1] <- rep(runif(sum(ctime==1)/2),each=2)*(mt+2)
 }
 else {
@@ -128,6 +128,8 @@ data<-data.frame(time=time,cause=cause,xl=rep(xl,each=2),
 		 p22=rep(p22,each=2))
 return(data)
 } ## }}}
+
+library(mets)
 
 simnordic <- function(n) 
 {
