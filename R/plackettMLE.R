@@ -47,6 +47,10 @@
 ##' fit2<-twostage(marg2,data=diab2,clusters=diab2$id,model="clayton.oakes")
 ##' summary(fit2)
 ##' 
+##' fit1p<-twostage(marg1,data=diab1,clusters=diab1$id,score.method="optimize")
+##' fit2p<-twostage(marg2,data=diab2,clusters=diab2$id,score.method="optimize")
+##' summary(fit1p)
+##' summary(fit2p)
 ##' @keywords survival
 ##' @author Thomas Scheike
 ##' @export
