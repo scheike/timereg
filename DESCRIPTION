@@ -60,3 +60,4 @@ Collate:
     'sim-nordic-twin.R'
     'concordance-scripts.R'
     'cor.R'
+    'plackettMLE.R'
