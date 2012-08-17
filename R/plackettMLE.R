@@ -548,7 +548,7 @@ surv.boxare <- function(left.trunc,right.cens,data,timevar="time",status="status
   covars2 <- NULL; 
   if (length(covars)>0) covars2 <- paste(covars,1,sep=".")
  
-  ww0 <- reshape(data[,c(timevar,status,covars,id,num)],direction="wide",idvar=id,timevar=num)[,c(timevar2,status2,covars2)]
+  ww0 <- reshape(data[,c(timevar,status,covars,id,num)],direction="wide",idvar=id,timevar=num)[,c(timevar2,status2,covars2,id)]
   left <- apply(ww0[,timevar2 ] > left.trunc,1,sum)==2
   ww0 <- ww0[left,]
   right  <- (ww0[,timevar2] > right.cens)
@@ -559,8 +559,7 @@ surv.boxare <- function(left.trunc,right.cens,data,timevar="time",status="status
   truncvar2 <- c("left.1","left.2")
   ww0[,truncvar2] <- left.trunc
 
-  lr.data <- reshape(ww0,direction="long",varying=list(c(timevar2),c(status2),c(truncvar2)),
-		   idvar="id",v.names=c(timevar,status,"left"))
+  lr.data <- reshape(ww0,direction="long",varying=list(c(timevar2),c(status2),c(truncvar2)),idvar="id",v.names=c(timevar,status,"left"))
 
 return(lr.data)
 } ## }}}
