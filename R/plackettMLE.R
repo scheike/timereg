@@ -533,7 +533,7 @@ return(out)
 } ## }}}
 
 ##' @export
-surv.boxare <- function(left.trunc,right.cens,data,timevar="time",status="status",id="id",covars=NULL,num=NULL)
+surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="status",id="id",covars=NULL,num=NULL)
 { ## {{{
 
   if (is.null(num)) {
