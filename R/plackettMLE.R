@@ -683,25 +683,22 @@ print.summary.pc.twostage <- function(object,var.link=NULL, digits=3,...)
   if (object$model=="clayton.oakes") cat("Dependence parameter for Clayton-Oakes model \n"); 
 
   if (vlink==1) cat("log-coefficient for dependence parameter (SE) \n")  else cat("Dependence parameter (SE) \n");
-  myest <- round(10^digits*(object$estimate))/10^digits;
-  myest <- paste(ifelse(myest<0,""," "),myest,sep="")
-  mysd <- round(10^digits*(object$se))/10^digits;  
-  res <- matrix(paste(myest," (",mysd,")",sep=""),ncol=ncol(object$cor))
-  dimnames(res) <- dimnames(object$cor)
-  colnames(res) <- paste("",colnames(res))
-  print(res,quote=FALSE)  
+  print(coefmat(object$estimate,object$se,digits=digits,...))
   cat("\n") 
-
+        
   if (object$model=="plackett") {cat("Spearman Correlation (SE) \n");cor.type <- "Spearman Correlation"; }
   if (object$model=="clayton.oakes") {cat("Kendall's tau (SE) \n"); cor.type <- "Kendall's tau";}
 
-  myest <- round(10^digits*(object$cor))/10^digits;
-  myest <- paste(ifelse(myest<0,""," "),myest,sep="")
-  mysd <- round(10^digits*(object$se.cor))/10^digits;  
-  res <- matrix(paste(myest," (",mysd,")",sep=""),ncol=ncol(object$cor))
-  dimnames(res) <- dimnames(object$cor);
-  colnames(res) <- paste("",colnames(res))
-  print(res,quote=FALSE)  
+  print(coefmat(object$cor,object$se.cor,digits,...))
   cat("\n") 
 } ## }}}
 
+coefmat <- function(est,stderr,digits=3,...) {
+  myest <- round(10^digits*(est))/10^digits;
+  myest <- paste(ifelse(myest<0,""," "),myest,sep="")
+  mysd <- round(10^digits*(stderr))/10^digits;  
+  res <- matrix(paste(format(myest)," (",format(mysd),")",sep=""),ncol=ncol(est))
+  dimnames(res) <- dimnames(est)
+  colnames(res) <- paste("",colnames(res))
+  noquote(res)
+}
