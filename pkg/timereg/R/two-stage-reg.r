@@ -11,7 +11,7 @@ if (class(margsurv)!="coxph") {
  beta.fixed <- attr(margsurv,"beta.fixed")
  if (is.null(beta.fixed)) beta.fixed <- 1; 
  ldata<-aalen.des(formula,data=data,model="cox.aalen");
- id <- attr(margsurv,"id"); mclusters <- attr(margsurv,"cluster")
+ id <- attr(margsurv,"id"); mclusters <- attr(margsurv,"cluster.call")
  X<-ldata$X; time<-ldata$time2; Z<-ldata$Z;  status<-ldata$status;
  time2 <- attr(margsurv,"stop"); start <- attr(margsurv,"start")
  antpers<-nrow(X);
