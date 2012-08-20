@@ -140,7 +140,8 @@ ldata<-list(start=survs$start,stop=survs$stop,antpers=survs$antpers,antclust=sur
   attr(ud, "Call") <- sys.call()
   attr(ud, "Formula") <- formula
   attr(ud, "id") <- id.call
-  attr(ud, "cluster") <- cluster.call
+  attr(ud, "cluster.call") <- cluster.call
+  attr(ud, "cluster") <- clusters
   attr(ud, "start.time") <- start.time
   attr(ud, "stop") <- stop.call
   attr(ud, "start") <- start.call

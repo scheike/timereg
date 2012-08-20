@@ -138,7 +138,8 @@ ldata<-list(start=start,stop=stop, antpers=survs$antpers,antclust=survs$antclust
   class(ud)<-"cox.aalen"
   attr(ud,"Formula")<-formula;
   attr(ud,"id")<-id.call;
-  attr(ud,"cluster")<-cluster.call;
+  attr(ud,"cluster.call")<-cluster.call;
+  attr(ud,"cluster")<-clusters;
   attr(ud,"time2")<-time2; 
   attr(ud,"start.time")<-start.time; 
   attr(ud,"start")<-start.call; 
