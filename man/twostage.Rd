@@ -7,11 +7,10 @@ based on the pairwise bivariate models.}
 \usage{
   twostage(margsurv, data = sys.parent(),
     score.method = "nlminb", Nit = 60, detail = 0,
-    start.time = 0, max.time = NULL, id = NULL,
     clusters = NULL, silent = 1, weights = NULL,
-    control = list(), robust = 0, theta = NULL,
-    theta.des = NULL, var.link = 1, iid = 0, step = 0.5,
-    notaylor = 0, model = "plackett")
+    control = list(), theta = NULL, theta.des = NULL,
+    var.link = 1, iid = 0, step = 0.5, notaylor = 0,
+    model = "plackett")
 }
 \description{
   The reported standard errors are based on the estimated
@@ -58,7 +57,11 @@ summary(fit2)
 fit1p<-twostage(marg1,data=diab1,clusters=diab1$id,score.method="optimize")
 fit2p<-twostage(marg2,data=diab2,clusters=diab2$id,score.method="optimize")
 summary(fit1p)
-summary(fit2p)
+
+outc <- piecewise.twostage(c(0,15,40,90),data=diabetes,score.method="optimize",iid=1)
+summary(outc)
+outp <- piecewise.twostage(c(0,15,40,90),data=diabetes,score.method="optimize",iid=1)
+summary(outp)
 }
 \author{
   Thomas Scheike

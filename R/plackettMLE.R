@@ -50,13 +50,17 @@
 ##' fit1p<-twostage(marg1,data=diab1,clusters=diab1$id,score.method="optimize")
 ##' fit2p<-twostage(marg2,data=diab2,clusters=diab2$id,score.method="optimize")
 ##' summary(fit1p)
-##' summary(fit2p)
+##' 
+##' outc <- piecewise.twostage(c(0,15,40,90),data=diabetes,score.method="optimize",iid=1)
+##' summary(outc)
+##' outp <- piecewise.twostage(c(0,15,40,90),data=diabetes,score.method="optimize",iid=1)
+##' summary(outp)
 ##' @keywords survival
 ##' @author Thomas Scheike
 ##' @export
 twostage <- function(margsurv,data=sys.parent(),score.method="nlminb",
-Nit=60,detail=0,start.time=0,max.time=NULL,id=NULL,clusters=NULL,silent=1,weights=NULL,
-control=list(),robust=0,theta=NULL,theta.des=NULL,var.link=1,iid=0,
+Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
+control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=0,
 step=0.5,notaylor=0,model="plackett")
 { ## {{{
 ## {{{ seting up design and variables
@@ -112,7 +116,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 	   start <- rep(0,antpers);
 	   beta.fixed <- 0
 	   semi <- 1
-	   start.time <- 0
+###	   start.time <- 0
 } ## }}}
 
   if (sum(abs(start))>0) lefttrunk <- 1  else lefttrunk <- 0;  
@@ -356,11 +360,14 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 
 
 ## {{{ handling output
-###  theta.iid <- out$theta.iid %*% hessi
-###  if (robust==1) var.theta  <- hessi %*% (t(theta.iid) %*% theta.iid) %*% hessi else 
+  robvar.theta <- NULL
+  if (iid==1) {
+     theta.iid <- out$theta.iid %*% hessi
+     robvar.theta  <- (t(theta.iid) %*% theta.iid) 
+  }
   var.theta <- hessi
   if (!is.null(colnames(theta.des))) thetanames <- colnames(theta.des) else thetanames <- rep("intercept",ptheta)
-  ud <- list(theta=theta,score=score,hess=hess,hessi=hessi,var.theta=var.theta,model=model,
+  ud <- list(theta=theta,score=score,hess=hess,hessi=hessi,var.theta=var.theta,model=model,robvar.theta=robvar.theta,
              theta.iid=theta.iid,thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,margsurv=psurvmarg); 
   class(ud)<-"twostage" 
   attr(ud, "Formula") <- formula
@@ -375,6 +382,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 
 } ## }}}
 
+##' @S3method summary twostage
 summary.twostage <-function (object,digits = 3,...) { ## {{{
   if (!(inherits(object,"twostage"))) stop("Must be a Two-Stage object")
   
@@ -394,11 +402,13 @@ summary.twostage <-function (object,digits = 3,...) { ## {{{
   res
 } ## }}}
 
-##' @S3method coef cor
-coef.twostage <- function(object,...)
+##' @S3method coef twostage
+coef.twostage <- function(object,var.link=NULL,...)
 { ## {{{
   theta <- object$theta
-  if (attr(object,"var.link")==1) vlink <- 1 else vlink <- 0
+  if (is.null(var.link))
+     if (attr(object,"var.link")==1) vlink <- 1 else vlink <- 0
+     else vlink <- var.link
   se<-diag(object$var.theta)^0.5
   res <- cbind(theta, se )
   wald <- theta/se
@@ -549,18 +559,128 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   if (length(covars)>0) covars2 <- paste(covars,1,sep=".")
  
   ww0 <- reshape(data[,c(timevar,status,covars,id,num)],direction="wide",idvar=id,timevar=num)[,c(timevar2,status2,covars2,id)]
-  left <- apply(ww0[,timevar2 ] > left.trunc,1,sum)==2
-  ww0 <- ww0[left,]
+  mleft <- (1*(ww0[,timevar2[1] ] > left.trunc[1])+ 1*(ww0[,timevar2[2] ] > left.trunc[2])) ==2
+###  mleft <- apply(1*(ww0[,timevar2 ] > left.trunc),1,sum)==2
+  ww0 <- ww0[mleft,]
   right  <- (ww0[,timevar2] > right.cens)
   ww0[,timevar2[1]][right[,1]] <- right.cens[1]
   ww0[,timevar2[2]][right[,2]] <- right.cens[2]
   ww0[,status2[1]][right[,1]] <- 0
   ww0[,status2[2]][right[,2]] <- 0
   truncvar2 <- c("left.1","left.2")
-  ww0[,truncvar2] <- left.trunc
+  ww0[,truncvar2[1]] <- left.trunc[1]
+  ww0[,truncvar2[2]] <- left.trunc[2]
+###  t(ww0[,truncvar2]) <- left.trunc
 
-  lr.data <- reshape(ww0,direction="long",varying=list(c(timevar2),c(status2),c(truncvar2)),idvar="id",v.names=c(timevar,status,"left"))
+  lr.data <- reshape(ww0,direction="long",
+		     varying=list(c(timevar2),c(status2),c(truncvar2)),idvar="id",v.names=c(timevar,status,"left"))
 
 return(lr.data)
+} ## }}}
+
+##' @export
+piecewise.twostage <- function(cut1,cut2,data=sys.parent(),timevar="time",status="status",id="id",covars=NULL,num=NULL,
+                          score.method="optimize",
+                          Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
+                          control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=0,
+                          step=0.5,model="plackett",data.return=0)
+{ ## {{{
+
+ud <- list()
+if (missing(cut2)) cut2 <- cut1; 
+nc1 <- length(cut1); 
+nc2 <- length(cut2)
+names1 <- names2 <- c()
+theta.mat <- matrix(0,nc1-1,nc2-1); 
+se.theta.mat <- matrix(0,nc1-1,nc2-1); 
+cor.mat <- matrix(0,nc1-1,nc2-1); 
+se.cor.mat <- matrix(0,nc1-1,nc2-1); 
+idi <- unique(data[,id]); 
+if (iid==1) theta.iid <- matrix(0,length(idi),(nc1-1)*(nc2-1)) else theta.iid <- NULL
+
+k <- 0; 
+for (i1 in 2:nc1)
+for (i2 in 2:nc2)
+{
+k <-(i1-2)*(nc2-1)+(i2-1)
+ datalr <- surv.boxarea(c(cut1[i1-1],cut2[i2-1]),c(cut1[i1],cut2[i2]),data) 
+ boxlr <- list(left=c(cut1[i1-1],cut2[i2-1]),right=c(cut1[i1],cut2[i2]))
+### marg1 <- aalen(Surv(datalr$left,datalr[,timevar],datalr[,status])~+1,data=datalr,n.sim=0,max.clust=NULL,robust=0)
+###ud=eval(parse(text=paste("Surv(datalr$left,datalr$",timevar,",datalr$",status,")",sep=""))) 
+### marg1 <- aalen(Surv(left,datalr[,timevar],datalr[,status])~+1,data=datalr,n.sim=0,max.clust=NULL,robust=0)
+### print(ud)
+datalr$tstime <- datalr[,timevar]
+datalr$tsstatus <- datalr[,status]
+datalr$tsid <- datalr[,id]
+marg1 <- aalen(Surv(left,tstime,tsstatus)~+1,data=datalr,n.sim=0,max.clust=NULL,robust=0)
+fitlr<-twostage(marg1,data=datalr,clusters=datalr$tsid,model=model,score.method=score.method,
+                 Nit=Nit,detail=detail,silent=silent,weights=weights,
+                 control=control,theta=theta,theta.des=theta.des,var.link=var.link,iid=iid,step=step)
+####
+coef <- coef(fitlr)
+theta.mat[i1-1,i2-1] <- fitlr$theta
+se.theta.mat[i1-1,i2-1] <- fitlr$var.theta^.5
+cor.mat[i1-1,i2-1] <- coef[1,5]
+se.cor.mat[i1-1,i2-1] <- coef[1,6]
+if (data.return==0) 
+ud[[k]] <- list(index=c(i1,i2),left=c(cut1[i1-1],cut2[i2-1]),right=c(cut1[i1],cut2[i2]),fitlr=fitlr)
+if (data.return==1) 
+ud[[k]] <- list(index=c(i1,i2),left=c(cut1[i1-1],cut2[i2-1]),right=c(cut1[i1],cut2[i2]),fitlr=fitlr,data=datalr)
+if (i2==2) names1 <- c(names1, paste(cut1[i1-1],"-",cut1[i1]))
+if (i1==2) names2 <- c(names2, paste(cut2[i2-1],"-",cut2[i2]))
+theta <- c(theta,fitlr$theta)
+
+if (iid==1) theta.iid[idi %in% unique(datalr$tsid),k] <-  fitlr$theta.iid 
+}
+
+var.thetal <- NULL
+if (iid==1)  var.thetal <- t(theta.iid) %*% theta.iid
+
+colnames(cor.mat) <-  colnames(se.cor.mat)  <- colnames(se.theta.mat) <- colnames(theta.mat) <- names1; 
+rownames(cor.mat) <-  rownames(se.cor.mat) <-  rownames(se.theta.mat) <- rownames(theta.mat) <- names2; 
+
+ud <- list(model.fits=ud,theta=theta.mat,var.theta=se.theta.mat^2,
+	   se.theta=se.theta.mat,thetal=theta,thetal.iid=theta.iid,var.thetal=var.thetal,model=model,
+	   cor=cor.mat,se.cor=se.cor.mat); 
+class(ud)<-"pc.twostage" 
+attr(ud,"var.link")<-var.link; 
+attr(ud, "Type") <- model
+return(ud);
+} ## }}}
+
+
+##' @S3method summary pc.twostage
+summary.pc.twostage <- function(object,var.link=NULL,...)
+{ ## {{{
+  if (!(inherits(object,"pc.twostage"))) stop("Must be a Piecewise constant two-Stage object")
+  
+  res <- list(estimates=object$theta,se=object$se.theta,cor=object$cor,se.cor=object$se.cor,
+	      model=object$model)
+  class(res) <- "summary.pc.twostage"
+  attr(res,"var.link")<-attr(object,"var.link"); 
+  attr(res, "Type") <- object$model
+  res
+} ## }}}
+
+##' @S3method print summary.pc.twostage
+print.summary.pc.twostage <- function(object,var.link=NULL,...)
+{ ## {{{
+  
+  if (is.null(var.link)) { if (attr(object,"var.link")==1) vlink <- 1 else vlink <- 0; } else vlink <- var.link
+  print(vlink)
+
+  if (object$model=="plackett") cat("Dependence parameter for Plackett model \n"); 
+  if (object$model=="clayton.oakes") cat("Dependence parameter for Clayton-Oakes model \n"); 
+
+  if (vlink==1) cat("log-coefficient for dependence parameter (SE) \n")  else cat("Dependence parameter (SE) \n"); 
+  print(object$estimates); 
+  print(object$se)
+  cat("\n") 
+
+  if (object$model=="plackett") {cat("Spearman Correlation (SE) \n");cor.type <- "Spearman Correlation"; }
+  if (object$model=="clayton.oakes") {cat("Kendall's tau (SE) \n"); cor.type <- "Kendall's tau";}
+  print(object$cor)
+  print(object$se.cor)
+  cat("\n") 
 } ## }}}
 
