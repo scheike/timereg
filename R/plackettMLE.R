@@ -663,7 +663,7 @@ summary.pc.twostage <- function(object,var.link=NULL,...)
 } ## }}}
 
 ##' @S3method print summary.pc.twostage
-print.summary.pc.twostage <- function(object,var.link=NULL,...)
+print.summary.pc.twostage <- function(object,var.link=NULL, digits=3,...)
 { ## {{{
   
   if (is.null(var.link)) { if (attr(object,"var.link")==1) vlink <- 1 else vlink <- 0; } else vlink <- var.link
@@ -672,15 +672,26 @@ print.summary.pc.twostage <- function(object,var.link=NULL,...)
   if (object$model=="plackett") cat("Dependence parameter for Plackett model \n"); 
   if (object$model=="clayton.oakes") cat("Dependence parameter for Clayton-Oakes model \n"); 
 
-  if (vlink==1) cat("log-coefficient for dependence parameter (SE) \n")  else cat("Dependence parameter (SE) \n"); 
-  print(object$estimates); 
-  print(object$se)
+  if (vlink==1) cat("log-coefficient for dependence parameter (SE) \n")  else cat("Dependence parameter (SE) \n");
+  myest <- round(10^digits*(object$estimate))/10^digits;
+  myest <- paste(ifelse(myest<0,""," "),myest,sep="")
+  mysd <- round(10^digits*(object$se))/10^digits;  
+  res <- matrix(paste(myest," (",mysd,")",sep=""),ncol=ncol(object$cor))
+  dimnames(res) <- dimnames(object$cor)
+  colnames(res) <- paste("",colnames(res))
+  print(res,quote=FALSE)  
   cat("\n") 
 
   if (object$model=="plackett") {cat("Spearman Correlation (SE) \n");cor.type <- "Spearman Correlation"; }
   if (object$model=="clayton.oakes") {cat("Kendall's tau (SE) \n"); cor.type <- "Kendall's tau";}
-  print(object$cor)
-  print(object$se.cor)
+
+  myest <- round(10^digits*(object$cor))/10^digits;
+  myest <- paste(ifelse(myest<0,""," "),myest,sep="")
+  mysd <- round(10^digits*(object$se.cor))/10^digits;  
+  res <- matrix(paste(myest," (",mysd,")",sep=""),ncol=ncol(object$cor))
+  dimnames(res) <- dimnames(object$cor);
+  colnames(res) <- paste("",colnames(res))
+  print(res,quote=FALSE)  
   cat("\n") 
 } ## }}}
 
