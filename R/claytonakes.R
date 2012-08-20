@@ -57,6 +57,7 @@ ClaytonOakes <- function(formula,data=parent.frame(),cluster,var.formula=~1,cuts
   }
   if (missing(cluster)) stop("Missing 'cluster' variable")
   ngamma <- 0
+  data <- data[order(data[,cluster]),]
   Z <- model.matrix(var.formula,data)
   ngamma <- ncol(Z)
 
@@ -131,7 +132,7 @@ ClaytonOakes <- function(formula,data=parent.frame(),cluster,var.formula=~1,cuts
       multhaz <- exp(X%*%beta)
     }
     if (!is.null(dots$theta)) theta0 <- cbind(rep(dots$theta,length(theta0)))
-    ##browser()
+    ##    browser()
     res <- .Call("claytonoakes",
            ds=mydata$status,ts=mydata$T,es=mydata$entry,
            allcs=mydata$cluster,cs=ucluster,

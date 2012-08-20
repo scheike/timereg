@@ -54,6 +54,11 @@ summary(fit1)
 marg2 <- aalen(Surv(left,time,status)~+1,data=diab2,n.sim=0,max.clust=NULL,robust=0)
 fit2<-twostage(marg2,data=diab2,clusters=diab2$id,model="clayton.oakes")
 summary(fit2)
+
+fit1p<-twostage(marg1,data=diab1,clusters=diab1$id,score.method="optimize")
+fit2p<-twostage(marg2,data=diab2,clusters=diab2$id,score.method="optimize")
+summary(fit1p)
+summary(fit2p)
 }
 \author{
   Thomas Scheike
