@@ -245,7 +245,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 	  }
     } ## }}}
 
-      dyn.load("twostage.so")
+###      dyn.load("twostage.so")
       outl<-.Call("twostageloglike", ## {{{
       icause=status,ipmargsurv=psurvmarg, 
       itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
