@@ -562,6 +562,9 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   ww0 <- reshape(data[,c(timevar,status,covars,id,num)],direction="wide",idvar=id,timevar=num)[,c(timevar2,status2,covars2,id)]
   mleft <- (1*(ww0[,timevar2[1] ] > left.trunc[1])+ 1*(ww0[,timevar2[2] ] > left.trunc[2])) ==2
 ###  mleft <- apply(1*(ww0[,timevar2 ] > left.trunc),1,sum)==2
+  ww0 <- ww0[!is.na(mleft),]
+  mleft <- mleft[!is.na(mleft)]
+  if (sum(mleft)==0) stop("No data selected\n"); 
   ww0 <- ww0[mleft,]
   right  <- (ww0[,timevar2] > right.cens)
   ww0[,timevar2[1]][right[,1]] <- right.cens[1]
