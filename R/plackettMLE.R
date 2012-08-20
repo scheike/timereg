@@ -649,7 +649,6 @@ attr(ud, "Type") <- model
 return(ud);
 } ## }}}
 
-
 ##' @S3method summary pc.twostage
 summary.pc.twostage <- function(object,var.link=NULL,...)
 { ## {{{
@@ -661,6 +660,13 @@ summary.pc.twostage <- function(object,var.link=NULL,...)
   attr(res,"var.link")<-attr(object,"var.link"); 
   attr(res, "Type") <- object$model
   res
+} ## }}}
+
+##' @S3method print pc.twostage
+print.pc.twostage <- function(object,var.link=NULL,...)
+{ ## {{{
+   if (!(inherits(object,"pc.twostage"))) stop("Must be a Piecewise constant two-Stage object")
+   print( summary(object,var.link=var.link,...))
 } ## }}}
 
 ##' @S3method print summary.pc.twostage
