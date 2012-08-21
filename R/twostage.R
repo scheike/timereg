@@ -214,8 +214,8 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
   ptheta<-ncol(theta.des); 
   if (nrow(theta.des)!=antpers) stop("Theta design does not have correct dim");
 
-  if (is.null(theta)==TRUE && var.link==1) theta<-rep(0,ptheta); 
-  if (is.null(theta)==TRUE && var.link==0) theta<-rep(1,ptheta); 
+  if (is.null(theta)==TRUE && var.link==1) theta<-rep(0.1,ptheta); 
+  if (is.null(theta)==TRUE && var.link==0) theta<-rep(1.1,ptheta); 
   if (length(theta)!=ptheta) theta<-rep(theta[1],ptheta); 
   theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
 
@@ -255,7 +255,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
       itrunkp=ptrunc, DUP=FALSE) 
       ## }}}
 
-      if (detail==3) print(c(par,outl$loglike))
+    if (detail==3) print(c(par,outl$loglike))
 
     attr(outl,"gradient") <-outl$score 
     if (oout==0) ret <- c(-1*outl$loglike) else if (oout==1) ret <- sum(outl$score^2) else ret <- outl
@@ -598,6 +598,7 @@ names1 <- names2 <- c()
 theta.mat <- matrix(0,nc1-1,nc2-1); 
 se.theta.mat <- matrix(0,nc1-1,nc2-1); 
 cor.mat <- matrix(0,nc1-1,nc2-1); 
+score.mat <- matrix(0,nc1-1,nc2-1); 
 se.cor.mat <- matrix(0,nc1-1,nc2-1); 
 idi <- unique(data[,id]); 
 if (iid==1) theta.iid <- matrix(0,length(idi),(nc1-1)*(nc2-1)) else theta.iid <- NULL
@@ -607,7 +608,10 @@ for (i1 in 2:nc1)
 for (i2 in 2:nc2)
 {
 k <-(i1-2)*(nc2-1)+(i2-1)
+if (silent<=0) cat(paste("Data-set ",k,"out of ",(nc1-1)*(nc2-1)),"\n"); 
  datalr <- surv.boxarea(c(cut1[i1-1],cut2[i2-1]),c(cut1[i1],cut2[i2]),data,timevar=timevar,status=status,id=id,covars=covars,num=num) 
+if (silent<=0) cat(paste("number of rows in  Data-set ",nrow(datalr),"\n")); 
+if (silent<=-1) print(summary(datalr)); 
  boxlr <- list(left=c(cut1[i1-1],cut2[i2-1]),right=c(cut1[i1],cut2[i2]))
 ### marg1 <- aalen(Surv(datalr$left,datalr[,timevar],datalr[,status])~+1,data=datalr,n.sim=0,max.clust=NULL,robust=0)
 ###ud=eval(parse(text=paste("Surv(datalr$left,datalr$",timevar,",datalr$",status,")",sep=""))) 
@@ -616,7 +620,7 @@ k <-(i1-2)*(nc2-1)+(i2-1)
 datalr$tstime <- datalr[,timevar]
 datalr$tsstatus <- datalr[,status]
 datalr$tsid <- datalr[,id]
-marg1 <- aalen(Surv(left,tstime,tsstatus)~+1,data=datalr,n.sim=0,max.clust=NULL,robust=0)
+marg1 <- aalen(Surv(tstime,tsstatus)~+1,data=datalr,n.sim=0,max.clust=NULL,robust=0)
 fitlr<-twostage(marg1,data=datalr,clusters=datalr$tsid,model=model,score.method=score.method,
                  Nit=Nit,detail=detail,silent=silent,weights=weights,
                  control=control,theta=theta,theta.des=theta.des,var.link=var.link,iid=iid,step=step)
@@ -626,6 +630,7 @@ theta.mat[i1-1,i2-1] <- fitlr$theta
 se.theta.mat[i1-1,i2-1] <- fitlr$var.theta^.5
 cor.mat[i1-1,i2-1] <- coef[1,5]
 se.cor.mat[i1-1,i2-1] <- coef[1,6]
+score.mat[i1-1,i2-1] <- fitlr$score
 if (data.return==0) 
 ud[[k]] <- list(index=c(i1,i2),left=c(cut1[i1-1],cut2[i2-1]),right=c(cut1[i1],cut2[i2]),fitlr=fitlr)
 if (data.return==1) 
@@ -640,12 +645,12 @@ if (iid==1) theta.iid[idi %in% unique(datalr$tsid),k] <-  fitlr$theta.iid
 var.thetal <- NULL
 if (iid==1)  var.thetal <- t(theta.iid) %*% theta.iid
 
-colnames(cor.mat) <-  colnames(se.cor.mat)  <- colnames(se.theta.mat) <- colnames(theta.mat) <- names1; 
-rownames(cor.mat) <-  rownames(se.cor.mat) <-  rownames(se.theta.mat) <- rownames(theta.mat) <- names2; 
+colnames(score.mat) <- colnames(cor.mat) <-  colnames(se.cor.mat)  <- colnames(se.theta.mat) <- colnames(theta.mat) <- names1; 
+rownames(score.mat) <- rownames(cor.mat) <-  rownames(se.cor.mat) <-  rownames(se.theta.mat) <- rownames(theta.mat) <- names2; 
 
 ud <- list(model.fits=ud,theta=theta.mat,var.theta=se.theta.mat^2,
 	   se.theta=se.theta.mat,thetal=theta,thetal.iid=theta.iid,var.thetal=var.thetal,model=model,
-	   cor=cor.mat,se.cor=se.cor.mat); 
+	   cor=cor.mat,se.cor=se.cor.mat,score=score.mat); 
 class(ud)<-"pc.twostage" 
 attr(ud,"var.link")<-var.link; 
 attr(ud, "Type") <- model
@@ -658,7 +663,7 @@ summary.pc.twostage <- function(object,var.link=NULL,...)
   if (!(inherits(object,"pc.twostage"))) stop("Must be a Piecewise constant two-Stage object")
   
   res <- list(estimates=object$theta,se=object$se.theta,cor=object$cor,se.cor=object$se.cor,
-	      model=object$model)
+	      model=object$model,score=object$score)
   class(res) <- "summary.pc.twostage"
   attr(res,"var.link")<-attr(object,"var.link"); 
   attr(res, "Type") <- object$model
@@ -681,24 +686,29 @@ print.summary.pc.twostage <- function(object,var.link=NULL, digits=3,...)
 
   if (object$model=="plackett") cat("Dependence parameter for Plackett model \n"); 
   if (object$model=="clayton.oakes") cat("Dependence parameter for Clayton-Oakes model \n"); 
+ 
+  if (max(object$score)>0.001) { cat("Score of log-likelihood for parameter estimates (too large?)\n"); print(object$score);cat("\n\n");}
 
   if (vlink==1) cat("log-coefficient for dependence parameter (SE) \n")  else cat("Dependence parameter (SE) \n");
-  print(coefmat(object$estimate,object$se,digits=digits,...))
+  myest <- round(10^digits*(object$estimate))/10^digits;
+  myest <- paste(ifelse(myest<0,""," "),myest,sep="")
+  mysd <- round(10^digits*(object$se))/10^digits;  
+  res <- matrix(paste(myest," (",mysd,")",sep=""),ncol=ncol(object$cor))
+  dimnames(res) <- dimnames(object$cor)
+  colnames(res) <- paste("",colnames(res))
+  print(res,quote=FALSE)  
   cat("\n") 
-        
+
   if (object$model=="plackett") {cat("Spearman Correlation (SE) \n");cor.type <- "Spearman Correlation"; }
   if (object$model=="clayton.oakes") {cat("Kendall's tau (SE) \n"); cor.type <- "Kendall's tau";}
 
-  print(coefmat(object$cor,object$se.cor,digits,...))
+  myest <- round(10^digits*(object$cor))/10^digits;
+  myest <- paste(ifelse(myest<0,""," "),myest,sep="")
+  mysd <- round(10^digits*(object$se.cor))/10^digits;  
+  res <- matrix(paste(myest," (",mysd,")",sep=""),ncol=ncol(object$cor))
+  dimnames(res) <- dimnames(object$cor);
+  colnames(res) <- paste("",colnames(res))
+  print(res,quote=FALSE)  
   cat("\n") 
 } ## }}}
 
-coefmat <- function(est,stderr,digits=3,...) {
-  myest <- round(10^digits*(est))/10^digits;
-  myest <- paste(ifelse(myest<0,""," "),myest,sep="")
-  mysd <- round(10^digits*(stderr))/10^digits;  
-  res <- matrix(paste(format(myest)," (",format(mysd),")",sep=""),ncol=ncol(est))
-  dimnames(res) <- dimnames(est)
-  colnames(res) <- paste("",colnames(res))
-  noquote(res)
-}
