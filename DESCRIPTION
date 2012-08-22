@@ -58,6 +58,6 @@ Collate:
     'twinsim.R'
     'methodstwinlm.R'
     'sim-nordic-twin.R'
-    'concordance-scripts.R'
-    'cor.R'
+    'concordance-scripts.r'
+    'cor.r'
     'twostage.R'

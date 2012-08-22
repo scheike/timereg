@@ -71,6 +71,112 @@ conc2probandwise <- function(conc,marg,test="no-test")
   return(out)
 } ## }}}
 
+
+##' .. content for description (no empty lines) ..
+##'
+##' @title Estimates the probandwise concordance based on Concordance and marginal estimate 
+##' @param conc Concordance 
+##' @param marg Marginal estimate
+##' @param cause.prodlim specififes which cause that should be used for marginal cif based on prodlim
+##' @author Thomas Scheike
+##' @examples
+##' data(prt);
+##' 
+##' ### marginal cumulative incidence of prostate cancer 
+##' outm <- prodlim(Hist(time,status) ~ +1,data=prt)
+##' 
+##' times <- 60:100
+##' cifmz <- predict(outm,cause=2,time=times,newdata=data.frame(zyg="MZ"))
+##' cifdz <- predict(outm,cause=2,time=times,newdata=data.frame(zyg="DZ"))
+##' 
+##' ### concordance for MZ and DZ twins
+##' cc <- bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2),prodlim=TRUE)
+##' cdz <- cc$model$"DZ"
+##' cmz <- cc$model$"MZ"
+##' 
+##' cdz <- probandwise(cdz,outm,cause.prodlim=2)
+##' cmz <- probandwise(cmz,outm,cause.prodlim=2)
+##' 
+##' plot(cdz)
+##' plot(cmz)
+##' summary(cdz)
+##' summary(cmz)
+##' @export
+probandwise <- function(conc,marg,cause.prodlim=1)
+{ ## {{{
+  if ((!class(conc)=="prodlim")  || (!class(marg)=="prodlim")) stop("Assumes that both models are based on prodlim function \n"); 
+  time1 <- conc$time
+  time2 <- marg$time
+
+  mintime <- max(time1[1],time2[1])
+  maxtime <- min(max(time1),max(time2))
+  timer <- seq(mintime, maxtime,length=100)
+  dtimer <- timer[2]-timer[1]
+
+  out <- conc
+  out$time <- timer
+  if (class(marg)=="comp.risk") margtime <- Cpred(cbind(marg$time,c(marg$P1)),timer)[,2] else if (class(marg)=="prodlim") {
+	  cuminc <- data.frame(marg$cuminc)[,cause.prodlim]; 
+	  se.cuminc <- data.frame(marg$se.cuminc)[,cause.prodlim]; 
+	  margtime <- Cpred(cbind(marg$time,c(cuminc)),timer)[,2]; 
+	  se.margtime <- Cpred(cbind(marg$time,c(se.cuminc)),timer)[,2]; 
+  } else stop("marginal cumulative incidence comp.risk or prodlim output\n"); 
+
+  if (class(conc)=="comprisk") concP1 <-  Cpred(cbind(conc$time,c(conc$P1)),timer)[,2]
+  else if (class(conc)=="prodlim")  {
+	  conc.cuminc <- data.frame(conc$cuminc)[,1]
+	  conc.se.cuminc <- data.frame(conc$se.cuminc)[,1]
+          se.P1 <-  Cpred(cbind(conc$time,conc.se.cuminc),timer)[,2]
+	  concP1 <- Cpred(cbind(conc$time,conc.cuminc),timer)[,2]
+  }
+  P1 <- concP1/margtime
+  se.P1 <- se.P1/margtime
+  med <- (margtime>0)  & (concP1 > 0) 
+  out$P1 <- P1[med]
+  out$se.P1 <- se.P1[med]
+  out$timer <- timer[med]
+
+  margout <- cbind(timer,margtime,se.margtime)
+  colnames(margout) <- c("time","cif","se.cif")
+
+  probout <- cbind(out$timer,out$P1,out$se.P1)
+  colnames(probout) <- c("time","probandwise conc","se probandwise")
+
+  out <- list(probandwise=probout,marg=margout,mintime=mintime,maxtime=maxtime)
+  class(out) <- "probandwise"
+  return(out)
+} ## }}}
+
+##' @S3method plot probandwise 
+plot.probandwise <- function(object,ci=NULL,lty=NULL,ylim=NULL,col=NULL,xlab="time",ylab="concordance",legend=FALSE,...)
+{ ## {{{
+
+  if (is.null(col)) col <- 1:3
+  if (is.null(lty)) lty <- 1:3
+  if (is.null(ylim)) ylim=range(c(object$probandwise[,2],object$marg[,2]))
+
+  plot(object$probandwise[,1],object$probandwise[,2],type="s",ylim=ylim,lty=lty[1],col=col[1],xlab=xlab,ylab=ylab,...)
+  if (!is.null(ci)) {
+     ul <- object$probandwise[,2]+qnorm(1-(1-ci)/2)* object$probandwise[,3]
+     nl <- object$probandwise[,2]-qnorm(1-(1-ci)/2)* object$probandwise[,3]
+     lines(object$probandwise[,1],ul,type="s",ylim=ylim,lty=lty[3],col=col[3])
+     lines(object$probandwise[,1],nl,type="s",ylim=ylim,lty=lty[3],col=col[3])
+  }
+  lines(object$marg[,1],object$marg[,2],lty=lty[2],col=col[2],type="s")
+
+  if (legend==TRUE) legend("topleft",lty=lty[1:2],col=col[1:2],c("Probandwise concordance","Marginal estimate"))
+
+} ## }}}
+
+##' @S3method summary probandwise 
+summary.probandwise <- function(object,...)
+{ ## {{{
+
+   print(signif(cbind(object$probandwise),3))
+
+   print(signif(cbind(object$marg),3))
+} ## }}}
+
 ##' @S3method print testconc
 print.testconc <- function(x,digits=3,...)
 { ## {{{

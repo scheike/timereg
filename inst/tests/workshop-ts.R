@@ -29,7 +29,7 @@ or1$score
 rr1<-mets::rr.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des,same.cens=TRUE,score.method="fisher.scoring")
 summary(rr1)
 
-pcif <- predict(cifmod,X=1,resample.iid=0,uniform=0,se=0)
+pcif <- predict(cifmod,X=1,resample.iid=1,uniform=0,se=1)
 
 png(filename="pcif.png")
 plot(pcif,multiple=1,se=0,uniform=0,ylim=c(0,0.15))
