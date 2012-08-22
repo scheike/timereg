@@ -83,7 +83,7 @@ conc2probandwise <- function(conc,marg,test="no-test")
 ##' data(prt);
 ##' 
 ##' ### marginal cumulative incidence of prostate cancer 
-##' outm <- prodlim(Hist(time,status) ~ +1,data=prt)
+##' outm <- prodlim(Hist(time,status)~+1+cluster(id),data=prt)
 ##' 
 ##' times <- 60:100
 ##' cifmz <- predict(outm,cause=2,time=times,newdata=data.frame(zyg="MZ"))
@@ -169,12 +169,16 @@ plot.probandwise <- function(object,ci=NULL,lty=NULL,ylim=NULL,col=NULL,xlab="ti
 } ## }}}
 
 ##' @S3method summary probandwise 
-summary.probandwise <- function(object,...)
+summary.probandwise <- function(object,marg=FALSE,...)
 { ## {{{
-
+   cat("Probandwise concordance and standard errors \n"); 
    print(signif(cbind(object$probandwise),3))
+   cat("\n"); 
 
-   print(signif(cbind(object$marg),3))
+   if (marg==TRUE) {
+      cat("Marginal cumulative incidence and standard errors \n"); 
+      print(signif(cbind(object$marg),3))
+   }
 } ## }}}
 
 ##' @S3method print testconc
