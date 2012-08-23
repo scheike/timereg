@@ -83,7 +83,7 @@ conc2probandwise <- function(conc,marg,test="no-test")
 ##' data(prt);
 ##' 
 ##' ### marginal cumulative incidence of prostate cancer 
-##' outm <- prodlim(Hist(time,status)~+1+cluster(id),data=prt)
+##' outm <- prodlim(Hist(time,status)~+1,data=prt)
 ##' 
 ##' times <- 60:100
 ##' cifmz <- predict(outm,cause=2,time=times,newdata=data.frame(zyg="MZ"))
@@ -97,8 +97,9 @@ conc2probandwise <- function(conc,marg,test="no-test")
 ##' cdz <- probandwise(cdz,outm,cause.prodlim=2)
 ##' cmz <- probandwise(cmz,outm,cause.prodlim=2)
 ##' 
-##' plot(cdz)
-##' plot(cmz)
+##' plot(cmz,ci=NULL,ylim=c(0,0.5),xlim=c(60,100),legend=TRUE,col=c(3,2,1))
+##' par(new=TRUE)
+##' plot(cdz,ci=NULL,ylim=c(0,0.5),xlim=c(60,100),legend=TRUE)
 ##' summary(cdz)
 ##' summary(cmz)
 ##' @export
