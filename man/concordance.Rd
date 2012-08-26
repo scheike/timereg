@@ -4,8 +4,29 @@
 \usage{
   concordance(object, cif1, cif2 = NULL, messages = TRUE,
     model = NULL, coefs = NULL, ...)
+
+  concordance(object, cif1, cif2 = NULL, messages = TRUE,
+    model = NULL, coefs = NULL, ...)
 }
 \arguments{
+  \item{object}{Output from the cor.cif, rr.cif or or.cif
+  function}
+
+  \item{cif1}{Marginal cumulative incidence}
+
+  \item{cif2}{Marginal cumulative incidence of other cause
+  (cause2) if it is different from cause1}
+
+  \item{messages}{To print messages}
+
+  \item{model}{Specfifies wich model that is considered if
+  object not given.}
+
+  \item{coefs}{Specfifies dependence parameters if object
+  is not given.}
+
+  \item{...}{Extra arguments, not used.}
+
   \item{object}{Output from the cor.cif, rr.cif or or.cif
   function}
 
@@ -26,8 +47,12 @@
 }
 \description{
   Concordance
+
+  Concordance
 }
 \author{
+  Thomas Scheike
+
   Thomas Scheike
 }
 

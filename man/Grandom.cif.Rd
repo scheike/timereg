@@ -11,8 +11,91 @@
     score.method = "nlminb", entry = NULL, estimator = 1,
     trunkp = 1, admin.cens = NULL, random.design = NULL,
     ...)
+
+  Grandom.cif(cif, data, cause, cif2 = NULL, times = NULL,
+    cause1 = 1, cause2 = 1, cens.code = 0,
+    cens.model = "KM", Nit = 40, detail = 0,
+    clusters = NULL, theta = NULL, theta.des = NULL,
+    weights = NULL, step = 1, sym = 0, same.cens = FALSE,
+    censoring.probs = NULL, silent = 1, exp.link = 1,
+    score.method = "nlminb", entry = NULL, estimator = 1,
+    trunkp = 1, admin.cens = NULL, random.design = NULL,
+    ...)
 }
 \arguments{
+  \item{cif}{a model object from the comp.risk function
+  with the marginal cumulative incidence of cause2, i.e.,
+  the event that is conditioned on, and whose odds the
+  comparision is made with respect to}
+
+  \item{data}{a data.frame with the variables.}
+
+  \item{cause}{specifies the causes related to the death
+  times, the value cens.code is the censoring value.}
+
+  \item{cif2}{specificies model for cause2 if different
+  from cause1.}
+
+  \item{times}{time points}
+
+  \item{cause1}{cause of first coordinate.}
+
+  \item{cause2}{cause of second coordinate.}
+
+  \item{cens.code}{specificies the code for the censoring.}
+
+  \item{cens.model}{specified which model to use for the
+  ICPW, KM is Kaplan-Meier alternatively it may be "cox"}
+
+  \item{Nit}{number of iterations for Newton-Raphson
+  algorithm.}
+
+  \item{detail}{if 0 no details are printed during
+  iterations, if 1 details are given.}
+
+  \item{clusters}{specifies the cluster structure.}
+
+  \item{theta}{specifies starting values for the
+  cross-odds-ratio parameters of the model.}
+
+  \item{theta.des}{specifies a regression design for the
+  cross-odds-ratio parameters.}
+
+  \item{step}{specifies the step size for the
+  Newton-Raphson algorith.m}
+
+  \item{sym}{1 for symmetri and 0 otherwise}
+
+  \item{weights}{weights for score equations.}
+
+  \item{same.cens}{if true then censoring within clusters
+  are assumed to be the same variable, default is
+  independent censoring.}
+
+  \item{censoring.probs}{Censoring probabilities}
+
+  \item{silent}{debug information}
+
+  \item{exp.link}{if exp.link=1 then var is on log-scale.}
+
+  \item{score.method}{default uses "nlminb" optimzer,
+  alternatively, use the "fisher-scoring" algorithm.}
+
+  \item{entry}{entry-age in case of delayed entry. Then two
+  causes must be given.}
+
+  \item{estimator}{estimator}
+
+  \item{trunkp}{gives probability of survival for delayed
+  entry, and related to entry-ages given above.}
+
+  \item{admin.cens}{Administrative censoring}
+
+  \item{random.design}{specifies a regression design of
+  0/1's for the random effects.}
+
+  \item{...}{extra arguments.}
+
   \item{cif}{a model object from the comp.risk function
   with the marginal cumulative incidence of cause2, i.e.,
   the event that is conditioned on, and whose odds the
@@ -94,6 +177,14 @@
   \item{score}{scores at final stage.}
   \item{theta.iid}{matrix of iid decomposition of
   parametric effects.}
+
+  returns an object of type 'random.cif'. With the
+  following arguments: \item{theta}{estimate of parameters
+  of model.} \item{var.theta}{variance for gamma.  }
+  \item{hess}{the derivative of the used score.}
+  \item{score}{scores at final stage.}
+  \item{theta.iid}{matrix of iid decomposition of
+  parametric effects.}
 }
 \description{
   Fits a random effects model describing the dependence in
@@ -103,8 +194,40 @@
   indpendent, and that the marginal cumulative incidence
   curves are on additive form \deqn{ P(T \leq t, cause=1 |
   x,z) = P_1(t,x,z) = 1- exp( -x^T A(t) - t z^T \beta) }
+
+  Fits a random effects model describing the dependence in
+  the cumulative incidence curves for subjects within a
+  cluster.  Given the gamma distributed random effects it
+  is assumed that the cumulative incidence curves are
+  indpendent, and that the marginal cumulative incidence
+  curves are on additive form \deqn{ P(T \leq t, cause=1 |
+  x,z) = P_1(t,x,z) = 1- exp( -x^T A(t) - t z^T \beta) }
 }
 \details{
+  We allow a regression structure for the indenpendent
+  gamma distributed random effects and their variances that
+  may depend on cluster covariates.
+
+  random.design specificies the random effects for each
+  subject within a cluster. This is a matrix of 1's and 0's
+  with dimension n x d.  With d random effects. For a
+  cluster with two subjects, we let the random.design rows
+  be \eqn{v_1} and \eqn{v_2}. Such that the random effects
+  for subject 1 is \deqn{v_1^T (Z_1,...,Z_d)}, for d random
+  effects. Each random effect has an associated parameter
+  \eqn{(\lambda_1,...,\lambda_d)}. By construction subjects
+  1's random effect are Gamma distributed with mean
+  \eqn{\lambda_1/v_1^T \lambda} and variance
+  \eqn{\lambda_1/(v_1^T \lambda)^2}. Note that the random
+  effect \eqn{v_1^T (Z_1,...,Z_d)} has mean 1 and variance
+  \eqn{1/(v_1^T \lambda)}.
+
+  The parameters \eqn{(\lambda_1,...,\lambda_d)} are
+  related to the parameters of the model by a regression
+  construction \eqn{pard} (d x k), that links the \eqn{d}
+  \eqn{\lambda} parameters with the (k) underlying
+  \eqn{\theta} parameters \deqn{ \lambda = pard \theta }
+
   We allow a regression structure for the indenpendent
   gamma distributed random effects and their variances that
   may depend on cluster covariates.
@@ -169,11 +292,64 @@ outacem <-Grandom.cif(addm,data=multcif,causeS=1,Nit=30,detail=0,
 summary(outacem)
 ### genetic variance is
 exp(outacem$theta[1])/sum(exp(outacem$theta))^2
+data(multcif)
+multcif$cause[multcif$cause==0] <- 2
+addm<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,
+              multcif$cause,n.sim=0)
+
+### making group indidcator
+g.des<-data.frame(group2=rep(rbinom(200,1,0.5),rep(2,200)))
+theta.des <- model.matrix(~-1+factor(group2),g.des)
+
+out1m<-random.cif(addm,data=multcif,cause1=1,cause2=1,Nit=15,detail=0,
+theta=2,theta.des=theta.des,step=1.0)
+summary(out1m)
+
+## this model can also be formulated as a random effects model
+## but with different parameters
+out2m<-Grandom.cif(addm,data=multcif,cause1=1,cause2=1,Nit=10,detail=0,
+random.design=theta.des,step=1.0)
+summary(out2m)
+1/out2m$theta
+out1m$theta
+
+####################################################################
+################### ACE modelling of twin data #####################
+####################################################################
+### assume that zygbin gives the zygosity of mono and dizygotic twins
+### 0 for mono and 1 for dizygotic twins. We now formulate and AC model
+zygbin <- g.des$group2 ## indicator of dizygotic twins
+
+n <- nrow(multcif)
+### random effects for each cluster
+des.rv <- cbind(theta.des,(zygbin==1)*rep(c(1,0)),(zygbin==1)*rep(c(0,1)),1)
+### design making parameters half the variance for dizygotic components
+pardes <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0), c(0,1))
+
+outacem <-Grandom.cif(addm,data=multcif,causeS=1,Nit=30,detail=0,
+          theta=c(-1.21,2.1),theta.des=pardes,step=1.0,random.design=des.rv)
+summary(outacem)
+### genetic variance is
+exp(outacem$theta[1])/sum(exp(outacem$theta))^2
 }
 \author{
   Thomas Scheike
+
+  Thomas Scheike
 }
 \references{
+  A Semiparametric Random Effects Model for Multivariate
+  Competing Risks Data, Scheike, Zhang, Sun, Jensen (2010),
+  Biometrika.
+
+  Cross odds ratio Modelling of dependence for Multivariate
+  Competing Risks Data, Scheike and Sun (2012),
+  Biostatitistics, to appear.
+
+  Scheike, Holst, Hjelmborg (2012), LIDA, to appear.
+  Estimating heritability for cause specific hazards based
+  on twin data
+
   A Semiparametric Random Effects Model for Multivariate
   Competing Risks Data, Scheike, Zhang, Sun, Jensen (2010),
   Biometrika.
