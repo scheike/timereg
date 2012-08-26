@@ -61,7 +61,7 @@
 twostage <- function(margsurv,data=sys.parent(),score.method="nlminb",
 Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
 control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=0,
-step=0.5,notaylor=0,model="plackett")
+step=0.5,notaylor=0,model="plackett",marg.surv=NULL,strata=NULL)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -129,21 +129,6 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
          RR  <- resi$RR
 	 if (lefttrunk==1) ptrunc <- exp(-resi$cumhazleft); 
 	 psurvmarg <- exp(-resi$cumhaz); 
-###     if ((attr(margsurv,"residuals")!=2) || (lefttrunk==1)) { 
-###         resi <- residualsTimereg(margsurv,data=data) 
-###         residuals <- resi$residuals; 
-######	 cumhaz <- resi$cumhaz; 
-######	 cumhazleft <- resi$cumhazleft; 
-###	 RR <- resi$RR
-###	 ptrunc <- exp(-cumhazleft); 
-###	 psurvmarg <- exp(-resi$cumhaz); 
-###     } else { 
-###	    if (is.null(margsurv$residuals$dM))
-###	     residuals <- margsurv$residuals$dM; 
-###             cumhaz <- status-residuals; 
-###	      psurvmarg <- exp(-cumhaz); 
-###	      if (class(margsurv)=="cox.aalen") RR  <- exp( Z %*% margsurv$gamma)
-###     }
   } ## }}}
   else if (class(margsurv)=="coxph") {  ## {{{
        notaylor <- 1
@@ -161,6 +146,15 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
   } ## }}}
   if (is.null(weights)==TRUE) weights <- rep(1,antpers); 
 
+  if (is.null(strata)==TRUE) strata<- rep(1,antpers); 
+  if (length(strata)!=antpers) stop("Strata must have length equal to number of data points \n"); 
+
+  if (!is.null(marg.surv)) {
+	if (lefttrunk==1)  cat("Warnings specify only your own survival weights for right-censored data\n"); 
+        if (length(marg.surv)!=length(start)) stop(paste("marg.surv must have length=",antpers,"\n"));  
+        psurvmarg <- marg.surv.
+  }
+
   out.clust <- cluster.index(clusters);  
   clusters <- out.clust$clusters
   maxclust <- out.clust$maxclust 
@@ -168,46 +162,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
   clusterindex <- out.clust$idclust
   clustsize <- out.clust$cluster.size
 
-###  update <- 2;
-###  if (update==1) 
-###  if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen")  { ## {{{
-###     if ((attr(margsurv,"residuals")!=2) || (lefttrunk==1)) { 
-###         resi <- residualsTimereg(margsurv,data=data) 
-###         residuals <- resi$residuals; 
-###	 cumhaz <- resi$cumhaz; 
-###	 cumhazleft <- resi$cumhazleft; 
-###	 RR <- resi$RR
-###     } else { residuals <- margsurv$residuals$dM; 
-###              cumhaz <- status-residuals; 
-###	      if (class(margsurv)=="cox.aalen") RR  <- exp( Z %*% margsurv$gamma)
-###     }
-###  }
-###  else if (class(margsurv)=="coxph") {
-###       notaylor <- 1
-###       residuals <- residuals(margsurv)
-###       cumhaz <- status-residuals
-###       psurvmarg <- exp(-cumhaz); ### survival
-###       trunkp <- rep(1,length(status)); 
-###       cumhazleft <- rep(0,antpers)
-######    RR<- exp(Z %*% coef(margsurv))
-###       RR<- exp(margsurv$linear.predictors-margsurv$means*coef(margsurv))
-###        if ((lefttrunk==1)) { 
-###         baseout <- basehaz(margsurv,centered=FALSE); 
-###         cum <- cbind(baseout$time,baseout$hazard)
-###	 cum <- Cpred(cum,start)[,2]
-###	 cumhazleft <- cum * RR 
-###	}
-###  } ## }}}
-
   ratesim<-rate.sim; pxz <- px + pz;
-
-###  Biid<-c(); gamma.iid <- 0; 
-###  if (is.null(margsurv$B.iid)) notaylor <- 1; 
-###  if (notaylor==0) {
-###    if (!is.null(margsurv$B.iid))
-###    for (i in 1:antclust) Biid<-cbind(Biid,margsurv$B.iid[[i]]); 
-###    if (!is.null(margsurv$gamma.iid)) gamma.iid<-margsurv$gamma.iid;
-
   if (is.null(theta.des)==TRUE) ptheta<-1; 
   if (is.null(theta.des)==TRUE) theta.des<-matrix(1,antpers,ptheta) else
   theta.des<-as.matrix(theta.des); 
@@ -247,12 +202,13 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
     } ## }}}
 
 ###      dyn.load("twostage.so")
+
       outl<-.Call("twostageloglike", ## {{{
       icause=status,ipmargsurv=psurvmarg, 
       itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
       icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
       ivarlink=var.link, iiid=iid,iweights=weights, isilent=silent, idepmodel=dep.model,
-      itrunkp=ptrunc, DUP=FALSE) 
+      itrunkp=ptrunc, istrata=strata,DUP=FALSE) 
       ## }}}
 
     if (detail==3) print(c(par,outl$loglike))
@@ -544,7 +500,7 @@ return(out)
 } ## }}}
 
 ##' @export
-surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="status",id="id",covars=NULL,num=NULL)
+surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="status",id="id",covars=NULL,num=NULL,silent=1)
 { ## {{{
 
   if (is.null(num)) {
@@ -556,12 +512,14 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
 
   timevar2 <- paste(timevar,1:2,sep=".")
   status2 <- paste(status,1:2,sep=".")
+  nam2 <- paste("nam",1:2,sep=".")
   covars2 <- NULL; 
   if (length(covars)>0) covars2 <- paste(covars,1,sep=".")
+  data$nam <- data[,"num"]
  
-  ww0 <- reshape(data[,c(timevar,status,covars,id,num)],direction="wide",idvar=id,timevar=num)[,c(timevar2,status2,covars2,id)]
+  ww0 <- reshape(data[,c(timevar,status,covars,id,num,"nam")],direction="wide",idvar=id,timevar=num)[,c(timevar2,status2,covars2,nam2,id)]
+
   mleft <- (1*(ww0[,timevar2[1] ] > left.trunc[1])+ 1*(ww0[,timevar2[2] ] > left.trunc[2])) ==2
-###  mleft <- apply(1*(ww0[,timevar2 ] > left.trunc),1,sum)==2
   ww0 <- ww0[!is.na(mleft),]
   mleft <- mleft[!is.na(mleft)]
   if (sum(mleft)==0) stop("No data selected\n"); 
@@ -574,32 +532,26 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   truncvar2 <- c("left.1","left.2")
   ww0[,truncvar2[1]] <- left.trunc[1]
   ww0[,truncvar2[2]] <- left.trunc[2]
-###  t(ww0[,truncvar2]) <- left.trunc
+  if (silent<=0) cat(paste("   Number of joint events:",sum(apply(ww0[,status2],1,sum)==2),"of ",nrow(ww0)),"\n"); 
 
-  lr.data <- reshape(ww0,direction="long",
-		     varying=list(c(timevar2),c(status2),c(truncvar2)),idvar="id",v.names=c(timevar,status,"left"))
+  lr.data <- reshape(ww0,direction="long",varying=list(c(timevar2),c(status2),c(truncvar2),c(nam2)),
+		     idvar="id",v.names=c(timevar,status,"left","num"))
+  lr.data$boxtime <- lr.data[,timevar]-lr.data[,"left"]
 
 return(lr.data)
 } ## }}}
 
 ##' @export
 piecewise.twostage <- function(cut1,cut2,data=sys.parent(),timevar="time",status="status",id="id",covars=NULL,num=NULL,
-                          score.method="optimize",
-                          Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
-                          control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=0,
-                          step=0.5,model="plackett",data.return=0)
+            score.method="optimize",Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
+            control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=0,step=0.5,model="plackett",data.return=0)
 { ## {{{
 
 ud <- list()
 if (missing(cut2)) cut2 <- cut1; 
-nc1 <- length(cut1); 
-nc2 <- length(cut2)
+nc1 <- length(cut1); nc2 <- length(cut2)
 names1 <- names2 <- c()
-theta.mat <- matrix(0,nc1-1,nc2-1); 
-se.theta.mat <- matrix(0,nc1-1,nc2-1); 
-cor.mat <- matrix(0,nc1-1,nc2-1); 
-score.mat <- matrix(0,nc1-1,nc2-1); 
-se.cor.mat <- matrix(0,nc1-1,nc2-1); 
+theta.mat <- se.theta.mat <- cor.mat <- score.mat <- se.cor.mat <- matrix(0,nc1-1,nc2-1); 
 idi <- unique(data[,id]); 
 if (iid==1) theta.iid <- matrix(0,length(idi),(nc1-1)*(nc2-1)) else theta.iid <- NULL
 
@@ -609,21 +561,18 @@ for (i2 in 2:nc2)
 {
 k <-(i1-2)*(nc2-1)+(i2-1)
 if (silent<=0) cat(paste("Data-set ",k,"out of ",(nc1-1)*(nc2-1)),"\n"); 
- datalr <- surv.boxarea(c(cut1[i1-1],cut2[i2-1]),c(cut1[i1],cut2[i2]),data,timevar=timevar,status=status,id=id,covars=covars,num=num) 
-if (silent<=0) cat(paste("number of rows in  Data-set ",nrow(datalr),"\n")); 
+ datalr <- surv.boxarea(c(cut1[i1-1],cut2[i2-1]),c(cut1[i1],cut2[i2]),data,timevar=timevar,
+			status=status,id=id,covars=covars,num=num,silent=silent) 
 if (silent<=-1) print(summary(datalr)); 
  boxlr <- list(left=c(cut1[i1-1],cut2[i2-1]),right=c(cut1[i1],cut2[i2]))
 ### marg1 <- aalen(Surv(datalr$left,datalr[,timevar],datalr[,status])~+1,data=datalr,n.sim=0,max.clust=NULL,robust=0)
-###ud=eval(parse(text=paste("Surv(datalr$left,datalr$",timevar,",datalr$",status,")",sep=""))) 
-### marg1 <- aalen(Surv(left,datalr[,timevar],datalr[,status])~+1,data=datalr,n.sim=0,max.clust=NULL,robust=0)
-### print(ud)
 datalr$tstime <- datalr[,timevar]
 datalr$tsstatus <- datalr[,status]
 datalr$tsid <- datalr[,id]
-marg1 <- aalen(Surv(tstime,tsstatus)~+1,data=datalr,n.sim=0,max.clust=NULL,robust=0)
-fitlr<-twostage(marg1,data=datalr,clusters=datalr$tsid,model=model,score.method=score.method,
-                 Nit=Nit,detail=detail,silent=silent,weights=weights,
-                 control=control,theta=theta,theta.des=theta.des,var.link=var.link,iid=iid,step=step)
+marg1 <- aalen(Surv(boxtime,tsstatus)~-1+factor(num),data=datalr,n.sim=0,max.clust=NULL,robust=0)
+fitlr<-  twostage(marg1,data=datalr,clusters=datalr$tsid,model=model,score.method=score.method,
+              Nit=Nit,detail=detail,silent=silent,weights=weights,
+              control=control,theta=theta,theta.des=theta.des,var.link=var.link,iid=iid,step=step)
 ####
 coef <- coef(fitlr)
 theta.mat[i1-1,i2-1] <- fitlr$theta

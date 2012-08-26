@@ -76,8 +76,8 @@ dp(0)= ((-3*(-4*(-1 + x)*x*y + 2*(-1 + x)*(1 + (-1 + x)*(y + z)))*(-4*(-1 + x)*x
 return(valr); 
 } // }}}
                
-//double min(double a, double b) { if (a<b) return(a); else return(b); }
-//double max(double a, double b) { if (a>b) return(a); else return(b); }
+double min(double a, double b) { if (a<b) return(a); else return(b); }
+double max(double a, double b) { if (a>b) return(a); else return(b); }
 
 RcppExport SEXP twostageloglike( 
 		SEXP icause, SEXP ipmargsurv, 
@@ -85,7 +85,7 @@ RcppExport SEXP twostageloglike(
 		SEXP icluster,SEXP iclustsize,SEXP iclusterindex, SEXP ivarlink, 
                 SEXP iiid, SEXP  iweights, SEXP isilent, 
 		SEXP idepmodel, // SEXP ientryage,
-		SEXP itrunkp 
+		SEXP itrunkp , SEXP istrata
 ) // {{{
 {
 // {{{ setting matrices and vectors, and exporting to armadillo matrices
@@ -105,6 +105,7 @@ RcppExport SEXP twostageloglike(
  NumericVector DXthetavec(iDXtheta);
  IntegerVector arrayDims(idimDX);
  arma::cube DXtheta(DXthetavec.begin(), arrayDims[0], arrayDims[1], arrayDims[2], false);
+ IntegerVector strata(istrata);
 
  int varlink= Rcpp::as<int>(ivarlink);
  int silent = Rcpp::as<int>(isilent);
@@ -213,15 +214,16 @@ RcppExport SEXP twostageloglike(
 
   // }}}
 
-  for (j=0;j<antclust;j++) if (clustsize(j)>=2) { 
+for (j=0;j<antclust;j++) if (clustsize(j)>=2) { 
 
    R_CheckUserInterrupt(); diff=0; sdj=0; 
 
-  for (c=0;c<clustsize(j);c++) for (v=0;v<clustsize(j);v++) // {{{
-  if ((c<v)) { 
+  for (c=0;c<clustsize(j)-1;c++) for (v=c+1;v<clustsize(j);v++) // {{{ //  if ((c<v)) 
+  { 
      i=clusterindex(j,c); k=clusterindex(j,v); 
-     ci=cause(i); ck=cause(k); 
-     Li=pmargsurv(i); Lk=pmargsurv(k); 
+     if (strata(i)==strata(k)) { // {{{
+
+     ci=cause(i); ck=cause(k); Li=pmargsurv(i); Lk=pmargsurv(k); 
          
      int flexfunc=0; 
       if (flexfunc==0) {
@@ -235,15 +237,6 @@ RcppExport SEXP twostageloglike(
 
   if (depmodel==1){ if (varlink==1) deppar=1/exp(thetak); else deppar=1/thetak;}
   if (depmodel==2){ if (varlink==1) deppar=exp(thetak); else deppar=thetak; }
-
-//           ll=placklike(deppar,0,0,0.5,0.6,dplackt);
-//	   printf("%lf  %lf %lf \n",deppar,ll,dplackt(0)); 
-//           ll=placklike(deppar,1,0,0.5,0.6,dplackt);
-//	   printf(" %lf %lf \n",ll,dplackt(0)); 
-//           ll=placklike(deppar,0,1,0.5,0.6,dplackt);
-//	   printf(" %lf %lf \n",ll,dplackt(0)); 
-//           ll=placklike(deppar,1,1,0.5,0.6,dplackt);
-//	   printf(" %lf %lf \n",ll,dplackt(0)); 
 
 	if (depmodel==1) { // clayton-oakes  // {{{
 
@@ -289,10 +282,11 @@ RcppExport SEXP twostageloglike(
      Utheta=Utheta+vthetascore; 
 
      if (iid==1) for (c1=0;c1<pt;c1++) thetiid(j,c1)+=vthetascore(c1); 
-     } /* for (c=0....... */   // }}}
-	
+     } // }}} strata(i)==strata(k) indenfor strata
 
- } /* j in antclust */ 
+  } /* for (c=0....... */   // }}}
+
+} /* j in antclust */ 
 
 //printf("Sum of squares %lf \n",ssf); theta.print("theta"); Utheta.print("Utheta"); DUtheta.print("DUtheta"); 
 
