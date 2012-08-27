@@ -76,8 +76,8 @@ dp(0)= ((-3*(-4*(-1 + x)*x*y + 2*(-1 + x)*(1 + (-1 + x)*(y + z)))*(-4*(-1 + x)*x
 return(valr); 
 } // }}}
                
-double min(double a, double b) { if (a<b) return(a); else return(b); }
-double max(double a, double b) { if (a>b) return(a); else return(b); }
+//double min(double a, double b) { if (a<b) return(a); else return(b); }
+//double max(double a, double b) { if (a>b) return(a); else return(b); }
 
 RcppExport SEXP twostageloglike( 
 		SEXP icause, SEXP ipmargsurv, 

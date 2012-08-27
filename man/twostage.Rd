@@ -10,7 +10,7 @@ based on the pairwise bivariate models.}
     clusters = NULL, silent = 1, weights = NULL,
     control = list(), theta = NULL, theta.des = NULL,
     var.link = 1, iid = 0, step = 0.5, notaylor = 0,
-    model = "plackett")
+    model = "plackett", marg.surv = NULL, strata = NULL)
 }
 \description{
   The reported standard errors are based on the estimated
