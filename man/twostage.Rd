@@ -41,27 +41,38 @@ summary(fitpa)
 fitcoa<-twostage(marg,data=diabetes,theta=1.0,detail=0,Nit=40,clusters=diabetes$id,var.link=1,model="clayton.oakes")
 summary(fitcoa)
 
-diab1 <- surv.boxarea(c(10,10),c(40,40),diabetes) ### data truncated at (10,10) and right-censored (40,40)
-diab2 <- surv.boxarea(c(40,40),c(90,90),diabetes) ### data truncated at (40,40) and right-censored (90,90)
+### Piecewise constant cross hazards ratio modelling
+########################################################
 
-### dependence for early events
-marg1 <- aalen(Surv(left,time,status)~+1,data=diab1,n.sim=0,max.clust=NULL,robust=0)
-fit1<-twostage(marg1,data=diab1,clusters=diab1$id,model="clayton.oakes")
-summary(fit1)
+d <- subset(simClaytonOakes(2000,2,0.5,0,stoptime=2,left=0),!truncated)
+udp <- piecewise.twostage(c(0,0.5,2),data=d,score.method="optimize",id="cluster",timevar="time",
+			  status="status",model="clayton.oakes",silent=0)
+ summary(udp)
 
-### dependence for later events
-marg2 <- aalen(Surv(left,time,status)~+1,data=diab2,n.sim=0,max.clust=NULL,robust=0)
-fit2<-twostage(marg2,data=diab2,clusters=diab2$id,model="clayton.oakes")
-summary(fit2)
+### Same model using the strata option, a bit slower
+########################################################
 
-fit1p<-twostage(marg1,data=diab1,clusters=diab1$id,score.method="optimize")
-fit2p<-twostage(marg2,data=diab2,clusters=diab2$id,score.method="optimize")
-summary(fit1p)
+ud1=surv.boxarea(c(0,0),c(0.5,0.5),data=d,id="cluster",timevar="time",status="status")
+ud2=surv.boxarea(c(0,0.5),c(0.5,2),data=d,id="cluster",timevar="time",status="status")
+ud3=surv.boxarea(c(0.5,0),c(2,0.5),data=d,id="cluster",timevar="time",status="status")
+ud4=surv.boxarea(c(0.5,0.5),c(2,2),data=d,id="cluster",timevar="time",status="status")
+ud1$strata <- 1; ud2$strata <- 2; ud3$strata <- 3; ud4$strata <- 4
+ud <- rbind(ud1,ud2,ud3,ud4)
 
-outc <- piecewise.twostage(c(0,15,40,90),data=diabetes,score.method="optimize",iid=1)
-summary(outc)
-outp <- piecewise.twostage(c(0,15,40,90),data=diabetes,score.method="optimize",iid=1)
-summary(outp)
+marg2 <- aalen(Surv(boxtime,status)~-1+factor(num):factor(strata),data=ud,n.sim=0,robust=0)
+tdes <- model.matrix(~-1+factor(strata),data=ud)
+fitp2<-twostage(marg2,data=ud,clusters=ud$id,score.method="fisher.scoring",model="clayton.oakes",
+                theta.des=tdes,step=1.0,detail=0,strata=ud$strata)
+summary(fitp2)
+
+### now fitting the model with symmetry, i.e. strata 2 and 3 same effect
+ud$stratas <- ud$strata; ud$stratas[ud$strata==3] <- 2;
+tdes2 <- model.matrix(~-1+factor(stratas),data=ud)
+fitp3<-twostage(marg2,data=ud,clusters=ud$id,score.method="fisher.scoring",model="clayton.oakes",
+                theta.des=tdes2,step=1.0,detail=0,strata=ud$strata)
+summary(fitp3)
+
+### could also symmetry in marginal models
 }
 \author{
   Thomas Scheike

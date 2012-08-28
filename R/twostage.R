@@ -34,27 +34,38 @@
 ##' fitcoa<-twostage(marg,data=diabetes,theta=1.0,detail=0,Nit=40,clusters=diabetes$id,var.link=1,model="clayton.oakes")
 ##' summary(fitcoa)
 ##' 
-##' diab1 <- surv.boxarea(c(10,10),c(40,40),diabetes) ### data truncated at (10,10) and right-censored (40,40)
-##' diab2 <- surv.boxarea(c(40,40),c(90,90),diabetes) ### data truncated at (40,40) and right-censored (90,90)
+##' ### Piecewise constant cross hazards ratio modelling
+##' ########################################################
 ##' 
-##' ### dependence for early events
-##' marg1 <- aalen(Surv(left,time,status)~+1,data=diab1,n.sim=0,max.clust=NULL,robust=0)
-##' fit1<-twostage(marg1,data=diab1,clusters=diab1$id,model="clayton.oakes")
-##' summary(fit1)
+##' d <- subset(simClaytonOakes(2000,2,0.5,0,stoptime=2,left=0),!truncated)
+##' udp <- piecewise.twostage(c(0,0.5,2),data=d,score.method="optimize",id="cluster",timevar="time",
+##'			  status="status",model="clayton.oakes",silent=0)
+##'  summary(udp)
 ##' 
-##' ### dependence for later events
-##' marg2 <- aalen(Surv(left,time,status)~+1,data=diab2,n.sim=0,max.clust=NULL,robust=0)
-##' fit2<-twostage(marg2,data=diab2,clusters=diab2$id,model="clayton.oakes")
-##' summary(fit2)
+##' ### Same model using the strata option, a bit slower
+##' ########################################################
 ##' 
-##' fit1p<-twostage(marg1,data=diab1,clusters=diab1$id,score.method="optimize")
-##' fit2p<-twostage(marg2,data=diab2,clusters=diab2$id,score.method="optimize")
-##' summary(fit1p)
-##' 
-##' outc <- piecewise.twostage(c(0,15,40,90),data=diabetes,score.method="optimize",iid=1)
-##' summary(outc)
-##' outp <- piecewise.twostage(c(0,15,40,90),data=diabetes,score.method="optimize",iid=1)
-##' summary(outp)
+##' ud1=surv.boxarea(c(0,0),c(0.5,0.5),data=d,id="cluster",timevar="time",status="status")
+##' ud2=surv.boxarea(c(0,0.5),c(0.5,2),data=d,id="cluster",timevar="time",status="status")
+##' ud3=surv.boxarea(c(0.5,0),c(2,0.5),data=d,id="cluster",timevar="time",status="status")
+##' ud4=surv.boxarea(c(0.5,0.5),c(2,2),data=d,id="cluster",timevar="time",status="status")
+##' ud1$strata <- 1; ud2$strata <- 2; ud3$strata <- 3; ud4$strata <- 4
+##' ud <- rbind(ud1,ud2,ud3,ud4)
+##'
+##' marg2 <- aalen(Surv(boxtime,status)~-1+factor(num):factor(strata),data=ud,n.sim=0,robust=0)
+##' tdes <- model.matrix(~-1+factor(strata),data=ud)
+##' fitp2<-twostage(marg2,data=ud,clusters=ud$id,score.method="fisher.scoring",model="clayton.oakes",
+##'                 theta.des=tdes,step=1.0,detail=0,strata=ud$strata)
+##' summary(fitp2)
+##'
+##' ### now fitting the model with symmetry, i.e. strata 2 and 3 same effect
+##' ud$stratas <- ud$strata; ud$stratas[ud$strata==3] <- 2;
+##' tdes2 <- model.matrix(~-1+factor(stratas),data=ud)
+##' fitp3<-twostage(marg2,data=ud,clusters=ud$id,score.method="fisher.scoring",model="clayton.oakes",
+##'                 theta.des=tdes2,step=1.0,detail=0,strata=ud$strata)
+##' summary(fitp3)
+##'
+##' ### could also symmetry in marginal models
 ##' @keywords survival
 ##' @author Thomas Scheike
 ##' @export
@@ -169,8 +180,10 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
   ptheta<-ncol(theta.des); 
   if (nrow(theta.des)!=antpers) stop("Theta design does not have correct dim");
 
-  if (is.null(theta)==TRUE && var.link==1) theta<-rep(0.1,ptheta); 
-  if (is.null(theta)==TRUE && var.link==0) theta<-rep(1.1,ptheta); 
+  if (is.null(theta)==TRUE) {
+         if (var.link==1) theta<- rep(-0.7,ptheta);  
+         if (var.link==0) theta<- rep(exp(-0.7),ptheta);   
+  }       
   if (length(theta)!=ptheta) theta<-rep(theta[1],ptheta); 
   theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
 
@@ -221,6 +234,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
   if (score.method=="optimize" && ptheta!=1) {cat("optimize only works for d==1, score.mehod set to nlminb \n"); score.method <- "nlminb";}
 
   theta.iid <- NULL
+  logl <- NULL
   p <- theta
   if (score.method=="fisher.scoring") { ## {{{
     oout <- 2;  ### output control for obj
@@ -239,6 +253,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
         }## }}}
         delta <- hessi %*% out$score *step 
         p <- p+delta* step
+        theta <- p; 
 	if (is.nan(sum(out$score))) break; 
         if (sum(abs(out$score))<0.00001) break; 
         if (max(theta)>20) break; 
@@ -524,15 +539,16 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   mleft <- mleft[!is.na(mleft)]
   if (sum(mleft)==0) stop("No data selected\n"); 
   ww0 <- ww0[mleft,]
-  right  <- (ww0[,timevar2] > right.cens)
-  ww0[,timevar2[1]][right[,1]] <- right.cens[1]
-  ww0[,timevar2[2]][right[,2]] <- right.cens[2]
-  ww0[,status2[1]][right[,1]] <- 0
-  ww0[,status2[2]][right[,2]] <- 0
+  right1  <- (ww0[,timevar2[1]] > right.cens[1])
+  right2  <- (ww0[,timevar2[2]] > right.cens[2])
+  ww0[,timevar2[1]][right1] <- right.cens[1]
+  ww0[,timevar2[2]][right2] <- right.cens[2]
+  ww0[,status2[1]][right1] <- 0
+  ww0[,status2[2]][right2] <- 0
   truncvar2 <- c("left.1","left.2")
   ww0[,truncvar2[1]] <- left.trunc[1]
   ww0[,truncvar2[2]] <- left.trunc[2]
-  if (silent<=0) cat(paste("   Number of joint events:",sum(apply(ww0[,status2],1,sum)==2),"of ",nrow(ww0)),"\n"); 
+  if (silent<=0) cat(paste("  Number of joint events:",sum(apply(ww0[,status2],1,sum)==2),"of ",nrow(ww0)),"\n"); 
 
   lr.data <- reshape(ww0,direction="long",varying=list(c(timevar2),c(status2),c(truncvar2),c(nam2)),
 		     idvar="id",v.names=c(timevar,status,"left","num"))
