@@ -40,7 +40,7 @@
 ##' d <- subset(simClaytonOakes(2000,2,0.5,0,stoptime=2,left=0),!truncated)
 ##' udp <- piecewise.twostage(c(0,0.5,2),data=d,score.method="optimize",id="cluster",timevar="time",
 ##'			  status="status",model="clayton.oakes",silent=0)
-##'  summary(udp)
+##' summary(udp)
 ##' 
 ##' ### Same model using the strata option, a bit slower
 ##' ########################################################
@@ -522,7 +522,7 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
     idtab <- table(data[,id])
     num <- "num"
     while (num%in%names(data)) num <- paste(num,"_",sep="")
-    data[,num] <- unlist(lapply(idtab,seq_len))
+    data[,c(num)] <- unlist(lapply(idtab,seq_len))
   }
 
   timevar2 <- paste(timevar,1:2,sep=".")
@@ -530,7 +530,7 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   nam2 <- paste("nam",1:2,sep=".")
   covars2 <- NULL; 
   if (length(covars)>0) covars2 <- paste(covars,1,sep=".")
-  data$nam <- data[,"num"]
+  data$nam <- data[,c(num)]
  
   ww0 <- reshape(data[,c(timevar,status,covars,id,num,"nam")],direction="wide",idvar=id,timevar=num)[,c(timevar2,status2,covars2,nam2,id)]
 
