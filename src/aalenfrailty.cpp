@@ -118,7 +118,7 @@ RcppExport SEXP Uhat(SEXP ds, SEXP H, SEXP theta, SEXP id, SEXP idsize) {
       double Hi = sum(Hij.elem(clustpos));
       double thetaH = thetahat*Hi+1;
       double R = (log(thetaH)/thetahat + (Ni-Hi)/(thetaH));
-      for (unsigned h=0; h<=fmax(0,Ni-1); h++) R -= 1/(1+thetahat*h);
+      for (unsigned h=0; h<Ni; h++) R -= 1/(1+thetahat*h);
       res(i) = R/thetahat;
     }
     return(Rcpp::wrap(res));
