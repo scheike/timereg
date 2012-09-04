@@ -102,8 +102,13 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
 ##################################################
 ### No strata
     if (is.null(control$method)) {
-    control$method <- "gradient"
-    if (!samecens & !is.null(weight)) control$method <- "bhhh"
+      if (!samecens & !is.null(weight)) {
+        control$method <- "bhhh"
+      } else {
+        if (require(ucminf)) {
+          control$method <- "gradient"
+        } else control$method <- "nlminb"
+      }
   }
   if (length(grep("flex",tolower(type)))>0) { type <- "u"; eqmean <- FALSE }
 

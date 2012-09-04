@@ -14,15 +14,14 @@ URL: http://r-forge.r-project.org/projects/lava/
 Depends:
     Rcpp (>= 0.9.2),
     RcppArmadillo (>= 0.3),
-    lava,
+    lava (>= 1.1),
     mvtnorm,
     numDeriv,
     splines,
     timereg,
-    ucminf,
     prodlim
 Suggests:
-    lava.tobit
+    lava.tobit (>= 0.4-7), ucminf
 LinkingTo: Rcpp, RcppArmadillo
 Collate:
     'biprobit.R'
