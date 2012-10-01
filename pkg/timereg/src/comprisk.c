@@ -5,12 +5,12 @@
 void itfit(times,Ntimes,x,censcode,cause,KMc,z,n,px,Nit,betaS,
 score,hess,est,var,sim,antsim,rani,test,testOBS,Ut,simUt,weighted,
 gamma,vargamma,semi,zsem,pg,trans,gamma2,CA,line,detail,biid,gamiid,resample,
-timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,estimator,fixgamma,stratum,ordertime,robust)
+timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,estimator,fixgamma,stratum,ordertime,conservative,ssf)
 double *times,*betaS,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
 *Ut,*simUt,*gamma,*zsem,*gamma2,*biid,*gamiid,*vargamma,*timepow,
-	*timepowtest,*convc,*weights,*entry,*trunkp;
+	*timepowtest,*convc,*weights,*entry,*trunkp,*ssf;
 int *n,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
-*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum,*ordertime,*robust;
+*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum,*ordertime,*conservative;
 { // {{{
   // {{{ allocation and reading of data from R
   matrix *X,*cX,*A,*AI,*cumAt[*antclust],*VAR,*Z,*censX;
@@ -18,7 +18,7 @@ int *n,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
     *rr,*rowX,*difbeta,*qs,*bhatub,*betaub,*dcovs,*pcovs,*zi,*rowZ,*zgam,*vcumentry; 
   vector *cumhatA[*antclust],*cumA[*antclust],*bet1,*gam,*dp,*dp1,*dp2; 
   int clusterj,osilent,convt,ps,sing,c,i,j,k,l,s,it,convproblems=0; 
-  double varp=0.5,nrisk,time,sumscore,totrisk, 
+  double prede,varp=0.5,nrisk,time,sumscore,totrisk, 
 	 *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
 	 *cifentry=calloc((*n),sizeof(double)),
 	 *cumentry=calloc((*n)*(*px+1),sizeof(double));
@@ -51,8 +51,6 @@ int *n,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
     }
 
     // }}}
-   
-	 
 
 for (s=0;s<*Ntimes;s++)
 {
@@ -67,6 +65,7 @@ for (s=0;s<*Ntimes;s++)
 
   for (it=0;it<*Nit;it++)
   {
+   ssf[0]=0; 
    R_CheckUserInterrupt();
     totrisk=0; 
 
@@ -138,6 +137,8 @@ for (s=0;s<*Ntimes;s++)
           else VE(Y,j)=( (VE(Y,j)/KMc[j])-VE(pbhat,j)/trunkp[j])*(time>entry[j]);
 	  if (varp>0.001) VE(Y,j)=VE(Y,j)/varp; else VE(Y,j)=VE(Y,j)/0.001; 
       }
+      prede=(VE(Y,j)-VE(pbhat,j)); 
+      ssf[0]=ssf[0]+pow(prede,2); 
       VE(Y,j)=pow(weights[j],0.5)*VE(Y,j); 
 
     } // j=0;j<n*;j++ }}}
@@ -163,6 +164,7 @@ for (s=0;s<*Ntimes;s++)
       if (osilent==0) Rprintf("Non-invertible design at time %lf \n",time); 
       it=*Nit-1;  
     }
+
     if (sing==0) {
       /* print_vec(Y); print_vec(SCORE); print_vec(difbeta); */ 
       vM(cX,Y,SCORE); 
@@ -173,8 +175,8 @@ for (s=0;s<*Ntimes;s++)
       for (k=0;k<*px;k++) sumscore=sumscore+fabs(VE(difbeta,k)); 
       if ((sumscore<*convc) & (it<*Nit-2)) it=*Nit-2;
 
-      if (isnan(vec_sum(SCORE))) {
-	Rprintf("missing values in SCORE %ld \n",(long int) s); 
+      if (isnan(vec_sum(SCORE)) || ((sumscore>0.5) && (it==(*Nit-1))) ) {
+	Rprintf("missing values in SCORE or lacking convergence %ld \n",(long int) s); 
 	convproblems=1; convt=0; silent[s]=2;
 	it=*Nit-1; 
 	for (c=0;c<ps;c++) { VE(beta,c)=0; VE(SCORE,c)=99; }
@@ -188,7 +190,7 @@ for (s=0;s<*Ntimes;s++)
       Rprintf("Information -D^2 l\n"); print_mat(AI); 
     };
 //
-//    if ((it==(*Nit-1)) && (convt==1) && (*robust==0)) { // {{{ censoring terms for variance 
+//    if ((it==(*Nit-1)) && (convt==1) && (*conservative==0)) { // {{{ censoring terms for variance 
 //	    for (j=0;j<*n;j++) { // sum from t->0 in cens times
 //		k=ordertime[j];
 //		nrisk=(*n)-j; 
@@ -223,7 +225,8 @@ if (convt==1 ) {
       // scl_vec_mult(VE(Y,i),dp,dp); 
       //  vec_add(dp,cumA[j],cumA[j]); 
 
-    if ((*robust==0)) { // {{{ censoring terms for variance 
+    if ((*conservative==0)) { // {{{ censoring terms for variance 
+//	    if (osilent==0)  Rprintf(" Censoring correction in standard errors \n"); 
 		k=ordertime[i];
 		nrisk=(*n)-i; 
 		clusterj=clusters[k]; 
@@ -272,7 +275,7 @@ if (convt==1 ) {
 	      score,hess,est,var,sim,antsim,rani,test,testOBS,Ut,simUt,weighted,
 	      gamma,vargamma,semi,zsem,pg,trans,gamma2,CA,line,detail,biid,
 	      gamiid,resample,timepow,clusters,antclust,timepowtest,silent,convc,weights,
-	      entry,trunkp,estimator,fixgamma,stratum,ordertime,robust);
+	      entry,trunkp,estimator,fixgamma,stratum,ordertime,conservative,ssf);
   }
  
   if (convproblems>0) convc[0]=1; 
@@ -298,11 +301,11 @@ void itfitsemi(times,Ntimes,x,censcode,cause,
 	       zsem,pg,trans,gamma2,CA,
 	       line,detail,biid,gamiid,resample,
 	       timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,
-	       estimator,fixgamma,stratum,ordertime,robust)
+	       estimator,fixgamma,stratum,ordertime,conservative,ssf)
 double *times,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,*Ut,*simUt,*gamma,*zsem,
-       *vargamma,*gamma2,*biid,*gamiid,*timepow,*timepowtest,*entry,*trunkp,*convc,*weights;
+       *vargamma,*gamma2,*biid,*gamiid,*timepow,*timepowtest,*entry,*trunkp,*convc,*weights,*ssf;
 int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
-*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum,*ordertime,*robust;
+*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum,*ordertime,*conservative;
 { // {{{
   // {{{ allocation and reading of data from R
   matrix *ldesignX,*A,*AI,*cdesignX,*ldesignG,*cdesignG,*censX,*censZ;
@@ -317,14 +320,15 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
   vector *korG,*pghat,*rowG,*gam,*dgam,*ZGdN,*IZGdN,*ZGlamt,*IZGlamt,*censZv,*censXv;
   vector *covsx,*covsz,*qs,*Y,*rr,*bhatub,*xi,*xit,*zit,*rowX,*rowZ,*difX,*zi,*z1,
     *tmpv1,*tmpv2,*lrisk;
-  int sing,itt,i,j,k,l,s,c,pmax,totrisk,convproblems=0, 
+  int sing,itt,i,j,k,l,s,c,pmax,totrisk,convproblems=0,nagam=0,
       *n= calloc(1,sizeof(int)), *nx= calloc(1,sizeof(int)),
-//      *robust= calloc(1,sizeof(int)),
+//      *conservative= calloc(1,sizeof(int)),
       *px1= calloc(1,sizeof(int));
   int clusterj,fixedcov,osilent,withtrunc=0; 
-  double svarp=1,varp=0.5,nrisk,time,dummy,dtime,phattrunc,lrr,lrrt;
+  double weighttot=0,svarp=1,varp=0.5,nrisk,time,dummy,dtime,phattrunc,lrr,lrrt;
   double *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
 	 *inc=calloc((*Ntimes)*(*px+1),sizeof(double)),
+	 *weightt=calloc((*Ntimes),sizeof(double)),
 	 *cifentry=calloc((*antpers),sizeof(double)),
 	 *cumentry=calloc((*antpers)*(*px+1),sizeof(double));
   osilent=silent[0]; silent[0]=0; 
@@ -356,6 +360,8 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
   malloc_vecs(*antpers,&Y,&bhatub,&rr,&lrisk,&dN,&pbhat,&pghat,&plamt,&ciftrunk,NULL);
   malloc_vec((*px)+(*pg),qs); 
 
+  for (s=0;s<*Ntimes;s++) weightt[s]=1;  
+  weighttot=*Ntimes; 
   if (*px>=*pg) pmax=*px; else pmax=*pg; 
   for (j=0;j<*pg;j++) VE(gam,j)=gamma[j]; 
   px1[0]=*px+1; 
@@ -363,31 +369,34 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
   for(j=0;j<*antpers;j++)  for(i=0;i<=*px;i++) cumentry[i*(*antpers)+j]=0; 
   // }}}
   
-  if (fixedcov==1) {
-    for (c=0;c<*antpers;c++) {
-      for(j=0;j<pmax;j++)  {
+    if (fixedcov==1) 
+    for (c=0;c<*antpers;c++) 
+      for(j=0;j<pmax;j++)  
+      {
 	if (j<*px) ME(ldesignX,c,j)= z[j*(*antpers)+c];
-	if (j<*pg) ME(ldesignG,c,j)=zsem[j*(*antpers)+c]; } } }
+	if (j<*pg) ME(ldesignG,c,j)=zsem[j*(*antpers)+c]; 
+      }
 
   for (itt=0;itt<*Nit;itt++)  // {{{
     {
-   R_CheckUserInterrupt();
-      mat_zeros(Ct); mat_zeros(CGam); vec_zeros(IZGdN); vec_zeros(IZGlamt); 
+    ssf[0]=0; 
+    R_CheckUserInterrupt();
+    mat_zeros(Ct); mat_zeros(CGam); vec_zeros(IZGdN); vec_zeros(IZGlamt); 
 
    if (withtrunc==1)  Cpred(est,Ntimes,px1,entry,antpers,cumentry); 
 
       Mv(ldesignG,gam,pghat);
-      for (s=0;s<*Ntimes;s++)
+      for (s=0;s<*Ntimes;s++) if (silent[s]==0)   // removes points with lacking convergence
       {
-	  time=times[s]; if (s==0) dtime=0; else dtime=time-times[s-1]; 
-//	  dtime=1; 
+	  time=times[s]; if (s==0) dtime=1; else dtime=time-times[s-1]; 
+	  dtime=1; 
 
 	  for(j=1;j<=*px;j++) VE(bhatt,j-1)=est[j*(*Ntimes)+s];
 	  Mv(ldesignX,bhatt,pbhat); 
 	  vec_zeros(censXv); vec_zeros(censZv); 
 
 	  totrisk=0; 
-	  for (j=0;j<*antpers;j++) { 
+	  for (j=0;j<*antpers;j++) {  // {{{ computing design and P_1, DP_1
 	    VE(lrisk,j)=(x[j]>=time); totrisk=totrisk+VE(lrisk,j);
 	    extract_row(ldesignX,j,xi); extract_row(ldesignG,j,zi); 
 
@@ -540,7 +549,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	   
 	    VE(Y,j)=((x[j]<=time) & (cause[j]==*CA))*1;
 
-           if ((itt==(*Nit-1)) && (*robust==0)) { // {{{ for censoring distribution correction 
+           if ((itt==(*Nit-1)) && (*conservative==0)) { // {{{ for censoring distribution correction 
               if (KMc[j]>0.001) scl_vec_mult(weights[j]*VE(Y,j)*1/KMc[j],xi,rowX); 
 	      else scl_vec_mult(weights[j]*VE(Y,j)*1/0.001,xi,rowX); 
               vec_add(censXv,rowX,censXv); 
@@ -566,12 +575,14 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	   if (KMc[j]<0.001) VE(Y,j)=((VE(Y,j)/0.001)-VE(plamt,j)/trunkp[j])*(time>entry[j]); 
 	   else VE(Y,j)=((VE(Y,j)/KMc[j])-VE(plamt,j)/trunkp[j])*(time>entry[j]);
 	   } else if (*estimator==3) VE(Y,j)=(VE(Y,j)-VE(plamt,j)/trunkp[j])*(time<KMc[j])*(time>entry[j]);
+	   ssf[0]+=pow(VE(Y,j)-VE(plamt,j),2); 
 	   VE(Y,j)=svarp*pow(weights[j],0.5)*VE(Y,j); 
-     } // j antpers 
+
+     }  // }}}
 
 	  MtM(cdesignX,A); 
 	  invertS(A,AI,osilent); sing=0; 
-          if (ME(AI,0,0)==0 && *stratum==0 && (osilent==0)) {
+          if (ME(AI,0,0)==0 && (*stratum==0) && (osilent==0)) {
 	     Rprintf(" X'X not invertible at time %d %lf %d \n",s,time,osilent); 
 	     print_mat(A); 
           }
@@ -579,11 +590,10 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	     for (k=0;k<*px;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);
           }
 
-
-          if (( fabs(ME(AI,0,0))<.0000001) && (*stratum==0)) {
+          if ((fabs(ME(AI,0,0))<.00001) && ((*stratum==0) || ((*stratum==1) && (*px==1)))) {
              convproblems=1;  silent[s]=1; 
              if (osilent==0) Rprintf("Iteration %d: non-invertible design at time %lf\n",itt,time); 
-	     for (k=1;k<=*px;k++) inc[k*(*Ntimes)+s]=0; 
+	     for (k=1;k<=*px;k++) { inc[k*(*Ntimes)+s]=0; est[k*(*Ntimes)+s]=0; }
 	     sing=1;
           }
 
@@ -593,8 +603,16 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	  MtM(cdesignG,ZZ); MtA(cdesignX,cdesignG,XZ);
 	  MxA(AI,XZ,XZAI); MtA(XZAI,XZ,tmpM2); 
 	  mat_subtr(ZZ,tmpM2,dCGam); 
-	  scl_mat_mult(dtime,dCGam,dCGam); mat_add(CGam,dCGam,CGam); 
 
+	  weighttot=weighttot-weightt[s]; 
+          double convs=0; 
+	  for (k=0;k<*pg;k++) convs=convs+pow(ME(dCGam,k,k),2); 
+	  if (convs<1) convs=1; 
+	  weightt[s]=1/convs; 
+	  weighttot=weighttot+1/convs;
+	  dtime=weightt[s]/weighttot; 
+
+	  scl_mat_mult(dtime,dCGam,dCGam); mat_add(CGam,dCGam,CGam); 
 	  vM(cdesignG,Y,zi); vM(XZ,AIXdN,tmpv2); 
 	  vec_subtr(zi,tmpv2,ZGdN); scl_vec_mult(dtime,ZGdN,ZGdN); 
 	  vec_add(ZGdN,IZGdN,IZGdN); 
@@ -603,9 +621,14 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	  }
 
 	  /* scl_mat_mult(dtime,XZAI,tmpM4);mat_add(tmpM4,Ct,Ct); */
-	  for (k=1;k<=*px;k++) inc[k*(*Ntimes)+s]=VE(AIXdN,k-1); 
+	  double convs=0; 
+	  for (k=1;k<=*px;k++) { 
+		  inc[k*(*Ntimes)+s]=VE(AIXdN,k-1); 
+		  convs=convs+fabs(inc[k*(*Ntimes)+s]); 
+	  }
+	  if (convs>0.5 && (itt==(*Nit-2))) silent[s]=2;  // lacking convergence for this time
 
-	  if (itt==(*Nit-1)) 
+	  if (itt==(*Nit-1))  // {{{
 	  for (i=0;i<*antpers;i++) 
           { // vec_zeros(tmpv1); vec_zeros(z1); 
               j=clusters[i]; 	
@@ -618,8 +641,8 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	         scl_vec_mult(dtime,rowZ,rowZ); 
 	         vec_add(rowZ,W2[j],W2[j]); 
 	      }
-
-	      if (*robust==0) { // {{{ censuring terms  
+	      if (*conservative==0) { // {{{ censoring terms  
+//	         if (osilent==0)  Rprintf(" Censoring correction in standard errors \n"); 
               k=ordertime[i]; nrisk=(*antpers)-i; 
 	      clusterj=clusters[k]; 
 	      if (cause[k]==(*censcode)) { 
@@ -643,34 +666,34 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
              // fewer where I(s <= T_i) , because s is increasing
              extract_row(censX,k,xi); vec_subtr(censXv,xi,censXv);  
              extract_row(censZ,k,zi); vec_subtr(censZv,zi,censZv);  
-           }     // robust==0 }}}
-
-	   } // if (itt==(*Nit-1)) for (i=0;i<*antpers;i++) 
-
-	  } // sing=0
-
+           }     // conservative==0 }}}
+	   } // if (itt==(*Nit-1)) for (i=0;i<*antpers;i++)  // }}}
+	} // sing=0
 	} /* s=1,...Ntimes */
 
       dummy=0; 
       if (*fixgamma==0) {
-      invertS(CGam,ICGam,osilent); Mv(ICGam,IZGdN,dgam); vec_add(gam,dgam,gam); 
+      for (k=0;k<*pg;k++)  dummy=dummy+fabs(VE(dgam,k)); 
+      invertS(CGam,ICGam,osilent); 
+      Mv(ICGam,IZGdN,dgam); 
 
       if (isnan(vec_sum(dgam))) {
          if (convproblems==1) convproblems=3;  else convproblems=2; 
-         if (osilent==1) Rprintf("missing values in dgam %ld \n",(long int) s);
-	 vec_zeros(gam); 
-      }
-
-      for (k=0;k<*pg;k++)  dummy=dummy+fabs(VE(dgam,k)); 
+	 if (osilent==0) print_mat(ICGam); 
+         if (osilent==0 && (nagam==0)) Rprintf("Missing values in gamma increment, omitted \n");
+	 vec_zeros(dgam); 
+	 nagam=1; 
+      } 
+      vec_add(gam,dgam,gam); 
       }
 
       for (s=0;s<*Ntimes;s++) {
       if (*fixgamma==0) vM(Acorb[s],dgam,korG); 
 	est[s]=times[s]; var[s]=times[s]; 
 	for (k=1;k<=*px;k++)  { 
-            est[k*(*Ntimes)+s]= est[k*(*Ntimes)+s]+inc[k*(*Ntimes)+s]-VE(korG,k-1); 
-	  dummy=dummy+fabs(inc[k*(*Ntimes)+s]-VE(korG,k-1)); 
-	  /* Rprintf(" %lf ",est[k*(*Ntimes)+s]); Rprintf(" \n");*/ }
+            est[k*(*Ntimes)+s]=est[k*(*Ntimes)+s]+inc[k*(*Ntimes)+s]-VE(korG,k-1); 
+	    dummy=dummy+fabs(inc[k*(*Ntimes)+s]-VE(korG,k-1)); 
+        }
       } /* s=1,...Ntimes */
       if (dummy<*convc && itt<*Nit-2) itt=*Nit-2; 
 
@@ -687,8 +710,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 
    R_CheckUserInterrupt();
   /* ROBUST VARIANCES   */ 
-//  if (*robust==1) 
-//    { //    }
+//  if (*conservative==1) { 
       for (s=0;s<*Ntimes;s++) { // {{{ robust variances 
 	vec_zeros(VdB); 
 	 for (i=0;i<*antclust;i++) {
@@ -700,7 +722,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	  vec_add(tmpv1,VdB,VdB);
 
 	  if (*resample==1) {
-	  if ((s==1) & (*fixgamma==0)) for (c=0;c<*pg;c++) gamiid[c*(*antclust)+i]=gamiid[c*(*antclust)+i]+VE(tmpv2,c);
+	  if ((s==0) & (*fixgamma==0)) for (c=0;c<*pg;c++) gamiid[c*(*antclust)+i]=gamiid[c*(*antclust)+i]+VE(tmpv2,c);
 	    for (c=0;c<*px;c++) {l=i*(*px)+c; biid[l*(*Ntimes)+s]=biid[l*(*Ntimes)+s]+VE(difX,c);} 
 	  }
 
@@ -710,6 +732,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	for (k=1;k<*px+1;k++) var[k*(*Ntimes)+s]=VE(VdB,k-1); 
 
       } /* s=0..Ntimes*/ // }}}
+//  } // if *conservative=1
 
   /* MxA(RobVargam,ICGam,tmpM2); MxA(ICGam,tmpM2,RobVargam);*/
   /* print_mat(RobVargam);  */ 
@@ -740,7 +763,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
   for (j=0;j<*antclust;j++) {free_mat(W3t[j]); free_mat(W4t[j]);
     free_vec(W2[j]); free_vec(W3[j]); }
   free(vcudif); free(inc); free(n); free(nx);  free(cumentry); free(px1); 
-  free(cifentry); 
+  free(cifentry); free(weightt); 
   // }}}
 } // }}}
 

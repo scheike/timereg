@@ -3,7 +3,7 @@ clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="fg",
 causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",cens.formula=NULL,time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
 weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,estimator=1,
-trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=0) 
+trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=1) 
 # {{{
 { 
 ## {{{
@@ -75,8 +75,6 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=0)
 	antclust <- max.clust    
   }                                                         
   cluster.call<-clusters; 
-
-
 
   pxz <-px+pz;
 
@@ -231,11 +229,11 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
   if (is.null(time.pow.test)==TRUE & model=="logistic2" ) time.pow.test<-rep(0,px); 
   if (length(time.pow.test)!=px) time.pow.test <- rep(time.pow.test[1],px); 
 
-  if (ntimes>1) silent <- c(silent,rep(0,ntimes-1)) else silent <- c(silent,rep(0,1)) 
+  if (ntimes>1) silent <- c(silent,rep(0,ntimes-1)) else silent <- c(silent,0) 
   ## }}}
 
 ###  dyn.load("comprisk.so")
-
+  ssf <- 0; 
   out<-.C("itfit", ## {{{
           as.double(times),as.integer(ntimes),as.double(time2),
           as.integer(cens.code), as.integer(cause),as.double(Gcx),
@@ -251,9 +249,10 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
           as.double(biid),as.double(gamiid),as.integer(resample.iid),
           as.double(time.pow),as.integer(clusters),as.integer(antclust),
           as.double(time.pow.test),as.integer(silent),
-	  as.double(conv),as.double(weights), as.double(entry),
-	  as.double(trunc.p), as.integer(estimator), as.integer(fix.gamma),
-	  as.integer(stratum),  as.integer(ordertime-1), as.integer(conservative), PACKAGE="timereg") ## }}}
+	  as.double(conv),as.double(weights),as.double(entry),
+	  as.double(trunc.p),as.integer(estimator),as.integer(fix.gamma),
+	  as.integer(stratum),as.integer(ordertime-1),as.integer(conservative), 
+	  as.double(ssf), PACKAGE="timereg") ## }}}
 
  ## {{{ handling output
   gamma<-matrix(out[[24]],pg,1); var.gamma<-matrix(out[[25]],pg,pg); 

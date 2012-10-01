@@ -48,7 +48,7 @@ causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",cens.formula=NULL,
 time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
 weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,
-estimator=1,trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=0)
+estimator=1,trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=1)
 }
 \arguments{
 \item{formula}{a formula object, with the response on the left of a '~'
@@ -97,11 +97,11 @@ Default is 1000 to save memory and time. }
 \item{n.times}{only uses 50 points for estimation, if NULL then uses all points, subject to p.start condition.}
 \item{estimator}{default estimator is 1.}
 \item{trunc.p}{truncation weight for delayed entry, P(T > entry.time | Z_i), typically Cox model.}
-\item{entry.time}{entry times}
+\item{entry.time}{entry times, under development}
 \item{cens.weight}{censoring weights can be given here rather than calculated using the KM, cox or aalen models.}
 \item{admin.cens}{censoring times for the administrative censoring}
-\item{conservative}{set to 1 to compute only conservative variance that ignores that the censoring weights are estimated. 
-This can speed up tings considerably for large data-sets.}
+\item{conservative}{set to 0 to compute correct variances based on censoring weights, default is conservative
+	estimates that are much quicker.}
 }
 \value{returns an object of type 'comprisk'. With the following arguments:
 \item{cum}{cumulative timevarying regression coefficient estimates are 
@@ -141,10 +141,10 @@ data(bmt);
 
 clust <- rep(1:204,each=2)
 addclust<-comp.risk(Surv(time,cause>0)~platelet+age+tcell+cluster(clust),data=bmt,
-bmt$cause,causeS=1,resample.iid=1,n.sim=100)
+bmt$cause,causeS=1,resample.iid=1,n.sim=100,model="additive")
 
 add<-comp.risk(Surv(time,cause>0)~platelet+age+tcell,data=bmt,
-bmt$cause,causeS=1,resample.iid=1,n.sim=100)
+bmt$cause,causeS=1,resample.iid=1,n.sim=100,model="additive")
 summary(add)
 
 par(mfrow=c(2,4))
@@ -158,8 +158,7 @@ par(mfrow=c(2,2))
 plot(out,multiple=0,uniform=1,col=1:3,lty=1,se=1)
 
 add<-comp.risk(Surv(time,cause>0)~platelet+age+tcell,data=bmt,
-bmt$cause,causeS=1,resample.iid=0,n.sim=0,cens.model="cox",
-cens.formula=~factor(platelet))
+bmt$cause,causeS=1,resample.iid=0,n.sim=0,cens.model="cox",cens.formula=~factor(platelet),model="additive")
 
 out<-predict(add,ndata,se=0,uniform=0)
 par(mfrow=c(2,2))
@@ -168,7 +167,7 @@ plot(out,multiple=0,se=0,uniform=0,col=1:3,lty=1)
 ## fits additive model with some constant effects 
 add.sem<-comp.risk(Surv(time,cause>0)~
 const(platelet)+const(age)+const(tcell),data=bmt,
-bmt$cause,causeS=1,resample.iid=1,n.sim=100)
+bmt$cause,causeS=1,resample.iid=1,n.sim=100,model="additive")
 summary(add.sem)
 
 out<-predict(add.sem,ndata,uniform=1,n.sim=100)
@@ -178,7 +177,7 @@ plot(out,multiple=0,uniform=1,col=1:3,lty=1,se=0)
 ## Fine & Gray model 
 fg<-comp.risk(Surv(time,cause>0)~
 const(platelet)+const(age)+const(tcell),data=bmt,
-bmt$cause,causeS=1,resample.iid=1,model="prop",n.sim=100)
+bmt$cause,causeS=1,resample.iid=1,model="fg",n.sim=100)
 summary(fg)
 
 out<-predict(fg,ndata,uniform=1,n.sim=100)
@@ -197,34 +196,33 @@ head(out$P1[,1:5]); head(out$se.P1[,1:5])
 par(mfrow=c(2,2))
 plot(out,multiple=1,uniform=0,col=1:3,lty=1,se=0)
 
-## Fine & Gray model with alternative parametrization
-fg<-comp.risk(Surv(time,cause>0)~
-const(platelet)+const(age)+const(tcell),data=bmt,
-bmt$cause,causeS=1,resample.iid=1,model="fg",n.sim=100)
-summary(fg)
+## Fine & Gray model with alternative parametrization for baseline
+fg2<-comp.risk(Surv(time,cause>0)~ const(platelet)+const(age)+const(tcell),data=bmt,
+bmt$cause,causeS=1,resample.iid=1,model="prop",n.sim=100)
+summary(fg2)
 
 ## Left truncated cumulative incidence estimation 
 ## truncation weights  computed first, by Cox model
-tt <- runif(408)*bmt$time*rbinom(408,1,0.5)*0.5
-fgt<- cox.aalen(Surv(tt,time,cause>0)~prop(platelet)+prop(age)+prop(tcell),data=bmt,n.sim=0,robust=0)
-cumt <- Cpred(fgt$cum,tt)[,2]  
-psurv <- exp(-cumt); 
-
-fgt<-comp.risk(Surv(time,cause>0)~ const(platelet)+const(age)+const(tcell),data=bmt,
-bmt$cause,causeS=1,model="fg",n.sim=0,trunc.p=psurv,entry.time=tt)
-summary(fgt)
-pfgt <- predict(fgt,X=1,Z=c(0,0,0))
-pfgt <- predict(fgt,X=1)
-plot(pfgt)
-
-## Left truncated cumulative incidence estimation 
-## without covariates but using dummy covariate, equivalent with Aalen-Johansen estimator
-fgt<- aalen(Surv(tt,time,cause>0)~+1,data=bmt,n.sim=0,robust=0)
-cumt <- Cpred(fgt$cum,tt)[,2]
-psurv <- exp(-cumt); 
-
-pcif<-comp.risk(Surv(time,cause>0)~const(platelet),data=bmt,
-bmt$cause,fix.gamma=1,causeS=1,model="fg",n.sim=0,trunc.p=psurv,entry.time=tt)
-pout <- predict(pcif,X=1)
+###tt <- runif(408)*bmt$time*rbinom(408,1,0.5)*0.5
+###fgt<- cox.aalen(Surv(tt,time,cause>0)~prop(platelet)+prop(age)+prop(tcell),data=bmt,n.sim=0,robust=0)
+###cumt <- Cpred(fgt$cum,tt)[,2]  
+###psurv <- exp(-cumt); 
+###
+###fgt<-comp.risk(Surv(time,cause>0)~ const(platelet)+const(age)+const(tcell),data=bmt,
+###bmt$cause,causeS=1,model="fg",n.sim=0,trunc.p=psurv,entry.time=tt)
+###summary(fgt)
+###pfgt <- predict(fgt,X=1,Z=c(0,0,0))
+###pfgt <- predict(fgt,X=1)
+###plot(pfgt)
+###
+##### Left truncated cumulative incidence estimation 
+##### without covariates but using dummy covariate, equivalent with Aalen-Johansen estimator
+###fgt<- aalen(Surv(tt,time,cause>0)~+1,data=bmt,n.sim=0,robust=0)
+###cumt <- Cpred(fgt$cum,tt)[,2]
+###psurv <- exp(-cumt); 
+###
+###pcif<-comp.risk(Surv(time,cause>0)~const(platelet),data=bmt,
+###bmt$cause,fix.gamma=1,causeS=1,model="fg",n.sim=0,trunc.p=psurv,entry.time=tt)
+###pout <- predict(pcif,X=1)
 }
 \keyword{survival}

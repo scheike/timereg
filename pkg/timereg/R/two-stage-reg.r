@@ -24,7 +24,7 @@ if (class(margsurv)!="coxph") {
 	  cat("Warning: Clusters for marginal model different than those specified for two.stage\n"); 
 
   if (!is.null(attr(margsurv,"max.clust")))
-  if (attr(margsurv,"max.clust")< attr(margsurv,"orig.max.clust")) 
+  if ((attr(margsurv,"max.clust")< attr(margsurv,"orig.max.clust"))  && (!is.null(mclusters)) )
 	  cat("Warning: Probably want to estimate marginal model with max.clust=NULL\n"); 
 
  if (nrow(X)!=length(clusters)) stop("Length of Marginal survival data not consistent with cluster length\n"); 
@@ -143,7 +143,10 @@ if (class(margsurv)!="coxph") {
   ptheta<-ncol(theta.des); 
   if (nrow(theta.des)!=antpers) stop("Theta design does not have correct dim");
 
-  if (is.null(theta)==TRUE) theta<-rep(0.1,ptheta); 
+  if (is.null(theta)==TRUE) {
+	  if (var.link==1) theta<- rep(-5,ptheta); 
+	  if (var.link==0) theta<- rep(exp(-5),ptheta); 
+  }
   if (length(theta)!=ptheta) theta<-rep(theta[1],ptheta); 
   theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
 

@@ -147,7 +147,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,
   if(inherits(object,'comprisk')) timepow <- attr(object,"time.pow")
 
   if (semi==TRUE)
-  constant.part <- constant.covs %*% (matrix( rep(c(time),pg)^timepow,pg,nt) *c(object$gamma) )
+  constant.part <- constant.covs %*% ((matrix(rep(c(time),pg),pg,nt,by=T)^timepow)*c(object$gamma))
 
   if (inherits(object,'comprisk')) { ## {{{ competing models
     if (modelType == "additive") {
@@ -220,7 +220,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,
 
        if (semi==TRUE) {
              gammai <- matrix(object$gamma.iid[i,],pg,1); 
-             tmp.const<-constant.covs %*% (matrix( rep(c(time),pg)^timepow,pg,nt)*c(gammai) )
+             tmp.const<-constant.covs %*% ((matrix(rep(c(time),pg),pg,nt,by=T)^timepow)*c(gammai))
        } 
 
       if (i==0) { ## {{{ test print stuff
