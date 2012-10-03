@@ -21,7 +21,8 @@ Depends:
     timereg,
     prodlim
 Suggests:
-    lava.tobit (>= 0.4-7), ucminf
+    lava.tobit (>= 0.4-7),
+    ucminf
 LinkingTo: Rcpp, RcppArmadillo
 Collate:
     'biprobit.R'
@@ -61,3 +62,4 @@ Collate:
     'concordance-scripts.R'
     'cor.R'
     'aalenfrailty.R'
+    'surv.boxarea.R'
