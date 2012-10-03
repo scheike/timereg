@@ -515,49 +515,6 @@ return(out)
 } ## }}}
 
 ##' @export
-surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="status",id="id",covars=NULL,num=NULL,silent=1)
-{ ## {{{
-
-  if (is.null(num)) {
-    idtab <- table(data[,id])
-    num <- "num"
-    while (num%in%names(data)) num <- paste(num,"_",sep="")
-    data[,c(num)] <- unlist(lapply(idtab,seq_len))
-  }
-
-  timevar2 <- paste(timevar,1:2,sep=".")
-  status2 <- paste(status,1:2,sep=".")
-  nam2 <- paste("nam",1:2,sep=".")
-  covars2 <- NULL; 
-  if (length(covars)>0) covars2 <- paste(covars,1,sep=".")
-  data$nam <- data[,c(num)]
- 
-  ww0 <- reshape(data[,c(timevar,status,covars,id,num,"nam")],direction="wide",idvar=id,timevar=num)[,c(timevar2,status2,covars2,nam2,id)]
-
-  mleft <- (1*(ww0[,timevar2[1] ] > left.trunc[1])+ 1*(ww0[,timevar2[2] ] > left.trunc[2])) ==2
-  ww0 <- ww0[!is.na(mleft),]
-  mleft <- mleft[!is.na(mleft)]
-  if (sum(mleft)==0) stop("No data selected\n"); 
-  ww0 <- ww0[mleft,]
-  right1  <- (ww0[,timevar2[1]] > right.cens[1])
-  right2  <- (ww0[,timevar2[2]] > right.cens[2])
-  ww0[,timevar2[1]][right1] <- right.cens[1]
-  ww0[,timevar2[2]][right2] <- right.cens[2]
-  ww0[,status2[1]][right1] <- 0
-  ww0[,status2[2]][right2] <- 0
-  truncvar2 <- c("left.1","left.2")
-  ww0[,truncvar2[1]] <- left.trunc[1]
-  ww0[,truncvar2[2]] <- left.trunc[2]
-  if (silent<=0) cat(paste("  Number of joint events:",sum(apply(ww0[,status2],1,sum)==2),"of ",nrow(ww0)),"\n"); 
-
-  lr.data <- reshape(ww0,direction="long",varying=list(c(timevar2),c(status2),c(truncvar2),c(nam2)),
-		     idvar="id",v.names=c(timevar,status,"left","num"))
-  lr.data$boxtime <- lr.data[,timevar]-lr.data[,"left"]
-
-return(lr.data)
-} ## }}}
-
-##' @export
 piecewise.twostage <- function(cut1,cut2,data=sys.parent(),timevar="time",status="status",id="id",covars=NULL,num=NULL,
             score.method="optimize",Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
             control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=0,step=0.5,model="plackett",data.return=0)
