@@ -92,7 +92,6 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
   if (any(latentnames%in%varnames))
     stop(paste(paste(latentnames,collapse=",")," reserved for names of latent variables.",sep=""))
   
-
   mm <- model.matrix(formula,mf)
   options(opt)
   
@@ -118,7 +117,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
     }
     data[,twinnum] <- mynum
   }
-
+  
   cur <- cbind(data[,c(yvar,keep)],as.data.frame(cbind(as.numeric(data[,twinnum]),as.numeric(data[,id]),as.numeric(zygstat))));
   colnames(cur) <- c(yvar,keep,twinnum,id,zyg)
   mydata <- cbind(cur,mm)
@@ -135,13 +134,15 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
 
  
   data1 <- mydata[mydata[,zyg]==myMZ,,drop=FALSE]
+  if (nrow(data1)==0) stop("No MZ twins found")
   data2 <- mydata[mydata[,zyg]==myDZ,,drop=FALSE]
+  if (nrow(data2)==0) stop("No DZ twins found")
   data3 <- NULL
   if (!missing(OS)) {
     data3 <- mydata[mydata[,zyg]==myOS,,drop=FALSE]
+    if (nrow(data3)==0) stop("No opposite-sex twins found")
   }
-
-
+  
   ## Monozygotic
   data1.1 <- data1[which(data1[,twinnum]==1),c(id,zyg,yvar,keep,covars)]; colnames(data1.1) <- c(id,zyg,paste(colnames(data1.1)[-c(1,2)],".1",sep=""))  
   data1.2 <- data1[which(data1[,twinnum]==2),c(id,yvar,keep,covars),drop=FALSE]; colnames(data1.2) <- c(id, paste(colnames(data1.2)[-1],".2",sep=""))
@@ -214,7 +215,6 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
   model1<-lvm(outcomes,silent=TRUE)
   f1 <- as.formula(paste(outcomes[1]," ~ ."))
   f2 <- as.formula(paste(outcomes[2]," ~ ."))
-##  parameter(model1) <- ~sdu1+sdu2
   regression(model1,silent=TRUE) <- update(f1, . ~ f(a1,lambda[a])+f(c1,lambda[c])+f(d1,lambda[d]) + f(e1,lambda[e])) ## + f(u,sdu1))
   regression(model1,silent=TRUE) <- update(f2, . ~ f(a1,lambda[a])+f(c1,lambda[c])+f(d1,lambda[d]) + f(e2,lambda[e]))## + f(u,sdu1))
   latent(model1) <- ~ a1+c1+d1+e1+e2##+u
@@ -236,9 +236,6 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
   }
   
   model2 <- model1
-##  parameter(model2) <- ~sdu1+sdu2
-##  regression(model2) <- update(f1,.~f(u,sdu2))
-##  regression(model2) <- update(f2,.~f(u,sdu2))
   cancel(model2) <- update(f2, . ~ a1)
   cancel(model2) <- update(f2, . ~ d1)
   regression(model2,silent=TRUE) <- update(f2, . ~ f(a2,lambda[a]))
@@ -268,11 +265,6 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
      covariance(model2,outcomes) <- c("var(DZ)1","var(DZ)2")
      covariance(model3,outcomes) <- c("var(OS)1","var(OS)2")
   }
-  ## if (type=="u") {
-  ##   covariance(model1,outcomes) <- c("var","var")
-  ##   covariance(model2,outcomes) <- c("var","var")
-  ##   covariance(model3,outcomes) <- c("var","var")   
-  ## }
   if (type%in%c("u","flex","sat")) {
     if (constrain) {
       if (type=="sat") {
@@ -311,12 +303,10 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
 
   
   full <- list(MZ=model1,DZ=model2,OS=model3)
-  ## #######
   isA <- length(grep("a",type))>0 & type!="sat"
   isC <- length(grep("c",type))>0
   isD <- length(grep("d",type))>0
   isE <- length(grep("e",type))>0 | type=="sat" | type=="u"
-  ##  isU <- length(grep("e",type))>0
   if (!isA) {
     kill(model1) <- ~ a1 + a2
     kill(model2) <- ~ a1 + a2
@@ -339,15 +329,6 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
     kill(model2) <- ~ e1 + e2
     kill(model3) <- ~ e1 + e2
   }
-  ## if (!isU) {
-  ##   kill(model1) <- ~ u##+sdu2
-  ##   kill(model2) <- ~ u##+sdu1
-  ##   kill(model3) <- ~ u##+sdu1
-  ## }
-  ## if (isU & isE) {
-  ##   regression(model1,outcomes[1],"e1") <- "lambda[e2]"
-  ##   regression(model1,outcomes[2],"e2") <- "lambda[e2]"
-  ## }
 
   ## Full rank covariate/design matrix?
   for (i in covars) {

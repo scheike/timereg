@@ -213,16 +213,8 @@ print.summary.twinlm <- function(x,signif.stars=FALSE,...) {
 
 ##' @S3method compare twinlm
 compare.twinlm <- function(object,...) {
-  objects <- list(object,...)
-  if (length(objects)<2)
-    return(summary(objects))
-  res <- list()
-  for (i in 1:(length(objects)-1)) {
-    res <- c(res, list(compare(objects[[i]]$estimate,objects[[i+1]]$estimate)))
-  }
-  if (length(res)==1)
-    return(res[[1]])
-  return(res)
+  if (length(list(...))==0) return(compare(object$estimate))
+  lava:::compare.default(object,...)
 }
 ###}}} compare.twinlm
 
