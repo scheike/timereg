@@ -285,7 +285,7 @@ RcppExport SEXP uniprobit(SEXP m, SEXP dm,
   mat tdmu(dmm.begin(), dmm.nrow(), dmm.ncol(), false);
   mat Y(yy.begin(), yy.nrow(), yy.ncol(), false);
   bool weights = Rcpp::as<bool>(std);
-  bool EqMarginal = Rcpp::as<bool>(eqmarg);
+
   unsigned n = mm.nrow();
   NumericVector W;
   if (weights) {
