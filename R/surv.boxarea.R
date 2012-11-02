@@ -22,7 +22,7 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   ww0 <- reshape(data[,c(timevar,status,covars,id,num)],direction="wide",idvar=id,timevar=num)[,c(timevar2,status2,covars2,id)] 
   mleft <- with(ww0, (get(timevar2[1])>left.trunc[1]) & (get(timevar2[2])>left.trunc[2]))  ## Both not-truncated
   if (length(na.idx <- which(is.na(mleft)))>0) {
-    warning("Removing incomplete cases", which(na.idx))
+    warning("Removing incomplete cases", na.idx)
     mleft <- mleft[-na.idx,]
     ww0 <- ww0[-na.idx,]
   } 
