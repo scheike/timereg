@@ -51,7 +51,6 @@ plotcr <- function(x,col,lty,legend=TRUE,which=1:2,
     dots$curvlab <- seq(1:length(unique(causes)))
   if (missing(col)) col <- c("seagreen","darkred","darkblue","goldenrod","mediumpurple")
   if (1%in%which) {
-    browser()
     plot(t,type="n",...)
     count <- 1
     for (i in causes) {

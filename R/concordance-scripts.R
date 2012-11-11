@@ -149,21 +149,21 @@ probandwise <- function(conc,marg,cause.prodlim=1)
 } ## }}}
 
 ##' @S3method plot probandwise 
-plot.probandwise <- function(object,ci=NULL,lty=NULL,ylim=NULL,col=NULL,xlab="time",ylab="concordance",legend=FALSE,...)
+plot.probandwise <- function(x,ci=NULL,lty=NULL,ylim=NULL,col=NULL,xlab="time",ylab="concordance",legend=FALSE,...)
 { ## {{{
 
   if (is.null(col)) col <- 1:3
   if (is.null(lty)) lty <- 1:3
-  if (is.null(ylim)) ylim=range(c(object$probandwise[,2],object$marg[,2]))
+  if (is.null(ylim)) ylim=range(c(x$probandwise[,2],x$marg[,2]))
 
-  plot(object$probandwise[,1],object$probandwise[,2],type="s",ylim=ylim,lty=lty[1],col=col[1],xlab=xlab,ylab=ylab,...)
+  plot(x$probandwise[,1],x$probandwise[,2],type="s",ylim=ylim,lty=lty[1],col=col[1],xlab=xlab,ylab=ylab,...)
   if (!is.null(ci)) {
-     ul <- object$probandwise[,2]+qnorm(1-(1-ci)/2)* object$probandwise[,3]
-     nl <- object$probandwise[,2]-qnorm(1-(1-ci)/2)* object$probandwise[,3]
-     lines(object$probandwise[,1],ul,type="s",ylim=ylim,lty=lty[3],col=col[3])
-     lines(object$probandwise[,1],nl,type="s",ylim=ylim,lty=lty[3],col=col[3])
+     ul <- x$probandwise[,2]+qnorm(1-(1-ci)/2)* x$probandwise[,3]
+     nl <- x$probandwise[,2]-qnorm(1-(1-ci)/2)* x$probandwise[,3]
+     lines(x$probandwise[,1],ul,type="s",ylim=ylim,lty=lty[3],col=col[3])
+     lines(x$probandwise[,1],nl,type="s",ylim=ylim,lty=lty[3],col=col[3])
   }
-  lines(object$marg[,1],object$marg[,2],lty=lty[2],col=col[2],type="s")
+  lines(x$marg[,1],x$marg[,2],lty=lty[2],col=col[2],type="s")
 
   if (legend==TRUE) legend("topleft",lty=lty[1:2],col=col[1:2],c("Probandwise concordance","Marginal estimate"))
 

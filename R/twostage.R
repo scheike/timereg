@@ -69,6 +69,24 @@
 ##' @keywords survival
 ##' @author Thomas Scheike
 ##' @export
+##' @param margsurv Marginal model 
+##' @param data data frame
+##' @param score.method Scoring method
+##' @param Nit Number of iterations
+##' @param detail Detail
+##' @param clusters Cluster variable
+##' @param silent Debug information
+##' @param weights Weights
+##' @param control Optimization arguments
+##' @param theta Starting values for variance components
+##' @param theta.des Variance component design
+##' @param var.link Link function for variance 
+##' @param iid Calculate i.i.d. decomposition
+##' @param step Step size
+##' @param notaylor Taylor expansion
+##' @param model model
+##' @param marg.surv marg.surv
+##' @param strata Strata
 twostage <- function(margsurv,data=sys.parent(),score.method="nlminb",
 Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
 control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=0,
@@ -593,32 +611,32 @@ summary.pc.twostage <- function(object,var.link=NULL,...)
 } ## }}}
 
 ##' @S3method print pc.twostage
-print.pc.twostage <- function(object,var.link=NULL,...)
+print.pc.twostage <- function(x,var.link=NULL,...)
 { ## {{{
-   if (!(inherits(object,"pc.twostage"))) stop("Must be a Piecewise constant two-Stage object")
-   print( summary(object,var.link=var.link,...))
+   if (!(inherits(x,"pc.twostage"))) stop("Must be a Piecewise constant two-Stage object")
+   print( summary(x,var.link=var.link,...))
 } ## }}}
 
 ##' @S3method print summary.pc.twostage
-print.summary.pc.twostage <- function(object,var.link=NULL, digits=3,...)
+print.summary.pc.twostage <- function(x,var.link=NULL, digits=3,...)
 { ## {{{
   
-  if (is.null(var.link)) { if (attr(object,"var.link")==1) vlink <- 1 else vlink <- 0; } else vlink <- var.link
+  if (is.null(var.link)) { if (attr(x,"var.link")==1) vlink <- 1 else vlink <- 0; } else vlink <- var.link
   print(vlink)
 
-  if (object$model=="plackett") cat("Dependence parameter for Plackett model \n"); 
-  if (object$model=="clayton.oakes") cat("Dependence parameter for Clayton-Oakes model \n"); 
+  if (x$model=="plackett") cat("Dependence parameter for Plackett model \n"); 
+  if (x$model=="clayton.oakes") cat("Dependence parameter for Clayton-Oakes model \n"); 
  
-  if (max(object$score)>0.001) { cat("Score of log-likelihood for parameter estimates (too large?)\n"); print(object$score);cat("\n\n");}
+  if (max(x$score)>0.001) { cat("Score of log-likelihood for parameter estimates (too large?)\n"); print(x$score);cat("\n\n");}
 
   if (vlink==1) cat("log-coefficient for dependence parameter (SE) \n")  else cat("Dependence parameter (SE) \n");
-  print(coefmat(object$estimate,object$se,digits=digits,...))
+  print(coefmat(x$estimate,x$se,digits=digits,...))
   cat("\n") 
 
-  if (object$model=="plackett") {cat("Spearman Correlation (SE) \n");cor.type <- "Spearman Correlation"; }
-  if (object$model=="clayton.oakes") {cat("Kendall's tau (SE) \n"); cor.type <- "Kendall's tau";}
+  if (x$model=="plackett") {cat("Spearman Correlation (SE) \n");cor.type <- "Spearman Correlation"; }
+  if (x$model=="clayton.oakes") {cat("Kendall's tau (SE) \n"); cor.type <- "Kendall's tau";}
 
-  print(coefmat(object$cor,object$se.cor,digits,...))
+  print(coefmat(x$cor,x$se.cor,digits,...))
   cat("\n") 
 } ## }}}
 

@@ -12,6 +12,43 @@ based on the pairwise bivariate models.}
     var.link = 1, iid = 0, step = 0.5, notaylor = 0,
     model = "plackett", marg.surv = NULL, strata = NULL)
 }
+\arguments{
+  \item{margsurv}{Marginal model}
+
+  \item{data}{data frame}
+
+  \item{score.method}{Scoring method}
+
+  \item{Nit}{Number of iterations}
+
+  \item{detail}{Detail}
+
+  \item{clusters}{Cluster variable}
+
+  \item{silent}{Debug information}
+
+  \item{weights}{Weights}
+
+  \item{control}{Optimization arguments}
+
+  \item{theta}{Starting values for variance components}
+
+  \item{theta.des}{Variance component design}
+
+  \item{var.link}{Link function for variance}
+
+  \item{iid}{Calculate i.i.d. decomposition}
+
+  \item{step}{Step size}
+
+  \item{notaylor}{Taylor expansion}
+
+  \item{model}{model}
+
+  \item{marg.surv}{marg.surv}
+
+  \item{strata}{Strata}
+}
 \description{
   The reported standard errors are based on the estimated
   information from the likelihood assuming that the

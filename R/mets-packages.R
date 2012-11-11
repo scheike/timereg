@@ -60,5 +60,6 @@ NULL
 ##' @keywords utilities
 ##' @export
 ##' @aliases plotcr npc nonparcuminc simnordic corsim.prostate
+##' alpha2kendall alpha2spear coefmat piecewise.twostage surv.boxarea
 NULL
 
