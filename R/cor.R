@@ -499,7 +499,8 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##'  cor1 <- cor.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,theta=c(0.5,1.0,0.1,0.1),
 ##'        par.func=parfunc,dpar.func=dparfunc,dimpar=4,control=list(trace=TRUE),detail=1)
 ##' summary(cor1)
-##' 
+##'
+##' \donttest{
 ##' ### piecewise contant OR model
 ##' gparfunc <- function(par,t,pardes)
 ##' {
@@ -527,6 +528,8 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' summary(or1g)
 ##' names(or1g)
 ##' or1g$theta.iid
+##' }
+##' 
 ##' @export
 ##' @keywords survival
 cor.cif<-function(cif,data,cause,times=NULL,
@@ -770,7 +773,8 @@ random.cif<-function(cif,data,cause,cif2=NULL,
 ##' out1m<-random.cif(addm,data=multcif,cause1=1,cause2=1,Nit=15,detail=0,
 ##' theta=2,theta.des=theta.des,step=1.0)
 ##' summary(out1m)
-##'
+##' 
+##' \donttest{
 ##' ## this model can also be formulated as a random effects model 
 ##' ## but with different parameters
 ##' out2m<-Grandom.cif(addm,data=multcif,cause1=1,cause2=1,Nit=10,detail=0,
@@ -778,7 +782,9 @@ random.cif<-function(cif,data,cause,cif2=NULL,
 ##' summary(out2m)
 ##' 1/out2m$theta
 ##' out1m$theta
-##'
+##' }
+##' 
+##' \donttest{
 ##' ####################################################################
 ##' ################### ACE modelling of twin data #####################
 ##' ####################################################################
@@ -797,6 +803,7 @@ random.cif<-function(cif,data,cause,cif2=NULL,
 ##' summary(outacem)
 ##' ### genetic variance is 
 ##' exp(outacem$theta[1])/sum(exp(outacem$theta))^2
+##' }
 ##' @keywords survival
 ##' @author Thomas Scheike
 ##' @export

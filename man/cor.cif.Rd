@@ -192,6 +192,7 @@ summary(or1)
        par.func=parfunc,dpar.func=dparfunc,dimpar=4,control=list(trace=TRUE),detail=1)
 summary(cor1)
 
+\donttest{
 ### piecewise contant OR model
 gparfunc <- function(par,t,pardes)
 {
@@ -219,6 +220,7 @@ or1g <- or.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=T
 summary(or1g)
 names(or1g)
 or1g$theta.iid
+}
 }
 \author{
   Thomas Scheike

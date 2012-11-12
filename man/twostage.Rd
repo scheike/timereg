@@ -86,6 +86,7 @@ udp <- piecewise.twostage(c(0,0.5,2),data=d,score.method="optimize",id="cluster"
 			  status="status",model="clayton.oakes",silent=0)
 summary(udp)
 
+\donttest{
 ### Same model using the strata option, a bit slower
 ########################################################
 
@@ -108,7 +109,7 @@ tdes2 <- model.matrix(~-1+factor(stratas),data=ud)
 fitp3<-twostage(marg2,data=ud,clusters=ud$id,score.method="fisher.scoring",model="clayton.oakes",
                 theta.des=tdes2,step=1.0,detail=0,strata=ud$strata)
 summary(fitp3)
-
+}
 ### could also symmetry in marginal models
 }
 \author{

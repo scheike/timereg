@@ -143,6 +143,7 @@ out1m<-random.cif(addm,data=multcif,cause1=1,cause2=1,Nit=15,detail=0,
 theta=2,theta.des=theta.des,step=1.0)
 summary(out1m)
 
+\donttest{
 ## this model can also be formulated as a random effects model
 ## but with different parameters
 out2m<-Grandom.cif(addm,data=multcif,cause1=1,cause2=1,Nit=10,detail=0,
@@ -150,7 +151,9 @@ random.design=theta.des,step=1.0)
 summary(out2m)
 1/out2m$theta
 out1m$theta
+}
 
+\donttest{
 ####################################################################
 ################### ACE modelling of twin data #####################
 ####################################################################
@@ -169,6 +172,7 @@ outacem <-Grandom.cif(addm,data=multcif,causeS=1,Nit=30,detail=0,
 summary(outacem)
 ### genetic variance is
 exp(outacem$theta[1])/sum(exp(outacem$theta))^2
+}
 }
 \author{
   Thomas Scheike
