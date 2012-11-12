@@ -47,18 +47,18 @@ f <- ~1##+x
 X <- model.matrix(f,dd) ## design matrix for non-parametric terms
 system.time(out<-aalen(update(f,Surv(time,status)~.),dd,n.sim=0,robust=0))
 dix <- which(dd$status==1)
-t1 <- system.time(bb <- .Call("Bhat",dd$status,X,theta,dd$id,NULL,NULL,-1,package="mets"))
+t1 <- system.time(bb <- .Call("Bhat",as.integer(dd$status),X,theta,as.integer(dd$id),NULL,NULL,-1,package="mets"))
 spec <- 1
 ##plot(out,spec=spec)
 plot(dd$time[dix],bb$B2[,spec],col="red",type="s",ylim=c(0,max(dd$time)*c(beta0,beta)[spec]))
 abline(a=0,b=c(beta0,beta)[spec])
 
 
-thetas <- seq(0.1,2,length.out=10)
+\dontrun{thetas <- seq(0.1,2,length.out=10)
 Us <- unlist(aalenfrailty(dd$time,dd$status,X,dd$id,as.list(thetas)))
 plot(thetas,Us,type="l",ylim=c(-.5,1)); abline(h=0,lty=2); abline(v=theta,lty=2)
 op <- aalenfrailty(dd$time,dd$status,X,dd$id)
-op
+op}
 }
 \author{
   Klaus K. Holst
