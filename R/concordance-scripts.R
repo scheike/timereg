@@ -20,12 +20,12 @@
 ##' cdz <- cc$model$"DZ"
 ##' cmz <- cc$model$"MZ"
 ##' 
-##' cdz <- conc2casewise(cdz,cifmz,test="case")
-##' cmz <- conc2casewise(cmz,cifdz,test="conc")
+##' cdz <- casewise.test(cdz,cifmz,test="case")
+##' cmz <- casewise.test(cmz,cifdz,test="conc")
 ##' 
-##' plot(cmz$casewise,ylim=c(0,0.5),xlim=c(60,100),type="l")
+##' plot(cmz,ylim=c(0,0.5),xlim=c(60,100))
 ##' par(new=TRUE)
-##' plot(cdz$casewise,ylim=c(0,0.5),xlim=c(60,100),type="l")
+##' plot(cdz,ylim=c(0,0.5),xlim=c(60,100))
 ##' @export
 casewise.test <- function(conc,marg,test="no-test")
 { ## {{{
@@ -56,6 +56,7 @@ casewise.test <- function(conc,marg,test="no-test")
   }
 
    se.casewise <- as.matrix(Cpred(cbind(conc$time,c(conc$se.P1)),timer)[,2]/margtime,ncol=100)
+   se.margtime <- as.matrix(Cpred(marg$se.P1,timer)[,2],ncol=100)
 
   if (!is.null(conc$se.P1) && !is.null(marg$se.P1) )
   {
@@ -91,10 +92,15 @@ casewise.test <- function(conc,marg,test="no-test")
    }
    }  
 
-  out <- list(casewise=cbind(timer,concP1/margtime),se.casewise=cbind(timer,se.casewise),
-	      marg=cbind(timer,margtime),test=outtest,
-	      mintime=mintime,maxtime=maxtime,same.cluster=TRUE,test=test)
-  class(out) <- "testconc"
+   margout <- cbind(timer,margtime,se.margtime)
+   colnames(margout) <- c("time","cif","se")
+
+   casewiseout <- cbind(timer,casewise,se.casewise)
+   colnames(casewiseout) <- c("time","casewise","se")
+
+  out <- list(casewise=casewiseout,marg=margout,
+	      test=outtest, mintime=mintime,maxtime=maxtime,same.cluster=TRUE,test=test)
+  class(out) <- "casewise"
   return(out)
 } ## }}}
 
@@ -169,7 +175,7 @@ casewise <- function(conc,marg,cause.prodlim=1)
   probout <- cbind(out$timer,out$P1,out$se.P1)
   colnames(probout) <- c("time","casewise conc","se casewise")
 
-  out <- list(casewise=probout,marg=margout,mintime=mintime,maxtime=maxtime)
+  out <- list(casewise=probout,marg=margout,test=NULL)
   class(out) <- "casewise"
   return(out)
 } ## }}}
@@ -205,10 +211,21 @@ summary.casewise <- function(object,marg=FALSE,...)
       cat("Marginal cumulative incidence and standard errors \n"); 
       print(signif(cbind(object$marg),3))
    }
+
+   if (!is.null(object$test)) {
+	   print.casewisetest(object)
+   }
+
 } ## }}}
 
-##' @S3method print testconc
-print.testconc <- function(x,digits=3,...)
+##' .. content for description (no empty lines) ..
+##'
+##' @title prints Concordance test 
+##' @param x output from casewise.test 
+##' @param digits number of digits
+##' @author Thomas Scheike
+##' @export
+print.casewisetest <- function(x,digits=3,...)
 { ## {{{
   cat("\n")
   cat("Pepe-Mori type test for H_0: conc_1(t)= conc_2(t)\n")
