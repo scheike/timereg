@@ -3,9 +3,10 @@
 \title{Estimation of concordance in bivariate competing risks data}
 \usage{
   bicomprisk(formula, data, cause = c(1, 1), cens = 0,
-    causes, indiv, strata = NULL, id, num, prodlim = FALSE,
-    messages = TRUE, model, return.data = 0, uniform = 0,
-    conservative = 1, resample.iid = 1, ...)
+    causes, indiv, strata = NULL, id, num,
+    max.clust = 1000, prodlim = FALSE, messages = TRUE,
+    model, return.data = 0, uniform = 0, conservative = 1,
+    resample.iid = 1, ...)
 }
 \arguments{
   \item{formula}{Formula with left-hand-side being a
@@ -28,6 +29,10 @@
   \item{id}{Clustering variable}
 
   \item{num}{num}
+
+  \item{maxclust}{max number of clusters in comp.risk call
+  for iid decompostion, max.clust=NULL uses all clusters
+  otherwise rougher grouping.}
 
   \item{prodlim}{prodlim to use prodlim estimator
   (Aalen-Johansen) rather than IPCW weighted estimator

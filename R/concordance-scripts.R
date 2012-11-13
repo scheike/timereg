@@ -1,12 +1,33 @@
 ##' .. content for description (no empty lines) ..
 ##'
-##' @title Estimates the probandwise concordance based on Concordance and marginal estimate 
+##' @title Estimates the casewise concordance based on Concordance and marginal estimate using timereg and performs test for independence
 ##' @param conc Concordance 
 ##' @param marg Marginal estimate
-##' @param test Type of test for independence assumption. "conc" makes test on concordance scale  and "case" means a test on the probandwise concordance
+##' @param test Type of test for independence assumption. "conc" makes test on concordance scale and "case" means a test on the casewise concordance
 ##' @author Thomas Scheike
+##' @examples
+##' data(prt);
+##' 
+##' ### marginal cumulative incidence of prostate cancer 
+##' times <- 60:100
+##' outm <- comp.risk(Surv(time,status==0)~+1,data=prt,prt$status,causeS=2,times=times)
+##' 
+##' cifmz <- predict(outm,X=1,uniform=0)
+##' cifdz <- predict(outm,X=1,uniform=0)
+##' 
+##' ### concordance for MZ and DZ twins
+##' cc <- bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2))
+##' cdz <- cc$model$"DZ"
+##' cmz <- cc$model$"MZ"
+##' 
+##' cdz <- conc2casewise(cdz,cifmz)
+##' cmz <- conc2casewise(cmz,cifdz)
+##' 
+##' plot(cmz$casewise,ylim=c(0,0.5),xlim=c(60,100),type="l")
+##' par(new=TRUE)
+##' plot(cdz$casewise,ylim=c(0,0.5),xlim=c(60,100),type="l")
 ##' @export
-conc2probandwise <- function(conc,marg,test="no-test")
+conc2casewise <- function(conc,marg,test="no-test")
 { ## {{{
   time1 <- conc$time
   time2 <- marg$time
@@ -16,40 +37,44 @@ conc2probandwise <- function(conc,marg,test="no-test")
   timer <- seq(mintime, maxtime,length=100)
   dtimer <- timer[2]-timer[1]
 
-  out <- conc
-  out$time <- timer
   margtime <- Cpred(cbind(marg$time,c(marg$P1)),timer)[,2]
   concP1 <- Cpred(cbind(conc$time,c(conc$P1)),timer)[,2]
-  out$P1 <- concP1/margtime
   outtest <- NULL
+  se.casewise <- NULL
+  casewise.iid <- NULL
+  casewise <- concP1/margtime
 
-  if (!is.null(conc$P1.iid) && !is.null(marg$P1.iid))  {
-  if ((ncol(conc$P1.iid[1,,])-ncol(marg$P1.iid[1,,]))!=0)
+  if (test=="conc" ||test=="case") {
+
+  if (is.null(conc$P1.iid) || is.null(marg$P1.iid))  {
+      stop("Warning, need iid for Concordance and marginal\n");
+  } else {
+  if ((ncol(conc$P1.iid[1,,])-ncol(marg$P1.iid[1,,]))!=0) {
       cat("Warning, not same number of iid residuals for concordance and marginal estimate\n"); 
-      cat("Must be computed on same data\n"); 
+      stop("Must be computed on same data\n"); 
+  }
   }
 
-  if (test=="conc" || test=="case") 
   if (!is.null(conc$se.P1) && !is.null(marg$se.P1) )
   {
-   if (!is.null(conc$se.P1)) out$se.P1 <- as.matrix(Cpred(cbind(conc$time,c(conc$se.P1)),timer)[,2]/margtime,ncol=100)
-   if (!is.null(conc$P1.iid)) out$P1.iid <- Cpred(cbind(conc$time,conc$P1.iid[1,,]),timer)[,-1]/margtime
+   se.casewise <- as.matrix(Cpred(cbind(conc$time,c(conc$se.P1)),timer)[,2]/margtime,ncol=100)
+   casewise.iid <- Cpred(cbind(conc$time,conc$P1.iid[1,,]),timer)[,-1]/margtime
+  if (test=="conc" || test=="case") {
     if (ncol(conc$P1.iid[1,,])== ncol(marg$P1.iid[1,,])) {
-   if (test=="case") 
-   {
-    if (!is.null(conc$P1.iid)) {
+    if (test=="case") 
+    {
+    if (!is.null(conc$P1.iid)) { } 
             margP1.iid  <- Cpred(cbind(marg$time,marg$P1.iid[1,,]),timer)[,-1]
-            diff.iid <- (apply(out$P1.iid,2,sum)-apply(margP1.iid,2,sum))*dtimer
+            diff.iid <- (apply(casewise.iid,2,sum)-apply(margP1.iid,2,sum))*dtimer
             sd.pepem <- sum(diff.iid^2)^.5
-            diff.pepem <- sum((out$P1-margtime))*dtimer
+            diff.pepem <- sum((casewise-margtime))*dtimer
             z.pepem <- diff.pepem/sd.pepem
             pval.pepem <- 2*pnorm(-abs(z.pepem))
             outtest <- cbind(diff.pepem,sd.pepem,z.pepem,pval.pepem)
             colnames(outtest) <- c("cum dif.","sd","z","pval") 			 
             rownames(outtest) <- "pepe-mori"
-          } 
-        } else if (test=="conc") {
-          if (!is.null(conc$P1.iid)) {
+    } else if (test=="conc") {
+          if (!is.null(conc$P1.iid)) { } 
             conciid <- Cpred(cbind(conc$time,conc$P1.iid[1,,]),timer)[,-1]
             margP1.iid  <- Cpred(cbind(marg$time,marg$P1.iid[1,,]),timer)[,-1]*2*margtime
             diff.iid <- (apply(conciid,2,sum)-apply(margP1.iid,2,sum))*dtimer
@@ -60,21 +85,22 @@ conc2probandwise <- function(conc,marg,test="no-test")
             outtest <- cbind(diff.pepem,sd.pepem,z.pepem,pval.pepem)
             colnames(outtest) <- c("cum dif.","sd","z","pval") 			 
             rownames(outtest) <- "pepe-mori"
-          } 
-       }
-   }
+    }
    } 
+   }
+   }  
+  }
 
-  out <- list(probandwise=out,marg=cbind(timer,margtime),test=outtest,
+  out <- list(casewise=cbind(timer,concP1/margtime),se.casewise=cbind(timer,se.casewise),
+	      marg=cbind(timer,margtime),test=outtest,
 	      mintime=mintime,maxtime=maxtime,same.cluster=TRUE,test=test)
   class(out) <- "testconc"
   return(out)
 } ## }}}
 
-
 ##' .. content for description (no empty lines) ..
 ##'
-##' @title Estimates the probandwise concordance based on Concordance and marginal estimate 
+##' @title Estimates the casewise concordance based on Concordance and marginal estimate using prodlim
 ##' @param conc Concordance 
 ##' @param marg Marginal estimate
 ##' @param cause.prodlim specififes which cause that should be used for marginal cif based on prodlim
@@ -94,8 +120,8 @@ conc2probandwise <- function(conc,marg,test="no-test")
 ##' cdz <- cc$model$"DZ"
 ##' cmz <- cc$model$"MZ"
 ##' 
-##' cdz <- probandwise(cdz,outm,cause.prodlim=2)
-##' cmz <- probandwise(cmz,outm,cause.prodlim=2)
+##' cdz <- casewise(cdz,outm,cause.prodlim=2)
+##' cmz <- casewise(cmz,outm,cause.prodlim=2)
 ##' 
 ##' plot(cmz,ci=NULL,ylim=c(0,0.5),xlim=c(60,100),legend=TRUE,col=c(3,2,1))
 ##' par(new=TRUE)
@@ -103,7 +129,7 @@ conc2probandwise <- function(conc,marg,test="no-test")
 ##' summary(cdz)
 ##' summary(cmz)
 ##' @export
-probandwise <- function(conc,marg,cause.prodlim=1)
+casewise <- function(conc,marg,cause.prodlim=1)
 { ## {{{
   if ((!class(conc)=="prodlim")  || (!class(marg)=="prodlim")) stop("Assumes that both models are based on prodlim function \n"); 
   time1 <- conc$time
@@ -141,39 +167,38 @@ probandwise <- function(conc,marg,cause.prodlim=1)
   colnames(margout) <- c("time","cif","se.cif")
 
   probout <- cbind(out$timer,out$P1,out$se.P1)
-  colnames(probout) <- c("time","probandwise conc","se probandwise")
+  colnames(probout) <- c("time","casewise conc","se casewise")
 
-  out <- list(probandwise=probout,marg=margout,mintime=mintime,maxtime=maxtime)
-  class(out) <- "probandwise"
+  out <- list(casewise=probout,marg=margout,mintime=mintime,maxtime=maxtime)
+  class(out) <- "casewise"
   return(out)
 } ## }}}
 
-##' @S3method plot probandwise 
-plot.probandwise <- function(x,ci=NULL,lty=NULL,ylim=NULL,col=NULL,xlab="time",ylab="concordance",legend=FALSE,...)
+##' @S3method plot casewise 
+plot.casewise <- function(x,ci=NULL,lty=NULL,ylim=NULL,col=NULL,xlab="time",ylab="concordance",legend=FALSE,...)
 { ## {{{
 
   if (is.null(col)) col <- 1:3
   if (is.null(lty)) lty <- 1:3
-  if (is.null(ylim)) ylim=range(c(x$probandwise[,2],x$marg[,2]))
+  if (is.null(ylim)) ylim=range(c(x$casewise[,2],x$marg[,2]))
 
-  plot(x$probandwise[,1],x$probandwise[,2],type="s",ylim=ylim,lty=lty[1],col=col[1],xlab=xlab,ylab=ylab,...)
+  plot(x$casewise[,1],x$casewise[,2],type="s",ylim=ylim,lty=lty[1],col=col[1],xlab=xlab,ylab=ylab,...)
   if (!is.null(ci)) {
-     ul <- x$probandwise[,2]+qnorm(1-(1-ci)/2)* x$probandwise[,3]
-     nl <- x$probandwise[,2]-qnorm(1-(1-ci)/2)* x$probandwise[,3]
-     lines(x$probandwise[,1],ul,type="s",ylim=ylim,lty=lty[3],col=col[3])
-     lines(x$probandwise[,1],nl,type="s",ylim=ylim,lty=lty[3],col=col[3])
+     ul <- x$casewise[,2]+qnorm(1-(1-ci)/2)* x$casewise[,3]
+     nl <- x$casewise[,2]-qnorm(1-(1-ci)/2)* x$casewise[,3]
+     lines(x$casewise[,1],ul,type="s",ylim=ylim,lty=lty[3],col=col[3])
+     lines(x$casewise[,1],nl,type="s",ylim=ylim,lty=lty[3],col=col[3])
   }
   lines(x$marg[,1],x$marg[,2],lty=lty[2],col=col[2],type="s")
 
-  if (legend==TRUE) legend("topleft",lty=lty[1:2],col=col[1:2],c("Probandwise concordance","Marginal estimate"))
-
+  if (legend==TRUE) legend("topleft",lty=lty[1:2],col=col[1:2],c("Casewise concordance","Marginal estimate"))
 } ## }}}
 
-##' @S3method summary probandwise 
-summary.probandwise <- function(object,marg=FALSE,...)
+##' @S3method summary casewise 
+summary.casewise <- function(object,marg=FALSE,...)
 { ## {{{
-   cat("Probandwise concordance and standard errors \n"); 
-   print(signif(cbind(object$probandwise),3))
+   cat("Casewise concordance and standard errors \n"); 
+   print(signif(cbind(object$casewise),3))
    cat("\n"); 
 
    if (marg==TRUE) {

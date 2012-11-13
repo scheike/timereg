@@ -10,6 +10,7 @@
 ##' @param strata Strata
 ##' @param id Clustering variable
 ##' @param num num
+##' @param maxclust max number of clusters in comp.risk call for iid decompostion, max.clust=NULL uses all clusters otherwise rougher grouping.
 ##' @param prodlim prodlim to use prodlim estimator (Aalen-Johansen) rather than IPCW weighted estimator based on comp.risk function.These are equivalent in the case of no covariates.
 ##' @param messages Control amount of output
 ##' @param model Type of competing risk model (default is Fine-Gray model "fg", see comp.risk). 
@@ -20,7 +21,8 @@
 ##' @param ... Additional arguments to lower level functions
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
-bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv, strata=NULL, id,num,prodlim=FALSE,messages=TRUE,model,return.data=0,uniform=0,conservative=1,resample.iid=1,...) {
+bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv, strata=NULL, id,num,max.clust=1000,
+		       prodlim=FALSE,messages=TRUE,model,return.data=0,uniform=0,conservative=1,resample.iid=1,...) {
 
   mycall <- match.call()
   formulaId <- unlist(Specials(formula,"id"))
@@ -162,7 +164,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv, strat
     if (missing(model)) model <- "fg"
     add<-comp.risk(as.formula(ff),data=mydata,
                    status,causeS=1,n.sim=0,resample.iid=resample.iid,model=model,conservative=conservative,
-		   max.clust=NULL)
+		   max.clust=max.clust)
     padd <- predict(add,X=1,se=1,uniform=uniform,resample.iid=resample.iid)
   } else {
     ff <- as.formula(paste("Hist(",timevar,",",causes,")~",paste(c("1",covars,indiv2),collapse="+")))
