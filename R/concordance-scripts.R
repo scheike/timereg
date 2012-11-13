@@ -8,8 +8,9 @@
 ##' @examples
 ##' data(prt);
 ##' 
+##' prt <- prt[which(prt$id %in% sample(unique(prt$id),10000)),]
 ##' ### marginal cumulative incidence of prostate cancer 
-##' times <- 60:100
+##' times <- seq(60,100,by=10)
 ##' outm <- comp.risk(Surv(time,status==0)~+1,data=prt,prt$status,causeS=2,times=times)
 ##' 
 ##' cifmz <- predict(outm,X=1,uniform=0,resample.iid=1) 
@@ -23,9 +24,9 @@
 ##' cdz <- casewise.test(cdz,cifmz,test="case")
 ##' cmz <- casewise.test(cmz,cifdz,test="conc")
 ##' 
-##' plot(cmz,ylim=c(0,0.5),xlim=c(60,100))
+##' plot(cmz,ylim=c(0,0.7),xlim=c(60,100))
 ##' par(new=TRUE)
-##' plot(cdz,ylim=c(0,0.5),xlim=c(60,100))
+##' plot(cdz,ylim=c(0,0.7),xlim=c(60,100))
 ##' @export
 casewise.test <- function(conc,marg,test="no-test")
 { ## {{{
@@ -106,7 +107,7 @@ casewise.test <- function(conc,marg,test="no-test")
 
 ##' .. content for description (no empty lines) ..
 ##'
-##' @title Estimates the casewise concordance based on Concordance and marginal estimate using prodlim
+##' @title Estimates the casewise concordance based on Concordance and marginal estimate using prodlim but no testing
 ##' @param conc Concordance 
 ##' @param marg Marginal estimate
 ##' @param cause.prodlim specififes which cause that should be used for marginal cif based on prodlim
