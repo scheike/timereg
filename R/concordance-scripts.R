@@ -12,22 +12,22 @@
 ##' times <- 60:100
 ##' outm <- comp.risk(Surv(time,status==0)~+1,data=prt,prt$status,causeS=2,times=times)
 ##' 
-##' cifmz <- predict(outm,X=1,uniform=0)
-##' cifdz <- predict(outm,X=1,uniform=0)
+##' cifmz <- predict(outm,X=1,uniform=0,resample.iid=1) 
+##' cifdz <- predict(outm,X=1,uniform=0,resample.iid=1)
 ##' 
 ##' ### concordance for MZ and DZ twins
 ##' cc <- bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2))
 ##' cdz <- cc$model$"DZ"
 ##' cmz <- cc$model$"MZ"
 ##' 
-##' cdz <- conc2casewise(cdz,cifmz)
-##' cmz <- conc2casewise(cmz,cifdz)
+##' cdz <- conc2casewise(cdz,cifmz,test="case")
+##' cmz <- conc2casewise(cmz,cifdz,test="conc")
 ##' 
 ##' plot(cmz$casewise,ylim=c(0,0.5),xlim=c(60,100),type="l")
 ##' par(new=TRUE)
 ##' plot(cdz$casewise,ylim=c(0,0.5),xlim=c(60,100),type="l")
 ##' @export
-conc2casewise <- function(conc,marg,test="no-test")
+casewise.test <- function(conc,marg,test="no-test")
 { ## {{{
   time1 <- conc$time
   time2 <- marg$time
@@ -40,7 +40,6 @@ conc2casewise <- function(conc,marg,test="no-test")
   margtime <- Cpred(cbind(marg$time,c(marg$P1)),timer)[,2]
   concP1 <- Cpred(cbind(conc$time,c(conc$P1)),timer)[,2]
   outtest <- NULL
-  se.casewise <- NULL
   casewise.iid <- NULL
   casewise <- concP1/margtime
 
@@ -54,10 +53,12 @@ conc2casewise <- function(conc,marg,test="no-test")
       stop("Must be computed on same data\n"); 
   }
   }
+  }
+
+   se.casewise <- as.matrix(Cpred(cbind(conc$time,c(conc$se.P1)),timer)[,2]/margtime,ncol=100)
 
   if (!is.null(conc$se.P1) && !is.null(marg$se.P1) )
   {
-   se.casewise <- as.matrix(Cpred(cbind(conc$time,c(conc$se.P1)),timer)[,2]/margtime,ncol=100)
    casewise.iid <- Cpred(cbind(conc$time,conc$P1.iid[1,,]),timer)[,-1]/margtime
   if (test=="conc" || test=="case") {
     if (ncol(conc$P1.iid[1,,])== ncol(marg$P1.iid[1,,])) {
@@ -89,7 +90,6 @@ conc2casewise <- function(conc,marg,test="no-test")
    } 
    }
    }  
-  }
 
   out <- list(casewise=cbind(timer,concP1/margtime),se.casewise=cbind(timer,se.casewise),
 	      marg=cbind(timer,margtime),test=outtest,
