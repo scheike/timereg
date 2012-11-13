@@ -87,12 +87,12 @@
 ##' @param step Step size
 ##' @param notaylor Taylor expansion
 ##' @param model model
-##' @param marg.surv marg.surv
+##' @param marginal.survival optional vector of marginal survival probabilities 
 ##' @param strata Strata
 twostage <- function(margsurv,data=sys.parent(),score.method="nlminb",
 Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
 control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=0,
-step=0.5,notaylor=0,model="plackett",marg.surv=NULL,strata=NULL)
+step=0.5,notaylor=0,model="plackett",marginal.survival=NULL,strata=NULL)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -180,10 +180,10 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
   if (is.null(strata)==TRUE) strata<- rep(1,antpers); 
   if (length(strata)!=antpers) stop("Strata must have length equal to number of data points \n"); 
 
-  if (!is.null(marg.surv)) {
+  if (!is.null(marginal.survival)) {
 	if (lefttrunk==1)  cat("Warnings specify only your own survival weights for right-censored data\n"); 
-        if (length(marg.surv)!=length(start)) stop(paste("marg.surv must have length=",antpers,"\n"));  
-        psurvmarg <- marg.surv.
+        if (length(marginal.survival)!=length(start)) stop(paste("marginal.survival must have length=",antpers,"\n"));  
+        psurvmarg <- marginal.survival
   }
 
   out.clust <- cluster.index(clusters);  

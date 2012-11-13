@@ -10,7 +10,8 @@ based on the pairwise bivariate models.}
     clusters = NULL, silent = 1, weights = NULL,
     control = list(), theta = NULL, theta.des = NULL,
     var.link = 1, iid = 0, step = 0.5, notaylor = 0,
-    model = "plackett", marg.surv = NULL, strata = NULL)
+    model = "plackett", marginal.survival = NULL,
+    strata = NULL)
 }
 \arguments{
   \item{margsurv}{Marginal model}
@@ -45,7 +46,8 @@ based on the pairwise bivariate models.}
 
   \item{model}{model}
 
-  \item{marg.surv}{marg.surv}
+  \item{marginal.survival}{optional vector of marginal
+  survival probabilities}
 
   \item{strata}{Strata}
 }
