@@ -1,6 +1,7 @@
 ##' .. content for description (no empty lines) ..
 ##'
 ##' @title Estimates the casewise concordance based on Concordance and marginal estimate using timereg and performs test for independence
+##' @details Uses cluster based conservative standard errors for marginal
 ##' @param conc Concordance 
 ##' @param marg Marginal estimate
 ##' @param test Type of test for independence assumption. "conc" makes test on concordance scale and "case" means a test on the casewise concordance
