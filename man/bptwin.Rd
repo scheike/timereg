@@ -86,9 +86,11 @@
   Liability-threshold model for twin data
 }
 \examples{
+\donttest{
 data(twinstut)
-b0 <- bptwin(stutter~sex,data=subset(twinstut,age<40),id="tvparnr",zyg="zyg",DZ="dz",type="u")
+b0 <- bptwin(stutter~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="u")
 summary(b0)
+}
 }
 \author{
   Klaus K. Holst

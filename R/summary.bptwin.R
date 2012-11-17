@@ -132,7 +132,7 @@ summary.bptwin <- function(object,level=0.05,...) {
   sprobDZ <- diag((Dp1)%*%vcov(object)%*%t(Dp1))^0.5
   probMZ <- tigol(cbind(probMZ,probMZ-qnorm(1-alpha)*sprobMZ,probMZ+qnorm(1-alpha)*sprobMZ))
   probDZ <- tigol(cbind(probDZ,probDZ-qnorm(1-alpha)*sprobDZ,probDZ+qnorm(1-alpha)*sprobDZ))
-  rownames(probMZ) <- rownames(probDZ) <- c("Concordance","Probandwise Concordance","Marginal")
+  rownames(probMZ) <- rownames(probDZ) <- c("Concordance","Casewise Concordance","Marginal")
   colnames(probMZ) <- colnames(probDZ) <- c("Estimate",CIlab)
  
   ## mu <- coef(object)[c(object$bidx0[1],object$bidx1[1])]
