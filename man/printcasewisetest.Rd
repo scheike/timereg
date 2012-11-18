@@ -1,0 +1,21 @@
+\name{printcasewisetest}
+\alias{printcasewisetest}
+\title{prints Concordance test}
+\usage{
+  printcasewisetest(x, digits = 3, ...)
+}
+\arguments{
+  \item{x}{output from casewise.test}
+
+  \item{digits}{number of digits}
+
+  \item{\dots}{Additional arguments to lower level
+  functions}
+}
+\description{
+  .. content for description (no empty lines) ..
+}
+\author{
+  Thomas Scheike
+}
+

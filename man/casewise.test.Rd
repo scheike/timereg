@@ -16,6 +16,10 @@
 \description{
   .. content for description (no empty lines) ..
 }
+\details{
+  Uses cluster based conservative standard errors for
+  marginal
+}
 \examples{
 data(prt);
 

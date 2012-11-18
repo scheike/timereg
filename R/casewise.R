@@ -215,7 +215,7 @@ summary.casewise <- function(object,marg=FALSE,...)
    }
 
    if (!is.null(object$test)) {
-	   print.casewisetest(object)
+	   printcasewisetest(object)
    }
 
 } ## }}}
@@ -225,9 +225,10 @@ summary.casewise <- function(object,marg=FALSE,...)
 ##' @title prints Concordance test 
 ##' @param x output from casewise.test 
 ##' @param digits number of digits
+##' @param \dots Additional arguments to lower level functions
 ##' @author Thomas Scheike
 ##' @export
-print.casewisetest <- function(x,digits=3,...)
+printcasewisetest <- function(x,digits=3,...)
 { ## {{{
   cat("\n")
   cat("Pepe-Mori type test for H_0: conc_1(t)= conc_2(t)\n")

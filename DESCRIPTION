@@ -61,5 +61,5 @@ Collate:
     'twostage.R'
     'aalenfrailty.R'
     'surv.boxarea.R'
-    'concordance-scripts.R'
     'cor.R'
+    'casewise.R'
