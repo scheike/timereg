@@ -11,7 +11,8 @@ based on the pairwise bivariate models.}
     control = list(), theta = NULL, theta.des = NULL,
     var.link = 1, iid = 0, step = 0.5, notaylor = 0,
     model = "plackett", marginal.survival = NULL,
-    strata = NULL)
+    strata = NULL, par.func = NULL, dpar.func = NULL,
+    dimpar)
 }
 \arguments{
   \item{margsurv}{Marginal model}
@@ -50,6 +51,13 @@ based on the pairwise bivariate models.}
   survival probabilities}
 
   \item{strata}{Strata}
+
+  \item{par.func}{(optional) Model design function}
+
+  \item{dpar.func}{(optional) derivative of design
+  function}
+
+  \item{dimpar}{(optional) dimension of parameters}
 }
 \description{
   The reported standard errors are based on the estimated
