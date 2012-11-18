@@ -10,7 +10,7 @@
 ##' @param strata Strata
 ##' @param id Clustering variable
 ##' @param num num
-##' @param maxclust max number of clusters in comp.risk call for iid decompostion, max.clust=NULL uses all clusters otherwise rougher grouping.
+##' @param max.clust max number of clusters in comp.risk call for iid decompostion, max.clust=NULL uses all clusters otherwise rougher grouping.
 ##' @param prodlim prodlim to use prodlim estimator (Aalen-Johansen) rather than IPCW weighted estimator based on comp.risk function.These are equivalent in the case of no covariates.
 ##' @param messages Control amount of output
 ##' @param model Type of competing risk model (default is Fine-Gray model "fg", see comp.risk). 

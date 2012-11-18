@@ -30,7 +30,7 @@
 
   \item{num}{num}
 
-  \item{maxclust}{max number of clusters in comp.risk call
+  \item{max.clust}{max number of clusters in comp.risk call
   for iid decompostion, max.clust=NULL uses all clusters
   otherwise rougher grouping.}
 
