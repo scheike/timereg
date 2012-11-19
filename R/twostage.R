@@ -88,14 +88,11 @@
 ##' @param notaylor Taylor expansion
 ##' @param model model
 ##' @param marginal.survival optional vector of marginal survival probabilities 
-##' @param strata Strata
-##' @param par.func (optional) Model design function
-##' @param dpar.func (optional) derivative of design function
-##' @param dimpar (optional) dimension of parameters 
+##' @param strata strata for fitting, see example
 twostage <- function(margsurv,data=sys.parent(),score.method="nlminb",
 Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
 control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=0,
-step=0.5,notaylor=0,model="plackett",marginal.survival=NULL,strata=NULL,par.func=NULL,dpar.func=NULL,dimpar)
+step=0.5,notaylor=0,model="plackett",marginal.survival=NULL,strata=NULL)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -215,25 +212,8 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 
   loglike <- function(par) 
   { ## {{{
-    if (is.null(par.func)) {
        Xtheta <- theta.des %*% matrix(c(par),ptheta,1); 
        DXtheta <- array(0,c(1,1,1));
-    } else { ## {{{
-	  Xtheta <- c(); DXtheta <- array(0,c(length(time2),antpers,dimpar));
-	  if (is.null(dpar.func))
-		  stop("Must also provide derivative of function wrt to parameters")
-	  s <- 0
-	  for (t in time2) {
-		  s <- 1+s
-		  Xttheta <- par.func(par,t,theta.des)
-		  if (length(Xttheta)!=antpers) stop("par.func(par,t,theta.des) must length n"); 
-		  Xtheta <- cbind(Xtheta,Xttheta)
-		  Dttheta <- dpar.func(par,t,theta.des); 
-		  if (dim(Dttheta)[1]!=antpers || dim(Dttheta)[2]!=dimpar) 
-			  stop("dpar.func must return matrix n x dimpar when called on dpar.func(par,t,theta.des)"); 
-		  DXtheta[s,,] <- Dttheta
-	  }
-    } ## }}}
 
 ###      dyn.load("twostage.so")
 

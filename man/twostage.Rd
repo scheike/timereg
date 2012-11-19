@@ -50,7 +50,7 @@ based on the pairwise bivariate models.}
   \item{marginal.survival}{optional vector of marginal
   survival probabilities}
 
-  \item{strata}{Strata}
+  \item{strata}{strata for fitting, see example}
 
   \item{par.func}{(optional) Model design function}
 
