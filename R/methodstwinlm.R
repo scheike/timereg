@@ -44,7 +44,7 @@ summary.twinlm <- function(object,...) {
     return(res)
   }
 
-  ##suppressMessages(browser())
+  ##  suppressMessages(browser())
 
   OScor <- NULL
   if(object$OS) {
@@ -68,9 +68,14 @@ summary.twinlm <- function(object,...) {
   ## rownames(myest)[idx] <- r2
 ##  rownames(myest) <- coef(Model(Model(e))[[1]],
 ##                                      mean=e$meanstructure, silent=TRUE)
-                     
+
   lambda.idx <- sapply(c("<-a1","<-c1","<-d1","<-e1"),function(x) grep(x,rownames(myest)))
+  lambda.idx2 <- sapply(c("<-a2","<-c2","<-d2","<-e2"),function(x) grep(x,rownames(myest)))
+  for (k in seq_len(length(lambda.idx)))
+    if (length(lambda.idx[[k]])==0) lambda.idx[[k]] <- lambda.idx2[[k]] 
+
   lambda.w <- which(sapply(lambda.idx, function(x) length(x)>0))
+          
   rownames(myest)[unlist(lambda.idx)] <- paste("sd(",c("A)","C)","D)","E)"),sep="")[lambda.w]
 
   varEst <- rep(0,4)
@@ -132,6 +137,7 @@ summary.twinlm <- function(object,...) {
   colnames(h2val) <- c("Estimate", "Std.Err"); rownames(h2val) <- "h squared"
 
 
+  
   atanhcorMZf <- function(x) atanh(sum(x[1:3]^2)/sum(x^2))
   atanhcorDZf <- function(x) atanh(sum(x[1:3]^2*c(0.5,1,0.25))/sum(x^2))
   e1 <- atanhcorMZf(varEst)
