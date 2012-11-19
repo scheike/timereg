@@ -22,7 +22,7 @@ data(prt);
 outm <- prodlim(Hist(time,status)~+1,data=prt)
 
 times <- 60:100
-cifmz <- predict(outm,cause=2,time=times,newdata=data.frame(zyg="MZ"))
+cifmz <- predict(outm,cause=2,time=times,newdata=data.frame(zyg="MZ")) ## cause is 2 (second cause)
 cifdz <- predict(outm,cause=2,time=times,newdata=data.frame(zyg="DZ"))
 
 ### concordance for MZ and DZ twins
@@ -30,7 +30,7 @@ cc <- bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2),prod
 cdz <- cc$model$"DZ"
 cmz <- cc$model$"MZ"
 
-cdz <- casewise(cdz,outm,cause.prodlim=2)
+cdz <- casewise(cdz,outm,cause.prodlim=2) ## cause refers to second cause of prodlim object (possibly with other name)
 cmz <- casewise(cmz,outm,cause.prodlim=2)
 
 plot(cmz,ci=NULL,ylim=c(0,0.5),xlim=c(60,100),legend=TRUE,col=c(3,2,1))
