@@ -527,7 +527,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##'        par.func=gparfunc,dpar.func=dgparfunc,dimpar=6,score.method="fisher.scoring",detail=1)
 ##' summary(or1g)
 ##' names(or1g)
-##' or1g$theta.iid
+##' head(or1g$theta.iid)
 ##' }
 ##' 
 ##' @export
