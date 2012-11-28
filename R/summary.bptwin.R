@@ -78,7 +78,6 @@ summary.bptwin <- function(object,level=0.05,...) {
     zrho.var <- datanh(cc)^2*diag(Vc)
     CIs <- tanh(zrho%x%cbind(1,1)+zrho.var^0.5%x%cbind(-1,1)*qnorm(1-alpha))
   }
-
   newcoef <- rbind(cbind(cc,diag(Vc)^0.5,CIs),corr);
   ##  CIs <- rbind(CIs,c(NA,NA),c(NA,NA))
   ##  newcoef <- cbind(newcoef,CIs)
@@ -114,12 +113,12 @@ summary.bptwin <- function(object,level=0.05,...) {
     cond <- conc/marg
     logit(c(conc,cond,marg))
   }
-   
+
   mycoef <- coef(object)
-  formals(probs) <- alist(p=,idx=0)
-  hp <- probs(mycoef)
-  Dhp <- grad(probs,mycoef)
-  shp <- diag(t(Dhp)%*%vcov(object)%*%(Dhp))^0.5
+  ## formals(probs) <- alist(p=,idx=0)
+  ## hp <- probs(mycoef)
+  ## Dhp <- grad(probs,mycoef)
+  ## shp <- diag(t(Dhp)%*%vcov(object)%*%(Dhp))^0.5
   
   formals(probs) <- alist(p=,idx=1)
   probMZ <- probs(mycoef)
