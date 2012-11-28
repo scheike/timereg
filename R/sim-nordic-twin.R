@@ -7,11 +7,10 @@ return( 1 - exp(-baset*exp(xm %*% matrix(beta,3,1))))
 } ## }}}
 
 ##' @export 
-corsim.prostate <- function(n,theta=1,thetaslope=0,crate=2,test=0,pcens=0,mt=1,same.cens=TRUE) 
+corsim.prostate <- function(n,theta=1,thetaslope=0,crate=2,test=0,pcens=0,mt=1,same.cens=TRUE,country=TRUE) 
 { ## {{{
 ###n <- 10; theta <- 1; thetaslope <- 0; mt <- 1
-xl <- sample(1:4,n,replace=TRUE)
-###xl <- rep(xl,each=2)
+if (country==TRUE) xl <- sample(1:4,n,replace=TRUE) else xl <- rep(1,n)
 x<-cbind(xl==2,xl==3,xl==4)*1
 tt<-seq(0,mt,length=mt*100)
 ###
@@ -129,28 +128,27 @@ return(data)
 } ## }}}
 
 ##' @export 
-simnordic <- function(n,cordz=2,cormz=3,cratemz=2,cratedz=2,pcensmz=0.8,pcensdz=0.8) 
+simnordic <- function(n,cordz=2,cormz=3,cratemz=2,cratedz=2,pcensmz=0.8,pcensdz=0.8,country=TRUE) 
 { ## {{{
-outdz <- corsim.prostate(n,theta=cordz,crate=cratedz,pcens=pcensmz,mt=1,same.cens=TRUE,test=0) 
-outmz <- corsim.prostate(n,theta=cormz,crate=cratemz,pcens=pcensdz,mt=1,same.cens=TRUE,test=0) 
+outdz <- corsim.prostate(n,theta=cordz,crate=cratedz,pcens=pcensdz,mt=1,same.cens=TRUE,test=0,country=country) 
+outmz <- corsim.prostate(n,theta=cormz,crate=cratemz,pcens=pcensmz,mt=1,same.cens=TRUE,test=0,country=country) 
 outdz$zyg <- "DZ" 
 outmz$zyg <-  "MZ"
 outmz$id <- outmz$id+nrow(outdz)
 ###
 out <- rbind(outdz,outmz)
 out$time <- out$time*100
-table(out$type,out$country)
-table(out$type,out$cause)
-out$country <- relevel(factor(out$country),ref="SWE")
-table(out$country)
+###table(out$type,out$country)
+###table(out$type,out$cause)
+if (country==TRUE) out$country <- relevel(factor(out$country),ref="SWE")
+###table(out$country)
 outk <- out[,c("country","cause","id","time","zyg","type")]
-table(outk$cause)
-table(outk$type,outk$country)
-table(outk$cause,outk$country)
+###table(outk$cause)
+###table(outk$type,outk$country)
+###table(outk$cause,outk$country)
 ###
 
 return(outk)
 } ## }}}
 
-###outk <- simnordic(2000)
 
