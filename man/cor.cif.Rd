@@ -219,7 +219,7 @@ or1g <- or.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=T
        par.func=gparfunc,dpar.func=dgparfunc,dimpar=6,score.method="fisher.scoring",detail=1)
 summary(or1g)
 names(or1g)
-or1g$theta.iid
+head(or1g$theta.iid)
 }
 }
 \author{
