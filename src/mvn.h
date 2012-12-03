@@ -13,7 +13,7 @@ using namespace std;
 using namespace Rcpp;
 using namespace arma;
 
-const double log2pi = log(2*math::pi());
+const double log2pi = log(2*datum::pi);
 
 struct vecmat
 {
@@ -21,26 +21,42 @@ struct vecmat
   mat M;
 };
 
+
+RcppExport SEXP loglikMVN(SEXP yl, SEXP yu, 
+			  SEXP status,
+			  SEXP mu, SEXP dmu,
+			  SEXP s, SEXP ds,
+			  SEXP z, SEXP su, SEXP dsu,
+			  SEXP threshold, SEXP dthreshold);
+
+RcppExport SEXP pmvn(SEXP upper, SEXP cor);
+
 extern "C" double bvnd_(const double *dh, const double *dk, const double *r);
-RcppExport SEXP cdf(SEXP a, SEXP b, SEXP r);
+
+RcppExport SEXP bvncdf(SEXP a, SEXP b, SEXP r);
+
 double Sbvn(double &l1, double &l2,double &r);
+
 inline double Fbvn(double u1, double u2, double r) { 
   u1 *= -1; u2 *= -1; 
   return(Sbvn(u1,u2,r)); 
 };
+
 vecmat Dbvn(double y1, double y2, double R);
+
 double dbvnorm(double y1, double y2, double R);
-RcppExport SEXP FastApprox(const SEXP a, const SEXP t, const SEXP z);
-
-/* template <class T> */
-/* string numStr(T x) { */
-/*   ostringstream nmbstr; nmbstr << x; */
-/*   string ss = nmbstr.str();     */
-/*   return ss; */
-/* } */
 
 
-
-
+extern "C" double mvtdst_(const int *N, const int *NU,
+			  const double *LOWER, const double *UPPER,
+			  const int *INFIN,
+			  const double *CORREL,
+			  const double *DELTA,
+			  const int *MAXPTS,
+			  const double *ABSEPS,
+			  const double *RELEPS,
+			  const double *ERR,
+			  const double *VAL,
+			  const int *INFORM);
 
 #endif /* MVN_H */
