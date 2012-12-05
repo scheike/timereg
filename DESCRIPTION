@@ -22,6 +22,7 @@ Depends:
     prodlim
 Suggests:
     lava.tobit (>= 0.4-7),
+    testthat,
     ucminf
 LinkingTo: Rcpp, RcppArmadillo
 Collate:
