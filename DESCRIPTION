@@ -62,5 +62,6 @@ Collate:
     'twostage.R'
     'aalenfrailty.R'
     'surv.boxarea.R'
-    'cor.r'
     'casewise.R'
+    'cor.R'
+    'fastpattern.R'
