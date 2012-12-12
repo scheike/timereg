@@ -2,7 +2,7 @@
 \alias{casewise}
 \title{Estimates the casewise concordance based on Concordance and marginal estimate using prodlim but no testing}
 \usage{
-  casewise(conc, marg, cause.prodlim = 1)
+  casewise(conc, marg, cause.marg)
 }
 \arguments{
   \item{conc}{Concordance}
@@ -30,8 +30,8 @@ cc <- bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2),prod
 cdz <- cc$model$"DZ"
 cmz <- cc$model$"MZ"
 
-cdz <- casewise(cdz,outm,cause.prodlim=2) ## cause refers to second cause of prodlim object (possibly with other name)
-cmz <- casewise(cmz,outm,cause.prodlim=2)
+cdz <- casewise(cdz,outm,cause.marg=2)
+cmz <- casewise(cmz,outm,cause.marg=2)
 
 plot(cmz,ci=NULL,ylim=c(0,0.5),xlim=c(60,100),legend=TRUE,col=c(3,2,1))
 par(new=TRUE)

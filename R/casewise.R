@@ -128,8 +128,8 @@ casewise.test <- function(conc,marg,test="no-test")
 ##' cdz <- cc$model$"DZ"
 ##' cmz <- cc$model$"MZ"
 ##' 
-##' cdz <- casewise(cdz,outm,cause.prodlim=2) ## cause refers to second cause of prodlim object (possibly with other name)
-##' cmz <- casewise(cmz,outm,cause.prodlim=2)
+##' cdz <- casewise(cdz,outm,cause.marg=2) 
+##' cmz <- casewise(cmz,outm,cause.marg=2)
 ##' 
 ##' plot(cmz,ci=NULL,ylim=c(0,0.5),xlim=c(60,100),legend=TRUE,col=c(3,2,1))
 ##' par(new=TRUE)
@@ -137,17 +137,21 @@ casewise.test <- function(conc,marg,test="no-test")
 ##' summary(cdz)
 ##' summary(cmz)
 ##' @export
-casewise <- function(conc,marg,cause.prodlim=1)
+casewise <- function(conc,marg,cause.marg)
 { ## {{{
+  if (missing(cause.marg)) stop("Please specify cause of marginal (as given in Hist object)")
   if ((!class(conc)=="prodlim")  || (!class(marg)=="prodlim")) stop("Assumes that both models are based on prodlim function \n"); 
   time1 <- conc$time
   time2 <- marg$time
 
+  cause.prodlim <- match(as.character(cause.marg),levels(getEvent(marg$model.response)))
+  if (is.na(cause.prodlim)) stop("Cause did not match marginal model")
+  
   mintime <- max(time1[1],time2[1])
   maxtime <- min(max(time1),max(time2))
   timer <- seq(mintime, maxtime,length=100)
   dtimer <- timer[2]-timer[1]
-
+ 
   out <- conc
   out$time <- timer
   if (class(marg)=="comp.risk") margtime <- Cpred(cbind(marg$time,c(marg$P1)),timer)[,2] else if (class(marg)=="prodlim") {
