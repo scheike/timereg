@@ -266,7 +266,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
     score <- out$score
     oout <- 0; 
     score1 <- jacobian(loglike,p)
-    hess <- hessian(loglike,p)
+    hess <- hessian(loglike,p);
     if (iid==1) theta.iid <- out$theta.iid
     }
     if (detail==1 & Nit==0) {## {{{
@@ -520,7 +520,6 @@ piecewise.twostage <- function(cut1,cut2,data=sys.parent(),timevar="time",status
             score.method="optimize",Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
             control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=0,step=0.5,model="plackett",data.return=0)
 { ## {{{
-
 ud <- list()
 if (missing(cut2)) cut2 <- cut1; 
 nc1 <- length(cut1); nc2 <- length(cut2)
@@ -543,6 +542,7 @@ if (silent<=-1) print(summary(datalr));
 datalr$tstime <- datalr[,timevar]
 datalr$tsstatus <- datalr[,status]
 datalr$tsid <- datalr[,id]
+if (silent<=-1) print(str(datalr)); 
 marg1 <- aalen(Surv(boxtime,tsstatus)~-1+factor(num),data=datalr,n.sim=0,max.clust=NULL,robust=0)
 fitlr<-  twostage(marg1,data=datalr,clusters=datalr$tsid,model=model,score.method=score.method,
               Nit=Nit,detail=detail,silent=silent,weights=weights,
@@ -633,4 +633,18 @@ coefmat <- function(est,stderr,digits=3,...) { ## {{{
   colnames(res) <- paste("",colnames(res))
   noquote(res)
 } ## }}}
+
+##' @export
+simple.reshape <- function(data,id="id",num=NULL) {  ## {{{
+   cud <- cluster.index(data[,c(id)]) 
+   dataw <- c()
+   mnames <- c()
+   for (i in 1:cud$maxclust) {
+      if (i==1) dataw <- data[cud$idclust[,i]+1,]
+      else dataw <- cbind(dataw,data[cud$idclust[,i]+1,])
+      mnames <- c(mnames,paste(names(data),".",i,sep=""))
+   }
+   names(dataw) <- mnames
+return(dataw)
+}  ## }}}
 
