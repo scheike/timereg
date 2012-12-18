@@ -15,13 +15,20 @@ void nclusters(int  *npers,int  *clusters, int  *nclust, int  *uniqueclust, int 
   mclust[0]=maxclust; 
 }
 
-void clusterindex(int *clusters,int *nclust,int *npers,int *idclust,int *clustsize)
+void clusterindex(int *clusters,int *nclust,int *npers,int *idclust,int *clustsize,int *mednum,int *num)
 {
   int i;
-  for (i=0;i<*npers;i++){
-      idclust[(clustsize[clusters[i]])*(*nclust)+clusters[i]]=i; 
-      clustsize[clusters[i]]+=1; 
-  } 
+  if (*mednum==0) {
+     for (i=0;i<*npers;i++){
+         idclust[(clustsize[clusters[i]])*(*nclust)+clusters[i]]=i; 
+         clustsize[clusters[i]]+=1; 
+      } 
+  } else {
+    for (i=0;i<*npers;i++){
+        idclust[num[i]*(*nclust)+clusters[i]]=i; 
+        clustsize[clusters[i]]+=1; 
+     } 
+  }
 }
 
 /* compute the values of a step function, 
