@@ -604,13 +604,14 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	  MxA(AI,XZ,XZAI); MtA(XZAI,XZ,tmpM2); 
 	  mat_subtr(ZZ,tmpM2,dCGam); 
 
-	  weighttot=weighttot-weightt[s]; 
-          double convs=0; 
-	  for (k=0;k<*pg;k++) convs=convs+pow(ME(dCGam,k,k),2); 
-	  if (convs<1) convs=1; 
-	  weightt[s]=1/convs; 
-	  weighttot=weighttot+1/convs;
-	  dtime=weightt[s]/weighttot; 
+//	  weighttot=weighttot-weightt[s]; 
+//          double convs=0; 
+//	  for (k=0;k<*pg;k++) convs=convs+pow(ME(dCGam,k,k),2); 
+//	  if (convs<1) convs=1; 
+//	  weightt[s]=1/convs; 
+//	  weighttot=weighttot+1/convs;
+//	  dtime=weightt[s]/weighttot; 
+	  dtime=1; 
 
 	  scl_mat_mult(dtime,dCGam,dCGam); mat_add(CGam,dCGam,CGam); 
 	  vM(cdesignG,Y,zi); vM(XZ,AIXdN,tmpv2); 

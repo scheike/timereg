@@ -84,7 +84,7 @@ timetest<-function(object,digits=3,hyp.label="p-value H_0:constant effect",out=0
 } ## }}}
 
 is.diag <- function(m)
-{
+{ ## {{{
 p <- nrow(m)
 adiag <- min(diag(m)*1)
 if (adiag==0) ud <- FALSE else ud <- TRUE
@@ -92,7 +92,8 @@ dm <- diag(p); diag(dm) <- diag(m);
 ndiag <- sum(abs(c(m - dm)))
 if (ndiag>0.0000001) ud <- FALSE;
 return(ud)
-}
+} ## }}}
+
 
 cluster.index <- function(clusters,index.type=FALSE)
 { ## {{{
@@ -119,8 +120,7 @@ out <- list(clusters=clusters,maxclust=maxclust,antclust=antclust,idclust=idclus
 residualsTimereg <- function(object,data=data)
 { ## {{{
 
-if (class(object)!="cox.aalen" & class(object)!="aalen") 
-	stop("Computes residuals for Aalen or Cox.aalen object") 
+if (class(object)!="cox.aalen" & class(object)!="aalen") stop("Computes residuals for Aalen or Cox.aalen object") 
 else {
  formula<-attr(object,"Formula");
  beta.fixed <- attr(object,"beta.fixed")
@@ -142,7 +142,8 @@ else {
  if (npar==TRUE) {Z<-matrix(0,antpers,1); pz<-1; fixed<-0;} else {fixed<-1;pz<-ncol(Z);}
  px<-ncol(X);
 
- if (sum(abs(start))>0) lefttrunk <- 1  else lefttrunk <- 0;  cumhazleft <- 0; 
+ if (sum(abs(start))>0) lefttrunk <- 1  else lefttrunk <- 0;  
+ cumhazleft <- 0; 
  nn <- nrow(object$cum) 
 
  cum <- Cpred(object$cum,time2)[,-1]
@@ -171,7 +172,6 @@ if (class(object)=="aalen")
 	 cumhazleft <- apply(cum*X,1,sum)
 	 cumhazleft  <-  cumhazleft+ex.haz*start
      }
-
   } else {  ## Aalen model
 	  cumhaz <- cumhaz0
           if (lefttrunk==1) {

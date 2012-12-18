@@ -21,7 +21,6 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
   vector *lamt,*lamtt,*offset,*weight,*one;
   vector *tmpv1,*xi,*zi,*reszpbeta,*res1dim; 
   vector *vthetascore,*vtheta1,*vtheta2,*dtheta,*thetaiid[*antclust]; 
-//  vector *dbetaNH[*antclust],*dANH[*antclust]; 
   vector *dAiid[*antclust],*gammaiid[*antclust]; 
   int c,i,j,k,l,s,it,pmax,v,
       *cluster=calloc(*antpers,sizeof(int));
@@ -70,12 +69,10 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
 // for (j=0;j<*antpers;j++) Rprintf("%d %d %d %lf %lf %lf  \n",j,id[j],cluster[id[j]],cumhaz[j],Nti[j],cumhazleft[j]); 
 
   if (*notaylor==0) {
-  for (i=0;i<*antclust;i++) for (j=0;j<*pg;j++) VE(gammaiid[i],j)=gamiid[j*(*antclust)+i]; 
-
-   for (i=0;i<*antclust;i++) for (s=0;s<*maxtimesim;s++) 
-   for (c=0;c<*px;c++) {l=i*(*px)+c; ME(Biid[i],s,c)=biid[l*(*maxtimesim)+s]; }
-    }
- 
+      for (i=0;i<*antclust;i++) for (j=0;j<*pg;j++) VE(gammaiid[i],j)=gamiid[j*(*antclust)+i]; 
+      for (i=0;i<*antclust;i++) for (s=0;s<*maxtimesim;s++) 
+      for (c=0;c<*px;c++) {l=i*(*px)+c; ME(Biid[i],s,c)=biid[l*(*maxtimesim)+s]; }
+  }
 
   // assuming that destheta is on this form: antpers x ptheta
   for(i=0;i<*antpers;i++) 
@@ -208,8 +205,7 @@ for(j=0;j<pmax;j++) {
       if ((sumscore<0.0000000001) & (it<*Nit-1)) it=*Nit-1; 
     } /* it theta Newton-Raphson */  // }}}
 
-  for (i=0;i<*ptheta;i++) { theta[i]=VE(vtheta1,i);
-    thetascore[i]=VE(vthetascore,i); }
+  for (i=0;i<*ptheta;i++) { theta[i]=VE(vtheta1,i); thetascore[i]=VE(vthetascore,i); }
 
    R_CheckUserInterrupt();
   /* terms for robust variances ============================ */
@@ -223,11 +219,9 @@ for(j=0;j<pmax;j++) {
 	   i= idiclust[j*(*antclust)+k]; 
            theta0=VE(lamtt,i); 
         if (*inverse==1) theta0=exp(theta0); 
-	dummy= Hik[i]*(
-		(1/(theta0*Rtheta[k]))*exp(theta0*Hik[i])-
-	  (1/theta0+Nt[k])*(1+theta0*Hik[i])*exp(theta0*Hik[i])/Rtheta[k]+
-	  Nti[i]+
-	  (1+theta0*Nt[k])*exp(theta0*Hik[i])*HeH[k]/pow(Rtheta[k],2));
+	dummy= Hik[i]*((1/(theta0*Rtheta[k]))*exp(theta0*Hik[i])-
+	                (1/theta0+Nt[k])*(1+theta0*Hik[i])*exp(theta0*Hik[i])/Rtheta[k]+
+	  Nti[i]+ (1+theta0*Nt[k])*exp(theta0*Hik[i])*HeH[k]/pow(Rtheta[k],2));
 	if (*lefttrunk==1) {
 		dummyleft=-cumhazleft[i]*(
 		(1/(theta0*Rthetaleft[k]))*exp(theta0*cumhazleft[i])-
@@ -244,17 +238,18 @@ for(j=0;j<pmax;j++) {
 
      if (*notaylor==0) 
       for (s=1;s<*Ntimes;s++) { // {{{
+//      for (s=1;s<*maxtimesim;s++) { // {{{
 	if (k==0) {
 	  mat_zeros(Ftilde); 
-	  for (j=0;j<*antclust;j++) if (clustsize[j]>=2) {
+      for (j=0;j<*antclust;j++) if (clustsize[j]>=2) {
       for (v=0;v<clustsize[j];v++) {
 	   i= idiclust[v*(*antclust)+j]; 
+//           if (stop[i]>=times[s]) {
            if (stop[i]>=times[s]) {
 	      theta0=VE(lamtt,i); 
               if (*inverse==1) theta0=exp(theta0); 
-	      dummy=rr[i]* ((1/(theta0*Rtheta[j]))*exp(theta0*Hik[i])
-		     -(1/theta0+Nt[j])*(1+theta0*Hik[i])*exp(theta0*Hik[i])/Rtheta[j]
-		     +Nti[i]
+	      dummy=rr[i]*((1/(theta0*Rtheta[j]))*exp(theta0*Hik[i])
+		     -(1/theta0+Nt[j])*(1+theta0*Hik[i])*exp(theta0*Hik[i])/Rtheta[j] +Nti[i]
 		     +(1+theta0*Nt[j])*exp(theta0*Hik[i])*HeH[j]/pow(Rtheta[j],2));
     	      if (*lefttrunk==1) {
 	       	dummyleft=-rr[i]*
@@ -265,19 +260,17 @@ for(j=0;j<pmax;j++) {
 	      extract_row(destheta,i,vtheta1); extract_row(cdesX2,i,xi); 
             
 	      for (c=0;c<*ptheta;c++) for (l=0;l<*px;l++) 
-		ME(Ftilde,c,l)=ME(Ftilde,c,l)+ VE(xi,l)*VE(vtheta1,c)*(dummy+dummyleft);  
+		ME(Ftilde,c,l)=ME(Ftilde,c,l)+VE(xi,l)*VE(vtheta1,c)*(dummy+dummyleft);  
 	    }
 	  }
 	}  
 	}
 	extract_row(Biid[k],timegroup[s],tmpv1); 
-	extract_row(Biid[k],timegroup[s]-1,xi); 
+	extract_row(Biid[k],timegroup[s-1],xi); 
 	vec_subtr(tmpv1,xi,xi); Mv(Ftilde,xi,vtheta2); 
 	vec_add(dAiid[k],vtheta2,dAiid[k]); 
       }  // }}}
-
     } /* k=1..antclust */ 
-
 
     for (j=0;j<*antclust;j++) if (clustsize[j]>=2) {
       if (*notaylor==0) {
@@ -288,9 +281,8 @@ for(j=0;j<pmax;j++) {
       vec_add_mult(thetaiid[j],dAiid[j],Dthetanu,thetaiid[j]);
       }
 
-      for (i=0;i<*ptheta;i++) for (k=0;k<*ptheta;k++)
-	ME(varthetascore,i,k) = ME(varthetascore,i,k) +
-	  VE(thetaiid[j],i)*VE(thetaiid[j],k);
+      for (i=0;i<*ptheta;i++) for (k=0;k<*ptheta;k++) 
+	      ME(varthetascore,i,k) = ME(varthetascore,i,k) + VE(thetaiid[j],i)*VE(thetaiid[j],k);
     }
   } // }}} robust==1
 
