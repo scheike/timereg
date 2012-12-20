@@ -7,6 +7,7 @@
 ##' @param test Type of test for independence assumption. "conc" makes test on concordance scale and "case" means a test on the casewise concordance
 ##' @author Thomas Scheike
 ##' @examples
+##' \donttest{
 ##' data(prt);
 ##' 
 ##' prt <- prt[which(prt$id %in% sample(unique(prt$id),10000)),]
@@ -28,6 +29,7 @@
 ##' plot(cmz,ylim=c(0,0.7),xlim=c(60,100))
 ##' par(new=TRUE)
 ##' plot(cdz,ylim=c(0,0.7),xlim=c(60,100))
+##' }
 ##' @export
 casewise.test <- function(conc,marg,test="no-test")
 { ## {{{
@@ -111,7 +113,7 @@ casewise.test <- function(conc,marg,test="no-test")
 ##' @title Estimates the casewise concordance based on Concordance and marginal estimate using prodlim but no testing
 ##' @param conc Concordance 
 ##' @param marg Marginal estimate
-##' @param cause.prodlim specififes which cause that should be used for marginal cif based on prodlim
+##' @param cause.marg specifies which cause that should be used for marginal cif
 ##' @author Thomas Scheike
 ##' @examples
 ##' data(prt);

@@ -9,8 +9,8 @@
 
   \item{marg}{Marginal estimate}
 
-  \item{cause.prodlim}{specififes which cause that should
-  be used for marginal cif based on prodlim}
+  \item{cause.marg}{specifies which cause that should be
+  used for marginal cif}
 }
 \description{
   .. content for description (no empty lines) ..
