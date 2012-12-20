@@ -636,7 +636,7 @@ coefmat <- function(est,stderr,digits=3,...) { ## {{{
 
 ##' @export
 simple.reshape <- function(data,id="id",num=NULL) {  ## {{{
-   cud <- cluster.index(data[,c(id)]) 
+   cud <- cluster.index(data[,c(id)],num=num) 
    dataw <- c()
    mnames <- c()
    for (i in 1:cud$maxclust) {
