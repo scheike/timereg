@@ -98,7 +98,9 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv, strat
   
   ww0 <- reshape(data[,c(timevar,causes,covars,indiv,id,num)],
                  direction="wide",idvar=id,timevar=num)[,c(timevar2,causes2,indiv2,covars2)]
- 
+
+### ww0 <- fast.reshape(data[,c(timevar,causes,covars,indiv,id,num)],id=data$id,num=data$num)
+
   ## switchers <- which(ww0[,timevar2[1]]>ww0[,timevar2[2]])
   ## switchpos <- 1:4
   ## if (length(indiv)>0)

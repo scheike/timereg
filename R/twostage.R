@@ -635,16 +635,28 @@ coefmat <- function(est,stderr,digits=3,...) { ## {{{
 } ## }}}
 
 ##' @export
-simple.reshape <- function(data,id="id",num=NULL) {  ## {{{
-   cud <- cluster.index(data[,c(id)],num=num) 
-   dataw <- c()
-   mnames <- c()
-   for (i in 1:cud$maxclust) {
-      if (i==1) dataw <- data[cud$idclust[,i]+1,]
-      else dataw <- cbind(dataw,data[cud$idclust[,i]+1,])
-      mnames <- c(mnames,paste(names(data),".",i,sep=""))
-   }
-   names(dataw) <- mnames
-return(dataw)
-}  ## }}}
+###simple.reshape <- function(data,id="id",num=NULL) {  ## {{{
+###   cud <- cluster.index(data[,c(id)],num=num,Rindex=1) 
+###   dataw <- c()
+###   mnames <- c()
+###   for (i in 1:cud$maxclust) {
+###      if (i==1) dataw <- data[cud$idclust[,i]+1,]
+###      else dataw <- cbind(dataw,data[cud$idclust[,i]+1,])
+###      mnames <- c(mnames,paste(names(data),".",i,sep=""))
+###   }
+###   names(dataw) <- mnames
+###return(dataw)
+###}  ## }}}
+
+##' @export
+simple.reshape<- function(data,id="id",num=NULL) { ## {{{
+  cud <- cluster.index(data[,c(id)],num=num,Rindex=1)
+  N <- nrow(cud$idclust); p <- ncol(data)
+  dataw <- matrix(NA,nrow=N,ncol=p*cud$maxclust)
+  for (i in seq <- length(cud$maxclust)) {
+        dataw[,seq(p)+(i-1)*p] <- as.matrix(data[cud$idclust[,i]+1,])
+  }
+  names(dataw) <- paste(names(data),rep(seq <- length(cud$maxclust),each=p),sep=".")
+  return(dataw)
+} ## }}}
 
