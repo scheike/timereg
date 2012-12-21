@@ -94,49 +94,6 @@ if (ndiag>0.0000001) ud <- FALSE;
 return(ud)
 } ## }}}
 
-
-cluster.index <- function(clusters,index.type=FALSE,num=NULL)
-{ ## {{{
- antpers <- length(clusters)
-if (index.type==FALSE)  {
-	max.clust <- length(unique(clusters))
-	clusters <- as.integer(factor(clusters, labels = 1:max.clust)) -1
-}
-
- nclust <- .C("nclusters",
-	as.integer(antpers), as.integer(clusters), as.integer(rep(0,antpers)), 
-	as.integer(0), as.integer(0), package="timereg")
-  maxclust <- nclust[[5]]
-  antclust <- nclust[[4]]
-  cluster.size <- nclust[[3]][1:antclust]
-
-if (!is.null(num)) { ### different types in different columns
-	mednum <- 1
-numnum <- as.integer(factor(num, labels = 1:maxclust)) -1
-} else { numnum <- 0; mednum <- 0; }
-
-clustud <- .C("clusterindex",as.integer(clusters),
-		as.integer(antclust),as.integer(antpers),
-                as.integer(rep(0,antclust*maxclust)),as.integer(rep(0,antclust)),
-		as.integer(mednum), as.integer(numnum), package="timereg")
-idclust <- matrix(clustud[[4]],antclust,maxclust)
-out <- list(clusters=clusters,maxclust=maxclust,antclust=antclust,idclust=idclust,cluster.size=cluster.size)
-} ## }}}
-
-fast.reshape <- function(data,id="id",num=NULL) {  ## {{{
-   cud <- cluster.index(data[,c(id)],num=num) 
-   dataw <- c()
-   mnames <- c()
-  for (i in 1:cud$maxclust) {
-     if (i==1) dataw <- data[cud$idclust[,i]+1,]
-     else dataw <- cbind(dataw,data[cud$idclust[,i]+1,])
-     mnames <- c(mnames,paste(names(data),".",i,sep=""))
-  }
-  names(dataw) <- mnames
-  return(dataw)
-}  ## }}}
-
-
 residualsTimereg <- function(object,data=data)
 { ## {{{
 
