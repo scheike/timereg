@@ -653,10 +653,10 @@ simple.reshape<- function(data,id="id",num=NULL) { ## {{{
   cud <- cluster.index(data[,c(id)],num=num,Rindex=1)
   N <- nrow(cud$idclust); p <- ncol(data)
   dataw <- matrix(NA,nrow=N,ncol=p*cud$maxclust)
-  for (i in seq <- length(cud$maxclust)) {
+  for (i in seq_len(cud$maxclust)) {
         dataw[,seq(p)+(i-1)*p] <- as.matrix(data[cud$idclust[,i]+1,])
   }
-  names(dataw) <- paste(names(data),rep(seq <- length(cud$maxclust),each=p),sep=".")
+  names(dataw) <- paste(names(data),rep(seq_len(cud$maxclust),each=p),sep=".")
   return(dataw)
 } ## }}}
 

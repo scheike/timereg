@@ -21,11 +21,6 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
 
   ww0 <- reshape(data[,c(timevar,status,covars,id,num)],direction="wide",
 		 idvar=id,timevar=num)[,c(timevar2,status2,covars2,id)] 
-  print(head(ww0))
-
-  ww0 <- faster.reshape(data[,c(timevar,status,covars,id,num)],data[,id],num=num)$data
-  names(ww0)
-  print(head(ww0))
 
   mleft <- with(ww0, (get(timevar2[1])>left.trunc[1]) & (get(timevar2[2])>left.trunc[2]))  ## Both not-truncated
   if (length(na.idx <- which(is.na(mleft)))>0) {
