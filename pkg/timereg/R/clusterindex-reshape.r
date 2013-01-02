@@ -28,7 +28,7 @@ if(Rindex==1) idclust[idclust==-1] <- NA
 out <- list(clusters=clusters,maxclust=maxclust,antclust=antclust,idclust=idclust,cluster.size=cluster.size)
 } ## }}}
 
-faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=0)
+faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=1)
 { ## {{{
 data <- as.matrix(data)
 if (NCOL(data)==1) data <- cbind(data)
@@ -51,7 +51,7 @@ if ((!is.null(num)) && (Rindex==1)) { ### different types in different columns
    numnum <- as.integer(factor(num, labels = 1:maxclust)) -1
 } else { numnum <- 0; mednum <- 0; }
 
-data[is.na(data)] <- -1
+data[is.na(data)] <- nan 
 p <- ncol(data); 
 init <- -1*Rindex;
 clustud <- .C("clusterindexdata",
@@ -62,9 +62,11 @@ clustud <- .C("clusterindexdata",
 idclust <- matrix(clustud[[4]],antclust,maxclust)
 xny <- matrix(clustud[[10]],antclust,maxclust*p)
 if(Rindex==1) xny[idclust==-1] <- NA 
+if(Rindex==1) xny[idclust==-1] <- NA 
 if(Rindex==1) idclust[idclust==-1] <- NA 
   mnames <- c()
-  for (i in 1:clustud$maxclust) {
+print(maxclust)
+  for (i in 1:maxclust) {
      mnames <- c(mnames,paste(names(data),".",i,sep=""))
   }
   xny <- data.frame(xny)

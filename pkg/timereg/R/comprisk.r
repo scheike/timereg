@@ -58,9 +58,11 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=1)
 
   if(is.null(clusters)){ clusters <- des$clusters}
   if(is.null(clusters)){
+    cluster.call<-clusters; 
     clusters <- 0:(nrow(X) - 1)
     antclust <- nrow(X)
   } else {
+    cluster.call<-clusters; 
     antclust <- length(unique(clusters))
     clusters <- as.integer(factor(clusters,labels=1:antclust))-1
   }
@@ -74,7 +76,6 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=1)
 	max.clusters <- length(unique(clusters))
 	antclust <- max.clust    
   }                                                         
-  cluster.call<-clusters; 
 
   pxz <-px+pz;
 
@@ -255,6 +256,7 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
 	  as.double(ssf), PACKAGE="timereg") ## }}}
 
  ## {{{ handling output
+  ssf <- out[[51]]; 
   gamma<-matrix(out[[24]],pg,1); var.gamma<-matrix(out[[25]],pg,pg); 
   gamma2<-matrix(out[[30]],ps,1); 
   rownames(gamma2)<-covnamesX; 
@@ -323,21 +325,25 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
            obs.testBeq0=obs.testBeq0,
            obs.testBeqC.is=obs.testBeqC.is,
            obs.testBeqC=obs.testBeqC,pval.testBeqC.is=pval.testBeqC.is,
-           conf.band=unifCI,B.iid=B.iid,gamma.iid=gamiid,
+           conf.band=unifCI,B.iid=B.iid,gamma.iid=gamiid,ss=ssf,
            test.procBeqC=Ut,sim.test.procBeqC=UIt,conv=conv,cens.weight=cens.weight)
 
   ud$call<-call; 
   ud$model<-model; 
   ud$n<-n; 
+  ud$clusters <- clusters
   ud$formula<-formula; 
   class(ud)<-"comprisk"; 
   attr(ud, "Call") <- sys.call()
   attr(ud, "Formula") <- formula
   attr(ud, "time.pow") <- time.pow
   attr(ud, "cause") <- cause
-  attr(ud, "clusters") <- clusters
+  attr(ud, "cluster.call") <- cluster.call
   attr(ud, "coarse.clust") <- coarse.clust
   attr(ud, "max.clust") <- max.clust
+  attr(ud, "clusters") <- clusters
+###  attr(ud, "se.cluster") <- list(clusters=clusters,cluster.call=cluster.call,
+###				 coarse.clust=coarse.clust,max.clust=max.clust)
   attr(ud, "causeS") <- causeS
   attr(ud, "cens.code") <- cens.code
   attr(ud, "times") <- times

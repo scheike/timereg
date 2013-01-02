@@ -282,15 +282,18 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,
   out<-list(time=time,unif.band=uband,model=modelType,alpha=alpha,
             newdata=list(X = time.vars, Z = constant.covs),RR=RR,
             call=sys.calls()[[1]], initial.call = attr(object,'Call'));
+
   if(modelType == 'additive' || modelType == 'prop' || modelType=="logistic"
      || modelType=='rcif2' || modelType=='rcif' || modelType=='fg' || modelType=='logistic2'){
+    if (nrow(P1)==1)  { P1 <- c(P1); se.P1 <- c(se.P1); }
     out$P1 <- P1;
     out$se.P1 <- se.P1;    
-    if (resample.iid==1) out$P1.iid <- P1.iid
+    out$clusters <- attr(object,"clusters"); 
+    if (resample.iid==1) {out$P1.iid <- P1.iid[1,,]; colnames(out$P1.iid)<-paste(unique(out$clusters));}
   } else if (modelType == 'aalen' || modelType == 'cox.aalen'){
     out$S0 <- S0;
     out$se.S0 <- se.S0;    
-    if (resample.iid==1) out$S0.iid <- S0.iid
+    if (resample.iid==1) {out$S0.iid <- S0.iid[1,,]; colnames(out$S0.iid)<-paste(unique(out$clusters));}
   }
    # e.g. for an compound risk model, className = predictComprisk
   className <- switch(class(object),aalen='predictAalen',cox.aalen='predictCoxAalen',comprisk='predictComprisk')
@@ -327,21 +330,21 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
   
   if (modelType == 'aalen' || modelType == 'cox.aalen'){
     type<-"surv"
-    mainLine <- object$S0;
+    mainLine <- as.matrix(object$S0);
     if (monotone==TRUE) { mainLine<--t(apply(as.matrix(-mainLine),1,pava)); 
     mainLine[mainLine<0]<-0; 
     mainLine[mainLine>1]<-1; 
     }
-    mainLine.se <- object$se.S0;    
+    mainLine.se <- as.matrix(object$se.S0);    
   } else if(modelType == 'additive' || modelType == 'prop' || modelType=="logistic"
      || modelType=='rcif2' || modelType=='rcif' || modelType=='fg' || modelType=='logistic2'){
     type<-"cif"
-    mainLine <- object$P1;
+    mainLine <- as.matrix(object$P1);
     if (monotone==TRUE) { mainLine<-t(apply(as.matrix(mainLine),1,pava)); 
                            mainLine[mainLine<0]<-0; 
                            mainLine[mainLine>1]<-1; 
     }
-    mainLine.se <- object$se.P1;    
+    mainLine.se <- as.matrix(object$se.P1);    
   }
   
   if (length(col)!=nobs){ col<-rep(col[1],nobs); }
