@@ -4,8 +4,9 @@
 \usage{
   bicomprisk(formula, data, cause = c(1, 1), cens = 0,
     causes, indiv, strata = NULL, id, num,
-    max.clust = 1000, prodlim = FALSE, messages = TRUE,
-    model, return.data = 0, uniform = 0, conservative = 1,
+    max.clust = 1000, marg = NULL, se.clusters = NULL,
+    prodlim = FALSE, messages = TRUE, model,
+    return.data = 0, uniform = 0, conservative = 1,
     resample.iid = 1, ...)
 }
 \arguments{
@@ -33,6 +34,13 @@
   \item{max.clust}{max number of clusters in comp.risk call
   for iid decompostion, max.clust=NULL uses all clusters
   otherwise rougher grouping.}
+
+  \item{marg}{marginal cumulative incidence to make stanard
+  errors for same clusters for subsequent use in
+  casewise.test()}
+
+  \item{se.clusters}{to specify clusters for standard
+  errors.}
 
   \item{prodlim}{prodlim to use prodlim estimator
   (Aalen-Johansen) rather than IPCW weighted estimator

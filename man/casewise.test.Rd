@@ -21,7 +21,6 @@
   marginal
 }
 \examples{
-\donttest{
 data(prt);
 
 prt <- prt[which(prt$id \%in\% sample(unique(prt$id),10000)),]
@@ -43,7 +42,6 @@ cmz <- casewise.test(cmz,cifdz,test="conc")
 plot(cmz,ylim=c(0,0.7),xlim=c(60,100))
 par(new=TRUE)
 plot(cdz,ylim=c(0,0.7),xlim=c(60,100))
-}
 }
 \author{
   Thomas Scheike
