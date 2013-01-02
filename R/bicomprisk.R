@@ -54,6 +54,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
   else { 
     if (is.null(se.clusters)) {
       lse.clusters <- marg$clusters
+###      if (!is.null(max.clust)) {   }
     } else {
       if (is.character(se.clusters)) {
         lse.clusters <- data[,se.clusters]
@@ -63,6 +64,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
     }
   }
   if (length(lse.clusters)!=nrow(data)) stop("'se.clusters' and 'data' does not match!")
+  se.clusters.call <- se.clusters
 
   data <- data.frame(cbind(data,lse.clusters))
 
@@ -135,7 +137,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
 
   ##  suppressMessages(browser())  
 
-  ##(i,j)
+  ## {{{ (i,j) causes 
   idx2 <- which(ww0[,causes2[1]]==cause[1] & ww0[,causes2[2]]==cause[2])
   status[idx2] <- 1
   time[idx2] <- apply(ww0[idx2,timevar2[1:2]],1,max)
@@ -167,7 +169,8 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
   
   mydata0 <- mydata <- data.frame(time,status,ww0[,covars2],ww0[,indiv2])
   names(mydata) <- c(timevar,causes,covars,indiv2)
-  
+  ## }}}
+
   if (return.data==2) return(list(data=mydata)) else {
   if (!prodlim) {
     ff <- paste("Surv(",timevar,",",causes,"!=",cens,") ~ 1",sep="")
@@ -181,8 +184,8 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
     if (missing(model)) model <- "fg"
     ### clusters for iid construction
     lse.clusters <- NULL
-    if (!is.null(se.clusters)) {
-        max.clust <- NULL; lse.clusters <- ww0$lse.clusters.1
+    if (!is.null(se.clusters.call)) {
+        lse.clusters <- ww0$lse.clusters.1
     }
 
     add<-comp.risk(as.formula(ff),data=mydata,
