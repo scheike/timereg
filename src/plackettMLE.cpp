@@ -9,10 +9,9 @@ using namespace Rcpp;
 
 double claytonoakes(double theta,int status1,int status2,double cif1,double cif2,vec &dp) 
 { // {{{
-double valr=1,x,y,z;
+double S,valr=1,cifs,x,y,z;
 
-//cifs=cif1+cif2; 
-//S=1+(cifs*(theta-1)); 
+cifs=cif1+cif2; S=1+(cifs*(theta-1)); 
 x=theta; y=cif1; z=cif2; 
 
 if (status1==0 && status2==0) { // {{{
@@ -40,11 +39,9 @@ return(valr);
  
 double placklike(double theta,int status1,int status2,double cif1,double cif2,vec &dp) 
 { // {{{
-double valr=1,x,y,z; 
-//cifs=cif1+cif2; 
-//S=1+cifs*(theta-1); S2=4*cif1*cif2*theta*(theta-1);
-//a=(1+(theta-1)*(cifs)); 
-x=theta; y=cif1; z=cif2; 
+double S,S2,valr=1,cifs,a,x,y,z; 
+cifs=cif1+cif2; S=1+cifs*(theta-1); S2=4*cif1*cif2*theta*(theta-1);
+a=(1+(theta-1)*(cifs)); x=theta; y=cif1; z=cif2; 
 
 dp(0)=0; 
 

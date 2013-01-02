@@ -103,7 +103,7 @@ if (same.cens==TRUE) {
         ctime[ctime==1] <- rep(runif(sum(ctime==1)/2),each=2)*crate
 }
 else {
-	ctime<- rbinom(2*n,1,pcens)
+	ctime<- rbinom(n,1,pcens)
         ctime[ctime==1] <- runif(sum(ctime==1))*crate
 }
 

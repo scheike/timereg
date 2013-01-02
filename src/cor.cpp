@@ -576,7 +576,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
   } // }}}
 
   int nr,ci,ck,i,j,c,s,k,v,c1,v1; 
-  double Li,Lk,weight=0,p11t,ormarg=0,sdj,diff,cweight2,time,resp1,resp2;
+  double Li,Lk,weight=0,p11t,ormarg=0,sdj,diff,cweight2,resp3,time,resp1,resp2;
   double Dinverse=1,DDinverse=1,ddd,edd,ssf=0,response=0,thetak=0,respst=0; 
 //  double plack(); 
   vec dplack(4); 
@@ -701,7 +701,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	       diff=diff+response; 
 	       sdj=sdj- weight*exp(thetak)*(ormarg+cif1entry(i)*cif2entry(k)- 
                 	 (1-exp(-Li))*cif2entry(k)- (1-exp(-Lk))*cif1entry(i))/trunkp(i);
-//	       resp3=-exp(thetak);
+	       resp3=-exp(thetak);
 	   } else {
 	     double nn=(exp(-Li)+exp(thetak)*(1-exp(-Li)));
              double   nt=(1-exp(-Li))*(1-exp(-Lk))*exp(thetak);
@@ -712,11 +712,11 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
                 double dp11t=(nn*(1-exp(-Li))*(1-exp(-Lk))*exp(thetak)-nt*exp(thetak)*(1-exp(-Li)))/pow(nn,2);
                 response= 2*dp11t*(resp2-p11t); 
 	        sdj=sdj-2*pow(dp11t,2); 
-//	        resp3=0; 
+	        resp3=0; 
 	     } else {
 	     response=exp(thetak)*(exp(thetak)*ormarg*(resp1-resp2)-resp2); 
 	     sdj=sdj+2*exp(2*thetak)*ormarg*(resp1-resp2)-exp(thetak)*resp2;
-//	     resp3=exp(2*thetak)*(resp1-resp2)*exp(Li);
+	     resp3=exp(2*thetak)*(resp1-resp2)*exp(Li);
 	     }
 	     diff=diff+response; 
 	    } // }}}
@@ -736,14 +736,14 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	   diff=diff+response; 
 	   sdj=sdj- weight*exp(thetak)*(ormarg+cif1entry(i)*cif2entry(k)- 
 	 (1-exp(-Li))*cif2entry(k)- (1-exp(-Lk))*cif1entry(i))/trunkp(i);
-//	   resp3=-exp(thetak);
+	   resp3=-exp(thetak);
 	} else {
            p11t=exp(thetak)*ormarg; 
 	     p11tvec(j)=p11t; 
 	   response=2*weight*exp(thetak)*ormarg*(resp2-p11t); 
 	   diff=diff+response; 
 	   sdj=sdj-2*exp(2*thetak)*pow(ormarg,2)*weight;
-//	   resp3=-exp(thetak);
+	   resp3=-exp(thetak);
 	   ssf+=weights(i)*weight*pow(resp2-p11t,2); 
 	}
 	} // }}}
@@ -764,14 +764,14 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	   response=weight*dplack(0)*exp(thetak)*(resp2-p11t);
 	   diff=diff+response; 
 	   sdj=sdj+weight*dplack(0)*dplack(0)*exp(2*thetak); 
-//	   resp3=0;
+	   resp3=0;
 	} else {
            p11t=plack(exp(thetak),(1-exp(-Li)),(1-exp(-Lk)),dplack);
 	   p11tvec(j)=p11t; 
 	   response=2*weight*dplack(0)*exp(thetak)*(resp2-p11t);
 	   diff=diff+response; 
 	   sdj=sdj-2*weight*exp(2*thetak)*pow(dplack(0),2);
-//	   resp3=-dplack(0)*exp(thetak);
+	   resp3=-dplack(0)*exp(thetak);
 	   ssf+=weights(i)*weight*pow(resp2-p11t,2); 
 // printf("mm %d %d %d %lf %lf %lf %lf %lf %lf \n",j,i,k,KMc(i),KMc(k),response,resp2,p11t,dplack(0)); 
 // printf("mmm %lf %lf %lf  \n",Li,Lk,ssf); 

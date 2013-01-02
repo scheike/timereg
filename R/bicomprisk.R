@@ -12,7 +12,7 @@
 ##' @param num num
 ##' @param max.clust max number of clusters in comp.risk call for iid decompostion, max.clust=NULL uses all clusters otherwise rougher grouping.
 ##' @param marg marginal cumulative incidence to make stanard errors for same clusters for subsequent use in casewise.test()
-##' @param se.clusters to specify clusters for standard errors.
+##' @param se.clusters to specify clusters for standard errors. Either a vector of cluster indices or a column name in \code{data}. Defaults to the \code{id} variable.
 ##' @param prodlim prodlim to use prodlim estimator (Aalen-Johansen) rather than IPCW weighted estimator based on comp.risk function.These are equivalent in the case of no covariates.
 ##' @param messages Control amount of output
 ##' @param model Type of competing risk model (default is Fine-Gray model "fg", see comp.risk). 
@@ -49,16 +49,22 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
   } 
   if (missing(id)) stop("Missing 'id' variable")
   
-  ### setting up cluster level for iid decomposition 
+  ### setting up cluster level for iid decomposition
   if (is.null(se.clusters) & is.null(marg))  lse.clusters <- data[,c(id)]
   else { 
-	if (is.null(se.clusters)) lse.clusters <- marg$clusters else lse.clusters <- se.clusters 
+    if (is.null(se.clusters)) {
+      lse.clusters <- marg$clusters
+    } else {
+      if (is.character(se.clusters)) {
+        lse.clusters <- data[,se.clusters]
+      } else {
+        lse.clusters <- se.clusters
+      }
+    }
   }
-  print(length(lse.clusters))
-  print(dim(data))
-  data <- data.frame(cbind(data,lse.clusters))
-  print(head(data))
+  if (length(lse.clusters)!=nrow(data)) stop("'se.clusters' and 'data' does not match!")
 
+  data <- data.frame(cbind(data,lse.clusters))
 
   timevar <- terms(formula)[[2]]
   ##  hh <- with(data,eval(timevar))
@@ -70,12 +76,15 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
   causes <- as.character(causes)
   
   if (!is.null(strata)) {
-    dd <- split(data,interaction(data[,strata]))
+    fac <- interaction(data[,strata])
+    dd <- split(data,fac)
     nn <- unlist(lapply(dd,nrow))
     dd[which(nn==0)] <- NULL
     if (length(dd)>1) {
       fit <- lapply(seq_len(length(dd)),function(i) {
         if (messages>0) message("Strata '",names(dd)[i],"'")
+        idx <- which(fac==names(dd)[i])
+        mycall$se.clusters <- lse.clusters[idx]
         mycall$formula <- formula
         mycall$data <- dd[[i]]
         eval(mycall)
@@ -158,7 +167,6 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
   
   mydata0 <- mydata <- data.frame(time,status,ww0[,covars2],ww0[,indiv2])
   names(mydata) <- c(timevar,causes,covars,indiv2)
-###  print(head(ww0)); 
   
   if (return.data==2) return(list(data=mydata)) else {
   if (!prodlim) {
@@ -176,9 +184,6 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
     if (!is.null(se.clusters)) {
         max.clust <- NULL; lse.clusters <- ww0$lse.clusters.1
     }
-
-    print(max.clust)
-    print(head(lse.clusters))
 
     add<-comp.risk(as.formula(ff),data=mydata,
     status,causeS=1,n.sim=0,resample.iid=resample.iid,model=model,conservative=conservative,
