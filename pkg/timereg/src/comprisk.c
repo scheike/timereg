@@ -325,7 +325,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 //      *conservative= calloc(1,sizeof(int)),
       *px1= calloc(1,sizeof(int));
   int clusterj,fixedcov,osilent,withtrunc=0; 
-  double weighttot=0,svarp=1,varp=0.5,nrisk,time,dummy,dtime,phattrunc,lrr,lrrt;
+  double svarp=1,varp=0.5,nrisk,time,dummy,dtime,phattrunc,lrr,lrrt;
   double *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
 	 *inc=calloc((*Ntimes)*(*px+1),sizeof(double)),
 	 *weightt=calloc((*Ntimes),sizeof(double)),
@@ -361,7 +361,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
   malloc_vec((*px)+(*pg),qs); 
 
   for (s=0;s<*Ntimes;s++) weightt[s]=1;  
-  weighttot=*Ntimes; 
+//  weighttot=*Ntimes; 
   if (*px>=*pg) pmax=*px; else pmax=*pg; 
   for (j=0;j<*pg;j++) VE(gam,j)=gamma[j]; 
   px1[0]=*px+1; 
