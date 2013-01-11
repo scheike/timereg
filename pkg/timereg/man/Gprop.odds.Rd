@@ -111,12 +111,14 @@ Springer (2006).
 }
 \author{Thomas Scheike}
 \examples{
-library(survival)
+library(timereg)
 data(sTRACE)
+# take half the data
+ssTRACE <- sTRACE[1:250,]
 # Fits Proportional odds model with stratified baseline
-age.c<-scale(sTRACE$age,scale=FALSE); 
+age.c<-scale(ssTRACE$age,scale=FALSE); 
 out<-Gprop.odds(Surv(time,status==9)~diabetes+prop(age.c)+prop(chf)+
-prop(sex)+prop(vf),sTRACE,max.time=7,n.sim=100)
+                prop(sex)+prop(vf),data=ssTRACE,max.time=7,n.sim=50)
 summary(out) 
 par(mfrow=c(2,3))
 plot(out,sim.ci=2); plot(out,score=1) 
@@ -124,7 +126,7 @@ plot(out,sim.ci=2); plot(out,score=1)
 # Fits Proportional odds model with baseline on additive form
 # thus giving odds-ratio of dyings for vf and diabetes
 out<-Gprop.odds(Surv(time,status==9)~vf+diabetes+prop(age.c)+prop(chf)+
-prop(sex),sTRACE,max.time=7,n.sim=100)
+		prop(sex),data=ssTRACE,max.time=7,n.sim=50)
 summary(out) 
 par(mfrow=c(2,3))
 plot(out,sim.ci=2); plot(out,score=1) 

@@ -90,8 +90,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,
   if (!is.null(newdata)) { 
     ##  The time-constant effects first
     formulao <- attr(object,"Formula")
-    des <- aalen.des2(formula(delete.response(terms(formulao))),
-		    data=newdata,model=modelType)
+    des <- aalen.des2(formula(delete.response(terms(formulao))),data=newdata,model=modelType)
     time.vars <- des$X 
 
     if (semi==TRUE) {
@@ -260,6 +259,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,
     }
     ## }}}
 
+
     ### uniform confidence bands, based on resampling  ## {{{
     if (uniform==1) {
       mpt <- .C('confBandBasePredict',
@@ -293,6 +293,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,
   } else if (modelType == 'aalen' || modelType == 'cox.aalen'){
     out$S0 <- S0;
     out$se.S0 <- se.S0;    
+    print(names(out))
     if (resample.iid==1) {out$S0.iid <- S0.iid[1,,]; colnames(out$S0.iid)<-paste(unique(out$clusters));}
   }
    # e.g. for an compound risk model, className = predictComprisk
@@ -335,7 +336,7 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
     mainLine[mainLine<0]<-0; 
     mainLine[mainLine>1]<-1; 
     }
-    mainLine.se <- as.matrix(object$se.S0);    
+    if (is.null(object$se.S0))  mainLine.se <- NULL else mainLine.se <- as.matrix(object$se.S0);    
   } else if(modelType == 'additive' || modelType == 'prop' || modelType=="logistic"
      || modelType=='rcif2' || modelType=='rcif' || modelType=='fg' || modelType=='logistic2'){
     type<-"cif"
@@ -344,9 +345,9 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
                            mainLine[mainLine<0]<-0; 
                            mainLine[mainLine>1]<-1; 
     }
-    mainLine.se <- as.matrix(object$se.P1);    
+    if (is.null(object$se.P1))  mainLine.se <- NULL else mainLine.se <- as.matrix(object$se.P1);    
   }
-  
+
   if (length(col)!=nobs){ col<-rep(col[1],nobs); }
   if (length(lty)!=nobs){ lty<-rep(lty[1],nobs); }
   if (length(lwd)!=nobs){ lwd<-rep(lwd[1],nobs); }
