@@ -22,8 +22,15 @@
 ##' cdz <- cc$model$"DZ"
 ##' cmz <- cc$model$"MZ"
 ##' 
-##' cdz <- casewise.test(cdz,cifmz,test="case")
-##' cmz <- casewise.test(cmz,cifdz,test="conc")
+##' ### To compute casewise cluster argument must be passed on, here with a max of 100 to limit comp-time 
+##' outm <-comp.risk(Surv(time,status==0)~+1,data=prt,prt$status,causeS=2,times=times,max.clust=100)
+##' cifmz <-predict(outm,X=1,uniform=0,resample.iid=1) 
+##' cc2 <-bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2),se.clusters=outm$clusters)
+##' cdz <- cc$model$"DZ"
+##' cmz <- cc$model$"MZ"
+##' 
+##' cdz <- casewise.test(cdz,cifmz,test="case") ## test based on casewise
+##' cmz <- casewise.test(cmz,cifdz,test="conc") ## test based on concordance:w
 ##' 
 ##' plot(cmz,ylim=c(0,0.7),xlim=c(60,100))
 ##' par(new=TRUE)
