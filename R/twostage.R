@@ -543,9 +543,11 @@ if (silent<=-1) print(summary(datalr));
 datalr$tstime <- datalr[,timevar]
 datalr$tsstatus <- datalr[,status]
 datalr$tsid <- datalr[,id]
-###print(head(datalr))
+print(head(datalr))
 ## ts 10/1 indsat underscore num_ i linien herunder, er nogle problemer ellers 
-marg1 <- aalen(Surv(boxtime,tsstatus)~-1+factor(num_),data=datalr,n.sim=0,max.clust=NULL,robust=0)
+## ts 10/1 indsat underscore num i linien herunder, er nogle problemer ellers 
+## hvis num eksister i datalaver den num_ og ellers hedder den num 
+marg1 <- aalen(Surv(boxtime,tsstatus)~-1+factor(num),data=datalr,n.sim=0,max.clust=NULL,robust=0)
 fitlr<-  twostage(marg1,data=datalr,clusters=datalr$tsid,model=model,score.method=score.method,
               Nit=Nit,detail=detail,silent=silent,weights=weights,
               control=control,theta=theta,theta.des=theta.des,var.link=var.link,iid=iid,step=step)
