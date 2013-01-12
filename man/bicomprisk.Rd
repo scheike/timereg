@@ -40,7 +40,8 @@
   casewise.test()}
 
   \item{se.clusters}{to specify clusters for standard
-  errors.}
+  errors. Either a vector of cluster indices or a column
+  name in \code{data}. Defaults to the \code{id} variable.}
 
   \item{prodlim}{prodlim to use prodlim estimator
   (Aalen-Johansen) rather than IPCW weighted estimator
