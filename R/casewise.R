@@ -109,7 +109,7 @@ casewise.test <- function(conc,marg,test="no-test")
 ##' @title Estimates the casewise concordance based on Concordance and marginal estimate using prodlim but no testing
 ##' @param conc Concordance 
 ##' @param marg Marginal estimate
-##' @param cause.prodlim specififes which cause that should be used for marginal cif based on prodlim
+##' @param cause.marg specififes which cause that should be used for marginal cif based on prodlim
 ##' @author Thomas Scheike
 ##' @examples
 ##' data(prt);
