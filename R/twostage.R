@@ -517,7 +517,7 @@ return(out)
 
 ##' @export
 piecewise.twostage <- function(cut1,cut2,data=sys.parent(),timevar="time",status="status",id="id",covars=NULL,num=NULL,
-            score.method="optimize",Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
+            score.method="optimize",Nit=100,detail=0,clusters=NULL,silent=1,weights=NULL,
             control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=0,step=0.5,model="plackett",data.return=0)
 { ## {{{
 
