@@ -51,6 +51,7 @@ Springer (2006).
 }
 \author{Thomas Scheike}
 \examples{
+\donttest{
 library(survival)
 data(csl)
 indi.m<-rep(1,length(csl$lt))
@@ -65,5 +66,6 @@ par(mfrow=c(2,3))
 plot(out)
 # plots tests-processes for time-varying effects 
 plot(out,score=TRUE)
+}
 }
 \keyword{survival}

@@ -113,6 +113,7 @@ Springer (2006).
 }
 \author{Thomas Scheike}
 \examples{
+\donttest{
 library(survival)
 data(sTRACE)
 # Fits time-varying Cox model 
@@ -132,5 +133,6 @@ const(diabetes)+chf+vf,data=sTRACE,max.time=7,n.sim=100)
 summary(out)
 par(mfrow=c(2,3))
 plot(out)
+}
 }
 \keyword{survival}

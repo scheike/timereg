@@ -31,6 +31,7 @@ Survival Data, Springer (2006).
 }
 \author{Thomas Scheike}
 \examples{
+\donttest{
 ## makes data for pbc complete case
 data(mypbc)
 pbc<-mypbc
@@ -45,5 +46,6 @@ out<-aalen(Surv(time,status>=1)~const(covs),pbc,robust=0,n.sim=0)
 S=out$intZHZ; s=out$intZHdN;
 
 out<-krylow.pls(S,s,2)
+}
 }
 \keyword{survival}

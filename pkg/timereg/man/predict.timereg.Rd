@@ -81,6 +81,7 @@ summary(add)
 out<-predict(add,newdata=ndata,uniform=1,n.sim=1000)
 plot(out,multiple=1,uniform=1,col=1:3,lty=1,se=1)
 
+\donttest{
 ## SURVIVAL predictions aalen function
 data(sTRACE)
 out<-aalen(Surv(time,status==9)~sex+ diabetes+chf+vf,
@@ -118,5 +119,6 @@ plot(pout,multiple=0,se=1,uniform=1,col=1:2)
 
 pout<-predict(out,uniform=0,se=0,newdata=sTRACE[1:10,]) 
 plot(pout,multiple=1,se=0,uniform=0)
+}
 }
 \keyword{survival}

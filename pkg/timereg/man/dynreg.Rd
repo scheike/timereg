@@ -142,7 +142,7 @@ Springer (2006).
 }
 \author{Thomas Scheike}
 \examples{
-library(survival)
+\donttest{
 data(csl)
 indi.m<-rep(1,length(csl$lt)) 
 
@@ -159,5 +159,6 @@ outS<-dynreg(prot~treat+const(prot.prev)+const(sex)+const(age),data=csl,
 Surv(lt,rt,indi.m)~+1,start.time=0,max.time=2,id=csl$id,
 n.sim=100,bandwidth=0.7,meansub=0)
 summary(outS)
+}
 }
 \keyword{survival}
