@@ -10,8 +10,7 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   if (is.null(num)) {
     idtab <- table(data[,id])
     num <- "num"
-### ts 11/1-2013 fjerner denne , hvis num er i data men ikke er givet går ny mum videre
-###    while (num%in%names(data)) num <- paste(num,"_",sep="")
+    while (num%in%names(data)) num <- paste(num,"_",sep="")
     data[,c(num)] <- unlist(lapply(idtab,seq_len))
   }    
   timevar2 <- paste(timevar,1:2,sep=".")
