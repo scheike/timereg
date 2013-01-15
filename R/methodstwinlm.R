@@ -1,7 +1,7 @@
 ###{{{ print.twinlm
 
 ##' @S3method print twinlm
-print.twinlm <- function(x,...) {
+print.twinlm <- function(x,...) {  
   print(summary(x,...))
   invisible(x)
 }
@@ -18,7 +18,7 @@ summary.twinlm <- function(object,...) {
   theta.sd <- sqrt(diag(e$vcov))
   myest <- cbind(theta,theta.sd,(Z <- theta/theta.sd),2*(1-pnorm(abs(Z))))
   colnames(myest) <- c("Estimate","Std. Error", "Z value", "Pr(>|z|)")
-  
+
   if (object$type%in%c("u","flex","sat")) {
     corMZ <- corDZ <- NULL
 
@@ -29,11 +29,12 @@ summary.twinlm <- function(object,...) {
       if (length(i1)>0) {
         corest <- coef(object$estimate,level=0)[c(i1,i2,i3)]
         sdest <- vcov(object$estimate)[cbind(c(i1,i2,i3),c(i1,i2,i3))]^0.5
-        ciest <- cbind(corest,corest)+qnorm(0.975)*cbind(-sdest,sdest)
+        ciest <- tanh(cbind(corest,corest)+qnorm(0.975)*cbind(-sdest,sdest))
+        corest <- tanh(corest)
         corMZ <- c(corest[1],ciest[1,])
         corDZ <- c(corest[2],ciest[2,])
       }
-    }      
+    }
     aa <- capture.output(e)
     res <- list(estimate=aa, zyg=zygtab,
                 varEst=NULL, varSigma=NULL, heritability=NULL, hci=NULL,

@@ -9,7 +9,7 @@
 ##' @param ... Optional additional arguments
 ##' @author Klaus K. Holst
 ##' @export
-fastpattern <- function(x,y,...) {
+fast.pattern <- function(x,y,...) {
   if (missing(y)) y <- NULL
    .Call("FastPattern",x,y,DUP=FALSE)
 }

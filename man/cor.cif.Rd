@@ -222,7 +222,6 @@ names(or1g)
 head(or1g$theta.iid)
 }
 }
-}
 \author{
   Thomas Scheike
 }

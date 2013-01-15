@@ -13,7 +13,7 @@
 ##' \item{pos}{The positions in \code{t1} of the elements of \code{t2}}
 ##' 
 ##' @export
-fastapprox <- function(t1,t2,y1=t1,...) {
+fast.approx <- function(t1,t2,y1=t1,...) {
   if (is.matrix(t1)) {
     y <- t1[,-1]; t1 <- t1[,1]
   }    

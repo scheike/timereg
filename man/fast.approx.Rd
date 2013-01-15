@@ -1,8 +1,8 @@
-\name{fastapprox}
-\alias{fastapprox}
+\name{fast.approx}
+\alias{fast.approx}
 \title{Fast approximation}
 \usage{
-  fastapprox(t1, t2, y1 = t1, ...)
+  fast.approx(t1, t2, y1 = t1, ...)
 }
 \arguments{
   \item{t1}{Original ordered time points}

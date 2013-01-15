@@ -65,4 +65,4 @@ Collate:
     'casewise.R'
     'cor.R'
     'fastpattern.R'
-    'clusterindex-reshape.R'
+    'fastreshape.R'

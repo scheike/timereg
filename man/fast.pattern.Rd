@@ -1,8 +1,8 @@
-\name{fastpattern}
-\alias{fastpattern}
+\name{fast.pattern}
+\alias{fast.pattern}
 \title{Fast pattern}
 \usage{
-  fastpattern(x, y, ...)
+  fast.pattern(x, y, ...)
 }
 \arguments{
   \item{x}{Matrix (binary) of patterns. Optionally if

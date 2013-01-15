@@ -529,7 +529,6 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' names(or1g)
 ##' head(or1g$theta.iid)
 ##' }
-##' }
 ##' 
 ##' @export
 ##' @keywords survival

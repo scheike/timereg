@@ -46,7 +46,7 @@
 aalenfrailty <- function(time,status,X,id,theta,
                          ...) {  
   dix <- which(status==1)
-  fB <- fastapprox(time[dix],time)
+  fB <- fast.approx(time[dix],time)
   cc <- cluster.index(id)
   ncluster <- length(cc$clusters)
   U <- function(theta,indiv=FALSE) {
