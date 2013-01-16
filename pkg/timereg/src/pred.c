@@ -31,6 +31,25 @@ void clusterindex(int *clusters,int *nclust,int *npers,int *idclust,int *clustsi
   }
 }
 
+void clusterindexdata(int *clusters,int *nclust,int *npers,int *idclust,int *clustsize,int *mednum,
+		int *num,double *data, int *p,double *nydata)
+{
+  int i,j;
+  if (*mednum==0) {
+     for (i=0;i<*npers;i++){
+         idclust[(clustsize[clusters[i]])*(*nclust)+clusters[i]]=i; 
+     for (j=0;j<*p;j++) nydata[(clustsize[clusters[i]]*(*p)+j)*(*nclust)+clusters[i]]=data[(*npers)*j+i]; 
+         clustsize[clusters[i]]+=1; 
+      } 
+  } else {
+    for (i=0;i<*npers;i++){
+        idclust[num[i]*(*nclust)+clusters[i]]=i; 
+        for (j=0;j<*p;j++) nydata[(num[i]*(*p)+j)*(*nclust)+clusters[i]]=data[(*npers)*j+i]; 
+        clustsize[clusters[i]]+=1; 
+     } 
+  }
+}
+
 /* compute the values of a step function, 
    ie how many of the jumps are smaller or
    equal to the eval points  */

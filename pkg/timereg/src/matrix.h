@@ -195,6 +195,10 @@ void sindex(int *index, double *jump, double *eval, int *njump, int *neval);
 void nclusters(int *npers,int *clusters, int *nclust, int *mclust);
 
 void clusterindex(int *clusters, int *nclust,int *npers,int *idclust, int *clustsize,int *mednum,int *num); 
+
+
+void clusterindexdata(int *clusters,int *nclust,int *npers,int *idclust,int *clustsize,int *mednum,
+		int *num,double *data, int *p,double *nydata); 
  
 void comptest(double *times,int *Ntimes,int *px,double *cu,double *vcu,
 	      double *vcudif,int *antsim,double *test,double *testOBS,
