@@ -115,10 +115,10 @@ fast.reshape <- function(data,id,varying,num,sep="",all.numeric=FALSE,...) {
         mnames[vidx] <- paste(mnames[vidx],i,sep=sep)
       } else {
         dataw[, seq(p) + (ncol(data)-p) + (i - 1) * p] <- as.matrix(data[idclust[, i] + 1,varying])
-        ##        mnames <- c(mnames,paste(varying,i,sep=sep))
+        mnames <- c(mnames,paste(varying,i,sep=sep))
       }
     }
-    mnames <- c(mnames,as.vector(t(outer(varying,seq_len(maxclust-1)+1,function(...) paste(...,sep=sep)))))
+##    mnames <- c(mnames,as.vector(t(outer(varying,seq_len(maxclust-1)+1,function(...) paste(...,sep=sep)))))
     colnames(dataw) <- mnames
     return(dataw)
   } ## Potentially slower with data.frame where we use cbind
