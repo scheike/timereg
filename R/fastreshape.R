@@ -50,31 +50,34 @@ fast.reshape <- function(data,id,varying,num,sep="",all.numeric=FALSE,...) {
   }
 
   numvar <- idvar <- NULL 
-  if (is.character(id)) {
+  if (is.character(id) || is.factor(id)) {
     if (length(id)>1) stop("Expecting column name or vector of id's")
     idvar <- id
-    id <- as.numeric(data[,id,drop=TRUE])
+    id <- as.integer(data[,id,drop=TRUE])
   } else {
     if (length(id)!=nrow(data)) stop("Length of ids and data-set does not agree")
   }    
   if (!missing(num)) {
-    if (is.character(num)) {
+    if (is.character(num) || is.factor(num)) {
       numvar <- num
-      num <- as.numeric(data[,num,drop=TRUE])
+      num <- as.integer(data[,num,drop=TRUE])
     } else {
       if (length(num)!=nrow(data)) stop("Length of time and data-set does not agree")
     }
   } else {
     num <- NULL
-  }    
+  }
 
-  antpers <- nrow(data)
-  unique.id <- unique(id)  
+  antpers <- nrow(data)  
+  unique.id <- unique(id)
+  max.clust <- length(unique.id)  
+  ##clusters <- as.integer(factor(clusters, labels = seq_len(max.clust)))-1
   clusters <- fast.approx(unique.id,id)$pos
-  max.clust <- length(unique.id)
+
   nclust <- .C("nclusters", as.integer(antpers), as.integer(clusters), 
                as.integer(rep(0, antpers)), as.integer(0), as.integer(0), 
                package = "timereg")
+
   maxclust <- nclust[[5]]
   antclust <- nclust[[4]]
   cluster.size <- nclust[[3]][seq_len(antclust)]
@@ -112,10 +115,11 @@ fast.reshape <- function(data,id,varying,num,sep="",all.numeric=FALSE,...) {
         mnames[vidx] <- paste(mnames[vidx],i,sep=sep)
       } else {
         dataw[, seq(p) + (ncol(data)-p) + (i - 1) * p] <- as.matrix(data[idclust[, i] + 1,varying])
-        mnames <- c(mnames,paste(varying,i,sep=sep))
+        ##        mnames <- c(mnames,paste(varying,i,sep=sep))
       }
     }
-##    colnames(dataw) <- mnames
+    mnames <- c(mnames,as.vector(t(outer(varying,seq_len(maxclust-1)+1,function(...) paste(...,sep=sep)))))
+    colnames(dataw) <- mnames
     return(dataw)
   } ## Potentially slower with data.frame where we use cbind
   dataw <- c()  
@@ -150,52 +154,3 @@ simple.reshape <- function (data, id = "id", num = NULL) {
 
 
 
-
-
-
-###faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=1)
-###{ ## {{{
-###data <- as.matrix(data)
-###if (NCOL(data)==1) data <- cbind(data)
-###
-###antpers <- length(clusters)
-###if (index.type==FALSE)  {
-###	max.clust <- length(unique(clusters))
-###	clusters <- as.integer(factor(clusters, labels = 1:max.clust))-1 
-###}
-###
-### nclust <- .C("nclusters",
-###	as.integer(antpers), as.integer(clusters), as.integer(rep(0,antpers)), 
-###	as.integer(0), as.integer(0), package="timereg")
-###  maxclust <- nclust[[5]]
-###  antclust <- nclust[[4]]
-###  cluster.size <- nclust[[3]][1:antclust]
-###
-###if ((!is.null(num)) && (Rindex==1)) { ### different types in different columns
-###   mednum <- 1
-###   numnum <- as.integer(factor(num, labels = 1:maxclust)) -1
-###} else { numnum <- 0; mednum <- 0; }
-###
-###data[is.na(data)] <- nan 
-###p <- ncol(data); 
-###init <- -1*Rindex;
-###clustud <- .C("clusterindexdata",
-###	        as.integer(clusters), as.integer(antclust),as.integer(antpers),
-###                as.integer(rep(init,antclust*maxclust)),as.integer(rep(0,antclust)), as.integer(mednum), 
-###		as.integer(numnum), as.double(c(data)), 
-###		as.integer(p), as.double(rep(init*1.0,antclust*maxclust*p)), package="timereg")
-###idclust <- matrix(clustud[[4]],antclust,maxclust)
-###xny <- matrix(clustud[[10]],antclust,maxclust*p)
-###if(Rindex==1) xny[idclust==-1] <- NA 
-###if(Rindex==1) xny[idclust==-1] <- NA 
-###if(Rindex==1) idclust[idclust==-1] <- NA 
-###  mnames <- c()
-###print(maxclust)
-###  for (i in 1:maxclust) {
-###     mnames <- c(mnames,paste(names(data),".",i,sep=""))
-###  }
-###  xny <- data.frame(xny)
-###  names(xny) <- mnames
-###out <- xny; 
-###} ## }}}
-###

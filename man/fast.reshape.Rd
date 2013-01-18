@@ -2,7 +2,8 @@
 \alias{fast.reshape}
 \title{Fast reshape}
 \usage{
-  fast.reshape(data, id, varying, num, sep = "", ...)
+  fast.reshape(data, id, varying, num, sep = "",
+    all.numeric = FALSE, ...)
 }
 \arguments{
   \item{data}{data.frame or matrix}
@@ -17,6 +18,9 @@
 
   \item{sep}{String seperating prefix-name with
   number/time}
+
+  \item{all.numeric}{If TRUE (all variables numeric) avoid
+  slow \code{cbind}}
 
   \item{...}{Optional additional arguments to the
   \code{reshape} function used in the wide->long reshape.}
