@@ -253,7 +253,7 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
 	  as.double(conv),as.double(weights),as.double(entry),
 	  as.double(trunc.p),as.integer(estimator),as.integer(fix.gamma),
 	  as.integer(stratum),as.integer(ordertime-1),as.integer(conservative), 
-	  as.double(ssf), PACKAGE="timereg") ## }}}
+	  as.double(ssf), as.double(Gctimes), PACKAGE="timereg") ## }}}
 
  ## {{{ handling output
   ssf <- out[[51]]; 
@@ -513,4 +513,3 @@ plot.comprisk <-  function (x, pointwise.ci=1, hw.ci=0,
     }
   }
 } ## }}}
-

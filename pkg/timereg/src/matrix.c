@@ -321,7 +321,7 @@ void invertSPDunsafe(matrix *A, matrix *AI){
   double qraux[n];
   double work[2*n];
   int rank = 0;
-  int job;
+  int job=1;
   double tol = 1.0e-07;
   
   // First copy the matrix A into the matrix AI
@@ -331,6 +331,9 @@ void invertSPDunsafe(matrix *A, matrix *AI){
     }
   }
     
+//  dqrdc(x,ldx,n,p, qraux,jpvt,work,job)
+//  F77_CALL(dqrdc)(AI->entries, &n, &n, &n, &rank, qraux, pivot, work,job);
+//  dqrdc2(x,ldx,n,p,tol,k,qraux,jpvt,work)
   F77_CALL(dqrdc2)(AI->entries, &n, &n, &n, &tol, &rank, qraux, pivot, work);
 
   for(i = 0; i < n; i++){

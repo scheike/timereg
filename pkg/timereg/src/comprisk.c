@@ -5,10 +5,10 @@
 void itfit(times,Ntimes,x,censcode,cause,KMc,z,n,px,Nit,betaS,
 score,hess,est,var,sim,antsim,rani,test,testOBS,Ut,simUt,weighted,
 gamma,vargamma,semi,zsem,pg,trans,gamma2,CA,line,detail,biid,gamiid,resample,
-timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,estimator,fixgamma,stratum,ordertime,conservative,ssf)
+timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,estimator,fixgamma,stratum,ordertime,conservative,ssf,KMtimes)
 double *times,*betaS,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
 *Ut,*simUt,*gamma,*zsem,*gamma2,*biid,*gamiid,*vargamma,*timepow,
-	*timepowtest,*convc,*weights,*entry,*trunkp,*ssf;
+	*timepowtest,*convc,*weights,*entry,*trunkp,*ssf,*KMtimes;
 int *n,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 *semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum,*ordertime,*conservative;
 { // {{{
@@ -275,7 +275,7 @@ if (convt==1 ) {
 	      score,hess,est,var,sim,antsim,rani,test,testOBS,Ut,simUt,weighted,
 	      gamma,vargamma,semi,zsem,pg,trans,gamma2,CA,line,detail,biid,
 	      gamiid,resample,timepow,clusters,antclust,timepowtest,silent,convc,weights,
-	      entry,trunkp,estimator,fixgamma,stratum,ordertime,conservative,ssf);
+	      entry,trunkp,estimator,fixgamma,stratum,ordertime,conservative,ssf,KMtimes);
   }
  
   if (convproblems>0) convc[0]=1; 
@@ -301,9 +301,9 @@ void itfitsemi(times,Ntimes,x,censcode,cause,
 	       zsem,pg,trans,gamma2,CA,
 	       line,detail,biid,gamiid,resample,
 	       timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,
-	       estimator,fixgamma,stratum,ordertime,conservative,ssf)
+	       estimator,fixgamma,stratum,ordertime,conservative,ssf,KMtimes)
 double *times,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,*Ut,*simUt,*gamma,*zsem,
-       *vargamma,*gamma2,*biid,*gamiid,*timepow,*timepowtest,*entry,*trunkp,*convc,*weights,*ssf;
+       *vargamma,*gamma2,*biid,*gamiid,*timepow,*timepowtest,*entry,*trunkp,*convc,*weights,*ssf,*KMtimes;
 int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 *semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum,*ordertime,*conservative;
 { // {{{
@@ -561,7 +561,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
            } // }}}
 
 	   if (*estimator==4) {
-	   if (varp>0.01 && itt>2) svarp=1/pow(varp,0.5); else svarp=1/pow(0.01,0.5); 
+	      if (varp>0.01 && itt>2) svarp=1/pow(varp,0.5); else svarp=1/pow(0.01,0.5); 
 	   }
 
 	   if (*estimator==1 || *estimator==4) scl_vec_mult(svarp*pow(weights[j],0.5)*(time>entry[j]),xi,xi); 
@@ -575,6 +575,9 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	   if (KMc[j]<0.001) VE(Y,j)=((VE(Y,j)/0.001)-VE(plamt,j)/trunkp[j])*(time>entry[j]); 
 	   else VE(Y,j)=((VE(Y,j)/KMc[j])-VE(plamt,j)/trunkp[j])*(time>entry[j]);
 	   } else if (*estimator==3) VE(Y,j)=(VE(Y,j)-VE(plamt,j)/trunkp[j])*(time<KMc[j])*(time>entry[j]);
+	   else if (*estimator==5) {
+	      if (x[j]<time) VE(Y,j)=VE(Y,j)*KMtimes[s]/KMc[j]; 
+	   }
 	   ssf[0]+=pow(VE(Y,j)-VE(plamt,j),2); 
 	   VE(Y,j)=svarp*pow(weights[j],0.5)*VE(Y,j); 
 

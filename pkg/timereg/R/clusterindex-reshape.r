@@ -1,9 +1,12 @@
 cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0)
 { ## {{{
 antpers <- length(clusters)
+
 if (index.type==FALSE)  {
-	max.clust <- length(unique(clusters))
-	clusters <- as.integer(factor(clusters, labels = 1:max.clust))-1 
+	if (is.numeric(clusters)) clusters <-  sindex.prodlim(unique(clusters),clusters)-1 else  {
+	   max.clust <- length(unique(clusters))
+	   clusters <- as.integer(factor(clusters, labels = 1:max.clust))-1
+	}
 }
 
  nclust <- .C("nclusters",
@@ -13,8 +16,10 @@ if (index.type==FALSE)  {
   antclust <- nclust[[4]]
   cluster.size <- nclust[[3]][1:antclust]
 
-if ((!is.null(num)) && (Rindex==1)) { ### different types in different columns
+if ((!is.null(num))) { ### different types in different columns
    mednum <- 1
+if (is.numeric(num)) numnum <-  sindex.prodlim(unique(num),num)-1
+else
    numnum <- as.integer(factor(num, labels = 1:maxclust)) -1
 } else { numnum <- 0; mednum <- 0; }
 
@@ -23,8 +28,9 @@ clustud <- .C("clusterindex",as.integer(clusters),
 		as.integer(antclust),as.integer(antpers),
                 as.integer(rep(init,antclust*maxclust)),as.integer(rep(0,antclust)),
 		as.integer(mednum), as.integer(numnum), package="timereg")
-idclust <- matrix(clustud[[4]],antclust,maxclust)
-if(Rindex==1) idclust[idclust==-1] <- NA 
+if (Rindex==1) idclust  <- matrix(clustud[[4]],antclust,maxclust)+1
+else idclust <- matrix(clustud[[4]],antclust,maxclust)
+if(Rindex==1) idclust[idclust==0] <- NA 
 out <- list(clusters=clusters,maxclust=maxclust,antclust=antclust,idclust=idclust,cluster.size=cluster.size)
 } ## }}}
 
