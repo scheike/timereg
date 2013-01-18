@@ -17,11 +17,11 @@ fast.approx <- function(t1,t2,y1=t1,...) {
   if (is.matrix(t1)) {
     y <- t1[,-1]; t1 <- t1[,1]
   }    
-  arglist <- list(name="FastApprox",
+  arglist <- list("FastApprox",
                   a=t1,
                   t=y1,
                   z=t2,
-                  DUP=FALSE)##,PACKAGE="bptwin")  
+                  DUP=FALSE,package="mets")
   res <- do.call(".Call",arglist)
   return(res)
 }
