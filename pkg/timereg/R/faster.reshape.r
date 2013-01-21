@@ -24,8 +24,7 @@ if ((!is.null(num))) { ### different types in different columns
    mednum <- 1
    if (is.numeric(num)) num <-  sindex.prodlim(unique(num),num)-1
    else num <- as.integer(factor(num, labels = 1:maxclust)) -1
-} else { num <- 0; mednum <- 0; }
-
+} else {num<-0; mednum<-0;}
 p <- ncol(data); 
 init <- -1*Rindex;
 
@@ -40,14 +39,15 @@ xny <- matrix(clustud[[10]],antclust,maxclust*p)
 if (Rindex==1) idclust  <- matrix(clustud[[4]],antclust,maxclust)+1
 else idclust <- matrix(clustud[[4]],antclust,maxclust)
 if(Rindex==1) idclust[idclust==0] <- NA 
+
 mnames <- c()
-
-##  for (i in 1:maxclust) {
-###     mnames <- c(mnames,paste(names(data),".",i,sep=""))
-###  }
-  xny <- data.frame(xny)
-  names(xny) <- mnames
+for (i in 1:maxclust) {
+  mnames <- c(mnames,paste(colnames(data),".",i,sep=""))
+}
+xny <- data.frame(xny)
+mm <- as.vector(t(outer(colnames(data),seq_len(maxclust),function(...) paste(...,sep=sep))))
+print(mm)
+names(xny) <- mnames
 out <- xny; 
-
 } ## }}}
 

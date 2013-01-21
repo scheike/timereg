@@ -26,6 +26,7 @@
 \alias{check.missing} 
 \alias{read.design}
 \alias{read.surv}
+\alias{faster.reshape}
 \alias{rm.missing}
 \alias{plot.two.stage}
 \alias{summary.two.stage}
