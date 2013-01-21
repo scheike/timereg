@@ -40,14 +40,12 @@ if (Rindex==1) idclust  <- matrix(clustud[[4]],antclust,maxclust)+1
 else idclust <- matrix(clustud[[4]],antclust,maxclust)
 if(Rindex==1) idclust[idclust==0] <- NA 
 
-mnames <- c()
-for (i in 1:maxclust) {
-  mnames <- c(mnames,paste(colnames(data),".",i,sep=""))
-}
+xnames <- colnames(data); 
+missingname <- (colnames(data)=="")
+xnames[missingname] <- paste(seq_len(maxclust))[missingname]
 xny <- data.frame(xny)
-mm <- as.vector(t(outer(colnames(data),seq_len(maxclust),function(...) paste(...,sep=sep))))
-print(mm)
-names(xny) <- mnames
+mm <- as.vector(outer(xnames,seq_len(maxclust),function(...) paste(...,sep=".")))
+names(xny) <- mm
 out <- xny; 
 } ## }}}
 
