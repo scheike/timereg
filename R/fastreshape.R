@@ -71,8 +71,7 @@ fast.reshape <- function(data,id,varying,num,sep="",all.numeric=FALSE,...) {
   antpers <- nrow(data)  
   unique.id <- unique(id)
   max.clust <- length(unique.id)  
-  ##clusters <- as.integer(factor(clusters, labels = seq_len(max.clust)))-1
-  clusters <- fast.approx(unique.id,id)$pos
+  clusters <- fast.approx(unique.id,id)$pos-1
 
   nclust <- .C("nclusters", as.integer(antpers), as.integer(clusters), 
                as.integer(rep(0, antpers)), as.integer(0), as.integer(0), 

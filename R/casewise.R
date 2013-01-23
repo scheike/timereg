@@ -54,11 +54,14 @@ casewise.test <- function(conc,marg,test="no-test")
   casewise.iid <- NULL
   casewise <- concP1/margtime
 
-  if (test=="conc" ||test=="case") if (is.null(conc$P1.iid) || is.null(marg$P1.iid))  
-     stop("Warning, need iid for Concordance and marginal\n");
-
   se.casewise2 <- as.matrix(Cpred(se.concP1,timer)[,2]/margtime,ncol=100)
   se.margtime <- as.matrix(Cpred(se.margtime,timer)[,2],ncol=100)
+  se.casewise <- NULL;
+  outtest <- NULL; 
+
+  if (is.null(conc$P1.iid) || is.null(marg$P1.iid))   {
+    cat("Warning, need iid decomposition for correct se's for Concordance \n");
+  } else {
 
    conciid <- Cpred(cbind(conc$time,conc$P1.iid),timer)[,-1]
    nconc <- colnames(conc$P1.iid)
@@ -91,6 +94,7 @@ casewise.test <- function(conc,marg,test="no-test")
         colnames(outtest) <- c("cum dif.","sd","z","pval") 			 
         rownames(outtest) <- "pepe-mori"
     }
+  }
 
    margout <- cbind(timer,margtime,se.margtime)
    colnames(margout) <- c("time","cif","se")
