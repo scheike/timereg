@@ -220,7 +220,6 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 	     print_vec(xi); print_vec(zi); print_vec(zav); print_vec(difzzav);
   }
 
-
   if (*betafixed==0) 
   if ( (((*exactderiv==1) && (it==(*Nit-1)) && (*px>1))) || ((*exactderiv==2) && (*px>1)) ) {
   mat_zeros(ZPZ1); mat_zeros(ZPX1); 
