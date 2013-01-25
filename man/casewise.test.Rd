@@ -25,7 +25,7 @@ data(prt);
 
 prt <- prt[which(prt$id \%in\% sample(unique(prt$id),10000)),]
 ### marginal cumulative incidence of prostate cancer
-times <- seq(60,100,by=10)
+times <- seq(60,100,by=2)
 outm <- comp.risk(Surv(time,status==0)~+1,data=prt,prt$status,causeS=2,times=times)
 
 cifmz <- predict(outm,X=1,uniform=0,resample.iid=1)
