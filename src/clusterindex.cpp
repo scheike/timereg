@@ -7,18 +7,18 @@ RcppExport SEXP nclust(SEXP in,SEXP iclusters) {
 
   uvec clusters = Rcpp::as<uvec>(iclusters); 
   int  n = Rcpp::as<int>(in);
+
   int uniqueclust=0; 
-
   uvec nclust = zeros(n); 
-
   int i,maxclust=0;
+
   for (i=0;i<n;i++){
       if (nclust[clusters[i]]==0) uniqueclust+=1; 
       nclust[clusters[i]]+=1; 
       if (nclust[clusters[i]]>maxclust) maxclust=nclust[clusters[i]]; 
   } 
 
-return(Rcpp::List::create(Rccp::Named("maxclust")=mclust,Rccp::Named("nclust")=nclust,
+return(Rcpp::List::create(Rccp::Named("maxclust")=maxclust,Rccp::Named("nclust")=nclust,
 			  Rccp::Named("uniqueclust")=uniqueclust)); 
 }
 
