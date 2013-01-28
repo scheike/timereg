@@ -1,7 +1,7 @@
 Package: mets
 Type: Package
 Title: Analysis of Multivariate Event Times
-Version: 0.1-13
+Version: 0.1-14
 Date: 2012-07-04
 Author: Klaus K. Holst and Thomas Scheike
 Maintainer: Klaus K. Holst <kkho@biostat.ku.dk>
@@ -18,7 +18,7 @@ Depends:
     mvtnorm,
     numDeriv,
     splines,
-    timereg (>= 1.6-8),
+    timereg (>= 1.7),
     prodlim
 Suggests:
     lava.tobit (>= 0.4-7),
@@ -66,3 +66,4 @@ Collate:
     'cor.R'
     'fastpattern.R'
     'fastreshape.R'
+    'clusterindex-reshape.r'

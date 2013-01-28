@@ -2,16 +2,16 @@
 \alias{fast.approx}
 \title{Fast approximation}
 \usage{
-  fast.approx(t1, t2, y1 = t1, ...)
+  fast.approx(time, new.time, y = time, ...)
 }
 \arguments{
-  \item{t1}{Original ordered time points}
+  \item{time}{Original ordered time points}
 
-  \item{t2}{New time points}
+  \item{new.time}{New time points}
 
-  \item{y1}{Optional function values (default is simply the
-  identity) corresponding to the original time points
-  \code{t1}}
+  \item{y}{Optional function values (default is simply the
+  identity) evaluated at the original time points
+  \code{time}}
 
   \item{...}{Optional additional arguments}
 }
@@ -22,7 +22,7 @@
   evaluated in \code{t2}}
 
   \item{pos}{The positions in \code{t1} of the elements of
-  \code{t2}}
+  \code{t2} starting from index 0}
 }
 \description{
   Fast approximation

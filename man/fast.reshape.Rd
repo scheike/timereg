@@ -2,8 +2,7 @@
 \alias{fast.reshape}
 \title{Fast reshape}
 \usage{
-  fast.reshape(data, id, varying, num, sep = "",
-    all.numeric = FALSE, ...)
+  fast.reshape(data, id, varying, num, sep = "", ...)
 }
 \arguments{
   \item{data}{data.frame or matrix}
@@ -18,9 +17,6 @@
 
   \item{sep}{String seperating prefix-name with
   number/time}
-
-  \item{all.numeric}{If TRUE (all variables numeric) avoid
-  slow \code{cbind}}
 
   \item{...}{Optional additional arguments to the
   \code{reshape} function used in the wide->long reshape.}
@@ -40,9 +36,14 @@ d1 <- fast.reshape(dd,"id")
 d2 <- fast.reshape(dd,"id",var="y")
 d3 <- fast.reshape(dd,"id",var="y",num="time")
 
+d4 <- fast.reshape(data.matrix(dd),"id",var="y")
+
 ## From long-format
 fast.reshape(d,var="y",idvar="a",timevar="b")
 fast.reshape(d,var=list(c("y1","y2","y3","y4")),idvar="a",timevar="b")
+
+data(prt)
+head(fast.reshape(prt,"id",var="cancer"))
 }
 \author{
   Thomas Scheike, Klaus K. Holst

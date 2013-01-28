@@ -309,8 +309,8 @@ return(val1);
 
 double ilaplace(double t,double y)
 { // {{{
-double val,laplace(); 
-val=exp(-log(y)*t); val= (val-1)/t;  
+  double val; //,laplace(); 
+  val=exp(-log(y)*t); val= (val-1)/t;  
 // Rprintf("ilaplace y^(1/t)  %lf %lf  \n",exp(log(y)/t),pow(y,1.0/t)); 
 // Rprintf("ilaplace  %lf %lf  \n",val,val1); 
 return(val); 
