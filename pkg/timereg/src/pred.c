@@ -31,6 +31,18 @@ void clusterindex(int *clusters,int *nclust,int *npers,int *idclust,int *clustsi
   }
 }
 
+void atriskindex(double *start,double *stop,int *id,int *n,double *times,int *ntimes,int *nrisk,int *riskindex)
+{
+  int i,j;
+    for (j=0;j<*ntimes;j++)
+    for (i=0;i<*n;i++)
+    if ((start[i]<times[j]) && (stop[i]>=times[j]))
+    {
+       riskindex[(nrisk[j])*(*ntimes)+j]=id[i]; 
+       nrisk[j]+=1; 
+    } 
+}
+
 void clusterindexdata(int *clusters,int *nclust,int *npers,int *idclust,int *clustsize,int *mednum,
 		int *num,double *data, int *p,double *nydata)
 {

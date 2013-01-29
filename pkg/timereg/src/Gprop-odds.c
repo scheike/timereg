@@ -6,11 +6,11 @@
 void Gtranssurv(times,Ntimes,designX,nx,px,designG,ng,pg,antpers,start,stop,
 betaS,Nit,cu,vcu,loglike,Iinv,Vbeta,detail,sim,antsim,
 rani,Rvcu,RVbeta,test,testOBS,Ut,simUt,Uit,id,status,wscore,
-score,dhatMit,dhatMitiid,retur,exppar,sym,mlestart)
+score,dhatMit,dhatMitiid,retur,exppar,sym,mlestart,stratum)
 double *designX,*designG,*times,*betaS,*start,*stop,*cu,*loglike,*Vbeta,*RVbeta,
 *vcu,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*score,*dhatMit,*dhatMitiid;
 int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,
-*wscore,*retur,*exppar,*sym,*mlestart;
+*wscore,*retur,*exppar,*sym,*mlestart,*stratum;
 {
   matrix *ldesignX,*cdesG,*ldesignG,*cdesX,*cdesX2,*cdesX3,*cdesX4,*CtVUCt,*A,*AI;
   matrix *dYI,*Ct,*dM1M2,*M1M2t,*COV,*ZX,*ddesG,*ZP,*ZPX; 
@@ -140,8 +140,12 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 	print_vec(plamt); print_vec(dlamt); print_mat(cdesX); 
       }
 
-      MtA(cdesX,ldesignX,A); 
-      invert(A,AI); 
+     MtA(cdesX,ldesignX,A); 
+     invertS(A,AI,detail[0]); 
+    if (ME(AI,0,0)==0.0 && *detail==1 && *stratum==1){ 
+       Rprintf(" X'X not invertible at time %lf \n",time); }
+    if (*stratum==1)  { for (k=0;k<*px;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);  }
+
       scl_mat_mult(1.0,AI,S0tI[s]); 
       extract_row(ldesignX,pers,xi); 
       Mv(AI,xi,dA); 

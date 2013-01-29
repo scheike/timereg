@@ -53,6 +53,8 @@ antsim<-n.sim;
 
   desZ<-as.matrix(X); px<-ncol(desZ); 
 
+  if (is.diag(  t(desZ) %*% desZ  )==TRUE) stratum <- 1 else stratum <- 0
+
 if (!inherits(Y, "Surv")) stop("Response must be a survival object")
 
 if (attr(m[, 1], "type") == "right") {
@@ -87,7 +89,6 @@ Ntimes <- length(times);
 if (is.null(cause)) stop(" cause must be given\n"); 
 
 ## {{{ censoring and estimator
-
 if (cens.model=="KM") { ## {{{
     ud.cens<-survfit(Surv(time2,cause==cens.code)~+1);
     Gfit<-cbind(ud.cens$time,ud.cens$surv)
@@ -95,24 +96,24 @@ if (cens.model=="KM") { ## {{{
     KMti<-Cpred(Gfit,time2)[,2];
     KMtimes<-Cpred(Gfit,times)[,2]; ## }}}
   } else if (cens.model=="cox") { ## {{{
-    if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
-    ud.cens<-coxph(Surv(time2,cause==cens.code)~XZ)
-    aseout <- basehaz(ud.cens,centered=FALSE); 
-    baseout <- cbind(baseout$time,baseout$hazard)
-    Gcx<-Cpred(baseout,time2)[,2];
-    RR<-exp(XZ %*% coef(ud.cens))
-    KMti<-exp(-Gcx*RR)
-    KMtimes<-Cpred(Gfit,times)[,2]; 
+###    if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
+###    ud.cens<-coxph(Surv(time2,cause==cens.code)~XZ)
+###    aseout <- basehaz(ud.cens,centered=FALSE); 
+###    baseout <- cbind(baseout$time,baseout$hazard)
+###    Gcx<-Cpred(baseout,time2)[,2];
+###    RR<-exp(XZ %*% coef(ud.cens))
+###    KMti<-exp(-Gcx*RR)
+###    KMtimes<-Cpred(Gfit,times)[,2]; 
     ## }}}
   } else if (cens.model=="aalen") {  ## {{{
-    if (npar==TRUE) XZ<-X else XZ<-cbind(X,Z);
-    ud.cens<-aalen(Surv(time2,cause==cens.code)~-1+XZ+cluster(clusters),n.sim=0,residuals=0,robust=0,silent=1)
-    KMti <- Cpred(ud.cens$cum,time2)[,-1];
-    Gcx<-exp(-apply(Gcx*XZ,1,sum))
-    Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
-    Gfit<-rbind(c(0,1),cbind(time2,Gcx)); 
-    KMti <- Gcx
-    KMtimes<-Cpred(Gfit,times)[,2]; ## }}}
+###    if (npar==TRUE) XZ<-X else XZ<-cbind(X,Z);
+###    ud.cens<-aalen(Surv(time2,cause==cens.code)~-1+XZ+cluster(clusters),n.sim=0,residuals=0,robust=0,silent=1)
+###    KMti <- Cpred(ud.cens$cum,time2)[,-1];
+###    Gcx<-exp(-apply(Gcx*XZ,1,sum))
+###    Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
+###    Gfit<-rbind(c(0,1),cbind(time2,Gcx)); 
+###    KMti <- Gcx
+###    KMtimes<-Cpred(Gfit,times)[,2]; ## }}}
     } else  stop('Unknown censoring model') 
 ## }}}
 
@@ -160,8 +161,8 @@ as.double(simUt),as.double(Uit),as.integer(id),
 as.integer(cause),as.integer(weighted.test),as.double(score),
 as.double(cumAi),as.double(cumAiiid),as.integer(residuals),
 as.integer(exppar),as.integer(sym),as.integer(mle.start),
-as.double(KMtimes),as.double(KMti),as.double(time2),as.integer(causeS),as.integer(index-1),
-,PACKAGE="timereg");
+as.double(KMtimes),as.double(KMti),as.double(time2),as.integer(causeS),
+as.integer(index-1),as.integer(stratum),PACKAGE="timereg");
 ## }}}
 
 ## {{{ output handling

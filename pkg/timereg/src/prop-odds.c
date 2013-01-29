@@ -75,10 +75,11 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 
       for (s=1;s<*Ntimes;s++)
       { 
-	  time=times[s]; vec_zeros(dN); mat_zeros(ldesignX); vec_zeros(risk); 
+	  time=times[s];  mat_zeros(ldesignX); 
+//	  vec_zeros(risk); 
 	  vec_zeros(dS0);  mat_zeros(d2S0);  mat_zeros(dS1);  vec_zeros(S1star);
 	  S0star=0; S0=0; S0p=0; 
-	  vec_zeros(Gbeta); vec_zeros(plamt); vec_zeros(dlamt); 
+//	  vec_zeros(Gbeta); vec_zeros(plamt); vec_zeros(dlamt); 
 	  vec_zeros(S1); S0cox=0; 
 
 	  for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) { // {{{ reading data and computing things 

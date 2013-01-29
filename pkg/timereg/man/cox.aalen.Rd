@@ -24,7 +24,7 @@ The modelling formula uses the standard survival modelling given in the
 cox.aalen(formula=formula(data),data=sys.parent(),beta=NULL,Nit=10,detail=0,
 start.time=0,max.time=NULL,id=NULL,clusters=NULL,n.sim=500,residuals=0,
 robust=1,weighted.test=0,covariance=0,resample.iid=0,weights=NULL,rate.sim=1,
-beta.fixed=0,max.clust=1000,exact.deriv=1,silent=0,max.timepoint.sim=100)
+beta.fixed=0,max.clust=1000,exact.deriv=1,silent=1,max.timepoint.sim=100)
 }
 \arguments{
 \item{formula}{

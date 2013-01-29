@@ -1,12 +1,12 @@
-prop.odds<-function(formula,data=sys.parent(),beta=0,
+prop.odds<-function(formula,data=sys.parent(),beta=NULL,
 Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
-profile=1,sym=0)
+profile=1,sym=0,baselinevar=1)
 {
 id.call<-id; call<-match.call(); residuals<-0;  
 robust<-0; ratesim<-0; # profile<-0; 
 m<-match.call(expand.dots = FALSE);
 m$sym<-m$profile<-m$max.time<-m$start.time<-m$weighted.test<-m$n.sim<-
-m$id<-m$Nit<-m$detail<-m$beta<-NULL
+m$id<-m$Nit<-m$detail<-m$beta <- m$baselinevar<-NULL
 if (n.sim==0) sim<-0 else sim<-1; 
 antsim<-n.sim; 
 
@@ -58,8 +58,12 @@ if (is.null(id)==TRUE) {antpers<-length(time); id<-0:(antpers-1); }
 else { pers<-unique(id); antpers<-length(pers); 
        id<-as.integer(factor(id,labels=1:(antpers)))-1; }
 
-if (sum(abs(beta))==0) beta<-rep(0,pg); 
-if (length(beta)!=pg) beta<-rep(0,pg);
+  if ((length(beta)!=pg) && (is.null(beta)==FALSE)) beta <- rep(beta[1],pg); 
+  if ((is.null(beta))) {
+        if ( (attr(m[, 1], "type") == "right" ) ) 
+        beta<-coxph(Surv(stop,status)~X)$coef
+        else beta<-coxph(Surv(start,stop,status)~X)$coef; 
+  }
 
 if (residuals==1) {
 cumAi<-matrix(0,Ntimes,antpers*1);
@@ -96,7 +100,7 @@ as.double(Uit),as.integer(id),as.integer(status),
 as.integer(weighted.test),as.integer(ratesim),as.double(score),
 as.double(cumAi),as.double(cumAiiid),as.integer(residuals),
 as.double(loglike),as.integer(profile),as.integer(sym),
-PACKAGE="timereg");
+as.integer(baselinevar), PACKAGE="timereg");
 
 gamma<-matrix(nparout[[9]],pg,1);
 cumint<-matrix(nparout[[11]],Ntimes,px+1);

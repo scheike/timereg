@@ -57,7 +57,6 @@ aalen<-function (formula = formula(data),
 	survs$antclust <- max.clust    
   }                                                         
 
-
   if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
    ot <- order(-time2,status==1); 
    time2<-time2[ot]; status<-status[ot]; 

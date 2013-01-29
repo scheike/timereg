@@ -54,6 +54,7 @@ antsim<-n.sim;
 
   desZ<-as.matrix(X); px<-ncol(desZ); 
 
+  if (is.diag(  t(desZ) %*% desZ  )==TRUE) stratum <- 1 else stratum <- 0
 
 if (!inherits(Y, "Surv")) stop("Response must be a survival object")
 
@@ -79,7 +80,7 @@ time2[index]<-time2[index]+runif(nties,0,min(0.001,dt/2));
 
 start<-time; stop<-time2; 
 times<-c(start.time,time2[status==1]); times<-sort(times);
-if (max.time==0) maxtimes<-max(times)+0.1 else maxtimes<-max.time; 
+if (is.null(max.time)) maxtimes<-max(times)+0.1 else maxtimes<-max.time; 
 times<-times[times<maxtimes]
 Ntimes <- length(times); 
 
@@ -126,7 +127,7 @@ as.double(test),as.double(testOBS), as.double(Ut),
 as.double(simUt),as.double(Uit),as.integer(id),
 as.integer(status),as.integer(weighted.test),as.double(score),
 as.double(cumAi),as.double(cumAiiid),as.integer(residuals),
-as.integer(exppar),as.integer(sym),as.integer(mle.start)
+as.integer(exppar),as.integer(sym),as.integer(mle.start),as.integer(stratum)
 ,PACKAGE="timereg");
 
 gamma<-matrix(nparout[[12]],pg,1);

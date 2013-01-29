@@ -5,10 +5,11 @@
 void Gpropoddssubdist(times,Ntimes,designX,nx,px,designG,ng,pg,antpers,start,stop,
 betaS,Nit,cu,vcu,loglike,Iinv,Vbeta,detail,sim,antsim,
 rani,Rvcu,RVbeta,test,testOBS,Ut,simUt,Uit,id,status,wscore,
-score,dhatMit,dhatMitiid,retur,exppar,sym,mlestart,KMtimes,KMti,etime,causeS,ipers)
+score,dhatMit,dhatMitiid,retur,exppar,sym,mlestart,
+KMtimes,KMti,etime,causeS,ipers,stratum)
 double *designX,*designG,*times,*betaS,*start,*stop,*cu,*loglike,*Vbeta,*RVbeta,
 *vcu,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*score,*dhatMit,*dhatMitiid,*KMtimes,*KMti,*etime;
-int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,
+int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*stratum,
 *wscore,*retur,*exppar,*sym,*mlestart,*ipers,*causeS;
 { 
 // {{{
@@ -27,7 +28,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
   vector *Lplamt,*ta,*ahatt,*risk; 
   vector *tmpv1,*tmpv2,*rowX,*rowZ,*difX,*VdB,*lht; 
   vector *W2[*antpers],*W3[*antpers],*reszpbeta,*res1dim,*dAt[*Ntimes]; 
-  int t,c,robust=1,pers=0,i,j,k,l,s,it,count,pmax,risks; 
+  int t,c,robust=1,pers=0,i,j,k,l,s,it,pmax,risks; 
   double weights,time=0,dummy,ll; 
   double tau,hati=0,random,sumscore; 
   double norm_rand(); 
@@ -88,12 +89,12 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 
   for (it=0;it<*Nit;it++){ // {{{
     vec_zeros(U); mat_zeros(S1);  sumscore=0; 
+    Mv(ldesignG,beta,Gbeta); 
 
     for (s=1;s<*Ntimes;s++){ // {{{
       time=times[s]; 
       pers=ipers[s]; // person with type 1 jump
 
-      Mv(ldesignG,beta,Gbeta); 
       for (i=0;i<*px;i++){
 	VE(tmpv1,i)=cu[(i+1)*(*Ntimes)+s-1];
       }
@@ -133,7 +134,12 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
       if (s < 0) { print_vec(plamt); print_vec(dlamt); print_mat(cdesX); }
 
       MtA(cdesX,ldesignX,A); 
-      invert(A,AI); 
+
+      invertS(A,AI,detail[0]); 
+      if (ME(AI,0,0)==0.0 && *detail==1 && *stratum==1){ 
+          Rprintf(" X'X not invertible at time %lf \n",time); }
+      if (*stratum==1)  { for (k=0;k<*px;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);  }
+
       scl_mat_mult(1.0,AI,S0tI[s]); 
       extract_row(ldesignX,pers,xi); 
       scl_vec_mult(VE(dlamt,j),rowZ,rowZ); 

@@ -164,3 +164,25 @@ if (class(object)=="aalen")
 residuals <- status- cumhaz
 out <- list(residuals=c(residuals),status=c(status),cumhaz=c(cumhaz),cumhazleft=c(cumhazleft),RR=RR)
 } ## }}}
+
+risk.index <- function(start,stop,id,times)
+{ ## {{{
+n <- length(start)
+nstop <- length(stop)
+if (n!=nstop) stop("start and stop not of same length\n"); 
+if (is.null(id)) id <- 1:n
+nid <- length(id)
+if (n!=nid) stop("id and start not of same length\n"); 
+
+nt <- length(times)
+
+ nclust <- .C("atriskindex",
+	as.double(start), as.double(stop), as.integer(id), as.integer(n),
+	as.double(times), as.integer(nt), as.integer(rep(0,nt)),as.integer(rep(0,nt*n)),PACKAGE="timereg")
+
+  nrisk <- nclust[[7]]
+  riskindex <- matrix(nclust[[8]],nt,n)
+
+out <- list(nrisk=nrisk,riskindex=riskindex)
+} ## }}}
+

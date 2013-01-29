@@ -2,6 +2,8 @@
 //#include <stdio.h>
 #include <math.h>
 #include "matrix.h"
+#include <time.h>
+#include <sys/types.h>
 
 void aalen(times,Ntimes,designX,nx,p,antpers,start,stop,cu,vcu,status)
 double *designX,*times,*start,*stop,*cu,*vcu;
@@ -285,6 +287,10 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
   //     Rprintf(" entry \n"); 
   //     for (c=0;(c<*nx);c++) Rprintf(" %d \n",entry[c]); 
 
+  int timing=0; 
+  clock_t c0,c1; 
+  c0=clock();
+
   for (s=1;s<*Nalltimes;s++){
 	  time=alltimes[s]; dtime=time-alltimes[s-1]; 
 	  //      mat_zeros(X); mat_zeros(Z); mat_zeros(WX); mat_zeros(WZ);
@@ -421,6 +427,12 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 //	}
 
     } /* s =1...Ntimes */ 
+
+  if (timing==1) { // {{{
+  c1=clock();
+  printf ("\telapsed CPU time:  going through times %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+  c0=clock();
+  } // }}}
 
  if (detail>=2) Rprintf("Fitting done \n"); 
   invertS(CGam,ICGam,silent[0]);

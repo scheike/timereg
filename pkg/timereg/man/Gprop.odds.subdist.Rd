@@ -1,5 +1,5 @@
-\name{Gprop.odds}
-\alias{Gprop.odds}
+\name{Gprop.odds.subdist}
+\alias{Gprop.odds.subdist}
 \title{Fit Generalized Semiparametric Proportional 0dds Model for the competing risks subdistribution}
 \description{
 Fits a semiparametric  proportional odds model:
@@ -23,7 +23,7 @@ The modelling formula uses the standard survival modelling given in the
 \bold{survival} package.
 }
 \usage{
-Gprop.odds.subist(formula=formula(data),data=sys.parent(),cause=NULL,
+Gprop.odds.subdist(formula=formula(data),data=sys.parent(),cause=NULL,
                    beta=0,Nit=50,detail=0,start.time=0, max.time=NULL,
 		   id=NULL,n.sim=500,weighted.test=0,sym=0,mle.start=0,causeS=1,
 		   cens.code=0,cens.model="KM")
@@ -116,15 +116,14 @@ Springer (2006).
 \donttest{
 data(bmt)
 # Fits Proportional odds model 
-out <- Gprop.odds.subist(Surv(time,cause==1)~prop(platelet)+prop(age)+prop(tcell),data=bmt,
+out <- Gprop.odds.subdist(Surv(time,cause==1)~prop(platelet)+prop(age)+prop(tcell),data=bmt,
 		 cause=bmt$cause,cens.code=0,cens.model="KM",causeS=1,detail=0,n.sim=1000)
 summary(out) 
 par(mfrow=c(2,3))
 plot(out,sim.ci=2); plot(out,score=1) 
 
-
 # Fits Proportional odds model with stratified baseline
-out <- Gprop.odds.subist(Surv(time,cause==1)~-1+factor(platelet)+prop(age)+prop(tcell),data=bmt,
+out <- Gprop.odds.subdist(Surv(time,cause==1)~-1+factor(platelet)+prop(age)+prop(tcell),data=bmt,
 		 cause=bmt$cause,cens.code=0,cens.model="KM",causeS=1,detail=0,n.sim=1000)
 summary(out) 
 par(mfrow=c(2,3))

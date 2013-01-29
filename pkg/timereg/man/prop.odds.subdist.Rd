@@ -1,23 +1,31 @@
-\name{prop.odds}
-\alias{prop.odds}
-\title{Fit Semiparametric Proportional 0dds Model}
+\name{prop.odds.subdist}
+\alias{prop.odds.subdist}
+\title{Fit Semiparametric Proportional 0dds Model for the competing risks subdistribution}
 \description{
 Fits a semiparametric  proportional odds model:
 \deqn{
-logit(1-S_Z(t)) = log(G(t)) + \beta^T Z 
+logit(F_1(t;X,Z)) = log( A(t)) + \beta^T Z 
 }
-where G(t) is increasing but otherwise unspecified. Model is 
+where A(t) is increasing but otherwise unspecified. Model is 
 fitted by maximising the modified partial likelihood. 
 A goodness-of-fit test by
 considering the score functions is also computed by resampling methods. 
+
+An alternative way of writing the model :
+\deqn{
+F_1(t;X,Z)  = \frac{ \exp(  \beta^T Z )}{
+ (A(t)) + \exp(  \beta^T Z)  }
+}
+such that \eqn{\beta} is the log-odds-ratio of cause 1 before time t,
+and \eqn{A(t)} is the odds-ratio.
 
 The modelling formula uses the standard survival modelling given in the
 \bold{survival} package.
 }
 \usage{
-prop.odds(formula,data=sys.parent(),beta=NULL,Nit=10,
-detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
-profile=1,sym=0,baselinevar=1)
+prop.odds.subdist(formula,data=sys.parent(),cause=NULL,causeS=1,beta=0,
+Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
+profile=1,sym=0,cens.code=0,cens.model="KM")
 }
 \arguments{
 \item{formula}{
@@ -26,30 +34,24 @@ the terms on the right.  The response must be a survival object as
 returned by the `Surv' function.
 }
 \item{data}{a data.frame with the variables.}
-\item{start.time}{start of observation period where estimates are computed.}
-\item{max.time}{
-end of observation period where estimates are computed.
-Estimates thus computed from [start.time, max.time]. 
-This is very useful to obtain stable estimates, especially for the
-baseline. Default is max of data.}
-\item{id}{For timevarying covariates the variable must
-associate each record with the id of a subject.}
-\item{n.sim}{number of simulations in resampling.}
-\item{weighted.test}{to compute a variance weighted version of the
-test-processes used for testing time-varying effects.}
+\item{cause}{cause indicator for competing risks.}
 \item{beta}{starting value for relative risk estimates}
 \item{Nit}{number of iterations for Newton-Raphson algorithm.}
-\item{detail}{if 0 no details is printed during iterations, 
-if 1 details are given.}
-\item{profile}{if profile is 1 then modified partial likelihood is
-used, profile=0 fits by simple estimating equation. The modified 
-partial likelihood is recommended. 
-}
-\item{sym}{to use symmetrized second derivative in the case
-of the estimating equation approach (profile=0). 
-This may improve the numerical performance. 
-}
-\item{baselinevar}{set to 0 to omit calculations of baseline variance.}
+\item{detail}{if 0 no details is printed during iterations, if 1 details are given.}
+\item{start.time}{start of observation period where estimates are computed.}
+\item{max.time}{ end of observation period where estimates are computed. 
+       	Estimates thus computed from [start.time, max.time]. 
+       This is very useful to obtain stable estimates, especially for the baseline. Default is max of data.}
+\item{id}{For timevarying covariates the variable must associate each record with the id of a subject.}
+\item{n.sim}{number of simulations in resampling.}
+\item{weighted.test}{to compute a variance weighted version of the test-processes used for 
+	testing time-varying effects.}
+\item{profile}{use profile version of score equations.}
+\item{sym}{to use symmetrized second derivative in the case of the estimating equation approach (profile=0). 
+This may improve the numerical performance.  }
+\item{causeS}{specifies cause of interst. numeric value.}
+\item{cens.code}{specifies censoring code.}
+\item{cens.model}{specifies censoring model. So far only Kaplan-Meier "KM".}
 }
 \details{
 The data for a subject is presented as multiple rows or "observations",
@@ -100,21 +102,29 @@ test-processes for constant proportional odds under the model
 based on resampling.}
 }
 \references{
+Scheike, A flexible semiparametric transformation model for
+survival data, Lifetime Data Anal. (2007). 
+
 Martinussen and Scheike, Dynamic Regression Models for Survival Data,
 Springer (2006).
 }
 \author{Thomas Scheike}
 \examples{
-library(survival)
-data(sTRACE)
+\donttest{
+data(bmt)
 # Fits Proportional odds model 
-out<-prop.odds(Surv(time,status==9)~age+diabetes+chf+vf+sex,
-sTRACE,max.time=7,n.sim=100)
-
+out <- prop.odds.subdist(Surv(time,cause==1)~platelet+age+tcell,data=bmt,
+		 cause=bmt$cause,cens.code=0,cens.model="KM",causeS=1,detail=0,n.sim=1000)
 summary(out) 
-
 par(mfrow=c(2,3))
-plot(out,sim.ci=2)
-plot(out,score=1) 
+plot(out,sim.ci=2); plot(out,score=1) 
+
+# Fits Proportional odds model with stratified baseline
+out <- Gprop.odds.subdist(Surv(time,cause==1)~-1+factor(platelet)+prop(age)+prop(tcell),data=bmt,
+		 cause=bmt$cause,cens.code=0,cens.model="KM",causeS=1,detail=0,n.sim=1000)
+summary(out) 
+par(mfrow=c(2,3))
+plot(out,sim.ci=2); plot(out,score=1) 
+}
 }
 \keyword{survival}

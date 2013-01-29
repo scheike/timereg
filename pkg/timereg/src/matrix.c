@@ -94,6 +94,7 @@ extern void
 F77_SUB(dgetri)(const int* n, double* a, const int* lda,
                  int* ipiv, double* work, const int* lwork, int* info);
 
+
 // cumsum of matrix apply(X,2,cusum)
 // rev=1 apply(X[n:1,],2,cumsum)[n:1,]
 // for rev=1 possible to return only apply(X[n:1,],2,cumsum)[nindex,]

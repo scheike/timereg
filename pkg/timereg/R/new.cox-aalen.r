@@ -4,7 +4,7 @@ cox.aalen<-function(formula=formula(data),data=sys.parent(),
 beta=NULL,Nit=10,detail=0,start.time=0,max.time=NULL, id=NULL, 
 clusters=NULL, n.sim=500, residuals=0,robust=1,
 weighted.test=0,covariance=0,resample.iid=0,weights=NULL,
-rate.sim=1,beta.fixed=0,max.clust=1000,exact.deriv=1,silent=0,
+rate.sim=1,beta.fixed=0,max.clust=1000,exact.deriv=1,silent=1,
 max.timepoint.sim=100)
 { ## {{{
 offsets=0; 
@@ -19,7 +19,7 @@ offsets=0;
   m <- match.call(expand.dots=FALSE)
   m$robust<-m$start.time<- m$scaleLWY<-m$weighted.test<-m$beta<-m$Nit<-m$detail<-m$max.time<-m$residuals<-m$n.sim<-m$id<-
 	                   m$covariance<-m$resample.iid<-m$clusters<-m$rate.sim<-m$beta.fixed<-
-                           m$max.clust <- m$exact.deriv <- m$silent <- m$max.timepoint.sim <- NULL
+                           m$max.clust <- m$exact.deriv <- m$silent <- m$max.timepoint.sim <- m$silent <- NULL
   special <- c("prop","cluster")
   Terms <- if(missing(data)) terms(formula, special)
   else          terms(formula, special, data=data)
@@ -59,9 +59,12 @@ offsets=0;
 	survs$antclust <- max.clust    
   }                                                         
 
-
   if ((length(beta)!=pz) && (is.null(beta)==FALSE)) beta <- rep(beta[1],pz); 
-  if ((is.null(beta))) beta<-coxph(Surv(survs$start,survs$stop,survs$status)~Z)$coef; 
+  if ((is.null(beta))) {
+        if ( (attr(m[, 1], "type") == "right" ) ) 
+        beta<-coxph(Surv(survs$stop,survs$status)~Z)$coef
+else beta<-coxph(Surv(survs$start,survs$stop,survs$status)~Z)$coef; 
+  }
 
 if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
    ot<-order(-time2,status==1); # order in time, status=0 first for ties
@@ -107,8 +110,9 @@ ldata<-list(start=start,stop=stop, antpers=survs$antpers,antclust=survs$antclust
             weighted.test=weighted.test,ratesim=rate.sim,
             covariance=covariance,resample.iid=resample.iid,namesX=covnamesX,
 	    namesZ=covnamesZ,beta.fixed=beta.fixed,entry=entry,
-	    offsets=0,exactderiv=exact.deriv,max.timepoint.sim=max.timepoint.sim);
+	    offsets=0,exactderiv=exact.deriv,max.timepoint.sim=max.timepoint.sim,silent=silent)
 
+  ## {{{ output handling
   colnames(ud$test.procProp)<-c("time",covnamesZ)
   if (beta.fixed==1) colnames(ud$var.score)<-c("time",covnamesZ)
   if (robust==1 & beta.fixed==0) colnames(ud$var.score)<-c("time",covnamesZ)
@@ -152,6 +156,7 @@ ldata<-list(start=start,stop=stop, antpers=survs$antpers,antclust=survs$antclust
   attr(ud,"orig.max.clust")<- orig.max.clust 
   attr(ud,"max.timepoint.sim")<-max.timepoint.sim; 
   ud$call<-call
+  ## }}}
 
   return(ud); 
 } ## }}}

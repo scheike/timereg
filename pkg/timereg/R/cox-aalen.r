@@ -3,7 +3,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
     sim = 1, antsim = 1000, weighted.test= 0, robust = 1, 
     ratesim = 1, residuals = 0, covariance = 1,
     resample.iid=0,namesZ=NULL,namesX=NULL,beta.fixed=0,
-    entry=NULL,offsets=0,exactderiv=1,max.timepoint.sim=100) 
+    entry=NULL,offsets=0,exactderiv=1,max.timepoint.sim=100,silent=1) 
 { ## {{{
   additive.resamp <-0; ridge <- 0; XligZ <- 0; 
   Ntimes <- length(times)
@@ -74,8 +74,8 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
                 as.double(biid),as.integer(clusters),as.integer(fdata$antclust),
                 as.double(var.score),as.integer(beta.fixed),
 		as.double(weights),as.integer(entry) ,as.integer(exactderiv),
-	        as.integer(time.group), as.integer(max.timepoint.sim),as.integer(stratum)
-                ,PACKAGE = "timereg")
+	        as.integer(time.group), as.integer(max.timepoint.sim),as.integer(stratum),
+		as.integer(silent),PACKAGE = "timereg")
 
   Iinv <- matrix(nparout[[19]], pg, pg); RVarbeta <- -matrix(nparout[[28]], pg, pg)
   rvcu <- matrix(nparout[[27]], mts , px + 1); ## convert to approx for times 
