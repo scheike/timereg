@@ -14,7 +14,9 @@
   test on the casewise concordance}
 }
 \description{
-  .. content for description (no empty lines) ..
+  Estimates the casewise concordance based on Concordance
+  and marginal estimate using timereg and performs test for
+  independence
 }
 \details{
   Uses cluster based conservative standard errors for
@@ -23,7 +25,7 @@
 \examples{
 data(prt);
 
-prt <- prt[which(prt$id \%in\% sample(unique(prt$id),10000)),]
+prt <- prt[which(prt$id \%in\% sample(unique(prt$id),7500)),]
 ### marginal cumulative incidence of prostate cancer
 times <- seq(60,100,by=2)
 outm <- comp.risk(Surv(time,status==0)~+1,data=prt,prt$status,causeS=2,times=times)
