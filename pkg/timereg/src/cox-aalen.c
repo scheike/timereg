@@ -210,6 +210,12 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
    if (ME(AI,0,0)==0 && *stratum==0 && *silent==0) {
 	   Rprintf("additive design X'X not invertible at time (number, value): %d %lf \n",s,time); print_mat(A);
    }
+   if (ME(AI,0,0)==0 && *stratum==0 && *silent==2) {
+	   Rprintf("additive design X'X not invertible at time (number, value) : %d %lf \n",s,time); print_mat(A);
+	   Rprintf("print only first time with non-invertible design X'X\n"); 
+	   silent[0]=0; 
+   }
+
    if (*stratum==1)  {
     for (k=0;k<*px;k++) 
     if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);
