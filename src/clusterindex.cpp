@@ -73,7 +73,7 @@ RcppExport SEXP clusterindexdata(SEXP in,SEXP iclusters,SEXP imaxclust,SEXP incl
 
   mat data = Rcpp::as<mat>(idata);
   int p= data.n_cols; 
-  mat nydata = mat(nclust,maxclust*p); nydata.fill(0);
+  mat nydata(nclust,maxclust*p); nydata.fill(0);
 
   if (mednum==0) {
      for (i=0;i<n;i++){
@@ -89,7 +89,6 @@ RcppExport SEXP clusterindexdata(SEXP in,SEXP iclusters,SEXP imaxclust,SEXP incl
      } 
   }
 
-  return(List::create(Named("idclustmat")=idclust,
-		      Named("clustsize")=clustsize), Named("iddata")=nydata); 
+  return(List::create(Named("idclustmat")=idclust,Named("clustsize")=clustsize,Named("iddata")=nydata)); 
 } // }}}
 
