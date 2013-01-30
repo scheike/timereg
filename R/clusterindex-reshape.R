@@ -32,8 +32,10 @@ faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=1)
 { ## {{{
   if (NCOL(data)==1) data <- cbind(data)
   if (!is.matrix(data)) data <- as.matrix(data)
-
   n <- length(clusters)
+
+  if (nrow(data)!=n)  stop("nrow(data) and clusters of different lengths\n"); 
+
   if (index.type==FALSE)  {
     max.clust <- length(unique(clusters))
     if (is.numeric(clusters)) clusters <-  timereg:::sindex.prodlim(unique(clusters),clusters)-1 else 
@@ -44,12 +46,11 @@ faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=1)
   }
 
   if ((!is.null(num))) { ### different types in different columns
+    if (length(num)!=n)  stop("clusters and num of different lengths\n"); 
     mednum <- 1
     if (is.numeric(num)) num <-  timereg:::sindex.prodlim(unique(num),num)-1
     else num <- as.integer(factor(num, labels = seq(length(unique(clusters))))) -1
   } else { num <- 0; mednum <- 0; }
-
-###RcppExport SEXP clusterindexdata(SEXP iclusters, SEXP imednum,SEXP inum, SEXP idata) 
 
   clustud <- .Call("clusterindexdata",as.integer(clusters),as.integer(mednum), as.integer(num),iddata=data,DUP=FALSE)
 
@@ -64,7 +65,6 @@ faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=1)
   xny <- data.frame(xny)
   mm <- as.vector(outer(xnames,seq_len(maxclust),function(...) paste(...,sep=".")))
   names(xny) <- mm
-
 
   return(xny); 
 } ## }}}
