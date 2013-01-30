@@ -100,9 +100,9 @@ xny <- clustud$iddata
 
 xnames <- colnames(data); 
 missingname <- (colnames(data)=="")
-xnames[missingname] <- paste(seq <- len(maxclust))[missingname]
+xnames[missingname] <- paste(seq_len(maxclust))[missingname]
 xny <- data.frame(xny)
-mm <- as.vector(outer(xnames,seq <- len(maxclust),function(...) paste(...,sep=".")))
+mm <- as.vector(outer(xnames,seq_len(maxclust),function(...) paste(...,sep=".")))
 names(xny) <- mm
 
 return(xny); 
