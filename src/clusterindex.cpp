@@ -74,38 +74,48 @@ RcppExport SEXP clusterindexM(SEXP iclusters, SEXP imednum, SEXP inum) {
 
 
 
-RcppExport SEXP clusterindexdata(SEXP iclusters,SEXP imaxclust,SEXP inclust,SEXP imednum,SEXP inum,
-		SEXP idata) 
-{ // {{{
-  int i,j;
-  uvec clusters = Rcpp::as<uvec>(iclusters); 
-  int n = clusters.n_elem; 
-  int maxclust = Rcpp::as<int>(imaxclust); 
-  int nclust = Rcpp::as<int>(inclust); 
+RcppExport SEXP clusterindexdata(SEXP iclusters, SEXP imednum,SEXP inum, SEXP idata) 
+{
+  uvec clusters = Rcpp::as<uvec>(iclusters);
+  unsigned n = clusters.n_elem;
+ 
+  unsigned uniqueclust=0; 
+  unsigned maxclust=0;
+  uvec nclust(n); nclust.fill(0);
+ 
+  for (unsigned i=0;i<n;i++){
+    if (nclust[clusters[i]]==0) uniqueclust+=1; 
+    nclust[clusters[i]]+=1; 
+    if (nclust[clusters[i]]>maxclust) maxclust=nclust[clusters[i]]; 
+  } 
+
   uvec num = Rcpp::as<uvec>(inum); 
   int  mednum = Rcpp::as<int>(imednum);
-
-  imat idclust = imat(nclust,maxclust); idclust.fill(NA_INTEGER);
-  uvec clustsize(nclust); clustsize.fill(0);
+  
+  imat idclust = imat(uniqueclust,maxclust); idclust.fill(NA_INTEGER);
+  uvec clustsize(uniqueclust); clustsize.fill(0);
 
   mat data = Rcpp::as<mat>(idata);
-  int p= data.n_cols; 
-  mat nydata(nclust,maxclust*p); nydata.fill(0);
+  unsigned p= data.n_cols; 
+  mat nydata(uniqueclust,maxclust*p); nydata.fill(NA_REAL);
 
   if (mednum==0) {
-     for (i=0;i<n;i++){
-         idclust[(clustsize[clusters[i]])*(nclust)+clusters[i]]=i; 
-     for (j=0;j<p;j++) nydata[(clustsize[clusters[i]]*(p)+j)*(nclust)+clusters[i]]=data[(n)*j+i]; 
+     for (unsigned i=0;i<n;i++){
+//         idclust[(clustsize[clusters[i]])*(uniqueclust)+clusters[i]]=i; 
+     for (unsigned j=0;j<p;j++) nydata[(clustsize[clusters[i]]*(p)+j)*(uniqueclust)+clusters[i]]=data[(n)*j+i]; 
          clustsize[clusters[i]]+=1; 
       } 
   } else {
-    for (i=0;i<n;i++){
-        idclust[num[i]*(nclust)+clusters[i]]=i; 
-        for (j=0;j<p;j++) nydata[(num[i]*(p)+j)*(nclust)+clusters[i]]=data[(n)*j+i]; 
+    for (unsigned i=0;i<n;i++){
+//        idclust[num[i]*(uniqueclust)+clusters[i]]=i; 
+        for (unsigned j=0;j<p;j++) nydata[(num[i]*(p)+j)*(uniqueclust)+clusters[i]]=data[(n)*j+i]; 
         clustsize[clusters[i]]+=1; 
      } 
   }
 
-  return(List::create(Named("idclustmat")=idclust,Named("clustsize")=clustsize,Named("iddata")=nydata)); 
+  return(List::create(
+//	              Named("idclust")=idclust,
+		      Named("maxclust")=maxclust,
+   		      Named("clustsize")=clustsize,Named("iddata")=nydata)); 
 } // }}}
 

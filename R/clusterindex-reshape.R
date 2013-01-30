@@ -4,7 +4,7 @@ cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0)
   n <- length(clusters)
 
   if (index.type==FALSE)  {
-    if (is.numeric(clusters)) clusters <-  sindex.prodlim(unique(clusters),clusters)-1 else  {
+    if (is.numeric(clusters)) clusters <-  timereg:::sindex.prodlim(unique(clusters),clusters)-1 else  {
       max.clust <- length(unique(clusters))
       clusters <- as.integer(factor(clusters, labels = seq(max.clust)))-1
     }
@@ -12,7 +12,7 @@ cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0)
   
   if ((!is.null(num))) { ### different types in different columns
     mednum <- 1
-    if (is.numeric(num)) numnum <-  sindex.prodlim(unique(num),num)-1
+    if (is.numeric(num)) numnum <-  timereg:::sindex.prodlim(unique(num),num)-1
     else {
       numnum <- as.integer(factor(num, labels = seq(length(unique(clusters))))) -1
     }
@@ -36,45 +36,44 @@ faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=1)
   n <- length(clusters)
   if (index.type==FALSE)  {
     max.clust <- length(unique(clusters))
-    if (is.numeric(clusters)) clusters <-  sindex.prodlim(unique(clusters),clusters)-1 else 
+    if (is.numeric(clusters)) clusters <-  timereg:::sindex.prodlim(unique(clusters),clusters)-1 else 
     {
       max.clust <- length(unique(clusters))
       clusters <- as.integer(factor(clusters, labels = 1:max.clust))-1
     }
   }
 
-  nclust <- .Call("nclust", as.integer(clusters))
-  maxclust <- nclust$maxclust
-  antclust <- nclust$uniqueclust
-  nclust <-   nclust$nclust[1:nclust$uniqueclust]
-
   if ((!is.null(num))) { ### different types in different columns
     mednum <- 1
-    if (is.numeric(num)) num <-  sindex.prodlim(unique(num),num)-1
-    else num <- as.integer(factor(num, labels = 1:maxclust)) -1
+    if (is.numeric(num)) num <-  timereg:::sindex.prodlim(unique(num),num)-1
+    else num <- as.integer(factor(num, labels = seq(length(unique(clusters))))) -1
   } else { num <- 0; mednum <- 0; }
 
-  p <- ncol(data); 
-  init <- -1*Rindex;
+###RcppExport SEXP clusterindexdata(SEXP iclusters, SEXP imednum,SEXP inum, SEXP idata) 
 
-  clustud <- .Call("clusterindexdata",as.integer(clusters), 
-                   as.integer(maxclust), as.integer(antclust),
-                   as.integer(mednum), as.integer(num),iddata=data,DUP=FALSE)
+  clustud <- .Call("clusterindexdata",as.integer(clusters),as.integer(mednum), as.integer(num),iddata=data,DUP=FALSE)
 
-  if (Rindex==1) idclust  <- clustud$idclustmat+1 else idclust <- clustud$idclustmat+1
-  if(Rindex==1) idclust[idclust==0] <- NA 
+  if (Rindex==1) clustud$idclust  <- clustud$idclust+1
+###  if(Rindex==1) idclust[idclust==0] <- NA 
+  maxclust <- clustud$maxclust
+
   xny <- clustud$iddata
+  xnames <- colnames(data); 
+  missingname <- (colnames(data)=="")
+  xnames[missingname] <- paste(seq_len(maxclust))[missingname]
+  xny <- data.frame(xny)
+  mm <- as.vector(outer(xnames,seq_len(maxclust),function(...) paste(...,sep=".")))
+  names(xny) <- mm
+
 
   return(xny); 
 } ## }}}
 
 
-
-
 komud<-function(){  ## {{{ 
   library(mets)
   clusters <- c(1,1,2,2,1,3)
-  if (is.numeric(clusters)) clusters <-  sindex.prodlim(unique(clusters),clusters)-1 
+  if (is.numeric(clusters)) clusters <-  timereg:::sindex.prodlim(unique(clusters),clusters)-1 
   clusters
   n <- length(clusters)
   nclust <- .Call("nclust", as.integer(clusters))
