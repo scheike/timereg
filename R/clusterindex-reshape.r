@@ -90,28 +90,20 @@ if ((!is.null(num))) { ### different types in different columns
    else num <- as.integer(factor(num, labels = 1:maxclust)) -1
 } else { num <- 0; mednum <- 0; }
 
-p <- ncol(data); 
-init <- -1*Rindex;
-
-
-###RcppExport SEXP clusterindexdata(SEXP in,SEXP iclusters,SEXP imaxclust,SEXP inclust,SEXP imednum,SEXP inum,
-###		SEXP idata) 
-
 clustud <- .Call("clusterindexdata",as.integer(n),as.integer(clusters), 
                 as.integer(maxclust), as.integer(antclust),
 		as.integer(mednum), as.integer(num),iddata=data,DUP=FALSE)
-
-###print(clustud)
-###clustud <- .C("clusterindexdata",
-###	        as.integer(clusters), as.integer(antclust),as.integer(antpers),
-###                as.integer(rep(init,antclust*maxclust)),as.integer(rep(0,antclust)), as.integer(mednum), 
-###		as.integer(num), as.double(data) )
 
 if (Rindex==1) idclust  <- clustud$idclustmat+1 else idclust <- clustud$idclustmat+1
 if(Rindex==1) idclust[idclust==0] <- NA 
 xny <- clustud$iddata
 
-###mnames <- c()
-###names(xny) <- mnames
+xnames <- colnames(data); 
+missingname <- (colnames(data)=="")
+xnames[missingname] <- paste(seq <- len(maxclust))[missingname]
+xny <- data.frame(xny)
+mm <- as.vector(outer(xnames,seq <- len(maxclust),function(...) paste(...,sep=".")))
+names(xny) <- mm
+
 return(xny); 
 } ## }}}
