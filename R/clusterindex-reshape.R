@@ -13,8 +13,9 @@ cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0)
   if ((!is.null(num))) { ### different types in different columns
     mednum <- 1
     if (is.numeric(num)) numnum <-  sindex.prodlim(unique(num),num)-1
-    else
-      numnum <- as.integer(factor(num, labels = 1:maxclust)) -1
+    else {
+      numnum <- as.integer(factor(num, labels = seq(length(unique(clusters))))) -1
+    }
   } else { numnum <- 0; mednum <- 0; }
 
   clustud <- .Call("clusterindexM",as.integer(clusters),                    
@@ -22,7 +23,7 @@ cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0)
   
   if (Rindex==1) clustud$idclust <- clustud$idclustmat+1
   
-  invisible(clsutud)
+  invisible(clustud)
 } ## }}}
 
 
