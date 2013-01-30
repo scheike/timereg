@@ -1,4 +1,5 @@
 
+##' @export
 cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0)
 { ## {{{
 n <- length(clusters)
@@ -32,14 +33,13 @@ out <- list(clusters=clusters,maxclust=maxclust,antclust=antclust,idclust=idclus
 } ## }}}
 
 komud<-function(){  ## {{{ 
-
 library(mets)
 clusters <- c(1,1,2,2,1,3)
 if (is.numeric(clusters)) clusters <-  sindex.prodlim(unique(clusters),clusters)-1 
 clusters
 n <- length(clusters)
 nclust <- .Call("nclust", as.integer(n), as.integer(clusters))
-numnum <- 0; mednum <- 0;
+num <- numnum <- 0; mednum <- 0;
   maxclust <- nclust$maxclust
   antclust <- nclust$uniqueclust
   nclust <-   nclust$nclust[1:nclust$uniqueclust]
@@ -50,15 +50,26 @@ clustud <- .Call("clusterindexM",as.integer(n),as.integer(clusters),
 		as.integer(mednum), as.integer(numnum))
 
 out=cluster.index(clusters,Rindex=1)
+
+data <- x <- matrix(1:12,6,2)
+clusters <- c(1,1,2,2,1,3)
+
+out=faster.reshape(x,clusters)
+
+out=faster.reshapeM(x,clusters)
+
+clustud <- .Call("clusterindexdata",as.integer(n),as.integer(clusters), 
+                as.integer(maxclust), as.integer(antclust),
+		as.integer(mednum), as.integer(num),idata=data,DUP=FALSE)
 } ## }}}
 
-
+##' @export
 faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=1)
 { ## {{{
 if (NCOL(data)==1) data <- cbind(data)
 if (!is.matrix(data)) data <- as.matrix(data)
 
-antpers <- length(clusters)
+n <- length(clusters)
 if (index.type==FALSE)  {
 	max.clust <- length(unique(clusters))
 	if (is.numeric(clusters)) clusters <-  sindex.prodlim(unique(clusters),clusters)-1 else 
@@ -82,28 +93,25 @@ if ((!is.null(num))) { ### different types in different columns
 p <- ncol(data); 
 init <- -1*Rindex;
 
+
+###RcppExport SEXP clusterindexdata(SEXP in,SEXP iclusters,SEXP imaxclust,SEXP inclust,SEXP imednum,SEXP inum,
+###		SEXP idata) 
+
 clustud <- .Call("clusterindexdata",as.integer(n),as.integer(clusters), 
                 as.integer(maxclust), as.integer(antclust),
-		as.integer(mednum), as.integer(numnum))
+		as.integer(mednum), as.integer(num),iddata=data,DUP=FALSE)
 
-clustud <- .C("clusterindexdata",
-	        as.integer(clusters), as.integer(antclust),as.integer(antpers),
-                as.integer(rep(init,antclust*maxclust)),as.integer(rep(0,antclust)), as.integer(mednum), 
-		as.integer(num), as.double(data) )
+###print(clustud)
+###clustud <- .C("clusterindexdata",
+###	        as.integer(clusters), as.integer(antclust),as.integer(antpers),
+###                as.integer(rep(init,antclust*maxclust)),as.integer(rep(0,antclust)), as.integer(mednum), 
+###		as.integer(num), as.double(data) )
 
-xny <- matrix(clustud[[10]],antclust,maxclust*p)
-###if(Rindex==1) xny[idclust==-1] <- NA 
-###if(Rindex==1) xny[idclust==-1] <- NA 
-if (Rindex==1) idclust  <- matrix(clustud[[4]],antclust,maxclust)+1
-else idclust <- matrix(clustud[[4]],antclust,maxclust)
+if (Rindex==1) idclust  <- clustud$idclustmat+1 else idclust <- clustud$idclustmat+1
 if(Rindex==1) idclust[idclust==0] <- NA 
-mnames <- c()
+xny <- clustud$iddata
 
-##  for (i in 1:maxclust) {
-###     mnames <- c(mnames,paste(names(data),".",i,sep=""))
-###  }
-  xny <- data.frame(xny)
-  names(xny) <- mnames
-out <- xny; 
-
+###mnames <- c()
+###names(xny) <- mnames
+return(xny); 
 } ## }}}
