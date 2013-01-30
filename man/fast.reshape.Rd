@@ -2,24 +2,30 @@
 \alias{fast.reshape}
 \title{Fast reshape}
 \usage{
-  fast.reshape(data, id, varying, num, sep = "", ...)
+  fast.reshape(data, id, varying, num, sep = "",
+    drop = NULL, idname = "id", numname = "num", ...)
 }
 \arguments{
   \item{data}{data.frame or matrix}
 
-  \item{id}{id-variable. If omitted then reshape from wide
-  to long.}
+  \item{id}{id-variable. If omitted then reshape
+  Wide->Long.}
 
   \item{varying}{Vector of prefix-names of the time varying
-  variables. Optional for long->wide reshaping.}
+  variables. Optional for Long->Wide reshaping.}
 
   \item{num}{Optional number/time variable}
 
   \item{sep}{String seperating prefix-name with
   number/time}
 
-  \item{...}{Optional additional arguments to the
-  \code{reshape} function used in the wide->long reshape.}
+  \item{drop}{Vector of column names to drop}
+
+  \item{idname}{Name of id-variable (Wide->Long)}
+
+  \item{numname}{Name of number-variable (Wide->Long)}
+
+  \item{...}{Optional additional arguments}
 }
 \description{
   Simple reshape/tranpose of data
@@ -34,7 +40,7 @@ d1 <- fast.reshape(dd,"id")
 ## From wide-format
 d1 <- fast.reshape(dd,"id")
 d2 <- fast.reshape(dd,"id",var="y")
-d3 <- fast.reshape(dd,"id",var="y",num="time")
+d3 <- fast.reshape(dd,"id",var="y",num="num")
 
 d4 <- fast.reshape(data.matrix(dd),"id",var="y")
 

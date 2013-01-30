@@ -69,34 +69,3 @@ faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=1)
   return(xny); 
 } ## }}}
 
-
-komud<-function(){  ## {{{ 
-  library(mets)
-  clusters <- c(1,1,2,2,1,3)
-  if (is.numeric(clusters)) clusters <-  timereg:::sindex.prodlim(unique(clusters),clusters)-1 
-  clusters
-  n <- length(clusters)
-  nclust <- .Call("nclust", as.integer(clusters))
-  num <- numnum <- 0; mednum <- 0;
-  maxclust <- nclust$maxclust
-  antclust <- nclust$uniqueclust
-  nclust <-   nclust$nclust[1:nclust$uniqueclust]
-
-###
-  clustud <- .Call("clusterindexM",,as.integer(clusters), 
-                   as.integer(maxclust), as.integer(antclust),
-                   as.integer(mednum), as.integer(numnum))
-
-  out=cluster.index(clusters,Rindex=1)
-
-  data <- x <- matrix(1:12,6,2)
-  clusters <- c(1,1,2,2,1,3)
-
-  out=faster.reshape(x,clusters)
-
-  out=faster.reshapeM(x,clusters)
-
-  clustud <- .Call("clusterindexdata",as.integer(clusters), 
-                   as.integer(maxclust), as.integer(antclust),
-                   as.integer(mednum), as.integer(num),idata=data,DUP=FALSE)
-} ## }}}

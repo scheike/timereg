@@ -2,12 +2,15 @@
 ##'
 ##' @title Fast reshape
 ##' @param data data.frame or matrix
-##' @param id id-variable. If omitted then reshape from wide to long. 
+##' @param id id-variable. If omitted then reshape Wide->Long. 
 ##' @param varying Vector of prefix-names of the time varying
-##' variables. Optional for long->wide reshaping.
+##' variables. Optional for Long->Wide reshaping.
 ##' @param num Optional number/time variable
 ##' @param sep String seperating prefix-name with number/time
-##' @param ... Optional additional arguments to the \code{reshape} function used in the wide->long reshape.
+##' @param drop Vector of column names to drop
+##' @param idname Name of id-variable (Wide->Long)
+##' @param numname Name of number-variable (Wide->Long)
+##' @param ... Optional additional arguments
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
 ##' @examples
@@ -20,7 +23,7 @@
 ##' ## From wide-format
 ##' d1 <- fast.reshape(dd,"id")
 ##' d2 <- fast.reshape(dd,"id",var="y")
-##' d3 <- fast.reshape(dd,"id",var="y",num="time")
+##' d3 <- fast.reshape(dd,"id",var="y",num="num")
 ##' 
 ##' d4 <- fast.reshape(data.matrix(dd),"id",var="y")
 ##' 
@@ -31,16 +34,8 @@
 ##' data(prt)
 ##' head(fast.reshape(prt,"id",var="cancer"))
 fast.reshape <- function(data,id,varying,num,sep="",drop=NULL,
-                         idname="id",timename="num",...) {
+                         idname="id",numname="num",...) {
   if (NCOL(data)==1) data <- cbind(data)
-'.onAttach' <- function(lib, pkg="mets")
-  {    
-    desc <- packageDescription(pkg)
-    packageStartupMessage("\nLoading '", desc$Package, "' package...\n",
-                          "Version    : ", desc$Version, "\n",
-                          "Overview: help(package=", desc$Package, ")\n");
-  }
-  
   if (missing(id)) {
     ## reshape from wide to long format. Fall-back to stats::reshape
     nn <- colnames(data)
@@ -59,28 +54,51 @@ fast.reshape <- function(data,id,varying,num,sep="",drop=NULL,
       varying <- newlist
     }
     is_df <- is.data.frame(data)
-    if (is_df) data <- data.matrix(data)
-    
-    fixed <- setdiff(nn,unlist(c(varying,drop,idname,timename)))
+    oldreshape <- FALSE
+    if (is_df) {
+      D0 <- data[1,]
+      classes <- unlist(lapply(D0,class))
+      if (!all(classes%in%c("numeric","logical","factor","integer"))) oldreshape <- TRUE
+      data <- data.matrix(data)
+    }
+
+    if (oldreshape) return(reshape(as.data.frame(data),varying=varying,direction="long",v.names=vnames,...))
+
+    fixed <- setdiff(nn,unlist(c(varying,drop,idname,numname)))
     nfixed <- length(fixed)
     nvarying <- length(varying)
     nclusts <- unlist(lapply(varying,length))
     nclust <- length(varying[[1]])
     if (any(nclusts!=nclust)) stop("Different length of varying vectors!")
     data <- data[,c(fixed,unlist(varying))]
-    
-    long <- as.data.frame(.Call("FastLong",idata=data,inclust=as.integer(nclust),
-                                as.integer(nfixed),as.integer(nvarying)));
-    colnames(long) <- c(fixed,vnames,idname,timename)
+    long <- as.data.frame(.Call("FastLong",
+                                idata=data,
+                                inclust=as.integer(nclust),
+                                as.integer(nfixed),
+                                as.integer(nvarying)));
+    colnames(long) <- c(fixed,vnames,idname,numname)
 
     if (is_df) { ## Recreate classes 
       vars.orig <- c(fixed,unlist(lapply(varying,function(x) x[1])))
-    }   
-    
-    ##    if (test) return(reshape(as.data.frame(data),varying=varying,direction="long",v.names=vnames,...))
+      fac <- which("factor"==classes[vars.orig])
+      log <- which("logical"==classes[vars.orig])
+      if (length(fac)>0) {
+        for (i in fac) {
+          long[,vars.orig[i]] <- factor(long[,vars.orig[i]],labels=levels(D0[,vars.orig[i]]))
+        }
+      }
+      if (length(log)>0) {
+        for (i in log) {
+          long[,vars.orig[i]] <- long[,vars.orig[i]]==1
+        }
+      }      
+    } 
     return(long)
   }
 
+
+  ## Long to wide format:
+  
   numvar <- idvar <- NULL 
   if (is.character(id) || is.factor(id)) {
     if (length(id)>1) stop("Expecting column name or vector of id's")
