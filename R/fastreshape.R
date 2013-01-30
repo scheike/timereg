@@ -72,36 +72,30 @@ fast.reshape <- function(data,id,varying,num,sep="",...) {
     num <- NULL
   }  
 
-  ## antpers <- nrow(data)  
   ## unique.id <- unique(id)
   ## if (any(is.na(unique.id))) stop("NA's not allowed in id-variable")
   ## max.clust <- length(unique.id)  
   ## ##clusters <- as.integer(factor(clusters, labels = seq_len(max.clust)))-1
-  ## clusters <- fast.approx(unique.id,id)$pos
-  ## nclust <- .C("nclusters", as.integer(antpers), as.integer(clusters), 
-  ##              as.integer(rep(0, antpers)), as.integer(0), as.integer(0))
-  ## maxclust <- nclust[[5]]
-  ## antclust <- nclust[[4]]
-  ## cluster.size <- nclust[[3]][seq_len(antclust)]
-  ## if (!is.null(num)) { ### different types in different columns
+  ## ##  clusters <- fast.approx(unique.id,id)$pos
+  ## clusters <- sindex.prodlim(unique.id,id)
+  
+  ## nclust <- .Call("nclust", as.integer(clusters))
+  ## maxclust <- nclust$maxclust
+  ## antclust <- nclust$uniqueclust
+  ## nclust <-   nclust$nclust[1:nclust$uniqueclust]
+
+  ## if ((!is.null(num))) { ### different types in different columns
   ##   mednum <- 1
-  ##   numnum <- numnum <- order(num)-1
-  ## } else {
-  ##   numnum <- 0;
-  ##   mednum <- 0;
-  ## }
-  ## init <- -1
-  ## clustud <- .C("clusterindex", as.integer(clusters), as.integer(antclust), 
-  ##               as.integer(antpers),
-  ##               as.integer(rep(init, antclust * maxclust)),
-  ##               as.integer(rep(0, antclust)), as.integer(mednum), 
-  ##               as.integer(numnum))
-  ## idclust <- matrix(clustud[[4]], antclust, maxclust)
-  ## idclust[idclust == -1] <- NA
- 
-  cud <- cluster.index(id,num=num,Rindex=1)
-  idclust <- cud$idclust
-  maxclust <- cud$maxclust
+  ## } else { num <- 0; mednum <- 0; }
+  ## clustud <- .Call("clusterindexM",as.integer(clusters), 
+  ##                  as.integer(maxclust), as.integer(antclust),
+  ##                  as.integer(mednum), as.integer(num))
+  ## browser()
+  ## idclust <- clustud$idclustmat+1
+  ## idclust[idclust == 0] <- NA
+  clustud <- cluster.index(id)
+  maxclust <- clustud$maxclust
+  idclust <- clustud$idclust
   
   if (!is.null(numvar)) {
     ii <- which(colnames(data)==numvar)
