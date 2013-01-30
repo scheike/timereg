@@ -12,6 +12,8 @@ using namespace std;
 using namespace Rcpp;
 using namespace arma;
 
+
+RcppExport SEXP FastLong(SEXP idata, SEXP inclust, SEXP infixed, SEXP invarying);
 RcppExport SEXP FastApprox(const SEXP a, const SEXP t, const SEXP z);
 RcppExport SEXP FastPattern(SEXP y1,SEXP y2);
 

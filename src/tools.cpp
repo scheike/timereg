@@ -1,6 +1,35 @@
 #include "tools.h"
 #include <vector>
 
+SEXP FastLong(SEXP idata, SEXP inclust,
+	      SEXP infixed, SEXP invarying) {
+      unsigned nvarying = Rcpp::as<unsigned>(invarying); // Number of vayring var
+      unsigned nfixed = Rcpp::as<unsigned>(infixed); // Number of non-varying
+      unsigned nclust = Rcpp::as<unsigned>(inclust); // Number within cluster
+      mat d = Rcpp::as<mat>(idata); // Wide data
+      unsigned M = nclust*d.n_rows;
+      unsigned K = nvarying+nfixed+2;
+      mat dd(M,K); // Long data
+      urowvec idx(nvarying);
+      for (unsigned k=0; k<nvarying; k++)
+         idx[k] = nfixed+k*nclust;
+      rowvec xx(K); xx.fill(NA_REAL);      
+      unsigned count = 0;
+      for (unsigned i=0; i<d.n_rows; i++) {
+         rowvec xx0 = xx;
+         rowvec d0 = d.row(i);
+         for (unsigned k=0; k<nfixed; k++) xx0[k] = d(i,k);
+         for (unsigned j=0; j<nclust; j++) {
+            urowvec idx0 = idx+j;
+            xx0.subvec(nfixed,K-3) = trans(d0.elem(idx0));
+            xx0[K-2] = i+1; xx0[K-1] = j+1;
+            dd.row(count) = xx0;
+            count++;
+         }
+      }
+      return(Rcpp::wrap(dd));
+}
+
 void fastpattern(const umat &y, umat &pattern, uvec &group)  {
   unsigned n = y.n_rows;
   unsigned k = y.n_cols;  

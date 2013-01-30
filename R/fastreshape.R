@@ -30,8 +30,16 @@
 ##'
 ##' data(prt)
 ##' head(fast.reshape(prt,"id",var="cancer"))
-fast.reshape <- function(data,id,varying,num,sep="",...) {
+fast.reshape <- function(data,id,varying,num,sep="",drop=NULL,
+                         idname="id",timename="num",...) {
   if (NCOL(data)==1) data <- cbind(data)
+'.onAttach' <- function(lib, pkg="mets")
+  {    
+    desc <- packageDescription(pkg)
+    packageStartupMessage("\nLoading '", desc$Package, "' package...\n",
+                          "Version    : ", desc$Version, "\n",
+                          "Overview: help(package=", desc$Package, ")\n");
+  }
   
   if (missing(id)) {
     ## reshape from wide to long format. Fall-back to stats::reshape
@@ -47,10 +55,30 @@ fast.reshape <- function(data,id,varying,num,sep="",...) {
         tt <- as.numeric(substring(nn[ii],ncvar[i]+1+nsep))      
         newlist <- c(newlist,list(nn[ii[order(tt)]]))
       }
-      vnames <- varying
+      vnames <- varying      
       varying <- newlist
     }
-    return(reshape(data,varying=varying,direction="long",v.names=vnames,...))
+    is_df <- is.data.frame(data)
+    if (is_df) data <- data.matrix(data)
+    
+    fixed <- setdiff(nn,unlist(c(varying,drop,idname,timename)))
+    nfixed <- length(fixed)
+    nvarying <- length(varying)
+    nclusts <- unlist(lapply(varying,length))
+    nclust <- length(varying[[1]])
+    if (any(nclusts!=nclust)) stop("Different length of varying vectors!")
+    data <- data[,c(fixed,unlist(varying))]
+    
+    long <- as.data.frame(.Call("FastLong",idata=data,inclust=as.integer(nclust),
+                                as.integer(nfixed),as.integer(nvarying)));
+    colnames(long) <- c(fixed,vnames,idname,timename)
+
+    if (is_df) { ## Recreate classes 
+      vars.orig <- c(fixed,unlist(lapply(varying,function(x) x[1])))
+    }   
+    
+    ##    if (test) return(reshape(as.data.frame(data),varying=varying,direction="long",v.names=vnames,...))
+    return(long)
   }
 
   numvar <- idvar <- NULL 
@@ -72,30 +100,12 @@ fast.reshape <- function(data,id,varying,num,sep="",...) {
     num <- NULL
   }  
 
-  ## unique.id <- unique(id)
-  ## if (any(is.na(unique.id))) stop("NA's not allowed in id-variable")
-  ## max.clust <- length(unique.id)  
-  ## ##clusters <- as.integer(factor(clusters, labels = seq_len(max.clust)))-1
-  ## ##  clusters <- fast.approx(unique.id,id)$pos
-  ## clusters <- sindex.prodlim(unique.id,id)
-  
-  ## nclust <- .Call("nclust", as.integer(clusters))
-  ## maxclust <- nclust$maxclust
-  ## antclust <- nclust$uniqueclust
-  ## nclust <-   nclust$nclust[1:nclust$uniqueclust]
-
-  ## if ((!is.null(num))) { ### different types in different columns
-  ##   mednum <- 1
-  ## } else { num <- 0; mednum <- 0; }
-  ## clustud <- .Call("clusterindexM",as.integer(clusters), 
-  ##                  as.integer(maxclust), as.integer(antclust),
-  ##                  as.integer(mednum), as.integer(num))
-  ## browser()
-  ## idclust <- clustud$idclustmat+1
-  ## idclust[idclust == 0] <- NA
+  nn <- colnames(data)
+  if (any(nn=="")) data <- data.frame(data)
+ 
   clustud <- cluster.index(id)
   maxclust <- clustud$maxclust
-  idclust <- clustud$idclust
+  idclust <- clustud$idclust  
   
   if (!is.null(numvar)) {
     ii <- which(colnames(data)==numvar)
@@ -107,7 +117,7 @@ fast.reshape <- function(data,id,varying,num,sep="",...) {
   p <- length(varying)
 
   if (is.matrix(data) || all(apply(data[1,],2,is.numeric))) {
-  ## Everything numeric - we can work with matrices
+    ## Everything numeric - we can work with matrices
     dataw <- matrix(NA, nrow = N, ncol = p * (maxclust-1) + ncol(data))
     for (i in seq_len(maxclust)) {
       if (i==1) {
@@ -123,17 +133,17 @@ fast.reshape <- function(data,id,varying,num,sep="",...) {
     colnames(dataw) <- mnames
     return(dataw)
   } ## Potentially slower with data.frame where we use cbind
-
+  
   for (i in seq_len(maxclust)) {
-     if (i==1) {
-       dataw <- data[idclust[,i]+1,,drop=FALSE]
-       mnames <- names(data);
-       mnames[vidx] <- paste(mnames[vidx],sep,i,sep="")
-     } else {
-       dataw <- cbind(dataw,data[idclust[,i]+1,varying,drop=FALSE])
-       mnames <- c(mnames,paste(varying,sep,i,sep=""))
-     }
-   }
+    if (i==1) {
+      dataw <- data[idclust[,i]+1,,drop=FALSE]
+      mnames <- names(data);
+      mnames[vidx] <- paste(mnames[vidx],sep,i,sep="")
+    } else {
+      dataw <- cbind(dataw,data[idclust[,i]+1,varying,drop=FALSE])
+      mnames <- c(mnames,paste(varying,sep,i,sep=""))
+    }
+  }
   names(dataw) <- mnames
   
   return(dataw)
