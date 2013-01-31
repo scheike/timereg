@@ -114,18 +114,20 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
     data[,num] <- unlist(lapply(idtab,seq_len))
   }
 
-  timevar2 <- paste(timevar,1:2,sep=".")
-  causes2 <- paste(causes,1:2,sep=".")
+  oldreshape <- 0
+  if (oldreshape==1) sep="." else sep=""
+  timevar2 <- paste(timevar,1:2,sep=sep)
+  causes2 <- paste(causes,1:2,sep=sep)
   if (length(covars)>0)
-    covars2 <- paste(covars,1,sep=".")
+    covars2 <- paste(covars,1,sep=sep)
   for (i in seq_len(length(indiv)))
-
-  indiv2 <- c(indiv2, paste(indiv[i],1:2,sep="."))
+  indiv2 <- c(indiv2, paste(indiv[i],1:2,sep=sep))
   
+  if (oldreshape==1)
   ww0 <- reshape(data[,c(timevar,causes,covars,indiv,id,num,"lse.clusters")],
          direction="wide",idvar=id,timevar=num)[,c(id,"lse.clusters.1",timevar2,causes2,indiv2,covars2)]
-
-###  ww0 <- fast.reshape(data[,c(timevar,causes,covars,indiv,id,num,"se.clusters")],id=id,num=data$num)
+  else 
+  ww0 <- fast.reshape(data[,c(timevar,causes,covars,indiv,id,num,"lse.clusters")],id=id,num=data$num)[,c(id,"lse.clusters1",timevar2,causes2,indiv2,covars2)]
   ww0 <- na.omit(ww0)
  
   status <- rep(0,nrow(ww0))
@@ -133,7 +135,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
   mycauses <- setdiff(unique(data[,causes]),0)
 
   time <- status <- rep(0,nrow(ww0))
-  time <- ww0[,"time.1"]
+  time <- ww0[,"time1"]
 
   ##  suppressMessages(browser())  
 

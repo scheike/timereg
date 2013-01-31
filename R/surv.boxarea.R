@@ -13,16 +13,20 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
     while (num%in%names(data)) num <- paste(num,"_",sep="")
     data[,c(num)] <- unlist(lapply(idtab,seq_len))
   }    
-  timevar2 <- paste(timevar,1:2,sep=".")
-  status2 <- paste(status,1:2,sep=".")
-  num2 <- paste(num,1:2,sep=".")
+  timevar2 <- paste(timevar,1:2,sep="")
+  status2 <- paste(status,1:2,sep="")
+  num2 <- paste(num,1:2,sep="")
   covars2 <- NULL; 
-  if (length(covars)>0) covars2 <- paste(covars,1:2,sep=".")
+  if (length(covars)>0) covars2 <- paste(covars,1:2,sep="")
 
-  ww0 <- reshape(data[,c(timevar,status,covars,id,num)],direction="wide",
-		 idvar=id,timevar=num)[,c(timevar2,status2,covars2,id)] 
+  ww0 <- fast.reshape(data[,c(timevar,status,covars,id,num)],id=id)[,c(timevar2,status2,covars2,id)] 
+
+  print(head(ww0))
+  print(timevar2)
+  print("stopper her"); 
 
   mleft <- with(ww0, (get(timevar2[1])>left.trunc[1]) & (get(timevar2[2])>left.trunc[2]))  ## Both not-truncated
+  print(mleft)
   if (length(na.idx <- which(is.na(mleft)))>0) {
     ##    warning("Removing incomplete cases", na.idx)
     mleft <- mleft[-na.idx]
@@ -30,6 +34,8 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   }
   if (sum(mleft)==0) stop("No data selected\n"); 
   ww0 <- ww0[which(mleft),]
+
+  print(head(ww0))
   
   right1 <- which(ww0[,timevar2[1]] > right.cens[1])
   right2 <- which(ww0[,timevar2[2]] > right.cens[2])
@@ -37,15 +43,17 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   ww0[,timevar2[2]][right2] <- right.cens[2]
   ww0[,status2[1]][right1] <- 0
   ww0[,status2[2]][right2] <- 0
-  truncvar2 <- c("left.1","left.2")
+  truncvar2 <- c("left1","left2")
   ww0[,truncvar2[1]] <- left.trunc[1]
   ww0[,truncvar2[2]] <- left.trunc[2]
+  print(head(ww0))
 
   if (silent<=0) message(paste("  Number of joint events:",sum(apply(ww0[,status2],1,sum)==2),"of ",nrow(ww0)),"\n");
-  varying <- c(list(timevar2),list(status2),list(truncvar2),
-               lapply(covars,function(x) paste(x,1:2,sep=".")))
-  lr.data <- reshape(ww0,direction="long",varying=varying,timevar=num,
-		     idvar="id",v.names=c(timevar,status,"left",covars))
+  varying <- c(list(timevar2),list(status2),list(truncvar2),lapply(covars,function(x) paste(x,1:2,sep="")))
+  print(varying)
+  lr.data <- fast.reshape(ww0,direction="long",var=varying,num=num,idvar="id") 
+  print(head(lr.data))
+  ### ,v.names=c(timevar,status,"left",covars))
   lr.data[,boxtimevar] <- lr.data[,timevar]-lr.data[,"left"]
   return(structure(lr.data,num=num,time=boxtimevar,status=status,covars=covars,id=id))
 }
