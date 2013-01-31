@@ -123,12 +123,16 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
   for (i in seq_len(length(indiv)))
   indiv2 <- c(indiv2, paste(indiv[i],1:2,sep=sep))
   
+  print("mig")
+  print(head(data))
+
   if (oldreshape==1)
   ww0 <- reshape(data[,c(timevar,causes,covars,indiv,id,num,"lse.clusters")],
          direction="wide",idvar=id,timevar=num)[,c(id,"lse.clusters.1",timevar2,causes2,indiv2,covars2)]
   else 
   ww0 <- fast.reshape(data[,c(timevar,causes,covars,indiv,id,num,"lse.clusters")],id=id,num=data$num)[,c(id,"lse.clusters1",timevar2,causes2,indiv2,covars2)]
   ww0 <- na.omit(ww0)
+  print(head(ww0))
  
   status <- rep(0,nrow(ww0))
   time <- ww0[,timevar2[2]]
@@ -185,10 +189,14 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
     }
     if (missing(model)) model <- "fg"
     ### clusters for iid construction
+    print("mig2")
+    print(head(ww0))
+    print(head(se.clusters.call))
     lse.clusters <- NULL
     if (!is.null(se.clusters.call)) {
-        lse.clusters <- ww0$lse.clusters.1
+        lse.clusters <- ww0$lse.clusters1
     }
+    print("mig2")
 
     add<-comp.risk(as.formula(ff),data=mydata,
     status,causeS=1,n.sim=0,resample.iid=resample.iid,model=model,conservative=conservative,
