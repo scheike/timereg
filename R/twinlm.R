@@ -12,23 +12,23 @@
 ##' ## E(y|z1,z2) = z1 - z2. var(A) = var(C) = var(E) = 1
 ##' 
 ##' ## E.g to fit the data to an ACE-model without any confounders we simply write
-##' ace <- twinlm(y1 ~ 1, data=d, DZ="DZ", zyg="zyg", id="id")
+##' ace <- twinlm(y ~ 1, data=d, DZ="DZ", zyg="zyg", id="id")
 ##' ace
 ##' ## An AE-model could be fitted as
-##' ae <- twinlm(y1 ~ 1, data=d, DZ="DZ", zyg="zyg", id="id", type="ae")
+##' ae <- twinlm(y ~ 1, data=d, DZ="DZ", zyg="zyg", id="id", type="ae")
 ##' ## LRT:
 ##' compare(ae,ace)
 ##' ## AIC
 ##' AIC(ae)-AIC(ace)
 ##' ## To adjust for the covariates we simply alter the formula statement
-##' ace2 <- twinlm(y1 ~ x11+x12, data=d, DZ="DZ", zyg="zyg", id="id", type="ace")
+##' ace2 <- twinlm(y ~ x11+x12, data=d, DZ="DZ", zyg="zyg", id="id", type="ace")
 ##' ## Summary/GOF
 ##' summary(ace2)
 ##' ## An interaction could be analyzed as:
-##' ace3 <- twinlm(y1 ~ x11+x12 + x11:I(x12<0), data=d, DZ="DZ", zyg="zyg", id="id", type="ace")
+##' ace3 <- twinlm(y ~ x11+x12 + x11:I(x12<0), data=d, DZ="DZ", zyg="zyg", id="id", type="ace")
 ##' ## Categorical variables are also supported
 ##' d2 <- transform(d,x12cat=cut(x12,3,labels=c("Low","Med","High")))
-##' ace4 <- twinlm(y1 ~ x11+x12cat, data=d2, DZ="DZ", zyg="zyg", id="id", type="ace")
+##' ace4 <- twinlm(y ~ x11+x12cat, data=d2, DZ="DZ", zyg="zyg", id="id", type="ace")
 ##' ## plot the model structure
 ##' \dontrun{
 ##' plot(ace4)

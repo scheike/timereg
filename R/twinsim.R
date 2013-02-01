@@ -55,11 +55,11 @@ twinsim <- function(nMZ=100,nDZ=nMZ,b1=c(),b2=c(),mu=0,acde=c(1,1,0,1),randomslo
   if (length(b2)>0) { d <- cbind(d,g=g) }
   colnames(d) <- sub(".","",colnames(d),fixed=TRUE)
   if (wide) return(d)
-  dd <- fast.reshape(d,idvar="id",var="y")
+  dd <- fast.reshape(d,idvar="id",varying="y")
 
   dd$status <- dd$y<dd$cens
   dd$y0 <- (dd$y>threshold)
-  dd$y <- (dd$y>threshold & dd$y<cens)*1
+  dd$y1 <- (dd$y>threshold & dd$y<cens)*1
   ## S.MZ <- diag(2)*vE+vC+vA
   ## S.DZ <- diag(2)*(vE+vA) + rho*S2*vA + vC
   ## Mu <- (threshold-mu)
