@@ -25,7 +25,7 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   print(timevar2)
   print("stopper her"); 
 
-  mleft <- with(ww0, (get(timevar2[1])>left.trunc[1]) & (get(timevar2[2])>left.trunc[2]))  ## Both not-truncated
+  mleft <-  (ww0[,timevar2[1]]>left.trunc[1]) & (ww0[,timevar2[2]]>left.trunc[2])  ## Both not-truncated
   print(mleft)
   if (length(na.idx <- which(is.na(mleft)))>0) {
     ##    warning("Removing incomplete cases", na.idx)
@@ -44,14 +44,17 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   ww0[,status2[1]][right1] <- 0
   ww0[,status2[2]][right2] <- 0
   truncvar2 <- c("left1","left2")
-  ww0[,truncvar2[1]] <- left.trunc[1]
-  ww0[,truncvar2[2]] <- left.trunc[2]
+  ww0 <- cbind(ww0,left.trunc[1])
+  ww0 <- cbind(ww0,left.trunc[2])
+  colnames(ww0)[c(-1,0) + ncol(ww0)] <- truncvar2
   print(head(ww0))
 
   if (silent<=0) message(paste("  Number of joint events:",sum(apply(ww0[,status2],1,sum)==2),"of ",nrow(ww0)),"\n");
   varying <- c(list(timevar2),list(status2),list(truncvar2),lapply(covars,function(x) paste(x,1:2,sep="")))
   print(varying)
-  lr.data <- fast.reshape(ww0,direction="long",var=varying,num=num,idvar="id") 
+  print(num)
+###  lr.data <- data.frame(fast.reshape(ww0,var=varying,numname=num,idname=id) )
+  lr.data <- data.frame(fast.reshape(data.frame(ww0),var=varying) )
   print(head(lr.data))
   ### ,v.names=c(timevar,status,"left",covars))
   lr.data[,boxtimevar] <- lr.data[,timevar]-lr.data[,"left"]

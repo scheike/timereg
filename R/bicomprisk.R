@@ -194,7 +194,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
     print(head(se.clusters.call))
     lse.clusters <- NULL
     if (!is.null(se.clusters.call)) {
-        lse.clusters <- ww0$lse.clusters1
+        lse.clusters <- ww0[,"lse.clusters1"]
     }
     print("mig2")
 
