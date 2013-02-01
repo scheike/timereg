@@ -44,7 +44,8 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
 
   if (silent<=0) message(paste("  Number of joint events:",sum(apply(ww0[,status2],1,sum)==2),"of ",nrow(ww0)),"\n");
   varying <- c(list(timevar2),list(status2),list(truncvar2),lapply(covars,function(x) paste(x,1:2,sep="")))
-  lr.data <- data.frame(fast.reshape(ww0,varying=c(timevar,status,"left")))
+  lr.data <- data.frame(fast.reshape(ww0,varying=c(timevar,status,"left"),
+                                     idname=id,numname=num))
   ### ,v.names=c(timevar,status,"left",covars))
   lr.data[,boxtimevar] <- lr.data[,timevar]-lr.data[,"left"]
   return(structure(lr.data,num=num,time=boxtimevar,status=status,covars=covars,id=id))
