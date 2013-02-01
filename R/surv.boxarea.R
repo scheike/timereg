@@ -48,9 +48,11 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
 
   if (silent<=0) message(paste("  Number of joint events:",sum(apply(ww0[,status2],1,sum)==2),"of ",nrow(ww0)),"\n");
   varying <- c(list(timevar2),list(status2),list(truncvar2),lapply(covars,function(x) paste(x,1:2,sep="")))
-  print(varying)
+  print(unlist(varying))
   print(num)
-  lr.data <- data.frame(fast.reshape(data.frame(ww0),var=varying))
+###  lr.data <- data.frame(fast.reshape(data.frame(ww0),var=list(unlist(varying))))
+  print(list(c(timevar,status,truncvar2)))
+  lr.data <- data.frame(fast.reshape(data.frame(ww0),var=list(c(timevar,status,"left"))))
   print(head(lr.data))
   ### ,v.names=c(timevar,status,"left",covars))
   lr.data[,boxtimevar] <- lr.data[,timevar]-lr.data[,"left"]
