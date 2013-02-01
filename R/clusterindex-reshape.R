@@ -31,6 +31,7 @@ faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=1)
 { ## {{{
   if (NCOL(data)==1) data <- cbind(data)
   if (!is.matrix(data)) data <- as.matrix(data)
+  if (is.character(clusters)) clusters <- data[,clusters]
   n <- length(clusters)
 
   if (nrow(data)!=n)  stop("nrow(data) and clusters of different lengths\n"); 
