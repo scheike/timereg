@@ -58,7 +58,7 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
     is_df <- is.data.frame(data)
     oldreshape <- FALSE
     if (is_df) {
-      D0 <- data[1,]
+      D0 <- data[1,,drop=FALSE]
       classes <- unlist(lapply(D0,class))
       if (!all(classes%in%c("numeric","logical","factor","integer"))) {
         oldreshape <- TRUE
@@ -145,12 +145,12 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
   N <- nrow(idclust)
   p <- length(varying)
 
-  if (is.matrix(data) || all(apply(data[1,],2,is.numeric))) {
+  if (is.matrix(data) || all(apply(data[1,,drop=FALSE],2,is.numeric))) {
     ## Everything numeric - we can work with matrices
     dataw <- matrix(NA, nrow = N, ncol = p * (maxclust-1) + ncol(data))
     for (i in seq_len(maxclust)) {
       if (i==1) {
-        dataw[, seq(ncol(data))] <- as.matrix(data[idclust[, i] + 1,])
+        dataw[, seq(ncol(data))] <- as.matrix(data[idclust[, i] + 1,,drop=FALSE])
         mnames <- colnames(data);
         mnames[vidx] <- paste(mnames[vidx],i,sep=sep)
       } else {
