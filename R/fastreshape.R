@@ -76,7 +76,7 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
     nclusts <- unlist(lapply(varying,length))
     nclust <- length(varying[[1]])
     if (any(nclusts!=nclust)) stop("Different length of varying vectors!")
-    data <- data[,c(fixed,unlist(varying))]
+    data <- data[,c(fixed,unlist(varying)),drop=FALSE]
     long <- as.data.frame(.Call("FastLong",
                                 idata=data,
                                 inclust=as.integer(nclust),
