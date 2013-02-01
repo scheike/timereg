@@ -12,9 +12,10 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
     num <- "num"
     while (num%in%names(data)) num <- paste(num,"_",sep="")
     data[,c(num)] <- unlist(lapply(idtab,seq_len))
-  } 
-###  if (is.character(num)) num <- data[,num];   
-###  print(num)
+  } else {
+    if (is.character(num)) num <- data[,num];   
+  }
+  
 
   timevar2 <- paste(timevar,1:2,sep="")
   status2 <- paste(status,1:2,sep="")
@@ -25,7 +26,7 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   ww0 <- fast.reshape(data[,c(timevar,status,covars,id,num)],id=id)[,c(timevar2,status2,covars2,id)] 
 
   mleft <-  (ww0[,timevar2[1]]>left.trunc[1]) & (ww0[,timevar2[2]]>left.trunc[2])  ## Both not-truncated
-  print(mleft)
+
   if (length(na.idx <- which(is.na(mleft)))>0) {
     ##    warning("Removing incomplete cases", na.idx)
     mleft <- mleft[-na.idx]
@@ -44,16 +45,11 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   ww0 <- cbind(ww0,left.trunc[1])
   ww0 <- cbind(ww0,left.trunc[2])
   colnames(ww0)[c(-1,0) + ncol(ww0)] <- truncvar2
-  print(head(ww0))
 
   if (silent<=0) message(paste("  Number of joint events:",sum(apply(ww0[,status2],1,sum)==2),"of ",nrow(ww0)),"\n");
   varying <- c(list(timevar2),list(status2),list(truncvar2),lapply(covars,function(x) paste(x,1:2,sep="")))
-  print(unlist(varying))
-  print(num)
 ###  lr.data <- data.frame(fast.reshape(data.frame(ww0),var=list(unlist(varying))))
-  print(list(c(timevar,status,truncvar2)))
-  lr.data <- data.frame(fast.reshape(data.frame(ww0),var=list(c(timevar,status,"left"))))
-  print(head(lr.data))
+  lr.data <- data.frame(fast.reshape(ww0,var=c(timevar,status,"left")))
   ### ,v.names=c(timevar,status,"left",covars))
   lr.data[,boxtimevar] <- lr.data[,timevar]-lr.data[,"left"]
   return(structure(lr.data,num=num,time=boxtimevar,status=status,covars=covars,id=id))

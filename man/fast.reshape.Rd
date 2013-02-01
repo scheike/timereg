@@ -2,8 +2,8 @@
 \alias{fast.reshape}
 \title{Fast reshape}
 \usage{
-  fast.reshape(data, id, varying, num, sep = "",
-    drop = NULL, idname = "id", numname = "num", ...)
+  fast.reshape(data, id, varying, num, sep = "", keep,
+    idname = "id", numname = "num", ...)
 }
 \arguments{
   \item{data}{data.frame or matrix}
@@ -19,7 +19,7 @@
   \item{sep}{String seperating prefix-name with
   number/time}
 
-  \item{drop}{Vector of column names to drop}
+  \item{keep}{Vector of column names to keep}
 
   \item{idname}{Name of id-variable (Wide->Long)}
 
@@ -32,21 +32,23 @@
 }
 \examples{
 m <- lvm(c(y1,y2,y3,y4)~x)
-d <- sim(m,1e1)
+d <- sim(m,5)
 
-dd <- fast.reshape(d,var="y")
-d1 <- fast.reshape(dd,"id")
+fast.reshape(fast.reshape(d,var="y"),id="id")
 
-## From wide-format
-d1 <- fast.reshape(dd,"id")
-d2 <- fast.reshape(dd,"id",var="y")
-d3 <- fast.reshape(dd,"id",var="y",num="num")
+##### From wide-format
+(dd <- fast.reshape(d,var="y"))
+## Same with explicit setting new id and number variable/column names and seperator "" (default) and dropping x
+fast.reshape(d,var="y",idname="a",timevar="b",sep="",keep=c())
+## Same with 'reshape' list-syntax
+fast.reshape(d,var=list(c("y1","y2","y3","y4")))
 
-d4 <- fast.reshape(data.matrix(dd),"id",var="y")
-
-## From long-format
-fast.reshape(d,var="y",idvar="a",timevar="b")
-fast.reshape(d,var=list(c("y1","y2","y3","y4")),idvar="a",timevar="b")
+##### From long-format
+fast.reshape(dd,id="id")
+## Restrict set up within-cluster varying variables
+fast.reshape(d,var="y")
+## with time/number-variable, seperator '.', and dropping x
+fast.reshape(d,var="y",num="num",keep=c(),sep=".")
 
 data(prt)
 head(fast.reshape(prt,"id",var="cancer"))

@@ -7,7 +7,7 @@
 ##' variables. Optional for Long->Wide reshaping.
 ##' @param num Optional number/time variable
 ##' @param sep String seperating prefix-name with number/time
-##' @param drop Vector of column names to drop
+##' @param keep Vector of column names to keep
 ##' @param idname Name of id-variable (Wide->Long)
 ##' @param numname Name of number-variable (Wide->Long)
 ##' @param ... Optional additional arguments
@@ -15,25 +15,27 @@
 ##' @export
 ##' @examples
 ##' m <- lvm(c(y1,y2,y3,y4)~x)
-##' d <- sim(m,1e1)
-##' 
-##' dd <- fast.reshape(d,var="y")
-##' d1 <- fast.reshape(dd)
+##' d <- sim(m,5)
 ##'
-##' ## From wide-format
-##' d1 <- fast.reshape(dd)
-##' d2 <- fast.reshape(dd,var="y")
-##' d3 <- fast.reshape(dd,var="y",num="num")
-##' 
-##' d4 <- fast.reshape(data.matrix(dd),var="y")
-##' 
-##' ## From long-format
-##' fast.reshape(d,var="y",idr="a",timevar="b")
-##' fast.reshape(d,var=list(c("y1","y2","y3","y4")),idvar="a",timevar="b")
+##' fast.reshape(fast.reshape(d,var="y"),id="id")
+##'
+##' ##### From wide-format
+##' (dd <- fast.reshape(d,var="y"))
+##' ## Same with explicit setting new id and number variable/column names and seperator "" (default) and dropping x
+##' fast.reshape(d,var="y",idname="a",timevar="b",sep="",keep=c())
+##' ## Same with 'reshape' list-syntax
+##' fast.reshape(d,var=list(c("y1","y2","y3","y4")))
+##'
+##' ##### From long-format
+##' fast.reshape(dd,id="id")
+##' ## Restrict set up within-cluster varying variables
+##' fast.reshape(d,var="y")
+##' ## with time/number-variable, seperator '.', and dropping x
+##' fast.reshape(d,var="y",num="num",keep=c(),sep=".")
 ##'
 ##' data(prt)
 ##' head(fast.reshape(prt,"id",var="cancer"))
-fast.reshape <- function(data,id,varying,num,sep="",drop=NULL,
+fast.reshape <- function(data,id,varying,num,sep="",keep,
                          idname="id",numname="num",...) {
   if (NCOL(data)==1) data <- cbind(data)
   if (missing(id)) {
@@ -58,13 +60,17 @@ fast.reshape <- function(data,id,varying,num,sep="",drop=NULL,
     if (is_df) {
       D0 <- data[1,]
       classes <- unlist(lapply(D0,class))
-      if (!all(classes%in%c("numeric","logical","factor","integer"))) oldreshape <- TRUE
-      data <- data.matrix(data)
+      if (!all(classes%in%c("numeric","logical","factor","integer"))) {
+        oldreshape <- TRUE
+      } else {
+        data <- data.matrix(data)
+      }
     }
 
     if (oldreshape) return(reshape(as.data.frame(data),varying=varying,direction="long",v.names=vnames,...))
 
-    fixed <- setdiff(nn,unlist(c(varying,drop,idname,numname)))
+    fixed <- setdiff(nn,unlist(c(varying,idname,numname)))
+    if (!missing(keep)) fixed <- intersect(fixed,keep)
     nfixed <- length(fixed)
     nvarying <- length(varying)
     nclusts <- unlist(lapply(varying,length))
@@ -129,6 +135,11 @@ fast.reshape <- function(data,id,varying,num,sep="",drop=NULL,
     ii <- which(colnames(data)==numvar)
     data <- data[,-ii,drop=FALSE]
   }
+  if (!missing(keep)) {
+    ii <- which(colnames(data)%in%c(keep,idvar))
+    data <- data[,ii,drop=FALSE]
+  }
+  
   if (missing(varying)) varying <- setdiff(colnames(data),c(idvar))
   vidx <- match(varying,colnames(data))
   N <- nrow(idclust)
