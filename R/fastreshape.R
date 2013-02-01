@@ -122,15 +122,15 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
     }
   } else {
     num <- NULL
-  }  
+  }
 
   nn <- colnames(data)
   if (any(nn=="")) data <- data.frame(data)
- 
-  clustud <- cluster.index(id)
+
+  clustud <- cluster.index(id,num=num)
   maxclust <- clustud$maxclust
   idclust <- clustud$idclust  
-  
+
   if (!is.null(numvar)) {
     ii <- which(colnames(data)==numvar)
     data <- data[,-ii,drop=FALSE]
