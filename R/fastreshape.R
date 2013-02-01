@@ -42,8 +42,8 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
     ## reshape from wide to long format. Fall-back to stats::reshape
     nn <- colnames(data)
     nsep <- nchar(sep)
+    if (missing(varying)) stop("Prefix of time-varying variables needed")
     vnames <- NULL
-    if (missing(varying)) stop("Prefix of time-varying variables needed")    
     ncvar <- sapply(varying,nchar)
     newlist <- c()
     if (!is.list(varying)) {
@@ -54,7 +54,7 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
       }
       vnames <- varying      
       varying <- newlist
-    }
+    } 
     is_df <- is.data.frame(data)
     oldreshape <- FALSE
     if (is_df) {
@@ -65,6 +65,9 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
       } else {
         data <- data.matrix(data)
       }
+    }
+    if (is.null(vnames)) {
+      vnames <- unlist(lapply(varying,function(x) x[1]))
     }
 
     if (oldreshape) return(reshape(as.data.frame(data),varying=varying,direction="long",v.names=vnames,...))
@@ -135,8 +138,11 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
     ii <- which(colnames(data)==numvar)
     data <- data[,-ii,drop=FALSE]
   }
+
   if (!missing(keep)) {
-    ii <- which(colnames(data)%in%c(keep,idvar))
+    keepers <- c(keep,idvar)
+    if (!missing(varying)) keepers <- c(keepers,varying)
+    ii <- which(colnames(data)%in%keepers)
     data <- data[,ii,drop=FALSE]
   }
   
