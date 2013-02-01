@@ -18,17 +18,17 @@
 ##' d <- sim(m,1e1)
 ##' 
 ##' dd <- fast.reshape(d,var="y")
-##' d1 <- fast.reshape(dd,"id")
+##' d1 <- fast.reshape(dd)
 ##'
 ##' ## From wide-format
-##' d1 <- fast.reshape(dd,"id")
-##' d2 <- fast.reshape(dd,"id",var="y")
-##' d3 <- fast.reshape(dd,"id",var="y",num="num")
+##' d1 <- fast.reshape(dd)
+##' d2 <- fast.reshape(dd,var="y")
+##' d3 <- fast.reshape(dd,var="y",num="num")
 ##' 
-##' d4 <- fast.reshape(data.matrix(dd),"id",var="y")
+##' d4 <- fast.reshape(data.matrix(dd),var="y")
 ##' 
 ##' ## From long-format
-##' fast.reshape(d,var="y",idvar="a",timevar="b")
+##' fast.reshape(d,var="y",idr="a",timevar="b")
 ##' fast.reshape(d,var=list(c("y1","y2","y3","y4")),idvar="a",timevar="b")
 ##'
 ##' data(prt)

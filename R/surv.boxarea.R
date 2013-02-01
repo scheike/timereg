@@ -12,7 +12,10 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
     num <- "num"
     while (num%in%names(data)) num <- paste(num,"_",sep="")
     data[,c(num)] <- unlist(lapply(idtab,seq_len))
-  }    
+  } 
+###  if (is.character(num)) num <- data[,num];   
+###  print(num)
+
   timevar2 <- paste(timevar,1:2,sep="")
   status2 <- paste(status,1:2,sep="")
   num2 <- paste(num,1:2,sep="")
@@ -20,10 +23,6 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   if (length(covars)>0) covars2 <- paste(covars,1:2,sep="")
 
   ww0 <- fast.reshape(data[,c(timevar,status,covars,id,num)],id=id)[,c(timevar2,status2,covars2,id)] 
-
-  print(head(ww0))
-  print(timevar2)
-  print("stopper her"); 
 
   mleft <-  (ww0[,timevar2[1]]>left.trunc[1]) & (ww0[,timevar2[2]]>left.trunc[2])  ## Both not-truncated
   print(mleft)
@@ -35,8 +34,6 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   if (sum(mleft)==0) stop("No data selected\n"); 
   ww0 <- ww0[which(mleft),]
 
-  print(head(ww0))
-  
   right1 <- which(ww0[,timevar2[1]] > right.cens[1])
   right2 <- which(ww0[,timevar2[2]] > right.cens[2])
   ww0[,timevar2[1]][right1] <- right.cens[1]
@@ -53,8 +50,7 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   varying <- c(list(timevar2),list(status2),list(truncvar2),lapply(covars,function(x) paste(x,1:2,sep="")))
   print(varying)
   print(num)
-###  lr.data <- data.frame(fast.reshape(ww0,var=varying,numname=num,idname=id) )
-  lr.data <- data.frame(fast.reshape(data.frame(ww0),var=varying) )
+  lr.data <- data.frame(fast.reshape(data.frame(ww0),var=varying))
   print(head(lr.data))
   ### ,v.names=c(timevar,status,"left",covars))
   lr.data[,boxtimevar] <- lr.data[,timevar]-lr.data[,"left"]
