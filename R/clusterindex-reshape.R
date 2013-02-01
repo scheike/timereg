@@ -30,7 +30,8 @@ cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0)
 faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=1)
 { ## {{{
   if (NCOL(data)==1) data <- cbind(data)
-  if (!is.matrix(data)) data <- as.matrix(data)
+ ### uses data.matrix 
+  if (!is.matrix(data)) data <- data.matrix(data)
   if (is.character(clusters)) clusters <- data[,clusters]
   n <- length(clusters)
 
