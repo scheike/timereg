@@ -544,8 +544,8 @@ datalr$tstime <- datalr[,timevar]
 datalr$tsstatus <- datalr[,status]
 datalr$tsid <- datalr[,id]
 ###
-###f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(",num,")")))
-f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(num)")))
+f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(",num,")")))
+###f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(num)")))
 marg1 <- aalen(f,data=datalr,n.sim=0,max.clust=NULL,robust=0)
 fitlr<-  twostage(marg1,data=datalr,clusters=datalr$tsid,model=model,score.method=score.method,
               Nit=Nit,detail=detail,silent=silent,weights=weights,
