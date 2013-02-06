@@ -1,6 +1,8 @@
-//#include <stdio.h>
+#include <stdio.h>
 #include <math.h>
 #include "matrix.h"
+#include <sys/types.h>
+#include <time.h>
                  
 void Gpropoddssubdist(times,Ntimes,designX,nx,px,designG,ng,pg,antpers,start,stop,
 betaS,Nit,cu,vcu,loglike,Iinv,Vbeta,detail,sim,antsim,
@@ -76,6 +78,9 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
   vec_ones(difX); cu[0]=times[0]; 
   // }}}
 
+  int timing=1; 
+  clock_t c0,c1; 
+  c0=clock();
 
    // reading design once and for all
       for (c=0;c<*antpers;c++) { // {{{
@@ -129,12 +134,15 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 	vec_add(tmpv2,rowZ,rowZ); 
 	scl_vec_mult(weights*VE(dlamt,j),rowZ,rowZ); 
 	replace_row(ddesG,j,rowZ); 
+
+//	extract_row(ddesG,j,zi);  use the previous dA instead of current value to save time
+	scl_vec_mult(VE(weight,j)*VE(lamt,j),rowZ,rowZ); 
+	replace_row(ZP,j,rowZ);
       } // }}}
 
       if (s < 0) { print_vec(plamt); print_vec(dlamt); print_mat(cdesX); }
 
       MtA(cdesX,ldesignX,A); 
-
       invertS(A,AI,detail[0]); 
       if (ME(AI,0,0)==0.0 && *detail==1 && *stratum==1){ 
           Rprintf(" X'X not invertible at time %lf \n",time); }
@@ -165,12 +173,13 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
       vec_add(difzzav,U,U); 
 
       Mv(ldesignX,dA,lamt);  
-      for (j=0;j<*antpers;j++){
-	extract_row(ddesG,j,zi); 
-	if (s<0 && j<5 ) { Rprintf(" %ld %ld \n",(long int) s, (long int)j); print_vec(zi); }
-	scl_vec_mult(VE(weight,j)*VE(lamt,j),zi,zi); 
-	replace_row(ZP,j,zi);
-      }
+//      for (j=0;j<*antpers;j++){ // {{{
+//	if (s<0 && j<5 ) { Rprintf(" %ld %ld \n",(long int) s, (long int)j); print_vec(zi); }
+//	extract_row(ddesG,j,zi); 
+//	scl_vec_mult(VE(weight,j)*VE(lamt,j),zi,zi); 
+//	replace_row(ZP,j,zi);
+//      } // }}}
+
       MtA(ldesignX,ZP,ZPX); 
 
       MxA(AI,ZPX,tmp6); 
@@ -261,6 +270,12 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 
     } // }}} /* Ntimes */ 
 
+   if (timing==1) { // {{{ 
+	  c1=clock();
+	  Rprintf ("\telapsed CPU time:        %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+	  c0=clock();
+   } // }}} 	
+
     invert(S1,SI); 
     Mv(SI,U,delta); 
     vec_add(beta,delta,beta); 
@@ -284,6 +299,12 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
     if ((sumscore<0.000001) & (it<*Nit-2)) it=*Nit-2; 
     
   } // }}} /* it */
+
+   if (timing==1) { // {{{ 
+	  c1=clock();
+	  Rprintf ("\telapsed CPU time:     it   %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+	  c0=clock();
+   } // }}} 	
 
   for (k=0;k<*pg;k++)  score[k]=VE(U,k); 
 
@@ -322,6 +343,12 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 	free_mat(tempTranspose);
     }
   } // }}}
+
+   if (timing==1) { // {{{ 
+	  c1=clock();
+	  Rprintf ("\telapsed CPU time:     qt   %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+	  c0=clock();
+   } // }}} 	
 
   if (robust==1) { // {{{
 
@@ -474,6 +501,12 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
     MxA(RobVbeta,SI,tmp1); 
     MxA(SI,tmp1,RobVbeta);
   } // }}}
+
+   if (timing==1) { // {{{ 
+	  c1=clock();
+	  Rprintf ("\telapsed CPU time:     variance   %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+	  c0=clock();
+   } // }}} 	
 
   for(j=0;j<*pg;j++) { 
     betaS[j]= VE(beta,j); loglike[0]=ll;

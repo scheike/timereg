@@ -12,6 +12,7 @@ double *designX,*designG,*times,*betaS,*start,*stop,*cu,*loglike,*Vbeta,*RVbeta,
 int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,
 *wscore,*retur,*exppar,*sym,*mlestart,*stratum;
 {
+// {{{
   matrix *ldesignX,*cdesG,*ldesignG,*cdesX,*cdesX2,*cdesX3,*cdesX4,*CtVUCt,*A,*AI;
   matrix *dYI,*Ct,*dM1M2,*M1M2t,*COV,*ZX,*ddesG,*ZP,*ZPX; 
   matrix *tmp1,*tmp2,*tmp5,*tmp3,*dS,*S1,*SI,*S2,*M1,*VU,*ZXAI,*VUI, *tmp6; // Added tmp6 
@@ -30,7 +31,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
   int t,c,robust=1,pers=0,i,j,k,l,s,it,count,pmax; 
   int *ipers=calloc(*Ntimes,sizeof(int)); 
   double time=0,dummy,ll; 
-  double tau,hati=0,random,sumscore; 
+  double tau,dhati,hati=0,random,sumscore; 
   double norm_rand(); 
   void GetRNGstate(),PutRNGstate();  
 
@@ -75,16 +76,18 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
   pmax=max(*px,*pg); ll=0; vec_ones(one);
   for(j=0;j<*pg;j++){ VE(beta,j)=betaS[j]; }
   vec_ones(difX); cu[0]=times[0]; 
+  // }}}
 
   /* Main procedure ================================== */
   for (it=0;it<*Nit;it++){
     vec_zeros(U); mat_zeros(S1);  sumscore=0; 
 
-    for (s=1;s<*Ntimes;s++){
+    for (s=1;s<*Ntimes;s++){ // {{{
       time=times[s]; 
-      mat_zeros(ldesignX); mat_zeros(ldesignG); vec_zeros(risk); 
+      mat_zeros(ldesignX); mat_zeros(ldesignG); 
+//      vec_zeros(risk); 
 
-      for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) {
+      for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) { // {{{
 	if ((start[c]<time) && (stop[c]>=time))  {
 	  VE(risk,id[c])=1.0;
 	  for(j=0;j<pmax;j++) {
@@ -96,8 +99,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 	  } 
 	  count=count+1; 
 	}
-      }
-
+      } // }}}
 
 //readXZtsimple(antpers,nx,px,designX,pg,designG,
 //		start,stop,status,pers, ldesignX, ldesignG,time, s,id); 
@@ -134,6 +136,12 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 	vec_add(tmpv2,rowZ,rowZ); 
 	scl_vec_mult(VE(dlamt,j),rowZ,rowZ); 
 	replace_row(ddesG,j,rowZ); 
+
+	if (it<0) { // use previous hazard estimate
+           dhati=vec_prod(xi,dAt[s]); 
+	   scl_vec_mult(dhati,rowZ,rowZ); 
+	   replace_row(ZP,j,rowZ);
+	}
       }
 
       if (s < 0) {
@@ -170,12 +178,10 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
       vec_add(difzzav,U,U); 
 
       Mv(ldesignX,dA,lamt);  
+      if (it>=0)  // first time use update hazard est
       for (j=0;j<*antpers;j++){
+	if (s<0 && j<5 ) { Rprintf(" %ld %ld \n",(long int) s, (long int)j); print_vec(zi); }
 	extract_row(ddesG,j,zi); 
-	if (s<0 && j<5 ) {
-	  Rprintf(" %ld %ld \n",(long int) s, (long int)j); 
-	  print_vec(zi); 
-	}
 	scl_vec_mult(VE(lamt,j),zi,zi); 
 	replace_row(ZP,j,zi);
       }
@@ -190,7 +196,6 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 	print_mat(tmp3); 
 	print_mat(dG[s]); 
       }
-
       MxA(ZXAIs[s],ZPX,SI); 
       mat_transp(SI,tmp2); 
       MtA(ldesignG,ZP,tmp1); 
@@ -215,11 +220,10 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
       scl_mat_mult(1.0,S1,St[s]); 
 
       /* variance and other things */ 
-      if (it==((*Nit)-1)) { 
+      if (it==((*Nit)-1)) {  // {{{
 	replace_row(Utt,s,U);
 
-
-	for (j=0;j<*px;j++)  {
+	for (j=0;j<*px;j++)  { // {{{
 	  for (i=0;i<*antpers;i++){
 	    dummy=ME(ldesignX,i,j); 
 	    extract_row(cdesX2,i,xi); 
@@ -232,9 +236,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 	  for (k=0;k<*px;k++){
 	    ME(Ft[s],j,k)=VE(xi,k); 
 	  }
-
 	  VE(lht,s)=VE(lht,s-1)-ME(A,0,0)*(ME(AI,0,0)*ME(AI,0,0));
-
 
 	  /* Rprintf(" %ld %lf %lf \n",s,lht->ve[s],AI->me[0][0]); */
 
@@ -248,8 +250,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 	  for (k=0;k<*pg;k++) {
 	    ME(G1mG2t[s],k,j)=ME(G1mG2t[s],k,j)+VE(zi,k); 
 	  }
-	}
-
+	} // }}}
 
 	/*
 	  for (i=0;i<*px;i++){ for (j=0;j<*pg;j++) dM1M2->me[j][i]=dA->ve[i]*difzzav->ve[j];
@@ -273,15 +274,15 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 	  replace_row(q1t[j],s,zi); 
 	  VE(dLamt[j],s)=VE(plamt,j)*vec_sum(vec_star(xi,dA,rowX));
 	}
-      }/* if (it==((*Nit)-1)) */
+      } // }}} /* if (it==((*Nit)-1)) */
 
-    } /* Ntimes */ 
+    }  // }}} /* Ntimes */ 
 
     invert(S1,SI); 
     Mv(SI,U,delta); 
     vec_add(beta,delta,beta); 
 
-    if (*detail>=1) { 
+    if (*detail>=1) { // {{{
       Rprintf("====================Iteration %ld ==================== \n",(long int) it);
       Rprintf("delta \n"); 
       print_vec(delta); 
@@ -293,23 +294,17 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
       print_mat(SI); 
       Rprintf("simple D2 l\n");  
       print_mat(S1); 
-    }
+    } // }}}
 
-    for (k=0;k<*pg;k++) {
-      sumscore += VE(U,k); 
-    }
-
-    if ((fabs(sumscore)<0.000001) & (it<*Nit-2)){ 
-      it=*Nit-2; 
-    }
+    for (k=0;k<*pg;k++) sumscore += VE(U,k); 
+    if ((fabs(sumscore)<0.000001) & (it<*Nit-2)) it=*Nit-2; 
+    
   } /* it */
-  for (k=0;k<*pg;k++) { 
-    score[k]=VE(U,k); 
-  }
+  for (k=0;k<*pg;k++) score[k]=VE(U,k); 
 
 
   /* computation of q(t) */
-  for (s=1;s<*Ntimes;s++) {
+  for (s=1;s<*Ntimes;s++) { // {{{
     mat_zeros(M1M2t); 
 
     for (t=s;t<*Ntimes;t++) { 
@@ -342,11 +337,11 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
         print_mat(mat_transp(q2t[s],tempTranspose));
 	free_mat(tempTranspose);
     }
-  }
+  } // }}}
 
   /* terms for robust variances ============================ */
-  if (robust==1) {
-    for (s=1;s<*Ntimes;s++) {
+  if (robust==1) { // {{{
+    for (s=1;s<*Ntimes;s++) { // {{{
       time=times[s]; 
       cu[s]=times[s]; vcu[s]=times[s]; Rvcu[s]=times[s]; Ut[s]=times[s]; 
 
@@ -417,13 +412,13 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 	}
       } /* i=1..antpers */ 
 
-    } /* s=1 ..Ntimes */ 
+    } // }}} /* s=1 ..Ntimes */ 
 
     MxA(SI,VU,S2); 
     MxA(S2,SI,VU); 
 
     /* ROBUST VARIANCES   */
-    for (s=1;s<*Ntimes;s++) {
+    for (s=1;s<*Ntimes;s++) { // {{{
 
       if (s<0){ 
 	print_mat(dG[s]); 
@@ -507,10 +502,10 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
       for (k=1;k<*px+1;k++) { 
 	Rvcu[k*(*Ntimes)+s]=VE(VdB,k-1); vcu[k*(*Ntimes)+s]=VE(VdB,k-1); 
       }
-    }  /*  s=1 ..Ntimes */ 
+    } // }}} /*  s=1 ..Ntimes */ 
     MxA(RobVbeta,SI,tmp1); 
     MxA(SI,tmp1,RobVbeta);
-  }
+  } // }}}
 
   for(j=0;j<*pg;j++) { 
     betaS[j]= VE(beta,j); loglike[0]=ll;
@@ -520,7 +515,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
     } 
   } 
 
-  if (*sim==1) {
+  if (*sim==1) { // {{{
     Rprintf("Simulations start N= %ld \n",(long int) *antsim);
     GetRNGstate();  /* to use R random normals */
 
@@ -627,8 +622,9 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
       }  /* s=1..Ntims */
     }  /* k=1..antsim */
     PutRNGstate();  /* to use R random normals */
-  } /* sim==1 */
+  } // }}} /* sim==1 */
   
+  // {{{ freeing
   free_mats(&cumdG,&tmp4,&Ident,&ddesG,&Utt,&tmpM2,&VUI,&ZX,&COV,
 		&dM1M2,&AI,&A,&ZXAI,&tmp1,&tmp2,&tmp3,&ldesignX,&cdesX,
 		&cdesX2,&cdesX4,&cdesX3,&cdesG,&ldesignG,&M1,&dS,&S1,&SI,NULL);
@@ -636,7 +632,6 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 		&tmpM1,&CtVUCt,NULL); 
 
   free_vecs(&risk,&ta,&ahatt,&Uprofile,&dlamt,&plamt,&lamt,&one,&xi,&zcol,&Gbeta,&VdA,&dA,&MdA,&xtilde,&zi,&U,&beta,&delta,&zav,&difzzav,&weight,&offset,&tmpv1,&tmpv2,&rowX,&rowZ,&difX,&VdB,&reszpbeta,&res1dim,NULL); 
-
 
   free_mat(tmp6);
 
@@ -655,5 +650,6 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
   } 
 
   free(ipers); 
+  // }}}
 
 }

@@ -15,9 +15,9 @@ The modelling formula uses the standard survival modelling given in the
 \bold{survival} package.
 }
 \usage{
-prop.odds(formula,data=sys.parent(),beta=NULL,Nit=10,
-detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
-profile=1,sym=0,baselinevar=1)
+prop.odds(formula,data=sys.parent(),beta=NULL,
+Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
+profile=1,sym=0,baselinevar=1,clusters=NULL,max.clust=1000)
 }
 \arguments{
 \item{formula}{
@@ -49,6 +49,8 @@ partial likelihood is recommended.
 of the estimating equation approach (profile=0). 
 This may improve the numerical performance. 
 }
+\item{clusters}{to compute cluster based standard errors.}
+\item{max.clust}{number of maximum clusters to be used, to save time in iid decomposition.}
 \item{baselinevar}{set to 0 to omit calculations of baseline variance.}
 }
 \details{

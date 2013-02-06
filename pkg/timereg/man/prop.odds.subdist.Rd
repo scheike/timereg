@@ -23,9 +23,9 @@ The modelling formula uses the standard survival modelling given in the
 \bold{survival} package.
 }
 \usage{
-prop.odds.subdist(formula,data=sys.parent(),cause=NULL,causeS=1,beta=0,
+prop.odds.subdist(formula,data=sys.parent(),cause=NULL,causeS=1,beta=NULL,
 Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
-profile=1,sym=0,cens.code=0,cens.model="KM")
+profile=1,sym=0,cens.code=0,cens.model="KM",clusters=NULL,max.clust=100,baselinevar=1)
 }
 \arguments{
 \item{formula}{
@@ -33,7 +33,7 @@ a formula object, with the response on the left of a '~' operator, and
 the terms on the right.  The response must be a survival object as
 returned by the `Surv' function.
 }
-\item{data}{a data.frame with the variables.}
+j\item{data}{a data.frame with the variables.}
 \item{cause}{cause indicator for competing risks.}
 \item{beta}{starting value for relative risk estimates}
 \item{Nit}{number of iterations for Newton-Raphson algorithm.}
@@ -52,6 +52,9 @@ This may improve the numerical performance.  }
 \item{causeS}{specifies cause of interst. numeric value.}
 \item{cens.code}{specifies censoring code.}
 \item{cens.model}{specifies censoring model. So far only Kaplan-Meier "KM".}
+\item{clusters}{to compute cluster based standard errors.}
+\item{max.clust}{number of maximum clusters to be used, to save time in iid decomposition.}
+\item{baselinevar}{set to 0 to save time on computations.}
 }
 \details{
 The data for a subject is presented as multiple rows or "observations",
@@ -119,7 +122,10 @@ summary(out)
 par(mfrow=c(2,3))
 plot(out,sim.ci=2); plot(out,score=1) 
 
-# Fits Proportional odds model with stratified baseline
+pout <- predictpropodds(out,X=model.matrix(~platelet+age+tcell,data=bmt)[,-1])
+matplot(pout$time,pout$pred,type="l")
+
+# Fits Proportional odds model with stratified baseline, slow  !
 out <- Gprop.odds.subdist(Surv(time,cause==1)~-1+factor(platelet)+prop(age)+prop(tcell),data=bmt,
 		 cause=bmt$cause,cens.code=0,cens.model="KM",causeS=1,detail=0,n.sim=1000)
 summary(out) 

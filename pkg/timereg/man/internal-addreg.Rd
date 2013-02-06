@@ -32,6 +32,7 @@
 \alias{plot.two.stage}
 \alias{summary.two.stage}
 \alias{predict.two.stage}
+\alias{predictpropodds}
 \alias{plot.cums}
 \alias{plot.comprisk}
 \alias{plot.predict.comprisk}

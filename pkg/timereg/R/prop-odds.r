@@ -1,12 +1,12 @@
 prop.odds<-function(formula,data=sys.parent(),beta=NULL,
 Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
-profile=1,sym=0,baselinevar=1)
+profile=1,sym=0,baselinevar=1,clusters=NULL,max.clust=1000)
 {
 id.call<-id; call<-match.call(); residuals<-0;  
 robust<-0; ratesim<-0; # profile<-0; 
 m<-match.call(expand.dots = FALSE);
 m$sym<-m$profile<-m$max.time<-m$start.time<-m$weighted.test<-m$n.sim<-
-m$id<-m$Nit<-m$detail<-m$beta <- m$baselinevar<-NULL
+m$id<-m$Nit<-m$detail<-m$beta <- m$baselinevar<-m$clusters <- m$max.clust <- NULL
 if (n.sim==0) sim<-0 else sim<-1; 
 antsim<-n.sim; 
 
@@ -56,21 +56,37 @@ Ntimes <- length(times);
 ########################################################################
 if (is.null(id)==TRUE) {antpers<-length(time); id<-0:(antpers-1); }
 else { pers<-unique(id); antpers<-length(pers); 
-       id<-as.integer(factor(id,labels=1:(antpers)))-1; }
+       id<-as.integer(factor(id,labels=1:(antpers)))-1; 
+}
+
+cluster.call<-clusters; 
+if (is.null(clusters)== TRUE) {clusters<-id; antclust<-antpers;} else {
+       clus<-unique(clusters); antclust<-length(clus); 
+       clusters <- as.integer(factor(clusters, labels = 1:(antclust))) - 1;
+}
+
+if ((!is.null(max.clust))) if (max.clust<antclust) {
+	qq <- unique(quantile(clusters, probs = seq(0, 1, by = 1/max.clust)))
+	qqc <- cut(clusters, breaks = qq, include.lowest = TRUE)    
+	clusters <- as.integer(qqc)-1
+	max.clusters <- length(unique(clusters))
+###	clusters <- as.integer(factor(qqc, labels = 1:max.clust)) -1
+	antclust <- max.clust    
+  }                
 
   if ((length(beta)!=pg) && (is.null(beta)==FALSE)) beta <- rep(beta[1],pg); 
   if ((is.null(beta))) {
-        if ( (attr(m[, 1], "type") == "right" ) ) 
-        beta<-coxph(Surv(stop,status)~X)$coef
+        if ( (attr(m[, 1], "type") == "right" ) ) beta<-coxph(Surv(stop,status)~X)$coef
         else beta<-coxph(Surv(start,stop,status)~X)$coef; 
   }
 
 if (residuals==1) {
 cumAi<-matrix(0,Ntimes,antpers*1);
-cumAiiid<-matrix(0,Ntimes,antpers*1); }
-else { cumAi<-0; cumAiiid<-0; }
+cumAiiid<-matrix(0,Ntimes,antpers*1); 
+} else { cumAi<-0; cumAiiid<-0; }
 
-cumint<-matrix(0,Ntimes,px+1); vcum<-matrix(0,Ntimes,px+1);
+cumint<-matrix(0,Ntimes,px+1); 
+vcum<-matrix(0,Ntimes,px+1);
 Rvcu<-matrix(0,Ntimes,px+1);
 score<-beta;
 Varbeta<-matrix(0,pg,pg); Iinv<-matrix(0,pg,pg);
@@ -82,9 +98,11 @@ testval<-c();
 rani<--round(runif(1)*10000); 
 Ut<-matrix(0,Ntimes,pg+1); simUt<-matrix(0,antsim,pg);
 loglike<-0; 
+
 ########################################################################
 
-###cat("Proportional odds model \n"); 
+
+cat("Proportional odds model \n"); 
 ###dyn.load("Gprop-odds.so")
 
 nparout<- .C("transsurv",
@@ -100,7 +118,7 @@ as.double(Uit),as.integer(id),as.integer(status),
 as.integer(weighted.test),as.integer(ratesim),as.double(score),
 as.double(cumAi),as.double(cumAiiid),as.integer(residuals),
 as.double(loglike),as.integer(profile),as.integer(sym),
-as.integer(baselinevar), PACKAGE="timereg");
+as.integer(baselinevar),as.integer(clusters),as.integer(antclust), PACKAGE="timereg");
 
 gamma<-matrix(nparout[[9]],pg,1);
 cumint<-matrix(nparout[[11]],Ntimes,px+1);

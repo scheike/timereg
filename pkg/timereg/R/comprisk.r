@@ -79,6 +79,8 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=1)
 
   pxz <-px+pz;
 
+  if (is.character(cause)) cause <- data[,cause]
+
   if (is.null(times)) {
           timesc<-sort(unique(time2[cause==causeS])); 
 	  if (!is.null(n.times)) {
