@@ -23,3 +23,6 @@ CXX=ccache g++
 FC=ccache gfortran
 F77=ccache gfortran
 MAKE=make -j4
+
+CXXFLAGS= -O0 -pipe
+

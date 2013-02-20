@@ -13,7 +13,10 @@ using namespace std;
 using namespace Rcpp;
 using namespace arma;
 
-const double log2pi = log(2*datum::pi);
+
+const double twopi = 2*datum::pi;
+const double itwopi = 1.0/2/datum::pi;
+const double log2pi = log(twopi);
 
 struct vecmat
 {
@@ -21,6 +24,8 @@ struct vecmat
   mat M;
 };
 
+
+RcppExport SEXP Dpmvn(SEXP lower, SEXP upper, SEXP mu, SEXP sigma, SEXP std);
 
 RcppExport SEXP loglikMVN(SEXP yl, SEXP yu, 
 			  SEXP status,
