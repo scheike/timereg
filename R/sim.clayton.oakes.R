@@ -8,9 +8,10 @@
 ##' @param beta Effect (log hazard ratio) of covariate
 ##' @param stoptime Stopping time
 ##' @param left Left truncation
+##' @param pairleft pairwise (1) left truncation or individual (0)
 ##' @author Klaus K. Holst
 ##' @export
-simClaytonOakes <- function(K,n,eta,beta,stoptime,left=0) {
+simClaytonOakes <- function(K,n,eta,beta,stoptime,left=0,pairwise=0,pairleft=0) {
   ## K antal clustre, n=antal i clustre
   x<-array(c(runif(n*K),rep(0,n*K),rbinom(n*K,1,0.5)),dim=c(K,n,3))
   C<-matrix(stoptime,K,n);
@@ -20,15 +21,34 @@ simClaytonOakes <- function(K,n,eta,beta,stoptime,left=0) {
   x[,,1]<-pmin(temp,C)
   minstime <- apply(x[,,1],1,min)  
   ud <- as.data.frame(cbind(apply(x,3,t),rep(1:K,each=n)))  
-  if (left>0) {
-    lefttime <- rexp(K)*left
-    left <- rbinom(K,1,0.5) ## not trunation times!
-    lefttime <- apply(cbind(lefttime*left,3),1,min)
-    trunk <- (lefttime > minstime)
-    medleft <- rep(trunk,each=n)
-  } else { lefttime <- trunk <- rep(0,K);}
 
-  ud <- cbind(ud,rep(minstime,each=n),rep(lefttime,each=n),rep(trunk,each=n))
+if (left>0) {
+     if (pairleft==1) {
+     lefttime <- rexp(K)*left
+     left <- rbinom(K,1,0.5) ## not trunation times!
+     lefttime <- apply(cbind(lefttime*left,3),1,min)
+       trunk <- (lefttime > minstime)
+       medleft <- rep(trunk,each=n)
+     } else {
+       lefttime <- rexp(n*K)*left
+       left <- rbinom(n*K,1,0.5) ## not trunation times!
+       lefttime <- apply(cbind(lefttime*left,3),1,min)
+       trunk <- (lefttime > ud[,1])
+       medleft <- trunk
+     }
+  } else { lefttime <- trunk <- rep(0,K);}
+  if (pairleft==1) ud <- cbind(ud,rep(minstime,each=n),rep(lefttime,each=n),rep(trunk,each=n))
+  else ud <- cbind(ud,rep(minstime,each=n),lefttime,trunk)
+
+###  if (left>0) {
+###    lefttime <- rexp(K)*left
+###    left <- rbinom(K,1,0.5) ## not trunation times!
+###    lefttime <- apply(cbind(lefttime*left,3),1,min)
+###    trunk <- (lefttime > minstime)
+###    medleft <- rep(trunk,each=n)
+###  } else { lefttime <- trunk <- rep(0,K);}
+###
+###  ud <- cbind(ud,rep(minstime,each=n),rep(lefttime,each=n),rep(trunk,each=n))
   names(ud)<-c("time","status","x1","cluster","mintime","lefttime","truncated")
   return(ud)
 }
