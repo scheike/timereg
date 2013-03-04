@@ -2,7 +2,8 @@
 \alias{simClaytonOakes}
 \title{Simulate from the Clayton-Oakes frailty model}
 \usage{
-  simClaytonOakes(K, n, eta, beta, stoptime, left = 0)
+  simClaytonOakes(K, n, eta, beta, stoptime, left = 0,
+    pairwise = 0, pairleft = 0)
 }
 \arguments{
   \item{K}{Number of clusters}
@@ -16,6 +17,9 @@
   \item{stoptime}{Stopping time}
 
   \item{left}{Left truncation}
+
+  \item{pairleft}{pairwise (1) left truncation or
+  individual (0)}
 }
 \description{
   Simulate observations from the Clayton-Oakes copula model

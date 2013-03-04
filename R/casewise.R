@@ -270,15 +270,15 @@ test.conc <- function(conc1,conc2,same.cluster=FALSE)
 	  stop("Must give iid represenation for both estimators\n");  
 
     if (!is.null(conc1$P1.iid) && !is.null(conc2$P1.iid))  {
-    if ( ((ncol(conc1$P1.iid[1,,])-ncol(conc2$P1.iid[1,,]))!=0) && same.cluster==TRUE)
+    if ( ((ncol(conc1$P1.iid[,])-ncol(conc2$P1.iid[,]))!=0) && same.cluster==TRUE)
        cat("Warning, not same number of iid residuals for concordance and marginal estimate\n"); 
     }
 
     if (!is.null(conc1$P1.iid)) if (!is.null(conc2$P1.iid)) {
 ### iid version af integraler
-      conc2P1.iid  <- Cpred(cbind(conc2$time,conc2$P1.iid[1,,]),timer)[,-1]
-      conc1P1.iid  <- Cpred(cbind(conc1$time,conc1$P1.iid[1,,]),timer)[,-1]
-    if ( (ncol(conc1$P1.iid[1,,])==ncol(conc2$P1.iid[1,,])) && same.cluster==TRUE) {
+      conc2P1.iid  <- Cpred(cbind(conc2$time,conc2$P1.iid[,]),timer)[,-1]
+      conc1P1.iid  <- Cpred(cbind(conc1$time,conc1$P1.iid[,]),timer)[,-1]
+    if ( (ncol(conc1$P1.iid[1,,])==ncol(conc2$P1.iid[,])) && same.cluster==TRUE) {
 	diff.iid <- conc1P1.iid-conc2P1.iid
 	sdiff.iid <- apply(diff.iid,2,sum)*dtimer
 	sd.pepem <- sum(sdiff.iid^2)^.5
