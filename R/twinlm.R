@@ -77,7 +77,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
   yvar <- getoutcome(formula)
   if (missing(zyg)) stop("Zygosity variable not specified")
   if (missing(id)) stop("Twin-pair variable not specified")
-  
+
   if (binary | is.factor(data[,yvar]) | is.character(data[,yvar]) | is.logical(data[,yvar])) {
     args <- as.list(cl)
     args[[1]] <- NULL
@@ -368,44 +368,47 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
       }      
     }
   }
-
   if (!is.null(weight)) {
     weight <- paste(weight,1:2,sep=".")
     estimator <- "weighted"
   }
 
-  ## Estimate
-  newkeep <- unlist(sapply(keep, function(x) paste(x,1:2,sep=".")))
-  mm <- list(MZ=model1,DZ=model2)
-  dd <- list(wide1,wide2)
+  newkeep <- unlist(sapply(keep, function(x) paste(x, 1:2, 
+                                                   sep = ".")))
+  mm <- list(MZ = model1, DZ = model2)
+  dd <- list(wide1, wide2)
   if (!missing(OS)) {
-    mm <- c(mm,OS=list(model3))
-    dd <- c(dd,list(wide3))
+    mm <- c(mm, OS = list(model3))
+    dd <- c(dd, list(wide3))
   }
+
   names(dd) <- names(mm)
-  suppressWarnings(mg <- multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep,type=2))
-  if (is.null(estimator)) return(mg)
-  optim <- list(method="nlminb2",refit=FALSE,gamma=1,start=rep(0.1,with(mg,npar+npar.mean)))  
+
+  ## suppressWarnings(mg <- multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep,type=2))
+
+  if (is.null(estimator)) return(multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep,type=2))
+
+  optim <- list(method="nlminb2",refit=FALSE,gamma=1,start=rep(0.1,length(coef(mm[[1]]))*length(mm)))
+  ##                                                       with(mg,npar+npar.mean)))
   if (length(control)>0) {
     optim[names(control)] <- control
   }
 
   if (is.Surv(data[,yvar])) {
     require("lava.tobit")
-    estimator <- "tobit"
     if (is.null(optim$method))
-      optim$method <- "nlminb1"
-    e <- estimate(mg,estimator=estimator,fix=FALSE,control=optim,...)
+       optim$method <- "nlminb1"
+    e <- estimate(mm,dd,control=optim,...)
   } else {
-    e <- estimate(mg,weight=weight,estimator=estimator,fix=FALSE,control=optim,...)
+    e <- estimate(mm,dd,weight=weight,estimator=estimator,fix=FALSE,control=optim,...)
   }
   if (!is.null(optim$refit) && optim$refit) {
     optim$method <- "NR"
     optim$start <- pars(e)
     if (is.Surv(data[,yvar])) {
-      e <- estimate(mg,estimator=estimator,fix=FALSE,control=optim,...)      
+      e <- estimate(mm,dd,estimator=estimator,fix=FALSE,control=optim,...)      
     } else {
-      e <- estimate(mg,weight=weight,estimator=estimator,fix=FALSE,control=optim,...)
+      e <- estimate(mm,dd,weight=weight,estimator=estimator,fix=FALSE,control=optim,...)
     }
   }
   res <- list(coefficients=e$opt$estimate, vcov=Inverse(information(e)), estimate=e, model=mm, full=full, call=cl, data=data, zyg=zyg, id=id, twinnum=twinnum, type=type, model.mz=model1, model.dz=model2, model.dzos=model3, data.mz=wide1, data.dz=wide2, data.os=wide3, OS=!missing(OS), constrain=constrain)
