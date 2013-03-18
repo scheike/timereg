@@ -37,7 +37,11 @@
 ##' head(fast.reshape(prt,"id",var="cancer"))
 fast.reshape <- function(data,id,varying,num,sep="",keep,
                          idname="id",numname="num",...) {
-  if (NCOL(data)==1) data <- cbind(data)
+  if (!is.data.frame(data) & is.list(data)) {
+    data <- as.data.frame(data)
+  } else {
+    if (NCOL(data)==1) data <- cbind(data)
+  }
   if (missing(id)) {
     ## reshape from wide to long format. Fall-back to stats::reshape
     nn <- colnames(data)

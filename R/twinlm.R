@@ -76,8 +76,10 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
   formula <- update(formula, ~ . + 1)
   yvar <- getoutcome(formula)
   if (missing(zyg)) stop("Zygosity variable not specified")
+  if (!(zyg%in%colnames(data))) stop("'zyg' not found in data")
+  if (!(id%in%colnames(data))) stop("'id' not found in data")
   if (missing(id)) stop("Twin-pair variable not specified")
-
+  
   if (binary | is.factor(data[,yvar]) | is.character(data[,yvar]) | is.logical(data[,yvar])) {
     args <- as.list(cl)
     args[[1]] <- NULL
@@ -100,6 +102,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
     covars <- covars[-1]
   if(length(covars)<1) covars <- NULL
 
+  
   zygstat <- data[,zyg]
   if(!is.factor(zygstat)) {
     zygstat <- as.factor(zygstat)
@@ -132,7 +135,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
   numlev <- seq(2+!missing(OS))
   myMZ <- setdiff(numlev,c(myDZ,myOS))
 
- 
+
   data1 <- mydata[mydata[,zyg]==myMZ,,drop=FALSE]
   if (nrow(data1)==0) stop("No MZ twins found")
   data2 <- mydata[mydata[,zyg]==myDZ,,drop=FALSE]
@@ -383,7 +386,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
   }
 
   names(dd) <- names(mm)
-
+  
   ## suppressWarnings(mg <- multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep,type=2))
 
   if (is.null(estimator)) return(multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep,type=2))
@@ -393,6 +396,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
   if (length(control)>0) {
     optim[names(control)] <- control
   }
+
 
   if (is.Surv(data[,yvar])) {
     require("lava.tobit")
