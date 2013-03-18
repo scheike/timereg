@@ -2,7 +2,7 @@
 \alias{casewise.test}
 \title{Estimates the casewise concordance based on Concordance and marginal estimate using timereg and performs test for independence}
 \usage{
-  casewise.test(conc, marg, test = "no-test")
+  casewise.test(conc, marg, test = "no-test", p = 0.01)
 }
 \arguments{
   \item{conc}{Concordance}

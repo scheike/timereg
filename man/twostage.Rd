@@ -11,7 +11,7 @@ based on the pairwise bivariate models.}
     control = list(), theta = NULL, theta.des = NULL,
     var.link = 1, iid = 0, step = 0.5, notaylor = 0,
     model = "plackett", marginal.survival = NULL,
-    strata = NULL)
+    strata = NULL, se.clusters = NULL)
 }
 \arguments{
   \item{margsurv}{Marginal model}

@@ -85,7 +85,7 @@ RcppExport SEXP twostageloglike(
 		SEXP icluster,SEXP iclustsize,SEXP iclusterindex, SEXP ivarlink, 
                 SEXP iiid, SEXP  iweights, SEXP isilent, 
 		SEXP idepmodel, // SEXP ientryage,
-		SEXP itrunkp , SEXP istrata
+		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid 
 ) // {{{
 {
 // {{{ setting matrices and vectors, and exporting to armadillo matrices
@@ -100,6 +100,7 @@ RcppExport SEXP twostageloglike(
  colvec weights = Rcpp::as<colvec>(iweights);
 // colvec entryage = Rcpp::as<colvec>(ientryage);
  colvec trunkp = Rcpp::as<colvec>(itrunkp);
+ colvec secluster = Rcpp::as<colvec>(isecluster);
 
 // array for derivative of flexible design
  NumericVector DXthetavec(iDXtheta);
@@ -111,6 +112,7 @@ RcppExport SEXP twostageloglike(
  int silent = Rcpp::as<int>(isilent);
  int depmodel= Rcpp::as<int>(idepmodel); 
  int iid= Rcpp::as<int>(iiid); 
+ int antiid = Rcpp::as<int>(iantiid);
 
  mat Xtheta = Rcpp::as<mat>(iXtheta);
 
@@ -184,10 +186,8 @@ RcppExport SEXP twostageloglike(
   vec ckij(4),dckij(4),ckijvv(4),dckijvv(4),ckijtv(4),dckijtv(4),ckijvt(4),dckijvt(4);
   i=silent+1; 
 
-  mat thetiid(antclust,pt); 
+  mat thetiid(antiid,pt); 
   if (iid==1) thetiid.fill(0); 
-
-
 
   colvec p11tvec(antclust); 
 //  p11tvec=0; 
@@ -281,7 +281,7 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
      vthetascore=weights(i)*diff*vthetascore; 
      Utheta=Utheta+vthetascore; 
 
-     if (iid==1) for (c1=0;c1<pt;c1++) thetiid(j,c1)+=vthetascore(c1); 
+     if (iid==1) for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)+=vthetascore(c1); 
      } // }}} strata(i)==strata(k) indenfor strata
 
   } /* for (c=0....... */   // }}}
@@ -289,7 +289,6 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 } /* j in antclust */ 
 
 //printf("Sum of squares %lf \n",ssf); theta.print("theta"); Utheta.print("Utheta"); DUtheta.print("DUtheta"); 
-
 List res; 
 res["loglike"]=ssf; 
 res["score"]=Utheta; 

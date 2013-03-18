@@ -36,11 +36,10 @@
 ##' par(new=TRUE)
 ##' plot(cdz,ylim=c(0,0.7),xlim=c(60,100))
 ##' @export
-casewise.test <- function(conc,marg,test="no-test")
+casewise.test <- function(conc,marg,test="no-test",p=0.01)
 { ## {{{
-  time1 <- conc$time
-  time2 <- marg$time
-
+  if (sum(marg$P1>0.01)==0) stop("No timepoints where marginal > 0.01\n"); 
+  time1 <- conc$time; time2 <- marg$time[marg$P1>0.01]
   mintime <- max(time1[1],time2[1])
   maxtime <- min(max(time1),max(time2))
   timer <- seq(mintime, maxtime,length=100)
@@ -54,38 +53,36 @@ casewise.test <- function(conc,marg,test="no-test")
   casewise.iid <- NULL
   casewise <- concP1/margtime
 
-  se.casewise2 <- as.matrix(Cpred(se.concP1,timer)[,2]/margtime,ncol=100)
-  se.margtime <- as.matrix(Cpred(se.margtime,timer)[,2],ncol=100)
+  se.casewise2 <- as.matrix(se.concP1[,2]/margtime,ncol=100)
+  se.margtime <- as.matrix(se.margtime[,2],ncol=100)
   se.casewise <- NULL;
   outtest <- NULL; 
 
   if (is.null(conc$P1.iid) || is.null(marg$P1.iid))   {
     cat("Warning, need iid decomposition for correct se's for Concordance \n");
   } else {
-
    conciid <- Cpred(cbind(conc$time,conc$P1.iid),timer)[,-1]
    nconc <- colnames(conc$P1.iid)
    P1iid <- Cpred(cbind(marg$time,marg$P1.iid),timer)[,-1]
-   casewise.iid1 <- conciid/margtime
-   casewise.iid2 <- P1iid*(concP1/margtime^2)
-   casewise.iid <- casewise.iid2
-   casewise.iid[,nconc] <- casewise.iid[,nconc]+casewise.iid1
+   P1iid2  <- 2*P1iid*margtime;
+   se.p2 <- apply(P1iid2^2,1,sum)^.5
+   difconciid <- (P1iid2[,nconc]-conciid)
+   casewise.iid <- difconciid/margtime;
    se.casewise <- apply(casewise.iid^2,1,sum)^.5
 
    if (test=="case") 
    {
-        diff.iid <- (apply(casewise.iid,2,sum)-apply(P1iid,2,sum))*dtimer
-        sd.pepem <- sum(diff.iid^2)^.5
+        diff.iidcase <- apply(casewise.iid,2,sum)*dtimer;
+        sd.pepem <- sum(diff.iidcase^2)^.5
         diff.pepem <- sum((casewise-margtime))*dtimer
+        mix <-  diff.pepem
         z.pepem <- diff.pepem/sd.pepem
         pval.pepem <- 2*pnorm(-abs(z.pepem))
         outtest <- cbind(diff.pepem,sd.pepem,z.pepem,pval.pepem)
         colnames(outtest) <- c("cum dif.","sd","z","pval") 			 
         rownames(outtest) <- "pepe-mori"
     } else if (test=="conc") {
-        P1iid2  <- 2*P1iid;
-        P1iid2[,nconc] <- (P1iid2[,nconc] - conciid)
-        diff.iid <- apply(P1iid2,2,sum)*dtimer
+        diff.iid <- apply(difconciid,2,sum)*dtimer
         sd.pepem <- sum(diff.iid^2)^.5
         diff.pepem <- sum((concP1-margtime^2))*dtimer
         z.pepem <- diff.pepem/sd.pepem
@@ -96,14 +93,16 @@ casewise.test <- function(conc,marg,test="no-test")
     }
   }
 
+   concout <- cbind(timer,concP1,se.concP1[,2])
+   colnames(concout) <- c("time","concordance","se")
    margout <- cbind(timer,margtime,se.margtime)
    colnames(margout) <- c("time","cif","se")
-
    casewiseout <- cbind(timer,casewise,se.casewise,se.casewise2)
    colnames(casewiseout) <- c("time","casewise","se","se2")
+   difout <- cbind(timer,concP1-margtime^2,apply(difconciid^2,1,sum)^.5)
 
-  out <- list(casewise=casewiseout,marg=margout,
-	      test=outtest, mintime=mintime,maxtime=maxtime,same.cluster=TRUE,test=test)
+  out <- list(casewise=casewiseout,marg=margout,conc=concout,
+	      test=outtest,mintime=mintime,maxtime=maxtime,same.cluster=TRUE,testtype=test)
   class(out) <- "casewise"
   return(out)
 } ## }}}
@@ -275,14 +274,14 @@ test.conc <- function(conc1,conc2,same.cluster=FALSE)
     }
 
     if (!is.null(conc1$P1.iid)) if (!is.null(conc2$P1.iid)) {
-### iid version af integraler
+    ### iid version af integraler
       conc2P1.iid  <- Cpred(cbind(conc2$time,conc2$P1.iid[,]),timer)[,-1]
       conc1P1.iid  <- Cpred(cbind(conc1$time,conc1$P1.iid[,]),timer)[,-1]
-    if ( (ncol(conc1$P1.iid[1,,])==ncol(conc2$P1.iid[,])) && same.cluster==TRUE) {
+    if ( (ncol(conc1$P1.iid)==ncol(conc2$P1.iid)) && same.cluster==TRUE) {
 	diff.iid <- conc1P1.iid-conc2P1.iid
 	sdiff.iid <- apply(diff.iid,2,sum)*dtimer
 	sd.pepem <- sum(sdiff.iid^2)^.5
-      } else {
+    } else {
 	diff2.iid <- conc2P1.iid
 	sdiff2.iid <- apply(diff2.iid,2,sum)*dtimer
 	var2.pepem <- sum(sdiff2.iid^2)
@@ -290,7 +289,7 @@ test.conc <- function(conc1,conc2,same.cluster=FALSE)
 	sdiff1.iid <- apply(diff1.iid,2,sum)*dtimer
 	var1.pepem <- sum(sdiff1.iid^2)
 	sd.pepem <- (var1.pepem+var2.pepem)^.5
-      }
+    }
       diff.pepem <- sum(conc2timer-conc1timer)*dtimer
 ###	print(cbind(conc2timer,conc1timer))
       z.pepem <- diff.pepem/sd.pepem
@@ -299,10 +298,9 @@ test.conc <- function(conc1,conc2,same.cluster=FALSE)
       outtest <- cbind(diff.pepem,sd.pepem,z.pepem,pval.pepem)
       colnames(outtest) <- c("cum dif.","sd","z","pval") 			 
       rownames(outtest) <- "pepe-mori"
-###	print(outtest,4)
-###        prmatrix(outtest,3)			
+###  print(outtest,4)
+###  prmatrix(outtest,3)			
     } 
-    
 
   outtest <- list(test=outtest,mintime=mintime,maxtime=maxtime,same.cluster=same.cluster)
 ###attr(out,"class") <- rev(attr(out,"class")) 

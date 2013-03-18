@@ -27,8 +27,6 @@ RcppExport SEXP nclust(SEXP iclusters) {
 		       Named("uniqueclust")=uniqueclust)); 
  } // }}}
 
-
-
 /* organize indeces to different clusters in matrix  of size nclust x maxclust */ 
 RcppExport SEXP clusterindexM(SEXP iclusters, SEXP imednum, SEXP inum) {
 // {{{
@@ -67,15 +65,48 @@ RcppExport SEXP clusterindexM(SEXP iclusters, SEXP imednum, SEXP inum) {
 		      Named("maxclust")=maxclust,
 		      Named("idclustmat")=idclust,
 		      Named("cluster.size")=clustsize,
-		      Named("antclust")=clustsize
+		      Named("antclust")=clustsize,
+		      Named("uniqueclust")=uniqueclust
 		      )); 
 } // }}}
 
+RcppExport SEXP familypairindex(SEXP iclustmat,SEXP iclustsize,SEXP inumfamindex) {
+// {{{
+  uvec clustsize = Rcpp::as<uvec>(iclustsize);
+  umat clustmat;
+  clustmat  = Rcpp::as<umat>(iclustmat);
+  int uniqueclust=clustmat.n_rows;
+  int  numfamindex= Rcpp::as<int>(inumfamindex);
+ 
+  uvec famclustindex(numfamindex); famclustindex.fill(0);
+  uvec subfamilyindex(numfamindex); subfamilyindex.fill(0);
+  
+  int i,j,k,nclust,v=0,h=0;
 
+   for (i=0;i<uniqueclust;i++)
+   {
+	 if (clustsize(i)>=2)
+         for (j=0;j<(clustsize(i)-1);j++)
+         for (k=j+1;k<clustsize(i);k++)
+         {
+//	  Rprintf(" %d %d %d %d %d n=%d c=%d \n",i,j,k,h,v,numfamindex,clustsize(i)); 
+	    famclustindex(v)=clustmat(i,j);
+	    subfamilyindex(v)=h;
+	    v+=1;
+	    famclustindex(v)=clustmat(i,k);
+	    subfamilyindex(v)=h;
+	    v+=1;
+	    h+=1;
+	 }
+  }
 
+  return(List::create(Named("familypairindex")=famclustindex,
+		       Named("subfamilyindex")=subfamilyindex
+		       )); 
+} // }}}
 
 RcppExport SEXP clusterindexdata(SEXP iclusters, SEXP imednum,SEXP inum, SEXP idata) 
-{
+{ // {{{
   uvec clusters = Rcpp::as<uvec>(iclusters);
   unsigned n = clusters.n_elem;
  

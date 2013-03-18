@@ -25,6 +25,22 @@ cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0)
   invisible(clustud)
 } ## }}}
 
+##' @export
+familycluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=1)
+{ ## {{{
+  clusters <- cluster.index(clusters,Rindex=Rindex)
+  totpairs <- sum(clusters$antclust*(clusters$antclust-1)/2)
+  clustud <- .Call("familypairindex",clusters$idclust,clusters$cluster.size,as.integer(2*totpairs))
+
+  invisible(clustud)
+} ## }}}
+
+###library(mets)
+###index <- c(1,1,2,2,1)
+###clusters <- cluster.index(index,Rindex=1)
+###ud <- familycluster.index(index)
+###ud
+
 
 ##' @export
 faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=1)

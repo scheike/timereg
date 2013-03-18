@@ -601,7 +601,8 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
   if (!Utheta.is_finite()) {  Rprintf(" NA's i def U\n"); Utheta.print("U"); }
   if (!DUtheta.is_finite()) { Rprintf(" NA's i def DU\n"); DUtheta.print("DU"); }
 
-  rowvec bhatt2 = est.row(est2.n_cols); 
+
+  rowvec bhatt2 = est.row(est2.n_cols-1); 
   colvec pbhat2(z.n_rows); 
 
 // depmodel=5 
@@ -625,8 +626,8 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 //	  bhatt.print("bhatt");  pbhat.print("pbhatt"); 
 
 	  if ((CA1!=CA2)) {
-		  bhatt2 = est2.row(s); 
-		  pbhat2 = z2 * trans(bhatt2); 
+		  rowvec bhatt2 = est2.row(s); 
+		  vec pbhat2 = z2 * trans(bhatt2); 
 	     if ((semi2==1) & (cifmodel==1)) pbhat2 = pbhat2 + Z2gamma2*time;
 	     if ((semi2==1) & (cifmodel==2)) pbhat2=pbhat2%exp(Z2gamma2); 
 	  }

@@ -92,7 +92,7 @@
 twostage <- function(margsurv,data=sys.parent(),score.method="nlminb",
 Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
 control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=0,
-step=0.5,notaylor=0,model="plackett",marginal.survival=NULL,strata=NULL)
+step=0.5,notaylor=0,model="plackett",marginal.survival=NULL,strata=NULL,se.clusters=NULL)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -192,6 +192,14 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
   antclust <- out.clust$antclust
   clusterindex <- out.clust$idclust
   clustsize <- out.clust$cluster.size
+  call.secluster <- se.clusters
+  if (is.null(se.clusters)) { se.clusters <- clusters; antiid <- nrow(clusterindex);} else  {
+      iids <-  unique(seclusters); 
+      antiid <- length(iids); 
+      if (is.numeric(seclusters)) se.clusters <-  timereg:::sindex.prodlim(iids,se.clusters)-1
+       else se.clusters <- as.integer(factor(se.clusters, labels = seq(antiid)))-1
+  }
+  if (length(se.clusters)!=length(clusters)) stop("Length of seclusters and clusters must be same\n"); 
 
   ratesim<-rate.sim; pxz <- px + pz;
   if (is.null(theta.des)==TRUE) ptheta<-1; 
@@ -221,8 +229,8 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
       icause=status,ipmargsurv=psurvmarg, 
       itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
       icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
-      ivarlink=var.link, iiid=iid,iweights=weights, isilent=silent, idepmodel=dep.model,
-      itrunkp=ptrunc, istrata=strata,DUP=FALSE) 
+      ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
+      itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid,DUP=FALSE) 
       ## }}}
 
     if (detail==3) print(c(par,outl$loglike))
