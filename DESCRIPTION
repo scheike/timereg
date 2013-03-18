@@ -67,3 +67,4 @@ Collate:
     'fastpattern.R'
     'fastreshape.R'
     'clusterindex-reshape.R'
+    'binomial.twostage.r'
