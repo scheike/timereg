@@ -43,22 +43,31 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
     if (NCOL(data)==1) data <- cbind(data)
   }
   if (missing(id)) {
-    ## reshape from wide to long format. Fall-back to stats::reshape
+    ## reshape from wide to long format. 
     nn <- colnames(data)
     nsep <- nchar(sep)
     if (missing(varying)) stop("Prefix of time-varying variables needed")
     vnames <- NULL
     ncvar <- sapply(varying,nchar)
     newlist <- c()
+    numlev <- TRUE
     if (!is.list(varying)) {
       for (i in seq_len(length(varying))) {
         ii <- which(varying[i]==substr(nn,1,ncvar[i]))
-        tt <- as.numeric(substring(nn[ii],ncvar[i]+1+nsep))      
+        thelevels <- substring(nn[ii],ncvar[i]+1+nsep)
+        suppressWarnings(tt <- as.numeric(thelevels)) 
         newlist <- c(newlist,list(nn[ii[order(tt)]]))
+      }
+      if (any(is.na(tt))) {
+        numlev <- FALSE
+      } else {
+        thelevels <- tt
       }
       vnames <- varying      
       varying <- newlist
-    } 
+    } else {
+      thelevels <- seq(length(varying[[1]]))
+    }
     is_df <- is.data.frame(data)
     oldreshape <- FALSE
     if (is_df) {
@@ -72,9 +81,10 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
     }
     if (is.null(vnames)) {
       vnames <- unlist(lapply(varying,function(x) x[1]))
+      if (!is.null(names(vnames))) vnames <- names(vnames)
     }
-
-    if (oldreshape) return(reshape(as.data.frame(data),varying=varying,direction="long",v.names=vnames,...))
+    
+    if (oldreshape) return(reshape(as.data.frame(data),varying=varying,direction="long",v.names=vnames,...)) ### Fall-back to stats::reshape
 
     fixed <- setdiff(nn,unlist(c(varying,idname,numname)))
     if (!missing(keep)) fixed <- intersect(fixed,keep)
@@ -90,6 +100,12 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
                                 as.integer(nfixed),
                                 as.integer(nvarying)));
     colnames(long) <- c(fixed,vnames,idname,numname)
+    if (!numlev) {
+      long[,numname] <- factor(long[,numname],labels=thelevels)
+    } else {
+      if (!identical(order(thelevels),thelevels))
+        long[,numname] <- thelevels[long[,numname]]
+    }
 
     if (is_df) { ## Recreate classes 
       vars.orig <- c(fixed,unlist(lapply(varying,function(x) x[1])))
