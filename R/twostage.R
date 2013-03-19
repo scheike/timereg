@@ -89,10 +89,13 @@
 ##' @param model model
 ##' @param marginal.survival optional vector of marginal survival probabilities 
 ##' @param strata strata for fitting, see example
+##' @param se.clusters for clusters for se calculation with iid
+##' @param max.clust max se.clusters for se calculation with iid
+##' @numDeriv uses Fisher scoring aprox of second derivative if 0, otherwise numerical derivatives 
 twostage <- function(margsurv,data=sys.parent(),score.method="nlminb",
 Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
-control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=0,
-step=0.5,notaylor=0,model="plackett",marginal.survival=NULL,strata=NULL,se.clusters=NULL)
+control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
+step=0.5,notaylor=0,model="plackett",marginal.survival=NULL,strata=NULL,se.clusters=NULL,max.clust=NULL,numDeriv=0)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -201,6 +204,16 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
   }
   if (length(se.clusters)!=length(clusters)) stop("Length of seclusters and clusters must be same\n"); 
 
+  if ((!is.null(max.clust))) if (max.clust< antiid) {
+        coarse.clust <- TRUE
+	qq <- unique(quantile(se.clusters, probs = seq(0, 1, by = 1/max.clust)))
+	qqc <- cut(se.clusters, breaks = qq, include.lowest = TRUE)    
+	se.clusters <- as.integer(qqc)-1
+	max.clusters <- length(unique(se.clusters))
+	maxclust <- max.clust    
+	antiid <- max.clusters
+  }                                                         
+
   ratesim<-rate.sim; pxz <- px + pz;
   if (is.null(theta.des)==TRUE) ptheta<-1; 
   if (is.null(theta.des)==TRUE) theta.des<-matrix(1,antpers,ptheta) else
@@ -271,11 +284,14 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
     if (detail==1 && iid==1) cat("iid decomposition\n"); 
     out <- loglike(p) 
     logl <- out$loglike
-    score <- out$score
+    score1 <- score <- out$score
     oout <- 0; 
-    score1 <- jacobian(loglike,p)
-    hess <- hessian(loglike,p)
+    hess1 <- hess <- out$Dscore 
     if (iid==1) theta.iid <- out$theta.iid
+    }
+    if (numDeriv==1) {
+      score1 <- jacobian(loglike,p)
+      hess <- hessian(loglike,p)
     }
     if (detail==1 & Nit==0) {## {{{
           cat(paste("Fisher-Scoring ===================: final","\n")); 
@@ -290,16 +306,19 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
     oout <- 0; 
     tryCatch(opt <- nlminb(theta,loglike,control=control),error=function(x) NA)
     if (detail==1) print(opt); 
-    library(numDeriv)
-    score <- jacobian(loglike,opt$par)
-    hess <- hessian(loglike,opt$par)
-    hessi <- lava::Inverse(hess); 
-    theta <- opt$par
+
     if (detail==1 && iid==1) cat("iid decomposition\n"); 
     oout <- 2
+    theta <- opt$par
     out <- loglike(opt$par)
     logl <- out$loglike
-    score1 <- out$score
+    score1 <- score <- out$score
+    hess1 <- hess <- out$Dscore
+    if (numDeriv==1) {
+      score <- jacobian(loglike,p)
+      hess <- hessian(loglike,p)
+    }
+    hessi <- lava::Inverse(hess); 
     if (iid==1) theta.iid <- out$theta.iid
   ## }}}
   } else if (score.method=="optimize" && ptheta==1) { ## {{{  optimizer
@@ -307,24 +326,26 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
     if (var.link==1) {mino <- -20; maxo <- 10;} else {mino <- 0.001; maxo <- 100;}
     tryCatch(opt <- optimize(loglike,c(mino,maxo)));
     if (detail==1) print(opt); 
-    library(numDeriv)
+
     opt$par <- opt$minimum
-    score <- jacobian(loglike,opt$par)
-    hess <- hessian(loglike,opt$par)
-    hessi <- lava::Inverse(hess); 
     theta <- opt$par
     if (detail==1 && iid==1) cat("iid decomposition\n"); 
     oout <- 2
     out <- loglike(opt$par)
     logl <- out$loglike
-    score1 <- out$score
+    score1 <- score <- out$score
+    hess1 <- hess <- out$Dscore
+    if (numDeriv==1) {
+      score <- jacobian(loglike,p)
+      hess <- hessian(loglike,p)
+    }
+    hessi <- lava::Inverse(hess); 
     if (iid==1) theta.iid <- out$theta.iid
   ## }}}
   } else if (score.method=="nlm") { ## {{{ nlm optimizer
     iid <- 0; oout <- 0; 
     tryCatch(opt <- nlm(loglike,theta,hessian=TRUE,print.level=detail),error=function(x) NA)
     iid <- 1; 
-###    library(numDeriv)
     hess <- opt$hessian
     score <- opt$gradient
     if (detail==1) print(opt); 
@@ -335,9 +356,105 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
     out <- loglike(opt$estimate)
     logl <- out$loglike
     score1 <- out$score
+    hess1 <- out$Dscore
     if (iid==1) theta.iid <- out$theta.iid
   ## }}}
   }  else stop("score.methods = optimize(dim=1) nlm nlminb fisher.scoring\n"); 
+
+
+###  if (score.method=="fisher.scoring") { ## {{{
+###    oout <- 2;  ### output control for obj
+###    if (Nit>0) 
+###    for (i in 1:Nit)
+###    {
+###        out <- loglike(p)
+###	hess <- out$Dscore
+###	if (!is.na(sum(hess))) hessi <- lava::Inverse(out$Dscore) else hessi <- hess 
+###        if (detail==1) {## {{{
+###          cat(paste("Fisher-Scoring ===================: it=",i,"\n")); 
+###          cat("theta:");print(c(p))
+###          cat("loglike:");cat(c(out$loglike),"\n"); 
+###          cat("score:");cat(c(out$score),"\n"); 
+###	  cat("hess:\n"); cat(out$Dscore,"\n"); 
+###        }## }}}
+###        delta <- hessi %*% out$score *step 
+###        p <- p+delta* step
+###        theta <- p; 
+###	if (is.nan(sum(out$score))) break; 
+###        if (sum(abs(out$score))<0.00001) break; 
+###        if (max(theta)>20) break; 
+###    }
+###    if (!is.nan(sum(p))) { 
+###    if (detail==1 && iid==1) cat("iid decomposition\n"); 
+###    out <- loglike(p) 
+###    logl <- out$loglike
+###    score <- out$score
+###    oout <- 0; 
+###    score1 <- jacobian(loglike,p)
+###    hess <- hessian(loglike,p)
+###    if (iid==1) theta.iid <- out$theta.iid
+###    }
+###    if (detail==1 & Nit==0) {## {{{
+###          cat(paste("Fisher-Scoring ===================: final","\n")); 
+###          cat("theta:");print(c(p))
+###          cat("loglike:");cat(c(out$loglike),"\n"); 
+###          cat("score:");cat(c(out$score),"\n"); 
+###	  cat("hess:\n"); cat(out$Dscore,"\n"); 
+###    }## }}}
+###    if (!is.na(sum(hess))) hessi <- lava::Inverse(hess) else hessi <- diag(nrow(hess))
+###    ## }}}
+###  } else if (score.method=="nlminb") { ## {{{ nlminb optimizer
+###    oout <- 0; 
+###    tryCatch(opt <- nlminb(theta,loglike,control=control),error=function(x) NA)
+###    if (detail==1) print(opt); 
+###    library(numDeriv)
+###    score <- jacobian(loglike,opt$par)
+###    hess <- hessian(loglike,opt$par)
+###    hessi <- lava::Inverse(hess); 
+###    theta <- opt$par
+###    if (detail==1 && iid==1) cat("iid decomposition\n"); 
+###    oout <- 2
+###    out <- loglike(opt$par)
+###    logl <- out$loglike
+###    score1 <- out$score
+###    if (iid==1) theta.iid <- out$theta.iid
+###  ## }}}
+###  } else if (score.method=="optimize" && ptheta==1) { ## {{{  optimizer
+###    oout <- 0; 
+###    if (var.link==1) {mino <- -20; maxo <- 10;} else {mino <- 0.001; maxo <- 100;}
+###    tryCatch(opt <- optimize(loglike,c(mino,maxo)));
+###    if (detail==1) print(opt); 
+###    library(numDeriv)
+###    opt$par <- opt$minimum
+###    score <- jacobian(loglike,opt$par)
+###    hess <- hessian(loglike,opt$par)
+###    hessi <- lava::Inverse(hess); 
+###    theta <- opt$par
+###    if (detail==1 && iid==1) cat("iid decomposition\n"); 
+###    oout <- 2
+###    out <- loglike(opt$par)
+###    logl <- out$loglike
+###    score1 <- out$score
+###    if (iid==1) theta.iid <- out$theta.iid
+###  ## }}}
+###  } else if (score.method=="nlm") { ## {{{ nlm optimizer
+###    iid <- 0; oout <- 0; 
+###    tryCatch(opt <- nlm(loglike,theta,hessian=TRUE,print.level=detail),error=function(x) NA)
+###    iid <- 1; 
+######    library(numDeriv)
+###    hess <- opt$hessian
+###    score <- opt$gradient
+###    if (detail==1) print(opt); 
+###    hessi <- lava::Inverse(hess); 
+###    theta <- opt$estimate
+###    if (detail==1 && iid==1) cat("iid decomposition\n"); 
+###    oout <- 2
+###    out <- loglike(opt$estimate)
+###    logl <- out$loglike
+###    score1 <- out$score
+###    if (iid==1) theta.iid <- out$theta.iid
+###  ## }}}
+###  }  else stop("score.methods = optimize(dim=1) nlm nlminb fisher.scoring\n"); 
 
 
 ## {{{ handling output
@@ -346,7 +463,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
      theta.iid <- out$theta.iid %*% hessi
      robvar.theta  <- (t(theta.iid) %*% theta.iid) 
   }
-  var.theta <- hessi
+  if (iid==1) var.theta <- robvar.theta else var.theta <- -hessi
   if (!is.null(colnames(theta.des))) thetanames <- colnames(theta.des) else thetanames <- rep("intercept",ptheta)
   ud <- list(theta=theta,score=score,hess=hess,hessi=hessi,var.theta=var.theta,model=model,robvar.theta=robvar.theta,
              theta.iid=theta.iid,thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,margsurv=psurvmarg); 
@@ -526,7 +643,7 @@ return(out)
 ##' @export
 piecewise.twostage <- function(cut1,cut2,data=sys.parent(),timevar="time",status="status",id="id",covars=NULL,num=NULL,
             score.method="optimize",Nit=100,detail=0,clusters=NULL,silent=1,weights=NULL,
-            control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=0,step=0.5,model="plackett",data.return=0)
+            control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,step=0.5,model="plackett",data.return=0)
 { ## {{{
 
 ud <- list()

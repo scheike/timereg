@@ -9,9 +9,10 @@ based on the pairwise bivariate models.}
     score.method = "nlminb", Nit = 60, detail = 0,
     clusters = NULL, silent = 1, weights = NULL,
     control = list(), theta = NULL, theta.des = NULL,
-    var.link = 1, iid = 0, step = 0.5, notaylor = 0,
+    var.link = 1, iid = 1, step = 0.5, notaylor = 0,
     model = "plackett", marginal.survival = NULL,
-    strata = NULL, se.clusters = NULL)
+    strata = NULL, se.clusters = NULL, max.clust = NULL,
+    numDeriv = 0)
 }
 \arguments{
   \item{margsurv}{Marginal model}
@@ -50,6 +51,12 @@ based on the pairwise bivariate models.}
   survival probabilities}
 
   \item{strata}{strata for fitting, see example}
+
+  \item{se.clusters}{for clusters for se calculation with
+  iid}
+
+  \item{max.clust}{max se.clusters for se calculation with
+  iid}
 }
 \description{
   The reported standard errors are based on the estimated
