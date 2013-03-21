@@ -157,7 +157,6 @@ if (class(margsurv)!="coxph") {
   if (maxclust==1) stop("No clusters !, maxclust size=1\n"); 
   ## }}}
 
-
   nparout <- .C("twostagereg", 
         as.double(times), as.integer(Ntimes), as.double(X),
    	as.integer(antpers), as.integer(px), as.double(Z), 

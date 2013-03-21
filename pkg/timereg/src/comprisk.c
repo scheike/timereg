@@ -62,9 +62,10 @@ for (s=0;s<*Ntimes;s++)
  for (j=0;j<*antclust;j++) { 
      vec_zeros(cumA[j]); vec_zeros(cumhatA[j]); 
  }
+ vec_zeros(censXv); 
 
-  for (it=0;it<*Nit;it++)
-  {
+  for (it=0;it<*Nit;it++) // {{{ 
+  { 
    ssf[0]=0; 
    R_CheckUserInterrupt();
     totrisk=0; 
@@ -116,9 +117,9 @@ for (s=0;s<*Ntimes;s++)
 //    replace_row(wcX,j,dp); 
       VE(Y,j)=((x[j]<=time) & (cause[j]==*CA))*1;
 
-      if (it==(*Nit-1)) { // {{{ for censoring distrubution
-	   if (KMc[j]>0.001) scl_vec_mult(weights[j]*VE(Y,j)*1/KMc[j],dp1,dp1); 
-	   else scl_vec_mult(weights[j]*VE(Y,j)*1/0.001,dp1,dp1); 
+      if (it==(*Nit-1) && (*conservative==0)) { // {{{ for censoring distrubution
+	   if (KMc[j]>0.001) scl_vec_mult(weights[j]*VE(Y,j)/KMc[j],dp1,dp1); 
+	   else scl_vec_mult(weights[j]*VE(Y,j)/0.001,dp1,dp1); 
            vec_add(censXv,dp1,censXv); 
            replace_row(censX,j,dp1);
       } // }}}
@@ -142,6 +143,7 @@ for (s=0;s<*Ntimes;s++)
       VE(Y,j)=pow(weights[j],0.5)*VE(Y,j); 
 
     } // j=0;j<n*;j++ }}}
+//    if (it==(*Nit-1)) { printf(" s %d ",s); print_vec(censXv); }
 
     totrisk=vec_sum(risk); 
     MtM(cX,A); 
@@ -189,67 +191,58 @@ for (s=0;s<*Ntimes;s++)
       Rprintf("Score D l\n"); print_vec(difbeta); 
       Rprintf("Information -D^2 l\n"); print_mat(AI); 
     };
-//
-//    if ((it==(*Nit-1)) && (convt==1) && (*conservative==0)) { // {{{ censoring terms for variance 
-//	    for (j=0;j<*n;j++) { // sum from t->0 in cens times
-//		k=ordertime[j];
-//		nrisk=(*n)-j; 
-//		clusterj=clusters[k]; 
-//		if (cause[k]==(*censcode)) { 
-//		   vec_add_mult(cumhatA[clusterj],censXv,1/nrisk,cumhatA[clusterj]);  
-//	           for (i=j;i<*n;i++) {
-//	                clusterj=clusters[ordertime[i]]; 	
-//			vec_add_mult(cumhatA[clusterj],censXv,-1/pow(nrisk,2),cumhatA[clusterj]); 
-//		   }
-//		}
-//                // fewer where I(s <= T_i) , because s is increasing
-//                extract_row(censX,k,xi); 
-//                vec_subtr(censXv,xi,censXv);  
-//            }
-//    } // }}} if (it==*Nit-1) if (convt==1 ) 
-//
 
-  } /* it */
+  } // }}} /* it */
 
    vec_zeros(VdB); mat_zeros(VAR); 
 
 //    if (osilent<=1) for (i=0;i<*antclust;i++) vec_zeros(cumhatA[i]); 
 
-if (convt==1 ) {
+if (convt==1 ) { // {{{ iid decomp 
    for (i=0;i<*n;i++) { 
       R_CheckUserInterrupt();
       j=clusters[i]; 
       if (s<-1) Rprintf("%d  %d %d \n",s,i,j);
-      for(k=0;k<ps;k++) VE(cumA[j],k)+= VE(Y,i)*ME(cX,i,k); 
+      for(l=0;l<ps;l++) VE(cumA[j],l)+= VE(Y,i)*ME(cX,i,l); 
       //  extract_row(cX,i,dp); 
       // scl_vec_mult(VE(Y,i),dp,dp); 
       //  vec_add(dp,cumA[j],cumA[j]); 
 
     if ((*conservative==0)) { // {{{ censoring terms for variance 
-//	    if (osilent==0)  Rprintf(" Censoring correction in standard errors \n"); 
-		k=ordertime[i];
-		nrisk=(*n)-i; 
-		clusterj=clusters[k]; 
-		if (cause[k]==(*censcode)) { 
-                   for(k=0;k<ps;k++) VE(cumhatA[clusterj],k)+= VE(censXv,k)/nrisk; 
-//		   vec_add_mult(cumhatA[clusterj],censXv,1/nrisk,cumhatA[clusterj]);  
-		   scl_vec_mult(-1/pow(nrisk,2),censXv,rowX); 
-	           for (j=i;j<*n;j++) {
-	                clusterj=clusters[ordertime[j]]; 	
-                        for(k=0;k<ps;k++) VE(cumhatA[clusterj],k)+= VE(rowX,k); 
+//    if (osilent==0)  Rprintf(" Censoring correction in standard errors \n"); 
+	k=ordertime[i]; nrisk=(*n)-i; 
+	clusterj=clusters[k]; 
+	if (cause[k]==(*censcode)) { 
+//	   Mv(AI,censXv,rowX);
+//	   printf("%lf %d %d %d %d \n",nrisk,i,j,k,cause[k]); 
+//	   print_mat(AI); print_vec(censXv); print_vec(rowX); 
+           scl_vec_mult(1,censXv,rowX); 
+///           for(k=0;k<ps;k++) VE(cumhatA[clusterj],k)+= VE(rowX,k)/nrisk; 
+           for(l=0;l<ps;l++) VE(cumA[clusterj],l)+=VE(rowX,l)/nrisk; 
+//	   vec_add_mult(cumhatA[clusterj],censXv,1/nrisk,cumhatA[clusterj]);  
+//	   scl_vec_mult(-1/pow(nrisk,2),censXv,rowX); 
+           for (j=i;j<*n;j++) {
+              clusterj=clusters[ordertime[j]]; 	
+///              for(k=0;k<ps;k++) VE(cumhatA[clusterj],k)-= VE(rowX,k)/pow(nrisk,2); 
+             for(l=0;l<ps;l++) VE(cumA[clusterj],l)-=VE(rowX,l)/pow(nrisk,2); 
 //			vec_add(rowX,cumhatA[clusterj],cumhatA[clusterj]); 
-		   }
-		}
-                // fewer where I(s <= T_i) , because s is increasing
-                extract_row(censX,k,xi); 
-                vec_subtr(censXv,xi,censXv);  
+	   }
+	}
+        // fewer where I(s <= T_i) , because s is increasing
+        extract_row(censX,k,xi); vec_subtr(censXv,xi,censXv);  
+//	printf(" %d \n",k); print_vec(xi); print_vec(censXv); 
     } // }}}
    }
 
+   vec_zeros(dp1); 
    for (j=0;j<*antclust;j++) { 
 //    if (osilent<=2) else vec_subtr(cumhatA[j],cumA[j],dp1); 
-      vec_add(cumhatA[j],cumA[j],dp1); 
-      Mv(AI,dp1,dp2); replace_row(cumAt[j],s,dp2);  
+//      vec_add(cumhatA[j],cumA[j],dp1); 
+//      Mv(AI,dp1,dp2); 
+      Mv(AI,cumA[j],dp2); 
+//      vec_add(cumhatA[j],dp1,dp2); 
+//      Mv(AI,dp1,dp2); 
+      replace_row(cumAt[j],s,dp2);  
 
       for(k=0;k<ps;k++) 
       for(c=0;c<ps;c++) ME(VAR,k,c)=ME(VAR,k,c)+VE(dp2,k)*VE(dp2,c); 
@@ -258,7 +251,7 @@ if (convt==1 ) {
       for (c=0;c<*px;c++) {l=j*(*px)+c; biid[l*(*Ntimes)+s]=VE(dp2,c);}
       }
    }
-  }
+  } // }}} 
 
    for (i=1;i<ps+1;i++) {
       var[i*(*Ntimes)+s]=ME(VAR,i-1,i-1); 
@@ -550,12 +543,12 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	    VE(Y,j)=((x[j]<=time) & (cause[j]==*CA))*1;
 
            if ((itt==(*Nit-1)) && (*conservative==0)) { // {{{ for censoring distribution correction 
-              if (KMc[j]>0.001) scl_vec_mult(weights[j]*VE(Y,j)*1/KMc[j],xi,rowX); 
-	      else scl_vec_mult(weights[j]*VE(Y,j)*1/0.001,xi,rowX); 
+              if (KMc[j]>0.001) scl_vec_mult(weights[j]*VE(Y,j)/KMc[j],xi,rowX); 
+	      else scl_vec_mult(weights[j]*VE(Y,j)/0.001,xi,rowX); 
               vec_add(censXv,rowX,censXv); 
               replace_row(censX,j,rowX);
-              if (KMc[j]>0.001) scl_vec_mult(weights[j]*VE(Y,j)*1/KMc[j],zi,rowZ); 
-	      else scl_vec_mult(weights[j]*VE(Y,j)*1/0.001,zi,rowZ); 
+              if (KMc[j]>0.001) scl_vec_mult(weights[j]*VE(Y,j)/KMc[j],zi,rowZ); 
+	      else scl_vec_mult(weights[j]*VE(Y,j)/0.001,zi,rowZ); 
               vec_add(censZv,rowZ,censZv); 
               replace_row(censZ,j,rowZ);
            } // }}}
@@ -582,6 +575,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	   VE(Y,j)=svarp*pow(weights[j],0.5)*VE(Y,j); 
 
      }  // }}}
+//    if (itt==(*Nit-1)) { printf(" s %d ",s); print_vec(censXv); }
 
 	  MtM(cdesignX,A); 
 	  invertS(A,AI,osilent); sing=0; 
@@ -646,11 +640,14 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	         vec_add(rowZ,W2[j],W2[j]); 
 	      }
 	      if (*conservative==0) { // {{{ censoring terms  
-//	         if (osilent==0)  Rprintf(" Censoring correction in standard errors \n"); 
+//    if (osilent==0)  Rprintf(" Censoring correction in standard errors \n"); 
               k=ordertime[i]; nrisk=(*antpers)-i; 
 	      clusterj=clusters[k]; 
 	      if (cause[k]==(*censcode)) { 
 	         Mv(AI,censXv,rowX);
+//	   printf("ssss %lf %d %d %d %d \n",nrisk,i,j,k,cause[k]); 
+//	   print_mat(AI); 
+//	   print_vec(censXv); print_vec(rowX); 
 	         for (l=0;l<*px;l++) ME(W3t[clusterj],s,l)+=VE(rowX,l)/nrisk; 
 		 if (*fixgamma==0) {
 	         vM(C[s],rowX,tmpv2); vec_subtr(censZv,tmpv2,rowZ); 
@@ -669,6 +666,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	      } 
              // fewer where I(s <= T_i) , because s is increasing
              extract_row(censX,k,xi); vec_subtr(censXv,xi,censXv);  
+//	     printf("ssss  %d \n",k); print_vec(xi); print_vec(censXv); 
              extract_row(censZ,k,zi); vec_subtr(censZv,zi,censZv);  
            }     // conservative==0 }}}
 	   } // if (itt==(*Nit-1)) for (i=0;i<*antpers;i++)  // }}}
@@ -710,8 +708,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
       }
 
     } /*itt løkke */  // }}}
-
-
+		
    R_CheckUserInterrupt();
   /* ROBUST VARIANCES   */ 
 //  if (*conservative==1) { 

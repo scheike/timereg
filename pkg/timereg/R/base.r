@@ -13,12 +13,14 @@ coefBase<- function(object, digits=3, d2logl=0) { ## {{{
   return(res)
 } ## }}}
 
-wald.test <- function(object,contrast,coef.null=NULL,Sigma=NULL,null=NULL)
+wald.test <- function(object=NULL,coef=NULL,contrast,coef.null=NULL,Sigma=NULL,null=NULL)
 { ## {{{
   if (is.null(Sigma)) {
-     if (class(object)=="cor") Sigma <- object$var.theta else Sigma <- object$var.gamma;
+     if (class(object)=="cor" || class(object)=="twostage") Sigma <- object$var.theta else Sigma <- object$var.gamma;
   }
-  coefs <- coefBase(object)[,1]
+  if (!is.null(object)) {
+     if (class(object)=="cor" || class(object)=="twostage") coefs <- object$theta else coefs <- object$gamma;
+  } else if (!is.null(coef)) coefs <- coef else stop("No estimates given \n"); 
   nl <- length(coefs)
   if (missing(contrast)) {
       contrast <- rep(1,length(coefs))
@@ -36,13 +38,6 @@ wald.test <- function(object,contrast,coef.null=NULL,Sigma=NULL,null=NULL)
   p <- coefs
   if (is.vector(B)) { B <- rbind(B); colnames(B) <- names(contrast) }
 
-### if (ncol(B)<length(p)) {
-###    nn <- colnames(B)
-###    myidx <- parpos(Model(object),p=nn)
-###    B0 <- matrix(0,nrow=nrow(B),ncol=length(coef(object)))
-###    B0[,myidx] <- B[,attributes(myidx)$ord]
-###    B <- B0
-### }
  Q <- t(B%*%p-null)%*%solve(B%*%Sigma%*%t(B))%*%(B%*%p-null)
  df <- qr(B)$rank; names(df) <- "df"
  attributes(Q) <- NULL; names(Q) <- "chisq";
@@ -185,4 +180,5 @@ nt <- length(times)
 
 out <- list(nrisk=nrisk,riskindex=riskindex)
 } ## }}}
+
 

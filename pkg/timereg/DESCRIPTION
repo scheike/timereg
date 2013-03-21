@@ -2,10 +2,51 @@ Package: timereg
 Title: Flexible regression models for survival data.
 Version: 1.7.1
 Date: 2012-01-24
-Title: Flexible regression models for survival data.
-Author: Thomas Scheike with contributions from Torben Martinussen and Jeremy Silver
+Author: Thomas Scheike with contributions from Torben Martinussen and Jeremy
+    Silver
 Maintainer: Thomas Scheike <ts@biostat.ku.dk>
-Description: Programs for Martinussen and Scheike (2006), `Dynamic Regression Models for Survival Data', Springer Verlag.  Plus more recent developments. Additive survival model, semiparametric proportional odds model, cumulative residuals, excess risk models and more. Flexible competing risks regression including GOF-tests. Two-stage frailty modelling. PLS for the additive risk model. Lasso in ahaz package.
-Depends: survival, R (>= 2.4.0)
+Description: Programs for Martinussen and Scheike (2006), `Dynamic Regression
+    Models for Survival Data', Springer Verlag.  Plus more recent developments.
+    Additive survival model, semiparametric proportional odds model, cumulative
+    residuals, excess risk models and more. Flexible competing risks regression
+    including GOF-tests. Two-stage frailty modelling. PLS for the additive risk
+    model. Lasso in ahaz package.
+Depends:
+    survival,
+    R (>= 2.4.0)
 LazyLoad: yes
 License: GPL (>= 2)
+Collate:
+    'aalenC.r'
+    'aalen-des.r'
+    'aalen.r'
+    'additive-compSs.r'
+    'additive-pls.r'
+    'base.r'
+    'clusterindex-reshape.r'
+    'comprisk.r'
+    'cox-aalen.r'
+    'Cpred.r'
+    'Csmooth.r'
+    'dynadd.r'
+    'faster.reshape.r'
+    'gamprop-odds.r'
+    'Gprop-odds.r'
+    'Gprop-odds-subdist.r'
+    'krylow.pls.r'
+    'mgresid.r'
+    'new.aalen.r'
+    'new.cox-aalen.r'
+    'new.dynreg.r'
+    'new.pe-sasieni.r'
+    'new.prop-excess.r'
+    'new.timecox.r'
+    'plots.r'
+    'pls.cv.r'
+    'predict-timereg.r'
+    'prop-excess.r'
+    'prop-odds.r'
+    'prop-odds-subdist.r'
+    'read-design.r'
+    'timecox.r'
+    'two-stage-reg.r'

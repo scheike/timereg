@@ -63,7 +63,7 @@ offsets=0;
   if ((is.null(beta))) {
         if ( (attr(m[, 1], "type") == "right" ) ) 
         beta<-coxph(Surv(survs$stop,survs$status)~Z)$coef
-else beta<-coxph(Surv(survs$start,survs$stop,survs$status)~Z)$coef; 
+        else beta<-coxph(Surv(survs$start,survs$stop,survs$status)~Z)$coef; 
   }
 
 if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
