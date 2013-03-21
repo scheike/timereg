@@ -57,6 +57,9 @@ based on the pairwise bivariate models.}
 
   \item{max.clust}{max se.clusters for se calculation with
   iid}
+
+  \item{numDeriv}{uses Fisher scoring aprox of second
+  derivative if 0, otherwise numerical derivatives}
 }
 \description{
   The reported standard errors are based on the estimated
