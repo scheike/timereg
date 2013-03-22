@@ -7,9 +7,9 @@
     response = "response", id = "id", type = NULL,
     Nit = 60, detail = 0, silent = 1, weights = NULL,
     control = list(), theta = NULL, theta.formula = NULL,
-    desnames = NULL, var.link = 1, iid = 1, step = 0.5,
-    model = "plackett", marginal.p = NULL, strata = NULL,
-    max.clust = NULL, se.clusters = NULL)
+    desnames = NULL, deshelp = 0, var.link = 1, iid = 1,
+    step = 0.5, model = "plackett", marginal.p = NULL,
+    strata = NULL, max.clust = NULL, se.clusters = NULL)
 }
 \description{
   Fits two-stage binomial for describing depdendence in
