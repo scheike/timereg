@@ -33,8 +33,12 @@
 ##' ## with time/number-variable, seperator '.', and dropping x
 ##' fast.reshape(d,var="y",num="num",keep=c(),sep=".")
 ##'
+##' d <- mets:::sim.bin.fam(10)
+##' dd <- fast.reshape(d,var="y")
+##'
 ##' data(prt)
 ##' head(fast.reshape(prt,"id",var="cancer"))
+##' 
 fast.reshape <- function(data,id,varying,num,sep="",keep,
                          idname="id",numname="num",...) {
   if (!is.data.frame(data) & is.list(data)) {
