@@ -30,7 +30,6 @@ Collate:
     'Csmooth.r'
     'dynadd.r'
     'faster.reshape.r'
-    'gamprop-odds.r'
     'Gprop-odds.r'
     'Gprop-odds-subdist.r'
     'krylow.pls.r'
