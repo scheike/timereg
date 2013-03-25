@@ -356,9 +356,14 @@ step=0.5,model="plackett",marginal.p=NULL,strata=NULL,max.clust=NULL,se.clusters
      if (is.function(theta.formula)) {
 	library(compiler) 
         desfunction <- cmpfun(theta.formula)
-	if (deshelp==1) print(head(data.fam.clust))
+	if (deshelp==1){
+	 cat("These names appear in wide version of pairs for dependence \n")
+	  cat("design function must be defined in terms of these: \n")
+	  cat(names(data.fam.clust)); cat("\n")
+	  cat("Here is head of wide version with pairs\n")
+	  print(head(data.fam.clust)); cat("\n")
+	}
         des.theta  <- t( apply(data.fam.clust,1,desfunction)) 
-	if (deshelp==1) print(head(des.theta))
         colnames(des.theta) <- desnames
 	desnames <- desnames
      } else {
@@ -367,11 +372,23 @@ step=0.5,model="plackett",marginal.p=NULL,strata=NULL,max.clust=NULL,se.clusters
           desnames <- colnames(des.theta); 
      }
      data.fam.clust <- cbind(data.fam.clust,des.theta)
+     if (deshelp==1) {
+	 cat("These names appear in wide version of pairs for dependence \n")
+	     print(head(data.fam.clust))
+     }
 
      ### back to long format keeping only needed variables
-     data.fam <- fast.reshape(data.fam.clust,
-	      varying=c(response,"ps",id,"zyg"),
-              keep=c(response,id,"subfam","ps",desnames))
+     data.fam <- fast.reshape(data.fam.clust,varying=c(response,id,"ps"))
+    if (deshelp==1) {
+	cat("Back to long format for binomial.twostage (head)\n"); 
+        print(head(data.fam)); 
+	cat("\n")
+	cat(paste("binomial.twostage, called with reponse",response,"\n")); 
+	cat(paste("cluster=",id,",  subcluster (pairs)=subfam \n")); 
+	cat(paste("design variables =")); 
+	cat(desnames)
+	cat("\n")
+    } 
 
     out <- binomial.twostage(data.fam[,response],data=data.fam,
                     clusters=data.fam$subfam,
