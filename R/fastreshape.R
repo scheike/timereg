@@ -113,7 +113,8 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
         long[,numname] <- thelevels[long[,numname]]
     }
 
-    if (is_df) { ## Recreate classes 
+    if (is_df) { ## Recreate classes
+      browser()
       vars.orig <- c(fixed,unlist(lapply(varying,function(x) x[1])))
       fac <- which("factor"==classes[vars.orig])
       log <- which("logical"==classes[vars.orig])

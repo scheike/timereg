@@ -90,6 +90,12 @@ twinstut$binstut <- (twinstut$stutter=="yes")*1
 out <- easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut,response="binstut",id="tvparnr",
 			      theta.formula=~-1+factor(zyg1),score.method="fisher.scoring")
 summary(out)
+
+desfs<-function(x,num1="zyg1",namesdes=c("mz","dz","os")) c(x[num1]=="dz",x[num1]=="mz",x[num1]=="os")*1
+out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
+      data=twinstut,response="binstut",id="tvparnr",type="zyg",
+      score.method="fisher.scoring", theta.formula=desfs,desnames=c("mz","dz","os"))
+summary(out3)
 }
 \author{
   Thomas Scheike
