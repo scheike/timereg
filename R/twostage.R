@@ -486,6 +486,7 @@ summary.twostage <-function (object,digits = 3,...) { ## {{{
   
   var.link<-attr(object,"var.link");
   if (object$model=="plackett") cat("Dependence parameter for Plackett model \n"); 
+  if (attr(object,"resp")=="binomial") resp <- "binomial" else resp <- "survival"
   if (object$model=="clayton.oakes") cat("Dependence parameter for Clayton-Oakes model \n"); 
 
   if (sum(abs(object$score)>0.0001) ) {
@@ -493,7 +494,7 @@ summary.twostage <-function (object,digits = 3,...) { ## {{{
 	  cat(paste("    Score:",object$score,"  \n")); 
   }
 
-  coefs <- coef.twostage(object,...);
+  coefs <- coef.twostage(object,response=resp,...);
 
   res <- list(estimates=coefs, type=attr(object,"Type"))
   class(res) <- "summary.twostage"
@@ -539,8 +540,15 @@ coef.twostage <- function(object,var.link=NULL,...)
 ##' @export
 alpha2spear <- function(theta,link=1) {
    if (link==1) theta <- exp(theta)
-   if (theta!=1) return( (theta+1)/(theta-1) -2* theta* log(theta)/ (theta-1)^2)
-   else return(0)
+if (length(theta)>1) {
+   out <- c()
+   for (thet in theta) {
+   if (thet!=1) out <- c(out,( (thet+1)/(thet-1) -2* thet* log(thet)/ (thet-1)^2))
+   else out <- c(out,0)
+   }
+} else { if (theta!=1) out <- ( (theta+1)/(theta-1) -2* theta* log(theta)/ (theta-1)^2) }
+
+return(out)
 }
 
 ##' @export

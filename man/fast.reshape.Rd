@@ -47,16 +47,13 @@ fast.reshape(d,var=list(c("y1","y2","y3","y4")))
 fast.reshape(dd,id="id")
 ## Restrict set up within-cluster varying variables
 fast.reshape(d,var="y")
-## with time/number-variable, seperator '', and dropping x
-fast.reshape(d,var="y",numname="t",idname="subject",keep=c(),sep="")
+## with time/number-variable, seperator '.', and dropping x
+fast.reshape(d,var="y",num="num",keep=c(),sep=".")
 
 d <- mets:::sim.bin.fam(3)
 d
 dd <- fast.reshape(d,var="y")
 dd
-
-fast.reshape(dd,id="id",var="y",num="num")
-
 
 data(prt)
 head(fast.reshape(prt,"id",var="cancer"))

@@ -299,6 +299,7 @@ antpers <- NROW(data);
   attr(ud,"antpers")<-antpers; 
   attr(ud,"antclust")<-antclust; 
   attr(ud, "Type") <- model
+  attr(ud, "resp") <- "binomial"
   return(ud);
   ## }}}
 
