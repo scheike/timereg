@@ -16,31 +16,30 @@
 ##' @examples
 ##' m <- lvm(c(y1,y2,y3,y4)~x)
 ##' d <- sim(m,5)
-##'
+##' ##'
 ##' fast.reshape(fast.reshape(d,var="y"),id="id")
-##'
+##' ##'
 ##' ##### From wide-format
 ##' (dd <- fast.reshape(d,var="y"))
 ##' ## Same with explicit setting new id and number variable/column names and seperator "" (default) and dropping x
 ##' fast.reshape(d,var="y",idname="a",timevar="b",sep="",keep=c())
 ##' ## Same with 'reshape' list-syntax
 ##' fast.reshape(d,var=list(c("y1","y2","y3","y4")))
-##'
+##' ##'
 ##' ##### From long-format
 ##' fast.reshape(dd,id="id")
 ##' ## Restrict set up within-cluster varying variables
 ##' fast.reshape(d,var="y")
 ##' ## with time/number-variable, seperator '.', and dropping x
 ##' fast.reshape(d,var="y",num="num",keep=c(),sep=".")
-##'
+##' ##'
 ##' d <- mets:::sim.bin.fam(3)
 ##' d
 ##' dd <- fast.reshape(d,var="y")
 ##' dd
-##'
+##' ##'
 ##' data(prt)
 ##' head(fast.reshape(prt,"id",var="cancer"))
-##' 
 fast.reshape <- function(data,id,varying,num,sep="",keep,
                          idname="id",numname="num",...) {
   if (!is.data.frame(data) & is.list(data)) {
@@ -48,6 +47,7 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
   } else {
     if (NCOL(data)==1) data <- cbind(data)
   }
+
   if (missing(id)) {
     ## reshape from wide to long format. 
     nn <- colnames(data)
@@ -77,9 +77,11 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
     is_df <- is.data.frame(data)
     oldreshape <- FALSE
     if (is_df) {
-      D0 <- data[1,,drop=FALSE]
+      D0 <- droplevels(data)[1,,drop=FALSE]
+      ##      D0 <- data[1,,drop=FALSE]
       classes <- unlist(lapply(D0,class))
-      if (!all(classes%in%c("numeric","logical","factor","integer"))) {
+      dim <- unlist(lapply(D0,NCOL))
+      if (any(dim>1) || !all(classes%in%c("numeric","logical","factor","integer","matrix"))) { ## e.g. Surv columns 
         oldreshape <- TRUE
       } else {
         data <- data.matrix(data)
@@ -89,7 +91,6 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
       vnames <- unlist(lapply(varying,function(x) x[1]))
       if (!is.null(names(vnames))) vnames <- names(vnames)
     }
-    
     if (oldreshape) return(reshape(as.data.frame(data),varying=varying,direction="long",v.names=vnames,...)) ### Fall-back to stats::reshape
 
     fixed <- setdiff(nn,unlist(c(varying,idname,numname)))
@@ -100,6 +101,7 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
     nclust <- length(varying[[1]])
     if (any(nclusts!=nclust)) stop("Different length of varying vectors!")
     data <- data[,c(fixed,unlist(varying)),drop=FALSE]
+
     long <- as.data.frame(.Call("FastLong",
                                 idata=data,
                                 inclust=as.integer(nclust),

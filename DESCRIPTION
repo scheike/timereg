@@ -1,7 +1,7 @@
 Package: mets
 Type: Package
 Title: Analysis of Multivariate Event Times
-Version: 0.1-14
+Version: 0.2.0
 Date: 2012-07-04
 Author: Klaus K. Holst and Thomas Scheike
 Maintainer: Klaus K. Holst <kkho@biostat.ku.dk>
@@ -67,4 +67,4 @@ Collate:
     'fastpattern.R'
     'fastreshape.R'
     'binomial.twostage.r'
-    'clusterindex-reshape.r'
+    'clusterindex-reshape.R'

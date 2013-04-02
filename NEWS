@@ -1,3 +1,7 @@
+* Version 0.2 <2013-03-27>
+  - fast.reshape
+  - easy.binomial.twostage
+
 * Version 0.1-4 <2012-05-09>
   - Fixed cor.cpp
   - New datasets: twinstut, twinbmi, prtsim
