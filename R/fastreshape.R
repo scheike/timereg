@@ -106,7 +106,9 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
                                 idata=data,
                                 inclust=as.integer(nclust),
                                 as.integer(nfixed),
-                                as.integer(nvarying)));
+                                as.integer(nvarying),
+                                TRUE ## Remove rows with all missing
+                                ));
     while (idname%in%c(fixed,vnames,numname)) idname <- paste(idname,"_",sep="")
     while (numname%in%c(fixed,vnames)) numname <- paste(numname,"_",sep="")
     
