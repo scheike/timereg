@@ -10,6 +10,7 @@
 ##' @param keep Vector of column names to keep
 ##' @param idname Name of id-variable (Wide->Long)
 ##' @param numname Name of number-variable (Wide->Long)
+##' @param factors.keep If FALSE all factors are converted to integers
 ##' @param ... Optional additional arguments
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
@@ -93,7 +94,7 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
     }
     if (oldreshape) return(reshape(as.data.frame(data),varying=varying,direction="long",v.names=vnames,...)) ### Fall-back to stats::reshape
 
-    fixed <- setdiff(nn,unlist(c(varying,idname,numname)))
+    fixed <- setdiff(nn,unlist(c(varying,numname)))
     if (!missing(keep)) fixed <- intersect(fixed,keep)
     nfixed <- length(fixed)
     nvarying <- length(varying)
@@ -109,7 +110,18 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
                                 as.integer(nvarying),
                                 TRUE ## Remove rows with all missing
                                 ));
-    colnames(long) <- c(fixed,vnames,idname,numname)
+
+    
+    if (idname%in%fixed) {
+      long <- long[,-(ncol(long)-1)]
+      cnames <- c(fixed,vnames,numname)
+    } else {
+      cnames <- c(fixed,vnames,idname,numname)
+    }
+    ##    while (idname%in%c(fixed,vnames,numname)) idname <- paste(idname,"_",sep="")
+    while (numname%in%c(fixed,vnames)) numname <- paste(numname,"_",sep="")
+    
+    colnames(long) <- cnames
     if (!numlev) {
       long[,numname] <- factor(long[,numname],labels=thelevels)
     } else {

@@ -500,7 +500,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##'  cor1 <- cor.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,theta=c(0.5,1.0,0.1,0.1),
 ##'        par.func=parfunc,dpar.func=dparfunc,dimpar=4,control=list(trace=TRUE),detail=1)
 ##' summary(cor1)
-##'
+##' ##'
 ##' ### piecewise contant OR model
 ##' gparfunc <- function(par,t,pardes)
 ##' {
@@ -529,7 +529,6 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' names(or1g)
 ##' head(or1g$theta.iid)
 ##' }
-##' 
 ##' @export
 ##' @keywords survival
 cor.cif<-function(cif,data,cause,times=NULL,
@@ -633,8 +632,7 @@ or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 ##' data(multcif)
 ##' 
 ##' times <- seq(0.3,1,length=4)
-##' add<-comp.risk(Surv(time,cause>0)~+1+cluster(id),data=multcif,multcif$cause,n.sim=0,causeS=1,
-##'               times=times,max.clust=NULL)
+##' add<-comp.risk(Surv(time,cause>0)~+1+cluster(id),data=multcif,multcif$cause,n.sim=0,causeS=1, times=times,max.clust=NULL)
 ##' 
 ##' out1<-random.cif(add,data=multcif,cause1=1,cause2=1)
 ##' summary(out1)
@@ -645,22 +643,22 @@ or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 ##' out2<-random.cif(add,data=multcif,cause1=1,cause2=1,theta.des=theta.des)
 ##' summary(out2)
 ##' #########################################
-##' ##### 2 different causes 
+##' ##### 2 different causes
 ##' #########################################
 ##' 
-##' multcif$cause[multcif$cause==0] <- 2
-##'  
-##' ###times<-sort(multcif$time[multcif$status \%in\% c(1,2)])
-##' add1<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,causeS=1,
-##' 		  multcif$cause,n.sim=0,times=times)
-##' add2<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,causeS=2,
-##' 		  multcif$cause,n.sim=0,times=times)
-##'  
-##' out1<-random.cif(add1,data=multcif,cause1=1,cause2=2,cif2=add2)
-##' summary(out1) ## negative dependence
+##' ## multcif$cause[multcif$cause==0] <- 2
 ##' 
-##' out1g<-random.cif(add1,data=multcif,cause1=1,cause2=2,cif2=add2,theta.des=theta.des)
-##' summary(out1g)
+##' ## ###times<-sort(multcif$time[multcif$status \%in\% c(1,2)])
+##' ## add1<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,causeS=1,
+##' ## 		  multcif$cause,n.sim=0,times=times)
+##' ## add2<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,causeS=2,
+##' ## 		  multcif$cause,n.sim=0,times=times)
+##' 
+##' ## out1<-random.cif(add1,data=multcif,cause1=1,cause2=2,cif2=add2)
+##' ## summary(out1) ## negative dependence
+##' 
+##' ## out1g<-random.cif(add1,data=multcif,cause1=1,cause2=2,cif2=add2,theta.des=theta.des)
+##' ## summary(out1g)
 ##' @keywords survival
 ##' @author Thomas Scheike
 random.cif<-function(cif,data,cause,cif2=NULL,

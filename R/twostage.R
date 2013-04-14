@@ -198,9 +198,9 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
   clustsize <- out.clust$cluster.size
   call.secluster <- se.clusters
   if (is.null(se.clusters)) { se.clusters <- clusters; antiid <- nrow(clusterindex);} else  {
-      iids <-  unique(seclusters); 
+      iids <-  unique(se.clusters); 
       antiid <- length(iids); 
-      if (is.numeric(seclusters)) se.clusters <-  timereg:::sindex.prodlim(iids,se.clusters)-1
+      if (is.numeric(se.clusters)) se.clusters <-  timereg:::sindex.prodlim(iids,se.clusters)-1
        else se.clusters <- as.integer(factor(se.clusters, labels = seq(antiid)))-1
   }
   if (length(se.clusters)!=length(clusters)) stop("Length of seclusters and clusters must be same\n"); 

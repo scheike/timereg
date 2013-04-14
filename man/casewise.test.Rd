@@ -12,6 +12,9 @@
   \item{test}{Type of test for independence assumption.
   "conc" makes test on concordance scale and "case" means a
   test on the casewise concordance}
+
+  \item{p}{check that marginal probability is greater at
+  some point than p}
 }
 \description{
   Estimates the casewise concordance based on Concordance

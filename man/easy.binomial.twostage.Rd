@@ -14,6 +14,45 @@ Useful in particular for family design data.}
     step = 0.5, model = "plackett", marginal.p = NULL,
     strata = NULL, max.clust = NULL, se.clusters = NULL)
 }
+\arguments{
+  \item{margbin}{Marginal binomial model}
+
+  \item{data}{data frame}
+
+  \item{score.method}{Scoring method}
+
+  \item{Nit}{Number of iterations}
+
+  \item{detail}{Detail}
+
+  \item{clusters}{Cluster variable}
+
+  \item{silent}{Debug information}
+
+  \item{weights}{Weights for log-likelihood, can be used
+  for each type of outcome in 2x2 tables.}
+
+  \item{control}{Optimization arguments}
+
+  \item{theta}{Starting values for variance components}
+
+  \item{var.link}{Link function for variance}
+
+  \item{iid}{Calculate i.i.d. decomposition}
+
+  \item{step}{Step size}
+
+  \item{model}{model}
+
+  \item{marginal.p}{vector of marginal probabilities}
+
+  \item{strata}{strata for fitting}
+
+  \item{max.clust}{max clusters}
+
+  \item{se.clusters}{clusters for iid decomposition for
+  roubst standard errors}
+}
 \description{
   If clusters contain more than two times, the algoritm
   uses a compososite likelihood based on the pairwise
@@ -71,6 +110,11 @@ desfs <- function(x,num1="num1",num2="num2")
          bb <- (x[num1]=="b1")*(x[num2]=="b1" | x[num2]=="b2")*1
          c(mf,mb,bb)
 }
+\author{
+  Thomas Scheike
+}
+\keyword{binomial}
+\keyword{regression}
 
 out <- easy.binomial.twostage(y~+1,data=ddl,
                    response="y",id="id",type="zyg",

@@ -5,6 +5,7 @@
 ##' @param conc Concordance 
 ##' @param marg Marginal estimate
 ##' @param test Type of test for independence assumption. "conc" makes test on concordance scale and "case" means a test on the casewise concordance
+##' @param p check that marginal probability is greater at some point than p
 ##' @author Thomas Scheike
 ##' @examples
 ##' data(prt);
@@ -38,7 +39,7 @@
 ##' @export
 casewise.test <- function(conc,marg,test="no-test",p=0.01)
 { ## {{{
-  if (sum(marg$P1>0.01)==0) stop("No timepoints where marginal > 0.01\n"); 
+  if (sum(marg$P1>p)==0) stop("No timepoints where marginal > ",p,"\n"); 
   time1 <- conc$time; time2 <- marg$time[marg$P1>0.01]
   mintime <- max(time1[1],time2[1])
   maxtime <- min(max(time1),max(time2))

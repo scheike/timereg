@@ -19,6 +19,7 @@ Depends:
     numDeriv,
     splines,
     timereg (>= 1.7),
+    compiler,
     prodlim
 Suggests:
     lava.tobit (>= 0.4-7),

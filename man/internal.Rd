@@ -1,8 +1,11 @@
 \name{npc}
 \alias{alpha2kendall}
 \alias{alpha2spear}
+\alias{cluster.index}
 \alias{coefmat}
 \alias{corsim.prostate}
+\alias{familycluster.index}
+\alias{faster.reshape}
 \alias{nonparcuminc}
 \alias{npc}
 \alias{piecewise.twostage}

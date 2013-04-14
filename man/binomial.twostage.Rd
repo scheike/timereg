@@ -51,7 +51,7 @@ based on the pairwise bivariate models.}
 
   \item{strata}{strata for fitting}
 
-  \item{max.clust}{}
+  \item{max.clust}{max clusters}
 
   \item{se.clusters}{clusters for iid decomposition for
   roubst standard errors}

@@ -25,6 +25,9 @@
 
   \item{numname}{Name of number-variable (Wide->Long)}
 
+  \item{factors.keep}{If FALSE all factors are converted to
+  integers}
+
   \item{...}{Optional additional arguments}
 }
 \description{

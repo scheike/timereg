@@ -11,7 +11,7 @@
 ##' @param pairleft pairwise (1) left truncation or individual (0)
 ##' @author Klaus K. Holst
 ##' @export
-simClaytonOakes <- function(K,n,eta,beta,stoptime,left=0,pairwise=0,pairleft=0) {
+simClaytonOakes <- function(K,n,eta,beta,stoptime,left=0,pairleft=0) {
   ## K antal clustre, n=antal i clustre
   x<-array(c(runif(n*K),rep(0,n*K),rbinom(n*K,1,0.5)),dim=c(K,n,3))
   C<-matrix(stoptime,K,n);

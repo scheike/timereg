@@ -66,7 +66,7 @@
 ##' @param model model
 ##' @param marginal.p vector of marginal probabilities 
 ##' @param strata strata for fitting 
-##' @param max.clust
+##' @param max.clust max clusters
 ##' @param se.clusters clusters for iid decomposition for roubst standard errors
 ##' @param numDeriv uses Fisher scoring aprox of second derivative if 0, otherwise numerical derivatives 
 binomial.twostage <- function(margbin,data=sys.parent(),score.method="nlminb",
@@ -308,6 +308,7 @@ antpers <- NROW(data);
 
 } ## }}}
 
+
 ##' Fits two-stage binomial for describing depdendence in binomial data
 ##' using marginals that are on logistic form using the binomial.twostage funcion, but
 ##' call is different and easier and the data manipulation is build into the function.
@@ -371,6 +372,24 @@ antpers <- NROW(data);
 ##' 		       theta.formula=desfs,desnames=c("mf","mb","bb"))
 ##' summary(out)
 ##' @export
+##' @param margbin Marginal binomial model 
+##' @param data data frame
+##' @param score.method Scoring method
+##' @param Nit Number of iterations
+##' @param detail Detail
+##' @param clusters Cluster variable
+##' @param silent Debug information
+##' @param weights Weights for log-likelihood, can be used for each type of outcome in 2x2 tables. 
+##' @param control Optimization arguments
+##' @param theta Starting values for variance components
+##' @param var.link Link function for variance 
+##' @param iid Calculate i.i.d. decomposition
+##' @param step Step size
+##' @param model model
+##' @param marginal.p vector of marginal probabilities 
+##' @param strata strata for fitting 
+##' @param max.clust max clusters
+##' @param se.clusters clusters for iid decomposition for roubst standard errors
 easy.binomial.twostage <- function(margbin=NULL,data=sys.parent(),score.method="nlminb",
 response="response",id="id",type=NULL,
 Nit=60,detail=0, silent=1,weights=NULL, control=list(),
@@ -479,7 +498,7 @@ yb2 <- rbinom(n,1,pb1)
 data.frame(x1=x1,x2=x2,ym=ym,yf=yf,yb1=yb1,yb2=yb2,id=1:n)
 } ## }}} 
 
-onerunfam <- function(i,n,alr=0,manual=1,time=0,simplealr=1) { ## {{{ 
+onerunfam <- function(i,n,alr=0,manual=1,time=0,simplealr=1,theta=1) { ## {{{ 
 ### n=200; beta=0.2; theta=1; time=0; i=1
 print(i)
 dd <- sim.bin.fam(n,beta=0,theta=theta) 
