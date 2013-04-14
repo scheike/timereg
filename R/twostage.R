@@ -606,6 +606,7 @@ if (silent<=0) cat(paste("Data-set ",k,"out of ",(nc1-1)*(nc2-1)),"\n");
  datalr <- surv.boxarea(c(cut1[i1-1],cut2[i2-1]),c(cut1[i1],cut2[i2]),data,timevar=timevar,
 			status=status,id=id,covars=covars,covars.pairs=covars.pairs,num=num,silent=silent) 
 if (silent<=-1) print(summary(datalr)); 
+if (silent<=-1) print(head(datalr)); 
  boxlr <- list(left=c(cut1[i1-1],cut2[i2-1]),right=c(cut1[i1],cut2[i2]))
 ### marg1 <- aalen(Surv(datalr$left,datalr[,timevar],datalr[,status])~+1,data=datalr,n.sim=0,max.clust=NULL,robust=0)
 datalr$tstime <- datalr[,timevar]
@@ -633,6 +634,7 @@ if (i2==2) names1 <- c(names1, paste(cut1[i1-1],"-",cut1[i1]))
 if (i1==2) names2 <- c(names2, paste(cut2[i2-1],"-",cut2[i2]))
 theta <- c(theta,fitlr$theta)
 
+if ((silent<=-1) & (iid==1)) print(head(fitlr$theta.iid)); 
 ###if (iid==1) theta.iid[idi %in% unique(datalr$tsid),k] <-  fitlr$theta.iid 
 if (iid==1) theta.iid[rownames(fitlr$theta.iid),k] <-  fitlr$theta.iid 
 }
