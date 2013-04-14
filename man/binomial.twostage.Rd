@@ -1,6 +1,6 @@
 \name{binomial.twostage}
 \alias{binomial.twostage}
-\title{Fits Clayton-Oakes or bivariate Plackett models for bivariate survival data
+\title{Fits Clayton-Oakes or bivariate Plackett (OR) models for binary data
 using marginals that are on logistic form.
 If clusters contain more than two times, the algoritm uses a compososite likelihood
 based on the pairwise bivariate models.}
@@ -62,7 +62,10 @@ based on the pairwise bivariate models.}
 \description{
   The reported standard errors are based on the estimated
   information from the likelihood assuming that the
-  marginals are known.
+  marginals are known. This gives correct standard errors
+  in the case of the plackett distribution (OR model for
+  dependence), but incorrect for the clayton-oakes types
+  model.
 }
 \examples{
 data(twinstut)

@@ -189,6 +189,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
         psurvmarg <- marginal.survival
   }
 
+  cluster.call <- clusters
   out.clust <- cluster.index(clusters);  
   clusters <- out.clust$clusters
   maxclust <- out.clust$maxclust 
@@ -212,7 +213,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 	max.clusters <- length(unique(se.clusters))
 	maxclust <- max.clust    
 	antiid <- max.clusters
-  }                                                         
+  }                                                        
 
   ratesim<-rate.sim; pxz <- px + pz;
   if (is.null(theta.des)==TRUE) ptheta<-1; 
@@ -243,7 +244,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
       itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
       icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
       ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
-      itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid,DUP=FALSE) 
+      itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,DUP=FALSE) 
       ## }}}
 
     if (detail==3) print(c(par,outl$loglike))
@@ -361,106 +362,11 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
   ## }}}
   }  else stop("score.methods = optimize(dim=1) nlm nlminb fisher.scoring\n"); 
 
-
-###  if (score.method=="fisher.scoring") { ## {{{
-###    oout <- 2;  ### output control for obj
-###    if (Nit>0) 
-###    for (i in 1:Nit)
-###    {
-###        out <- loglike(p)
-###	hess <- out$Dscore
-###	if (!is.na(sum(hess))) hessi <- lava::Inverse(out$Dscore) else hessi <- hess 
-###        if (detail==1) {## {{{
-###          cat(paste("Fisher-Scoring ===================: it=",i,"\n")); 
-###          cat("theta:");print(c(p))
-###          cat("loglike:");cat(c(out$loglike),"\n"); 
-###          cat("score:");cat(c(out$score),"\n"); 
-###	  cat("hess:\n"); cat(out$Dscore,"\n"); 
-###        }## }}}
-###        delta <- hessi %*% out$score *step 
-###        p <- p+delta* step
-###        theta <- p; 
-###	if (is.nan(sum(out$score))) break; 
-###        if (sum(abs(out$score))<0.00001) break; 
-###        if (max(theta)>20) break; 
-###    }
-###    if (!is.nan(sum(p))) { 
-###    if (detail==1 && iid==1) cat("iid decomposition\n"); 
-###    out <- loglike(p) 
-###    logl <- out$loglike
-###    score <- out$score
-###    oout <- 0; 
-###    score1 <- jacobian(loglike,p)
-###    hess <- hessian(loglike,p)
-###    if (iid==1) theta.iid <- out$theta.iid
-###    }
-###    if (detail==1 & Nit==0) {## {{{
-###          cat(paste("Fisher-Scoring ===================: final","\n")); 
-###          cat("theta:");print(c(p))
-###          cat("loglike:");cat(c(out$loglike),"\n"); 
-###          cat("score:");cat(c(out$score),"\n"); 
-###	  cat("hess:\n"); cat(out$Dscore,"\n"); 
-###    }## }}}
-###    if (!is.na(sum(hess))) hessi <- lava::Inverse(hess) else hessi <- diag(nrow(hess))
-###    ## }}}
-###  } else if (score.method=="nlminb") { ## {{{ nlminb optimizer
-###    oout <- 0; 
-###    tryCatch(opt <- nlminb(theta,loglike,control=control),error=function(x) NA)
-###    if (detail==1) print(opt); 
-###    library(numDeriv)
-###    score <- jacobian(loglike,opt$par)
-###    hess <- hessian(loglike,opt$par)
-###    hessi <- lava::Inverse(hess); 
-###    theta <- opt$par
-###    if (detail==1 && iid==1) cat("iid decomposition\n"); 
-###    oout <- 2
-###    out <- loglike(opt$par)
-###    logl <- out$loglike
-###    score1 <- out$score
-###    if (iid==1) theta.iid <- out$theta.iid
-###  ## }}}
-###  } else if (score.method=="optimize" && ptheta==1) { ## {{{  optimizer
-###    oout <- 0; 
-###    if (var.link==1) {mino <- -20; maxo <- 10;} else {mino <- 0.001; maxo <- 100;}
-###    tryCatch(opt <- optimize(loglike,c(mino,maxo)));
-###    if (detail==1) print(opt); 
-###    library(numDeriv)
-###    opt$par <- opt$minimum
-###    score <- jacobian(loglike,opt$par)
-###    hess <- hessian(loglike,opt$par)
-###    hessi <- lava::Inverse(hess); 
-###    theta <- opt$par
-###    if (detail==1 && iid==1) cat("iid decomposition\n"); 
-###    oout <- 2
-###    out <- loglike(opt$par)
-###    logl <- out$loglike
-###    score1 <- out$score
-###    if (iid==1) theta.iid <- out$theta.iid
-###  ## }}}
-###  } else if (score.method=="nlm") { ## {{{ nlm optimizer
-###    iid <- 0; oout <- 0; 
-###    tryCatch(opt <- nlm(loglike,theta,hessian=TRUE,print.level=detail),error=function(x) NA)
-###    iid <- 1; 
-######    library(numDeriv)
-###    hess <- opt$hessian
-###    score <- opt$gradient
-###    if (detail==1) print(opt); 
-###    hessi <- lava::Inverse(hess); 
-###    theta <- opt$estimate
-###    if (detail==1 && iid==1) cat("iid decomposition\n"); 
-###    oout <- 2
-###    out <- loglike(opt$estimate)
-###    logl <- out$loglike
-###    score1 <- out$score
-###    if (iid==1) theta.iid <- out$theta.iid
-###  ## }}}
-###  }  else stop("score.methods = optimize(dim=1) nlm nlminb fisher.scoring\n"); 
-
-
 ## {{{ handling output
   robvar.theta <- NULL
   if (iid==1) {
      theta.iid <- out$theta.iid %*% hessi
+     if (is.null(call.secluster) & is.null(max.clust)) rownames(theta.iid) <- unique(cluster.call) else rownames(theta.iid) <- unique(se.clusters)
      robvar.theta  <- (t(theta.iid) %*% theta.iid) 
   }
   if (iid==1) var.theta <- robvar.theta else var.theta <- -hessi
@@ -469,12 +375,14 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
              theta.iid=theta.iid,thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,margsurv=psurvmarg); 
   class(ud)<-"twostage" 
   attr(ud, "Formula") <- formula
-  attr(ud, "Clusters") <- clusters
+  attr(ud, "clusters") <- clusters
+  attr(ud, "cluster.call") <- cluster.call
   attr(ud,"sym")<-sym; 
   attr(ud,"var.link")<-var.link; 
   attr(ud,"antpers")<-antpers; 
   attr(ud,"antclust")<-antclust; 
   attr(ud, "Type") <- model
+  attr(ud, "response") <- "survival"
   return(ud);
   ## }}}
 
@@ -486,7 +394,7 @@ summary.twostage <-function (object,digits = 3,...) { ## {{{
   
   var.link<-attr(object,"var.link");
   if (object$model=="plackett") cat("Dependence parameter for Plackett model \n"); 
-  if (attr(object,"resp")=="binomial") resp <- "binomial" else resp <- "survival"
+  if (attr(object,"response")=="binomial") response <- "binomial" else response <- "survival"
   if (object$model=="clayton.oakes") cat("Dependence parameter for Clayton-Oakes model \n"); 
 
   if (sum(abs(object$score)>0.0001) ) {
@@ -494,7 +402,7 @@ summary.twostage <-function (object,digits = 3,...) { ## {{{
 	  cat(paste("    Score:",object$score,"  \n")); 
   }
 
-  coefs <- coef.twostage(object,response=resp,...);
+  coefs <- coef.twostage(object,response=response,...);
 
   res <- list(estimates=coefs, type=attr(object,"Type"))
   class(res) <- "summary.twostage"
@@ -502,7 +410,7 @@ summary.twostage <-function (object,digits = 3,...) { ## {{{
 } ## }}}
 
 ##' @S3method coef twostage
-coef.twostage <- function(object,var.link=NULL,...)
+coef.twostage <- function(object,var.link=NULL,response="survival",...)
 { ## {{{
   theta <- object$theta
   if (is.null(var.link))
@@ -513,32 +421,33 @@ coef.twostage <- function(object,var.link=NULL,...)
   wald <- theta/se
   waldp <- (1 - pnorm(abs(wald))) * 2
   library(numDeriv)
-  if (object$model=="plackett") {
-  spearman <- alpha2spear(theta,link=vlink)
-  Dspear <- jacobian(alpha2spear,theta,link=vlink) 
-  var.spearman <- Dspear %*% object$var.theta %*%  Dspear
-  se.spearman <- diag(var.spearman)^.5
-  res <- as.matrix(cbind(res, wald, waldp,spearman,se.spearman))
-  if (vlink==1) colnames(res) <- c("log-Coef.", "SE","z", "P-val","Spearman Corr.","SE")
-  else colnames(res) <- c("Coef.", "SE","z", "P-val","Spearman Corr.","SE")
-  if (!is.null(object$thetanames)) rownames(res)<-object$thetanames
+  if (response=="survival") { 
+       if (object$model=="plackett") {
+       spearman <- alpha2spear(theta,link=vlink)
+       Dspear <- jacobian(alpha2spear,theta,link=vlink) 
+       var.spearman <- Dspear %*% object$var.theta %*%  Dspear
+       se.spearman <- diag(var.spearman)^.5
+       res <- as.matrix(cbind(res, wald, waldp,spearman,se.spearman))
+       if (vlink==1) colnames(res) <- c("log-Coef.", "SE","z", "P-val","Spearman Corr.","SE")
+	  else colnames(res) <- c("Coef.", "SE","z", "P-val","Spearman Corr.","SE")
+	  if (!is.null(object$thetanames)) rownames(res)<-object$thetanames
+       }
+       if (object$model=="clayton.oakes") {
+       kendall <- alpha2kendall(theta,link=vlink)
+       Dken <- jacobian(alpha2kendall,theta,link=vlink) 
+       var.kendall<- Dken %*% object$var.theta %*%  Dken
+       se.kendall <- diag(var.kendall)^.5
+       res <- as.matrix(cbind(res, wald, waldp,kendall,se.kendall))
+       if (vlink==1) colnames(res) <- c("log-Coef.", "SE","z", "P-val","Kendall tau","SE")
+       else colnames(res) <- c("Coef.", "SE","z", "P-val","Kendall tau","SE")
+       if (!is.null(object$thetanames)) rownames(res)<-object$thetanames
+       }
   }
-  if (object$model=="clayton.oakes") {
-  kendall <- alpha2kendall(theta,link=vlink)
-  Dken <- jacobian(alpha2kendall,theta,link=vlink) 
-  var.kendall<- Dken %*% object$var.theta %*%  Dken
-  se.kendall <- diag(var.kendall)^.5
-  res <- as.matrix(cbind(res, wald, waldp,kendall,se.kendall))
-  if (vlink==1) colnames(res) <- c("log-Coef.", "SE","z", "P-val","Kendall tau","SE")
-  else colnames(res) <- c("Coef.", "SE","z", "P-val","Kendall tau","SE")
-  if (!is.null(object$thetanames)) rownames(res)<-object$thetanames
-  }
-
   return(res)
 } ## }}}
 
 ##' @export
-alpha2spear <- function(theta,link=1) {
+alpha2spear <- function(theta,link=1) { ## {{{ 
    if (link==1) theta <- exp(theta)
 if (length(theta)>1) {
    out <- c()
@@ -549,13 +458,13 @@ if (length(theta)>1) {
 } else { if (theta!=1) out <- ( (theta+1)/(theta-1) -2* theta* log(theta)/ (theta-1)^2) }
 
 return(out)
-}
+} ## }}} 
 
 ##' @export
-alpha2kendall <- function(theta,link=0) { 
+alpha2kendall <- function(theta,link=0) {  ## {{{ 
    if (link==1) theta <- exp(theta)
    return(1/(1+2/theta)) 
-}
+} ## }}} 
 
 ##' @S3method print twostage
 print.twostage<-function(x,digits=3,...)
@@ -649,18 +558,44 @@ return(out)
 } ## }}}
 
 ##' @export
-piecewise.twostage <- function(cut1,cut2,data=sys.parent(),timevar="time",status="status",id="id",covars=NULL,num=NULL,
-            score.method="optimize",Nit=100,detail=0,clusters=NULL,silent=1,weights=NULL,
+piecewise.twostage <- function(cut1,cut2,data=sys.parent(),timevar="time",status="status",id="id",covars=NULL,covars.pairs=FALSE,num=NULL,
+            score.method="optimize",Nit=100,detail=0,silent=1,weights=NULL,
             control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,step=0.5,model="plackett",data.return=0)
 { ## {{{
-
 ud <- list()
 if (missing(cut2)) cut2 <- cut1; 
 nc1 <- length(cut1); nc2 <- length(cut2)
 names1 <- names2 <- c()
 theta.mat <- se.theta.mat <- cor.mat <- score.mat <- se.cor.mat <- matrix(0,nc1-1,nc2-1); 
+clusters <- data[,id]
+cluster.call <- clusters
 idi <- unique(data[,id]); 
-if (iid==1) theta.iid <- matrix(0,length(idi),(nc1-1)*(nc2-1)) else theta.iid <- NULL
+
+## {{{ 
+###   se.clusters=NULL,max.clust=1000,
+###  evt sætte cluster se max.clust på 
+###  if (is.null(se.clusters)) { se.clusters <- clusters; antiid <- nrow(clusterindex);} else  {
+###      iids <-  unique(seclusters); 
+###      antiid <- length(iids); 
+###      if (is.numeric(seclusters)) se.clusters <-  timereg:::sindex.prodlim(iids,se.clusters)-1
+###       else se.clusters <- as.integer(factor(se.clusters, labels = seq(antiid)))-1
+###  }
+###  if (length(se.clusters)!=length(clusters)) stop("Length of seclusters and clusters must be same\n"); 
+###
+###  if ((!is.null(max.clust))) if (max.clust< antiid) {
+###        coarse.clust <- TRUE
+###	qq <- unique(quantile(se.clusters, probs = seq(0, 1, by = 1/max.clust)))
+###	qqc <- cut(se.clusters, breaks = qq, include.lowest = TRUE)    
+###	se.clusters <- as.integer(qqc)-1
+###	max.clusters <- length(unique(se.clusters))
+###	maxclust <- max.clust    
+###	antiid <- max.clusters
+###  }                                                         
+## }}} 
+
+if (iid==1) { theta.iid <- matrix(0,length(idi),(nc1-1)*(nc2-1));
+              rownames(theta.iid) <- idi
+            } else theta.iid <- NULL
 
 k <- 0; 
 for (i1 in 2:nc1)
@@ -669,7 +604,7 @@ for (i2 in 2:nc2)
 k <-(i1-2)*(nc2-1)+(i2-1)
 if (silent<=0) cat(paste("Data-set ",k,"out of ",(nc1-1)*(nc2-1)),"\n"); 
  datalr <- surv.boxarea(c(cut1[i1-1],cut2[i2-1]),c(cut1[i1],cut2[i2]),data,timevar=timevar,
-			status=status,id=id,covars=covars,num=num,silent=silent) 
+			status=status,id=id,covars=covars,covars.pairs=covars.pairs,num=num,silent=silent) 
 if (silent<=-1) print(summary(datalr)); 
  boxlr <- list(left=c(cut1[i1-1],cut2[i2-1]),right=c(cut1[i1],cut2[i2]))
 ### marg1 <- aalen(Surv(datalr$left,datalr[,timevar],datalr[,status])~+1,data=datalr,n.sim=0,max.clust=NULL,robust=0)
@@ -679,7 +614,7 @@ datalr$tsid <- datalr[,id]
 ###
 f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(",num,")")))
 ###f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(num)")))
-marg1 <- aalen(f,data=datalr,n.sim=0,max.clust=NULL,robust=0)
+marg1 <- aalen(f,data=datalr,n.sim=0,robust=0)
 fitlr<-  twostage(marg1,data=datalr,clusters=datalr$tsid,model=model,score.method=score.method,
               Nit=Nit,detail=detail,silent=silent,weights=weights,
               control=control,theta=theta,theta.des=theta.des,var.link=var.link,iid=iid,step=step)
@@ -698,7 +633,8 @@ if (i2==2) names1 <- c(names1, paste(cut1[i1-1],"-",cut1[i1]))
 if (i1==2) names2 <- c(names2, paste(cut2[i2-1],"-",cut2[i2]))
 theta <- c(theta,fitlr$theta)
 
-if (iid==1) theta.iid[idi %in% unique(datalr$tsid),k] <-  fitlr$theta.iid 
+###if (iid==1) theta.iid[idi %in% unique(datalr$tsid),k] <-  fitlr$theta.iid 
+if (iid==1) theta.iid[rownames(fitlr$theta.iid),k] <-  fitlr$theta.iid 
 }
 
 var.thetal <- NULL

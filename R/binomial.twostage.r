@@ -1,10 +1,12 @@
-##' Fits Clayton-Oakes or bivariate Plackett models for bivariate survival data 
+##' Fits Clayton-Oakes or bivariate Plackett (OR) models for binary data 
 ##' using marginals that are on logistic form. 
 ##' If clusters contain more than two times, the algoritm uses a compososite likelihood
 ##' based on the pairwise bivariate models.
 ##'
 ##' The reported standard errors are based on the estimated information from the 
-##' likelihood assuming that the marginals are known. 
+##' likelihood assuming that the marginals are known. This gives correct standard errors
+##' in the case of the plackett distribution (OR model for dependence), but incorrect for
+##' the clayton-oakes types model.
 ##'
 ##' @export
 ##' @references
@@ -288,7 +290,8 @@ antpers <- NROW(data);
      robvar.theta  <- (t(theta.iid) %*% theta.iid) 
   }
   if (iid==1) var.theta <- robvar.theta else var.theta <- -hessi
-  if (!is.null(colnames(theta.des))) thetanames <- colnames(theta.des) else thetanames <- rep("intercept",ptheta)
+  if (!is.null(colnames(theta.des))) thetanames <- colnames(theta.des) else thetanames <- paste("dependence",1:ptheta,sep="")
+  if (length(thetanames)==nrow(theta)) { rownames(theta) <- thetanames; rownames(var.theta) <- colnames(var.theta) <- thetanames; }
   ud <- list(theta=theta,score=score,hess=hess,hessi=hessi,var.theta=var.theta,model=model,robvar.theta=robvar.theta,
              theta.iid=theta.iid,thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,margsurv=ps); 
   class(ud)<-"twostage" 
@@ -299,13 +302,26 @@ antpers <- NROW(data);
   attr(ud,"antpers")<-antpers; 
   attr(ud,"antclust")<-antclust; 
   attr(ud, "Type") <- model
-  attr(ud, "resp") <- "binomial"
+  attr(ud, "response") <- "binomial"
   return(ud);
   ## }}}
 
 } ## }}}
 
 ##' Fits two-stage binomial for describing depdendence in binomial data
+##' using marginals that are on logistic form using the binomial.twostage funcion, but
+##' call is different and easier and the data manipulation is build into the function.
+##' Useful in particular for family design data. 
+##'
+##' If clusters contain more than two times, the algoritm uses a compososite likelihood
+##' based on the pairwise bivariate models.
+##'
+##' The reported standard errors are based on the estimated information from the 
+##' likelihood assuming that the marginals are known. This gives correct standard errors
+##' in the case of the plackett distribution (OR model for dependence), but incorrect for
+##' the clayton-oakes types model. The OR model is often known as the ALR model, but this
+##' function gives correct standard errors and is quite a bit quicker.
+##'
 ##' @examples
 ##' data(twinstut)
 ##' theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut)
@@ -320,11 +336,13 @@ antpers <- NROW(data);
 ##' 	  score.method="fisher.scoring",Nit=20,step=1.0)
 ##' summary(bin)
 ##' 
+##' ### easier call with formula call for OR dependence model
 ##' twinstut$binstut <- (twinstut$stutter=="yes")*1
 ##' out <- easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut,response="binstut",id="tvparnr",
 ##' 			      theta.formula=~-1+factor(zyg1))
 ##' summary(out)
 ##' 
+##' ### easier call with flexible design for OR dependence model using functions
 ##' desfs <- function(x,num1="zyg1",namesdes=c("mz","dz","os")) c(x[num1]=="dz",x[num1]=="mz",x[num1]=="os")*1
 ##'
 ##' out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
@@ -332,6 +350,26 @@ antpers <- NROW(data);
 ##'       score.method="fisher.scoring", theta.formula=desfs,desnames=c("mz","dz","os"))
 ##' summary(out3)
 ##'
+##' ### Family design with parents and children and dependence parameters for 
+##' ### mother - father (mf), mother-child and father-child (mb), child-child (bb)
+##'
+##' dd <- sim.bin.fam(1000,beta=0,theta=2) 
+##' ddl <- fast.reshape(dd,varying="y",keep="y")
+##'
+##' ### design function sets up the type of the pair and the related design
+##' desfs <- function(x,num1="num1",num2="num2")
+##' { 
+##' 	     mf <- (x[num1]=="m")*(x[num2]=="f")*1
+##'          mb <- (x[num1]=="m" | x[num1]=="f")*(x[num2]=="b1" | x[num2]=="b2")*1
+##'          bb <- (x[num1]=="b1")*(x[num2]=="b1" | x[num2]=="b2")*1
+##'          c(mf,mb,bb)
+##' }  
+##'
+##' out <- easy.binomial.twostage(y~+1,data=ddl,
+##'                    response="y",id="id",type="zyg",
+##'         	       score.method="fisher.scoring", deshelp=0,
+##' 		       theta.formula=desfs,desnames=c("mf","mb","bb"))
+##' summary(out)
 ##' @export
 easy.binomial.twostage <- function(margbin=NULL,data=sys.parent(),score.method="nlminb",
 response="response",id="id",type=NULL,
@@ -378,8 +416,8 @@ step=0.5,model="plackett",marginal.p=NULL,strata=NULL,max.clust=NULL,se.clusters
 	     print(head(data.fam.clust))
      }
 
-     ### back to long format keeping only needed variables
-     data.fam <- fast.reshape(data.fam.clust,varying=c(response,id,"ps"))
+    ### back to long format keeping only needed variables
+    data.fam <- fast.reshape(data.fam.clust,varying=c(response,id,"ps"))
     if (deshelp==1) {
 	cat("Back to long format for binomial.twostage (head)\n"); 
         print(head(data.fam)); 
@@ -401,6 +439,7 @@ step=0.5,model="plackett",marginal.p=NULL,strata=NULL,max.clust=NULL,se.clusters
    return(out)
 } ## }}}
 
+##' @export
 sim.bin.plack <- function(n,beta=0.3,theta=1) { ## {{{ 
 x1 <- rbinom(n,1,0.5)
 x2 <- rbinom(n,1,0.5)
@@ -420,6 +459,7 @@ y2 <- (y1==1)*rbinom(n,1,p11/p1)+(y1==0)*rbinom(n,1,p01/(1-p1))
 list(x1=x1,x2=x2,y1=y1,y2=y2,id=1:n)
 } ## }}} 
 
+##' @export
 sim.bin.fam <- function(n,beta=0.0,theta=1,lam1=1,lam2=1) { ## {{{ 
 x1 <- rbinom(n,1,0.5); x2 <- rbinom(n,1,0.5); 
 x3 <- rbinom(n,1,0.5); x4 <- rbinom(n,1,0.5); 

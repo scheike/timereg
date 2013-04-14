@@ -3,8 +3,7 @@
 \title{Fast reshape}
 \usage{
   fast.reshape(data, id, varying, num, sep = "", keep,
-    idname = "id", numname = "num", factors.keep = TRUE,
-    ...)
+    idname = "id", numname = "num", ...)
 }
 \arguments{
   \item{data}{data.frame or matrix}

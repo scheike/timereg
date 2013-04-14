@@ -41,7 +41,7 @@
 ##' data(prt)
 ##' head(fast.reshape(prt,"id",var="cancer"))
 fast.reshape <- function(data,id,varying,num,sep="",keep,
-                         idname="id",numname="num",factors.keep=TRUE,...) {
+                         idname="id",numname="num",...) {
   if (!is.data.frame(data) & is.list(data)) {
     data <- as.data.frame(data)
   } else {
@@ -77,8 +77,8 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
     is_df <- is.data.frame(data)
     oldreshape <- FALSE
     if (is_df) {
-      ## D0 <- droplevels(data)[1,,drop=FALSE]
-      D0 <- data[1,,drop=FALSE]
+      D0 <- droplevels(data)[1,,drop=FALSE]
+      ##      D0 <- data[1,,drop=FALSE]
       classes <- unlist(lapply(D0,class))
       dim <- unlist(lapply(D0,NCOL))
       if (any(dim>1) || !all(classes%in%c("numeric","logical","factor","integer","matrix"))) { ## e.g. Surv columns 
@@ -109,9 +109,6 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
                                 as.integer(nvarying),
                                 TRUE ## Remove rows with all missing
                                 ));
-    while (idname%in%c(fixed,vnames,numname)) idname <- paste(idname,"_",sep="")
-    while (numname%in%c(fixed,vnames)) numname <- paste(numname,"_",sep="")
-    
     colnames(long) <- c(fixed,vnames,idname,numname)
     if (!numlev) {
       long[,numname] <- factor(long[,numname],labels=thelevels)
@@ -120,19 +117,21 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
         long[,numname] <- thelevels[long[,numname]]
     }
 
-    if (is_df && factors.keep) { ## Recreate classes 
+    if (is_df) { ## Recreate classes 
       vars.orig <- c(fixed,unlist(lapply(varying,function(x) x[1])))
-      vars.new <- c(fixed,vnames)
-      factors <- which("factor"==classes[vars.orig])
-      logicals <- which("logical"==classes[vars.orig])
-      for (i in factors) {
-        lev <- levels(D0[,vars.orig[i]])
-        long[,vars.new[i]] <- factor(lev[long[,vars.new[i]]],levels=lev)
+      fac <- which("factor"==classes[vars.orig])
+      log <- which("logical"==classes[vars.orig])
+      if (length(fac)>0) {
+        for (i in fac) {
+          long[,vars.orig[i]] <- factor(long[,vars.orig[i]],labels=levels(D0[,vars.orig[i]]))
+        }
       }
-      for (i in logicals) {
-        long[,vars.new[i]] <- long[,vars.new[i]]==1
-      }
-    }
+      if (length(log)>0) {
+        for (i in log) {
+          long[,vars.orig[i]] <- long[,vars.orig[i]]==1
+        }
+      }      
+    } 
     return(long)
   }
 
