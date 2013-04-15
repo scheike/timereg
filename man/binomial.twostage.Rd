@@ -3,7 +3,7 @@
 \title{Fits Clayton-Oakes or bivariate Plackett (OR) models for binary data
 using marginals that are on logistic form.
 If clusters contain more than two times, the algoritm uses a compososite likelihood
-based on the pairwise bivariate models.}
+based on all pairwise bivariate models.}
 \usage{
   binomial.twostage(margbin, data = sys.parent(),
     score.method = "nlminb", Nit = 60, detail = 0,
@@ -60,12 +60,12 @@ based on the pairwise bivariate models.}
   derivative if 0, otherwise numerical derivatives}
 }
 \description{
-  The reported standard errors are based on the estimated
-  information from the likelihood assuming that the
-  marginals are known. This gives correct standard errors
-  in the case of the plackett distribution (OR model for
-  dependence), but incorrect for the clayton-oakes types
-  model.
+  The reported standard errors are based on a cluster
+  corrected score equations from the pairwise likelihoods
+  assuming that the marginals are known. This gives correct
+  standard errors in the case of the plackett distribution
+  (OR model for dependence), but incorrect standard errors
+  for the clayton-oakes types model.
 }
 \examples{
 data(twinstut)
@@ -96,7 +96,7 @@ summary(out)
 
 desfs<-function(x,num1="zyg1",namesdes=c("mz","dz","os")) c(x[num1]=="dz",x[num1]=="mz",x[num1]=="os")*1
 out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
-      data=twinstut,response="binstut",id="tvparnr",type="zyg",
+      data=twinstut,response="binstut",id="tvparnr",
       score.method="fisher.scoring", theta.formula=desfs,desnames=c("mz","dz","os"))
 summary(out3)
 }

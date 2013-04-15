@@ -41,7 +41,7 @@
 ##' desfs<-function(x,num1="zyg1",namesdes=c("mz","dz","os")) c(x[num1]=="dz",x[num1]=="mz",x[num1]=="os")*1
 ###
 ##' out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
-##'       data=twinstut,response="binstut",id="tvparnr",type="zyg",
+##'       data=twinstut,response="binstut",id="tvparnr",
 ##'       score.method="fisher.scoring", theta.formula=desfs,desnames=c("mz","dz","os"))
 ##' summary(out3)
 ##'
@@ -348,7 +348,7 @@ antpers <- NROW(data);
 ##' desfs <- function(x,num1="zyg1",namesdes=c("mz","dz","os")) c(x[num1]=="dz",x[num1]=="mz",x[num1]=="os")*1
 ##'
 ##' out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
-##'       data=twinstut,response="binstut",id="tvparnr",type="zyg",
+##'       data=twinstut,response="binstut",id="tvparnr",
 ##'       score.method="fisher.scoring", theta.formula=desfs,desnames=c("mz","dz","os"))
 ##' summary(out3)
 ##'
@@ -367,7 +367,7 @@ antpers <- NROW(data);
 ##'          c(mf,mb,bb)
 ##' }  
 ##'
-##' out <- easy.binomial.twostage(y~+1,data=ddl,response="y",id="id",type="zyg",
+##' out <- easy.binomial.twostage(y~+1,data=ddl,response="y",id="id",
 ##'         	       score.method="fisher.scoring",deshelp=0,
 ##' 		       theta.formula=desfs,desnames=c("mf","mb","bb"))
 ##' summary(out)
@@ -464,7 +464,7 @@ step=0.5,model="plackett",marginal.p=NULL,strata=NULL,max.clust=NULL,se.clusters
 } ## }}}
 
 ##' @export
-sim.bin.plack <- function(n,beta=0.3,theta=1) { ## {{{ 
+sim.bin.plack <- function(n,beta=0.3,theta=1,...) { ## {{{ 
 x1 <- rbinom(n,1,0.5)
 x2 <- rbinom(n,1,0.5)
 ###
@@ -484,7 +484,7 @@ list(x1=x1,x2=x2,y1=y1,y2=y2,id=1:n)
 } ## }}} 
 
 ##' @export
-sim.bin.fam <- function(n,beta=0.0,theta=1,lam1=1,lam2=1) { ## {{{ 
+sim.bin.fam <- function(n,beta=0.0,theta=1,lam1=1,lam2=1,...) { ## {{{ 
 x1 <- rbinom(n,1,0.5); x2 <- rbinom(n,1,0.5); 
 x3 <- rbinom(n,1,0.5); x4 <- rbinom(n,1,0.5); 
 ###

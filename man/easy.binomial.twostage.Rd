@@ -7,25 +7,27 @@ Useful in particular for family design data.}
 \usage{
   easy.binomial.twostage(margbin = NULL,
     data = sys.parent(), score.method = "nlminb",
-    response = "response", id = "id", type = NULL,
-    Nit = 60, detail = 0, silent = 1, weights = NULL,
-    control = list(), theta = NULL, theta.formula = NULL,
-    desnames = NULL, deshelp = 0, var.link = 1, iid = 1,
-    step = 0.5, model = "plackett", marginal.p = NULL,
-    strata = NULL, max.clust = NULL, se.clusters = NULL)
+    response = "response", id = "id", Nit = 60, detail = 0,
+    silent = 1, weights = NULL, control = list(),
+    theta = NULL, theta.formula = NULL, desnames = NULL,
+    deshelp = 0, var.link = 1, iid = 1, step = 0.5,
+    model = "plackett", marginal.p = NULL, strata = NULL,
+    max.clust = NULL, se.clusters = NULL)
 }
 \arguments{
   \item{margbin}{Marginal binomial model}
 
   \item{data}{data frame}
 
+  \item{response}{name of response variable in data frame}
+
+  \item{id}{name of cluster variable in data frame}
+
   \item{score.method}{Scoring method}
 
   \item{Nit}{Number of iterations}
 
-  \item{detail}{Detail}
-
-  \item{clusters}{Cluster variable}
+  \item{detail}{Detail for more output for iterations}
 
   \item{silent}{Debug information}
 
@@ -35,6 +37,14 @@ Useful in particular for family design data.}
   \item{control}{Optimization arguments}
 
   \item{theta}{Starting values for variance components}
+
+  \item{theta.formula}{design for depedence, either formula
+  or design function}
+
+  \item{desnames}{names for dependence parameters}
+
+  \item{deshelp}{if 1 then prints out some data sets that
+  are used, on on which the design function operates}
 
   \item{var.link}{Link function for variance}
 
@@ -92,7 +102,7 @@ summary(out)
 desfs <- function(x,num1="zyg1",namesdes=c("mz","dz","os")) c(x[num1]=="dz",x[num1]=="mz",x[num1]=="os")*1
 
 out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
-      data=twinstut,response="binstut",id="tvparnr",type="zyg",
+      data=twinstut,response="binstut",id="tvparnr",
       score.method="fisher.scoring", theta.formula=desfs,desnames=c("mz","dz","os"))
 summary(out3)
 
@@ -111,10 +121,11 @@ desfs <- function(x,num1="num1",num2="num2")
          c(mf,mb,bb)
 }
 
-out <- easy.binomial.twostage(y~+1,data=ddl,
-                   response="y",id="id",type="zyg",
-        	       score.method="fisher.scoring", deshelp=0,
+out <- easy.binomial.twostage(y~+1,data=ddl,response="y",id="id",
+        	       score.method="fisher.scoring",deshelp=0,
 		       theta.formula=desfs,desnames=c("mf","mb","bb"))
 summary(out)
 }
+\keyword{binomial}
+\keyword{regression}
 
