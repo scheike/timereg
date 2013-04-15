@@ -1,12 +1,12 @@
 ##' Fits Clayton-Oakes or bivariate Plackett (OR) models for binary data 
 ##' using marginals that are on logistic form. 
 ##' If clusters contain more than two times, the algoritm uses a compososite likelihood
-##' based on the pairwise bivariate models.
+##' based on all pairwise bivariate models.
 ##'
-##' The reported standard errors are based on the estimated information from the 
-##' likelihood assuming that the marginals are known. This gives correct standard errors
-##' in the case of the plackett distribution (OR model for dependence), but incorrect for
-##' the clayton-oakes types model.
+##' The reported standard errors are based on a cluster corrected score equations from the 
+##' pairwise likelihoods assuming that the marginals are known. This gives correct standard errors
+##' in the case of the plackett distribution (OR model for dependence), but incorrect standard
+##' errors for the clayton-oakes types model.
 ##'
 ##' @export
 ##' @references
@@ -367,22 +367,26 @@ antpers <- NROW(data);
 ##'          c(mf,mb,bb)
 ##' }  
 ##'
-##' out <- easy.binomial.twostage(y~+1,data=ddl,
-##'                    response="y",id="id",type="zyg",
-##'         	       score.method="fisher.scoring", deshelp=0,
+##' out <- easy.binomial.twostage(y~+1,data=ddl,response="y",id="id",type="zyg",
+##'         	       score.method="fisher.scoring",deshelp=0,
 ##' 		       theta.formula=desfs,desnames=c("mf","mb","bb"))
 ##' summary(out)
+##' @keywords binomial regression 
 ##' @export
 ##' @param margbin Marginal binomial model 
 ##' @param data data frame
+##' @param response name of response variable in data frame
+##' @param id name of cluster variable in data frame
 ##' @param score.method Scoring method
 ##' @param Nit Number of iterations
-##' @param detail Detail
-##' @param clusters Cluster variable
+##' @param detail Detail for more output for iterations 
 ##' @param silent Debug information
 ##' @param weights Weights for log-likelihood, can be used for each type of outcome in 2x2 tables. 
 ##' @param control Optimization arguments
 ##' @param theta Starting values for variance components
+##' @param theta.formula design for depedence, either formula or design function
+##' @param desnames names for dependence parameters
+##' @param deshelp if 1 then prints out some data sets that are used, on on which the design function operates
 ##' @param var.link Link function for variance 
 ##' @param iid Calculate i.i.d. decomposition
 ##' @param step Step size
@@ -392,7 +396,7 @@ antpers <- NROW(data);
 ##' @param max.clust max clusters
 ##' @param se.clusters clusters for iid decomposition for roubst standard errors
 easy.binomial.twostage <- function(margbin=NULL,data=sys.parent(),score.method="nlminb",
-response="response",id="id",type=NULL,
+response="response",id="id",
 Nit=60,detail=0, silent=1,weights=NULL, control=list(),
 theta=NULL,theta.formula=NULL,desnames=NULL,deshelp=0,var.link=1,iid=1,
 step=0.5,model="plackett",marginal.p=NULL,strata=NULL,max.clust=NULL,se.clusters=NULL)
@@ -566,6 +570,7 @@ if (manual==1) {
 ###    ZMAST <- cbind(ZMAST,c(0,0,0,0,1,1,0,1,1,0,1,1))
 ###
 ###   outl <- alr(ddl$y~+1,id=ddl$id,depmodel="general",ainit=rep(0.01,3),z=udz$z,zmast=0)
+   require(alr)
    out4t <-  system.time(
    outl <- alr(ddl$y~+1,id=ddl$id,depmodel="general",zlocs=rep(1:4,n),ainit=rep(0.01,3),z=zfam,zmast=1)
    )
