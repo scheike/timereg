@@ -76,4 +76,3 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
 ###surv.boxarea(c(0,0),c(5,5),x,covars="x",covars.pairs="sex",num="tv")
 
 
-
