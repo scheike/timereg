@@ -67,15 +67,5 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   return(lr.data)
 } ## }}}
 
-load("../../minilife.rda")
-library(mets)
-life=minilife
- surv.boxarea(c(0,0),c(50,50),minilife,time="time",status="dead",
-            covars=c("zygtrip"),covars.pairs="sex",
-             id="twinpair",num="tv",silent=-1)
-
- surv.boxarea(c(0,0),c(50,50),minilife,time="time",status="dead",
-            covars=c("zygtrip","sex"),
-             id="twinpair",num="tv",silent=-1)
 
 
