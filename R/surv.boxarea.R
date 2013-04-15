@@ -5,9 +5,10 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   if (is.null(data[,timevar])) stop("Wrong time variable")
   if (is.null(data[,status])) stop("Wrong status variable")
   data <- data[order(data[,id]),]
-  if (silent<=-1) print("survboxare()")
-  if (silent<=-1) print(head(data))
-###  num <- NULL
+  if (silent<=-1) {
+    message("survboxare()")
+    print(head(data))
+  }
   if (is.null(num)) {
     idtab <- table(data[,id])
     num <- "num"
@@ -23,12 +24,13 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   if (length(covars.pairs)>0) covars.pairs2 <- paste(covars.pairs,1:2,sep="")
 
   ww0 <- fast.reshape(data[,c(timevar,status,covars,covars.pairs,id,num)],id=id,num=num)
-  if (silent<=-1) print("survboxare(), ww0")
-  if (silent<=-1) print(head(ww0))
-  if (silent<=-1) print(c(timevar2,status2,covars2,covars.pairs2,id,num2)) 
-  ww0 <- fast.reshape(data[,c(timevar,status,covars,covars.pairs,id,num)],id=id,num=num,numname=num)[,c(timevar2,status2,covars2,covars.pairs2,id)] 
-  if (silent<=-1) print(head(ww0))
-  if (silent<=-1) print("check mig ud")
+  if (silent<=-1) {
+    message("survboxarea(), ww0")
+    print(head(ww0))
+    print(c(timevar2,status2,covars2,covars.pairs2,id,num2)) 
+    print(head(ww0))
+    print("check mig ud")
+  }
   mleft <-  (ww0[,timevar2[1]]>left.trunc[1]) & (ww0[,timevar2[2]]>left.trunc[2])  ## Both not-truncated
 
   if (length(na.idx <- which(is.na(mleft)))>0) {
@@ -51,20 +53,18 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   colnames(ww0)[c(-1,0) + ncol(ww0)] <- truncvar2
 
   if (silent<=-1) print(head(ww0))
-  if (silent<=0) message(paste("  Number of joint events:",sum(apply(ww0[,status2],1,sum)==2),"of ",nrow(ww0)),"\n");
-  varying <- c(list(timevar2),list(status2),list(truncvar2),lapply(covars,function(x) paste(x,1:2,sep="")))
-  if (silent<=-1) print(varying)
-###  varying=c(timevar,status,"left",covars)
-###  if (silent<=-1) print(varying)
+  if (silent<=0)
+    message(paste("  Number of joint events:",sum(apply(ww0[,status2],1,sum)==2),"of ",nrow(ww0)),"\n");
+
+  varying <- c(timevar,status,"left",covars)
   lr.data <- data.frame(fast.reshape(ww0,varying=varying,numname=num))
-###  lr.data <- data.frame(fast.reshape(ww0,varying=c(timevar,status,"left",covars),numname=num))
-  if (silent<=-1) print("surv.boxarea after fast.reshape"); 
-  if (silent<=-1) print(head(lr.data))
-  ### ,v.names=c(timevar,status,"left",covars))
-  print(timevar)
+  if (silent<=-1) {
+    print("surv.boxarea after fast.reshape"); 
+    print(head(lr.data))
+  }
   lr.data[,boxtimevar] <- lr.data[,timevar]-lr.data[,"left"]
-###  return(structure(lr.data,num=num,time=boxtimevar,status=status,covars=covars,id=id,covars.pairs2=covars.pairs2))
-  return(lr.data)
+
+  return(lr.data)  
 } ## }}}
 
 
