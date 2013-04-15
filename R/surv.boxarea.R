@@ -57,9 +57,7 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
 ###  varying=c(timevar,status,"left",covars)
 ###  if (silent<=-1) print(varying)
   lr.data <- data.frame(fast.reshape(ww0,varying=varying,numname=num))
-  print("hej")
 ###  lr.data <- data.frame(fast.reshape(ww0,varying=c(timevar,status,"left",covars),numname=num))
-  print("hej")
   if (silent<=-1) print("surv.boxarea after fast.reshape"); 
   if (silent<=-1) print(head(lr.data))
   ### ,v.names=c(timevar,status,"left",covars))
@@ -71,18 +69,13 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
 
 load("../../minilife.rda")
 library(mets)
-load("minilife.rda")
 life=minilife
  surv.boxarea(c(0,0),c(50,50),minilife,time="time",status="dead",
             covars=c("zygtrip"),covars.pairs="sex",
              id="twinpair",num="tv",silent=-1)
 
-
-###library(mets)
-###x <- data.frame(time=1:4,id=c(5,5,6,6),status=c(0,1,0,1),
-###		sex=c(1,0,1,0), x=c(1,0,1,0), tv=c(2,1,1,2))
-###surv.boxarea(c(0,0),c(5,5),x,covars="sex",silent=-1)
-###surv.boxarea(c(0,0),c(5,5),x,covars="sex",num="tv")
-###surv.boxarea(c(0,0),c(5,5),x,covars="x",covars.pairs="sex",num="tv")
+ surv.boxarea(c(0,0),c(50,50),minilife,time="time",status="dead",
+            covars=c("zygtrip","sex"),
+             id="twinpair",num="tv",silent=-1)
 
 
