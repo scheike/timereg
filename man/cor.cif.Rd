@@ -153,8 +153,8 @@ summary(out1)
 out2<-cor.cif(add,data=multcif,cause1=1,cause2=1,theta.des=theta.des)
 summary(out2)
 
-out3<-cor.cif(add,data=multcif,cause1=1,cause2=2,cif2=add2)
-summary(out3)
+##out3<-cor.cif(add,data=multcif,cause1=1,cause2=2,cif2=add2)
+##summary(out3)
 ###########################################################
 # investigating further models using parfunc and dparfunc
 ###########################################################

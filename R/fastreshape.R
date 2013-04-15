@@ -1,48 +1,46 @@
-##' Simple reshape/tranpose of data
-##'
 ##' @title Fast reshape
+##' Simple reshape/tranpose of data
 ##' @param data data.frame or matrix
 ##' @param id id-variable. If omitted then reshape Wide->Long. 
-##' @param varying Vector of prefix-names of the time varying
-##' variables. Optional for Long->Wide reshaping.
+##' @param varying Vector of prefix-names of the time varying variables. Optional for Long->Wide reshaping.
 ##' @param num Optional number/time variable
 ##' @param sep String seperating prefix-name with number/time
 ##' @param keep Vector of column names to keep
 ##' @param idname Name of id-variable (Wide->Long)
 ##' @param numname Name of number-variable (Wide->Long)
-##' @param factors.keep If FALSE all factors are converted to integers
+##' @param factors.keep If false all factors are converted to integers
 ##' @param ... Optional additional arguments
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
 ##' @examples
 ##' m <- lvm(c(y1,y2,y3,y4)~x)
 ##' d <- sim(m,5)
-##' ##'
+##' 
 ##' fast.reshape(fast.reshape(d,var="y"),id="id")
-##' ##'
+##' 
 ##' ##### From wide-format
 ##' (dd <- fast.reshape(d,var="y"))
 ##' ## Same with explicit setting new id and number variable/column names and seperator "" (default) and dropping x
 ##' fast.reshape(d,var="y",idname="a",timevar="b",sep="",keep=c())
 ##' ## Same with 'reshape' list-syntax
 ##' fast.reshape(d,var=list(c("y1","y2","y3","y4")))
-##' ##'
+##' 
 ##' ##### From long-format
 ##' fast.reshape(dd,id="id")
 ##' ## Restrict set up within-cluster varying variables
 ##' fast.reshape(d,var="y")
 ##' ## with time/number-variable, seperator '.', and dropping x
 ##' fast.reshape(d,var="y",num="num",keep=c(),sep=".")
-##' ##'
+##' 
 ##' d <- mets:::sim.bin.fam(3)
 ##' d
 ##' dd <- fast.reshape(d,var="y")
 ##' dd
-##' ##'
+##' 
 ##' data(prt)
 ##' head(fast.reshape(prt,"id",var="cancer"))
 fast.reshape <- function(data,id,varying,num,sep="",keep,
-                         idname="id",numname="num",...) {
+                         idname="id",numname="num",factors.keep=TRUE,...) {
   if (!is.data.frame(data) & is.list(data)) {
     data <- as.data.frame(data)
   } else {
@@ -78,8 +76,8 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
     is_df <- is.data.frame(data)
     oldreshape <- FALSE
     if (is_df) {
-      D0 <- droplevels(data)[1,,drop=FALSE]
-      ##      D0 <- data[1,,drop=FALSE]
+      ##      D0 <- droplevels(data)[1,,drop=FALSE]
+      D0 <- data[1,,drop=FALSE]
       classes <- unlist(lapply(D0,class))
       dim <- unlist(lapply(D0,NCOL))
       if (any(dim>1) || !all(classes%in%c("numeric","logical","factor","integer","matrix"))) { ## e.g. Surv columns 
@@ -95,14 +93,14 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
     if (oldreshape) return(reshape(as.data.frame(data),varying=varying,direction="long",v.names=vnames,...)) ### Fall-back to stats::reshape
 
     fixed <- setdiff(nn,unlist(c(varying,numname)))
-    if (!missing(keep)) fixed <- intersect(fixed,keep)
+    if (!missing(keep)) fixed <- intersect(fixed,c(keep,idname,numname))
     nfixed <- length(fixed)
     nvarying <- length(varying)
     nclusts <- unlist(lapply(varying,length))
     nclust <- length(varying[[1]])
     if (any(nclusts!=nclust)) stop("Different length of varying vectors!")
     data <- data[,c(fixed,unlist(varying)),drop=FALSE]
-
+    
     long <- as.data.frame(.Call("FastLong",
                                 idata=data,
                                 inclust=as.integer(nclust),
@@ -129,25 +127,23 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
         long[,numname] <- thelevels[long[,numname]]
     }
 
-    if (is_df) { ## Recreate classes 
+    if (is_df && factors.keep) { ## Recreate classes 
       vars.orig <- c(fixed,unlist(lapply(varying,function(x) x[1])))
-      fac <- which("factor"==classes[vars.orig])
-      log <- which("logical"==classes[vars.orig])
-      if (length(fac)>0) {
-        for (i in fac) {
-          long[,vars.orig[i]] <- factor(long[,vars.orig[i]],labels=levels(D0[,vars.orig[i]]))
-        }
+      vars.new <- c(fixed,vnames)
+      factors <- which("factor"==classes[vars.orig])
+      logicals <- which("logical"==classes[vars.orig])
+      for (i in factors) {
+        lev <- levels(D0[,vars.orig[i]])
+        long[,vars.new[i]] <- factor(lev[long[,vars.new[i]]],levels=lev)
       }
-      if (length(log)>0) {
-        for (i in log) {
-          long[,vars.orig[i]] <- long[,vars.orig[i]]==1
-        }
-      }      
-    } 
+      for (i in logicals) {
+        long[,vars.new[i]] <- long[,vars.new[i]]==1
+      }
+    }
     return(long)
   }
 
-
+  
   ## Long to wide format:
   
   numvar <- idvar <- NULL 
@@ -202,7 +198,8 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
         mnames <- colnames(data);
         mnames[vidx] <- paste(mnames[vidx],i,sep=sep)
       } else {
-        dataw[, seq(p) + (ncol(data)-p) + (i - 1) * p] <- as.matrix(data[idclust[, i] + 1,varying])
+        idx <- idclust[, i] + 1
+        dataw[which(!is.na(idx)), c(1,seq(p) + (ncol(data)-p) + (i - 1) * p)] <- as.matrix(data[na.omit(idx),c(idvar,varying),drop=FALSE])
         ##        mnames <- c(mnames,paste(varying,i,sep=sep))
       }
     }

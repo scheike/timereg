@@ -20,7 +20,6 @@ SEXP FastLong(SEXP idata, SEXP inclust,
       for (unsigned i=0; i<d.n_rows; i++) {
          rowvec xx0 = xx;
          rowvec d0 = d.row(i);
-	 bool allmiss = Missing;
          for (unsigned k=0; k<nfixed; k++) {
 	   xx0[k] = d(i,k);
 	 }
@@ -28,13 +27,14 @@ SEXP FastLong(SEXP idata, SEXP inclust,
             urowvec idx0 = idx+j;
             xx0.subvec(nfixed,K-3) = trans(d0.elem(idx0));
             xx0[K-2] = i+1; xx0[K-1] = j+1;
-	    if (Missing)
-	    for (unsigned k=0; k<nvarying+nfixed; k++) {
-	      if (!R_IsNA(xx0[k])) {
-		allmiss = false;		 
+	    bool allmiss = Missing;
+	    if (Missing) 
+	      for (unsigned k=nfixed*(i>0); k<nvarying+nfixed; k++) {
+		if (!R_IsNA(xx0[k])) {
+		  allmiss = false;		 
+		}
+		if (!allmiss) break;
 	      }
-	      if (!allmiss) break;
-	    }
 	    if (allmiss) {
 	      mis[count] = 1;
 	    } else {
