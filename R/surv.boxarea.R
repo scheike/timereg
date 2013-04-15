@@ -1,8 +1,6 @@
 ##' @export
-surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="status",id="id",covars=NULL,covars.pairs=NULL,num=NULL,
-			 silent=1,boxtimevar="boxtime")
+surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="status",id="id",covars=NULL,covars.pairs=NULL,num=NULL,silent=1,boxtimevar="boxtime")
 { ## {{{
-
   if (is.null(data[,id])) stop("Wrong cluster variable")
   if (is.null(data[,timevar])) stop("Wrong time variable")
   if (is.null(data[,status])) stop("Wrong status variable")
@@ -57,16 +55,28 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   varying <- c(list(timevar2),list(status2),list(truncvar2),lapply(covars,function(x) paste(x,1:2,sep="")))
   if (silent<=-1) print(varying)
 ###  varying=c(timevar,status,"left",covars)
-  if (silent<=-1) print(varying)
-  lr.data <- data.frame(fast.reshape(ww0,varying=c(timevar,status,"left",covars),numname=num))
+###  if (silent<=-1) print(varying)
   lr.data <- data.frame(fast.reshape(ww0,varying=varying,numname=num))
+  print("hej")
+###  lr.data <- data.frame(fast.reshape(ww0,varying=c(timevar,status,"left",covars),numname=num))
+  print("hej")
   if (silent<=-1) print("surv.boxarea after fast.reshape"); 
   if (silent<=-1) print(head(lr.data))
   ### ,v.names=c(timevar,status,"left",covars))
+  print(timevar)
   lr.data[,boxtimevar] <- lr.data[,timevar]-lr.data[,"left"]
 ###  return(structure(lr.data,num=num,time=boxtimevar,status=status,covars=covars,id=id,covars.pairs2=covars.pairs2))
   return(lr.data)
-}
+} ## }}}
+
+load("../../minilife.rda")
+library(mets)
+load("minilife.rda")
+life=minilife
+ surv.boxarea(c(0,0),c(50,50),minilife,time="time",status="dead",
+            covars=c("zygtrip"),covars.pairs="sex",
+             id="twinpair",num="tv",silent=-1)
+
 
 ###library(mets)
 ###x <- data.frame(time=1:4,id=c(5,5,6,6),status=c(0,1,0,1),
