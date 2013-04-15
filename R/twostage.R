@@ -558,7 +558,7 @@ return(out)
 } ## }}}
 
 ##' @export
-piecewise.twostage <- function(cut1,cut2,data=sys.parent(),timevar="time",status="status",id="id",covars=NULL,covars.pairs=FALSE,num=NULL,
+piecewise.twostage <- function(cut1,cut2,data=sys.parent(),timevar="time",status="status",id="id",covars=NULL,covars.pairs=NULL,num=NULL,
             score.method="optimize",Nit=100,detail=0,silent=1,weights=NULL,
             control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,step=0.5,model="plackett",data.return=0)
 { ## {{{
@@ -603,8 +603,8 @@ for (i1 in 2:nc1)
 for (i2 in 2:nc2)
 {
 k <-(i1-2)*(nc2-1)+(i2-1)
-if (silent<=0) cat(paste("Data-set ",k,"out of ",(nc1-1)*(nc2-1)),"\n"); 
- datalr <- surv.boxarea(c(cut1[i1-1],cut2[i2-1]),c(cut1[i1],cut2[i2]),data,timevar=timevar,
+if (silent<=0) cat(paste("Data-set ",k,"out of ",(nc1-1)*(nc2-1)),"\n");
+datalr <- surv.boxarea(c(cut1[i1-1],cut2[i2-1]),c(cut1[i1],cut2[i2]),data,timevar=timevar,
 			status=status,id=id,covars=covars,covars.pairs=covars.pairs,num=num,silent=silent) 
 if (silent<=-1) print(summary(datalr)); 
 if (silent<=-1) print(head(datalr)); 
@@ -614,9 +614,12 @@ datalr$tstime <- datalr[,timevar]
 datalr$tsstatus <- datalr[,status]
 datalr$tsid <- datalr[,id]
 ###
+
+browser()
 f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(",num,")")))
 ###f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(num)")))
 marg1 <- aalen(f,data=datalr,n.sim=0,robust=0)
+
 fitlr<-  twostage(marg1,data=datalr,clusters=datalr$tsid,model=model,score.method=score.method,
               Nit=Nit,detail=detail,silent=silent,weights=weights,
               control=control,theta=theta,theta.des=theta.des,var.link=var.link,iid=iid,step=step)
@@ -664,7 +667,7 @@ return(ud);
 
 
 ##' @export
-piecewise.data <- function(cut1,cut2,data=sys.parent(),timevar="time",status="status",id="id",covars=NULL,covars.pairs=FALSE,num=NULL,silent=1)
+piecewise.data <- function(cut1,cut2,data=sys.parent(),timevar="time",status="status",id="id",covars=NULL,covars.pairs=NULL,num=NULL,silent=1)
 { ## {{{
 ud <- list()
 if (missing(cut2)) cut2 <- cut1; 

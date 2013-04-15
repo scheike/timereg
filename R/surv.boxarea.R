@@ -63,8 +63,7 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
     print(head(lr.data))
   }
   lr.data[,boxtimevar] <- lr.data[,timevar]-lr.data[,"left"]
-
-  return(lr.data)  
+  return(structure(lr.data,num=num,time=boxtimevar,status=status,covars=covars,id=id))
 } ## }}}
 
 
