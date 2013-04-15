@@ -110,11 +110,6 @@ desfs <- function(x,num1="num1",num2="num2")
          bb <- (x[num1]=="b1")*(x[num2]=="b1" | x[num2]=="b2")*1
          c(mf,mb,bb)
 }
-\author{
-  Thomas Scheike
-}
-\keyword{binomial}
-\keyword{regression}
 
 out <- easy.binomial.twostage(y~+1,data=ddl,
                    response="y",id="id",type="zyg",

@@ -570,6 +570,7 @@ theta.mat <- se.theta.mat <- cor.mat <- score.mat <- se.cor.mat <- matrix(0,nc1-
 clusters <- data[,id]
 cluster.call <- clusters
 idi <- unique(data[,id]); 
+print(head(idi))
 
 ## {{{ 
 ###   se.clusters=NULL,max.clust=1000,
@@ -635,8 +636,15 @@ if (i1==2) names2 <- c(names2, paste(cut2[i2-1],"-",cut2[i2]))
 theta <- c(theta,fitlr$theta)
 
 if ((silent<=-1) & (iid==1)) print(head(fitlr$theta.iid)); 
-###if (iid==1) theta.iid[idi %in% unique(datalr$tsid),k] <-  fitlr$theta.iid 
-if (iid==1) theta.iid[rownames(fitlr$theta.iid),k] <-  fitlr$theta.iid 
+if ((silent<=-1) & (iid==1)) {
+print(idi) ; print(datalr$tsid)
+print(dim(fitlr$theta.iid))
+print(head(fitlr$theta.iid))
+print(dim(theta.iid))
+print(length( idi %in% unique(datalr$tsid)))
+}
+if (iid==1) theta.iid[idi %in% unique(datalr$tsid),k] <-c(fitlr$theta.iid) 
+###if (iid==1) theta.iid[rownames(fitlr$theta.iid),k] <-  fitlr$theta.iid 
 }
 
 var.thetal <- NULL
@@ -653,6 +661,40 @@ attr(ud,"var.link")<-var.link;
 attr(ud, "Type") <- model
 return(ud);
 } ## }}}
+
+
+##' @export
+piecewise.data <- function(cut1,cut2,data=sys.parent(),timevar="time",status="status",id="id",covars=NULL,covars.pairs=FALSE,num=NULL,silent=1)
+{ ## {{{
+ud <- list()
+if (missing(cut2)) cut2 <- cut1; 
+nc1 <- length(cut1); nc2 <- length(cut2)
+dataud <- c()
+
+k <- 0; 
+for (i1 in 2:nc1)
+for (i2 in 2:nc2)
+{
+k <-(i1-2)*(nc2-1)+(i2-1)
+if (silent<=0) cat(paste("Data-set ",k,"out of ",(nc1-1)*(nc2-1)),"\n"); 
+ datalr <- surv.boxarea(c(cut1[i1-1],cut2[i2-1]),c(cut1[i1],cut2[i2]),data,timevar=timevar,
+			status=status,id=id,covars=covars,covars.pairs=covars.pairs,num=num,silent=silent) 
+if (silent<=-1) print(summary(datalr)); 
+if (silent<=-1) print(head(datalr)); 
+datalr$tstime <- datalr[,timevar]
+datalr$tsstatus <- datalr[,status]
+datalr$tsid <- datalr[,id]
+###
+datalr$strata <- paste( c(cut1[i1-1],cut2[i2-1]),c(cut1[i1],cut2[i2]),collapse=",",sep="-")
+
+if (silent<=-1) print(head(datalr)); 
+dataud <- rbind(dataud,datalr)
+}
+
+return(data.frame(dataud))
+###if (iid==1) theta.iid[idi %in% unique(datalr$tsid),k] <-  fitlr$theta.iid 
+} ## }}}
+
 
 ##' @S3method summary pc.twostage
 summary.pc.twostage <- function(object,var.link=NULL,...)
