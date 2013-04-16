@@ -15,7 +15,6 @@
 ##' @examples
 ##' m <- lvm(c(y1,y2,y3,y4)~x)
 ##' d <- sim(m,5)
-##' 
 ##' fast.reshape(fast.reshape(d,var="y"),id="id")
 ##' 
 ##' ##### From wide-format
@@ -28,17 +27,30 @@
 ##' ##### From long-format
 ##' fast.reshape(dd,id="id")
 ##' ## Restrict set up within-cluster varying variables
-##' fast.reshape(d,var="y")
-##' ## with time/number-variable, seperator '.', and dropping x
-##' fast.reshape(d,var="y",num="num",keep=c(),sep=".")
+##' fast.reshape(dd,id="id",var="y")
+##' fast.reshape(dd,id="id",var="y",keep="x",sep=".")
 ##' 
+##' #####
+##' x <- data.frame(id=c(5,5,6,6,7),y=1:5,x=1:5,tv=c(1,2,2,1,2))
+##' (xw <- fast.reshape(x,id="id"))
+##' (xl <- fast.reshape(xw,varying=c("y","x"),idname="id2",keep=c()))
+##' (xl <- fast.reshape(xw,varying=c("y","x","tv")))
+##' (xw2 <- fast.reshape(xl,id="id",num="num"))
+##' fast.reshape(xw2,varying=c("y","x"),idname="id")
+##' 
+##' 
+##' ##### Family cluster example
 ##' d <- mets:::sim.bin.fam(3)
 ##' d
 ##' dd <- fast.reshape(d,var="y")
 ##' dd
 ##' 
+##' ##### Prostate cancer example
 ##' data(prt)
-##' head(fast.reshape(prt,"id",var="cancer"))
+##' head(prtw <- fast.reshape(prt,"id",var="cancer"))
+##' ftable(cancer1~cancer2,data=prtw)
+##' rm(prtw)
+##' 
 fast.reshape <- function(data,id,varying,num,sep="",keep,
                          idname="id",numname="num",factors.keep=TRUE,...) {
   if (!is.data.frame(data) & is.list(data)) {
@@ -109,15 +121,17 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
                                 TRUE ## Remove rows with all missing
                                 ));
 
-    
+    if (numname%in%fixed) {
+      while (numname%in%c(fixed)) numname <- paste(numname,"_",sep="")
+    }
     if (idname%in%fixed) {
       long <- long[,-(ncol(long)-1)]
       cnames <- c(fixed,vnames,numname)
     } else {
       cnames <- c(fixed,vnames,idname,numname)
     }
-    ##    while (idname%in%c(fixed,vnames,numname)) idname <- paste(idname,"_",sep="")
-    while (numname%in%c(fixed,vnames)) numname <- paste(numname,"_",sep="")
+    ##  while (idname%in%c(fixed,vnames,numname)) idname <- paste(idname,"_",sep="")
+    ##  while (numname%in%c(fixed,vnames)) numname <- paste(numname,"_",sep="")
     
     colnames(long) <- cnames
     if (!numlev) {
