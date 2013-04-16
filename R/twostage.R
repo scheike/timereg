@@ -615,7 +615,6 @@ datalr$tsstatus <- datalr[,status]
 datalr$tsid <- datalr[,id]
 ###
 
-browser()
 f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(",num,")")))
 ###f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(num)")))
 marg1 <- aalen(f,data=datalr,n.sim=0,robust=0)
