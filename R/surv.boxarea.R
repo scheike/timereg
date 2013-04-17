@@ -8,6 +8,7 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   if (silent<=-1) {
     message("survboxare()")
     print(head(data))
+    print(summary(data[,id]))
   }
   if (is.null(num)) {
     idtab <- table(data[,id])
@@ -23,12 +24,19 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   if (length(covars)>0) covars2 <- paste(covars,1:2,sep="")
   if (length(covars.pairs)>0) covars.pairs2 <- paste(covars.pairs,1:2,sep="")
 
+  if (silent<=-1) {
+    message("survboxare()")
+    print(head(data))
+    print( c(timevar,status,covars,covars.pairs,id,num))
+    print(c(id,num))
+    print(summary(data))
+  }
   ww0 <- fast.reshape(data[,c(timevar,status,covars,covars.pairs,id,num)],id=id,num=num)
   if (silent<=-1) {
     message("survboxarea(), ww0")
     print(head(ww0))
+    print(summary(ww0))
     print(c(timevar2,status2,covars2,covars.pairs2,id,num2)) 
-    print(head(ww0))
     print("check mig ud")
   }
   mleft <-  (ww0[,timevar2[1]]>left.trunc[1]) & (ww0[,timevar2[2]]>left.trunc[2])  ## Both not-truncated
@@ -61,10 +69,9 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   if (silent<=-1) {
     print("surv.boxarea after fast.reshape"); 
     print(head(lr.data))
+    print(summary(lr.data[.id]))
   }
   lr.data[,boxtimevar] <- lr.data[,timevar]-lr.data[,"left"]
   return(structure(lr.data,num=num,time=boxtimevar,status=status,covars=covars,id=id))
 } ## }}}
-
-
 

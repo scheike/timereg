@@ -570,7 +570,10 @@ theta.mat <- se.theta.mat <- cor.mat <- score.mat <- se.cor.mat <- matrix(0,nc1-
 clusters <- data[,id]
 cluster.call <- clusters
 idi <- unique(data[,id]); 
-print(head(idi))
+###print(head(idi))
+
+print("start")
+print(summary(data[,id]))
 
 ## {{{ 
 ###   se.clusters=NULL,max.clust=1000,
@@ -606,8 +609,10 @@ k <-(i1-2)*(nc2-1)+(i2-1)
 if (silent<=0) cat(paste("Data-set ",k,"out of ",(nc1-1)*(nc2-1)),"\n");
 datalr <- surv.boxarea(c(cut1[i1-1],cut2[i2-1]),c(cut1[i1],cut2[i2]),data,timevar=timevar,
 			status=status,id=id,covars=covars,covars.pairs=covars.pairs,num=num,silent=silent) 
+if (silent<=-1) print("back in piecewise.twostage"); 
 if (silent<=-1) print(summary(datalr)); 
 if (silent<=-1) print(head(datalr)); 
+if (silent<=-1) print(summary(datalr[,id])); 
  boxlr <- list(left=c(cut1[i1-1],cut2[i2-1]),right=c(cut1[i1],cut2[i2]))
 ### marg1 <- aalen(Surv(datalr$left,datalr[,timevar],datalr[,status])~+1,data=datalr,n.sim=0,max.clust=NULL,robust=0)
 datalr$tstime <- datalr[,timevar]
@@ -618,6 +623,8 @@ datalr$tsid <- datalr[,id]
 f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(",num,")")))
 ###f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(num)")))
 marg1 <- aalen(f,data=datalr,n.sim=0,robust=0)
+print("ts er lidt dum")
+print(summary(datalr[,id]))
 
 fitlr<-  twostage(marg1,data=datalr,clusters=datalr$tsid,model=model,score.method=score.method,
               Nit=Nit,detail=detail,silent=silent,weights=weights,
@@ -694,7 +701,6 @@ dataud <- rbind(dataud,datalr)
 }
 
 return(data.frame(dataud))
-###if (iid==1) theta.iid[idi %in% unique(datalr$tsid),k] <-  fitlr$theta.iid 
 } ## }}}
 
 
