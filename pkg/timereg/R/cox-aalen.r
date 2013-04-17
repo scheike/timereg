@@ -154,6 +154,6 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
              sim.testBeq0 = sim.testBeq0, sim.testBeqC = sim.testBeqC, 
              conf.band = unifCI, test.procProp = Ut, sim.test.procProp = UIt,
              pval.Prop = testUt, sim.supProp = sim.supUt, covariance = cov.list, 
-             B.iid=B.iid,gamma.iid=gammaiid,time.sim.resolution=qq)
+             B.iid=B.iid,gamma.iid=gammaiid,time.sim.resolution=qq,stratum=stratum)
   return(ud)
 } ## }}}

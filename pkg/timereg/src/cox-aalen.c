@@ -206,7 +206,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 	     print_mat(A);  print_mat(ZPZ); 
            }
 
-   invertS(A,AI,*silent); 
+   if (*stratum==0)  invertS(A,AI,*silent); 
    if (ME(AI,0,0)==0 && *stratum==0 && *silent==0) {
 	   Rprintf("additive design X'X not invertible at time (number, value): %d %lf \n",s,time); print_mat(A);
    }

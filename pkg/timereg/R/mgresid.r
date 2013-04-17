@@ -2,7 +2,9 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
 	weighted.test=1,max.point.func=50)
 { ## {{{
 ## {{{ setting up
-  start.design<-1
+  start.design<-1; silent <- 1; 
+  stratum <- attr(object,"stratum"); 
+  print(stratum)
   if (!(class(object)!="aalen" | class(object)!="timecox" | class(object)!="cox.aalen" ))
     stop ("Must be output from aalen() timecox() or cox.aalen() functions\n") 
   if (class(object)=="timecox") if (object$method!="basic") 
@@ -156,7 +158,8 @@ if ( type == "right" )  {  ## {{{
      as.double(beta),as.double(Z), as.integer(pg),
      as.double(gamma.iid),as.integer(cluster), as.integer(antclust), 
      as.double(robvarcumz), as.double(simcumz), as.integer(inXZ), 
-     as.integer(inXorZ),as.integer(pcumz), as.integer(entry),PACKAGE="timereg")
+     as.integer(inXorZ),as.integer(pcumz), as.integer(entry),
+     as.integer(stratum),as.integer(silent), PACKAGE="timereg")
 ## }}}
 
 ## {{{ handling output from C

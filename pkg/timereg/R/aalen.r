@@ -99,7 +99,7 @@ obs.testBeqC=obs.testBeqC,obs.testBeqC.is=obs.testBeqC.is,
 sim.testBeq0= sim.testBeq0,
 sim.testBeqC=sim.testBeqC,sim.testBeqC.is=sim.testBeqC.is,
 conf.band=unifCI,test.procBeqC=Ut,sim.test.procBeqC=UIt,
-covariance=cov.list,B.iid=B.iid)
+covariance=cov.list,B.iid=B.iid,stratum=stratum)
 }
 
 pval<-function(simt,Otest)
@@ -130,6 +130,7 @@ nb<-1;
 if(is.matrix(bhat)==TRUE) nb<-as.integer(dim(bhat)[1]); 
 if(is.matrix(bhat)==FALSE) bhat<-matrix(0,nb,px+1); 
 
+if (is.diag(  t(designX) %*% designX  )==TRUE) stratum <- 1 else stratum <- 0
 if (covariance==1) covs<-matrix(0,Ntimes,px*px) else covs<-0;
 
 if (resample.iid==1) {
@@ -251,6 +252,6 @@ sim.testBeq0= sim.testBeq0,
 sim.testBeqC=sim.testBeqC,sim.testBeqC.is=sim.testBeqC.is,
 conf.band=unifCI,test.procBeqC=Ut,sim.test.procBeqC=UIt,
 covariance=cov.list,B.iid=B.iid,gamma.iid=gamma.iid,
-intZHZ=intZHZ,intZHdN=intZHdN); ### ,gamma2=gamma2/tau,var.gamma2=Vargam2/tau^2)
+intZHZ=intZHZ,intZHdN=intZHdN,stratum=stratum); ### ,gamma2=gamma2/tau,var.gamma2=Vargam2/tau^2)
 return(ud);
 }

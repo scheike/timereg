@@ -136,6 +136,7 @@ ldata<-list(start=survs$start,stop=survs$stop,antpers=survs$antpers,antclust=sur
     rownames(ud$var.gamma) <- c(covnamesZ)
   } ## }}}
 
+  attr(ud,"stratum")<-ud$stratum; 
   attr(ud, "Call") <- sys.call()
   attr(ud, "Formula") <- formula
   attr(ud, "id") <- id.call

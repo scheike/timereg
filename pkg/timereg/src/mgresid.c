@@ -13,7 +13,7 @@ modelmatrix,model,pm,cummgt,mgresidiid,robvarcum,
 testOBS,test,simUt,Ut,cumresid,maxval,startdesign,
 coxaalen,dcum,beta,designG,pg,Ogammaiid,
 clusters,antclust,robvarcumz,simcumz,
-inXZ,inXorZ,iptot,entry) 
+inXZ,inXorZ,iptot,entry,stratum,silent) 
 double *designG,*dcum,*beta,*designX,*start,*stop,*mgtimes,
 	*dmgresid,*xval,*univarproc,*timeproc,*simunivarproc,
 	*simtimeproc,*unitest,*unitestOBS, *timetest,*timetestOBS,
@@ -22,7 +22,7 @@ double *designG,*dcum,*beta,*designX,*start,*stop,*mgtimes,
 	*robvarcumz,*simcumz;
 int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
     *status,*id,*model,*pm,*cumresid,*maxval,*startdesign,*clusters,*antclust,
-    *inXZ,*inXorZ,*iptot,*entry; 
+    *inXZ,*inXorZ,*iptot,*entry,*stratum,*silent; 
 { // {{{
 // {{{ // memory allocation
   matrix *Delta,*tmpM1,*X,*cummat,*modelMGT[*antclust],*modMGz,*modMGzosdt;
@@ -173,8 +173,14 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
      vM(cummat,dMGt[s],respm); 
      for (k=1;k<=*pm;k++) cummgt[k*(*nmgt)+s]=cummgt[k*(*nmgt)+s-1]+VE(respm,k-1);
 
-     invert(A,AI);
-     if (ME(AI,0,0)==0) Rprintf(" X'X not invertible at time %lf \n",time);
+     if (*stratum==0) invertS(A,AI,*silent); 
+     if (ME(AI,0,0)==0 && *stratum==0 && *silent==0) {
+	   Rprintf("additive design X'X not invertible at time (number, value): %d %lf \n",s,time); print_mat(A);
+     }
+     if (*stratum==1)  {
+          for (k=0;k<*px;k++) 
+          if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);
+     }
 
      MxA(cumX,AI,cumXAI);
 
@@ -374,8 +380,17 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
     if (*model==0) 
 	    for (i=0;i<*antpers;i++) VE(dMGt[s],i)=dmgresid[i*(*nmgt)+s];  
 
-    invert(A,AI);
-    if (ME(AI,0,0)==0) Rprintf("X'X not invertible at time %lf \n",time);
+     if (*stratum==0) invertS(A,AI,*silent); 
+     if (ME(AI,0,0)==0 && *stratum==0 && *silent==0) {
+	   Rprintf("additive design X'X not invertible at time (number, value): %d %lf \n",s,time); print_mat(A);
+     }
+     if (*stratum==1)  {
+          for (k=0;k<*px;k++) 
+          if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);
+     }
+
+//    invert(A,AI);
+//    if (ME(AI,0,0)==0) Rprintf("X'X not invertible at time %lf \n",time);
     MxA(cumX1,AI,cumXAI1);
 
 //    Rprintf(" _______________  %d %d %lf \n",l,s,time); 
