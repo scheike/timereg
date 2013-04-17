@@ -34,17 +34,24 @@ read.design<-function(m,Terms,model="aalen"){
 Zterms<-semicov # ts 25-6-2008
 
   if (length(semicov)>0) {
-    X<-as.matrix(XZ[,-c(Zterms,clusterTerms)]);
-    covnamesX <- dimnames(XZ)[[2]][-c(Zterms,clusterTerms)];
-    dimnames(X)[[2]]<-covnamesX;
-    Z<-as.matrix(XZ[,Zterms]);
-    covnamesZ <- dimnames(XZ)[[2]][Zterms];
+   covnamesX <- colnames(XZ)[-c(Zterms,clusterTerms)];
+   px <- length(covnamesX); 
+   X<-matrix(XZ[,-c(Zterms,clusterTerms)],ncol=px);
+   if (px==length(colnames(X))) colnames(X)<-covnamesX;
+   covnamesZ <- colnames(XZ)[Zterms];
+   pz <- length(covnamesZ); 
+   Z<-matrix(XZ[,Zterms],ncol=pz);
+   if (pz==length(colnames(Z))) colnames(Z)<-covnamesX;
   } else if(length(clusterTerms)>0) {
-    X<-as.matrix(XZ[,-clusterTerms]);
-    covnamesX <- dimnames(XZ)[[2]][-clusterTerms]
+    covnamesX <- colnames(XZ)[-clusterTerms]
+    px <- length(covnamesX); 
+    X<-matrix(XZ[,-clusterTerms],ncol=px);
+    if (px==length(colnames(X))) colnames(X)<-covnamesX;
   } else {
-    X<-as.matrix(XZ);
-    covnamesX <- dimnames(XZ)[[2]]
+    covnamesX <- colnames(XZ)
+    px <- length(covnamesX); 
+    X<-matrix(XZ,ncol=px);
+    if (px==length(colnames(X))) colnames(X)<-covnamesX;
   }
 
   px <- ncol(X)

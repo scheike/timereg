@@ -344,8 +344,6 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
   attr(ud, "coarse.clust") <- coarse.clust
   attr(ud, "max.clust") <- max.clust
   attr(ud, "clusters") <- clusters
-###  attr(ud, "se.cluster") <- list(clusters=clusters,cluster.call=cluster.call,
-###				 coarse.clust=coarse.clust,max.clust=max.clust)
   attr(ud, "causeS") <- causeS
   attr(ud, "cens.code") <- cens.code
   attr(ud, "times") <- times

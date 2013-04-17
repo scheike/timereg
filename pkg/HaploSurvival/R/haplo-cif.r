@@ -8,9 +8,9 @@ covnamesX=NULL,covnamesZ=NULL){
 ## {{{ setting up models 
 # trans=1 P_1=1-exp(- ( x' b(b)+ z' gam t) ), 
 # trans=2 P_1=1-exp(-exp(x a(t)+ z` b )
-# trans=2 P_1=1-exp(-x a(t) exp(z` b )) is not good numerically
-  if (model=="additive") trans<-1; if (model=="prop") trans<-2; 
-  if (trans==1) line<-1; if (trans==2) line<-0; 
+# trans=3 P_1= exp(x a(t)+ z` b)/( exp(x a(t) + z' b) +1 );  logistic
+  trans <- switch(model,additive=1,prop=2,logistic=3) ### ,rcif=4,rcif2=5,fg=6,logistic2=7)
+  if (trans==1) line<-1; if (trans==2) line<-0; if (trans==3) line<-0; 
 # line=1 indicates that it is tested that "b(t) = gamma t".
 # line=0 indicates that it is tested that "b(t) = gamma ".
   m<-match.call(expand = FALSE);
@@ -337,7 +337,7 @@ if (match==FALSE) {
            obs.testBeqC.is=obs.testBeqC.is,
            obs.testBeqC=obs.testBeqC,pval.testBeqC.is=pval.testBeqC.is,
            conf.band=unifCI,B.iid=B.iid,gamma.iid=gamiid,
-           test.procBeqC=Ut,sim.test.procBeqC=UIt)
+           test.procBeqC=Ut,sim.test.procBeqC=UIt,KMweights=Gcx)
 ## }}}
 
     ud$conv$convd <- 0 ### to make compatible with comp.risk output

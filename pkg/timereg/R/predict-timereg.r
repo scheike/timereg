@@ -5,7 +5,7 @@ retur<-y[index]; return(retur); }
 pred.cum<-function(x,time,cum) {ud<-sapply(x,slaaop,time,cum); 
  return(ud)}
 
-"pred.des"<-function(formula,data=sys.parent())
+pred.des<-function(formula,data=sys.parent())
 { ## {{{
   call <- match.call();
   m <- match.call(expand.dots=FALSE);
@@ -81,6 +81,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,
     stop("resample processes necessary for these computations, set resample.iid=1");
   }
   if (is.null(object$gamma)==TRUE) { semi<-FALSE } else { semi<-TRUE }
+  if (se==FALSE) uniform <- FALSE
 
   ## {{{ extracts design based on the different specifications
   ## cox.aalen uses prop(...), while aalen and comp.risk use const(...)
