@@ -185,7 +185,8 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
   clustud <- cluster.index(id,num=num)
   maxclust <- clustud$maxclust
   idclust <- clustud$idclust  
-
+  obs1 <- unlist(lapply(apply(idclust,1,na.omit),function(x) x[1]))+1
+  
   if (!is.null(numvar)) {
     ii <- which(colnames(data)==numvar)
     data <- data[,-ii,drop=FALSE]
@@ -202,29 +203,32 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
   vidx <- match(varying,colnames(data))
   N <- nrow(idclust)
   p <- length(varying)
-
+  P <- NCOL(data)
+  fixidx <- setdiff(seq(P),vidx)
   if (is.matrix(data) || all(apply(data[1,,drop=FALSE],2,is.numeric))) {
     ## Everything numeric - we can work with matrices
     dataw <- matrix(NA, nrow = N, ncol = p * (maxclust-1) + ncol(data))
+    dataw[,fixidx] <- as.matrix(data[obs1,fixidx,drop=FALSE])
+    mnames <- colnames(data)
+    mnames[vidx] <- paste(mnames[vidx],1,sep=sep)
     for (i in seq_len(maxclust)) {
-      if (i==1) {
-        dataw[, seq(ncol(data))] <- as.matrix(data[idclust[, i] + 1,,drop=FALSE])
-        mnames <- colnames(data);
-        mnames[vidx] <- paste(mnames[vidx],i,sep=sep)
-      } else {
-        idx <- idclust[, i] + 1
-        dataw[which(!is.na(idx)), c(1,seq(p) + (ncol(data)-p) + (i - 1) * p)] <- as.matrix(data[na.omit(idx),c(idvar,varying),drop=FALSE])
-        ##        mnames <- c(mnames,paste(varying,i,sep=sep))
+      idx <- idclust[, i] + 1
+      pos <- vidx
+      if (i>1) {
+        pos <- P+seq(p)+p*(i-2)
       }
+      dataw[which(!is.na(idx)), pos] <-
+        as.matrix(data[na.omit(idx),vidx,drop=FALSE])      
     }
     mnames <- c(mnames,as.vector(t(outer(varying,seq_len(maxclust-1)+1,function(...) paste(...,sep=sep)))))
     colnames(dataw) <- mnames
     return(dataw)
   } ## Potentially slower with data.frame where we use cbind
-  
+
   for (i in seq_len(maxclust)) {
     if (i==1) {
-      dataw <- data[idclust[,i]+1,,drop=FALSE]
+      dataw <- data[obs1,,drop=FALSE]
+      dataw[,vidx] <- data[idclust[,i]+1,vidx,drop=FALSE]
       mnames <- names(data);
       mnames[vidx] <- paste(mnames[vidx],sep,i,sep="")
     } else {
