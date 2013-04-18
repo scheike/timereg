@@ -185,7 +185,7 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
   clustud <- cluster.index(id,num=num)
   maxclust <- clustud$maxclust
   idclust <- clustud$idclust  
-  obs1 <- unlist(lapply(apply(idclust,1,na.omit),function(x) x[1]))+1
+  obs1 <- as.vector(apply(idclust,1,function(x) na.omit(x)[1]))+1
   
   if (!is.null(numvar)) {
     ii <- which(colnames(data)==numvar)
@@ -211,25 +211,28 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
     dataw[,fixidx] <- as.matrix(data[obs1,fixidx,drop=FALSE])
     mnames <- colnames(data)
     mnames[vidx] <- paste(mnames[vidx],1,sep=sep)
-    for (i in seq_len(maxclust)) {
-      idx <- idclust[, i] + 1
-      pos <- vidx
-      if (i>1) {
-        pos <- P+seq(p)+p*(i-2)
+    if (p>0) {
+      for (i in seq_len(maxclust)) {
+        idx <- idclust[, i] + 1
+        pos <- vidx
+        if (i>1) {
+          pos <- P+seq(p)+p*(i-2)
+        }
+        dataw[which(!is.na(idx)), pos] <-
+          as.matrix(data[na.omit(idx),vidx,drop=FALSE])      
       }
-      dataw[which(!is.na(idx)), pos] <-
-        as.matrix(data[na.omit(idx),vidx,drop=FALSE])      
+      mnames <- c(mnames,as.vector(t(outer(varying,seq_len(maxclust-1)+1,function(...) paste(...,sep=sep)))))
     }
-    mnames <- c(mnames,as.vector(t(outer(varying,seq_len(maxclust-1)+1,function(...) paste(...,sep=sep)))))
     colnames(dataw) <- mnames
     return(dataw)
-  } ## Potentially slower with data.frame where we use cbind
+  }
 
+  ## Potentially slower with data.frame where we use cbind
   for (i in seq_len(maxclust)) {
     if (i==1) {
       dataw <- data[obs1,,drop=FALSE]
-      dataw[,vidx] <- data[idclust[,i]+1,vidx,drop=FALSE]
       mnames <- names(data);
+      dataw[,vidx] <- data[idclust[,i]+1,vidx,drop=FALSE]
       mnames[vidx] <- paste(mnames[vidx],sep,i,sep="")
     } else {
       dataw <- cbind(dataw,data[idclust[,i]+1,varying,drop=FALSE])
