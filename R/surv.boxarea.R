@@ -69,7 +69,6 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   if (silent<=-1) {
     print("surv.boxarea after fast.reshape"); 
     print(head(lr.data))
-    print(summary(lr.data[.id]))
   }
   lr.data[,boxtimevar] <- lr.data[,timevar]-lr.data[,"left"]
   return(structure(lr.data,num=num,time=boxtimevar,status=status,covars=covars,id=id))

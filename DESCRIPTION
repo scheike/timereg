@@ -14,7 +14,7 @@ URL: http://r-forge.r-project.org/projects/lava/
 Depends:
     Rcpp (>= 0.9.2),
     RcppArmadillo (>= 0.3),
-    lava (>= 1.1-12),
+    lava (>= 1.2),
     mvtnorm,
     numDeriv,
     splines,
@@ -25,6 +25,8 @@ Suggests:
     lava.tobit (>= 0.4-7),
     testthat,
     ucminf
+Enhances:
+    alr
 LinkingTo: Rcpp, RcppArmadillo
 Collate:
     'biprobit.R'

@@ -8,6 +8,7 @@
 \alias{faster.reshape}
 \alias{nonparcuminc}
 \alias{npc}
+\alias{piecewise.data}
 \alias{piecewise.twostage}
 \alias{plotcr}
 \alias{simnordic}
