@@ -80,7 +80,7 @@ Useful in particular for family design data.}
 }
 \examples{
 data(twinstut)
-twinstut0 <- subset(twinstut, tvparnr<2500000)
+twinstut0 <- subset(twinstut, tvparnr<2300000)
 theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut0)
 margbin <- glm(stutter~factor(sex)+age,data=twinstut0,family=binomial())
 bin <- binomial.twostage(margbin,data=twinstut0,clusters=twinstut0$tvparnr,
