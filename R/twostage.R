@@ -265,7 +265,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
     for (i in 1:Nit)
     {
         out <- loglike(p)
-	hess <- - out$Dscore
+	hess <- -1* out$Dscore
 	if (!is.na(sum(hess))) hessi <- lava::Inverse(out$Dscore) else hessi <- hess 
         if (detail==1) {## {{{
           cat(paste("Fisher-Scoring ===================: it=",i,"\n")); 
@@ -286,7 +286,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
     out <- loglike(p) 
     logl <- out$loglike
     score1 <- score <- out$score
-    hess1 <- hess <- - out$Dscore 
+    hess1 <- hess <- -1* out$Dscore 
     if (iid==1) theta.iid <- out$theta.iid
     }
     if (numDeriv==1) {
@@ -315,7 +315,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
     out <- loglike(opt$par)
     logl <- out$loglike
     score1 <- score <- out$score
-    hess1 <- hess <- - out$Dscore
+    hess1 <- hess <- -1* out$Dscore
     if (iid==1) theta.iid <- out$theta.iid
     if (numDeriv==1) {
     if (detail==1 ) cat("numDeriv hessian start\n"); 
@@ -337,7 +337,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
     out <- loglike(opt$par)
     logl <- out$loglike
     score1 <- score <- out$score
-    hess1 <- hess <- - out$Dscore
+    hess1 <- hess <- -1* out$Dscore
     if (numDeriv==1) {
     if (detail==1 ) cat("numDeriv hessian start\n"); 
       oout <- 3;  ## to get jacobian
@@ -368,7 +368,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 
 ## {{{ handling output
   robvar.theta <- NULL
-  var.theta <- -hessi
+  var.theta <- -1*hessi
   if (iid==1) {
      theta.iid <- out$theta.iid %*% hessi
      if (is.null(call.secluster) & is.null(max.clust)) rownames(theta.iid) <- unique(cluster.call) else rownames(theta.iid) <- unique(se.clusters)
