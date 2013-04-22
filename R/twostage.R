@@ -375,7 +375,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
      robvar.theta  <- (t(theta.iid) %*% theta.iid) 
   }
   if (!is.null(colnames(theta.des))) thetanames <- colnames(theta.des) else thetanames <- rep("intercept",ptheta)
-  if (length(thetanames)==nrow(theta)) rownames(theta) <- thetanames
+###  if (length(thetanames)==nrow(theta)) rownames(theta) <- thetanames
   ud <- list(theta=theta,score=score,hess=hess,hessi=hessi,var.theta=var.theta,model=model,robvar.theta=robvar.theta,
              theta.iid=theta.iid,thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,margsurv=psurvmarg); 
   class(ud)<-"twostage" 
