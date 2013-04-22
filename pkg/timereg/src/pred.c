@@ -64,29 +64,25 @@ void clusterindexdata(int *clusters,int *nclust,int *npers,int *idclust,int *clu
 
 /* compute the values of a step function, 
    ie how many of the jumps are smaller or
-   equal to the eval points  */
+   equal to the eval points from prodlim THomas Gerds */
 
-void sindex(int *index, double *jump, double *eval, int *njump, int *neval){
-  int n,nt,i,t;
-
-  n = *njump;
-  
-  nt = *neval;
-
-  index[0] = 0;
-
-  i = 0;
-  
-  for (t=0;t<nt;t++){
-    
-    while(jump[i]<=eval[t]
-	  && i<n)
-      i++;
-
-    index[t] = i;
-  }
+void sindex(int *index, double *jump, double *eval, int *N, int *NT, int *strict){
+int i,t;
+index[0] = 0;
+i = 0;
+if (*strict==0){
+for (t=0;t<*NT;t++){
+	     while(i<*N && jump[i]<=eval[t]) i++;
+		   index[t] = i;
+		       }
+ }
+else{
+ for (t=0;t<*NT;t++){
+	       while(i<*N && jump[i] < eval[t]) i++;
+		     index[t] = i;
+			 }
+   }
 }
-
 
 void Cpred(cum,nx,px,xval,nxval,pred,tminus)
 double *cum,*xval;
