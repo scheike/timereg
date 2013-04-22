@@ -107,11 +107,11 @@ if (estimator==1 || estimator==4) {
 if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncation
   if (cens.model=="KM") { ## {{{
     if (is.null(entry.time)) { ud.cens<-survfit(Surv(time2,cause==cens.code)~+1);
-###                               ud.censcum <- aalen(Surv(time2,cause==cens.code)~+1,n.sim=0,robust=0)
+###ud.censcum <- aalen(Surv(time2,cause==cens.code)~+1,n.sim=0,robust=0)
     }
     else {
-	    ud.cens<-survfit(Surv(entry,time2,cause==cens.code)~+1); 
-###            ud.censcum <- aalen(Surv(entry,time2,cause==cens.code)~+1,n.sim=0,robust=0)
+    ud.cens<-survfit(Surv(entry,time2,cause==cens.code)~+1); 
+### ud.censcum <- aalen(Surv(entry,time2,cause==cens.code)~+1,n.sim=0,robust=0)
     }
     Gfit<-cbind(ud.cens$time,ud.cens$surv)
     Gfit<-rbind(c(0,1),Gfit); 

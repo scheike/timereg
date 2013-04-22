@@ -38,6 +38,6 @@ sindex.prodlim <- function (jump.times, eval.times, comp = "smaller", strict = F
            ind <- .C("sindex", index = integer(neval), as.double(sort(jump.times)),
                   as.double(eval.times[new.order]), as.integer(N),
                   as.integer(neval), as.integer(strict), DUP = FALSE, PACKAGE = "timereg")$index
-			            ind[order(new.order)]
+		   ind[order(new.order)]
     }
 }
