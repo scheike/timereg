@@ -75,8 +75,8 @@ Useful in particular for family design data.}
   in the case of the plackett distribution (OR model for
   dependence), but incorrect for the clayton-oakes types
   model. The OR model is often known as the ALR model, but
-  this function gives correct standard errors and is quite
-  a bit quicker.
+  our fitting procedures gives correct standard errors and
+  is quite a bit quicker.
 }
 \examples{
 data(twinstut)
@@ -99,8 +99,7 @@ out <- easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut0,response="b
 			      theta.formula=~-1+factor(zyg1))
 summary(out)
 
-### easier call with flexible design for OR dependence model using functions
-desfs <- function(x,num1="zyg1",namesdes=c("mz","dz","os")) c(x[num1]=="dz",x[num1]=="mz",x[num1]=="os")*1
+desfs<-function(x,num1="zyg1",namesdes=c("mz","dz","os")) c(x[num1]=="dz",x[num1]=="mz",x[num1]=="os")*1
 out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
       data=twinstut0,response="binstut",id="tvparnr",
       score.method="fisher.scoring", theta.formula=desfs,desnames=c("mz","dz","os"))
@@ -118,12 +117,6 @@ desfs <- function(x,num1="num1",num2="num2")
          mb <- (x[num1]=="m" | x[num1]=="f")*(x[num2]=="b1" | x[num2]=="b2")*1
          bb <- (x[num1]=="b1")*(x[num2]=="b1" | x[num2]=="b2")*1
          c(mf,mb,bb)
-}
-
-out <- easy.binomial.twostage(y~+1,data=ddl,response="y",id="id",
-        	       score.method="fisher.scoring",deshelp=0,
-		       theta.formula=desfs,desnames=c("mf","mb","bb"))
-summary(out)
 }
 \keyword{binomial}
 \keyword{regression}

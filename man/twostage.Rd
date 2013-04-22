@@ -12,7 +12,7 @@ based on the pairwise bivariate models.}
     var.link = 1, iid = 1, step = 0.5, notaylor = 0,
     model = "plackett", marginal.survival = NULL,
     strata = NULL, se.clusters = NULL, max.clust = NULL,
-    numDeriv = 0)
+    numDeriv = 1)
 }
 \arguments{
   \item{margsurv}{Marginal model}
@@ -58,8 +58,8 @@ based on the pairwise bivariate models.}
   \item{max.clust}{max se.clusters for se calculation with
   iid}
 
-  \item{numDeriv}{uses Fisher scoring aprox of second
-  derivative if 0, otherwise numerical derivatives}
+  \item{numDeriv}{to get numDeriv version of second
+  derivative, otherwise uses sum of squared score}
 }
 \description{
   The reported standard errors are based on the estimated
@@ -112,14 +112,14 @@ ud <- rbind(ud1,ud2,ud3,ud4)
 marg2 <- aalen(Surv(boxtime,status)~-1+factor(num):factor(strata),data=ud,n.sim=0,robust=0)
 tdes <- model.matrix(~-1+factor(strata),data=ud)
 fitp2<-twostage(marg2,data=ud,clusters=ud$cluster,score.method="fisher.scoring",model="clayton.oakes",
-                theta.des=tdes,step=1.0,detail=0,strata=ud$strata)
+                theta.des=tdes,step=0.5,detail=0,strata=ud$strata)
 summary(fitp2)
 
 ### now fitting the model with symmetry, i.e. strata 2 and 3 same effect
 ud$stratas <- ud$strata; ud$stratas[ud$strata==3] <- 2;
 tdes2 <- model.matrix(~-1+factor(stratas),data=ud)
 fitp3<-twostage(marg2,data=ud,clusters=ud$cluster,score.method="fisher.scoring",model="clayton.oakes",
-                theta.des=tdes2,step=1.0,detail=0,strata=ud$strata)
+                theta.des=tdes2,step=0.5,detail=0,strata=ud$strata)
 summary(fitp3)
 }
 ### could also symmetry in marginal models

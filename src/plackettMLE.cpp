@@ -253,9 +253,9 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 //	printf(" %d %d %d %d %d  \n",j,c,v,i,k); 
 //	printf(" %d %d %d %d %d %d %d %lf %lf %lf %lf %lf %lf \n",j,c,v,i,k,ci,ck,thetak,Li,Lk,weights(i),ll,log(ll)); 
 	   } 
-	   if (varlink==1) diff=pow(deppar,1)*diff;  
-	   if (varlink==0) diff=1*pow(deppar,2)*diff; 
-	   sdj=-pow(diff,2); 
+	   if (varlink==1) diff=-pow(deppar,1)*diff;  
+	   if (varlink==0) diff=-1*pow(deppar,2)*diff; 
+	   sdj=pow(diff,2); 
 	   // }}}
 	} else if (depmodel==2) { // plackett model  // {{{
         if (trunkp(i)<1) {	
@@ -268,12 +268,12 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 	} else {
            ll=placklike(deppar,ci,ck,Li,Lk,dplack);
 	   ssf+=weights(i)*log(ll); 
-	   sdj=pow(dplack(0)/ll,2); 
 //	printf(" %d %d %d %lf %lf %lf %lf %lf %lf %lf %lf \n",j,ci,ck,thetak,deppar,Li,Lk,weights(i),ll,log(ll),diff); 
 //	printf(" %d %lf \n",j,ll); 
 	}
 	   if (varlink==1) diff=deppar*dplack(0)/ll; 
 	   if (varlink==0) diff=dplack(0)/ll; 
+	   sdj=pow(diff,2); 
 	} // }}}
 
      for (c1=0;c1<pt;c1++) 

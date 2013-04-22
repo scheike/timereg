@@ -70,10 +70,11 @@ based on all pairwise bivariate models.}
 \examples{
 data(twinstut)
 twinstut0 <- subset(twinstut, tvparnr<2300000)
-theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut0)
-margbin <- glm(stutter~factor(sex)+age,data=twinstut0,family=binomial())
-bin <- binomial.twostage(margbin,data=twinstut0,
-		         clusters=twinstut0$tvparnr,theta.des=theta.des,detail=0,
+twinstut <- twinstut0
+theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut)
+margbin <- glm(stutter~factor(sex)+age,data=twinstut,family=binomial())
+bin <- binomial.twostage(margbin,data=twinstut,
+		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0,
 	                 score.method="fisher.scoring")
 summary(bin)
 

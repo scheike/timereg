@@ -81,7 +81,7 @@ RcppExport SEXP familypairindex(SEXP iclustmat,SEXP iclustsize,SEXP inumfamindex
   uvec famclustindex(numfamindex); famclustindex.fill(0);
   uvec subfamilyindex(numfamindex); subfamilyindex.fill(0);
   
-  int i,j,k,nclust,v=0,h=0;
+  int i,j,k,v=0,h=0;
 
    for (i=0;i<uniqueclust;i++)
    {
