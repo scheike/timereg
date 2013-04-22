@@ -14,35 +14,36 @@
 ##' @examples
 ##' data(twinstut)
 ##' twinstut0 <- subset(twinstut, tvparnr<2300000)
-##' theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut0)
-##' margbin <- glm(stutter~factor(sex)+age,data=twinstut0,family=binomial())
-##' bin <- binomial.twostage(margbin,data=twinstut0,
-##' 		         clusters=twinstut0$tvparnr,theta.des=theta.des,detail=0,
+##' twinstut <- twinstut0
+##' theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut)
+##' margbin <- glm(stutter~factor(sex)+age,data=twinstut,family=binomial())
+##' bin <- binomial.twostage(margbin,data=twinstut,
+##' 		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0,
 ##' 	                 score.method="fisher.scoring")
 ##' summary(bin)
 ##' 
-##' twinstut0$cage <- scale(twinstut0$age)
-##' theta.des <- model.matrix( ~-1+factor(zyg)+cage,data=twinstut0)
-##' bina <- binomial.twostage(margbin,data=twinstut0,
-##' 		         clusters=twinstut0$tvparnr,theta.des=theta.des,detail=0,
+##' twinstut$cage <- scale(twinstut$age)
+##' theta.des <- model.matrix( ~-1+factor(zyg)+cage,data=twinstut)
+##' bina <- binomial.twostage(margbin,data=twinstut,
+##' 		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0,
 ##' 	                 score.method="fisher.scoring")
 ##' summary(bina)
 ##' 
-##' theta.des <- model.matrix( ~-1+factor(zyg)+factor(zyg)*cage,data=twinstut0)
-##' bina <- binomial.twostage(margbin,data=twinstut0,
-##' 		         clusters=twinstut0$tvparnr,theta.des=theta.des,detail=0,
+##' theta.des <- model.matrix( ~-1+factor(zyg)+factor(zyg)*cage,data=twinstut)
+##' bina <- binomial.twostage(margbin,data=twinstut,
+##' 		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0,
 ##' 	                 score.method="fisher.scoring")
 ##' summary(bina)
 ##' 
-##' twinstut0$binstut <- (twinstut0$stutter=="yes")*1
-##' out <- easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut0,response="binstut",id="tvparnr",
+##' twinstut$binstut <- (twinstut$stutter=="yes")*1
+##' out <- easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut,response="binstut",id="tvparnr",
 ##' 			      theta.formula=~-1+factor(zyg1),score.method="fisher.scoring")
 ##' summary(out)
 ##' 
 ##' desfs<-function(x,num1="zyg1",namesdes=c("mz","dz","os")) c(x[num1]=="dz",x[num1]=="mz",x[num1]=="os")*1
-##'
+###
 ##' out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
-##'       data=twinstut0, response="binstut",id="tvparnr",
+##'       data=twinstut,response="binstut",id="tvparnr",
 ##'       score.method="fisher.scoring", theta.formula=desfs,desnames=c("mz","dz","os"))
 ##' summary(out3)
 ##'
@@ -171,7 +172,7 @@ antpers <- NROW(data);
     if (detail==3) print(c(par,outl$loglike))
 
     attr(outl,"gradient") <-outl$score 
-    if (oout==0) ret <- c(-1*outl$loglike) else if (oout==1) ret <- sum(outl$score^2) else ret <- outl
+    if (oout==0) ret <- c(-1*outl$loglike) else if (oout==1) ret <- sum(outl$score^2) else if (oout==3) ret <- outl$score else ret <- outl
     return(ret)
   } ## }}}
 
@@ -208,12 +209,12 @@ antpers <- NROW(data);
     logl <- out$loglike
     score1 <- score <- out$score
     oout <- 0; 
-    hess1 <- hess <- out$Dscore 
+    hess1 <- hess <- - out$Dscore 
     if (iid==1) theta.iid <- out$theta.iid
     }
     if (numDeriv==1) {
-      score1 <- jacobian(loglike,p)
-      hess <- hessian(loglike,p)
+      oout <- 3
+      hess <- jacobian(loglike,p)
     }
     if (detail==1 & Nit==0) {## {{{
           cat(paste("Fisher-Scoring ===================: final","\n")); 
@@ -235,13 +236,14 @@ antpers <- NROW(data);
     out <- loglike(opt$par)
     logl <- out$loglike
     score1 <- score <- out$score
-    hess1 <- hess <- out$Dscore
+    hess1 <- hess <- - out$Dscore
+    if (iid==1) theta.iid <- out$theta.iid
     if (numDeriv==1) {
-      score <- jacobian(loglike,p)
-      hess <- hessian(loglike,p)
+      oout <- 3; 
+      p <- theta
+      hess <- jacobian(loglike,theta)
     }
     hessi <- lava::Inverse(hess); 
-    if (iid==1) theta.iid <- out$theta.iid
   ## }}}
   } else if (score.method=="optimize" && ptheta==1) { ## {{{  optimizer
     oout <- 0; 
@@ -256,22 +258,23 @@ antpers <- NROW(data);
     out <- loglike(opt$par)
     logl <- out$loglike
     score1 <- score <- out$score
-    hess1 <- hess <- out$Dscore
+    hess1 <- hess <- - out$Dscore
+    if (iid==1) theta.iid <- out$theta.iid
     if (numDeriv==1) {
-      score <- jacobian(loglike,p)
-      hess <- hessian(loglike,p)
+      oout <- 3; 
+      p <- opt$par
+      hess <-  jacobian(loglike,p)
     }
     hessi <- lava::Inverse(hess); 
-    if (iid==1) theta.iid <- out$theta.iid
   ## }}}
   } else if (score.method=="nlm") { ## {{{ nlm optimizer
     iid <- 0; oout <- 0; 
     tryCatch(opt <- nlm(loglike,theta,hessian=TRUE,print.level=detail),error=function(x) NA)
     iid <- 1; 
-    hess <- opt$hessian
+    hess <-  opt$hessian
     score <- opt$gradient
     if (detail==1) print(opt); 
-    hessi <- lava::Inverse(hess); 
+    hessi <-  lava::Inverse(hess); 
     theta <- opt$estimate
     if (detail==1 && iid==1) cat("iid decomposition\n"); 
     oout <- 2
@@ -286,11 +289,12 @@ antpers <- NROW(data);
 
 ## {{{ handling output
   robvar.theta <- NULL
+  var.theta <- hessi
   if (iid==1) {
      theta.iid <- out$theta.iid %*% hessi
      robvar.theta  <- (t(theta.iid) %*% theta.iid) 
   }
-  if (iid==1) var.theta <- robvar.theta else var.theta <- -hessi
+###  if (iid==1) var.theta <- robvar.theta else var.theta <- -hessi
   if (!is.null(colnames(theta.des))) thetanames <- colnames(theta.des) else thetanames <- paste("dependence",1:ptheta,sep="")
   theta <- matrix(theta,ptheta,1)
   if (length(thetanames)==nrow(theta)) { rownames(theta) <- thetanames; rownames(var.theta) <- colnames(var.theta) <- thetanames; }
@@ -322,55 +326,44 @@ antpers <- NROW(data);
 ##' The reported standard errors are based on the estimated information from the 
 ##' likelihood assuming that the marginals are known. This gives correct standard errors
 ##' in the case of the plackett distribution (OR model for dependence), but incorrect for
-##' the clayton-oakes types model. The OR model is often known as the ALR model, but this
-##' function gives correct standard errors and is quite a bit quicker.
+##' the clayton-oakes types model. The OR model is often known as the ALR model, but our fitting
+##' procedures gives correct standard errors and is quite a bit quicker.
 ##'
 ##' @examples
 ##' data(twinstut)
 ##' twinstut0 <- subset(twinstut, tvparnr<2300000)
+##' twinstut <- twinstut0
 ##' theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut0)
 ##' margbin <- glm(stutter~factor(sex)+age,data=twinstut0,family=binomial())
-##' bin <- binomial.twostage(margbin,data=twinstut0,clusters=twinstut0$tvparnr,
-##' 			    theta.des=theta.des,detail=0,
-##' 	  score.method="fisher.scoring",Nit=20,step=1.0)
+##' bin <- binomial.twostage(margbin,data=twinstut0,
+##' 		         clusters=twinstut0$tvparnr,theta.des=theta.des,detail=0,
+##' 	                 score.method="fisher.scoring")
 ##' summary(bin)
 ##' 
-##' ##bin <- binomial.twostage(stutter~factor(sex)+age,data=twinstut0,clusters=twinstut0$tvparnr,
-##' ## 			    theta.des=theta.des,detail=0,
-##' ## 	  score.method="fisher.scoring",Nit=20,step=1.0)
-##' ## summary(bin)
+##' twinstut0$cage <- scale(twinstut0$age)
+##' theta.des <- model.matrix( ~-1+factor(zyg)+cage,data=twinstut0)
+##' bina <- binomial.twostage(margbin,data=twinstut0,
+##' 		         clusters=twinstut0$tvparnr,theta.des=theta.des,detail=0,
+##' 	                 score.method="fisher.scoring")
+##' summary(bina)
 ##' 
-##' ### easier call with formula call for OR dependence model
+##' theta.des <- model.matrix( ~-1+factor(zyg)+factor(zyg)*cage,data=twinstut0)
+##' bina <- binomial.twostage(margbin,data=twinstut0,
+##' 		         clusters=twinstut0$tvparnr,theta.des=theta.des,detail=0,
+##' 	                 score.method="fisher.scoring")
+##' summary(bina)
+##' 
 ##' twinstut0$binstut <- (twinstut0$stutter=="yes")*1
 ##' out <- easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut0,response="binstut",id="tvparnr",
-##' 			      theta.formula=~-1+factor(zyg1))
+##' 			      theta.formula=~-1+factor(zyg1),score.method="fisher.scoring")
 ##' summary(out)
 ##' 
-##' ### easier call with flexible design for OR dependence model using functions
-##' desfs <- function(x,num1="zyg1",namesdes=c("mz","dz","os")) c(x[num1]=="dz",x[num1]=="mz",x[num1]=="os")*1
+##' desfs<-function(x,num1="zyg1",namesdes=c("mz","dz","os")) c(x[num1]=="dz",x[num1]=="mz",x[num1]=="os")*1
+##' 
 ##' out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
-##'       data=twinstut0,response="binstut",id="tvparnr",
+##'       data=twinstut0, response="binstut",id="tvparnr",
 ##'       score.method="fisher.scoring", theta.formula=desfs,desnames=c("mz","dz","os"))
 ##' summary(out3)
-##' 
-##' ### Family design with parents and children and dependence parameters for
-##' ### mother - father (mf), mother-child and father-child (mb), child-child (bb)
-##' dd <- mets:::sim.bin.fam(1000,beta=0,theta=2)
-##' ddl <- fast.reshape(dd,varying="y",keep="y")
-##' 
-##' ### design function sets up the type of the pair and the related design
-##' desfs <- function(x,num1="num1",num2="num2")
-##' {
-##' 	     mf <- (x[num1]=="m")*(x[num2]=="f")*1
-##'          mb <- (x[num1]=="m" | x[num1]=="f")*(x[num2]=="b1" | x[num2]=="b2")*1
-##'          bb <- (x[num1]=="b1")*(x[num2]=="b1" | x[num2]=="b2")*1
-##'          c(mf,mb,bb)
-##' }
-##' 
-##' out <- easy.binomial.twostage(y~+1,data=ddl,response="y",id="id",
-##'         	       score.method="fisher.scoring",deshelp=0,
-##' 		       theta.formula=desfs,desnames=c("mf","mb","bb"))
-##' summary(out)
 ##' @keywords binomial regression 
 ##' @export
 ##' @param margbin Marginal binomial model 
@@ -463,7 +456,7 @@ step=0.5,model="plackett",marginal.p=NULL,strata=NULL,max.clust=NULL,se.clusters
    return(out)
 } ## }}}
 
-
+##' @export
 sim.bin.plack <- function(n,beta=0.3,theta=1,...) { ## {{{ 
 x1 <- rbinom(n,1,0.5)
 x2 <- rbinom(n,1,0.5)
@@ -483,7 +476,7 @@ y2 <- (y1==1)*rbinom(n,1,p11/p1)+(y1==0)*rbinom(n,1,p01/(1-p1))
 list(x1=x1,x2=x2,y1=y1,y2=y2,id=1:n)
 } ## }}} 
 
-
+##' @export
 sim.bin.fam <- function(n,beta=0.0,theta=1,lam1=1,lam2=1,...) { ## {{{ 
 x1 <- rbinom(n,1,0.5); x2 <- rbinom(n,1,0.5); 
 x3 <- rbinom(n,1,0.5); x4 <- rbinom(n,1,0.5); 
@@ -506,7 +499,7 @@ data.frame(x1=x1,x2=x2,ym=ym,yf=yf,yb1=yb1,yb2=yb2,id=1:n)
 onerunfam <- function(i,n,alr=0,manual=1,time=0,simplealr=1,theta=1) { ## {{{ 
 ### n=200; beta=0.2; theta=1; time=0; i=1
 print(i)
-dd <- mets:::sim.bin.fam(n,beta=0,theta=theta) 
+dd <- sim.bin.fam(n,beta=0,theta=theta) 
 ddl <- fast.reshape(dd,varying="y",keep="y")
 out2t <- system.time(
  marg  <-  glm(y~+1,data=ddl,family=binomial())
@@ -570,7 +563,7 @@ if (manual==1) {
 ###    ZMAST <- cbind(ZMAST,c(0,0,0,0,1,1,0,1,1,0,1,1))
 ###
 ###   outl <- alr(ddl$y~+1,id=ddl$id,depmodel="general",ainit=rep(0.01,3),z=udz$z,zmast=0)
-   if (!require(alr)) stop("'alr' package required")
+    if (!require(alr)) stop("'alr' package required")
    out4t <-  system.time(
    outl <- alr(ddl$y~+1,id=ddl$id,depmodel="general",zlocs=rep(1:4,n),ainit=rep(0.01,3),z=zfam,zmast=1)
    )

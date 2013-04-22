@@ -38,12 +38,16 @@
 ##' (xw2 <- fast.reshape(xl,id="id",num="num"))
 ##' fast.reshape(xw2,varying=c("y","x"),idname="id")
 ##' 
+##' # more generally: varying=list(c("ym","yf","yb1","yb2"), c("zm","zf","zb1","zb2"))
+##' #varying=list(c("ym","yf","yb1","yb2")))
 ##' 
 ##' ##### Family cluster example
 ##' d <- mets:::sim.bin.fam(3)
 ##' d
 ##' dd <- fast.reshape(d,var="y")
 ##' dd
+##' dd2 <- fast.reshape(d,varying=list(c("ym","yf","yb1","yb2")))
+##' dd2
 ##' 
 ##' ##### Prostate cancer example
 ##' data(prt)

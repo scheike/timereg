@@ -56,14 +56,14 @@
 ##' marg2 <- aalen(Surv(boxtime,status)~-1+factor(num):factor(strata),data=ud,n.sim=0,robust=0)
 ##' tdes <- model.matrix(~-1+factor(strata),data=ud)
 ##' fitp2<-twostage(marg2,data=ud,clusters=ud$cluster,score.method="fisher.scoring",model="clayton.oakes",
-##'                 theta.des=tdes,step=1.0,detail=0,strata=ud$strata)
+##'                 theta.des=tdes,step=0.5,detail=0,strata=ud$strata)
 ##' summary(fitp2)
 ##'
 ##' ### now fitting the model with symmetry, i.e. strata 2 and 3 same effect
 ##' ud$stratas <- ud$strata; ud$stratas[ud$strata==3] <- 2;
 ##' tdes2 <- model.matrix(~-1+factor(stratas),data=ud)
 ##' fitp3<-twostage(marg2,data=ud,clusters=ud$cluster,score.method="fisher.scoring",model="clayton.oakes",
-##'                 theta.des=tdes2,step=1.0,detail=0,strata=ud$strata)
+##'                 theta.des=tdes2,step=0.5,detail=0,strata=ud$strata)
 ##' summary(fitp3)
 ##' }
 ##' ### could also symmetry in marginal models
@@ -91,11 +91,11 @@
 ##' @param strata strata for fitting, see example
 ##' @param se.clusters for clusters for se calculation with iid
 ##' @param max.clust max se.clusters for se calculation with iid
-##' @param numDeriv uses Fisher scoring aprox of second derivative if 0, otherwise numerical derivatives 
-twostage <- function(margsurv,data=sys.parent(),score.method="nlminb",
-Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
-control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
-step=0.5,notaylor=0,model="plackett",marginal.survival=NULL,strata=NULL,se.clusters=NULL,max.clust=NULL,numDeriv=0)
+##' @param numDeriv to get numDeriv version of second derivative, otherwise uses sum of squared score 
+twostage <- function(margsurv,data=sys.parent(),score.method="nlminb",Nit=60,detail=0,clusters=NULL,
+		     silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
+                     step=0.5,notaylor=0,model="plackett",marginal.survival=NULL,strata=NULL,
+		     se.clusters=NULL,max.clust=NULL,numDeriv=1)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -250,7 +250,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
     if (detail==3) print(c(par,outl$loglike))
 
     attr(outl,"gradient") <-outl$score 
-    if (oout==0) ret <- c(-1*outl$loglike) else if (oout==1) ret <- sum(outl$score^2) else ret <- outl
+    if (oout==0) ret <- c(-1*outl$loglike) else if (oout==1) ret <- sum(outl$score^2) else if (oout==2) ret <- outl else ret <- outl$score
     return(ret)
   } ## }}}
 
@@ -265,7 +265,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
     for (i in 1:Nit)
     {
         out <- loglike(p)
-	hess <- out$Dscore
+	hess <- - out$Dscore
 	if (!is.na(sum(hess))) hessi <- lava::Inverse(out$Dscore) else hessi <- hess 
         if (detail==1) {## {{{
           cat(paste("Fisher-Scoring ===================: it=",i,"\n")); 
@@ -286,13 +286,14 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
     out <- loglike(p) 
     logl <- out$loglike
     score1 <- score <- out$score
-    oout <- 0; 
-    hess1 <- hess <- out$Dscore 
+    hess1 <- hess <- - out$Dscore 
     if (iid==1) theta.iid <- out$theta.iid
     }
     if (numDeriv==1) {
-      score1 <- jacobian(loglike,p)
-      hess <- hessian(loglike,p)
+    if (detail==1 ) cat("numDeriv hessian start\n"); 
+      oout <- 3;  ## to get jacobian
+      hess <- jacobian(loglike,p)
+    if (detail==1 ) cat("numDeriv hessian start\n"); 
     }
     if (detail==1 & Nit==0) {## {{{
           cat(paste("Fisher-Scoring ===================: final","\n")); 
@@ -314,20 +315,21 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
     out <- loglike(opt$par)
     logl <- out$loglike
     score1 <- score <- out$score
-    hess1 <- hess <- out$Dscore
+    hess1 <- hess <- - out$Dscore
+    if (iid==1) theta.iid <- out$theta.iid
     if (numDeriv==1) {
-      score <- jacobian(loglike,p)
-      hess <- hessian(loglike,p)
+    if (detail==1 ) cat("numDeriv hessian start\n"); 
+      oout <- 3; 
+      hess <- jacobian(loglike,opt$par)
+    if (detail==1 ) cat("numDeriv hessian done\n"); 
     }
     hessi <- lava::Inverse(hess); 
-    if (iid==1) theta.iid <- out$theta.iid
   ## }}}
   } else if (score.method=="optimize" && ptheta==1) { ## {{{  optimizer
     oout <- 0; 
     if (var.link==1) {mino <- -20; maxo <- 10;} else {mino <- 0.001; maxo <- 100;}
     tryCatch(opt <- optimize(loglike,c(mino,maxo)));
     if (detail==1) print(opt); 
-
     opt$par <- opt$minimum
     theta <- opt$par
     if (detail==1 && iid==1) cat("iid decomposition\n"); 
@@ -335,10 +337,12 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
     out <- loglike(opt$par)
     logl <- out$loglike
     score1 <- score <- out$score
-    hess1 <- hess <- out$Dscore
+    hess1 <- hess <- - out$Dscore
     if (numDeriv==1) {
-      score <- jacobian(loglike,p)
-      hess <- hessian(loglike,p)
+    if (detail==1 ) cat("numDeriv hessian start\n"); 
+      oout <- 3;  ## to get jacobian
+      hess <- jacobian(loglike,theta)
+    if (detail==1 ) cat("numDeriv hessian done\n"); 
     }
     hessi <- lava::Inverse(hess); 
     if (iid==1) theta.iid <- out$theta.iid
@@ -364,13 +368,14 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 
 ## {{{ handling output
   robvar.theta <- NULL
+  var.theta <- -hessi
   if (iid==1) {
      theta.iid <- out$theta.iid %*% hessi
      if (is.null(call.secluster) & is.null(max.clust)) rownames(theta.iid) <- unique(cluster.call) else rownames(theta.iid) <- unique(se.clusters)
      robvar.theta  <- (t(theta.iid) %*% theta.iid) 
   }
-  if (iid==1) var.theta <- robvar.theta else var.theta <- -hessi
   if (!is.null(colnames(theta.des))) thetanames <- colnames(theta.des) else thetanames <- rep("intercept",ptheta)
+  if (length(thetanames)==nrow(theta)) rownames(theta) <- thetanames
   ud <- list(theta=theta,score=score,hess=hess,hessi=hessi,var.theta=var.theta,model=model,robvar.theta=robvar.theta,
              theta.iid=theta.iid,thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,margsurv=psurvmarg); 
   class(ud)<-"twostage" 
@@ -572,9 +577,6 @@ cluster.call <- clusters
 idi <- unique(data[,id]); 
 ###print(head(idi))
 
-print("start")
-print(summary(data[,id]))
-
 ## {{{ 
 ###   se.clusters=NULL,max.clust=1000,
 ###  evt sætte cluster se max.clust på 
@@ -623,8 +625,6 @@ datalr$tsid <- datalr[,id]
 f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(",num,")")))
 ###f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(num)")))
 marg1 <- aalen(f,data=datalr,n.sim=0,robust=0)
-print("ts er lidt dum")
-print(summary(datalr[,id]))
 
 fitlr<-  twostage(marg1,data=datalr,clusters=datalr$tsid,model=model,score.method=score.method,
               Nit=Nit,detail=detail,silent=silent,weights=weights,
