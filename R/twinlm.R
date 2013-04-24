@@ -50,6 +50,7 @@
 ##'     the dyzogitic twins.
 ##' @param OS Optional. Character defining the level in the zyg variable
 ##'     corresponding to the oppposite sex dyzogitic twins.
+##' @param strata Strata variable name
 ##' @param weight Weight matrix if needed by the chosen estimator. For use
 ##'     with Inverse Probability Weights
 ##' @param type Character defining the type of analysis to be
@@ -65,8 +66,9 @@
 ##' @param estimator Choice of estimator/model
 ##' @param control Control argument parsed on to the optimization routine
 ##' @param constrain Development argument
+##' @param messages Control amount of messages shown 
 ##' @param ... Additional arguments parsed on to lower-level functions
-twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), twinnum="twinnum", binary=FALSE,keep=weight,estimator="gaussian",constrain=TRUE,control=list(),...) {
+twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, type=c("ace"), twinnum="twinnum", binary=FALSE,keep=weight,estimator="gaussian",constrain=TRUE,control=list(),messages=1,...) {
 
   cl <- match.call(expand.dots=TRUE)
   opt <- options(na.action="na.pass")
@@ -85,6 +87,42 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, weight=NULL, type=c("ace"), t
     args[[1]] <- NULL
     return(do.call("bptwin",args))
   }
+
+
+  formulaId <- unlist(Specials(formula,"cluster"))
+  formulaStrata <- unlist(Specials(formula,"strata"))
+  formulaSt <- paste("~.-cluster(",formulaId,")-strata(",paste(formulaStrata,collapse="+"),")")
+  formula <- update(formula,formulaSt)
+  if (!is.null(formulaId)) {
+    id <- formulaId
+    cl$id <- id
+  }
+  if (!is.null(formulaStrata)) strata <- formulaStrata
+  cl$formula <- formula
+ 
+  if (!is.null(strata)) {
+    dd <- split(data,interaction(data[,strata]))
+    nn <- unlist(lapply(dd,nrow))
+    dd[which(nn==0)] <- NULL
+    if (length(dd)>1) {
+      fit <- lapply(seq(length(dd)),function(i) {
+        if (messages>0) message("Strata '",names(dd)[i],"'")
+        cl$data <- dd[[i]]
+        eval(cl)
+      })
+      res <- list(model=fit)
+      res$strata <- names(res$model) <- names(dd)
+      class(res) <- c("twinlm.strata","twinlm")
+      res$coef <- unlist(lapply(res$model,coef))
+      res$vcov <- blockdiag(lapply(res$model,vcov.biprobit))
+      res$N <- length(dd)
+      res$idx <- seq(length(coef(res$model[[1]])))
+      rownames(res$vcov) <- colnames(res$vcov) <- names(res$coef)
+      return(res)
+    }
+  }
+
+  
   
   type <- tolower(type)
   ## if ("u" %in% type) type <- c("ue")
