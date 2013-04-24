@@ -31,7 +31,7 @@ biprobit <- function(formula, data, id, time, strata=NULL, eqmarg=TRUE,
     })
     res <- list(model=fit)
     res$strata <- names(res$model) <- names(dd)
-    class(res) <- c("biprobit.strata","biprobit")
+    class(res) <- c("twinlm.strata","biprobit")
     res$coef <- unlist(lapply(res$model,coef))
     res$vcov <- blockdiag(lapply(res$model,vcov.biprobit))
     res$N <- length(dd)
@@ -168,7 +168,6 @@ biprobit <- function(formula, data, id, time, strata=NULL, eqmarg=TRUE,
       ## U$score <- rbind(U$score,U_marg)
       ## U$loglik <- c(U$loglik,attributes(U_marg)$logLik)
       ##      W0_marg <- rep(1,nrow(XX0_marg))
-      ##      browser()
       U_marg <- with(MyData, .Call("uniprobit",
                                    Mu_marg,XX0_marg,
                                    Sigma[1,1],dS0_marg*dvartr(p[plen]),Y0_marg,
@@ -200,7 +199,6 @@ biprobit <- function(formula, data, id, time, strata=NULL, eqmarg=TRUE,
     p0 <- control$start
     control$start <- NULL
   }
-##  browser()
 
   if (!missing(p)) return(U(p,indiv=FALSE))
 

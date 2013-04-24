@@ -31,7 +31,6 @@ Collate:
     'biprobit.R'
     'biprobit.strata.R'
     'bpnd.R'
-    'bptwin.R'
     'claytonakes.R'
     'coef.biprobit.R'
     'cumh.R'
@@ -70,3 +69,4 @@ Collate:
     'fastreshape.R'
     'binomial.twostage.R'
     'clusterindex-reshape.R'
+    'bptwin.R'

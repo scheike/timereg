@@ -93,7 +93,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
       })
       res <- list(model=fit)
       res$strata <- names(res$model) <- names(dd)
-      class(res) <- c("bicomprisk.strata","biprobit.strata")
+      class(res) <- c("bicomprisk.strata","twinlm.strata")
       res$N <- length(dd)
       return(res)
     }
@@ -101,7 +101,6 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
 
   covars <- as.character(attributes(terms(formula))$variables)[-(1:2)]
   indiv2 <- covars2 <- NULL 
-  ##  suppressMessages(browser())
   
   data <- data[order(data[,id]),]
   idtab <- table(data[,id])
@@ -136,8 +135,6 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
 
   time <- status <- rep(0,nrow(ww0))
   time <- ww0[,"time1"]
-
-  ##  suppressMessages(browser())  
 
   ## {{{ (i,j) causes 
   idx2 <- which(ww0[,causes2[1]]==cause[1] & ww0[,causes2[2]]==cause[2])

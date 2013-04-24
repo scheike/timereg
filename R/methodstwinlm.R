@@ -1,3 +1,4 @@
+
 ###{{{ print.twinlm
 
 ##' @S3method print twinlm
@@ -44,8 +45,6 @@ summary.twinlm <- function(object,...) {
     class(res) <- "summary.twinlm"
     return(res)
   }
-
-  ##  suppressMessages(browser())
 
   OScor <- NULL
   if(object$OS) {
@@ -284,3 +283,5 @@ acde.twinlm <- function(x,...) {
 }
 
 ###}}} acde
+
+coef.twinlm <- function(object,...) coef(object$estimate,...)

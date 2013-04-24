@@ -2,10 +2,10 @@
 \alias{twinlm}
 \title{Classic twin model for quantitative traits}
 \usage{
-  twinlm(formula, data, id, zyg, DZ, OS, weight = NULL,
-    type = c("ace"), twinnum = "twinnum", binary = FALSE,
-    keep = weight, estimator = "gaussian",
-    constrain = TRUE, control = list(), ...)
+  twinlm(formula, data, id, zyg, DZ, OS, strata = NULL,
+    weight = NULL, type = c("ace"), twinnum = "twinnum",
+    binary = FALSE, keep = weight, estimator = "gaussian",
+    constrain = TRUE, control = list(), messages = 1, ...)
 }
 \arguments{
   \item{formula}{Formula specifying effects of covariates
@@ -31,6 +31,8 @@
   \item{OS}{Optional. Character defining the level in the
   zyg variable corresponding to the oppposite sex dyzogitic
   twins.}
+
+  \item{strata}{Strata variable name}
 
   \item{weight}{Weight matrix if needed by the chosen
   estimator. For use with Inverse Probability Weights}
@@ -60,6 +62,8 @@
   optimization routine}
 
   \item{constrain}{Development argument}
+
+  \item{messages}{Control amount of messages shown}
 
   \item{...}{Additional arguments parsed on to lower-level
   functions}

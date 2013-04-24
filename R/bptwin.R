@@ -91,7 +91,7 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
       })
       res <- list(model=fit)
       res$strata <- names(res$model) <- names(dd)
-      class(res) <- c("biprobit.strata","biprobit")
+      class(res) <- c("twinlm.strata","biprobit")
       res$coef <- unlist(lapply(res$model,coef))
       res$vcov <- blockdiag(lapply(res$model,vcov.biprobit))
       res$N <- length(dd)
@@ -298,7 +298,6 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
       MyData1$W0_marg <- cbind(apply(MyData1$W0_marg,1,biweight))
   }
   rm(Y0,XX0,W0,Y1,XX1,W1)
-  ##  suppressMessages(browser())
   ##  N <- rbind(##c("","","Complete","","Complete pairs",""),
   ##             rep(c("MZ","DZ"),ncol(N)/2), N)
   colnames(N) <- c("Total.MZ","Total.DZ","Complete.MZ","Complete.DZ","Complete pairs.MZ","Complete pairs.DZ")[seq(ncol(N))]

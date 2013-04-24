@@ -114,7 +114,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
       res$strata <- names(res$model) <- names(dd)
       class(res) <- c("twinlm.strata","twinlm")
       res$coef <- unlist(lapply(res$model,coef))
-      res$vcov <- blockdiag(lapply(res$model,vcov.biprobit))
+      res$vcov <- blockdiag(lapply(res$model,vcov))
       res$N <- length(dd)
       res$idx <- seq(length(coef(res$model[[1]])))
       rownames(res$vcov) <- colnames(res$vcov) <- names(res$coef)
