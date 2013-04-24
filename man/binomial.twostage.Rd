@@ -78,28 +78,27 @@ bin <- binomial.twostage(margbin,data=twinstut,
 	                 score.method="fisher.scoring")
 summary(bin)
 
-twinstut0$cage <- scale(twinstut0$age)
-theta.des <- model.matrix( ~-1+factor(zyg)+cage,data=twinstut0)
-bina <- binomial.twostage(margbin,data=twinstut0,
-		         clusters=twinstut0$tvparnr,theta.des=theta.des,detail=0,
+twinstut$cage <- scale(twinstut$age)
+theta.des <- model.matrix( ~-1+factor(zyg)+cage,data=twinstut)
+bina <- binomial.twostage(margbin,data=twinstut,
+		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0,
 	                 score.method="fisher.scoring")
 summary(bina)
 
-theta.des <- model.matrix( ~-1+factor(zyg)+factor(zyg)*cage,data=twinstut0)
-bina <- binomial.twostage(margbin,data=twinstut0,
-		         clusters=twinstut0$tvparnr,theta.des=theta.des,detail=0,
+theta.des <- model.matrix( ~-1+factor(zyg)+factor(zyg)*cage,data=twinstut)
+bina <- binomial.twostage(margbin,data=twinstut,
+		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0,
 	                 score.method="fisher.scoring")
 summary(bina)
 
-twinstut0$binstut <- (twinstut0$stutter=="yes")*1
-out <- easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut0,response="binstut",id="tvparnr",
+twinstut$binstut <- (twinstut$stutter=="yes")*1
+out <- easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut,response="binstut",id="tvparnr",
 			      theta.formula=~-1+factor(zyg1),score.method="fisher.scoring")
 summary(out)
 
 desfs<-function(x,num1="zyg1",namesdes=c("mz","dz","os")) c(x[num1]=="dz",x[num1]=="mz",x[num1]=="os")*1
-
 out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
-      data=twinstut0, response="binstut",id="tvparnr",
+      data=twinstut,response="binstut",id="tvparnr",
       score.method="fisher.scoring", theta.formula=desfs,desnames=c("mz","dz","os"))
 summary(out3)
 }

@@ -237,7 +237,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
        Xtheta <- theta.des %*% matrix(c(par),ptheta,1); 
        DXtheta <- array(0,c(1,1,1));
 
-###      dyn.load("twostage.so")
+###   dyn.load("twostage.so")
 
       outl<-.Call("twostageloglike", ## {{{
       icause=status,ipmargsurv=psurvmarg, 
@@ -293,7 +293,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
     if (detail==1 ) cat("numDeriv hessian start\n"); 
       oout <- 3;  ## to get jacobian
       hess <- jacobian(loglike,p)
-    if (detail==1 ) cat("numDeriv hessian start\n"); 
+    if (detail==1 ) cat("numDeriv hessian stop\n"); 
     }
     if (detail==1 & Nit==0) {## {{{
           cat(paste("Fisher-Scoring ===================: final","\n")); 

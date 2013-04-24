@@ -81,42 +81,38 @@ Useful in particular for family design data.}
 \examples{
 data(twinstut)
 twinstut0 <- subset(twinstut, tvparnr<2300000)
+twinstut <- twinstut0
 theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut0)
 margbin <- glm(stutter~factor(sex)+age,data=twinstut0,family=binomial())
-bin <- binomial.twostage(margbin,data=twinstut0,clusters=twinstut0$tvparnr,
-			    theta.des=theta.des,detail=0,
-	  score.method="fisher.scoring",Nit=20,step=1.0)
+bin <- binomial.twostage(margbin,data=twinstut0,
+		         clusters=twinstut0$tvparnr,theta.des=theta.des,detail=0,
+	                 score.method="fisher.scoring")
 summary(bin)
 
-##bin <- binomial.twostage(stutter~factor(sex)+age,data=twinstut0,clusters=twinstut0$tvparnr,
-## 			    theta.des=theta.des,detail=0,
-## 	  score.method="fisher.scoring",Nit=20,step=1.0)
-## summary(bin)
+twinstut0$cage <- scale(twinstut0$age)
+theta.des <- model.matrix( ~-1+factor(zyg)+cage,data=twinstut0)
+bina <- binomial.twostage(margbin,data=twinstut0,
+		         clusters=twinstut0$tvparnr,theta.des=theta.des,detail=0,
+	                 score.method="fisher.scoring")
+summary(bina)
 
-### easier call with formula call for OR dependence model
+theta.des <- model.matrix( ~-1+factor(zyg)+factor(zyg)*cage,data=twinstut0)
+bina <- binomial.twostage(margbin,data=twinstut0,
+		         clusters=twinstut0$tvparnr,theta.des=theta.des,detail=0,
+	                 score.method="fisher.scoring")
+summary(bina)
+
 twinstut0$binstut <- (twinstut0$stutter=="yes")*1
 out <- easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut0,response="binstut",id="tvparnr",
-			      theta.formula=~-1+factor(zyg1))
+			      theta.formula=~-1+factor(zyg1),score.method="fisher.scoring")
 summary(out)
 
 desfs<-function(x,num1="zyg1",namesdes=c("mz","dz","os")) c(x[num1]=="dz",x[num1]=="mz",x[num1]=="os")*1
+
 out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
-      data=twinstut0,response="binstut",id="tvparnr",
+      data=twinstut0, response="binstut",id="tvparnr",
       score.method="fisher.scoring", theta.formula=desfs,desnames=c("mz","dz","os"))
 summary(out3)
-
-### Family design with parents and children and dependence parameters for
-### mother - father (mf), mother-child and father-child (mb), child-child (bb)
-dd <- mets:::sim.bin.fam(1000,beta=0,theta=2)
-ddl <- fast.reshape(dd,varying="y",keep="y")
-
-### design function sets up the type of the pair and the related design
-desfs <- function(x,num1="num1",num2="num2")
-{
-	     mf <- (x[num1]=="m")*(x[num2]=="f")*1
-         mb <- (x[num1]=="m" | x[num1]=="f")*(x[num2]=="b1" | x[num2]=="b2")*1
-         bb <- (x[num1]=="b1")*(x[num2]=="b1" | x[num2]=="b2")*1
-         c(mf,mb,bb)
 }
 \keyword{binomial}
 \keyword{regression}
