@@ -1,4 +1,3 @@
-
 ###{{{ print.twinlm
 
 ##' @S3method print twinlm
@@ -38,7 +37,7 @@ summary.twinlm <- function(object,...) {
     }
     aa <- capture.output(e)
     res <- list(estimate=aa, zyg=zygtab,
-                varEst=NULL, varSigma=NULL, heritability=NULL, hci=NULL,
+                varEst=NULL, varSigma=NULL, heritability=NULL,
                 corMZ=corMZ, corDZ=corDZ,
                 logLik=logLik(e), AIC=AIC(e), BIC=BIC(e), type=object$type
                 )                
@@ -46,14 +45,14 @@ summary.twinlm <- function(object,...) {
     return(res)
   }
 
-  OScor <- NULL
+  corOS <- NULL
   if(object$OS) {
-    OScor <- constraints(e,k=3)[,c(1,5,6),drop=FALSE]
+    corOS <- constraints(e,k=3)[,c(1,5,6),drop=FALSE]
     myest <- myest[-nrow(myest),,drop=FALSE]
-    rownames(OScor)[1] <- "OS correlation"
-    if (nrow(OScor)>1) {
+    rownames(corOS)[1] <- "OS correlation"
+    if (nrow(corOS)>1) {
       myest <- myest[-nrow(myest),,drop=FALSE]
-      rownames(OScor) <- c("OS correlation (A)","OS correlation (D)")
+      rownames(corOS) <- c("OS correlation (A)","OS correlation (D)")
     }
     
   }
@@ -153,8 +152,20 @@ summary.twinlm <- function(object,...) {
   ## corDZ <- sum(varEst[1:3]^2*c(0.5,1,0.25))/sum(varEst^2<)
   corMZ <- c(tanh(c(e1,ci1)))
   corDZ <- c(tanh(c(e2,ci2)))  
+
+  acde <- acde.twinlm(object)
+  coef <- rbind(acde)  
   
-  res <- list(estimate=myest, zyg=zygtab, varEst=varEst, varSigma=varSigma, hval=hval, heritability=h2val, hci=ci.logit, corMZ=corMZ, corDZ=corDZ, acde=acde.twinlm(object), logLik=logLik(e), AIC=AIC(e), BIC=BIC(e), type=object$type, OScor=OScor)
+  hrow <- rbind(c(h2val,ci.logit));
+  rownames(hrow) <- "Broad-sense heritability"
+  colnames(hrow)[1:2] <- c("Estimate","Std.Err")
+
+  all <- rbind(hrow[,c(1,3,4),drop=FALSE],coef,corMZ,corDZ,corOS)
+  
+  res <- list(estimate=myest, zyg=zygtab, varEst=varEst,
+              varSigma=varSigma, heritability=hrow, corMZ=corMZ, corDZ=corDZ,
+              corOS=corOS, acde=acde, logLik=logLik(e), AIC=AIC(e), BIC=BIC(e),
+              type=object$type, coef=coef, all=all);
   class(res) <- "summary.twinlm"
   return(res)
 }
@@ -184,17 +195,12 @@ print.summary.twinlm <- function(x,signif.stars=FALSE,...) {
     if (!is.null(x$acde)) {
       cat("\nVariance decomposition:\n")
       print(x$acde)
-      if (!is.null(x$OScor))
-        print(x$OScor)   
+      if (!is.null(x$corOS))
+        print(x$corOS)   
     }
     cat("\n")
-    ##  cat("hn2 = ", hn2, "\t hb2 = ", hb2, "\n\n")
-    ##  cat("Narrow-sense heritability (additive genetic factors):\n")
-    ##  print(x$hval)
-    ##  cat("\n")  
     cat("Broad-sense heritability (total genetic factors):\n")
-    h <- with(x, c(heritability[1],hci));
-    names(h) <- c("Estimate",names(x$hci))
+    h <- with(x, heritability[,c(1,3,4),drop=FALSE]);
     h <- na.omit(h)
     print(h)  
     cat("\n")

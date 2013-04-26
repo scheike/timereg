@@ -152,7 +152,7 @@ summary.bptwin <- function(object,level=0.05,...) {
   if (hval[1]>1) hval[1,] <- c(1,NaN,NaN,NaN)
 
 ##  hval <- rbind(hval, tigol(c(hp,NA,hp-qnorm(1-alpha)*shp,hp+qnorm(1-alpha)*shp)))
-  rownames(hval) <- c("Broad-sense Heritability")##,"Risk-scale Heritability")
+  rownames(hval) <- c("Broad-sense heritability")##,"Risk-scale Heritability")
   
   Nstr <- object$N
   nN <- ncol(object$N)
@@ -161,10 +161,16 @@ summary.bptwin <- function(object,level=0.05,...) {
   rownames(Nstr) <- ""
   colnames(Nstr) <- unlist(lapply(strsplit(colnames(object$N)[npos*2-1],".",fixed=TRUE),
                                   function(x) paste(x[1], "MZ/DZ")))
-  res <- list(h=hval,
+
+  all  <-  rbind(hval[,c(1,3,4),drop=FALSE],newcoef[,c(1,3,4),drop=FALSE])
+  allprob <- rbind(probMZ,probDZ); rownames(allprob) <-
+    c(paste("MZ",rownames(probMZ)),paste("DZ",rownames(probDZ)))
+  all <- rbind(all,allprob)
+    
+  res <- list(heritability=hval,
               par=object$coef,
               probMZ=probMZ, probDZ=probDZ, Nstr=Nstr,
-              coef=newcoef) ##, concordance=concordance, conditional=conditional)
+              coef=newcoef, all=all) ##, concordance=concordance, conditional=conditional)
   class(res) <- "summary.bptwin"
   res
 }
@@ -185,6 +191,6 @@ print.summary.bptwin <- function(x,digits = max(3, getOption("digits") - 2),...)
 ##  cat("\nConcordance (MZ; DZ):\t\t", x$concordance,"\n")
 ##  cat("Case-wise concordance (MZ; DZ):\t", x$conditional,"\n\n")
   cat("\n")
-  print(RoundMat(x$h[,-2,drop=FALSE],digits=digits),quote=FALSE)
+  print(RoundMat(x$heritability[,-2,drop=FALSE],digits=digits),quote=FALSE)
   cat("\n")
 }

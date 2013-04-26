@@ -1,7 +1,7 @@
 ##' @export
 cumh <- function(formula,data,...,time,
                  timestrata=quantile(data[,time],c(0.25,0.5,0.75,1)),
-                 cumulative=TRUE,
+                 cumulative=TRUE, 
                  silent=FALSE) {
   
   time.  <- substitute(time)
@@ -11,6 +11,7 @@ cumh <- function(formula,data,...,time,
   res <- list(); i <- 0
   ht <- c()
   outcome <- as.character(terms(formula)[[2]])
+  coefs <- c()
   y0 <- data[,outcome]
   for (i in seq(length(timestrata))) {
     t <- timestrata[i]
@@ -26,17 +27,29 @@ cumh <- function(formula,data,...,time,
       data[,outcome] <- data[,outcome]*(data[,time]<t)
     }
     if (!silent) {
-      message(t)##," ",sum(data[,outcome]))
+      message(t)
     }
     if (!cumulative)
-      res[[i]] <-bptwin(formula,data=data[idx,],...)
+      res[[i]] <- summary(twinlm(formula,data=data[idx,],...))
     else
-      res[[i]] <-bptwin(formula,data=data,...)
-    ht <- rbind(ht,c(t,summary(res[[i]])$h[1,]))
+      res[[i]] <- summary(twinlm(formula,data=data,...))
+
+    coefs <- c(coefs, list(res[[i]]$all))
+    ht <- rbind(ht,c(t,res[[i]]$heritability[1,]))
   }
+  
+  coeftype <- c()
+  for (i in seq(nrow(coefs[[1]]))) {
+    rr <- matrix(unlist(lapply(coefs,function(z) z[i,])),ncol=3,byrow=TRUE)
+    colnames(rr) <- colnames(coefs[[1]])
+    rr <- cbind(time=timestrata,rr)
+    coeftype <- c(coeftype,list(rr)); names(coeftype)[length(coeftype)] <- rownames(coefs[[1]])[i]
+  }
+  
   rownames(ht) <- timestrata
   colnames(ht) <- c("time","Heritability","Std.Err","2.5%","97.5%")
-  res <- (list(ht=ht,models=res))
+  res <- (list(time=timestrata, ht=ht,models=res,coef=coefs,
+               coeftype=coeftype))
   class(res) <- "cumh"
   res
 }
@@ -45,8 +58,14 @@ cumh <- function(formula,data,...,time,
 summary.cumh <- function(object,...) object 
 
 ##' @S3method print cumh
-print.cumh <- function(x,...) {
-  print(x$ht)
+print.cumh <- function(x,type=seq(nrow(x$coef[[1]])),...) {
+  for (i in type) {    
+    cat(i, ": ", names(x$coeftype)[i], "\n",sep="")
+    rr <- matrix(unlist(lapply(x$coef,function(z) z[i,])),ncol=3,byrow=TRUE)
+    colnames(rr) <- colnames(x$coef[[1]])
+    rr <- cbind(time=x$time,rr)
+    print(rr)
+  }
   invisible(x)
 }
 
@@ -56,17 +75,25 @@ Col <- function (col, alpha = 0.2) {
 }
 
 ##' @S3method plot cumh
-plot.cumh <- function(x,...,idx=seq(nrow(x$ht)),lwd=2,col,fillcol,alpha=0.2,ylim=c(0,1),xlab="Time",ylab="Heritability",add=FALSE) {
+plot.cumh <- function(x,...,type=1,lwd=2,col,fillcol,alpha=0.2,ylim=c(0,1),xlab="Time",ylab="Heritability",idx=seq(nrow(x$ht)),legend=TRUE,legendpos="topleft") {
 
-  if (missing(col)) col <- "darkblue"
+  add <- FALSE
+  if (missing(col)) col <- seq(length(type))
   if (alpha>0 & missing(fillcol)) fillcol <- Col(col,alpha)
-  if (!add) {
-    plot(x$ht[idx,1:2,drop=FALSE],type="l",ylim=ylim,lwd=lwd,
-         ylab=ylab,xlab=xlab,col=col,...)
+  count <- 0
+  for (tt in type) {
+    count <- count+1
+    zz <- x$coeftype[[tt]][idx,,drop=FALSE]
+    if (!add) {    
+      plot(zz[,1:2,drop=FALSE],type="l",ylim=ylim,lwd=lwd,
+           ylab=ylab,xlab=xlab,col=col[count],...)
+    }
+    add <- TRUE
+    xx <- with(x, c(zz[,1],rev(zz[,1])))
+    yy <- with(x, c(zz[,3],rev(zz[,4]))) 
+    polygon(xx,yy,col=fillcol[count])
+    lines(zz[,1:2,drop=FALSE],lwd=lwd,col=col[count],...)
   }
-  xx <- with(x, c(ht[idx,1],rev(ht[idx,1])))
-  yy <- with(x, c(ht[idx,4],rev(ht[idx,5])))           
-  polygon(xx,yy,col=fillcol)
-  lines(x$ht[idx,1:2,drop=FALSE],lwd=lwd,col=col,...)
-  invisible(x)
+  if (legend) graphics::legend(legendpos,names(x$coeftype)[type],col=col,lwd=lwd,lty=1)
+  invisible(x)    
 }

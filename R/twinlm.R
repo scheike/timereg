@@ -318,6 +318,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
           model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var(DZ))")
           model3 <- covariance(model3,outcomes,constrain=TRUE,rname="atanh(rhoOS)",cname="covOS",lname="log(var(OS))")
         }  else {
+          browser()
           model1 <- covariance(model1,outcomes,constrain=TRUE,rname="atanh(rhoMZ)",cname="covMZ",lname="log(var)")
           model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var)")
           model3 <- covariance(model3,outcomes,constrain=TRUE,rname="atanh(rhoOS)",cname="covOS",lname="log(var)")          

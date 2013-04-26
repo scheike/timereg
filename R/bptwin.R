@@ -154,28 +154,21 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
 
   idtab <- table(data[,id])
   ##  ii0 <- which(as.character(data[,id])%in%names(idtab)[idtab==2])              
-  ##  data0 <- data[ii0,]  
-  idx2 <- NULL  
-  if (!missing(DZ)) {
-    if (!missing(OS)) {
-      warning("Opposite-sex analysis not implemented yet!")
-      idx2 <- data[,zyg]==OS
-      if (length(idx2)==0) stop("No opposite-sex twins found") 
-    }
-    idx1 <- data[,zyg]==DZ
-    if (length(idx1)==0) stop("No DZ twins found")
-    idx0 <- data[,zyg]!=DZ
-    if (length(idx1)==0) stop("No MZ twins found")
-    data[,zyg] <- (data[,zyg]!=DZ)*1
-  } else {
-    if (!missing(OS))
-      idx2 <- (as.factor(data[,zyg])==levels(as.factor(data[,zyg]))[3]) # DZos
-    DZlev <- levels(as.factor(data[,zyg]))[1]
-    idx1 <- (as.factor(data[,zyg])==DZlev) # DZ
-    idx0 <- (as.factor(data[,zyg])==levels(as.factor(data[,zyg]))[2]) # MZ
-    message("Using '",DZlev,"' as DZ",sep="")
-    data[,zyg] <- (data[,zyg]!=levels(as.factor(data[,zyg]))[1])
+  idx2 <- NULL
+  if (missing(DZ)) {
+    DZ <- levels(as.factor(data[,zyg]))[1]
+    message("Using '",DZ,"' as DZ",sep="")
+  } 
+  if (!missing(OS)) {
+    warning("Opposite-sex analysis not implemented yet!")
+    idx2 <- data[,zyg]==OS
+    if (length(idx2)==0) stop("No opposite-sex twins found") 
   }
+  idx1 <- data[,zyg]==DZ
+  if (length(idx1)==0) stop("No DZ twins found")
+  idx0 <- data[,zyg]!=DZ
+  if (length(idx1)==0) stop("No MZ twins found")
+  data[,zyg] <- (data[,zyg]!=DZ)*1
   
   
   time <- "time"
@@ -261,15 +254,15 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
   if (!is.null(weight)) {
     widx <- paste(weight,1:2,sep=".")
     rmidx <- c(rmidx,widx)
-    W0 <- as.matrix(Wide[Wide[,zyg]==1,widx,drop=FALSE])
-    W1 <- as.matrix(Wide[Wide[,zyg]==0,widx,drop=FALSE])
+    W0 <- as.matrix(Wide[Wide[,zyg]==0,widx,drop=FALSE])
+    W1 <- as.matrix(Wide[Wide[,zyg]==1,widx,drop=FALSE])
   }
   XX <- as.matrix(Wide[,setdiff(colnames(Wide),rmidx)])
   XX[is.na(XX)] <- 0
-  Y0 <- as.matrix(Wide[Wide[,zyg]==1,yidx,drop=FALSE])
-  Y1 <- as.matrix(Wide[Wide[,zyg]==0,yidx,drop=FALSE])
-  XX0 <- XX[Wide[,zyg]==1,,drop=FALSE]
-  XX1 <- XX[Wide[,zyg]==0,,drop=FALSE]
+  Y0 <- as.matrix(Wide[Wide[,zyg]==0,yidx,drop=FALSE])
+  Y1 <- as.matrix(Wide[Wide[,zyg]==1,yidx,drop=FALSE])
+  XX0 <- XX[Wide[,zyg]==0,,drop=FALSE]
+  XX1 <- XX[Wide[,zyg]==1,,drop=FALSE]
   
 ##################################################
 
