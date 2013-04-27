@@ -87,6 +87,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 
 //     mat_zeros(X);mat_zeros(cummat);vec_zeros(risk);mat_zeros(Z);
 
+   if (*coxaalen==1) 
    for (j=0;j<*px;j++) VE(dA,j)=dcum[j*(*nmgt-1)+s-1]; 
 
     // {{{ reading design and computing matrix products
@@ -270,7 +271,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 
     R_CheckUserInterrupt();
  // {{{ allokering
- malloc_mat(ant[l],*pg,dS1);   malloc_mat(ant[l],*pg,S1);
+ malloc_mat(ant[l],*pg,dS1); malloc_mat(ant[l],*pg,S1);
  malloc_mat(ant[l],*px,cumX1);
  malloc_mat(ant[l],*px,cumXAI1); 
  malloc_mat(ant[l],*pg,cumZP1);
@@ -290,7 +291,11 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 	time=mgtimes[s]; dtime=mgtimes[s]-mgtimes[s-1]; 
 	cummgt[s]=time; robvarcum[s]=time; 
 
-        for (j=0;j<*px;j++) VE(dA,j)=dcum[j*(*nmgt-1)+s-1]; 
+	if (*coxaalen==1) 
+        for (j=0;j<*px;j++) {
+//	          printf(" %d %d %d %lf \n",j,*nmgt,j*(*nmgt-1)+s-1,dcum[j*(*nmgt-1)+s-1]); 
+	          VE(dA,j)=dcum[j*(*nmgt-1)+s-1]; 
+	}
 
     // {{{ reading design and computing matrix products
 	  if (s==1) { // {{{
@@ -342,7 +347,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
     while ((stop[ci]<time)  & (ci>=0) ) {
             for(j=0;j<pmax;j++) {
 	       if (j<*px) VE(xi,j)=designX[j*(*nx)+ci]; 
-               if (*coxaalen==1) if (j<*pg) VE(zi,j)=designG[j*(*nx)+c]; 
+               if (*coxaalen==1) if (j<*pg) VE(zi,j)=designG[j*(*nx)+ci]; 
 	    }
                for(j=0;j<*pm;j++) 
                   if (inXorZ[l]==0) VE(vtmp1,j)=((designG[inXZ[l]*(*nx)+ci])<=xval[(*maxval)*l+j]); else VE(vtmp1,j)=((designX[inXZ[l]*(*nx)+ci])<=xval[(*maxval)*l+j]);
@@ -377,8 +382,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 
     if (s < -2) {Rprintf(" %d \n",s);head_matrix(X);head_matrix(cummat1);head_matrix(A);}
 
-    if (*model==0) 
-	    for (i=0;i<*antpers;i++) VE(dMGt[s],i)=dmgresid[i*(*nmgt)+s];  
+    if (*model==0) for (i=0;i<*antpers;i++) VE(dMGt[s],i)=dmgresid[i*(*nmgt)+s];  
 
      if (*stratum==0) invertS(A,AI,*silent); 
      if (ME(AI,0,0)==0 && *stratum==0 && *silent==0) {
@@ -456,7 +460,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
     /* simulation of testprocesses and teststatistics */ // {{{
    //  Rprintf("Simulations start N= %d \n",*sim);
 
-    for (k=0;k<*sim;k++) {
+    for (k=0;k<*sim;k++) { // {{{ 
     R_CheckUserInterrupt();
       for (i=0;i<*antclust;i++) VE(rvec,i)=norm_rand(); 
 	vM(modMGz,rvec,Deltaz); vM(modMGzosdt,rvec,Deltazsd); 
@@ -469,13 +473,13 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 	   xij=VE(Deltazsd,j); 
 	   if (fabs(xij)>simcumz[(*sim)*(l)+k]) simcumz[(*sim)*(l)+k]=fabs(xij); 
 	} 
-    }  /* k=1..antsim */ 
+    }  // }}} /* k=1..antsim */ 
 
     // }}}
 
        R_CheckUserInterrupt();
 // {{{ free allokering local allocation LWY style cum res
-free_mats(&S1,&dS1,&cumX1, &cumXAI1, &cumZP1,&tmp21,&cummat1,&modMGz,&modMGzosdt,NULL); 
+free_mats(&S1,&dS1,&cumX1,&cumXAI1,&cumZP1,&tmp21,&cummat1,&modMGz,&modMGzosdt,NULL); 
 free_vecs(&vtmp2,&vtmp1,&cumdB1,&VdB1,&respm1,&Deltaz,&Deltazsd,&tmpM1z,NULL);
 for (k=0;k<*antclust;k++) free_vec(dB1[k]); 
 // }}}
@@ -492,7 +496,7 @@ for (k=0;k<*antclust;k++) free_vec(dB1[k]);
   for (i=0;i<*antclust;i++) {
 	  free_mat(modelMGT[i]); free_vec(gammaiid[i]); free_vec(cumA[i]); 
   }
-  free_mats(&Delta,&tmpM1,&Z,&X,&A,&AI,&cumXAI,&cumZP,&XPZ,&tmp2,&dS,&S,&cummat,NULL); 
+  free_mats(&cumX,&Delta,&tmpM1,&Z,&X,&A,&AI,&cumXAI,&cumZP,&XPZ,&tmp2,&dS,&S,&cummat,NULL); 
 
   free_vecs(&vtmp,&cumdB,&dB,&VdB,&respm,&tmpv1,&cum,&dA,&xtilde,&xi,&rowX,
             &rowcum,&difX,&zi,&gamma,&rowZ,&vecX,&risk,&Gbeta,&rvec,NULL); 

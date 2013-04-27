@@ -24,33 +24,34 @@ int *n,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	 *cumentry=calloc((*n)*(*px+1),sizeof(double));
   float gasdev(),expdev(),ran1();
   ps=(*px); 
+    // }}}
 
   if (*semi==0) { 
     osilent=silent[0]; silent[0]=0; 
-    malloc_mat(*n,*px,X); malloc_mats(*n,*px,&cX,&censX,NULL);
+    malloc_mats(*n,*px,&X,&cX,&censX,NULL);
     if (*trans==2) {malloc_mat(*n,*pg,Z);malloc_vecs(*pg,&zgam,&gam,&zi,&rowZ,NULL);}
     malloc_mats(ps,ps,&A,&AI,&VAR,NULL); 
 
     malloc_vecs(*n,&rr,&bhatub,&risk,&W,&Y,&Gc,&CAUSE,&bhat,&pbhat,NULL); 
     malloc_vecs(*px,&vcumentry,&bet1,&xi,&rowX,&censXv,NULL); 
-    malloc_vecs(ps,&dp,&dp1,&dp2,&dcovs,&pcovs,&betaub,&VdB,&qs,&SCORE,&beta,
-	       &difbeta,NULL); 
+    malloc_vecs(ps,&dp,&dp1,&dp2,&dcovs,&pcovs,&betaub,&VdB,&qs,&SCORE,&beta,&difbeta,NULL); 
 
     for (i=0;i<*antclust;i++) {
       malloc_vec(ps,cumhatA[i]); malloc_vec(ps,cumA[i]); 
-      malloc_mat(*Ntimes,ps,cumAt[i]);}
+      malloc_mat(*Ntimes,ps,cumAt[i]);
+    }
 
     for (c=0;c<ps;c++) VE(beta,c)=betaS[c]; 
     for (c=0;c<*px;c++) VE(bet1,c)=betaS[c]; 
 //    if (*trans==0) {for (c=0;c<*pg;c++) VE(gam,c)=betaS[*px+c];}
 
-    for (c=0;c<*n;c++) {VE(Gc,c)=KMc[c]; 
+    for (c=0;c<*n;c++) {
+	  VE(Gc,c)=KMc[c]; 
 //	 if (trunkp[c]<1) withtrunc=1; cifentry[c]=0; 
          VE(CAUSE,c)=cause[c]; 
          for(j=0;j<*px;j++)  ME(X,c,j)=z[j*(*n)+c]; 
     }
 
-    // }}}
 
 for (s=0;s<*Ntimes;s++)
 {
@@ -303,19 +304,19 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
   // {{{ allocation and reading of data from R
   matrix *ldesignX,*A,*AI,*cdesignX,*ldesignG,*cdesignG,*censX,*censZ;
   matrix *S,*dCGam,*CGam,*ICGam,*VarKorG,*dC,*XZ,*ZZ,*ZZI,*XZAI; 
-  matrix *Ct,*C[*Ntimes],*Acorb[*Ntimes],*tmpM1,*tmpM2,*tmpM3,*tmpM4; 
+  matrix *Ct,*C[*Ntimes],*Acorb[*Ntimes],*tmpM2,*tmpM3,*tmpM4; 
   matrix *Vargam,*dVargam,*M1M2[*Ntimes],*Delta,*dM1M2,*M1M2t,*RobVargam;
   matrix *W3t[*antclust],*W4t[*antclust];
 //  matrix *W3tcens[*antclust],*W4tcens[*antclust];
   vector *W2[*antclust],*W3[*antclust];
 //  vector *W2cens[*antclust],*W3cens[*antclust];
-  vector *diag,*dB,*dN,*VdB,*AIXdN,*AIXlamt,*bhatt,*truncbhatt,*pbhat,*plamt,*ciftrunk;
+  vector *dB,*dN,*VdB,*AIXdN,*AIXlamt,*bhatt,*truncbhatt,*pbhat,*plamt,*ciftrunk;
   vector *korG,*pghat,*rowG,*gam,*dgam,*ZGdN,*IZGdN,*ZGlamt,*IZGlamt,*censZv,*censXv;
-  vector *covsx,*covsz,*qs,*Y,*rr,*bhatub,*xi,*xit,*zit,*rowX,*rowZ,*difX,*zi,*z1,
-    *tmpv1,*tmpv2,*lrisk;
+  vector *qs,*Y,*rr,*bhatub,*xi,*xit,*zit,*rowX,*rowZ,*difX,*zi,*z1,
+	 *tmpv1,*tmpv2,*lrisk;
   int sing,itt,i,j,k,l,s,c,pmax,totrisk,convproblems=0,nagam=0,
-      *n= calloc(1,sizeof(int)), *nx= calloc(1,sizeof(int)),
-//      *conservative= calloc(1,sizeof(int)),
+      *n= calloc(1,sizeof(int)), 
+      *nx= calloc(1,sizeof(int)),
       *px1= calloc(1,sizeof(int));
   int clusterj,fixedcov,osilent,withtrunc=0; 
   double svarp=1,varp=0.5,nrisk,time,dummy,dtime,phattrunc,lrr,lrrt;
@@ -337,24 +338,26 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
     malloc_mat(*Ntimes,*px,W4t[j]); malloc_vec(*pg,W2[j]); 
     malloc_vec(*px,W3[j]);
   }
+  for (j=0;j<*Ntimes;j++) { malloc_mat(*pg,*px,Acorb[j]); 
+	  malloc_mat(*px,*pg,C[j]); malloc_mat(*px,*pg,M1M2[j]);
+  }
 
   malloc_mats(*antpers,*px,&censX,&ldesignX,&cdesignX,NULL);
   malloc_mats(*antpers,*pg,&censZ,&ldesignG,&cdesignG,NULL); 
-  malloc_mats(*px,*px,&tmpM1,&A,&AI,NULL);
+  malloc_mats(*px,*px,&A,&AI,NULL);
   malloc_mats(*pg,*pg,&dVargam,&Vargam,&RobVargam,&tmpM2,&ZZ,&VarKorG,&ICGam,&CGam,&dCGam,&S,&ZZI,NULL); 
   malloc_mats(*px,*pg,&XZAI,&tmpM3,&Ct,&dC,&XZ,&dM1M2,&M1M2t,NULL);
   malloc_mat(*px,*pg,tmpM4); 
-  for (j=0;j<*Ntimes;j++) { malloc_mat(*pg,*px,Acorb[j]); 
-    malloc_mat(*px,*pg,C[j]); malloc_mat(*px,*pg,M1M2[j]);}
-  malloc_mat(*Ntimes,*px,Delta); malloc_mat(*Ntimes,*px,tmpM1);
+  malloc_mat(*Ntimes,*px,Delta); 
 
-  malloc_vecs(*px,&censXv,&covsx,&xit,&xi,&rowX,&difX,&tmpv1,&korG,&diag,&dB,&VdB,&AIXdN,&AIXlamt,&truncbhatt,&bhatt,NULL);
-  malloc_vecs(*pg,&censZv,&covsz,&zit,&zi,&rowZ,&tmpv2,&zi,&z1,&rowG,&gam,&dgam,&ZGdN,&IZGdN,&ZGlamt,&IZGlamt,NULL);
-  malloc_vecs(*antpers,&Y,&bhatub,&rr,&lrisk,&dN,&pbhat,&pghat,&plamt,&ciftrunk,NULL);
-  malloc_vec((*px)+(*pg),qs); 
+ malloc_vecs(*px, &censXv, &xit, &xi, &rowX, &difX, &tmpv1, &korG, &dB, &VdB, &AIXdN, &AIXlamt,
+                  &truncbhatt,&bhatt,NULL);
+malloc_vecs(*pg,&censZv, &zit, &zi, &rowZ, &tmpv2,&z1,&rowG,&gam,&dgam,
+            &ZGdN,&IZGdN,&ZGlamt,&IZGlamt,NULL);
+malloc_vecs(*antpers,&Y,&bhatub,&rr,&lrisk,&dN,&pbhat,&pghat,&plamt,&ciftrunk,NULL);
+malloc_vec((*px)+(*pg),qs); 
 
   for (s=0;s<*Ntimes;s++) weightt[s]=1;  
-//  weighttot=*Ntimes; 
   if (*px>=*pg) pmax=*px; else pmax=*pg; 
   for (j=0;j<*pg;j++) VE(gam,j)=gamma[j]; 
   px1[0]=*px+1; 
@@ -752,19 +755,19 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
   // {{{ freeing
   free_mats(&censX,&censZ,&ldesignX,&A,&AI,&cdesignX,&ldesignG,&cdesignG,
 	      &S,&dCGam,&CGam,&ICGam,&VarKorG,&dC,&XZ,&ZZ,&ZZI,&XZAI, 
-	      &Ct,&tmpM1,&tmpM2,&tmpM3,&tmpM4,&Vargam,&dVargam,
+	      &Ct,&tmpM2,&tmpM3,&tmpM4,&Vargam,&dVargam,
 	      &Delta,&dM1M2,&M1M2t,&RobVargam,NULL); 
 
-  free_vecs(&censXv,&censZv,&qs,&Y,&rr,&bhatub,&diag,&dB,&dN,&VdB,&AIXdN,&AIXlamt,
+  free_vecs(&censXv,&censZv,&qs,&Y,&rr,&bhatub,&dB,&dN,&VdB,&AIXdN,&AIXlamt,
 	      &bhatt,&pbhat,&plamt,&korG,&pghat,&rowG,&gam,&dgam,&ZGdN,&IZGdN,
 	      &ZGlamt,&IZGlamt,&xit,&xi,&rowX,&rowZ,&difX,&zit,&zi,&z1,&tmpv1,&tmpv2,&lrisk,&ciftrunk,&truncbhatt,
 	      NULL); 
 
   for (j=0;j<*Ntimes;j++) {free_mat(Acorb[j]);free_mat(C[j]);free_mat(M1M2[j]);}
-  for (j=0;j<*antclust;j++) {free_mat(W3t[j]); free_mat(W4t[j]);
-    free_vec(W2[j]); free_vec(W3[j]); }
-  free(vcudif); free(inc); free(n); free(nx);  free(cumentry); free(px1); 
-  free(cifentry); free(weightt); 
+  for (j=0;j<*antclust;j++) {free_mat(W3t[j]); free_mat(W4t[j]); free_vec(W2[j]); free_vec(W3[j]); }
+
+  free(n); free(nx);  free(px1); 
+  free(vcudif); free(inc); free(weightt); free(cifentry); free(cumentry); 
   // }}}
 } // }}}
 

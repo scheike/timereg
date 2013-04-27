@@ -58,8 +58,7 @@ as.double(test),as.double(testOBS),
 as.integer(status),as.double(Ut),as.double(simUt),
 as.double(b),as.double(cum.ly),as.integer(resample),as.integer(id),
 as.integer(smoothXX),as.integer(weighted.test),as.double(vcum.ly),
-as.integer(clusters),as.integer(fdata$antclust),
-PACKAGE="timereg")
+as.integer(clusters),as.integer(fdata$antclust)) ### , PACKAGE="timereg")
 
 cum0 <-matrix(nparout[[17]],Ntimes,px+1);
 cumf <-matrix(nparout[[18]],Ntimes,px+1);

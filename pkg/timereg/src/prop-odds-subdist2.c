@@ -21,7 +21,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
   matrix *dotwitowit[*antpers],*W3t[*antclust],*W4t[*antclust],*W2t[*antclust],*AIxit[*antpers],*Uti[*antclust],*d2G[*Ntimes],*Delta,*Delta2; 
   vector *Ctt,*lht,*S1,*dS0,*S0t,*S0start,*dA,*VdA,*dN,*MdA,*delta,*zav,*dlamt,*plamt,*dG[*Ntimes],
     *S1star;
-  vector *xav,*difxxav,*xi,*xipers,*zi,*U,*Upl,*beta,*xtilde; 
+  vector *xav,*difxxav,*xi,*zi,*U,*Upl,*beta,*xtilde; 
   vector *Gbeta,*zcol,*one,*difzzav,*difZ; 
   vector *offset,*weight,*ZXdA[*Ntimes],*varUthat[*Ntimes],*Uprofile;
   vector *ahatt,*risk,*tmpv1,*tmpv2,*rowX,*rowZ,*difX,*VdB; 
@@ -65,7 +65,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
   malloc_vec(*Ntimes,S0start); malloc_vec(*Ntimes,lht); 
   malloc_vec(1,reszpbeta); malloc_vec(1,res1dim); 
   malloc_vecs(*antpers,&risk,&weight,&plamt,&dlamt,&dN,&zcol,&Gbeta,&one,&offset,NULL); 
-  malloc_vecs(*px,&Ctt,&ahatt,&tmpv1,&difX,&rowX,&xi,&xipers,&dA,&VdA,&MdA,NULL); 
+  malloc_vecs(*px,&Ctt,&ahatt,&tmpv1,&difX,&rowX,&xi,&dA,&VdA,&MdA,NULL); 
   malloc_vecs(*px,&S1,&dS0,&S1star,&xtilde,&xav,&difxxav,NULL); 
   malloc_vecs(*px,&U,&Upl,&beta,&delta,&difzzav,&Uprofile,NULL); 
   malloc_vecs(*pg,&tmpv2,&rowZ,&zi,&difZ,&zav,&VdB,NULL); 
@@ -574,7 +574,8 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
   }
   for (j=0;j<*antclust;j++) {
     free_mat(W3t[j]); free_mat(W4t[j]); 
-    free_mat(W2t[j]);free_vec(W2[j]); free_vec(W3[j]); 
+    free_mat(W2t[j]); free_mat(Uti[j]); 
+    free_vec(W2[j]); free_vec(W3[j]); 
   }
 
   for (j=0;j<*Ntimes;j++) {

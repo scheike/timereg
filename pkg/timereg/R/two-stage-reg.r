@@ -127,8 +127,8 @@ if (class(margsurv)!="coxph") {
     for (i in 1:antclust) Biid<-cbind(Biid,margsurv$B.iid[[i]]); 
     if (!is.null(margsurv$gamma.iid)) gamma.iid<-margsurv$gamma.iid;
     if (is.null(margsurv$time.sim.resolution)) { 
-	   time.group <- 1:nrow(Biid); 
-           maxtimesim <- Ntimes+1; 
+	   time.group <- (1:nrow(Biid))-1; 
+           maxtimesim <- nrow(Biid); 
     }  
     else {
        qqc <- cut(times, breaks = margsurv$time.sim.resolution, include.lowest = TRUE)    
@@ -156,6 +156,13 @@ if (class(margsurv)!="coxph") {
 
   if (maxclust==1) stop("No clusters !, maxclust size=1\n"); 
   ## }}}
+  
+###  print(dim(Biid))
+###  print(prod(dim(Biid)))
+###  print(dim(gamma.iid))
+###  print(print(c(px,pz,maxtimesim,antclust)))
+###  print(times)
+###  print(c(Ntimes,maxtimesim))
 
   nparout <- .C("twostagereg", 
         as.double(times), as.integer(Ntimes), as.double(X),
@@ -207,13 +214,12 @@ if (class(margsurv)!="coxph") {
   attr(ud,"marg.model")<-class(margsurv)
 
   return(ud) 
-  ## }}}
-
-} ## }}}
-
-summary.two.stage<-function (object,digits = 3,...) { ## {{{
-  if (!(inherits(object, 'two.stage') )) stop("Must be a Two-Stage object")
+  ## }}} 
+} ## }}} 
   
+  summary.two.stage<-function (object,digits = 3,...) { ## {{{ 
+
+  if (!(inherits(object, 'two.stage') )) stop("Must be a Two-Stage object")
   prop<-TRUE; 
   if (is.null(object$prop.odds)==TRUE) p.o<-FALSE else p.o<-TRUE
     

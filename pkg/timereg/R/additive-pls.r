@@ -205,7 +205,7 @@ if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
     as.integer(deltaweight),as.double(pls.cov),
     as.integer(dimplscov),as.double(betapls),as.double(plscomp),
     as.integer(semipls),as.integer(weighted.pls),as.integer(silent),as.double(weights),
-    as.integer(entry), PACKAGE="timereg")
+    as.integer(entry)) ### , PACKAGE="timereg")
 
     plscomp<-semiout[[20]]; 
     betapls<-semiout[[19]];

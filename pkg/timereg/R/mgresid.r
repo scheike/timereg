@@ -22,11 +22,14 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
     beta<-object$gamma; coxaalen<-1; 
   } else { dcum<-0; beta<-0; coxaalen<-0; pg<-0;Z<-0; }
 
-  id<-attr(object,"id"); cluster<-attr(object,"cluster"); 
+  id<-attr(object,"id"); 
+  cluster<-attr(object,"cluster"); 
   formula<-attr(object,"Formula"); 
   start.time<-attr(object,"start.time"); 
-  pers<-unique(id); antpers<-length(pers); 
-  clust<-unique(cluster); antclust<-length(clust); 
+  pers<-unique(id); 
+  antpers<-length(pers); 
+  clust<-unique(cluster); 
+  antclust<-length(clust); 
 
   if (class(object)=="cox.aalen") 
   ldata<-aalen.des(formula,data,model="cox.aalen") else ldata<-aalen.des(formula,data) 
@@ -135,6 +138,7 @@ if ( type == "right" )  {  ## {{{
   ant<-ant[keepcumz]; 
 
   Ut<- cummgt<- robvarcum <- matrix(0,lmgresids,pm+1); 
+###  Ut<- cummgt<- robvarcum <- matrix(0,lmgresids,px+1); 
   simUt<-matrix(0,lmgresids,pm*50); test<-matrix(0,n.sim,3*pm); 
   testOBS <- rep(0,3*pm); 
   ## }}}
@@ -159,7 +163,7 @@ if ( type == "right" )  {  ## {{{
      as.double(gamma.iid),as.integer(cluster), as.integer(antclust), 
      as.double(robvarcumz), as.double(simcumz), as.integer(inXZ), 
      as.integer(inXorZ),as.integer(pcumz), as.integer(entry),
-     as.integer(stratum),as.integer(silent), PACKAGE="timereg")
+     as.integer(stratum),as.integer(silent)) ### , PACKAGE="timereg")
 ## }}}
 
 ## {{{ handling output from C

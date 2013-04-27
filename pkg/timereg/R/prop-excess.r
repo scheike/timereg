@@ -76,7 +76,7 @@ prop.excessBase<-function(time,status,X,Z,excess,tol=0.0001,alpha=1,frac=1,
 	  U.out<-.C("addmult",time,status,X,X.til,Z,Uinp,dUinp,optinp,
                         excess,phi,s.time,beta,n,p,q,k,tol,alpha,
                         Psiinp,CoVarPsiinp,VarPsiinp,rani,testinp,testinpHW,testinpCM,
-                        testinpGOFCM,Scoreinp,no.sim,k1,PACKAGE="timereg")
+                        testinpGOFCM,Scoreinp,no.sim,k1) ### ,PACKAGE="timereg")
           U.bet<-U.out[[6]]
           D.bet<-U.out[[7]];#print(c('D.bet',D.bet))
           I.bet<-U.out[[8]];#print(c('I.bet',I.bet))

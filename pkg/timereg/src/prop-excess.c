@@ -36,9 +36,9 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
 { int i,j,l,l1,l2,it,init_it,nummer;
   double alpha_tmp,y[*n], y1[*n], y2[*n],tmp1_sc,del,del_old,betaZ[*n],tau,b,beta_tmp[*q],random,testOBSGOFCM,dum1;
 
-  vector *vtmp1,*vtmp2,*vtmp3,*vtmp4,*vtmp5,*vtmp6,*vtmp7,*vtmp8;
+  vector *vtmp1,*vtmp2,*vtmp3,*vtmp4,*vtmp5,*vtmp6,*vtmp7;
   vector *testOBS, *testOBSHW, *testOBSCM, *testtmp,*testtmpHW,*testtmpCM,*testtmp1,
-    *testtmp2, *pKS,*testGOFCM,*testtmp1GOFCM,*Ufunkdim1,*Ufunkdim12, *Delta2tmp, 
+    *testtmp2, *testGOFCM,*testtmp1GOFCM,*Ufunkdim1,*Ufunkdim12, *Delta2tmp, 
     *Delta2tmp1;
   matrix *mtmp1,*mtmp2,*mtmp2t,*mtmp3,*mtmp3m,*mtmp3mm,*mtmp3mmm,*mtmp4,*mtmp5,*mtmp6,
     *tmtmp1,*testOBS1,*testHW,*testCM;
@@ -67,8 +67,8 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
   
 
   malloc_vecs((*p+1),&vtmp1,&vtmp3,&testOBS,&testtmp,&testOBSHW,&testOBSCM,
-	     &testtmpHW,&testtmpCM,&testtmp1,&testtmp2,&pKS,NULL);  
-  malloc_vecs(*q,&vtmp2,&vtmp4,&vtmp5,&vtmp8,NULL);  
+	     &testtmpHW,&testtmpCM,&testtmp1,&testtmp2,NULL);  
+  malloc_vecs(*q,&vtmp2,&vtmp4,&vtmp5,NULL);  
   malloc_vecs((*p+1)*(*p+1),&vtmp7,NULL);  
   malloc_vecs(1,&vtmp6,NULL);  
   malloc_vecs(*k,&Ufunkdim1,&Ufunkdim12,&Delta2tmp,&Delta2tmp1,NULL); 
@@ -807,7 +807,7 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
               &testOBS1,&testHW,&testCM,
               &Xt,&PhiXt,&tmp10_mat,&DdN_Xt,&dM2m,&tXt,&tDdN_Xt,&tdM2m,&X,
               &Z,&Phi_Z,&DdN_Phi_Z,&tmp3_mat,&tmp4_mat,&tmp5_mat,&tmp6_mat,&ttmpI,
-              &dU_dbeta,&dU_dbeta_tmp,&dU_dbeta_I,&tmp7_mat,&dU_dbeta_tilv,&tmp13_mat,
+              &dU_dbeta,&dU_dbeta1,&dU_dbeta_tmp,&dU_dbeta_I,&dU_dbeta_I1,&tmp7_mat,&dU_dbeta_tilv,&tmp13_mat,
               &opt_tilv,&opt,&dM1,&dM1tmp,
               &tZ,&tZ_Phi,&tDdN_Phi_Z,&tZ_PhiXt_tXt_Xt_I_tDdN_Xt,&tmpI,
               &tXt_Xt,&tXt_Xt_I,&tXt_Xt_tmp,&dN,&Phi_dN,&Q_dN,&Xt_tXt_Xt_I_tXt_dN,
@@ -820,7 +820,7 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
               &Delta2,&tmpM2,&Ufunk,NULL);
   for (j=0;j<*n;j++) { free_mat(W2t[j]); free_mat(Ut[j]);free_mat(Utm[j]);}
   for (j=0;j<*k;j++) { free_mat(dU_dbeta_i[j]); free_mat(Ui[j]);}
-  free_vecs(&vtmp1,&vtmp2,&vtmp3,&vtmp4,&vtmp5,&vtmp6,&testtmp,
+  free_vecs(&vtmp1,&vtmp2,&vtmp3,&vtmp4,&vtmp5,&vtmp6,&vtmp7,&testtmp,
               &testtmp1,&testtmp2,&testOBS,&testOBSHW,&testOBSCM,
               &testtmpHW,&testtmpCM,&testGOFCM,&testtmp1GOFCM,
               &Delta2tmp,&Delta2tmp1,&Ufunkdim1,&Ufunkdim12,NULL);

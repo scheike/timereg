@@ -1,8 +1,7 @@
 pls.surv.cv<-function(formula=formula(data),data=sys.parent(),
 K = 10,start.time=0,max.time=NULL,id=NULL,
 pls.dims = seq(from = 0, to = 5, by = 1), 
-trace = FALSE, plot.it = FALSE , se = TRUE, silent=1,
-    ...) 
+trace = FALSE, plot.it = FALSE , se = TRUE, silent=1, ...) 
 { ## {{{
 ## {{{ reads design and survival times
     call <- match.call()

@@ -26,9 +26,10 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
   vector *ahatt,*risk,*tmpv1,*tmpv2,*rowX,*rowZ,*difX,*VdB; 
   vector *W2[*antclust],*W3[*antclust],*reszpbeta,*res1dim,*dAt[*Ntimes]; 
   vector *dLamt[*antpers];
-  int *pg=calloc(1,sizeof(int)),c,robust=1,pers=0,ci,i,j,k,l,s,t,it,count,*ipers=calloc(*Ntimes,sizeof(int));
-  double RR,S0p,S0star,time,dummy,ll;
-  double S0cox,S0,tau,random,scale,sumscore;
+  int *pg=calloc(1,sizeof(int)),c,robust=1,pers=0,ci=0,i,j,k,l,s,t,it,count,*ipers=calloc(*Ntimes,sizeof(int));
+  int *cluster=calloc(*antpers,sizeof(int));
+  double RR,S0star,time,dummy,ll;
+  double S0,S0p=0,S0cox=0,tau,random,scale,sumscore;
   double norm_rand();
   void GetRNGstate(),PutRNGstate();
 
@@ -41,8 +42,15 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 
   for (j=0;j<*antclust;j++) { 
     malloc_mat(*Ntimes,*pg,W3t[j]); malloc_mat(*Ntimes,*pg,W4t[j]); 
-    malloc_mat(*Ntimes,*px,W2t[j]); malloc_mat(*Ntimes,*px,Uti[j]); 
-    malloc_vec(*px,W2[j]); malloc_vec(*pg,W3[j]); 
+    malloc_mat(*Ntimes,*px,W2t[j]); malloc_vec(*px,W2[j]); malloc_vec(*pg,W3[j]); 
+    malloc_mat(*Ntimes,*px,Uti[j]); 
+  }
+
+ for(j=0;j<*Ntimes;j++) {
+    malloc_mat(*px,*pg,dYIt[j]); malloc_vec(*px,dAt[j]); malloc_mat(*px,*pg,C[j]); malloc_mat(*pg,*px,M1M2[j]);
+    malloc_mat(*pg,*px,ZXAIs[j]); 
+    malloc_vec(*pg,ZXdA[j]); malloc_mat(*px,*px,St[j]); 
+    malloc_mat(*px,*px,d2G[j]); malloc_vec(*px,dG[j]); malloc_vec(*px,varUthat[j]);
   }
 
   malloc_mat(*Ntimes,*pg,tmpM1); 
@@ -60,22 +68,17 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
   malloc_mats(*px,*pg,&tmp3,&ZPX,&dYI,&Ct,NULL); 
 
   malloc_vec(*Ntimes,S0t);  
-  malloc_vec(*Ntimes,S0start); malloc_vec(*Ntimes,lht); 
-  malloc_vec(1,reszpbeta); malloc_vec(1,res1dim); 
+  malloc_vec(*Ntimes,S0start); 
+  malloc_vec(*Ntimes,lht); 
+  malloc_vec(1,reszpbeta); 
+  malloc_vec(1,res1dim); 
   malloc_vecs(*antpers,&risk,&weight,&plamt,&dlamt,&dN,&zcol,&Gbeta,&one,&offset,NULL); 
   malloc_vecs(*px,&Ctt,&ahatt,&tmpv1,&difX,&rowX,&xi,&xipers,&dA,&VdA,&MdA,NULL); 
   malloc_vecs(*px,&S1,&dS0,&S1star,&xtilde,&xav,&difxxav,NULL); 
   malloc_vecs(*px,&U,&Upl,&beta,&delta,&difzzav,&Uprofile,NULL); 
   malloc_vecs(*pg,&tmpv2,&rowZ,&zi,&difZ,&zav,&VdB,NULL); 
 
-  for(j=0;j<*Ntimes;j++) {
-    malloc_mat(*px,*pg,C[j]); malloc_mat(*pg,*px,M1M2[j]);
-    malloc_mat(*pg,*px,ZXAIs[j]); malloc_mat(*px,*pg,dYIt[j]); malloc_vec(*px,dAt[j]);
-    malloc_vec(*pg,ZXdA[j]); malloc_mat(*px,*px,St[j]); 
-    malloc_mat(*px,*px,d2G[j]); malloc_vec(*px,dG[j]); malloc_vec(*px,varUthat[j]);
-  }
-
-  ll=0; for(j=0;j<*px;j++) VE(beta,j)=betaS[j]; 
+   ll=0; for(j=0;j<*px;j++) VE(beta,j)=betaS[j]; 
   // }}}
 
   int timing=1; 
@@ -350,7 +353,6 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 
    R_CheckUserInterrupt();
 
-  int *cluster=calloc(*antpers,sizeof(int));
   for (c=0;c<*antpers;c++) cluster[id[c]]=clusters[c]; 
 
   if (robust==1) { // {{{ terms for robust variances ============================ 
@@ -574,7 +576,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
   ,&tmp3,&ZPX,&dYI,&Ct,NULL); 
 
  free_vecs(&S0t  ,&S0start,&lht ,&reszpbeta,&res1dim, &risk,&weight,&plamt,&dlamt,&dN,&zcol,&Gbeta,&one,&offset
-  ,&Ctt,&ahatt,&tmpv1,&difX,&rowX,&xi,&dA,&VdA,&MdA,&S1,&dS0,&S1star,&xtilde,&xav,&difxxav
+  ,&Ctt,&ahatt,&tmpv1,&difX,&rowX,&xi,&xipers,&dA,&VdA,&MdA,&S1,&dS0,&S1star,&xtilde,&xav,&difxxav
   ,&U,&Upl,&beta,&delta,&difzzav,&Uprofile, &tmpv2,&rowZ,&zi,&difZ,&zav,&VdB,NULL); 
 
   for (j=0;j<*antpers;j++) {
@@ -583,6 +585,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
   for (j=0;j<*antclust;j++) {
     free_mat(W3t[j]); free_mat(W4t[j]); 
     free_mat(W2t[j]);free_vec(W2[j]); free_vec(W3[j]); 
+    free_mat(Uti[j]); 
   }
 
   for (j=0;j<*Ntimes;j++) {

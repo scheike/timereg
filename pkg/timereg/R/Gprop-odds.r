@@ -127,8 +127,7 @@ as.double(test),as.double(testOBS), as.double(Ut),
 as.double(simUt),as.double(Uit),as.integer(id),
 as.integer(status),as.integer(weighted.test),as.double(score),
 as.double(cumAi),as.double(cumAiiid),as.integer(residuals),
-as.integer(exppar),as.integer(sym),as.integer(mle.start),as.integer(stratum)
-,PACKAGE="timereg");
+as.integer(exppar),as.integer(sym),as.integer(mle.start),as.integer(stratum),PACKAGE="timereg");
 
 gamma<-matrix(nparout[[12]],pg,1);
 cumint<-matrix(nparout[[14]],Ntimes,px+1);

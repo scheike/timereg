@@ -23,11 +23,11 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
   matrix *dW3t[*antpers],*W3t[*antpers],*W4t[*antpers],*W2t[*antpers],*AIxit[*antpers],*Uti[*antpers],*tmp4,*Fst[(*Ntimes)*(*Ntimes)]; 
   matrix *dG[*Ntimes],*cumdG,*Ft[*Ntimes],*ZcX2AIs[*Ntimes],*ZcX2[*Ntimes],*S0tI[*Ntimes],*Ident,*gt[*Ntimes],*q2t[*Ntimes],*G1mG2t[*Ntimes],*q1t[*antpers]; 
   vector *dLamt[*antpers]; 
-  vector *dA,*VdA,*dN,*MdA,*delta,*zav,*lamt,*plamt,*dlamt;
+  vector *dA,*VdA,*MdA,*delta,*zav,*lamt,*plamt,*dlamt;
   vector *xi,*zi,*U,*beta,*xtilde; 
   vector *Gbeta,*zcol,*one,*difzzav; 
   vector *offset,*weight,*ZXdA[*Ntimes],*varUthat[*Ntimes],*Uprofile;
-  vector *Lplamt,*ta,*ahatt,*risk; 
+  vector *ta,*ahatt,*risk; 
   vector *tmpv1,*tmpv2,*rowX,*rowZ,*difX,*VdB,*lht; 
   vector *W2[*antpers],*W3[*antpers],*reszpbeta,*res1dim,*dAt[*Ntimes]; 
   int t,c,robust=1,pers=0,i,j,k,l,s,it,pmax,risks; 
@@ -35,33 +35,6 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
   double tau,hati=0,random,sumscore; 
   double norm_rand(); 
   void GetRNGstate(),PutRNGstate();  
-
-  for (j=0;j<*antpers;j++) { 
-    malloc_vec(*Ntimes,dLamt[j]); malloc_mat(*Ntimes,*px,W3t[j]);
-    malloc_mat(*Ntimes,*px,dW3t[j]); malloc_mat(*Ntimes,*px,W4t[j]);
-    malloc_mat(*Ntimes,*pg,W2t[j]); malloc_mat(*Ntimes,*pg,Uti[j]);
-    malloc_vec(*pg,W2[j]); malloc_vec(*px,W3[j]);
-    malloc_mat(*Ntimes,*pg,q1t[j]); malloc_mat(*Ntimes,*px,AIxit[j]);
-  }
-  malloc_mat(*Ntimes,*px,Delta); malloc_mat(*Ntimes,*px,tmpM1);
-  malloc_mat(*Ntimes,*pg,Delta2); malloc_mat(*Ntimes,*pg,tmpM2); malloc_mat(*Ntimes,*pg,Utt);
-  malloc_vec(1,reszpbeta); malloc_vec(1,res1dim);
-
-  malloc_vec(*Ntimes,lht);
-  malloc_mats(*antpers,*px,&ldesignX,&cdesX,&cdesX2,&cdesX3,&cdesX4,NULL);
-  malloc_mats(*antpers,*pg,&ZP,&cdesG,&ldesignG,&ddesG,NULL); 
-  malloc_mats(*px,*px,&tmp4,&Ident,&COV,&A,&AI,&M1,&CtVUCt,NULL); 
-  malloc_mats(*pg,*pg,&RobVbeta,&tmp1,&tmp2,&dS,&S1,&S2,&SI,&VU,&VUI,NULL); 
-  malloc_mats(*pg,*px,&ZXAI,&tmp5,&tmp3,&ZX,&dM1M2,&M1M2t,NULL); // changed dims of tmp3 and tmp5 
-  malloc_mats(*px,*pg,&cumdG,&ZPX,&dYI,&Ct,NULL); // changed dims of tmp3 and tmp5
-  malloc_mat(*px,*pg,tmp6);
-
-  malloc_vecs(*antpers,&Lplamt,&risk,&weight,&dlamt,&plamt,&lamt,&dN,&zcol,&Gbeta,&one,&offset,NULL); 
-  malloc_vecs(*px,&ahatt,&tmpv1,&difX,&VdB,&rowX,&xi,&dA,&VdA,&MdA,NULL); 
-  malloc_vecs(*px,&ta,&xtilde,NULL); 
-  malloc_vecs(*pg,&tmpv2,&rowZ,&zi,&U,&beta,&delta,&zav,&difzzav,&Uprofile,NULL); 
-
-  identity_matrix(Ident);
 
   for(j=0;j<*Ntimes;j++) {
     malloc_mat(*px,*px,Ft[j]); malloc_mat(*pg,*px,ZcX2AIs[j]); malloc_mat(*pg,*px,gt[j]);
@@ -72,6 +45,34 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
     malloc_vec(*pg,varUthat[j]);
     for(i=0;i<=j;i++){ malloc_mat(*px,*px,Fst[j*(*Ntimes)+i]); }
   }
+
+  for (j=0;j<*antpers;j++) { 
+    malloc_vec(*Ntimes,dLamt[j]); malloc_mat(*Ntimes,*px,W3t[j]);
+    malloc_mat(*Ntimes,*px,dW3t[j]); malloc_mat(*Ntimes,*px,W4t[j]);
+    malloc_mat(*Ntimes,*pg,W2t[j]); malloc_mat(*Ntimes,*pg,Uti[j]);
+    malloc_vec(*pg,W2[j]); malloc_vec(*px,W3[j]);
+    malloc_mat(*Ntimes,*pg,q1t[j]); malloc_mat(*Ntimes,*px,AIxit[j]);
+  }
+
+  malloc_mat(*Ntimes,*px,Delta); malloc_mat(*Ntimes,*px,tmpM1);
+  malloc_mat(*Ntimes,*pg,Delta2); malloc_mat(*Ntimes,*pg,tmpM2); malloc_mat(*Ntimes,*pg,Utt);
+
+  malloc_mats(*antpers,*px,&ldesignX,&cdesX,&cdesX2,&cdesX3,&cdesX4,NULL);
+  malloc_mats(*antpers,*pg,&ZP,&cdesG,&ldesignG,&ddesG,NULL); 
+  malloc_mats(*px,*px,&tmp4,&Ident,&COV,&A,&AI,&M1,&CtVUCt,NULL); 
+  malloc_mats(*pg,*pg,&RobVbeta,&tmp1,&tmp2,&dS,&S1,&S2,&SI,&VU,&VUI,NULL); 
+  malloc_mats(*pg,*px,&ZXAI,&tmp5,&tmp3,&ZX,&dM1M2,&M1M2t,NULL); 
+  malloc_mats(*px,*pg,&cumdG,&ZPX,&dYI,&Ct,NULL); 
+  malloc_mat(*px,*pg,tmp6);
+
+  malloc_vec(1,reszpbeta); malloc_vec(1,res1dim);
+  malloc_vec(*Ntimes,lht);
+  malloc_vecs(*antpers,&risk,&weight,&dlamt,&plamt,&lamt,&zcol,&Gbeta,&one,&offset,NULL); 
+  malloc_vecs(*px,&ahatt,&tmpv1,&difX,&VdB,&rowX,&xi,&dA,&VdA,&MdA,NULL); 
+  malloc_vecs(*px,&ta,&xtilde,NULL); 
+  malloc_vecs(*pg,&tmpv2,&rowZ,&zi,&U,&beta,&delta,&zav,&difzzav,&Uprofile,NULL); 
+
+  identity_matrix(Ident);
 
   pmax=max(*px,*pg); ll=0; vec_ones(one);
   for(j=0;j<*pg;j++){ VE(beta,j)=betaS[j]; }
@@ -150,7 +151,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 
       scl_mat_mult(1.0,AI,S0tI[s]); 
       extract_row(ldesignX,pers,xi); 
-      scl_vec_mult(VE(dlamt,j),rowZ,rowZ); 
+      scl_vec_mult(VE(dlamt,pers),rowZ,rowZ); 
       scl_vec_mult(VE(weight,pers),xi,xi); 
       Mv(AI,xi,dA); 
       MtA(ldesignG,cdesX,ZX); 
@@ -626,28 +627,31 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
   } // }}} /* sim==1 */
   
   // {{{ freeing
-  free_mats(&cumdG,&tmp4,&Ident,&ddesG,&Utt,&tmpM2,&VUI,&ZX,&COV,
+  free_mats(&tmp5,&cumdG,&tmp4,&Ident,&ddesG,&Utt,&tmpM2,&VUI,&ZX,&COV,
 		&dM1M2,&AI,&A,&ZXAI,&tmp1,&tmp2,&tmp3,&ldesignX,&cdesX,
 		&cdesX2,&cdesX4,&cdesX3,&cdesG,&ldesignG,&M1,&dS,&S1,&SI,NULL);
   free_mats(&S2,&VU,&ZP,&ZPX,&dYI,&Ct,&M1M2t,&RobVbeta,&Delta,&Delta2,
 		&tmpM1,&CtVUCt,NULL); 
 
-  free_vecs(&risk,&ta,&ahatt,&Uprofile,&dlamt,&plamt,&lamt,&one,&xi,&zcol,&Gbeta,&VdA,&dA,&MdA,&xtilde,&zi,&U,&beta,&delta,&zav,&difzzav,&weight,&offset,&tmpv1,&tmpv2,&rowX,&rowZ,&difX,&VdB,&reszpbeta,&res1dim,NULL); 
-
+  free_vecs(&lht,&risk,&ta,&ahatt,&Uprofile,&dlamt,&plamt,&lamt,&one,&xi,&zcol,&Gbeta,&VdA,&dA,&MdA,&xtilde,&zi,&U,&beta,&delta,&zav,&difzzav,&weight,&offset,&tmpv1,&tmpv2,&rowX,&rowZ,&difX,&VdB,&reszpbeta,&res1dim,NULL); 
 
   free_mat(tmp6);
 
   for (j=0;j<*antpers;j++) {
-    free_mat(W3t[j]); free_mat(dW3t[j]); 
-    free_mat(W4t[j]); free_mat(W2t[j]); free_vec(W2[j]); free_vec(W3[j]);
-    free_mat(AIxit[j]); free_mat(Uti[j]); free_vec(dLamt[j]); free_mat(q1t[j]); 
+    free_vec(dLamt[j]); free_mat(W3t[j]); 
+    free_mat(dW3t[j]); free_mat(W4t[j]); 
+    free_mat(W2t[j]); free_mat(Uti[j]); 
+    free_vec(W2[j]); free_vec(W3[j]);
+    free_mat(q1t[j]); free_mat(AIxit[j]); 
   }
 
   for (j=0;j<*Ntimes;j++) {
-    free_mat(gt[j]); free_mat(G1mG2t[j]); free_mat(q2t[j]);
-    free_mat(Ft[j]); free_mat(ZcX2AIs[j]); free_mat(ZcX2[j]); free_mat(S0tI[j]); 
-    free_mat(dG[j]); free_mat(dYIt[j]); free_vec(dAt[j]); free_mat(C[j]); free_mat(M1M2[j]);
-    free_mat(ZXAIs[j]); free_vec(ZXdA[j]); free_mat(St[j]); free_vec(varUthat[j]); 
+    free_mat(Ft[j]); free_mat(ZcX2AIs[j]); free_mat(gt[j]); 
+    free_mat(G1mG2t[j]); free_mat(q2t[j]); free_mat(ZcX2[j]); 
+    free_mat(S0tI[j]); free_mat(dG[j]); free_mat(C[j]); 
+    free_mat(M1M2[j]); free_mat(ZXAIs[j]); free_mat(dYIt[j]); 
+    free_vec(dAt[j]); free_vec(ZXdA[j]); free_mat(St[j]); 
+    free_vec(varUthat[j]); 
     for(i=0;i<=j;i++) free_mat(Fst[j*(*Ntimes)+i]); 
   } 
 
