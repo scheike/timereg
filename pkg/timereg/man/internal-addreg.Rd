@@ -1,6 +1,5 @@
 \name{pval}
 \alias{pval}
-\alias{cv.folds}
 \alias{additive.compSs}
 \alias{CsmoothB}
 \alias{mypbc}
@@ -15,7 +14,6 @@
 \alias{aalenBase}
 \alias{aalenBaseC}
 \alias{cox.aalenBase}
-\alias{prop.excessBase}
 \alias{read-design}
 \alias{is.diag}
 \alias{semiaalen}
@@ -42,7 +40,6 @@
 \alias{pred.des}
 \alias{Cpred}
 \alias{plot.cox.aalen2}
-\alias{plot.prop.excess2}
 \alias{plot.predict}
 \alias{coef.aalen}
 \alias{coef.cox.aalen}
@@ -58,10 +55,7 @@
 \alias{residualsTimereg}
 \alias{summary.pe.sasieni}
 \alias{summary.predict.timereg}
-\alias{summary.pls}
 \alias{sindex.prodlim}
-\alias{print.pls}
-\alias{predict.pls}
 \alias{wald.test}
 \title{For internal use}
 \description{for internal use}

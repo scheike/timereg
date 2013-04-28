@@ -14,7 +14,7 @@ export("aalen",
        "coefBase",
        "comp.risk",
        "const",       
-       "cox",
+###       "cox",
        "cox.aalen",	
        "cox.aalenBase",
        "cum.residuals",
@@ -39,8 +39,8 @@ export("aalen",
        "predictpropodds",
 ###       "summary.pls",
        "prop",	
-       "prop.excess",	
-       "prop.excessBase",
+###       "prop.excess",	
+###       "prop.excessBase",
        "prop.odds",
        "prop.odds.subdist",
        "pval",
@@ -65,7 +65,7 @@ S3method(plot,cum.residuals)
 S3method(plot,cox.aalen)
 ###S3method(plot,dynreg)
 S3method(plot,predict.timereg)
-S3method(plot,prop.excess)
+###S3method(plot,prop.excess)
 ###S3method(plot,timecox)
 S3method(plot,two.stage)
 S3method(plot,predict.timereg)
@@ -77,7 +77,7 @@ S3method(print,cum.residuals)
 ###S3method(print,dynreg)
 S3method(print,pe.sasieni)
 S3method(print,predict.timereg)
-S3method(print,prop.excess)
+###S3method(print,prop.excess)
 ###S3method(print,timecox)
 S3method(print,two.stage)
 ###S3method(print,pls)
@@ -89,7 +89,7 @@ S3method(summary,cum.residuals)
 ###S3method(summary,dynreg)
 S3method(summary,pe.sasieni)
 S3method(summary,predict.timereg)
-S3method(summary,prop.excess)
+###S3method(summary,prop.excess)
 ###S3method(summary,timecox)
 S3method(summary,two.stage)
 ###S3method(summary,pls)
@@ -114,7 +114,7 @@ export("plot.aalen",
        "plotScore",
 ###       "plot.dynreg",
        "plot.predict.timereg",
-       "plot.prop.excess",
+###       "plot.prop.excess",
 ###       "plot.timecox",
        "plot.two.stage",
        "print.aalen",
@@ -124,7 +124,7 @@ export("plot.aalen",
 ###       "print.dynreg",
        "print.pe.sasieni",
        "print.predict.timereg",
-       "print.prop.excess",
+###       "print.prop.excess",
 ###       "print.timecox",
        "print.two.stage",
 ###       "print.pls",
@@ -136,7 +136,7 @@ export("plot.aalen",
        "summary.pe.sasieni",
 ###       "summary.pls",
        "summary.predict.timereg",
-       "summary.prop.excess",
+###       "summary.prop.excess",
 ###       "summary.timecox",
        "summary.two.stage",
        "predict.aalen",
