@@ -78,7 +78,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
   vec_ones(difX); cu[0]=times[0]; 
   // }}}
 
-  int timing=1; 
+  int timing=0; 
   clock_t c0,c1; 
   c0=clock();
 
