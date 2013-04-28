@@ -181,4 +181,42 @@ nt <- length(times)
 out <- list(nrisk=nrisk,riskindex=riskindex)
 } ## }}}
 
+namematrix<-function(mat,names)
+{ colnames(mat)<-names; rownames(mat)<-names; return(mat); }
+nameestimate<-function(mat,names)
+{ colnames(mat)<-"estimate"; rownames(mat)<-names; return(mat); }
+
+aalen.des<-function(formula=formula(data),data=sys.parent(),model="aalen")
+{ ## {{{
+  call <- match.call(); 
+  m <- match.call(expand.dots=FALSE); 
+  m$model<-NULL
+  special <- c("cluster","prop","const")
+  Terms <- if(missing(data)) terms(formula,special) else terms(formula, special, data=data)
+  m$formula <- Terms
+  m[[1]] <- as.name("model.frame")
+  m <- eval(m, sys.parent())
+  mt <- attr(m, "terms")
+  intercept<-attr(mt, "intercept")
+  Y <- model.extract(m,"response")
+
+  des<-read.design(m,Terms,model=model)
+  X<-des$X; Z<-des$Z; npar<-des$npar; px<-des$px;
+  pz<-des$pz;
+  covnamesX<-des$covnamesX; covnamesZ<-des$covnamesZ;
+  clusters<-des$clusters;
+
+  if (attr(m[, 1], "type") == "right") {
+    type<-"right"; 
+    status <- m[, 1][, "status"];
+    time2  <- m[, 1][, "time"]; time   <- rep(0,length(time2)); 
+  } else if (attr(m[, 1], "type") == "counting") {
+    type<-"counting"; 
+    time   <- m[, 1][,1]; time2  <- m[, 1][,2]; status <- m[, 1][,3];
+  } else { stop("only right-censored or counting processes data") } 
+return(list(type=type,time=time,time2=time2,status=status,
+ X=X,Z=Z,px=px,pz=pz,npar=npar,
+ covnamesX=covnamesX,covnamesZ=covnamesZ,clusters=clusters))
+} ## }}}
+
 
