@@ -1,7 +1,7 @@
 Package: timereg
 Title: Flexible regression models for survival data.
 Version: 1.7.3
-Date: 2012-04-22
+Date: 2012-04-27
 Author: Thomas Scheike with contributions from Torben Martinussen and Jeremy
     Silver
 Maintainer: Thomas Scheike <ts@biostat.ku.dk>
@@ -28,7 +28,6 @@ Collate:
     'cox-aalen.r'
     'Cpred.r'
     'Csmooth.r'
-    'dynadd.r'
     'faster.reshape.r'
     'Gprop-odds.r'
     'Gprop-odds-subdist.r'
@@ -36,10 +35,8 @@ Collate:
     'mgresid.r'
     'new.aalen.r'
     'new.cox-aalen.r'
-    'new.dynreg.r'
     'new.pe-sasieni.r'
     'new.prop-excess.r'
-    'new.timecox.r'
     'plots.r'
     'pls.cv.r'
     'predict-timereg.r'
@@ -47,5 +44,4 @@ Collate:
     'prop-odds.r'
     'prop-odds-subdist.r'
     'read-design.r'
-    'timecox.r'
     'two-stage-reg.r'
