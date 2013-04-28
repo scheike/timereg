@@ -6,9 +6,9 @@ export("aalen",
        "aalen.des",
        "aalenBase",
        "aalenBaseC",
-       "additive.pls",
+###       "additive.pls",
        "additive.compSs",
-       "additive.plsR",
+###       "additive.plsR",
        "check.missing",
        "rm.missing",
        "coefBase",
@@ -37,7 +37,7 @@ export("aalen",
        "pred.cum",
        "pred.des",
        "predictpropodds",
-       "summary.pls",
+###       "summary.pls",
        "prop",	
        "prop.excess",	
        "prop.excessBase",
@@ -51,7 +51,7 @@ export("aalen",
        "semiaalen",	
 ###       "semicox",	
 ###       "semiregBase",
-       "pls.surv.cv",
+###       "pls.surv.cv",
 ###       "timecox",
 ###       "timecoxBase",
        "timetest",
@@ -80,7 +80,7 @@ S3method(print,predict.timereg)
 S3method(print,prop.excess)
 ###S3method(print,timecox)
 S3method(print,two.stage)
-S3method(print,pls)
+###S3method(print,pls)
 
 S3method(summary,aalen)
 S3method(summary,cox.aalen)
@@ -92,13 +92,13 @@ S3method(summary,predict.timereg)
 S3method(summary,prop.excess)
 ###S3method(summary,timecox)
 S3method(summary,two.stage)
-S3method(summary,pls)
+###S3method(summary,pls)
 
 S3method(predict,aalen)
 S3method(predict,comprisk)
 S3method(predict,cox.aalen)
 S3method(predict,two.stage)
-S3method(predict,pls)
+###S3method(predict,pls)
 
 S3method(coef,aalen)
 S3method(coef,cox.aalen)
@@ -127,20 +127,20 @@ export("plot.aalen",
        "print.prop.excess",
 ###       "print.timecox",
        "print.two.stage",
-       "print.pls",
+###       "print.pls",
        "summary.aalen",
        "summary.cox.aalen",
        "summary.comprisk",
        "summary.cum.residuals",
 ###       "summary.dynreg",
        "summary.pe.sasieni",
-       "summary.pls",
+###       "summary.pls",
        "summary.predict.timereg",
        "summary.prop.excess",
 ###       "summary.timecox",
        "summary.two.stage",
        "predict.aalen",
-       "predict.pls",
+###       "predict.pls",
        "predict.comprisk",
        "predict.timereg",
        "predict.cox.aalen",
