@@ -1447,9 +1447,9 @@ void LevenbergMarquardt(matrix *S,matrix *SI,vector *U,vector *delta,double *lm,
   if  (ss > *lm ) {
      MxA(S,S,S2);
      for (i=0;i<nrow;i++) ME(S2,i,i)=ME(S2,i,i)+min(VE(U,i)*VE(U,i),100);
-     invert(S2,SI); MxA(SI,S,S2); Mv(S2,U,delta);
+     invertS(S2,SI,1); MxA(SI,S,S2); Mv(S2,U,delta);
   } else {
-    invert(S2,SI); Mv(SI,U,delta);
+    invertS(S2,SI,1); Mv(SI,U,delta);
   }
   if  (*step>0.0001) scl_vec_mult(*step,delta,delta); 
   free_mat(S2); 

@@ -143,7 +143,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
       if (s < 0) { print_vec(plamt); print_vec(dlamt); print_mat(cdesX); }
 
       MtA(cdesX,ldesignX,A); 
-      invertS(A,AI,detail[0]); 
+      invertS(A,AI,1); 
       if (ME(AI,0,0)==0.0 && *detail==1 && *stratum==1){ 
           Rprintf(" X'X not invertible at time %lf \n",time); }
       if (*stratum==1)  { for (k=0;k<*px;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);  }
@@ -276,7 +276,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 	  c0=clock();
    } // }}} 	
 
-    invert(S1,SI); 
+    invertS(S1,SI,1); 
     Mv(SI,U,delta); 
     vec_add(beta,delta,beta); 
 

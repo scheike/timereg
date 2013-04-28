@@ -89,7 +89,7 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
 	  scl_vec_mult(1/S0,S1,S1); 
 	  scl_mat_mult(1/S0,S2,S2); 
 
-	  MtA(X,WX,A); invert(A,AI); 
+	  MtA(X,WX,A); invertS(A,AI,1); 
 	  MtA(Z,WZ,ZWZ);MtA(WX,Z,XWZ);MxA(AI,XWZ,XWZAI);
 	  MtA(XWZAI,XWZ,tmpM2); mat_subtr(ZWZ,tmpM2,dCGam); 
 	  scl_mat_mult(1/S0,dCGam,dCGam); 
@@ -149,7 +149,7 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
 	  } /* it==*Nit-1 */ 
 	} /* s =1...Ntimes */ 
 
-      invert(CGam,ICGam); 
+      invertS(CGam,ICGam,1); 
       MxA(Vargam,ICGam,tmpM2); MxA(ICGam,tmpM2,Vargam); 
       vec_subtr(IZHdN,gamoff,IZHdN);  
       Mv(ICGam,IZHdN,rowZ); vec_add(gam,rowZ,gam);

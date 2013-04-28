@@ -277,7 +277,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
    } // }}} 	
 
       if (*profile==1)  scl_mat_mult(-1,S2pl,A); else scl_mat_mult(-1,S2,A);
-      invert(A,SI);
+      invertS(A,SI,1);
       if (*profile==1) Mv(SI,Upl,delta);  else Mv(SI,U,delta); 
 
       if (*detail==1) {  // {{{ 
