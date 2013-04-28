@@ -18,10 +18,7 @@
 \alias{prop.excessBase}
 \alias{read-design}
 \alias{is.diag}
-\alias{dynregBase}
-\alias{timecoxBase}
 \alias{semiaalen}
-\alias{semicox}
 \alias{semiregBase}
 \alias{check.missing} 
 \alias{read.design}
@@ -46,13 +43,10 @@
 \alias{Cpred}
 \alias{plot.cox.aalen2}
 \alias{plot.prop.excess2}
-\alias{plot.timecox2}
 \alias{plot.predict}
 \alias{coef.aalen}
 \alias{coef.cox.aalen}
 \alias{coef.comprisk}
-\alias{coef.dynreg}
-\alias{coef.timecox}
 \alias{coef.two.stage}
 \alias{cluster.index}
 \alias{coefBase}
