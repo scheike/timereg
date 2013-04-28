@@ -146,6 +146,7 @@ loglike<-0;
 
 #cat("Generalised Proportional odds model \n"); 
 
+
 ## {{{ C-call
 nparout<- .C("Gpropoddssubdist",
 as.double(times),as.integer(Ntimes), as.double(desZ),
@@ -162,7 +163,7 @@ as.integer(cause),as.integer(weighted.test),as.double(score),
 as.double(cumAi),as.double(cumAiiid),as.integer(residuals),
 as.integer(exppar),as.integer(sym),as.integer(mle.start),
 as.double(KMtimes),as.double(KMti),as.double(time2),as.integer(causeS),
-as.integer(index-1),as.integer(stratum)) ###  ,PACKAGE="timereg");
+as.integer(index-1),as.integer(stratum),PACKAGE="timereg");
 ## }}}
 
 ## {{{ output handling

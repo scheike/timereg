@@ -1207,6 +1207,7 @@ void invertUnsafeS(matrix *A, matrix *Ainv,int silent){
     if(rcond < tol ){
       if (silent==0) Rprintf("Error in invert: estimated reciprocal condition number = %7.7e\n",rcond); 
       mat_zeros(Ainv);
+      free(work); free(iwork); free(dwork); free(ipiv);
       return;
     }
 
@@ -1224,10 +1225,7 @@ void invertUnsafeS(matrix *A, matrix *Ainv,int silent){
     }
   }
   
-  free(work);
-  free(iwork);
-  free(dwork);
-  free(ipiv);
+  free(work); free(iwork); free(dwork); free(ipiv);
 }
 
 
