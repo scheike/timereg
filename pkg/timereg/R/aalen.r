@@ -102,6 +102,8 @@ conf.band=unifCI,test.procBeqC=Ut,sim.test.procBeqC=UIt,
 covariance=cov.list,B.iid=B.iid,stratum=stratum)
 }
 
+const <- function(x) x 
+
 pval<-function(simt,Otest)
 {
 simt<-sort(simt);
