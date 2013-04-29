@@ -11,7 +11,7 @@ L(\beta,D,d) = \beta^T D \beta - 2 \beta^T d
 where \eqn{D=\int Z H Z dt} and  \eqn{d=\int Z H dN}.
 }
 \usage{
-krylow.pls(D,d,dim)
+krylow.pls(D,d,dim=1)
 }
 \arguments{
 \item{D}{defined above}
@@ -46,7 +46,7 @@ covs<-cbind(covs[,c(1:6,16)],log(covs[,7:15]))
 out<-aalen(Surv(time,status>=1)~const(covs),pbc,robust=0,n.sim=0)
 S=out$intZHZ; s=out$intZHdN;
 
-out<-krylow.pls(S,s,2)
+out<-krylow.pls(S,s,dim=2)
 }
 }
 \keyword{survival}
