@@ -230,12 +230,12 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
 
 ##################################################
 
-  ## Wide <- reshape(as.data.frame(Data),idvar=c(id,zyg),timevar=time,direction="wide")
-  Wide <- as.data.frame(fast.reshape(Data,id=c(id,zyg),sep="."))
+  ## system.time(Wide <- reshape(as.data.frame(Data),idvar=c(id,zyg),timevar=time,direction="wide"))
+  ##  system.time(Wide <- as.data.frame(fast.reshape(Data,id=c(id),sep=".")))
+  Wide <- as.data.frame(fast.reshape(Data,id=c(id,zyg),sep=".",idcombine=FALSE))
   yidx <- paste(yvar,1:2,sep=".")
   rmidx <- c(id,yidx,zyg)
-  
-  
+    
   W0 <- W1 <- W2 <- NULL
   if (!is.null(weight)) {
     widx <- paste(weight,1:2,sep=".")
@@ -300,8 +300,9 @@ browser()
       Sigma0 <- diag(2) + p0[pos0]*Rm
       Sigma1 <- diag(2) + p0[pos0+1]*Rm
       if (OSon) Sigma2 <- diag(2) + p0[pos0+2]*Rm
-    } else {    
-      pv <- ACDU*1;  pv[which(ACDU[1:3])] <- p0[vidx]
+    } else {
+      ii <- ACDU; ii[4:5] <- FALSE
+      pv <- ACDU*1;  pv[ii] <- p0[vidx]
       Sigma0 <- Em*pv["e"] + pv["a"] + pv["c"] + pv["d"]
       Sigma1 <- Em*pv["e"] + pv["a"]*Am + pv["c"] + pv["d"]*Dm
       Sigma2 <- Em*pv["e"] + pv["c"] + (pv["a"] + pv["d"])*Vm +

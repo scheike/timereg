@@ -9,6 +9,7 @@
 ##' @param idname Name of id-variable (Wide->Long)
 ##' @param numname Name of number-variable (Wide->Long)
 ##' @param factors.keep If false all factors are converted to integers
+##' @param idcombine If TRUE and \code{id} is vector of several variables, the unique id is combined from all the variables. Otherwise the first variable is only used as identifier.
 ##' @param ... Optional additional arguments
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
@@ -56,7 +57,8 @@
 ##' rm(prtw)
 ##' 
 fast.reshape <- function(data,id,varying,num,sep="",keep,
-                         idname="id",numname="num",factors.keep=TRUE,...) {
+                         idname="id",numname="num",factors.keep=TRUE,
+                         idcombine=FALSE,...) {
   if (!is.data.frame(data) & is.list(data)) {
     data <- as.data.frame(data)
   } else {
@@ -163,15 +165,17 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
 
   
   ## Long to wide format:
-
   numvar <- idvar <- NULL 
   if (is.character(id) || is.factor(id)) {
     ##    if (length(id)>1) stop("Expecting column name or vector of id's")
     idvar <- id
     if (length(id)==1) {
-      id <- as.integer(data[,id,drop=TRUE])
+      id <- data[,idvar,drop=TRUE]
     } else {
-      id <- as.integer(apply(data[,idvar,drop=TRUE],1,function(x) paste(x,collapse="")))
+      if (idcombine)
+        id <- interaction(as.data.frame(data[,idvar,drop=FALSE]),drop=TRUE)
+      else
+        id <- data[,idvar[1],drop=TRUE]
     } 
   } else {
     if (length(id)!=nrow(data)) stop("Length of ids and data-set does not agree")
@@ -193,7 +197,7 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
   clustud <- cluster.index(id,num=num)
   maxclust <- clustud$maxclust
   idclust <- clustud$idclust  
-  obs1 <- as.vector(apply(idclust,1,function(x) na.omit(x)[1]))+1
+  obs1 <- clustud$firstclustid+1 ## as.vector(apply(idclust,1,function(x) na.omit(x)[1]))+1
   
   if (!is.null(numvar)) {
     ii <- which(colnames(data)==numvar)

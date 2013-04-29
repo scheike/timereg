@@ -85,13 +85,13 @@ RcppExport SEXP familypairindex(SEXP iclustmat,SEXP iclustsize,SEXP inumfamindex
   uvec famclustindex(numfamindex); famclustindex.fill(0);
   uvec subfamilyindex(numfamindex); subfamilyindex.fill(0);
   
-  int i,j,k,v=0,h=0;
+  int i,j,v=0,h=0;
 
    for (i=0;i<uniqueclust;i++)
    {
 	 if (clustsize(i)>=2)
          for (j=0;j<(clustsize(i)-1);j++)
-         for (k=j+1;k<clustsize(i);k++)
+         for (unsigned k=j+1;k<clustsize(i);k++)
          {
 //	  Rprintf(" %d %d %d %d %d n=%d c=%d \n",i,j,k,h,v,numfamindex,clustsize(i)); 
 	    famclustindex(v)=clustmat(i,j);

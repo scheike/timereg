@@ -57,6 +57,7 @@ Collate:
     'event.R'
     'procformula.R'
     'twinlm.R'
+    'twinlm2.R'
     'twinsim.R'
     'methodstwinlm.R'
     'sim-nordic-twin.R'
