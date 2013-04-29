@@ -457,7 +457,7 @@ step=0.5,model="plackett",marginal.p=NULL,strata=NULL,max.clust=NULL,se.clusters
 } ## }}}
 
 ##' @export
-sim.bin.plack <- function(n,beta=0.3,theta=1,...) { ## {{{ 
+simBinPlack <- function(n,beta=0.3,theta=1,...) { ## {{{ 
 x1 <- rbinom(n,1,0.5)
 x2 <- rbinom(n,1,0.5)
 ###
@@ -477,7 +477,7 @@ list(x1=x1,x2=x2,y1=y1,y2=y2,id=1:n)
 } ## }}} 
 
 ##' @export
-sim.bin.fam <- function(n,beta=0.0,theta=1,lam1=1,lam2=1,...) { ## {{{ 
+simBinFam <- function(n,beta=0.0,theta=1,lam1=1,lam2=1,...) { ## {{{ 
 x1 <- rbinom(n,1,0.5); x2 <- rbinom(n,1,0.5); 
 x3 <- rbinom(n,1,0.5); x4 <- rbinom(n,1,0.5); 
 ###
@@ -499,7 +499,7 @@ data.frame(x1=x1,x2=x2,ym=ym,yf=yf,yb1=yb1,yb2=yb2,id=1:n)
 onerunfam <- function(i,n,alr=0,manual=1,time=0,simplealr=1,theta=1) { ## {{{ 
 ### n=200; beta=0.2; theta=1; time=0; i=1
 print(i)
-dd <- sim.bin.fam(n,beta=0,theta=theta) 
+dd <- simBinFam(n,beta=0,theta=theta) 
 ddl <- fast.reshape(dd,varying="y",keep="y")
 out2t <- system.time(
  marg  <-  glm(y~+1,data=ddl,family=binomial())
