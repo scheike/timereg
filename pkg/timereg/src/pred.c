@@ -15,18 +15,21 @@ void nclusters(int  *npers,int  *clusters, int  *nclust, int  *uniqueclust, int 
   mclust[0]=maxclust; 
 }
 
-void clusterindex(int *clusters,int *nclust,int *npers,int *idclust,int *clustsize,int *mednum,int *num)
+void clusterindex(int *clusters,int *nclust,int *npers,int *idclust,int *clustsize,int *mednum,int *num,
+		  int *firstclustid)
 {
   int i;
   if (*mednum==0) {
      for (i=0;i<*npers;i++){
          idclust[(clustsize[clusters[i]])*(*nclust)+clusters[i]]=i; 
          clustsize[clusters[i]]+=1; 
+	 if (clustsize[clusters[i]]==1) firstclustid[clusters[i]]=i; 
       } 
   } else {
     for (i=0;i<*npers;i++){
         idclust[num[i]*(*nclust)+clusters[i]]=i; 
         clustsize[clusters[i]]+=1; 
+        if (clustsize[clusters[i]]==1) firstclustid[clusters[i]]=i; 
      } 
   }
 }

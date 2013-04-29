@@ -194,7 +194,8 @@ void sindex(int *index, double *jump, double *eval, int *njump, int *neval,int *
 
 void nclusters(int *npers,int *clusters, int *nclust, int *mclust);
 
-void clusterindex(int *clusters, int *nclust,int *npers,int *idclust, int *clustsize,int *mednum,int *num); 
+void clusterindex(int *clusters, int *nclust,int *npers,int *idclust, int *clustsize,
+	          int *mednum,int *num,int *firstclustid); 
 
 
 void clusterindexdata(int *clusters,int *nclust,int *npers,int *idclust,int *clustsize,int *mednum,
