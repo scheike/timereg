@@ -81,7 +81,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
    ll=0; for(j=0;j<*px;j++) VE(beta,j)=betaS[j]; 
   // }}}
 
-  int timing=1; 
+  int timing=0; 
   clock_t c0,c1; 
   c0=clock();
 
