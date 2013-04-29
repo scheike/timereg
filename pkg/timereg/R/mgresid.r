@@ -4,7 +4,6 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
 ## {{{ setting up
   start.design<-1; silent <- 1; 
   stratum <- attr(object,"stratum"); 
-  print(stratum)
   if (!(class(object)!="aalen" | class(object)!="timecox" | class(object)!="cox.aalen" ))
     stop ("Must be output from aalen() timecox() or cox.aalen() functions\n") 
   if (class(object)=="timecox") if (object$method!="basic") 
