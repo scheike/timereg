@@ -4,13 +4,13 @@
 \alias{cumh}
 \title{Liability model for twin data}
 \usage{
-  bptwin(formula, data, id, zyg, DZ, OS, weight = NULL,
-    biweight = function(x) 1/min(x), strata = NULL,
-    messages = 1, control = list(trace = 0), type = "ace",
-    eqmean = TRUE, pairsonly = FALSE, samecens = TRUE,
-    allmarg = samecens & !is.null(weight), stderr = TRUE,
-    robustvar = TRUE, p, indiv = FALSE, constrain,
-    bound = FALSE, debug = FALSE, ...)
+  bptwin(formula, data, id, zyg, DZ, OS = NULL,
+    weight = NULL, biweight = function(x) 1/min(x),
+    strata = NULL, messages = 1, control = list(trace = 0),
+    type = "ace", eqmean = TRUE, pairsonly = FALSE,
+    samecens = TRUE, allmarg = samecens & !is.null(weight),
+    stderr = TRUE, robustvar = TRUE, p, indiv = FALSE,
+    constrain, bound = FALSE, debug = FALSE, ...)
 }
 \arguments{
   \item{formula}{Formula specifying effects of covariates

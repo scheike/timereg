@@ -49,16 +49,19 @@ RcppExport SEXP clusterindexM(SEXP iclusters, SEXP imednum, SEXP inum) {
   
   imat idclust = imat(uniqueclust,maxclust); idclust.fill(NA_INTEGER);
   uvec clustsize(uniqueclust); clustsize.fill(0);
+  uvec firstclustid(uniqueclust); firstclustid.fill(0);
 
   if (mednum==0) {
     for (unsigned i=0;i<n;i++){
       idclust[(clustsize[clusters[i]])*(uniqueclust)+clusters[i]]=i; 
       clustsize[clusters[i]]+=1; 
+      if (clustsize[clusters[i]]==1) firstclustid[clusters[i]]=i; 
     } 
   } else {
     for (unsigned i=0;i<n;i++){
       idclust[num[i]*(uniqueclust)+clusters[i]]=i; 
       clustsize[clusters[i]]+=1; 
+      if (clustsize[clusters[i]]==1) firstclustid[clusters[i]]=i; 
     } 
   }
   return(List::create(Named("clusters")=clusters,
@@ -66,7 +69,8 @@ RcppExport SEXP clusterindexM(SEXP iclusters, SEXP imednum, SEXP inum) {
 		      Named("idclustmat")=idclust,
 		      Named("cluster.size")=clustsize,
 		      Named("antclust")=clustsize,
-		      Named("uniqueclust")=uniqueclust
+		      Named("uniqueclust")=uniqueclust,
+		      Named("firstclustid")=firstclustid
 		      )); 
 } // }}}
 
