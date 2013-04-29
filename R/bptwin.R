@@ -22,7 +22,7 @@
 ##' @param biweight Function defining the bivariate weight in each cluster
 ##' @param strata Strata
 ##' @param messages Control amount of messages shown 
-##' @param control Control argument parsed on to the optimization routine
+##' @param control Control argument parsed on to the optimization routine. Starting values may be parsed as '\code{start}'.
 ##' @param type Character defining the type of analysis to be
 ##'     performed. Should be a subset of "aced" (additive genetic factors, common
 ##'     environmental factors, unique environmental factors, dominant
@@ -37,14 +37,13 @@
 ##' @param samecens Same censoring
 ##' @param allmarg Should all marginal terms be included
 ##' @param bound Development argument
-##' @param debug Development argument
 ##' @param ... Additional arguments to lower level functions
 ##' @author Klaus K. Holst
 ##' @export
 ##' @examples
 ##' \donttest{
 ##' data(twinstut)
-##' b0 <- bptwin(stutter~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="u")
+##' b0 <- bptwin(stutter~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",OS="os",type="ae")
 ##' summary(b0)
 ##' }
 bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
@@ -63,7 +62,7 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
                    p, indiv=FALSE,
                    constrain,
                    bound=FALSE,
-                   debug=FALSE,...) {
+                   ...) {
 
 ###{{{ setup
 
@@ -132,7 +131,7 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
   }
   OSon <- FALSE
   if (!is.null(OS)) {
-    idx2 <- data[,zyg]==OS
+    idx2 <- which(data[,zyg]==OS)
     OSon <- TRUE
     if (length(idx2)==0) {
       warning("No OS twins found")
@@ -166,9 +165,9 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
 
   bidx0 <- seq(nx)
   midx0 <- bidx0; midx1 <- midx0+nx
-  dS0 <- rbind(rep(1,4),rep(1,4),rep(1,4)) ## MZ
-  dS1 <- rbind(c(1,.5,.5,1),rep(1,4),c(1,.25,.25,1)) ## DZ
-  dS2  <- rbind(c(1,0,0,1),rep(1,4),c(1,0,0,1),c(0,1,1,0))
+  dS0. <- rbind(rep(1,4),rep(1,4),rep(1,4)) ## MZ
+  dS1. <- rbind(c(1,.5,.5,1),rep(1,4),c(1,.25,.25,1)) ## DZ
+  dS2.  <- rbind(c(1,0,0,1),rep(1,4),c(1,0,0,1),c(0,1,1,0))
   
   ##mytr <- function(x) x; dmytr <- function(x) 1
   ##mytr <- function(x) x^2; dmytr <- function(x) 2*x
@@ -184,9 +183,16 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
   trname2 <- "tanh"; invtrname2 <- "atanh"
 
   if (OSon) {
+    ## logit <- function(p) log(p/(1-p))
+    ## tigol <- function(z) 1/(1+exp(-z))
+    ## dlogit <- function(p) 1/(p*(1-p))
+    ## dtigol <- function(z) tigol(z)^2*exp(-z)    
+    ## mytr <- function(p) c(exp(p[-length(p)]),tigol(p[length(p)]))
+    ## myinvtr <- function(z) c(log(z[-length(z)]),logit(z[length(z)]))
+    ## dmytr <- function(p) c(exp(p[-length(p)]),dtigol(p[length(p)]))
     mytr <- function(p) c(exp(p[-length(p)]),mytr2(p[length(p)]))
     myinvtr <- function(z) c(log(z[-length(z)]),myinvtr2(z[length(z)]))
-    dmytr <- function(p) c(exp(p[-length(p)]),dmytr2(p[length(p)]))    
+    dmytr <- function(p) c(exp(p[-length(p)]),dmytr2(p[length(p)]))
   }
 
   if (ACDU["u"]) {
@@ -205,9 +211,9 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
     nvar <- sum(ACDU[1:3])
     vidx0 <- vidx1 <- seq(nvar); vidx2 <- seq(nvar+1)
     if (OSon) nvar <- nvar+1
-    dS0 <- dS0[ACDU[1:3],,drop=FALSE]
-    dS1 <- dS1[ACDU[1:3],,drop=FALSE]
-    dS2 <- dS2[which(c(ACDU[1:3],TRUE)),,drop=FALSE]
+    dS0 <- dS0.[ACDU[1:3],,drop=FALSE]
+    dS1 <- dS1.[ACDU[1:3],,drop=FALSE]
+    dS2 <- dS2.[which(c(ACDU[1:3],TRUE)),,drop=FALSE]
   }  
   if (eqmean) {
     bidx2 <- bidx1 <- bidx0
@@ -224,7 +230,6 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
 
   Am <- matrix(c(1,.5,.5,1),ncol=2)
   Dm <- matrix(c(1,.25,.25,1),ncol=2)
-  Em <- diag(2)
   Vm <- matrix(c(1,0,0,1),ncol=2)
   Rm <- matrix(c(0,1,1,0),ncol=2)
 
@@ -246,7 +251,7 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
   }
   XX <- as.matrix(Wide[,setdiff(colnames(Wide),rmidx)])
   XX[is.na(XX)] <- 0
-browser()
+
   Y0 <- as.matrix(Wide[which(Wide[,zyg]==0),yidx,drop=FALSE])
   Y1 <- as.matrix(Wide[which(Wide[,zyg]==1),yidx,drop=FALSE])
   Y2 <- as.matrix(Wide[which(Wide[,zyg]==2),yidx,drop=FALSE])
@@ -264,13 +269,17 @@ browser()
   MyData0 <- ExMarg(Y0,XX0,W0,dS0,eqmarg=TRUE,allmarg=allmarg)
   MyData1 <- ExMarg(Y1,XX1,W1,dS1,eqmarg=TRUE,allmarg=allmarg)
   MyData2 <- ExMarg(Y2,XX2,W2,dS2,eqmarg=TRUE,allmarg=allmarg)
-  N <- cbind(sum(idx0),sum(idx1),sum(idx2)); 
-  if (missing(OS)) N <- N[,-3,drop=FALSE]
-  N <- cbind(N,
-             2*nrow(MyData0$Y0)+nrow(MyData0$Y0_marg),
-             2*nrow(MyData1$Y0)+nrow(MyData1$Y0_marg),
-             nrow(MyData0$Y0),nrow(MyData1$Y0))
 
+  N <- cbind(length(idx0),length(idx1),length(idx2)); 
+  N <- cbind(N,
+             2*nrow(MyData0$Y0)+NROW(MyData0$Y0_marg),
+             2*nrow(MyData1$Y0)+NROW(MyData1$Y0_marg),
+             2*nrow(MyData2$Y0)+NROW(MyData2$Y0_marg),
+             NROW(MyData0$Y0),NROW(MyData1$Y0),NROW(MyData2$Y0))
+  colnames(N) <- c("Total.MZ","Total.DZ","Total.OS","Complete.MZ","Complete.DZ","Complete.OS","Complete pairs.MZ","Complete pairs.DZ","Complete pairs.OS")
+  rownames(N) <- rep("",nrow(N))
+  if (!OSon) N <- N[-c(3,6,9),drop=FALSE]
+  
   if (samecens & !is.null(weight)) {
     MyData0$W0 <- cbind(apply(MyData0$W0,1,biweight))
     if (!is.null(MyData0$Y0_marg))
@@ -289,8 +298,6 @@ browser()
 
   rm(Y0,XX0,W0,Y1,XX1,W1,Y2,XX2,W2)
   
-  colnames(N) <- c("Total.MZ","Total.DZ","Complete.MZ","Complete.DZ","Complete pairs.MZ","Complete pairs.DZ")[seq(ncol(N))]
-  rownames(N) <- rep("",nrow(N))
 
   Sigma <- function(p0) {
     Sigma2 <- NULL
@@ -303,14 +310,29 @@ browser()
     } else {
       ii <- ACDU; ii[4:5] <- FALSE
       pv <- ACDU*1;  pv[ii] <- p0[vidx]
-      Sigma0 <- Em*pv["e"] + pv["a"] + pv["c"] + pv["d"]
-      Sigma1 <- Em*pv["e"] + pv["a"]*Am + pv["c"] + pv["d"]*Dm
-      Sigma2 <- Em*pv["e"] + pv["c"] + (pv["a"] + pv["d"])*Vm +
+      Sigma0 <- Vm*pv["e"] + pv["a"] + pv["c"] + pv["d"]
+      Sigma1 <- Vm*pv["e"] + pv["a"]*Am + pv["c"] + pv["d"]*Dm
+      Sigma2 <- Vm*pv["e"] + pv["c"] + (pv["a"] + pv["d"])*Vm +
         pv["os"]*(pv["a"] + pv["d"])*Rm
+      if (OSon) {
+        dS2 <- dS2.
+        dS2[c(1,3),2:3] <- pv["os"]
+        dS2[4,2:3] <- pv["a"]+pv["d"]
+        dS2 <- dS2[which(c(ACDU[1:3],TRUE)),]
+      }
     }
-    return(list(Sigma0=Sigma0,Sigma1=Sigma1,Sigma2=Sigma2))
+    return(list(Sigma0=Sigma0,Sigma1=Sigma1,Sigma2=Sigma2,dS2=dS2))
   }
 
+  ## p0 <- op$par
+  ## ff <- function(p) as.vector(Sigma(p)$Sigma2)
+  ## jacobian(ff,p0)
+  ## Sigma(p0)$dS2
+  ## dmytr(p0[vidx])
+  ## Sigma(p0)$dS2[1,]*dmytr(p0[vidx])[1]
+  ## Sigma(p0)$dS2[2,]*dmytr(p0[vidx])[2]
+  ## Sigma(p0)$dS2[3,]*dmytr(p0[vidx])[3]
+ 
 ###}}} Mean/Var function
   
 ###{{{ U  
@@ -333,9 +355,10 @@ browser()
 
     if (!is.null(MyData0$Y0_marg)) {
       mum <- with(MyData0, XX0_marg%*%b00)
+      dSmarg <- dS0[,1,drop=FALSE]
        U_marg <- with(MyData0, .Call("uniprobit",
                                    mum,XX0_marg,
-                                   S$Sigma0[1,1],t(dS0_marg),Y0_marg,
+                                   S$Sigma0[1,1],t(dSmarg),Y0_marg,
                                    W0_marg,!is.null(W0_marg),TRUE))
       U0$score <- rbind(U0$score,U_marg$score)
       U0$loglik <- c(U0$loglik,U_marg$loglik)
@@ -349,28 +372,28 @@ browser()
                              S$Sigma1,dS1,Y0,XX0,W0,!is.null(W0),samecens))
     if (!is.null(MyData1$Y0_marg)) {
       mum <- with(MyData1, XX0_marg%*%b11)
+      dSmarg <- dS1[,1,drop=FALSE]
       U_marg <- with(MyData1, .Call("uniprobit",
                                     mum,XX0_marg,
-                                    S$Sigma1[1,1],t(dS0_marg),Y0_marg,
+                                    S$Sigma1[1,1],t(dSmarg),Y0_marg,
                                     W0_marg,!is.null(W0_marg),TRUE))
       U1$score <- rbind(U1$score,U_marg$score)
       U1$loglik <- c(U1$loglik,U_marg$loglik)
     }
 
-    browser()
-    
+    U2 <- val2 <- NULL
     if (OSon) {
       Mu2 <- with(MyData2, cbind(XX0[,midx0,drop=FALSE]%*%b22,
                                  XX0[,midx1,drop=FALSE]%*%b22))
-
       U2 <- with(MyData2, .Call("biprobit0",
                                 Mu2,
-                                S$Sigma2,dS2,Y0,XX0,W0,!is.null(W0),samecens))
+                                S$Sigma2,S$dS2,Y0,XX0,W0,!is.null(W0),samecens))
       if (!is.null(MyData2$Y0_marg)) {
         mum <- with(MyData2, XX0_marg%*%b22)
+        dSmarg <- S$dS2[,1,drop=FALSE]
         U_marg <- with(MyData2, .Call("uniprobit",
                                       mum,XX0_marg,
-                                      S$Sigma2[1,1],t(dS0_marg),Y0_marg,
+                                      S$Sigma2[1,1],t(dSmarg),Y0_marg,
                                       W0_marg,!is.null(W0_marg),TRUE))
         U2$score <- rbind(U2$score,U_marg$score)
         U2$loglik <- c(U2$loglik,U_marg$loglik)
@@ -422,9 +445,7 @@ browser()
           val2 <- rbind(val2, U2$score[-idxs2,,drop=FALSE])
           ll2 <- c(ll2,ll2[-idxs2])        
         }
-      } else {
-        U2 <- val2 <- NULL
-      }
+      } 
       
       val <- matrix(0,ncol=plen,nrow=nrow(val0)+nrow(val1) + NROW(val2))
       val[seq_len(nrow(val0)),c(bidx0,vidx0)] <- val0
@@ -432,8 +453,9 @@ browser()
       if (OSon) {
         val[nrow(val0)+nrow(val1)+seq_len(nrow(val2)),c(bidx2,vidx2)] <- val2
       }
-      for (ii in vidx) {
-        val[,ii] <- val[,ii]*dmytr(p[ii])
+      trp <- dmytr(p[vidx])
+      for (i in seq(length(vidx))) {
+        val[,vidx[i]] <- val[,vidx[i]]*trp[i]
       }
       attributes(val)$logLik <- c(U0$loglik,U1$loglik,U2$loglik)
       return(val)
@@ -443,9 +465,8 @@ browser()
     val[c(bidx0,vidx0)] <- colSums(U0$score)
     val[c(bidx1,vidx1)] <- val[c(bidx1,vidx1)]+colSums(U1$score)
     if (OSon) val[c(bidx2,vidx2)] <- val[c(bidx2,vidx2)]+colSums(U2$score)
-    for (ii in vidx)
-      val[ii] <- val[ii]*dmytr(p[ii])
-    attributes(val)$logLik <- sum(U0$loglik)+sum(U1$loglik) + sum(U2$loglik)
+    val[vidx] <- val[vidx]*dmytr(p[vidx])
+    attributes(val)$logLik <- sum(U0$loglik)+sum(U1$loglik)+sum(U2$loglik)
     return(val)
   }
 
@@ -454,6 +475,7 @@ browser()
 ###{{{ optim
 
   p0 <- rep(-1,plen); ##p0[vidx] <- 0
+  if (OSon) p0[length(p0)] <- 0.3
   if (type=="u")
     p0[vidx] <- 0.3
   if (!is.null(control$start)) {
@@ -494,6 +516,13 @@ browser()
   }
 
 
+  ## Derivatives, Sanity check 
+  ## ff <- function(p) attributes(U(p,indiv=FALSE))$logLik
+  ## pp <- c(0,-.1,.1,0.5)
+  ## grad(ff,pp)
+  ## U(pp,indiv=FALSE)
+
+  
   controlstd <- list(hessian=0)
   controlstd[names(control)] <- control
   control <- controlstd
@@ -502,7 +531,6 @@ browser()
   ucminfopt <- intersect(names(control),c("trace","grtol","xtol","stepmax","maxeval","grad","gradstep","invhessian.lt"))
   optimopt <- names(control) 
 
-  if (debug) browser()
   op <- switch(tolower(control$method),
                nlminb=nlminb(p0,f0,gradient=g0,control=control[nlminbopt]),
                optim=optim(p0,fn=f0,gr=g0,control=control[ucminfopt]),
@@ -527,12 +555,9 @@ browser()
                ##                              ucminf=ucminf(p0,f,control=mycontrol[ucminfopt],hessian=F),
                ##                optim=optim(p0,f,control=mycontrol[ucminfopt],...),
                  nlminb(p0,f,control=control[nlminbopt]))
-  ##  op <- nlm(f,p0,print.level=2)
-  ##  op <- spg(p0,f,control=control)
-  
 
   if (stderr) {
-    UU <- U(op$par,indiv=TRUE)
+    UU <- U(op$par,indiv=TRUE)    
     I <- -numDeriv::jacobian(U,op$par)
     tol <- 1e-15
     V <- Inverse(I,tol)
@@ -552,13 +577,12 @@ browser()
 
 ###{{{ return
 
-  cc <- cbind(op$par,sqrt(diag(V)))
+  suppressWarnings(cc <- cbind(op$par,sqrt(diag(V))))
   cc <- cbind(cc,cc[,1]/cc[,2],2*(1-pnorm(abs(cc[,1]/cc[,2]))))
   colnames(cc) <- c("Estimate","Std.Err","Z","p-value")
-  browser()
   vnames1 <- NULL
   trnam <- " "
-  if (debug) browser()
+
   if (!eqmean) {
     rnam <- rnames1
     rnames1 <- c(paste(rnam,"MZ",sep=trnam),paste(rnam,"DZ",sep=trnam))
@@ -571,7 +595,7 @@ browser()
     rnames <- c(rnames1,paste(c("atanh(rho)","atanh(rho)"),groups,sep=trnam))
   } else {
     rnames <- c(rnames1,c("log(var(A))","log(var(C))","log(var(D))")[ACDU[1:3]])
-    if (OSon) rnames <- c(rnames,"log(Var(O))")
+    if (OSon) rnames <- c(rnames,"atanh(rho(G[OS]))")
   }
   if (!missing(constrain)) rnames <- rnames[freeidx]
   rownames(cc) <- rnames
@@ -595,7 +619,8 @@ browser()
               transform=list(tr=mytr, invtr=myinvtr, dtr=dmytr,
                 name=trname, invname=invtrname),
               SigmaFun=Sigma,
-              npar=npar
+              npar=npar,
+              OS=OSon
               )
   class(val) <- c("bptwin","biprobit")
   return(val)
