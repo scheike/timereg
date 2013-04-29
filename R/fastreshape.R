@@ -43,7 +43,7 @@
 ##' #varying=list(c("ym","yf","yb1","yb2")))
 ##' 
 ##' ##### Family cluster example
-##' d <- mets:::sim.bin.fam(3)
+##' d <- mets:::simBinFam(3)
 ##' d
 ##' dd <- fast.reshape(d,var="y")
 ##' dd
