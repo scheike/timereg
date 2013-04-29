@@ -33,6 +33,7 @@ Survival Data, Springer (2006).
 \examples{
 \donttest{
 ## makes data for pbc complete case
+library(timereg)
 data(mypbc)
 pbc<-mypbc
 pbc$time<-pbc$time+runif(418)*0.1; pbc$time<-pbc$time/365
