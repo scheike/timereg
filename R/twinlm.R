@@ -145,24 +145,34 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
   zyglev <- levels(zygstat)
   if (length(zyglev)>2 & missing(OS)) stop("More than two zygosity levels and no opposite sex (OS) group specified")
 
-
   ## To wide format:
   num <- NULL; if (twinnum%in%colnames(data)) num <- twinnum
   data <- cbind(data[,c(yvar,keep,num,zyg,id)],mm)
   ddd <- fast.reshape(data,id=id,varying=c(yvar,keep,covars),keep=zyg,num=num,sep=".")
-  wide1 <- subset(ddd, zyg=="MZ")
-  wide2 <- subset(ddd, zyg=="DZ")
-  wide3 <- NULL
-  if (!missing(OS)) wide3 <- subset(ddd, zyg=="OS")
+
+  if (missing(DZ)) {
+    warning("Using first level, `",zyglev[1],"', in status variable as indicator for 'dizygotic'", sep="")
+    DZ <- zyglev[1]    
+  }  
+  if (!missing(OS)) {
+    wide3 <- subset(ddd, zyg==OS)
+    MZ <- setdiff(zyglev,c(DZ,OS))  
+  } else {
+    wide3 <- NULL  
+    MZ <- setdiff(zyglev,DZ)
+  }
+  wide1 <- subset(ddd, zyg==MZ)
+  wide2 <- subset(ddd, zyg==DZ)
+  
   
   ## ###### The SEM
   outcomes <- paste(yvar,".",1:2,sep="")
   model1<- lvm()  
   regression(model1,to=outcomes,from=c("a1","c1","d1"),silent=TRUE) <-
-    rep(c("lambda[a]","lambda[c]","lambda[d]"),each=2)
+    rep(c("lambda[a]","lambda[c]","lambda[d]"),2)
   regression(model1,to=outcomes,from=c("e1","e2")) <- rep("lambda[e]",2)
   latent(model1) <- c("a1","c1","d1","e1","e2")
-  intercept(model1,latent(model1)) <- 0  
+  intercept(model1,latent(model1)) <- 0
   if (!is.null(covars))
     for (i in 1:length(covars)) {
       regression(model1, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta[",i,"]",sep="")
@@ -247,21 +257,21 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
   isD <- length(grep("d",type))>0
   isE <- length(grep("e",type))>0 | type=="sat" | type=="u"
   if (!isA) {
-    kill(model1) <- c("a1","a2")
+    kill(model1) <- c("a1")
     kill(model2) <- c("a1","a2")
     kill(model3) <- c("a1","a2","ra")
     constrain(model3,r1~1) <- NULL
   }
   if (!isD) {
-    kill(model1) <- c("d1","d2")
+    kill(model1) <- c("d1")
     kill(model2) <- c("d1","d2")
     kill(model3) <- c("d1","d2","rd")
     constrain(model3,r2~1) <- NULL
   }
   if (!isC) {
-    kill(model1) <- c("c1","c2")
-    kill(model2) <- c("c1","c2")
-    kill(model3) <- c("c1","c2")
+    kill(model1) <- c("c1")
+    kill(model2) <- c("c1")
+    kill(model3) <- c("c1")
   }
   if (!isE) {
     kill(model1) <- c("e1","e2")

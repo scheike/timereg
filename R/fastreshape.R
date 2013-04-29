@@ -166,9 +166,13 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
   
   numvar <- idvar <- NULL 
   if (is.character(id) || is.factor(id)) {
-    if (length(id)>1) stop("Expecting column name or vector of id's")
+    ##    if (length(id)>1) stop("Expecting column name or vector of id's")
     idvar <- id
-    id <- as.integer(data[,id,drop=TRUE])
+    if (length(id)==1) {
+      id <- as.integer(data[,id,drop=TRUE])
+    } else {
+      id <- as.integer(apply(data[,idvar,drop=TRUE],1,function(x) paste(x,collapse="")))
+    } 
   } else {
     if (length(id)!=nrow(data)) stop("Length of ids and data-set does not agree")
   }    
@@ -202,7 +206,7 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
     ii <- which(colnames(data)%in%keepers)
     data <- data[,ii,drop=FALSE]
   }
-  
+
   if (missing(varying)) varying <- setdiff(colnames(data),c(idvar))
   vidx <- match(varying,colnames(data))
   N <- nrow(idclust)
@@ -225,7 +229,9 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
         dataw[which(!is.na(idx)), pos] <-
           as.matrix(data[na.omit(idx),vidx,drop=FALSE])      
       }
-      mnames <- c(mnames,as.vector(t(outer(varying,seq_len(maxclust-1)+1,function(...) paste(...,sep=sep)))))
+      postn <- seq_len(maxclust-1)+1
+      ##if (is.null(numname)) postn <- idlev[postn]
+      mnames <- c(mnames,as.vector(t(outer(varying,postn,function(...) paste(...,sep=sep)))))
     }
     colnames(dataw) <- mnames
     return(dataw)

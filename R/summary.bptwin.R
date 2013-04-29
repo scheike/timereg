@@ -14,18 +14,15 @@ summary.bptwin <- function(object,level=0.05,...) {
   alpha <- level/2
   CIlab <- paste(c(alpha*100,100*(1-alpha)),"%",sep="")
   V <- c()
-  if (length(idx2)>0) {    
+  if (length(idx2)>0) {
     idx <- idx2
     V <- vcov(object)[idx,idx]
     arho <- coef(object)[idx2[1:2]]
     mz <- multinomlogit(coef(object)[idx2[1]]); names(mz) <- c("U","E")
     dz <- multinomlogit(coef(object)[idx2[2]]); names(dz) <- c("U","E")
     cc <- tanh(arho)
-  ##    cc <- c(mz[1],dz[1]) ##,mz[2],dz[2])
     names(cc) <- c("Tetrachoric correlation MZ","Tetrachoric correlation DZ")
-##    corMZ <- mz[1]; corDZ <- dz[1]
     corMZ <- cc[1]; corDZ <- cc[2]
-##    D <- (cbind(c(attributes(mz)$gradient[1],0),c(0,attributes(dz)$gradient[1])))
     D <- diag(object$tr$dtr(arho))
     h <- function(x) 2*(x[1]-x[2])
     dh <- function(x) c(2,-2)

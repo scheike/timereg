@@ -47,7 +47,7 @@
 ##' b0 <- bptwin(stutter~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="u")
 ##' summary(b0)
 ##' }
-bptwin <- function(formula, data, id, zyg, DZ, OS,
+bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
                    weight=NULL,
                    biweight=function(x) 1/min(x),
                    strata=NULL,
@@ -124,87 +124,57 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
   if (is.logical(data[,yvar])) data[,yvar] <- data[,yvar]*1
   if (is.factor(data[,yvar])) data[,yvar] <- as.numeric(data[,yvar])-1  
 
-  ## Y <- suppressWarnings(model.frame(formula,data,na.action="na.pass")[,1])    
-  ## Blen <- 0
-  ## Bord <- c()
-  ## if (degree>0)
-  ##   if (is.Surv(Y) | !missing(time) | !is.null(B)) {
-  ##     if (is.Surv(Y)) {
-  ##       if (ncol(Y)==3) {
-  ##         entry <- Y[,1]
-  ##         time <- Y[,2]
-  ##         Y <- Y[,3]*1 # event
-  ##       } else {
-  ##         time <- Y[,1]
-  ##         Y <- Y[,2]*1
-  ##       }
-  ##     } else {
-  ##       if (is.character(time))
-  ##         time <- data[,time]
-  ##       if (is.character(entry))
-  ##         entry <- data[,entry]
-  ##     }
-  ##     if (is.null(B)) {
-  ##       B <- bs(time,degree=degree)
-  ##       Bord <- cbind(time,B)[order(time),,drop=FALSE]
-  ##       colnames(B) <- paste("B","_",1:ncol(B),sep="")
-  ##       Blen <- ncol(B)   
-  ##     }
-  ##   }
-
   idtab <- table(data[,id])
-  ##  ii0 <- which(as.character(data[,id])%in%names(idtab)[idtab==2])              
   idx2 <- NULL
   if (missing(DZ)) {
     DZ <- levels(as.factor(data[,zyg]))[1]
     message("Using '",DZ,"' as DZ",sep="")
-  } 
-  if (!missing(OS)) {
-    warning("Opposite-sex analysis not implemented yet!")
+  }
+  OSon <- FALSE
+  if (!is.null(OS)) {
+    warning("Opposite-sex analysis not supported!")
     idx2 <- data[,zyg]==OS
-    if (length(idx2)==0) stop("No opposite-sex twins found") 
+    if (length(idx2)==0) stop("No OS twins found")
+    OSon <- TRUE
   }
   idx1 <- data[,zyg]==DZ
   if (length(idx1)==0) stop("No DZ twins found")
-  idx0 <- data[,zyg]!=DZ
+  idx0 <- data[,zyg]!=c(DZ,OS)
   if (length(idx1)==0) stop("No MZ twins found")
-  data[,zyg] <- (data[,zyg]!=DZ)*1
+  zyg2 <- rep(1,nrow(data)); zyg2[idx0] <- 0; zyg2[idx2] <- 2
+  data[,zyg] <- zyg2
+
   
+  ## time <- "time"
+  ## while (time%in%names(data)) time <- paste(time,"_",sep="")
+  ## data[,time] <- unlist(lapply(idtab,seq))
   
-  time <- "time"
-  while (time%in%names(data)) time <- paste(time,"_",sep="")
-  data[,time] <- unlist(lapply(idtab,seq))
-  
-  ##  ff <- as.formula(paste("~",paste(attributes(terms(formula))$term.labels,
-  ##                                   collapse="+"),"+1",sep=""))
-  ff <- paste(as.character(formula)[3],"+",time,"+",id,"+",zyg)
+  ##  ff <- paste(as.character(formula)[3],"+",time,"+",id,"+",zyg)
+  ff <- paste(as.character(formula)[3],"+",id,"+",zyg)
   if (!is.null(weight))
     ff <- paste(weight,"+",ff)
   ff <- paste("~",yvar,"+",ff)
   formula0 <- as.formula(ff)
   Data <- model.matrix(formula0,data,na.action=na.pass)
-  rnames1 <- setdiff(colnames(Data),c(yvar,time,id,weight,zyg))
-  ##  X0 <- as.matrix(Data[,rnames1])
-  nx <-length(rnames1) ##ncol(Data)-4 + !is.null(weight)
+   ## rnames1 <- setdiff(colnames(Data),c(yvar,time,id,weight,zyg))
+  rnames1 <- setdiff(colnames(Data),c(yvar,id,weight,zyg))
+  nx <- length(rnames1) 
   if (nx==0) stop("Zero design not allowed")
   
-  ##  X <- cbind(model.matrix(ff,data0)
-  ##  nx <- ncol(X)
-  ##  if (nx==0) stop("Zero design not allowed")
-##################################################
-
 
   bidx0 <- seq(nx)
   midx0 <- bidx0; midx1 <- midx0+nx  
   dS0 <- rbind(rep(1,4),rep(1,4),rep(1,4)) ## MZ
   dS1 <- rbind(c(1,.5,.5,1),rep(1,4),c(1,.25,.25,1)) ## DZ
-
+  dS2  <- rbind(c(1,0,0,1),rep(1,4),c(1,0,0,1),c(0,1,1,0))
+  
   ##mytr <- function(x) x; dmytr <- function(x) 1
   ##mytr <- function(x) x^2; dmytr <- function(x) 2*x
   ##mytr <- function(z) 1/(1+exp(-z)); dmytr <- function(z) exp(-z)/(1+exp(-z))^2
   mytr <- exp; dmytr <- exp; myinvtr <- log
   trname <- "exp"; invtrname <- "log"      
   ACDU <- sapply(c("a","c","d","e","u"),function(x) length(grep(x,tolower(type)))>0)
+  ACDU <- c(ACDU,os=OSon)
   if (ACDU["u"]) {
     ##      datanh <- function(r) 1/(1-r^2)
     dmytr <- function(z) 4*exp(2*z)/(exp(2*z)+1)^2
@@ -213,24 +183,27 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
     dS0 <- rbind(c(0,1,1,0))
     vidx0 <- 1
     vidx1 <- 2
-    dS1 <- dS0
+    vidx2 <- 3
+    dS2 <- dS1 <- dS0
     nvar <- length(vidx0)+length(vidx1)
+    if (OSon) nvar <- nvar+length(vidx2)
   } else {
     nvar <- sum(ACDU[1:3])
-    vidx0 <- vidx1 <- 1:nvar
+    vidx0 <- vidx1 <- seq(nvar); vidx2 <- seq(nvar+1)
+    if (OSon) nvar <- nvar+1
     dS0 <- dS0[ACDU[1:3],,drop=FALSE]
     dS1 <- dS1[ACDU[1:3],,drop=FALSE]
+    dS2 <- dS2[which(c(ACDU[1:3],TRUE)),,drop=FALSE]
   }  
   if (eqmean) {
-    bidx1 <- bidx0
-##    midx0 <- midx1 <- midx    
+    bidx2 <- bidx1 <- bidx0
   } else {
     bidx1 <- bidx0+nx
-##    midx0 <- 1:nx; midx1 <- midx0+nx
-    nx <- 2*nx;
+    bidx2 <- bidx1+nx    
+    if (OSon) nx <- 3*nx else nx <- 2*nx;
   }
   
-  vidx0 <- vidx0+nx; vidx1 <- vidx1+nx
+  vidx0 <- vidx0+nx; vidx1 <- vidx1+nx; vidx2 <- vidx2+nx
   vidx <- nx+seq_len(nvar)
   midx <- seq_len(nx)
   plen <- nx+nvar
@@ -238,31 +211,33 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
   Am <- matrix(c(1,.5,.5,1),ncol=2)
   Dm <- matrix(c(1,.25,.25,1),ncol=2)
   Em <- diag(2)
+  Vm <- matrix(c(1,0,0,1),ncol=2)
+  Om <- matrix(c(0,1,1,0),ncol=2)
 
 ##################################################
 
-  Wide <- reshape(as.data.frame(Data),idvar=c(id,zyg),timevar=time,direction="wide")
+  ## Wide <- reshape(as.data.frame(Data),idvar=c(id,zyg),timevar=time,direction="wide")
+  Wide <- as.data.frame(fast.reshape(Data,id=c(id,zyg),sep="."))
   yidx <- paste(yvar,1:2,sep=".")
   rmidx <- c(id,yidx,zyg)
-  ## if (!is.null(weight)) {
-  ##   W <- cbind(data[,weight])
-  ##   widx <- paste(weight,1:2,sep=".")
-  ##   WW <- as.matrix(Wide[,widx])
-  ##   
-  ## }
+  
+  
   W0 <- W1 <- W2 <- NULL
   if (!is.null(weight)) {
     widx <- paste(weight,1:2,sep=".")
     rmidx <- c(rmidx,widx)
-    W0 <- as.matrix(Wide[Wide[,zyg]==0,widx,drop=FALSE])
-    W1 <- as.matrix(Wide[Wide[,zyg]==1,widx,drop=FALSE])
+    W0 <- as.matrix(Wide[which(Wide[,zyg]==0),widx,drop=FALSE])
+    W1 <- as.matrix(Wide[which(Wide[,zyg]==1),widx,drop=FALSE])
+    W2 <- as.matrix(Wide[which(Wide[,zyg]==2),widx,drop=FALSE])
   }
   XX <- as.matrix(Wide[,setdiff(colnames(Wide),rmidx)])
   XX[is.na(XX)] <- 0
-  Y0 <- as.matrix(Wide[Wide[,zyg]==0,yidx,drop=FALSE])
-  Y1 <- as.matrix(Wide[Wide[,zyg]==1,yidx,drop=FALSE])
-  XX0 <- XX[Wide[,zyg]==0,,drop=FALSE]
-  XX1 <- XX[Wide[,zyg]==1,,drop=FALSE]
+  Y0 <- as.matrix(Wide[which(Wide[,zyg]==0),yidx,drop=FALSE])
+  Y1 <- as.matrix(Wide[which(Wide[,zyg]==1),yidx,drop=FALSE])
+  Y2 <- as.matrix(Wide[which(Wide[,zyg]==2),yidx,drop=FALSE])
+  XX0 <- XX[which(Wide[,zyg]==0),,drop=FALSE]
+  XX1 <- XX[which(Wide[,zyg]==1),,drop=FALSE]
+  XX2 <- XX[which(Wide[,zyg]==2),,drop=FALSE]
   
 ##################################################
 
@@ -273,6 +248,7 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
   ##Marginals etc.
   MyData0 <- ExMarg(Y0,XX0,W0,dS0,eqmarg=TRUE,allmarg=allmarg)
   MyData1 <- ExMarg(Y1,XX1,W1,dS1,eqmarg=TRUE,allmarg=allmarg)
+  MyData2 <- ExMarg(Y2,XX2,W2,dS2,eqmarg=TRUE,allmarg=allmarg)
   N <- cbind(sum(idx0),sum(idx1),sum(idx2)); 
   if (missing(OS)) N <- N[,-3,drop=FALSE]
   N <- cbind(N,
@@ -290,38 +266,35 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
     if (!is.null(MyData1$Y0_marg))
       MyData1$W0_marg <- cbind(apply(MyData1$W0_marg,1,biweight))
   }
-  rm(Y0,XX0,W0,Y1,XX1,W1)
-  ##  N <- rbind(##c("","","Complete","","Complete pairs",""),
-  ##             rep(c("MZ","DZ"),ncol(N)/2), N)
+  if (samecens & !is.null(weight)) {
+    MyData2$W0 <- cbind(apply(MyData2$W0,1,biweight))
+    if (!is.null(MyData2$Y0_marg))
+      MyData2$W0_marg <- cbind(apply(MyData2$W0_marg,1,biweight))
+  }
+
+  rm(Y0,XX0,W0,Y1,XX1,W1,Y2,XX2,W2)
+  
   colnames(N) <- c("Total.MZ","Total.DZ","Complete.MZ","Complete.DZ","Complete pairs.MZ","Complete pairs.DZ")[seq(ncol(N))]
   rownames(N) <- rep("",nrow(N))
-##  print(N,quote=FALSE)
-  
-  ## Mu <- function(p0) {
-  ##   b0 <- cbind(p0[midx0])
-  ##   b1 <- cbind(p0[midx1])
-  ##   b00 <- b0; b11 <- b1
-  ##   if (Bconstrain) {
-  ##     b00 <- trMean(b0,Blen); b11 <- trMean(b1,Blen)
-  ##   }
-  ##     mu0 <- with(MyData0, X0%*%b00)
-  ##     mu1 <- with(MyData1, X0%*%b11)
-  ##   return(list(mu0=mu0,mu1=mu1))
-  ## }
-  Sigma <- function(p0) {    
+
+  Sigma <- function(p0) {
+    Sigma2 <- NULL
     p0[vidx] <- mytr(p0[vidx])    
-    if (ACDU["u"]) {     
-      ##      Sigma0 <- Em+p0[plen-1]; Sigma1 <- Em+p0[plen]
-      Sigma0 <- diag(2) + p0[plen-1]*matrix(c(0,1,1,0),2,2)
-      Sigma1 <- diag(2) + p0[plen]*matrix(c(0,1,1,0),2,2)
+    if (ACDU["u"]) {
+      pos0 <- ifelse(OSon, plen-2, plen-1)
+      Sigma0 <- diag(2) + p0[pos0]*Om
+      Sigma1 <- diag(2) + p0[pos0+1]*Om
+      if (OSon) Sigma2 <- diag(2) + p0[pos0+2]*Om
     } else {    
       pv <- ACDU*1;  pv[which(ACDU[1:3])] <- p0[vidx]
       Sigma0 <- Em*pv["e"] + pv["a"] + pv["c"] + pv["d"]
       Sigma1 <- Em*pv["e"] + pv["a"]*Am + pv["c"] + pv["d"]*Dm
+      Sigma2 <- Em*pv["e"] + pv["a"] + pv["c"] + pv["d"] + pv["os"]*Om
     }
-    return(list(Sigma0=Sigma0,Sigma1=Sigma1))
+    return(list(Sigma0=Sigma0,Sigma1=Sigma1,Sigma2=Sigma2))
   }
 
+  browser()
   ###}}} Mean/Var function
   
 ###{{{ U  
@@ -329,16 +302,12 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
   U <- function(p,indiv=FALSE) {
     b0 <- cbind(p[bidx0])
     b1 <- cbind(p[bidx1])
-    b00 <- b0; b11 <- b1
-    ## if (Bconstrain) {
-    ##   b00 <- trMean(b0,Blen); b11 <- trMean(b1,Blen)
-    ## }
+    b2 <- cbind(p[bidx2])
+    b00 <- b0; b11 <- b1; b22 <- b2
     if (bound) p[vidx] <- min(p[vidx],20)
     S <- Sigma(p)
     lambda <- eigen(S$Sigma0)$values
     if (any(lambda<1e-12 | lambda>1e9)) stop("Variance matrix out of bounds")
-    ##mu0 <- with(MyData0, X0%*%b00)
-    ##Mu0 <- matrix(mu0,ncol=2,byrow=TRUE)
     
     Mu0 <- with(MyData0, cbind(XX0[,midx0,drop=FALSE]%*%b00,
                                XX0[,midx1,drop=FALSE]%*%b00))
@@ -356,8 +325,6 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
       U0$loglik <- c(U0$loglik,U_marg$loglik)
     }
 
-##    mu1 <- with(MyData1, X0%*%b11) 
-##    Mu1 <- matrix(mu1,ncol=2,byrow=TRUE)
     Mu1 <- with(MyData1, cbind(XX0[,midx0,drop=FALSE]%*%b11,
                                XX0[,midx1,drop=FALSE]%*%b11))
 
@@ -374,11 +341,28 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
       U1$loglik <- c(U1$loglik,U_marg$loglik)
     }
 
+    if (OSon) {
+      U2 <- with(MyData2, .Call("biprobit0",
+                                Mu2,
+                                S$Sigma2,dS2,Y0,XX0,W0,!is.null(W0),samecens))
+      if (!is.null(MyData2$Y0_marg)) {
+        mum <- with(MyData2, XX0_marg%*%b22)
+        U_marg <- with(MyData2, .Call("uniprobit",
+                                      mum,XX0_marg,
+                                      S$Sigma2[1,1],t(dS0_marg),Y0_marg,
+                                      W0_marg,!is.null(W0_marg),TRUE))
+        U2$score <- rbind(U2$score,U_marg$score)
+        U2$loglik <- c(U2$loglik,U_marg$loglik)
+      }
+    }
+
+    
     if (indiv) {
       ll0 <- U0$loglik
       ll1 <- U1$loglik
       val0 <- U0$score[MyData0$id,,drop=FALSE]
       val1 <- U1$score[MyData1$id,,drop=FALSE]
+      
       N0 <- length(MyData0$id)
       idxs0 <- seq_len(N0)
       if (length(MyData0$margidx)>0) {
@@ -390,6 +374,7 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
         val0 <- rbind(val0, U0$score[-idxs0,,drop=FALSE])
         ll0 <- c(ll0,ll0[-idxs0])
       }
+      
       N1 <- length(MyData1$id)
       idxs1 <- seq_len(N1)
       if (length(MyData1$margidx)>0) {
@@ -401,32 +386,36 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
         val1 <- rbind(val1, U1$score[-idxs1,,drop=FALSE])
         ll1 <- c(ll1,ll1[-idxs1])        
       }
-      val <- matrix(0,ncol=plen,nrow=nrow(val0)+nrow(val1))
+
+      if (OSon) {
+        ll2 <- U2$loglik
+        val2 <- U2$score[MyData2$id,,drop=FALSE]
+        N2 <- length(MyData2$id)
+        idxs2 <- seq_len(N2)
+        if (length(MyData2$margidx)>0) {
+          for (i in seq_len(N2)) {
+            idx2 <- which((MyData2$idmarg)==(MyData2$id[i]))+N2
+            idxs2 <- c(idxs2,idx2)
+            val2[i,] <- val2[i,]+colSums(U2$score[idx2,,drop=FALSE])
+          }
+          val2 <- rbind(val2, U2$score[-idxs2,,drop=FALSE])
+          ll2 <- c(ll2,ll2[-idxs2])        
+        }
+      } else {
+        U2 <- val2 <- NULL
+      }
+      
+      val <- matrix(0,ncol=plen,nrow=nrow(val0)+nrow(val1) + NROW(val2))
       val[seq_len(nrow(val0)),c(bidx0,vidx0)] <- val0
       val[nrow(val0)+seq_len(nrow(val1)),c(bidx1,vidx1)] <- val1
+      if (OSon) {
+        val[nrow(val0)+nrow(val1)+seq_len(nrow(val2)),c(bidx2,vidx2)] <- val2
+      }
       for (ii in vidx) {
         val[,ii] <- val[,ii]*dmytr(p[ii])
       }
-      attributes(val)$logLik <- c(U0$loglik,U1$loglik)
+      attributes(val)$logLik <- c(U0$loglik,U1$loglik,U2$loglik)
       return(val)
-      
-#########      
-      ## val <- matrix(0,ncol=plen,nrow=nrow(U0$score)+nrow(U1$score))
-      ## val[seq_len(nrow(U0$score)),c(bidx0,vidx0)] <- U0$score
-      ## val[nrow(U0$score)+seq_len(nrow(U1$score)),c(bidx1,vidx1)] <- U1$score
-      ## for (ii in vidx) {
-      ##   val[,ii] <- val[,ii]*dmytr(p[ii])
-      ## }
-      ## ## if (Bconstrain & Blen>0) {
-      ## ##   Bidx <- attributes(b00)$idx
-      ## ##   val[,Bidx] <- as.numeric((val[,Bidx,drop=FALSE])%*%attributes(b00)$D[Bidx,Bidx,drop=FALSE])
-      ## ##   if (!eqmean) {
-      ## ##     Bidx <- bidx1[attributes(b11)$idx]
-      ## ##     val[,Bidx] <- as.numeric((val[,Bidx,drop=FALSE])%*%attributes(b11)$D[attributes(b11)$idx,attributes(b11)$idx])
-      ## ##   }
-      ## ## }      
-      ## attributes(val)$logLik <- c(U0$loglik,U1$loglik)
-      ## return(val)
       
     }
     val <- numeric(plen)
@@ -434,14 +423,6 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
     val[c(bidx1,vidx1)] <- val[c(bidx1,vidx1)]+colSums(U1$score)
     for (ii in vidx)
       val[ii] <- val[ii]*dmytr(p[ii])
-    ## if (Bconstrain & Blen>0) {
-    ##   Bidx <- attributes(b00)$idx
-    ##   val[Bidx] <- as.numeric(val[Bidx]%*%attributes(b00)$D[Bidx,Bidx])
-    ##   if (!eqmean) {
-    ##     Bidx <- bidx1[attributes(b11)$idx]
-    ##     val[Bidx] <- as.numeric(val[Bidx]%*%attributes(b11)$D[attributes(b11)$idx,attributes(b11)$idx])
-    ##   }
-    ## }    
     attributes(val)$logLik <- sum(U0$loglik)+sum(U1$loglik)
     return(val)
   }
@@ -461,14 +442,6 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
     Y <- rbind(MyData0$Y0[,1,drop=FALSE],MyData0$Y0[,2,drop=FALSE])
     g <- suppressWarnings(glm(Y~-1+X,family=binomial(probit)))
     p0[midx] <- coef(g)
-    ## if (Blen>0) {
-    ##   pB <- p0[tail(midx,Blen)]
-    ##   pB[1] <- ifelse(pB[1]<0,-2,log(pB[1]))
-    ##   if (Blen>1) {
-    ##     pB[seq_len(Blen-1)+1] <- -2
-    ##   }
-    ##   p0[tail(midx,Blen)] <- pB
-    ## }
   }
  
   if (!missing(p)) return(U(p,indiv=indiv))
@@ -537,16 +510,6 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
   
 
   if (stderr) {
-    
-    ## WW <- rbind(W0,W1)
-    ## ff <- function(p) {
-    ##   UU <- U(p,indiv=TRUE)
-    ##   s <- apply(UU,2,function(x) x) ##*WW[,1,drop=FALSE])
-    ##   l <- attributes(UU)$logLik##*WW[,1]
-    ##   res <- structure(sum(l), grad=colSums(s))
-    ##   res
-    ## }
-    
     UU <- U(op$par,indiv=TRUE)
     I <- -numDeriv::jacobian(U,op$par)
     tol <- 1e-15
@@ -578,7 +541,6 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
   }
 
   if (ACDU["u"]) {
-##    rnames <- c(rnames1,paste(c("log(var(U))","log(var(U))"),c("MZ","DZ"),sep=trnam))
     rnames <- c(rnames1,paste(c("atanh(rho)","atanh(rho)"),c("MZ","DZ"),sep=trnam))
   } else {
     rnames <- c(rnames1,c("log(var(A))","log(var(C))","log(var(D))")[ACDU[1:3]])
@@ -594,12 +556,11 @@ bptwin <- function(formula, data, id, zyg, DZ, OS,
                ACDU=ACDU[-4]*1)
   
   npar[unlist(lapply(npar,length))==0] <- 0
-##  npar$var <- nrow(cc)-sum(unlist(npar))
   
   val <- list(coef=cc,vcov=V,score=UU,logLik=attributes(UU)$logLik,opt=op, Sigma0=S$Sigma0, Sigma1=S$Sigma1, dS0=dS0, dS1=dS1, N=N, midx0=midx0, midx1=midx1, vidx0=vidx0, vidx1=vidx1, eqmean=eqmean, I=I,J=J, robustvar=robustvar,
               transform=list(tr=mytr, invtr=myinvtr, dtr=dmytr,
                 name=trname, invname=invtrname),
-              SigmaFun=Sigma, ##MuFun=Mu,
+              SigmaFun=Sigma,
               npar=npar
               )
   class(val) <- c("bptwin","biprobit")
