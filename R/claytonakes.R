@@ -32,7 +32,7 @@
 ##' e3
 ##' @export
 ClaytonOakes <- function(formula,data=parent.frame(),cluster,var.formula=~1,cuts=NULL,type="piecewise",start,control=list(),var.invlink=exp,...) {
-  
+
   mycall <- match.call()
   dots <- list(...)
   formulaId <- Specials(formula,"cluster") 
@@ -137,11 +137,12 @@ ClaytonOakes <- function(formula,data=parent.frame(),cluster,var.formula=~1,cuts
     ##    browser()
     res <- .Call("claytonoakes",
            ds=mydata$status,ts=mydata$T,es=mydata$entry,
-           allcs=mydata$cluster,cs=ucluster,
-           cuts=cuts,hs=exp(p),mulths=multhaz,
-           var=theta0,DUP=FALSE)$logLik
+           allcs=mydata$cluster,cs=ucluster, cuts=cuts,
+                 hs=exp(p),mulths=multhaz,
+                 var=theta0)$logLik
     return(-res)
   }
+  browser()
   opt <- tryCatch(nlminb(p0,obj,control=control),error=function(x) NULL)
   if (is.null(opt)) stop("Critical optmization problem")
   if (any(is.na(opt$par)) | any(!is.finite(opt$par)) | any(is.nan(opt$par)) ) {

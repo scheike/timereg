@@ -172,7 +172,7 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
   } else {
     if (length(id)!=nrow(data)) stop("Length of ids and data-set does not agree")
   }    
-  if (!missing(num)) {
+  if (!missing(num) && !is.null(num)) {
     if (is.character(num) || is.factor(num)) {
       numvar <- num
       num <- as.integer(data[,num,drop=TRUE])

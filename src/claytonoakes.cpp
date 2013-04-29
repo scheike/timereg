@@ -7,8 +7,9 @@
 using namespace arma;
 using namespace Rcpp;
 
-RcppExport SEXP claytonoakes( SEXP ds, SEXP ts, SEXP es, SEXP allcs, 
-			 SEXP cs, SEXP cuts, SEXP hs, SEXP mulths, SEXP var ) {
+RcppExport SEXP claytonoakes(SEXP ds, SEXP ts, SEXP es, 
+			     SEXP allcs, SEXP cs, SEXP cuts, 
+			     SEXP hs, SEXP mulths, SEXP var ) {
   // try {
   colvec event = Rcpp::as<colvec>(ds);
   colvec time = Rcpp::as<colvec>(ts);
