@@ -62,5 +62,6 @@ NULL
 ##' @aliases plotcr npc nonparcuminc simnordic corsim.prostate
 ##' alpha2kendall alpha2spear coefmat piecewise.twostage surv.boxarea
 ##' cluster.index familycluster.index faster.reshape piecewise.data
+##' simBinPlack simBinFam
 NULL
 

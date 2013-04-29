@@ -11,6 +11,8 @@
 \alias{piecewise.data}
 \alias{piecewise.twostage}
 \alias{plotcr}
+\alias{simBinFam}
+\alias{simBinPlack}
 \alias{simnordic}
 \alias{surv.boxarea}
 \title{For internal use}

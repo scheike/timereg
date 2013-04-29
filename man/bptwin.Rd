@@ -10,7 +10,7 @@
     type = "ace", eqmean = TRUE, pairsonly = FALSE,
     samecens = TRUE, allmarg = samecens & !is.null(weight),
     stderr = TRUE, robustvar = TRUE, p, indiv = FALSE,
-    constrain, bound = FALSE, debug = FALSE, ...)
+    constrain, bound = FALSE, ...)
 }
 \arguments{
   \item{formula}{Formula specifying effects of covariates
@@ -48,7 +48,8 @@
   \item{messages}{Control amount of messages shown}
 
   \item{control}{Control argument parsed on to the
-  optimization routine}
+  optimization routine. Starting values may be parsed as
+  '\code{start}'.}
 
   \item{type}{Character defining the type of analysis to be
   performed. Should be a subset of "aced" (additive genetic
@@ -78,8 +79,6 @@
 
   \item{bound}{Development argument}
 
-  \item{debug}{Development argument}
-
   \item{...}{Additional arguments to lower level functions}
 }
 \description{
@@ -88,7 +87,7 @@
 \examples{
 \donttest{
 data(twinstut)
-b0 <- bptwin(stutter~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="u")
+b0 <- bptwin(stutter~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",OS="os",type="ae")
 summary(b0)
 }
 }

@@ -5,7 +5,7 @@ Simple reshape/tranpose of data}
 \usage{
   fast.reshape(data, id, varying, num, sep = "", keep,
     idname = "id", numname = "num", factors.keep = TRUE,
-    ...)
+    idcombine = FALSE, ...)
 }
 \arguments{
   \item{data}{data.frame or matrix}
@@ -29,6 +29,11 @@ Simple reshape/tranpose of data}
 
   \item{factors.keep}{If false all factors are converted to
   integers}
+
+  \item{idcombine}{If TRUE and \code{id} is vector of
+  several variables, the unique id is combined from all the
+  variables. Otherwise the first variable is only used as
+  identifier.}
 
   \item{...}{Optional additional arguments}
 }
@@ -65,7 +70,7 @@ fast.reshape(xw2,varying=c("y","x"),idname="id")
 #varying=list(c("ym","yf","yb1","yb2")))
 
 ##### Family cluster example
-d <- mets:::sim.bin.fam(3)
+d <- mets:::simBinFam(3)
 d
 dd <- fast.reshape(d,var="y")
 dd
