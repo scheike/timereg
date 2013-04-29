@@ -12,12 +12,12 @@
 ###return(list(beta=beta))
 ###}
 
-krylow.pls <- function(D,d,K = 1) {
+krylow.pls <- function(D,d,dim = 1) {
 	r <- d
 	p <- r
 	rsold <- drop(t(r) %*% r) 
 	x <- rep(0,length(d)) 
-	for(k in 1:K){
+	for(k in 1:dim){
 		Ap <- D %*% p;
 		alpha <-drop(rsold / (t(p) %*% Ap)); x <- x + alpha * p;
 		r <- r - alpha * Ap;
