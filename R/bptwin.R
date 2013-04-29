@@ -132,38 +132,40 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
   }
   OSon <- FALSE
   if (!is.null(OS)) {
-    warning("Opposite-sex analysis not supported!")
     idx2 <- data[,zyg]==OS
-    if (length(idx2)==0) stop("No OS twins found")
     OSon <- TRUE
+    if (length(idx2)==0) {
+      warning("No OS twins found")
+      OSon <- FALSE
+    }
   }
-  idx1 <- data[,zyg]==DZ
+  idx1 <- which(data[,zyg]==DZ) ## DZ
   if (length(idx1)==0) stop("No DZ twins found")
-  idx0 <- data[,zyg]!=c(DZ,OS)
+  idx0 <- which(!(data[,zyg]%in%c(DZ,OS))) ## MZ
   if (length(idx1)==0) stop("No MZ twins found")
   zyg2 <- rep(1,nrow(data)); zyg2[idx0] <- 0; zyg2[idx2] <- 2
-  data[,zyg] <- zyg2
+  data[,zyg] <- zyg2 ## MZ=0, DZ=1, OS=2
 
   
   ## time <- "time"
   ## while (time%in%names(data)) time <- paste(time,"_",sep="")
   ## data[,time] <- unlist(lapply(idtab,seq))
   
-  ##  ff <- paste(as.character(formula)[3],"+",time,"+",id,"+",zyg)
+  ## ff <- paste(as.character(formula)[3],"+",time,"+",id,"+",zyg)
   ff <- paste(as.character(formula)[3],"+",id,"+",zyg)
   if (!is.null(weight))
     ff <- paste(weight,"+",ff)
   ff <- paste("~",yvar,"+",ff)
   formula0 <- as.formula(ff)
   Data <- model.matrix(formula0,data,na.action=na.pass)
-   ## rnames1 <- setdiff(colnames(Data),c(yvar,time,id,weight,zyg))
+  ## rnames1 <- setdiff(colnames(Data),c(yvar,time,id,weight,zyg))
   rnames1 <- setdiff(colnames(Data),c(yvar,id,weight,zyg))
   nx <- length(rnames1) 
   if (nx==0) stop("Zero design not allowed")
   
 
   bidx0 <- seq(nx)
-  midx0 <- bidx0; midx1 <- midx0+nx  
+  midx0 <- bidx0; midx1 <- midx0+nx
   dS0 <- rbind(rep(1,4),rep(1,4),rep(1,4)) ## MZ
   dS1 <- rbind(c(1,.5,.5,1),rep(1,4),c(1,.25,.25,1)) ## DZ
   dS2  <- rbind(c(1,0,0,1),rep(1,4),c(1,0,0,1),c(0,1,1,0))
@@ -212,12 +214,14 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
   Dm <- matrix(c(1,.25,.25,1),ncol=2)
   Em <- diag(2)
   Vm <- matrix(c(1,0,0,1),ncol=2)
-  Om <- matrix(c(0,1,1,0),ncol=2)
+  Rm <- matrix(c(0,1,1,0),ncol=2)
 
 ##################################################
 
   ## Wide <- reshape(as.data.frame(Data),idvar=c(id,zyg),timevar=time,direction="wide")
   Wide <- as.data.frame(fast.reshape(Data,id=c(id,zyg),sep="."))
+  ## system.time(Wide <- as.data.frame(fast.reshape(Data,id=id,sep=".")))
+  Wide0 <- subset(Wide, zyg==1)
   yidx <- paste(yvar,1:2,sep=".")
   rmidx <- c(id,yidx,zyg)
   
@@ -282,20 +286,19 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
     p0[vidx] <- mytr(p0[vidx])    
     if (ACDU["u"]) {
       pos0 <- ifelse(OSon, plen-2, plen-1)
-      Sigma0 <- diag(2) + p0[pos0]*Om
-      Sigma1 <- diag(2) + p0[pos0+1]*Om
-      if (OSon) Sigma2 <- diag(2) + p0[pos0+2]*Om
+      Sigma0 <- diag(2) + p0[pos0]*Rm
+      Sigma1 <- diag(2) + p0[pos0+1]*Rm
+      if (OSon) Sigma2 <- diag(2) + p0[pos0+2]*Rm
     } else {    
       pv <- ACDU*1;  pv[which(ACDU[1:3])] <- p0[vidx]
       Sigma0 <- Em*pv["e"] + pv["a"] + pv["c"] + pv["d"]
       Sigma1 <- Em*pv["e"] + pv["a"]*Am + pv["c"] + pv["d"]*Dm
-      Sigma2 <- Em*pv["e"] + pv["a"] + pv["c"] + pv["d"] + pv["os"]*Om
+      Sigma2 <- Em*pv["e"] + (pv["a"] + pv["c"] + pv["d"])*Vm + pv["os"]*
     }
     return(list(Sigma0=Sigma0,Sigma1=Sigma1,Sigma2=Sigma2))
   }
 
-  browser()
-  ###}}} Mean/Var function
+###}}} Mean/Var function
   
 ###{{{ U  
 
@@ -341,7 +344,12 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
       U1$loglik <- c(U1$loglik,U_marg$loglik)
     }
 
+    browser()
+    
     if (OSon) {
+      Mu2 <- with(MyData2, cbind(XX0[,midx0,drop=FALSE]%*%b22,
+                                 XX0[,midx1,drop=FALSE]%*%b22))
+
       U2 <- with(MyData2, .Call("biprobit0",
                                 Mu2,
                                 S$Sigma2,dS2,Y0,XX0,W0,!is.null(W0),samecens))
@@ -421,9 +429,10 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
     val <- numeric(plen)
     val[c(bidx0,vidx0)] <- colSums(U0$score)
     val[c(bidx1,vidx1)] <- val[c(bidx1,vidx1)]+colSums(U1$score)
+    if (OSon) val[c(bidx2,vidx2)] <- val[c(bidx2,vidx2)]+colSums(U2$score)
     for (ii in vidx)
       val[ii] <- val[ii]*dmytr(p[ii])
-    attributes(val)$logLik <- sum(U0$loglik)+sum(U1$loglik)
+    attributes(val)$logLik <- sum(U0$loglik)+sum(U1$loglik) + sum(U2$loglik)
     return(val)
   }
 
@@ -526,24 +535,30 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
     I <- J <- V <- matrix(NA,ncol=length(op$par),nrow=length(op$par))
   }
 
-  ###}}} optim
+###}}} optim
 
 ###{{{ return
 
   cc <- cbind(op$par,sqrt(diag(V)))
   cc <- cbind(cc,cc[,1]/cc[,2],2*(1-pnorm(abs(cc[,1]/cc[,2]))))
   colnames(cc) <- c("Estimate","Std.Err","Z","p-value")
+  browser()
   vnames1 <- NULL
   trnam <- " "
   if (debug) browser()
   if (!eqmean) {
-    rnames1 <- c(paste(rnames1,"MZ",sep=trnam),paste(rnames1,"DZ",sep=trnam))
+    rnam <- rnames1
+    rnames1 <- c(paste(rnam,"MZ",sep=trnam),paste(rnam,"DZ",sep=trnam))
+    if (OSon) rnames1 <- c(rnames1,paste(rnam,"OS",sep=trnam))
+
   }
 
   if (ACDU["u"]) {
-    rnames <- c(rnames1,paste(c("atanh(rho)","atanh(rho)"),c("MZ","DZ"),sep=trnam))
+    groups <- c("MZ","DZ"); if (OSon) groups <- c(groups,"OS")
+    rnames <- c(rnames1,paste(c("atanh(rho)","atanh(rho)"),groups,sep=trnam))
   } else {
     rnames <- c(rnames1,c("log(var(A))","log(var(C))","log(var(D))")[ACDU[1:3]])
+    if (OSon) rnames <- c(rnames,"log(Var(O))")
   }
   if (!missing(constrain)) rnames <- rnames[freeidx]
   rownames(cc) <- rnames
@@ -557,7 +572,13 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
   
   npar[unlist(lapply(npar,length))==0] <- 0
   
-  val <- list(coef=cc,vcov=V,score=UU,logLik=attributes(UU)$logLik,opt=op, Sigma0=S$Sigma0, Sigma1=S$Sigma1, dS0=dS0, dS1=dS1, N=N, midx0=midx0, midx1=midx1, vidx0=vidx0, vidx1=vidx1, eqmean=eqmean, I=I,J=J, robustvar=robustvar,
+  val <- list(coef=cc,vcov=V,score=UU,logLik=attributes(UU)$logLik,opt=op,
+              Sigma0=S$Sigma0, Sigma1=S$Sigma1, Sigma2=S$Sigma2,
+              dS0=dS0, dS1=dS1, dS2=dS2,
+              N=N,
+              midx0=midx0, midx1=midx1,
+              vidx0=vidx0, vidx1=vidx1, vidx2=vidx2,
+              eqmean=eqmean, I=I,J=J, robustvar=robustvar,
               transform=list(tr=mytr, invtr=myinvtr, dtr=dmytr,
                 name=trname, invname=invtrname),
               SigmaFun=Sigma,

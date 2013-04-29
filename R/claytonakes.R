@@ -134,7 +134,6 @@ ClaytonOakes <- function(formula,data=parent.frame(),cluster,var.formula=~1,cuts
       multhaz <- exp(X%*%beta)
     }
     if (!is.null(dots$theta)) theta0 <- cbind(rep(dots$theta,length(theta0)))
-    ##    browser()
     res <- .Call("claytonoakes",
            ds=mydata$status,ts=mydata$T,es=mydata$entry,
            allcs=mydata$cluster,cs=ucluster, cuts=cuts,
@@ -142,7 +141,6 @@ ClaytonOakes <- function(formula,data=parent.frame(),cluster,var.formula=~1,cuts
                  var=theta0)$logLik
     return(-res)
   }
-  browser()
   opt <- tryCatch(nlminb(p0,obj,control=control),error=function(x) NULL)
   if (is.null(opt)) stop("Critical optmization problem")
   if (any(is.na(opt$par)) | any(!is.finite(opt$par)) | any(is.nan(opt$par)) ) {

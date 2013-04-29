@@ -1,3 +1,7 @@
+* Version 0.2.2 <2013-04-30>
+  - Updated twinlm. bptwin: OS analysis 
+  - Fixed claytonaokes.cpp
+
 * Version 0.2 <2013-03-27>
   - fast.reshape
   - easy.binomial.twostage

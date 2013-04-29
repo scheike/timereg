@@ -163,7 +163,7 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
 
   
   ## Long to wide format:
-  
+
   numvar <- idvar <- NULL 
   if (is.character(id) || is.factor(id)) {
     ##    if (length(id)>1) stop("Expecting column name or vector of id's")
@@ -207,6 +207,7 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
     data <- data[,ii,drop=FALSE]
   }
 
+  return(NULL)
   if (missing(varying)) varying <- setdiff(colnames(data),c(idvar))
   vidx <- match(varying,colnames(data))
   N <- nrow(idclust)
