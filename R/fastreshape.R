@@ -207,7 +207,6 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
     data <- data[,ii,drop=FALSE]
   }
 
-  return(NULL)
   if (missing(varying)) varying <- setdiff(colnames(data),c(idvar))
   vidx <- match(varying,colnames(data))
   N <- nrow(idclust)

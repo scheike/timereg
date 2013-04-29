@@ -173,15 +173,27 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
   ##mytr <- function(x) x; dmytr <- function(x) 1
   ##mytr <- function(x) x^2; dmytr <- function(x) 2*x
   ##mytr <- function(z) 1/(1+exp(-z)); dmytr <- function(z) exp(-z)/(1+exp(-z))^2
-  mytr <- exp; dmytr <- exp; myinvtr <- log
-  trname <- "exp"; invtrname <- "log"      
   ACDU <- sapply(c("a","c","d","e","u"),function(x) length(grep(x,tolower(type)))>0)
   ACDU <- c(ACDU,os=OSon)
+
+  mytr <- exp; dmytr <- exp; myinvtr <- log
+  trname <- "exp"; invtrname <- "log"      
+
+  dmytr2 <- function(z) 4*exp(2*z)/(exp(2*z)+1)^2
+  mytr2 <- tanh;  myinvtr2 <- atanh
+  trname2 <- "tanh"; invtrname2 <- "atanh"
+
+  if (OSon) {
+    mytr <- function(p) c(exp(p[-length(p)]),mytr2(p[length(p)]))
+    myinvtr <- function(z) c(log(z[-length(z)]),myinvtr2(z[length(z)]))
+    dmytr <- function(p) c(exp(p[-length(p)]),dmytr2(p[length(p)]))    
+  }
+
   if (ACDU["u"]) {
     ##      datanh <- function(r) 1/(1-r^2)
-    dmytr <- function(z) 4*exp(2*z)/(exp(2*z)+1)^2
-    mytr <- tanh;  myinvtr <- atanh
-    trname <- "tanh"; invtrname <- "atanh"    
+    dmytr <- dmytr2
+    mytr <- mytr2;  myinvtr <- myinvtr2
+    trname <- trname2; invtrname <- invtrname2
     dS0 <- rbind(c(0,1,1,0))
     vidx0 <- 1
     vidx1 <- 2
@@ -220,8 +232,6 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
 
   ## Wide <- reshape(as.data.frame(Data),idvar=c(id,zyg),timevar=time,direction="wide")
   Wide <- as.data.frame(fast.reshape(Data,id=c(id,zyg),sep="."))
-  ## system.time(Wide <- as.data.frame(fast.reshape(Data,id=id,sep=".")))
-  Wide0 <- subset(Wide, zyg==1)
   yidx <- paste(yvar,1:2,sep=".")
   rmidx <- c(id,yidx,zyg)
   
@@ -236,6 +246,7 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
   }
   XX <- as.matrix(Wide[,setdiff(colnames(Wide),rmidx)])
   XX[is.na(XX)] <- 0
+browser()
   Y0 <- as.matrix(Wide[which(Wide[,zyg]==0),yidx,drop=FALSE])
   Y1 <- as.matrix(Wide[which(Wide[,zyg]==1),yidx,drop=FALSE])
   Y2 <- as.matrix(Wide[which(Wide[,zyg]==2),yidx,drop=FALSE])
@@ -293,7 +304,8 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
       pv <- ACDU*1;  pv[which(ACDU[1:3])] <- p0[vidx]
       Sigma0 <- Em*pv["e"] + pv["a"] + pv["c"] + pv["d"]
       Sigma1 <- Em*pv["e"] + pv["a"]*Am + pv["c"] + pv["d"]*Dm
-      Sigma2 <- Em*pv["e"] + (pv["a"] + pv["c"] + pv["d"])*Vm + pv["os"]*
+      Sigma2 <- Em*pv["e"] + pv["c"] + (pv["a"] + pv["d"])*Vm +
+        pv["os"]*(pv["a"] + pv["d"])*Rm
     }
     return(list(Sigma0=Sigma0,Sigma1=Sigma1,Sigma2=Sigma2))
   }
