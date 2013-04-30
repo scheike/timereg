@@ -357,7 +357,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
     }
   }
   
-  res <- list(coefficients=e$opt$estimate, vcov=Inverse(information(e)), estimate=e, model=mm, full=full, call=cl, data=data, zyg=zyg, id=id, twinnum=twinnum, type=type, model.mz=model1, model.dz=model2, model.dzos=model3, data.mz=wide1, data.dz=wide2, data.os=wide3, OS=!missing(OS), constrain=constrain)
+  res <- list(coefficients=e$opt$estimate, vcov=Inverse(information(e)), estimate=e, model=mm, full=full, call=cl, data=data, zyg=zyg, id=id, twinnum=twinnum, type=type, model.mz=model1, model.dz=model2, model.dzos=model3, data.mz=wide1, data.dz=wide2, data.os=wide3, OS=!missing(OS), constrain=constrain, outcomes=outcomes)
   class(res) <- "twinlm"
   return(res)
 }

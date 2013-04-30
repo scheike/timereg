@@ -13,7 +13,32 @@ print.twinlm <- function(x,...) {
 ##' @S3method summary twinlm
 summary.twinlm <- function(object,...) {
   e <- object$estimate
-  zygtab <- with(object, table(data[,zyg]))
+  counts <- function(dd) {
+    dd0 <- apply(dd,2,function(x) !is.na(x))
+    pairs <- sum(dd0[,1]*dd0[,2])
+    singletons <- sum((!dd0[,1])*dd0[,2] + (!dd0[,2])*dd0[,1])
+    return(c(pairs,singletons))
+  }
+  mz  <- counts(object$data.mz[,object$outcomes])
+  dz  <- counts(object$data.dz[,object$outcomes])
+  if (!object$estimate$model$missing) {
+    zygtab <- c("MZ-pairs"=mz[1],"DZ-pairs"=dz[1])
+  } else {
+    zygtab <- c(paste(mz,collapse="/"),paste(dz,collapse="/"))
+    names(zygtab) <- c("MZ-pairs/singletons","DZ-pairs/singletons")
+  }
+  if (object$OS) {
+    os  <- counts(object$data.os[,object$outcomes])
+    if (!object$estimate$model$missing) {
+      zygtab <- c(zyg,"OS-pairs"=os[1])
+    } else {
+      zygtab <- c(zygtab,paste(dz,collapse="/"))
+      names(zygtab)[3] <- "OS-pairs/singletons"
+    }
+  } 
+  ## zygtab <- with(object, table(data[,zyg]))
+  ## names(zygtab) <- paste(names(zygtab),"pairs",sep="-")
+
   theta <- pars(e)
   theta.sd <- sqrt(diag(e$vcov))
   myest <- cbind(theta,theta.sd,(Z <- theta/theta.sd),2*(1-pnorm(abs(Z))))
@@ -62,10 +87,6 @@ summary.twinlm <- function(object,...) {
   rownames(myest) <- seq(nrow(myest))
   idx <- seq(nrow(myest)); 
   rownames(myest)[idx] <- r1
-  ## r2 <- gsub(".2","",rownames(myest),fixed=TRUE)
-  ## rownames(myest)[idx] <- r2
-##  rownames(myest) <- coef(Model(Model(e))[[1]],
-##                                      mean=e$meanstructure, silent=TRUE)
 
   lambda.idx <- sapply(c("<-a1","<-c1","<-d1","<-e1"),function(x) grep(x,rownames(myest)))
   lambda.idx2 <- sapply(c("<-a2","<-c2","<-d2","<-e2"),function(x) grep(x,rownames(myest)))
@@ -84,18 +105,7 @@ summary.twinlm <- function(object,...) {
   L <- binomial("logit")
   varcomp <- c()
   genpos <- c()
-  pos <- 0
-  ## if ("e1"%in%latent(e) & object$binary) {
-  ##   if (length(object$probitscale)>0)
-  ##     varEst[4] <- object$probitscale
-  ##   if ("a1"%in%latent(e)) { varcomp <- "lambda[a]"; pos <- pos+1; genpos <- c(genpos,pos) }
-  ##   if ("c1"%in%latent(e)) { varcomp <- c(varcomp,"lambda[c]"); pos <- pos+1 }
-  ##   if ("d1"%in%latent(e)) { varcomp <- c(varcomp,"lambda[d]"); pos <- pos+1;
-  ##                            genpos <- c(genpos,pos) }
-  ##   f <- paste("h2~",paste(varcomp,collapse="+"))
-  ##   constrain(e, as.formula(f)) <- function(x) L$linkfun(sum(x[genpos]^2)/sum(c(x^2,varEst[4])))
-    
-  ## } else
+  pos <- 0    
   {
     varcomp <- c()
         if ("a1"%in%latent(e)) { varcomp <- "lambda[a]"; pos <- pos+1;
@@ -147,8 +157,6 @@ summary.twinlm <- function(object,...) {
   s2 <- (t(D2)%*%varSigma%*%(D2))^0.5
   ci2 <- e2+qnorm(0.975)*c(-1,1)*s2
   
-  ## corMZ <- sum(varEst[1:3]^2)/sum(varEst^2)
-  ## corDZ <- sum(varEst[1:3]^2*c(0.5,1,0.25))/sum(varEst^2<)
   corMZ <- c(tanh(c(e1,ci1)))
   corDZ <- c(tanh(c(e2,ci2)))  
 
@@ -182,15 +190,8 @@ print.summary.twinlm <- function(x,signif.stars=FALSE,...) {
 
     printCoefmat(x$estimate,signif.stars=signif.stars,...)
     cat("\n")
-    myzyg <- with(x,zyg)
-    names(myzyg)[1:2] <- c("Group 1 (DZ)", "Group 2 (MZ)")
-    if (length(myzyg)==3) names(myzyg)[3] <- "Group 3 (OS)"
-    print(myzyg)
-##   cat("\n")
-##   mynames <- c("sigmaA","sigmaC","sigmaD","sigmaE")
-##   for (i in 1:4) {
-##     cat(mynames[i], "=", x$varEst[i], "\n")
-##   }
+    print(x$zyg,quote=FALSE)
+
     if (!is.null(x$acde)) {
       cat("\nVariance decomposition:\n")
       print(x$acde)
