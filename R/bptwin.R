@@ -102,11 +102,11 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
 
 ##################################################
 ### No strata
-    if (is.null(control$method)) {
+  if (is.null(control$method)) {
       if (!samecens & !is.null(weight)) {
         control$method <- "bhhh"
       } else {
-        if (require(ucminf)) {
+        if (suppressWarnings(require(ucminf))) {
           control$method <- "gradient"
         } else control$method <- "nlminb"
       }

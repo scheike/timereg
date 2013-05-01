@@ -196,11 +196,18 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
   latent(model2) <- c("a2","d2")
   intercept(model2, c("a2","d2")) <- 0
   covariance(model2, c("a2","d2")) <- 1
+
   model3 <- model2
-  covariance(model3, a1~a2)  <- "r1"
-  suppressMessages(constrain(model3, r1 ~ ra) <- lava:::Range.lvm())
+  covariance(model3, a1~a2) <- "r1"
   covariance(model3, d1~d2) <- "r2"
-  suppressMessages(constrain(model3, r2 ~ rd) <- lava:::Range.lvm())
+  constrain(model3, r1~ra) <- tanh
+  constrain(model3, r2~rd) <- tanh
+  browser()
+  ## model3 <- model2
+  ## covariance(model3, a1~a2)  <- "r1"
+  ## suppressMessages(constrain(model3, r1 ~ ra) <- lava:::Range.lvm())
+  ## covariance(model3, d1~d2) <- "r2"
+  ## suppressMessages(constrain(model3, r2 ~ rd) <- lava:::Range.lvm())
 
   if (type=="flex") {
      intercept(model1,outcomes) <- "mu1"
@@ -305,7 +312,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
     }
 
     if (!missing(OS)) {
-      dif <- wide3[,myvars[1]]-wide2[,myvars[2]]   
+      dif <- wide3[,myvars[1]]-wide3[,myvars[2]]   
       mykeep <- myvars
       if (all(na.omit(dif)==00)) {
         mykeep <- mykeep[-2]
@@ -337,7 +344,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
   if (length(control)>0) {
     optim[names(control)] <- control
   }
-
+  
   if (is.Surv(data[,yvar])) {
     require("lava.tobit")
     if (is.null(optim$method))
@@ -346,7 +353,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
   } else {
     e <- estimate(mm,dd,weight=weight,estimator=estimator,fix=FALSE,control=optim,...)
   }
-  
+
   if (!is.null(optim$refit) && optim$refit) {
     optim$method <- "NR"
     optim$start <- pars(e)
@@ -356,7 +363,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
       e <- estimate(mm,dd,weight=weight,estimator=estimator,fix=FALSE,control=optim,...)
     }
   }
-  
+
   res <- list(coefficients=e$opt$estimate, vcov=Inverse(information(e)), estimate=e, model=mm, full=full, call=cl, data=data, zyg=zyg, id=id, twinnum=twinnum, type=type, model.mz=model1, model.dz=model2, model.dzos=model3, data.mz=wide1, data.dz=wide2, data.os=wide3, OS=!missing(OS), constrain=constrain, outcomes=outcomes)
   class(res) <- "twinlm"
   return(res)

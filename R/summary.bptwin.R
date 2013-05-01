@@ -89,8 +89,12 @@ summary.bptwin <- function(object,level=0.05,...) {
     rEst <- object$coef[nrow(object$coef),1]
     rSE <- object$coef[nrow(object$coef),2]
     rhoOS <- tanh(rbind(c(rEst,rEst+qnorm(1-alpha)*c(-1,1)*rSE)))
-    colnames(rhoOS) <- c("Etimate",CIlab)
-    rownames(rhoOS) <- "OS Cor(genetic)"    
+    colnames(rhoOS) <- c("Estimate",CIlab)
+    if (length(idx1)==0) {
+      rownames(rhoOS) <- "Tetrachoric correlation OS"
+    } else {
+      rownames(rhoOS) <- "Kinship OS"    
+    }
   }
   
     

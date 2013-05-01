@@ -30,9 +30,9 @@ summary.twinlm <- function(object,...) {
   if (object$OS) {
     os  <- counts(object$data.os[,object$outcomes])
     if (!object$estimate$model$missing) {
-      zygtab <- c(zyg,"OS-pairs"=os[1])
+      zygtab <- c(zygtab,"OS-pairs"=os[1])
     } else {
-      zygtab <- c(zygtab,paste(dz,collapse="/"))
+      zygtab <- c(zygtab,paste(os,collapse="/"))
       names(zygtab)[3] <- "OS-pairs/singletons"
     }
   } 
@@ -57,30 +57,34 @@ summary.twinlm <- function(object,...) {
         corest <- tanh(corest)
         corMZ <- c(corest[1],ciest[1,])
         corDZ <- c(corest[2],ciest[2,])
+        corOS <- NULL
+        if (object$OS) {
+          corOS <- c(corest[3],ciest[3,])
+        }
       }
     }
     aa <- capture.output(e)
     res <- list(estimate=aa, zyg=zygtab,
                 varEst=NULL, varSigma=NULL, heritability=NULL,
-                corMZ=corMZ, corDZ=corDZ,
+                corMZ=corMZ, corDZ=corDZ, corOS=corOS,
                 logLik=logLik(e), AIC=AIC(e), BIC=BIC(e), type=object$type
                 )                
     class(res) <- "summary.twinlm"
     return(res)
   }
 
-  corOS <- NULL
-  if(object$OS) {
-    corOS <- constraints(e,k=3)[,c(1,5,6),drop=FALSE]
-    myest <- myest[-nrow(myest),,drop=FALSE]
-    rownames(corOS)[1] <- "OS correlation"
-    if (nrow(corOS)>1) {
-      myest <- myest[-nrow(myest),,drop=FALSE]
-      rownames(corOS) <- c("OS correlation (A)","OS correlation (D)")
-    }
-    
-  }
 
+  kinshipOS  <- NULL
+  if(object$OS) {
+    KinshipOS <- constraints(e,k=3)[,c(1,5,6),drop=FALSE]
+    myest <- myest[-nrow(myest),,drop=FALSE]
+    rownames(KinshipOS)[1] <- "OS Kinship"
+    if (nrow(KinshipOS)>1) {
+      myest <- myest[-nrow(myest),,drop=FALSE]
+      rownames(KinshipOS) <- c("OS Kinship(A)","OS Kinship(D)")
+    }
+  }
+  
   r1 <- gsub(".1","",coef(Model(Model(e))[[1]],
                                        mean=e$meanstructure, silent=TRUE),
                           fixed=TRUE)
@@ -148,6 +152,7 @@ summary.twinlm <- function(object,...) {
   
   atanhcorMZf <- function(x) atanh(sum(x[1:3]^2)/sum(x^2))
   atanhcorDZf <- function(x) atanh(sum(x[1:3]^2*c(0.5,1,0.25))/sum(x^2))
+  
   e1 <- atanhcorMZf(varEst)
   D1 <- grad(atanhcorMZf,varEst)
   s1 <- (t(D1)%*%varSigma%*%(D1))^0.5
@@ -162,11 +167,16 @@ summary.twinlm <- function(object,...) {
 
   acde <- acde.twinlm(object)
   coef <- rbind(acde)  
+
+  corOS <- NULL
+  if (object$OS)
+    acde <- rbind(acde,KinshipOS)
+
   
   hrow <- rbind(c(h2val,ci.logit));
   rownames(hrow) <- "Broad-sense heritability"
   colnames(hrow)[1:2] <- c("Estimate","Std.Err")
-
+  
   all <- rbind(hrow[,c(1,3,4),drop=FALSE],coef,corMZ,corDZ,corOS)
   
   res <- list(estimate=myest, zyg=zygtab, varEst=varEst,
@@ -194,22 +204,21 @@ print.summary.twinlm <- function(x,signif.stars=FALSE,...) {
 
     if (!is.null(x$acde)) {
       cat("\nVariance decomposition:\n")
-      print(x$acde)
-      if (!is.null(x$corOS))
-        print(x$corOS)   
+      printCoefmat(x$acde,...)
     }
-    cat("\n")
-    cat("Broad-sense heritability (total genetic factors):\n")
+    cat("\n\n")
+    ##    cat("Broad-sense heritability (total genetic factors):\n")
     h <- with(x, heritability[,c(1,3,4),drop=FALSE]);
     h <- na.omit(h)
-    print(h)  
+    printCoefmat(h,...)  
     cat("\n")
   }
   if (!is.null(x$corMZ)) {
-    cc <- with(x, rbind(corMZ,corDZ))
-    rownames(cc) <- c("Correlation within MZ:","Correlation within DZ:")
+    cc <- with(x, rbind(corMZ,corDZ,corOS))
+    rownames(cc)[1:2] <- c("Correlation within MZ:","Correlation within DZ:")
+    if (!is.null(x$corOS)) rownames(cc)[3] <- "Correlation within OS:"
     colnames(cc) <- c("Estimate","2.5%","97.5%")
-    printCoefmat(cc,signif.stars=FALSE)
+    printCoefmat(cc,signif.stars=FALSE,...)
   }
   
   cat("\n")
