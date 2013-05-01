@@ -77,50 +77,55 @@ summary.twinlm <- function(object,...) {
   kinshipOS  <- NULL
   if(object$OS) {
     KinshipOS <- constraints(e,k=3)[,c(1,5,6),drop=FALSE]
-    myest <- myest[-nrow(myest),,drop=FALSE]
     rownames(KinshipOS)[1] <- "OS Kinship"
     if (nrow(KinshipOS)>1) {
-      myest <- myest[-nrow(myest),,drop=FALSE]
       rownames(KinshipOS) <- c("OS Kinship(A)","OS Kinship(D)")
     }
+    myest <- myest[-lava:::parpos.multigroup(object$estimate$model,p=c("ra","rd")),,drop=FALSE]
   }
-  
+
   r1 <- gsub(".1","",coef(Model(Model(e))[[1]],
-                                       mean=e$meanstructure, silent=TRUE),
+                          mean=e$meanstructure, silent=TRUE),
                           fixed=TRUE)
   rownames(myest) <- seq(nrow(myest))
   idx <- seq(nrow(myest)); 
   rownames(myest)[idx] <- r1
 
-  lambda.idx <- sapply(c("<-a1","<-c1","<-d1","<-e1"),function(x) grep(x,rownames(myest)))
-  lambda.idx2 <- sapply(c("<-a2","<-c2","<-d2","<-e2"),function(x) grep(x,rownames(myest)))
+
+  myest.varpos <- unlist(sapply(c("<-a1","<-c1","<-d1","<-e1"),function(x) grep(x,rownames(myest))))
+  
+  lambda.idx <- sapply(c("<-a1","<-c1","<-d1","<-e1"),function(x) grep(x,names(coef(e))))
+  lambda.idx2 <- sapply(c("<-a2","<-c2","<-d2","<-e2"),function(x) grep(x,names(coef(e))))
   for (k in seq_len(length(lambda.idx)))
     if (length(lambda.idx[[k]])==0) lambda.idx[[k]] <- lambda.idx2[[k]] 
 
   lambda.w <- which(sapply(lambda.idx, function(x) length(x)>0))
           
-  rownames(myest)[unlist(lambda.idx)] <- paste("sd(",c("A)","C)","D)","E)"),sep="")[lambda.w]
+  rownames(myest)[myest.varpos] <- paste("sd(",c("A)","C)","D)","E)"),sep="")[lambda.w]
 
   varEst <- rep(0,4)
-  varEst[lambda.w] <- myest[unlist(lambda.idx),1]
+  varEst[lambda.w] <- myest[myest.varpos,1]
   varSigma <- matrix(0,4,4);
   varSigma[lambda.w,lambda.w] <- e$vcov[unlist(lambda.idx),unlist(lambda.idx)]
 
   L <- binomial("logit")
   varcomp <- c()
   genpos <- c()
-  pos <- 0    
+  pos <- 0L
   {
     varcomp <- c()
-        if ("a1"%in%latent(e)) { varcomp <- "lambda[a]"; pos <- pos+1;
-                                 genpos <- c(genpos,pos) }
+    if ("a1"%in%latent(e)) { varcomp <- "lambda[a]"; pos <- pos+1
+                             genpos <- c(genpos,pos) }
     if ("c1"%in%latent(e)) { varcomp <- c(varcomp,"lambda[c]"); pos <- pos+1 }
     if ("d1"%in%latent(e)) { varcomp <- c(varcomp,"lambda[d]"); pos <- pos+1;
                              genpos <- c(genpos,pos) }
     if ("e1"%in%latent(e)) { varcomp <- c(varcomp,"lambda[e]"); pos <- pos+1 }
     f <- paste("h2~",paste(varcomp,collapse="+"))
 
-    constrain(e, as.formula(f)) <- function(x) L$linkfun(sum(x[genpos]^2)/sum(x^2))
+    constrain(e, as.formula(f)) <- function(x) {
+      L$linkfun(sum(x[genpos]^2)/sum(x^2))
+    }
+
   }
   ci.logit <- L$linkinv(constraints(e,k=1)["h2",5:6])
   
@@ -147,12 +152,10 @@ summary.twinlm <- function(object,...) {
   colnames(hval) <- c("Estimate", "Std.Err"); rownames(hval) <- "h squared"
   h2val <- cbind(h2(varEst), (t(dh2(varEst))%*%varSigma%*%(dh2(varEst)))^0.5)
   colnames(h2val) <- c("Estimate", "Std.Err"); rownames(h2val) <- "h squared"
-
-
-  
+ 
   atanhcorMZf <- function(x) atanh(sum(x[1:3]^2)/sum(x^2))
   atanhcorDZf <- function(x) atanh(sum(x[1:3]^2*c(0.5,1,0.25))/sum(x^2))
-  
+ 
   e1 <- atanhcorMZf(varEst)
   D1 <- grad(atanhcorMZf,varEst)
   s1 <- (t(D1)%*%varSigma%*%(D1))^0.5

@@ -200,14 +200,8 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
   model3 <- model2
   covariance(model3, a1~a2) <- "r1"
   covariance(model3, d1~d2) <- "r2"
-  constrain(model3, r1~ra) <- tanh
-  constrain(model3, r2~rd) <- tanh
-  browser()
-  ## model3 <- model2
-  ## covariance(model3, a1~a2)  <- "r1"
-  ## suppressMessages(constrain(model3, r1 ~ ra) <- lava:::Range.lvm())
-  ## covariance(model3, d1~d2) <- "r2"
-  ## suppressMessages(constrain(model3, r2 ~ rd) <- lava:::Range.lvm())
+  constrain(model3, r1~ra) <- function(x) tanh(x)
+  constrain(model3, r2~rd) <- function(x) tanh(x)
 
   if (type=="flex") {
      intercept(model1,outcomes) <- "mu1"
