@@ -143,6 +143,11 @@ clust <- rep(1:204,each=2)
 addclust<-comp.risk(Surv(time,cause>0)~platelet+age+tcell+cluster(clust),data=bmt,
 bmt$cause,causeS=1,resample.iid=1,n.sim=100,model="additive")
 
+addclust<-comp.risk(Surv(time,cause>0)~+1+cluster(clust),data=bmt,
+bmt$cause,causeS=1,resample.iid=1,n.sim=100,model="additive")
+pad <- predict(addclust,X=1)
+plot(pad)
+
 add<-comp.risk(Surv(time,cause>0)~platelet+age+tcell,data=bmt,
 bmt$cause,causeS=1,resample.iid=1,n.sim=100,model="additive")
 summary(add)
