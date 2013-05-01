@@ -29,7 +29,7 @@
   Aalen frailty model
 }
 \examples{
-n <- 5e3
+n <- 5e4
 theta <- 0.3
 K <- 2
 Z <- rep(rgamma(n/K,1/theta,1/theta),each=K)
@@ -52,13 +52,15 @@ spec <- 1
 ##plot(out,spec=spec)
 plot(dd$time[dix],bb$B2[,spec],col="red",type="s",ylim=c(0,max(dd$time)*c(beta0,beta)[spec]))
 abline(a=0,b=c(beta0,beta)[spec])
+###system.time(out<-prop.odds(update(f,Surv(time,status)~Z),dd,n.sim=0))
 
-
-\dontrun{thetas <- seq(0.1,2,length.out=10)
+\dontrun{
+thetas <- seq(0.1,2,length.out=10)
 Us <- unlist(aalenfrailty(dd$time,dd$status,X,dd$id,as.list(thetas)))
 plot(thetas,Us,type="l",ylim=c(-.5,1)); abline(h=0,lty=2); abline(v=theta,lty=2)
 op <- aalenfrailty(dd$time,dd$status,X,dd$id)
-op}
+op
+}
 }
 \author{
   Klaus K. Holst

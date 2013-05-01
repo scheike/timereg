@@ -170,6 +170,9 @@ casewise <- function(conc,marg,cause.marg)
           se.P1 <-  Cpred(cbind(conc$time,conc.se.cuminc),timer)[,2]
 	  concP1 <- Cpred(cbind(conc$time,conc.cuminc),timer)[,2]
   }
+  concordance<- cbind(timer,concP1,se.P1)
+  colnames(concordance) <- c("time","cif","se.cif")
+
   P1 <- concP1/margtime
   se.P1 <- se.P1/margtime
   med <- (margtime>0)  & (concP1 > 0) 
@@ -177,13 +180,14 @@ casewise <- function(conc,marg,cause.marg)
   out$se.P1 <- se.P1[med]
   out$timer <- timer[med]
 
+
   margout <- cbind(timer,margtime,se.margtime)
   colnames(margout) <- c("time","cif","se.cif")
 
   probout <- cbind(out$timer,out$P1,out$se.P1)
   colnames(probout) <- c("time","casewise conc","se casewise")
 
-  out <- list(casewise=probout,marg=margout,test=NULL)
+  out <- list(casewise=probout,marg=margout,concordance=concordance,test=NULL)
   class(out) <- "casewise"
   return(out)
 } ## }}}
@@ -191,7 +195,6 @@ casewise <- function(conc,marg,cause.marg)
 ##' @S3method plot casewise 
 plot.casewise <- function(x,ci=NULL,lty=NULL,ylim=NULL,col=NULL,xlab="time",ylab="concordance",legend=FALSE,...)
 { ## {{{
-
   if (is.null(col)) col <- 1:3
   if (is.null(lty)) lty <- 1:3
   if (is.null(ylim)) ylim=range(c(x$casewise[,2],x$marg[,2]))
