@@ -347,12 +347,14 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
                            mainLine[mainLine>1]<-1; 
     }
     if (is.null(object$se.P1))  mainLine.se <- NULL else {
-    mainLine.se <-as.matrix(object$se.P1,ncol=ncol(mainLine));    
+    mainLine.se <-matrix(object$se.P1,nrow=nrow(mainLine));    
     }
   }
 ###  print(head(mainLine))
+###  print(dim(mainLine))
 ###  print(object$se.P1)
 ###  print(head(mainLine.se))
+###  print(dim(mainLine.se))
 
   if (length(col)!=nobs){ col<-rep(col[1],nobs); }
   if (length(lty)!=nobs){ lty<-rep(lty[1],nobs); }

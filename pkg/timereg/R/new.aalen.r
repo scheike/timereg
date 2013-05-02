@@ -42,8 +42,6 @@ aalen<-function (formula = formula(data),
   survs<-read.surv(m,id,npar,clusters,start.time,max.time,silent=silent)
   times<-survs$times; id<-survs$id.cal; id.call<-id; 
   clusters<-survs$clusters; 
-  print(clusters)
-  print(id)
   stop.call <- time2<-survs$stop
   start.call <- survs$start
   status<-survs$status; 
