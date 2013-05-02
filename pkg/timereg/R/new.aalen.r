@@ -36,10 +36,14 @@ aalen<-function (formula = formula(data),
   if(is.null(clusters)) clusters <- des$clusters ##########
   pxz <- px + pz; 
 
+  if ((nrow(X)!=nrow(data) && (!is.null(id)))) stop("Missing values in design matrix not allowed with id \n"); 
+
   cluster.call<-clusters; 
   survs<-read.surv(m,id,npar,clusters,start.time,max.time,silent=silent)
   times<-survs$times; id<-survs$id.cal; id.call<-id; 
   clusters<-survs$clusters; 
+  print(clusters)
+  print(id)
   stop.call <- time2<-survs$stop
   start.call <- survs$start
   status<-survs$status; 

@@ -54,6 +54,8 @@ trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=1)
   X<-des$X; Z<-des$Z; npar<-des$npar; px<-des$px; pz<-des$pz;
   covnamesX<-des$covnamesX; covnamesZ<-des$covnamesZ;
 
+###  if (nrow(X)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
+
   if (is.diag(t(X) %*% X)==TRUE) stratum <- 1 else stratum <- 0; 
 
   if(is.null(clusters)){ clusters <- des$clusters}

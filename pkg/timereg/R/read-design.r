@@ -108,11 +108,13 @@ read.surv<-function(m,id,npar,clusters,start.time,max.time,model="aalen",silent=
 
   if (is.null(id) == TRUE) {antpers <- length(time); id <- 0:(antpers - 1);}
   else {pers <- unique(id); antpers <- length(pers);
-        id <- as.integer(factor(id, labels = 1:(antpers))) - 1; }
+        id <- as.integer(factor(id, labels = 1:(antpers))) - 1; 
+  }
 
   if (is.null(clusters)== TRUE) {clusters<-id; antclust<-antpers;} else {
     clus<-unique(clusters); antclust<-length(clus); 
-    clusters <- as.integer(factor(clusters, labels = 1:(antclust))) - 1;}
+    clusters <- as.integer(factor(clusters, labels = 1:(antclust))) - 1;
+  }
 
   ud2<-list(status=status,start=time,stop=time2,antpers=antpers,antclust=antclust,
             times=times,id.call=id,clusters=clusters)

@@ -52,7 +52,8 @@ times<-c(start.time,dtimes[dtimes>start.time]); times<-sort(times);
 if (is.null(max.time)==TRUE) maxtimes<-max(times)+0.1 else maxtimes<-max.time; 
 times<-times[times<=maxtimes]
 Ntimes <- length(times); 
-
+ 
+ if ((nrow(X)!=nrow(data)) && (!is.null(id))) stop("Missing values in design matrix not allowed with id\n"); 
 ########################################################################
 if (is.null(id)==TRUE) {antpers<-length(time); id<-0:(antpers-1); }
 else { pers<-unique(id); antpers<-length(pers); 
@@ -101,8 +102,7 @@ loglike<-0;
 
 ########################################################################
 
-
-cat("Proportional odds model \n"); 
+###cat("Proportional odds model \n"); 
 ###dyn.load("Gprop-odds.so")
 
 nparout<- .C("transsurv",

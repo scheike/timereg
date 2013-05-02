@@ -47,6 +47,8 @@ antsim<-n.sim;
     if (renaalen == FALSE) pz <- ncol(Z) else pz <- 0
     pxz <- px + pz
 
+ if ((nrow(Z)!=nrow(data)) && (!is.null(id))) stop("Missing values in design matrix not allowed with id\n"); 
+
   desX<-as.matrix(Z);
   if(is.matrix(desX) == TRUE) pg <- as.integer(dim(desX)[2])
   if(is.matrix(desX) == TRUE) nx <- as.integer(dim(desX)[1])

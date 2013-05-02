@@ -157,9 +157,9 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 	 }
            ci=*nx-1; 
            while ((stop[ci]<time)  & (ci>=0) )  ci=ci-1; 
-	  } // }}}
+	 } // }}}
 
-     vec_zeros(rowX); vec_zeros(rowZ); 
+    vec_zeros(rowX); vec_zeros(rowZ); 
     if (s>1)  // {{{ modifying design for next time points
     while ((stop[ci]<time)  & (ci>=0) ) {
 	    VE(Gbeta,id[ci])=0; // vec_prod(zi,beta); 
@@ -208,12 +208,12 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 
    if (*stratum==0)  invertS(A,AI,*silent); 
    if (ME(AI,0,0)==0 && *stratum==0 && *silent==0) {
-	   Rprintf("additive design X'X not invertible at time (number, value): %d %lf \n",s,time); print_mat(A);
+       Rprintf("additive design X'X not invertible at time (number, value): %d %lf \n",s,time); print_mat(A);
    }
    if (ME(AI,0,0)==0 && *stratum==0 && *silent==2) {
-	   Rprintf("additive design X'X not invertible at time (number, value) : %d %lf \n",s,time); print_mat(A);
-	   Rprintf("print only first time with non-invertible design X'X\n"); 
-	   silent[0]=0; 
+      Rprintf("additive design X'X not invertible at time (number, value) : %d %lf \n",s,time); print_mat(A);
+      Rprintf("print only first time with non-invertible design X'X\n"); 
+      silent[0]=0; 
    }
 
    if (*stratum==1)  {
@@ -238,8 +238,13 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   vec_subtr(zi,zav,difzzav); 
   vec_add(difzzav,U,U); 
 
-  if (s<0) { Rprintf(" %d \n",pers); 
-	     print_vec(xi); print_vec(zi); print_vec(zav); print_vec(difzzav);
+  if (s<0) { Rprintf(" %d %d %lf %lf \n",pers,s,time,scale); 
+	     print_vec(xi); 
+	     print_vec(dA); 
+	     print_vec(zi); 
+	     print_vec(zav); 
+	     print_vec(difzzav);
+	     print_vec(U); 
   }
 
   if (*betafixed==0)  // {{{

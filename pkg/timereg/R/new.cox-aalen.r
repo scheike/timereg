@@ -37,6 +37,8 @@ offsets=0;
   if(is.null(clusters)) clusters <- des$clusters  
   pxz <- px + pz;
 
+  if ( (nrow(Z)!=nrow(data)) && (!is.null(id))) stop("Missing values in design matrix not allowed with id\n"); 
+
   cluster.call<-clusters; 
   survs<-read.surv(m,id,npar,clusters,start.time,max.time,model="cox.aalen",silent=silent)
   times<-survs$times;id<-id.call<-survs$id.cal;
@@ -68,7 +70,8 @@ offsets=0;
 
 if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
    ot<-order(-time2,status==1); # order in time, status=0 first for ties
-   time2<-time2[ot]; status<-status[ot]; 
+   time2<-time2[ot]; 
+   status<-status[ot]; 
    X<-as.matrix(X[ot,])
    if (npar==FALSE) Z<-as.matrix(Z[ot,])
    stop<-time2;
@@ -94,7 +97,8 @@ if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
 	clusters <- rep(clusters,2)[ix]
 	if (sum(abs(offsets))!=0) offsets <- rep(offsets,2)[ix]
     } ## }}}
-###  print(cbind(Z,start,stop,etimes,id,entry))
+
+### print(cbind(Z,start,stop,status,id,entry)); print(length(id));  print(dim(X)); 
 
 ldata<-list(start=start,stop=stop, antpers=survs$antpers,antclust=survs$antclust);
 ## }}}

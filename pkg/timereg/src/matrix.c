@@ -1188,8 +1188,8 @@ void invertUnsafeS(matrix *A, matrix *Ainv,int silent){
 
   if(info != 0){
     //Avoid printing this error message
-    if (silent==0) Rprintf("Error in invert: DGETRF returned info = %d \n",info);
     mat_zeros(Ainv);
+    if (silent==0) Rprintf("Error in invert: DGETRF returned info = %d \n",info);
   } else {
   
     for(i = 0; i < n; i++){
@@ -1199,15 +1199,16 @@ void invertUnsafeS(matrix *A, matrix *Ainv,int silent){
     
     if(info != 0){
       //Avoid printing this error message
-      if (silent==0) Rprintf("Error in invert: DGETRF returned info = %d \n",info);
       mat_zeros(Ainv);
+      free(work); free(iwork); free(dwork); free(ipiv);
+      if (silent==0) Rprintf("Error in invert: DGETRF returned info = %d \n",info);
       return;
     } 
     
     if(rcond < tol ){
-      if (silent==0) Rprintf("Error in invert: estimated reciprocal condition number = %7.7e\n",rcond); 
       mat_zeros(Ainv);
       free(work); free(iwork); free(dwork); free(ipiv);
+      if (silent==0) Rprintf("Error in invert: estimated reciprocal condition number = %7.7e\n",rcond); 
       return;
     }
 
@@ -1215,13 +1216,13 @@ void invertUnsafeS(matrix *A, matrix *Ainv,int silent){
     F77_CALL(dgetri)(&n, Ainv->entries, &lda, ipiv, work, &lwork, &info);
 
     if(info != 0 ){
-      if (silent==0) Rprintf("Error in invert: DPOTRI returned info = %d \n",info);
       mat_zeros(Ainv);
+      if (silent==0) Rprintf("Error in invert: DPOTRI returned info = %d \n",info);
     }
 
     if (fabs(ME(Ainv,0,0))>99999999999999 )  { // TS 23-10
-      if (silent==0) Rprintf("Inversion, unstable large elements  \n");
       mat_zeros(Ainv);
+      if (silent==0) Rprintf("Inversion, unstable large elements  \n");
     }
   }
   
