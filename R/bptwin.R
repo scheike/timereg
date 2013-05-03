@@ -17,6 +17,7 @@
 ##'     the dyzogitic twins.
 ##' @param OS Optional. Character defining the level in the zyg variable
 ##'     corresponding to the oppposite sex dyzogitic twins.
+##' @param num Optional twin number variable
 ##' @param weight Weight matrix if needed by the chosen estimator. For use
 ##'     with Inverse Probability Weights
 ##' @param biweight Function defining the bivariate weight in each cluster
@@ -47,6 +48,7 @@
 ##' summary(b0)
 ##' }
 bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
+                   num=NULL,
                    weight=NULL,
                    biweight=function(x) 1/min(x),
                    strata=NULL,
@@ -118,12 +120,13 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
   idtab <- table(data[,id])
   if (sum(idtab>2)) stop("More than two individuals with the same id ")
   
-  if (pairsonly)
+  if (pairsonly) {
     data <- data[as.character(data[,id])%in%names(idtab)[idtab==2],]
+    idtab <- table(data[,id])
+  }
   if (is.logical(data[,yvar])) data[,yvar] <- data[,yvar]*1
   if (is.factor(data[,yvar])) data[,yvar] <- as.numeric(data[,yvar])-1  
 
-  idtab <- table(data[,id])
   idx2 <- NULL
   if (missing(DZ)) {
     DZ <- levels(as.factor(data[,zyg]))[1]
@@ -151,14 +154,15 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
   ## data[,time] <- unlist(lapply(idtab,seq))
   
   ## ff <- paste(as.character(formula)[3],"+",time,"+",id,"+",zyg)
-  ff <- paste(as.character(formula)[3],"+",id,"+",zyg)
-  if (!is.null(weight))
-    ff <- paste(weight,"+",ff)
+  ff <- paste(as.character(formula)[3],"+",
+              paste(c(id,zyg,weight,num),collapse="+"))
   ff <- paste("~",yvar,"+",ff)
   formula0 <- as.formula(ff)
-  Data <- model.matrix(formula0,data,na.action=na.pass)
+  opt <- options(na.action="na.pass")
+  Data <- model.matrix(formula0,data)
+  options(opt)
   ## rnames1 <- setdiff(colnames(Data),c(yvar,time,id,weight,zyg))
-  rnames1 <- setdiff(colnames(Data),c(yvar,id,weight,zyg))
+  rnames1 <- setdiff(colnames(Data),c(yvar,id,weight,zyg,num))
   nx <- length(rnames1) 
   if (nx==0) stop("Zero design not allowed")
   
@@ -272,13 +276,15 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
 
   N <- cbind(length(idx0),length(idx1),length(idx2)); 
   N <- cbind(N,
-             2*nrow(MyData0$Y0)+NROW(MyData0$Y0_marg),
-             2*nrow(MyData1$Y0)+NROW(MyData1$Y0_marg),
-             2*nrow(MyData2$Y0)+NROW(MyData2$Y0_marg),
+             2*nrow(MyData0$Y0)+if (!pairsonly) NROW(MyData0$Y0_marg) else 0, 
+             2*nrow(MyData1$Y0)+if (!pairsonly) NROW(MyData1$Y0_marg) else 0,
+             2*nrow(MyData2$Y0)+if (!pairsonly) NROW(MyData2$Y0_marg) else 0,
              NROW(MyData0$Y0),NROW(MyData1$Y0),NROW(MyData2$Y0))
+
+  
   colnames(N) <- c("Total.MZ","Total.DZ","Total.OS","Complete.MZ","Complete.DZ","Complete.OS","Complete pairs.MZ","Complete pairs.DZ","Complete pairs.OS")
   rownames(N) <- rep("",nrow(N))
-  if (!OSon) N <- N[-c(3,6,9),drop=FALSE]
+  if (!OSon) N <- N[,-c(3,6,9),drop=FALSE]
   
   if (samecens & !is.null(weight)) {
     MyData0$W0 <- cbind(apply(MyData0$W0,1,biweight))
@@ -337,6 +343,22 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
   
 ###{{{ U  
 
+
+  p0 <- rep(-1,plen); ##p0[vidx] <- 0
+  if (OSon) p0[length(p0)] <- 0.3
+  if (type=="u")
+    p0[vidx] <- 0.3
+  if (!is.null(control$start)) {
+    p0 <- control$start
+    control$start <- NULL
+  } else {
+    X <- rbind(MyData0$XX0[,midx0,drop=FALSE],MyData0$XX0[,midx1,drop=FALSE])
+    Y <- rbind(MyData0$Y0[,1,drop=FALSE],MyData0$Y0[,2,drop=FALSE])
+    g <- suppressWarnings(glm(Y~-1+X,family=binomial(probit)))
+    p0[midx] <- coef(g)
+  }
+
+
   U <- function(p,indiv=FALSE) {
     b0 <- cbind(p[bidx0])
     b1 <- cbind(p[bidx1])
@@ -353,7 +375,7 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
                              Mu0,
                              S$Sigma0,dS0,Y0,XX0,W0,!is.null(W0),samecens))
 
-    if (!is.null(MyData0$Y0_marg)) {
+    if (!is.null(MyData0$Y0_marg) &&!pairsonly) {
       mum <- with(MyData0, XX0_marg%*%b00)
       dSmarg <- dS0[,1,drop=FALSE]
        U_marg <- with(MyData0, .Call("uniprobit",
@@ -370,7 +392,7 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
     U1 <- with(MyData1, .Call("biprobit0",
                              Mu1,
                              S$Sigma1,dS1,Y0,XX0,W0,!is.null(W0),samecens))
-    if (!is.null(MyData1$Y0_marg)) {
+    if (!is.null(MyData1$Y0_marg) &&!pairsonly) {
       mum <- with(MyData1, XX0_marg%*%b11)
       dSmarg <- dS1[,1,drop=FALSE]
       U_marg <- with(MyData1, .Call("uniprobit",
@@ -388,7 +410,7 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
       U2 <- with(MyData2, .Call("biprobit0",
                                 Mu2,
                                 S$Sigma2,S$dS2,Y0,XX0,W0,!is.null(W0),samecens))
-      if (!is.null(MyData2$Y0_marg)) {
+      if (!is.null(MyData2$Y0_marg) &&!pairsonly) {
         mum <- with(MyData2, XX0_marg%*%b22)
         dSmarg <- S$dS2[,1,drop=FALSE]
         U_marg <- with(MyData2, .Call("uniprobit",
@@ -474,19 +496,6 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
 
 ###{{{ optim
 
-  p0 <- rep(-1,plen); ##p0[vidx] <- 0
-  if (OSon) p0[length(p0)] <- 0.3
-  if (type=="u")
-    p0[vidx] <- 0.3
-  if (!is.null(control$start)) {
-    p0 <- control$start
-    control$start <- NULL
-  } else {
-    X <- rbind(MyData0$XX0[,midx0,drop=FALSE],MyData0$XX0[,midx1,drop=FALSE])
-    Y <- rbind(MyData0$Y0[,1,drop=FALSE],MyData0$Y0[,2,drop=FALSE])
-    g <- suppressWarnings(glm(Y~-1+X,family=binomial(probit)))
-    p0[midx] <- coef(g)
-  }
  
   if (!missing(p)) return(U(p,indiv=indiv))
 

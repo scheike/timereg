@@ -50,7 +50,7 @@ summary.bptwin <- function(object,level=0.05,...) {
     i1 <- na.omit(match(c("D","A"),nn))
     h <- function(x) sum(x)
     dh <- function(x) rep(1,length(i1))
-##    dh <- function(x) { res <- rep(0,length(x)); res[i1] <- 1; res }
+    ##    dh <- function(x) { res <- rep(0,length(x)); res[i1] <- 1; res }
     ##    h <- function(x) 2*(sum(x[i1])-sum(x[i1]*dzsc))
     ##    dh <- function(x) 2*(1-dzsc)
     
@@ -166,14 +166,13 @@ summary.bptwin <- function(object,level=0.05,...) {
   nN <- ncol(object$N)
   ngroups <- ifelse(object$OS,3,2)
   postn  <- "MZ/DZ"; if (object$OS) postn <- paste(postn,"OS",sep="/")
-  npos <- seq(nN/ngroups)
+  npos <- seq(ngroups)
   Nstr <- cbind(paste(Nstr[npos],collapse="/"),
                 paste(Nstr[npos+ngroups],collapse="/"),
                 paste(Nstr[npos+2*ngroups],collapse="/"))
-##  Nstr <- rbind(paste(Nstr[npos*ngroups-1],Nstr[npos*ngroups],sep="/"))
   rownames(Nstr) <- ""
   colnames(Nstr) <-
-    unlist(lapply(strsplit(colnames(object$N)[npos*ngroups],".",fixed=TRUE),
+    unlist(lapply(strsplit(colnames(object$N)[(1:3)*ngroups],".",fixed=TRUE),
                                   function(x) paste(x[1], postn)))
   
   all  <-  rbind(hval[,c(1,3,4),drop=FALSE],newcoef[,c(1,3,4),drop=FALSE])
@@ -195,8 +194,9 @@ print.summary.bptwin <- function(x,digits = max(3, getOption("digits") - 2),...)
   cat("\n")
   printCoefmat(x$par,digits=digits,...)
   cat("\n")
-  x$Nstr <- x$Nstr[,which((colnames(x$Nstr)!="Complete MZ/DZ")),drop=FALSE]
-  print(x$Nstr,quote=FALSE)
+  ##  x$Nstr <- x$Nstr[,which((colnames(x$Nstr)!="Complete MZ/DZ")),drop=FALSE]
+  NN <- x$Nstr[,2:3,drop=FALSE]; colnames(NN)[1] <- gsub("Complete ","",colnames(NN)[1])
+  print(NN,quote=FALSE)
   cat("\n")
   cc <- rbind(x$coef[,-2,drop=FALSE],x$rhoOS)
   print(RoundMat(cc,digits=digits),quote=FALSE)

@@ -1,5 +1,5 @@
 ##' @export
-biprobit <- function(formula, data, id, time, strata=NULL, eqmarg=TRUE,
+biprobit <- function(formula, data, id, num=NULL, strata=NULL, eqmarg=TRUE,
                      indep=FALSE, weight=NULL,
                      biweight=function(x) 1/min(x),
                      samecens=TRUE, randomeffect=FALSE, vcov="robust",
@@ -12,8 +12,13 @@ biprobit <- function(formula, data, id, time, strata=NULL, eqmarg=TRUE,
 
   mycall <- match.call()
   formulaId <- unlist(Specials(formula,"cluster"))
+  if (is.null(formulaId)) {
+    formulaId <- unlist(Specials(formula,"id"))
+  }
   formulaStrata <- unlist(Specials(formula,"strata"))
-  formulaSt <- paste("~.-cluster(",formulaId,")-strata(",paste(formulaStrata,collapse="+"),")")
+  formulaSt <- paste("~.-cluster(",formulaId,
+                     ")-id(",formulaId,
+                     ")-strata(",paste(formulaStrata,collapse="+"),")")
   formula <- update(formula,formulaSt)
   if (!is.null(formulaId)) {
     id <- formulaId
@@ -56,12 +61,8 @@ biprobit <- function(formula, data, id, time, strata=NULL, eqmarg=TRUE,
     idtab <- table(data[,id])
   }
   
-  if (missing(time)) {
-    time <- "time"
-    while (time%in%names(data)) time <- paste(time,"_",sep="")
-    data[,time] <- unlist(lapply(idtab,seq))
-  }
-  ff <- paste(as.character(formula)[3],"+",time,"+",id)
+  ff <- paste(as.character(formula)[3],"+",
+              paste(c(id,num),collapse="+"))
   yvar <- paste(deparse(formula[[2]]),collapse="")
   if (!is.null(weight))
     ff <- paste(weight,"+",ff)
@@ -72,8 +73,10 @@ biprobit <- function(formula, data, id, time, strata=NULL, eqmarg=TRUE,
 ##  Y <- cbind(as.numeric(data[,yvar]))-(!is.numeric(data[,yvar]))
   
   formula0 <- as.formula(ff)
-  Data <- model.matrix(formula0,data,na.action=na.pass)
-  rnames1 <- setdiff(colnames(Data),c(yvar,time,id,weight))
+  opt <- options(na.action="na.pass")
+  Data <- model.matrix(formula0,data)
+  options(opt)
+  rnames1 <- setdiff(colnames(Data),c(yvar,num,id,weight))
   X0 <- as.matrix(Data[,rnames1])
   
   nx <- length(rnames1)
@@ -87,7 +90,8 @@ biprobit <- function(formula, data, id, time, strata=NULL, eqmarg=TRUE,
   midx <- seq(2*nx)
   plen <- ifelse(eqmarg,nx+1,2*nx+1)
 
-  Wide <- reshape(as.data.frame(Data),idvar=id,timevar=time,direction="wide")
+  ## Wide <- reshape(as.data.frame(Data),idvar=id,timevar=time,direction="wide")
+  Wide <- fast.reshape(as.data.frame(Data),id=id,num=num,sep=".")
   W0 <- NULL
   yidx <- paste(yvar,1:2,sep=".")
   rmidx <- c(id,yidx)
