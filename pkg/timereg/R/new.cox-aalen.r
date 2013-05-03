@@ -37,7 +37,11 @@ offsets=0;
   if(is.null(clusters)) clusters <- des$clusters  
   pxz <- px + pz;
 
+<<<<<<< HEAD
   if ( (nrow(Z)!=nrow(data)) && (!is.null(id))) stop("Missing values in design matrix not allowed with id\n"); 
+=======
+  if (nrow(Z)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
+>>>>>>> check for missing in design
 
   cluster.call<-clusters; 
   survs<-read.surv(m,id,npar,clusters,start.time,max.time,model="cox.aalen",silent=silent)
