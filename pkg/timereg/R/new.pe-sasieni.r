@@ -25,11 +25,8 @@ id=NULL,start.time=0,max.time=NULL,offsets=0,Nit=50,detail=0,n.sim=500)
   Z<-as.matrix(XZ[,-1]); covnamesZ <- dimnames(XZ)[[2]][-1]; 
   px <- ncol(X); pz <- ncol(Z); pxz <- px + pz
 
-<<<<<<< HEAD
  if ( (nrow(X)!=nrow(data)) & (!is.null(id))) stop("Missing values in design matrix not allowed with id \n"); 
-=======
-  if (nrow(Z)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
->>>>>>> check for missing in design
+###  if (nrow(Z)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
 
   if (attr(m[, 1], "type") == "right") {
     X <- data.matrix(X); Z <- data.matrix(Z); 

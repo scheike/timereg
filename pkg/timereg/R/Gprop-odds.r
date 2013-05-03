@@ -39,11 +39,7 @@ antsim<-n.sim;
        }
     else {X<-as.matrix(XZ); covnamesZ<-dimnames(XZ)[[2]]}
 
-<<<<<<< HEAD
  if ((nrow(X)!=nrow(data)) && (!is.null(id))) stop("Missing values in design matrix not allowed with id\n"); 
-=======
-  if (nrow(X)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
->>>>>>> check for missing in design
 
 #    print("X"); print(X[1,]); print(covnamesX); 
 #    if (renaalen==FALSE) {print("Z"); print(Z[1,]);

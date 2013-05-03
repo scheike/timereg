@@ -38,11 +38,8 @@ if(is.matrix(desX) == TRUE) nx <- as.integer(dim(desX)[1])
 px<-1; 
 Ntimes <- sum(status); 
 
-<<<<<<< HEAD
 if ( (nx!=nrow(data)) & (!is.null(id))) stop("Missing values in design matrix not allowed with id \n"); 
-=======
-if (nrow(Z)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
->>>>>>> check for missing in design
+###if (nrow(Z)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
 
 if (is.null(cause)) stop(" cause must be given\n"); 
 status <- cause
