@@ -599,6 +599,52 @@ if (alr==1)  ud <- c(ud,outl)
    return(ud)
 } ## }}} 
 
+onerunfam2 <- function(i,n,alr=0,manual=1,time=0,theta=1) { ## {{{ 
+### n=1000; beta=0.2; theta=1; time=0; i=1
+print(i)
+dd <- mets:::simBinFam(n,beta=0,theta=theta) 
+ddl <- fast.reshape(dd,varying="y",keep="y")
+
+desfs <- function(x,num1="num1",num2="num2")
+{ ## {{{ 
+     mf <- (x[num1]=="m")*(x[num2]=="f")*1
+     mb <- (x[num1]=="m" | x[num1]=="f")*(x[num2]=="b1" | x[num2]=="b2")*1
+     bb <- (x[num1]=="b1")*(x[num2]=="b1" | x[num2]=="b2")*1
+     c(mf,mb,bb)
+} ## }}} 
+
+ud <- easy.binomial.twostage(y~+1,data=ddl,
+      response="y",id="id",
+      score.method="fisher.scoring",deshelp=0,
+      theta.formula=desfs,desnames=c("pp","pc","cc"))
+
+    ud <- c(ud$theta[,1],diag(ud$var.theta)^.5)
+
+    zfam <- rbind(c(1,0,0), ## m-f
+	      	  c(0,1,0),  ## m-b1
+	      	  c(0,1,0),  ## m-b2
+                  c(1,0,0), ## f-m
+	      	  c(0,1,0),  ## f-b1
+	      	  c(0,1,0),  ## f-b2
+	      	  c(0,1,0), ## b1-m
+	      	  c(0,1,0), ## b1-f
+	      	  c(0,0,1), ## b1-b2
+	      	  c(0,1,0), ## b2-m
+	      	  c(0,1,0), ## b2-f
+	      	  c(0,0,1)) ## b2-b1
+
+if (alr==1) {
+   if (!require(alr)) stop("'alr' package required")
+   outl <- alr(ddl$y~+1,id=ddl$id,
+   depmodel="general",zlocs=rep(1:4,n),ainit=rep(0.01,3),z=zfam,zmast=1)
+   outl <- c(summary(outl)$alpha[,1],summary(outl)$alpha[,2])
+   names(outl) <- c(rep("alr",3),rep("se-alr",3))
+}
+
+if (alr==1)  ud <- c(ud,outl)
+   return(ud)
+} ## }}} 
+
 #####' @S3method summary twostage
 ###summary.twostage <-function (object,digits = 3,...) { ## {{{
 ###  if (!(inherits(object,"twostage"))) stop("Must be a Two-Stage object")
