@@ -66,7 +66,11 @@ offsets=0;
   if ((is.null(beta))) {
         if ( (attr(m[, 1], "type") == "right" ) ) 
         beta<-coxph(Surv(survs$stop,survs$status)~Z)$coef
-        else beta<-coxph(Surv(survs$start,survs$stop,survs$status)~Z)$coef; 
+        else { 
+          if (survs$antpers< 20000) beta<-coxph(Surv(survs$start,survs$stop,survs$status)~Z)$coef 
+	  else beta<-coxph(Surv(survs$stop,survs$status)~Z)$coef;  
+	}
+	if (detail>=2) {cat("starting values (coxph) \n");  print(beta);}
   }
 
 if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
