@@ -348,62 +348,95 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     Ut[timegroup[s]]=times[s]; 
 
     if (*robust==1) {
+     sumscore=0; S0=0; 
     // {{{ reading design and computing matrix products
 	  if (s==1) { // {{{
 	  for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) 
 	  {
-	      if ((start[c]<time) && (stop[c]>=time)) {
-                for(j=0;j<*pg;j++) { 
-			ME(Z,id[c],j)=designG[j*(*ng)+c]; VE(zi,j)=designG[j*(*ng)+c]; 
+	   if (( (start[c]<time) && (stop[c]>=time)) ) {
+                for(j=0;j<pmax;j++) {
+                   if (j<*pg) {   
+			   ME(Z,id[c],j)=designG[j*(*ng)+c]; 
+			   VE(zi,j)=designG[j*(*ng)+c]; 
+		   }
+	           if (j<*px) {ME(X,id[c],j)=designX[j*(*nx)+c]; 
+			       VE(xi,j)=designX[j*(*nx)+c]; 
+		   }
 		}
 		VE(Gbeta,id[c])=vec_prod(zi,beta); 
 		RR=exp(VE(Gbeta,id[c]));
+		S0+=RR*weights[c]; 
                 for(j=0;j<pmax;j++) {
-	           if (j<*px) {ME(X,id[c],j)=designX[j*(*nx)+c]; }
-	           if (j<*px) {ME(WX,id[c],j) =RR*designX[j*(*nx)+c];}
-	           if (j<*pg) {ME(WZ,id[c],j)=weights[c]*designG[j*(*ng)+c];} 
-//	        if (j<*pg) {ME(Z,id[c],j)=designG[j*(*ng)+c];} 
+	        if (j<*px) {ME(WX,id[c],j) =weights[c]*RR*designX[j*(*nx)+c];}
+	        if (j<*pg) {ME(WZ,id[c],j)=weights[c]*designG[j*(*ng)+c];} 
 		}
 		if (time==stop[c] && status[c]==1) {pers=id[c];} 
 		if (*mof==1) VE(offset,id[c])=offs[c];  
 		if (*mw==1) VE(weight,id[c])=weights[c]; 
-		} 
-		count=count+1; 
-	   }
+
+//	    for(j=0;j<pmax;j++) for(k=0;k<pmax;k++)  {
+//              if ((j<*px) & (k<*px)) ME(A,j,k)+=VE(xi,k)*VE(xi,j)*RR*weights[c]; 
+//              if ((j<*pg) & (k<*px)) ME(ZX,j,k)+=VE(zi,j)*VE(xi,k)*RR*weights[c]; 
+//	      if ((*exactderiv<2) || (*px==1)) {
+//                 if ((j<*pg) & (k<*pg)) ME(ZPZ,j,k)+= VE(zi,j)*VE(zi,k)*weights[c]*RR; 
+//                 if ((j<*pg) & (k<*px)) ME(ZPX,k,j)+= VE(zi,j)*VE(xi,k)*weights[c]*RR;
+//	      }
+//	   }
+           count=count+1; 
+         }		 
+	 }
            ci=*nx-1; 
            while ((stop[ci]<time)  & (ci>=0) )  ci=ci-1; 
-	  } // }}}
+	 } // }}}
 
-
-     vec_zeros(rowX); vec_zeros(rowZ); 
+    vec_zeros(rowX); vec_zeros(rowZ); 
     if (s>1)  // {{{ modifying design for next time points
     while ((stop[ci]<time)  & (ci>=0) ) {
+	    VE(Gbeta,id[ci])=0; // vec_prod(zi,beta); 
             for(j=0;j<*px;j++) VE(xi,j)=designX[j*(*nx)+ci]; 
-            for(j=0;j<*pg;j++) VE(zi,j)=designG[j*(*nx)+ci]; 
-		VE(Gbeta,id[ci])=vec_prod(zi,beta); 
-		RR=exp(VE(Gbeta,id[ci]));
+            for(j=0;j<*pg;j++) { VE(zi,j)=designG[j*(*nx)+ci]; 
+		VE(Gbeta,id[ci])+=VE(zi,j)*VE(beta,j);  
+	    }
+	    RR=exp(VE(Gbeta,id[ci]));
 	    if (entry[ci]==1)  {
 	         replace_row(X,id[ci],xi); replace_row(Z,id[ci],zi); 
-	         scl_vec_mult(RR,xi,tmpv1);replace_row(WX,id[ci],tmpv1);
+		 scl_vec_mult(RR*weights[ci],xi,tmpv1);replace_row(WX,id[ci],tmpv1);
 		 scl_vec_mult(weights[ci],zi,tmpv2);replace_row(WZ,id[ci],tmpv2); 
+		 VE(weight,id[ci])=weights[ci]; 
+		 if (*mof==1) VE(offset,id[ci])=offs[ci];  
 	    } 
-	    else { replace_row(X,id[ci],rowX);replace_row(Z,id[ci],rowZ);
-		   replace_row(WX,id[ci],rowX); replace_row(WZ,id[ci],rowZ);
-		   VE(Gbeta,id[ci])=0; 
+	    else { 
+		    replace_row(X,id[ci],rowX);replace_row(Z,id[ci],rowZ);
+		    replace_row(WX,id[ci],rowX); replace_row(WZ,id[ci],rowZ);
+		    VE(Gbeta,id[ci])=0; VE(weight,id[ci])=0; 
+		    if (*mof==1) VE(offset,id[ci])=offs[ci];  
 	    }
+	    S0+=entry[ci]*RR*weights[ci]; 
+//	  for(j=0;j<pmax;j++) for(k=0;k<pmax;k++)  {
+//              if ((j<*px) & (k<*px)) ME(A,j,k)+=entry[ci]*VE(xi,k)*VE(xi,j)*RR*weights[ci]; 
+//              if ((j<*pg) & (k<*px)) ME(ZX,j,k)+=entry[ci]*VE(zi,j)*VE(xi,k)*RR*weights[ci]; 
+// 	      if ((*exactderiv<2) || (*px==1)) {
+//                 if ((j<*pg) & (k<*pg)) ME(ZPZ,j,k)+=entry[ci]*VE(zi,j)*VE(zi,k)*weights[ci]*RR;
+//                 if ((j<*pg) & (k<*px)) ME(ZPX,k,j)+=entry[ci]*VE(zi,j)*VE(xi,k)*weights[ci]*RR;
+//	      }
+//	  }
 	  ci=ci-1; 
 	  pers=id[ci]; 
     }
     // }}}
-	  ipers[s]=pers;
+   ipers[s]=pers;
+
+// Rprintf("___________ %d %d  %lf %d \n",it,s,time,pers); print_mat(Z); print_mat(X); 
+
+     scl_mat_mult(1/S0,ZPZ,ZPZo); scl_mat_mult(1/S0,ZPX,ZPXo);
    // }}}
-    }
    
 //  print_mat(WX); print_mat(X); print_mat(Z); 
 // Rprintf("=============== %d  %lf %d \n",s,time,pers); print_mat(Z); print_mat(X); 
-
-    extract_row(WX,pers,xi); hati=vec_prod(xi,dAt[s]); 
+    extract_row(WX,pers,xi); 
+    hati=vec_prod(xi,dAt[s]); 
     lle=lle+log(hati);
+    }
 
     /* terms for robust variance   */ 
     if (*robust==1) {
@@ -434,7 +467,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     } /* i 1.. antpers */ // }}}
     }
 
-    if (*robust==1) 
+    if (*robust==1 && *sim==1) 
     for (j=0;j<*antclust;j++) 
     {
       replace_row(W2t[j],timegroup[s],W2[j]); replace_row(W3t[j],timegroup[s],W3[j]);  
