@@ -71,3 +71,4 @@ Collate:
     'binomial.twostage.R'
     'clusterindex-reshape.R'
     'bptwin.R'
+    'fastcox.R'

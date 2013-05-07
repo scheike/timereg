@@ -4,7 +4,7 @@
 \alias{cumh}
 \title{Liability model for twin data}
 \usage{
-  bptwin(formula, data, id, zyg, DZ, OS = NULL,
+  bptwin(formula, data, id, zyg, DZ, OS = NULL, num = NULL,
     weight = NULL, biweight = function(x) 1/min(x),
     strata = NULL, messages = 1, control = list(trace = 0),
     type = "ace", eqmean = TRUE, pairsonly = FALSE,
@@ -36,6 +36,8 @@
   \item{OS}{Optional. Character defining the level in the
   zyg variable corresponding to the oppposite sex dyzogitic
   twins.}
+
+  \item{num}{Optional twin number variable}
 
   \item{weight}{Weight matrix if needed by the chosen
   estimator. For use with Inverse Probability Weights}
