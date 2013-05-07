@@ -104,7 +104,8 @@ loglike<-0;
 
 ########################################################################
 
-###cat("Proportional odds model \n"); 
+
+cat("Proportional odds model \n"); 
 ###dyn.load("Gprop-odds.so")
 
 nparout<- .C("transsurv",
