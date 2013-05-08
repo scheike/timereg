@@ -11,7 +11,6 @@ BEGIN_RCPP
   bool haveId = (Rf_isNull)(id);
   bool Truncation = !((Rf_isNull)(entry));
   unsigned n = X.n_rows;
-  uvec idx;
 
   mat XX(X.n_rows, X.n_cols*X.n_cols); // Calculate XX' at each time-point
   for (unsigned i=0; i<X.n_rows; i++) {
@@ -19,25 +18,29 @@ BEGIN_RCPP
     XX.row(i) = reshape(Xi.t()*Xi,1,XX.n_cols);
   }
 
+  ivec Sign;
+
   if (Truncation) {
     vec Entry = Rcpp::as<vec>(entry);  
     Exit.insert_rows(0,Entry);
     XX.insert_rows(0,XX);
     X.insert_rows(0,X);
     Status.insert_rows(0,Status);
-  } 
-  idx = sort_index(Exit);
-  ivec Sign;
-  if (Truncation) {
     Sign.reshape(2*n,1); Sign.fill(1);
     for (unsigned i=0; i<n; i++) Sign(i) = -1;
-    Status = Status%Sign;
+    Status = Status%(1+Sign);
+  }
+  uvec idx0 = sort_index(Status,0); 
+  uvec idx = stable_sort_index(Exit.elem(idx0),0);
+  idx = idx0.elem(idx);
+  if (Truncation) {
     Sign = Sign.elem(idx);  
   }
+
   XX = XX.rows(idx);
   X = X.rows(idx);  
   Status = Status.elem(idx);
-  uvec jumps = find(Status==1);
+  uvec jumps = find(Status>0);
   
   uvec newId;
   if (!haveId) {

@@ -35,6 +35,7 @@ fast.cox0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,...) {
       with(val, structure(-ploglik,gradient=-gradient,hessian=-hessian,U=U))
     }
   }
+  browser()
   opt <- nlm(obj,beta)
   val <- obj(opt$estimate,TRUE)
   cc <- opt$estimate; names(cc) <- colnames(X)
@@ -74,12 +75,16 @@ fast.cox0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,...) {
 ##' }
 ##' 
 ##' n <- 1e3;
-##' d <- simcox(n); d$id <- seq(nrow(d)); d$group <- rbinom(nrow(d),1,0.5)
+##' d <- simcox(n); d$id <- seq(nrow(d)); d$group <- factor(rbinom(nrow(d),1,0.5))
 ##' fast.cox(Surv(entry,time,status)~X1*X2+strata(group)+cluster(id),data=d)
-##' ##'
-##' fast.cox(Surv(entry,time,status)~X1+X2,data=d)
-##' coxph(Surv(entry,time,status)~X1+X2+cluster(id),data=d)
-##' coef(cox.aalen(Surv(entry,time,status)~prop(X1)+prop(X2),data=d))
+##' 
+##' (m1 <- fast.cox(Surv(entry,time,status)~X1+X2,data=d))
+##' (m2 <- coxph(Surv(entry,time,status)~X1+X2+cluster(id),data=d))
+##' (coef(m3 <-cox.aalen(Surv(entry,time,status)~prop(X1)+prop(X2),data=d)))
+##' 
+##' (m1b <- fast.cox(Surv(entry,time,status)~X1+X2+strata(group),data=d))
+##' (m2b <- coxph(Surv(entry,time,status)~X1+X2+cluster(id)+strata(group),data=d))
+##' (coef(m3b <-cox.aalen(Surv(entry,time,status)~-1+group+prop(X1)+prop(X2),data=d)))
 fast.cox <- function(formula,data,...) {
   call <- match.call()
   m <- match.call(expand.dots = FALSE)
