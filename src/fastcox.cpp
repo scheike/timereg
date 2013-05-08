@@ -72,8 +72,8 @@ BEGIN_RCPP
 
   colvec a = X*beta;
   colvec ea = exp(a);  
-  if (Sign.n_cols==n) { // Truncation
-    ea = ea%Sign;
+  if (Sign.n_cols==ea.n_cols) { // Truncation
+    ea = Sign%ea;
   }
 
   colvec b1 = flipud(cumsum(flipud(ea)));

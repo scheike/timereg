@@ -76,6 +76,10 @@ fast.cox0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,...) {
 ##' n <- 1e3;
 ##' d <- simcox(n); d$id <- seq(nrow(d)); d$group <- rbinom(nrow(d),1,0.5)
 ##' fast.cox(Surv(entry,time,status)~X1*X2+strata(group)+cluster(id),data=d)
+##' ##'
+##' fast.cox(Surv(entry,time,status)~X1+X2,data=d)
+##' coxph(Surv(entry,time,status)~X1+X2+cluster(id),data=d)
+##' coef(cox.aalen(Surv(entry,time,status)~prop(X1)+prop(X2),data=d))
 fast.cox <- function(formula,data,...) {
   call <- match.call()
   m <- match.call(expand.dots = FALSE)
