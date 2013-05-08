@@ -196,7 +196,13 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     // }}}
    ipers[s]=pers;
 
-// Rprintf("___________ %d %d  %lf %d \n",it,s,time,pers); print_mat(Z); print_mat(X); 
+   if (*detail==2) {
+           Rprintf("___________ s=%d jump.time=%lf jump.person=%d \n",it,s,time,pers); 
+	   Rprintf("Z matrix\n"); 
+	   print_mat(Z); 
+	   Rprintf("X matrix (at risk)\n"); 
+	   print_mat(X); 
+   }
 
      scl_mat_mult(1/S0,ZPZ,ZPZo); scl_mat_mult(1/S0,ZPX,ZPXo);
    // }}}
