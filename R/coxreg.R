@@ -1,4 +1,4 @@
-fast.cox0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,...) {
+coxreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,...) {
   p <- ncol(X)
   if (missing(beta)) beta <- rep(0,p)
   if (!is.null(strata)) {
@@ -25,7 +25,7 @@ fast.cox0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,...) {
       structure(-ploglik,gradient=-gradient,hessian=-hessian,U=U)
     }
   } else {
-    dd <- .Call("FastCoxPrep",entry,exit,status,as.matrix(X),id,package="mets")
+    system.time(dd <- .Call("FastCoxPrep",entry,exit,status,as.matrix(X),id,package="mets"))
     if (!is.null(id))
       id <- dd$id[dd$jumps+1]
     obj <- function(pp,U=FALSE) {
@@ -35,18 +35,18 @@ fast.cox0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,...) {
       with(val, structure(-ploglik,gradient=-gradient,hessian=-hessian,U=U))
     }
   }
-  browser()
+
   opt <- nlm(obj,beta)
   val <- obj(opt$estimate,TRUE)
   cc <- opt$estimate; names(cc) <- colnames(X)
-
+  ll <- -val; attributes(ll) <- NULL
   res <- list(coef=cc,
               score=-1*attributes(val)$U,
               hessian=-1*attributes(val)$hessian,
-              logLik=-1*attributes(val)$ploglik,
+              logLik=ll,
               strata=strata,
               id=id)
-  class(res) <- "fast.cox"
+  class(res) <- "coxreg"
   res
 }
 
@@ -76,23 +76,23 @@ fast.cox0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,...) {
 ##' 
 ##' n <- 1e3;
 ##' d <- simcox(n); d$id <- seq(nrow(d)); d$group <- factor(rbinom(nrow(d),1,0.5))
-##' fast.cox(Surv(entry,time,status)~X1*X2+strata(group)+cluster(id),data=d)
+##' coxreg(Surv(entry,time,status)~X1*X2+strata(group)+cluster(id),data=d)
 ##' 
-##' (m1 <- fast.cox(Surv(entry,time,status)~X1+X2,data=d))
+##' (m1 <- coxreg(Surv(entry,time,status)~X1+X2,data=d))
 ##' (m2 <- coxph(Surv(entry,time,status)~X1+X2+cluster(id),data=d))
 ##' (coef(m3 <-cox.aalen(Surv(entry,time,status)~prop(X1)+prop(X2),data=d)))
 ##' 
-##' (m1b <- fast.cox(Surv(entry,time,status)~X1+X2+strata(group),data=d))
+##' (m1b <- coxreg(Surv(entry,time,status)~X1+X2+strata(group),data=d))
 ##' (m2b <- coxph(Surv(entry,time,status)~X1+X2+cluster(id)+strata(group),data=d))
 ##' (coef(m3b <-cox.aalen(Surv(entry,time,status)~-1+group+prop(X1)+prop(X2),data=d)))
-fast.cox <- function(formula,data,...) {
+coxreg <- function(formula,data,...) {
   call <- match.call()
   m <- match.call(expand.dots = FALSE)
   special <- c("strata", "cluster")
   Terms <- terms(formula, special, data = data)
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
-  m <- eval(m, sys.parent())
+  m <- eval(m, parent.frame())
   Y <- model.extract(m, "response")
   if (!is.Surv(Y)) stop("Expected a 'Surv'-object")
   if (ncol(Y)==2) {
@@ -119,12 +119,12 @@ fast.cox <- function(formula,data,...) {
   if (!is.null(intpos  <- attributes(Terms)$intercept))
     X <- X[,-intpos,drop=FALSE]
   if (ncol(X)==0) return(NULL)
-  fast.cox0(X,entry,exit,status,id,strata,...)
+  coxreg0(X,entry,exit,status,id,strata,...)
 }
 
 
-##' @S3method vcov fast.cox
-vcov.fast.cox  <- function(object,...) {
+##' @S3method vcov coxreg
+vcov.coxreg  <- function(object,...) {
   I <- -solve(object$hessian)
   if (!is.null(object$id)) {
     ii <- mets::cluster.index(object$id)
@@ -141,32 +141,32 @@ vcov.fast.cox  <- function(object,...) {
   res
 }
 
-##' @S3method coef fast.cox
-coef.fast.cox  <- function(object,...) {
+##' @S3method coef coxreg
+coef.coxreg  <- function(object,...) {
   object$coef
 }
 
-##' @S3method summary fast.cox
-summary.fast.cox <- function(object,...) {
+##' @S3method summary coxreg
+summary.coxreg <- function(object,...) {
   I <- -solve(object$hessian)
   V <- vcov(object)
   cc <- cbind(coef(object),diag(I)^0.5,diag(V)^0.5)
   colnames(cc) <- c("Estimate","Naive S.E.","Robust S.E.")
   rownames(cc) <- names(coef(object))
   res <- list(coef=cc)
-  class(res) <- "summary.fast.cox"
+  class(res) <- "summary.coxreg"
   res
 }
 
-##' @S3method print summary.fast.cox
-print.summary.fast.cox  <- function(x,...) {
+##' @S3method print summary.coxreg
+print.summary.coxreg  <- function(x,...) {
   cat("\n")
   printCoefmat(x$coef,...)
   cat("\n")
 }
 
-##' @S3method print fast.cox
-print.fast.cox  <- function(x,...) {
+##' @S3method print coxreg
+print.coxreg  <- function(x,...) {
   print(summary(x),...)
 }
 

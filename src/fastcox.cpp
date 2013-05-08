@@ -19,7 +19,6 @@ BEGIN_RCPP
   }
 
   ivec Sign;
-
   if (Truncation) {
     vec Entry = Rcpp::as<vec>(entry);  
     Exit.insert_rows(0,Entry);
@@ -30,7 +29,7 @@ BEGIN_RCPP
     for (unsigned i=0; i<n; i++) Sign(i) = -1;
     Status = Status%(1+Sign);
   }
-  uvec idx0 = sort_index(Status,0); 
+  uvec idx0 = sort_index(Status,1); 
   uvec idx = stable_sort_index(Exit.elem(idx0),0);
   idx = idx0.elem(idx);
   if (Truncation) {
@@ -75,7 +74,7 @@ BEGIN_RCPP
 
   colvec a = X*beta;
   colvec ea = exp(a);  
-  if (Sign.n_cols==ea.n_cols) { // Truncation
+  if (Sign.n_rows==ea.n_rows) { // Truncation
     ea = Sign%ea;
   }
 

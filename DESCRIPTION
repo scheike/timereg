@@ -71,5 +71,5 @@ Collate:
     'binomial.twostage.R'
     'clusterindex-reshape.R'
     'bptwin.R'
-    'fastcox.R'
     'prop-odds.R'
+    'coxreg.R'
