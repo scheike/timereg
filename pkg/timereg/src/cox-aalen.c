@@ -197,7 +197,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
    ipers[s]=pers;
 
    if (*detail==2) {
-           Rprintf("___________ s=%d jump.time=%lf jump.person=%d \n",it,s,time,pers); 
+           Rprintf("___________ s=%d jump.time=%lf jump.person=%d \n",s,time,pers); 
 	   Rprintf("Z matrix\n"); 
 	   print_mat(Z); 
 	   Rprintf("X matrix (at risk)\n"); 
