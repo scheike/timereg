@@ -15,7 +15,7 @@ RcppExport SEXP pBhat(SEXP ds,
     uvec           event = Rcpp::as<uvec>(ds); 
     mat                X = Rcpp::as<mat>(Xs);
     mat               Xc = zeros<mat>(X.n_cols,X.n_cols);
-    vec         betahat  = Rcpp::as<double>(beta);
+    vec         betahat  = Rcpp::as<vec>(beta);
     unsigned  stop,start = X.n_rows;
     uvec        eventpos = find(event==1);
     mat               dB = zeros(eventpos.n_elem,X.n_cols);
@@ -88,7 +88,7 @@ RcppExport SEXP pBhat(SEXP ds,
 }
 
 
-RcppExport SEXP Uhat(SEXP ds, SEXP H, SEXP theta, SEXP id, SEXP idsize) {
+RcppExport SEXP UhatPropOdd(SEXP ds, SEXP H, SEXP theta, SEXP id, SEXP idsize) {
   try {
     uvec                event = Rcpp::as<uvec>(ds);
     vec                   Hij = Rcpp::as<vec>(H);

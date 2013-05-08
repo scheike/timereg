@@ -24,7 +24,7 @@ fast.cox0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,...) {
       if (U) U <- do.call("rbind",lapply(val,function(x) x$U))
       structure(-ploglik,gradient=-gradient,hessian=-hessian,U=U)
     }
-  } else {  
+  } else {
     dd <- .Call("FastCoxPrep",entry,exit,status,as.matrix(X),id,package="mets")
     if (!is.null(id))
       id <- dd$id[dd$jumps+1]
@@ -55,6 +55,7 @@ fast.cox0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,...) {
 ##' @param formula formula with 'Surv' outcome (see \code{coxph})
 ##' @param data data frame
 ##' @param ... Additional arguments to lower level funtions
+##' @author Klaus K. Holst
 ##' @export
 ##' @examples
 ##' simcox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
@@ -87,7 +88,7 @@ fast.cox <- function(formula,data,...) {
   if (!is.Surv(Y)) stop("Expected a 'Surv'-object")
   if (ncol(Y)==2) {
     exit <- Y[,1]
-    entry <- rep(0,nrow(Y))
+    entry <- NULL ## rep(0,nrow(Y))
     status <- Y[,2]
   } else {
     entry <- Y[,1]

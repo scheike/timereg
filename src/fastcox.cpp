@@ -4,50 +4,61 @@ using namespace arma;
 
 RcppExport SEXP FastCoxPrep( SEXP entry, SEXP exit, SEXP status, SEXP x, SEXP id) {
 BEGIN_RCPP
-  vec Entry = Rcpp::as<vec>(entry);
+
   vec Exit = Rcpp::as<vec>(exit);  
-  uvec Status = Rcpp::as<uvec>(status);
+  ivec Status = Rcpp::as<ivec>(status);
   mat X = Rcpp::as<mat>(x);
   bool haveId = (Rf_isNull)(id);
-
+  bool Truncation = !((Rf_isNull)(entry));
   unsigned n = X.n_rows;
-  Entry.insert_rows(0,Exit);
-  uvec idx = sort_index(Entry);
+  uvec idx;
 
   mat XX(X.n_rows, X.n_cols*X.n_cols); // Calculate XX' at each time-point
   for (unsigned i=0; i<X.n_rows; i++) {
     rowvec Xi = X.row(i);
     XX.row(i) = reshape(Xi.t()*Xi,1,XX.n_cols);
   }
-  XX.insert_rows(0,XX);
+
+  if (Truncation) {
+    vec Entry = Rcpp::as<vec>(entry);  
+    Exit.insert_rows(0,Entry);
+    XX.insert_rows(0,XX);
+    X.insert_rows(0,X);
+    Status.insert_rows(0,Status);
+  } 
+  idx = sort_index(Exit);
+  ivec Sign;
+  if (Truncation) {
+    Sign.reshape(2*n,1); Sign.fill(1);
+    for (unsigned i=0; i<n; i++) Sign(i) = -1;
+    Status = Status%Sign;
+    Sign = Sign.elem(idx);  
+  }
   XX = XX.rows(idx);
-  X.insert_rows(0,X);
-  X = X.rows(idx);
+  X = X.rows(idx);  
+  Status = Status.elem(idx);
+  uvec jumps = find(Status==1);
   
   uvec newId;
   if (!haveId) {
     uvec Id = Rcpp::as<uvec>(id);
-    Id.insert_rows(0,Id);
+    if (Truncation) {
+      Id.insert_rows(0,Id);
+    }
     newId = Id.elem(idx);
   }
-
-  Status.insert_rows(0,Status);
-  ivec Sign(2*n); Sign.fill(-1);
-  for (unsigned i=0; i<n; i++) Sign(i) = 1; 
-  Sign = Sign.elem(idx);
-  Status = Status.elem(idx);
-  uvec jumps = find(Status%Sign==1);
 
   return(Rcpp::List::create(Rcpp::Named("XX")=XX,
 			    Rcpp::Named("X")=X,
 			    Rcpp::Named("jumps")=jumps,
 			    Rcpp::Named("sign")=Sign,
 			    Rcpp::Named("ord")=idx,
-			    Rcpp::Named("time")=Entry,
+			    Rcpp::Named("time")=Exit,
 			    Rcpp::Named("id")=newId
 			    ));
 END_RCPP
   }
+
 
 
 RcppExport SEXP FastCoxPL( SEXP b, SEXP x, SEXP xx, SEXP sgn, SEXP jumps ) {
@@ -55,12 +66,21 @@ BEGIN_RCPP
   colvec beta = Rcpp::as<colvec>(b);
   mat X = Rcpp::as<mat>(x);
   mat XX = Rcpp::as<mat>(xx);
-  ivec Sign = Rcpp::as<ivec>(sgn);
   uvec Jumps = Rcpp::as<uvec>(jumps);
+  ivec Sign = Rcpp::as<ivec>(sgn);
+  unsigned n = X.n_rows;
 
   colvec a = X*beta;
-  colvec ea = Sign%exp(a);
+  colvec ea = exp(a);  
+  if (Sign.n_cols==n) { // Truncation
+    ea = ea%Sign;
+  }
+
   colvec b1 = flipud(cumsum(flipud(ea)));
+  // colvec b1(n); b1(0) = ea(n-1);
+  // for (unsigned i=1; i<n; i++) {
+  //   b1(i) = b1(i-1)+ea(n-i);
+  // }
   vec val = a-log(b1); // Partial log-likelihood
   mat b = X;
   for (unsigned j=0; j<b.n_cols; j++) {

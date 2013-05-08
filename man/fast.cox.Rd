@@ -35,4 +35,7 @@ n <- 1e3;
 d <- simcox(n); d$id <- seq(nrow(d)); d$group <- rbinom(nrow(d),1,0.5)
 fast.cox(Surv(entry,time,status)~X1*X2+strata(group)+cluster(id),data=d)
 }
+\author{
+  Klaus K. Holst
+}
 
