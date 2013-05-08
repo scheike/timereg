@@ -149,6 +149,7 @@ ldata<-list(start=start,stop=stop, antpers=survs$antpers,antclust=survs$antclust
   class(ud)<-"cox.aalen"
   attr(ud,"stratum")<-ud$stratum; 
   attr(ud,"Formula")<-formula;
+  attr(ud,"id.call")<-id.call;
   attr(ud,"id")<-id.call;
   attr(ud,"cluster.call")<-cluster.call;
   attr(ud,"cluster")<-clusters;

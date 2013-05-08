@@ -105,7 +105,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   R_CheckUserInterrupt();
 
   cu[0]=times[0]; 
-  for (it=0;it<*Nit;it++) // {{{ iterations start for cox-aalen model
+  for (it=0;it<*Nit || (*Nit==0 && it==0);it++) // {{{ iterations start for cox-aalen model
   {
      if (it>0) {
       vec_zeros(U); mat_zeros(S1);   
@@ -208,7 +208,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 
    if (*stratum==0)  invertS(A,AI,*silent); 
    if (ME(AI,0,0)==0 && *stratum==0 && *silent==0) {
-       Rprintf("additive design X'X not invertible at time (number, value): %d %lf \n",s,time); print_mat(A);
+      Rprintf("additive design X'X not invertible at time (number, value): %d %lf \n",s,time); print_mat(A);
    }
    if (ME(AI,0,0)==0 && *stratum==0 && *silent==2) {
       Rprintf("additive design X'X not invertible at time (number, value) : %d %lf \n",s,time); print_mat(A);
@@ -245,6 +245,8 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 	     print_vec(zav); 
 	     print_vec(difzzav);
 	     print_vec(U); 
+	     print_mat(A); 
+	     print_mat(AI); 
   }
 
   if (*betafixed==0)  // {{{
@@ -304,7 +306,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   } // }}}
 
 /* for (k=0;k<*pg;k++) ME(S1,k,k)=ME(S1,k,k)+*ridge;  */
-  if (*betafixed==0)  {
+  if (*betafixed==0 )  {
       invertS(S1,SI,*silent); Mv(SI,U,delta); MxA(SI,VU,S2); MxA(S2,SI,VU); 
   }
 
@@ -316,7 +318,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 	Rprintf("Information -D^2 l\n"); print_mat(SI); 
       };
 
-      if (*betafixed==0) vec_add(beta,delta,beta); 
+      if (*betafixed==0 && (*Nit>0)) vec_add(beta,delta,beta); 
 
       for (k=0;k<*pg;k++) sumscore=sumscore+fabs(VE(U,k)); 
       if ((sumscore<0.0000001) & (it<(*Nit)-2)) {  it=*Nit-2; }
