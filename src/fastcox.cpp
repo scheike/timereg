@@ -10,7 +10,7 @@ BEGIN_RCPP
   mat X = Rcpp::as<mat>(x);
   bool haveId = (Rf_isNull)(id);
   bool Truncation = !((Rf_isNull)(entry));
-  unsigned n = X.n_rows;
+  unsigned n = Exit.n_elem;
 
   mat XX(X.n_rows, X.n_cols*X.n_cols); // Calculate XX' at each time-point
   for (unsigned i=0; i<X.n_rows; i++) {
@@ -36,8 +36,10 @@ BEGIN_RCPP
     Sign = Sign.elem(idx);  
   }
 
-  XX = XX.rows(idx);
-  X = X.rows(idx);  
+  if (X.n_rows>0) {
+    XX = XX.rows(idx);
+    X = X.rows(idx);  
+  }
   Status = Status.elem(idx);
   uvec jumps = find(Status>0);
   
@@ -62,6 +64,22 @@ END_RCPP
   }
 
 
+// colvec revcumsum(const colvec &a) {
+//   return(flipud(cumsum(flipud(a))));
+// }
+colvec revcumsum(const colvec &a) {
+  unsigned n = a.n_rows;
+  colvec res = a; double prev=0;  
+  for (unsigned i=0; i<n; i++) {
+    prev += a(n-i-1);
+    res(n-i-1) = prev;
+  }  
+  return(res);
+}
+colvec revcumsum(const colvec &a, const colvec &v1, const colvec &v2) {
+  return(revcumsum(a%v1)/v2);
+}
+
 
 RcppExport SEXP FastCoxPL( SEXP b, SEXP x, SEXP xx, SEXP sgn, SEXP jumps ) {
 BEGIN_RCPP
@@ -72,37 +90,45 @@ BEGIN_RCPP
   ivec Sign = Rcpp::as<ivec>(sgn);
   unsigned n = X.n_rows;
 
-  colvec a = X*beta;
-  colvec ea = exp(a);  
-  if (Sign.n_rows==ea.n_rows) { // Truncation
-    ea = Sign%ea;
+  colvec Xb = X*beta;
+  colvec eXb = exp(Xb);  
+  if (Sign.n_rows==eXb.n_rows) { // Truncation
+    eXb = Sign%eXb;
   }
 
-  colvec b1 = flipud(cumsum(flipud(ea)));
-  // colvec b1(n); b1(0) = ea(n-1);
-  // for (unsigned i=1; i<n; i++) {
-  //   b1(i) = b1(i-1)+ea(n-i);
+  colvec S0 = revcumsum(eXb);
+  // mat S1(X.n_rows,X.n_cols);
+  // for (unsigned j=0; j<X.n_cols; j++) {
+  //   S1.col(j) = revcumsum(X.col(j),eXb);
   // }
-  vec val = a-log(b1); // Partial log-likelihood
-  mat b = X;
-  for (unsigned j=0; j<b.n_cols; j++) {
-    b.col(j) = flipud(cumsum(flipud(b.col(j)%ea))) / b1;
+  // mat S2(X.n_rows,XX.n_cols);
+  // for (unsigned j=0; j<X.n_cols; j++) {
+  //   S2.col(j) = revcumsum(XX.col(j),eXb);
+  // }
+  mat E(X.n_rows,X.n_cols); // S1/S0(s)
+  for (unsigned j=0; j<X.n_cols; j++) {
+    E.col(j) = revcumsum(X.col(j),eXb,S0);
   }
-  mat grad = (X-b); // Score
-  for (unsigned j=0; j<XX.n_cols; j++) {
-    XX.col(j) = flipud(cumsum(flipud(XX.col(j)%ea))) / b1;
+  for (unsigned j=0; j<XX.n_cols; j++) { // int S2/S0(s)
+    XX.col(j) = revcumsum(XX.col(j),eXb,S0);
   }
+
   XX = XX.rows(Jumps);
-  grad = grad.rows(Jumps);
-  b = b.rows(Jumps);
-  val = val.elem(Jumps);
-  mat hess = -(reshape(sum(XX),X.n_cols,X.n_cols)-b.t()*b);
+  X = X.rows(Jumps);
+  E = E.rows(Jumps);
+  S0 = S0.elem(Jumps);
+  mat grad = (X-E); // Score
+  vec val = Xb.elem(Jumps)-log(S0); // Partial log-likelihood
+  mat hess = -(reshape(sum(XX),X.n_cols,X.n_cols)-E.t()*E);
 
   return(Rcpp::List::create(Rcpp::Named("jumps")=jumps,
 			    Rcpp::Named("ploglik")=sum(val),
 			    Rcpp::Named("U")=grad,
 			    Rcpp::Named("gradient")=sum(grad),
-			    Rcpp::Named("hessian")=hess
+			    Rcpp::Named("hessian")=hess,
+			    Rcpp::Named("S2S0")=XX,
+			    Rcpp::Named("E")=E,
+			    Rcpp::Named("S0")=S0
 			    ));
 END_RCPP
   }

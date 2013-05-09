@@ -5,13 +5,9 @@
 ##' @param time Time variable
 ##' @param status Status variable (0,1)
 ##' @param X Covariate design matrix
-##' @param id cluster variable
-##' @param theta list of thetas (returns score evaluated here), or
-##' starting point for optimization (defaults to magic number 0.1)
 ##' @param ... Additional arguments to lower level functions
 ##' @return Parameter estimates
 ##' @author Klaus K. Holst
-##' @export
 ##' @examples
 ##' n <- 5e3
 ##' theta <- 0.3
@@ -43,7 +39,7 @@
 ##' plot(thetas,Us,type="l",ylim=c(-.5,1)); abline(h=0,lty=2); abline(v=theta,lty=2)
 ##' op <- aalenfrailty(dd$time,dd$status,X,dd$id)
 ##' op}
-propOdds <- function(time,status,X,beta,
+propOdds <- function(time,status,X,
                          ...) {  
   id <- 1:length(time)
   theta <- 1

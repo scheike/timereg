@@ -1,6 +1,8 @@
-coxreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,...) {
+###{{{ coxreg0 
+coxreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,...) {
   p <- ncol(X)
   if (missing(beta)) beta <- rep(0,p)
+  if (p==0) X <- cbind(rep(0,length(exit)))
   if (!is.null(strata)) {
     stratalev <- levels(strata)
     strataidx <- lapply(stratalev,function(x) which(strata==x))
@@ -14,42 +16,68 @@ coxreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,...) {
                        package="mets"))
     if (!is.null(id))
       id <- unlist(lapply(dd,function(x) x$id[x$jumps+1]))
-    obj <- function(pp,U=FALSE) {
+    obj <- function(pp,U=FALSE,all=FALSE) {
       val <- lapply(dd,function(d)
                     with(d,
                          .Call("FastCoxPL",pp,X,XX,sign,jumps,package="mets")))
       ploglik <- do.call("+",lapply(val,function(x) x$ploglik))
       gradient <- do.call("+",lapply(val,function(x) x$gradient))
       hessian <- do.call("+",lapply(val,function(x) x$hessian))
-      if (U) U <- do.call("rbind",lapply(val,function(x) x$U))
-      structure(-ploglik,gradient=-gradient,hessian=-hessian,U=U)
+      if (all) {
+        U <- do.call("rbind",lapply(val,function(x) x$U))
+        time <- lapply(dd,function(x) x$time[x$ord+1])
+        ord <- lapply(dd,function(x) x$ord+1)
+        jumps <- lapply(dd,function(x) x$jumps+1)
+        jumptimes <- lapply(dd,function(x) x$time[x$ord+1][x$jumps+1])
+        S0 <- lapply(val,function(x) x$S0)
+        nevent  <- unlist(lapply(S0,length))
+        return(list(ploglik=ploglik,gradient=gradient,hessian=hessian,
+                    U=U,S0=S0,nevent=nevent,
+                    ord=ord,time=time,jumps=jumps,jumptimes=jumptimes))
+      }
+      structure(-ploglik,gradient=-gradient,hessian=-hessian)
     }
   } else {
-    system.time(dd <- .Call("FastCoxPrep",entry,exit,status,as.matrix(X),id,package="mets"))
+    system.time(dd <- .Call("FastCoxPrep",entry,exit,status,X,id,package="mets"))
     if (!is.null(id))
       id <- dd$id[dd$jumps+1]
-    obj <- function(pp,U=FALSE) {
+    obj <- function(pp,U=FALSE,all=FALSE) {
       val <- with(dd,
                   .Call("FastCoxPL",pp,X,XX,sign,jumps,package="mets"))
-      if (U) U <- val$U
-      with(val, structure(-ploglik,gradient=-gradient,hessian=-hessian,U=U))
+      if (all) {
+        val$time <- dd$time[dd$ord+1]
+        val$ord <- dd$ord+1
+        val$jumps <- dd$jumps+1
+        val$jumptimes <- val$time[val$jumps]
+        val$nevent <- length(val$S0)
+        return(val)
+      }
+      with(val, structure(-ploglik,gradient=-gradient,hessian=-hessian))
     }
   }
-
-  opt <- nlm(obj,beta)
-  val <- obj(opt$estimate,TRUE)
-  cc <- opt$estimate; names(cc) <- colnames(X)
-  ll <- -val; attributes(ll) <- NULL
-  res <- list(coef=cc,
-              score=-1*attributes(val)$U,
-              hessian=-1*attributes(val)$hessian,
-              logLik=ll,
-              strata=strata,
-              id=id)
+  if (p>0) {
+    opt <- nlm(obj,beta)
+    cc <- opt$estimate; names(cc) <- colnames(X)
+    if (!stderr) return(cc)    
+    val <- c(list(coef=cc),obj(opt$estimate,all=TRUE))
+  } else {
+    val <- obj(0,all=TRUE)
+    val[c("ploglik","gradient","hessian","U")] <- NULL
+  }
+  res <- c(val,
+           list(strata=strata,
+                entry=entry,
+                exit=exit,
+                status=status,
+                p=p,
+                X=X,
+                id=id))
   class(res) <- "coxreg"
   res
 }
+###}}} coxreg0
 
+###{{{ coxreg
 ##' Fast Cox PH regression
 ##'
 ##' Fast Cox PH regression
@@ -76,18 +104,23 @@ coxreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,...) {
 ##' 
 ##' n <- 1e3;
 ##' d <- simcox(n); d$id <- seq(nrow(d)); d$group <- factor(rbinom(nrow(d),1,0.5))
-##' coxreg(Surv(entry,time,status)~X1*X2+strata(group)+cluster(id),data=d)
 ##' 
 ##' (m1 <- coxreg(Surv(entry,time,status)~X1+X2,data=d))
 ##' (m2 <- coxph(Surv(entry,time,status)~X1+X2+cluster(id),data=d))
 ##' (coef(m3 <-cox.aalen(Surv(entry,time,status)~prop(X1)+prop(X2),data=d)))
 ##' 
+##' \dontrun{
 ##' (m1b <- coxreg(Surv(entry,time,status)~X1+X2+strata(group),data=d))
 ##' (m2b <- coxph(Surv(entry,time,status)~X1+X2+cluster(id)+strata(group),data=d))
 ##' (coef(m3b <-cox.aalen(Surv(entry,time,status)~-1+group+prop(X1)+prop(X2),data=d)))
+##' }
+##' 
+##' m <- coxreg(Surv(entry,time,status)~X1*X2+strata(group)+cluster(id),data=d)
+##' m
+##' plot(m,ylim=c(0,5))
 coxreg <- function(formula,data,...) {
-  call <- match.call()
-  m <- match.call(expand.dots = FALSE)
+  cl <- match.call()
+  m <- match.call(expand.dots = TRUE)[1:3]
   special <- c("strata", "cluster")
   Terms <- terms(formula, special, data = data)
   m$formula <- Terms
@@ -118,57 +151,133 @@ coxreg <- function(formula,data,...) {
   X <- model.matrix(Terms, m)
   if (!is.null(intpos  <- attributes(Terms)$intercept))
     X <- X[,-intpos,drop=FALSE]
-  if (ncol(X)==0) return(NULL)
-  coxreg0(X,entry,exit,status,id,strata,...)
+  if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
+  res <- c(coxreg0(X,entry,exit,status,id,strata,...),list(call=cl))
+  class(res) <- "coxreg"
+  res
 }
+###}}} coxreg
 
-
+###{{{ vcov
 ##' @S3method vcov coxreg
 vcov.coxreg  <- function(object,...) {
   I <- -solve(object$hessian)
+  ncluster <- NULL
   if (!is.null(object$id)) {
     ii <- mets::cluster.index(object$id)
     UU <- matrix(nrow=ii$uniqueclust,ncol=ncol(I))
     for (i in seq(ii$uniqueclust)) {
-      UU[i,] <- colSums(object$score[ii$idclustmat[i,seq(ii$cluster.size[i])]+1,,drop=FALSE])
+      UU[i,] <- colSums(object$U[ii$idclustmat[i,seq(ii$cluster.size[i])]+1,,drop=FALSE])
     }
+    ncluster <- nrow(UU)
     J <- crossprod(UU)
   } else {
-    J <- crossprod(object$score)
+    J <- crossprod(object$U)
   }
   res <- I%*%J%*%t(I)
+  attributes(res)$ncluster <- ncluster
   colnames(res) <- rownames(res) <- names(coef(object))
   res
 }
+###}}} vcov
 
+###{{{ coef
 ##' @S3method coef coxreg
 coef.coxreg  <- function(object,...) {
   object$coef
 }
+###}}} coef
 
+###{{{ summary
 ##' @S3method summary coxreg
-summary.coxreg <- function(object,...) {
-  I <- -solve(object$hessian)
-  V <- vcov(object)
-  cc <- cbind(coef(object),diag(I)^0.5,diag(V)^0.5)
-  colnames(cc) <- c("Estimate","Naive S.E.","Robust S.E.")
-  rownames(cc) <- names(coef(object))
-  res <- list(coef=cc)
+summary.coxreg <- function(object,se="robust",...) {
+  cc <- NULL
+  if (object$p>0) {
+    I <- -solve(object$hessian)
+    V <- vcov(object)
+    cc <- cbind(coef(object),diag(V)^0.5,diag(I)^0.5)
+    cc  <- cbind(cc,2*(1-pnorm(abs(cc[,1]/cc[,2]))))
+    colnames(cc) <- c("Estimate","S.E.","dU^-1/2","P-value")
+    if (!is.null(attributes(V)$ncluster))
+    rownames(cc) <- names(coef(object))
+  }
+  Strata <- levels(object$strata)
+  if (!is.null(Strata)) {
+    n <- unlist(lapply(object$time,length))
+  } else {
+    n <- length(object$time)    
+  }  
+  res <- list(coef=cc,n=n,nevent=object$nevent,
+              strata=Strata,ncluster=attributes(V)$ncluster)
   class(res) <- "summary.coxreg"
   res
 }
+###}}} summary
 
+###{{{ print.summary
 ##' @S3method print summary.coxreg
 print.summary.coxreg  <- function(x,...) {
   cat("\n")
-  printCoefmat(x$coef,...)
+  nn <- cbind(x$n, x$nevent)
+  rownames(nn) <- x$strata; colnames(nn) <- c("n","events")
+  if (is.null(rownames(nn))) rownames(nn) <- rep("",NROW(nn))
+  print(nn,quote=FALSE)
+  if (!is.null(x$ncluster)) cat("\n ", x$ncluster, " clusters\n",sep="")
+  if (!is.null(x$coef)) {
+    cat("\n")
+    printCoefmat(x$coef,...)
+  }
   cat("\n")
 }
+###}}} print.summary
 
+###{{{ predict
+##' @S3method plot coxreg
+predict.coxreg  <- function(object,surv=FALSE,...) {
+  if (!is.null(object$strata)) {
+    lev <- levels(object$strata)
+    chaz <- c()
+    for (i in seq(length(lev))) {
+      ## Brewslow estimator
+      chaz0 <- cbind(object$jumptimes[[i]],cumsum(1/object$S0[[i]]))
+      colnames(chaz0) <- c("time","chaz")
+      chaz <- c(chaz,list(chaz0))
+    }
+    names(chaz) <- lev
+  } else {
+    chaz <- cbind(object$jumptimes,cumsum(1/object$S0))
+    colnames(chaz) <- c("time","chaz")
+  }
+  return(chaz)
+}
+###}}} predict
+
+###{{{ plot
+##' @S3method plot coxreg
+plot.coxreg  <- function(x,surv=FALSE,add=FALSE,...) {
+  P <- predict(x)
+  if (!is.list(P)) {
+    if (add) {
+      lines(P,type="s",...)
+    } else {
+      plot(P,type="s",...)
+    }
+    return(invisible(P))
+  }
+  plot(P[[1]],type="s",lty=1,col=1,...)
+  for (i in seq_len(length(P)-1)+1) {
+    lines(P[[i]],type="s",lty=i,col=i,...)   
+  }  
+}
+###}}} plot
+
+###{{{ print
 ##' @S3method print coxreg
 print.coxreg  <- function(x,...) {
+  cat("Call:\n")
+  dput(x$call)
   print(summary(x),...)
 }
-
+###}}} print
 
 

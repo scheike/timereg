@@ -2,7 +2,7 @@
 \alias{propOdds}
 \title{Aalen frailty model}
 \usage{
-  propOdds(time, status, X, beta, ...)
+  propOdds(time, status, X, ...)
 }
 \arguments{
   \item{time}{Time variable}
@@ -10,12 +10,6 @@
   \item{status}{Status variable (0,1)}
 
   \item{X}{Covariate design matrix}
-
-  \item{id}{cluster variable}
-
-  \item{theta}{list of thetas (returns score evaluated
-  here), or starting point for optimization (defaults to
-  magic number 0.1)}
 
   \item{...}{Additional arguments to lower level functions}
 }
