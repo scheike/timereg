@@ -23,14 +23,21 @@ NULL
 ##' @keywords data
 NULL
 
-##' multcif data set
+##' Menarche data set (sim)
+##'
+##' @name mena
+##' @docType data
+##' @keywords data
+NULL
+
+##' Multivariate Cumulative Incidence Function example data set
 ##'
 ##' @name multcif
 ##' @docType data
 ##' @keywords data
 NULL
 
-##' stutter data set
+##' Stutter data set
 ##'
 ##' @name twinstut
 ##' @docType data
@@ -44,7 +51,7 @@ NULL
 ##' @keywords data
 NULL
 
-##' Prostate data set
+##' Prostate data set (sim)
 ##'
 ##' @name prt
 ##' @docType data
