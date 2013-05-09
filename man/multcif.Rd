@@ -1,9 +1,10 @@
 \docType{data}
 \name{multcif}
 \alias{multcif}
-\title{multcif data set}
+\title{Multivariate Cumulative Incidence Function example data set}
 \description{
-  multcif data set
+  Multivariate Cumulative Incidence Function example data
+  set
 }
 \keyword{data}
 \keyword{datasets}

@@ -1,9 +1,9 @@
 \docType{data}
 \name{twinstut}
 \alias{twinstut}
-\title{stutter data set}
+\title{Stutter data set}
 \description{
-  stutter data set
+  Stutter data set
 }
 \keyword{data}
 \keyword{datasets}
