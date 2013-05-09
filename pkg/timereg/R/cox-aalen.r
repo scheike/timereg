@@ -77,7 +77,8 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
 	        as.integer(time.group), as.integer(max.timepoint.sim),as.integer(stratum),
 		as.integer(silent),PACKAGE = "timereg")
 
-  Iinv <- matrix(nparout[[19]], pg, pg); RVarbeta <- -matrix(nparout[[28]], pg, pg)
+  Iinv <- matrix(nparout[[19]], pg, pg); 
+  RVarbeta <- -matrix(nparout[[28]], pg, pg)
   rvcu <- matrix(nparout[[27]], mts , px + 1); ## convert to approx for times 
   Rvcu <- times; 
   for (i  in 2:(px+1)) Rvcu <- cbind(Rvcu,approx(rvcu[,1],rvcu[,i],times,f=0.5)$y)
@@ -91,8 +92,8 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   Ut <- matrix(nparout[[31]], mts , pg + 1)
   if (beta.fixed==1) var.score<-matrix(nparout[[57]],Ntimes,pg+1)
 
+  gamiid<-matrix(nparout[[53]],fdata$antclust,pg);
   if (resample.iid==1)  {
-    gamiid<-matrix(nparout[[53]],fdata$antclust,pg);
     biid<-matrix(nparout[[54]],mts,fdata$antclust*px);
     B.iid<-list();
     for (i in (0:(fdata$antclust-1))*px) {
@@ -157,3 +158,4 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
              B.iid=B.iid,gamma.iid=gammaiid,time.sim.resolution=qq,stratum=stratum)
   return(ud)
 } ## }}}
+
