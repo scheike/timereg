@@ -191,14 +191,14 @@ coef.coxreg  <- function(object,...) {
 ###{{{ summary
 ##' @S3method summary coxreg
 summary.coxreg <- function(object,se="robust",...) {
-  cc <- NULL
+  cc <- ncluster <- NULL
   if (object$p>0) {
     I <- -solve(object$hessian)
     V <- vcov(object)
     cc <- cbind(coef(object),diag(V)^0.5,diag(I)^0.5)
     cc  <- cbind(cc,2*(1-pnorm(abs(cc[,1]/cc[,2]))))
     colnames(cc) <- c("Estimate","S.E.","dU^-1/2","P-value")
-    if (!is.null(attributes(V)$ncluster))
+    if (!is.null(ncluster <- attributes(V)$ncluster))
     rownames(cc) <- names(coef(object))
   }
   Strata <- levels(object$strata)
@@ -208,7 +208,7 @@ summary.coxreg <- function(object,se="robust",...) {
     n <- length(object$time)    
   }  
   res <- list(coef=cc,n=n,nevent=object$nevent,
-              strata=Strata,ncluster=attributes(V)$ncluster)
+              strata=Strata,ncluster=ncluster)
   class(res) <- "summary.coxreg"
   res
 }
