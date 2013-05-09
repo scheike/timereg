@@ -232,7 +232,7 @@ print.summary.coxreg  <- function(x,...) {
 ###}}} print.summary
 
 ###{{{ predict
-##' @S3method plot coxreg
+##' @S3method predict coxreg
 predict.coxreg  <- function(object,surv=FALSE,...) {
   if (!is.null(object$strata)) {
     lev <- levels(object$strata)
