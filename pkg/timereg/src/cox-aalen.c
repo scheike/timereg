@@ -501,7 +501,8 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
       if (i==pers) vec_add(tmpv2,W2[cin],W2[cin]);
       if (*ratesim==1) {scl_vec_mult(hati,tmpv2,rowZ); vec_subtr(W2[cin],rowZ,W2[cin]); }
 
-      Mv(AIs[s],xi,rowX); scl_vec_mult(VE(weight,i),rowX,rowX); 
+      Mv(AIs[s],xi,rowX); 
+      scl_vec_mult(VE(weight,i),rowX,rowX); 
       if (i==pers) {vec_add(rowX,W3[cin],W3[cin]); }
       llo=llo+hati;
       if (*ratesim==1) {scl_vec_mult(hati,rowX,rowX); vec_subtr(W3[cin],rowX,W3[cin]);}
@@ -539,36 +540,39 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
       scl_vec_mult(VE(weight,pers),rowX,rowX); 
       vec_add(rowX,W3[cin],W3[cin]);
 
+      replace_row(W2t[cin],timegroup[s],W2[cin]); 
+      replace_row(W3t[cin],timegroup[s],W3[cin]);  
+
       llo=llo+hati;
 
-       Mv(SI,difzzav,tmpv2); 
-       vec_add(tmpv2,W2[cin],W2[cin]);
-       replace_row(W2t[cin],timegroup[s],W2[cin]);
-       extract_row(X,pers,xi);  
-       Mv(AI,xi,rowX); 
-       scl_vec_mult(VE(weight,i),rowX,rowX); 
-       vec_add(rowX,W3[cin],W3[cin]); 
-       replace_row(W3t[cin],timegroup[s],W3[cin]);  
-
-      //      Mv(SI,W2[cin],tmpv2); 
-      Mv(S1,tmpv2,rowZ); 
-      vec_subtr(tmpv2,rowZ,zi); 
-      vec_add(zi,Ui[cin],Ui[cin]);
-
-      replace_row(Uti[cin],timegroup[s],Ui[cin]);
-
-      extract_row(W3t[cin],timegroup[s],tmpv1); 
-      vec_add(tmpv1,rowX,difX); 
-      if (*betafixed==1) scl_vec_mult(1,tmpv1,difX); 
-      replace_row(W4t[cin],timegroup[s],difX); 
-
-      if (*resample==1) {
- 	  for (c=0;c<*px;c++) {
-             l=j*(*px)+c; 
-	     biid[l*(*maxtimepoint)+s]=biid[l*(*maxtimepoint)+s]+VE(difX,c);
-	  } 
-      }
-
+//      // score process i.i.d LWY style 
+//
+//      Mv(SI,tmpv2,zi); 
+//      Mv(St[s],zi,rowZ); 
+//      vec_subtr(tmpv2,rowZ,zi); 
+//      vec_add(zi,Ui[cin],Ui[cin]);
+//      replace_row(Uti[cin],timegroup[s],Ui[cin]);
+//
+//      // iid of baseline LYW counting process 
+//       extract_row(X,pers,xi);  
+//       Mv(AI,xi,rowX); 
+//       scl_vec_mult(VE(weight,i),rowX,rowX); 
+//       vec_add(rowX,W3[cin],W3[cin]); 
+//       replace_row(W3t[cin],timegroup[s],W3[cin]);  
+//
+//      //      Mv(SI,W2[cin],tmpv2); 
+//
+//      extract_row(W3t[cin],timegroup[s],tmpv1); 
+//      vec_add(tmpv1,rowX,difX); 
+//      if (*betafixed==1) scl_vec_mult(1,tmpv1,difX); 
+//      replace_row(W4t[cin],timegroup[s],difX); 
+//
+//      if (*resample==1) {
+// 	  for (c=0;c<*px;c++) {
+//             l=j*(*px)+c; 
+//	     biid[l*(*maxtimepoint)+s]=biid[l*(*maxtimepoint)+s]+VE(difX,c);
+//	  } 
+//      }
     }  // }}} 
 
     if (*robust==1 && *ratesim==1) 
@@ -603,12 +607,12 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   ll=lle-llo; /* likelihood beregnes */
   if (*detail==1) Rprintf("loglike is  %lf \n",ll);  
 
-  if ((*robust==1) && (*ratesim==1)) // {{{ robust variances 
+  if ((*robust==1)) // {{{ robust variances 
   {
       for (s=1;s<*maxtimepoint;s++) {
 	vec_zeros(VdB); mat_zeros(Vcov);
 
-	for (j=0;j<*antclust;j++) {
+	for (j=0;j<*antclust;j++) { // {{{ 
 	  Mv(SI,W2[j],tmpv2); 
 	  Mv(Cg[s],tmpv2,rowX);
 	  extract_row(W3t[j],s,tmpv1); 
@@ -637,12 +641,15 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 	  Mv(Stg[s],tmpv2,rowZ); 
 	  extract_row(W2t[j],s,tmpv2); 
 	  if (*betafixed==0) {
-	    vec_subtr(tmpv2,rowZ,zi); replace_row(Uti[j],s,zi); 
+	    vec_subtr(tmpv2,rowZ,zi); 
+	    replace_row(Uti[j],s,zi); 
 	  } else replace_row(Uti[j],s,tmpv2);
 
 	  vec_star(zi,zi,tmpv2); vec_add(tmpv2,varUthat[s],varUthat[s]);
 
-	} /* j in clusters  */
+	} // }}} /* j in clusters  */
+
+	if (*ratesim==1) 
 
 	if (*betafixed==0) 
 	  for (i=0;i<*pg;i++) vscore[(i+1)*(*maxtimepoint)+s]=VE(varUthat[s],i);  
