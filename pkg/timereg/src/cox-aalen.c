@@ -506,18 +506,10 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
       if (i==pers) {vec_add(rowX,W3[cin],W3[cin]); }
       llo=llo+hati;
       if (*ratesim==1) {scl_vec_mult(hati,rowX,rowX); vec_subtr(W3[cin],rowX,W3[cin]);}
-
-      if (*resample==1) {
- 	  for (c=0;c<*px;c++) {
-             l=j*(*px)+c; 
-	     biid[l*(*maxtimepoint)+s]=biid[l*(*maxtimepoint)+s]+VE(difX,c);
-	  } 
-      }
-     }
+    }
 
       if (*retur==1) dhatMit[i*(*Ntimes)+s]=1*(i==pers)-hati;
       if (*retur==2) dhatMit[i]=dhatMit[i]+1*(i==pers)-hati;
-
     } /* i 1.. antpers */ // }}}
     }
 
@@ -613,15 +605,23 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 	vec_zeros(VdB); mat_zeros(Vcov);
 
 	for (j=0;j<*antclust;j++) { // {{{ 
+		if (s==1 && *detail==3) {
+			printf("================================================= %d \n",j); 
+			print_mat(W2t[j]); 
+			print_vec(W2[j]); 
+			print_mat(Stg[s]); 
+			print_mat(S1); 
+			print_mat(SI); 
+		}
+
 	  Mv(SI,W2[j],tmpv2); 
 	  Mv(Cg[s],tmpv2,rowX);
 	  extract_row(W3t[j],s,tmpv1); 
 	  vec_add(tmpv1,rowX,difX); 
 	  if (*betafixed==1) scl_vec_mult(1,tmpv1,difX); 
-//	  printf(" her \n"); 
 	  replace_row(W4t[j],s,difX); 
-//	  printf(" her 2  \n"); 
-	  vec_star(difX,difX,tmpv1); vec_add(tmpv1,VdB,VdB);
+	  vec_star(difX,difX,tmpv1); 
+	  vec_add(tmpv1,VdB,VdB);
 
           if (s==1) 
           if (*betafixed==0) {
@@ -645,11 +645,9 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 	    replace_row(Uti[j],s,zi); 
 	  } else replace_row(Uti[j],s,tmpv2);
 
-	  vec_star(zi,zi,tmpv2); vec_add(tmpv2,varUthat[s],varUthat[s]);
-
+	  vec_star(zi,zi,tmpv2); 
+	  vec_add(tmpv2,varUthat[s],varUthat[s]);
 	} // }}} /* j in clusters  */
-
-	if (*ratesim==1) 
 
 	if (*betafixed==0) 
 	  for (i=0;i<*pg;i++) vscore[(i+1)*(*maxtimepoint)+s]=VE(varUthat[s],i);  
@@ -661,7 +659,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 	    } 
 	  } 
 	}
-      }  /*  s=1 ..Ntimes */ 
+      }  /*  s=1 ..maxtimepoints */ 
 
     } /* if robust==1 */  // }}}
 
