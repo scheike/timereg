@@ -140,8 +140,7 @@ library(timereg)
 data(sTRACE)
 # Fits Cox model 
 out<-cox.aalen(Surv(time,status==9)~prop(age)+prop(sex)+
-prop(vf)+prop(chf)+prop(diabetes),data=sTRACE,max.time=7,n.sim=100)
-
+prop(vf)+prop(chf)+prop(diabetes),data=sTRACE)
 
 # makes Lin, Wei, Ying test for proportionality
 summary(out)
@@ -160,14 +159,5 @@ vf+chf+prop(diabetes),data=sTRACE,max.time=7,n.sim=100)
 summary(out)
 par(mfrow=c(2,3))
 plot(out)
-
-# Fits model Cox-Aalen model  and 
-# simulates based on time-grouping to save computing time 
-out<- cox.aalen(Surv(time,status==9)~prop(sex)+prop(age)+prop(wmi),data=sTRACE,
-        	max.timepoint.sim=30,n.sim=100)
-summary(out)
-par(mfrow=c(2,2))
-plot(out)
-plot(out,score=1)
 }
 \keyword{survival}
