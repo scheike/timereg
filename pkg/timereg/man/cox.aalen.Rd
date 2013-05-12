@@ -26,7 +26,7 @@ The modelling formula uses the standard survival modelling given in the
 \usage{
 cox.aalen(formula=formula(data),data=sys.parent(),beta=NULL,Nit=10,detail=0,
 start.time=0,max.time=NULL,id=NULL,clusters=NULL,n.sim=500,residuals=0,
-robust=1,weighted.test=0,covariance=0,resample.iid=0,weights=NULL,rate.sim=0,
+robust=1,weighted.test=0,covariance=0,resample.iid=1,weights=NULL,rate.sim=0,
 beta.fixed=0,max.clust=1000,exact.deriv=1,silent=1,max.timepoint.sim=100)
 }
 \arguments{
@@ -57,7 +57,7 @@ and corresponding time vector (time).}
 \item{covariance}{to compute covariance estimates for
 nonparametric terms rather than just the variances.}
 \item{resample.iid}{to return i.i.d. representation for
-nonparametric and parametric terms.}
+nonparametric and parametric terms. based on counting process or martingale resduals (rate.sim).}
 \item{beta}{starting value for relative risk estimates.}
 \item{Nit}{number of iterations for Newton-Raphson algorithm.}
 \item{detail}{if 0 no details is printed during iterations, if 1 details are given.}
