@@ -35,7 +35,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   vector *ta,*ahatt,*vrisk,*tmpv1,*tmpv2,*rowX,*rowZ,*difX,*VdB; 
   vector *W2[*antclust],*W3[*antclust],*reszpbeta,*res1dim,*dAt[*Ntimes]; 
   vector *Ui[*antclust]; 
-  int cin=0,ci=0,c,pers=0,i=0,j,k,l,s,it,count,pmax,
+  int cin=0,ci=0,c,pers=0,i=0,j,k,l,s,s1,it,count,pmax,
       *imin=calloc(1,sizeof(int)),
       *cluster=calloc(*antpers,sizeof(int)),
       *ipers=calloc(*Ntimes,sizeof(int)); 
@@ -532,8 +532,11 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
       scl_vec_mult(VE(weight,pers),rowX,rowX); 
       vec_add(rowX,W3[cin],W3[cin]);
 
-      replace_row(W2t[cin],timegroup[s],W2[cin]); 
-      replace_row(W3t[cin],timegroup[s],W3[cin]);  
+      for (s1=timegroup[s];s1<*maxtimepoint;s1++)
+      {
+      replace_row(W2t[cin],s1,W2[cin]); 
+      replace_row(W3t[cin],s1,W3[cin]);  
+      }
 
       llo=llo+hati;
 

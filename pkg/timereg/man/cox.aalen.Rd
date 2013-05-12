@@ -26,7 +26,7 @@ The modelling formula uses the standard survival modelling given in the
 \usage{
 cox.aalen(formula=formula(data),data=sys.parent(),beta=NULL,Nit=10,detail=0,
 start.time=0,max.time=NULL,id=NULL,clusters=NULL,n.sim=500,residuals=0,
-robust=1,weighted.test=0,covariance=0,resample.iid=0,weights=NULL,rate.sim=1,
+robust=1,weighted.test=0,covariance=0,resample.iid=0,weights=NULL,rate.sim=0,
 beta.fixed=0,max.clust=1000,exact.deriv=1,silent=1,max.timepoint.sim=100)
 }
 \arguments{
@@ -42,7 +42,7 @@ beta.fixed=0,max.clust=1000,exact.deriv=1,silent=1,max.timepoint.sim=100)
 \item{max.time}{end of observation period where estimates are computed. 
 Estimates thus computed from [start.time, max.time]. Default is max of data.}
 \item{robust}{to compute robust variances and construct processes for
-resampling. May be set to 0 to save memory.}
+resampling. May be set to 0 to save memory and time, in particular for rate.sim=1.}
 \item{id}{For timevarying covariates the variable must 
 associate each record with the id of a subject.}
 \item{clusters}{cluster variable for computation of robust 

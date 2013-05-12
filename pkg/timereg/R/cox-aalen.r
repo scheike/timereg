@@ -1,7 +1,7 @@
 cox.aalenBase<-function (times, fdata, designX, designG, status,
     id, clusters, Nit = 5, beta = 0, weights=NULL, detail = 0, 
     sim = 1, antsim = 1000, weighted.test= 0, robust = 1, 
-    ratesim = 1, residuals = 0, covariance = 1,
+    ratesim = 0, residuals = 0, covariance = 1,
     resample.iid=0,namesZ=NULL,namesX=NULL,beta.fixed=0,
     entry=NULL,offsets=0,exactderiv=1,max.timepoint.sim=100,silent=1) 
 { ## {{{
