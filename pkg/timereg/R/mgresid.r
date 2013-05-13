@@ -16,6 +16,8 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   if (sum(modelmatrix)==0 && cum.resid==0) 
 	  stop("No modelmatrix or continous covariates given to cumulate residuals\n"); 
 
+  if (class(object)=="cox.aalen") 
+	  if (attr(object,"rate.sim")==0)  stop("Only works with rate.sim=1, in cox.aalen call\n"); 
   if (class(object)=="cox.aalen") {
     dcum<-apply(as.matrix(object$cum[,-1]),2,diff); 
     beta<-object$gamma; coxaalen<-1; 

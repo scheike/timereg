@@ -25,13 +25,14 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   matrix *ZPZ,*tmp2,*tmp3,*dS,*S1,*SI,*S2,*M1,*VU,*ZXAI,*VUI; 
   matrix *RobVbeta,*Delta,*tmpM1,*Utt,*Delta2,*tmpM2;
 //  matrix *St[*maxtimepoint],*M1M2[*Ntimes],*C[*maxtimepoint],*ZXAIs[*Ntimes],*dYIt[*Ntimes]; 
-  matrix *St[*Ntimes],*M1M2[*Ntimes],*C[*Ntimes],*ZXAIs[*Ntimes],*dYIt[*Ntimes]; 
+  matrix *St[*Ntimes],*M1M2[*Ntimes],*C[*Ntimes],*ZXAIs[*Ntimes],*AIs[*Ntimes];
   matrix *Stg[*maxtimepoint],*Cg[*maxtimepoint]; 
-  matrix *W3t[*antclust],*W4t[*antclust],*W2t[*antclust],*AIs[*Ntimes],*Uti[*antclust]; 
+  matrix *W3t[*antclust],*W4t[*antclust],*W2t[*antclust],*Uti[*antclust]; 
   matrix *ZPX1,*ZPZ1,*ZPXo,*ZPZo; 
   vector *dA,*VdA,*MdA,*delta,*zav,*lamt,*lamtt;
   vector *xi,*zi,*U,*beta,*xtilde,*Gbeta,*zcol,*one,*difzzav;
-  vector *offset,*weight,*ZXdA[*Ntimes],*varUthat[*maxtimepoint],*Uprofile;
+  vector *offset,*weight,*varUthat[*maxtimepoint],*Uprofile;
+//  vector *ZXdA[*Ntimes];
   vector *ta,*ahatt,*vrisk,*tmpv1,*tmpv2,*rowX,*rowZ,*difX,*VdB; 
   vector *W2[*antclust],*W3[*antclust],*reszpbeta,*res1dim,*dAt[*Ntimes]; 
   vector *Ui[*antclust]; 
@@ -57,7 +58,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
       malloc_vec(*pg,Ui[j]);  
       malloc_vec(*px,W3[j]); 
     }
-    for (j=0;j<*Ntimes;j++) {malloc_mat(*px,*px,AIs[j]); }
+   for (j=0;j<*Ntimes;j++) {malloc_mat(*px,*px,AIs[j]); }
     for(j=0;j<*maxtimepoint;j++) malloc_vec(*pg,varUthat[j]);
   }
   for (j=0;j<*antclust;j++) malloc_vec(*pg,W2[j]);
@@ -88,9 +89,13 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 
   for(j=0;j<*maxtimepoint;j++) { malloc_mat(*px,*pg,Cg[j]); malloc_mat(*pg,*pg,Stg[j]);}
   for(j=0;j<*Ntimes;j++) { 
-    malloc_mat(*px,*pg,C[j]); malloc_mat(*pg,*px,M1M2[j]); 
-    malloc_mat(*pg,*px,ZXAIs[j]); malloc_mat(*px,*pg,dYIt[j]); 
-    malloc_vec(*px,dAt[j]); malloc_vec(*pg,ZXdA[j]); malloc_mat(*pg,*pg,St[j]); 
+    malloc_mat(*px,*pg,C[j]); 
+    malloc_mat(*pg,*px,M1M2[j]); 
+    malloc_mat(*pg,*px,ZXAIs[j]); 
+    malloc_vec(*px,dAt[j]); 
+//    malloc_mat(*px,*pg,dYIt[j]); 
+//    malloc_vec(*pg,ZXdA[j]); 
+    malloc_mat(*pg,*pg,St[j]); 
   } 
 
   pmax=max(*px,*pg); ll=0; 
@@ -235,7 +240,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     Mv(AI,xi,dA); 
     scl_vec_mult(1,dA,dAt[s]); 
     MxA(ZX,AI,ZXAIs[s]); 
-    Mv(ZX, dA, ZXdA[s]);  
+//    Mv(ZX, dA, ZXdA[s]);  
 
   if (s<0) {print_mat(A); print_mat(AI); print_mat(ZX); print_mat(ZXAIs[s]); }
 
@@ -326,7 +331,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
       for (j=0;j<*pg;j++) ME(VU,i,j)=ME(VU,i,j)+VE(difzzav,i)*VE(difzzav,j); 
     }
 
-    MxA(AI,ZPXo,dYIt[s]); mat_subtr(Ct,dYIt[s],Ct); 
+    MxA(AI,ZPXo,dYI); mat_subtr(Ct,dYI,Ct); 
     scl_mat_mult(1,Ct,C[s]); scl_mat_mult(1,Ct,Cg[timegroup[s]]); 
 
     vec_star(dA,dA,VdA); mat_add(dM1M2,M1M2t,M1M2t); M1M2[s]=mat_copy(M1M2t,M1M2[s]); 
@@ -486,13 +491,13 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     if (*ratesim==1 || *retur>=1)
     for (i=0;i<*antpers;i++)   // {{{
     {
-     if (*ratesim==1) {
       cin=cluster[i]; 
       extract_row(WX,i,rowX); 
       extract_row(Z,i,zi); 
       extract_row(X,i,xi); 
       hati=vec_prod(rowX,dAt[s]); 
 
+     if (*ratesim==1) {
 //      Rprintf("%d %d %d  %d %lf \n",s,i,ipers[s],pers,hati);  
       Mv(ZXAIs[s],xi,tmpv2);  
       vec_subtr(zi,tmpv2,tmpv2); 
@@ -830,8 +835,10 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   for (j=0;j<*antclust;j++) free_vec(W2[j]);
 
   for (j=0;j<*Ntimes;j++) {
-    free_mat(dYIt[j]); free_vec(dAt[j]); free_mat(C[j]);free_mat(M1M2[j]);
-    free_mat(ZXAIs[j]); free_vec(ZXdA[j]);free_mat(St[j]); 
+    free_vec(dAt[j]); free_mat(C[j]);free_mat(M1M2[j]);
+    free_mat(ZXAIs[j]); 
+//    free_vec(ZXdA[j]);
+    free_mat(St[j]); 
   } 
   for(j=0;j<*maxtimepoint;j++) { free_mat(Cg[j]); free_mat(Stg[j]);}
   free(cluster); free(ipers); free(imin); free(cug); free(timesg); 
