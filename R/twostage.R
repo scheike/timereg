@@ -671,7 +671,6 @@ attr(ud, "Type") <- model
 return(ud);
 } ## }}}
 
-
 ##' @export
 piecewise.data <- function(cut1,cut2,data=sys.parent(),timevar="time",status="status",id="id",covars=NULL,covars.pairs=NULL,num=NULL,silent=1)
 { ## {{{
@@ -702,7 +701,6 @@ dataud <- rbind(dataud,datalr)
 
 return(data.frame(dataud))
 } ## }}}
-
 
 ##' @S3method summary pc.twostage
 summary.pc.twostage <- function(object,var.link=NULL,...)
@@ -758,3 +756,152 @@ coefmat <- function(est,stderr,digits=3,...) { ## {{{
   noquote(res)
 } ## }}}
 
+##' Fits two-stage model for describing depdendence in survival data
+##' using marginals that are on cox or aalen form using the twostage funcion, but
+##' call is different and easier and the data manipulation  build into the function.
+##' Useful in particular for family design data. 
+##'
+##' If clusters contain more than two times, the algoritm uses a composite likelihood
+##' based on the pairwise bivariate models.
+##'
+##' The reported standard errors are based on the estimated information from the 
+##' likelihood assuming that the marginals are known. 
+##'
+##' @examples
+##' data(prt)
+##' margp<- coxph(Surv(time,status==1)~factor(country),data=prt)
+##' fitco<-twostage(margp,data=prt,clusters=prt$id)
+##' summary(fitco)
+##' 
+##' des <- model.matrix(~-1+factor(zyg),data=prt); 
+##' fitco<-twostage(margp,data=prt,theta.des=des,clusters=prt$id)
+##' summary(fitco)
+##' 
+##' dfam <- simSurvFam(1000)
+##' dfam <- fast.reshape(dfam,var=c("x","t","c"))
+##' 
+##' desfs <- function(x,num1="num1",num2="num2")
+##' { 
+##' pp <- (x[num1]=="m")*(x[num2]=="f")*1   ## mother-father 
+##' pc <- (x[num1]=="m" | x[num1]=="f")*(x[num2]=="b1" | x[num2]=="b2")*1 ## mother-child
+##' cc <- (x[num1]=="b1")*(x[num2]=="b1" | x[num2]=="b2")*1               ## child-child
+##' c(pp,pc,cc)
+##' } 
+##' 
+##' #out3 <- easy.twostage(Surv(t,c)~factor(num),
+##' #      data=dfam,id="id",
+##' #      score.method="fisher.scoring",theta.formula=desfs,desnames=c("parent-parent","parent-child","child-cild"))
+##' #summary(out3)
+##' @keywords survival twostage 
+##' @export
+##' @param marginal model 
+##' @param data data frame
+##' @param id name of cluster variable in data frame
+##' @param score.method Scoring method
+##' @param Nit Number of iterations
+##' @param detail Detail for more output for iterations 
+##' @param silent Debug information
+##' @param weights Weights for log-likelihood, can be used for each type of outcome in 2x2 tables. 
+##' @param control Optimization arguments
+##' @param theta Starting values for variance components
+##' @param theta.formula design for depedence, either formula or design function
+##' @param desnames names for dependence parameters
+##' @param deshelp if 1 then prints out some data sets that are used, on on which the design function operates
+##' @param var.link Link function for variance 
+##' @param iid Calculate i.i.d. decomposition
+##' @param step Step size
+##' @param model model
+##' @param marginal.surv vector of marginal survival probabilities 
+##' @param strata strata for fitting 
+##' @param max.clust max clusters
+##' @param se.clusters clusters for iid decomposition for roubst standard errors
+easy.twostage <- function(margsurv=NULL,data=sys.parent(),score.method="nlminb",
+id="id", Nit=60,detail=0, silent=1,weights=NULL, control=list(),
+theta=NULL,theta.formula=NULL,desnames=NULL,deshelp=0,var.link=1,iid=1,
+step=0.5,model="plackett",marginal.surv=NULL,strata=NULL,max.clust=NULL,se.clusters=NULL)
+{ ## {{{
+###data=dfam; theta.formula=desfs; desnames=c("pp","pc","cc")
+###id="id"; margbin <- Surv(t,c)~factor(num); data=dfam
+
+  if (class(margsurv)[1]=="coxph") ps <- predict(margsurv,type="response") 
+  else if (class(margsurv)=="formula") {
+	    margsurv <- coxph(margbin,data=data)
+            ps <- predict(margsurv,type="risk")
+    }  else if (is.null(marginal.surv)) stop("without marginal model, marginal p's must be given\n"); 
+    if (!is.null(marginal.surv)) ps <- marginal.surv
+
+   data <- cbind(data,ps)
+
+  ### make all pairs in the families,
+  fam <- familycluster.index(data[,id])
+  data.fam <- data[fam$familypairindex,]
+  data.fam$subfam <- fam$subfamilyindex
+
+  ### make dependency design using wide format for all pairs 
+  data.fam.clust <- fast.reshape(data.fam,id="subfam")
+  if (is.function(theta.formula)) {
+     library(compiler) 
+     desfunction <- cmpfun(theta.formula)
+    if (deshelp==1){
+	 cat("These names appear in wide version of pairs for dependence \n")
+	  cat("design function must be defined in terms of these: \n")
+	  cat(names(data.fam.clust)); cat("\n")
+	  cat("Here is head of wide version with pairs\n")
+	  print(head(data.fam.clust)); cat("\n")
+    }
+    des.theta  <- t( apply(data.fam.clust,1,desfunction)) 
+    colnames(des.theta) <- desnames
+    desnames <- desnames
+     } else {
+	  if (is.null(theta.formula)) theta.formula <- ~+1
+          des.theta <- model.matrix(theta.formula,data=data.fam.clust)
+          desnames <- colnames(des.theta); 
+     }
+     data.fam.clust <- cbind(data.fam.clust,des.theta)
+     if (deshelp==1) {
+	 cat("These names appear in wide version of pairs for dependence \n")
+	     print(head(data.fam.clust))
+     }
+
+    ### back to long format keeping only needed variables
+    data.fam <- fast.reshape(data.fam.clust,varying=c(response,id,"ps"))
+    if (deshelp==1) {
+	cat("Back to long format for twostage (head)\n"); 
+        print(head(data.fam)); 
+	cat("\n")
+	cat(paste("twostage, called with reponse",response,"\n")); 
+	cat(paste("cluster=",id,",  subcluster (pairs)=subfam \n")); 
+	cat(paste("design variables =")); 
+	cat(desnames)
+	cat("\n")
+    } 
+
+    out <- twostage(NULL,data=data.fam,
+                    clusters=data.fam$subfam,
+		    theta.des=data.fam[,desnames],
+                    detail=detail, score.method=score.method, Nit=Nit,step=step,
+                    iid=iid,theta=theta, var.link=var.link,model=model, 
+                    max.clust=max.clust,
+                    marginal.survival=data.fam[,"ps"],se.clusters=data.fam[,id])
+   return(out)
+} ## }}}
+
+
+##' @export
+simSurvFam <- function(n,beta=0.0,theta=1,lam0=0.5,lam1=1,lam2=1,ctime=10,...) { ## {{{ 
+	n=100; beta=0; theta=1; lam1=1;lam2=1; ctime=10; lam0=0.5
+xm <- rbinom(n,1,0.5); xf <- rbinom(n,1,0.5); 
+xb1 <- rbinom(n,1,0.5); xb2 <- rbinom(n,1,0.5); 
+###
+zf <- rgamma(n,shape=lam1); zb <- rgamma(n,shape=lam2); 
+tm <- rexp(n)/(zf*exp(xm*beta)*lam0)
+tf <- rexp(n)/(zf*exp(xf*beta)*lam0)
+tb1 <- rexp(n)/((zf+zb)*exp(xb1*beta)*2*lam0)
+tb2 <- rexp(n)/((zf+zb)*exp(xb2*beta)*2*lam0)
+cm <- ifelse(tm<ctime,1,0); cf <- ifelse(tf<ctime,1,0); 
+cb1 <- ifelse(tb1<ctime,1,0); cb2 <- ifelse(tb2<ctime,1,0); 
+tm <- ifelse(tm<ctime,tm,ctime); tf <- ifelse(tf<ctime,tf,ctime)
+tb1 <- ifelse(tb1<ctime,tb1,ctime); tb2 <- ifelse(tb2<ctime,tb2,ctime)
+#
+data.frame(xm=xm,xf=xf,xb1=xb1,xb2=xb2,tm=tm,tf=tf,tb1=tb1,tb2=tb2,cm=cm,cf=cf,cb1=cb1,cb2=cb2,id=1:n)
+} ## }}} 

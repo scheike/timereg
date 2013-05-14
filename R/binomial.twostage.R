@@ -400,6 +400,8 @@ step=0.5,model="plackett",marginal.p=NULL,strata=NULL,max.clust=NULL,se.clusters
             ps <- predict(margbin,type="response")
     }  else if (is.null(marginal.p)) stop("without marginal model, marginal p's must be given\n"); 
 
+    if (!is.null(marginal.p)) ps <- marginal.p
+
      data <- cbind(data,ps)
 
      ### make all pairs in the families,
