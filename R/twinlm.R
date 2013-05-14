@@ -145,6 +145,8 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
   zyglev <- levels(zygstat)
   if (length(zyglev)>2 & missing(OS)) stop("More than two zygosity levels and no opposite sex (OS) group specified")
 
+    browser()
+
   ## To wide format:
   num <- NULL; if (twinnum%in%colnames(data)) num <- twinnum
   data <- cbind(data[,c(yvar,keep,num,zyg,id)],mm)
@@ -338,7 +340,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
   if (length(control)>0) {
     optim[names(control)] <- control
   }
-  
+
   if (is.Surv(data[,yvar])) {
     require("lava.tobit")
     if (is.null(optim$method))

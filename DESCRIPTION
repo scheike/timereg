@@ -72,5 +72,4 @@ Collate:
     'clusterindex-reshape.R'
     'bptwin.R'
     'prop-odds.R'
-    'coxreg.R'
     'phreg.R'

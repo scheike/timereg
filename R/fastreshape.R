@@ -215,9 +215,9 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
   vidx <- match(varying,colnames(data))
   N <- nrow(idclust)
   p <- length(varying)
-  P <- NCOL(data)
+  P <- NCOL(data)  
   fixidx <- setdiff(seq(P),vidx)
-  if (is.matrix(data) || all(apply(data[1,,drop=FALSE],2,is.numeric))) {
+  if (is.matrix(data) || (all(apply(data[1,,drop=FALSE],2,is.numeric)) & length(unlist(data[1,]))==length(data[1,]) )) {
     ## Everything numeric - we can work with matrices
     dataw <- matrix(NA, nrow = N, ncol = p * (maxclust-1) + ncol(data))
     dataw[,fixidx] <- as.matrix(data[obs1,fixidx,drop=FALSE])
