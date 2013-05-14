@@ -823,11 +823,33 @@ step=0.5,model="plackett",marginal.surv=NULL,strata=NULL,max.clust=NULL,se.clust
 ###data=dfam; theta.formula=desfs; desnames=c("pp","pc","cc")
 ###id="id"; margbin <- Surv(t,c)~factor(num); data=dfam
 
-  if (class(margsurv)[1]=="coxph") ps <- predict(margsurv,type="response") 
-  else if (class(margsurv)=="formula") {
-	    margsurv <- coxph(margbin,data=data)
-            ps <- predict(margsurv,type="risk")
-    }  else if (is.null(marginal.surv)) stop("without marginal model, marginal p's must be given\n"); 
+if (is.null(marginal.surv))
+if (class(margsurv)[1]!="coxph")
+{ ## {{{
+    X <- model.matrix(coxformula,data=data); 
+
+    baseout <- basehaz(margsurv,centered=FALSE); 
+    baseout <- cbind(baseout$time,baseout$hazard)
+    RR<-exp(X %*% coef(margsurv))
+    Gcx<-exp(-baseout*RR)
+    ## }}}
+  } else if (class(margsurv)[1]=="aalen")
+  {  ## {{{
+    Gcx <- Cpred(ud.cens$cum,time2)[,-1];
+    Gcx<-exp(-apply(Gcx*XZ,1,sum))
+    Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
+    Gfit<-rbind(c(0,1),cbind(time2,Gcx)); 
+    Gcx <- Gcx/Gcxe; 
+    Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
+  }
+
+
+  if (class(margsurv)[1]!="coxreg" && is.null(marginal.surv)) stop("Use coxreg for marginal model\n"); 
+ps <- predict(margsurv,type="response") 
+###  else if (class(margsurv)=="formula") {
+###	    margsurv <- coxph(margbin,data=data)
+###            ps <- predict(margsurv,type="risk")
+###    }  else if (is.null(marginal.surv)) stop("without marginal model, marginal p's must be given\n"); 
     if (!is.null(marginal.surv)) ps <- marginal.surv
 
    data <- cbind(data,ps)
