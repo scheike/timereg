@@ -81,7 +81,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
   if (!(zyg%in%colnames(data))) stop("'zyg' not found in data")
   if (!(id%in%colnames(data))) stop("'id' not found in data")
   if (missing(id)) stop("Twin-pair variable not specified")
-  
+
   if (binary | is.factor(data[,yvar]) | is.character(data[,yvar]) | is.logical(data[,yvar])) {
     args <- as.list(cl)
     args[[1]] <- NULL
@@ -155,14 +155,14 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
     DZ <- zyglev[1]    
   }  
   if (!missing(OS)) {
-    wide3 <- subset(ddd, zyg==OS)
+    wide3 <- ddd[which(ddd[,zyg]==OS),,drop=FALSE]
     MZ <- setdiff(zyglev,c(DZ,OS))  
   } else {
     wide3 <- NULL  
     MZ <- setdiff(zyglev,DZ)
   }
-  wide1 <- subset(ddd, zyg==MZ)
-  wide2 <- subset(ddd, zyg==DZ)
+  wide1 <- ddd[which(ddd[,zyg]==MZ),,drop=FALSE]
+  wide2 <- ddd[which(ddd[,zyg]==DZ),,drop=FALSE]
   
   
   ## ###### The SEM

@@ -1,5 +1,5 @@
-###{{{ coxreg0 
-coxreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,...) {
+###{{{ phreg0 
+phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,...) {
   p <- ncol(X)
   if (missing(beta)) beta <- rep(0,p)
   if (p==0) X <- cbind(rep(0,length(exit)))
@@ -72,12 +72,32 @@ coxreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,...
                 p=p,
                 X=X,
                 id=id))
-  class(res) <- "coxreg"
+  class(res) <- "phreg"
   res
 }
-###}}} coxreg0
+###}}} phreg0
 
-###{{{ coxreg
+###{{{ simcox
+
+simcox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
+  if (!is.null(seed))
+    set.seed(seed)
+  library(lava)
+  m <- lvm()
+  regression(m,T~X1+X2) <- beta
+  distribution(m,~T+C) <- coxWeibull.lvm(scale=1/100)
+  distribution(m,~entry) <- coxWeibull.lvm(scale=1/10)
+  m <- eventTime(m,time~min(T,C=0),"status")
+  d <- sim(m,n);
+  if (!entry) d$entry <- 0
+  else d <- subset(d, time>entry,select=-c(T,C))
+  return(d)
+}
+
+
+###}}} simcox
+
+###{{{ phreg
 ##' Fast Cox PH regression
 ##'
 ##' Fast Cox PH regression
@@ -87,38 +107,24 @@ coxreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,...
 ##' @author Klaus K. Holst
 ##' @export
 ##' @examples
-##' simcox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
-##'   if (!is.null(seed))
-##'     set.seed(seed)
-##'   library(lava)
-##'   m <- lvm()
-##'   regression(m,T~X1+X2) <- beta
-##'   distribution(m,~T+C) <- coxWeibull.lvm(scale=1/100)
-##'   distribution(m,~entry) <- coxWeibull.lvm(scale=1/10)
-##'   m <- eventTime(m,time~min(T,C=0),"status")
-##'   d <- sim(m,n);
-##'   if (!entry) d$entry <- 0
-##'   else d <- subset(d, time>entry,select=-c(T,C))
-##'   return(d)
-##' }
 ##' 
 ##' n <- 1e3;
-##' d <- simcox(n); d$id <- seq(nrow(d)); d$group <- factor(rbinom(nrow(d),1,0.5))
+##' d <- mets::;simcox(n); d$id <- seq(nrow(d)); d$group <- factor(rbinom(nrow(d),1,0.5))
 ##' 
-##' (m1 <- coxreg(Surv(entry,time,status)~X1+X2,data=d))
+##' (m1 <- phreg(Surv(entry,time,status)~X1+X2,data=d))
 ##' (m2 <- coxph(Surv(entry,time,status)~X1+X2+cluster(id),data=d))
 ##' (coef(m3 <-cox.aalen(Surv(entry,time,status)~prop(X1)+prop(X2),data=d)))
 ##' 
 ##' \dontrun{
-##' (m1b <- coxreg(Surv(entry,time,status)~X1+X2+strata(group),data=d))
+##' (m1b <- phreg(Surv(entry,time,status)~X1+X2+strata(group),data=d))
 ##' (m2b <- coxph(Surv(entry,time,status)~X1+X2+cluster(id)+strata(group),data=d))
 ##' (coef(m3b <-cox.aalen(Surv(entry,time,status)~-1+group+prop(X1)+prop(X2),data=d)))
 ##' }
 ##' 
-##' m <- coxreg(Surv(entry,time,status)~X1*X2+strata(group)+cluster(id),data=d)
+##' m <- phreg(Surv(entry,time,status)~X1*X2+strata(group)+cluster(id),data=d)
 ##' m
 ##' plot(m,ylim=c(0,5))
-coxreg <- function(formula,data,...) {
+phreg <- function(formula,data,...) {
   cl <- match.call()
   m <- match.call(expand.dots = TRUE)[1:3]
   special <- c("strata", "cluster")
@@ -152,15 +158,15 @@ coxreg <- function(formula,data,...) {
   if (!is.null(intpos  <- attributes(Terms)$intercept))
     X <- X[,-intpos,drop=FALSE]
   if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
-  res <- c(coxreg0(X,entry,exit,status,id,strata,...),list(call=cl))
-  class(res) <- "coxreg"
+  res <- c(phreg0(X,entry,exit,status,id,strata,...),list(call=cl))
+  class(res) <- "phreg"
   res
 }
-###}}} coxreg
+###}}} phreg
 
 ###{{{ vcov
-##' @S3method vcov coxreg
-vcov.coxreg  <- function(object,...) {
+##' @S3method vcov phreg
+vcov.phreg  <- function(object,...) {
   I <- -solve(object$hessian)
   ncluster <- NULL
   if (!is.null(object$id)) {
@@ -182,15 +188,15 @@ vcov.coxreg  <- function(object,...) {
 ###}}} vcov
 
 ###{{{ coef
-##' @S3method coef coxreg
-coef.coxreg  <- function(object,...) {
+##' @S3method coef phreg
+coef.phreg  <- function(object,...) {
   object$coef
 }
 ###}}} coef
 
 ###{{{ summary
-##' @S3method summary coxreg
-summary.coxreg <- function(object,se="robust",...) {
+##' @S3method summary phreg
+summary.phreg <- function(object,se="robust",...) {
   cc <- ncluster <- NULL
   if (object$p>0) {
     I <- -solve(object$hessian)
@@ -209,14 +215,14 @@ summary.coxreg <- function(object,se="robust",...) {
   }  
   res <- list(coef=cc,n=n,nevent=object$nevent,
               strata=Strata,ncluster=ncluster)
-  class(res) <- "summary.coxreg"
+  class(res) <- "summary.phreg"
   res
 }
 ###}}} summary
 
 ###{{{ print.summary
-##' @S3method print summary.coxreg
-print.summary.coxreg  <- function(x,...) {
+##' @S3method print summary.phreg
+print.summary.phreg  <- function(x,...) {
   cat("\n")
   nn <- cbind(x$n, x$nevent)
   rownames(nn) <- x$strata; colnames(nn) <- c("n","events")
@@ -232,8 +238,8 @@ print.summary.coxreg  <- function(x,...) {
 ###}}} print.summary
 
 ###{{{ predict
-##' @S3method predict coxreg
-predict.coxreg  <- function(object,surv=FALSE,...) {
+##' @S3method predict phreg
+predict.phreg  <- function(object,surv=FALSE,...) {
   if (!is.null(object$strata)) {
     lev <- levels(object$strata)
     chaz <- c()
@@ -253,8 +259,8 @@ predict.coxreg  <- function(object,surv=FALSE,...) {
 ###}}} predict
 
 ###{{{ plot
-##' @S3method plot coxreg
-plot.coxreg  <- function(x,surv=FALSE,add=FALSE,...) {
+##' @S3method plot phreg
+plot.phreg  <- function(x,surv=FALSE,add=FALSE,...) {
   P <- predict(x)
   if (!is.list(P)) {
     if (add) {
@@ -272,8 +278,8 @@ plot.coxreg  <- function(x,surv=FALSE,add=FALSE,...) {
 ###}}} plot
 
 ###{{{ print
-##' @S3method print coxreg
-print.coxreg  <- function(x,...) {
+##' @S3method print phreg
+print.phreg  <- function(x,...) {
   cat("Call:\n")
   dput(x$call)
   print(summary(x),...)
