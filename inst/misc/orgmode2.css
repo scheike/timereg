@@ -1,0 +1,57 @@
+/* 
+   orgmode.css - CSS Stylesheet for http://www.biostat.ku.dk/~kkho
+   Copyright (C) 2013  Klaus K. Holst
+   Author: Klaus K. Holst <kkho@biostat.ku.dk>
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+@import url("orgmode1.css");
+
+html {
+    background:rgba(215,215,215,1.0);
+}
+
+#box-link { 
+    margin-left:-1.7em;
+    border: 1px solid transparent;
+}
+
+body {
+    margin: 0 auto;
+    width: 900px;
+}
+
+pre.src {
+    background-color: rgba(215,215,215,1.0);
+    color: #aaa;
+    background-color: #073642;
+    border: 1px solid rgba(0,0,0,1);
+}
+
+pre.example {
+    color: #222;
+    border: 1px solid rgba(0,0,0,1);      
+    background-color: #ccc;
+}
+
+img,table  {
+    /* font-family: Monaco, Consolas, "Lucida Console", monospace; */
+    -webkit-box-shadow: 5px 5px 6px rgba(0,0,0,0.23);
+    -moz-box-shadow: 5px 5px 6px rgba(0,0,0,0.23);
+    box-shadow: 5px 5px 6px rgba(0,0,0,0.23);
+    border: 1pt solid rgba(150,150,150,1);
+    border: 1pt solid rgba(0,0,0,1);
+    padding: 0pt;
+    margin: 10pt;
+}

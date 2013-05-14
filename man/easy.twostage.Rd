@@ -1,0 +1,102 @@
+\name{easy.twostage}
+\alias{easy.twostage}
+\title{Fits two-stage model for describing depdendence in survival data
+using marginals that are on cox or aalen form using the twostage funcion, but
+call is different and easier and the data manipulation  build into the function.
+Useful in particular for family design data.}
+\usage{
+  easy.twostage(margsurv = NULL, data = sys.parent(),
+    score.method = "nlminb", id = "id", Nit = 60,
+    detail = 0, silent = 1, weights = NULL,
+    control = list(), theta = NULL, theta.formula = NULL,
+    desnames = NULL, deshelp = 0, var.link = 1, iid = 1,
+    step = 0.5, model = "plackett", marginal.surv = NULL,
+    strata = NULL, max.clust = NULL, se.clusters = NULL)
+}
+\arguments{
+  \item{marginal}{model}
+
+  \item{data}{data frame}
+
+  \item{id}{name of cluster variable in data frame}
+
+  \item{score.method}{Scoring method}
+
+  \item{Nit}{Number of iterations}
+
+  \item{detail}{Detail for more output for iterations}
+
+  \item{silent}{Debug information}
+
+  \item{weights}{Weights for log-likelihood, can be used
+  for each type of outcome in 2x2 tables.}
+
+  \item{control}{Optimization arguments}
+
+  \item{theta}{Starting values for variance components}
+
+  \item{theta.formula}{design for depedence, either formula
+  or design function}
+
+  \item{desnames}{names for dependence parameters}
+
+  \item{deshelp}{if 1 then prints out some data sets that
+  are used, on on which the design function operates}
+
+  \item{var.link}{Link function for variance}
+
+  \item{iid}{Calculate i.i.d. decomposition}
+
+  \item{step}{Step size}
+
+  \item{model}{model}
+
+  \item{marginal.surv}{vector of marginal survival
+  probabilities}
+
+  \item{strata}{strata for fitting}
+
+  \item{max.clust}{max clusters}
+
+  \item{se.clusters}{clusters for iid decomposition for
+  roubst standard errors}
+}
+\description{
+  If clusters contain more than two times, the algoritm
+  uses a composite likelihood based on the pairwise
+  bivariate models.
+}
+\details{
+  The reported standard errors are based on the estimated
+  information from the likelihood assuming that the
+  marginals are known.
+}
+\examples{
+data(prt)
+margp<- coxph(Surv(time,status==1)~factor(country),data=prt)
+fitco<-twostage(margp,data=prt,clusters=prt$id)
+summary(fitco)
+
+des <- model.matrix(~-1+factor(zyg),data=prt);
+fitco<-twostage(margp,data=prt,theta.des=des,clusters=prt$id)
+summary(fitco)
+
+dfam <- simSurvFam(1000)
+dfam <- fast.reshape(dfam,var=c("x","t","c"))
+
+desfs <- function(x,num1="num1",num2="num2")
+{
+pp <- (x[num1]=="m")*(x[num2]=="f")*1   ## mother-father
+pc <- (x[num1]=="m" | x[num1]=="f")*(x[num2]=="b1" | x[num2]=="b2")*1 ## mother-child
+cc <- (x[num1]=="b1")*(x[num2]=="b1" | x[num2]=="b2")*1               ## child-child
+c(pp,pc,cc)
+}
+
+#out3 <- easy.twostage(Surv(t,c)~factor(num),
+#      data=dfam,id="id",
+#      score.method="fisher.scoring",theta.formula=desfs,desnames=c("parent-parent","parent-child","child-cild"))
+#summary(out3)
+}
+\keyword{survival}
+\keyword{twostage}
+

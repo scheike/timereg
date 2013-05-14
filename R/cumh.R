@@ -7,14 +7,16 @@ cumh <- function(formula,data,cens.formula=NULL,...,time,
   time.  <- substitute(time)
   if (!is.character(time.)) time. <- deparse(time.)
   time <- time.
-  if (!is.null(cens.formula)) {
-    ##    m <- match.call(expand.dots = TRUE)[1:4]
-    Terms <- terms(formula, data = data)
+  if (!is.null(cens.formula)) {    
+    browser()
+    m <- match.call(expand.dots = TRUE)[1:3]
+    Terms <- terms(cens.formula, data = data)
     m$formula <- Terms
     m[[1]] <- as.name("model.frame")
-    m <- eval(m, parent.frame())
-    Y <- model.extract(m, "response")
-  
+    censMod <- eval(m, parent.frame())
+    censtime <- model.extract(m, "response")
+    status <- censtime[,2]
+    data[,"_status"] <- 
   }
    
   res <- list(); i <- 0
@@ -37,8 +39,7 @@ cumh <- function(formula,data,cens.formula=NULL,...,time,
       newdata[,outcome] <- data[,outcome]*(data[,time]<t)
       if (!is.null(cens.formula)) {
         
-      }
-      
+      }      
     }
     if (!silent) {
       message(t)
