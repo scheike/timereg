@@ -260,7 +260,6 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,
     }
     ## }}}
 
-
     ### uniform confidence bands, based on resampling  ## {{{
     if (uniform==1) {
       mpt <- .C('confBandBasePredict',
