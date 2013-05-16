@@ -25,7 +25,8 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   matrix *ZPZ,*tmp2,*tmp3,*dS,*S1,*SI,*S2,*M1,*VU,*ZXAI,*VUI; 
   matrix *RobVbeta,*Delta,*tmpM1,*Utt,*Delta2,*tmpM2;
 //  matrix *St[*maxtimepoint],*M1M2[*Ntimes],*C[*maxtimepoint],*ZXAIs[*Ntimes],*dYIt[*Ntimes]; 
-  matrix *St[*Ntimes],*M1M2[*Ntimes],*C[*Ntimes],*ZXAIs[*Ntimes],*AIs[*Ntimes];
+//  matrix *St[*Ntimes],
+//  matrix *M1M2[*Ntimes],*C[*Ntimes],*ZXAIs[*Ntimes],*AIs[*Ntimes];
   matrix *Stg[*maxtimepoint],*Cg[*maxtimepoint]; 
   matrix *W3t[*antclust],*W4t[*antclust],*W2t[*antclust],*Uti[*antclust]; 
   matrix *ZPX1,*ZPZ1,*ZPXo,*ZPZo; 
@@ -34,7 +35,8 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   vector *offset,*weight,*varUthat[*maxtimepoint],*Uprofile;
 //  vector *ZXdA[*Ntimes];
   vector *ta,*ahatt,*vrisk,*tmpv1,*tmpv2,*rowX,*rowZ,*difX,*VdB; 
-  vector *W2[*antclust],*W3[*antclust],*reszpbeta,*res1dim,*dAt[*Ntimes]; 
+  vector *W2[*antclust],*W3[*antclust],*reszpbeta,*res1dim;
+  matrix *dAt; 
   vector *Ui[*antclust]; 
   int cin=0,ci=0,c,pers=0,i=0,j,k,l,s,s1,it,count,pmax,
       *imin=calloc(1,sizeof(int)),
@@ -58,7 +60,6 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
       malloc_vec(*pg,Ui[j]);  
       malloc_vec(*px,W3[j]); 
     }
-   for (j=0;j<*Ntimes;j++) {malloc_mat(*px,*px,AIs[j]); }
     for(j=0;j<*maxtimepoint;j++) malloc_vec(*pg,varUthat[j]);
   }
   for (j=0;j<*antclust;j++) malloc_vec(*pg,W2[j]);
@@ -78,6 +79,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   malloc_mats(*px,*pg,&tmp3,&ZPX,&dYI,&Ct,NULL); 
   malloc_mats(*px,*pg,&ZPX1,NULL); malloc_mats(*pg,*pg,&ZPZ1,NULL); 
   malloc_mats(*px,*pg,&ZPXo,NULL); malloc_mats(*pg,*pg,&ZPZo,NULL); 
+  malloc_mat(*Ntimes,*px,dAt); 
 
   malloc_vec(1,reszpbeta); malloc_vec(1,res1dim); 
   malloc_vecs(*antpers,&weight,&lamtt,&lamt,&zcol,&Gbeta,&one,&offset,NULL); 
@@ -88,19 +90,24 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   malloc_vec(*antpers,vrisk); 
 
   for(j=0;j<*maxtimepoint;j++) { malloc_mat(*px,*pg,Cg[j]); malloc_mat(*pg,*pg,Stg[j]);}
-  for(j=0;j<*Ntimes;j++) { 
-    malloc_mat(*px,*pg,C[j]); 
-    malloc_mat(*pg,*px,M1M2[j]); 
-    malloc_mat(*pg,*px,ZXAIs[j]); 
-    malloc_vec(*px,dAt[j]); 
-//    malloc_mat(*px,*pg,dYIt[j]); 
-//    malloc_vec(*pg,ZXdA[j]); 
-    malloc_mat(*pg,*pg,St[j]); 
-  } 
+
+matrix *Cn,*M1M2n,*ZXAIn,*AIn; 
+malloc_mat((*px)*(*Ntimes),*pg,Cn); 
+malloc_mat((*px)*(*Ntimes),*px,AIn); 
+malloc_mat(*pg,(*px)*(*Ntimes),M1M2n); 
+malloc_mat(*pg,(*px)*(*Ntimes),ZXAIn); 
+
+//  for(j=0;j<*Ntimes;j++) { 
+//    malloc_mat(*px,*pg,C[j]); 
+//    malloc_mat(*pg,*px,M1M2[j]); 
+//    malloc_mat(*pg,*px,ZXAIs[j]); 
+////    malloc_vec(*px,dAt[j]); malloc_mat(*px,*pg,dYIt[j]); 
+////    malloc_vec(*pg,ZXdA[j]); malloc_mat(*pg,*pg,St[j]); 
+//  } 
 
   pmax=max(*px,*pg); ll=0; 
   for(j=0;j<*pg;j++) VE(beta,j)=betaS[j]; 
-  for(j=0;j<*antpers;j++) {VE(one,j)=1; VE(weight,j)=1; VE(offset,j)=1;} 
+  for(j=0;j<*antpers;j++) {VE(weight,j)=1; VE(offset,j)=1;} 
   // }}}
   
   if (timing==2) { // {{{
@@ -238,11 +245,16 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     extract_row(X,pers,xi); 
     scl_vec_mult(scale,xi,xi); 
     Mv(AI,xi,dA); 
-    scl_vec_mult(1,dA,dAt[s]); 
-    MxA(ZX,AI,ZXAIs[s]); 
+//    scl_vec_mult(1,dA,dAt[s]); 
 //    Mv(ZX, dA, ZXdA[s]);  
+	MxA(ZX,AI,ZXAI); 
+   if (it==(*Nit-1)) {
+	replace_row(dAt,s,dA); 
+//	MxA(ZX,AI,ZXAIs[s]); 
+        for (j=0;j<*pg;j++) for (i=0;i<*px;i++) ME(ZXAIn,j,(s-1)*(*px)+i)=ME(ZXAI,j,i); 
+   }
 
-  if (s<0) {print_mat(A); print_mat(AI); print_mat(ZX); print_mat(ZXAIs[s]); }
+  if (s<0) {print_mat(A); print_mat(AI); print_mat(ZX); }
 
   /* First derivative U and Second derivative S  */ 
   extract_row(Z,pers,zi);  
@@ -252,8 +264,8 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   vec_add(difzzav,U,U); 
 
   if (*betafixed==0)  {
-   MxA(ZXAIs[s],ZPXo,tmp2); mat_subtr(ZPZo,tmp2, dS); 
-   mat_add(dS,S1,S1);  scl_mat_mult(1,S1,St[s]); 
+   MxA(ZXAI,ZPXo,tmp2); mat_subtr(ZPZo,tmp2, dS); 
+   mat_add(dS,S1,S1);  
    scl_mat_mult(1,S1,Stg[timegroup[s]]);
   }
 
@@ -332,16 +344,23 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     }
 
     MxA(AI,ZPXo,dYI); mat_subtr(Ct,dYI,Ct); 
-    scl_mat_mult(1,Ct,C[s]); scl_mat_mult(1,Ct,Cg[timegroup[s]]); 
+    scl_mat_mult(1,Ct,Cg[timegroup[s]]); 
 
-    vec_star(dA,dA,VdA); mat_add(dM1M2,M1M2t,M1M2t); M1M2[s]=mat_copy(M1M2t,M1M2[s]); 
+    vec_star(dA,dA,VdA); mat_add(dM1M2,M1M2t,M1M2t); 
+    
+    for (j=0;j<*pg;j++) for (i=0;i<*px;i++) {
+	    ME(M1M2n,j,(s-1)*(*px)+i)=ME(M1M2t,j,i); 
+	    ME(Cn,(s-1)*(*px)+i,j)=ME(Ct,i,j); 
+    }
 
     for (k=1;k<=*px;k++) {
       cu[k*(*Ntimes)+s]=cu[k*(*Ntimes)+s-1]+VE(dA,k-1); 
       cug[k*(*maxtimepoint)+timegroup[s]]=cu[k*(*Ntimes)+s]; 
       vcu[k*(*Ntimes)+s]=VE(VdA,k-1)+vcu[k*(*Ntimes)+s-1];
     }
-    if (*robust==1) AIs[s]=mat_copy(AI,AIs[s]); 
+    if (*robust==1) { 
+         for (j=0;j<*px;j++) for (i=0;i<*px;i++) ME(AIn,(s-1)*(*px)+j,i)=ME(AI,j,i); 
+    }
   } // }}}
 
    } // }}} /* Ntimes */ 
@@ -482,12 +501,16 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 //  print_mat(WX); print_mat(X); print_mat(Z); 
 // Rprintf("=============== %d  %lf %d \n",s,time,pers); print_mat(Z); print_mat(X); 
     extract_row(WX,pers,xi); 
-    hati=vec_prod(xi,dAt[s]); 
+    extract_row(dAt,s,dA); 
+    hati=vec_prod(xi,dA); 
     lle=lle+log(hati);
     }
 
     /* terms for robust variance   */ 
     if (*robust==1) {
+        for (j=0;j<*pg;j++) for (i=0;i<*px;i++) ME(ZXAI,j,i)=ME(ZXAIn,j,(s-1)*(*px)+i);
+        for (j=0;j<*px;j++) for (i=0;i<*px;i++)  ME(AI,j,i)=ME(AIn,(s-1)*(*px)+j,i);
+
     if (*ratesim==1 || *retur>=1)
     for (i=0;i<*antpers;i++)   // {{{
     {
@@ -495,18 +518,18 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
       extract_row(WX,i,rowX); 
       extract_row(Z,i,zi); 
       extract_row(X,i,xi); 
-      hati=vec_prod(rowX,dAt[s]); 
+      hati=vec_prod(rowX,dA); 
 
      if (*ratesim==1) {
 //      Rprintf("%d %d %d  %d %lf \n",s,i,ipers[s],pers,hati);  
-      Mv(ZXAIs[s],xi,tmpv2);  
+      Mv(ZXAI,xi,tmpv2);  
       vec_subtr(zi,tmpv2,tmpv2); 
       scl_vec_mult(VE(weight,i),tmpv2,tmpv2); 
 
       if (i==pers) vec_add(tmpv2,W2[cin],W2[cin]);
       if (*ratesim==1) {scl_vec_mult(hati,tmpv2,rowZ); vec_subtr(W2[cin],rowZ,W2[cin]); }
 
-      Mv(AIs[s],xi,rowX); 
+      Mv(AI,xi,rowX); 
       scl_vec_mult(VE(weight,i),rowX,rowX); 
       if (i==pers) {vec_add(rowX,W3[cin],W3[cin]); }
       llo=llo+hati;
@@ -523,17 +546,17 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
        extract_row(WX,pers,rowX); 
        extract_row(Z,pers,zi); 
        extract_row(X,pers,xi); 
-       hati=vec_prod(rowX,dAt[s]); 
+       hati=vec_prod(rowX,dA); 
        if (*detail==2) Rprintf(" %d %d \n",cin,pers); 
 //      print_mat(SI); 
 //      print_vec(difzzav); 
 
-      Mv(ZXAIs[s],xi,tmpv2);  
+      Mv(ZXAI,xi,tmpv2);  
       vec_subtr(zi,tmpv2,tmpv2); 
       scl_vec_mult(VE(weight,pers),tmpv2,tmpv2); 
       vec_add(tmpv2,W2[cin],W2[cin]);
 
-      Mv(AIs[s],xi,rowX); 
+      Mv(AI,xi,rowX); 
       scl_vec_mult(VE(weight,pers),rowX,rowX); 
       vec_add(rowX,W3[cin],W3[cin]);
 
@@ -583,8 +606,25 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     } 
 
     /* MG baseret varians beregning */
-    MxA(C[s],VU,tmp3); MAt(tmp3,C[s],CtVUCt);
-    MxA(C[s],SI,tmp3); MxA(tmp3,M1M2[s],COV); 
+
+    for (j=0;j<*pg;j++) for (i=0;i<*px;i++) {
+         ME(M1M2t,j,i)=ME(M1M2n,j,(s-1)*(*px)+i);
+         ME(Ct,i,j)= ME(Cn,(s-1)*(*px)+i,j);
+    }
+
+    MxA(Ct,VU,tmp3); MAt(tmp3,Ct,CtVUCt);
+    MxA(Ct,SI,tmp3); 
+//    printf(" %d %d %d %d \n",0,(s-1)*(*px),*pg,s*(*px)); 
+//    print_mat(M1M2t); 
+//    print_mat(M1M2n); 
+
+//    print_mat(M1M2t); 
+    
+//    mat_subsec(M1M2n,0,(s-1)*(*px),*pg,s*(*px),M1M2t); 
+//    MxA(tmp3,M1M2[s],COV); 
+//    print_mat(COV); 
+    MxA(tmp3,M1M2t,COV); 
+//    print_mat(COV); 
 
     for (k=1;k<=*px;k++) {
       if (*betafixed==0) 
@@ -814,7 +854,8 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   // {{{ freeing 
   if (*sim==1) free_mats(&Delta,&Delta2,&tmpM2,&tmpM1,NULL); 
 
-  free_mats(&Utt,&WX,&X,&cdesX,&cdesX2,&cdesX3, &WZ,&ZP,&Z,
+  free_mats(&Cn,&M1M2n,&ZXAIn,&AIn,NULL); 
+  free_mats(&dAt,&Utt,&WX,&X,&cdesX,&cdesX2,&cdesX3, &WZ,&ZP,&Z,
      &Vcov,&COV,&A,&AI,&M1,&CtVUCt, &RobVbeta,&ZPZ,&tmp2,&dS,&S1,&S2,&SI,&VU,&VUI,
      &ZXAI,&ZX,&dM1M2,&M1M2t, &tmp3,&ZPX,&dYI,&Ct, &ZPX1,&ZPZ1, &ZPXo,&ZPZo,NULL); 
 
@@ -829,17 +870,16 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
       free_vec(W3[j]); free_mat(Uti[j]); 
       free_vec(Ui[j]); 
     }
-    for (j=0;j<*Ntimes;j++) free_mat(AIs[j]); 
     for (j=0;j<*maxtimepoint;j++)  free_vec(varUthat[j]);
   }
   for (j=0;j<*antclust;j++) free_vec(W2[j]);
 
-  for (j=0;j<*Ntimes;j++) {
-    free_vec(dAt[j]); free_mat(C[j]);free_mat(M1M2[j]);
-    free_mat(ZXAIs[j]); 
-//    free_vec(ZXdA[j]);
-    free_mat(St[j]); 
-  } 
+//  for (j=0;j<*Ntimes;j++) {
+////    free_mat(C[j]);free_mat(M1M2[j]); free_mat(ZXAIs[j]); 
+////    free_vec(ZXdA[j]);
+////    free_mat(St[j]); 
+//  } 
+
   for(j=0;j<*maxtimepoint;j++) { free_mat(Cg[j]); free_mat(Stg[j]);}
   free(cluster); free(ipers); free(imin); free(cug); free(timesg); 
   // }}}

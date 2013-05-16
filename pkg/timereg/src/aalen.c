@@ -230,11 +230,10 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
 // {{{ setting up variables and allocating
   matrix *Vcov,*X,*WX,*A,*AI,*AIXW,*Z,*WZ;
   matrix *IdCGam,*dCGam,*CGam,*Ct,*ICGam,*VarKorG,*dC,*ZH,*XWZ,*ZWZ,*XWZAI;
-  matrix *Acorb[*Nalltimes],*Vargam,*dVargam,*M1M2[*Ntimes],*GCdM1M2,*Vargam2;
-  matrix *C[*Nalltimes],*dM1M2,*M1M2t,*RobVargam; 
-  matrix *tmpM2,*tmpM3,*tmpM4;
+  matrix *Vargam,*dVargam,*GCdM1M2,*Vargam2;
+  matrix *dM1M2,*M1M2t,*RobVargam,*tmpM2,*tmpM3,*tmpM4;
   matrix *W3t[*antclust],*W4t[*antclust];
-  matrix *AIs[*Nalltimes]; 
+  matrix *AIs[*Nalltimes],*C[*Nalltimes],*Acorb[*Nalltimes],*M1M2[*Ntimes]; 
   vector *W2[*antclust],*W3[*antclust];
   vector *VdB,*difX,*xi,*tmpv1,*tmpv2; 
   vector *dAoff,*dA,*rowX,*dN,*AIXWdN,*bhatt,*pbhat,*plamt;
@@ -261,11 +260,13 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
   malloc_vecs(*px,&dA,&dAoff,&VdB,&difX,&xi,&tmpv1,&korG,&rowX,&AIXWdN,&bhatt,NULL);
   malloc_vecs(*pg,&dgam2,&gam2,&zi,&tmpv2,&rowZ,&gam,&gamoff,&dgam,&ZHdN,&IZHdN,NULL);
   malloc_vecs(*antpers,&offset,&pbhat,&dN,&pghat,&plamt,NULL);
-
+ 
   for (j=0;j<*Nalltimes;j++) {
-	  malloc_mat(*px,*pg,Acorb[j]); malloc_mat(*px,*pg,C[j]);stats[j]=0; 
+	  malloc_mat(*px,*pg,Acorb[j]); 
+	  malloc_mat(*px,*pg,C[j]);
+	  stats[j]=0; 
   }
-  for (j=0;j<*Ntimes;j++) { malloc_mat(*px,*pg,M1M2[j]); }
+  for (j=0;j<*Ntimes;j++)  malloc_mat(*px,*pg,M1M2[j]); 
 
   if (*robust==1) {
 	  for (j=0;j<*antclust;j++) { malloc_mat(*Ntimes,*px,W3t[j]);
