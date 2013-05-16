@@ -266,7 +266,6 @@ malloc_mat((*px)*(*Ntimes),*px,AIn);
 malloc_mat((*px)*(*Ntimes),*pg,Acorbn); 
 malloc_mat((*px)*(*Ntimes),*pg,Cn); 
 malloc_mat(*pg,(*px)*(*Ntimes),M1M2n); 
-malloc_mat((*px)*(*Ntimes),*px,AIn); 
 
   for (j=0;j<*Nalltimes;j++) {
 	  malloc_mat(*px,*pg,Acorb[j]); 
