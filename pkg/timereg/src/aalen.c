@@ -405,10 +405,10 @@ malloc_mat((*px)*(*Ntimes),*px,AIn);
 
 	  mat_copy(XWZAI,Acorb[s]);
 	  mat_copy(Ct,C[s]);
-         for (j=0;j<*pg;j++) for (i=0;i<*px;i++)  {
-	    ME(Acorbn,(s-1)*(*px)+i,j)=ME(XWZAI,i,j); 
-	    ME(Cn,(s-1)*(*px)+i,j)=ME(Ct,i,j); 
-	 }
+//         for (j=0;j<*pg;j++) for (i=0;i<*px;i++)  {
+//	    ME(Acorbn,(s-1)*(*px)+i,j)=ME(XWZAI,i,j); 
+//	    ME(Cn,(s-1)*(*px)+i,j)=ME(Ct,i,j); 
+//	 }
 
 	  if (stat==1) {
 		  vcu[l]=time; cu[l]=time; times[l]=time; 
@@ -429,8 +429,8 @@ malloc_mat((*px)*(*Ntimes),*px,AIn);
 	}
       }
 
-      if (*robust==1)  
-         for (j=0;j<*px;j++) for (i=0;i<*px;i++) ME(AIn,(s-1)*(*px)+j,i)=ME(AI,j,i); 
+      if (*robust==1)   AIs[s]=mat_copy(AI,AIs[s]); 
+//         for (j=0;j<*px;j++) for (i=0;i<*px;i++) ME(AIn,(s-1)*(*px)+j,i)=ME(AI,j,i); 
 //	for (i=0;i<*antpers;i++) {
 //	 extract_row(WX,i,xi);Mv(AI,xi,rowX);replace_row(AIxit[i],s,rowX); 
 //	}
@@ -627,8 +627,6 @@ malloc_mat((*px)*(*Ntimes),*px,AIn);
 	}
 
 	if (s==1)  for (c=0;c<*pg;c++) for (k=0;k<*pg;k++) ME(RobVargam,c,k)=ME(RobVargam,c,k)+VE(W2[j],c)*VE(W2[j],k);
-	    
-	  
 	
       } /* j =1 ..Antclust */ 
     } // }}} /* robust==1 */

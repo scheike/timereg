@@ -112,7 +112,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),ZXAIn);
   
   if (timing==2) { // {{{
   c1=clock();
-  printf ("\telapsed CPU time: setting up allocation  %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+  Rprintf ("\telapsed CPU time: setting up allocation  %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
   c0=clock();
   } // }}}
 
@@ -367,7 +367,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),ZXAIn);
 
   if (timing==1) { // {{{
   c1=clock();
-  printf ("\telapsed CPU time:  going through times %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+  Rprintf ("\telapsed CPU time:  going through times %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
   c0=clock();
   } // }}}
 
@@ -394,7 +394,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),ZXAIn);
 
   if (timing==2) { // {{{
   c1=clock();
-  printf ("\telapsed CPU time: fitting done %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+  Rprintf ("\telapsed CPU time: fitting done %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
   c0=clock();
   } // }}}
 
@@ -636,7 +636,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),ZXAIn);
 
   if (timing==2) { // {{{
   c1=clock();
-  printf ("\telapsed CPU time: robust variance terms 1 %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+  Rprintf ("\telapsed CPU time: robust variance terms 1 %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
   c0=clock();
   } // }}}
 
@@ -654,7 +654,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),ZXAIn);
 
 	for (j=0;j<*antclust;j++) { // {{{ 
 		if (s==1 && *detail==3) {
-			printf("================================================= %d \n",j); 
+			Rprintf("================================================= %d \n",j); 
 			print_mat(W2t[j]); 
 			print_vec(W2[j]); 
 			print_mat(Stg[s]); 
@@ -713,7 +713,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),ZXAIn);
 
   if (timing==2) { // {{{
   c1=clock();
-  printf ("\telapsed CPU time: variance terms 2 %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+  Rprintf ("\telapsed CPU time: variance terms 2 %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
   c0=clock();
   } // }}}
 
@@ -730,7 +730,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),ZXAIn);
 
   if (timing==2) { // {{{
   c1=clock();
-  printf ("\telapsed CPU time: variance terms 3 %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+  Rprintf ("\telapsed CPU time: variance terms 3 %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
   c0=clock();
   } // }}}
 
