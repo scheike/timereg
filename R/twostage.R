@@ -87,7 +87,9 @@
 ##' @param step Step size
 ##' @param notaylor Taylor expansion
 ##' @param model model
+##' @param marginal.truncation marginal left truncation probabilities
 ##' @param marginal.survival optional vector of marginal survival probabilities 
+##' @param marginal.status related to marginal survival probabilities 
 ##' @param strata strata for fitting, see example
 ##' @param se.clusters for clusters for se calculation with iid
 ##' @param max.clust max se.clusters for se calculation with iid
@@ -95,6 +97,7 @@
 twostage <- function(margsurv,data=sys.parent(),score.method="nlminb",Nit=60,detail=0,clusters=NULL,
 		     silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
                      step=0.5,notaylor=0,model="plackett",
+		     marginal.trunc=NULL,
 		     marginal.survival=NULL,
 		     marginal.status=NULL,strata=NULL,
 		     se.clusters=NULL,max.clust=NULL,numDeriv=1)
@@ -185,14 +188,13 @@ if (!is.null(margsurv))
   } ## }}}
 
 
-  print(summary(marginal.survival))
   if (!is.null(marginal.survival)) {
 	if (lefttrunk==1)  cat("Warnings specify only your own survival weights for right-censored data\n"); 
 ###        if (length(marginal.survival)!=length(start.time)) stop(paste("marginal.survival must have length=",antpers,"\n"));  
         psurvmarg <- marginal.survival
 	antpers <- length(marginal.survival)
         RR <-  rep(1,antpers); 
-        ptrunc <- rep(1,antpers);
+	if (!is.null(marginal.trunc)) ptrunc <- marginal.trunc else ptrunc <- rep(1,antpers);
 	if (!is.null(marginal.status)) status <- marginal.status else stop("must give censoring status\n"); 
   }
 
@@ -829,7 +831,7 @@ coefmat <- function(est,stderr,digits=3,...) { ## {{{
 ##' @param max.clust max clusters
 ##' @param se.clusters clusters for iid decomposition for roubst standard errors
 easy.twostage <- function(margsurv=NULL,data=sys.parent(),score.method="nlminb",
-status="status",time="time",id="id", Nit=60,detail=0, silent=1,weights=NULL, control=list(),
+status="status",time="time",entry=NULL,id="id", Nit=60,detail=0, silent=1,weights=NULL, control=list(),
 theta=NULL,theta.formula=NULL,desnames=NULL,deshelp=0,var.link=1,iid=1,
 step=0.5,model="plackett",marginal.surv=NULL,strata=NULL,max.clust=NULL,se.clusters=NULL)
 { ## {{{
@@ -839,11 +841,13 @@ step=0.5,model="plackett",marginal.surv=NULL,strata=NULL,max.clust=NULL,se.clust
 ###dim(data)
 ###length(ps)
 
+### marginal trunction probabilty, to be computed from model 
+pentry <- NULL
+
 if (is.null(marginal.surv))
 if (class(margsurv)[1]=="coxph")
 { ## {{{
 ###    ps <- survfit(margsurv)$surv
-
     coxformula <- margsurv$formula
     X <- model.matrix(coxformula,data=data)[,-1]; 
     baseout <- basehaz(margsurv,centered=FALSE); 
@@ -855,10 +859,12 @@ if (class(margsurv)[1]=="coxph")
   } else if (class(margsurv)[1]=="phreg")
   {  ## {{{
 	  ps <- predict(margsurv)
+	  pentry <- predict(margsurv,pentry)
   }
   else stop("marginal survival probabilities must be given as marginal.sur or margsurv \n"); 
 
   data <- cbind(data,ps)
+  if (!is.null(pentry)) data <- cbind(data,pentry)
 
   ### make all pairs in the families,
   fam <- familycluster.index(data[,id])
@@ -892,7 +898,9 @@ if (class(margsurv)[1]=="coxph")
      }
 
     ### back to long format keeping only needed variables
+     if (is.null(pentry))
     data.fam <- fast.reshape(data.fam.clust,varying=c(id,"ps",status))
+    else data.fam <- fast.reshape(data.fam.clust,varying=c(id,"ps",status,"pentry"))
     if (deshelp==1) {
 	cat("Back to long format for twostage (head)\n"); 
         print(head(data.fam)); 
@@ -907,6 +915,7 @@ if (class(margsurv)[1]=="coxph")
 ###    print(status)
 ###    print(names(data.fam))
 ###    print(data.fam[,status])
+    if (is.null(pentry)) ptrunc <- NULL else ptrunc <- data.fam[,pentry]
 
     out <- twostage(NULL,data=data.fam,
                     clusters=data.fam$subfam,
@@ -916,6 +925,7 @@ if (class(margsurv)[1]=="coxph")
                     max.clust=max.clust,
                     marginal.survival=data.fam[,"ps"],
                     marginal.status=data.fam[,status],
+		    marginal.trunc=ptrunc,
 		    se.clusters=data.fam[,id])
 
    return(out)
