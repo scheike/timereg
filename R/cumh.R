@@ -16,7 +16,7 @@ cumh <- function(formula,data,cens.formula=NULL,...,time,
     censMod <- eval(m, parent.frame())
     censtime <- model.extract(m, "response")
     status <- censtime[,2]
-    data[,"_status"] <- 
+###    data[,"_status"] <- 
   }
    
   res <- list(); i <- 0

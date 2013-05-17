@@ -94,7 +94,9 @@
 ##' @param numDeriv to get numDeriv version of second derivative, otherwise uses sum of squared score 
 twostage <- function(margsurv,data=sys.parent(),score.method="nlminb",Nit=60,detail=0,clusters=NULL,
 		     silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
-                     step=0.5,notaylor=0,model="plackett",marginal.survival=NULL,strata=NULL,
+                     step=0.5,notaylor=0,model="plackett",
+		     marginal.survival=NULL,
+		     marginal.status=NULL,strata=NULL,
 		     se.clusters=NULL,max.clust=NULL,numDeriv=1)
 { ## {{{
 ## {{{ seting up design and variables
@@ -102,7 +104,9 @@ rate.sim <- 1; sym=1;
 if (model=="clayton.oakes") dep.model <- 1
 else if (model=="plackett") dep.model <- 2
 else stop("Model must by either clayton.oakes or plackett \n"); 
+start.time <- NULL
 
+if (!is.null(margsurv)) 
 if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 	 formula<-attr(margsurv,"Formula");
 	 beta.fixed <- attr(margsurv,"beta.fixed")
@@ -111,7 +115,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 	 id <- attr(margsurv,"id"); 
 	 mclusters <- attr(margsurv,"cluster.call")
 	 X<-ldata$X; time<-ldata$time2; Z<-ldata$Z;  status<-ldata$status;
-	 time2 <- attr(margsurv,"stop"); start <- attr(margsurv,"start")
+	 time2 <- attr(margsurv,"stop"); start.time <- attr(margsurv,"start")
 	 antpers<-nrow(X);
          if (is.null(Z)==TRUE) {npar<-TRUE; semi<-0;}  else { Z<-as.matrix(Z); npar<-FALSE; semi<-1;}
          if (npar==TRUE) {Z<-matrix(0,antpers,1); pz<-1; fixed<-0;} else {fixed<-1;pz<-ncol(Z);}
@@ -135,9 +139,9 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 	  if (attr(Y, "type") == "right") {
 	      time2 <- Y[, "time"]; 
 	      status <- Y[, "status"]
-		start <- rep(0,antpers);
+		start.time <- rep(0,antpers);
 		} else {
-		 start <- Y[, 1]; 
+		 start.time <- Y[, 1]; 
 		 time2 <- Y[, 2];
 		 status <- Y[, 3];
 		}
@@ -154,10 +158,11 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 ###	   start.time <- 0
 } ## }}}
 
-  if (sum(abs(start))>0) lefttrunk <- 1  else lefttrunk <- 0;  
-  RR <-  rep(1,antpers); 
-  ptrunc <- rep(1,antpers);
+  if (!is.null(start.time)) {
+  if (sum(abs(start.time))>0) lefttrunk <- 1  else lefttrunk <- 0;  
+  } else lefttrunk <- 0
 
+if (!is.null(margsurv)) 
   if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen")  { ## {{{
          resi <- residualsTimereg(margsurv,data=data) 
          RR  <- resi$RR
@@ -174,20 +179,26 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
         if ((lefttrunk==1)) { 
          baseout <- basehaz(margsurv,centered=FALSE); 
          cum <- cbind(baseout$time,baseout$hazard)
-	 cum <- Cpred(cum,start)[,2]
+	 cum <- Cpred(cum,start.time)[,2]
 	 ptrunc <- exp(-cum * RR)
 	}
   } ## }}}
-  if (is.null(weights)==TRUE) weights <- rep(1,antpers); 
 
-  if (is.null(strata)==TRUE) strata<- rep(1,antpers); 
-  if (length(strata)!=antpers) stop("Strata must have length equal to number of data points \n"); 
 
+  print(summary(marginal.survival))
   if (!is.null(marginal.survival)) {
 	if (lefttrunk==1)  cat("Warnings specify only your own survival weights for right-censored data\n"); 
-        if (length(marginal.survival)!=length(start)) stop(paste("marginal.survival must have length=",antpers,"\n"));  
+###        if (length(marginal.survival)!=length(start.time)) stop(paste("marginal.survival must have length=",antpers,"\n"));  
         psurvmarg <- marginal.survival
+	antpers <- length(marginal.survival)
+        RR <-  rep(1,antpers); 
+        ptrunc <- rep(1,antpers);
+	if (!is.null(marginal.status)) status <- marginal.status else stop("must give censoring status\n"); 
   }
+
+  if (is.null(weights)==TRUE) weights <- rep(1,antpers); 
+  if (is.null(strata)==TRUE) strata<- rep(1,antpers); 
+  if (length(strata)!=antpers) stop("Strata must have length equal to number of data points \n"); 
 
   cluster.call <- clusters
   out.clust <- cluster.index(clusters);  
@@ -215,7 +226,8 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 	antiid <- max.clusters
   }                                                        
 
-  ratesim<-rate.sim; pxz <- px + pz;
+  ratesim<-rate.sim; 
+###  pxz <- px + pz;
   if (is.null(theta.des)==TRUE) ptheta<-1; 
   if (is.null(theta.des)==TRUE) theta.des<-matrix(1,antpers,ptheta) else
   theta.des<-as.matrix(theta.des); 
@@ -778,7 +790,7 @@ coefmat <- function(est,stderr,digits=3,...) { ## {{{
 ##' summary(fitco)
 ##' 
 ##' dfam <- simSurvFam(1000)
-##' dfam <- fast.reshape(dfam,var=c("x","t","c"))
+##' dfam <- fast.reshape(dfam,var=c("x","time","status"))
 ##' 
 ##' desfs <- function(x,num1="num1",num2="num2")
 ##' { 
@@ -789,8 +801,9 @@ coefmat <- function(est,stderr,digits=3,...) { ## {{{
 ##' } 
 ##' 
 ##' #out3 <- easy.twostage(Surv(t,c)~factor(num),
-##' #      data=dfam,id="id",
-##' #      score.method="fisher.scoring",theta.formula=desfs,desnames=c("parent-parent","parent-child","child-cild"))
+##' #      data=dfam,id="id",status="status",time="time",
+##' #      score.method="fisher.scoring",theta.formula=desfs,
+##' #      desnames=c("parent-parent","parent-child","child-cild"))
 ##' #summary(out3)
 ##' @keywords survival twostage 
 ##' @export
@@ -816,43 +829,36 @@ coefmat <- function(est,stderr,digits=3,...) { ## {{{
 ##' @param max.clust max clusters
 ##' @param se.clusters clusters for iid decomposition for roubst standard errors
 easy.twostage <- function(margsurv=NULL,data=sys.parent(),score.method="nlminb",
-id="id", Nit=60,detail=0, silent=1,weights=NULL, control=list(),
+status="status",time="time",id="id", Nit=60,detail=0, silent=1,weights=NULL, control=list(),
 theta=NULL,theta.formula=NULL,desnames=NULL,deshelp=0,var.link=1,iid=1,
 step=0.5,model="plackett",marginal.surv=NULL,strata=NULL,max.clust=NULL,se.clusters=NULL)
 { ## {{{
 ###data=dfam; theta.formula=desfs; desnames=c("pp","pc","cc")
-###id="id"; margbin <- Surv(t,c)~factor(num); data=dfam
+###time="t";id="id"; data=dfam; deshelp=1
+###margsurv=marg
+###dim(data)
+###length(ps)
 
 if (is.null(marginal.surv))
-if (class(margsurv)[1]!="coxph")
+if (class(margsurv)[1]=="coxph")
 { ## {{{
-    X <- model.matrix(coxformula,data=data); 
+###    ps <- survfit(margsurv)$surv
 
+    coxformula <- margsurv$formula
+    X <- model.matrix(coxformula,data=data)[,-1]; 
     baseout <- basehaz(margsurv,centered=FALSE); 
     baseout <- cbind(baseout$time,baseout$hazard)
+    cumh <-  Cpred(baseout,data[,time])[,2]
     RR<-exp(X %*% coef(margsurv))
-    Gcx<-exp(-baseout*RR)
+    ps<-exp(-cumh*RR)
     ## }}}
-  } else if (class(margsurv)[1]=="aalen")
+  } else if (class(margsurv)[1]=="phreg")
   {  ## {{{
-    Gcx <- Cpred(ud.cens$cum,time2)[,-1];
-    Gcx<-exp(-apply(Gcx*XZ,1,sum))
-    Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
-    Gfit<-rbind(c(0,1),cbind(time2,Gcx)); 
-    Gcx <- Gcx/Gcxe; 
-    Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
+	  ps <- predict(margsurv)
   }
+  else stop("marginal survival probabilities must be given as marginal.sur or margsurv \n"); 
 
-
-  if (class(margsurv)[1]!="coxreg" && is.null(marginal.surv)) stop("Use coxreg for marginal model\n"); 
-ps <- predict(margsurv,type="response") 
-###  else if (class(margsurv)=="formula") {
-###	    margsurv <- coxph(margbin,data=data)
-###            ps <- predict(margsurv,type="risk")
-###    }  else if (is.null(marginal.surv)) stop("without marginal model, marginal p's must be given\n"); 
-    if (!is.null(marginal.surv)) ps <- marginal.surv
-
-   data <- cbind(data,ps)
+  data <- cbind(data,ps)
 
   ### make all pairs in the families,
   fam <- familycluster.index(data[,id])
@@ -865,7 +871,7 @@ ps <- predict(margsurv,type="response")
      library(compiler) 
      desfunction <- cmpfun(theta.formula)
     if (deshelp==1){
-	 cat("These names appear in wide version of pairs for dependence \n")
+ 	  cat("These names appear in wide version of pairs for dependence \n")
 	  cat("design function must be defined in terms of these: \n")
 	  cat(names(data.fam.clust)); cat("\n")
 	  cat("Here is head of wide version with pairs\n")
@@ -886,17 +892,21 @@ ps <- predict(margsurv,type="response")
      }
 
     ### back to long format keeping only needed variables
-    data.fam <- fast.reshape(data.fam.clust,varying=c(response,id,"ps"))
+    data.fam <- fast.reshape(data.fam.clust,varying=c(id,"ps",status))
     if (deshelp==1) {
 	cat("Back to long format for twostage (head)\n"); 
         print(head(data.fam)); 
 	cat("\n")
-	cat(paste("twostage, called with reponse",response,"\n")); 
+###	cat(paste("twostage, called with reponse",response,"\n")); 
 	cat(paste("cluster=",id,",  subcluster (pairs)=subfam \n")); 
 	cat(paste("design variables =")); 
 	cat(desnames)
 	cat("\n")
     } 
+
+###    print(status)
+###    print(names(data.fam))
+###    print(data.fam[,status])
 
     out <- twostage(NULL,data=data.fam,
                     clusters=data.fam$subfam,
@@ -904,14 +914,35 @@ ps <- predict(margsurv,type="response")
                     detail=detail, score.method=score.method, Nit=Nit,step=step,
                     iid=iid,theta=theta, var.link=var.link,model=model, 
                     max.clust=max.clust,
-                    marginal.survival=data.fam[,"ps"],se.clusters=data.fam[,id])
+                    marginal.survival=data.fam[,"ps"],
+                    marginal.status=data.fam[,status],
+		    se.clusters=data.fam[,id])
+
    return(out)
 } ## }}}
 
+### library(mets)
+### dfam <- simSurvFam(10000)
+### dfam <- fast.reshape(dfam,var=c("x","time","status"))
+###### 
+### desfs <- function(x,num1="num1",num2="num2")
+### { 
+### pp <- (x[num1]=="m")*(x[num2]=="f")*1   ## mother-father 
+### pc <- (x[num1]=="m" | x[num1]=="f")*(x[num2]=="b1" | x[num2]=="b2")*1 ## mother-child
+### cc <- (x[num1]=="b1")*(x[num2]=="b1" | x[num2]=="b2")*1               ## child-child
+### c(pp,pc,cc)
+### } 
+######
+### marg <- coxph(Surv(time,status)~factor(num),data=dfam)
+### system.time(
+###out3 <- easy.twostage(marg,data=dfam,time="time",status="status",id="id",deshelp=1,
+###  score.method="fisher.scoring",theta.formula=desfs,
+###  desnames=c("parent-parent","parent-child","child-cild"))
+###)
 
 ##' @export
 simSurvFam <- function(n,beta=0.0,theta=1,lam0=0.5,lam1=1,lam2=1,ctime=10,...) { ## {{{ 
-	n=100; beta=0; theta=1; lam1=1;lam2=1; ctime=10; lam0=0.5
+###	n=10; beta=0; theta=1; lam1=1;lam2=1; ctime=10; lam0=0.5
 xm <- rbinom(n,1,0.5); xf <- rbinom(n,1,0.5); 
 xb1 <- rbinom(n,1,0.5); xb2 <- rbinom(n,1,0.5); 
 ###
@@ -925,5 +956,6 @@ cb1 <- ifelse(tb1<ctime,1,0); cb2 <- ifelse(tb2<ctime,1,0);
 tm <- ifelse(tm<ctime,tm,ctime); tf <- ifelse(tf<ctime,tf,ctime)
 tb1 <- ifelse(tb1<ctime,tb1,ctime); tb2 <- ifelse(tb2<ctime,tb2,ctime)
 #
-data.frame(xm=xm,xf=xf,xb1=xb1,xb2=xb2,tm=tm,tf=tf,tb1=tb1,tb2=tb2,cm=cm,cf=cf,cb1=cb1,cb2=cb2,id=1:n)
+data.frame(xm=xm,xf=xf,xb1=xb1,xb2=xb2,timem=tm,timef=tf,timeb1=tb1,timeb2=tb2,statusm=cm,statusf=cf,
+	   statusb1=cb1,statusb2=cb2,id=1:n)
 } ## }}} 
