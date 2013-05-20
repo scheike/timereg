@@ -9,13 +9,13 @@
 ##' @author Thomas Scheike
 ##' @examples
 ##' data(prt);
-##'
+##' 
 ##' prt <- prt[which(prt$id %in% sample(unique(prt$id),7500)),]
-##' ### marginal cumulative incidence of prostate cancer 
+##' ### marginal cumulative incidence of prostate cancer
 ##' times <- seq(60,100,by=2)
 ##' outm <- comp.risk(Surv(time,status==0)~+1,data=prt,prt$status,causeS=2,times=times)
 ##' 
-##' cifmz <- predict(outm,X=1,uniform=0,resample.iid=1) 
+##' cifmz <- predict(outm,X=1,uniform=0,resample.iid=1)
 ##' cifdz <- predict(outm,X=1,uniform=0,resample.iid=1)
 ##' 
 ##' ### concordance for MZ and DZ twins
@@ -23,9 +23,9 @@
 ##' cdz <- cc$model$"DZ"
 ##' cmz <- cc$model$"MZ"
 ##' 
-##' ### To compute casewise cluster argument must be passed on, here with a max of 100 to limit comp-time 
+##' ### To compute casewise cluster argument must be passed on, here with a max of 100 to limit comp-time
 ##' outm <-comp.risk(Surv(time,status==0)~+1,data=prt,prt$status,causeS=2,times=times,max.clust=100)
-##' cifmz <-predict(outm,X=1,uniform=0,resample.iid=1) 
+##' cifmz <-predict(outm,X=1,uniform=0,resample.iid=1)
 ##' cc <-bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2),se.clusters=outm$clusters)
 ##' cdz <- cc$model$"DZ"
 ##' cmz <- cc$model$"MZ"

@@ -47,10 +47,11 @@ BEGIN_RCPP
  
   uvec num = Rcpp::as<uvec>(inum); 
   int  mednum = Rcpp::as<int>(imednum);
-  // uvec unum;
-  // if (mednum==1) {
-  //   maxclust = unum.n_elem;
-  // }     
+  uvec unum;
+  if (mednum==1) {
+    unum = unique(num);
+    maxclust = unum.n_elem;
+  }     
   
   imat idclust = imat(uniqueclust,maxclust); idclust.fill(NA_INTEGER);
   uvec clustsize(uniqueclust); clustsize.fill(0);

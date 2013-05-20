@@ -48,7 +48,7 @@ based on the pairwise bivariate models.}
 
   \item{model}{model}
 
-  \item{marginal.truncation}{marginal left truncation
+  \item{marginal.trunc}{marginal left truncation
   probabilities}
 
   \item{marginal.survival}{optional vector of marginal

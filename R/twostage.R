@@ -87,7 +87,7 @@
 ##' @param step Step size
 ##' @param notaylor Taylor expansion
 ##' @param model model
-##' @param marginal.truncation marginal left truncation probabilities
+##' @param marginal.trunc marginal left truncation probabilities
 ##' @param marginal.survival optional vector of marginal survival probabilities 
 ##' @param marginal.status related to marginal survival probabilities 
 ##' @param strata strata for fitting, see example
@@ -154,7 +154,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 	   if (is.null(clusters)) stop("must give clusters for coxph\n");
 	   X <- matrix(1,antpers,1); ### Z <- matrix(0,antpers,1); ### no use for these
 	   px <- 1; pz <- ncol(Z); 
-	   if (sum(abs(start))>0) lefttrunk <- 1 else lefttrunk <- 0
+	   if (sum(abs(start.time))>0) lefttrunk <- 1 else lefttrunk <- 0
 	   start <- rep(0,antpers);
 	   beta.fixed <- 0
 	   semi <- 1
@@ -813,6 +813,9 @@ coefmat <- function(est,stderr,digits=3,...) { ## {{{
 ##' @param data data frame
 ##' @param id name of cluster variable in data frame
 ##' @param score.method Scoring method
+##' @param status Status at exit time
+##' @param time Exit time
+##' @param entry Entry time
 ##' @param Nit Number of iterations
 ##' @param detail Detail for more output for iterations 
 ##' @param silent Debug information

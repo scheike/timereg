@@ -15,13 +15,19 @@ Useful in particular for family design data.}
     strata = NULL, max.clust = NULL, se.clusters = NULL)
 }
 \arguments{
-  \item{marginal}{model}
+  \item{margsurv}{model}
 
   \item{data}{data frame}
 
   \item{id}{name of cluster variable in data frame}
 
   \item{score.method}{Scoring method}
+
+  \item{status}{Status at exit time}
+
+  \item{time}{Exit time}
+
+  \item{time}{Entry time}
 
   \item{Nit}{Number of iterations}
 
