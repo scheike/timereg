@@ -334,7 +334,18 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
   names(dd) <- names(mm)
 
   if (is.null(estimator)) return(multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep,type=2))
-  optim <- list(method="nlminb2",refit=FALSE,gamma=1,start=rep(0.1,length(coef(mm[[1]]))*length(mm)))  
+  optim <- list(method="nlminb2",refit=FALSE,gamma=1,start=rep(0.1,length(coef(mm[[1]]))*length(mm)))
+  
+  l <- lm(formula,data)
+  s <- summary(l)
+  start <- c(coef(l),rep(s$sigma/nchar(type),nchar(type)))
+  if (type=="sat")
+      start <- rep(c(rep(coef(l),2),rep(log(s$sigma^2),2),0.5),2)
+  if (type=="flex")
+      start <- rep(c(coef(l),log(s$sigma^2),0.5),2)
+  if (type=="u")
+      start <- c(coef(l),log(s$sigma^2),0.5,0.5)
+  optim$start <- start
   if (length(control)>0) {
     optim[names(control)] <- control
   }

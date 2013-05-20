@@ -23,7 +23,7 @@ cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0)
   if (Rindex==1) clustud$idclust <- clustud$idclustmat+1
   if (Rindex==1) clustud$firstclustid <- clustud$firstclustid +1 
   
-  invisible(clustud)
+  clustud
 } ## }}}
 
 ##' @export
@@ -86,4 +86,3 @@ faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=1)
 
   return(xny); 
 } ## }}}
-

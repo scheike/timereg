@@ -119,7 +119,6 @@ plot.cumh <- function(x,...,type=1,lwd=2,col,fillcol,alpha=0.2,ylim=c(0,1),xlab=
 
 ###{{{ cumh2 - Deprecated
 
-##' @export
 cumh2 <- function(formula,data,...,time,
                  timestrata=quantile(data[,time],c(0.25,0.5,0.75,1)),
                  cumulative=TRUE, 

@@ -3,6 +3,7 @@
 
 SEXP FastLong(SEXP idata, SEXP inclust,
 	      SEXP infixed, SEXP invarying, SEXP missing) {
+BEGIN_RCPP
       unsigned nvarying = Rcpp::as<unsigned>(invarying); // Number of vayring var
       unsigned nfixed = Rcpp::as<unsigned>(infixed); // Number of non-varying
       unsigned nclust = Rcpp::as<unsigned>(inclust); // Number within cluster
@@ -45,6 +46,7 @@ SEXP FastLong(SEXP idata, SEXP inclust,
       }
       if (Missing) dd = dd.rows(find(mis==0));
       return(Rcpp::wrap(dd));
+END_RCPP
 }
 
 void fastpattern(const umat &y, umat &pattern, uvec &group)  {
@@ -107,6 +109,7 @@ END_RCPP
 RcppExport SEXP FastApprox(const SEXP a,
 			   const SEXP t,
 			   const SEXP z) {
+BEGIN_RCPP
   NumericVector A(a);
   NumericVector T(t);
   NumericVector Z(z);
@@ -139,4 +142,5 @@ RcppExport SEXP FastApprox(const SEXP a,
   ans["t"] = newT;
   ans["pos"] = idx;
   return(ans);
+END_RCPP
 }

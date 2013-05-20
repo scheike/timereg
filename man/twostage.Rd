@@ -10,7 +10,8 @@ based on the pairwise bivariate models.}
     clusters = NULL, silent = 1, weights = NULL,
     control = list(), theta = NULL, theta.des = NULL,
     var.link = 1, iid = 1, step = 0.5, notaylor = 0,
-    model = "plackett", marginal.survival = NULL,
+    model = "plackett", marginal.trunc = NULL,
+    marginal.survival = NULL, marginal.status = NULL,
     strata = NULL, se.clusters = NULL, max.clust = NULL,
     numDeriv = 1)
 }
@@ -47,8 +48,14 @@ based on the pairwise bivariate models.}
 
   \item{model}{model}
 
+  \item{marginal.truncation}{marginal left truncation
+  probabilities}
+
   \item{marginal.survival}{optional vector of marginal
   survival probabilities}
+
+  \item{marginal.status}{related to marginal survival
+  probabilities}
 
   \item{strata}{strata for fitting, see example}
 

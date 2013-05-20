@@ -79,7 +79,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,...)
 
 ###{{{ simcox
 
-simcox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
+simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
   if (!is.null(seed))
     set.seed(seed)
   library(lava)
@@ -109,7 +109,7 @@ simcox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' @examples
 ##' 
 ##' n <- 1e3;
-##' d <- mets::;simcox(n); d$id <- seq(nrow(d)); d$group <- factor(rbinom(nrow(d),1,0.5))
+##' d <- mets:::simCox(n); d$id <- seq(nrow(d)); d$group <- factor(rbinom(nrow(d),1,0.5))
 ##' 
 ##' (m1 <- phreg(Surv(entry,time,status)~X1+X2,data=d))
 ##' (m2 <- coxph(Surv(entry,time,status)~X1+X2+cluster(id),data=d))
@@ -238,42 +238,93 @@ print.summary.phreg  <- function(x,...) {
 ###}}} print.summary
 
 ###{{{ predict
-##' @S3method predict phreg
-predict.phreg  <- function(object,surv=FALSE,...) {
-  if (!is.null(object$strata)) {
-    lev <- levels(object$strata)
-    chaz <- c()
-    for (i in seq(length(lev))) {
-      ## Brewslow estimator
-      chaz0 <- cbind(object$jumptimes[[i]],cumsum(1/object$S0[[i]]))
-      colnames(chaz0) <- c("time","chaz")
-      chaz <- c(chaz,list(chaz0))
+
+predictPhreg <- function(jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
+    ## Brewslow estimator
+    chaz <- cbind(jumptimes,cumsum(1/S0))
+    if (!is.null(time)) {
+      chaz <- Cpred(chaz,time)
     }
-    names(chaz) <- lev
-  } else {
-    chaz <- cbind(object$jumptimes,cumsum(1/object$S0))
     colnames(chaz) <- c("time","chaz")
-  }
-  return(chaz)
+    if (!is.null(X)) {
+      H <- exp(X%*%beta)
+      if (nrow(chaz)==length(H)) {
+        chaz[,2] <- chaz[,2]*H
+      } else {
+        chaz2 <- c()
+        X <- rbind(X)
+        for (i in seq(nrow(X)))
+          chaz2 <- rbind(chaz2,
+                         cbind(chaz[,1],chaz[,2]*H[i],
+                               rep(1,nrow(chaz))%x%X[i,,drop=FALSE]))
+        chaz <- chaz2;
+        nn <- c("time","chaz",names(beta))
+        colnames(chaz) <- nn
+      }
+    }
+    if (surv) {    
+      chaz[,2] <- exp(-chaz[,2])
+      colnames(chaz)[2] <- "surv"
+    }
+    return(chaz)
+}
+
+##' @S3method predict phreg
+predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,strata=object$strata,...) {
+    if (!is.null(object$strata)) {
+        lev <- levels(object$strata)
+        if (!is.null(object$strata) &&
+            !(is.list(time) & !is.data.frame(time)) &&
+            !(is.list(X) & !is.data.frame(X))) {
+            X0 <- X
+            time0 <- time
+            X <- time <- c()
+            for (i in seq(length(lev))) {
+                idx <- which(strata==lev[i])
+                X <- c(X,list(X0[idx,,drop=FALSE]))
+                time <- c(time,list(time0[idx]))
+            }
+        }
+        chaz <- c()
+        for (i in seq(length(lev)))
+            chaz <- c(chaz,list(predictPhreg(object$jumptimes[[i]],
+                                             object$S0[[i]],
+                                             coef(object),
+                                             time[[i]],X[[i]],surv)))
+        names(chaz) <- lev    
+    } else {
+        chaz <- predictPhreg(object$jumptimes,object$S0,coef(object),time,X,surv)
+    }
+    return(chaz)
 }
 ###}}} predict
 
 ###{{{ plot
 ##' @S3method plot phreg
-plot.phreg  <- function(x,surv=FALSE,add=FALSE,...) {
-  P <- predict(x)
-  if (!is.list(P)) {
-    if (add) {
-      lines(P,type="s",...)
+plot.phreg  <- function(x,surv=TRUE,X=NULL,time=NULL,add=FALSE,...) {
+    if (!is.null(X) && nrow(X)>1) {
+        P <- lapply(split(X,seq(nrow(X))),function(xx) predict(x,X=xx,time=time,surv=surv))
     } else {
-      plot(P,type="s",...)
+        P <- predict(x,X=X,time=time,surv=surv)
+    }
+    if (!is.list(P)) {
+        if (add) {
+            lines(P,type="s",...)
+        } else {
+            plot(P,type="s",...)
+        }
+        return(invisible(P))
+    }
+
+    if (add) {
+        lines(P[[1]][,1:2],type="s",lty=1,col=1,...)
+    } else {
+        plot((P[[1]])[,1:2],type="s",lty=1,col=1,...)
+    }
+    for (i in seq_len(length(P)-1)+1) {
+        lines(P[[i]][,1:2],type="s",lty=i,col=i,...)   
     }
     return(invisible(P))
-  }
-  plot(P[[1]],type="s",lty=1,col=1,...)
-  for (i in seq_len(length(P)-1)+1) {
-    lines(P[[i]],type="s",lty=i,col=i,...)   
-  }  
 }
 ###}}} plot
 

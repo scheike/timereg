@@ -6,7 +6,8 @@ call is different and easier and the data manipulation  build into the function.
 Useful in particular for family design data.}
 \usage{
   easy.twostage(margsurv = NULL, data = sys.parent(),
-    score.method = "nlminb", id = "id", Nit = 60,
+    score.method = "nlminb", status = "status",
+    time = "time", entry = NULL, id = "id", Nit = 60,
     detail = 0, silent = 1, weights = NULL,
     control = list(), theta = NULL, theta.formula = NULL,
     desnames = NULL, deshelp = 0, var.link = 1, iid = 1,
@@ -82,7 +83,7 @@ fitco<-twostage(margp,data=prt,theta.des=des,clusters=prt$id)
 summary(fitco)
 
 dfam <- simSurvFam(1000)
-dfam <- fast.reshape(dfam,var=c("x","t","c"))
+dfam <- fast.reshape(dfam,var=c("x","time","status"))
 
 desfs <- function(x,num1="num1",num2="num2")
 {
@@ -93,8 +94,9 @@ c(pp,pc,cc)
 }
 
 #out3 <- easy.twostage(Surv(t,c)~factor(num),
-#      data=dfam,id="id",
-#      score.method="fisher.scoring",theta.formula=desfs,desnames=c("parent-parent","parent-child","child-cild"))
+#      data=dfam,id="id",status="status",time="time",
+#      score.method="fisher.scoring",theta.formula=desfs,
+#      desnames=c("parent-parent","parent-child","child-cild"))
 #summary(out3)
 }
 \keyword{survival}

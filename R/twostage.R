@@ -809,7 +809,7 @@ coefmat <- function(est,stderr,digits=3,...) { ## {{{
 ##' #summary(out3)
 ##' @keywords survival twostage 
 ##' @export
-##' @param marginal model 
+##' @param margsurv model 
 ##' @param data data frame
 ##' @param id name of cluster variable in data frame
 ##' @param score.method Scoring method

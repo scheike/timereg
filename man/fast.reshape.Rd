@@ -5,7 +5,7 @@ Simple reshape/tranpose of data}
 \usage{
   fast.reshape(data, id, varying, num, sep = "", keep,
     idname = "id", numname = "num", factors.keep = TRUE,
-    idcombine = FALSE, ...)
+    idcombine = FALSE, labelnum = TRUE, ...)
 }
 \arguments{
   \item{data}{data.frame or matrix}
@@ -34,6 +34,9 @@ Simple reshape/tranpose of data}
   several variables, the unique id is combined from all the
   variables. Otherwise the first variable is only used as
   identifier.}
+
+  \item{labelnum}{If TRUE varying variables in wide format
+  are labeled 1,2,3,... otherwise use 'num' variable.}
 
   \item{...}{Optional additional arguments}
 }

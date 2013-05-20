@@ -17,7 +17,7 @@
 }
 \examples{
 n <- 1e3;
-d <- mets::;simcox(n); d$id <- seq(nrow(d)); d$group <- factor(rbinom(nrow(d),1,0.5))
+d <- mets:::simCox(n); d$id <- seq(nrow(d)); d$group <- factor(rbinom(nrow(d),1,0.5))
 
 (m1 <- phreg(Surv(entry,time,status)~X1+X2,data=d))
 (m2 <- coxph(Surv(entry,time,status)~X1+X2+cluster(id),data=d))

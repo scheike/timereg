@@ -8,7 +8,7 @@ using namespace arma;
 /* how many are there of the different clusters, similar to table(clusters) */ 
 RcppExport SEXP nclust(SEXP iclusters) {
 // {{{
-
+BEGIN_RCPP
   uvec clusters = Rcpp::as<uvec>(iclusters);
   unsigned n = clusters.n_elem;
  
@@ -25,27 +25,32 @@ RcppExport SEXP nclust(SEXP iclusters) {
   return(List::create(Named("maxclust")=maxclust,
 		       Named("nclust")=nclust,
 		       Named("uniqueclust")=uniqueclust)); 
+END_RCPP
  } // }}}
 
 /* organize indeces to different clusters in matrix  of size nclust x maxclust */ 
 RcppExport SEXP clusterindexM(SEXP iclusters, SEXP imednum, SEXP inum) {
 // {{{
-
+BEGIN_RCPP
   uvec clusters = Rcpp::as<uvec>(iclusters);
   unsigned n = clusters.n_elem;
  
   unsigned uniqueclust=0; 
   unsigned maxclust=0;
   uvec nclust(n); nclust.fill(0);
- 
-  for (unsigned i=0;i<n;i++){
+    
+  for (unsigned i=0;i<n;i++) {
     if (nclust[clusters[i]]==0) uniqueclust+=1; 
     nclust[clusters[i]]+=1; 
     if (nclust[clusters[i]]>maxclust) maxclust=nclust[clusters[i]]; 
   } 
-
+ 
   uvec num = Rcpp::as<uvec>(inum); 
   int  mednum = Rcpp::as<int>(imednum);
+  // uvec unum;
+  // if (mednum==1) {
+  //   maxclust = unum.n_elem;
+  // }     
   
   imat idclust = imat(uniqueclust,maxclust); idclust.fill(NA_INTEGER);
   uvec clustsize(uniqueclust); clustsize.fill(0);
@@ -72,6 +77,7 @@ RcppExport SEXP clusterindexM(SEXP iclusters, SEXP imednum, SEXP inum) {
 		      Named("uniqueclust")=uniqueclust,
 		      Named("firstclustid")=firstclustid
 		      )); 
+END_RCPP
 } // }}}
 
 RcppExport SEXP familypairindex(SEXP iclustmat,SEXP iclustsize,SEXP inumfamindex) {
@@ -111,6 +117,7 @@ RcppExport SEXP familypairindex(SEXP iclustmat,SEXP iclustsize,SEXP inumfamindex
 
 RcppExport SEXP clusterindexdata(SEXP iclusters, SEXP imednum,SEXP inum, SEXP idata) 
 { // {{{
+BEGIN_RCPP
   uvec clusters = Rcpp::as<uvec>(iclusters);
   unsigned n = clusters.n_elem;
  
@@ -152,5 +159,6 @@ RcppExport SEXP clusterindexdata(SEXP iclusters, SEXP imednum,SEXP inum, SEXP id
 //	              Named("idclust")=idclust,
 		      Named("maxclust")=maxclust,
    		      Named("clustsize")=clustsize,Named("iddata")=nydata)); 
+END_RCPP
 } // }}}
 
