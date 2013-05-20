@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Analyzing twin survival data with 'mets'</title>
+<!-- 2013-05-15 Wed 07:30 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" title="orgmode2" href="orgmode2.css"/>
+<link rel="icon" type="image/x-icon" href="http://www.biostat.ku.dk/~kkho/styles/logo.ico"/>
+<style type="text/css">body { background-image: url(http://www.biostat.ku.dk/~kkho/styles/logo.png); }</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012  Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Analyzing twin survival data with 'mets'</h1>
+<ol class="org-ol">
+<li>Load the menarche data.
+<div class="org-src-container">
+
+<pre class="src src-R"><span style="color: #259185;">library</span>(mets)
+data(<span style="color: #259185;">"mena"</span>)
+</pre>
+</div>
+</li>
+
+<li>Estimate the mean age at menarche in each cohort treating the
+censored observations as uncensored. Are there seemingly any 
+significant effect of cohort?
+</li>
+
+<li>Estimate parameters from the Tobit regression model (linear normal
+regression with right censoring): 
+<div class="org-src-container">
+
+<pre class="src src-R">s <span style="color: #259185;">&lt;-</span> survreg(Surv(agemena,status) ~ 1+factor(cohort)+cluster(id),
+             dist=<span style="color: #259185;">"gaussian"</span>, data=mena)
+</pre>
+</div>
+<p>
+Interpret the output from the model.
+</p>
+</li>
+<li>Calculate the Kaplan-Meier estimator for each cohort. Plot and
+interpret the results. What is the approximate age at median survival time?
+
+<div class="org-src-container">
+
+<pre class="src src-R">km1 <span style="color: #259185;">&lt;-</span> survfit(Surv(agemena,status) ~ factor(cohort), data=mena)
+palette(c(<span style="color: #259185;">"darkblue"</span>,<span style="color: #259185;">"darkred"</span>,<span style="color: #259185;">"orange"</span>,<span style="color: #259185;">"olivedrab"</span>))
+plot(km1,mark.time=<span style="color: #a57705;">FALSE</span>,col=1:4)
+</pre>
+</div>
+</li>
+<li>Add the survival curve from the Tobit regression to the plot (for
+the youngest cohort). Use the <code>pnorm</code> function and extract the mean and
+standard deviation (scale) from the survreg model.
+<div class="org-src-container">
+
+<pre class="src src-R">tt <span style="color: #259185;">&lt;-</span> seq(0,16,length.out=100)
+ss <span style="color: #259185;">&lt;-</span> 1-pnorm(tt,mean=coef(s)[1],sd=s$scale)
+lines(tt,ss,lty=2)
+</pre>
+</div>
+</li>
+<li>Estimate a Cox regression model using the cox.aalen function from
+the <code>timereg</code> package. 
+<div class="org-src-container">
+
+<pre class="src src-R">ca <span style="color: #259185;">&lt;-</span> cox.aalen(Surv(agemena,status)~+1+prop(cohort)+cluster(id),
+                data=mena,max.clust=<span style="color: #a57705;">NULL</span>,n.sim=0,robust=0)
+</pre>
+</div>
+</li>
+<li>Calculate the two-stage Clayton-Oakes-Glidden estimate
+<div class="org-src-container">
+
+<pre class="src src-R">vardesign <span style="color: #259185;">&lt;-</span> model.matrix(~-1+factor(zyg),mena)
+e <span style="color: #259185;">&lt;-</span> two.stage(ca,data=mena,theta.des=vardesign)
+</pre>
+</div>
+<p>
+Interpret the results. Refit the model with a new variance regression
+design, vardesign, that makes it possible to assess the statistical
+significance of zygosity.
+</p>
+</li>
+<li>Plot paired menarche times
+<div class="org-src-container">
+
+<pre class="src src-R"><span style="color: #259185;">library</span>(lava.tobit)
+menaw <span style="color: #259185;">&lt;-</span> fast.reshape(mena,id=<span style="color: #259185;">"id"</span>)
+status <span style="color: #259185;">&lt;-</span> menaw$status1+menaw$status2+1
+plot(agemena2~agemena1,data=menaw,pch=c(2,6,16)[status],col=Col(c(4,2,1)[status],0.6))
+</pre>
+</div>
+</li>
+<li>Estimate parameters from ACE model 
+<div class="org-src-container">
+
+<pre class="src src-R">s0 <span style="color: #259185;">&lt;-</span> twinlm(agemena~1,zyg=<span style="color: #259185;">"zyg"</span>,DZ=<span style="color: #259185;">"DZ"</span>,id=<span style="color: #259185;">"id"</span>,data=mena)
+s0
+mena$S <span style="color: #259185;">&lt;-</span> with(mena, Surv(agemena,status))
+s <span style="color: #259185;">&lt;-</span> twinlm(S~1,zyg=<span style="color: #259185;">"zyg"</span>,DZ=<span style="color: #259185;">"DZ"</span>,id=<span style="color: #259185;">"id"</span>,data=mena,control=list(trace=1,start=coef(s0)))
+s
+</pre>
+</div>
+</li>
+</ol>
+
+
+
+<div class="box1">
+   <a id="box-link" href="http://www.biostat.ku.dk/~kkho"></a>
+</div>
+<ul id="navigation">
+<li class="sub"><a href="#">Software</a>
+<ul class="org-ul">
+<li><a href="https://r-forge.r-project.org/projects/lava/">Latent Variable Models (lava)</a>
+</li>
+<li><a href="http://cran.r-project.org/web/packages/mets/index.html">Analysis of Multivariate Event Times (mets)</a>
+</li>
+</ul>
+</li>
+<li class="sub"><a href="#">Links</a>
+<ul class="org-ul">
+<li><a href="https://ifsv.sund.ku.dk/biostat/biostat_annualreport/images/a/ab/Research_Report_12-10.pdf">Estimating heritability for cause specific mortality based on twin studies</a>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div id="postamble" class="status">
+<p class="date">Created: 2013-05-15 Wed 07:30</p>
+<p class="validation"></p>
+</div>
+</body>
+</html>
