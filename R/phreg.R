@@ -107,6 +107,20 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' @author Klaus K. Holst
 ##' @export
 ##' @examples
+##' simcox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
+##'   if (!is.null(seed))
+##'     set.seed(seed)
+##'   library(lava)
+##'   m <- lvm()
+##'   regression(m,T~X1+X2) <- beta
+##'   distribution(m,~T+C) <- coxWeibull.lvm(scale=1/100)
+##'   distribution(m,~entry) <- coxWeibull.lvm(scale=1/10)
+##'   m <- eventTime(m,time~min(T,C=0),"status")
+##'   d <- sim(m,n);
+##'   if (!entry) d$entry <- 0
+##'   else d <- subset(d, time>entry,select=-c(T,C))
+##'   return(d)
+##' }
 ##' 
 ##' n <- 1e3;
 ##' d <- mets:::simCox(n); d$id <- seq(nrow(d)); d$group <- factor(rbinom(nrow(d),1,0.5))
@@ -245,6 +259,9 @@ predictPhreg <- function(jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
     if (!is.null(time)) {
       chaz <- Cpred(chaz,time)
     }
+    names(chaz) <- lev
+  } else {
+    chaz <- cbind(object$jumptimes,cumsum(1/object$S0))
     colnames(chaz) <- c("time","chaz")
     if (!is.null(X)) {
       H <- exp(X%*%beta)
@@ -325,6 +342,11 @@ plot.phreg  <- function(x,surv=TRUE,X=NULL,time=NULL,add=FALSE,...) {
         lines(P[[i]][,1:2],type="s",lty=i,col=i,...)   
     }
     return(invisible(P))
+  }
+  plot(P[[1]],type="s",lty=1,col=1,...)
+  for (i in seq_len(length(P)-1)+1) {
+    lines(P[[i]],type="s",lty=i,col=i,...)   
+  }  
 }
 ###}}} plot
 

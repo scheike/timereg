@@ -27,6 +27,7 @@ cumh <- function(formula,data,cens.formula=NULL,...,time,
   for (i in seq(length(timestrata))) {
     t <- timestrata[i]
     data[,outcome] <- y0
+    newdata <- data
     if (!cumulative) {
       if (i==1) {
         idx <- data[,time]<t
