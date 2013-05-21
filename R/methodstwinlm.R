@@ -101,7 +101,6 @@ summary.twinlm <- function(object,...) {
 
   lambda.w <- which(sapply(lambda.idx, function(x) length(x)>0))
 
-  browser()
   rownames(myest)[myest.varpos] <- paste("sd(",c("A)","C)","D)","E)"),sep="")[lambda.w]
 
   varEst <- rep(0,4)

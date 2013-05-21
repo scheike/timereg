@@ -8,7 +8,6 @@ cumh <- function(formula,data,cens.formula=NULL,...,time,
   if (!is.character(time.)) time. <- deparse(time.)
   time <- time.
   if (!is.null(cens.formula)) {    
-    browser()
     m <- match.call(expand.dots = TRUE)[1:3]
     Terms <- terms(cens.formula, data = data)
     m$formula <- Terms

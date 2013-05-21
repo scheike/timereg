@@ -134,8 +134,11 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
   options(opt)
   
   covars <- colnames(mm)
-  if (attr(terms(formula),"intercept")==1)
-    covars <- covars[-1]
+  hasIntercept <- FALSE
+  if (attr(terms(formula),"intercept")==1) {
+      hasIntercept <- TRUE
+      covars <- covars[-1]
+  }
   if(length(covars)<1) covars <- NULL
   
   zygstat <- data[,zyg]
@@ -335,18 +338,48 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
 
   if (is.null(estimator)) return(multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep,type=2))
   optim <- list(method="nlminb2",refit=FALSE,gamma=1,start=rep(0.1,length(coef(mm[[1]]))*length(mm)))
-  
-  l <- lm(formula,data)
-  s <- summary(l)
-  start <- c(coef(l),rep(s$sigma/nchar(type),nchar(type)))
-  if (type=="sat")
-      start <- rep(c(rep(coef(l),2),rep(log(s$sigma^2),2),0.5),2)
-  if (type=="flex")
-      start <- rep(c(coef(l),log(s$sigma^2),0.5),2)
-  if (type=="u")
-      start <- c(coef(l),log(s$sigma^2),0.5,0.5)
+
+
+  if (is.Surv(data[,yvar])) {
+      l <- survreg(formula,mf,dist="gaussian")
+      beta <- coef(l)
+      sigma <- l$scale
+  } else {
+      l <- lm(formula,mf)
+      beta <- coef(l)
+      sigma <- summary(l)$sigma
+  }
+  start <- rep(sigma/sqrt(nchar(type)),nchar(type))
+  if (hasIntercept) {
+      start <- c(beta[1],start)
+      start <- c(start,beta[-1])
+  } else start <- c(start,beta)
+  if (type=="sat") {
+      start <- c(rep(log(sigma^2),2),0.5)
+      if (hasIntercept) {
+          start <- c(rep(beta[1],2),start)
+          beta <- beta[-1]
+      }
+      start <- c(rep(start,2),rep(beta,4))
+  }
+  if (type=="flex") {
+      start <- c(log(sigma^2),0.5)
+      if (hasIntercept) {
+          start <- c(beta[1],start)
+          beta <- beta[-1]
+      }
+      start <- c(rep(start,2),rep(beta,2))
+  }
+  if (type=="u") {
+      start <- c(log(sigma^2),0.5,0.5)
+      if (hasIntercept) {
+          start <- c(beta[1],start)
+          beta <- beta[-1]
+      }
+      start <- c(start,beta)
+  }
   names(start) <- NULL
-  optim$start <- start
+  ##  optim$start <- start
   if (length(control)>0) {
     optim[names(control)] <- control
   }
