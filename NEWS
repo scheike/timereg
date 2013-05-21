@@ -1,6 +1,10 @@
-* Version 0.2.2 <2013-04-30>
+* Version 0.2.2 <2013-05-21>
   - Updated twinlm. bptwin: OS analysis 
+     - Better starting values for twinlm
   - Fixed claytonaokes.cpp
+  - New fast cox ph regression: phreg
+  - Updated two-stage estimator
+  - Improved fast.reshape
 
 * Version 0.2 <2013-03-27>
   - fast.reshape
