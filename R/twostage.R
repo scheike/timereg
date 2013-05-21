@@ -12,7 +12,7 @@
 ##' Clayton-Oakes and Plackett bivariate survival distributions,
 ##' @examples
 ##' data(diabetes)
-##' ##'
+##' 
 ##' data(diabetes)
 ##' # Marginal Cox model  with treat as covariate
 ##' margph <- coxph(Surv(time,status)~treat,data=diabetes)
@@ -43,9 +43,9 @@
 ##' d <- subset(simClaytonOakes(2000,2,0.5,0,stoptime=2,left=0),!truncated)
 ##' udp <- piecewise.twostage(c(0,0.5,2),data=d,score.method="optimize",
 ##'                           id="cluster",timevar="time",
-##' ##'			  status="status",model="clayton.oakes",silent=0)
+##' 
 ##' summary(udp)
-##' ##'
+##' 
 ##' \donttest{
 ##' ### Same model using the strata option, a bit slower
 ##' ########################################################
@@ -56,7 +56,7 @@
 ##' ud4=surv.boxarea(c(0.5,0.5),c(2,2),data=d,id="cluster",timevar="time",status="status")
 ##' ud1$strata <- 1; ud2$strata <- 2; ud3$strata <- 3; ud4$strata <- 4
 ##' ud <- rbind(ud1,ud2,ud3,ud4)
-##' ##'
+##' 
 ##' marg2 <- aalen(Surv(boxtime,status)~-1+factor(num):factor(strata),
 ##'                data=ud,n.sim=0,robust=0)
 ##' tdes <- model.matrix(~-1+factor(strata),data=ud)
@@ -64,7 +64,7 @@
 ##'                 score.method="fisher.scoring",model="clayton.oakes",
 ##'                 theta.des=tdes,step=0.5,detail=0,strata=ud$strata)
 ##' summary(fitp2)
-##' ##'
+##' 
 ##' ### now fitting the model with symmetry, i.e. strata 2 and 3 same effect
 ##' ud$stratas <- ud$strata; ud$stratas[ud$strata==3] <- 2;
 ##' tdes2 <- model.matrix(~-1+factor(stratas),data=ud)
@@ -73,8 +73,6 @@
 ##'                 theta.des=tdes2,step=0.5,detail=0,strata=ud$strata)
 ##' summary(fitp3)
 ##' }
-##' ### could also symmetry in marginal models
-##' ##'
 ##' @keywords survival
 ##' @author Thomas Scheike
 ##' @export

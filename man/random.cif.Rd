@@ -90,7 +90,8 @@
 data(multcif)
 
 times <- seq(0.3,1,length=4)
-add<-comp.risk(Surv(time,cause>0)~+1+cluster(id),data=multcif,multcif$cause,n.sim=0,causeS=1, times=times,max.clust=NULL)
+add<-comp.risk(Surv(time,cause>0)~+1+cluster(id),data=multcif,multcif$cause,
+               n.sim=0,causeS=1, times=times,max.clust=NULL)
 
 out1<-random.cif(add,data=multcif,cause1=1,cause2=1)
 summary(out1)
@@ -115,7 +116,8 @@ summary(out2)
 ## out1<-random.cif(add1,data=multcif,cause1=1,cause2=2,cif2=add2)
 ## summary(out1) ## negative dependence
 
-## out1g<-random.cif(add1,data=multcif,cause1=1,cause2=2,cif2=add2,theta.des=theta.des)
+## out1g<-random.cif(add1,data=multcif,cause1=1,cause2=2,
+##                   cif2=add2,theta.des=theta.des)
 ## summary(out1g)
 }
 \author{

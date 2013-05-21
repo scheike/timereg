@@ -50,7 +50,8 @@ fast.reshape(fast.reshape(d,var="y"),id="id")
 
 ##### From wide-format
 (dd <- fast.reshape(d,var="y"))
-## Same with explicit setting new id and number variable/column names and seperator "" (default) and dropping x
+## Same with explicit setting new id and number variable/column names
+## and seperator "" (default) and dropping x
 fast.reshape(d,var="y",idname="a",timevar="b",sep="",keep=c())
 ## Same with 'reshape' list-syntax
 fast.reshape(d,var=list(c("y1","y2","y3","y4")))
@@ -69,8 +70,9 @@ x <- data.frame(id=c(5,5,6,6,7),y=1:5,x=1:5,tv=c(1,2,2,1,2))
 (xw2 <- fast.reshape(xl,id="id",num="num"))
 fast.reshape(xw2,varying=c("y","x"),idname="id")
 
-# more generally: varying=list(c("ym","yf","yb1","yb2"), c("zm","zf","zb1","zb2"))
-#varying=list(c("ym","yf","yb1","yb2")))
+### more generally:
+### varying=list(c("ym","yf","yb1","yb2"), c("zm","zf","zb1","zb2"))
+### varying=list(c("ym","yf","yb1","yb2")))
 
 ##### Family cluster example
 d <- mets:::simBinFam(3)
