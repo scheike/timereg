@@ -379,7 +379,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
       start <- c(start,beta)
   }
   names(start) <- NULL
-  ##  optim$start <- start
+  optim$start <- start
   if (length(control)>0) {
     optim[names(control)] <- control
   }
