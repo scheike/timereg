@@ -257,11 +257,8 @@ predictPhreg <- function(jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
     ## Brewslow estimator
     chaz <- cbind(jumptimes,cumsum(1/S0))
     if (!is.null(time)) {
-      chaz <- Cpred(chaz,time)
+        chaz <- Cpred(chaz,time)
     }
-    names(chaz) <- lev
-  } else {
-    chaz <- cbind(object$jumptimes,cumsum(1/object$S0))
     colnames(chaz) <- c("time","chaz")
     if (!is.null(X)) {
       H <- exp(X%*%beta)
@@ -317,6 +314,7 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 ###}}} predict
 
 ###{{{ plot
+
 ##' @S3method plot phreg
 plot.phreg  <- function(x,surv=TRUE,X=NULL,time=NULL,add=FALSE,...) {
     if (!is.null(X) && nrow(X)>1) {
@@ -342,12 +340,8 @@ plot.phreg  <- function(x,surv=TRUE,X=NULL,time=NULL,add=FALSE,...) {
         lines(P[[i]][,1:2],type="s",lty=i,col=i,...)   
     }
     return(invisible(P))
-  }
-  plot(P[[1]],type="s",lty=1,col=1,...)
-  for (i in seq_len(length(P)-1)+1) {
-    lines(P[[i]],type="s",lty=i,col=i,...)   
-  }  
 }
+
 ###}}} plot
 
 ###{{{ print

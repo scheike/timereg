@@ -345,6 +345,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
       start <- rep(c(coef(l),log(s$sigma^2),0.5),2)
   if (type=="u")
       start <- c(coef(l),log(s$sigma^2),0.5,0.5)
+  names(start) <- NULL
   optim$start <- start
   if (length(control)>0) {
     optim[names(control)] <- control

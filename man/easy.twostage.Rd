@@ -100,7 +100,7 @@ c(pp,pc,cc)
 }
 
 marg <- coxph(Surv(time,status)~factor(num),data=dfam)
-out3 <- easy.twostage(marg,data=dfam,time="time",status="status",id="id",deshelp=1,
+out3 <- easy.twostage(marg,data=dfam,time="time",status="status",id="id",deshelp=0,
                       score.method="fisher.scoring",theta.formula=desfs,
                       desnames=c("parent-parent","parent-child","child-cild"))
 

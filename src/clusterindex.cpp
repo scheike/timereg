@@ -51,7 +51,7 @@ BEGIN_RCPP
   if (mednum==1) {
     // unum = unique(num);
     // maxclust = unum.n_elem;
-    maxclust = max(num);
+    maxclust = max(num)+1;
   }     
   
   imat idclust = imat(uniqueclust,maxclust); idclust.fill(NA_INTEGER);
