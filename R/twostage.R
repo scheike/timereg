@@ -20,7 +20,7 @@
 ##' fitco1<-two.stage(margph,data=diabetes,theta=1.0,detail=0,Nit=40,clusters=diabetes$id)
 ##' summary(fitco1)
 ##' ### Plackett model 
-##' fitp<-twostage(margph,data=diabetes,theta=1.0,detail=0,Nit=40,clusters=diabetes$id,var.link=1)
+##' fitp<-twostage(margph,data=diabetes,theta=0.0,Nit=40,clusters=diabetes$id,var.link=1)
 ##' summary(fitp)
 ##' ### Clayton-Oakes
 ##' fitco2<-twostage(margph,data=diabetes,theta=1.0,detail=0,Nit=40,clusters=diabetes$id,var.link=1,model="clayton.oakes")
@@ -169,8 +169,9 @@ if (!is.null(margsurv))
   if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen")  { ## {{{
          resi <- residualsTimereg(margsurv,data=data) 
          RR  <- resi$RR
-	 if (lefttrunk==1) ptrunc <- exp(-resi$cumhazleft); 
 	 psurvmarg <- exp(-resi$cumhaz); 
+         ptrunc <- rep(1,length(psurvmarg)); 
+	 if (lefttrunk==1) ptrunc <- exp(-resi$cumhazleft); 
   } ## }}}
   else if (class(margsurv)=="coxph") {  ## {{{
        notaylor <- 1
@@ -178,6 +179,7 @@ if (!is.null(margsurv))
        cumhaz <- status-residuals
        psurvmarg <- exp(-cumhaz); 
        cumhazleft <- rep(0,antpers)
+       ptrunc <- rep(1,length(psurvmarg)); 
        RR<- exp(margsurv$linear.predictors-sum(margsurv$means*coef(margsurv)))
         if ((lefttrunk==1)) { 
          baseout <- basehaz(margsurv,centered=FALSE); 
@@ -188,7 +190,11 @@ if (!is.null(margsurv))
   } ## }}}
 
 
-  if (!is.null(marginal.survival)) {
+  if (!is.null(marginal.survival) ) {
+      if (!is.null(margsurv)) {  
+	  cat("must give either margsurv model or marginal.survival=probabilities,\n"); 
+          cat(" uses marginal.survival\n"); 
+      }
 	if (lefttrunk==1)  cat("Warnings specify only your own survival weights for right-censored data\n"); 
 ###        if (length(marginal.survival)!=length(start.time)) stop(paste("marginal.survival must have length=",antpers,"\n"));  
         psurvmarg <- marginal.survival
@@ -196,7 +202,7 @@ if (!is.null(margsurv))
         RR <-  rep(1,antpers); 
 	if (!is.null(marginal.trunc)) ptrunc <- marginal.trunc else ptrunc <- rep(1,antpers);
 	if (!is.null(marginal.status)) status <- marginal.status else stop("must give censoring status\n"); 
-  }
+  } 
 
   if (is.null(weights)==TRUE) weights <- rep(1,antpers); 
   if (is.null(strata)==TRUE) strata<- rep(1,antpers); 
@@ -322,7 +328,6 @@ if (!is.null(margsurv))
     oout <- 0; 
     tryCatch(opt <- nlminb(theta,loglike,control=control),error=function(x) NA)
     if (detail==1) print(opt); 
-
     if (detail==1 && iid==1) cat("iid decomposition\n"); 
     oout <- 2
     theta <- opt$par
@@ -333,7 +338,7 @@ if (!is.null(margsurv))
     if (iid==1) theta.iid <- out$theta.iid
     if (numDeriv==1) {
     if (detail==1 ) cat("numDeriv hessian start\n"); 
-      oout <- 3; 
+      oout <- 3; ## returns score 
       hess <- jacobian(loglike,opt$par)
     if (detail==1 ) cat("numDeriv hessian done\n"); 
     }
@@ -802,20 +807,21 @@ coefmat <- function(est,stderr,digits=3,...) { ## {{{
 ##' c(pp,pc,cc)
 ##' } 
 ##' 
-##' #out3 <- easy.twostage(Surv(t,c)~factor(num),
-##' #      data=dfam,id="id",status="status",time="time",
-##' #      score.method="fisher.scoring",theta.formula=desfs,
-##' #      desnames=c("parent-parent","parent-child","child-cild"))
+##' marg <- coxph(Surv(time,status)~factor(num),data=dfam)
+##' out3 <- easy.twostage(marg,data=dfam,time="time",status="status",id="id",deshelp=0,
+##'                       score.method="fisher.scoring",theta.formula=desfs,
+##'                       desnames=c("parent-parent","parent-child","child-cild"))
+##' 
 ##' #summary(out3)
 ##' @keywords survival twostage 
 ##' @export
 ##' @param margsurv model 
 ##' @param data data frame
-##' @param id name of cluster variable in data frame
 ##' @param score.method Scoring method
 ##' @param status Status at exit time
 ##' @param time Exit time
 ##' @param entry Entry time
+##' @param id name of cluster variable in data frame
 ##' @param Nit Number of iterations
 ##' @param detail Detail for more output for iterations 
 ##' @param silent Debug information
@@ -825,10 +831,10 @@ coefmat <- function(est,stderr,digits=3,...) { ## {{{
 ##' @param theta.formula design for depedence, either formula or design function
 ##' @param desnames names for dependence parameters
 ##' @param deshelp if 1 then prints out some data sets that are used, on on which the design function operates
-##' @param var.link Link function for variance 
+##' @param var.link Link function for variance (exp link)
 ##' @param iid Calculate i.i.d. decomposition
-##' @param step Step size
-##' @param model model
+##' @param step Step size for newton-raphson
+##' @param model plackett or clayton-oakes model
 ##' @param marginal.surv vector of marginal survival probabilities 
 ##' @param strata strata for fitting 
 ##' @param max.clust max clusters
@@ -838,12 +844,6 @@ status="status",time="time",entry=NULL,id="id", Nit=60,detail=0, silent=1,weight
 theta=NULL,theta.formula=NULL,desnames=NULL,deshelp=0,var.link=1,iid=1,
 step=0.5,model="plackett",marginal.surv=NULL,strata=NULL,max.clust=NULL,se.clusters=NULL)
 { ## {{{
-###data=dfam; theta.formula=desfs; desnames=c("pp","pc","cc")
-###time="t";id="id"; data=dfam; deshelp=1
-###margsurv=marg
-###dim(data)
-###length(ps)
-
 ### marginal trunction probabilty, to be computed from model 
 pentry <- NULL
 

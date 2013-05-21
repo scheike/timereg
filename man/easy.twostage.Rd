@@ -19,15 +19,15 @@ Useful in particular for family design data.}
 
   \item{data}{data frame}
 
-  \item{id}{name of cluster variable in data frame}
-
   \item{score.method}{Scoring method}
 
   \item{status}{Status at exit time}
 
   \item{time}{Exit time}
 
-  \item{time}{Entry time}
+  \item{entry}{Entry time}
+
+  \item{id}{name of cluster variable in data frame}
 
   \item{Nit}{Number of iterations}
 
@@ -50,13 +50,13 @@ Useful in particular for family design data.}
   \item{deshelp}{if 1 then prints out some data sets that
   are used, on on which the design function operates}
 
-  \item{var.link}{Link function for variance}
+  \item{var.link}{Link function for variance (exp link)}
 
   \item{iid}{Calculate i.i.d. decomposition}
 
-  \item{step}{Step size}
+  \item{step}{Step size for newton-raphson}
 
-  \item{model}{model}
+  \item{model}{plackett or clayton-oakes model}
 
   \item{marginal.surv}{vector of marginal survival
   probabilities}
@@ -99,10 +99,11 @@ cc <- (x[num1]=="b1")*(x[num2]=="b1" | x[num2]=="b2")*1               ## child-c
 c(pp,pc,cc)
 }
 
-#out3 <- easy.twostage(Surv(t,c)~factor(num),
-#      data=dfam,id="id",status="status",time="time",
-#      score.method="fisher.scoring",theta.formula=desfs,
-#      desnames=c("parent-parent","parent-child","child-cild"))
+marg <- coxph(Surv(time,status)~factor(num),data=dfam)
+out3 <- easy.twostage(marg,data=dfam,time="time",status="status",id="id",deshelp=1,
+                      score.method="fisher.scoring",theta.formula=desfs,
+                      desnames=c("parent-parent","parent-child","child-cild"))
+
 #summary(out3)
 }
 \keyword{survival}

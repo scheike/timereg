@@ -83,7 +83,7 @@ margph <- coxph(Surv(time,status)~treat,data=diabetes)
 fitco1<-two.stage(margph,data=diabetes,theta=1.0,detail=0,Nit=40,clusters=diabetes$id)
 summary(fitco1)
 ### Plackett model
-fitp<-twostage(margph,data=diabetes,theta=1.0,detail=0,Nit=40,clusters=diabetes$id,var.link=1)
+fitp<-twostage(margph,data=diabetes,theta=0.0,Nit=40,clusters=diabetes$id,var.link=1)
 summary(fitp)
 ### Clayton-Oakes
 fitco2<-twostage(margph,data=diabetes,theta=1.0,detail=0,Nit=40,clusters=diabetes$id,var.link=1,model="clayton.oakes")
