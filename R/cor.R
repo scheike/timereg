@@ -473,8 +473,9 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' table(prt$status)
 ##' 
 ##' times <- seq(40,100,by=10)
-##' cifmod <- comp.risk(Surv(time,status>0)~+1+cluster(id),data=prt,prt$status,causeS=1,n.sim=0,
-##'                   times=times,conservative=1,max.clust=NULL,model="fg")
+##' cifmod <- comp.risk(Surv(time,status>0)~+1+cluster(id),data=prt,
+##'                     prt$status,causeS=1,n.sim=0,
+##'                     times=times,conservative=1,max.clust=NULL,model="fg")
 ##' theta.des <- model.matrix(~-1+factor(zyg),data=prt)
 ##' 
 ##' parfunc <- function(par,t,pardes)
@@ -493,12 +494,16 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' head(dparfunc(c(0.1,1,0.1,1),50,theta.des))
 ##' 
 ##' names(prt)
-##' or1 <- or.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,theta=c(0.6,1.1,0.1,0.1),
-##'   par.func=parfunc,dpar.func=dparfunc,dimpar=4,score.method="fisher.scoring",detail=1)
+##' or1 <- or.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,
+##'               same.cens=TRUE,theta=c(0.6,1.1,0.1,0.1),
+##'               par.func=parfunc,dpar.func=dparfunc,dimpar=4,
+##'               score.method="fisher.scoring",detail=1)
 ##' summary(or1)
 ##' 
-##'  cor1 <- cor.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,theta=c(0.5,1.0,0.1,0.1),
-##'        par.func=parfunc,dpar.func=dparfunc,dimpar=4,control=list(trace=TRUE),detail=1)
+##'  cor1 <- cor.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,
+##'                  same.cens=TRUE,theta=c(0.5,1.0,0.1,0.1),
+##'                  par.func=parfunc,dpar.func=dparfunc,dimpar=4,
+##'                  control=list(trace=TRUE),detail=1)
 ##' summary(cor1)
 ##' ##'
 ##' ### piecewise contant OR model
@@ -506,7 +511,8 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' {
 ##' 	cuts <- c(0,80,90,120)
 ##' 	grop <- diff(t<cuts)
-##' paru  <- (pardes[,1]==1) * sum(grop*par[1:3])+ (pardes[,2]==1) * sum(grop*par[4:6])
+##' paru  <- (pardes[,1]==1) * sum(grop*par[1:3]) +
+##'     (pardes[,2]==1) * sum(grop*par[4:6])
 ##' paru
 ##' }
 ##' 
@@ -523,8 +529,10 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' head(dgparfunc(rep(0.1,6),50,theta.des))
 ##' head(gparfunc(rep(0.1,6),50,theta.des))
 ##' 
-##' or1g <- or.cif(cifmod,data=prt,cause1=1,cause2=1,theta.des=theta.des,same.cens=TRUE,
-##'        par.func=gparfunc,dpar.func=dgparfunc,dimpar=6,score.method="fisher.scoring",detail=1)
+##' or1g <- or.cif(cifmod,data=prt,cause1=1,cause2=1,
+##'                theta.des=theta.des, same.cens=TRUE,
+##'                par.func=gparfunc,dpar.func=dgparfunc,
+##'                dimpar=6,score.method="fisher.scoring",detail=1)
 ##' summary(or1g)
 ##' names(or1g)
 ##' head(or1g$theta.iid)
@@ -632,7 +640,8 @@ or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 ##' data(multcif)
 ##' 
 ##' times <- seq(0.3,1,length=4)
-##' add<-comp.risk(Surv(time,cause>0)~+1+cluster(id),data=multcif,multcif$cause,n.sim=0,causeS=1, times=times,max.clust=NULL)
+##' add<-comp.risk(Surv(time,cause>0)~+1+cluster(id),data=multcif,multcif$cause,
+##'                n.sim=0,causeS=1, times=times,max.clust=NULL)
 ##' 
 ##' out1<-random.cif(add,data=multcif,cause1=1,cause2=1)
 ##' summary(out1)
@@ -657,7 +666,8 @@ or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 ##' ## out1<-random.cif(add1,data=multcif,cause1=1,cause2=2,cif2=add2)
 ##' ## summary(out1) ## negative dependence
 ##' 
-##' ## out1g<-random.cif(add1,data=multcif,cause1=1,cause2=2,cif2=add2,theta.des=theta.des)
+##' ## out1g<-random.cif(add1,data=multcif,cause1=1,cause2=2,
+##' ##                   cif2=add2,theta.des=theta.des)
 ##' ## summary(out1g)
 ##' @keywords survival
 ##' @author Thomas Scheike

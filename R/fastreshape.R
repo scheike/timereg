@@ -9,7 +9,8 @@
 ##' @param idname Name of id-variable (Wide->Long)
 ##' @param numname Name of number-variable (Wide->Long)
 ##' @param factors.keep If false all factors are converted to integers
-##' @param idcombine If TRUE and \code{id} is vector of several variables, the unique id is combined from all the variables. Otherwise the first variable is only used as identifier.
+##' @param idcombine If TRUE and \code{id} is vector of several variables, the unique id is combined from all the variables.
+##' Otherwise the first variable is only used as identifier.
 ##' @param labelnum If TRUE varying variables in wide format are labeled 1,2,3,... otherwise use 'num' variable.
 ##' @param ... Optional additional arguments
 ##' @author Thomas Scheike, Klaus K. Holst
@@ -21,7 +22,8 @@
 ##' 
 ##' ##### From wide-format
 ##' (dd <- fast.reshape(d,var="y"))
-##' ## Same with explicit setting new id and number variable/column names and seperator "" (default) and dropping x
+##' ## Same with explicit setting new id and number variable/column names
+##' ## and seperator "" (default) and dropping x
 ##' fast.reshape(d,var="y",idname="a",timevar="b",sep="",keep=c())
 ##' ## Same with 'reshape' list-syntax
 ##' fast.reshape(d,var=list(c("y1","y2","y3","y4")))
@@ -40,8 +42,9 @@
 ##' (xw2 <- fast.reshape(xl,id="id",num="num"))
 ##' fast.reshape(xw2,varying=c("y","x"),idname="id")
 ##' 
-##' # more generally: varying=list(c("ym","yf","yb1","yb2"), c("zm","zf","zb1","zb2"))
-##' #varying=list(c("ym","yf","yb1","yb2")))
+##' ### more generally:
+##' ### varying=list(c("ym","yf","yb1","yb2"), c("zm","zf","zb1","zb2"))
+##' ### varying=list(c("ym","yf","yb1","yb2")))
 ##' 
 ##' ##### Family cluster example
 ##' d <- mets:::simBinFam(3)
@@ -56,7 +59,6 @@
 ##' head(prtw <- fast.reshape(prt,"id",var="cancer"))
 ##' ftable(cancer1~cancer2,data=prtw)
 ##' rm(prtw)
-##' 
 fast.reshape <- function(data,id,varying,num,sep="",keep,
                          idname="id",numname="num",factors.keep=TRUE,
                          idcombine=FALSE,labelnum=TRUE,...) {

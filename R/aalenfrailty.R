@@ -18,7 +18,7 @@
 ##' K <- 2
 ##' Z <- rep(rgamma(n/K,1/theta,1/theta),each=K)
 ##' id <- rep(seq(n/K),each=K)
-##' beta0 <- 1.5; beta <- 0##-0.5 #-.15 
+##' beta0 <- 1.5; beta <- 0##-0.5 #-.15
 ##' Ai <- function(u) (u/Z)/(beta0+beta*x)
 ##' x <- rbinom(n,1,0.5)
 ##' uu <- -log(runif(n)) ##rexp(n,1)
@@ -31,12 +31,15 @@
 ##' X <- model.matrix(f,dd) ## design matrix for non-parametric terms
 ##' system.time(out<-aalen(update(f,Surv(time,status)~.),dd,n.sim=0,robust=0))
 ##' dix <- which(dd$status==1)
-##' t1 <- system.time(bb <- .Call("Bhat",as.integer(dd$status),X,theta,as.integer(dd$id),NULL,NULL,-1,package="mets"))
+##' t1 <- system.time(bb <- .Call("Bhat",as.integer(dd$status),
+##'                               X,theta,as.integer(dd$id),NULL,NULL,-1,
+##'                               package="mets"))
 ##' spec <- 1
 ##' ##plot(out,spec=spec)
-##' plot(dd$time[dix],bb$B2[,spec],col="red",type="s",ylim=c(0,max(dd$time)*c(beta0,beta)[spec]))
+##' plot(dd$time[dix],bb$B2[,spec],col="red",type="s",
+##'      ylim=c(0,max(dd$time)*c(beta0,beta)[spec]))
 ##' abline(a=0,b=c(beta0,beta)[spec])
-##'
+##' ##'
 ##' 
 ##' \dontrun{thetas <- seq(0.1,2,length.out=10)
 ##' Us <- unlist(aalenfrailty(dd$time,dd$status,X,dd$id,as.list(thetas)))
