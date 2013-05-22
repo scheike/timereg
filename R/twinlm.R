@@ -152,7 +152,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
   ## To wide format:
   num <- NULL; if (twinnum%in%colnames(data)) num <- twinnum
   data <- cbind(data[,c(yvar,keep,num,zyg,id)],mm)
-  ddd <- fast.reshape(data,id=id,varying=c(yvar,keep,covars),keep=zyg,num=num,sep=".")
+  ddd <- fast.reshape(data,id=id,varying=c(yvar,keep,covars),keep=zyg,num=num,sep=".",labelnum=TRUE)
 
   if (missing(DZ)) {
     warning("Using first level, `",zyglev[1],"', in status variable as indicator for 'dizygotic'", sep="")

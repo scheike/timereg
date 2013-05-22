@@ -61,7 +61,7 @@
 ##' rm(prtw)
 fast.reshape <- function(data,id,varying,num,sep="",keep,
                          idname="id",numname="num",factors.keep=TRUE,
-                         idcombine=FALSE,labelnum=TRUE,...) {
+                         idcombine=FALSE,labelnum=FALSE,...) {
   if (!is.data.frame(data) & is.list(data)) {
     data <- as.data.frame(data)
   } else {

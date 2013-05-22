@@ -91,7 +91,7 @@ biprobit <- function(formula, data, id, num=NULL, strata=NULL, eqmarg=TRUE,
   plen <- ifelse(eqmarg,nx+1,2*nx+1)
 
   ## Wide <- reshape(as.data.frame(Data),idvar=id,timevar=time,direction="wide")
-  Wide <- fast.reshape(as.data.frame(Data),id=id,num=num,sep=".")
+  Wide <- fast.reshape(as.data.frame(Data),id=id,num=num,sep=".",labelnum=TRUE)
   W0 <- NULL
   yidx <- paste(yvar,1:2,sep=".")
   rmidx <- c(id,yidx)

@@ -23,6 +23,14 @@ NULL
 ##' @keywords data
 NULL
 
+##' Migraine data
+##'
+##' @name migr
+##' @docType data
+##' @keywords data
+NULL
+
+
 ##' Menarche data set (sim)
 ##'
 ##' @name mena

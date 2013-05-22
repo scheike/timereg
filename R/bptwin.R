@@ -241,7 +241,7 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
 
   ## system.time(Wide <- reshape(as.data.frame(Data),idvar=c(id,zyg),timevar=time,direction="wide"))
   ##  system.time(Wide <- as.data.frame(fast.reshape(Data,id=c(id),sep=".")))
-  Wide <- as.data.frame(fast.reshape(Data,id=c(id,zyg),sep=".",idcombine=FALSE))
+  Wide <- as.data.frame(fast.reshape(Data,id=c(id,zyg),sep=".",idcombine=FALSE,labelnum=TRUE))
   yidx <- paste(yvar,1:2,sep=".")
   rmidx <- c(id,yidx,zyg)
     

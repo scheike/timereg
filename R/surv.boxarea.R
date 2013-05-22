@@ -31,7 +31,7 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
     print(c(id,num))
     print(summary(data))
   }
-  ww0 <- fast.reshape(data[,c(timevar,status,covars,covars.pairs,id,num)],id=id,num=num)
+  ww0 <- fast.reshape(data[,c(timevar,status,covars,covars.pairs,id,num)],id=id,num=num,labelnum=TRUE)
   if (silent<=-1) {
     message("survboxarea(), ww1")
     print(head(ww0))
