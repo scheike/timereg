@@ -163,7 +163,8 @@ par(mfrow=c(2,2))
 plot(out,multiple=0,uniform=1,col=1:3,lty=1,se=1)
 
 add<-comp.risk(Surv(time,cause>0)~platelet+age+tcell,data=bmt,
-bmt$cause,causeS=1,resample.iid=0,n.sim=0,cens.model="cox",cens.formula=~factor(platelet),model="additive")
+	       bmt$cause,causeS=1,resample.iid=0,n.sim=0,cens.model="cox",
+	       cens.formula=~factor(platelet),model="additive")
 
 out<-predict(add,ndata,se=0,uniform=0)
 par(mfrow=c(2,2))
@@ -205,29 +206,5 @@ plot(out,multiple=1,uniform=0,col=1:3,lty=1,se=0)
 fg2<-comp.risk(Surv(time,cause>0)~ const(platelet)+const(age)+const(tcell),data=bmt,
 bmt$cause,causeS=1,resample.iid=1,model="prop",n.sim=100)
 summary(fg2)
-
-## Left truncated cumulative incidence estimation 
-## truncation weights  computed first, by Cox model
-###tt <- runif(408)*bmt$time*rbinom(408,1,0.5)*0.5
-###fgt<- cox.aalen(Surv(tt,time,cause>0)~prop(platelet)+prop(age)+prop(tcell),data=bmt,n.sim=0,robust=0)
-###cumt <- Cpred(fgt$cum,tt)[,2]  
-###psurv <- exp(-cumt); 
-###
-###fgt<-comp.risk(Surv(time,cause>0)~ const(platelet)+const(age)+const(tcell),data=bmt,
-###bmt$cause,causeS=1,model="fg",n.sim=0,trunc.p=psurv,entry.time=tt)
-###summary(fgt)
-###pfgt <- predict(fgt,X=1,Z=c(0,0,0))
-###pfgt <- predict(fgt,X=1)
-###plot(pfgt)
-###
-##### Left truncated cumulative incidence estimation 
-##### without covariates but using dummy covariate, equivalent with Aalen-Johansen estimator
-###fgt<- aalen(Surv(tt,time,cause>0)~+1,data=bmt,n.sim=0,robust=0)
-###cumt <- Cpred(fgt$cum,tt)[,2]
-###psurv <- exp(-cumt); 
-###
-###pcif<-comp.risk(Surv(time,cause>0)~const(platelet),data=bmt,
-###bmt$cause,fix.gamma=1,causeS=1,model="fg",n.sim=0,trunc.p=psurv,entry.time=tt)
-###pout <- predict(pcif,X=1)
 }
 \keyword{survival}

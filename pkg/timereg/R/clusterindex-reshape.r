@@ -19,8 +19,8 @@ if (index.type==FALSE)  {
 if ((!is.null(num))) { ### different types in different columns
    mednum <- 1
 if (is.numeric(num)) numnum <-  timereg:::sindex.prodlim(unique(num),num)-1
-else
-   numnum <- as.integer(factor(num, labels = 1:maxclust)) -1
+else numnum <- as.integer(factor(num, labels = 1:maxclust)) -1
+maxclust <- max(numnum)+1; 
 } else { numnum <- 0; mednum <- 0; }
 
 init <- -1*Rindex
@@ -29,6 +29,7 @@ clustud <- .C("clusterindex",
 	      as.integer(antpers), as.integer(rep(init,antclust*maxclust)),
 	      as.integer(rep(0,antclust)), as.integer(mednum), 
 	      as.integer(numnum),as.integer(rep(0,antclust)), package="timereg")
+
 if (Rindex==1) idclust  <- matrix(clustud[[4]],antclust,maxclust)+1
 else idclust <- matrix(clustud[[4]],antclust,maxclust)
 if(Rindex==1) idclust[idclust==0] <- NA 

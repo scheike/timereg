@@ -155,7 +155,7 @@ summary(out)
 
 # Fits Cox-Aalen model 
 out<-cox.aalen(Surv(time,status==9)~prop(age)+prop(sex)+
-vf+chf+prop(diabetes),data=sTRACE,max.time=7,n.sim=100)
+               vf+chf+prop(diabetes),data=sTRACE,max.time=7,n.sim=100)
 summary(out)
 par(mfrow=c(2,3))
 plot(out)
