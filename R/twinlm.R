@@ -21,14 +21,15 @@
 ##' ## AIC
 ##' AIC(ae)-AIC(ace)
 ##' ## To adjust for the covariates we simply alter the formula statement
-##' ace2 <- twinlm(y ~ x11+x12, data=d, DZ="DZ", zyg="zyg", id="id", type="ace")
+##' ace2 <- twinlm(y ~ x1+x2, data=d, DZ="DZ", zyg="zyg", id="id", type="ace")
 ##' ## Summary/GOF
 ##' summary(ace2)
 ##' ## An interaction could be analyzed as:
-##' ace3 <- twinlm(y ~ x11+x12 + x11:I(x12<0), data=d, DZ="DZ", zyg="zyg", id="id", type="ace")
+##' ace3 <- twinlm(y ~ x1+x2 + x1:I(x2<0), data=d, DZ="DZ", zyg="zyg", id="id", type="ace")
+##' ace3
 ##' ## Categorical variables are also supported
-##' d2 <- transform(d,x12cat=cut(x12,3,labels=c("Low","Med","High")))
-##' ace4 <- twinlm(y ~ x11+x12cat, data=d2, DZ="DZ", zyg="zyg", id="id", type="ace")
+##' d2 <- transform(d,x2cat=cut(x2,3,labels=c("Low","Med","High")))
+##' ace4 <- twinlm(y ~ x1+x2cat, data=d2, DZ="DZ", zyg="zyg", id="id", type="ace")
 ##' ## plot the model structure
 ##' \dontrun{
 ##' plot(ace4)

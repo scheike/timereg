@@ -47,16 +47,25 @@ twinsim <- function(nMZ=100,nDZ=nMZ,b1=c(),b2=c(),mu=0,acde=c(1,1,0,1),randomslo
   d <- data.frame(id=seq(n),y=y,zyg=c(rep("MZ",nMZ),rep("DZ",nDZ)),
                   cens=Cens)
   vary <- list(c("y1","y2"))
+  vnames <- c("y")  
   colnames(d)[2:3] <- vary[[1]]
   if (length(b1)>0) {
     d <- cbind(d,x1=x1,x2=x2);
+    if (length(b1)==0) {
+        colnames(d)[1:2] <- c("x11","x21")
+    }
     vary <- c(vary,lapply(seq(length(b1)),FUN=function(x) paste(c("x1","x2"),x,sep="")))
+    vnames <- c(vnames,paste("x",seq_len(length(b1)),sep=""))
+  }  
+  if (length(b2)>0) {
+      d <- cbind(d,g=g)
   }
-  if (length(b2)>0) { d <- cbind(d,g=g) }
+  names(vary) <- vnames
   colnames(d) <- sub(".","",colnames(d),fixed=TRUE)
   if (wide) return(d)
-  dd <- fast.reshape(d,idvar="id",varying="y")
-
+  dd <- fast.reshape(d,idvar="id",varying=vary)
+  ##  fast.reshape(d,idvar="id",varying=vary)
+  
   dd$status <- dd$y<dd$cens
   dd$y0 <- (dd$y>threshold)
   dd$y1 <- (dd$y>threshold & dd$y<cens)*1
