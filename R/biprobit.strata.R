@@ -41,7 +41,8 @@ logLik.twinlm.strata <- function(object,indiv=FALSE,list=FALSE,...) {
       attributes(res)$nall <- attributes(res)$nall+attributes(ll[[i]])$nall
       attributes(res)$df <- attributes(res)$df+attributes(ll[[i]])$df
     }
-    attributes(res)$nobs <- attributes(res)$nall-attributes(res)$df
+    ##  attributes(res)$nobs <- attributes(res)$nall-attributes(res)$df
+    attributes(res)$nobs <- attributes(res)$nall
     class(res) <- "logLik"
     return(res)
   }

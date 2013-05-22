@@ -13,6 +13,14 @@ test_that("fast reshape I", {
 })
 
 
+test_that("fast reshape II", {
+    test <- data.frame(hour=c(12,13,14,11,12,14,15,16),id=c(1,1,1,2,2,3,3,3),y=round(rnorm(8),2))
+    widetest <- as.matrix(reshape(test,v.names="y",idvar="id",direction="wide",timevar="hour"))
+    wide <- fast.reshape(test,varying="y",id="id",num="hour",sep=".")
+    expect_equivalent(widetest,wide[,colnames(widetest)])
+})
+
+
 
 ## fast.reshape(fast.reshape(d,var=c("y","z","w")),id="id",var=c("y","z","w"))
 ## library(mets)
