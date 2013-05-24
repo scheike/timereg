@@ -38,25 +38,24 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
       structure(-ploglik,gradient=-gradient,hessian=-hessian)
     }
   } else {
-    system.time(dd <- .Call("FastCoxPrep",entry,exit,status,X,id,package="mets"))
-    if (!is.null(id))
-      id <- dd$id[dd$jumps+1]
-    obj <- function(pp,U=FALSE,all=FALSE) {
-      val <- with(dd,
-                  .Call("FastCoxPL",pp,X,XX,sign,jumps,package="mets"))
-      if (all) {
-        val$time <- dd$time[dd$ord+1]
-        val$ord <- dd$ord+1
-        val$jumps <- dd$jumps+1
-        val$jumptimes <- val$time[val$jumps]
-        val$nevent <- length(val$S0)
-        return(val)
-      }
+      dd <- .Call("FastCoxPrep",entry,exit,status,X,id,package="mets")
+      if (!is.null(id))
+          id <- dd$id[dd$jumps+1]
+      obj <- function(pp,U=FALSE,all=FALSE) {
+          val <- with(dd,
+                      .Call("FastCoxPL",pp,X,XX,sign,jumps,package="mets"))
+          if (all) {
+              val$time <- dd$time[dd$ord+1]
+              val$ord <- dd$ord+1
+              val$jumps <- dd$jumps+1
+              val$jumptimes <- val$time[val$jumps]
+              val$nevent <- length(val$S0)
+              return(val)
+          }
       with(val, structure(-ploglik,gradient=-gradient,hessian=-hessian))
-    }
+      }
   }
-  if (p>0) {
-      
+  if (p>0) {      
       if (tolower(method)=="nr") {
           opt <- lava:::NR(beta,obj,...)
           opt$estimate <- opt$par
@@ -65,7 +64,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
           opt$method <- "nlm"
       }
       cc <- opt$estimate;  names(cc) <- colnames(X)
-      if (!stderr) return(cc)    
+      if (!stderr) return(cc)
       val <- c(list(coef=cc),obj(opt$estimate,all=TRUE))
   } else {
       val <- obj(0,all=TRUE)
@@ -86,6 +85,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
 
 ###{{{ simcox
 
+##' @export
 simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
   if (!is.null(seed))
     set.seed(seed)
@@ -179,8 +179,10 @@ phreg <- function(formula,data,...) {
   if (!is.null(intpos  <- attributes(Terms)$intercept))
     X <- X[,-intpos,drop=FALSE]
   if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
+
   res <- c(phreg0(X,entry,exit,status,id,strata,...),list(call=cl))
   class(res) <- "phreg"
+  
   res
 }
 ###}}} phreg
