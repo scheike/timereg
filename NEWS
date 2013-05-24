@@ -1,3 +1,6 @@
+* Version 0.2.3 <2013-05-22>
+  - Bug-fix fast.reshape (column names)
+
 * Version 0.2.2 <2013-05-21>
   - Updated twinlm. bptwin: OS analysis 
      - Better starting values for twinlm
