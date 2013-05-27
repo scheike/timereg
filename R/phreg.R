@@ -144,7 +144,7 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' 
 ##' m <- phreg(Surv(entry,time,status)~X1*X2+strata(group)+cluster(id),data=d)
 ##' m
-##' plot(m,ylim=c(0,5))
+##' plot(m,ylim=c(0,1))
 phreg <- function(formula,data,...) {
   cl <- match.call()
   m <- match.call(expand.dots = TRUE)[1:3]

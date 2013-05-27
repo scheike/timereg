@@ -46,7 +46,7 @@ d <- mets:::simCox(n); d$id <- seq(nrow(d)); d$group <- factor(rbinom(nrow(d),1,
 
 m <- phreg(Surv(entry,time,status)~X1*X2+strata(group)+cluster(id),data=d)
 m
-plot(m,ylim=c(0,5))
+plot(m,ylim=c(0,1))
 }
 \author{
   Klaus K. Holst
