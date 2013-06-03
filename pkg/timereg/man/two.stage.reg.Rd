@@ -91,7 +91,7 @@ Springer (2006).}
 data(diabetes)
 # Marginal Cox model  with treat as covariate
 marg <- cox.aalen(Surv(time,status)~prop(treat)+cluster(id),data=diabetes,
-		  robust=0,n.sim=0,max.clust=NULL,resample.iid=1)
+		  max.clust=NULL,resample.iid=1)
 fit<-two.stage(marg,data=diabetes,theta=1.0,detail=0,Nit=40)
 summary(fit)
 
@@ -124,14 +124,14 @@ fita<-two.stage(marg,data=diabetes,theta=0.95,detail=0)
 summary(fita)
 
 # same model but se's without variation from marginal model to speed up computations
-marg <- aalen(Surv(time,status) ~+1+cluster(id),data=diabetes,robust=0,
+marg <- aalen(Surv(time,status) ~+1+cluster(id),data=diabetes,
 	      resample.iid=0,n.sim=0,max.clust=NULL)
 fit<-two.stage(marg,data=diabetes,theta=0.95,detail=0)
 summary(fit)
 
 # same model but se's now with fewer time-points for approx of iid decomp of marginal 
 # model to speed up computations
-marg <- cox.aalen(Surv(time,status) ~+prop(treat)+cluster(id),data=diabetes,robust=0,
+marg <- cox.aalen(Surv(time,status) ~+prop(treat)+cluster(id),data=diabetes,
 	      resample.iid=1,n.sim=0,max.clust=NULL,max.timepoint.sim=5,beta.fixed=1,beta=0)
 fit<-two.stage(marg,data=diabetes,theta=0.95,detail=0)
 summary(fit)
