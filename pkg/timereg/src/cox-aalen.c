@@ -541,15 +541,13 @@ malloc_mat(*pg,(*px)*(*Ntimes),ZXAIn);
     } /* i 1.. antpers */ // }}}
     }
 
-    if ((*ratesim==0)) { // {{{  compute resampling counting process version
+    if ((*ratesim==0) && (*robust==1)) { // {{{  compute resampling counting process LWY style version
        cin=cluster[pers]; 
        extract_row(WX,pers,rowX); 
        extract_row(Z,pers,zi); 
        extract_row(X,pers,xi); 
        hati=vec_prod(rowX,dA); 
-       if (*detail==2) Rprintf(" %d %d \n",cin,pers); 
-//      print_mat(SI); 
-//      print_vec(difzzav); 
+//       if (*detail==2) Rprintf(" %d %d \n",cin,pers); 
 
       Mv(ZXAI,xi,tmpv2);  
       vec_subtr(zi,tmpv2,tmpv2); 
@@ -568,7 +566,8 @@ malloc_mat(*pg,(*px)*(*Ntimes),ZXAIn);
 
       llo=llo+hati;
 
-//      // score process i.i.d LWY style 
+//   score process i.i.d LWY style, later !
+//      // {{{ 
 //
 //      Mv(SI,tmpv2,zi); 
 //      Mv(St[s],zi,rowZ); 
@@ -595,7 +594,8 @@ malloc_mat(*pg,(*px)*(*Ntimes),ZXAIn);
 //             l=j*(*px)+c; 
 //	     biid[l*(*maxtimepoint)+s]=biid[l*(*maxtimepoint)+s]+VE(difX,c);
 //	  } 
-//      }
+//      } // }}} 
+
     }  // }}} 
 
     if (*robust==1 && *ratesim==1) 
