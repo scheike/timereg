@@ -343,7 +343,6 @@ bptwin <- function(formula, data, id, zyg, DZ, OS=NULL,
   
 ###{{{ U  
 
-
   p0 <- rep(-1,plen); ##p0[vidx] <- 0
   if (OSon) p0[length(p0)] <- 0.3
   if (type=="u")

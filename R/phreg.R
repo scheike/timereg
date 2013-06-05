@@ -55,6 +55,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
       with(val, structure(-ploglik,gradient=-gradient,hessian=-hessian))
       }
   }
+  opt <- NULL
   if (p>0) {      
       if (tolower(method)=="nr") {
           opt <- lava:::NR(beta,obj,...)
