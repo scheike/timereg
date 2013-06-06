@@ -56,6 +56,12 @@
 \alias{summary.pe.sasieni}
 \alias{summary.predict.timereg}
 \alias{sindex.prodlim}
+\alias{coef.dynreg}
+\alias{coef.timecox}
+\alias{dynregBase}
+\alias{prop.excessBase}
+\alias{semicox}
+\alias{timecoxBase}
 \alias{wald.test}
 \title{For internal use}
 \description{for internal use}
