@@ -74,7 +74,7 @@ Springer Verlag (2006).
 }
 \author{Torben Martinussen}
 \examples{
-library(survival)
+\donttest{
 data(melanoma)
 lt<-log(melanoma$thick)          # log-thickness 
 excess<-(melanoma$thick>=210)    # excess risk for thick tumors
@@ -85,5 +85,6 @@ fit<-prop.excess(Surv(days/365,status==1)~sex+ulc+cox(sex)+
 summary(fit)
 par(mfrow=c(2,3))
 plot(fit)
+}
 }
 \keyword{survival}
