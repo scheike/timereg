@@ -1,16 +1,16 @@
 PKG_LIBS = ${LAPACK_LIBS} ${BLAS_LIBS} ${FLIBS}
 
 ## for C code
-CFLAGS=-g -O3 -Wall -pipe -pedantic -std=gnu99
-#CFLAGS=-O3 -g0 -Wall -pipe -std=gnu99
-## for C++ code
-CXXFLAGS= -g -O3 -Wall -pipe -pedantic -Wno-variadic-macros
-#CXXFLAGS= -g0 -O3 -Wall -pipe -Wno-variadic-macros
-#CXXFLAGS= -O3 -g0 -Wall -pipe 
-## for Fortran code
-#FFLAGS=-g -O3 -Wall -pipe
-FFLAGS=-O3 -g0 -Wall -pipe
-## for Fortran 95 code
-#FCFLAGS=-g -O3 -Wall -pipe
-FCFLAGS=-O3 -g0 -Wall -pipe
+###CFLAGS=-g -O3 -Wall -pipe -pedantic -std=gnu99
+####CFLAGS=-O3 -g0 -Wall -pipe -std=gnu99
+##### for C++ code
+###CXXFLAGS= -g -O3 -Wall -pipe -pedantic -Wno-variadic-macros
+####CXXFLAGS= -g0 -O3 -Wall -pipe -Wno-variadic-macros
+####CXXFLAGS= -O3 -g0 -Wall -pipe 
+##### for Fortran code
+####FFLAGS=-g -O3 -Wall -pipe
+###FFLAGS=-O3 -g0 -Wall -pipe
+##### for Fortran 95 code
+####FCFLAGS=-g -O3 -Wall -pipe
+###FCFLAGS=-O3 -g0 -Wall -pipe
 
