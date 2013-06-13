@@ -10,7 +10,7 @@ max.timepoint.sim=100)
 offsets=0; 
 ## {{{ set up variables 
   if (n.sim == 0) sim <- 0 else sim <- 1
-  if (resample.iid==1 & robust==0) {stop("robust must be one for this \n");}
+  if (resample.iid==1 & robust==0) {robust <- 1;}
   if (covariance==1 & robust==0) {covariance<-0;cat("Covariance of baseline only for robust=1\n"); }
   if (robust==0 ) { n.sim <- 0; sim<-0;}
   if (n.sim>0 & n.sim<50) {n.sim<-50 ; cat("Minimum 50 simulations\n");}
