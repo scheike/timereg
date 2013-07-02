@@ -24,13 +24,14 @@ simClaytonOakes <- function(K,n,eta,beta,stoptime,left=0,pairleft=0) {
 
 if (left>0) {
      if (pairleft==1) {
-     lefttime <- rexp(K)*left
+     lefttime <- runif(K)*(stoptime-left)
      left <- rbinom(K,1,0.5) ## not trunation times!
      lefttime <- apply(cbind(lefttime*left,3),1,min)
        trunk <- (lefttime > minstime)
        medleft <- rep(trunk,each=n)
      } else {
-       lefttime <- rexp(n*K)*left
+###       lefttime <- rexp(n*K)*left
+       lefttime <- runif(K)*(stoptime-left)
        left <- rbinom(n*K,1,0.5) ## not trunation times!
        lefttime <- apply(cbind(lefttime*left,3),1,min)
        trunk <- (lefttime > ud[,1])
