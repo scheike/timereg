@@ -240,9 +240,9 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 
 	if (depmodel==1) { // clayton-oakes  // {{{
 
-           if (trunkp(i)<1) {	
+           if (trunkp(i)<1 || trunkp(j)<1) {	
 		   Lit=trunkp(i); Lkt=trunkp(k); 
-		   llt=claytonoakes(deppar,0,0,Lit,Lkt,dplack);
+		   llt=claytonoakes(deppar,0,0,Lit,Lkt,dplackt);
 		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
 		   ssf+=weights(i)*(log(ll)-log(llt));
 	           diff=dplack(0)/ll-dplackt(0)/llt; 
@@ -258,7 +258,7 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 	   sdj=pow(diff,2); 
 	   // }}}
 	} else if (depmodel==2) { // plackett model  // {{{
-        if (trunkp(i)<1) {	
+        if (trunkp(i)<1 || trunkp(j)<1) {	
            Lit=trunkp(i); Lkt=trunkp(k); 
            llt=placklike(deppar,0,0,Lit,Lkt,dplackt);
            ll=placklike(deppar,ci,ck,Li,Lk,dplack);
