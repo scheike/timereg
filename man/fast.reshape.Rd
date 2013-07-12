@@ -36,7 +36,10 @@ Simple reshape/tranpose of data}
   identifier.}
 
   \item{labelnum}{If TRUE varying variables in wide format
-  are labeled 1,2,3,... otherwise use 'num' variable.}
+  (going from long->wide) are labeled 1,2,3,... otherwise
+  use 'num' variable. In long-format (going from
+  wide->long) varying variables matching 'varying' prefix
+  are only selected if their postfix is a number.}
 
   \item{...}{Optional additional arguments}
 }
@@ -81,6 +84,15 @@ dd <- fast.reshape(d,var="y")
 dd
 dd2 <- fast.reshape(d,varying=list(c("ym","yf","yb1","yb2")))
 dd2
+##'
+##'
+
+d <- sim(lvm(~y1+y2+ya),10)
+(dd <- fast.reshape(d,varying="y"))
+fast.reshape(d,varying="y",labelnum=TRUE)
+fast.reshape(dd,id="id",num="num")
+fast.reshape(dd,id="id",num="num",labelnum=TRUE)
+fast.reshape(d,vary=c(a="y"),labelnum=TRUE) ## New column name
 
 ##### Prostate cancer example
 data(prt)

@@ -1,5 +1,10 @@
+* Version 0.2.4 <2013-07-10>
+ - fast.reshape :labelnum option for both wide and long format (see
+   example)
+ - Compilation flags removed from Makevars files
+
 * Version 0.2.3 <2013-05-22>
-  - Bug-fix fast.reshape (column names)
+  - fast.reshape bug-fix (column names)
 
 * Version 0.2.2 <2013-05-21>
   - Updated twinlm. bptwin: OS analysis 

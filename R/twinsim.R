@@ -51,15 +51,15 @@ twinsim <- function(nMZ=100,nDZ=nMZ,b1=c(),b2=c(),mu=0,acde=c(1,1,0,1),randomslo
   colnames(d)[2:3] <- vary[[1]]
   if (length(b1)>0) {
     d <- cbind(d,x1=x1,x2=x2);
-    if (length(b1)==0) {
-        colnames(d)[1:2] <- c("x11","x21")
+    if (length(b1)==1) {
+        colnames(d)[1:2+ncol(d)-2] <- c("x11","x21")
     }
     vary <- c(vary,lapply(seq(length(b1)),FUN=function(x) paste(c("x1","x2"),x,sep="")))
     vnames <- c(vnames,paste("x",seq_len(length(b1)),sep=""))
   }  
   if (length(b2)>0) {
       d <- cbind(d,g=g)
-  }
+  }  
   names(vary) <- vnames
   colnames(d) <- sub(".","",colnames(d),fixed=TRUE)
   if (wide) return(d)

@@ -91,11 +91,11 @@ summary.twinlm <- function(object,...) {
   idx <- seq(nrow(myest)); 
   rownames(myest)[idx] <- r1
 
-
-  myest.varpos <- unlist(sapply(c("<-a1","<-c1","<-d1","<-e1"),function(x) grep(x,rownames(myest))))
-  
-  lambda.idx <- sapply(c("<-a1","<-c1","<-d1","<-e1"),function(x) grep(x,names(coef(e))))
-  lambda.idx2 <- sapply(c("<-a2","<-c2","<-d2","<-e2"),function(x) grep(x,names(coef(e))))
+  coefpost <- paste(lava.options()$symbol[1],c("a1","c1","d1","e1"),sep="")
+  coefpost2 <- paste(lava.options()$symbol[1],c("a2","c2","d2","e2"),sep="")
+  myest.varpos <- unlist(sapply(coefpost,function(x) grep(x,rownames(myest))))  
+  lambda.idx <- sapply(coefpost,function(x) grep(x,names(coef(e))))
+  lambda.idx2 <- sapply(coefpost2,function(x) grep(x,names(coef(e))))
   for (k in seq_len(length(lambda.idx)))
     if (length(lambda.idx[[k]])==0) lambda.idx[[k]] <- lambda.idx2[[k]] 
 

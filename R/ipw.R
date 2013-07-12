@@ -8,11 +8,27 @@
 ##' @param samecens For clustered data, should same censoring be assumed (bivariate probability calculated as mininum of the marginal probabilities)
 ##' @param obsonly Return data with uncensored observations only
 ##' @param weightname Name of weight variable in the new data.frame
+##' @param cens.model Censoring model (default Aalens additive model)
 ##' @param pairs For paired data (e.g. twins) only the complete pairs are returned (With pairs=TRUE)
+##' @param ... Additional arguments to censoring model 
 ##' @author Klaus K. Holst
+##' @examples
+##' data(prt)
+##' prtw <- ipw(Surv(time,status==0)~country, data=prt[sample(nrow(prt),5000),],
+##'             cluster="id",weightname="w")
+##' plot(0,type="n",xlim=range(prtw$time),ylim=c(0,1),xlab="Age",ylab="Probability")
+##' count <- 0
+##' for (l in unique(prtw$country)) {
+##'     count <- count+1
+##'     prtw <- prtw[order(prtw$time),]
+##'     with(subset(prtw,country==l),
+##'          lines(time,w,col=count,lwd=2))
+##' }
+##' legend("topright",legend=unique(prtw$country),col=1:4,pch=-1,lty=1)
 ##' @export
-ipw <- function(formula,data,cluster,samecens=FALSE,obsonly=TRUE,weightname="w",
-                pairs=FALSE) {
+ipw <- function(formula,data,cluster,
+                samecens=FALSE, obsonly=TRUE,weightname="w",
+                cens.model="aalen", pairs=FALSE, ...) {
 
   timevar <- as.character(terms(formula)[[2]][[2]])
   otimes <- data[,timevar]
@@ -39,7 +55,8 @@ ipw <- function(formula,data,cluster,samecens=FALSE,obsonly=TRUE,weightname="w",
   ## }
   
   XZ <- model.matrix(formula,data)
-  ud.cens<- aalen(formula,n.sim=0,robust=0,data=data);
+  cens.args <- c(list(formula,n.sim=0,robust=0,data=data),list(...))
+  ud.cens <- do.call(cens.model,cens.args)
   Gcx<-Cpred(ud.cens$cum,otimes)[,-1];
   Gcx<-exp(-apply(Gcx*XZ,1,sum))
   Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0

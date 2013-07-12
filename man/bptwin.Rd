@@ -4,13 +4,14 @@
 \alias{cumh}
 \title{Liability model for twin data}
 \usage{
-  bptwin(formula, data, id, zyg, DZ, OS = NULL, num = NULL,
-    weight = NULL, biweight = function(x) 1/min(x),
-    strata = NULL, messages = 1, control = list(trace = 0),
-    type = "ace", eqmean = TRUE, pairsonly = FALSE,
-    samecens = TRUE, allmarg = samecens & !is.null(weight),
-    stderr = TRUE, robustvar = TRUE, p, indiv = FALSE,
-    constrain, bound = FALSE, ...)
+  bptwin(formula, data, id, zyg, MZ, DZ, group = NULL,
+    num = NULL, weight = NULL,
+    biweight = function(x) 1/min(x), strata = NULL,
+    messages = 1, control = list(trace = 0), type = "ace",
+    eqmean = TRUE, pairsonly = FALSE, samecens = TRUE,
+    allmarg = samecens & !is.null(weight), stderr = TRUE,
+    robustvar = TRUE, p, indiv = FALSE, constrain,
+    bound = FALSE, ...)
 }
 \arguments{
   \item{formula}{Formula specifying effects of covariates
@@ -28,14 +29,17 @@
   \item{zyg}{The name of the column in the dataset
   containing the zygosity variable.}
 
-  \item{DZ}{Character defining the level in the zyg
-  variable corresponding to the dyzogitic twins. If this
-  argument is missing, the reference level (i.e. the first
-  level) will be interpreted as the dyzogitic twins.}
+  \item{MZ}{Character defining the level in the zyg
+  variable corresponding to the monozygotic twins. Optional
+  if 'DZ' argument is used. If both MZ and DZ arguments are
+  omitted the reference level (i.e. the first level) will
+  be interpreted as the dyzogitic twins.}
 
-  \item{OS}{Optional. Character defining the level in the
-  zyg variable corresponding to the oppposite sex dyzogitic
-  twins.}
+  \item{DZ}{Character defining the level in the zyg
+  variable corresponding to the dyzogitic twins.}
+
+  \item{group}{Optional. Variable name defining group for
+  interaction analysis (e.g., gender)}
 
   \item{num}{Optional twin number variable}
 
@@ -89,7 +93,9 @@
 \examples{
 \donttest{
 data(twinstut)
-b0 <- bptwin(stutter~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",OS="os",type="ae")
+b0 <- bptwin(stutter~sex,
+             data=droplevels(subset(twinstut,zyg\%in\%c("mz","dz"))),
+             id="tvparnr",zyg="zyg",DZ="dz",type="ae")
 summary(b0)
 }
 }

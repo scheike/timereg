@@ -2,35 +2,35 @@
 \alias{twinlm}
 \title{Classic twin model for quantitative traits}
 \usage{
-  twinlm(formula, data, id, zyg, DZ, OS, strata = NULL,
-    weight = NULL, type = c("ace"), twinnum = "twinnum",
-    binary = FALSE, keep = weight, estimator = "gaussian",
-    constrain = TRUE, control = list(), messages = 1, ...)
+  twinlm(formula, data, id, zyg, DZ, group = NULL,
+    strata = NULL, weight = NULL, type = c("ace"),
+    twinnum = "twinnum", binary = FALSE, keep = weight,
+    estimator = "gaussian", constrain = TRUE,
+    control = list(), messages = 1, ...)
 }
 \arguments{
   \item{formula}{Formula specifying effects of covariates
-  on the response.}
+  on the response}
 
   \item{data}{\code{data.frame} with one observation pr
   row. In addition a column with the zygosity (DZ or MZ
   given as a factor) of each individual much be specified
   as well as a twin id variable giving a unique pair of
-  numbers/factors to each twin pair.}
+  numbers/factors to each twin pair}
 
   \item{id}{The name of the column in the dataset
   containing the twin-id variable.}
 
   \item{zyg}{The name of the column in the dataset
-  containing the zygosity variable.}
+  containing the zygosity variable}
 
   \item{DZ}{Character defining the level in the zyg
   variable corresponding to the dyzogitic twins. If this
   argument is missing, the reference level (i.e. the first
-  level) will be interpreted as the dyzogitic twins.}
+  level) will be interpreted as the dyzogitic twins}
 
-  \item{OS}{Optional. Character defining the level in the
-  zyg variable corresponding to the oppposite sex dyzogitic
-  twins.}
+  \item{group}{Optional. Variable name defining group for
+  interaction analysis (e.g., gender)}
 
   \item{strata}{Strata variable name}
 

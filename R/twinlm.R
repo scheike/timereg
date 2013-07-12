@@ -36,21 +36,20 @@
 ##' }
 ##' @keywords models
 ##' @keywords regression
-##' @param formula Formula specifying effects of covariates on the response.
+##' @param formula Formula specifying effects of covariates on the response
 ##' @param data \code{data.frame} with one observation pr row. In
 ##'     addition a column with the zygosity (DZ or MZ given as a factor) of
 ##'     each individual much be
 ##'     specified as well as a twin id variable giving a unique pair of
-##'     numbers/factors to each twin pair.
+##'     numbers/factors to each twin pair
 ##' @param id The name of the column in the dataset containing the twin-id variable.
 ##' @param zyg The name of the column in the dataset containing the
-##'     zygosity variable.
+##'     zygosity variable
 ##' @param DZ Character defining the level in the zyg variable
 ##'     corresponding to the dyzogitic twins. If this argument is missing,
 ##'     the reference level (i.e. the first level) will be interpreted as
-##'     the dyzogitic twins.
-##' @param OS Optional. Character defining the level in the zyg variable
-##'     corresponding to the oppposite sex dyzogitic twins.
+##'     the dyzogitic twins
+##' @param group Optional. Variable name defining group for interaction analysis (e.g., gender)
 ##' @param strata Strata variable name
 ##' @param weight Weight matrix if needed by the chosen estimator. For use
 ##'     with Inverse Probability Weights
@@ -69,7 +68,7 @@
 ##' @param constrain Development argument
 ##' @param messages Control amount of messages shown 
 ##' @param ... Additional arguments parsed on to lower-level functions
-twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, type=c("ace"), twinnum="twinnum", binary=FALSE,keep=weight,estimator="gaussian",constrain=TRUE,control=list(),messages=1,...) {
+twinlm <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=NULL, type=c("ace"), twinnum="twinnum", binary=FALSE,keep=weight,estimator="gaussian",constrain=TRUE,control=list(),messages=1,...) {
 
   cl <- match.call(expand.dots=TRUE)
   opt <- options(na.action="na.pass")
@@ -88,8 +87,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
     args[[1]] <- NULL
     return(do.call("bptwin",args))
   }
-
-
+  
   formulaId <- unlist(Specials(formula,"cluster"))
   formulaStrata <- unlist(Specials(formula,"strata"))
   formulaSt <- paste("~.-cluster(",formulaId,")-strata(",paste(formulaStrata,collapse="+"),")")
@@ -147,18 +145,19 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
     zygstat <- as.factor(zygstat)
   }
   zyglev <- levels(zygstat)
-  if (length(zyglev)>2 & missing(OS)) stop("More than two zygosity levels and no opposite sex (OS) group specified")
+  if (length(zyglev)>2) stop("More than two zygosity levels found. For opposite sex (OS) analysis use the 'sex' argument")
 
   ## To wide format:
   num <- NULL; if (twinnum%in%colnames(data)) num <- twinnum
-  data <- cbind(data[,c(yvar,keep,num,zyg,id)],mm)
-  ddd <- fast.reshape(data,id=id,varying=c(yvar,keep,covars),keep=zyg,num=num,sep=".",labelnum=TRUE)
-
+  data <- cbind(data[,c(yvar,keep,num,zyg,id,group)],mm)
+  ddd <- fast.reshape(data,id=id,varying=c(yvar,keep,covars,group),keep=zyg,num=num,sep=".",labelnum=TRUE)
+    
   if (missing(DZ)) {
     warning("Using first level, `",zyglev[1],"', in status variable as indicator for 'dizygotic'", sep="")
     DZ <- zyglev[1]    
-  }  
-  if (!missing(OS)) {
+  }
+  OS <- NULL
+  if (!is.null(OS)) {
     wide3 <- ddd[which(ddd[,zyg]==OS),,drop=FALSE]
     MZ <- setdiff(zyglev,c(DZ,OS))  
   } else {
@@ -331,7 +330,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
                                                    sep = ".")))
   mm <- list(MZ = model1, DZ = model2)
   dd <- list(wide1, wide2)
-  if (!missing(OS)) {
+  if (!is.null(OS)) {
     mm <- c(mm, OS = list(model3))
     dd <- c(dd, list(wide3))
   }
@@ -404,7 +403,7 @@ twinlm <- function(formula, data, id, zyg, DZ, OS, strata=NULL, weight=NULL, typ
     }
   }
 
-  res <- list(coefficients=e$opt$estimate, vcov=Inverse(information(e)), estimate=e, model=mm, full=full, call=cl, data=data, zyg=zyg, id=id, twinnum=twinnum, type=type, model.mz=model1, model.dz=model2, model.dzos=model3, data.mz=wide1, data.dz=wide2, data.os=wide3, OS=!missing(OS), constrain=constrain, outcomes=outcomes)
+  res <- list(coefficients=e$opt$estimate, vcov=Inverse(information(e)), estimate=e, model=mm, full=full, call=cl, data=data, zyg=zyg, id=id, twinnum=twinnum, type=type, model.mz=model1, model.dz=model2, model.dzos=model3, data.mz=wide1, data.dz=wide2, data.os=wide3, OS=!is.null(OS), constrain=constrain, outcomes=outcomes)
   class(res) <- "twinlm"
   return(res)
 }

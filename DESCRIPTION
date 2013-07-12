@@ -2,7 +2,7 @@ Package: mets
 Type: Package
 Title: Analysis of Multivariate Event Times
 Version: 0.2.4
-Date: 2013-05-23
+Date: 2013-07-10
 Author: Klaus K. Holst and Thomas Scheike
 Maintainer: Klaus K. Holst <kkho@biostat.ku.dk>
 Description: Implementation of various statistical models for multivariate

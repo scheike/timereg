@@ -1,6 +1,7 @@
 ##' @export
-cumh <- function(formula,data,cens.formula=NULL,...,time,
+cumh <- function(formula,data,...,time,
                  timestrata=quantile(data[,time],c(0.25,0.5,0.75,1)),
+                 cens.formula=NULL,cens.model="aalen",
                  cumulative=FALSE, 
                  silent=FALSE) {
 

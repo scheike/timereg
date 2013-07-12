@@ -1,26 +1,2 @@
 ## Use the R_HOME indirection to support installations of multiple R version
-PKG_CXXFLAGS=$(shell $(R_HOME)/bin/R --slave -e 'Rcpp:::CxxFlags(); cat(" "); RcppArmadillo:::CxxFlags()')
-##-I$(HOME)/RcppArmadillo/include 
-PKG_LIBS=$(shell $(R_HOME)/bin/R --slave -e 'cat(" -L",.libPaths()[1],"/RcppArmadillo/libs"," ",sep=""); Rcpp:::LdFlags();') $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-##-L$(HOME)/RcppArmadillo/libs 
-
-## for C code
-CFLAGS=-g -O3 -Wall -pipe -pedantic -std=gnu99
-#CFLAGS=-O3 -g0 -Wall -pipe -std=gnu99
-## for C++ code
-CXXFLAGS= -g -O3 -Wall -pipe -pedantic -Wno-variadic-macros
-#CXXFLAGS= -g0 -O3 -Wall -pipe -Wno-variadic-macros
-#CXXFLAGS= -O3 -g0 -Wall -pipe 
-## for Fortran code
-#FFLAGS=-g -O3 -Wall -pipe
-FFLAGS=-O3 -g0 -Wall -pipe
-## for Fortran 95 code
-#FCFLAGS=-g -O3 -Wall -pipe
-FCFLAGS=-O3 -g0 -Wall -pipe
-
-CC=ccache gcc
-CXX=ccache g++
-FC=ccache gfortran
-F77=ccache gfortran
-MAKE=make -j4
-
+PKG_LIBS = `$(R_HOME)/bin/Rscript -e "Rcpp:::LdFlags()"` $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
