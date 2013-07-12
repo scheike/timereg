@@ -16,6 +16,7 @@
   .. content for description (no empty lines) ..
 }
 \examples{
+library(prodlim)
 data(prt);
 
 ### marginal cumulative incidence of prostate cancer

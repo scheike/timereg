@@ -1,4 +1,5 @@
 ###{{{ phreg0 
+
 phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,method="NR",...) {
   p <- ncol(X)
   if (missing(beta)) beta <- rep(0,p)
@@ -82,6 +83,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
   class(res) <- "phreg"
   res
 }
+
 ###}}} phreg0
 
 ###{{{ simcox
@@ -89,8 +91,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
 ##' @export
 simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
   if (!is.null(seed))
-    set.seed(seed)
-  library(lava)
+      set.seed(seed)
   m <- lvm()
   regression(m,T~X1+X2) <- beta
   distribution(m,~T+C) <- coxWeibull.lvm(scale=1/100)

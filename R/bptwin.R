@@ -335,13 +335,13 @@ bptwin <- function(formula, data, id, zyg, MZ, DZ, group=NULL,
 
   ## p0 <- op$par
   ## ff <- function(p) as.vector(Sigma(p)$Sigma2)
-  ## jacobian(ff,p0)
+  ## numDeriv::jacobian(ff,p0)
   ## Sigma(p0)$dS2
   ## dmytr(p0[vidx])
   ## Sigma(p0)$dS2[1,]*dmytr(p0[vidx])[1]
   ## Sigma(p0)$dS2[2,]*dmytr(p0[vidx])[2]
   ## Sigma(p0)$dS2[3,]*dmytr(p0[vidx])[3]
- 
+
 ###}}} Mean/Var function
   
 ###{{{ U  
@@ -498,7 +498,6 @@ bptwin <- function(formula, data, id, zyg, MZ, DZ, group=NULL,
 
 ###{{{ optim
 
- 
   if (!missing(p)) return(U(p,indiv=indiv))
 
 
@@ -530,7 +529,7 @@ bptwin <- function(formula, data, id, zyg, MZ, DZ, group=NULL,
   ## Derivatives, Sanity check 
   ## ff <- function(p) attributes(U(p,indiv=FALSE))$logLik
   ## pp <- c(0,-.1,.1,0.5)
-  ## grad(ff,pp)
+  ## numDeriv::grad(ff,pp)
   ## U(pp,indiv=FALSE)
 
   

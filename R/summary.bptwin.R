@@ -105,8 +105,8 @@ summary.bptwin <- function(object,level=0.05,...) {
       m <- p[1]
       ##else m <- p[length(object$midx0)+1]
       S <- object$SigmaFun(p)
-      conc1 <- pmvnorm(upper=c(m,m),sigma=S[[1]],algorithm="Miwa")
-      conc2 <- pmvnorm(upper=c(m,m),sigma=S[[2]],algorithm="Miwa")
+      conc1 <- pmvn(upper=c(m,m),sigma=S[[1]])
+      conc2 <- pmvn(upper=c(m,m),sigma=S[[2]])
       marg <- pnorm(m,sd=S[[1]][1,1]^0.5)      
       return(logit((conc1-conc2)/(marg*(1-marg))))
     }
@@ -116,7 +116,7 @@ summary.bptwin <- function(object,level=0.05,...) {
     else m <- p[length(object$midx0)+1]
     mu.cond <- function(x) m+S[1,2]/S[2,2]*(x-m)
     var.cond <- S[1,1]-S[1,2]^2/S[2,2]    
-    conc <- pmvnorm(upper=c(m,m),sigma=S,algorithm="Miwa")
+    conc <- pmvn(upper=c(m,m),sigma=S)
     marg <- pnorm(m,sd=S[1,1]^0.5)
     cond <- conc/marg
     logit(c(conc,cond,marg))
@@ -125,16 +125,16 @@ summary.bptwin <- function(object,level=0.05,...) {
   mycoef <- coef(object)
   ## formals(probs) <- alist(p=,idx=0)
   ## hp <- probs(mycoef)
-  ## Dhp <- grad(probs,mycoef)
+  ## Dhp <- numDeriv::grad(probs,mycoef)
   ## shp <- diag(t(Dhp)%*%vcov(object)%*%(Dhp))^0.5
   
   formals(probs) <- alist(p=,idx=1)
   probMZ <- probs(mycoef)
   
-  Dp0 <- jacobian(probs,mycoef)
+  Dp0 <- numDeriv::jacobian(probs,mycoef)
   formals(probs) <- alist(p=,idx=2)
   probDZ <- probs(mycoef)
-  Dp1 <- jacobian(probs,mycoef)
+  Dp1 <- numDeriv::jacobian(probs,mycoef)
   sprobMZ <- diag((Dp0)%*%vcov(object)%*%t(Dp0))^0.5
   sprobDZ <- diag((Dp1)%*%vcov(object)%*%t(Dp1))^0.5
   probMZ <- tigol(cbind(probMZ,probMZ-qnorm(1-alpha)*sprobMZ,probMZ+qnorm(1-alpha)*sprobMZ))
@@ -148,7 +148,7 @@ summary.bptwin <- function(object,level=0.05,...) {
   ##   conc <- function()
   ##   mu.cond <- function(x) mu+Sigma[[i]][1,2]/Sigma[[i]][2,2]*(x-mu[i])
   ##   var.cond <- Sigma[[i]][1,1]-Sigma[[i]][1,2]^2/Sigma[[i]][2,2]    
-  ##   cc0 <- pmvnorm(upper=c(mu[i],mu[i]),sigma=Sigma[[i]])
+  ##   cc0 <- pmvn(upper=c(mu[i],mu[i]),sigma=Sigma[[i]])
   ##   px <- pnorm(mu[i],sd=Sigma[[i]][2,2]^0.5)
   ##   concordance <- c(concordance,cc0)
   ##   marg <- c(marg,px)

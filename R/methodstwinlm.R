@@ -157,11 +157,11 @@ summary.twinlm <- function(object,...) {
   atanhcorDZf <- function(x) atanh(sum(x[1:3]^2*c(0.5,1,0.25))/sum(x^2))
  
   e1 <- atanhcorMZf(varEst)
-  D1 <- grad(atanhcorMZf,varEst)
+  D1 <- numDeriv::grad(atanhcorMZf,varEst)
   s1 <- (t(D1)%*%varSigma%*%(D1))^0.5
   ci1 <- e1+qnorm(0.975)*c(-1,1)*s1
   e2 <- atanhcorDZf(varEst)
-  D2 <- grad(atanhcorDZf,varEst)
+  D2 <- numDeriv::grad(atanhcorDZf,varEst)
   s2 <- (t(D2)%*%varSigma%*%(D2))^0.5
   ci2 <- e2+qnorm(0.975)*c(-1,1)*s2
   

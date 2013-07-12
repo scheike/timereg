@@ -16,6 +16,7 @@
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
 ##' @examples
+##' library(lava)
 ##' m <- lvm(c(y1,y2,y3,y4)~x)
 ##' d <- sim(m,5)
 ##' fast.reshape(fast.reshape(d,var="y"),id="id")

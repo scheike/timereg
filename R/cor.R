@@ -278,9 +278,8 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
     tryCatch(opt <- nlminb(theta,obj,control=control),error=function(x) NA)
     if (detail==1) print(opt); 
     iid <- 1; 
-    library(numDeriv)
-    hess <- hessian(obj,opt$par)
-    score <- jacobian(obj,opt$par)
+    hess <- numDeriv::hessian(obj,opt$par)
+    score <- numDeriv::jacobian(obj,opt$par)
     hessi <- lava::Inverse(hess); 
     theta <- opt$par
     if (detail==1) cat("iid decomposition\n"); 
@@ -292,7 +291,6 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
     iid <- 0; oout <- 0; 
     tryCatch(opt <- nlm(obj,theta,hessian=TRUE,print.level=detail),error=function(x) NA)
     iid <- 1; 
-###    library(numDeriv)
     hess <- opt$hessian
     score <- opt$gradient
     if (detail==1) print(opt); 

@@ -217,7 +217,7 @@ antpers <- NROW(data);
     }
     if (numDeriv==1) {
       oout <- 3
-      hess <- jacobian(loglike,p)
+      hess <- numDeriv::jacobian(loglike,p)
     }
     if (detail==1 & Nit==0) {## {{{
           cat(paste("Fisher-Scoring ===================: final","\n")); 
@@ -244,7 +244,7 @@ antpers <- NROW(data);
     if (numDeriv==1) {
       oout <- 3; 
       p <- theta
-      hess <- jacobian(loglike,theta)
+      hess <- numDeriv::jacobian(loglike,theta)
     }
     hessi <- lava::Inverse(hess); 
   ## }}}
@@ -266,7 +266,7 @@ antpers <- NROW(data);
     if (numDeriv==1) {
       oout <- 3; 
       p <- opt$par
-      hess <-  jacobian(loglike,p)
+      hess <-  numDeriv::jacobian(loglike,p)
     }
     hessi <- lava::Inverse(hess); 
   ## }}}
@@ -420,7 +420,7 @@ step=0.5,model="plackett",marginal.p=NULL,strata=NULL,max.clust=NULL,se.clusters
      data.fam.clust <- fast.reshape(data.fam,id="subfam")
      if (is.function(theta.formula)) {
 	library(compiler) 
-        desfunction <- cmpfun(theta.formula)
+        desfunction <- compiler::cmpfun(theta.formula)
 	if (deshelp==1){
 	 cat("These names appear in wide version of pairs for dependence \n")
 	  cat("design function must be defined in terms of these: \n")
@@ -688,7 +688,7 @@ if (alr==1)  ud <- c(ud,outl)
 ###  library(numDeriv)
 ###  if (object$model=="plackett") {
 ###  spearman <- alpha2spear(theta,link=vlink)
-###  Dspear <- jacobian(alpha2spear,theta,link=vlink) 
+###  Dspear <- numDeriv::jacobian(alpha2spear,theta,link=vlink) 
 ###  var.spearman <- Dspear %*% object$var.theta %*%  Dspear
 ###  se.spearman <- diag(var.spearman)^.5
 ###  res <- as.matrix(cbind(res, wald, waldp,spearman,se.spearman))
@@ -698,7 +698,7 @@ if (alr==1)  ud <- c(ud,outl)
 ###  }
 ###  if (object$model=="clayton.oakes") {
 ###  kendall <- alpha2kendall(theta,link=vlink)
-###  Dken <- jacobian(alpha2kendall,theta,link=vlink) 
+###  Dken <- numDeriv::jacobian(alpha2kendall,theta,link=vlink) 
 ###  var.kendall<- Dken %*% object$var.theta %*%  Dken
 ###  se.kendall <- diag(var.kendall)^.5
 ###  res <- as.matrix(cbind(res, wald, waldp,kendall,se.kendall))

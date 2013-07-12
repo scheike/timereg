@@ -317,7 +317,7 @@ if (!is.null(margsurv))
     if (numDeriv==1) {
     if (detail==1 ) cat("numDeriv hessian start\n"); 
       oout <- 3;  ## to get jacobian
-      hess <- jacobian(loglike,p)
+      hess <- numDeriv::jacobian(loglike,p)
     if (detail==1 ) cat("numDeriv hessian stop\n"); 
     }
     if (detail==1 & Nit==0) {## {{{
@@ -344,7 +344,7 @@ if (!is.null(margsurv))
     if (numDeriv==1) {
     if (detail==1 ) cat("numDeriv hessian start\n"); 
       oout <- 3; ## returns score 
-      hess <- jacobian(loglike,opt$par)
+      hess <- numDeriv::jacobian(loglike,opt$par)
     if (detail==1 ) cat("numDeriv hessian done\n"); 
     }
     hessi <- lava::Inverse(hess); 
@@ -365,7 +365,7 @@ if (!is.null(margsurv))
     if (numDeriv==1) {
     if (detail==1 ) cat("numDeriv hessian start\n"); 
       oout <- 3;  ## to get jacobian
-      hess <- jacobian(loglike,theta)
+      hess <- numDeriv::jacobian(loglike,theta)
     if (detail==1 ) cat("numDeriv hessian done\n"); 
     }
     hessi <- lava::Inverse(hess); 
@@ -449,11 +449,10 @@ coef.twostage <- function(object,var.link=NULL,response="survival",...)
   res <- cbind(theta, se )
   wald <- theta/se
   waldp <- (1 - pnorm(abs(wald))) * 2
-  library(numDeriv)
   if (response=="survival") { 
        if (object$model=="plackett") {
        spearman <- alpha2spear(theta,link=vlink)
-       Dspear <- jacobian(alpha2spear,theta,link=vlink) 
+       Dspear <- numDeriv::jacobian(alpha2spear,theta,link=vlink) 
        var.spearman <- Dspear %*% object$var.theta %*%  Dspear
        se.spearman <- diag(var.spearman)^.5
        res <- as.matrix(cbind(res, wald, waldp,spearman,se.spearman))
@@ -463,7 +462,7 @@ coef.twostage <- function(object,var.link=NULL,response="survival",...)
        }
        if (object$model=="clayton.oakes") {
        kendall <- alpha2kendall(theta,link=vlink)
-       Dken <- jacobian(alpha2kendall,theta,link=vlink) 
+       Dken <- numDeriv::jacobian(alpha2kendall,theta,link=vlink) 
        var.kendall<- Dken %*% object$var.theta %*%  Dken
        se.kendall <- diag(var.kendall)^.5
        res <- as.matrix(cbind(res, wald, waldp,kendall,se.kendall))
@@ -883,7 +882,7 @@ if (class(margsurv)[1]=="coxph")
   data.fam.clust <- fast.reshape(data.fam,id="subfam")
   if (is.function(theta.formula)) {
      library(compiler) 
-     desfunction <- cmpfun(theta.formula)
+     desfunction <- compiler::cmpfun(theta.formula)
     if (deshelp==1){
  	  cat("These names appear in wide version of pairs for dependence \n")
 	  cat("design function must be defined in terms of these: \n")

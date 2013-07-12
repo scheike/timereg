@@ -154,7 +154,7 @@ ClaytonOakes <- function(formula,data=parent.frame(),cluster,var.formula=~1,cuts
   if (any(is.na(opt$par)) | any(!is.finite(opt$par)) | any(is.nan(opt$par)) ) {
     V <- matrix(NA,length(p0),length(p0))
   } else {    
-    I <- hessian(obj,opt$par)
+    I <- numDeriv::hessian(obj,opt$par)
     ee <- tryCatch(eigen(I),error=function(x) NULL); 
     if (!is.null(ee)) {
       threshold <- 1e-12

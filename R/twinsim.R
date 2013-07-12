@@ -1,3 +1,8 @@
+rmvn <- function(n,sigma) {
+  Sh <- with(svd(sigma), v%*%diag(sqrt(d))%*%t(u))
+  matrix(rnorm(ncol(sigma)*n),ncol=ncol(sigma))%*%Sh
+}
+
 ##' Simulate twin data from a linear normal ACE/ADE/AE model.
 ##'
 ##' @title Simulate twin data
@@ -26,20 +31,20 @@ twinsim <- function(nMZ=100,nDZ=nMZ,b1=c(),b2=c(),mu=0,acde=c(1,1,0,1),randomslo
   A.MZ <- rnorm(nMZ,sd=sA); A.MZ <- cbind(A.MZ,A.MZ)
   D.MZ <- rnorm(nMZ,sd=sD); D.MZ <- cbind(D.MZ,D.MZ)  
   S2 <- matrix(c(0,1,1,0),2)
-  A.DZ <- sA*rmvnorm(nDZ,sigma=diag(2)+S2*0.5)
-  D.DZ <- sD*rmvnorm(nDZ,sigma=diag(2)+S2*0.25)
+  A.DZ <- sA*rmvn(nDZ,sigma=diag(2)+S2*0.5)
+  D.DZ <- sD*rmvn(nDZ,sigma=diag(2)+S2*0.25)
   C.MZ <- rnorm(nMZ,sd=sC)
   C.DZ <- rnorm(nDZ,sd=sC)
   yMZ <- mu + A.MZ + cbind(C.MZ,C.MZ) + D.MZ + cbind(rnorm(nMZ,sd=sE),rnorm(nMZ,sd=sE))
   yDZ <- mu + A.DZ + cbind(C.DZ,C.DZ) + D.DZ + cbind(rnorm(nDZ,sd=sE),rnorm(nDZ,sd=sE))
   y <- rbind(yMZ,yDZ)
   if (length(b1)>0) {
-    x1 <- rmvnorm(n,rep(0,length(b1)),diag(length(b1)))
-    x2 <- rmvnorm(n,rep(0,length(b1)),diag(length(b1)))
+    x1 <- rmvn(n,sigma=diag(length(b1)))
+    x2 <- rmvn(n,sigma=diag(length(b1)))
     y <- y+cbind(x1%*%b1,x2%*%b1)
   }
   if (length(b2)>0) {
-    g <- rmvnorm(n,rep(0,length(b2)),diag(length(b2)))
+    g <- rmvn(n,sigma=diag(length(b2)))
     ge <- g%*%b2
     y <- y+cbind(ge,ge)
   }
@@ -64,7 +69,6 @@ twinsim <- function(nMZ=100,nDZ=nMZ,b1=c(),b2=c(),mu=0,acde=c(1,1,0,1),randomslo
   colnames(d) <- sub(".","",colnames(d),fixed=TRUE)
   if (wide) return(d)
   dd <- fast.reshape(d,idvar="id",varying=vary)
-  ##  fast.reshape(d,idvar="id",varying=vary)
   
   dd$status <- dd$y<dd$cens
   dd$y0 <- (dd$y>threshold)

@@ -65,7 +65,7 @@ aalenfrailty <- function(time,status,X,id,theta,
 
   op <- nlminb(theta,function(x) U(x)^2)
   uu <- U(op$par,TRUE)
-  du <- grad(U,op$par)
+  du <- numDeriv::grad(U,op$par)
   return(list(theta=op$par, sd=(mean(uu^2)/du^2/ncluster)^0.5))
 }
                   

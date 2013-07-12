@@ -17,7 +17,7 @@
 ##' ## An AE-model could be fitted as
 ##' ae <- twinlm(y ~ 1, data=d, DZ="DZ", zyg="zyg", id="id", type="ae")
 ##' ## LRT:
-##' compare(ae,ace)
+##' lava::compare(ae,ace)
 ##' ## AIC
 ##' AIC(ae)-AIC(ace)
 ##' ## To adjust for the covariates we simply alter the formula statement
