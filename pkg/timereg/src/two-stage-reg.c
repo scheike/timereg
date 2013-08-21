@@ -180,8 +180,8 @@ for(j=0;j<pmax;j++) {
  if (*lefttrunk==1 && multitrunc[j]>=2) logl=logl-(1/theta0)*log(Rthetaleft[j]); 
 
   if (it<0  && multitrunc[j]>=2) {
-    printf(" %d %d %lf %lf %lf \n",j,clustsize[j],Rtheta[j],HeH[j],H2eH[j]); 
-    printf(" %d %d %lf %lf %lf \n",j,multitrunc[j],Rthetaleft[j],HeHleft[j],H2eHleft[j]); 
+    Rprintf(" %d %d %lf %lf %lf \n",j,clustsize[j],Rtheta[j],HeH[j],H2eH[j]); 
+    Rprintf(" %d %d %lf %lf %lf \n",j,multitrunc[j],Rthetaleft[j],HeHleft[j],H2eHleft[j]); 
   }
 
  thetaiidscale[j]=sumscore+
