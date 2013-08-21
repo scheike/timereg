@@ -63,21 +63,24 @@ Only one record per subject is allowed in the current
 implementation for the estimation of theta. 
 The program assumes that there are no ties, and if such are present 
 random noise is added to break the ties.
+
+Left truncation is dealt with. Here the key assumption is that the maginals are
+correctly estimated and that we have a common truncation time within each cluster. 
 }
 \value{
 returns an object of type "two.stage". With the following arguments:
 \item{cum}{cumulative timevarying regression coefficient estimates are 
 computed within the estimation interval.}
-\item{var.cum}{the martingale based pointwise variance estimates.  }
+\item{var.cum}{the martingale based pointwise variance estimates.}
 \item{robvar.cum}{robust pointwise variances estimates.}
 \item{gamma}{estimate of parametric components of model.}
 \item{var.gamma}{variance for gamma.}
 \item{robvar.gamma}{robust variance for gamma.}
-\item{D2linv}{inverse of the derivative of the score function.}
+\item{D2linv}{inverse of the derivative of the score function from marginal model.}
 \item{score}{value of score for final estimates.}
 \item{theta}{estimate of Gamma variance for frailty.}
 \item{var.theta}{estimate of variance of theta.}
-\item{S.theta}{estimate of derivative of score of theta.}
+\item{SthetaInv}{inverse of derivative of score of theta.}
 \item{theta.score}{score for theta parameters.}
 }
 \references{
@@ -91,7 +94,7 @@ Springer (2006).}
 data(diabetes)
 # Marginal Cox model  with treat as covariate
 marg <- cox.aalen(Surv(time,status)~prop(treat)+cluster(id),data=diabetes,
-		  max.clust=NULL,resample.iid=1)
+		  resample.iid=1)
 fit<-two.stage(marg,data=diabetes,theta=1.0,detail=0,Nit=40)
 summary(fit)
 
@@ -103,7 +106,7 @@ design.treat<-cbind(des.t[,-1]*(diabetes$adult==1),
 
 # test for common baselines included here 
 marg1<-cox.aalen(Surv(time,status)~-1+factor(adult)+prop(design.treat)+cluster(id),
- data=diabetes,resample.iid=1,Nit=50,max.clust=NULL)
+ data=diabetes,resample.iid=1,Nit=50)
 
 fit.s<-two.stage(marg1,data=diabetes,Nit=40,theta=1,theta.des=theta.des)
 summary(fit.s)
@@ -119,20 +122,20 @@ summary(fit.s3)
 
 # to fit model without covariates, use beta.fixed=1 and prop or aalen function
 marg <- aalen(Surv(time,status)~+1+cluster(id),
-	 data=diabetes,resample.iid=1,n.sim=0,max.clust=NULL)
+	 data=diabetes,resample.iid=1,n.sim=0)
 fita<-two.stage(marg,data=diabetes,theta=0.95,detail=0)
 summary(fita)
 
 # same model but se's without variation from marginal model to speed up computations
 marg <- aalen(Surv(time,status) ~+1+cluster(id),data=diabetes,
-	      resample.iid=0,n.sim=0,max.clust=NULL)
+	      resample.iid=0,n.sim=0)
 fit<-two.stage(marg,data=diabetes,theta=0.95,detail=0)
 summary(fit)
 
 # same model but se's now with fewer time-points for approx of iid decomp of marginal 
 # model to speed up computations
 marg <- cox.aalen(Surv(time,status) ~+prop(treat)+cluster(id),data=diabetes,
-	      resample.iid=1,n.sim=0,max.clust=NULL,max.timepoint.sim=5,beta.fixed=1,beta=0)
+	      resample.iid=1,n.sim=0,max.timepoint.sim=5,beta.fixed=1,beta=0)
 fit<-two.stage(marg,data=diabetes,theta=0.95,detail=0)
 summary(fit)
 }

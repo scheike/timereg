@@ -11,23 +11,30 @@ if (class(margsurv)!="coxph") {
  beta.fixed <- attr(margsurv,"beta.fixed")
  if (is.null(beta.fixed)) beta.fixed <- 1; 
  ldata<-aalen.des(formula,data=data,model="cox.aalen");
- id <- attr(margsurv,"id"); mclusters <- attr(margsurv,"cluster.call")
+ id <- attr(margsurv,"id"); 
+ mclusters <- attr(margsurv,"cluster.call")
+ mclustersind <- attr(margsurv,"cluster")
  X<-ldata$X; time<-ldata$time2; Z<-ldata$Z;  status<-ldata$status;
- time2 <- attr(margsurv,"stop"); start <- attr(margsurv,"start")
+ time2 <- attr(margsurv,"stop"); 
+ start <- attr(margsurv,"start")
  antpers<-nrow(X);
  if (beta.fixed==1) Z <- NULL; 
  if (is.null(Z)==TRUE) {npar<-TRUE; semi<-0;}  else { Z<-as.matrix(Z); npar<-FALSE; semi<-1;}
  if (npar==TRUE) {Z<-matrix(0,antpers,1); pz<-1; fixed<-0;} else {fixed<-1;pz<-ncol(Z);}
  px<-ncol(X);
 
- if (is.null(clusters) && is.null(mclusters)) stop("No cluster variabel specified in marginal or twostage call \n"); 
- if (is.null(clusters)) clusters <- mclusters else if (sum(abs(clusters-mclusters))>0) 
-      cat("Warning: Clusters for marginal model different than those specified for two.stage\n"); 
-  if (!is.null(attr(margsurv,"max.clust")))
-  if ((attr(margsurv,"max.clust")< attr(margsurv,"orig.max.clust"))  && (!is.null(mclusters)) )
-	  cat("Warning: Probably want to estimate marginal model with max.clust=NULL\n"); 
+ if (is.null(clusters) && is.null(mclusters)) 
+	 stop("No cluster variabel specified in marginal or twostage call \n"); 
+ if (is.null(clusters)) clusters <- mclusters;
+### else if (sum(abs(clusters-mclusters))>0) 
+###      cat("Warning: Clusters for marginal model different than those specified for two.stage\n"); 
+###  if (!is.null(attr(margsurv,"max.clust")))
+###  if ((attr(margsurv,"max.clust")< attr(margsurv,"orig.max.clust"))  && (!is.null(mclusters)) )
+###	  cat("Warning: Probably want to estimate marginal model with max.clust=NULL\n"); 
 
  if (nrow(X)!=length(clusters)) stop("Length of Marginal survival data not consistent with cluster length\n"); 
+ secluster <- mclustersind; 
+ antsecluster <- length(unique(secluster))
 
 } else { ### coxph
   notaylor <- 1
@@ -49,10 +56,12 @@ if (class(margsurv)!="coxph") {
    if (is.null(clusters)) stop("must give clusters for coxph\n");
    X <- matrix(1,antpers,1); ### Z <- matrix(0,antpers,1); ### no use for these
    px <- 1; pz <- ncol(Z); 
-   start <- rep(0,antpers);
+###   start <- rep(0,antpers);
    beta.fixed <- 0
    semi <- 1
    start.time <- 0
+   secluster <- clusters; 
+   antsecluster <- length(unique(clusters))
 }
 
   out.clust <- cluster.index(clusters);  
@@ -124,13 +133,15 @@ if (class(margsurv)!="coxph") {
   if (is.null(margsurv$B.iid)) notaylor <- 1; 
   if (notaylor==0) {
     if (!is.null(margsurv$B.iid))
-    for (i in 1:antclust) Biid<-cbind(Biid,margsurv$B.iid[[i]]); 
+    for (i in 1:antsecluster) Biid<-cbind(Biid,margsurv$B.iid[[i]]); 
     if (!is.null(margsurv$gamma.iid)) gamma.iid<-margsurv$gamma.iid;
     if (is.null(margsurv$time.sim.resolution)) { 
 	   time.group <- (1:nrow(Biid))-1; 
            maxtimesim <- nrow(Biid); 
+	   timereso <- margsurv$time.sim.resolution
     }  
     else {
+      timereso <- margsurv$time.sim.resolution
        qqc <- cut(times, breaks = margsurv$time.sim.resolution, include.lowest = TRUE)    
        time.group <- as.integer(factor(qqc, labels = 1:(nrow(Biid)-1)))
        maxtimesim <- nrow(Biid); 
@@ -139,7 +150,7 @@ if (class(margsurv)!="coxph") {
        times <- margsurv$time.sim.resolution 
        Ntimes <-length(times)
     }
-  } else {time.group <- 1; maxtimesim <- 1;}
+  } else {time.group <- 1; maxtimesim <- 1; timereso <- 1}
 
   if (is.null(theta.des)==TRUE) ptheta<-1; 
   if (is.null(theta.des)==TRUE) theta.des<-matrix(1,antpers,ptheta) else
@@ -148,13 +159,14 @@ if (class(margsurv)!="coxph") {
   if (nrow(theta.des)!=antpers) stop("Theta design does not have correct dim");
 
   if (is.null(theta)==TRUE) {
-      if (var.link==1) theta<- rep(-5,ptheta); 
+      if (var.link==1) theta<- rep(-1,ptheta); 
       if (var.link==0) theta<- rep(exp(-5),ptheta); 
   }
   if (length(theta)!=ptheta) theta<-rep(theta[1],ptheta); 
   theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
 
   if (maxclust==1) stop("No clusters !, maxclust size=1\n"); 
+  theta.iid <- matrix(0,antsecluster,ptheta)
   ## }}}
   
 ###  print(dim(Biid))
@@ -163,6 +175,13 @@ if (class(margsurv)!="coxph") {
 ###  print(print(c(px,pz,maxtimesim,antclust)))
 ###  print(times)
 ###  print(c(Ntimes,maxtimesim))
+###  print(clusters)
+###  print(antclust)
+###  print(secluster)
+###  print(antsecluster)
+###  print(dim(Biid))
+###  print(dim(gamma.iid))
+###  print(idiclust); 
 
   nparout <- .C("twostagereg", 
         as.double(times), as.integer(Ntimes), as.double(X),
@@ -178,7 +197,8 @@ if (class(margsurv)!="coxph") {
 	as.double(step), as.integer(idiclust), as.integer(notaylor),
 	as.double(gamma.iid),as.double(Biid),as.integer(semi), as.double(cumhaz) ,
 	as.double(cumhazleft),as.integer(lefttrunk),as.double(RR),
-	as.integer(maxtimesim),as.integer(time.group),PACKAGE = "timereg")
+	as.integer(maxtimesim),as.integer(time.group),as.integer(secluster),
+	as.integer(antsecluster),as.double(theta.iid), as.double(timereso),PACKAGE = "timereg")
 
 ## {{{ handling output
    gamma <- margsurv$gamma
@@ -189,12 +209,14 @@ if (class(margsurv)!="coxph") {
    theta<-matrix(nparout[[21]],ptheta,1);  
    var.theta<-matrix(nparout[[22]],ptheta,ptheta); 
    theta.score<-nparout[[23]]; 
-   Stheta<-matrix(nparout[[24]],ptheta,ptheta); 
+   SthetaI<-matrix(nparout[[28]],ptheta,ptheta); 
+   theta.iid  <- matrix(nparout[[43]],antsecluster,ptheta); 
+   theta.iid <- theta.iid %*% SthetaI
 
    ud <- list(cum = cumint, var.cum = vcum, robvar.cum = Rvcu, 
        gamma = gamma, var.gamma = Varbeta, robvar.gamma = RVarbeta, 
        D2linv = Iinv, score = score,  theta=theta,var.theta=var.theta,
-       S.theta=Stheta,theta.score=theta.score)
+       SthetaInv=SthetaI,theta.score=theta.score,theta.iid=theta.iid)
 
   ptheta<-length(ud$theta); 
   if (ptheta>1) {
@@ -207,6 +229,7 @@ if (class(margsurv)!="coxph") {
   attr(ud,"Formula")<-formula;
   attr(ud,"id")<-id;
   attr(ud,"cluster")<-cluster;
+  attr(ud,"secluster")<-secluster;
   attr(ud,"start")<-start; 
   attr(ud,"time2")<-time2; 
   attr(ud,"var.link")<-var.link

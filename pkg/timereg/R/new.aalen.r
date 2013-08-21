@@ -39,10 +39,10 @@ aalen<-function (formula = formula(data),
   if ((nrow(X)!=nrow(data) && (!is.null(id)))) stop("Missing values in design matrix not allowed with id \n"); 
 ###  if (nrow(Z)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
 
-  cluster.call<-clusters; 
+  cluster.call<- clusters; 
   survs<-read.surv(m,id,npar,clusters,start.time,max.time,silent=silent)
   times<-survs$times; id<-survs$id.cal; id.call<-id; 
-  clusters<-survs$clusters; 
+  clusters<-gclusters <- survs$clusters; 
   stop.call <- time2<-survs$stop
   start.call <- survs$start
   status<-survs$status; 
@@ -54,7 +54,7 @@ aalen<-function (formula = formula(data),
   if ((!is.null(max.clust))) if (max.clust<survs$antclust) {
 	qq <- unique(quantile(clusters, probs = seq(0, 1, by = 1/max.clust)))
 	qqc <- cut(clusters, breaks = qq, include.lowest = TRUE)    
-	clusters <- as.integer(qqc)-1
+	clusters <- gclusters <-  as.integer(qqc)-1
 	max.clusters <- length(unique(clusters))
 ###	clusters <- as.integer(factor(qqc, labels = 1:max.clust)) -1
 	survs$antclust <- max.clust    
@@ -144,7 +144,7 @@ ldata<-list(start=survs$start,stop=survs$stop,antpers=survs$antpers,antclust=sur
   attr(ud, "Formula") <- formula
   attr(ud, "id") <- id.call
   attr(ud, "cluster.call") <- cluster.call
-  attr(ud, "cluster") <- clusters
+  attr(ud, "cluster") <- gclusters
   attr(ud, "start.time") <- start.time
   attr(ud, "stop") <- stop.call
   attr(ud, "start") <- start.call

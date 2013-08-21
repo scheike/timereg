@@ -197,6 +197,7 @@ namematrix(ud$D2linv,covnamesX);
 attr(ud,"Call")<-sys.call(); 
 attr(ud,"Formula")<-formula; 
 attr(ud,"id")<-id.call; 
+attr(ud,"basesim") <- 1
 class(ud)<-"cox.aalen"
 return(ud); 
 }

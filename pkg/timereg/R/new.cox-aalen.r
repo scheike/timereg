@@ -4,8 +4,8 @@ cox.aalen<-function(formula=formula(data),data=sys.parent(),
 beta=NULL,Nit=10,detail=0,start.time=0,max.time=NULL, id=NULL, 
 clusters=NULL, n.sim=500, residuals=0,robust=1,
 weighted.test=0,covariance=0,resample.iid=1,weights=NULL,
-rate.sim=0,beta.fixed=0,max.clust=1000,exact.deriv=1,silent=1,
-max.timepoint.sim=100)
+rate.sim=1,beta.fixed=0,max.clust=1000,exact.deriv=1,silent=1,
+max.timepoint.sim=100,basesim=0,stratum=0)
 { ## {{{
 offsets=0; 
 ## {{{ set up variables 
@@ -17,9 +17,10 @@ offsets=0;
   if (beta.fixed==1) Nit<-1; 
   call <- match.call()
   m <- match.call(expand.dots=FALSE)
-  m$robust<-m$start.time<- m$scaleLWY<-m$weighted.test<-m$beta<-m$Nit<-m$detail<-m$max.time<-m$residuals<-m$n.sim<-m$id<-
-	                   m$covariance<-m$resample.iid<-m$clusters<-m$rate.sim<-m$beta.fixed<-
-                           m$max.clust <- m$exact.deriv <- m$silent <- m$max.timepoint.sim <- m$silent <- NULL
+  m$robust<-m$start.time<- m$scaleLWY<-m$weighted.test<-m$beta<-m$Nit<-m$detail<-m$max.time<-
+	  m$residuals<-m$n.sim<-m$id<- m$covariance<-m$resample.iid<-m$clusters<-m$rate.sim<-m$beta.fixed<-
+          m$stratum <- m$max.clust <- m$exact.deriv <- m$silent <- m$max.timepoint.sim <- m$silent <- NULL
+	  m$basesim <- m$stratum <- NULL
   special <- c("prop","cluster")
   Terms <- if(missing(data)) terms(formula, special)
   else          terms(formula, special, data=data)
@@ -43,7 +44,7 @@ offsets=0;
   cluster.call<-clusters; 
   survs<-read.surv(m,id,npar,clusters,start.time,max.time,model="cox.aalen",silent=silent)
   times<-survs$times;id<-id.call<-survs$id.cal;
-  clusters<-survs$clusters; 
+  gclusters <- clusters<-survs$clusters; 
   start.call <- start <-  survs$start; 
   stop.call <- time2 <- survs$stop; 
   status<-survs$status;
@@ -56,7 +57,7 @@ offsets=0;
   if ((!is.null(max.clust))) if (max.clust<survs$antclust) {
 	qq <- unique(quantile(clusters, probs = seq(0, 1, by = 1/max.clust)))
 	qqc <- cut(clusters, breaks = qq, include.lowest = TRUE)    
-	clusters <- as.integer(qqc)-1
+	clusters <- gclusters <- as.integer(qqc)-1
 	max.clusters <- length(unique(clusters))
 ###	clusters <- as.integer(factor(qqc, labels = 1:max.clust)) -1
 	survs$antclust <- max.clust    
@@ -116,8 +117,8 @@ ldata<-list(start=start,stop=stop, antpers=survs$antpers,antclust=survs$antclust
             sim=sim,antsim=n.sim,residuals=residuals,robust=robust,
             weighted.test=weighted.test,ratesim=rate.sim,
             covariance=covariance,resample.iid=resample.iid,namesX=covnamesX,
-	    namesZ=covnamesZ,beta.fixed=beta.fixed,entry=entry,
-	    offsets=0,exactderiv=exact.deriv,max.timepoint.sim=max.timepoint.sim,silent=silent)
+	    namesZ=covnamesZ,beta.fixed=beta.fixed,entry=entry,basesim=basesim,
+	    offsets=0,exactderiv=exact.deriv,max.timepoint.sim=max.timepoint.sim,silent=silent,istratum=stratum)
 
   ## {{{ output handling
   colnames(ud$test.procProp)<-c("time",covnamesZ)
@@ -129,11 +130,10 @@ ldata<-list(start=start,stop=stop, antpers=survs$antpers,antclust=survs$antclust
     if (robust==1) colnames(ud$robvar.cum)<- c("time",covnamesX)
     if (sim==1) {
       names(ud$pval.Prop)<- covnamesZ
-      names(ud$conf.band)<- names(ud$pval.testBeq0)<-
-        names(ud$pval.testBeqC)<-
-          names(ud$obs.testBeq0)<- names(ud$obs.testBeqC)<-
-            colnames(ud$sim.testBeq0)<- covnamesX; 
-    } }
+      if (basesim>=1) names(ud$conf.band)<- names(ud$pval.testBeq0)<- names(ud$pval.testBeqC)<-
+	      names(ud$obs.testBeq0)<- names(ud$obs.testBeqC)<- colnames(ud$sim.testBeq0)<- covnamesX; 
+    } 
+  }
   covariance<-ud$covariance
 
   rownames(ud$gamma)<-c(covnamesZ); colnames(ud$gamma)<-"estimate"; 
@@ -153,7 +153,7 @@ ldata<-list(start=start,stop=stop, antpers=survs$antpers,antclust=survs$antclust
   attr(ud,"id.call")<-id.call;
   attr(ud,"id")<-id.call;
   attr(ud,"cluster.call")<-cluster.call;
-  attr(ud,"cluster")<-clusters;
+  attr(ud,"cluster")<-gclusters;
   attr(ud,"time2")<-time2; 
   attr(ud,"start.time")<-start.time; 
   attr(ud,"start")<-start.call; 
@@ -163,6 +163,7 @@ ldata<-list(start=start,stop=stop, antpers=survs$antpers,antclust=survs$antclust
   attr(ud,"residuals")<-residuals; 
   attr(ud,"max.clust")<-max.clust; 
   attr(ud,"max.time")<-max.time; 
+  attr(ud,"basesim")<-basesim; 
   attr(ud,"orig.max.clust")<- orig.max.clust 
   attr(ud,"max.timepoint.sim")<-max.timepoint.sim; 
   ud$call<-call
@@ -229,12 +230,13 @@ if (is.null(cox.aalen.object$gamma)==TRUE) prop<-FALSE else prop<-TRUE
   if (sum(abs(cox.aalen.object$score)>0.000001)) 
     cat("Did not converge, allow more iterations\n\n"); 
 
+  if (attr(obj,"basesim")==1) 
   if (p.o==FALSE) cat("Test for Aalen terms \n") else  cat("Test for baseline \n")
 
   if (is.null(obj$conf.band)==TRUE)  mtest<-FALSE else mtest<-TRUE; 
   if (mtest==FALSE) cat("Test not computed, sim=0 \n\n")
+  if (attr(obj,"basesim")==1) 
   if (mtest==TRUE) { 
-
     timetest(obj,digits=digits)
   }
 
