@@ -4,7 +4,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
     ratesim = 0, residuals = 0, covariance = 1,
     resample.iid=0,namesZ=NULL,namesX=NULL,beta.fixed=0,
     entry=NULL,offsets=0,exactderiv=1,max.timepoint.sim=100,
-    silent=1,basesim=0,istratum=0) 
+    silent=1,basesim=1,istratum=0) 
 { ## {{{
   additive.resamp <-0; ridge <- 0; XligZ <- 0; 
   Ntimes <- length(times)
