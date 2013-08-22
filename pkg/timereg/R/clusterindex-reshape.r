@@ -3,7 +3,7 @@ cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0)
 antpers <- length(clusters)
 
 if (index.type==FALSE)  {
-	if (is.numeric(clusters)) clusters <-  timereg:::sindex.prodlim(unique(clusters),clusters)-1 else  {
+	if (is.numeric(clusters)) clusters <-  timereg::sindex.prodlim(unique(clusters),clusters)-1 else  {
 	   max.clust <- length(unique(clusters))
 	   clusters <- as.integer(factor(clusters, labels = 1:max.clust))-1
 	}
@@ -18,7 +18,7 @@ if (index.type==FALSE)  {
 
 if ((!is.null(num))) { ### different types in different columns
    mednum <- 1
-if (is.numeric(num)) numnum <-  timereg:::sindex.prodlim(unique(num),num)-1
+if (is.numeric(num)) numnum <-  timereg::sindex.prodlim(unique(num),num)-1
 else numnum <- as.integer(factor(num, labels = 1:maxclust)) -1
 maxclust <- max(numnum)+1; 
 } else { numnum <- 0; mednum <- 0; }
