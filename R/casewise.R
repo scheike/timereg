@@ -44,10 +44,10 @@
 ##' @export
 casewise.test <- function(conc,marg,test="no-test",p=0.01)
 { ## {{{
-	conc=cdz; marg=cifdz; p=0.01
-	conc=cmz; marg=cifmz
-	names(cdz)
-	cdz$casewise
+###	conc=cdz; marg=cifdz; p=0.01
+###	conc=cmz; marg=cifmz
+###	names(cdz)
+###	cdz$casewise
   if (sum(marg$P1>p)==0) stop("No timepoints where marginal > ",p,"\n"); 
   time1 <- conc$time; time2 <- marg$time[marg$P1>0.01]
   mintime <- max(time1[1],time2[1])
