@@ -13,7 +13,7 @@ if (class(margsurv)!="coxph") {
  ldata<-aalen.des(formula,data=data,model="cox.aalen");
  id <- attr(margsurv,"id"); 
  mclusters <- attr(margsurv,"cluster.call")
- mclustersind <- attr(margsurv,"cluster")
+ mclustind <- attr(margsurv,"cluster")
  X<-ldata$X; time<-ldata$time2; Z<-ldata$Z;  status<-ldata$status;
  time2 <- attr(margsurv,"stop"); 
  start <- attr(margsurv,"start")
@@ -22,21 +22,30 @@ if (class(margsurv)!="coxph") {
  if (is.null(Z)==TRUE) {npar<-TRUE; semi<-0;}  else { Z<-as.matrix(Z); npar<-FALSE; semi<-1;}
  if (npar==TRUE) {Z<-matrix(0,antpers,1); pz<-1; fixed<-0;} else {fixed<-1;pz<-ncol(Z);}
  px<-ncol(X);
-
  if (is.null(clusters) && is.null(mclusters)) 
 	 stop("No cluster variabel specified in marginal or twostage call \n"); 
- if (is.null(clusters)) clusters <- mclusters;
+ if (is.null(clusters)) clusters <- mclusters; 
+
+ secluster <- clusters; 
+ antsecluster <- length(unique(clusters))
+ if (is.numeric(secluster)) secluster <-  sindex.prodlim(unique(secluster),secluster)-1 else  {
+      clusters <- as.integer(factor(clusters, labels = 1:antsecluster))-1
+ }
+
+ if ( (sum(abs(clusters-mclusters))>0)  || (is.null(mclusters)))
+ {
+    cat("Warning: Clusters for marginal model different than those specified for two.stage\n"); 
+    cat(" runs without variation from cox.aalen model, sets: notaylor=1\n"); 
+    notaylor <- 1
+ }
 ### else if (sum(abs(clusters-mclusters))>0) 
 ###      cat("Warning: Clusters for marginal model different than those specified for two.stage\n"); 
 ###  if (!is.null(attr(margsurv,"max.clust")))
 ###  if ((attr(margsurv,"max.clust")< attr(margsurv,"orig.max.clust"))  && (!is.null(mclusters)) )
 ###	  cat("Warning: Probably want to estimate marginal model with max.clust=NULL\n"); 
+### if (nrow(X)!=length(clusters)) stop("Length of Marginal survival data not consistent with cluster length\n"); 
 
- if (nrow(X)!=length(clusters)) stop("Length of Marginal survival data not consistent with cluster length\n"); 
- secluster <- mclustersind; 
- antsecluster <- length(unique(secluster))
-
-} else { ### coxph
+} else { ## coxph ## {{{ 
   notaylor <- 1
   antpers <- margsurv$n
   id <- 0:(antpers-1)
@@ -62,7 +71,10 @@ if (class(margsurv)!="coxph") {
    start.time <- 0
    secluster <- clusters; 
    antsecluster <- length(unique(clusters))
-}
+   if (is.numeric(secluster)) secluster <-  sindex.prodlim(unique(secluster),secluster)-1 else  {
+       clusters <- as.integer(factor(clusters, labels = 1:antsecluster))-1
+   }
+}  ## }}} 
 
   out.clust <- cluster.index(clusters);  
   clusters <- out.clust$clusters
@@ -70,6 +82,8 @@ if (class(margsurv)!="coxph") {
   antclust <- out.clust$antclust
   idiclust <- out.clust$idclust
   cluster.size <- out.clust$cluster.size
+
+  print(c(antsecluster,antclust));
 
   if (sum(abs(start))>0) lefttrunk <- 1  else lefttrunk <- 0;  
   cumhazleft <- 0; 
@@ -169,19 +183,14 @@ if (class(margsurv)!="coxph") {
   theta.iid <- matrix(0,antsecluster,ptheta)
   ## }}}
   
-###  print(dim(Biid))
-###  print(prod(dim(Biid)))
-###  print(dim(gamma.iid))
+###  print(" mMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"); 
+###  print(dim(Biid)); print(dim(gamma.iid)); 
 ###  print(print(c(px,pz,maxtimesim,antclust)))
-###  print(times)
-###  print(c(Ntimes,maxtimesim))
-###  print(clusters)
-###  print(antclust)
-###  print(secluster)
-###  print(antsecluster)
-###  print(dim(Biid))
-###  print(dim(gamma.iid))
-###  print(idiclust); 
+###  print(times); print(c(Ntimes,maxtimesim))
+###  print(rbind(clusters,secluster)); 
+  print(antclust); print(antsecluster); 
+###  print("NOTAYLOR"); 
+###  print(notaylor) 
 
   nparout <- .C("twostagereg", 
         as.double(times), as.integer(Ntimes), as.double(X),

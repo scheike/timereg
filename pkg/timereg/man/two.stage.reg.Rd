@@ -91,12 +91,18 @@ Martinussen and Scheike, Dynamic Regression Models for Survival Data,
 Springer (2006).}
 \author{Thomas Scheike}
 \examples{
+library(timereg)
 data(diabetes)
 # Marginal Cox model  with treat as covariate
 marg <- cox.aalen(Surv(time,status)~prop(treat)+cluster(id),data=diabetes,
 		  resample.iid=1)
-fit<-two.stage(marg,data=diabetes,theta=1.0,detail=0,Nit=40)
+fit<-two.stage(marg,data=diabetes,theta=1.0,Nit=40)
 summary(fit)
+
+# using coxph and giving clusters, but SE wittout cox uncetainty
+margph <- coxph(Surv(time,status)~treat,data=diabetes)
+fit<-two.stage(margph,data=diabetes,theta=1.0,Nit=40,clusters=diabetes$id)
+
 
 # Stratification after adult 
 theta.des<-model.matrix(~-1+factor(adult),diabetes);

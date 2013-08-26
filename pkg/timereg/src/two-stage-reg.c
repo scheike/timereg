@@ -203,7 +203,7 @@ for(j=0;j<pmax;j++) {
   if (isnan(thetaiidscale[j])) vec_zeros(vtheta3); 
 
   if (it==(*Nit-1)) { 
-     vec_add(vtheta3,thetaiid[secluster[i]],thetaiid[secluster[i]]); 
+	  vec_add(vtheta3,thetaiid[secluster[i]],thetaiid[secluster[i]]); 
   }
   vec_add(vthetascore,vtheta3,vthetascore); 
 
@@ -245,6 +245,7 @@ for(j=0;j<pmax;j++) {
     if ((sumscore<0.0000001) & (it<*Nit-2)) it=*Nit-2; 
   } /* it theta Newton-Raphson */  // }}}
 
+  if (*detail==1) printf("Newton-Raphson ok \n"); 
   for (i=0;i<*ptheta;i++) { theta[i]=VE(vtheta1,i); thetascore[i]=VE(vthetascore,i); }
 
    R_CheckUserInterrupt();

@@ -36,15 +36,15 @@ offsets=0;
   X<-des$X; Z<-des$Z; npar<-des$npar; px<-des$px; pz<-des$pz;
   covnamesX<-des$covnamesX; covnamesZ<-des$covnamesZ
   if(is.null(clusters)) clusters <- des$clusters  
+  cluster.call<-clusters; 
   pxz <- px + pz;
 
   if ( (nrow(Z)!=nrow(data)) && (!is.null(id))) stop("Missing values in design matrix not allowed with id\n"); 
 ###  if (nrow(Z)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
 
-  cluster.call<-clusters; 
   survs<-read.surv(m,id,npar,clusters,start.time,max.time,model="cox.aalen",silent=silent)
   times<-survs$times;id<-id.call<-survs$id.cal;
-  clusters<-survs$clusters; 
+  clusters<-gclusters <- survs$clusters; 
   start.call <- start <-  survs$start; 
   stop.call <- time2 <- survs$stop; 
   status<-survs$status;
@@ -57,7 +57,7 @@ offsets=0;
   if ((!is.null(max.clust))) if (max.clust<survs$antclust) {
 	qq <- unique(quantile(clusters, probs = seq(0, 1, by = 1/max.clust)))
 	qqc <- cut(clusters, breaks = qq, include.lowest = TRUE)    
-	clusters <- as.integer(qqc)-1
+	gclusters <- clusters <- as.integer(qqc)-1
 	max.clusters <- length(unique(clusters))
 ###	clusters <- as.integer(factor(qqc, labels = 1:max.clust)) -1
 	survs$antclust <- max.clust    
@@ -156,7 +156,7 @@ ldata<-list(start=start,stop=stop, antpers=survs$antpers,antclust=survs$antclust
   attr(ud,"id.call")<-id.call;
   attr(ud,"id")<-id.call;
   attr(ud,"cluster.call")<-cluster.call;
-  attr(ud,"cluster")<-clusters;
+  attr(ud,"cluster")<-gclusters; 
   attr(ud,"time2")<-time2; 
   attr(ud,"start.time")<-start.time; 
   attr(ud,"start")<-start.call; 
