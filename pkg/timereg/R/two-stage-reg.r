@@ -83,8 +83,6 @@ if (class(margsurv)!="coxph") {
   idiclust <- out.clust$idclust
   cluster.size <- out.clust$cluster.size
 
-  print(c(antsecluster,antclust));
-
   if (sum(abs(start))>0) lefttrunk <- 1  else lefttrunk <- 0;  
   cumhazleft <- 0; 
   RR <-  rep(1,antpers); 
@@ -188,7 +186,7 @@ if (class(margsurv)!="coxph") {
 ###  print(print(c(px,pz,maxtimesim,antclust)))
 ###  print(times); print(c(Ntimes,maxtimesim))
 ###  print(rbind(clusters,secluster)); 
-  print(antclust); print(antsecluster); 
+###  print(antclust); print(antsecluster); 
 ###  print("NOTAYLOR"); 
 ###  print(notaylor) 
 
