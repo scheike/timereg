@@ -92,17 +92,18 @@ trMean <- function(b,blen) {
 
 ###{{{ multinomlogit
 
-multinomlogit <- function(x) {
+multinomlogit <- function(x,tr=exp,dtr=exp) {
   n <- length(x)
-  ex <- exp(x)
+  ex <- tr(x)
+  dex <- dtr(x)
   sx <- sum(ex)+1
   f <- c(ex,1)
-  df <- c(ex,0)
+  df <- c(dex,0)
   res <- f/sx
-  dg <- -ex/sx^2   
+  dg <- -dex/sx^2   
   gradient <- matrix(ncol=n,nrow=n+1)
   I <- diag(n+1)
-  for (i in 1:(n)) {
+  for (i in seq_len(n)) {
     gradient[,i] <- df[i]*I[i,]/sx+dg[i]*f
   }
   attributes(res)$gradient <- gradient

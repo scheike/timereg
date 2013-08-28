@@ -42,11 +42,14 @@ RcppExport SEXP Bhat(SEXP ds,
       mat Xci = U*diagmat(1/s)*V.st();
       dB.row(rij) = trans(Xci*trans(X.row(start)));
     }
+    if (thetahat==0) {
+      return(Rcpp::List::create(Rcpp::Named("dB")=dB)); //Increments of marg. aalenn
+    }
 
 
     vec       Hij(X.n_rows); // Vector to hold cumulative hazard; updated as t increases
     Hij.fill(0);
-    mat        B2 = zeros(eventpos.n_elem,X.n_cols); // Conditional cumulative hazard 
+    mat        B2 = zeros(eventpos.n_elem,X.n_cols); // Cond. cumulative coef 
     for (unsigned k=0; k<eventpos.n_elem; k++) { // Iterate over events
       unsigned ij = eventpos(k);
       unsigned i = cluster(ij);  // cluster
@@ -75,8 +78,8 @@ RcppExport SEXP Bhat(SEXP ds,
       B2.row(k) = dB.row(k)/psi;
       if (k>0) { B2.row(k) += B2.row(k-1); }
     }
-    return(Rcpp::List::create(Rcpp::Named("dB")=dB,
-			      Rcpp::Named("B2")=B2
+    return(Rcpp::List::create(Rcpp::Named("dB")=dB, //Increments of marg. aalen
+			      Rcpp::Named("B2")=B2  // Cum.coef of frailty aalen
 			      ));
   } catch( std::exception &ex ) {
     forward_exception_to_r( ex );
@@ -85,6 +88,7 @@ RcppExport SEXP Bhat(SEXP ds,
   }
   return R_NilValue; // -Wall
 }
+
 
 
 RcppExport SEXP Uhat(SEXP ds, SEXP H, SEXP theta, SEXP id, SEXP idsize) {
@@ -107,7 +111,7 @@ RcppExport SEXP Uhat(SEXP ds, SEXP H, SEXP theta, SEXP id, SEXP idsize) {
     vec res(nclust);
     for (unsigned i=0; i<nclust; i++) {
       if (doclust) {
-        unsigned ic = ucluster(i);  // cluster
+        unsigned ic = ucluster(i);  // cluster 
         clustpos = find(cluster==ic); // position of within cluster observations
       } else {
         unsigned csize = clustersize(i);

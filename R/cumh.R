@@ -18,7 +18,8 @@ cumh <- function(formula,data,...,time,
     status <- censtime[,2]
 ###    data[,"_status"] <- 
   }
-   
+
+  browser()
   res <- list(); i <- 0
   ht <- c()
   outcome <- as.character(terms(formula)[[2]])

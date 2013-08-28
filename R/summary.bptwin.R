@@ -5,7 +5,10 @@ summary.bptwin <- function(object,level=0.05,...) {
   dlogit <- function(p) 1/(p*(1-p))
   dtigol <- function(z) tigol(z)^2*exp(-z)
   trnam <- " "
-  vcoef1 <- paste("log(var(",c("A","C","D"),"))",sep="")
+  vcoef1 <- paste("var(",c("A","C","D"),")",sep="")
+  if (object$transform$invname!="") {
+      vcoef1 <- paste(object$transform$invname,"(",vcoef1,")",sep="")
+  }
   vcoef2 <- paste("atanh(",
                   c(paste("rho)","MZ",sep=trnam),
                     paste("rho)","DZ",sep=trnam)),sep="")
@@ -37,7 +40,7 @@ summary.bptwin <- function(object,level=0.05,...) {
     nn <- c(c("A","C","D")[ACD],"E")
     dzsc <- c(1/2,1,1/4)[ACD]
     pp <- coef(object)[idx1]
-    cc <- multinomlogit(pp); names(cc) <- nn
+    cc <- multinomlogit(pp,object$transform$tr,object$transform$dtr); names(cc) <- nn
     D <- attributes(cc)$gradient  
     cc2 <- logit(cc)
     D2 <- diag(dlogit(cc))

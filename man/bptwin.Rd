@@ -11,7 +11,7 @@
     eqmean = TRUE, pairsonly = FALSE, samecens = TRUE,
     allmarg = samecens & !is.null(weight), stderr = TRUE,
     robustvar = TRUE, p, indiv = FALSE, constrain,
-    bound = FALSE, ...)
+    bound = FALSE, varlink, ...)
 }
 \arguments{
   \item{formula}{Formula specifying effects of covariates
@@ -84,6 +84,8 @@
   \item{allmarg}{Should all marginal terms be included}
 
   \item{bound}{Development argument}
+
+  \item{varlink}{Link function for variance parameters}
 
   \item{...}{Additional arguments to lower level functions}
 }

@@ -29,20 +29,7 @@
   Aalen frailty model
 }
 \examples{
-n <- 5e3
-theta <- 0.3
-K <- 2
-Z <- rep(rgamma(n/K,1/theta,1/theta),each=K)
-id <- rep(seq(n/K),each=K)
-beta0 <- 1.5; beta <- 0##-0.5 #-.15
-Ai <- function(u) (u/Z)/(beta0+beta*x)
-x <- rbinom(n,1,0.5)
-uu <- -log(runif(n)) ##rexp(n,1)
-dd <- data.frame(time=Ai(uu), x=x, status=1, id=id, Z=Z)
-cens <- runif(n,10,20)
-dd$status <- (dd$time<=cens)*1
-dd$time <- apply(cbind(dd$time,cens),1,min)
-dd <- dd[order(dd$time),] ## order after event/censoring tim
+dd <- simAalenFrailty(5000)
 f <- ~1##+x
 X <- model.matrix(f,dd) ## design matrix for non-parametric terms
 system.time(out<-aalen(update(f,Surv(time,status)~.),dd,n.sim=0,robust=0))

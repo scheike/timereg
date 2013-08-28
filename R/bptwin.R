@@ -38,6 +38,7 @@
 ##' @param samecens Same censoring
 ##' @param allmarg Should all marginal terms be included
 ##' @param bound Development argument
+##' @param varlink Link function for variance parameters
 ##' @param ... Additional arguments to lower level functions
 ##' @author Klaus K. Holst
 ##' @export
@@ -66,6 +67,7 @@ bptwin <- function(formula, data, id, zyg, MZ, DZ, group=NULL,
                    p, indiv=FALSE,
                    constrain,
                    bound=FALSE,
+                   varlink,
                    ...) {
 
 ###{{{ setup
@@ -182,9 +184,14 @@ bptwin <- function(formula, data, id, zyg, MZ, DZ, group=NULL,
   ACDU <- sapply(c("a","c","d","e","u"),function(x) length(grep(x,tolower(type)))>0)
   ACDU <- c(ACDU,os=OSon)
 
-  mytr <- exp; dmytr <- exp; myinvtr <- log
-  trname <- "exp"; invtrname <- "log"      
-
+  if (missing(varlink) || !is.null(varlink)) {
+      mytr <- exp; dmytr <- exp; myinvtr <- log
+      trname <- "exp"; invtrname <- "log"
+  } else {
+      mytr <- myinvtr <- identity; dmytr <- function(x) rep(1,length(x))
+      trname <- ""; invtrname <- ""
+  }
+  
   dmytr2 <- function(z) 4*exp(2*z)/(exp(2*z)+1)^2
   mytr2 <- tanh;  myinvtr2 <- atanh
   trname2 <- "tanh"; invtrname2 <- "atanh"
@@ -347,6 +354,7 @@ bptwin <- function(formula, data, id, zyg, MZ, DZ, group=NULL,
 ###{{{ U  
 
   p0 <- rep(-1,plen); ##p0[vidx] <- 0
+  if (!missing(varlink) && is.null(varlink)) p0 <- rep(0.5,plen)
   if (OSon) p0[length(p0)] <- 0.3
   if (type=="u")
     p0[vidx] <- 0.3
@@ -604,8 +612,11 @@ bptwin <- function(formula, data, id, zyg, MZ, DZ, group=NULL,
     groups <- c("MZ","DZ"); if (OSon) groups <- c(groups,"OS")
     rnames <- c(rnames1,paste(c("atanh(rho)","atanh(rho)"),groups,sep=trnam))
   } else {
-    rnames <- c(rnames1,c("log(var(A))","log(var(C))","log(var(D))")[ACDU[1:3]])
-    if (OSon) rnames <- c(rnames,"atanh(rho(G[OS]))")
+      rnames0 <- c("var(A)","var(C)","var(D)")[ACDU[1:3]]
+      if (invtrname!="")
+          rnames0 <- paste(invtrname,"(",rnames0,")",sep="")
+      rnames <- c(rnames1,rnames0)
+      if (OSon) rnames <- c(rnames,"atanh(rho(G[OS]))")
   }
   if (!missing(constrain)) rnames <- rnames[freeidx]
   rownames(cc) <- rnames
