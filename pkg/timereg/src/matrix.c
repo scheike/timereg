@@ -279,6 +279,114 @@ void MtM(matrix *M, matrix *A){
   }
 }
 
+// Does cholesky of := A, where A is symmetric positive definite, of order *n
+void cholesky(matrix *A, matrix *AI){ // {{{ 
+
+  if( !(nrow_matrix(A)  == ncol_matrix(A) && 
+	nrow_matrix(AI) == ncol_matrix(AI) &&
+	nrow_matrix(A)  == ncol_matrix(AI)) ){
+    oops("Error: dimensions in invertSPD\n");
+  }
+
+  // Ensure that A and AI do not occupy the same memory. 
+  if(A != AI){
+    choleskyunsafe(A, AI);
+  } else {
+    // if M and A occupy the same memory, store the results in a
+    // temporary matrix. 
+    matrix *temp;
+    malloc_mat(nrow_matrix(AI),ncol_matrix(AI),temp);
+
+    choleskyunsafe(A, temp);
+    
+    // Copy these results into AI, then remove the temporary matrix
+    mat_copy(temp,AI);    
+    free_mat(temp);
+  }
+
+} // }}} 
+
+// cholesky := A, where A is symmetric positive definite, of order *n
+void choleskyunsafe(matrix *A, matrix *AI){ // {{{ 
+  //unsafe because it assumes A and AI are both square and of the same
+  //dimensions, and that they occupy different memory
+
+  char uplo = 'U';
+  int i, j;
+  int n = nrow_matrix(A);
+  int lda = n; // matrix A has dimensions *n x *n
+  int info = -999;
+  double rcond;
+  int pivot[n];
+  double z[n];
+  double qraux[n];
+  double work[2*n];
+  int rank = 0;
+  int job=1;
+  double tol = 1.0e-07;
+  
+  // First copy the matrix A into the matrix AI
+  for(i = 0; i < n; i++){
+    for(j = 0; j < n; j++){
+      ME(AI,i,j) = ME(A,i,j);
+    }
+  }
+    
+//  dqrdc(x,ldx,n,p, qraux,jpvt,work,job)
+//  F77_CALL(dqrdc)(AI->entries, &n, &n, &n, &rank, qraux, pivot, work,job);
+//  dqrdc2(x,ldx,n,p,tol,k,qraux,jpvt,work)
+  F77_CALL(dqrdc2)(AI->entries, &n, &n, &n, &tol, &rank, qraux, pivot, work);
+
+  for(i = 0; i < n; i++){
+    for(j = 0; j < i; j++){
+      ME(AI,j,i) = 0.0;
+    }
+  }
+
+  job = 1; // Indicates that AI is upper triangular
+  rcond = 999.0;
+  F77_CALL(dtrco)(AI->entries, &n, &n, &rcond, z, &job);
+    
+  if(rcond < tol){
+    Rprintf("Error in invertSPD: estimated condition number = %7.7e\n",1/rcond); 
+    
+    for(i = 0; i < n; i++){
+      for(j = 0; j < n; j++){
+	ME(AI,i,j) = 0.0;
+      }
+    }
+  } else {
+
+    for(i = 0; i < n; i++){
+      pivot[i] = i+1;
+      for(j = 0; j < n; j++){
+	ME(AI,i,j) = ME(A,i,j);
+      }
+    }
+
+    // First find the Cholesky factorization of A,
+    // stored as an upper triangular matrix
+    F77_CALL(dpotrf)(&uplo, &n, AI->entries, &lda, &info); 
+
+    if(info < 0){
+      Rprintf("Error in cholesky: arg %d of DPOTRF\n",-info);
+    } else if(info > 0){
+      Rprintf("Error in cholesky: matrix does not appear to be SPD\n");
+    } 
+       
+    // Lastly turn the vector a into the matrix AI
+    // Take only the upper triangular portion, since this 
+    // is the relevant part returned by dpotrf
+//    for(i = 0; i < n; i++){
+//      for(j = 0; j < i; j++){
+//	ME(AI,i,j) = ME(AI,j,i);
+//      }
+//    }
+
+  }
+
+} // }}} 
+
 // Does AI := inverse(A), where A is symmetric positive definite, of order *n
 void invertSPD(matrix *A, matrix *AI){
 

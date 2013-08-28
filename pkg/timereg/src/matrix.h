@@ -156,6 +156,9 @@ void invertS(matrix *A, matrix *AI,int silent);
 void invertUnsafe(matrix *A, matrix *AI);
 void invertUnsafeS(matrix *A, matrix *AI,int silent);
 
+void cholesky(matrix *A, matrix *AI);
+void choleskyunsafe(matrix *A, matrix *AI);
+
 void MxA(matrix *M, matrix *A, matrix *Mout);
 
 void R_CheckUserInterrupt(void);
