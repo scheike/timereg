@@ -2,7 +2,7 @@
 \alias{aalenfrailty}
 \title{Aalen frailty model}
 \usage{
-  aalenfrailty(time, status, X, id, theta, ...)
+  aalenfrailty(time, status, X, id, theta, B = NULL, ...)
 }
 \arguments{
   \item{time}{Time variable}

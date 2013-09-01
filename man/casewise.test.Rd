@@ -26,7 +26,6 @@
   marginal
 }
 \examples{
-	library(mets)
 data(prt);
 
 prt <- prt[which(prt$id \%in\% sample(unique(prt$id),7500)),]
