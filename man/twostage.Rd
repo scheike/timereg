@@ -74,12 +74,13 @@ based on the pairwise bivariate models.}
   marginals are known.
 }
 \examples{
+	library(mets)
 data(diabetes)
 
 # Marginal Cox model  with treat as covariate
 margph <- coxph(Surv(time,status)~treat,data=diabetes)
 ### Clayton-Oakes, from timereg
-fitco1<-two.stage(margph,data=diabetes,theta=1.0,detail=0,Nit=40,clusters=diabetes$id)
+fitco1<-two.stage(margph,data=diabtes,theta=1.0,detail=0,Nit=40,clusters=diabetes$id)
 summary(fitco1)
 ### Plackett model
 fitp<-twostage(margph,data=diabetes,theta=0.0,Nit=40,
