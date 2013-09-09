@@ -140,7 +140,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
   idx2 <- which(ww0[,causes2[1]]==cause[1] & ww0[,causes2[2]]==cause[2])
   if (length(idx2)>0) {
       status[idx2] <- 1
-      time[idx2] <- apply(ww0[idx2,timevar2[1:2]],1,max)
+      time[idx2] <- apply(ww0[idx2,timevar2[1:2],drop=FALSE],1,max)
   }
 
   ##(0,0), (0,j)
@@ -168,7 +168,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
   idx2 <- which(ww0[,causes2[1]]!=cens & ww0[,causes2[1]]!=cause[1] & (ww0[,causes2[2]]!=cens & ww0[,causes2[2]]!=cause[2]))
   if (length(idx2)>0) {
       status[idx2] <- 2
-      time[idx2] <- apply(ww0[idx2,timevar2[1:2]],1,min)
+      time[idx2] <- apply(ww0[idx2,timevar2[1:2],drop=FALSE],1,min)
   }
 
   ##(0,jc),(i,jc)
