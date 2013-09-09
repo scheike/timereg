@@ -204,9 +204,9 @@ bptwin <- function(formula, data, id, zyg, MZ, DZ, group=NULL,
     ## mytr <- function(p) c(exp(p[-length(p)]),tigol(p[length(p)]))
     ## myinvtr <- function(z) c(log(z[-length(z)]),logit(z[length(z)]))
     ## dmytr <- function(p) c(exp(p[-length(p)]),dtigol(p[length(p)]))
-    mytr <- function(p) c(exp(p[-length(p)]),mytr2(p[length(p)]))
+    mytr <- function(x) c(exp(x[-length(x)]),mytr2(x[length(x)]))
     myinvtr <- function(z) c(log(z[-length(z)]),myinvtr2(z[length(z)]))
-    dmytr <- function(p) c(exp(p[-length(p)]),dmytr2(p[length(p)]))
+    dmytr <- function(x) c(exp(x[-length(x)]),dmytr2(x[length(x)]))
   }
 
   if (ACDU["u"]) {
