@@ -337,7 +337,6 @@ if ( type == "right" )  {  ## {{{
   }  ## }}} 
   else if (score==1)  ## {{{
   {
-	  print("1!!!!!!!!!!!!!!!"); 
       dim1<-ncol(object$procBeq0)
       if (sum(specific.comps)==FALSE) comp<-2:dim1 else comp<-specific.comps+1
 
@@ -376,7 +375,6 @@ if ( type == "right" )  {  ## {{{
     } ## }}} 
     else if (score==2)  ## {{{  plot score proces
     {
-     print("2!!!!!!!!!!!!!!!"); 
       dim1<-length(object$obs.test)
       if (sum(specific.comps)==FALSE) comp<-1:dim1 else comp<-specific.comps
 
@@ -390,8 +388,7 @@ if ( type == "right" )  {  ## {{{
         if (nrow(object$proc.cumz[[i]])==1) TYPE<-"p" else TYPE<-"l"; 
 
         if (is.null(xlab)) xlabl <- colnames(object$proc.cumz[[v]])[1] else xlabl <- xlab[i]
-	print(colnames(object$proc.cumz[[v]]))
-	print(xlabl)
+###	print(colnames(object$proc.cumz[[v]])); print(xlabl)
 
           if (TYPE=="l") 
             {
