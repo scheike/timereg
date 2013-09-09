@@ -17,10 +17,11 @@ offsets=0;
   if (beta.fixed==1) Nit<-1; 
   call <- match.call()
   m <- match.call(expand.dots=FALSE)
-  m$robust<-m$start.time<- m$scaleLWY<-m$weighted.test<-m$beta<-m$Nit<-m$detail<-m$max.time<-m$residuals<-m$n.sim<-m$id<-
-	                   m$covariance<-m$resample.iid<-m$clusters<-m$rate.sim<-m$beta.fixed<-
-                           m$max.clust <- m$exact.deriv <- m$silent <- m$max.timepoint.sim <- m$silent <- NULL
-			   m$basesim <- NULL
+  m$robust<-m$start.time<- m$scaleLWY<-m$weighted.test<-m$beta<-m$Nit<-m$detail<-
+	  m$max.time<-m$residuals<-m$n.sim<-m$id<-m$covariance<-m$resample.iid<-
+	  m$clusters<-m$rate.sim<-m$beta.fixed<- m$max.clust <- m$exact.deriv <- 
+	  m$silent <- m$max.timepoint.sim <- m$silent <- m$basesim <- NULL
+
   special <- c("prop","cluster")
   Terms <- if(missing(data)) terms(formula, special)
   else          terms(formula, special, data=data)

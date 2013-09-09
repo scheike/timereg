@@ -7,6 +7,8 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
 { ## {{{
   additive.resamp <-0; ridge <- 0; XligZ <- 0; 
   Ntimes <- length(times)
+  sim <- rep(sim,2); 
+  sim[2] <- basesim; ##  tmp tmp tmp  
 
   if (is.null(max.timepoint.sim)) max.timepoint.sim <- Ntimes; 
   if (max.timepoint.sim< Ntimes)  {   ## {{{
@@ -41,7 +43,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   if (length(betaS)!=pg) betaS <- rep(betaS[1],pg); 
   score <- betaS; loglike <- rep(0,2); 
   RVarbeta <- Iinv <- Varbeta <- matrix(0, pg, pg); 
-  if (sim == 1) Uit <- matrix(0, mts , 50 * pg) else Uit <- NULL
+  if (sim[1] == 1) Uit <- matrix(0, mts , 50 * pg) else Uit <- NULL
   if (additive.resamp == 1) baseproc <- matrix(0, mts, 50 * px) else baseproc <- NULL
   if (resample.iid == 1) biid <- matrix(0, mts, fdata$antclust * px) else biid <- NULL; 
   gamiid<- matrix(0,fdata$antclust,pg); 
@@ -51,7 +53,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   var.score<- matrix(0, Ntimes , pg + 1); 
 
   if (is.diag(  t(designX) %*% designX  )==TRUE) stratum <- 1 else stratum <- 0
-  if (basesim==1) sim <- 2; 
+  if (basesim==1) sim[1] <- 2; ## first argument 0,1,2 
 
   nparout <- .C("score", as.double(times), as.integer(Ntimes), 
                 as.double(designX), as.integer(nx), as.integer(px), 
@@ -115,7 +117,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
     testUt <- test <- unifCI <- supUtOBS <- UIt <- testOBS <- testval <- pval.testBeq0 <- 
     pval.testBeqC <- obs.testBeq0 <- obs.testBeqC <- sim.testBeq0 <- sim.testBeqC <- testUt <- sim.supUt <- NULL 
 	               
-  if (sim >= 1) {
+  if (sim[1] >= 1) {
     Uit <- matrix(nparout[[33]], mts, 50 * pg)
     UIt <- list()
     for (i in (0:49) * pg) UIt[[i/pg + 1]] <- as.matrix(Uit[, i + (1:pg)])
@@ -125,7 +127,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
     for (i in 1:pg) testUt <- c(testUt, pval(simUt[, i], supUtOBS[i]))
     sim.supUt <- as.matrix(simUt)
 
-    if (sim>=2) {
+    if (sim[1] >=2) {
 	    test <- matrix(nparout[[29]], antsim, 2 * px)
 	    testOBS <- nparout[[30]]
 	    for (i in 1:(2 * px)) testval <- c(testval, pval(test[, i], testOBS[i]))

@@ -290,6 +290,7 @@ void cholesky(matrix *A, matrix *AI){ // {{{
 
   // Ensure that A and AI do not occupy the same memory. 
   if(A != AI){
+//	  printf(" er her\n"); 
     choleskyunsafe(A, AI);
   } else {
     // if M and A occupy the same memory, store the results in a
@@ -335,7 +336,7 @@ void choleskyunsafe(matrix *A, matrix *AI){ // {{{
 //  dqrdc(x,ldx,n,p, qraux,jpvt,work,job)
 //  F77_CALL(dqrdc)(AI->entries, &n, &n, &n, &rank, qraux, pivot, work,job);
 //  dqrdc2(x,ldx,n,p,tol,k,qraux,jpvt,work)
-  F77_CALL(dqrdc2)(AI->entries, &n, &n, &n, &tol, &rank, qraux, pivot, work);
+//  F77_CALL(dqrdc2)(AI->entries, &n, &n, &n, &tol, &rank, qraux, pivot, work);
 
   for(i = 0; i < n; i++){
     for(j = 0; j < i; j++){
@@ -345,45 +346,54 @@ void choleskyunsafe(matrix *A, matrix *AI){ // {{{
 
   job = 1; // Indicates that AI is upper triangular
   rcond = 999.0;
-  F77_CALL(dtrco)(AI->entries, &n, &n, &rcond, z, &job);
-    
-  if(rcond < tol){
-    Rprintf("Error in invertSPD: estimated condition number = %7.7e\n",1/rcond); 
-    
-    for(i = 0; i < n; i++){
-      for(j = 0; j < n; j++){
-	ME(AI,i,j) = 0.0;
-      }
-    }
-  } else {
-
-    for(i = 0; i < n; i++){
-      pivot[i] = i+1;
-      for(j = 0; j < n; j++){
-	ME(AI,i,j) = ME(A,i,j);
-      }
-    }
-
+//  F77_CALL(dtrco)(AI->entries, &n, &n, &rcond, z, &job);
+//    
+//  if(rcond < tol){
+//    Rprintf("Error in invertSPD: estimated condition number = %7.7e\n",1/rcond); 
+//    
+//    for(i = 0; i < n; i++){
+//      for(j = 0; j < n; j++){
+//	ME(AI,i,j) = 0.0;
+//      }
+//    }
+//  } else {
+//
+//    for(i = 0; i < n; i++){
+//      pivot[i] = i+1;
+//      for(j = 0; j < n; j++){
+//	ME(AI,i,j) = ME(A,i,j);
+//      }
+//    }
+//
     // First find the Cholesky factorization of A,
     // stored as an upper triangular matrix
     F77_CALL(dpotrf)(&uplo, &n, AI->entries, &lda, &info); 
 
-    if(info < 0){
-      Rprintf("Error in cholesky: arg %d of DPOTRF\n",-info);
-    } else if(info > 0){
-      Rprintf("Error in cholesky: matrix does not appear to be SPD\n");
-    } 
+//    if(info < 0){
+//      Rprintf("Error in cholesky: arg %d of DPOTRF\n",-info);
+//    } else if(info > 0){
+//      Rprintf("Error in cholesky: matrix does not appear to be SPD\n");
+//    } 
        
     // Lastly turn the vector a into the matrix AI
     // Take only the upper triangular portion, since this 
     // is the relevant part returned by dpotrf
-//    for(i = 0; i < n; i++){
-//      for(j = 0; j < i; j++){
-//	ME(AI,i,j) = ME(AI,j,i);
-//      }
-//    }
+    //    Rprintf("in chol \n"); Rprint_mat(AI); 
+    for(i = 0; i < n; i++){
+      for(j = 0; j < i; j++){
+	      ME(AI,i,j) = 0; 
+      }
+    }
+//    printf("======================\n"); 
+//    print_mat(A); 
+//    print_mat(AI); 
 
-  }
+//    matrix *tmp; 
+//    malloc_mat(n,n,tmp); 
+//    printf(" check chol back\n"); 
+//    MtM(AI,tmp); print_mat(tmp); 
+
+//  }
 
 } // }}} 
 
