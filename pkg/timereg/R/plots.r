@@ -59,7 +59,6 @@ ylab ="Cumulative coefficients",ylim=NULL,...)
  }
 } ## }}} 
 
-
 plotScore<-function (object,specific.comps=FALSE,main=NULL,mains=TRUE,xlab="Time",
 		     ylab="Cumulative MG-residuals",ylim=NULL,...) 
 { ## {{{ 

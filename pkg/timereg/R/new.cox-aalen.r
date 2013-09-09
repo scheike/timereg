@@ -182,11 +182,10 @@ ylab="Cumulative coefficients",...)
 { ## {{{
   object <- x; rm(x);  
   if (!inherits(object,'cox.aalen') ) stop ("Must be output from Cox-Aalen function")
-  if (ylab=="Cumulative coefficients" && score==TRUE) ylab <- "Cumulative MG-residuals"
+  if (ylab=="Cumulative coefficients" && (1*score)>=1) ylab <- "Cumulative MG-residuals"
 
   if (score==FALSE) plot.cums(object, pointwise.ci=pointwise.ci,
-        hw.ci=hw.ci,
-        sim.ci=sim.ci, robust=robust, specific.comps=specific.comps,level=level,
+        hw.ci=hw.ci, sim.ci=sim.ci, robust=robust, specific.comps=specific.comps,level=level,
         start.time = start.time, stop.time = stop.time, add.to.plot=add.to.plot,
 	main=main, mains=mains, xlab=xlab,ylab=ylab,...)
   else plotScore(object, specific.comps=specific.comps, mains=mains,

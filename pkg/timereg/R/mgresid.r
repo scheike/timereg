@@ -256,8 +256,8 @@ if ( type == "right" )  {  ## {{{
 
 "plot.cum.residuals" <- function (x,pointwise.ci=1,hw.ci=0,sim.ci=0,
 	robust=1, specific.comps=FALSE,level=0.05, start.time = 0, 
-	stop.time = 0, add.to.plot=FALSE, mains=TRUE, 
-	xlab="Time",ylab ="Cumulative Residuals",ylim=NULL,
+	stop.time = 0, add.to.plot=FALSE, mains=TRUE, main=NULL,
+	xlab=NULL,ylab ="Cumulative MG-residuals",ylim=NULL,
 	score=0,conf.band=FALSE,...) 
 {## {{{
   object <- x; rm(x);
@@ -267,16 +267,18 @@ if ( type == "right" )  {  ## {{{
     B<-object$cum;
     if (sum(B)==0)  {
       cat(" To compute cumulative residuals provide model matrix \n");
-    } }
-  if (score==2) { ## {{{
+    } 
+  }
+  if (score==2)  ## {{{
+  {
     if (sum(object$obs.test)==0)
       stop("To plot cumulative residuals vs. covariates, cum.resid=1"); 
   }
 
-  if (score==0) {
+  if (score==0)  ## {{{ 
+  {
     B<-object$cum; 
     if (robust>=1) V<-object$robvar.cum else V<-object$var.cum
-    p<-dim(B)[[2]]; 
 
     if (specific.comps==FALSE) comp<-(2:p) else comp<-specific.comps+1
     if (stop.time==0) stop.time<-max(B[,1]);
@@ -288,63 +290,93 @@ if ( type == "right" )  {  ## {{{
     Vrob<-Vrob[med,]; Vrobs<-Vrob[1,]; Vrob<-t( t(Vrob)-Vrobs); 
 
     c.alpha<- qnorm(1-level/2)
-    for (v in comp) { 
+    for (v in comp)  ## {{{ 
+    { 
       c.alpha<- qnorm(1-level/2)
       est<-B[,v];ul<-B[,v]+c.alpha*V[,v]^.5;nl<-B[,v]-c.alpha*V[,v]^.5;
       if (add.to.plot==FALSE) 
-        {
-          plot(B[,1],est,ylim=1.05*range(ul,nl),type="s",xlab=xlab,ylab=ylab) 
-          if (mains==TRUE) title(main=colnames(B)[v]); }
-      else lines(B[,1],est,type="s"); 
+      {
+
+       if (is.null(xlab)) xlab <- "Time"
+       if (is.null(ylim)) plot(B[,1],est,ylim=1.05*range(ul,nl),type="s",xlab=xlab,ylab=ylab,...) 
+       else plot(B[,1],est,ylim=ylim,type="s",xlab=xlab,ylab=ylab) 
+
+       if (!is.null(main)) { if (length(main)==1) main <- rep(main,length(comp)); mains <- FALSE; } 
+       if (!is.null(main)) title(main=main[i]); 
+       if (mains==TRUE) title(main=colnames(B)[v]); 
+      } else lines(B[,1],est,type="s"); 
+
       if (pointwise.ci>=1) {
         lines(B[,1],ul,lty=pointwise.ci,type="s");
-        lines(B[,1],nl,lty=pointwise.ci,type="s"); }
+        lines(B[,1],nl,lty=pointwise.ci,type="s"); 
+      }
       if (robust>=1) {
         lines(B[,1],ul,lty=robust,type="s"); 
-        lines(B[,1],nl,lty=robust,type="s"); }
+        lines(B[,1],nl,lty=robust,type="s"); 
+      }
       if (hw.ci>=1) {
         if (level!=0.05) cat("Hall-Wellner bands only 95 % \n");
         tau<-length(B[,1])
         nl<-B[,v]-1.13*V[tau,v]^.5*(1+V[,v]/V[tau,v])
         ul<-B[,v]+1.13*V[tau,v]^.5*(1+V[,v]/V[tau,v])
         lines(B[,1],ul,lty=hw.ci,type="s"); 
-        lines(B[,1],nl,lty=hw.ci,type="s"); }
+        lines(B[,1],nl,lty=hw.ci,type="s"); 
+      }
       if (sim.ci>=1) {
         if (level!=0.05) c.alpha<-percen(object$sim.testBeq0[,v-1],1-level)
         else c.alpha<-object$conf.band[v-1];
         nl<-B[,v]-c.alpha*Vrob[,v]^.5; ul<-B[,v]+c.alpha*Vrob[,v]^.5;
         lines(B[,1],ul,lty=sim.ci,type="s"); 
-        lines(B[,1],nl,lty=sim.ci,type="s"); }
+        lines(B[,1],nl,lty=sim.ci,type="s"); 
+      }
       abline(h=0)
     } ## }}}
-  } else if (score==1)  ## {{{
-    {
+
+  }  ## }}} 
+  else if (score==1)  ## {{{
+  {
       dim1<-ncol(object$procBeq0)
       if (sum(specific.comps)==FALSE) comp<-2:dim1 else comp<-specific.comps+1
 
-      for (i in comp)
+      for (i in comp) ## {{{ 
         {
           ranyl<-range(object$procBeq0[,i]);
           for (j in 1:50) ranyl<-range(c(ranyl, (object$sim.test.procBeq0[[j]])[,i-1]));
           mr<-max(abs(ranyl));
 
           if (add.to.plot==FALSE)
-            plot(object$procBeq0[,1],object$procBeq0[,i],type="l",ylim=c(-mr,mr),
-                 lwd=2,xlab=xlab,ylab=ylab)
+	  {
+                if (!is.null(xlab)) { if (length(xlab)==1) xlab <- rep(xlab,length(comp)); } 
+		else xlab <- colnames(object$proc.cumz[[i]])[1]
+
+	        if (!is.null(ylim)) 
+                plot(object$proc.cumz[[i]][,1],object$proc.cumz[[i]][,2],type=TYPE,
+                ylim=ylim,lwd=2,xlab=xlab,ylab=ylab,...)
+	        else 
+                plot(object$proc.cumz[[i]][,1],object$proc.cumz[[i]][,2],type=TYPE,
+                ylim=c(-mr,mr),lwd=2,xlab=xlab,ylab=ylab,...)
+	  }
           else
             lines(object$procBeq0[,1],object$procBeq0[,i])
-          if (mains==TRUE) title(main=colnames(object$procBeq0)[i]);
+
+         if (!is.null(main)) { if (length(main)==1) main <- rep(main,length(comp)); mains <- FALSE; } 
+         if (!is.null(main)) title(main=main[i]); 
+         if (mains==TRUE) title(main=colnames(B)[v]); 
+
           for (j in 1:50)
             lines(object$procBeq0[,1],as.matrix(object$sim.test.procBeq0[[j]])[,i-1],
                   col="grey",lwd=1,lty=1)
           lines(object$procBeq0[,1],object$procBeq0[,i],lwd=2)
-        }  ## }}}
-    } else if (score==2) { ## {{{  plot score proces
+	}  ## }}}
+
+    } ## }}} 
+    else if (score==2)  ## {{{  plot score proces
+    {
       dim1<-length(object$obs.test)
       if (sum(specific.comps)==FALSE) comp<-1:dim1 else comp<-specific.comps
 
-      for (i in comp)
-        {
+      for (i in comp) ## {{{ 
+      {
           if (nrow(object$proc.cumz[[i]])==1) TYPE<-"p" else TYPE<-"l"; 
 
           if (TYPE=="l") 
@@ -354,12 +386,25 @@ if ( type == "right" )  {  ## {{{
               mr<-max(abs(ranyl));
 
               if (add.to.plot==FALSE)
+	      {
+                if (!is.null(xlab)) { if (length(xlab)==1) xlab <- rep(xlab,length(comp)); } 
+		else xlab <- colnames(object$proc.cumz[[i]])[1]
+		print(xlab); 
+
+	        if (!is.null(ylim)) 
                 plot(object$proc.cumz[[i]][,1],object$proc.cumz[[i]][,2],type=TYPE,
-                     ylim=c(-mr,mr),lwd=2,xlab=colnames(object$proc.cumz[[i]])[1],
-                     ylab="Cumulative residuals")
+                ylim=ylim,lwd=2,xlab=xlab,ylab=ylab,...)
+	        else 
+                plot(object$proc.cumz[[i]][,1],object$proc.cumz[[i]][,2],type=TYPE,
+                ylim=c(-mr,mr),lwd=2,xlab=xlab,ylab=ylab,...)
+	      }
               else
                 lines(object$proc.cumz[[i]][,1],object$proc.cumz[[i]][,2],type="l")
+
+              if (!is.null(main)) { if (length(main)==1) main <- rep(main,length(comp)); mains <- FALSE; } 
+              if (!is.null(main)) title(main=main[i]); 
               if (mains==TRUE) title(main=colnames(object$proc.cumz[[i]])[1]); 
+
               if (TYPE=="l") for (j in 1:50)
                 lines(object$proc.cumz[[i]][,1],object$sim.test.proccumz[[i]][,j],
                       col="grey",lwd=1,lty=1,type="l")
@@ -367,28 +412,29 @@ if ( type == "right" )  {  ## {{{
                 points(object$proc.cumz[[i]][,1],object$sim.test.proccumz[[i]][,j],pch=".")
               lines(object$proc.cumz[[i]][,1],object$proc.cumz[[i]][,2],lwd=2); 
             } 
-    ## Prediction bandds ## {{{
-    if (conf.band==TRUE) {
-     col.alpha<-0.2
-     col.ci<-"darkblue"
-     lty.ci<-2
-      if (col.alpha==0) col.trans <- col.ci
-      else
-      col.trans <- sapply(col.ci, FUN=function(x) do.call(rgb,as.list(c(col2rgb(x)/255,col.alpha))))
-      if (level!=0.05) c.alpha<-percen(object$sim.test[,i],1-level)
-      else c.alpha<-object$conf.band.cumz[i];
-      t<-object$proc.cumz[[i]][,1]
-      ci<-c.alpha*object$robvar.cumz[1:length(t),i]^.5
-      #print(t); print(ci)
-      lines(t,ci , lwd=1, col=col.ci, lty=lty.ci)
-      lines(t,-ci , lwd=1, col=col.ci, lty=lty.ci)
-      tt <- c(t, rev(t))
-      yy <- c(ci, rev(-ci))
-      polygon(tt,yy, col=col.trans, lty=0)      
+	    ## Prediction bandds ## {{{
+	    if (conf.band==TRUE) {
+	     col.alpha<-0.2
+	     col.ci<-"darkblue"
+	     lty.ci<-2
+	      if (col.alpha==0) col.trans <- col.ci
+	      else
+	      col.trans <- sapply(col.ci, FUN=function(x) do.call(rgb,as.list(c(col2rgb(x)/255,col.alpha))))
+	      if (level!=0.05) c.alpha<-percen(object$sim.test[,i],1-level)
+	      else c.alpha<-object$conf.band.cumz[i];
+	      t<-object$proc.cumz[[i]][,1]
+	      ci<-c.alpha*object$robvar.cumz[1:length(t),i]^.5
+	      #print(t); print(ci)
+	      lines(t,ci , lwd=1, col=col.ci, lty=lty.ci)
+	      lines(t,-ci , lwd=1, col=col.ci, lty=lty.ci)
+	      tt <- c(t, rev(t))
+	      yy <- c(ci, rev(-ci))
+	      polygon(tt,yy, col=col.trans, lty=0)      
+	  } ## }}}
   } ## }}}
-  }
 
     } ## }}}
+
 } ## }}}
 
 "summary.cum.residuals" <- function (object,digits=3,...) 
