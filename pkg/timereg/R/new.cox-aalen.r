@@ -177,19 +177,20 @@ ldata<-list(start=start,stop=stop, antpers=survs$antpers,antclust=survs$antclust
 
 "plot.cox.aalen" <-  function (x,pointwise.ci=1, hw.ci=0,
 sim.ci=0, robust=0, specific.comps=FALSE,level=0.05, start.time = 0,
-stop.time = 0, add.to.plot=FALSE, mains=TRUE, xlab="Time",
-ylab ="Cumulative coefficients",score=FALSE,...)
+stop.time = 0, add.to.plot=FALSE,main=NULL,mains=TRUE,xlab="Time",score=FALSE,
+ylab="Cumulative coefficients",...)
 { ## {{{
   object <- x; rm(x);  
   if (!inherits(object,'cox.aalen') ) stop ("Must be output from Cox-Aalen function")
+  if (ylab=="Cumulative coefficients" && score==TRUE) ylab <- "Cumulative MG-residuals"
 
   if (score==FALSE) plot.cums(object, pointwise.ci=pointwise.ci,
         hw.ci=hw.ci,
         sim.ci=sim.ci, robust=robust, specific.comps=specific.comps,level=level,
         start.time = start.time, stop.time = stop.time, add.to.plot=add.to.plot,
-        mains=mains, xlab=xlab, ylab =ylab)
+	main=main, mains=mains, xlab=xlab,ylab=ylab,...)
   else plotScore(object, specific.comps=specific.comps, mains=mains,
-                  xlab=xlab,ylab =ylab);
+		 main=main, xlab=xlab,ylab=ylab,...);
 } ## }}}
 
 "print.cox.aalen" <- function (x,...) 

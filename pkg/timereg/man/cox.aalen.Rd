@@ -125,7 +125,7 @@ test-processes under null based on resampling.}
 \item{B.iid}{Resample processes for nonparametric terms of model.}
 \item{gamma.iid}{Resample processes for parametric terms of model.}
 \item{loglike}{approximate log-likelihood for model, similar to
-Cox's partial likelihood. Only computed when robust=1.}
+      Cox's partial likelihood. Only computed when robust=1.}
 \item{D2linv}{inverse of the derivative of the score function.}
 \item{score}{value of score for final estimates.}
 \item{test.procProp}{observed score process for proportional part of model.}
