@@ -77,8 +77,7 @@ v <- 0
 for (i in comp) {
 v <- v+1
 ranyl<-range(obsProc[,i]);
-for (j in 1:50)
-ranyl<-range(c(ranyl,as.matrix(simProc[[j]])[,i-1]));
+for (j in 1:50) ranyl<-range(c(ranyl,as.matrix(simProc[[j]])[,i-1]));
 mr<-max(abs(ranyl)); 
 
 if (is.null(ylim))
@@ -87,6 +86,7 @@ else
 plot(obsProc[,1],obsProc[,i],ylim=ylim,lwd=2,xlab=xlab,ylab=ylab,type="s",...)
 if (!is.null(main)) title(main=main[v]); 
 if (mains==TRUE) title(main=colnames(obsProc)[i]); 
+
 for (j in 1:50)
 lines(obsProc[,1],as.matrix(simProc[[j]])[,i-1],
 col="grey",lwd=1,lty=1,type="s")
@@ -94,3 +94,6 @@ lines(obsProc[,1],obsProc[,i],lwd=2,type="s")
 } 
 
 } ## }}} 
+
+
+

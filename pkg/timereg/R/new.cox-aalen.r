@@ -189,7 +189,7 @@ ylab="Cumulative coefficients",...)
         start.time = start.time, stop.time = stop.time, add.to.plot=add.to.plot,
 	main=main, mains=mains, xlab=xlab,ylab=ylab,...)
   else plotScore(object, specific.comps=specific.comps, mains=mains,
-		 main=main, xlab=xlab,ylab=ylab,...);
+		 main=main,xlab=xlab,ylab=ylab,...);
 } ## }}}
 
 "print.cox.aalen" <- function (x,...) 
