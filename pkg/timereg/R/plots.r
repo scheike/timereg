@@ -71,6 +71,8 @@ else {      obsProc<-object$test.procBeqC;
 dim1<-ncol(obsProc)
 if (sum(specific.comps)==FALSE) comp<-2:dim1 else comp<-specific.comps+1
 
+if (!is.null(main)) {if (length(main)==1) main <- rep(main,length(comp)); mains <- FALSE; } 
+
 v <- 0
 for (i in comp) {
 v <- v+1
@@ -83,7 +85,6 @@ if (is.null(ylim))
 plot(obsProc[,1],obsProc[,i],ylim=c(-mr,mr),lwd=2,xlab=xlab,ylab=ylab,type="s",...)
 else
 plot(obsProc[,1],obsProc[,i],ylim=ylim,lwd=2,xlab=xlab,ylab=ylab,type="s",...)
-if (!is.null(main)) {if (length(main)==1) main <- rep(main,length(comp)); mains <- FALSE; } 
 if (!is.null(main)) title(main=main[v]); 
 if (mains==TRUE) title(main=colnames(obsProc)[i]); 
 for (j in 1:50)

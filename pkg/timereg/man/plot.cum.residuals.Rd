@@ -9,8 +9,8 @@ processes under the model.
 \usage{
 \method{plot}{cum.residuals}(x,pointwise.ci=1,hw.ci=0,sim.ci=0,
 robust=1, specific.comps=FALSE,level=0.05,start.time=0,stop.time=0,
-add.to.plot=FALSE,mains=TRUE,xlab="Time",
-ylab ="Cumulative Residuals",ylim=NULL,score=0,conf.band=FALSE,...)
+add.to.plot=FALSE,mains=TRUE,main=NULL,xlab=NULL,
+ylab ="Cumulative MG-residuals",ylim=NULL,score=0,conf.band=FALSE,...)
 }
 \arguments{
 \item{x}{the output from the "cum.residuals" function.}
@@ -40,8 +40,10 @@ Estimates thus plotted from [start.time, max.time].}
 \item{add.to.plot}{to add to an already existing plot. Default is "FALSE".
 }
 \item{mains}{add names of covariates as titles to plots.}
-\item{xlab}{label for x-axis. Default is "Time".}
-\item{ylab}{label for y-axis. Default is "Cumulative Residuals".}
+\item{main}{vector of names for titles  in plots.}
+\item{xlab}{label for x-axis. NULL is default which leads to "Time" or "". 
+Can also give a character vector.}
+\item{ylab}{label for y-axis. Default is "Cumulative MG-residuals".}
 \item{ylim}{limits for y-axis.}
 \item{score}{if '0' plots related to modelmatrix are specified, thus
   resulting in grouped residuals, if '1' plots for modelmatrix but with

@@ -266,7 +266,7 @@ if ( type == "right" )  {  ## {{{
   if (score <2) {
     B<-object$cum;
     if (sum(B)==0)  {
-      cat(" To compute cumulative residuals provide model matrix \n");
+      stop("To compute cumulative residuals provide model matrix \n");
     } 
   }
   if (score==2)  ## {{{
@@ -279,6 +279,9 @@ if ( type == "right" )  {  ## {{{
   {
     B<-object$cum; 
     if (robust>=1) V<-object$robvar.cum else V<-object$var.cum
+    p <- ncol(B); 
+    if (!is.null(main)) { if (length(main)!=p) main <- rep(main,length(comp)); mains <- FALSE; } 
+    if (!is.null(xlab)) { if (length(xlab)!=p) xlab  <- rep(xlab,length(comp)); } 
 
     if (specific.comps==FALSE) comp<-(2:p) else comp<-specific.comps+1
     if (stop.time==0) stop.time<-max(B[,1]);
@@ -296,12 +299,11 @@ if ( type == "right" )  {  ## {{{
       est<-B[,v];ul<-B[,v]+c.alpha*V[,v]^.5;nl<-B[,v]-c.alpha*V[,v]^.5;
       if (add.to.plot==FALSE) 
       {
+       if (is.null(xlab)) xlabl <- "Time" else xlabl <- xlab[v]
 
-       if (is.null(xlab)) xlab <- "Time"
-       if (is.null(ylim)) plot(B[,1],est,ylim=1.05*range(ul,nl),type="s",xlab=xlab,ylab=ylab,...) 
-       else plot(B[,1],est,ylim=ylim,type="s",xlab=xlab,ylab=ylab) 
+       if (is.null(ylim)) plot(B[,1],est,ylim=1.05*range(ul,nl),type="s",xlab=xlabl,ylab=ylab,...) 
+       else plot(B[,1],est,ylim=ylim,type="s",xlab=xlabl,ylab=ylab) 
 
-       if (!is.null(main)) { if (length(main)==1) main <- rep(main,length(comp)); mains <- FALSE; } 
        if (!is.null(main)) title(main=main[i]); 
        if (mains==TRUE) title(main=colnames(B)[v]); 
       } else lines(B[,1],est,type="s"); 
@@ -335,49 +337,61 @@ if ( type == "right" )  {  ## {{{
   }  ## }}} 
   else if (score==1)  ## {{{
   {
+	  print("1!!!!!!!!!!!!!!!"); 
       dim1<-ncol(object$procBeq0)
       if (sum(specific.comps)==FALSE) comp<-2:dim1 else comp<-specific.comps+1
+
+      if (!is.null(main)) { if (length(main)==1) main <- rep(main,length(comp)); mains <- FALSE; } 
+      if (!is.null(xlab)) { if (length(xlab)==1) xlab <- c("time",rep(xlab,length(comp))); } 
 
       for (i in comp) ## {{{ 
         {
           ranyl<-range(object$procBeq0[,i]);
-          for (j in 1:50) ranyl<-range(c(ranyl, (object$sim.test.procBeq0[[j]])[,i-1]));
+          for (j in 1:50) ranyl<-range(c(ranyl,(object$sim.test.procBeq0[[j]])[,i-1]));
           mr<-max(abs(ranyl));
 
           if (add.to.plot==FALSE)
 	  {
-                if (!is.null(xlab)) { if (length(xlab)==1) xlab <- rep(xlab,length(comp)); } 
-		else xlab <- colnames(object$proc.cumz[[i]])[1]
+             if (is.null(xlab)) xlabl <- "Time" else xlabl <- xlab[i]
 
-	        if (!is.null(ylim)) 
-                plot(object$proc.cumz[[i]][,1],object$proc.cumz[[i]][,2],type=TYPE,
-                ylim=ylim,lwd=2,xlab=xlab,ylab=ylab,...)
-	        else 
-                plot(object$proc.cumz[[i]][,1],object$proc.cumz[[i]][,2],type=TYPE,
-                ylim=c(-mr,mr),lwd=2,xlab=xlab,ylab=ylab,...)
+	     if (!is.null(ylim)) 
+             plot(object$procBeq0[,1],object$procBeq0[,i],type="s",
+              ylim=ylim,lwd=2,xlab=xlabl,ylab=ylab,...)
+	     else 
+             plot(object$procBeq0[,1],object$procBeq0[,i],type="s",
+                ylim=c(-mr,mr),lwd=2,xlab=xlabl,ylab=ylab,...)
+
+            if (!is.null(main)) title(main=main[i]); 
+            if (mains==TRUE) title(main=colnames(B)[i]); 
 	  }
-          else
-            lines(object$procBeq0[,1],object$procBeq0[,i])
+          else lines(object$procBeq0[,1],object$procBeq0[,i],type="s")
 
-         if (!is.null(main)) { if (length(main)==1) main <- rep(main,length(comp)); mains <- FALSE; } 
-         if (!is.null(main)) title(main=main[i]); 
-         if (mains==TRUE) title(main=colnames(B)[v]); 
 
           for (j in 1:50)
             lines(object$procBeq0[,1],as.matrix(object$sim.test.procBeq0[[j]])[,i-1],
-                  col="grey",lwd=1,lty=1)
-          lines(object$procBeq0[,1],object$procBeq0[,i],lwd=2)
+                  col="grey",lwd=1,lty=1,type="s")
+          lines(object$procBeq0[,1],object$procBeq0[,i],lwd=2,type="s")
 	}  ## }}}
 
     } ## }}} 
     else if (score==2)  ## {{{  plot score proces
     {
+     print("2!!!!!!!!!!!!!!!"); 
       dim1<-length(object$obs.test)
       if (sum(specific.comps)==FALSE) comp<-1:dim1 else comp<-specific.comps
 
+      if (!is.null(xlab)) { if (length(xlab)==1) xlab <- rep(xlab,length(comp)); } 
+      if (!is.null(main)) { if (length(main)==1) main <- rep(main,length(comp)); mains <- FALSE; } 
+
+      v <- 0
       for (i in comp) ## {{{ 
       {
-          if (nrow(object$proc.cumz[[i]])==1) TYPE<-"p" else TYPE<-"l"; 
+	v <- v+1
+        if (nrow(object$proc.cumz[[i]])==1) TYPE<-"p" else TYPE<-"l"; 
+
+        if (is.null(xlab)) xlabl <- colnames(object$proc.cumz[[v]])[1] else xlabl <- xlab[i]
+	print(colnames(object$proc.cumz[[v]]))
+	print(xlabl)
 
           if (TYPE=="l") 
             {
@@ -387,21 +401,16 @@ if ( type == "right" )  {  ## {{{
 
               if (add.to.plot==FALSE)
 	      {
-                if (!is.null(xlab)) { if (length(xlab)==1) xlab <- rep(xlab,length(comp)); } 
-		else xlab <- colnames(object$proc.cumz[[i]])[1]
-		print(xlab); 
-
 	        if (!is.null(ylim)) 
                 plot(object$proc.cumz[[i]][,1],object$proc.cumz[[i]][,2],type=TYPE,
-                ylim=ylim,lwd=2,xlab=xlab,ylab=ylab,...)
+                ylim=ylim,lwd=2,xlab=xlabl,ylab=ylab,...)
 	        else 
                 plot(object$proc.cumz[[i]][,1],object$proc.cumz[[i]][,2],type=TYPE,
-                ylim=c(-mr,mr),lwd=2,xlab=xlab,ylab=ylab,...)
+                ylim=c(-mr,mr),lwd=2,xlab=xlabl,ylab=ylab,...)
 	      }
               else
                 lines(object$proc.cumz[[i]][,1],object$proc.cumz[[i]][,2],type="l")
 
-              if (!is.null(main)) { if (length(main)==1) main <- rep(main,length(comp)); mains <- FALSE; } 
               if (!is.null(main)) title(main=main[i]); 
               if (mains==TRUE) title(main=colnames(object$proc.cumz[[i]])[1]); 
 
