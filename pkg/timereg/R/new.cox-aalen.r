@@ -5,9 +5,8 @@ beta=NULL,Nit=10,detail=0,start.time=0,max.time=NULL, id=NULL,
 clusters=NULL, n.sim=500, residuals=0,robust=1,
 weighted.test=0,covariance=0,resample.iid=1,weights=NULL,
 rate.sim=1,beta.fixed=0,max.clust=1000,exact.deriv=1,silent=1,
-max.timepoint.sim=100,basesim=0)
+max.timepoint.sim=100,basesim=0,offsets=NULL)
 { ## {{{
-offsets=0; 
 ## {{{ set up variables 
   if (n.sim == 0) sim <- 0 else sim <- 1
   if (resample.iid==1 & robust==0) {robust <- 1;}
@@ -20,7 +19,8 @@ offsets=0;
   m$robust<-m$start.time<- m$scaleLWY<-m$weighted.test<-m$beta<-m$Nit<-m$detail<-
 	  m$max.time<-m$residuals<-m$n.sim<-m$id<-m$covariance<-m$resample.iid<-
 	  m$clusters<-m$rate.sim<-m$beta.fixed<- m$max.clust <- m$exact.deriv <- 
-	  m$silent <- m$max.timepoint.sim <- m$silent <- m$basesim <- NULL
+	  m$silent <- m$max.timepoint.sim <- m$silent <- m$basesim  <- 
+	  m$offsets <- NULL
 
   special <- c("prop","cluster")
   Terms <- if(missing(data)) terms(formula, special)
@@ -52,8 +52,10 @@ offsets=0;
   orig.max.clust <- survs$antclust
   nobs <- nrow(X); 
   if (is.null(weights)) weights <- rep(1,nrow(X));  
-  weights <- rep(1,nrow(X)); 
-  if (sum(abs(offsets))!=0) stop("no offsets in this version \n"); 
+###  weights <- rep(1,nrow(X)); 
+  if (length(weights)!=nrow(X)) stop("Lengths of weights and data do not match\n"); 
+  if (is.null(offsets)) offsets <- rep(0,nrow(X));  
+  if (length(offsets)!=nrow(X)) stop("Lengths of offsets and data do not match\n"); 
 
   if ((!is.null(max.clust))) if (max.clust<survs$antclust) {
 	qq <- unique(quantile(clusters, probs = seq(0, 1, by = 1/max.clust)))
@@ -84,7 +86,8 @@ if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
    clusters<-clusters[ot]
    id<-id[ot];
    weights <- weights[ot]
-   if (sum(abs(offsets))!=0) offsets <- offsets[ot]
+###   if (sum(abs(offsets))!=0) 
+   offsets <- offsets[ot]
    entry=rep(-1,nobs); 
   } else {
         eventtms <- c(survs$start,time2)
@@ -101,7 +104,7 @@ if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
 	if (npar==FALSE) Z <- Z[rep(1:nobs,2)[ix],]
 	id <- rep(id,2)[ix]
 	clusters <- rep(clusters,2)[ix]
-	if (sum(abs(offsets))!=0) offsets <- rep(offsets,2)[ix]
+        offsets <- rep(offsets,2)[ix]
     } ## }}}
 ###  print(cbind(Z,start,stop,etimes,id,entry))
 
@@ -119,7 +122,7 @@ ldata<-list(start=start,stop=stop, antpers=survs$antpers,antclust=survs$antclust
             weighted.test=weighted.test,ratesim=rate.sim,
             covariance=covariance,resample.iid=resample.iid,namesX=covnamesX,
 	    namesZ=covnamesZ,beta.fixed=beta.fixed,entry=entry,basesim=basesim,
-	    offsets=0,exactderiv=exact.deriv,max.timepoint.sim=max.timepoint.sim,silent=silent)
+	    offsets=offsets,exactderiv=exact.deriv,max.timepoint.sim=max.timepoint.sim,silent=silent)
 
   ## {{{ output handling
   colnames(ud$test.procProp)<-c("time",covnamesZ)
@@ -194,27 +197,26 @@ ylab="Cumulative coefficients",...)
 
 "print.cox.aalen" <- function (x,...) 
 { ## {{{
-  cox.aalen.object <- x; rm(x);
-  if (!inherits(cox.aalen.object, 'cox.aalen')) 
-    stop ("Must be an aalen object")
-
-if (is.null(cox.aalen.object$prop.odds)==TRUE) p.o<-FALSE else p.o<-TRUE
-
-if (is.null(cox.aalen.object$gamma)==TRUE) prop<-FALSE else prop<-TRUE
-    
-  # We print information about object:  
-  cat("Cox-Aalen Model \n\n")
-  cat("Additive Aalen terms : "); 
-  cat(colnames(cox.aalen.object$cum)[-1]); cat("   \n");  
-  if (prop) {
-  cat("Proportional Cox terms :  "); 
-  cat(rownames(cox.aalen.object$gamma)); 
-  cat("   \n");  }
-  cat("   \n");  
-
-  cat("  Call: \n")
-  dput(attr(cox.aalen.object,"Call"))
-  cat("\n")
+summary.cox.aalen(x,...) 
+###  cox.aalen.object <- x; rm(x);
+###  if (!inherits(cox.aalen.object, 'cox.aalen')) 
+###    stop ("Must be an aalen object")
+###if (is.null(cox.aalen.object$prop.odds)==TRUE) p.o<-FALSE else p.o<-TRUE
+###if (is.null(cox.aalen.object$gamma)==TRUE) prop<-FALSE else prop<-TRUE
+###    
+###  # We print information about object:  
+###  cat("Cox-Aalen Model \n\n")
+###  cat("Additive Aalen terms : "); 
+###  cat(colnames(cox.aalen.object$cum)[-1]); cat("   \n");  
+###  if (prop) {
+###  cat("Proportional Cox terms :  "); 
+###  cat(rownames(cox.aalen.object$gamma)); 
+###  cat("   \n");  }
+###  cat("   \n");  
+###
+###  cat("  Call: \n")
+###  dput(attr(cox.aalen.object,"Call"))
+###  cat("\n")
 } ## }}}
 
 "summary.cox.aalen" <- function (object,digits = 3,...) 

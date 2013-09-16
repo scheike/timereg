@@ -1,4 +1,4 @@
-//#include <stdio.h>
+#include <stdio.h>
 #include <math.h>
 #include "matrix.h"
 #include <time.h>
@@ -23,8 +23,8 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 // {{{ setting up memory 
   matrix *X,*Z,*WX,*WZ,*cdesX,*cdesX2,*cdesX3,*CtVUCt,*A,*AI;
   matrix *Vcov,*dYI,*Ct,*dM1M2,*M1M2t,*COV,*ZX,*ZP,*ZPX; 
-  matrix *ZPZ,*tmp2,*tmp3,*dS,*S1,*SI,*S2,*M1,*VU,*ZXAI,*VUI; 
-  matrix *RobVbeta,*Delta,*tmpM1,*Utt,*Delta2,*tmpM2;
+  matrix *tmp2,*tmp3,*dS,*S1,*SI,*S2,*M1,*VU,*ZXAI,*VUI; 
+  matrix *ZPZ,*RobVbeta,*Delta,*tmpM1,*Utt,*Delta2,*tmpM2;
 //  matrix *St[*maxtimepoint],*M1M2[*Ntimes],*C[*maxtimepoint],*ZXAIs[*Ntimes],*dYIt[*Ntimes]; 
 //  matrix *St[*Ntimes],
 //  matrix *M1M2[*Ntimes],*C[*Ntimes],*ZXAIs[*Ntimes],*AIs[*Ntimes];
@@ -42,6 +42,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   int cin=0,ci=0,c,pers=0,i=0,j,k,l,s,s1,it,count,pmax,
       *imin=calloc(1,sizeof(int)),
       *cluster=calloc(*antpers,sizeof(int)),
+      *strata=calloc(*antpers,sizeof(int)),
       *ipers=calloc(*Ntimes,sizeof(int)); 
   double S0,RR=1,time=0,ll,lle,llo;
   double tau,hati,random,scale,sumscore;
@@ -49,6 +50,20 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
          *timesg=calloc((*maxtimepoint),sizeof(double));
   double norm_rand();
   void GetRNGstate(),PutRNGstate();
+
+  int stratpers=0,antstrat=*px; 
+  double *S0strata=calloc(antstrat,sizeof(double)); 
+  matrix *ZPZs[antstrat],*ZPXs[antstrat]; 
+
+//  printf(" %d \n",antstrat); 
+//  for (j=0;j<=*nx;j++) printf(" %d ",stratum[j]);
+
+  for (j=0;j<antstrat;j++) {
+    S0strata[j]=0; 
+    malloc_mat(*pg,*pg,ZPZs[j]); 
+    malloc_mat(*px,*pg,ZPXs[j]); 
+  }
+
 
   /* float gasdev(),expdev(),ran1(); */ 
 
@@ -113,10 +128,8 @@ if (*ratesim==0 && mjump==1) {
   malloc_vec((*pg)*(*maxtimepoint),vectmp); 
 
 //  for(j=0;j<*Ntimes;j++) { 
-//    malloc_mat(*px,*pg,C[j]); 
-//    malloc_mat(*pg,*px,M1M2[j]); 
-//    malloc_mat(*pg,*px,ZXAIs[j]); 
-////    malloc_vec(*px,dAt[j]); malloc_mat(*px,*pg,dYIt[j]); 
+//    malloc_mat(*px,*pg,C[j]); malloc_mat(*pg,*px,M1M2[j]); 
+//    malloc_mat(*pg,*px,ZXAIs[j]);  malloc_vec(*px,dAt[j]); malloc_mat(*px,*pg,dYIt[j]); 
 ////    malloc_vec(*pg,ZXdA[j]); malloc_mat(*pg,*pg,St[j]); 
 //  } 
 
@@ -137,11 +150,16 @@ if (*ratesim==0 && mjump==1) {
   for (it=0;it<*Nit || (*Nit==0 && it==0);it++) // {{{ iterations start for cox-aalen model
   {
      if (it>0) {
-      vec_zeros(U); mat_zeros(S1);   
-      mat_zeros(A); mat_zeros(ZPZ); mat_zeros(ZPX); mat_zeros(ZX); 
-      mat_zeros(X); mat_zeros(Z); mat_zeros(WX); mat_zeros(WZ); 
-      }
+       vec_zeros(U); mat_zeros(S1);   
+       mat_zeros(A); mat_zeros(ZPZ); mat_zeros(ZPX); mat_zeros(ZX); 
+       mat_zeros(X); mat_zeros(Z); mat_zeros(WX); mat_zeros(WZ); 
+
+       for (j=0;j<antstrat;j++)  {
+         S0strata[j]=0; mat_zeros(ZPXs[j]); mat_zeros(ZPZs[j]); 
+       } 
+     }
      sumscore=0; S0=0; ci=0; 
+     
      R_CheckUserInterrupt();
 
       for (s=1;s<*Ntimes;s++)  // {{{ going through time
@@ -162,24 +180,27 @@ if (*ratesim==0 && mjump==1) {
 			       VE(xi,j)=designX[j*(*nx)+c]; 
 		   }
 		}
-		VE(Gbeta,id[c])=vec_prod(zi,beta); 
+		VE(Gbeta,id[c])=vec_prod(zi,beta)+offs[c]; 
 		RR=exp(VE(Gbeta,id[c]));
 		S0+=RR*weights[c]; 
+		S0strata[stratum[c+1]]+=RR*weights[c]; 
                 for(j=0;j<pmax;j++) {
-	        if (j<*px) {ME(WX,id[c],j) =weights[c]*RR*designX[j*(*nx)+c];}
+	        if (j<*px) {ME(WX,id[c],j)=weights[c]*RR*designX[j*(*nx)+c];}
 	        if (j<*pg) {ME(WZ,id[c],j)=weights[c]*designG[j*(*ng)+c];} 
 		}
-		if (time==stop[c] && status[c]==1) {pers=id[c];} 
+		if (time==stop[c] && status[c]==1) {pers=id[c];stratpers=stratum[c+1];} 
 		if (*mof==1) VE(offset,id[c])=offs[c];  
 		if (*mw==1) VE(weight,id[c])=weights[c]; 
-
+		if (*mof==1) RR=RR; 
 	    for(j=0;j<pmax;j++) for(k=0;k<pmax;k++)  {
               if ((j<*px) & (k<*px)) ME(A,j,k)+=VE(xi,k)*VE(xi,j)*RR*weights[c]; 
               if ((j<*pg) & (k<*px)) ME(ZX,j,k)+=VE(zi,j)*VE(xi,k)*RR*weights[c]; 
-	      if ((*exactderiv<2) || (*px==1)) {
+//	      if ((*exactderiv<2) || (*px==1)) {
                  if ((j<*pg) & (k<*pg)) ME(ZPZ,j,k)+= VE(zi,j)*VE(zi,k)*weights[c]*RR; 
                  if ((j<*pg) & (k<*px)) ME(ZPX,k,j)+= VE(zi,j)*VE(xi,k)*weights[c]*RR;
-	      }
+                 if ((j<*pg) & (k<*pg)) ME(ZPZs[stratum[c+1]],j,k)+= VE(zi,j)*VE(zi,k)*weights[c]*RR; 
+                 if ((j<*pg) & (k<*px)) ME(ZPXs[stratum[c+1]],k,j)+= VE(zi,j)*VE(xi,k)*weights[c]*RR;
+//	      }
 	   }
            count=count+1; 
          }		 
@@ -187,6 +208,13 @@ if (*ratesim==0 && mjump==1) {
            ci=*nx-1; 
            while ((stop[ci]<time)  & (ci>=0) )  ci=ci-1; 
 	 } // }}}
+
+//     printf("000 tester %lf \n",S0); 
+//     print_mat(ZPX); print_mat(ZPZ); 
+//     for (j=0;j<antstrat;j++) { 
+//        printf(" j %d %lf \n",j,S0strata[j]); 
+//        print_mat(ZPXs[j]); print_mat(ZPZs[j]); 
+//     }
 
     vec_zeros(rowX); vec_zeros(rowZ); 
     if (s>1)  // {{{ modifying design for next time points
@@ -196,7 +224,7 @@ if (*ratesim==0 && mjump==1) {
             for(j=0;j<*pg;j++) { VE(zi,j)=designG[j*(*nx)+ci]; 
 		VE(Gbeta,id[ci])+=VE(zi,j)*VE(beta,j);  
 	    }
-	    RR=exp(VE(Gbeta,id[ci]));
+	    RR=exp(VE(Gbeta,id[ci])+offs[ci]);
 	    if (entry[ci]==1)  {
 	         replace_row(X,id[ci],xi); replace_row(Z,id[ci],zi); 
 		 scl_vec_mult(RR*weights[ci],xi,tmpv1);replace_row(WX,id[ci],tmpv1);
@@ -211,16 +239,20 @@ if (*ratesim==0 && mjump==1) {
 		    if (*mof==1) VE(offset,id[ci])=offs[ci];  
 	    }
 	    S0+=entry[ci]*RR*weights[ci]; 
+	    S0strata[stratum[ci+1]]+=entry[ci]*RR*weights[ci]; 
 	  for(j=0;j<pmax;j++) for(k=0;k<pmax;k++)  {
-              if ((j<*px) & (k<*px)) ME(A,j,k)+=entry[ci]*VE(xi,k)*VE(xi,j)*RR*weights[ci]; 
+              if ((j<*px) & (k<*px)) ME(A,j,k)+=entry[ci]*VE(xi,j)*VE(xi,j)*RR*weights[ci]; 
               if ((j<*pg) & (k<*px)) ME(ZX,j,k)+=entry[ci]*VE(zi,j)*VE(xi,k)*RR*weights[ci]; 
- 	      if ((*exactderiv<2) || (*px==1)) {
+// 	      if ((*exactderiv<2) || (*px==1)) {
                  if ((j<*pg) & (k<*pg)) ME(ZPZ,j,k)+=entry[ci]*VE(zi,j)*VE(zi,k)*weights[ci]*RR;
                  if ((j<*pg) & (k<*px)) ME(ZPX,k,j)+=entry[ci]*VE(zi,j)*VE(xi,k)*weights[ci]*RR;
-	      }
+                 if ((j<*pg) & (k<*pg)) ME(ZPZs[stratum[ci+1]],j,k)+= entry[ci]*VE(zi,j)*VE(zi,k)*weights[ci]*RR; 
+                 if ((j<*pg) & (k<*px)) ME(ZPXs[stratum[ci+1]],k,j)+= entry[ci]*VE(zi,j)*VE(xi,k)*weights[ci]*RR;
+//	      }
 	  }
 	  ci=ci-1; 
 	  pers=id[ci]; 
+	  stratpers=stratum[ci+1]; 
     }
     // }}}
    ipers[s]=pers;
@@ -233,7 +265,23 @@ if (*ratesim==0 && mjump==1) {
 	   print_mat(X); 
    }
 
-     scl_mat_mult(1/S0,ZPZ,ZPZo); scl_mat_mult(1/S0,ZPX,ZPXo);
+   scl_mat_mult(1/S0,ZPZ,ZPZo); scl_mat_mult(1/S0,ZPX,ZPXo);
+   if (*stratum==1 && *px>1) {
+        scl_mat_mult(1/S0strata[stratpers],ZPZs[stratpers],ZPZo); 
+        scl_mat_mult(1/S0strata[stratpers],ZPXs[stratpers],ZPXo);
+   }
+
+//     printf(" nye version \n"); 
+//     print_mat(ZPZo); print_mat(ZPXo);
+
+//     printf("1 tester %lf \n",S0); 
+//     print_mat(ZPX); print_mat(ZPZ); 
+//     for (j=0;j<antstrat;j++) { 
+//         printf(" j %d %lf \n",j,S0strata[j]); 
+//         print_mat(ZPXs[j]); print_mat(ZPZs[j]); 
+//     }
+
+
    // }}}
 
   if (s<0) { Rprintf("======================================================= %d \n",s);
@@ -261,6 +309,9 @@ if (*ratesim==0 && mjump==1) {
     scl_vec_mult(scale,xi,xi); 
     Mv(AI,xi,dA); 
     MxA(ZX,AI,ZXAI); 
+
+//  if (*detail==3) {print_vec(xi); print_mat(A); print_mat(AI); }
+
    if (it==(*Nit-1)) {
 	replace_row(dAt,s,dA); 
         for (j=0;j<*pg;j++) for (i=0;i<*px;i++) ME(ZXAIn,j,(s-1)*(*px)+i)=ME(ZXAI,j,i); 
@@ -273,23 +324,20 @@ if (*ratesim==0 && mjump==1) {
   scl_vec_mult(scale,zi,zi); 
   Mv(ZX, dA, zav); 
   vec_subtr(zi,zav,difzzav); 
+  if (*detail==3) {Rprintf(" time %d %lf Dl contribution \n",s,times[s]); print_vec(difzzav);}
   vec_add(difzzav,U,U); 
 
-  if (*betafixed==0)  {
-   MxA(ZXAI,ZPXo,tmp2); mat_subtr(ZPZo,tmp2, dS); 
-   mat_add(dS,S1,S1);  
-   scl_mat_mult(1,S1,Stg[timegroup[s]]);
-  }
-
-  if (s<0) {  // {{{ 
+    if (s<0) {  // {{{ 
        Rprintf(" %d %d %lf %lf \n",pers,s,time,scale); 
        print_vec(xi); print_vec(dA); print_vec(zi); print_vec(zav); 
        print_vec(difzzav); print_vec(U); print_mat(A); print_mat(AI); 
   } // }}}
 
   if (*betafixed==0)  // {{{
+  if (*stratum==0) 
   if ( (((*exactderiv==1) && (it==(*Nit-1)) && (*px>1))) || ((*exactderiv==2) && (*px>1)) ) 
   {
+  if (*detail==3) Rprintf("Computation of second derivative \n"); 
   mat_zeros(ZPZ1); mat_zeros(ZPX1); 
   for (i=0;i<*antpers;i++)
   {
@@ -303,6 +351,16 @@ if (*ratesim==0 && mjump==1) {
   } 
   scl_mat_mult(1,ZPZ1,ZPZo); scl_mat_mult(1,ZPX1,ZPXo);
   } // }}}
+//  printf(" gamle version \n"); print_mat(ZPZo); print_mat(ZPXo);
+
+if (*betafixed==0)  {
+//	printf("=====================\n"); print_mat(ZXAI); print_mat(ZPXo); 
+   MxA(ZXAI,ZPXo,tmp2); mat_subtr(ZPZo,tmp2, dS); 
+   if (*mw==1) {scale=VE(weight,pers); scl_mat_mult(scale,dS,dS); }
+   mat_add(dS,S1,S1);  
+   if (*detail==3) {Rprintf(" time %d %lf D2l contribution \n",s,times[s]); print_mat(dS);}
+   scl_mat_mult(1,S1,Stg[timegroup[s]]);
+ }
 
   /* varians beregninger */ 
   if (it==((*Nit)-1)) { // {{{
@@ -363,7 +421,7 @@ if (*ratesim==0 && mjump==1) {
       if ((sumscore<0.0000001) & (it<(*Nit)-2)) {  it=*Nit-2; }
  } /* it */ // }}}
 
-  if (*detail>=1) Rprintf("Fitting done \n"); 
+  if (*detail==1) Rprintf("Fitting done \n"); 
 
   if (timing==2) { // {{{
   c1=clock();
@@ -388,7 +446,7 @@ if (*ratesim==0 && mjump==1) {
     R_CheckUserInterrupt();
 
     if (*robust==1) {
-     sumscore=0; S0=0; 
+     sumscore=0; S0=0; for (j=0;j<antstrat;j++)  S0strata[j]=0; 
     // {{{ reading design and computing matrix products
 	  if (s==1) { // {{{
 	  for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) 
@@ -403,9 +461,10 @@ if (*ratesim==0 && mjump==1) {
 			       VE(xi,j)=designX[j*(*nx)+c]; 
 		   }
 		}
-		VE(Gbeta,id[c])=vec_prod(zi,beta); 
+		VE(Gbeta,id[c])=vec_prod(zi,beta)+offs[c]; 
 		RR=exp(VE(Gbeta,id[c]));
 		S0+=RR*weights[c]; 
+	        S0strata[stratum[c+1]]+=RR*weights[c]; 
                 for(j=0;j<pmax;j++) {
 	        if (j<*px) {ME(WX,id[c],j) =weights[c]*RR*designX[j*(*nx)+c];}
 	        if (j<*pg) {ME(WZ,id[c],j)=weights[c]*designG[j*(*ng)+c];} 
@@ -437,7 +496,7 @@ if (*ratesim==0 && mjump==1) {
             for(j=0;j<*pg;j++) { VE(zi,j)=designG[j*(*nx)+ci]; 
 		VE(Gbeta,id[ci])+=VE(zi,j)*VE(beta,j);  
 	    }
-	    RR=exp(VE(Gbeta,id[ci]));
+	    RR=exp(VE(Gbeta,id[ci])+offs[ci]);
 	    if (entry[ci]==1)  {
 	         replace_row(X,id[ci],xi); replace_row(Z,id[ci],zi); 
 		 scl_vec_mult(RR*weights[ci],xi,tmpv1);replace_row(WX,id[ci],tmpv1);
@@ -452,6 +511,7 @@ if (*ratesim==0 && mjump==1) {
 		    if (*mof==1) VE(offset,id[ci])=offs[ci];  
 	    }
 	    S0+=entry[ci]*RR*weights[ci]; 
+	    S0strata[stratum[ci+1]]+=entry[ci]*RR*weights[c]; 
 //	  for(j=0;j<pmax;j++) for(k=0;k<pmax;k++)  {
 //              if ((j<*px) & (k<*px)) ME(A,j,k)+=entry[ci]*VE(xi,k)*VE(xi,j)*RR*weights[ci]; 
 //              if ((j<*pg) & (k<*px)) ME(ZX,j,k)+=entry[ci]*VE(zi,j)*VE(xi,k)*RR*weights[ci]; 
@@ -468,7 +528,8 @@ if (*ratesim==0 && mjump==1) {
 
 // Rprintf("___________ %d %d  %lf %d \n",it,s,time,pers); print_mat(Z); print_mat(X); 
 
-     scl_mat_mult(1/S0,ZPZ,ZPZo); scl_mat_mult(1/S0,ZPX,ZPXo);
+//     scl_mat_mult(1/S0,ZPZ,ZPZo); scl_mat_mult(1/S0,ZPX,ZPXo);
+//
    // }}}
    
 //  print_mat(WX); print_mat(X); print_mat(Z); 
@@ -585,7 +646,7 @@ if (*ratesim==0 && mjump==1) {
   c0=clock();
   } // }}}
 
-  if (*detail>=1) Rprintf("Robust variances 1 \n"); 
+  if (*detail==1) Rprintf("Robust variances 1 \n"); 
 
   R_CheckUserInterrupt();
 
@@ -598,7 +659,7 @@ if (*ratesim==0 && mjump==1) {
 	vec_zeros(VdB); mat_zeros(Vcov);
 
 	for (j=0;j<*antclust;j++) { // {{{ 
-		if (s==1 && *detail==3) {
+		if (s==1 && *detail==4) {
 			Rprintf("================================================= %d \n",j); 
 			print_mat(W2t[j]); 
 			print_vec(W2[j]); 
@@ -632,7 +693,7 @@ if (*ratesim==0 && mjump==1) {
 
 	  Mv(Stg[s],tmpv2,rowZ); 
 	  extract_row(W2t[j],s,tmpv2); 
-  if (*detail==3) Rprintf("j,s is %d %d \n",j,s);  
+  if (*detail==4) Rprintf("j,s is %d %d \n",j,s);  
 	  if (*betafixed==0) {
 	    vec_subtr(tmpv2,rowZ,zi); 
 	    replace_row(Uti[j],s,zi); 
@@ -678,7 +739,7 @@ if (*ratesim==0 && mjump==1) {
   c0=clock();
   } // }}}
 
-  if (*detail>=2) Rprintf("Robust variances 2 \n"); 
+  if (*detail==1) Rprintf("Robust variances 2 \n"); 
 
     if (*betafixed==0) 
     for (j=0;j<*antclust;j++) {
@@ -863,8 +924,11 @@ if (*ratesim==0 && mjump==1) {
 
   for(j=0;j<*maxtimepoint;j++) { free_mat(Cg[j]); free_mat(Stg[j]);}
   free(cluster); free(ipers); free(imin); free(cug); free(timesg); 
+  free(S0strata); free(strata); 
   // }}}
-  
+ for (j=0;j<antstrat;j++) { free_mat(ZPZs[j]); free_mat(ZPXs[j]); }
+
+ 
   if (timing==2) { // {{{
   c1=clock();
   printf ("\telapsed CPU time: after freeing %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);

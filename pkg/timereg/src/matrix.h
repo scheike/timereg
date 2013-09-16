@@ -13,12 +13,21 @@
 #include <Rinternals.h>
 
 #define ME(matrix,row,col) (((matrix)->entries)[(col) * ((matrix)->nr) + (row)])
+#define ME3(matrix3,dim1,row,col) (((matrix3)->entries)[(dim1)*(((matrix3)->nr)*((matrix3)->nc))+(col)*((matrix3)->nr)+(row)])
 #define VE(vector,index) (((vector)->entries)[(index)])
 #define oops(s) {error((s));}
 #define max(a,b) ( ((a) > (b)) ? (a) : (b) )
 #define min(a,b) ( ((a) > (b)) ? (b) : (a) )
 #define malloc_mat(NR, NC, M) { (M) = Calloc(1,matrix); ((M)->nr) = (NR); ((M)->nc) = (NC); ((M)->entries) = Calloc(((NR)*(NC)) , double);}
+#define malloc_mat3(DIM,NR, NC, M3) {(M3) = Calloc(1,matrix); ((M3)->dim)=(DIM); ((M3)->nr) = (NR); ((M3)->nc) = (NC); ((M3)->entries) = Calloc(((DIM)*(NR)*(NC)) , double);}
 #define malloc_vec(L, V) { (V) = Calloc(1,vector); ((V)->length) = (L); ((V)->entries) = Calloc((L), double);}
+
+typedef struct{
+  int dim;
+  int nr;
+  int nc;
+  double *entries;
+} matrix3;
 
 typedef struct{
   int nr;
@@ -37,6 +46,8 @@ typedef struct{
 } counter;
 
 /* void malloc_mat(int *nrow, int *ncol, matrix *M); */
+
+void free_mat3(matrix3 *M);
 
 void free_mat(matrix *M);
 

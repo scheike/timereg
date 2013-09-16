@@ -53,6 +53,8 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   var.score<- matrix(0, Ntimes , pg + 1); 
 
   if (is.diag(  t(designX) %*% designX  )==TRUE) stratum <- 1 else stratum <- 0
+  if (stratum==1) stratum <- c(stratum,designX %*% (0:(px-1))) else stratum <- c(stratum,rep(0,nx)); 
+  
   if (basesim==1) sim[1] <- 2; ## first argument 0,1,2 
 
   nparout <- .C("score", as.double(times), as.integer(Ntimes), 

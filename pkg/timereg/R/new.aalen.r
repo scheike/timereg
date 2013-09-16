@@ -178,21 +178,22 @@ ylab ="Cumulative coefficients",score=FALSE,...)
 
 "print.aalen" <- function (x,...) 
 { ## {{{
-  object <- x; rm(x);
-  if (!inherits(object, 'aalen')) stop ("Must be an aalen object")
-
-  if (is.null(object$gamma)==TRUE) semi<-FALSE else semi<-TRUE
-    
-                                        # We print information about object:
-  
-  cat("Additive Aalen Model \n\n")
-  cat(" Nonparametric terms : "); cat(colnames(object$cum)[-1]); cat("   \n");  
-  if (semi) {
-    cat(" Parametric terms :  "); cat(rownames(object$gamma)); 
-    cat("   \n");  } 
-  cat("   \n");  
-
-  cat("  Call: \n"); dput(attr(object, "Call")); cat("\n"); 
+summary.aalen(x,...)
+###  object <- x; rm(x);
+###  if (!inherits(object, 'aalen')) stop ("Must be an aalen object")
+###
+###  if (is.null(object$gamma)==TRUE) semi<-FALSE else semi<-TRUE
+###    
+###                                        # We print information about object:
+###  
+###  cat("Additive Aalen Model \n\n")
+###  cat(" Nonparametric terms : "); cat(colnames(object$cum)[-1]); cat("   \n");  
+###  if (semi) {
+###    cat(" Parametric terms :  "); cat(rownames(object$gamma)); 
+###    cat("   \n");  } 
+###  cat("   \n");  
+###
+###  cat("  Call: \n"); dput(attr(object, "Call")); cat("\n"); 
 } ## }}}
 
 "summary.aalen" <-
