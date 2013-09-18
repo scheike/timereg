@@ -253,12 +253,17 @@ summary.phreg <- function(object,se="robust",...) {
 
 ###{{{ print.summary
 ##' @S3method print summary.phreg
-print.summary.phreg  <- function(x,...) {
+print.summary.phreg  <- function(x,max.strata=5,...) {
   cat("\n")
   nn <- cbind(x$n, x$nevent)
   rownames(nn) <- x$strata; colnames(nn) <- c("n","events")
   if (is.null(rownames(nn))) rownames(nn) <- rep("",NROW(nn))
-  print(nn,quote=FALSE)
+  if (length(x$strata)>max.strata) {
+      nn <- rbind(c(colSums(nn),length(x$strata)));
+      colnames(nn) <- c("n","events","stratas")
+      rownames(nn) <- ""
+  } 
+  print(nn,quote=FALSE)  
   if (!is.null(x$ncluster)) cat("\n ", x$ncluster, " clusters\n",sep="")
   if (!is.null(x$coef)) {
     cat("\n")
