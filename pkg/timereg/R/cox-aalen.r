@@ -37,11 +37,10 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   if (is.null(weights)==FALSE) mw<-1 else { mw <- 0; weights <- rep(1, nx);}
   if (sum(offsets)==0) mof <- 0 else mof <- 1; nb <- 1; aalen <- 1
   if (covariance == 1) covs <- matrix(0, mts, px * px) else covs <- 0
-  cumAi <- 0; 
-  dM.iid<-0; 
+  cumAi <- 0; dNit <- 0 ; dM.iid<-0; 
   gammaiid <- matrix(0, pg, fdata$antclust * 1)
   if (residuals == 1)  cumAi <- matrix(0, Ntimes , fdata$antpers * 1) 
-  if (residuals == 1)  dNit <- matrix(0, Ntimes , fdata$antpers * 1) 
+###  if (residuals == 1)  dNit <- matrix(0, Ntimes , fdata$antpers * 1) 
   if (residuals == 2)  cumAi <- rep(0, fdata$antpers * 1) 
   cumint <- vcum <- matrix(0, Ntimes , px + 1); 
   Rvcu <- matrix(0, mts, px + 1); 
@@ -120,11 +119,10 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
     cov.list <- list()
     for (i in 1:mts) cov.list[[i]] <- matrix(covit[i,], px, px) 
   } else cov.list <- NULL
-  dNit <- NULL
   if (residuals == 1) cumAi <- matrix(nparout[[43]],Ntimes,fdata$antpers * 1)
-  if (residuals == 1) dNit <- matrix(nparout[[40]],Ntimes,fdata$antpers * 1)
+###  if (residuals == 1) dNit <- matrix(nparout[[40]],Ntimes,fdata$antpers * 1)
   if (residuals == 2) cumAi <- nparout[[43]]
-  cumAi <- list(time = times, dM = cumAi,dNit=dNit)
+  cumAi <- list(time = times, dM = cumAi)
 
     testUt <- test <- unifCI <- supUtOBS <- UIt <- testOBS <- testval <- pval.testBeq0 <- 
     pval.testBeqC <- obs.testBeq0 <- obs.testBeqC <- sim.testBeq0 <- sim.testBeqC <- testUt <- sim.supUt <- NULL 

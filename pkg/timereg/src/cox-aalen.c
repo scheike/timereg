@@ -22,6 +22,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   basesim=sim[1]; // baseline is also simulated and variance estimated (can be omitted for some for models) 
   // basesim=0 no simulations but variance, basesim=1 (simul and variance), basesim=-1 (no simulations no variance) 
   
+  if (*detail==1) Rprintf("Memory allocation starting \n"); 
 // {{{ setting up memory 
   matrix *X,*Z,*WX,*WZ,*cdesX,*cdesX2,*cdesX3,*CtVUCt,*A,*AI;
   matrix *Vcov,*dYI,*Ct,*dM1M2,*M1M2t,*COV,*ZX,*ZP,*ZPX; 
@@ -57,8 +58,8 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   double *S0strata=calloc(antstrat,sizeof(double)); 
   matrix *ZPZs[antstrat],*ZPXs[antstrat],*As[antstrat],*ZXs[antstrat]; 
 
+//  for (j=0;j<*nx;j++) printf(" %d ",stratum[j+2]);
 //  printf("antstrat %d \n",antstrat); 
-//  for (j=0;j<=*nx+1;j++) printf(" %d ",stratum[j]);
 
   for (j=0;j<antstrat;j++) {
     S0strata[j]=0; 
@@ -148,6 +149,7 @@ if (*ratesim==0 && mjump==1) {
   for(j=0;j<*antpers;j++) {VE(weight,j)=1; VE(offset,j)=1;} 
   // }}}
   
+  if (*detail==1) Rprintf("Memory allocation done \n"); 
   if (timing==2) { // {{{
   c1=clock();
   Rprintf ("\telapsed CPU time: setting up allocation  %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
@@ -156,6 +158,7 @@ if (*ratesim==0 && mjump==1) {
 
   R_CheckUserInterrupt();
 
+  if (*detail==1) Rprintf("Iterations start \n"); 
   cu[0]=times[0]; 
   for (it=0;it<*Nit || (*Nit==0 && it==0);it++) // {{{ iterations start for cox-aalen model
   {
@@ -176,6 +179,7 @@ if (*ratesim==0 && mjump==1) {
      {
          time=times[s]; //  vec_zeros(lamt);
     
+   if (*detail==1) Rprintf("Starting Data reading, time %d \n",s); 
     // {{{ reading design and computing matrix products
 	  if (s==1) { // {{{
 	  for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) 
@@ -206,12 +210,10 @@ if (*ratesim==0 && mjump==1) {
               if ((j<*pg) & (k<*px)) ME(ZX,j,k)+=VE(zi,j)*VE(xi,k)*RR*weights[c]; 
               if ((j<*px) & (k<*px)) ME(As[stratum[c+2]],j,k)+=VE(xi,k)*VE(xi,j)*RR*weights[c]; 
               if ((j<*pg) & (k<*px)) ME(ZXs[stratum[c+2]],j,k)+=VE(zi,j)*VE(xi,k)*RR*weights[c]; 
-//	      if ((*exactderiv<2) || (*px==1)) {
                  if ((j<*pg) & (k<*pg)) ME(ZPZ,j,k)+= VE(zi,j)*VE(zi,k)*weights[c]*RR; 
                  if ((j<*pg) & (k<*px)) ME(ZPX,k,j)+= VE(zi,j)*VE(xi,k)*weights[c]*RR;
                  if ((j<*pg) & (k<*pg)) ME(ZPZs[stratum[c+2]],j,k)+= VE(zi,j)*VE(zi,k)*weights[c]*RR; 
                  if ((j<*pg) & (k<*px)) ME(ZPXs[stratum[c+2]],k,j)+= VE(zi,j)*VE(xi,k)*weights[c]*RR;
-//	      }
 	   }
            count=count+1; 
          }		 
@@ -253,14 +255,12 @@ if (*ratesim==0 && mjump==1) {
 	  for(j=0;j<pmax;j++) for(k=0;k<pmax;k++)  {
               if ((j<*px) & (k<*px)) ME(A,j,k)+=entry[ci]*VE(xi,j)*VE(xi,j)*RR*weights[ci]; 
               if ((j<*pg) & (k<*px)) ME(ZX,j,k)+=entry[ci]*VE(zi,j)*VE(xi,k)*RR*weights[ci]; 
-              if ((j<*px) & (k<*px)) ME(As[stratum[ci+2]],j,k)+=entry[ci]*VE(xi,j)*VE(xi,j)*RR*weights[ci]; 
+              if ((j<*px) & (k<*px)) ME(As[stratum[ci+2]],j,k)+=entry[ci]*VE(xi,j)*VE(xi,k)*RR*weights[ci]; 
               if ((j<*pg) & (k<*px)) ME(ZXs[stratum[ci+2]],j,k)+=entry[ci]*VE(zi,j)*VE(xi,k)*RR*weights[ci]; 
-// 	      if ((*exactderiv<2) || (*px==1)) {
                  if ((j<*pg) & (k<*pg)) ME(ZPZ,j,k)+=entry[ci]*VE(zi,j)*VE(zi,k)*weights[ci]*RR;
                  if ((j<*pg) & (k<*px)) ME(ZPX,k,j)+=entry[ci]*VE(zi,j)*VE(xi,k)*weights[ci]*RR;
                  if ((j<*pg) & (k<*pg)) ME(ZPZs[stratum[ci+2]],j,k)+= entry[ci]*VE(zi,j)*VE(zi,k)*weights[ci]*RR; 
                  if ((j<*pg) & (k<*px)) ME(ZPXs[stratum[ci+2]],k,j)+= entry[ci]*VE(zi,j)*VE(xi,k)*weights[ci]*RR;
-//	      }
 	  }
 	  ci=ci-1; 
 	  pers=id[ci]; 
@@ -268,6 +268,8 @@ if (*ratesim==0 && mjump==1) {
     }
     // }}}
    ipers[s]=pers;
+
+   if (*detail==1) Rprintf(" Data read, time %d \n",s); 
 
    if (*detail==2) {
            Rprintf("___________ s=%d jump.time=%lf jump.person=%d \n",s,time,pers); 
@@ -395,6 +397,7 @@ if (*betafixed==0)  {
 
    scl_mat_mult(1,S1,Stg[timegroup[s]]);
  }
+
 
   /* varians beregninger */ 
   if (it==((*Nit)-1)) { // {{{
@@ -593,7 +596,6 @@ if (*betafixed==0)  {
     }
 
       if (*retur==1) dhatMit[i*(*Ntimes)+s]=1*(i==pers)-hati;
-      if (*retur==1) dNit[i*(*Ntimes)+s]=1*(i==pers);
       if (*retur==2) dhatMit[i]=dhatMit[i]+1*(i==pers)-hati;
     } // }}}
 
@@ -613,12 +615,8 @@ if (*betafixed==0)  {
 
       Mv(ZXAI,xi,tmpv2);  
       vec_subtr(zi,tmpv2,tmpv2); 
-//      printf(" %d %lf %lf \n",pers,VE(weight,pers),times[s]); 
       if (*mw==1) scl_vec_mult(VE(weight,pers),tmpv2,tmpv2); 
-//      print_vec(tmpv2); 
        vec_add(tmpv2,W2[cin],W2[cin]);
-//      vec_add(tmpv2,zav,zav); 
-//      print_vec(zav); 
 
       if (mjump==1) 
       for (j=0;j<*pg;j++) for (i=0;i<*pg;i++) 
@@ -633,7 +631,10 @@ if (*betafixed==0)  {
       // distrubes the increments to the end for each process with jumps
       for (s1=timegroup[s];s1<*maxtimepoint;s1++) // {{{ 
       { 
+//	      printf("W2t %d %d %d  \n",cin,s1,*maxtimepoint); 
+//	      print_mat(W2t[cin]); 
          replace_row(W2t[cin],s1,W2[cin]); 
+//	      printf("2 %d %d \n",cin,s1); 
       if (basesim>=0)  replace_row(W3t[cin],s1,W3[cin]);  
          if (mjump==1) {
              cholesky(Uicluster[cin],tmp2); 
@@ -641,8 +642,6 @@ if (*betafixed==0)  {
 	 }
       } // }}} 
 
-//      if (*retur==1) dhatMit[i*(*Ntimes)+s]=1*(i==pers);
-//      if (*retur==2) dhatMit[i]=dhatMit[i]+1*(i==pers);
     } // }}} 
 
     /* MG baseret varians beregning */
@@ -726,7 +725,7 @@ if (*betafixed==0)  {
 
 	  Mv(Stg[s],tmpv2,rowZ); 
 	  extract_row(W2t[j],s,tmpv2); 
-  if (*detail==4) Rprintf("j,s is %d %d \n",j,s);  
+          if (*detail==4) Rprintf("j,s is %d %d \n",j,s);  
 	  if (*betafixed==0) {
 	    vec_subtr(tmpv2,rowZ,zi); 
 	    replace_row(Uti[j],s,zi); 
