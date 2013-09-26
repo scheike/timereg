@@ -1,8 +1,9 @@
 cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim=500,
-	weighted.test=1,max.point.func=50)
+	weighted.test=1,max.point.func=50,weights=NULL)
 { ## {{{
 ## {{{ setting up
   start.design<-1; silent <- 1; 
+  offsets <- NULL; 
   stratum <- attr(object,"stratum"); 
   if (!(class(object)!="aalen" | class(object)!="timecox" | class(object)!="cox.aalen" ))
     stop ("Must be output from aalen() timecox() or cox.aalen() functions\n") 
@@ -16,14 +17,20 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   if (sum(modelmatrix)==0 && cum.resid==0) 
 	  stop("No modelmatrix or continous covariates given to cumulate residuals\n"); 
 
+  rate.sim <- 1; weights1 <- NULL
 ###  if (class(object)=="cox.aalen") 
 ###	  if (attr(object,"rate.sim")==0)  stop("Only works with rate.sim=1, in cox.aalen call\n"); 
   if (class(object)=="cox.aalen") {
     dcum<-apply(as.matrix(object$cum[,-1]),2,diff); 
-    beta<-object$gamma; coxaalen<-1; 
+    beta<-object$gamma; 
+    coxaalen<-1; 
+    weights1 <- attr(object,"weights") 
+    offsets <- attr(object,"offsets"); 
+    rate.sim <- attr(object,"rate.sim"); 
   } else { dcum<-0; beta<-0; coxaalen<-0; pg<-0;Z<-0; }
 
   id<-attr(object,"id"); 
+###  cluster<-attr(object,"cluster");  gruperet cluster men skal være for sortering
   cluster<-attr(object,"cluster"); 
   formula<-attr(object,"Formula"); 
   start.time<-attr(object,"start.time"); 
@@ -36,11 +43,22 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   ldata<-aalen.des(formula,data,model="cox.aalen") else ldata<-aalen.des(formula,data) 
 
   X<-ldata$X; covar<-X; px<-ldata$px; 
-  timel<-ldata$time; time2l<-ldata$time2; 
-  time<-attr(object,"start"); time2<-attr(object,"stop"); 
+  time<-attr(object,"start"); 
+  time2<-attr(object,"stop"); 
   if (sum(time)==0) type <- "right" else type <- "counting"
-  statusl<-ldata$status; 
   status<-attr(object,"status");  
+###  print(status)
+###  print("mig")
+###  print(time)
+###  print(time2)
+###  print(timel)
+###  print(time2l)
+  if (is.null(weights)) weights <- rep(1,nrow(X));  
+  if (is.null(weights1)) weights1 <- rep(1,nrow(X));  
+  if (is.null(offsets)) offsets <- rep(0,nrow(X));  
+  if (length(weights)!=nrow(X)) stop("Lengths of weights and data do not match\n"); 
+  if (length(weights1)!=nrow(X)) stop("Lengths of weights from aalen/cox.aalen and data do not match\n"); 
+
 
   if (coxaalen==1) {
     Z<-ldata$Z;  covnamesZ<-ldata$covnamesZ; 
@@ -48,53 +66,63 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   } else Z <- 0
   Ntimes <- sum(status); 
 
+
   if (sum(modelmatrix)==0) {modelmatrix<-0;model<-0;pm<-1;}  else 
   {model<-1; modelmatrix<-as.matrix(modelmatrix); pm<-ncol(modelmatrix); 
    test<-matrix(0,n.sim,3*pm); testOBS<-rep(0,2*pm); 
    covnames<-colnames(modelmatrix); 
   }
 
-  times<-c(start.time,time2[status==1]); times<-sort(times);
-  antpers=length(unique(id)); ntot<-nrow(X); 
+  times<-c(start.time,time2[status==1]); 
+  times<-sort(times);
+  antpers=length(unique(id)); 
+  ntot<-nrow(X); 
   lmgresids<-length(object$residuals$time); 
 
-if ( type == "right" )  {  ## {{{
+###if ( type == "right" )  {  ## {{{
    ot<-order(-time2,status==1); # order in time, status=0 first for ties
-   time2<-time2[ot]; status<-status[ot]; 
+   time2<-time2[ot]; 
+   status<-status[ot]; 
    X<-as.matrix(X[ot,])
    if (coxaalen==1) Z<-as.matrix(Z[ot,])
    if (model==1) modelmatrix<-as.matrix(modelmatrix[ot,])
-   start <- rep(0,length(time2))
+###   start <- rep(0,length(time2))
+   start <- time[ot] ### fra call 
    stop<-time2;
    cluster<-cluster[ot]
    id<-id[ot];
-###   weights <- weights[ot]
-###   if (sum(offsets)!=0) offsets <- offsets[ot]
+   weightsmg <- weights[ot]
+   weights <- weights1[ot]
+   offsets <- offsets[ot]
    entry=rep(-1,ntot); 
-  } else {
-        eventtms <- c(time,time2)
-        status <- c(rep(0, ntot), status)
-        ix <- order(-eventtms,status==1)
-        etimes    <- eventtms[ix]  # Entry/exit times
-	status <- status[ix]
-        stop  <- etimes; 
-        start <- c(time,time)[ix]; 
-        tdiff    <- c(-diff(etimes),start.time) # Event time differences
-        entry  <- c(rep(c(1, -1), each = ntot))[ix]
-        X        <- as.matrix(X[rep(1:ntot, 2)[ix],])
-	if (coxaalen==1) Z <- as.matrix(Z[rep(1:ntot,2)[ix],])
-        if (model==1) modelmatrix<-as.matrix(modelmatrix[rep(1:ntot,2)[ix],])
-	id <- rep(id,2)[ix]
-	cluster <- rep(cluster,2)[ix]
+###  } else {
+###        eventtms <- c(time,time2)
+###        status <- c(rep(0, ntot), status)
+###        ix <- order(-eventtms,status==1)
+###        etimes    <- eventtms[ix]  # Entry/exit times
+###	status <- status[ix]
+###        stop  <- etimes; 
+###        start <- c(time,time)[ix]; 
+###        tdiff    <- c(-diff(etimes),start.time) # Event time differences
+###        entry  <- c(rep(c(1, -1), each = ntot))[ix]
+###        X        <- as.matrix(X[rep(1:ntot, 2)[ix],])
+###	if (coxaalen==1) Z <- as.matrix(Z[rep(1:ntot,2)[ix],])
+###        if (model==1) modelmatrix<-as.matrix(modelmatrix[rep(1:ntot,2)[ix],])
+###	id <- rep(id,2)[ix]
+###	cluster <- rep(cluster,2)[ix]
 ###        weights <- rep(weights, 2)[ix]
-###	if (sum(offsets)!=0) offsets <- rep(offsets,2)[ix]
-    } ## }}}
+###	offsets <- rep(offsets,2)[ix]
+###    } ## }}}
+
   ntot <- nrow(X); 
 
   if (coxaalen==1) { gamma.iid<-object$gamma.iid 
                      covar<-cbind(X,Z);
                      ptot<-px+pg;
   } else { covar<-covar; ptot<-px; gamma.iid<-0; }
+
+### print(head(cbind(id,X,Z,start,stop,status,cluster)))
+### print(head(cbind(weights,weights1,offsets)))
 
   covnames0<-colnames(covar); 
   if (is.null(covnames0)) covnames0  <- rep("",ptot); 
@@ -145,6 +173,8 @@ if ( type == "right" )  {  ## {{{
   ## }}}
 
 ###dyn.load("mgresid.so");
+  dNit <- 0
+  if (coxaalen==1) dNit <- object$residuals$dNit
 
   mgout<- .C("mgresid", ## {{{
      as.double(X),as.integer(ntot),as.integer(px), 
@@ -156,7 +186,7 @@ if ( type == "right" )  {  ## {{{
      as.double(uni.test),as.double(uni.testOBS), as.double(time.test),
      as.double(time.testOBS),as.double(unitime.test), as.double(unitime.testOBS),
      as.double(modelmatrix),as.integer(model), as.integer(pm),
-     as.double(cummgt),as.double(0), as.double(robvarcum),  # 10 
+     as.double(cummgt),as.double(dNit), as.double(robvarcum),  # 10 
      as.double(testOBS),as.double(test), as.double(simUt),
      as.double(Ut),as.integer(cum.resid), as.integer(maxval),
      as.integer(start.design),as.integer(coxaalen), as.double(dcum),
@@ -164,7 +194,8 @@ if ( type == "right" )  {  ## {{{
      as.double(gamma.iid),as.integer(cluster), as.integer(antclust), 
      as.double(robvarcumz), as.double(simcumz), as.integer(inXZ), 
      as.integer(inXorZ),as.integer(pcumz), as.integer(entry),
-     as.integer(stratum),as.integer(silent)) ### , PACKAGE="timereg")
+     as.integer(stratum),as.integer(silent),as.double(weights1),
+     as.double(offsets),as.integer(rate.sim),as.double(weights)) ### , PACKAGE="timereg")
 ## }}}
 
 ## {{{ handling output from C

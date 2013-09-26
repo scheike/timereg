@@ -41,7 +41,9 @@ aalen<-function (formula = formula(data),
 
   cluster.call<- clusters; 
   survs<-read.surv(m,id,npar,clusters,start.time,max.time,silent=silent)
-  times<-survs$times; id<-survs$id.cal; id.call<-id; 
+  times<-survs$times; 
+  id<-survs$id.cal; 
+  id.call<-id; 
   clusters<-gclusters <- survs$clusters; 
   stop.call <- time2<-survs$stop
   start.call <- survs$start
@@ -50,6 +52,7 @@ aalen<-function (formula = formula(data),
   dtimes <- sort(survs$stop[survs$status==1])
   nobs <- nrow(X); 
   if (is.null(weights)) weights <- rep(1,nrow(X)); 
+  weights.call <- weights; 
 
   if ((!is.null(max.clust))) if (max.clust<survs$antclust) {
 	qq <- unique(quantile(clusters, probs = seq(0, 1, by = 1/max.clust)))
@@ -62,7 +65,8 @@ aalen<-function (formula = formula(data),
 
   if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
    ot <- order(-time2,status==1); 
-   time2<-time2[ot]; status<-status[ot]; 
+   time2<-time2[ot]; 
+   status<-status[ot]; 
    X<-as.matrix(X[ot,])
    if (npar==FALSE) Z<-as.matrix(Z[ot,])
    survs$stop<-time2;
@@ -152,6 +156,7 @@ ldata<-list(start=survs$start,stop=survs$stop,antpers=survs$antpers,antclust=sur
   attr(ud, "residuals") <- residuals
   attr(ud, "max.clust") <- max.clust; 
   attr(ud, "max.time") <- max.time; 
+  attr(ud, "weights") <- weights.call; 
   attr(ud, "orig.max.clust") <- orig.max.clust 
   class(ud) <- "aalen"
   ud$call<-call

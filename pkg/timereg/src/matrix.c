@@ -1226,8 +1226,9 @@ void invertUnsafe(matrix *A, matrix *Ainv){
 
   if(info != 0){
     //Avoid printing this error message
-    Rprintf("Error in invert: DGETRF returned info = %d \n",info);
+    Rprintf("2 Error in invert: DGETRF returned info = %d \n",info);
     mat_zeros(Ainv);
+    print_mat(Ainv); 
   } else {
   
     for(i = 0; i < n; i++){
@@ -1237,7 +1238,7 @@ void invertUnsafe(matrix *A, matrix *Ainv){
     
     if(info != 0){
       //Avoid printing this error message
-      Rprintf("Error in invert: DGETRF returned info = %d \n",info);
+      Rprintf("1 Error in invert: DGETRF returned info = %d \n",info);
       mat_zeros(Ainv);
       return;
     } 
@@ -1306,7 +1307,7 @@ void invertUnsafeS(matrix *A, matrix *Ainv,int silent){
   if(info != 0){
     //Avoid printing this error message
     mat_zeros(Ainv);
-    if (silent==0) Rprintf("Error in invert: DGETRF returned info = %d \n",info);
+    if (silent==0) Rprintf("3 Error in invert: DGETRF returned info = %d \n",info);
   } else {
   
     for(i = 0; i < n; i++){
@@ -1318,7 +1319,7 @@ void invertUnsafeS(matrix *A, matrix *Ainv,int silent){
       //Avoid printing this error message
       mat_zeros(Ainv);
       free(work); free(iwork); free(dwork); free(ipiv);
-      if (silent==0) Rprintf("Error in invert: DGETRF returned info = %d \n",info);
+      if (silent==0) Rprintf("4 Error in invert: DGETRF returned info = %d \n",info);
       return;
     } 
     

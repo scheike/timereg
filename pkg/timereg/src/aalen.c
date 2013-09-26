@@ -69,7 +69,7 @@ int *nx,*p,*antpers,*Ntimes,*sim,*retur,*antsim,*status,*id,*covariance,
   matrix *cumAt[*antclust];
   vector  *dB,*VdB,*xi,*rowX,*rowcum,*difX,*vtmp;
   vector *cumhatA[*antclust],*cumA[*antclust],*cum;
-  int cin,ci=0,i,j,k,l,s,c,count,pers=0,
+  int invertible,cin,ci=0,i,j,k,l,s,c,count,pers=0,
       *cluster=calloc(*antpers,sizeof(int)), *idd=calloc(*antpers,sizeof(int));
 //  int *int0=calloc(*antpers,sizeof(int));
   double time,ahati,*vcudif=calloc((*Ntimes)*(*p+1),sizeof(double));
@@ -138,8 +138,12 @@ for (s=1;s<*Ntimes;s++){
 //    MtM(ldesignX,AI); print_mat(AI); 
 
     invertS(A,AI,silent[0]); 
-    if (ME(AI,0,0)==0.0 && *silent==0 && *strata==1){ 
-       Rprintf(" X'X not invertible at time %lf \n",time); }
+    invertible=1; 
+    if (fabs(ME(AI,0,0))<0.0000000001 && *strata==0){ 
+       invertible=0; 
+       if (*silent==0) 
+       Rprintf(" X'X not invertible at time %lf %d \n",time,invertible); 
+    }
     if (*strata==1)  { for (k=0;k<*p;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);  }
     if (s < -1) { print_mat(AI); print_mat(A);	}
 
@@ -158,14 +162,17 @@ for (s=1;s<*Ntimes;s++){
 
 //   for (k=1;k<*p+1;k++) Rprintf(" %lf ",cu[k*(*Ntimes)+s]);Rprintf(" \n"); 
 
-    if ((*robust==1) || (*retur>=1)) { // {{{
+    if (((*robust==1) || (*retur>=1)) && (invertible==1))  // {{{
+    {
       vec_zeros(VdB); mat_zeros(Vcov);
 
 	for (i=0;i<*antpers;i++)
 	{
           cin=cluster[i]; 
-	  extract_row(ldesignX,i,xi); ahati=vec_prod(xi,dB);
-	  extract_row(wX,i,xi); Mv(AI,xi,rowX); 
+	  extract_row(ldesignX,i,xi); 
+	  ahati=vec_prod(xi,dB);
+	  extract_row(wX,i,xi); 
+	  Mv(AI,xi,rowX); 
 	  if (*robust==1) {
 	  if (i==pers) { vec_add(rowX,cumhatA[cin],cumhatA[cin]); }
 	    scl_vec_mult(ahati,rowX,rowX);
@@ -174,7 +181,6 @@ for (s=1;s<*Ntimes;s++){
 
 	  if (*retur==1) cumAit[i*(*Ntimes)+s]= 1*(i==pers)-ahati;  
 	  if (*retur==2) cumAit[i]= cumAit[i]+1*(i==pers)-ahati;  
-	  
        }
 
        if (*robust==1) {

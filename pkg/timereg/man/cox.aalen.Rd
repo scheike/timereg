@@ -54,7 +54,8 @@ test-processes used for testing
 time-varying effects.}
 \item{residuals}{to returns residuals that can be used for
 model validation in the function cum.residuals. Estimated martingale increments (dM)
-and corresponding time vector (time).}
+and corresponding time vector (time). When rate.sim=1 returns estimated martingales,
+dM_i(t) and if rate.sim=0, returns a matrix of dN_i(t).}
 \item{covariance}{to compute covariance estimates for
 nonparametric terms rather than just the variances.}
 \item{resample.iid}{to return i.i.d. representation for
@@ -71,9 +72,9 @@ on counting processes and thus only valid in intensity case.}
 \item{max.clust}{sets the total number of i.i.d. terms in i.i.d. decompostition. This can 
 limit the amount of memory used by coarsening the clusters. When NULL then all clusters 
 are used.  Default is 1000 to save memory and time. }
-\item{exact.deriv}{if 1 then uses exact derivative in last iteration, if 2 then uses exact
-derivate for all iterations, and if 0 then uses approximation for all computations and 
-there may be a small bias in the variance estimates. For Cox model always exact and 
+\item{exact.deriv}{if 1 then uses exact derivative in last iteration, if 2 then uses 
+exact derivate for all iterations, and if 0 then uses approximation for all computations 
+and there may be a small bias in the variance estimates. For Cox model always exact and 
 all options give same results.
 }
 \item{silent}{if 1 then opppresses some output.}
