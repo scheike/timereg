@@ -24,11 +24,11 @@ The modelling formula uses the standard survival modelling given in the
 \bold{survival} package.
 }
 \usage{
-cox.aalen(formula=formula(data),data=sys.parent(),beta=NULL,Nit=10,detail=0,
+cox.aalen(formula=formula(data),data=sys.parent(),beta=NULL,Nit=20,detail=0,
 start.time=0,max.time=NULL,id=NULL,clusters=NULL,n.sim=500,residuals=0,
-robust=1,weighted.test=0,covariance=0,resample.iid=1,weights=NULL,rate.sim=1,
+robust=1,weighted.test=0,covariance=0,resample.iid=1,weights=NULL,rate.sim=0,
 beta.fixed=0,max.clust=1000,exact.deriv=1,silent=1,max.timepoint.sim=100,
-basesim=0,offsets=NULL)
+basesim=0,offsets=NULL,strata=NULL)
 }
 \arguments{
 \item{formula}{
@@ -83,6 +83,7 @@ simulations, see time.sim.resolution argument}
 \item{basesim}{1 to get simulations for cumulative baseline, including tests for 
 contant effects.}
 \item{offsets}{offsets for analysis on log-scale. RR=exp(offsets+ x beta).}
+\item{strata}{future option for making strata in a different day than through X design in cox-aalen model (~-1+factor(strata)).}
 }
 \details{
 The data for a subject is presented as multiple rows or 'observations',

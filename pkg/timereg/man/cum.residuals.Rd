@@ -5,7 +5,7 @@
 	approximative p-values based on resampling techniques.}
 \usage{
 cum.residuals(object,data=sys.parent(),modelmatrix=0,cum.resid=1,
-              n.sim=500,weighted.test=1,max.point.func=50)
+              n.sim=500,weighted.test=1,max.point.func=50,weights=NULL)
 }
 \arguments{
 \item{object}{an object of class 'aalen', 'timecox', 'cox.aalen' where
@@ -20,6 +20,7 @@ test-processes used for testing constant effects of covariates.}
 the continuous covariates in the model.}
 \item{max.point.func}{limits the amount of computations, only considers a max of  50 points 
 on the covariate scales.}
+\item{weights}{weights for sum of martingale residuals, now for cum.resid=1.} 
 }
 \value{
 returns an object of type "cum.residuals" with the following arguments:

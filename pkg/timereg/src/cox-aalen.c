@@ -56,7 +56,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 
   int stratpers=0,antstrat=stratum[1]; 
   double *S0strata=calloc(antstrat,sizeof(double)); 
-  matrix *ZPZs[antstrat],*ZPXs[antstrat],*As[antstrat],*ZXs[antstrat]; 
+  matrix *ZPZs[antstrat],*ZPXs[antstrat]; // ,*As[antstrat],*ZXs[antstrat]; 
 
 //  for (j=0;j<*nx;j++) printf(" %d ",stratum[j+2]);
 //  printf("antstrat %d \n",antstrat); 
@@ -65,8 +65,8 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     S0strata[j]=0; 
     malloc_mat(*pg,*pg,ZPZs[j]); 
     malloc_mat(*px,*pg,ZPXs[j]); 
-    malloc_mat(*pg,*pg,As[j]); 
-    malloc_mat(*px,*pg,ZXs[j]); 
+//    malloc_mat(*pg,*pg,As[j]); 
+//    malloc_mat(*px,*pg,ZXs[j]); 
   }
 
   /* float gasdev(),expdev(),ran1(); */ 
@@ -179,7 +179,7 @@ if (*ratesim==0 && mjump==1) {
      {
          time=times[s]; //  vec_zeros(lamt);
     
-   if (*detail==1) Rprintf("Starting Data reading, time %d \n",s); 
+//   if (*detail==1) Rprintf("Starting Data reading, time %d \n",s); 
     // {{{ reading design and computing matrix products
 	  if (s==1) { // {{{
 	  for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) 
@@ -208,8 +208,8 @@ if (*ratesim==0 && mjump==1) {
 	    for(j=0;j<pmax;j++) for(k=0;k<pmax;k++)  {
               if ((j<*px) & (k<*px)) ME(A,j,k)+=VE(xi,k)*VE(xi,j)*RR*weights[c]; 
               if ((j<*pg) & (k<*px)) ME(ZX,j,k)+=VE(zi,j)*VE(xi,k)*RR*weights[c]; 
-              if ((j<*px) & (k<*px)) ME(As[stratum[c+2]],j,k)+=VE(xi,k)*VE(xi,j)*RR*weights[c]; 
-              if ((j<*pg) & (k<*px)) ME(ZXs[stratum[c+2]],j,k)+=VE(zi,j)*VE(xi,k)*RR*weights[c]; 
+//              if ((j<*px) & (k<*px)) ME(As[stratum[c+2]],j,k)+=VE(xi,k)*VE(xi,j)*RR*weights[c]; 
+//              if ((j<*pg) & (k<*px)) ME(ZXs[stratum[c+2]],j,k)+=VE(zi,j)*VE(xi,k)*RR*weights[c]; 
                  if ((j<*pg) & (k<*pg)) ME(ZPZ,j,k)+= VE(zi,j)*VE(zi,k)*weights[c]*RR; 
                  if ((j<*pg) & (k<*px)) ME(ZPX,k,j)+= VE(zi,j)*VE(xi,k)*weights[c]*RR;
                  if ((j<*pg) & (k<*pg)) ME(ZPZs[stratum[c+2]],j,k)+= VE(zi,j)*VE(zi,k)*weights[c]*RR; 
@@ -255,8 +255,8 @@ if (*ratesim==0 && mjump==1) {
 	  for(j=0;j<pmax;j++) for(k=0;k<pmax;k++)  {
               if ((j<*px) & (k<*px)) ME(A,j,k)+=entry[ci]*VE(xi,j)*VE(xi,j)*RR*weights[ci]; 
               if ((j<*pg) & (k<*px)) ME(ZX,j,k)+=entry[ci]*VE(zi,j)*VE(xi,k)*RR*weights[ci]; 
-              if ((j<*px) & (k<*px)) ME(As[stratum[ci+2]],j,k)+=entry[ci]*VE(xi,j)*VE(xi,k)*RR*weights[ci]; 
-              if ((j<*pg) & (k<*px)) ME(ZXs[stratum[ci+2]],j,k)+=entry[ci]*VE(zi,j)*VE(xi,k)*RR*weights[ci]; 
+//              if ((j<*px) & (k<*px)) ME(As[stratum[ci+2]],j,k)+=entry[ci]*VE(xi,j)*VE(xi,k)*RR*weights[ci]; 
+//              if ((j<*pg) & (k<*px)) ME(ZXs[stratum[ci+2]],j,k)+=entry[ci]*VE(zi,j)*VE(xi,k)*RR*weights[ci]; 
                  if ((j<*pg) & (k<*pg)) ME(ZPZ,j,k)+=entry[ci]*VE(zi,j)*VE(zi,k)*weights[ci]*RR;
                  if ((j<*pg) & (k<*px)) ME(ZPX,k,j)+=entry[ci]*VE(zi,j)*VE(xi,k)*weights[ci]*RR;
                  if ((j<*pg) & (k<*pg)) ME(ZPZs[stratum[ci+2]],j,k)+= entry[ci]*VE(zi,j)*VE(zi,k)*weights[ci]*RR; 
@@ -269,7 +269,7 @@ if (*ratesim==0 && mjump==1) {
     // }}}
    ipers[s]=pers;
 
-   if (*detail==1) Rprintf(" Data read, time %d \n",s); 
+//   if (*detail==1) Rprintf(" Data read, time %d \n",s); 
 
    if (*detail==2) {
            Rprintf("___________ s=%d jump.time=%lf jump.person=%d \n",s,time,pers); 
@@ -284,16 +284,6 @@ if (*ratesim==0 && mjump==1) {
         scl_mat_mult(1/S0strata[stratpers],ZPZs[stratpers],ZPZo); 
         scl_mat_mult(1/S0strata[stratpers],ZPXs[stratpers],ZPXo);
    }
-
-//     printf(" nye version \n"); 
-//     print_mat(ZPZo); print_mat(ZPXo);
-
-//     printf("1 tester %lf \n",S0); 
-//     print_mat(ZPX); print_mat(ZPZ); 
-//     for (j=0;j<antstrat;j++) { 
-//         printf(" j %d %lf \n",j,S0strata[j]); 
-//         print_mat(ZPXs[j]); print_mat(ZPZs[j]); 
-//     }
 
 
    // }}}
@@ -973,7 +963,7 @@ if (*betafixed==0)  {
   free(S0strata); free(strata); 
   // }}}
  for (j=0;j<antstrat;j++) { free_mat(ZPZs[j]); free_mat(ZPXs[j]); 
-                            free_mat(As[j]); free_mat(ZXs[j]); 
+//                            free_mat(As[j]); free_mat(ZXs[j]); 
  }
  
   if (timing==2) { // {{{
