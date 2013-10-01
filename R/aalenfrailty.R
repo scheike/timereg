@@ -1,4 +1,4 @@
-##' Aalen additive hazards model with (gamma) frailty
+##' Additive hazards model with (gamma) frailty
 ##'
 ##' Aalen frailty model
 ##' @title Aalen frailty model
@@ -37,7 +37,7 @@ aalenfrailty <- function(time,status,X,id,theta,B=NULL,...) {
   dix <- which(status==1)
   cc <- cluster.index(id)
   ncluster <- length(cc$clusters)
-  U <- function(theta,indiv=FALSE) {
+  U <- function(theta,indiv=FALSE,Bhat=FALSE) {
     if (is.null(B)) {
         BB <- .Call("Bhat",as.integer(status),X,theta,as.integer(cc$clusters),cc$idclust,as.integer(cc$cluster.size))$B2
     } else {
@@ -48,11 +48,17 @@ aalenfrailty <- function(time,status,X,id,theta,B=NULL,...) {
 ##    if (is.na(Hij[1])) browser()
     res <- .Call("Uhat",as.integer(status),Hij,theta,cc$idclust,as.integer(cc$cluster.size))
     if (!indiv) res <- mean(res,na.rm=TRUE)
-    res
+    if (Bhat) attributes(res)$B <- BB
+    return(res)
   }
   if (missing(theta)) theta <- 0.1
-  if (is.list(theta)) return(lapply(theta,function(x) U(x,...)))
-
+  if (is.list(theta)) {
+      cc <- lapply(theta,function(x) U(x,Bhat=TRUE,...))
+      BB <- Reduce("cbind",lapply(cc,function(x) attributes(x)$B))
+      UU <- unlist(lapply(cc,function(x) x[1]))
+      res <- list(U=UU, B=BB, time=time, dix=dix, X=X, id=id, status=status)
+      return(res)
+  }
   op <- nlminb(theta,function(x) U(x)^2)
   uu <- U(op$par,TRUE)
   du <- numDeriv::grad(U,op$par)
@@ -73,18 +79,30 @@ aalenfrailty <- function(time,status,X,id,theta,B=NULL,...) {
 ##' @param pairleft pairwise (1) left truncation or individual (0)
 ##' @author Klaus K. Holst
 ##' @export
-simAalenFrailty <- function(n=5e3,theta=0.3,K=2,beta0=1.5,beta=1,cens=1.5,...) {
+simAalenFrailty <- function(n=5e3,theta=0.3,K=2,beta0=1.5,beta=1,cens=1.5,cuts=0,...) {
     ## beta0 (constant baseline intensity)
     ## beta (covariate effect)
-    Z <- rep(rgamma(n/K,1/theta,1/theta),each=K) ## Frailty, mean 1, var theta
+    if (length(beta0)!=length(cuts)) 
+        stop("Number of time-intervals (cuts) does not agree with number of rate parameters (beta0)")  
+    cuts <- c(cuts,Inf)
     id <- rep(seq(n/K),each=K) ## Cluster indicator
-    Ai <- function(u) (u/Z)/(beta0+beta*x) 
     x <- rbinom(n,1,0.5) ## Binary covariate
-    uu <- -log(runif(n)) ##rexp(n,1)   
-    dat <- data.frame(time=Ai(uu), x=x, status=1, id=id, Z=Z)
+    Z <- rep(rgamma(n/K,1/theta,1/theta),each=K) ## Frailty, mean 1, var theta
+    Ai <- function() {
+        vals <- matrix(0,ncol=length(beta0),nrow=n)
+        ival <- numeric(n)
+        for (i in seq(length(beta0))) {
+            u <- -log(runif(n)) ##rexp(n,1)
+            vals[,i] <-  cuts[i] + u/(beta0[i]+beta*x)/Z
+            idx <- which(vals[,i]<=cuts[i+1] & ival==0)
+            ival[idx] <- vals[idx,i]
+        }
+        ival
+    }
+    dat <- data.frame(time=Ai(), x=x, status=1, id=id, Z=Z)
     if (cens==0) cens <- Inf else cens <- -log(runif(n))/cens
     dat$status <- (dat$time<=cens)*1
     dat$time <- apply(cbind(dat$time,cens),1,min)
-    dat <- dat[order(dat$time),] ## order after event/censoring tim
+    dat <- dat[order(dat$time),] ## order after event/censoring time
     return(dat)
 }
