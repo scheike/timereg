@@ -82,6 +82,7 @@ fast.reshape <- function(data,id,varying,num,sep="",keep,
         nn <- colnames(data)
         nsep <- nchar(sep)
         if (missing(varying)) stop("Prefix of time-varying variables needed")
+        varying <- as.character(substitute(varying))
         vnames <- NULL
         ncvar <- sapply(varying,nchar)
         newlist <- c()
