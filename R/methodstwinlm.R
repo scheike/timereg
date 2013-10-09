@@ -41,7 +41,7 @@ summary.twinlm <- function(object,...) {
 
   theta <- pars(e)
   theta.sd <- sqrt(diag(e$vcov))
-  myest <- cbind(theta,theta.sd,(Z <- theta/theta.sd),2*(1-pnorm(abs(Z))))
+  myest <- cbind(theta,theta.sd,(Z <- theta/theta.sd),2*(pnorm(abs(Z),lower.tail=FALSE)))
   colnames(myest) <- c("Estimate","Std. Error", "Z value", "Pr(>|z|)")
 
   if (object$type%in%c("u","flex","sat")) {

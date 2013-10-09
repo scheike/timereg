@@ -182,7 +182,7 @@ phreg <- function(formula,data,...) {
     X <- X[,-intpos,drop=FALSE]
   if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
 
-  res <- c(phreg0(X,entry,exit,status,id,strata,...),list(call=cl))
+  res <- c(phreg0(X,entry,exit,status,id,strata,...),list(call=cl,model.frame=m))
   class(res) <- "phreg"
   
   res
@@ -208,6 +208,7 @@ coef.phreg  <- function(object,...) {
 ###}}} coef
 
 ###{{{ iid
+##' @S3method iid phreg
 iid.phreg  <- function(x,...) {
     invhess <- solve(x$hessian)
   ncluster <- NULL
@@ -233,7 +234,7 @@ summary.phreg <- function(object,se="robust",...) {
     I <- -solve(object$hessian)
     V <- vcov(object)
     cc <- cbind(coef(object),diag(V)^0.5,diag(I)^0.5)
-    cc  <- cbind(cc,2*(1-pnorm(abs(cc[,1]/cc[,2]))))
+    cc  <- cbind(cc,2*(pnorm(abs(cc[,1]/cc[,2]),lower.tail=FALSE)))
     colnames(cc) <- c("Estimate","S.E.","dU^-1/2","P-value")
     if (!is.null(ncluster <- attributes(V)$ncluster))
     rownames(cc) <- names(coef(object))

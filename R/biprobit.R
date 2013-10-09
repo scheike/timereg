@@ -251,7 +251,7 @@ biprobit <- function(formula, data, id, num=NULL, strata=NULL, eqmarg=TRUE,
               hessian=iI              
               )
   cc <- cbind(op$par,sqrt(diag(V)))
-  cc <- cbind(cc,cc[,1]/cc[,2],2*(1-pnorm(abs(cc[,1]/cc[,2]))))
+  cc <- cbind(cc,cc[,1]/cc[,2],2*(pnorm(abs(cc[,1]/cc[,2]),lower.tail=FALSE)))
   colnames(cc) <- c("Estimate","Std.Err","Z","p-value")
   rho <- ifelse(itrname=="log","U","rho")
   if (!eqmarg)

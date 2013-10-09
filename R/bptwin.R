@@ -596,7 +596,7 @@ bptwin <- function(formula, data, id, zyg, MZ, DZ, group=NULL,
 ###{{{ return
 
   suppressWarnings(cc <- cbind(op$par,sqrt(diag(V))))
-  cc <- cbind(cc,cc[,1]/cc[,2],2*(1-pnorm(abs(cc[,1]/cc[,2]))))
+  cc <- cbind(cc,cc[,1]/cc[,2],2*(pnorm(abs(cc[,1]/cc[,2]),lower.tail=FALSE)))
   colnames(cc) <- c("Estimate","Std.Err","Z","p-value")
   vnames1 <- NULL
   trnam <- " "
