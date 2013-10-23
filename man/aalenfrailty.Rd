@@ -23,7 +23,7 @@
   Parameter estimates
 }
 \description{
-  Aalen additive hazards model with (gamma) frailty
+  Additive hazards model with (gamma) frailty
 }
 \details{
   Aalen frailty model

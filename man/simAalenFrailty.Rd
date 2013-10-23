@@ -3,7 +3,7 @@
 \title{Simulate from the Aalen Frailty model}
 \usage{
   simAalenFrailty(n = 5000, theta = 0.3, K = 2,
-    beta0 = 1.5, beta = 1, cens = 1.5, ...)
+    beta0 = 1.5, beta = 1, cens = 1.5, cuts = 0, ...)
 }
 \arguments{
   \item{K}{Number of clusters}

@@ -3,7 +3,7 @@
 \title{Fast reshape
 Simple reshape/tranpose of data}
 \usage{
-  fast.reshape(data, id, varying, num, sep = "", keep,
+  fast.reshape(data, varying, id, num, sep = "", keep,
     idname = "id", numname = "num", factors.keep = TRUE,
     idcombine = FALSE, labelnum = FALSE, ...)
 }

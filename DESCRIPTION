@@ -75,3 +75,4 @@ Collate:
     'bptwin.R'
     'prop-odds.R'
     'phreg.R'
+    'lifetable.R'
