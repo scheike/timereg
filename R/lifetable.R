@@ -33,8 +33,10 @@ lifetable <- function(time,status,entry,strata=list(),breaks=c(),confint=FALSE) 
     if (length(strata)>0) {
         a <- by(cbind(entry,time,status), strata,
                 FUN=lifetable, breaks=breaks, confint=confint)
-        res <- cbind(Reduce("rbind",a),
-                     do.call("expand.grid",attributes(a)$dimnames))
+        nn <- do.call("expand.grid",attributes(a)$dimnames)
+        nam <- nn[rep(seq(NROW(nn)),each=NROW(a[[1]])),]
+        ##colnames(nam) <- colnames(nn)
+        res <- cbind(Reduce("rbind",a),nam)
         return(res)
     }    
     if (length(breaks)>0) breaks <- sort(unique(breaks))
