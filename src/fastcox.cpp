@@ -88,7 +88,7 @@ BEGIN_RCPP
   mat XX = Rcpp::as<mat>(xx);
   uvec Jumps = Rcpp::as<uvec>(jumps);
   ivec Sign = Rcpp::as<ivec>(sgn);
-  unsigned n = X.n_rows;
+  //  unsigned n = X.n_rows;
 
   colvec Xb = X*beta;
   colvec eXb = exp(Xb);  
