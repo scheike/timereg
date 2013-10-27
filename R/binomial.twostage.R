@@ -611,7 +611,7 @@ if (alr==1)  ud <- c(ud,outl)
 onerunfam2 <- function(i,n,alr=0,manual=1,time=0,theta=1) { ## {{{ 
 ### n=1000; beta=0.2; theta=1; time=0; i=1
 print(i)
-dd <- mets:::simBinFam(n,beta=0,theta=theta) 
+dd <- simBinFam(n,beta=0,theta=theta) 
 ddl <- fast.reshape(dd,varying="y",keep="y")
 
 desfs <- function(x,num1="num1",num2="num2")

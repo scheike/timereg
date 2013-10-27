@@ -12,8 +12,9 @@
 ##' @examples
 ##' library(timereg)
 ##' data(TRACE)
+##' \donttest{
 ##' with(TRACE, lifetable(cbind(time,status==9),breaks=c(0.2,0.5),confint=TRUE))
-##' 
+##' }
 ##' d <- with(TRACE, lifetable(time,status==9,strata=list(sex=sex,vf=vf),breaks=c(0.2,0.5)))
 ##' summary(glm(events ~ offset(log(atrisk))+interval+sex+vf,data=d,poisson))
 ##' 
