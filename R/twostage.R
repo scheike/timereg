@@ -114,6 +114,7 @@ else if (model=="plackett") dep.model <- 2
 else stop("Model must by either clayton.oakes or plackett \n"); 
 start.time <- NULL
 
+
 if (!is.null(margsurv)) 
 if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 	 formula<-attr(margsurv,"Formula");
@@ -214,6 +215,7 @@ if (!is.null(margsurv))
   if (length(strata)!=antpers) stop("Strata must have length equal to number of data points \n"); 
 
   cluster.call <- clusters
+
   out.clust <- cluster.index(clusters);  
   clusters <- out.clust$clusters
   maxclust <- out.clust$maxclust 
