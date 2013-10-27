@@ -71,7 +71,7 @@
 ##' rm(prtw)
 fast.reshape <- function(data,varying,id,num,sep="",keep,
                          idname="id",numname="num",factors.keep=TRUE,
-                         idcombine=FALSE,labelnum=FALSE,...) {
+                         idcombine=TRUE,labelnum=FALSE,...) {
     if (!is.data.frame(data) & is.list(data)) {
         data <- as.data.frame(data)
     } else {
@@ -188,7 +188,6 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
         return(long)
     }
 
-    
     ## Long to wide format:
     numvar <- idvar <- NULL 
     if (is.character(id)) {
