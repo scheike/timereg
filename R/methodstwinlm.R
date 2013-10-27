@@ -12,30 +12,34 @@ print.twinlm <- function(x,...) {
 
 ##' @S3method summary twinlm
 summary.twinlm <- function(object,...) {
-  e <- object$estimate
-  counts <- function(dd) {
-    dd0 <- apply(dd,2,function(x) !is.na(x))
-    pairs <- sum(dd0[,1]*dd0[,2])
-    singletons <- sum((!dd0[,1])*dd0[,2] + (!dd0[,2])*dd0[,1])
-    return(c(pairs,singletons))
-  }
-  mz  <- counts(object$data.mz[,object$outcomes])
-  dz  <- counts(object$data.dz[,object$outcomes])
-  if (!object$estimate$model$missing) {
-    zygtab <- c("MZ-pairs"=mz[1],"DZ-pairs"=dz[1])
-  } else {
-    zygtab <- c(paste(mz,collapse="/"),paste(dz,collapse="/"))
-    names(zygtab) <- c("MZ-pairs/singletons","DZ-pairs/singletons")
-  }
-  if (object$OS) {
-    os  <- counts(object$data.os[,object$outcomes])
-    if (!object$estimate$model$missing) {
-      zygtab <- c(zygtab,"OS-pairs"=os[1])
-    } else {
-      zygtab <- c(zygtab,paste(os,collapse="/"))
-      names(zygtab)[3] <- "OS-pairs/singletons"
-    }
-  } 
+    browser()
+  e <- object$estimate    
+  ## counts <- function(dd) {
+  ##   dd0 <- apply(dd,2,function(x) !is.na(x))
+  ##   pairs <- sum(dd0[,1]*dd0[,2])
+  ##   singletons <- sum((!dd0[,1])*dd0[,2] + (!dd0[,2])*dd0[,1])
+  ##   return(c(pairs,singletons))
+  ## }
+  ## mz  <- counts(object$data.mz[,object$outcomes])
+  ## dz  <- counts(object$data.dz[,object$outcomes])
+  ## if (!object$estimate$model$missing) {
+  ##   zygtab <- c("MZ-pairs"=mz[1],"DZ-pairs"=dz[1])
+  ## } else {
+  ##   zygtab <- c(paste(mz,collapse="/"),paste(dz,collapse="/"))
+  ##   names(zygtab) <- c("MZ-pairs/singletons","DZ-pairs/singletons")
+  ## }
+    zygtab <- NULL
+  ## if (object$OS) {
+  ##   os  <- counts(object$data.os[,object$outcomes])
+  ##   if (!object$estimate$model$missing) {
+  ##     zygtab <- c(zygtab,"OS-pairs"=os[1])
+  ##   } else {
+  ##     zygtab <- c(zygtab,paste(os,collapse="/"))
+  ##     names(zygtab)[3] <- "OS-pairs/singletons"
+  ##   }
+  ## } 
+
+
   ## zygtab <- with(object, table(data[,zyg]))
   ## names(zygtab) <- paste(names(zygtab),"pairs",sep="-")
 
@@ -49,7 +53,7 @@ summary.twinlm <- function(object,...) {
     if (object$constrain) {
       i1 <- lava:::parpos.multigroup(object$estimate$model,p="atanh(rhoMZ)")[1]
       i2 <- lava:::parpos.multigroup(object$estimate$model,p="atanh(rhoDZ)")[1]
-      i3 <- lava:::parpos.multigroup(object$estimate$model,p="atanh(rhoOS)")[1]
+      ## i3 <- lava:::parpos.multigroup(object$estimate$model,p="atanh(rhoOS)")[1]
       if (length(i1)>0) {
         corest <- coef(object$estimate,level=0)[c(i1,i2,i3)]
         sdest <- vcov(object$estimate)[cbind(c(i1,i2,i3),c(i1,i2,i3))]^0.5
@@ -58,15 +62,15 @@ summary.twinlm <- function(object,...) {
         corMZ <- c(corest[1],ciest[1,])
         corDZ <- c(corest[2],ciest[2,])
         corOS <- NULL
-        if (object$OS) {
-          corOS <- c(corest[3],ciest[3,])
-        }
+        ## if (object$OS) {
+        ##   corOS <- c(corest[3],ciest[3,])
+        ## }
       }
     }
     aa <- capture.output(e)
     res <- list(estimate=aa, zyg=zygtab,
                 varEst=NULL, varSigma=NULL, heritability=NULL,
-                corMZ=corMZ, corDZ=corDZ, corOS=corOS,
+                corMZ=corMZ, corDZ=corDZ, 
                 logLik=logLik(e), AIC=AIC(e), BIC=BIC(e), type=object$type
                 )                
     class(res) <- "summary.twinlm"
@@ -74,15 +78,15 @@ summary.twinlm <- function(object,...) {
   }
 
 
-  kinshipOS  <- NULL
-  if(object$OS) {
-    KinshipOS <- constraints(e,k=3)[,c(1,5,6),drop=FALSE]
-    rownames(KinshipOS)[1] <- "OS Kinship"
-    if (nrow(KinshipOS)>1) {
-      rownames(KinshipOS) <- c("OS Kinship(A)","OS Kinship(D)")
-    }
-    myest <- myest[-lava:::parpos.multigroup(object$estimate$model,p=c("ra","rd")),,drop=FALSE]
-  }
+  ## kinshipOS  <- NULL
+  ## if(object$OS) {
+  ##   KinshipOS <- constraints(e,k=3)[,c(1,5,6),drop=FALSE]
+  ##   rownames(KinshipOS)[1] <- "OS Kinship"
+  ##   if (nrow(KinshipOS)>1) {
+  ##     rownames(KinshipOS) <- c("OS Kinship(A)","OS Kinship(D)")
+  ##   }
+  ##   myest <- myest[-lava:::parpos.multigroup(object$estimate$model,p=c("ra","rd")),,drop=FALSE]
+  ## }
 
   r1 <- gsub(".1","",coef(Model(Model(e))[[1]],
                           mean=e$meanstructure, silent=TRUE),
@@ -171,20 +175,20 @@ summary.twinlm <- function(object,...) {
   acde <- acde.twinlm(object)
   coef <- rbind(acde)  
 
-  corOS <- NULL
-  if (object$OS)
-    acde <- rbind(acde,KinshipOS)
+  ## corOS <- NULL
+  ## if (object$OS)
+  ##   acde <- rbind(acde,KinshipOS)
 
   
   hrow <- rbind(c(h2val,ci.logit));
   rownames(hrow) <- "Broad-sense heritability"
   colnames(hrow)[1:2] <- c("Estimate","Std.Err")
   
-  all <- rbind(hrow[,c(1,3,4),drop=FALSE],coef,corMZ,corDZ,corOS)
+  all <- rbind(hrow[,c(1,3,4),drop=FALSE],coef,corMZ,corDZ) ##,corOS)
   
   res <- list(estimate=myest, zyg=zygtab, varEst=varEst,
               varSigma=varSigma, heritability=hrow, corMZ=corMZ, corDZ=corDZ,
-              corOS=corOS, acde=acde, logLik=logLik(e), AIC=AIC(e), BIC=BIC(e),
+              acde=acde, logLik=logLik(e), AIC=AIC(e), BIC=BIC(e),
               type=object$type, coef=coef, all=all);
   class(res) <- "summary.twinlm"
   return(res)
@@ -217,9 +221,9 @@ print.summary.twinlm <- function(x,signif.stars=FALSE,...) {
     cat("\n")
   }
   if (!is.null(x$corMZ)) {
-    cc <- with(x, rbind(corMZ,corDZ,corOS))
+    cc <- with(x, rbind(corMZ,corDZ)) ##,corOS))
     rownames(cc)[1:2] <- c("Correlation within MZ:","Correlation within DZ:")
-    if (!is.null(x$corOS)) rownames(cc)[3] <- "Correlation within OS:"
+    ## if (!is.null(x$corOS)) rownames(cc)[3] <- "Correlation within OS:"
     colnames(cc) <- c("Estimate","2.5%","97.5%")
     printCoefmat(cc,signif.stars=FALSE,...)
   }

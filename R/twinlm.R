@@ -1,3 +1,5 @@
+###{{{ twinlm
+
 ##' Fits a classical twin model for quantitative traits.
 ##'
 ##' @title Classic twin model for quantitative traits
@@ -69,7 +71,7 @@
 ##' @param messages Control amount of messages shown 
 ##' @param ... Additional arguments parsed on to lower-level functions
 twinlm <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=NULL, type=c("ace"), twinnum="twinnum", binary=FALSE,keep=weight,estimator="gaussian",constrain=TRUE,control=list(),messages=1,...) {
-
+    
   cl <- match.call(expand.dots=TRUE)
   opt <- options(na.action="na.pass")
   mf <- model.frame(formula,data)
@@ -129,10 +131,9 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=N
   if (any(latentnames%in%varnames))
     stop(paste(paste(latentnames,collapse=",")," reserved for names of latent variables.",sep=""))
   
-  mm <- model.matrix(formula,mf)
-  options(opt)
-  
-  covars <- colnames(mm)
+  M <- model.matrix(formula,mf)
+  options(opt)  
+  covars <- colnames(M)
   hasIntercept <- FALSE
   if (attr(terms(formula),"intercept")==1) {
       hasIntercept <- TRUE
@@ -145,241 +146,61 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=N
     zygstat <- as.factor(zygstat)
   }
   zyglev <- levels(zygstat)
-  if (length(zyglev)>2) stop("More than two zygosity levels found. For opposite sex (OS) analysis use the 'sex' argument")
+  if (length(zyglev)>2) stop("More than two zygosity levels found. For opposite sex (OS) analysis use the 'group' argument (and recode OS group as DZ)")
 
   ## To wide format:
   num <- NULL; if (twinnum%in%colnames(data)) num <- twinnum
-  data <- cbind(data[,c(yvar,keep,num,zyg,id,group)],mm)
+  if (!is.null(group)) data[,group] <- as.factor(data[,group])
+  data <- cbind(data[,c(yvar,keep,num,zyg,id,group)],M)
   ddd <- fast.reshape(data,id=id,varying=c(yvar,keep,covars,group),keep=zyg,num=num,sep=".",labelnum=TRUE)
-    
+  groups <- paste(group,".",1:2,sep="")
+  outcomes <- paste(yvar,".",1:2,sep="")  
+
   if (missing(DZ)) {
     warning("Using first level, `",zyglev[1],"', in status variable as indicator for 'dizygotic'", sep="")
     DZ <- zyglev[1]    
   }
-  OS <- NULL
-  if (!is.null(OS)) {
-    wide3 <- ddd[which(ddd[,zyg]==OS),,drop=FALSE]
-    MZ <- setdiff(zyglev,c(DZ,OS))  
-  } else {
-    wide3 <- NULL  
-    MZ <- setdiff(zyglev,DZ)
-  }
+  MZ <- setdiff(zyglev,DZ)
   wide1 <- ddd[which(ddd[,zyg]==MZ),,drop=FALSE]
   wide2 <- ddd[which(ddd[,zyg]==DZ),,drop=FALSE]
-  
+
+
+  mm <- nn <- c()
+  dd <- list()
+  if (!is.null(group)) {
+      levgrp <- levels(data[,group])
+      for (i1 in levgrp) {
+          for (i2 in levgrp) {
+              nn <- c(nn,paste("MZ","i1",sep="."),paste("DZ","i2",sep="."))
+              idxMZ <- which(wide1[,groups[1]]==i1 & wide1[,groups[2]]==i1)
+              dMZ <- wide1[idxMZ,,drop=FALSE]
+              idxDZ <- which(wide2[,groups[1]]==i1 & wide2[,groups[2]]==i1)
+              dDZ <- wide2[idxDZ,,drop=FALSE]
+              dd <- c(dd,list(dMZ,dDZ))
+              mm <- c(mm,
+                      twinsem1(outcomes,c(i1,i2),
+                               levels=levgrp,covars=covars,type=type,
+                               data=list(dMZ,dDZ))$model)
+          }
+      }; names(mm) <- nn; names(dd) <- nn      
+  } else {
+      mm <- twinsem1(outcomes,NULL,
+                     levels=NULL,covars=covars,type=type,
+                     data=list(wide1,wide2))$model
+      dd <- list(MZ=wide1,DZ=wide2)
+  }
+  browser()
+ 
   
   ## ###### The SEM
-  outcomes <- paste(yvar,".",1:2,sep="")
-  model1<- lvm()  
-  regression(model1,to=outcomes,from=c("a1","c1","d1"),silent=TRUE) <-
-    rep(c("lambda[a]","lambda[c]","lambda[d]"),2)
-  regression(model1,to=outcomes,from=c("e1","e2")) <- rep("lambda[e]",2)
-  latent(model1) <- c("a1","c1","d1","e1","e2")
-  intercept(model1,latent(model1)) <- 0
-  if (!is.null(covars))
-    for (i in 1:length(covars)) {
-      regression(model1, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta[",i,"]",sep="")
-      regression(model1, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta[",i,"]",sep="")
-    }
-  covariance(model1,outcomes) <- 0
-  covariance(model1, latent(model1))  <- 1
-  if (!type%in%c("sat","flex")) {    
-    intercept(model1,outcomes) <- "mu"
-  }
-  if (type%in%c("u","flex","sat")) {
-    kill(model1) <- ~e1+e2
-    covariance(model1,outcomes) <- "v1"
-  }
-  
-  model2 <- cancel(model1,c(outcomes[2],"a1","d1"))
-  regression(model2,to=outcomes[2],from=c("a2","d2"),silent=TRUE) <-
-    c("lambda[a]","lambda[d]")  
-  covariance(model2,a1~a2)  <- 0.5
-  covariance(model2,d1~d2)  <- 0.25
-  latent(model2) <- c("a2","d2")
-  intercept(model2, c("a2","d2")) <- 0
-  covariance(model2, c("a2","d2")) <- 1
-
-  model3 <- model2
-  covariance(model3, a1~a2) <- "r1"
-  covariance(model3, d1~d2) <- "r2"
-  constrain(model3, r1~ra) <- function(x) tanh(x)
-  constrain(model3, r2~rd) <- function(x) tanh(x)
-
-  if (type=="flex") {
-     intercept(model1,outcomes) <- "mu1"
-     intercept(model2,outcomes) <- "mu2"
-     intercept(model3,outcomes) <- "mu3"
-     covariance(model1,outcomes) <- "var(MZ)"
-     covariance(model2,outcomes) <- "var(DZ)"
-     covariance(model3,outcomes) <- "var(OS)"
-   }
-  if (type=="sat") {
-     covariance(model1,outcomes) <- c("var(MZ)1","var(MZ)2")
-     covariance(model2,outcomes) <- c("var(DZ)1","var(DZ)2")
-     covariance(model3,outcomes) <- c("var(OS)1","var(OS)2")
-  }
-  if (type%in%c("u","flex","sat")) {
-    if (constrain) {
-      if (type=="sat") {
-        model1 <- covariance(model1,outcomes,constrain=TRUE,rname="atanh(rhoMZ)",cname="covMZ",lname="log(var(MZ)).1",l2name="log(var(MZ)).2")
-        model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var(DZ)).1",l2name="log(var(DZ)).2")
-        model3 <- covariance(model3,outcomes,constrain=TRUE,rname="atanh(rhoOS)",cname="covOS",lname="log(var(OS)).1",l2name="log(var(OS)).2")
-      } else {
-        if (type=="flex") {
-          model1 <- covariance(model1,outcomes,constrain=TRUE,rname="atanh(rhoMZ)",cname="covMZ",lname="log(var(MZ))")
-          model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var(DZ))")
-          model3 <- covariance(model3,outcomes,constrain=TRUE,rname="atanh(rhoOS)",cname="covOS",lname="log(var(OS))")
-        }  else {
-          model1 <- covariance(model1,outcomes,constrain=TRUE,rname="atanh(rhoMZ)",cname="covMZ",lname="log(var)")
-          model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var)")
-          model3 <- covariance(model3,outcomes,constrain=TRUE,rname="atanh(rhoOS)",cname="covOS",lname="log(var)")          
-        }        
-      }     
-    } else {
-      covariance(model1,outcomes[1],outcomes[2]) <- "covMZ"
-      covariance(model2,outcomes[1],outcomes[2]) <- "covDZ"
-      covariance(model3,outcomes[1],outcomes[2]) <- "covOS"
-    }
-  }
-  if (!is.null(covars) & type%in%c("flex","sat")) {
-    sta <- ""
-    if (type=="sat") sta <- "b"
-       for (i in 1:length(covars)) {
-         regression(model1, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta1[",i,"]",sep="")         
-         regression(model1, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta1",sta,"[",i,"]",sep="")
-         regression(model2, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta2[",i,"]",sep="")
-         regression(model2, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta2",sta,"[",i,"]",sep="")
-         regression(model3, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta3[",i,"]",sep="")
-         regression(model3, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta3",sta,"[",i,"]",sep="")
-       }
-  }
-  
-  full <- list(MZ=model1,DZ=model2,OS=model3)
-  isA <- length(grep("a",type))>0 & type!="sat"
-  isC <- length(grep("c",type))>0
-  isD <- length(grep("d",type))>0
-  isE <- length(grep("e",type))>0 | type=="sat" | type=="u"
-  if (!isA) {
-    kill(model1) <- c("a1")
-    kill(model2) <- c("a1","a2")
-    kill(model3) <- c("a1","a2","ra")
-    constrain(model3,r1~1) <- NULL
-  }
-  if (!isD) {
-    kill(model1) <- c("d1")
-    kill(model2) <- c("d1","d2")
-    kill(model3) <- c("d1","d2","rd")
-    constrain(model3,r2~1) <- NULL
-  }
-  if (!isC) {
-    kill(model1) <- c("c1")
-    kill(model2) <- c("c1")
-    kill(model3) <- c("c1")
-  }
-  if (!isE) {
-    kill(model1) <- c("e1","e2")
-    kill(model2) <- c("e1","e2")
-    kill(model3) <- c("e1","e2")
-  }
-
-  ## Full rank covariate/design matrix?
-  for (i in covars) {
-    myvars <- paste(i,c(1,2),sep=".")
-    dif <- wide1[,myvars[1]]-wide1[,myvars[2]]   
-    mykeep <- myvars
-    if (all(na.omit(dif)==00)) {
-      mykeep <- mykeep[-2]
-    }   
-    trash <- setdiff(myvars,mykeep)
-    if (length(mykeep)==1) {
-      regression(model1, to=outcomes[2], from=mykeep) <- lava:::regfix(model1)$label[trash,outcomes[2]]
-      kill(model1) <- trash
-    }
-
-    dif <- wide2[,myvars[1]]-wide2[,myvars[2]]   
-    mykeep <- myvars
-    if (all(na.omit(dif)==00)) {
-      mykeep <- mykeep[-2]
-    }  
-    trash <- setdiff(myvars,mykeep)
-    if (length(mykeep)==1) {
-      regression(model2, to=outcomes[2], from=mykeep) <- lava:::regfix(model2)$label[trash,outcomes[2]]
-      kill(model2) <- trash
-    }
-
-    if (!missing(OS)) {
-      dif <- wide3[,myvars[1]]-wide3[,myvars[2]]   
-      mykeep <- myvars
-      if (all(na.omit(dif)==00)) {
-        mykeep <- mykeep[-2]
-      }  
-      trash <- setdiff(myvars,mykeep)
-      if (length(mykeep)==1) {
-        regression(model3, to=outcomes[2], from=mykeep) <- lava:::regfix(model3)$label[trash,outcomes[2]]
-        kill(model3) <- trash
-      }      
-    }
-  }
-  if (!is.null(weight)) {
-    weight <- paste(weight,1:2,sep=".")
-    estimator <- "weighted"
-  }
-
   newkeep <- unlist(sapply(keep, function(x) paste(x, 1:2, 
                                                    sep = ".")))
-  mm <- list(MZ = model1, DZ = model2)
-  dd <- list(wide1, wide2)
-  if (!is.null(OS)) {
-    mm <- c(mm, OS = list(model3))
-    dd <- c(dd, list(wide3))
-  }
-  names(dd) <- names(mm)
 
   if (is.null(estimator)) return(multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep,type=2))
   optim <- list(method="nlminb2",refit=FALSE,gamma=1,start=rep(0.1,length(coef(mm[[1]]))*length(mm)))
 
 
-  if (is.Surv(data[,yvar])) {
-      l <- survreg(formula,mf,dist="gaussian")
-      beta <- coef(l)
-      sigma <- l$scale
-  } else {
-      l <- lm(formula,mf)
-      beta <- coef(l)
-      sigma <- summary(l)$sigma
-  }
-  start <- rep(sigma/sqrt(nchar(type)),nchar(type))
-  if (hasIntercept) {
-      start <- c(beta[1],start)
-      start <- c(start,beta[-1])
-  } else start <- c(start,beta)
-  if (type=="sat") {
-      start <- c(rep(log(sigma^2),2),0.5)
-      if (hasIntercept) {
-          start <- c(rep(beta[1],2),start)
-          beta <- beta[-1]
-      }
-      start <- c(rep(start,2),rep(beta,4))
-  }
-  if (type=="flex") {
-      start <- c(log(sigma^2),0.5)
-      if (hasIntercept) {
-          start <- c(beta[1],start)
-          beta <- beta[-1]
-      }
-      start <- c(rep(start,2),rep(beta,2))
-  }
-  if (type=="u") {
-      start <- c(log(sigma^2),0.5,0.5)
-      if (hasIntercept) {
-          start <- c(beta[1],start)
-          beta <- beta[-1]
-      }
-      start <- c(start,beta)
-  }
-  names(start) <- NULL
-  optim$start <- start
+  optim$start <- twinlmStart(formula,mf,type,hasIntercept,surv=is.Surv(data[,yvar])) 
   if (length(control)>0) {
     optim[names(control)] <- control
   }
@@ -403,7 +224,232 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=N
     }
   }
 
-  res <- list(coefficients=e$opt$estimate, vcov=Inverse(information(e)), estimate=e, model=mm, full=full, call=cl, data=data, zyg=zyg, id=id, twinnum=twinnum, type=type, model.mz=model1, model.dz=model2, model.dzos=model3, data.mz=wide1, data.dz=wide2, data.os=wide3, OS=!is.null(OS), constrain=constrain, outcomes=outcomes)
+  res <- list(coefficients=e$opt$estimate, vcov=Inverse(information(e)), estimate=e, model=mm, call=cl, data=data, zyg=zyg, id=id, twinnum=twinnum, type=type,  group=group, constrain=constrain, outcomes=outcomes)
   class(res) <- "twinlm"
   return(res)
 }
+
+###}}} twinlm
+
+###{{{ twinsem1 (create lava model)
+
+##outcomes <- c("y1","y2"); groups <- c("M","F"); covars <- NULL; type <- "ace"
+##twinsem1(c("y1","y2"),c("M","F"))
+twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",data,...) {
+    isA <- length(grep("a",type))>0 & type!="sat"
+    isC <- length(grep("c",type))>0
+    isD <- length(grep("d",type))>0
+    isE <- length(grep("e",type))>0 | type=="sat" | type=="u"
+    lambdas <- c("lambda[a]","lambda[c]","lambda[d]","lambda[e]")
+    varidx <- which(c(isA,isC,isD,isE))
+    vMZ1 <- c("a1","c1","d1","e1")
+    vMZ2 <- c("a1","c1","d1","e2")
+    vDZ2 <- c("a2","c1","d2","e2")
+    rhoA <- rhoD <- zA <- zD <- NULL        
+    if (is.list(outcomes)) {
+        if (!is.null(groups) & is.null(levels)) stop("missing levels")
+        if (is.null(groups)) groups <- c("","")
+        grp <- paste(sort(groups),collapse="")
+        sameGroup <- groups[1]==groups[2]
+        model1 <- outcomes[[1]]
+        model2 <- outcomes[[2]]
+        if (!is.null(levels)) {
+            pars <- c()
+            for (i in seq(length(levels)-1)) for (j in seq(i+1,length(levels)))
+                pars <- c(pars,paste(sort(levels)[c(i,j)],collapse=""))
+            if (isA) {
+
+                parameter(model1) <- paste("zA",pars,sep="")
+                parameter(model2) <- paste("zA",pars,sep="")
+            }
+            if (isD) {
+                parameter(model1) <- paste("zD",pars,sep="")
+                parameter(model2) <- paste("zD",pars,sep="")
+            }
+        }
+        outcomes <- endogenous(model1)
+        if (length(varidx)>0) {
+            regression(model1,to=outcomes[1],from=vMZ1[varidx]) <-
+                paste(lambdas,groups[1],sep="")[varidx]
+            regression(model1,to=outcomes[2],from=vMZ2[varidx]) <-
+                paste(lambdas,groups[2],sep="")[varidx]            
+             regression(model2,to=outcomes[1],from=vMZ1[varidx]) <-
+                paste(lambdas,groups[1],sep="")[varidx]
+            regression(model2,to=outcomes[2],from=vDZ2[varidx]) <-
+                paste(lambdas,groups[2],sep="")[varidx]
+        }
+        if (sameGroup) {
+            if (isA) covariance(model2,a1~a2)  <- 0.5
+            if (isD) covariance(model2,d1~d2)  <- 0.25
+        } else {            
+            if (isA) {
+                rhoA <- paste("rA",grp,sep="")
+                zA <- paste("zA",grp,sep="")
+                covariance(model2, a1~a2) <- rhoA
+                constrain(model2, rhoA,zA) <- function(x) tanh(x)
+            }
+            if (isD) {                
+                rhoD <- paste("rD",grp,sep="")
+                zD <- paste("zD",grp,sep="")
+                covariance(model2, d1~d2) <- rhoD
+                constrain(model2, rhoD,zD) <- function(x) tanh(x)
+            }
+        }
+        return(list(model=list(MZ=model1,DZ=model2),
+                    zA=zA, rhoA=rhoA, zD=zD, rhoD=rhoD))
+    }
+
+    ### Build model from scratch....
+    model1<- lvm()
+    if (length(varidx)>0) {
+        model1 <- regression(model1,to=outcomes[1],from=vMZ1[varidx])
+        model1 <- regression(model1,to=outcomes[2],from=vMZ2[varidx])
+    }
+        latent(model1) <- union(vMZ1[varidx],vMZ2[varidx])
+        intercept(model1,latent(model1)) <- 0
+        if (!is.null(covars))
+            for (i in 1:length(covars)) {
+            regression(model1, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta[",i,"]",sep="")
+            regression(model1, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta[",i,"]",sep="")
+        }
+        covariance(model1,outcomes) <- 0
+        covariance(model1, latent(model1)) <- 1
+        if (!type%in%c("sat","flex")) {    
+            intercept(model1,outcomes) <- "mu"
+        }
+        if (type%in%c("u","flex","sat")) {
+            kill(model1) <- ~e1+e2
+            covariance(model1,outcomes) <- "v1"
+        }
+        model2 <- model1
+        if (length(varidx)>0) {
+            model2 <- cancel(model2,c(outcomes[2],vMZ2[varidx]))
+            model2 <- regression(model2,to=outcomes[2],from=vDZ2[varidx])
+            latent(model2) <- vDZ2[varidx]
+            intercept(model2, latent(model2)) <- 0
+            covariance(model2, latent(model2)) <- 1
+        }
+    if (type=="flex") {
+        varMZ <- paste("var(MZ)",groups,sep="")
+        varDZ <- paste("var(DZ)",groups,sep="")
+        intercept(model1,outcomes) <- "mu1"
+        intercept(model2,outcomes) <- "mu2"
+        covariance(model1,outcomes) <- varMZ
+        covariance(model2,outcomes) <- varDZ
+    }
+    if (type=="sat") {
+        varMZ <- c(paste("var(MZ)1",groups[1],""),
+                   paste("var(MZ)2",groups[2],""))
+        varMZ <- c(paste("var(DZ)1",groups[1],""),
+                   paste("var(DZ)2",groups[2],""))        
+        covariance(model1,outcomes) <- varMZ
+        covariance(model2,outcomes) <- varDZ
+    }
+    if (type%in%c("u","flex","sat")) {
+        if (constrain) {
+            if (type=="sat") {
+                model1 <- covariance(model1,outcomes,constrain=TRUE,rname="atanh(rhoMZ)",cname="covMZ",lname="log(var(MZ)).1",l2name="log(var(MZ)).2")
+                model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var(DZ)).1",l2name="log(var(DZ)).2")
+            } else {
+                if (type=="flex") {
+                    model1 <- covariance(model1,outcomes,constrain=TRUE,rname="atanh(rhoMZ)",cname="covMZ",lname="log(var(MZ))")
+                    model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var(DZ))")
+                }  else {
+                    model1 <- covariance(model1,outcomes,constrain=TRUE,rname="atanh(rhoMZ)",cname="covMZ",lname="log(var)")
+                    model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var)")
+                }        
+            }     
+        } else {
+            covariance(model1,outcomes[1],outcomes[2]) <- "covMZ"
+            covariance(model2,outcomes[1],outcomes[2]) <- "covDZ"
+        }
+    }
+
+    if (!is.null(covars) & type%in%c("flex","sat")) {
+        sta <- ""
+        if (type=="sat") sta <- "b"
+        for (i in 1:length(covars)) {
+            regression(model1, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta1[",i,"]",sep="")         
+            regression(model1, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta1",sta,"[",i,"]",sep="")
+            regression(model2, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta2[",i,"]",sep="")
+            regression(model2, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta2",sta,"[",i,"]",sep="")
+        }
+    }
+   
+    ## Full rank covariate/design matrix?
+    if (!missing(data))
+    for (i in covars) {
+        myvars <- paste(i,c(1,2),sep=".")
+        dif <- data[[1]][,myvars[1]]-data[[1]][,myvars[2]]   
+        mykeep <- myvars
+        if (all(na.omit(dif)==00)) {
+            mykeep <- mykeep[-2]
+        }   
+        trash <- setdiff(myvars,mykeep)
+        if (length(mykeep)==1) {
+            regression(model1, to=outcomes[2], from=mykeep) <- lava:::regfix(model1)$label[trash,outcomes[2]]
+            kill(model1) <- trash
+        }
+        dif <- data[[2]][,myvars[1]]-data[[2]][,myvars[2]]   
+        mykeep <- myvars
+        if (all(na.omit(dif)==00)) {
+            mykeep <- mykeep[-2]
+        }  
+        trash <- setdiff(myvars,mykeep)
+        if (length(mykeep)==1) {
+            regression(model2, to=outcomes[2], from=mykeep) <- lava:::regfix(model2)$label[trash,outcomes[2]]
+            kill(model2) <- trash
+        }
+    }
+    twinsem1(list(MZ=model1,DZ=model2),groups=groups,type=type,levels=levels)
+}
+
+###}}} twinsem1
+
+###{{{ twinlmStart (starting values)
+
+twinlmStart <- function(formula,mf,type,hasIntercept,surv=FALSE,...)  {
+    if (surv) {
+        l <- survreg(formula,mf,dist="gaussian")
+        beta <- coef(l)
+        sigma <- l$scale
+    } else {
+        l <- lm(formula,mf)
+        beta <- coef(l)
+        sigma <- summary(l)$sigma
+    }
+    start <- rep(sigma/sqrt(nchar(type)),nchar(type))
+    if (hasIntercept) {
+        start <- c(beta[1],start)
+        start <- c(start,beta[-1])
+    } else start <- c(start,beta)
+    if (type=="sat") {
+        start <- c(rep(log(sigma^2),2),0.5)
+        if (hasIntercept) {
+            start <- c(rep(beta[1],2),start)
+            beta <- beta[-1]
+        }
+        start <- c(rep(start,2),rep(beta,4))
+    }
+    if (type=="flex") {
+        start <- c(log(sigma^2),0.5)
+        if (hasIntercept) {
+            start <- c(beta[1],start)
+            beta <- beta[-1]
+        }
+        start <- c(rep(start,2),rep(beta,2))
+    }
+    if (type=="u") {
+        start <- c(log(sigma^2),0.5,0.5)
+        if (hasIntercept) {
+            start <- c(beta[1],start)
+            beta <- beta[-1]
+        }
+        start <- c(start,beta)
+    }
+    names(start) <- NULL
+    return(start)
+}
+
+###}}} twinlmStart
+
