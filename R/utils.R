@@ -109,6 +109,7 @@ multinomlogit <- function(x,tr=exp,dtr=exp) {
   attributes(res)$gradient <- gradient
   return(res)
 }
+
 ###}}} multinomlogit
 
 ###{{{ Inverse

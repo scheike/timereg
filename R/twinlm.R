@@ -152,7 +152,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=N
   num <- NULL; if (twinnum%in%colnames(data)) num <- twinnum
   if (!is.null(group)) data[,group] <- as.factor(data[,group])
   data <- cbind(data[,c(yvar,keep,num,zyg,id,group)],M)
-  ddd <- fast.reshape(data,id=id,varying=c(yvar,keep,covars,group),keep=zyg,num=num,sep=".",labelnum=TRUE)
+  ddd <- fast.reshape(data,id=c(id,zyg),varying=c(yvar,keep,covars,group),keep=zyg,num=num,sep=".",labelnum=TRUE)
   groups <- paste(group,".",1:2,sep="")
   outcomes <- paste(yvar,".",1:2,sep="")  
 
@@ -164,41 +164,44 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=N
   wide1 <- ddd[which(ddd[,zyg]==MZ),,drop=FALSE]
   wide2 <- ddd[which(ddd[,zyg]==DZ),,drop=FALSE]
 
+  browser()
 
   mm <- nn <- c()
   dd <- list()
+  levgrp <- NULL
   if (!is.null(group)) {
       levgrp <- levels(data[,group])
       for (i1 in levgrp) {
-          for (i2 in levgrp) {
-              nn <- c(nn,paste("MZ","i1",sep="."),paste("DZ","i2",sep="."))
-              idxMZ <- which(wide1[,groups[1]]==i1 & wide1[,groups[2]]==i1)
+          for (i2 in levgrp) {              
+              idxMZ <- which(wide1[,groups[1]]==i1 & wide1[,groups[2]]==i2)
               dMZ <- wide1[idxMZ,,drop=FALSE]
-              idxDZ <- which(wide2[,groups[1]]==i1 & wide2[,groups[2]]==i1)
+              idxDZ <- which(wide2[,groups[1]]==i1 & wide2[,groups[2]]==i2)
               dDZ <- wide2[idxDZ,,drop=FALSE]
-              dd <- c(dd,list(dMZ,dDZ))
-              mm <- c(mm,
-                      twinsem1(outcomes,c(i1,i2),
-                               levels=levgrp,covars=covars,type=type,
-                               data=list(dMZ,dDZ))$model)
+              m0 <- twinsem1(outcomes,c(i1,i2),
+                             levels=levgrp,covars=covars,type=type,
+                             data=list(dMZ,dDZ),constrain=constrain)$model
+              if (length(idxMZ)>0) {
+                  nn <- c(nn,paste("MZ",i1,sep=":"))
+                  dd <- c(dd,list(dMZ))
+                  mm <- c(mm,list(m0[[1]]))
+              }
+              if (length(idxDZ)>0) {
+                  nn <- c(nn,paste("DZ",i2,sep=":"))
+                  dd <- c(dd,list(dDZ))
+                  mm <- c(mm,list(m0[[2]]))
+              }
           }
       }; names(mm) <- nn; names(dd) <- nn      
   } else {
       mm <- twinsem1(outcomes,NULL,
                      levels=NULL,covars=covars,type=type,
-                     data=list(wide1,wide2))$model
+                     data=list(wide1,wide2),constrain=constrain)$model
       dd <- list(MZ=wide1,DZ=wide2)
   }
-  browser()
- 
   
-  ## ###### The SEM
-  newkeep <- unlist(sapply(keep, function(x) paste(x, 1:2, 
-                                                   sep = ".")))
-
+  newkeep <- unlist(sapply(keep, function(x) paste(x, 1:2, sep = ".")))
   if (is.null(estimator)) return(multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep,type=2))
   optim <- list(method="nlminb2",refit=FALSE,gamma=1,start=rep(0.1,length(coef(mm[[1]]))*length(mm)))
-
 
   optim$start <- twinlmStart(formula,mf,type,hasIntercept,surv=is.Surv(data[,yvar])) 
   if (length(control)>0) {
@@ -213,7 +216,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=N
   } else {
     e <- estimate(mm,dd,weight=weight,estimator=estimator,fix=FALSE,control=optim,...)
   }
-
+  
   if (!is.null(optim$refit) && optim$refit) {
     optim$method <- "NR"
     optim$start <- pars(e)
@@ -224,7 +227,37 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=N
     }
   }
 
-  res <- list(coefficients=e$opt$estimate, vcov=Inverse(information(e)), estimate=e, model=mm, call=cl, data=data, zyg=zyg, id=id, twinnum=twinnum, type=type,  group=group, constrain=constrain, outcomes=outcomes)
+  counts <- function(dd) {
+    dd0 <- apply(dd,2,function(x) !is.na(x))
+    pairs <- sum(dd0[,1]*dd0[,2])
+    singletons <- sum((!dd0[,1])*dd0[,2] + (!dd0[,2])*dd0[,1])
+    return(c(pairs,singletons))
+  }
+  zygtab <- lapply(dd,counts)
+  ## mz  <- counts(object$data.mz[,object$outcomes])
+  ## dz  <- counts(object$data.dz[,object$outcomes])
+  if (!e$model$missing) {
+      zygtab <- c("MZ-pairs"=zygtab[[1]][1],"DZ-pairs"=zygtab[[2]][1])
+  } else {
+      zygtab <- c(paste(zygtab[[1]],collapse="/"),paste(zygtab[[2]],collapse="/"))
+      names(zygtab) <- c("MZ-pairs/singletons","DZ-pairs/singletons")
+  }
+  ## if (object$OS) {
+  ##   os  <- counts(object$data.os[,object$outcomes])
+  ##   if (!object$estimate$model$missing) {
+  ##     zygtab <- c(zygtab,"OS-pairs"=os[1])
+  ##   } else {
+  ##     zygtab <- c(zygtab,paste(os,collapse="/"))
+  ##     names(zygtab)[3] <- "OS-pairs/singletons"
+  ##   }
+  ## } 
+
+  res <- list(coefficients=e$opt$estimate, vcov=Inverse(information(e)),
+              estimate=e, model=mm, call=cl, data=data, zyg=zyg,
+              id=id, twinnum=twinnum, type=type,  group=group,
+              constrain=constrain, outcomes=outcomes, zygtab=zygtab,
+              nam=nn, groups=levgrp
+              )
   class(res) <- "twinlm"
   return(res)
 }
@@ -235,7 +268,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=N
 
 ##outcomes <- c("y1","y2"); groups <- c("M","F"); covars <- NULL; type <- "ace"
 ##twinsem1(c("y1","y2"),c("M","F"))
-twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",data,...) {
+twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",data,constrain=TRUE,...) {
     isA <- length(grep("a",type))>0 & type!="sat"
     isC <- length(grep("c",type))>0
     isD <- length(grep("d",type))>0
@@ -300,8 +333,8 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
     }
 
     ### Build model from scratch....
-    model1<- lvm()
-    if (length(varidx)>0) {
+    model1<- lvm()    
+    if (!(type%in%c("u","flex","sat"))) {
         model1 <- regression(model1,to=outcomes[1],from=vMZ1[varidx])
         model1 <- regression(model1,to=outcomes[2],from=vMZ2[varidx])
     }
@@ -314,6 +347,7 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
         }
         covariance(model1,outcomes) <- 0
         covariance(model1, latent(model1)) <- 1
+
         if (!type%in%c("sat","flex")) {    
             intercept(model1,outcomes) <- "mu"
         }
@@ -322,7 +356,7 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
             covariance(model1,outcomes) <- "v1"
         }
         model2 <- model1
-        if (length(varidx)>0) {
+        if (!(type%in%c("u","flex","sat"))) {
             model2 <- cancel(model2,c(outcomes[2],vMZ2[varidx]))
             model2 <- regression(model2,to=outcomes[2],from=vDZ2[varidx])
             latent(model2) <- vDZ2[varidx]
@@ -401,7 +435,8 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
             kill(model2) <- trash
         }
     }
-    twinsem1(list(MZ=model1,DZ=model2),groups=groups,type=type,levels=levels)
+    
+    twinsem1(list(MZ=model1,DZ=model2),groups=groups,type=type,levels=levels,constrain=constrain)
 }
 
 ###}}} twinsem1
