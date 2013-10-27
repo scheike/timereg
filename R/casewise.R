@@ -76,21 +76,19 @@ casewise.test <- function(conc,marg,test="no-test",p=0.01)
    P1iid <- Cpred(cbind(marg$time,marg$P1.iid),timer)[,-1]
    P1iid2  <- 2*P1iid*margtime;
    se.p2 <- apply(P1iid2^2,1,sum)^.5
-   difconciid <- (P1iid2[,nconc]-conciid)
-   casewise.iid <- conciid/margtime - P1iid[,nconc]*casewise
-   c.iid <- casewise.iid 
+   conciid <- (P1iid2[,nconc]-conciid) ### iid of conc-p1^2 test
+   c.iid <- casewise.iid <- conciid/margtime - P1iid[,nconc]*casewise
    se.casewise <- apply(casewise.iid^2,1,sum)^.5
+   dif.casewise.iid <- conciid/margtime  ### iid of casewise test
 
    if (test=="case") 
    {
-        diff.iidcase <- apply(casewise.iid,2,sum)*dtimer;
+        diff.iidcase <- apply(dif.casewise.iid,2,sum)*dtimer;
         sd.pepem <- sum(diff.iidcase^2)^.5
         diff.pepem <- sum((casewise-margtime))*dtimer
         z.pepem <- diff.pepem/sd.pepem
         pval.pepem <- 2*pnorm(-abs(z.pepem))
         outtest <- cbind(diff.pepem,sd.pepem,z.pepem,pval.pepem)
-###        colnames(outtest) <- c("cum dif.","sd","z","pval") 			 
-###        rownames(outtest) <- "pepe-mori"
 
 	### test for constant casewise concordance
 	diff.const <- (casewise-mean(casewise))
@@ -105,7 +103,7 @@ casewise.test <- function(conc,marg,test="no-test",p=0.01)
         rownames(outtest) <- "pepe-mori"
 
     } else if (test=="conc") {
-        diff.iid <- apply(difconciid,2,sum)*dtimer
+        diff.iid <- apply(conciid,2,sum)*dtimer
         sd.pepem <- sum(diff.iid^2)^.5
         diff.pepem <- sum((concP1-margtime^2))*dtimer
         z.pepem <- diff.pepem/sd.pepem
@@ -122,7 +120,7 @@ casewise.test <- function(conc,marg,test="no-test",p=0.01)
    colnames(margout) <- c("time","cif","se")
    casewiseout <- cbind(timer,casewise,se.casewise,se.casewise2)
    colnames(casewiseout) <- c("time","casewise","se","se2")
-   difout <- cbind(timer,concP1-margtime^2,apply(difconciid^2,1,sum)^.5)
+   difout <- cbind(timer,concP1-margtime^2,apply(conciid^2,1,sum)^.5)
 
   out <- list(casewise=casewiseout,marg=margout,conc=concout,
 	      test=outtest,mintime=mintime,maxtime=maxtime,same.cluster=TRUE,testtype=test)

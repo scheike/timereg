@@ -73,6 +73,7 @@ if (left>0) {
 simClaytonOakesWei <- function(K,n,eta,beta,stoptime,
 	       weiscale=1,weishape=2,left=0,pairleft=0)
 { ## {{{ 
+cat(" not quite \n"); 
 ## K antal clustre, n=antal i clustre
 ### K=10; n=2; eta=1; beta=0.3; stoptime=3; lam=0.5; 
 ### weigamma=2; left=0; pairleft=0
@@ -80,14 +81,13 @@ simClaytonOakesWei <- function(K,n,eta,beta,stoptime,
  C<-rep(stoptime,n*K);
  Gam1 <-rep(rgamma(K,eta),each=n)
  temp <- rexp(K*n)
-### temp <- rweibull(n*K,weigamma,scale=lam/(exp(X*beta)*Gam1))
+### temp <- rweibull(n*K,weishape,scale=weiscale)/(exp(X*beta)*Gam1)
  temp<- (eta*log(eta*temp/(eta*Gam1)+1)/(exp(beta*X)*weiscale^weishape))^{1/weishape}
  status<- ifelse(temp<=C,1,0);
  temp <-   pmin(temp,C)
  xt <- matrix(temp,n,K)
  minstime <- apply(xt,2,min)  
  id=rep(1:K,each=n)
-###ud <-   list(time=temp,status=status,x1=X,id=rep(1:K,each=n))
   ud <- cbind(temp,status,X,id)
 if (left>0) {
      if (pairleft==1) {
