@@ -8,7 +8,7 @@
 ##' @docType package
 ##' @author Klaus K. Holst and Thomas Scheike
 ##' @useDynLib mets
-##' @import stats lava
+##' @import stats lava Rcpp RcppArmadillo prodlim splines timereg
 ##' @keywords package
 ##' @examples
 ##' 
@@ -45,7 +45,7 @@ NULL
 ##' pp.211--231. DOI: 10.1111/j.1469-1809.1952.tb02513.x
 ##' @examples
 ##' data(dermalridges)
-##' fast.reshape(mets::dermalridges,id="family",varying=c("child.left","child.right","sex"))
+##' fast.reshape(dermalridges,id="family",varying=c("child.left","child.right","sex"))
 NULL
 
 ##' Dermal ridges data (monozygotic twins)

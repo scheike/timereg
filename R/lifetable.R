@@ -7,6 +7,7 @@
 ##' @param entry Entry time
 ##' @param strata Strata
 ##' @param breaks Time intervals
+##' @param confint If TRUE 95% confidence limits are calculated
 ##' @author Klaus K. Holst
 ##' @examples
 ##' library(timereg)

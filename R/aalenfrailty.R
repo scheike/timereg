@@ -8,6 +8,7 @@
 ##' @param id cluster variable
 ##' @param theta list of thetas (returns score evaluated here), or
 ##' starting point for optimization (defaults to magic number 0.1)
+##' @param B (optional) Cumulative coefficients (update theta by fixing B)
 ##' @param ... Additional arguments to lower level functions
 ##' @return Parameter estimates
 ##' @author Klaus K. Holst
@@ -19,13 +20,13 @@
 ##' system.time(out<-aalen(update(f,Surv(time,status)~.),dd,n.sim=0,robust=0))
 ##' dix <- which(dd$status==1)
 ##' t1 <- system.time(bb <- .Call("Bhat",as.integer(dd$status),
-##'                               X,theta,as.integer(dd$id),NULL,NULL,-1,
+##'                               X,0.2,as.integer(dd$id),NULL,NULL,-1,
 ##'                               package="mets"))
 ##' spec <- 1
 ##' ##plot(out,spec=spec)
-##' plot(dd$time[dix],bb$B2[,spec],col="red",type="s",
-##'      ylim=c(0,max(dd$time)*c(beta0,beta)[spec]))
-##' abline(a=0,b=c(beta0,beta)[spec])
+##' ## plot(dd$time[dix],bb$B2[,spec],col="red",type="s",
+##' ##      ylim=c(0,max(dd$time)*c(beta0,beta)[spec]))
+##' ## abline(a=0,b=c(beta0,beta)[spec])
 ##' ##'
 ##' 
 ##' \dontrun{thetas <- seq(0.1,2,length.out=10)
@@ -70,13 +71,14 @@ aalenfrailty <- function(time,status,X,id,theta,B=NULL,...) {
 ##' distributed frailty and constant intensity.
 ##'
 ##' @title Simulate from the Aalen Frailty model
-##' @param K Number of clusters
 ##' @param n Number of observations in each cluster
-##' @param eta 1/variance
+##' @param theta Dependence paramter (variance of frailty)
+##' @param K Number of clusters
+##' @param beta0 Baseline (intercept)
 ##' @param beta Effect (log hazard ratio) of covariate
-##' @param stoptime Stopping time
-##' @param left Left truncation
-##' @param pairleft pairwise (1) left truncation or individual (0)
+##' @param cens Censoring rate
+##' @param cuts time cuts
+##' @param ... Additional arguments
 ##' @author Klaus K. Holst
 ##' @export
 simAalenFrailty <- function(n=5e3,theta=0.3,K=2,beta0=1.5,beta=1,cens=1.5,cuts=0,...) {

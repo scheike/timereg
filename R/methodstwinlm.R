@@ -55,8 +55,11 @@ summary.twinlm <- function(object,...) {
       i2 <- lava:::parpos.multigroup(object$estimate$model,p="atanh(rhoDZ)")[1]
       ## i3 <- lava:::parpos.multigroup(object$estimate$model,p="atanh(rhoOS)")[1]
       if (length(i1)>0) {
-        corest <- coef(object$estimate,level=0)[c(i1,i2,i3)]
-        sdest <- vcov(object$estimate)[cbind(c(i1,i2,i3),c(i1,i2,i3))]^0.5
+        ## corest <- coef(object$estimate,level=0)[c(i1,i2,i3)]
+        ## sdest <- vcov(object$estimate)[cbind(c(i1,i2,i3),c(i1,i2,i3))]^0.5
+        corest <- coef(object$estimate,level=0)[c(i1,i2)]
+        sdest <- vcov(object$estimate)[cbind(c(i1,i2),c(i1,i2))]^0.5
+
         ciest <- tanh(cbind(corest,corest)+qnorm(0.975)*cbind(-sdest,sdest))
         corest <- tanh(corest)
         corMZ <- c(corest[1],ciest[1,])

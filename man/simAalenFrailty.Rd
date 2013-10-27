@@ -6,20 +6,21 @@
     beta0 = 1.5, beta = 1, cens = 1.5, cuts = 0, ...)
 }
 \arguments{
-  \item{K}{Number of clusters}
-
   \item{n}{Number of observations in each cluster}
 
-  \item{eta}{1/variance}
+  \item{theta}{Dependence paramter (variance of frailty)}
+
+  \item{K}{Number of clusters}
+
+  \item{beta0}{Baseline (intercept)}
 
   \item{beta}{Effect (log hazard ratio) of covariate}
 
-  \item{stoptime}{Stopping time}
+  \item{cens}{Censoring rate}
 
-  \item{left}{Left truncation}
+  \item{cuts}{time cuts}
 
-  \item{pairleft}{pairwise (1) left truncation or
-  individual (0)}
+  \item{...}{Additional arguments}
 }
 \description{
   Simulate observations from Aalen Frailty model with Gamma

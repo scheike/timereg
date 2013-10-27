@@ -387,7 +387,7 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
         }   
         trash <- setdiff(myvars,mykeep)
         if (length(mykeep)==1) {
-            regression(model1, to=outcomes[2], from=mykeep) <- lava:::regfix(model1)$label[trash,outcomes[2]]
+            regression(model1, to=outcomes[2], from=mykeep) <- lava::regfix(model1)$label[trash,outcomes[2]]
             kill(model1) <- trash
         }
         dif <- data[[2]][,myvars[1]]-data[[2]][,myvars[2]]   
@@ -397,7 +397,7 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
         }  
         trash <- setdiff(myvars,mykeep)
         if (length(mykeep)==1) {
-            regression(model2, to=outcomes[2], from=mykeep) <- lava:::regfix(model2)$label[trash,outcomes[2]]
+            regression(model2, to=outcomes[2], from=mykeep) <- lava::regfix(model2)$label[trash,outcomes[2]]
             kill(model2) <- trash
         }
     }

@@ -16,6 +16,9 @@
   \item{strata}{Strata}
 
   \item{breaks}{Time intervals}
+
+  \item{confint}{If TRUE 95% confidence limits are
+  calculated}
 }
 \description{
   Creat simple life table

@@ -227,7 +227,7 @@ twinlm2 <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=
     }   
     trash <- setdiff(myvars,mykeep)
     if (length(mykeep)==1) {
-      regression(model1, to=outcomes[2], from=mykeep) <- lava:::regfix(model1)$label[trash,outcomes[2]]
+      regression(model1, to=outcomes[2], from=mykeep) <- lava::regfix(model1)$label[trash,outcomes[2]]
       kill(model1) <- trash
     }
 
@@ -238,7 +238,7 @@ twinlm2 <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=
     }  
     trash <- setdiff(myvars,mykeep)
     if (length(mykeep)==1) {
-      regression(model2, to=outcomes[2], from=mykeep) <- lava:::regfix(model2)$label[trash,outcomes[2]]
+      regression(model2, to=outcomes[2], from=mykeep) <- lava::regfix(model2)$label[trash,outcomes[2]]
       kill(model2) <- trash
     }
 
@@ -250,7 +250,7 @@ twinlm2 <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=
       }  
       trash <- setdiff(myvars,mykeep)
       if (length(mykeep)==1) {
-        regression(model3, to=outcomes[2], from=mykeep) <- lava:::regfix(model3)$label[trash,outcomes[2]]
+        regression(model3, to=outcomes[2], from=mykeep) <- lava::regfix(model3)$label[trash,outcomes[2]]
         kill(model3) <- trash
       }      
     }
