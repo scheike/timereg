@@ -1,9 +1,12 @@
 \docType{data}
 \name{mena}
 \alias{mena}
-\title{Menarche data set (sim)}
+\title{Menarche data set}
+\source{
+  Simulated data
+}
 \description{
-  Menarche data set (sim)
+  Menarche data set
 }
 \keyword{data}
 \keyword{datasets}
