@@ -1,8 +1,12 @@
 cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim=500,
-	weighted.test=1,max.point.func=50,weights=NULL)
+	weighted.test=0,max.point.func=50,weights=NULL)
 { ## {{{
 ## {{{ setting up
-  start.design<-1; silent <- 1; 
+###  if (weighted.test==1) { cat(" Can only use weighted.test=0, under development\n"); 
+###	                  weighted.test <- 0; 
+###  }
+  start.design<-1; 
+  silent <- 1; 
   offsets <- NULL; 
   stratum <- attr(object,"stratum"); 
   if (!(class(object)!="aalen" | class(object)!="timecox" | class(object)!="cox.aalen" ))
@@ -32,6 +36,8 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   id<-attr(object,"id"); 
 ###  cluster<-attr(object,"cluster");  gruperet cluster men skal være for sortering
   cluster<-attr(object,"cluster"); 
+###  print(id)
+###  print(cluster)
   formula<-attr(object,"Formula"); 
   start.time<-attr(object,"start.time"); 
   pers<-unique(id); 
@@ -47,25 +53,18 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   time2<-attr(object,"stop"); 
   if (sum(time)==0) type <- "right" else type <- "counting"
   status<-attr(object,"status");  
-###  print(status)
-###  print("mig")
-###  print(time)
-###  print(time2)
-###  print(timel)
-###  print(time2l)
+###  print(status); print("mig"); print(time); print(time2); print(timel); print(time2l);
   if (is.null(weights)) weights <- rep(1,nrow(X));  
   if (is.null(weights1)) weights1 <- rep(1,nrow(X));  
   if (is.null(offsets)) offsets <- rep(0,nrow(X));  
   if (length(weights)!=nrow(X)) stop("Lengths of weights and data do not match\n"); 
   if (length(weights1)!=nrow(X)) stop("Lengths of weights from aalen/cox.aalen and data do not match\n"); 
 
-
   if (coxaalen==1) {
     Z<-ldata$Z;  covnamesZ<-ldata$covnamesZ; 
     pg<-ncol(Z); 
   } else Z <- 0
   Ntimes <- sum(status); 
-
 
   if (sum(modelmatrix)==0) {modelmatrix<-0;model<-0;pm<-1;}  else 
   {model<-1; modelmatrix<-as.matrix(modelmatrix); pm<-ncol(modelmatrix); 
@@ -86,6 +85,7 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
    X<-as.matrix(X[ot,])
    if (coxaalen==1) Z<-as.matrix(Z[ot,])
    if (model==1) modelmatrix<-as.matrix(modelmatrix[ot,])
+###  print(head(X))
 ###   start <- rep(0,length(time2))
    start <- time[ot] ### fra call 
    stop<-time2;
@@ -142,11 +142,15 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   if (sum(keepcumz)==0 && cum.resid==1) 
     stop(" No continous covariates given to cumulate residuals \n"); 
 
-  pcumz<-length(keepcumz); uni.test<-matrix(0,n.sim,pcumz); 
-  univar.proc<-matrix(0,maxval,pcumz);robvarcumz<-matrix(0,maxval,pcumz);
+  pcumz<-length(keepcumz); 
+  uni.test<-matrix(0,n.sim,pcumz); 
+  univar.proc<-matrix(0,maxval,pcumz);
+  robvarcumz<-matrix(0,maxval,pcumz);
   sim.univar.proc<-matrix(0,maxval,50*pcumz); 
-  time.proc<-matrix(0,lmgresids,2); sim.time.proc<-matrix(0,lmgresids,50); 
-  simcumz<-matrix(0,n.sim,pcumz); xval<-matrix(0,maxval,pcumz); 
+  time.proc<-matrix(0,lmgresids,2); 
+  sim.time.proc<-matrix(0,lmgresids,50); 
+  simcumz<-matrix(0,n.sim,pcumz); 
+  xval<-matrix(0,maxval,pcumz); 
   k<-1; 
   for (i in keepcumz) {xval[1:ant[i],k]<-xvals[[k]]; k<-k+1;}
 
@@ -195,7 +199,8 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
      as.double(robvarcumz), as.double(simcumz), as.integer(inXZ), 
      as.integer(inXorZ),as.integer(pcumz), as.integer(entry),
      as.integer(stratum),as.integer(silent),as.double(weights1),
-     as.double(offsets),as.integer(rate.sim),as.double(weights)) ### , PACKAGE="timereg")
+     as.double(offsets),as.integer(rate.sim),as.double(weights),
+     as.integer(weighted.test)) ### , PACKAGE="timereg")
 ## }}}
 
 ## {{{ handling output from C

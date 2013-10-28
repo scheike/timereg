@@ -9,12 +9,10 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   Ntimes <- length(times)
   sim <- rep(sim,3); 
   sim[2] <- basesim; ##  tmp tmp tmp  
-  if (ratesim==0 && (max(by(clusters,status,sum))>1)) mjump <- 1 else mjump <- 0; 
-
+  if (ratesim==0 && (max(by(status,clusters,sum))>1)) mjump <- 1 else mjump <- 0; 
   sim[3] <- mjump;  ### multiple jumps within cluster
 
-###  print(c(ratesim,mjump))
-###  print(sim)
+  if (ratesim==0 && mjump==1) cat("Multiple jumps in some clusters, use rate.sim=1\n"); 
 
   if (is.null(max.timepoint.sim)) max.timepoint.sim <- Ntimes; 
   if (max.timepoint.sim< Ntimes)  {   ## {{{

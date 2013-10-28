@@ -311,7 +311,7 @@ void choleskyunsafe(matrix *A, matrix *AI){ // {{{
   //unsafe because it assumes A and AI are both square and of the same
   //dimensions, and that they occupy different memory
 
-  char uplo = 'U';
+  char uplo = 'U'; // lower version 
   int i, j;
   int n = nrow_matrix(A);
   int lda = n; // matrix A has dimensions *n x *n
@@ -325,74 +325,40 @@ void choleskyunsafe(matrix *A, matrix *AI){ // {{{
   int job=1;
   double tol = 1.0e-07;
   
-  // First copy the matrix A into the matrix AI
-  for(i = 0; i < n; i++){
-    for(j = 0; j < n; j++){
-      ME(AI,i,j) = ME(A,i,j);
-    }
-  }
-    
-//  dqrdc(x,ldx,n,p, qraux,jpvt,work,job)
-//  F77_CALL(dqrdc)(AI->entries, &n, &n, &n, &rank, qraux, pivot, work,job);
-//  dqrdc2(x,ldx,n,p,tol,k,qraux,jpvt,work)
-//  F77_CALL(dqrdc2)(AI->entries, &n, &n, &n, &tol, &rank, qraux, pivot, work);
+// First copy the matrix A into the matrix AI
+//  print_mat(A); 
+   mat_copy(A,AI); 
+//  print_mat(AI); 
 
-  for(i = 0; i < n; i++){
-    for(j = 0; j < i; j++){
-      ME(AI,j,i) = 0.0;
-    }
-  }
-
+//  printf("sssssssssss======================\n"); 
   job = 1; // Indicates that AI is upper triangular
   rcond = 999.0;
-//  F77_CALL(dtrco)(AI->entries, &n, &n, &rcond, z, &job);
-//    
-//  if(rcond < tol){
-//    Rprintf("Error in invertSPD: estimated condition number = %7.7e\n",1/rcond); 
-//    
-//    for(i = 0; i < n; i++){
-//      for(j = 0; j < n; j++){
-//	ME(AI,i,j) = 0.0;
-//      }
-//    }
-//  } else {
-//
-//    for(i = 0; i < n; i++){
-//      pivot[i] = i+1;
-//      for(j = 0; j < n; j++){
-//	ME(AI,i,j) = ME(A,i,j);
-//      }
-//    }
-//
+
     // First find the Cholesky factorization of A,
     // stored as an upper triangular matrix
-    F77_CALL(dpotrf)(&uplo, &n, AI->entries, &lda, &info); 
+    char uplo1 = 'U'; // lower version 
+    F77_CALL(dpotrf)(&uplo1, &n, AI->entries, &n, &info); 
 
-//    if(info < 0){
-//      Rprintf("Error in cholesky: arg %d of DPOTRF\n",-info);
-//    } else if(info > 0){
-//      Rprintf("Error in cholesky: matrix does not appear to be SPD\n");
-//    } 
-       
     // Lastly turn the vector a into the matrix AI
-    // Take only the upper triangular portion, since this 
+    // Take only the lower triangular portion, since this 
     // is the relevant part returned by dpotrf
-    //    Rprintf("in chol \n"); Rprint_mat(AI); 
     for(i = 0; i < n; i++){
       for(j = 0; j < i; j++){
 	      ME(AI,i,j) = 0; 
       }
     }
+//    print_mat(AI); 
+
+//    Rprintf("in chol \n"); 
 //    printf("======================\n"); 
 //    print_mat(A); 
 //    print_mat(AI); 
-
+//    printf(" check chol back\n"); 
 //    matrix *tmp; 
 //    malloc_mat(n,n,tmp); 
-//    printf(" check chol back\n"); 
-//    MtM(AI,tmp); print_mat(tmp); 
-
-//  }
+//    MtM(AI,tmp); 
+//    print_mat(tmp); 
+//    free_mat(tmp); 
 
 } // }}} 
 
@@ -506,6 +472,7 @@ void invertSPDunsafe(matrix *A, matrix *AI){
 	ME(AI,i,j) = ME(AI,j,i);
       }
     }
+    
   }
 
 }

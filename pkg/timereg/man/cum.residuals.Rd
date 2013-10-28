@@ -5,7 +5,7 @@
 	approximative p-values based on resampling techniques.}
 \usage{
 cum.residuals(object,data=sys.parent(),modelmatrix=0,cum.resid=1,
-              n.sim=500,weighted.test=1,max.point.func=50,weights=NULL)
+              n.sim=500,weighted.test=0,max.point.func=50,weights=NULL)
 }
 \arguments{
 \item{object}{an object of class 'aalen', 'timecox', 'cox.aalen' where

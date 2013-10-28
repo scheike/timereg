@@ -26,7 +26,7 @@ The modelling formula uses the standard survival modelling given in the
 \usage{
 cox.aalen(formula=formula(data),data=sys.parent(),beta=NULL,Nit=20,detail=0,
 start.time=0,max.time=NULL,id=NULL,clusters=NULL,n.sim=500,residuals=0,
-robust=1,weighted.test=0,covariance=0,resample.iid=1,weights=NULL,rate.sim=0,
+robust=1,weighted.test=0,covariance=0,resample.iid=1,weights=NULL,rate.sim=1,
 beta.fixed=0,max.clust=1000,exact.deriv=1,silent=1,max.timepoint.sim=100,
 basesim=0,offsets=NULL,strata=NULL)
 }
@@ -161,6 +161,13 @@ plot(out,score=1)
 out<-cox.aalen(Surv(time,status==9)~-1+factor(vf)+ prop(age)+prop(sex)+
 	       prop(chf)+prop(diabetes),data=sTRACE,max.time=7,n.sim=100)
 summary(out)
+par(mfrow=c(1,2)); plot(out); 
+# Same model, but needs to invert the entire marix for the aalen part: X(t) 
+out<-cox.aalen(Surv(time,status==9)~factor(vf)+ prop(age)+prop(sex)+
+	       prop(chf)+prop(diabetes),data=sTRACE,max.time=7,n.sim=100)
+summary(out)
+par(mfrow=c(1,2)); plot(out); 
+
 
 # Fits Cox-Aalen model 
 out<-cox.aalen(Surv(time,status==9)~prop(age)+prop(sex)+

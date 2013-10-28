@@ -22,6 +22,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   basesim=sim[1]; // baseline is also simulated and variance estimated (can be omitted for some for models) 
   // basesim=0 no simulations but variance, basesim=1 (simul and variance), basesim=-1 (no simulations no variance) 
   
+  
   if (*detail==1) Rprintf("Memory allocation starting \n"); 
 // {{{ setting up memory 
   matrix *X,*Z,*WX,*WZ,*cdesX,*cdesX2,*cdesX3,*CtVUCt,*A,*AI;
@@ -131,7 +132,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 if (*ratesim==0 && mjump==1) {
   for(j=0;j<*antclust;j++) { 
 	  malloc_mat((*pg)*(*maxtimepoint),*pg,Uiclustert[j]); 
-	  malloc_mat((*pg),*pg,Uicluster[j]); 
+	  malloc_mat((*pg),(*pg),Uicluster[j]); 
 }
 }
   vector *ranvec,*vectmp;  
@@ -627,8 +628,16 @@ if (*betafixed==0)  {
 //	      printf("2 %d %d \n",cin,s1); 
       if (basesim>=0)  replace_row(W3t[cin],s1,W3[cin]);  
          if (mjump==1) {
-             cholesky(Uicluster[cin],tmp2); 
-	     for (j=0;j<*pg;j++) for (i=0;i<*pg;i++) ME(Uiclustert[cin],s1*(*pg)+j,i)=ME(tmp2,j,i); 
+	     cholesky(Uicluster[cin],tmp2); 
+//             if (s1==timegroup[s])  {
+//	        printf(" tmp2 %d \n",cin); 
+//		print_vec(tmpv2); 
+//		print_mat(Uicluster[cin]); 
+//	        print_mat(tmp2); 
+//		MtM(tmp2,dS); 
+//	        print_mat(dS); 
+//	     }
+	     for (j=0;j<*pg;j++) for (i=0;i<*pg;i++) ME(Uiclustert[cin],s1*(*pg)+j,i)=ME(tmp2,i,j); 
 	 }
       } // }}} 
 
@@ -670,6 +679,29 @@ if (*betafixed==0)  {
 
   ll=lle-llo; /* likelihood beregnes */
   if (*detail==1) Rprintf("loglike is  %lf \n",ll);  
+
+// check af score process er ok 
+//  int itest=1; 
+//  if (itest==1)
+// for (s=0;s<*maxtimepoint;s++)   {
+//  mat_zeros(S2); mat_zeros(dS); mat_zeros(SI);
+//  mat_zeros(VUI);  mat_zeros(ZPZ); 
+// for (j=0;j<*antclust;j++) 
+// {
+//	  extract_row(W2t[j],s,tmpv2); 
+//	  for (k=0;k<*pg;k++) for (i=0;i<*pg;i++) ME(S2,k,i)+=VE(tmpv2,k)*VE(tmpv2,i); 
+//	  if (mjump==1) {
+//	  for (k=0;k<*pg;k++) for (i=0;i<*pg;i++) ME(dS,k,i)=ME(Uiclustert[j],s*(*pg)+k,i);
+//	  mat_transp(dS,dS); 
+//	  MtM(dS,VUI); 
+//	  mat_add(VUI,ZPZ,ZPZ); 
+//	  }
+//}
+//printf("score process variance  %d \n",s); 
+//print_mat(S2); 
+//print_mat(ZPZ); 
+//}
+
 
   if ((*robust==1)) // {{{ robust variances 
   {
@@ -722,6 +754,7 @@ if (*betafixed==0)  {
 	    if (mjump==1 && *ratesim==0) 
 	    {
                cholesky(Uicluster[j],tmp2); 
+	       mat_transp(tmp2,tmp2); 
                MxA(SI,tmp2,tmp2); 
 	       MxA(Stg[s],tmp2,dS); 
 	       for (c=0;c<*pg;c++) for (i=0;i<*pg;i++) ME(Uiclustert[j],s*(*pg)+c,i)-=ME(dS,c,i);
@@ -748,7 +781,15 @@ if (*betafixed==0)  {
     }  // }}} robust variance
 
 //if (mjump==1 && *ratesim==0) 
-//for (j=0;j<1;j++) { // {{{ 
+//for (j=0;j<*antclust;j++) { 
+//     printf("observed score ========================== %d \n",j); 
+//     print_vec(W2[j]); 
+//     print_mat(Uicluster[j]); 
+//}
+
+
+//if (mjump==2 && *ratesim==0) 
+//for (j=0;j<*antclust;j++) { 
 //     printf("observed score ========================== %d \n",j); 
 //     print_mat(Uti[j]); 
 //     print_mat(Uiclustert[j]); 
@@ -762,13 +803,21 @@ if (*betafixed==0)  {
 
   if (*detail==1) Rprintf("Robust variances 2 \n"); 
 
-    if (*betafixed==0) 
-    for (j=0;j<*antclust;j++) {
-      Mv(SI,W2[j],tmpv2); 
-      for (c=0;c<*pg;c++) for (k=0;k<*pg;k++)
-		ME(RobVbeta,c,k)=ME(RobVbeta,c,k)+VE(W2[j],c)*VE(W2[j],k);
-      for (k=0;k<*pg;k++) gammaiid[j*(*pg)+k]=VE(tmpv2,k); 
+
+    if (*betafixed==0)  {
+	    if (mjump==0 || *ratesim==1) 
+	    {
+	      for (j=0;j<*antclust;j++) {
+	         Mv(SI,W2[j],tmpv2); 
+	         for (c=0;c<*pg;c++) for (k=0;k<*pg;k++)
+		 ME(RobVbeta,c,k)=ME(RobVbeta,c,k)+VE(W2[j],c)*VE(W2[j],k);
+	      for (k=0;k<*pg;k++) gammaiid[j*(*pg)+k]=VE(tmpv2,k); 
+	    }
+	    } else {
+	      for (j=0;j<*antclust;j++)  mat_add(Uicluster[j],RobVbeta,RobVbeta); 
+	    }
     }
+
     MxA(RobVbeta,SI,ZPZ); MxA(SI,ZPZ,RobVbeta);
 
   if (timing==2) { // {{{
@@ -787,7 +836,6 @@ if (*betafixed==0)  {
       Iinv[k*(*pg)+j]=ME(SI,j,k);
       Vbeta[k*(*pg)+j]=-ME(VU,j,k); 
       RVbeta[k*(*pg)+j]=-ME(RobVbeta,j,k); 
-
     } 
   } 
 
@@ -799,6 +847,32 @@ if (*betafixed==0)  {
   printf ("\telapsed CPU time: variance terms 4 %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
   c0=clock();
   } // }}}
+
+
+// check af observed score process er ok , sammenligning af variancer til 
+//  int itest1=1; 
+//  if (itest1==1 )
+// for (s=0;s<*maxtimepoint;s++)   {
+//  mat_zeros(S2); mat_zeros(dS); mat_zeros(VUI); mat_zeros(ZPZ);
+// for (j=0;j<*antclust;j++) 
+// {
+//	  extract_row(Uti[j],s,tmpv2); 
+//	  for (k=0;k<*pg;k++) for (i=0;i<*pg;i++) ME(S2,k,i)+=VE(tmpv2,k)*VE(tmpv2,i); 
+//	  if (mjump==1) {
+//	  for (k=0;k<*pg;k++) for (i=0;i<*pg;i++) ME(dS,k,i)=ME(Uiclustert[j],s*(*pg)+k,i);
+//	  print_mat(dS); 
+////	  mat_transp(dS,dS); 
+//	  MtM(dS,ZPZ); 
+//	  printf("obs Score %d %d \n",s,j); 
+//	  print_mat(ZPZ); 
+//	  mat_add(ZPZ,VUI,VUI); 
+//	  }
+//}
+//printf(" %d \n",s); 
+//print_mat(S2); 
+//print_mat(VUI); 
+//}
+
 
 
 //  for(j=0;j<*antclust;j++)  print_mat(Uti[j]); 
@@ -843,12 +917,12 @@ if (*betafixed==0)  {
 
   if (*detail==1)  Rprintf("Simulations start N= %ld \n",(long int) *antsim);
 
+
     for (k=1;k<=*antsim;k++) // {{{  k=1,...,antsim
     {
 	 R_CheckUserInterrupt();
 	 if (basesim==1) mat_zeros(Delta); 
-	  mat_zeros(Delta2); 
-	  vec_zeros(tmpv1);
+	  mat_zeros(Delta2); vec_zeros(tmpv1);
      for (i=0;i<*antclust;i++)  // {{{ 
      {
 	random=norm_rand();
@@ -856,6 +930,7 @@ if (*betafixed==0)  {
 	    scl_mat_mult(random,W4t[i],tmpM1); mat_add(tmpM1,Delta,Delta);
 	}
         if ((mjump==0 && *ratesim==0) || (*ratesim==1)) {
+	   random=norm_rand();
 	   scl_mat_mult(random,Uti[i],tmpM2); 
 	   mat_add(tmpM2,Delta2,Delta2);
 	} else {
@@ -865,7 +940,7 @@ if (*betafixed==0)  {
            for (l=0;l<*pg;l++) ME(tmpM2,c,l)=VE(vectmp,c*(*pg)+l); 
 	   mat_add(tmpM2,Delta2,Delta2);
 	}
-      } // }}} 
+     } // }}} 
 
 
     if (basesim==1) extract_row(Delta,*maxtimepoint-1,tmpv1); 
@@ -918,6 +993,7 @@ if (*betafixed==0)  {
 
       }  /* s=1..Ntims */
     }  // }}} /* k=1..antsim */
+
   } /* sim==1 */ // }}}
 
   if (timing==2) { // {{{
