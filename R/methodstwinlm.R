@@ -15,7 +15,7 @@ summarygroup.twinlm <- function(object,...) {
     cc <- lapply(mz,function(i)
                  coef(object$model[[i]],label=TRUE))
     ii <- lapply(cc, function(x)
-                 sapply(x, function(i) parpos.multigroup(object$estimate$model,i)))
+                 sapply(x, function(i) lava:::parpos.multigroup(object$estimate$model,i)))
     coefs <- c()
     for (i in seq(length(ii))) {
         res <- coef(object$estimate,level=1)[ii[[i]],,drop=FALSE]
