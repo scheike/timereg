@@ -5,7 +5,7 @@ Simple reshape/tranpose of data}
 \usage{
   fast.reshape(data, varying, id, num, sep = "", keep,
     idname = "id", numname = "num", factors.keep = TRUE,
-    idcombine = FALSE, labelnum = FALSE, ...)
+    idcombine = TRUE, labelnum = FALSE, ...)
 }
 \arguments{
   \item{data}{data.frame or matrix}

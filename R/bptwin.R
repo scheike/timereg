@@ -11,9 +11,6 @@
 ##' @param id The name of the column in the dataset containing the twin-id variable.
 ##' @param zyg The name of the column in the dataset containing the
 ##'     zygosity variable.
-##' @param MZ Character defining the level in the zyg variable
-##' corresponding to the monozygotic twins. Optional if 'DZ' argument is used. If both MZ and DZ arguments are omitted 
-##' the reference level (i.e. the first level) will be interpreted as the dyzogitic twins.
 ##' @param DZ Character defining the level in the zyg variable
 ##' corresponding to the dyzogitic twins. 
 ##' @param group Optional. Variable name defining group for interaction analysis (e.g., gender)
@@ -50,7 +47,7 @@
 ##'              id="tvparnr",zyg="zyg",DZ="dz",type="ae")
 ##' summary(b0)
 ##' }
-bptwin <- function(formula, data, id, zyg, MZ, DZ, group=NULL,
+bptwin <- function(formula, data, id, zyg, DZ, group=NULL,
                    num=NULL,
                    weight=NULL,
                    biweight=function(x) 1/min(x),

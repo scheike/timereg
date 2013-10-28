@@ -52,6 +52,7 @@
 ##'     the reference level (i.e. the first level) will be interpreted as
 ##'     the dyzogitic twins
 ##' @param group Optional. Variable name defining group for interaction analysis (e.g., gender)
+##' @param group.equal If TRUE marginals of groups are asummed to be the same
 ##' @param strata Strata variable name
 ##' @param weight Weight matrix if needed by the chosen estimator. For use
 ##'     with Inverse Probability Weights
@@ -66,11 +67,11 @@
 ##' @param keep Vector of variables from \code{data} that are not
 ##'     specified in \code{formula}, to be added to data.frame of the SEM
 ##' @param estimator Choice of estimator/model
-##' @param control Control argument parsed on to the optimization routine
 ##' @param constrain Development argument
+##' @param control Control argument parsed on to the optimization routine
 ##' @param messages Control amount of messages shown 
 ##' @param ... Additional arguments parsed on to lower-level functions
-twinlm <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=NULL, type=c("ace"), twinnum="twinnum", binary=FALSE,keep=weight,estimator="gaussian",constrain=TRUE,control=list(),messages=1,...) {
+twinlm <- function(formula, data, id, zyg, DZ, group=NULL, group.equal=FALSE, strata=NULL, weight=NULL, type=c("ace"), twinnum="twinnum", binary=FALSE,keep=weight,estimator="gaussian",constrain=TRUE,control=list(),messages=1,...) {
     
   cl <- match.call(expand.dots=TRUE)
   opt <- options(na.action="na.pass")
@@ -148,11 +149,12 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=N
   zyglev <- levels(zygstat)
   if (length(zyglev)>2) stop("More than two zygosity levels found. For opposite sex (OS) analysis use the 'group' argument (and recode OS group as DZ)")
 
+  if (!is.null(group) && type%in%c("u","flex","sat")) stop("Only polygenic models are allowed with 'group' ('type' subset of 'acde'). See also the 'strata' argument.")      
   ## To wide format:
   num <- NULL; if (twinnum%in%colnames(data)) num <- twinnum
   if (!is.null(group)) data[,group] <- as.factor(data[,group])
   data <- cbind(data[,c(yvar,keep,num,zyg,id,group)],M)
-  ddd <- fast.reshape(data,id=c(id,zyg),varying=c(yvar,keep,covars,group),keep=zyg,num=num,sep=".",labelnum=TRUE)
+  ddd <- fast.reshape(data,id=c(id),varying=c(yvar,keep,covars,group),keep=zyg,num=num,sep=".",labelnum=TRUE)
   groups <- paste(group,".",1:2,sep="")
   outcomes <- paste(yvar,".",1:2,sep="")  
 
@@ -162,9 +164,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=N
   }
   MZ <- setdiff(zyglev,DZ)
   wide1 <- ddd[which(ddd[,zyg]==MZ),,drop=FALSE]
-  wide2 <- ddd[which(ddd[,zyg]==DZ),,drop=FALSE]
-
-  browser()
+  wide2 <- ddd[which(ddd[,zyg]%in%DZ),,drop=FALSE]
 
   mm <- nn <- c()
   dd <- list()
@@ -172,21 +172,22 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=N
   if (!is.null(group)) {
       levgrp <- levels(data[,group])
       for (i1 in levgrp) {
-          for (i2 in levgrp) {              
+          for (i2 in levgrp) {
               idxMZ <- which(wide1[,groups[1]]==i1 & wide1[,groups[2]]==i2)
               dMZ <- wide1[idxMZ,,drop=FALSE]
               idxDZ <- which(wide2[,groups[1]]==i1 & wide2[,groups[2]]==i2)
               dDZ <- wide2[idxDZ,,drop=FALSE]
               m0 <- twinsem1(outcomes,c(i1,i2),
                              levels=levgrp,covars=covars,type=type,
-                             data=list(dMZ,dDZ),constrain=constrain)$model
+                             data=list(dMZ,dDZ),constrain=constrain,
+                             equal.marg=group.equal)$model
               if (length(idxMZ)>0) {
-                  nn <- c(nn,paste("MZ",i1,sep=":"))
+                  nn <- c(nn,paste("MZ:",i1,sep=""))
                   dd <- c(dd,list(dMZ))
                   mm <- c(mm,list(m0[[1]]))
               }
               if (length(idxDZ)>0) {
-                  nn <- c(nn,paste("DZ",i2,sep=":"))
+                  nn <- c(nn,paste("DZ:",i1,",",i2,sep=""))
                   dd <- c(dd,list(dDZ))
                   mm <- c(mm,list(m0[[2]]))
               }
@@ -233,13 +234,13 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=N
     singletons <- sum((!dd0[,1])*dd0[,2] + (!dd0[,2])*dd0[,1])
     return(c(pairs,singletons))
   }
-  zygtab <- lapply(dd,counts)
+  counts <- lapply(dd,counts)
   ## mz  <- counts(object$data.mz[,object$outcomes])
   ## dz  <- counts(object$data.dz[,object$outcomes])
   if (!e$model$missing) {
-      zygtab <- c("MZ-pairs"=zygtab[[1]][1],"DZ-pairs"=zygtab[[2]][1])
+      zygtab <- c("MZ-pairs"=counts[[1]][1],"DZ-pairs"=counts[[2]][1])
   } else {
-      zygtab <- c(paste(zygtab[[1]],collapse="/"),paste(zygtab[[2]],collapse="/"))
+      zygtab <- c(paste(counts[[1]],collapse="/"),paste(counts[[2]],collapse="/"))
       names(zygtab) <- c("MZ-pairs/singletons","DZ-pairs/singletons")
   }
   ## if (object$OS) {
@@ -256,8 +257,8 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=N
               estimate=e, model=mm, call=cl, data=data, zyg=zyg,
               id=id, twinnum=twinnum, type=type,  group=group,
               constrain=constrain, outcomes=outcomes, zygtab=zygtab,
-              nam=nn, groups=levgrp
-              )
+              nam=nn, groups=levgrp, group.equal=group.equal,
+              counts=counts)
   class(res) <- "twinlm"
   return(res)
 }
@@ -268,7 +269,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, strata=NULL, weight=N
 
 ##outcomes <- c("y1","y2"); groups <- c("M","F"); covars <- NULL; type <- "ace"
 ##twinsem1(c("y1","y2"),c("M","F"))
-twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",data,constrain=TRUE,...) {
+twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",data,constrain=TRUE,equal.marg=FALSE,...) {
     isA <- length(grep("a",type))>0 & type!="sat"
     isC <- length(grep("c",type))>0
     isD <- length(grep("d",type))>0
@@ -282,48 +283,58 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
     if (is.list(outcomes)) {
         if (!is.null(groups) & is.null(levels)) stop("missing levels")
         if (is.null(groups)) groups <- c("","")
-        grp <- paste(sort(groups),collapse="")
+        grp <- paste(sort(groups),collapse=",")
         sameGroup <- groups[1]==groups[2]
         model1 <- outcomes[[1]]
         model2 <- outcomes[[2]]
         if (!is.null(levels)) {
             pars <- c()
             for (i in seq(length(levels)-1)) for (j in seq(i+1,length(levels)))
-                pars <- c(pars,paste(sort(levels)[c(i,j)],collapse=""))
+                pars <- c(pars,paste(sort(levels)[c(i,j)],collapse=","))
             if (isA) {
-
-                parameter(model1) <- paste("zA",pars,sep="")
-                parameter(model2) <- paste("zA",pars,sep="")
+                parameter(model1) <- paste("z(A):",pars,sep="")
+                parameter(model2) <- paste("z(A):",pars,sep="")
             }
             if (isD) {
-                parameter(model1) <- paste("zD",pars,sep="")
-                parameter(model2) <- paste("zD",pars,sep="")
+                parameter(model1) <- paste("z(D):",pars,sep="")
+                parameter(model2) <- paste("z(D):",pars,sep="")
             }
         }
         outcomes <- endogenous(model1)
-        if (length(varidx)>0) {
-            regression(model1,to=outcomes[1],from=vMZ1[varidx]) <-
-                paste(lambdas,groups[1],sep="")[varidx]
-            regression(model1,to=outcomes[2],from=vMZ2[varidx]) <-
-                paste(lambdas,groups[2],sep="")[varidx]            
-             regression(model2,to=outcomes[1],from=vMZ1[varidx]) <-
-                paste(lambdas,groups[1],sep="")[varidx]
-            regression(model2,to=outcomes[2],from=vDZ2[varidx]) <-
-                paste(lambdas,groups[2],sep="")[varidx]
+        if (!(type%in%c("u","flex","sat"))) {
+            if (equal.marg) {
+                regression(model1,to=outcomes[1],from=vMZ1[varidx]) <-
+                    lambdas[varidx]
+                regression(model1,to=outcomes[2],from=vMZ2[varidx]) <-
+                    lambdas[varidx]            
+                regression(model2,to=outcomes[1],from=vMZ1[varidx]) <-
+                    lambdas[varidx]
+                regression(model2,to=outcomes[2],from=vDZ2[varidx]) <-
+                    lambdas[varidx]
+            } else {
+                regression(model1,to=outcomes[1],from=vMZ1[varidx]) <-
+                    paste(lambdas,groups[1],sep="")[varidx]
+                regression(model1,to=outcomes[2],from=vMZ2[varidx]) <-
+                    paste(lambdas,groups[2],sep="")[varidx]            
+                regression(model2,to=outcomes[1],from=vMZ1[varidx]) <-
+                    paste(lambdas,groups[1],sep="")[varidx]
+                regression(model2,to=outcomes[2],from=vDZ2[varidx]) <-
+                    paste(lambdas,groups[2],sep="")[varidx]
+            }
         }
         if (sameGroup) {
             if (isA) covariance(model2,a1~a2)  <- 0.5
             if (isD) covariance(model2,d1~d2)  <- 0.25
         } else {            
             if (isA) {
-                rhoA <- paste("rA",grp,sep="")
-                zA <- paste("zA",grp,sep="")
+                rhoA <- paste("Kinship[A]:",grp,sep="")
+                zA <- paste("z(A):",grp,sep="")
                 covariance(model2, a1~a2) <- rhoA
                 constrain(model2, rhoA,zA) <- function(x) tanh(x)
             }
             if (isD) {                
-                rhoD <- paste("rD",grp,sep="")
-                zD <- paste("zD",grp,sep="")
+                rhoD <- paste("Kinship[D]:",grp,sep="")
+                zD <- paste("z(D):",grp,sep="")
                 covariance(model2, d1~d2) <- rhoD
                 constrain(model2, rhoD,zD) <- function(x) tanh(x)
             }
@@ -374,7 +385,7 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
     if (type=="sat") {
         varMZ <- c(paste("var(MZ)1",groups[1],""),
                    paste("var(MZ)2",groups[2],""))
-        varMZ <- c(paste("var(DZ)1",groups[1],""),
+        varDZ <- c(paste("var(DZ)1",groups[1],""),
                    paste("var(DZ)2",groups[2],""))        
         covariance(model1,outcomes) <- varMZ
         covariance(model2,outcomes) <- varDZ
@@ -435,8 +446,7 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
             kill(model2) <- trash
         }
     }
-    
-    twinsem1(list(MZ=model1,DZ=model2),groups=groups,type=type,levels=levels,constrain=constrain)
+    twinsem1(list(MZ=model1,DZ=model2),groups=groups,type=type,levels=levels,constrain=constrain,equal.marg=equal.marg)
 }
 
 ###}}} twinsem1

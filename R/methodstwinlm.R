@@ -10,12 +10,35 @@ print.twinlm <- function(x,...) {
 
 ###{{{ summary.twinlm
 
+summarygroup.twinlm <- function(object,...) {
+    coefmat <- coef(object$estimate,level=2)[[3]]
+    coef <- coef(object$estimate)
+    vcov <- vcov(object$estimate)
+    kinship <- constraints(object$estimate)[,c(1,5,6),drop=FALSE]
+    fit <- c(logLik=logLik(object),AIC=AIC(object),BIC=BIC(object))
+    structure(list(coef=coef,coefmat=coefmat,vcov=vcov,kinship=kinship,fit=fit),class="summary.twinlm.group")
+}
+
+##' @S3method print summary.twinlm.group
+print.summary.twinlm.group <- function(x,...) {
+    print(x$coefmat)
+    cat("\n")
+    print(x$kinship)
+    cat("\n")
+    print(x$fit)
+    invisible(x)
+}
+
+
 ##' @S3method summary twinlm
 summary.twinlm <- function(object,...) {
-    browser()
-    e <- object$estimate    
-    zygtab <- object$zygtab
+
+    if (!is.null(object$group) && !object$group.equal) {
+        return(summarygroup.twinlm(object,...))
+    }   
     
+    e <- object$estimate    
+    zygtab <- object$zygtab    
     ## zygtab <- with(object, table(data[,zyg]))
     ## names(zygtab) <- paste(names(zygtab),"pairs",sep="-")
 
@@ -29,10 +52,7 @@ summary.twinlm <- function(object,...) {
         if (object$constrain) {
             i1 <- lava:::parpos.multigroup(object$estimate$model,p="atanh(rhoMZ)")[1]
             i2 <- lava:::parpos.multigroup(object$estimate$model,p="atanh(rhoDZ)")[1]
-            ## i3 <- lava:::parpos.multigroup(object$estimate$model,p="atanh(rhoOS)")[1]
             if (length(i1)>0) {
-                ## corest <- coef(object$estimate,level=0)[c(i1,i2,i3)]
-                ## sdest <- vcov(object$estimate)[cbind(c(i1,i2,i3),c(i1,i2,i3))]^0.5
                 corest <- coef(object$estimate,level=0)[c(i1,i2)]
                 sdest <- vcov(object$estimate)[cbind(c(i1,i2),c(i1,i2))]^0.5
 
@@ -40,10 +60,6 @@ summary.twinlm <- function(object,...) {
                 corest <- tanh(corest)
                 corMZ <- c(corest[1],ciest[1,])
                 corDZ <- c(corest[2],ciest[2,])
-                corOS <- NULL
-                ## if (object$OS) {
-                ##   corOS <- c(corest[3],ciest[3,])
-                ## }
             }
         }
         aa <- capture.output(e)
@@ -56,16 +72,12 @@ summary.twinlm <- function(object,...) {
         return(res)
     }
 
-
-    ## kinshipOS  <- NULL
-    ## if(object$OS) {
-    ##   KinshipOS <- constraints(e,k=3)[,c(1,5,6),drop=FALSE]
-    ##   rownames(KinshipOS)[1] <- "OS Kinship"
-    ##   if (nrow(KinshipOS)>1) {
-    ##     rownames(KinshipOS) <- c("OS Kinship(A)","OS Kinship(D)")
-    ##   }
-    ##   myest <- myest[-lava:::parpos.multigroup(object$estimate$model,p=c("ra","rd")),,drop=FALSE]
-    ## }
+    KinshipGroup <- NULL
+    if (!is.null(object$group)) {
+        zA.idx <- grep("z(A):",names(coef(object)),fixed=TRUE)
+        zD.idx <- grep("z(A):",names(coef(object)),fixed=TRUE)
+        KinshipGroup <- constraints(e)[,c(1,5,6),drop=FALSE]
+    }
 
     r1 <- gsub(".1","",coef(Model(Model(e))[[1]],
                             mean=e$meanstructure, silent=TRUE),
@@ -154,18 +166,15 @@ summary.twinlm <- function(object,...) {
     acde <- acde.twinlm(object)
     coef <- rbind(acde)  
 
-    ## corOS <- NULL
-    ## if (object$OS)
-    ##   acde <- rbind(acde,KinshipOS)
-
-    
+   
     hrow <- rbind(c(h2val,ci.logit));
     rownames(hrow) <- "Broad-sense heritability"
     colnames(hrow)[1:2] <- c("Estimate","Std.Err")
     
-    all <- rbind(hrow[,c(1,3,4),drop=FALSE],coef,corMZ,corDZ) ##,corOS)
+    all <- rbind(hrow[,c(1,3,4),drop=FALSE],coef,corMZ,corDZ)
     
     res <- list(estimate=myest, zyg=zygtab, varEst=varEst,
+                KinshipGroup=KinshipGroup,
                 varSigma=varSigma, heritability=hrow, corMZ=corMZ, corDZ=corDZ,
                 acde=acde, logLik=logLik(e), AIC=AIC(e), BIC=BIC(e),
                 type=object$type, coef=coef, all=all);
@@ -200,9 +209,11 @@ print.summary.twinlm <- function(x,signif.stars=FALSE,...) {
         cat("\n")
     }
     if (!is.null(x$corMZ)) {
-        cc <- with(x, rbind(corMZ,corDZ)) ##,corOS))
+        cc <- with(x, rbind(corMZ,corDZ))        
         rownames(cc)[1:2] <- c("Correlation within MZ:","Correlation within DZ:")
-        ## if (!is.null(x$corOS)) rownames(cc)[3] <- "Correlation within OS:"
+        if (!is.null(x$KinshipGroup)) {
+            cc <- rbind(cc,x$KinshipGroup)
+        }      
         colnames(cc) <- c("Estimate","2.5%","97.5%")
         printCoefmat(cc,signif.stars=FALSE,...)
     }
@@ -278,7 +289,6 @@ acde.twinlm <- function(x,...) {
         constrain(x$estimate,f) <- myfun ##function(x) x[get("pos")]^2/sum(x^2)
     }
     M <- pnorm(constraints(x$estimate,k=1)[,c(1,5,6),drop=FALSE])
-    ##  if (x$OS) M <- M[-nrow(M),,drop=FALSE]
     rownames(M) <- toupper(rownames(M))
     M
 }

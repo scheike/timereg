@@ -3,10 +3,10 @@
 \title{Classic twin model for quantitative traits}
 \usage{
   twinlm(formula, data, id, zyg, DZ, group = NULL,
-    strata = NULL, weight = NULL, type = c("ace"),
-    twinnum = "twinnum", binary = FALSE, keep = weight,
-    estimator = "gaussian", constrain = TRUE,
-    control = list(), messages = 1, ...)
+    group.equal = FALSE, strata = NULL, weight = NULL,
+    type = c("ace"), twinnum = "twinnum", binary = FALSE,
+    keep = weight, estimator = "gaussian",
+    constrain = TRUE, control = list(), messages = 1, ...)
 }
 \arguments{
   \item{formula}{Formula specifying effects of covariates
@@ -31,6 +31,9 @@
 
   \item{group}{Optional. Variable name defining group for
   interaction analysis (e.g., gender)}
+
+  \item{group.equal}{If TRUE marginals of groups are
+  asummed to be the same}
 
   \item{strata}{Strata variable name}
 
@@ -58,10 +61,10 @@
 
   \item{estimator}{Choice of estimator/model}
 
+  \item{constrain}{Development argument}
+
   \item{control}{Control argument parsed on to the
   optimization routine}
-
-  \item{constrain}{Development argument}
 
   \item{messages}{Control amount of messages shown}
 

@@ -4,7 +4,7 @@
 \alias{cumh}
 \title{Liability model for twin data}
 \usage{
-  bptwin(formula, data, id, zyg, MZ, DZ, group = NULL,
+  bptwin(formula, data, id, zyg, DZ, group = NULL,
     num = NULL, weight = NULL,
     biweight = function(x) 1/min(x), strata = NULL,
     messages = 1, control = list(trace = 0), type = "ace",
@@ -28,12 +28,6 @@
 
   \item{zyg}{The name of the column in the dataset
   containing the zygosity variable.}
-
-  \item{MZ}{Character defining the level in the zyg
-  variable corresponding to the monozygotic twins. Optional
-  if 'DZ' argument is used. If both MZ and DZ arguments are
-  omitted the reference level (i.e. the first level) will
-  be interpreted as the dyzogitic twins.}
 
   \item{DZ}{Character defining the level in the zyg
   variable corresponding to the dyzogitic twins.}
