@@ -67,7 +67,7 @@ max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL)
   if (length(strata)!=nrow(X)) stop("Lengths of strata and data do not match\n"); 
     iids <- unique(strata)
     antiid <- length(iids)
-    if (is.numeric(strata)) strata <-  timereg:::sindex.prodlim(iids,strata)-1
+    if (is.numeric(strata)) strata <-  sindex.prodlim(iids,strata)-1
     else strata<- as.integer(factor(strata, labels = seq(antiid)))-1
   } 
 
