@@ -11,17 +11,32 @@ print.twinlm <- function(x,...) {
 ###{{{ summary.twinlm
 
 summarygroup.twinlm <- function(object,...) {
-    coefmat <- coef(object$estimate,level=2)[[3]]
+    mz <- grep("MZ",names(object$model))
+    cc <- lapply(mz,function(i)
+                 coef(object$model[[i]],label=TRUE))
+    ii <- lapply(cc, function(x)
+                 sapply(x, function(i) parpos.multigroup(object$estimate$model,i)))
+    coefs <- c()
+    for (i in seq(length(ii))) {
+        res <- coef(object$estimate,level=1)[ii[[i]],,drop=FALSE]
+        rownames(res) <- cc[[i]]
+        coefs <- c(coefs,list(res))
+    }; names(coefs) <- names(object$model)[mz]
+    
     coef <- coef(object$estimate)
     vcov <- vcov(object$estimate)
-    kinship <- constraints(object$estimate)[,c(1,5,6),drop=FALSE]
+    suppressWarnings(kinship <- constraints(object$estimate)[,c(1,5,6),drop=FALSE])
     fit <- c(logLik=logLik(object),AIC=AIC(object),BIC=BIC(object))
-    structure(list(coef=coef,coefmat=coefmat,vcov=vcov,kinship=kinship,fit=fit),class="summary.twinlm.group")
+    structure(list(coef=coef,coefmat=coefs,vcov=vcov,kinship=kinship,fit=fit),class="summary.twinlm.group")
 }
 
 ##' @S3method print summary.twinlm.group
 print.summary.twinlm.group <- function(x,...) {
-    print(x$coefmat)
+    for (i in seq(length(x$coefmat))) {
+        cat(names(x$coefmat)[i],"\n")
+        printCoefmat(x$coefmat[[i]],...)
+        cat("\n")
+    }
     cat("\n")
     print(x$kinship)
     cat("\n")
@@ -32,7 +47,6 @@ print.summary.twinlm.group <- function(x,...) {
 
 ##' @S3method summary twinlm
 summary.twinlm <- function(object,...) {
-
     if (!is.null(object$group) && !object$group.equal) {
         return(summarygroup.twinlm(object,...))
     }   

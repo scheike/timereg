@@ -187,7 +187,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, group.equal=FALSE, st
                   mm <- c(mm,list(m0[[1]]))
               }
               if (length(idxDZ)>0) {
-                  nn <- c(nn,paste("DZ:",i1,",",i2,sep=""))
+                  nn <- c(nn,paste("DZ:",i1," ",i2,sep=""))
                   dd <- c(dd,list(dDZ))
                   mm <- c(mm,list(m0[[2]]))
               }
@@ -204,7 +204,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, group.equal=FALSE, st
   if (is.null(estimator)) return(multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep,type=2))
   optim <- list(method="nlminb2",refit=FALSE,gamma=1,start=rep(0.1,length(coef(mm[[1]]))*length(mm)))
 
-  optim$start <- twinlmStart(formula,mf,type,hasIntercept,surv=is.Surv(data[,yvar])) 
+    optim$start <- twinlmStart(formula,na.omit(mf),type,hasIntercept,surv=is.Surv(data[,yvar]),model=mm, group=levgrp, group.equal=group.equal)
   if (length(control)>0) {
     optim[names(control)] <- control
   }
@@ -283,14 +283,14 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
     if (is.list(outcomes)) {
         if (!is.null(groups) & is.null(levels)) stop("missing levels")
         if (is.null(groups)) groups <- c("","")
-        grp <- paste(sort(groups),collapse=",")
+        grp <- paste(sort(groups),collapse=" ")
         sameGroup <- groups[1]==groups[2]
         model1 <- outcomes[[1]]
         model2 <- outcomes[[2]]
         if (!is.null(levels)) {
             pars <- c()
             for (i in seq(length(levels)-1)) for (j in seq(i+1,length(levels)))
-                pars <- c(pars,paste(sort(levels)[c(i,j)],collapse=","))
+                pars <- c(pars,paste(sort(levels)[c(i,j)],collapse=" "))
             if (isA) {
                 parameter(model1) <- paste("z(A):",pars,sep="")
                 parameter(model2) <- paste("z(A):",pars,sep="")
@@ -453,7 +453,7 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
 
 ###{{{ twinlmStart (starting values)
 
-twinlmStart <- function(formula,mf,type,hasIntercept,surv=FALSE,...)  {
+twinlmStart <- function(formula,mf,type,hasIntercept,surv=FALSE,model,group=NULL,group.equal,...)  {
     if (surv) {
         l <- survreg(formula,mf,dist="gaussian")
         beta <- coef(l)
@@ -493,8 +493,18 @@ twinlmStart <- function(formula,mf,type,hasIntercept,surv=FALSE,...)  {
         start <- c(start,beta)
     }
     names(start) <- NULL
+
+    if (!is.null(group)) {
+        cc <- coef(model[[1]])        
+        iA <- grep(c("z(A):"),cc,fixed=TRUE)
+        iD <- grep(c("z(D):"),cc,fixed=TRUE)
+        nplus <- length(iA) + length(iD) + max(length(iA),length(iD))
+        start <- c(start,rep(.2,nplus))
+        ii <- sort(c(iA,iD))
+        start <- c(start[seq(ii[1]-1)],rep(0.3,length(ii)),start[seq(ii[1]+1,length(start))])
+    }
+    
     return(start)
 }
 
 ###}}} twinlmStart
-
