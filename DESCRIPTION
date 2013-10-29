@@ -75,3 +75,4 @@ Collate:
     'prop-odds.R'
     'phreg.R'
     'lifetable.R'
+    'simbinfam.r'

@@ -1,3 +1,5 @@
+
+##' @export 
 sim.bin.fam <- function(n,beta=0.0,theta=1,lam1=1,lam2=1) { ## {{{ 
 xm <- rbinom(n,1,0.5); xf <- rbinom(n,1,0.5); 
 xb1 <- rbinom(n,1,0.5); xb2 <- rbinom(n,1,0.5); 
