@@ -1,10 +1,11 @@
 
 ##' @export 
-sim.bin.fam <- function(n,beta=0.0,theta=1,lam1=1,lam2=1) { ## {{{ 
+sim.bin.fam <- function(n,beta=0.0,vargam1=1,vargam2=1) { ## {{{ 
 xm <- rbinom(n,1,0.5); xf <- rbinom(n,1,0.5); 
 xb1 <- rbinom(n,1,0.5); xb2 <- rbinom(n,1,0.5); 
 ###
-zf <- rgamma(n,shape=lam1); zb <- rgamma(n,shape=lam2); 
+lam1 <- vargam1; lam2 <- vargam2
+zf <- rgamma(n,shape=1/lam1)*lam1; zb <- rgamma(n,shape=1/lam2)*lam2; 
 pm <- exp(0.5+xm*beta+zf)
 pf <- exp(0.5+xf*beta+zf)
 pf <- pf/(1+pf)
