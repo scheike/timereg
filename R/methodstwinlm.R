@@ -136,7 +136,7 @@ summary.twinlm <- function(object,transform=FALSE,...) {
     varSigma <- matrix(0,4,4);
     varSigma[lambda.w,lambda.w] <- e$vcov[unlist(lambda.idx),unlist(lambda.idx)]
 
-    L <- binomial("identity")
+    L <- gaussian("identity")
     if (transform) L <- binomial("logit")
     varcomp <- c()
     genpos <- c()

@@ -1,12 +1,20 @@
-* Version 0.2.4 <2013-07-10>
+* Version 0.2.5 <2013-11-01 Fri>
+  - New datasets: dermalridges, dermalridgesMZ
+  - Grouped analysis updated in twinlm
+  - Confidence limits for genetic and environmental effects are now
+    based on standard Wald confidence limits. (use the 'transform'
+    argument of the summary method to apply logit-transform)
+  - Improved output in twinlm
+    
+* Version 0.2.4 <2013-07-10 Wed>
   - fast.reshape :labelnum option for both wide and long format (see
     example)
   - Compilation flags removed from Makevars files
 
-* Version 0.2.3 <2013-05-22>
+* Version 0.2.3 <2013-05-22 Wed>
   - fast.reshape bug-fix (column names)
 
-* Version 0.2.2 <2013-05-21>
+* Version 0.2.2 <2013-05-21 Tue>
   - Updated twinlm. bptwin: OS analysis 
      - Better starting values for twinlm
   - Fixed claytonaokes.cpp
@@ -14,28 +22,28 @@
   - Updated two-stage estimator
   - Improved fast.reshape
 
-* Version 0.2 <2013-03-27>
+* Version 0.2 <2013-03-27 Wed>
   - fast.reshape
   - easy.binomial.twostage
 
-* Version 0.1-4 <2012-05-09>
+* Version 0.1-4 <2012-09-07 Fri>
   - Fixed cor.cpp
   - New datasets: twinstut, twinbmi, prtsim
 
-* Version 0.1-3 <2012-05-07>
+* Version 0.1-3 <2012-07-05 Thu>
   - twinlm moved to mets package, and wraps the bptwin function
 
-* Version 0.1-2 <2012-05-06>
+* Version 0.1-2 <2012-05-14 Mon>
   - code clean-up and minor bug-fixes
 
-* Version 0.1-1 <2012-05-06>
+* Version 0.1-1 <2012-05-06 Sun>
 
   - Random effects CIF models moved from MultiComp to mets
   - new data sets: np, multcif
   - Documentation via roxygen2
   - bug fixes
 
-* Version 0.1-0 <2012-04-25>
+* Version 0.1-0 <2012-04-25 Wed>
 
   - Initialization of the new package 'mets' with implementation of the
     Clayton-Oakes model with piecewise constant marginal hazards, and

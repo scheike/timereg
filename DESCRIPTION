@@ -2,7 +2,7 @@ Package: mets
 Type: Package
 Title: Analysis of Multivariate Event Times
 Version: 0.2.5
-Date: 2013-08-01
+Date: 2013-11-01
 Author: Klaus K. Holst and Thomas Scheike
 Maintainer: Klaus K. Holst <kkho@biostat.ku.dk>
 Description: Implementation of various statistical models for multivariate
@@ -13,7 +13,7 @@ LazyLoad: yes
 URL: http://lava.r-forge.r-project.org/
 Depends:
     R (>= 2.15),
-    timereg (>= 1.8)
+    timereg (>= 1.8.1)
 Imports:
     lava (>= 1.2.3),
     numDeriv,
