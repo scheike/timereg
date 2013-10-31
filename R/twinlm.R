@@ -78,7 +78,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, group.equal=FALSE, st
   mf <- model.frame(formula,data)
   mt <- attr(mf, "terms")
   y <- model.response(mf, "any")
-  formula <- update(formula, ~ . + 1)
+  ## formula <- update(formula, ~ . + 1)
   yvar <- getoutcome(formula)
   if (missing(zyg)) stop("Zygosity variable not specified")
   if (!(zyg%in%colnames(data))) stop("'zyg' not found in data")
@@ -180,7 +180,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, group.equal=FALSE, st
               m0 <- twinsem1(outcomes,c(i1,i2),
                              levels=levgrp,covars=covars,type=type,
                              data=list(dMZ,dDZ),constrain=constrain,
-                             equal.marg=group.equal)$model
+                             equal.marg=group.equal,intercept=hasIntercept)$model
               if (length(idxMZ)>0) {
                   nn <- c(nn,paste("MZ:",i1,sep=""))
                   dd <- c(dd,list(dMZ))
@@ -196,7 +196,8 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, group.equal=FALSE, st
   } else {
       mm <- twinsem1(outcomes,NULL,
                      levels=NULL,covars=covars,type=type,
-                     data=list(wide1,wide2),constrain=constrain)$model
+                     data=list(wide1,wide2),constrain=constrain,
+                     intercept=hasIntercept)$model
       dd <- list(MZ=wide1,DZ=wide2)
   }
   
@@ -269,7 +270,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, group.equal=FALSE, st
 
 ##outcomes <- c("y1","y2"); groups <- c("M","F"); covars <- NULL; type <- "ace"
 ##twinsem1(c("y1","y2"),c("M","F"))
-twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",data,constrain=TRUE,equal.marg=FALSE,...) {
+twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",data,constrain=TRUE,equal.marg=FALSE,intercept=TRUE,...) {
     isA <- length(grep("a",type))>0 & type!="sat"
     isC <- length(grep("c",type))>0
     isD <- length(grep("d",type))>0
@@ -348,9 +349,13 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
     if (!(type%in%c("u","flex","sat"))) {
         model1 <- regression(model1,to=outcomes[1],from=vMZ1[varidx])
         model1 <- regression(model1,to=outcomes[2],from=vMZ2[varidx])
-    }
-        latent(model1) <- union(vMZ1[varidx],vMZ2[varidx])
-        intercept(model1,latent(model1)) <- 0
+    } else {
+        addvar(model1) <- outcomes
+        covariance(model1) <- outcomes        
+    }    
+    latent(model1) <- union(vMZ1[varidx],vMZ2[varidx])
+    intercept(model1,latent(model1)) <- 0
+
         if (!is.null(covars))
             for (i in 1:length(covars)) {
             regression(model1, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta[",i,"]",sep="")
@@ -419,6 +424,11 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
             regression(model2, from=paste(covars[i],".1",sep=""), to=outcomes[1],silent=TRUE) <- paste("beta2[",i,"]",sep="")
             regression(model2, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta2",sta,"[",i,"]",sep="")
         }
+    }
+
+    if (!intercept) {
+        intercept(model1,outcomes) <- 0
+        intercept(model2,outcomes) <- 0
     }
    
     ## Full rank covariate/design matrix?

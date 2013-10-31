@@ -15,19 +15,37 @@ summarygroup.twinlm <- function(object,...) {
     cc <- lapply(mz,function(i)
                  coef(object$model[[i]],label=TRUE))
     ii <- lapply(cc, function(x)
-                 sapply(x, function(i) lava:::parpos.multigroup(object$estimate$model,i)))
+                 sapply(x, function(i) lava:::parpos.multigroup(object$estimate$model,i)))    
+    c0 <- coef(object$estimate)
+    c2 <- coef(object$estimate,level=2)
+    pnam <- names(c0)
     coefs <- c()
-    for (i in seq(length(ii))) {
+    acde <- c()
+    nn <- c()
+    lambdas <- c("~a","~c","~d","~e")    
+    for (i in seq(length(mz))) {
         res <- coef(object$estimate,level=1)[ii[[i]],,drop=FALSE]
-        rownames(res) <- cc[[i]]
-        coefs <- c(coefs,list(res))
-    }; names(coefs) <- names(object$model)[mz]
+        pp <- sapply(lambdas,function(x) ii[[i]][grep(x,rownames(res),fixed=TRUE)])
+        nam <- c("A","C","D","E")[which(unlist(lapply(pp,function(x) length(x)>0)))]
+        pp <- unlist(pp); names(pp) <- nam
+        acde <- c(acde,list(acde.twinlm(object,pp)))
+        nn0 <- cc[[i]]
+        if (nn0[1]=="mu") nn0[1] <- "(Intercept)"
+        for (k in c("a","c","d","e"))
+            nn0 <- gsub("lambda["%+%k%+%"]","SD("%+%toupper(k)%+%"):",nn0,fixed=TRUE)
+        nam <- rownames(res)
+        idx <- unlist(lapply(c("Intercept","SD(","z(A):","z(D):"),function(x) grep(x,nn0,fixed=TRUE)))
+        nam.keep.idx <- setdiff(seq(length(nam)),idx)
+        nn0[nam.keep.idx] <- unlist(lapply(strsplit(nam[nam.keep.idx],"~"),
+                                           function(x) gsub(".2|.1","",x[2])))
+        rownames(res) <- nn0
+        coefs <- c(coefs,list(res))       
+    }; names(coefs) <- names(object$model)[mz]    
     
-    coef <- coef(object$estimate)
     vcov <- vcov(object$estimate)
     suppressWarnings(kinship <- constraints(object$estimate)[,c(1,5,6),drop=FALSE])
     fit <- c(logLik=logLik(object),AIC=AIC(object),BIC=BIC(object))
-    structure(list(coef=coef,coefmat=coefs,vcov=vcov,kinship=kinship,fit=fit),class="summary.twinlm.group")
+    structure(list(coef=c0,coefmat=coefs,vcov=vcov,acde=acde,kinship=kinship,fit=fit),class="summary.twinlm.group")
 }
 
 ##' @S3method print summary.twinlm.group
@@ -35,6 +53,7 @@ print.summary.twinlm.group <- function(x,...) {
     for (i in seq(length(x$coefmat))) {
         cat(names(x$coefmat)[i],"\n")
         printCoefmat(x$coefmat[[i]],...)
+        print(x$acde[[i]])
         cat("\n")
     }
     cat("\n")
@@ -46,7 +65,7 @@ print.summary.twinlm.group <- function(x,...) {
 
 
 ##' @S3method summary twinlm
-summary.twinlm <- function(object,...) {
+summary.twinlm <- function(object,transform=FALSE,...) {
     if (!is.null(object$group) && !object$group.equal) {
         return(summarygroup.twinlm(object,...))
     }   
@@ -117,7 +136,8 @@ summary.twinlm <- function(object,...) {
     varSigma <- matrix(0,4,4);
     varSigma[lambda.w,lambda.w] <- e$vcov[unlist(lambda.idx),unlist(lambda.idx)]
 
-    L <- binomial("logit")
+    L <- binomial("identity")
+    if (transform) L <- binomial("logit")
     varcomp <- c()
     genpos <- c()
     pos <- 0L
@@ -177,7 +197,7 @@ summary.twinlm <- function(object,...) {
     corMZ <- c(tanh(c(e1,ci1)))
     corDZ <- c(tanh(c(e2,ci2)))  
 
-    acde <- acde.twinlm(object)
+    acde <- acde.twinlm(object,transform=transform)
     coef <- rbind(acde)  
 
    
@@ -290,23 +310,51 @@ model.frame.twinlm <- function(formula,...) {
 ###{{{ acde
 
 ##"acde" <- function(x,...) UseMethod("acde")
-acde.twinlm <- function(x,...) {
-    m <- x$estimate$model$lvm[[1]]
-    lambdas <- c("lambda[a]","lambda[c]","lambda[d]","lambda[e]")
-    ACDE <- lambdas%in%as.vector(m$par)
-    lcur <- lambdas[ACDE]
-    for (l in lcur) {
-        pos <- which(lcur%in%l)
-        par <- substr(strsplit(l,"[",fixed=TRUE)[[1]][2],1,1)
-        f <- as.formula(paste(par,"~",paste(lcur,collapse="+")))
-        myfun <- eval(parse(text=paste("function(x) qnorm(x[",pos,"]^2/sum(x^2))")))
-        constrain(x$estimate,f) <- myfun ##function(x) x[get("pos")]^2/sum(x^2)
+acde.twinlm <- function(x,index,transform=FALSE,estimate.return=FALSE,...) {
+    if (missing(index)) {
+        m <- x$estimate$model$lvm[[1]]
+        lambdas <- c("lambda[a]","lambda[c]","lambda[d]","lambda[e]")
+        pp <- sapply(lambdas,function(x) grep(x,as.vector(m$par),fixed=TRUE))
+        ACDE <- unlist(lapply(pp,function(x) length(x)>0))
+        pp <- unlist(lapply(pp[ACDE], function(x) as.vector(m$par)[x[1]]))
+        index <- sapply(pp,function(p) lava:::parpos.multigroup(x$estimate$model,p))
+        names(index) <- c("A","C","D","E")[ACDE]
     }
-    M <- pnorm(constraints(x$estimate,k=1)[,c(1,5,6),drop=FALSE])
-    rownames(M) <- toupper(rownames(M))
-    M
+
+    ##    f <- function(p) structure(log(p/(1-p)),grad=cbind(0,1/(p*(1-p)),0))    
+    if (transform) {        
+        suppressWarnings(res <- estimate(x,function(p)
+                                         lapply(index,
+                                                function(z)
+                                                lava:::logit((p[z]^2/sum(p[index]^2)))),
+                                         vcov=vcov(x)))
+        if (estimate.return) return(res)
+        res <- res$coefmat[,c(1,3,4),drop=FALSE]
+        res <- lava:::tigol(res)
+    } else {
+        suppressWarnings(res <- estimate(x,function(p)
+                                         lapply(index,
+                                                function(z)
+                                                (p[z]^2/sum(p[index]^2))),
+                                         vcov=vcov(x)))
+        if (estimate.return) return(res)        
+        res <- res$coefmat[,c(1,3,4),drop=FALSE]
+    }
+    res
 }
 
 ###}}} acde
 
+##' @S3method coef twinlm
 coef.twinlm <- function(object,...) coef(object$estimate,...)
+
+##' @S3method iid twinlm
+iid.twinlm <- function(x,...) {
+    U <- score(x$estimate,indiv=TRUE)
+    U <- lapply(U,function(x) {x[is.na(x)] <- 0; return(x)})
+    U <- Reduce(rbind,U)
+    iI <- vcov(x)
+    U%*%iI
+}
+
+    

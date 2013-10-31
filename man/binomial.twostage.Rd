@@ -93,8 +93,8 @@ summary(bina)
 
 twinstut$binstut <- (twinstut$stutter=="yes")*1
 out <- easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut,
-                              response="binstut",id="tvparnr",
-			      theta.formula=~-1+factor(zyg1),
+                          response="binstut",id="tvparnr",
+	             	      theta.formula=~-1+factor(zyg1),
                               score.method="fisher.scoring")
 summary(out)
 
