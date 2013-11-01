@@ -405,20 +405,20 @@ step=0.5,model="plackett",marginal.p=NULL,strata=NULL,max.clust=NULL,se.clusters
   else if (class(margbin)=="formula") {
 	    margbin <- glm(margbin,data=data,family=binomial())
             ps <- predict(margbin,type="response")
-    }  else if (is.null(marginal.p)) stop("without marginal model, marginal p's must be given\n"); 
+  }  else if (is.null(marginal.p)) stop("without marginal model, marginal p's must be given\n"); 
 
-    if (!is.null(marginal.p)) ps <- marginal.p
+  if (!is.null(marginal.p)) ps <- marginal.p
 
-     data <- cbind(data,ps)
+  data <- cbind(data,ps)
 
-     ### make all pairs in the families,
-     fam <- familycluster.index(data[,id])
-     data.fam <- data[fam$familypairindex,]
-     data.fam$subfam <- fam$subfamilyindex
+  ### make all pairs in the families,
+  fam <- familycluster.index(data[,id])
+  data.fam <- data[fam$familypairindex,]
+  data.fam$subfam <- fam$subfamilyindex
 
-     ### make dependency design using wide format for all pairs 
-     data.fam.clust <- fast.reshape(data.fam,id="subfam")
-     if (is.function(theta.formula)) {
+  ### make dependency design using wide format for all pairs 
+  data.fam.clust <- fast.reshape(data.fam,id="subfam")
+  if (is.function(theta.formula)) {
 	library(compiler) 
         desfunction <- compiler::cmpfun(theta.formula)
 	if (deshelp==1){
