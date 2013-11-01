@@ -364,7 +364,7 @@ antpers <- NROW(data);
 ##' summary(out)
 ##' 
 ##' desfs <- function(x,num1="zyg1",namesdes=c("mz","dz","os"))
-##'     c(x[num1]=="dz",x[num1]=="mz",x[num1]=="os")*1
+##'     c(x[num1]=="mz",x[num1]=="dz",x[num1]=="os")*1
 ##' 
 ##' out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
 ##'                                data=twinstut0, response="binstut",id="tvparnr",
