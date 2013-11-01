@@ -428,8 +428,9 @@ step=0.5,model="plackett",marginal.p=NULL,strata=NULL,max.clust=NULL,se.clusters
 	  cat("Here is head of wide version with pairs\n")
 	  print(head(data.fam.clust)); cat("\n")
 	}
-        des.theta  <- t( apply(data.fam.clust,1,desfunction)) 
-        colnames(des.theta) <- desnames
+###	des.theta <- Reduce("rbind",lapply(seq(nrow(data.fam.clust)),function(i) unlist(desfunction(data.fam.clust[i,] ))))
+        des.theta <- t(apply(data.fam.clust,1, function(x) desfunction(x)))
+	colnames(des.theta) <- desnames
 	desnames <- desnames
      } else {
 	  if (is.null(theta.formula)) theta.formula <- ~+1
