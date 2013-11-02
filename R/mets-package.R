@@ -82,6 +82,13 @@ NULL
 
 ##' Stutter data set
 ##'
+##' Based on nation-wide questionnaire answers from 33,317 Danish twins
+##' @format
+##' tvparnr: twin-pair id
+##' zyg: zygosity, MZ:=mz, DZ(same sex):=dz, DZ(opposite sex):=os
+##' stutter: stutter status (yes/no)
+##' age: age
+##' nr: number within twin-pair
 ##' @name twinstut
 ##' @docType data
 ##' @keywords data
@@ -89,6 +96,14 @@ NULL
 
 ##' BMI data set
 ##'
+##' @format
+##' Self-reported BMI-values on 11,411 subjects
+##' 
+##' tvparnr: twin id
+##' bmi: BMI (m/kg^2)
+##' age: Age
+##' gender: (male/female)
+##' zyg: zygosity, MZ:=mz, DZ(same sex):=dz, DZ(opposite sex):=os
 ##' @name twinbmi
 ##' @docType data
 ##' @keywords data
