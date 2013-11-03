@@ -39,7 +39,6 @@ Collate:
     'fastapprox.R'
     'ipw.R'
     'logLik.biprobit.R'
-    'mets-packages.R'
     'npc.R'
     'onload.R'
     'plot.bptwin.R'
@@ -75,3 +74,4 @@ Collate:
     'prop-odds.R'
     'phreg.R'
     'lifetable.R'
+    'mets-package.R'
