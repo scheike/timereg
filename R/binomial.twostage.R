@@ -518,7 +518,7 @@ data.frame(agem=agem,agef=agem+3+rnorm(n)*2,
 } ## }}} 
 
 ##' @export
-simBinFam <- function(n,beta=0.0,theta=1,lam1=1,lam2=1,...) { ## {{{ 
+simBinFam2 <- function(n,beta=0.0,theta=1,lam1=1,lam2=1,...) { ## {{{ 
 x1 <- rbinom(n,1,0.5); x2 <- rbinom(n,1,0.5); 
 x3 <- rbinom(n,1,0.5); x4 <- rbinom(n,1,0.5); 
 ###
