@@ -17,7 +17,8 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   if (npar==TRUE) {Z<-matrix(0,antpers,1); pg<-1; fixed<-0;} else {fixed<-1;pg<-ncol(Z);} 
   ng<-antpers;px<-ncol(X);  
   if (is.null(times)) times<-cif$cum[,1]; 
-  est<-cif$cum; if (semi==1) gamma<-cif$gamma  else gamma<-0; 
+  est<-as.matrix(cif$cum); 
+  if (semi==1) gamma<-cif$gamma  else gamma<-0; 
   ntimes<-length(times); 
   if ((cif$model!="additive") && (cif$model!="fg")) 
     stop("Marginal Cumulative incidence model, must be either additive or extended Fine-Gray model\n")
@@ -140,7 +141,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
      dimpar <- ncol(theta.des); 
  
      if (nrow(theta.des)!=ncol(random.design)) stop("nrow(theta.des)!= ncol(random.design)"); 
-###     score.method <- "nlminb"
+     score.method <- "nlminb"; ### force nlminb because derivatives are not working
  } else random.design <- matrix(0,1,1); 
 
   if ( (!is.null(par.func)) && is.null(dimpar) ) 
@@ -162,7 +163,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   }
   var.theta<-hess<-matrix(0,dimpar,dimpar); score<-rep(0,dimpar); 
   time.pow<-attr(cif,"time.pow"); 
-                                        #if (sum(time.pow)==0) time.pow<-rep(1,pg); 
+  #if (sum(time.pow)==0) time.pow<-rep(1,pg); 
   theta.iid<-matrix(0,antclust,dimpar); 
 
   if ((nrow(theta.des)!=nrow(X)) && (model!="ARANCIF")) 
@@ -215,7 +216,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 
       outl<-.Call("cor", ## {{{
                  itimes=times,iy=time,icause=cause,iCA1=cause1,iKMc=Gcx, 
-                 iz=X,iest=as.matrix(est[,-1]),iZgamma=c(Zgamma),isemi=semi,izsem=Z, 
+                 iz=X,iest=matrix(est[,-1],ncol=ncol(est)-1),iZgamma=c(Zgamma),isemi=semi,izsem=Z, 
                  ### Biid,gamma.iid,time.pow, 
                  itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),
 		 ithetades=theta.des,
