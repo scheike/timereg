@@ -28,6 +28,7 @@ summarygroup.twinlm <- function(object,...) {
         pp <- sapply(lambdas,function(x) ii[[i]][grep(x,rownames(res),fixed=TRUE)])
         nam <- c("A","C","D","E")[which(unlist(lapply(pp,function(x) length(x)>0)))]
         pp <- unlist(pp); names(pp) <- nam
+        browser()
         acde <- c(acde,list(acde.twinlm(object,pp)))
         nn0 <- cc[[i]]
         if (nn0[1]=="mu") nn0[1] <- "(Intercept)"
@@ -41,7 +42,6 @@ summarygroup.twinlm <- function(object,...) {
         rownames(res) <- nn0
         coefs <- c(coefs,list(res))       
     }; names(coefs) <- names(object$model)[mz]    
-    
     vcov <- vcov(object$estimate)
     suppressWarnings(kinship <- constraints(object$estimate)[,c(1,5,6),drop=FALSE])
     fit <- c(logLik=logLik(object),AIC=AIC(object),BIC=BIC(object))
@@ -233,13 +233,13 @@ print.summary.twinlm <- function(x,signif.stars=FALSE,...) {
 
         if (!is.null(x$acde)) {
             cat("\nVariance decomposition:\n")
-            printCoefmat(x$acde,...)
+            print(RoundMat(x$acde,...),quote=FALSE)
         }
         cat("\n\n")
         ##    cat("Broad-sense heritability (total genetic factors):\n")
         h <- with(x, heritability[,c(1,3,4),drop=FALSE]);
         h <- na.omit(h)
-        printCoefmat(h,...)  
+        print(RoundMat(h,...),quote=FALSE)
         cat("\n")
     }
     if (!is.null(x$corMZ)) {
@@ -249,7 +249,7 @@ print.summary.twinlm <- function(x,signif.stars=FALSE,...) {
             cc <- rbind(cc,x$KinshipGroup)
         }      
         colnames(cc) <- c("Estimate","2.5%","97.5%")
-        printCoefmat(cc,signif.stars=FALSE,...)
+        print(Roundmat(cc,...),quote=FALSE)
     }
     
     cat("\n")
