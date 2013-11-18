@@ -129,6 +129,7 @@ summary.twinlm <- function(object,transform=FALSE,...) {
 
     lambda.w <- which(sapply(lambda.idx, function(x) length(x)>0))
 
+##    browser()
     rownames(myest)[myest.varpos] <- paste("sd(",c("A)","C)","D)","E)"),sep="")[lambda.w]
 
     varEst <- rep(0,4)
@@ -249,7 +250,7 @@ print.summary.twinlm <- function(x,signif.stars=FALSE,...) {
             cc <- rbind(cc,x$KinshipGroup)
         }      
         colnames(cc) <- c("Estimate","2.5%","97.5%")
-        print(Roundmat(cc,...),quote=FALSE)
+        print(RoundMat(cc,...),quote=FALSE)
     }
     
     cat("\n")
