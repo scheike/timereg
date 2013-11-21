@@ -60,7 +60,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   if (!is.null(strata)) ostratum <- c(stratum[1],length(unique(strata)),strata) else if (stratum==1) ostratum <- c(stratum,px,designX %*% (0:(px-1))) else ostratum <- c(stratum,1,rep(0,nx)); 
   stratum <- ostratum
 
-###  print(stratum); print(weights); print(offsets)
+### print(stratum); ### print(weights); print(offsets)
 
   nparout <- .C("score", as.double(times), as.integer(Ntimes), 
                 as.double(designX), as.integer(nx), as.integer(px), 

@@ -254,7 +254,7 @@ if (*ratesim==0 && mjump==1) {
 	    S0+=entry[ci]*RR*weights[ci]; 
 	    S0strata[stratum[ci+2]]+=entry[ci]*RR*weights[ci]; 
 	  for(j=0;j<pmax;j++) for(k=0;k<pmax;k++)  {
-              if ((j<*px) & (k<*px)) ME(A,j,k)+=entry[ci]*VE(xi,j)*VE(xi,j)*RR*weights[ci]; 
+              if ((j<*px) & (k<*px)) ME(A,j,k)+=entry[ci]*VE(xi,j)*VE(xi,k)*RR*weights[ci]; 
               if ((j<*pg) & (k<*px)) ME(ZX,j,k)+=entry[ci]*VE(zi,j)*VE(xi,k)*RR*weights[ci]; 
 //              if ((j<*px) & (k<*px)) ME(As[stratum[ci+2]],j,k)+=entry[ci]*VE(xi,j)*VE(xi,k)*RR*weights[ci]; 
 //              if ((j<*pg) & (k<*px)) ME(ZXs[stratum[ci+2]],j,k)+=entry[ci]*VE(zi,j)*VE(xi,k)*RR*weights[ci]; 
@@ -332,12 +332,11 @@ if (*ratesim==0 && mjump==1) {
   scl_vec_mult(scale,zi,zi); 
   vec_subtr(zi,zav,difzzav); 
 
-//  vec_subtr(zi,zav,difzzav); 
-//  scl_vec_mult(scale,difzzav,difzzav); 
+  vec_add(difzzav,U,U); 
 
   if (it==((*Nit)-1)) 
-  if (*detail==3) {Rprintf(" time %d %lf %lf Dl contribution \n",s,scale,times[s]); print_vec(difzzav);}
-  vec_add(difzzav,U,U); 
+  if (*detail==3) {Rprintf(" time %d %lf %lf Dl contribution \n",s,scale,times[s]); print_vec(difzzav);
+  }
 
     if (s<0) {  // {{{ 
        Rprintf(" %d %d %lf %lf \n",pers,s,time,scale); 
@@ -374,9 +373,12 @@ if (*betafixed==0)  {
    if (*mw==1) {scale=VE(weight,pers); scl_mat_mult(scale,dS,dS); }
    mat_add(dS,S1,S1);  
    if (it==((*Nit)-1)) 
-   if (*detail==3) {
+   if (*detail==4) {
 	   Rprintf(" time %d %d %lf D2l contribution \n",s,stratpers,times[s]); 
-	   print_mat(dS);
+	   print_mat(ZPZo); print_mat(ZPXo); print_mat(ZXAI); 
+	   Rprintf("============================================ \n"); 
+	   print_mat(tmp2); print_mat(dS);
+	   print_mat(S1); 
 //   for (j=0;j<antstrat;j++) { 
 //   printf(" j %d %lf \n",j,S0strata[j]); 
 //   MxA(ZXAI,ZPXs[j],tmp2); mat_subtr(ZPZs[j],tmp2, dS); 
