@@ -60,7 +60,7 @@
 ##' marg2 <- aalen(Surv(boxtime,status)~-1+factor(num):factor(strata),
 ##'                data=ud,n.sim=0,robust=0)
 ##' tdes <- model.matrix(~-1+factor(strata),data=ud)
-##' fitp2<-twostage(marg2,data=ud,clusters=ud$cluster,
+##' fitp2<-twostage(marg2,data=ud,se.clusters=ud$cluster,clusters=ud$id,
 ##'                 score.method="fisher.scoring",model="clayton.oakes",
 ##'                 theta.des=tdes,step=0.5,detail=0,strata=ud$strata)
 ##' summary(fitp2)
@@ -68,7 +68,7 @@
 ##' ### now fitting the model with symmetry, i.e. strata 2 and 3 same effect
 ##' ud$stratas <- ud$strata; ud$stratas[ud$strata==3] <- 2;
 ##' tdes2 <- model.matrix(~-1+factor(stratas),data=ud)
-##' fitp3<-twostage(marg2,data=ud,clusters=ud$cluster,
+##' fitp3<-twostage(marg2,data=ud,clusters=ud$id,se.cluster=ud$cluster,
 ##'                 score.method="fisher.scoring",model="clayton.oakes",
 ##'                 theta.des=tdes2,step=0.5,detail=0,strata=ud$strata)
 ##' summary(fitp3)
