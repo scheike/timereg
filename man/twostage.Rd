@@ -102,7 +102,7 @@ summary(fitcoa)
 
 ### Piecewise constant cross hazards ratio modelling
 ########################################################
-library(mets)
+
 d <- subset(simClaytonOakes(2000,2,0.5,0,stoptime=2,left=0),!truncated)
 udp <- piecewise.twostage(c(0,0.5,2),data=d,score.method="optimize",
                           id="cluster",timevar="time",
@@ -119,35 +119,29 @@ ud3=surv.boxarea(c(0.5,0),c(2,0.5),data=d,id="cluster",timevar="time",status="st
 ud4=surv.boxarea(c(0.5,0.5),c(2,2),data=d,id="cluster",timevar="time",status="status")
 ud1$strata <- 1; ud2$strata <- 2; ud3$strata <- 3; ud4$strata <- 4
 ud <- rbind(ud1,ud2,ud3,ud4)
-### unique id for each pair in each box
-ud$id <-(ud$strata)*2000+ud$id 
+ud$idstrata <- ud$id+(ud$strata-1)*2000
 
 marg2 <- aalen(Surv(boxtime,status)~-1+factor(num):factor(strata),
                data=ud,n.sim=0,robust=0)
 tdes <- model.matrix(~-1+factor(strata),data=ud)
-fitp2<-twostage(marg2,data=ud,clusters=ud$cluster,
+fitp2<-twostage(marg2,data=ud,se.clusters=ud$cluster,clusters=ud$id,
                 score.method="fisher.scoring",model="clayton.oakes",
                 theta.des=tdes,step=0.5,detail=0,strata=ud$strata)
 summary(fitp2)
 
-### same model other syntax
-fitp3<-twostage(marg2,data=ud,
-		clusters=ud$id,
-		se.clusters=ud$cluster,
-                score.method="fisher.scoring",model="clayton.oakes",
-                theta.des=tdes,step=0.5,detail=0)
-summary(fitp3)
-
-
-
-
 ### now fitting the model with symmetry, i.e. strata 2 and 3 same effect
 ud$stratas <- ud$strata; ud$stratas[ud$strata==3] <- 2;
 tdes2 <- model.matrix(~-1+factor(stratas),data=ud)
-fitp3<-twostage(marg2,data=ud,clusters=ud$cluster,
+fitp3<-twostage(marg2,data=ud,clusters=ud$id,se.cluster=ud$cluster,
                 score.method="fisher.scoring",model="clayton.oakes",
                 theta.des=tdes2,step=0.5,detail=0,strata=ud$strata)
 summary(fitp3)
+
+### same model using strata specific pair variable
+fitp4<-twostage(marg2,data=ud,clusters=ud$idstrata,se.cluster=ud$cluster,
+                score.method="fisher.scoring",model="clayton.oakes",
+                theta.des=tdes2,step=0.5,detail=0)
+summary(fitp4)
 }
 }
 \author{

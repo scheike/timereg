@@ -56,6 +56,7 @@
 ##' ud4=surv.boxarea(c(0.5,0.5),c(2,2),data=d,id="cluster",timevar="time",status="status")
 ##' ud1$strata <- 1; ud2$strata <- 2; ud3$strata <- 3; ud4$strata <- 4
 ##' ud <- rbind(ud1,ud2,ud3,ud4)
+##' ud$idstrata <- ud$id+(ud$strata-1)*2000
 ##' 
 ##' marg2 <- aalen(Surv(boxtime,status)~-1+factor(num):factor(strata),
 ##'                data=ud,n.sim=0,robust=0)
@@ -72,6 +73,12 @@
 ##'                 score.method="fisher.scoring",model="clayton.oakes",
 ##'                 theta.des=tdes2,step=0.5,detail=0,strata=ud$strata)
 ##' summary(fitp3)
+##' 
+##' ### same model using strata specific pair variable 
+##' fitp4<-twostage(marg2,data=ud,clusters=ud$idstrata,se.cluster=ud$cluster,
+##'                 score.method="fisher.scoring",model="clayton.oakes",
+##'                 theta.des=tdes2,step=0.5,detail=0)
+##' summary(fitp4)
 ##' }
 ##' @keywords survival
 ##' @author Thomas Scheike

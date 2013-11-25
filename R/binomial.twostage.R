@@ -74,7 +74,7 @@
 ##' @param notaylor Taylor expansion
 ##' @param model model
 ##' @param marginal.p vector of marginal probabilities 
-##' @param strata strata for fitting: only
+##' @param strata strata for fitting: considers only pairs where both are from same strata 
 ##' @param max.clust max clusters
 ##' @param se.clusters clusters for iid decomposition for roubst standard errors
 ##' @param numDeriv uses Fisher scoring aprox of second derivative if 0, otherwise numerical derivatives 

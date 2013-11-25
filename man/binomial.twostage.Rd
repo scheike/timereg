@@ -49,7 +49,8 @@ based on all pairwise bivariate models.}
 
   \item{marginal.p}{vector of marginal probabilities}
 
-  \item{strata}{strata for fitting: only}
+  \item{strata}{strata for fitting: considers only pairs
+  where both are from same strata}
 
   \item{max.clust}{max clusters}
 
