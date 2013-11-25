@@ -9,14 +9,14 @@ using namespace arma;
 RcppExport SEXP nclust(SEXP iclusters) {
 // {{{
 BEGIN_RCPP
-  uvec clusters = Rcpp::as<uvec>(iclusters);
-  unsigned n = clusters.n_elem;
+  ivec clusters = Rcpp::as<ivec>(iclusters);
+  int  n = clusters.n_elem;
  
-  unsigned uniqueclust=0; 
-  unsigned maxclust=0;
-  uvec nclust(n); nclust.fill(0);
+  int  uniqueclust=0; 
+  int  maxclust=0;
+  ivec nclust(n); nclust.fill(0);
  
-  for (unsigned i=0;i<n;i++){
+  for (int  i=0;i<n;i++){
     if (nclust[clusters[i]]==0) uniqueclust+=1; 
     nclust[clusters[i]]+=1; 
     if (nclust[clusters[i]]>maxclust) maxclust=nclust[clusters[i]]; 
@@ -32,22 +32,22 @@ END_RCPP
 RcppExport SEXP clusterindexM(SEXP iclusters, SEXP imednum, SEXP inum) {
 // {{{
 BEGIN_RCPP
-  uvec clusters = Rcpp::as<uvec>(iclusters);
-  unsigned n = clusters.n_elem;
+  ivec clusters = Rcpp::as<ivec>(iclusters);
+  int n = clusters.n_elem;
  
-  unsigned uniqueclust=0; 
-  unsigned maxclust=0;
-  uvec nclust(n); nclust.fill(0);
+  int  uniqueclust=0; 
+  int  maxclust=0;
+  ivec nclust(n); nclust.fill(0);
     
-  for (unsigned i=0;i<n;i++) {
+  for (int  i=0;i<n;i++) {
     if (nclust[clusters[i]]==0) uniqueclust+=1; 
     nclust[clusters[i]]+=1; 
     if (nclust[clusters[i]]>maxclust) maxclust=nclust[clusters[i]]; 
   } 
  
-  uvec num = Rcpp::as<uvec>(inum); 
+  ivec num = Rcpp::as<ivec>(inum); 
   int  mednum = Rcpp::as<int>(imednum);
-  uvec unum;
+  ivec unum;
   if (mednum==1) {
     // unum = unique(num);
     // maxclust = unum.n_elem;
@@ -55,17 +55,17 @@ BEGIN_RCPP
   }     
   
   imat idclust = imat(uniqueclust,maxclust); idclust.fill(NA_INTEGER);
-  uvec clustsize(uniqueclust); clustsize.fill(0);
-  uvec firstclustid(uniqueclust); firstclustid.fill(0);
+  ivec clustsize(uniqueclust); clustsize.fill(0);
+  ivec firstclustid(uniqueclust); firstclustid.fill(0);
 
   if (mednum==0) {
-    for (unsigned i=0;i<n;i++){
+    for (int  i=0;i<n;i++){
       idclust[(clustsize[clusters[i]])*(uniqueclust)+clusters[i]]=i; 
       clustsize[clusters[i]]+=1; 
       if (clustsize[clusters[i]]==1) firstclustid[clusters[i]]=i; 
     } 
   } else {
-    for (unsigned i=0;i<n;i++){
+    for (int  i=0;i<n;i++){
       idclust[num[i]*(uniqueclust)+clusters[i]]=i; 
       clustsize[clusters[i]]+=1; 
       if (clustsize[clusters[i]]==1) firstclustid[clusters[i]]=i; 
@@ -84,14 +84,14 @@ END_RCPP
 
 RcppExport SEXP familypairindex(SEXP iclustmat,SEXP iclustsize,SEXP inumfamindex) {
 // {{{
-  uvec clustsize = Rcpp::as<uvec>(iclustsize);
-  umat clustmat;
-  clustmat  = Rcpp::as<umat>(iclustmat);
+  ivec clustsize = Rcpp::as<ivec>(iclustsize);
+  imat clustmat;
+  clustmat  = Rcpp::as<imat>(iclustmat);
   int uniqueclust=clustmat.n_rows;
   int  numfamindex= Rcpp::as<int>(inumfamindex);
  
-  uvec famclustindex(numfamindex); famclustindex.fill(0);
-  uvec subfamilyindex(numfamindex); subfamilyindex.fill(0);
+  ivec famclustindex(numfamindex); famclustindex.fill(0);
+  ivec subfamilyindex(numfamindex); subfamilyindex.fill(0);
   
   int i,j,v=0,h=0;
 
@@ -99,7 +99,7 @@ RcppExport SEXP familypairindex(SEXP iclustmat,SEXP iclustsize,SEXP inumfamindex
    {
 	 if (clustsize(i)>=2)
          for (j=0;j<(clustsize(i)-1);j++)
-         for (unsigned k=j+1;k<clustsize(i);k++)
+         for (int k=j+1;k<clustsize(i);k++)
          {
 //	  Rprintf(" %d %d %d %d %d n=%d c=%d \n",i,j,k,h,v,numfamindex,clustsize(i)); 
 	    famclustindex(v)=clustmat(i,j);
@@ -120,39 +120,39 @@ RcppExport SEXP familypairindex(SEXP iclustmat,SEXP iclustsize,SEXP inumfamindex
 RcppExport SEXP clusterindexdata(SEXP iclusters, SEXP imednum,SEXP inum, SEXP idata) 
 { // {{{
 BEGIN_RCPP
-  uvec clusters = Rcpp::as<uvec>(iclusters);
-  unsigned n = clusters.n_elem;
+  ivec clusters = Rcpp::as<ivec>(iclusters);
+  int  n = clusters.n_elem;
  
-  unsigned uniqueclust=0; 
-  unsigned maxclust=0;
-  uvec nclust(n); nclust.fill(0);
+  int  uniqueclust=0; 
+  int  maxclust=0;
+  ivec nclust(n); nclust.fill(0);
  
-  for (unsigned i=0;i<n;i++){
+  for (int  i=0;i<n;i++){
     if (nclust[clusters[i]]==0) uniqueclust+=1; 
     nclust[clusters[i]]+=1; 
     if (nclust[clusters[i]]>maxclust) maxclust=nclust[clusters[i]]; 
   } 
 
-  uvec num = Rcpp::as<uvec>(inum); 
+  ivec num = Rcpp::as<ivec>(inum); 
   int  mednum = Rcpp::as<int>(imednum);
   
   imat idclust = imat(uniqueclust,maxclust); idclust.fill(NA_INTEGER);
-  uvec clustsize(uniqueclust); clustsize.fill(0);
+  ivec clustsize(uniqueclust); clustsize.fill(0);
 
   mat data = Rcpp::as<mat>(idata);
-  unsigned p= data.n_cols; 
+  int  p= data.n_cols; 
   mat nydata(uniqueclust,maxclust*p); nydata.fill(NA_REAL);
 
   if (mednum==0) {
-     for (unsigned i=0;i<n;i++){
+     for (int  i=0;i<n;i++){
 //         idclust[(clustsize[clusters[i]])*(uniqueclust)+clusters[i]]=i; 
-     for (unsigned j=0;j<p;j++) nydata[(clustsize[clusters[i]]*(p)+j)*(uniqueclust)+clusters[i]]=data[(n)*j+i]; 
+     for (int  j=0;j<p;j++) nydata[(clustsize[clusters[i]]*(p)+j)*(uniqueclust)+clusters[i]]=data[(n)*j+i]; 
          clustsize[clusters[i]]+=1; 
       } 
   } else {
-    for (unsigned i=0;i<n;i++){
+    for (int  i=0;i<n;i++){
 //        idclust[num[i]*(uniqueclust)+clusters[i]]=i; 
-        for (unsigned j=0;j<p;j++) nydata[(num[i]*(p)+j)*(uniqueclust)+clusters[i]]=data[(n)*j+i]; 
+        for (int  j=0;j<p;j++) nydata[(num[i]*(p)+j)*(uniqueclust)+clusters[i]]=data[(n)*j+i]; 
         clustsize[clusters[i]]+=1; 
      } 
   }
