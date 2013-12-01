@@ -4,7 +4,7 @@ cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0)
   n <- length(clusters)
 
   if (index.type==FALSE)  {
-    if (is.numeric(clusters)) clusters <-  timereg:::sindex.prodlim(unique(clusters),clusters)-1 else  {
+    if (is.numeric(clusters)) clusters <-  prodlim::sindex.prodlim(unique(clusters),clusters)-1 else  {
       max.clust <- length(unique(clusters))
       clusters <- as.integer(factor(clusters, labels = seq(max.clust)))-1
     }
@@ -12,7 +12,7 @@ cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0)
   
   if ((!is.null(num))) { ### different types in different columns
     mednum <- 1
-    if (is.numeric(num)) numnum <-  timereg:::sindex.prodlim(unique(num),num)-1
+    if (is.numeric(num)) numnum <-  prodlim::sindex.prodlim(unique(num),num)-1
     else {
       numnum <- as.integer(factor(num, labels = seq(length(unique(clusters))))) -1
     }
@@ -56,7 +56,7 @@ faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=1)
 
   if (index.type==FALSE)  {
     max.clust <- length(unique(clusters))
-    if (is.numeric(clusters)) clusters <-  timereg:::sindex.prodlim(unique(clusters),clusters)-1 else 
+    if (is.numeric(clusters)) clusters <-  prodlim::sindex.prodlim(unique(clusters),clusters)-1 else 
     {
       max.clust <- length(unique(clusters))
       clusters <- as.integer(factor(clusters, labels = 1:max.clust))-1
@@ -66,7 +66,7 @@ faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=1)
   if ((!is.null(num))) { ### different types in different columns
     if (length(num)!=n)  stop("clusters and num of different lengths\n"); 
     mednum <- 1
-    if (is.numeric(num)) num <-  timereg:::sindex.prodlim(unique(num),num)-1
+    if (is.numeric(num)) num <-  prodlim::sindex.prodlim(unique(num),num)-1
     else num <- as.integer(factor(num, labels = seq(length(unique(clusters))))) -1
   } else { num <- 0; mednum <- 0; }
 
