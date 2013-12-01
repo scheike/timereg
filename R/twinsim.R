@@ -68,7 +68,7 @@ twinsim <- function(nMZ=100,nDZ=nMZ,b1=c(),b2=c(),mu=0,acde=c(1,1,0,1),randomslo
   names(vary) <- vnames
   colnames(d) <- sub(".","",colnames(d),fixed=TRUE)
   if (wide) return(d)
-  dd <- fast.reshape(d,idvar="id",varying=vary)
+  dd <- fast.reshape(d,idname="id",varying=vary)
   
   dd$status <- dd$y<dd$cens
   dd$y0 <- (dd$y>threshold)
