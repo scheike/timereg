@@ -15,10 +15,12 @@ summary.biprobit <- function(object,level=0.05,...) {
     m <- c(0,0)
     if (object$npar$intercept==1) m[1:2] <- p[1]
     if (object$npar$intercept==2) {
-      m[1:2] <- p[c(1,1+object$npar$pred/2+1)]
+        idx <- 1:2
+        if (length(object$npar$pred)>0) idx <- c(1,1+object$npar$pred/2+1)
+        m[1:2] <- p[idx]
     }
     mu.cond <- function(x) m[1]+S[1,2]/S[2,2]*(x-m[2])
-    var.cond <- S[1,1]-S[1,2]^2/S[2,2]    
+    var.cond <- S[1,1]-S[1,2]^2/S[2,2]
     conc <- pmvn(upper=m,sigma=S)
     marg <- pnorm(m[1],sd=S[1,1]^0.5)
     cond <- conc/marg
