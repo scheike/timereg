@@ -147,7 +147,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, group.equal=FALSE, st
     zygstat <- as.factor(zygstat)
   }
   zyglev <- levels(zygstat)
-  if (length(zyglev)>2) stop("More than two zygosity levels found. For opposite sex (OS) analysis use the 'group' argument (and recode OS group as DZ)")
+  if (length(zyglev)>2) stop("More than two zygosity levels found. For opposite sex (OS) analysis use the 'group' argument (and regroup OS group as DZ, e.g. DZ=c('OS','DZ'))")
 
   if (!is.null(group) && type%in%c("u","flex","sat")) stop("Only polygenic models are allowed with 'group' ('type' subset of 'acde'). See also the 'strata' argument.")      
   ## To wide format:
