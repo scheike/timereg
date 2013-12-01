@@ -1,26 +1,70 @@
-##' Creat simple life table 
-##'
+##' @export
+`lifetable` <- function(x,...) UseMethod("lifetable")
+    
+
+
+##' Create simple life table 
 ##' 
 ##' @title Life table
-##' @param time Time (or matrix with columns time,status or entry,time,status)
-##' @param status status (event=TRUE,censoring=FALSE)
-##' @param entry Entry time
+##' @param x time formula (Surv) or matrix/data.frame with columns time,status or entry,exit,status
 ##' @param strata Strata
 ##' @param breaks Time intervals
 ##' @param confint If TRUE 95% confidence limits are calculated
 ##' @author Klaus K. Holst
+##' @aliases lifetable lifetable.matrix lifetable.formula
 ##' @examples
 ##' library(timereg)
 ##' data(TRACE)
 ##' \donttest{
-##' with(TRACE, lifetable(cbind(time,status==9),breaks=c(0.2,0.5),confint=TRUE))
+##'     lifetable(Surv(time,status==9)~sex+I(cut(wmi,c(-Inf,1,1.5,Inf))),data=TRACE,breaks=c(0.2,0.5),confint=TRUE)
 ##' }
-##' d <- with(TRACE, lifetable(time,status==9,strata=list(sex=sex,vf=vf),breaks=c(0.2,0.5)))
-##' summary(glm(events ~ offset(log(atrisk))+interval+sex+vf,data=d,poisson))
 ##' 
+##' d <- with(TRACE,lifetable(Surv(time,status==9)~sex+vf,breaks=c(0.2,0.5)))
+##' summary(glm(events ~ offset(log(atrisk))+interval*vf + sex*vf,data=d,poisson))
 ##' @export
-lifetable <- function(time,status,entry,strata=list(),breaks=c(),confint=FALSE) {
-    if (missing(entry)) entry <- rep(0,NROW(time))
+##' @S3method lifetable matrix
+lifetable.matrix <- function(x,strata=list(),breaks=c(),confint=FALSE,...) {
+    if (ncol(x)==3) {
+        status <- x[,3]
+        entry <- x[,1]
+        time <- x[,2]
+    } else {
+        status <- x[,2]
+        time <- x[,1]
+        entry <- rep(0,length(time))
+    }
+    LifeTable(time,status,entry,strata,breaks,confint,...)
+}
+
+##' @S3method lifetable formula
+lifetable.formula <- function(x,data=parent.frame(),breaks=c(),confint=FALSE,...) {
+    cl <- match.call()
+    mf <- model.frame(x,data)
+    Y <- model.extract(mf, "response")
+    Terms <- terms(x, data = data)
+    if (!is.Surv(Y)) stop("Expected a 'Surv'-object")
+    if (ncol(Y)==2) {
+        exit <- Y[,1]
+        entry <- NULL ## rep(0,nrow(Y))
+        status <- Y[,2]
+    } else {
+        entry <- Y[,1]
+        exit <- Y[,2]
+        status <- Y[,3]
+    }
+    strata <- list()
+    X <- model.matrix(Terms, data)
+    if (!is.null(intpos  <- attributes(Terms)$intercept))
+        X <- X[,-intpos,drop=FALSE]
+    if (ncol(X)>0) {
+        strata <- as.list(model.frame(Terms,data)[,-1,drop=FALSE])
+    }
+    LifeTable(exit,status,entry,strata,breaks,confint,...)       
+}
+
+
+LifeTable <- function(time,status,entry=NULL,strata=list(),breaks=c(),confint=FALSE) {
+    if (is.null(entry)) entry <- rep(0,NROW(time))
     if ((is.matrix(time) || is.data.frame(time)) && ncol(time)>1) {
         if (ncol(time)==3) {
             status <- time[,3]
@@ -34,10 +78,9 @@ lifetable <- function(time,status,entry,strata=list(),breaks=c(),confint=FALSE) 
     }
     if (length(strata)>0) {
         a <- by(cbind(entry,time,status), strata,
-                FUN=lifetable, breaks=breaks, confint=confint)
+                FUN=LifeTable, breaks=breaks, confint=confint)
         nn <- do.call("expand.grid",attributes(a)$dimnames)
-        nam <- nn[rep(seq(NROW(nn)),each=NROW(a[[1]])),]
-        ##colnames(nam) <- colnames(nn)
+        nam <- nn[rep(seq(NROW(nn)),each=NROW(a[[1]])),,drop=FALSE]
         res <- cbind(Reduce("rbind",a),nam)
         return(res)
     }    
