@@ -50,13 +50,16 @@
 ##' ### Same model using the strata option, a bit slower
 ##' ########################################################
 ##' 
-##' ud1=surv.boxarea(c(0,0),c(0.5,0.5),data=d,id="cluster",timevar="time",status="status")
-##' ud2=surv.boxarea(c(0,0.5),c(0.5,2),data=d,id="cluster",timevar="time",status="status")
-##' ud3=surv.boxarea(c(0.5,0),c(2,0.5),data=d,id="cluster",timevar="time",status="status")
-##' ud4=surv.boxarea(c(0.5,0.5),c(2,2),data=d,id="cluster",timevar="time",status="status")
-##' ud1$strata <- 1; ud2$strata <- 2; ud3$strata <- 3; ud4$strata <- 4
-##' ud <- rbind(ud1,ud2,ud3,ud4)
-##' ud$idstrata <- ud$id+(ud$strata-1)*2000
+##' ##ud1=surv.boxarea(c(0,0),c(0.5,0.5),data=d,id="cluster",timevar="time",status="status")
+##' ##ud2=surv.boxarea(c(0,0.5),c(0.5,2),data=d,id="cluster",timevar="time",status="status")
+##' ##ud3=surv.boxarea(c(0.5,0),c(2,0.5),data=d,id="cluster",timevar="time",status="status")
+##' ##ud4=surv.boxarea(c(0.5,0.5),c(2,2),data=d,id="cluster",timevar="time",status="status")
+##' 
+##' ud1 <- piecewise.data(c(0,0.5,2),data=d,timevar="time",status="status",id="cluster")
+##' head(ud1)
+##' 
+
+##' ud1$idstrata <- ud1$id+(ud1$strata-1)*2000
 ##' 
 ##' marg2 <- aalen(Surv(boxtime,status)~-1+factor(num):factor(strata),
 ##'                data=ud,n.sim=0,robust=0)
