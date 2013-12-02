@@ -101,8 +101,6 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
 ###    while (num%in%names(data)) num <- paste(num,"_",sep="")
 ###    data[,c(num)] <- unlist(lapply(idtab,seq_len))
 ###  }
-  int1name <- paste("[",left.trunc[1],",",right.cens[1],")")
-  int2name <- paste("[",left.trunc[2],",",right.cens[2],")")
 
   timevar2 <- paste(timevar,1:2,sep="")
   status2 <- paste(status,1:2,sep="")
@@ -163,7 +161,6 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   }
   lr.data[,boxtimevar] <- lr.data[,timevar]-lr.data[,"left"]
 ###  print(head(lr.data))
-  return(lr.data)
-###  return(structure(lr.data,num=num,time=boxtimevar,status=status,covars=covars,id=id,intnames=intnames))
+ return(structure(lr.data,num=num,time=boxtimevar,status=status,covars=covars,id=id))
 } ## }}}
 
