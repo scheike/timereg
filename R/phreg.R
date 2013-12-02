@@ -1,3 +1,4 @@
+
 ###{{{ phreg0 
 
 phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,method="NR",...) {
@@ -257,7 +258,7 @@ summary.phreg <- function(object,se="robust",...) {
 print.summary.phreg  <- function(x,max.strata=5,...) {
   cat("\n")
   nn <- cbind(x$n, x$nevent)
-  rownames(nn) <- x$strata; colnames(nn) <- c("n","events")
+  rownames(nn) <- levels(x$strata); colnames(nn) <- c("n","events")
   if (is.null(rownames(nn))) rownames(nn) <- rep("",NROW(nn))
   if (length(x$strata)>max.strata) {
       nn <- rbind(c(colSums(nn),length(x$strata)));

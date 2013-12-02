@@ -16,7 +16,7 @@
 ##' @export
 fast.approx <- function(time,new.time,equal=FALSE,...) {
   arglist <- list("FastApprox",
-                  time=time,
+                  time=sort(time),
                   newtime=new.time,
                   equal=equal,
                   DUP=FALSE,PACKAGE="mets")
