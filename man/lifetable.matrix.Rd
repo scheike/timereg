@@ -7,9 +7,8 @@
   \method{lifetable}{matrix}(x, strata = list(), breaks =
     c(), confint = FALSE, ...)
 
-  \method{lifetable}{formula}(x, strata = list(),
-    data=parent.frame(), breaks = c(), confint = FALSE,
-    ...)
+  \method{lifetable}{formula}(x, data=parent.frame(),
+    breaks = c(), confint = FALSE, ...)
 }
 \arguments{
   \item{x}{time formula (Surv) or matrix/data.frame with
