@@ -4,7 +4,7 @@
 SEXP FastLong(SEXP idata, SEXP inclust,
 	      SEXP infixed, SEXP invarying, SEXP missing) {
 BEGIN_RCPP
-      unsigned nvarying = Rcpp::as<unsigned>(invarying); // Number of vayring var
+      unsigned nvarying = Rcpp::as<unsigned>(invarying); // Number of varying var
       unsigned nfixed = Rcpp::as<unsigned>(infixed); // Number of non-varying
       unsigned nclust = Rcpp::as<unsigned>(inclust); // Number within cluster
       mat d = Rcpp::as<mat>(idata); // Wide data
@@ -13,7 +13,7 @@ BEGIN_RCPP
       unsigned K = nvarying+nfixed+2;
       mat dd(M,K); // Long data      
       urowvec idx(nvarying);
-      uvec mis(M); mis.fill(NA_REAL);
+      uvec mis(M); mis.fill(0); // NA_INTEGER
       for (unsigned k=0; k<nvarying; k++)
          idx[k] = nfixed+k*nclust;
       rowvec xx(K); xx.fill(NA_REAL);      
