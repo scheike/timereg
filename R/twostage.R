@@ -49,38 +49,40 @@
 ##' \donttest{
 ##' ### Same model using the strata option, a bit slower
 ##' ########################################################
-##' 
+##' ## makes the survival pieces for different areas in the plane 
 ##' ##ud1=surv.boxarea(c(0,0),c(0.5,0.5),data=d,id="cluster",timevar="time",status="status")
 ##' ##ud2=surv.boxarea(c(0,0.5),c(0.5,2),data=d,id="cluster",timevar="time",status="status")
 ##' ##ud3=surv.boxarea(c(0.5,0),c(2,0.5),data=d,id="cluster",timevar="time",status="status")
 ##' ##ud4=surv.boxarea(c(0.5,0.5),c(2,2),data=d,id="cluster",timevar="time",status="status")
 ##' 
+##' ## everything done in one call 
 ##' ud1 <- piecewise.data(c(0,0.5,2),data=d,timevar="time",status="status",id="cluster")
 ##' head(ud1)
 ##' 
-
+##' ## makes strata specific id variable to identify pairs within strata
+##' ## se's computed based on the id variable across strata "cluster"
 ##' ud1$idstrata <- ud1$id+(ud1$strata-1)*2000
 ##' 
 ##' marg2 <- aalen(Surv(boxtime,status)~-1+factor(num):factor(strata),
 ##'                data=ud,n.sim=0,robust=0)
 ##' tdes <- model.matrix(~-1+factor(strata),data=ud)
-##' fitp2<-twostage(marg2,data=ud,se.clusters=ud$cluster,clusters=ud$id,
+##' fitp2<-twostage(marg2,data=ud,se.clusters=ud$cluster,clusters=ud$idstrata,
 ##'                 score.method="fisher.scoring",model="clayton.oakes",
-##'                 theta.des=tdes,step=0.5,detail=0,strata=ud$strata)
+##'                 theta.des=tdes,step=0.5)
 ##' summary(fitp2)
 ##' 
 ##' ### now fitting the model with symmetry, i.e. strata 2 and 3 same effect
 ##' ud$stratas <- ud$strata; ud$stratas[ud$strata==3] <- 2;
 ##' tdes2 <- model.matrix(~-1+factor(stratas),data=ud)
-##' fitp3<-twostage(marg2,data=ud,clusters=ud$id,se.cluster=ud$cluster,
+##' fitp3<-twostage(marg2,data=ud,clusters=ud$idstrata,se.cluster=ud$cluster,
 ##'                 score.method="fisher.scoring",model="clayton.oakes",
-##'                 theta.des=tdes2,step=0.5,detail=0,strata=ud$strata)
+##'                 theta.des=tdes2,step=0.5)
 ##' summary(fitp3)
 ##' 
-##' ### same model using strata specific pair variable 
-##' fitp4<-twostage(marg2,data=ud,clusters=ud$idstrata,se.cluster=ud$cluster,
+##' ### same model using strata option, a bit slower 
+##' fitp4<-twostage(marg2,data=ud,clusters=ud$cluster,se.cluster=ud$cluster,
 ##'                 score.method="fisher.scoring",model="clayton.oakes",
-##'                 theta.des=tdes2,step=0.5,detail=0)
+##'                 theta.des=tdes2,step=0.5,strata=ud$strata)
 ##' summary(fitp4)
 ##' }
 ##' @keywords survival
