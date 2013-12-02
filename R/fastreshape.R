@@ -64,6 +64,20 @@
 ##' fast.reshape(dd,id="id",num="num",labelnum=TRUE)
 ##' fast.reshape(d,vary=c(a="y"),labelnum=TRUE) ## New column name
 ##' 
+##' 
+##' ##### Unbalanced data
+##' m <- lvm(c(y1,y2,y3,y4)~ x+z1+z3+z5)
+##' d <- sim(m,3)
+##' d
+##' fast.reshape(d,c("y","z"))
+##' 
+##' ##### not-varying syntax:
+##' fast.reshape(d,-c("x"))
+##' 
+##' ##### Automatically define varying variables from trailing digits
+##' fast.reshape(d)
+##' 
+##' 
 ##' ##### Prostate cancer example
 ##' data(prt)
 ##' head(prtw <- fast.reshape(prt,"id",var="cancer"))
@@ -81,12 +95,17 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
         ## reshape from wide to long format. 
         nn <- colnames(data)
         nsep <- nchar(sep)
-        if (missing(varying)) stop("Prefix of time-varying variables needed")
-        varsubst <- substitute(varying)
-        if (as.character(varsubst)[1]=="-") {
-            notvarying <- varsubst[[-1]]
-            vars <- setdiff(nn,eval(notvarying))
-            browser()
+        if (missing(varying)) {#stop("Prefix of time-varying variables needed")
+            ## Find all variable names with trailing digits
+            vars0 <- grep("(\\d+)$",nn)            
+            varying <- unique(gsub("(\\d+)$","",nn[vars0]))
+        } else {
+            varsubst <- substitute(varying)
+            if (as.character(varsubst)[1]=="-") {
+                notvarying <- varsubst[[-1]]
+                vars0 <- setdiff(nn,eval(notvarying))
+                varying <- unique(gsub("(\\d+)$","",vars0))
+            }
         }
         ## nl <- as.list(seq_along(data)); names(nl) <- nn
         ## varying <- eval(substitute(varying),nl,parent.frame())

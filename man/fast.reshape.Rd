@@ -95,6 +95,20 @@ fast.reshape(dd,id="id",num="num")
 fast.reshape(dd,id="id",num="num",labelnum=TRUE)
 fast.reshape(d,vary=c(a="y"),labelnum=TRUE) ## New column name
 
+
+##### Unbalanced data
+m <- lvm(c(y1,y2,y3,y4)~ x+z1+z3+z5)
+d <- sim(m,3)
+d
+fast.reshape(d,c("y","z"))
+
+##### not-varying syntax:
+fast.reshape(d,-c("x"))
+
+##### Automatically define varying variables from trailing digits
+fast.reshape(d)
+
+
 ##### Prostate cancer example
 data(prt)
 head(prtw <- fast.reshape(prt,"id",var="cancer"))
