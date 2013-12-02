@@ -16,10 +16,11 @@
   .. content for description (no empty lines) ..
 }
 \examples{
+\donttest{
 library(prodlim)
 data(prt);
 
-### marginal cumulative incidence of prostate cancer
+### marginal cumulative incidence of prostate cancer##'
 outm <- prodlim(Hist(time,status)~+1,data=prt)
 
 times <- 60:100
@@ -39,6 +40,7 @@ par(new=TRUE)
 plot(cdz,ci=NULL,ylim=c(0,0.5),xlim=c(60,100),legend=TRUE)
 summary(cdz)
 summary(cmz)
+}
 }
 \author{
   Thomas Scheike
