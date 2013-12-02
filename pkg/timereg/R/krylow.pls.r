@@ -12,6 +12,7 @@
 ###return(list(beta=beta))
 ###}
 
+### Anders Gorst Rasmussen's code
 krylow.pls <- function(D,d,dim = 1) {
 	r <- d
 	p <- r

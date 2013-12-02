@@ -392,8 +392,12 @@ summary.comprisk <- function (object,digits = 3,...) {  ## {{{
   if (sum(object$obs.testBeq0)==FALSE) cat("No test for non-parametric terms\n") else
   timetest(object,digits=digits); 
 
-  if (semi) { cat("Parametric terms : \n"); 
-              out=coef(object); print(signif(out,digits=digits)); cat("   \n"); 
+  if (semi) { 
+         if (sum(abs(object$score)>0.000001)) 
+         cat("Did not converge, allow more iterations\n\n"); 
+
+	 cat("Parametric terms : \n"); 
+         out=coef(object); print(signif(out,digits=digits)); cat("   \n"); 
   }
 
   if (object$conv$convd>=1) {

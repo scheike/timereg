@@ -38,8 +38,8 @@ max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL)
   covnamesX<-des$covnamesX; covnamesZ<-des$covnamesZ
   pxz <- px + pz;
 
-  if ( (nrow(Z)!=nrow(data)) && (!is.null(id))) stop("Missing values in design matrix not allowed with id\n"); 
-###  if (nrow(Z)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
+###  if ( (nrow(Z)!=nrow(data)) && (!is.null(id))) stop("Missing values in design matrix not allowed with id\n"); 
+  if (nrow(Z)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
 
   ### if clusters=null perhaps given through cluster() special 
   if (is.null(clusters)) clusters <- des$clusters  
