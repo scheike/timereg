@@ -4,14 +4,20 @@
 \alias{lifetable.matrix}
 \title{Life table}
 \usage{
-  lifetable.matrix(x, strata = list(), breaks = c(),
-    confint = FALSE, ...)
+  \method{lifetable}{matrix}(x, strata = list(), breaks =
+    c(), confint = FALSE, ...)
+
+  \method{lifetable}{formula}(x, strata = list(),
+    data=parent.frame(), breaks = c(), confint = FALSE,
+    ...)
 }
 \arguments{
   \item{x}{time formula (Surv) or matrix/data.frame with
   columns time,status or entry,exit,status}
 
   \item{strata}{Strata}
+
+  \item{data}{data.frame}
 
   \item{breaks}{Time intervals}
 

@@ -635,7 +635,7 @@ simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{
 onerunfam <- function(i,n,alr=0,manual=1,time=0,simplealr=1,theta=1) { ## {{{ 
 ### n=200; beta=0.2; theta=1; time=0; i=1
     print(i)
-    dd <- simBinFam(n,beta=0,theta=theta) 
+    dd <- simBinFam(n,beta=0,theta) 
     ddl <- fast.reshape(dd,varying="y",keep="y")
     out2t <- system.time(
         marg  <-  glm(y~+1,data=ddl,family=binomial())
@@ -738,7 +738,7 @@ onerunfam <- function(i,n,alr=0,manual=1,time=0,simplealr=1,theta=1) { ## {{{
 onerunfam2 <- function(i,n,alr=0,manual=1,time=0,theta=1) { ## {{{ 
 ### n=1000; beta=0.2; theta=1; time=0; i=1
     print(i)
-    dd <- simBinFam(n,beta=0,theta=theta) 
+    dd <- simBinFam(n,beta=0,theta) 
     ddl <- fast.reshape(dd,varying="y",keep="y")
 
     desfs <- function(x,num1="num1",num2="num2")

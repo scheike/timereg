@@ -2,17 +2,23 @@
 `lifetable` <- function(x,...) UseMethod("lifetable")
     
 
-
 ##' Create simple life table 
 ##' 
 ##' @title Life table
 ##' @param x time formula (Surv) or matrix/data.frame with columns time,status or entry,exit,status
 ##' @param strata Strata
+##' @param data data.frame
 ##' @param breaks Time intervals
 ##' @param confint If TRUE 95% confidence limits are calculated
 ##' @param ... Additional arguments to lower level functions
 ##' @author Klaus K. Holst
 ##' @aliases lifetable lifetable.matrix lifetable.formula
+##' @usage
+##'  \method{lifetable}{matrix}(x, strata = list(), breaks = c(),
+##'    confint = FALSE, ...)
+##'
+##'  \method{lifetable}{formula}(x, data=parent.frame(), breaks = c(),
+##'    confint = FALSE, ...)
 ##' @examples
 ##' library(timereg)
 ##' data(TRACE)
