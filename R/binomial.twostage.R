@@ -128,7 +128,7 @@ antpers <- NROW(data);
   antiid <- nrow(clusterindex);} else  {
       iids <-  unique(se.clusters); 
       antiid <- length(iids); 
-      if (is.numeric(se.clusters)) se.clusters <-  prodlim::sindex.prodlim(iids,se.clusters)-1
+      if (is.numeric(se.clusters)) se.clusters <-  fast.approx(iids,se.clusters)-1
        else se.clusters <- as.integer(factor(se.clusters, labels = seq(antiid)))-1
   }
   if (length(se.clusters)!=length(clusters)) stop("Length of seclusters and clusters must be same\n"); 
