@@ -82,29 +82,47 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
         nn <- colnames(data)
         nsep <- nchar(sep)
         if (missing(varying)) stop("Prefix of time-varying variables needed")
+        varsubst <- substitute(varying)
+        if (as.character(varsubst)[1]=="-") {
+            notvarying <- varsubst[[-1]]
+            vars <- setdiff(nn,eval(notvarying))
+            browser()
+        }
         ## nl <- as.list(seq_along(data)); names(nl) <- nn
         ## varying <- eval(substitute(varying),nl,parent.frame())
         vnames <- NULL
         ncvar <- sapply(varying,nchar)
         newlist <- c()
         numlev <- TRUE
+        all_levels <- c()
+        thelevels <- c()
         if (!is.list(varying)) {
             for (i in seq_len(length(varying))) {
                 ii <- which(varying[i]==substr(nn,1,ncvar[i]))                
-                thelevels <- substring(nn[ii],ncvar[i]+1+nsep)
+                thelevel <- substring(nn[ii],ncvar[i]+1+nsep)
+                all_levels <- union(all_levels,thelevel)
                 if (labelnum) {
-                    ii0 <- suppressWarnings(which(!is.na(as.numeric(thelevels))))
+                    ii0 <- suppressWarnings(which(!is.na(as.numeric(thelevel))))
                     ii <- ii[ii0]
-                    thelevels <- thelevels[ii0]
+                    thelevel <- thelevel[ii0]
                 }
-                suppressWarnings(tt <- as.numeric(thelevels)) 
+                thelevels <- c(thelevels,list(thelevel))
+                suppressWarnings(tt <- as.numeric(thelevel))
                 newlist <- c(newlist,list(nn[ii[order(tt)]]))
             }
-            if (any(is.na(tt))) {
-                numlev <- FALSE
-            } else {
-                thelevels <- tt
+            len <- unlist(lapply(newlist,length))
+            for (i in seq_len(length(varying))) {
+                if (len[i]<length(all_levels)) {
+                    pp <- setdiff(all_levels,thelevels[[i]])
+                    vv <- paste(varying[i],pp,sep=sep)
+                    data[,vv] <- NA
+                    newlist[[i]] <- paste(varying[i],all_levels,sep=sep)
+                }                    
             }
+            thelevels <- all_levels
+            if (any(is.na(as.numeric(all_levels)))) {
+                numlev <- FALSE
+            }            
             vnames0 <- names(varying) 
             vnames <- varying
             if (!is.null(vnames0)) {
@@ -140,7 +158,8 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
         nfixed <- length(fixed)
         nvarying <- length(varying)
         nclusts <- unlist(lapply(varying,length))
-        nclust <- length(varying[[1]])
+        ##        nclust <- length(varying[[1]])
+        nclust <- max(nclusts)
         if (any(nclusts!=nclust)) stop("Different length of varying vectors!")
         data <- data[,c(fixed,unlist(varying)),drop=FALSE]
         
