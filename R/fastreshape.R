@@ -58,7 +58,7 @@
 ##' ##'
 ##' 
 ##' d <- sim(lvm(~y1+y2+ya),10)
-##' (dd <- fast.reshape(d,varying="y"))
+##' (dd <- fast.reshape(d,"y"))
 ##' fast.reshape(d,varying="y",labelnum=TRUE)
 ##' fast.reshape(dd,id="id",num="num")
 ##' fast.reshape(dd,id="id",num="num",labelnum=TRUE)
@@ -119,12 +119,12 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
             for (i in seq_len(length(varying))) {
                 ii <- which(varying[i]==substr(nn,1,ncvar[i]))                
                 thelevel <- substring(nn[ii],ncvar[i]+1+nsep)
-                all_levels <- union(all_levels,thelevel)
                 if (labelnum) {
                     ii0 <- suppressWarnings(which(!is.na(as.numeric(thelevel))))
                     ii <- ii[ii0]
                     thelevel <- thelevel[ii0]
                 }
+                all_levels <- union(all_levels,thelevel)
                 thelevels <- c(thelevels,list(thelevel))
                 suppressWarnings(tt <- as.numeric(thelevel))
                 newlist <- c(newlist,list(nn[ii[order(tt)]]))
@@ -138,10 +138,12 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
                     newlist[[i]] <- paste(varying[i],all_levels,sep=sep)
                 }                    
             }
-            thelevels <- all_levels
-            if (any(is.na(as.numeric(all_levels)))) {
+            if (any(is.na(suppressWarnings(as.numeric(all_levels))))) {
                 numlev <- FALSE
-            }            
+            } else {
+                all_levels <- as.numeric(all_levels)
+            }
+            thelevels <- all_levels
             vnames0 <- names(varying) 
             vnames <- varying
             if (!is.null(vnames0)) {
@@ -208,7 +210,7 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
         } else {
             if (!identical(order(thelevels),thelevels))
                 long[,numname] <- thelevels[long[,numname]]
-        }
+        } 
 
         if (is_df && factors.keep) { ## Recreate classes 
             vars.orig <- c(fixed,unlist(lapply(varying,function(x) x[1])))
@@ -247,7 +249,7 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
         if (is.character(num)) {
             numvar <- num
             if (is.character(data[1,num,drop=TRUE])) {
-                data[,num,drop=TRUE] <- as.factor(data[,num,drop=TRUE])
+                data[,num] <- as.factor(data[,num,drop=TRUE])
             }
             num <- as.integer(data[,num,drop=TRUE])
             if (!labelnum) unum <- sort(unique(data[,numvar,drop=TRUE]))

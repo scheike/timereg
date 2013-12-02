@@ -89,7 +89,7 @@ dd2
 ##'
 
 d <- sim(lvm(~y1+y2+ya),10)
-(dd <- fast.reshape(d,varying="y"))
+(dd <- fast.reshape(d,"y"))
 fast.reshape(d,varying="y",labelnum=TRUE)
 fast.reshape(dd,id="id",num="num")
 fast.reshape(dd,id="id",num="num",labelnum=TRUE)
