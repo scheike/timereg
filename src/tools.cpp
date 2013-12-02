@@ -106,41 +106,43 @@ END_RCPP
 
 
 
-RcppExport SEXP FastApprox(const SEXP a,
-			   const SEXP t,
-			   const SEXP z) {
+
+RcppExport SEXP FastApprox(const SEXP time,
+			   const SEXP newtime,
+			   const SEXP equal) {
 BEGIN_RCPP
-  NumericVector A(a);
-  NumericVector T(t);
-  NumericVector Z(z);
-  vector<unsigned> idx(Z.size());
-  vector<double> newT(Z.size());
+  NumericVector NewTime(newtime);
+  NumericVector Time(time);
+  bool Equal = Rcpp::as<bool>(equal);
+  vector<int> idx(NewTime.size());
+  vector<int> eq(NewTime.size());
 
   NumericVector::iterator it;  
-  double lower,upper; int pos=200;
-  for (int i=0; i<Z.size(); i++) {
-    it = lower_bound(A.begin(), A.end(), Z[i]);
-    if (it == A.begin()) { 
+  double upper; int pos=0;
+  for (int i=0; i<NewTime.size(); i++) {    
+    eq[i] = 0;
+    it = lower_bound(Time.begin(), Time.end(), NewTime[i]);
+    if (it == Time.begin()) { 
       pos = 0; 
-      // upper = *it; // no smaller value  than val in vector
-    } 
-    else if (int(it-A.end())==0) {
-      pos = A.size()-1;
-      //lower = *(it-1); // no bigger value than val in vector
-    } else {
-      lower = *(it-1);
       upper = *it;
-      pos = int(it- A.begin());
-      if (abs(Z[i]-lower)<abs(Z[i]-upper)) {
-	pos = int(it- A.begin());
-      }
+      if (Equal && (NewTime[i]==upper)) { eq[i] = 1; }
     }
-    idx[i] = pos;
-    newT[i] = T[pos];
+    else if (int(it-Time.end())==0) {
+      pos = Time.size()-1;
+    } else {
+      pos = int(it-Time.begin());
+      upper = *it;
+      if (Equal && (NewTime[i]==upper)) { eq[i] = pos+1; }
+    }
+    idx[i] = pos+1;
   }
-  List ans;
-  ans["t"] = newT;
-  ans["pos"] = idx;
-  return(ans);
+  if (Equal) {
+    List ans;
+    ans["idx"] = idx;
+    ans["eq"] = eq;
+    return(ans);   
+  }
+
+  return(Rcpp::wrap(idx));
 END_RCPP
 }
