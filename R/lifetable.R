@@ -10,18 +10,20 @@
 ##' @param strata Strata
 ##' @param breaks Time intervals
 ##' @param confint If TRUE 95% confidence limits are calculated
+##' @param ... Additional arguments to lower level functions
 ##' @author Klaus K. Holst
 ##' @aliases lifetable lifetable.matrix lifetable.formula
 ##' @examples
 ##' library(timereg)
 ##' data(TRACE)
 ##' \donttest{
-##'     lifetable(Surv(time,status==9)~sex+I(cut(wmi,c(-Inf,1,1.5,Inf))),data=TRACE,breaks=c(0.2,0.5),confint=TRUE)
+##'     lifetable(Surv(time,status==9)~sex+I(cut(wmi,c(-Inf,1,1.5,Inf))),
+##'               data=TRACE,breaks=c(0.2,0.5),confint=TRUE)
 ##' }
 ##' 
 ##' d <- with(TRACE,lifetable(Surv(time,status==9)~sex+vf,breaks=c(0.2,0.5)))
-##' summary(glm(events ~ offset(log(atrisk))+interval*vf + sex*vf,data=d,poisson))
-##' @export
+##' summary(glm(events ~ offset(log(atrisk))+interval*vf + sex*vf,
+##'             data=d,poisson))
 ##' @S3method lifetable matrix
 lifetable.matrix <- function(x,strata=list(),breaks=c(),confint=FALSE,...) {
     if (ncol(x)==3) {

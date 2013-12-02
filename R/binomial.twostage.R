@@ -79,61 +79,61 @@
 ##' @param se.clusters clusters for iid decomposition for roubst standard errors
 ##' @param numDeriv uses Fisher scoring aprox of second derivative if 0, otherwise numerical derivatives 
 binomial.twostage <- function(margbin,data=sys.parent(),score.method="nlminb",
-Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
-control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
-step=0.5,notaylor=1,model="plackett",marginal.p=NULL,strata=NULL,
-max.clust=NULL,se.clusters=NULL,numDeriv=0)
+                              Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
+                              control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
+                              step=0.5,notaylor=1,model="plackett",marginal.p=NULL,strata=NULL,
+                              max.clust=NULL,se.clusters=NULL,numDeriv=0)
 { ## {{{
-## {{{ seting up design and variables
-rate.sim <- 1; sym=1; 
-if (model=="clayton.oakes") dep.model <- 1 else if (model=="plackett") dep.model <- 2 else stop("Model must by either clayton.oakes or plackett \n"); 
-antpers <- NROW(data); 
+    ## {{{ seting up design and variables
+    rate.sim <- 1; sym=1; 
+    if (model=="clayton.oakes") dep.model <- 1 else if (model=="plackett") dep.model <- 2 else stop("Model must by either clayton.oakes or plackett \n"); 
+    antpers <- NROW(data); 
 
 ### marginal prediction and binomial response, two types of calls ## {{{
-   if (class(margbin)[1]=="glm") {
-             ps <- predict(margbin,type="response")
-	     cause <- margbin$y
-   }
+    if (class(margbin)[1]=="glm") {
+        ps <- predict(margbin,type="response")
+        cause <- margbin$y
+    }
     else if (class(margbin)[1]=="formula") {
-	    margbin <- glm(margbin,data=data,family=binomial())
-            ps <- predict(margbin,type="response")
-	    cause <- margbin$y
+        margbin <- glm(margbin,data=data,family=binomial())
+        ps <- predict(margbin,type="response")
+        cause <- margbin$y
     }  else if (is.null(marginal.p))
-     stop("without marginal model, marginal p's must be given\n"); 
+        stop("without marginal model, marginal p's must be given\n"); 
 
     if (!is.null(marginal.p)) {
-    if (length(margbin)!=antpers) 
-		    stop("with marginal margbin is reseponse \n")
-	    else cause <- margbin
-    if (length(marginal.p)!=antpers) 
-		    stop("length same as data dimension  \n")
-	    else ps <- marginal.p
+        if (length(margbin)!=antpers) 
+            stop("with marginal margbin is reseponse \n")
+        else cause <- margbin
+        if (length(marginal.p)!=antpers) 
+            stop("length same as data dimension  \n")
+        else ps <- marginal.p
     }
     ## }}}
 
-  notaylor <- 1
-  if (is.null(weights)==TRUE) weights <- rep(1,antpers); 
-  if (is.null(strata)==TRUE) strata<- rep(1,antpers); 
-  if (length(strata)!=antpers) stop("Strata must have length equal to number of data points \n"); 
+    notaylor <- 1
+    if (is.null(weights)==TRUE) weights <- rep(1,antpers); 
+    if (is.null(strata)==TRUE) strata<- rep(1,antpers); 
+    if (length(strata)!=antpers) stop("Strata must have length equal to number of data points \n"); 
 
-  out.clust <- cluster.index(clusters);  
-  clusters <- out.clust$clusters
-  maxclust <- out.clust$maxclust 
-  antclust <- out.clust$antclust
-  clusterindex <- out.clust$idclust
-  clustsize <- out.clust$cluster.size
-  call.secluster <- se.clusters
+    out.clust <- cluster.index(clusters);  
+    clusters <- out.clust$clusters
+    maxclust <- out.clust$maxclust 
+    antclust <- out.clust$antclust
+    clusterindex <- out.clust$idclust
+    clustsize <- out.clust$cluster.size
+    call.secluster <- se.clusters
 
-  if (is.null(se.clusters)) { se.clusters <- clusters; 
-  antiid <- nrow(clusterindex);} else  {
-      iids <-  unique(se.clusters); 
-      antiid <- length(iids); 
-      if (is.numeric(se.clusters)) se.clusters <-  fast.approx(iids,se.clusters)-1
-       else se.clusters <- as.integer(factor(se.clusters, labels = seq(antiid)))-1
-  }
-  if (length(se.clusters)!=length(clusters)) stop("Length of seclusters and clusters must be same\n"); 
+    if (is.null(se.clusters)) { se.clusters <- clusters; 
+                                antiid <- nrow(clusterindex);} else  {
+                                    iids <-  unique(se.clusters); 
+                                    antiid <- length(iids); 
+                                    if (is.numeric(se.clusters)) se.clusters <-  fast.approx(iids,se.clusters)-1
+                                    else se.clusters <- as.integer(factor(se.clusters, labels = seq(antiid)))-1
+                                }
+    if (length(se.clusters)!=length(clusters)) stop("Length of seclusters and clusters must be same\n"); 
 
-  if ((!is.null(max.clust))) if (max.clust< antiid) {
+    if ((!is.null(max.clust))) if (max.clust< antiid) {
         coarse.clust <- TRUE
 	qq <- unique(quantile(se.clusters, probs = seq(0, 1, by = 1/max.clust)))
 	qqc <- cut(se.clusters, breaks = qq, include.lowest = TRUE)    
@@ -141,183 +141,183 @@ antpers <- NROW(data);
 	max.clusters <- length(unique(se.clusters))
 	maxclust <- max.clust    
 	antiid <- max.clusters
-  }                                                         
+    }                                                         
 
-  ratesim<-rate.sim; 
-  if (is.null(theta.des)==TRUE) ptheta<-1; 
-  if (is.null(theta.des)==TRUE) theta.des<-matrix(1,antpers,ptheta) else
-  theta.des<-as.matrix(theta.des); 
-  ptheta<-ncol(theta.des); 
-  if (nrow(theta.des)!=antpers) stop("Theta design does not have correct dim");
+    ratesim<-rate.sim; 
+    if (is.null(theta.des)==TRUE) ptheta<-1; 
+    if (is.null(theta.des)==TRUE) theta.des<-matrix(1,antpers,ptheta) else
+    theta.des<-as.matrix(theta.des); 
+    ptheta<-ncol(theta.des); 
+    if (nrow(theta.des)!=antpers) stop("Theta design does not have correct dim");
 
-  if (is.null(theta)==TRUE) {
-         if (var.link==1) theta<- rep(-0.7,ptheta);  
-         if (var.link==0) theta<- rep(exp(-0.7),ptheta);   
-  }       
-  if (length(theta)!=ptheta) theta<-rep(theta[1],ptheta); 
-  theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
+    if (is.null(theta)==TRUE) {
+        if (var.link==1) theta<- rep(-0.7,ptheta);  
+        if (var.link==0) theta<- rep(exp(-0.7),ptheta);   
+    }       
+    if (length(theta)!=ptheta) theta<-rep(theta[1],ptheta); 
+    theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
 
-  if (maxclust==1) stop("No clusters, maxclust size=1\n"); 
-  ## }}}
+    if (maxclust==1) stop("No clusters, maxclust size=1\n"); 
+    ## }}}
 
-  loglike <- function(par) 
-  { ## {{{
-       Xtheta <- theta.des %*% matrix(c(par),ptheta,1); 
-       DXtheta <- array(0,c(1,1,1));
+    loglike <- function(par) 
+        { ## {{{
+            Xtheta <- theta.des %*% matrix(c(par),ptheta,1); 
+            DXtheta <- array(0,c(1,1,1));
 
 ###      dyn.load("twostage.so")
-       ptrunc <- rep(1,antpers); 
+            ptrunc <- rep(1,antpers); 
 
-      outl<-.Call("twostageloglikebin", ## {{{
-      icause=cause,ipmargsurv=ps, 
-      itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
-      icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
-      ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
-      itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid,DUP=FALSE) 
-      ## }}}
+            outl<-.Call("twostageloglikebin", ## {{{
+                        icause=cause,ipmargsurv=ps, 
+                        itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
+                        icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
+                        ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
+                        itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid,DUP=FALSE) 
+            ## }}}
 
-    if (detail==3) print(c(par,outl$loglike))
+            if (detail==3) print(c(par,outl$loglike))
 
-    attr(outl,"gradient") <-outl$score 
-    if (oout==0) ret <- c(-1*outl$loglike) else if (oout==1) ret <- sum(outl$score^2) else if (oout==3) ret <- outl$score else ret <- outl
-    return(ret)
-  } ## }}}
+            attr(outl,"gradient") <-outl$score 
+            if (oout==0) ret <- c(-1*outl$loglike) else if (oout==1) ret <- sum(outl$score^2) else if (oout==3) ret <- outl$score else ret <- outl
+            return(ret)
+        } ## }}}
 
-  if (score.method=="optimize" && ptheta!=1) {cat("optimize only works for d==1, score.mehod set to nlminb \n"); score.method <- "nlminb";}
+    if (score.method=="optimize" && ptheta!=1) {cat("optimize only works for d==1, score.mehod set to nlminb \n"); score.method <- "nlminb";}
 
-  theta.iid <- NULL
-  logl <- NULL
-  p <- theta
-  if (score.method=="fisher.scoring") { ## {{{
-    oout <- 2;  ### output control for obj
-    if (Nit>0) 
-    for (i in 1:Nit)
-    {
-        out <- loglike(p)
-	hess <- out$Dscore
-	if (!is.na(sum(hess))) hessi <- lava::Inverse(out$Dscore) else hessi <- hess 
-        if (detail==1) {## {{{
-          cat(paste("Fisher-Scoring ===================: it=",i,"\n")); 
-          cat("theta:");print(c(p))
-          cat("loglike:");cat(c(out$loglike),"\n"); 
-          cat("score:");cat(c(out$score),"\n"); 
-	  cat("hess:\n"); cat(out$Dscore,"\n"); 
+    theta.iid <- NULL
+    logl <- NULL
+    p <- theta
+    if (score.method=="fisher.scoring") { ## {{{
+        oout <- 2;  ### output control for obj
+        if (Nit>0) 
+            for (i in 1:Nit)
+                {
+                    out <- loglike(p)
+                    hess <- out$Dscore
+                    if (!is.na(sum(hess))) hessi <- lava::Inverse(out$Dscore) else hessi <- hess 
+                    if (detail==1) {## {{{
+                        cat(paste("Fisher-Scoring ===================: it=",i,"\n")); 
+                        cat("theta:");print(c(p))
+                        cat("loglike:");cat(c(out$loglike),"\n"); 
+                        cat("score:");cat(c(out$score),"\n"); 
+                        cat("hess:\n"); cat(out$Dscore,"\n"); 
+                    }## }}}
+                    delta <- hessi %*% out$score *step 
+                    p <- p+delta* step
+                    theta <- p; 
+                    if (is.nan(sum(out$score))) break; 
+                    if (sum(abs(out$score))<0.00001) break; 
+                    if (max(theta)>20) break; 
+                }
+        if (!is.nan(sum(p))) { 
+            if (detail==1 && iid==1) cat("iid decomposition\n"); 
+            out <- loglike(p) 
+            logl <- out$loglike
+            score1 <- score <- out$score
+            oout <- 0; 
+            hess1 <- hess <- - out$Dscore 
+            if (iid==1) theta.iid <- out$theta.iid
+        }
+        if (numDeriv==1) {
+            oout <- 3
+            hess <- numDeriv::jacobian(loglike,p)
+        }
+        if (detail==1 & Nit==0) {## {{{
+            cat(paste("Fisher-Scoring ===================: final","\n")); 
+            cat("theta:");print(c(p))
+            cat("loglike:");cat(c(out$loglike),"\n"); 
+            cat("score:");cat(c(out$score),"\n"); 
+            cat("hess:\n"); cat(out$Dscore,"\n"); 
         }## }}}
-        delta <- hessi %*% out$score *step 
-        p <- p+delta* step
-        theta <- p; 
-	if (is.nan(sum(out$score))) break; 
-        if (sum(abs(out$score))<0.00001) break; 
-        if (max(theta)>20) break; 
-    }
-    if (!is.nan(sum(p))) { 
-    if (detail==1 && iid==1) cat("iid decomposition\n"); 
-    out <- loglike(p) 
-    logl <- out$loglike
-    score1 <- score <- out$score
-    oout <- 0; 
-    hess1 <- hess <- - out$Dscore 
-    if (iid==1) theta.iid <- out$theta.iid
-    }
-    if (numDeriv==1) {
-      oout <- 3
-      hess <- numDeriv::jacobian(loglike,p)
-    }
-    if (detail==1 & Nit==0) {## {{{
-          cat(paste("Fisher-Scoring ===================: final","\n")); 
-          cat("theta:");print(c(p))
-          cat("loglike:");cat(c(out$loglike),"\n"); 
-          cat("score:");cat(c(out$score),"\n"); 
-	  cat("hess:\n"); cat(out$Dscore,"\n"); 
-    }## }}}
-    if (!is.na(sum(hess))) hessi <- lava::Inverse(hess) else hessi <- diag(nrow(hess))
-    ## }}}
-  } else if (score.method=="nlminb") { ## {{{ nlminb optimizer
-    oout <- 0; 
-    tryCatch(opt <- nlminb(theta,loglike,control=control),error=function(x) NA)
-    if (detail==1) print(opt); 
+        if (!is.na(sum(hess))) hessi <- lava::Inverse(hess) else hessi <- diag(nrow(hess))
+        ## }}}
+    } else if (score.method=="nlminb") { ## {{{ nlminb optimizer
+        oout <- 0; 
+        tryCatch(opt <- nlminb(theta,loglike,control=control),error=function(x) NA)
+        if (detail==1) print(opt); 
 
-    if (detail==1 && iid==1) cat("iid decomposition\n"); 
-    oout <- 2
-    theta <- opt$par
-    out <- loglike(opt$par)
-    logl <- out$loglike
-    score1 <- score <- out$score
-    hess1 <- hess <- - out$Dscore
-    if (iid==1) theta.iid <- out$theta.iid
-    if (numDeriv==1) {
-      oout <- 3; 
-      p <- theta
-      hess <- numDeriv::jacobian(loglike,theta)
-    }
-    hessi <- lava::Inverse(hess); 
-  ## }}}
-  } else if (score.method=="optimize" && ptheta==1) { ## {{{  optimizer
-    oout <- 0; 
-    if (var.link==1) {mino <- -20; maxo <- 10;} else {mino <- 0.001; maxo <- 100;}
-    tryCatch(opt <- optimize(loglike,c(mino,maxo)));
-    if (detail==1) print(opt); 
+        if (detail==1 && iid==1) cat("iid decomposition\n"); 
+        oout <- 2
+        theta <- opt$par
+        out <- loglike(opt$par)
+        logl <- out$loglike
+        score1 <- score <- out$score
+        hess1 <- hess <- - out$Dscore
+        if (iid==1) theta.iid <- out$theta.iid
+        if (numDeriv==1) {
+            oout <- 3; 
+            p <- theta
+            hess <- numDeriv::jacobian(loglike,theta)
+        }
+        hessi <- lava::Inverse(hess); 
+        ## }}}
+    } else if (score.method=="optimize" && ptheta==1) { ## {{{  optimizer
+        oout <- 0; 
+        if (var.link==1) {mino <- -20; maxo <- 10;} else {mino <- 0.001; maxo <- 100;}
+        tryCatch(opt <- optimize(loglike,c(mino,maxo)));
+        if (detail==1) print(opt); 
 
-    opt$par <- opt$minimum
-    theta <- opt$par
-    if (detail==1 && iid==1) cat("iid decomposition\n"); 
-    oout <- 2
-    out <- loglike(opt$par)
-    logl <- out$loglike
-    score1 <- score <- out$score
-    hess1 <- hess <- - out$Dscore
-    if (iid==1) theta.iid <- out$theta.iid
-    if (numDeriv==1) {
-      oout <- 3; 
-      p <- opt$par
-      hess <-  numDeriv::jacobian(loglike,p)
-    }
-    hessi <- lava::Inverse(hess); 
-  ## }}}
-  } else if (score.method=="nlm") { ## {{{ nlm optimizer
-    iid <- 0; oout <- 0; 
-    tryCatch(opt <- nlm(loglike,theta,hessian=TRUE,print.level=detail),error=function(x) NA)
-    iid <- 1; 
-    hess <-  opt$hessian
-    score <- opt$gradient
-    if (detail==1) print(opt); 
-    hessi <-  lava::Inverse(hess); 
-    theta <- opt$estimate
-    if (detail==1 && iid==1) cat("iid decomposition\n"); 
-    oout <- 2
-    out <- loglike(opt$estimate)
-    logl <- out$loglike
-    score1 <- out$score
-    hess1 <- out$Dscore
-    if (iid==1) theta.iid <- out$theta.iid
-  ## }}}
-  }  else stop("score.methods = optimize(dim=1) nlm nlminb fisher.scoring\n"); 
+        opt$par <- opt$minimum
+        theta <- opt$par
+        if (detail==1 && iid==1) cat("iid decomposition\n"); 
+        oout <- 2
+        out <- loglike(opt$par)
+        logl <- out$loglike
+        score1 <- score <- out$score
+        hess1 <- hess <- - out$Dscore
+        if (iid==1) theta.iid <- out$theta.iid
+        if (numDeriv==1) {
+            oout <- 3; 
+            p <- opt$par
+            hess <-  numDeriv::jacobian(loglike,p)
+        }
+        hessi <- lava::Inverse(hess); 
+        ## }}}
+    } else if (score.method=="nlm") { ## {{{ nlm optimizer
+        iid <- 0; oout <- 0; 
+        tryCatch(opt <- nlm(loglike,theta,hessian=TRUE,print.level=detail),error=function(x) NA)
+        iid <- 1; 
+        hess <-  opt$hessian
+        score <- opt$gradient
+        if (detail==1) print(opt); 
+        hessi <-  lava::Inverse(hess); 
+        theta <- opt$estimate
+        if (detail==1 && iid==1) cat("iid decomposition\n"); 
+        oout <- 2
+        out <- loglike(opt$estimate)
+        logl <- out$loglike
+        score1 <- out$score
+        hess1 <- out$Dscore
+        if (iid==1) theta.iid <- out$theta.iid
+        ## }}}
+    }  else stop("score.methods = optimize(dim=1) nlm nlminb fisher.scoring\n"); 
 
 
-## {{{ handling output
-  robvar.theta <- NULL
-  var.theta <- hessi
-  if (iid==1) {
-     theta.iid <- out$theta.iid %*% hessi
-     robvar.theta  <- (t(theta.iid) %*% theta.iid) 
-  }
+    ## {{{ handling output
+    robvar.theta <- NULL
+    var.theta <- hessi
+    if (iid==1) {
+        theta.iid <- out$theta.iid %*% hessi
+        robvar.theta  <- (t(theta.iid) %*% theta.iid) 
+    }
 ###  if (iid==1) var.theta <- robvar.theta else var.theta <- -hessi
-  if (!is.null(colnames(theta.des))) thetanames <- colnames(theta.des) else thetanames <- paste("dependence",1:ptheta,sep="")
-  theta <- matrix(theta,ptheta,1)
-  if (length(thetanames)==nrow(theta)) { rownames(theta) <- thetanames; rownames(var.theta) <- colnames(var.theta) <- thetanames; }
-  ud <- list(theta=theta,score=score,hess=hess,hessi=hessi,var.theta=var.theta,model=model,robvar.theta=robvar.theta,
-             theta.iid=theta.iid,thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,margsurv=ps); 
-  class(ud)<-"twostage" 
-  attr(ud, "Formula") <- formula
-  attr(ud, "Clusters") <- clusters
-  attr(ud,"sym")<-sym; 
-  attr(ud,"var.link")<-var.link; 
-  attr(ud,"antpers")<-antpers; 
-  attr(ud,"antclust")<-antclust; 
-  attr(ud, "Type") <- model
-  attr(ud, "response") <- "binomial"
-  return(ud);
-  ## }}}
+    if (!is.null(colnames(theta.des))) thetanames <- colnames(theta.des) else thetanames <- paste("dependence",1:ptheta,sep="")
+    theta <- matrix(theta,ptheta,1)
+    if (length(thetanames)==nrow(theta)) { rownames(theta) <- thetanames; rownames(var.theta) <- colnames(var.theta) <- thetanames; }
+    ud <- list(theta=theta,score=score,hess=hess,hessi=hessi,var.theta=var.theta,model=model,robvar.theta=robvar.theta,
+               theta.iid=theta.iid,thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,margsurv=ps); 
+    class(ud)<-"twostage" 
+    attr(ud, "Formula") <- formula
+    attr(ud, "Clusters") <- clusters
+    attr(ud,"sym")<-sym; 
+    attr(ud,"var.link")<-var.link; 
+    attr(ud,"antpers")<-antpers; 
+    attr(ud,"antclust")<-antclust; 
+    attr(ud, "Type") <- model
+    attr(ud, "response") <- "binomial"
+    return(ud);
+    ## }}}
 
 } ## }}}
 
@@ -491,54 +491,54 @@ antpers <- NROW(data);
 ##' @param max.clust max clusters
 ##' @param se.clusters clusters for iid decomposition for roubst standard errors
 easy.binomial.twostage <- function(margbin=NULL,data=sys.parent(),score.method="nlminb",
-response="response",id="id",
-Nit=60,detail=0, silent=1,weights=NULL, control=list(),
-theta=NULL,theta.formula=NULL,desnames=NULL,deshelp=0,var.link=1,iid=1,
-step=0.5,model="plackett",marginal.p=NULL,strata=NULL,max.clust=NULL,se.clusters=NULL)
+                                   response="response",id="id",
+                                   Nit=60,detail=0, silent=1,weights=NULL, control=list(),
+                                   theta=NULL,theta.formula=NULL,desnames=NULL,deshelp=0,var.link=1,iid=1,
+                                   step=0.5,model="plackett",marginal.p=NULL,strata=NULL,max.clust=NULL,se.clusters=NULL)
 { ## {{{
-  if (class(margbin)[1]=="glm") ps <- predict(margbin,type="response") 
-  else if (class(margbin)=="formula") {
-	    margbin <- glm(margbin,data=data,family=binomial())
-            ps <- predict(margbin,type="response")
-  }  else if (is.null(marginal.p)) stop("without marginal model, marginal p's must be given\n"); 
+    if (class(margbin)[1]=="glm") ps <- predict(margbin,type="response") 
+    else if (class(margbin)=="formula") {
+        margbin <- glm(margbin,data=data,family=binomial())
+        ps <- predict(margbin,type="response")
+    }  else if (is.null(marginal.p)) stop("without marginal model, marginal p's must be given\n"); 
 
-  if (!is.null(marginal.p)) ps <- marginal.p
+    if (!is.null(marginal.p)) ps <- marginal.p
 
-  data <- cbind(data,ps)
+    data <- cbind(data,ps)
 
-  ### make all pairs in the families,
-  fam <- familycluster.index(data[,id])
-  data.fam <- data[fam$familypairindex,]
-  data.fam$subfam <- fam$subfamilyindex
+### make all pairs in the families,
+    fam <- familycluster.index(data[,id])
+    data.fam <- data[fam$familypairindex,]
+    data.fam$subfam <- fam$subfamilyindex
 
-  ### make dependency design using wide format for all pairs 
-  data.fam.clust <- fast.reshape(data.fam,id="subfam")
-  if (is.function(theta.formula)) {
+### make dependency design using wide format for all pairs 
+    data.fam.clust <- fast.reshape(data.fam,id="subfam")
+    if (is.function(theta.formula)) {
 	library(compiler) 
         desfunction <- compiler::cmpfun(theta.formula)
 	if (deshelp==1){
-	 cat("These names appear in wide version of pairs for dependence \n")
-	  cat("design function must be defined in terms of these: \n")
-	  cat(names(data.fam.clust)); cat("\n")
-	  cat("Here is head of wide version with pairs\n")
-	  print(head(data.fam.clust)); cat("\n")
+            cat("These names appear in wide version of pairs for dependence \n")
+            cat("design function must be defined in terms of these: \n")
+            cat(names(data.fam.clust)); cat("\n")
+            cat("Here is head of wide version with pairs\n")
+            print(head(data.fam.clust)); cat("\n")
 	}
 ###	des.theta <- Reduce("rbind",lapply(seq(nrow(data.fam.clust)),function(i) unlist(desfunction(data.fam.clust[i,] ))))
         des.theta <- t(apply(data.fam.clust,1, function(x) desfunction(x)))
 	colnames(des.theta) <- desnames
 	desnames <- desnames
-     } else {
-	  if (is.null(theta.formula)) theta.formula <- ~+1
-          des.theta <- model.matrix(theta.formula,data=data.fam.clust)
-          desnames <- colnames(des.theta); 
-     }
-     data.fam.clust <- cbind(data.fam.clust,des.theta)
-     if (deshelp==1) {
-	 cat("These names appear in wide version of pairs for dependence \n")
-	     print(head(data.fam.clust))
-     }
+    } else {
+        if (is.null(theta.formula)) theta.formula <- ~+1
+        des.theta <- model.matrix(theta.formula,data=data.fam.clust)
+        desnames <- colnames(des.theta); 
+    }
+    data.fam.clust <- cbind(data.fam.clust,des.theta)
+    if (deshelp==1) {
+        cat("These names appear in wide version of pairs for dependence \n")
+        print(head(data.fam.clust))
+    }
 
-    ### back to long format keeping only needed variables
+### back to long format keeping only needed variables
     data.fam <- fast.reshape(data.fam.clust,varying=c(response,id,"ps"))
     if (deshelp==1) {
 	cat("Back to long format for binomial.twostage (head)\n"); 
@@ -552,143 +552,143 @@ step=0.5,model="plackett",marginal.p=NULL,strata=NULL,max.clust=NULL,se.clusters
     } 
 
     out <- binomial.twostage(data.fam[,response],data=data.fam,
-                    clusters=data.fam$subfam,
-		    theta.des=data.fam[,desnames],
-                    detail=detail, score.method=score.method, Nit=Nit,step=step,
-                    iid=iid,theta=theta, var.link=var.link,model=model, 
-                    max.clust=max.clust,
-                    marginal.p=data.fam[,"ps"], se.clusters=data.fam[,id])
-   return(out)
+                             clusters=data.fam$subfam,
+                             theta.des=data.fam[,desnames],
+                             detail=detail, score.method=score.method, Nit=Nit,step=step,
+                             iid=iid,theta=theta, var.link=var.link,model=model, 
+                             max.clust=max.clust,
+                             marginal.p=data.fam[,"ps"], se.clusters=data.fam[,id])
+    return(out)
 } ## }}}
 
 ##' @export
 simBinPlack <- function(n,beta=0.3,theta=1,...) { ## {{{ 
-x1 <- rbinom(n,1,0.5)
-x2 <- rbinom(n,1,0.5)
+    x1 <- rbinom(n,1,0.5)
+    x2 <- rbinom(n,1,0.5)
 ###
-p1 <- exp(0.5+x1*beta)
-p2 <- exp(0.5+x2*beta)
-p1 <- p1/(1+p1)
-p2 <- p2/(1+p2)
+    p1 <- exp(0.5+x1*beta)
+    p2 <- exp(0.5+x2*beta)
+    p1 <- p1/(1+p1)
+    p2 <- p2/(1+p2)
 ###
-p11 <- plack.cif2(p1,p2,theta)
-p10 <- p1-p11
-p01 <- p2-p11
-p00 <- 1- p10-p01-p11
+    p11 <- plack.cif2(p1,p2,theta)
+    p10 <- p1-p11
+    p01 <- p2-p11
+    p00 <- 1- p10-p01-p11
 ###
-y1 <- rbinom(n,1,p1)
-y2 <- (y1==1)*rbinom(n,1,p11/p1)+(y1==0)*rbinom(n,1,p01/(1-p1))
-list(x1=x1,x2=x2,y1=y1,y2=y2,id=1:n)
+    y1 <- rbinom(n,1,p1)
+    y2 <- (y1==1)*rbinom(n,1,p11/p1)+(y1==0)*rbinom(n,1,p01/(1-p1))
+    list(x1=x1,x2=x2,y1=y1,y2=y2,id=1:n)
 } ## }}} 
 
 ##' @export 
 simBinFam <- function(n,beta=0.0,rhopp=0.1,rhomb=0.7,rhofb=0.1,rhobb=0.7) { ## {{{ 
-xc <- runif(n)*0.5
-xm <- rbinom(n,1,0.5+xc); 
-xf <- rbinom(n,1,0.5+xc); 
-xb1 <- rbinom(n,1,0.3+xc); 
-xb2 <- rbinom(n,1,0.3+xc); 
+    xc <- runif(n)*0.5
+    xm <- rbinom(n,1,0.5+xc); 
+    xf <- rbinom(n,1,0.5+xc); 
+    xb1 <- rbinom(n,1,0.3+xc); 
+    xb2 <- rbinom(n,1,0.3+xc); 
 ###
-rn <- matrix(rnorm(n*4),n,4)
-corm <- matrix( c(1,rhopp,rhomb,rhomb, rhopp,1,rhofb,rhofb, rhomb,rhofb,1,rhobb, rhomb,rhofb,rhobb,1),4,4)
-rnn <- t( corm %*% t(rn))
-zm <- exp(rnn[,1]); zf <- exp(rnn[,2]); zb1 <- exp(rnn[,3]); zb2 <- exp(rnn[,4]); 
-pm <- exp(0.5+xm*beta+zm)
-pf <- exp(0.5+xf*beta+zf)
-pf <- pf/(1+pf)
-pm <- pm/(1+pm)
-pb1 <- exp(0.5+xb1*beta+zb1)
-pb1 <- pb1/(1+pb1)
-pb2 <- exp(0.5+xb2*beta+zb2)
-pb2 <- pb2/(1+pb2)
-ym <- rbinom(n,1,pm)
-yf <- rbinom(n,1,pf)
-yb1 <- rbinom(n,1,pb1)
-yb2 <- rbinom(n,1,pb2)
-#
-agem <- 20+runif(n)*10
-ageb1 <- 5+runif(n)*10
-data.frame(agem=agem,agef=agem+3+rnorm(n)*2,
-	   ageb1=ageb1,ageb2=ageb1+1+runif(n)*3,xm=xm,xf=xf,xb1=xb1,xb2=xb2,ym=ym,yf=yf,yb1=yb1,yb2=yb2,id=1:n)
+    rn <- matrix(rnorm(n*4),n,4)
+    corm <- matrix( c(1,rhopp,rhomb,rhomb, rhopp,1,rhofb,rhofb, rhomb,rhofb,1,rhobb, rhomb,rhofb,rhobb,1),4,4)
+    rnn <- t( corm %*% t(rn))
+    zm <- exp(rnn[,1]); zf <- exp(rnn[,2]); zb1 <- exp(rnn[,3]); zb2 <- exp(rnn[,4]); 
+    pm <- exp(0.5+xm*beta+zm)
+    pf <- exp(0.5+xf*beta+zf)
+    pf <- pf/(1+pf)
+    pm <- pm/(1+pm)
+    pb1 <- exp(0.5+xb1*beta+zb1)
+    pb1 <- pb1/(1+pb1)
+    pb2 <- exp(0.5+xb2*beta+zb2)
+    pb2 <- pb2/(1+pb2)
+    ym <- rbinom(n,1,pm)
+    yf <- rbinom(n,1,pf)
+    yb1 <- rbinom(n,1,pb1)
+    yb2 <- rbinom(n,1,pb2)
+                                        #
+    agem <- 20+runif(n)*10
+    ageb1 <- 5+runif(n)*10
+    data.frame(agem=agem,agef=agem+3+rnorm(n)*2,
+               ageb1=ageb1,ageb2=ageb1+1+runif(n)*3,xm=xm,xf=xf,xb1=xb1,xb2=xb2,ym=ym,yf=yf,yb1=yb1,yb2=yb2,id=1:n)
 } ## }}} 
 
 ##' @export
-simBinFam2 <- function(n,beta=0.0,theta=1,lam1=1,lam2=1,...) { ## {{{ 
-x1 <- rbinom(n,1,0.5); x2 <- rbinom(n,1,0.5); 
-x3 <- rbinom(n,1,0.5); x4 <- rbinom(n,1,0.5); 
+simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{ 
+    x1 <- rbinom(n,1,0.5); x2 <- rbinom(n,1,0.5); 
+    x3 <- rbinom(n,1,0.5); x4 <- rbinom(n,1,0.5); 
 ###
-zf <- rgamma(n,shape=lam1); zb <- rgamma(n,shape=lam2); 
-pm <- exp(0.5+x1*beta+zf)
-pf <- exp(0.5+x2*beta+zf)
-pf <- pf/(1+pf)
-pm <- pm/(1+pm)
-pb1 <- exp(0.5+x1*beta+zf+zb)
-pb1 <- pb1/(1+pb1)
-ym <- rbinom(n,1,pm)
-yf <- rbinom(n,1,pf)
-yb1 <- rbinom(n,1,pb1)
-yb2 <- rbinom(n,1,pb1)
-#
-data.frame(x1=x1,x2=x2,ym=ym,yf=yf,yb1=yb1,yb2=yb2,id=1:n)
+    zf <- rgamma(n,shape=lam1); zb <- rgamma(n,shape=lam2); 
+    pm <- exp(0.5+x1*beta+zf)
+    pf <- exp(0.5+x2*beta+zf)
+    pf <- pf/(1+pf)
+    pm <- pm/(1+pm)
+    pb1 <- exp(0.5+x1*beta+zf+zb)
+    pb1 <- pb1/(1+pb1)
+    ym <- rbinom(n,1,pm)
+    yf <- rbinom(n,1,pf)
+    yb1 <- rbinom(n,1,pb1)
+    yb2 <- rbinom(n,1,pb1)
+                                        #
+    data.frame(x1=x1,x2=x2,ym=ym,yf=yf,yb1=yb1,yb2=yb2,id=1:n)
 } ## }}} 
 
 onerunfam <- function(i,n,alr=0,manual=1,time=0,simplealr=1,theta=1) { ## {{{ 
 ### n=200; beta=0.2; theta=1; time=0; i=1
-print(i)
-dd <- simBinFam(n,beta=0,theta=theta) 
-ddl <- fast.reshape(dd,varying="y",keep="y")
-out2t <- system.time(
- marg  <-  glm(y~+1,data=ddl,family=binomial())
- )
- ps <- predict(marg,type="response")
-if (time==1) print(out2t)
+    print(i)
+    dd <- simBinFam(n,beta=0,theta=theta) 
+    ddl <- fast.reshape(dd,varying="y",keep="y")
+    out2t <- system.time(
+        marg  <-  glm(y~+1,data=ddl,family=binomial())
+        )
+    ps <- predict(marg,type="response")
+    if (time==1) print(out2t)
 
-if (manual==1) {
-    if (time==1) print(date())
-     ddl$ps <- ps
-     fam <- familycluster.index(ddl$id)
-     prtfam <- ddl[fam$familypairindex,]
-     prtfam$subfam <- fam$subfamilyindex
-     ### lave afhængighedsdesign pba af wide format zyg1*zyg2  feks
-     prtfamclust <- data.frame(fast.reshape(prtfam,id="subfam"))
+    if (manual==1) {
+        if (time==1) print(date())
+        ddl$ps <- ps
+        fam <- familycluster.index(ddl$id)
+        prtfam <- ddl[fam$familypairindex,]
+        prtfam$subfam <- fam$subfamilyindex
+### lave afhængighedsdesign pba af wide format zyg1*zyg2  feks
+        prtfamclust <- data.frame(fast.reshape(prtfam,id="subfam"))
 ###     des <- model.matrix(~-1+factor(num1):factor(num2),data=prtfamclust)
-     mf <- with(prtfamclust,(num1=="m")*(num2=="f")*1)
-     mb <- with(prtfamclust,(num1=="m" | num1=="f")*(num2=="b1" | num2=="b2")*1)
-     bb <- with(prtfamclust,(num1=="b1" )*(num2=="b1" | num2=="b2")*1)
-     des <- cbind(mf,mb,bb)*1
-     mulig <- (apply(des,2,sum)>0)
-     names <- colnames(des)
-     prtfamclust <- cbind(prtfamclust,des)
-    prtfam <- fast.reshape(prtfamclust,varying=c("y","ps","num"),keep=c("y","ps","num","subfam","id",names))
-    prtfam$famclust <- prtfam$id1
-    destheta <- prtfam[,names]
-    if (time==1) print(date())
-    udt <-  system.time(
-    udf <- binomial.twostage(prtfam$y,data=prtfam,
-	   clusters=prtfam$subfam, detail=0,
+        mf <- with(prtfamclust,(num1=="m")*(num2=="f")*1)
+        mb <- with(prtfamclust,(num1=="m" | num1=="f")*(num2=="b1" | num2=="b2")*1)
+        bb <- with(prtfamclust,(num1=="b1" )*(num2=="b1" | num2=="b2")*1)
+        des <- cbind(mf,mb,bb)*1
+        mulig <- (apply(des,2,sum)>0)
+        names <- colnames(des)
+        prtfamclust <- cbind(prtfamclust,des)
+        prtfam <- fast.reshape(prtfamclust,varying=c("y","ps","num"),keep=c("y","ps","num","subfam","id",names))
+        prtfam$famclust <- prtfam$id1
+        destheta <- prtfam[,names]
+        if (time==1) print(date())
+        udt <-  system.time(
+            udf <- binomial.twostage(prtfam$y,data=prtfam,
+                                     clusters=prtfam$subfam, detail=0,
 ###	   score.method="nlminb",
-	   score.method="fisher.scoring",
-	   theta.des=prtfam[,names],
-	   max.clust=1000,iid=1,
-           Nit=60,marginal.p=prtfam$ps,se.clusters=prtfam$famclust)
-    )
-    if (time==1) print(udt)
+                                     score.method="fisher.scoring",
+                                     theta.des=prtfam[,names],
+                                     max.clust=1000,iid=1,
+                                     Nit=60,marginal.p=prtfam$ps,se.clusters=prtfam$famclust)
+            )
+        if (time==1) print(udt)
 
-    zfam <- rbind(c(1,0,0), ## m-f
-	      	  c(0,1,0),  ## m-b1
-	      	  c(0,1,0),  ## m-b2
-                  c(1,0,0), ## f-m
-	      	  c(0,1,0),  ## f-b1
-	      	  c(0,1,0),  ## f-b2
-	      	  c(0,1,0), ## b1-m
-	      	  c(0,1,0), ## b1-f
-	      	  c(0,0,1), ## b1-b2
-	      	  c(0,1,0), ## b2-m
-	      	  c(0,1,0), ## b2-f
-	      	  c(0,0,1)) ## b2-b1
+        zfam <- rbind(c(1,0,0), ## m-f
+                      c(0,1,0),  ## m-b1
+                      c(0,1,0),  ## m-b2
+                      c(1,0,0), ## f-m
+                      c(0,1,0),  ## f-b1
+                      c(0,1,0),  ## f-b2
+                      c(0,1,0), ## b1-m
+                      c(0,1,0), ## b1-f
+                      c(0,0,1), ## b1-b2
+                      c(0,1,0), ## b2-m
+                      c(0,1,0), ## b2-f
+                      c(0,0,1)) ## b2-b1
 
 
-    if (alr==1) {
+        if (alr==1) {
 	    if (simplealr==0) {
 ###       cvec <- (ddl$num=="m"| ddl$num=="f")*1 +(ddl$num=="b1"| ddl$num=="b2")*2
 ###       k <- 2
@@ -699,30 +699,30 @@ if (manual==1) {
 ###    ZMAST <- cbind(ZMAST,c(0,0,0,0,1,1,0,1,1,0,1,1))
 ###
 ###   outl <- alr(ddl$y~+1,id=ddl$id,depmodel="general",ainit=rep(0.01,3),z=udz$z,zmast=0)
-    if (!require(alr)) stop("'alr' package required")
-   out4t <-  system.time(
-   outl <- alr(ddl$y~+1,id=ddl$id,depmodel="general",zlocs=rep(1:4,n),ainit=rep(0.01,3),z=zfam,zmast=1)
-   )
-   if (time==1) print(out4t)
+                if (!require(alr)) stop("'alr' package required")
+                out4t <-  system.time(
+                    outl <- alr(ddl$y~+1,id=ddl$id,depmodel="general",zlocs=rep(1:4,n),ainit=rep(0.01,3),z=zfam,zmast=1)
+                    )
+                if (time==1) print(out4t)
 
-   outl <- c(summary(outl)$alpha[,1],summary(outl)$alpha[,2])
-   names(outl) <- c(rep("alr",3),rep("se-alr",3))
+                outl <- c(summary(outl)$alpha[,1],summary(outl)$alpha[,2])
+                names(outl) <- c(rep("alr",3),rep("se-alr",3))
 	    } else {
-   outl <- alr(ddl$y~+1,id=ddl$id,depmodel="exchangeable",ainit=rep(0.01,1))
-   outl <- c(summary(outl)$alpha[,1],summary(outl)$alpha[,2])
-   names(outl) <- c(rep("alr",1),rep("se-alr",1))
+                outl <- alr(ddl$y~+1,id=ddl$id,depmodel="exchangeable",ainit=rep(0.01,1))
+                outl <- c(summary(outl)$alpha[,1],summary(outl)$alpha[,2])
+                names(outl) <- c(rep("alr",1),rep("se-alr",1))
 	    }
 
+        }
+
+    } else { ### med design formula
+        form <- ~factor(num1)*factor(num2)
+        udbin <- easy.binomial.twostage(marg,data=ddl,
+                                        response="y",id="id",theta.formula=form,
+                                        marginal.p=ps,
+                                        score.method="fisher.scoring")
+
     }
-
-} else { ### med design formula
-  form <- ~factor(num1)*factor(num2)
-   udbin <- easy.binomial.twostage(marg,data=ddl,
-	   response="y",id="id",theta.formula=form,
-	   marginal.p=ps,
-              score.method="fisher.scoring")
-
-}
 
 ###   if (alr==1) { ### alr til simpelt design
 ###   outl <- alr(ddl$y~ddl$x,id=ddl$id,depm="exchangeable", ainit=0.01)
@@ -730,29 +730,29 @@ if (manual==1) {
 ###   ud <- c(udbin$theta,udbin$var.theta^.5,udbin$hessi^.5,c(outl)[1:2])
 ###   names(ud) <- c("TWO","se-two","se-twoR","alr","se-alr")
 ###   } 
-ud <- c(udf$theta,diag(udf$var.theta)^.5)
-if (alr==1)  ud <- c(ud,outl)
-   return(ud)
+    ud <- c(udf$theta,diag(udf$var.theta)^.5)
+    if (alr==1)  ud <- c(ud,outl)
+    return(ud)
 } ## }}} 
 
 onerunfam2 <- function(i,n,alr=0,manual=1,time=0,theta=1) { ## {{{ 
 ### n=1000; beta=0.2; theta=1; time=0; i=1
-print(i)
-dd <- simBinFam(n,beta=0,theta=theta) 
-ddl <- fast.reshape(dd,varying="y",keep="y")
+    print(i)
+    dd <- simBinFam(n,beta=0,theta=theta) 
+    ddl <- fast.reshape(dd,varying="y",keep="y")
 
-desfs <- function(x,num1="num1",num2="num2")
-{ ## {{{ 
-     mf <- (x[num1]=="m")*(x[num2]=="f")*1
-     mb <- (x[num1]=="m" | x[num1]=="f")*(x[num2]=="b1" | x[num2]=="b2")*1
-     bb <- (x[num1]=="b1")*(x[num2]=="b1" | x[num2]=="b2")*1
-     c(mf,mb,bb)
-} ## }}} 
+    desfs <- function(x,num1="num1",num2="num2")
+        { ## {{{ 
+            mf <- (x[num1]=="m")*(x[num2]=="f")*1
+            mb <- (x[num1]=="m" | x[num1]=="f")*(x[num2]=="b1" | x[num2]=="b2")*1
+            bb <- (x[num1]=="b1")*(x[num2]=="b1" | x[num2]=="b2")*1
+            c(mf,mb,bb)
+        } ## }}} 
 
-ud <- easy.binomial.twostage(y~+1,data=ddl,
-      response="y",id="id",
-      score.method="fisher.scoring",deshelp=0,
-      theta.formula=desfs,desnames=c("pp","pc","cc"))
+    ud <- easy.binomial.twostage(y~+1,data=ddl,
+                                 response="y",id="id",
+                                 score.method="fisher.scoring",deshelp=0,
+                                 theta.formula=desfs,desnames=c("pp","pc","cc"))
 
     ud <- c(ud$theta[,1],diag(ud$var.theta)^.5)
 
@@ -769,16 +769,16 @@ ud <- easy.binomial.twostage(y~+1,data=ddl,
 	      	  c(0,1,0), ## b2-f
 	      	  c(0,0,1)) ## b2-b1
 
-if (alr==1) {
-   if (!require(alr)) stop("'alr' package required")
-   outl <- alr(ddl$y~+1,id=ddl$id,
-   depmodel="general",zlocs=rep(1:4,n),ainit=rep(0.01,3),z=zfam,zmast=1)
-   outl <- c(summary(outl)$alpha[,1],summary(outl)$alpha[,2])
-   names(outl) <- c(rep("alr",3),rep("se-alr",3))
-}
+    if (alr==1) {
+        if (!require(alr)) stop("'alr' package required")
+        outl <- alr(ddl$y~+1,id=ddl$id,
+                    depmodel="general",zlocs=rep(1:4,n),ainit=rep(0.01,3),z=zfam,zmast=1)
+        outl <- c(summary(outl)$alpha[,1],summary(outl)$alpha[,2])
+        names(outl) <- c(rep("alr",3),rep("se-alr",3))
+    }
 
-if (alr==1)  ud <- c(ud,outl)
-   return(ud)
+    if (alr==1)  ud <- c(ud,outl)
+    return(ud)
 } ## }}} 
 
 #####' @S3method summary twostage

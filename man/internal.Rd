@@ -13,6 +13,7 @@
 \alias{plotcr}
 \alias{sim}
 \alias{simBinFam}
+\alias{simBinFam2}
 \alias{simBinPlack}
 \alias{simCox}
 \alias{simnordic}
