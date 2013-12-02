@@ -206,7 +206,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
     padd$cluster.names <- lse.clusters
   } else {
     ff <- as.formula(paste("Hist(",timevar,",",causes,")~",paste(c("1",covars,indiv2),collapse="+")))
-    padd <- prodlim(ff,data=mydata)
+    padd <- prodlim::prodlim(ff,data=mydata)
   }
 ###  class(padd) <- c("bicomprisk",class(padd))
  if (return.data==1) return(list(comp.risk=padd,data=mydata)) else return(padd)  

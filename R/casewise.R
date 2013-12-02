@@ -136,10 +136,11 @@ casewise.test <- function(conc,marg,test="no-test",p=0.01)
 ##' @param cause.marg specififes which cause that should be used for marginal cif based on prodlim
 ##' @author Thomas Scheike
 ##' @examples
+##' \donttest{
 ##' library(prodlim)
 ##' data(prt);
 ##' 
-##' ### marginal cumulative incidence of prostate cancer 
+##' ### marginal cumulative incidence of prostate cancer##' 
 ##' outm <- prodlim(Hist(time,status)~+1,data=prt)
 ##' 
 ##' times <- 60:100
@@ -159,6 +160,7 @@ casewise.test <- function(conc,marg,test="no-test",p=0.01)
 ##' plot(cdz,ci=NULL,ylim=c(0,0.5),xlim=c(60,100),legend=TRUE)
 ##' summary(cdz)
 ##' summary(cmz)
+##' }
 ##' @export
 casewise <- function(conc,marg,cause.marg)
 { ## {{{

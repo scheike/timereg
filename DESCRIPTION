@@ -19,11 +19,11 @@ Imports:
     numDeriv,
     compiler,
     splines,
-    prodlim,
     Rcpp (>= 0.9.2),
     RcppArmadillo (>= 0.3.6)
 Suggests:
     lava.tobit (>= 0.4-7),
+    prodlim,
     testthat,
     ucminf
 Enhances: alr

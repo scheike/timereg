@@ -1,6 +1,10 @@
 ##' @export
 plotcr <- function(x,col,lty,legend=TRUE,which=1:2,
                    ask = prod(par("mfcol")) < length(which) && dev.interactive(), ...) {
+    if (inherits(try(find.package("prodlim"),silent=TRUE),"try-error")) {
+        stop("Needs prodlim")
+    }
+
   dots <- list(...)
   if (is.null(dots$xlab)) dots$xlab <- "Time"
   if ((!is.data.frame(x) | !is.matrix(x)) && ncol(x)<2) stop("Wrong type of data")  
@@ -10,7 +14,7 @@ plotcr <- function(x,col,lty,legend=TRUE,which=1:2,
       dots$curvlab <- seq(length(causes))
     }
     colnames(x)[1:2] <- c("t","status")
-    co <- prodlim(Hist(t,status)~1,data=data.frame(x))
+    co <- prodlim::prodlim(Hist(t,status)~1,data=data.frame(x))    
     ##    co <- cuminc(x[,1],x[,2])
     ##    if (any(x[,1]<0)) {
     ##      do.call(co,p)
@@ -67,8 +71,8 @@ plotcr <- function(x,col,lty,legend=TRUE,which=1:2,
   if (2%in%which) {
     colnames(x)[1:4] <- c("t1","t2","cause1","cause2")
 
-    co1 <- prodlim(Hist(t1,cause1)~1,data.frame(x))
-    co2 <- prodlim(Hist(t2,cause2)~1,data.frame(x))
+    co1 <- prodlim::prodlim(Hist(t1,cause1)~1,data.frame(x))
+    co2 <- prodlim::prodlim(Hist(t2,cause2)~1,data.frame(x))
     if (is.null(dots$lwd)) dots$lwd <- 1
     if (missing(lty)) lty <- seq_len(length(co1$cuminc))
     if (missing(col)) col <- rep(1,length(co1$cuminc))
