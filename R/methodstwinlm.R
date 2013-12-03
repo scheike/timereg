@@ -28,7 +28,6 @@ summarygroup.twinlm <- function(object,...) {
         pp <- sapply(lambdas,function(x) ii[[i]][grep(x,rownames(res),fixed=TRUE)])
         nam <- c("A","C","D","E")[which(unlist(lapply(pp,function(x) length(x)>0)))]
         pp <- unlist(pp); names(pp) <- nam
-        browser()
         acde <- c(acde,list(acde.twinlm(object,pp)))
         nn0 <- cc[[i]]
         if (nn0[1]=="mu") nn0[1] <- "(Intercept)"
@@ -129,7 +128,6 @@ summary.twinlm <- function(object,transform=FALSE,...) {
 
     lambda.w <- which(sapply(lambda.idx, function(x) length(x)>0))
 
-##    browser()
     rownames(myest)[myest.varpos] <- paste("sd(",c("A)","C)","D)","E)"),sep="")[lambda.w]
 
     varEst <- rep(0,4)

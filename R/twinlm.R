@@ -218,7 +218,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, group.equal=FALSE, st
   } else {
     e <- estimate(mm,dd,weight=weight,estimator=estimator,fix=FALSE,control=optim,...)
   }
-  
+
   if (!is.null(optim$refit) && optim$refit) {
     optim$method <- "NR"
     optim$start <- pars(e)
@@ -235,7 +235,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, group.equal=FALSE, st
     singletons <- sum((!dd0[,1])*dd0[,2] + (!dd0[,2])*dd0[,1])
     return(c(pairs,singletons))
   }
-  counts <- lapply(dd,counts)
+  counts <- lapply(dd, function(x) counts(x[,outcomes]))
   ## mz  <- counts(object$data.mz[,object$outcomes])
   ## dz  <- counts(object$data.dz[,object$outcomes])
   if (!e$model$missing) {
@@ -244,15 +244,6 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, group.equal=FALSE, st
       zygtab <- c(paste(counts[[1]],collapse="/"),paste(counts[[2]],collapse="/"))
       names(zygtab) <- c("MZ-pairs/singletons","DZ-pairs/singletons")
   }
-  ## if (object$OS) {
-  ##   os  <- counts(object$data.os[,object$outcomes])
-  ##   if (!object$estimate$model$missing) {
-  ##     zygtab <- c(zygtab,"OS-pairs"=os[1])
-  ##   } else {
-  ##     zygtab <- c(zygtab,paste(os,collapse="/"))
-  ##     names(zygtab)[3] <- "OS-pairs/singletons"
-  ##   }
-  ## } 
 
   res <- list(coefficients=e$opt$estimate, vcov=Inverse(information(e)),
               estimate=e, model=mm, call=cl, data=data, zyg=zyg,
