@@ -145,8 +145,8 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   ww0 <- cbind(ww0,left.trunc[1])
   ww0 <- cbind(ww0,left.trunc[2])
   colnames(ww0)[c(-1,0) + ncol(ww0)] <- truncvar2
-  ww0$intnames1 <- paste("[",left.trunc[1],",",right.cens[1],")",sep="")
-  ww0$intnames2 <- paste("[",left.trunc[2],",",right.cens[2],")",sep="")
+  ww0[,"intnames1"] <- paste("[",left.trunc[1],",",right.cens[1],")",sep="")
+  ww0[,"intnames2"] <- paste("[",left.trunc[2],",",right.cens[2],")",sep="")
 
   if (silent<=-1) print(head(ww0))
   if (silent<=0)

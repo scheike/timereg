@@ -881,7 +881,7 @@ if (class(margsurv)[1]=="coxph")
   {  ## {{{
 	  ps <- predict(margsurv)
 	  pentry <- predict(margsurv,pentry)
-  }
+  } ## }}} 
   else stop("marginal survival probabilities must be given as marginal.sur or margsurv \n"); 
 
   data <- cbind(data,ps)
