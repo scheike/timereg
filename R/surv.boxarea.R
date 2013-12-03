@@ -145,14 +145,14 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   ww0 <- cbind(ww0,left.trunc[1])
   ww0 <- cbind(ww0,left.trunc[2])
   colnames(ww0)[c(-1,0) + ncol(ww0)] <- truncvar2
-  ww0[,"intnames1"] <- paste("[",left.trunc[1],",",right.cens[1],")",sep="")
-  ww0[,"intnames2"] <- paste("[",left.trunc[2],",",right.cens[2],")",sep="")
+###  ww0[,"intnames1"] <- paste("[",left.trunc[1],",",right.cens[1],")",sep="")
+###  ww0[,"intnames2"] <- paste("[",left.trunc[2],",",right.cens[2],")",sep="")
 
   if (silent<=-1) print(head(ww0))
   if (silent<=0)
     message(paste("  Number of joint events:",sum(apply(ww0[,status2],1,sum)==2),"of ",nrow(ww0)),"\n");
 
-  varying <- c(timevar,status,"left",covars,"intnames")
+  varying <- c(timevar,status,"left",covars)
   lr.data <- data.frame(fast.reshape(ww0,varying=varying,numname=num))
   if (silent<=-1) {
     print("surv.boxarea after fast.reshape"); 

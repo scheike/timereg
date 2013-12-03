@@ -56,14 +56,15 @@
 ##' ##ud4=surv.boxarea(c(0.5,0.5),c(2,2),data=d,id="cluster",timevar="time",status="status")
 ##' 
 ##' ## everything done in one call 
-##' ud1 <- piecewise.data(c(0,0.5,2),data=d,timevar="time",status="status",id="cluster")
-##' head(ud1)
+##' ud <- piecewise.data(c(0,0.5,2),data=d,timevar="time",status="status",id="cluster")
+##' ud$strata <- factor(ud$strata); 
+##' ud$intstrata <- factor(ud$intstrata)
 ##' 
 ##' ## makes strata specific id variable to identify pairs within strata
 ##' ## se's computed based on the id variable across strata "cluster"
-##' ud1$idstrata <- ud1$id+(ud1$strata-1)*2000
+##' ud$idstrata <- ud$id+(as.numeric(ud$strata)-1)*2000
 ##' 
-##' marg2 <- aalen(Surv(boxtime,status)~-1+factor(num):factor(strata),
+##' marg2 <- aalen(Surv(boxtime,status)~-1+factor(num):factor(intstrata),
 ##'                data=ud,n.sim=0,robust=0)
 ##' tdes <- model.matrix(~-1+factor(strata),data=ud)
 ##' fitp2<-twostage(marg2,data=ud,se.clusters=ud$cluster,clusters=ud$idstrata,
@@ -72,7 +73,8 @@
 ##' summary(fitp2)
 ##' 
 ##' ### now fitting the model with symmetry, i.e. strata 2 and 3 same effect
-##' ud$stratas <- ud$strata; ud$stratas[ud$strata==3] <- 2;
+##' ud$stratas <- ud$strata; 
+##' ud$stratas[ud$strata=="0.5-2,0-0.5"] <- "0-0.5,0.5-2"
 ##' tdes2 <- model.matrix(~-1+factor(stratas),data=ud)
 ##' fitp3<-twostage(marg2,data=ud,clusters=ud$idstrata,se.cluster=ud$cluster,
 ##'                 score.method="fisher.scoring",model="clayton.oakes",
@@ -731,6 +733,8 @@ datalr$tsstatus <- datalr[,status]
 datalr$tsid <- datalr[,id]
 ###
 datalr$strata <- paste( c(cut1[i1-1],cut2[i2-1]),c(cut1[i1],cut2[i2]),collapse=",",sep="-")
+datalr$intstrata <- 
+c(paste(c(cut1[i1-1],cut1[i1]),collapse=",",sep="-"),paste( c(cut2[i2-1],cut2[i2]),collapse=",",sep="-"))
 
 if (silent<=-1) print(head(datalr)); 
 dataud <- rbind(dataud,datalr)
@@ -829,8 +833,7 @@ coefmat <- function(est,stderr,digits=3,...) { ## {{{
 ##' out3 <- easy.twostage(marg,data=dfam,time="time",status="status",id="id",deshelp=0,
 ##'                       score.method="fisher.scoring",theta.formula=desfs,
 ##'                       desnames=c("parent-parent","parent-child","child-cild"))
-##' 
-##' #summary(out3)
+##' summary(out3)
 ##' @keywords survival twostage 
 ##' @export
 ##' @param margsurv model 
