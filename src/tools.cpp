@@ -43,12 +43,12 @@ BEGIN_RCPP
       LogicalMatrix mm(nclust,n);
       for (unsigned i=0; i<nclust; i++)
 	mm(i,_) = Rcpp::as<LogicalVector>(d[idx[k]+i]);	    
-      myList[nfixed+k] = Rcpp::LogicalMatrix(1,M,mm.begin());
+      myList[nfixed+k] = Rcpp::LogicalMatrix(M,1,mm.begin());
     } else if (Rf_isInteger(d[idx[k]])) {
       IntegerMatrix mm(nclust,n);
       for (unsigned i=0; i<nclust; i++)
 	mm(i,_) = Rcpp::as<IntegerVector>(d[idx[k]+i]);	    
-      myList[nfixed+k] = Rcpp::IntegerMatrix(1,M,mm.begin());
+      myList[nfixed+k] = Rcpp::IntegerMatrix(M,1,mm.begin());
     } else if (Rf_isNumeric(d[idx[k]])) {
       NumericMatrix mm(nclust,n);
       for (unsigned i=0; i<nclust; i++)
@@ -58,12 +58,12 @@ BEGIN_RCPP
       ComplexMatrix mm(nclust,n);
       for (unsigned i=0; i<nclust; i++)
 	mm(i,_) = Rcpp::as<ComplexVector>(d[idx[k]+i]);	    
-      myList[nfixed+k] = Rcpp::ComplexMatrix(1,M,mm.begin());
+      myList[nfixed+k] = Rcpp::ComplexMatrix(M,1,mm.begin());
     } else if (Rf_isString(d[idx[k]]) || Rf_isFactor(d[idx[k]])) {
       CharacterMatrix mm(nclust,n);
       for (unsigned i=0; i<nclust; i++)
 	mm(i,_) = Rcpp::as<CharacterVector>(d[idx[k]+i]);	    
-      myList[nfixed+k] = Rcpp::CharacterMatrix(1,M,mm.begin());
+      myList[nfixed+k] = Rcpp::CharacterMatrix(M,1,mm.begin());
     } 
   }      
 
