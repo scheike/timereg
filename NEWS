@@ -1,8 +1,13 @@
+
+* Version 0.2.6 <2013-12-07 Sat>
+  - C++ source code cleanup
+  - Optimization of fast.reshape
+
 * Version 0.2.5 <2013-11-01 Fri>
   - New datasets: dermalridges, dermalridgesMZ
-  - Grouped analysis updated in twinlm
+  - Grouped analysis updated in twinlm (e.g. sex limitation model)
   - Confidence limits for genetic and environmental effects are now
-    based on standard Wald confidence limits. (use the 'transform'
+    based on standard (symmetric) Wald confidence limits. (use the 'transform'
     argument of the summary method to apply logit-transform)
   - Improved output in twinlm
     

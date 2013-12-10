@@ -94,7 +94,7 @@ BEGIN_RCPP
     return(res);    
   }
 
-  for (unsigned j=0; j<n; j++) {
+  for (int j=0; j<n; j++) {
     mat Sj = S; Sj.shed_row(j); 
     mat Sj0 = Sj.col(j);
     Sj.shed_col(j);
@@ -116,11 +116,11 @@ BEGIN_RCPP
     mat Phis = phis;
     uvec idx1(n-2);
     uvec idx2(2);
-    for (unsigned i=0; i<(n-1); i++) {
-      for (unsigned j=(i+1); j<n; j++) {
+    for (int i=0; i<(n-1); i++) {
+      for (int j=(i+1); j<n; j++) {
 	idx2(0) = i; idx2(1) = j;
 	unsigned pos = 0;
-	for (unsigned k=0; k<n; k++) {
+	for (int k=0; k<n; k++) {
 	  if (k!=i && k!=j) {
 	    idx1(pos) = k; 
 	    pos++;

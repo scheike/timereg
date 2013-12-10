@@ -1,5 +1,4 @@
 if (require(testthat)) {
   library(mets)
-
-  test_package("mets")
+  test_check("mets")
 }

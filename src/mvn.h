@@ -52,15 +52,17 @@ vecmat Dbvn(double y1, double y2, double R);
 double dbvnorm(double y1, double y2, double R);
 
 
-extern "C" double mvtdst_(const int *N, const int *NU,
-			  const double *LOWER, const double *UPPER,
+extern "C" double mvtdst_(const int *N, 
+			  const int *NU,
+			  const double *LOWER, 
+			  const double *UPPER,
 			  const int *INFIN,
 			  const double *CORREL,
 			  const double *DELTA,
 			  const int *MAXPTS,
 			  const double *ABSEPS,
 			  const double *RELEPS,
-			  const double *ERR,
+			  const double *ERS,
 			  const double *VAL,
 			  const int *INFORM);
 
