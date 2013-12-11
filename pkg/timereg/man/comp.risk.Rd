@@ -136,7 +136,6 @@ Martinussen and Scheike (2006), Dynamic regression models for survival data, Spr
 }
 \author{Thomas Scheike}
 \examples{
-library(timereg)
 data(bmt); 
 
 clust <- rep(1:204,each=2)

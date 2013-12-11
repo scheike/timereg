@@ -40,6 +40,10 @@ max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL)
 
 ###  if ( (nrow(Z)!=nrow(data)) && (!is.null(id))) stop("Missing values in design matrix not allowed with id\n"); 
   if (nrow(Z)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
+  if (!is.null(id)) {
+	  if (length(id)!=nrow(Z)) stop("id length and data not the same\n"); 
+  }
+  if (nrow(Z)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
 
   ### if clusters=null perhaps given through cluster() special 
   if (is.null(clusters)) clusters <- des$clusters  

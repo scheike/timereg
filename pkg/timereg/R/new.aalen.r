@@ -38,6 +38,9 @@ aalen<-function (formula = formula(data),
 
   if ((nrow(X)!=nrow(data) && (!is.null(id)))) stop("Missing values in design matrix not allowed with id \n"); 
 ###  if (nrow(Z)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
+  if (!is.null(id)) {
+	  if (length(id)!=nrow(X)) stop("id length and data not the same\n"); 
+  }
 
   cluster.call<- clusters; 
   survs<-read.surv(m,id,npar,clusters,start.time,max.time,silent=silent)
