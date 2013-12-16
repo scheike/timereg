@@ -52,9 +52,9 @@
   '\code{start}'.}
 
   \item{type}{Character defining the type of analysis to be
-  performed. Should be a subset of "aced" (additive genetic
-  factors, common environmental factors, unique
-  environmental factors, dominant genetic factors).}
+  performed. Should be a subset of "acde" (additive genetic
+  factors, common environmental factors, dominant genetic
+  factors, unique environmental factors).}
 
   \item{eqmean}{Equal means (with type="u")?}
 
