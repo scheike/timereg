@@ -181,15 +181,6 @@ if (class(margsurv)!="coxph") {
   theta.iid <- matrix(0,antsecluster,ptheta)
   ## }}}
   
-###  print(" mMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"); 
-###  print(dim(Biid)); print(dim(gamma.iid)); 
-###  print(print(c(px,pz,maxtimesim,antclust)))
-###  print(times); print(c(Ntimes,maxtimesim))
-###  print(rbind(clusters,secluster)); 
-###  print(antclust); print(antsecluster); 
-###  print("NOTAYLOR"); 
-###  print(notaylor) 
-
   nparout <- .C("twostagereg", 
         as.double(times), as.integer(Ntimes), as.double(X),
    	as.integer(antpers), as.integer(px), as.double(Z), 
