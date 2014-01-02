@@ -306,9 +306,9 @@ malloc_mat(*pg,(*px)*(*Ntimes),M1M2n);
   c0=clock();
 
   for (s=1;s<*Nalltimes;s++){
-	  time=alltimes[s]; dtime=time-alltimes[s-1]; 
-	  //      mat_zeros(X); mat_zeros(Z); mat_zeros(WX); mat_zeros(WZ);
-	  vec_zeros(rowX); vec_zeros(rowZ); stat=0;  
+      time=alltimes[s]; dtime=time-alltimes[s-1]; 
+  //  mat_zeros(X); mat_zeros(Z); mat_zeros(WX); mat_zeros(WZ);
+  vec_zeros(rowX); vec_zeros(rowZ); stat=0;  
 
 	  // {{{ reading design and making matrix products
 	  if (s==1)  { // {{{ reading start design 
@@ -398,7 +398,8 @@ malloc_mat(*pg,(*px)*(*Ntimes),M1M2n);
 
 
 	  /* correction from offsets calculated here */
-	  if (*mof==1)  {vM(WX,offset,rowX); Mv(AI,rowX,tmpv1); 
+	  if (*mof==1)  {
+		  vM(WX,offset,rowX); Mv(AI,rowX,tmpv1); 
 		  scl_vec_mult(dtime,tmpv1,tmpv1); // vec_subtr(AIXWdN,tmpv1,dB); 
 		  vM(WZ,offset,rowZ);  vM(XWZAI,rowX,dgam); 
 		  vec_subtr(rowZ,dgam,dgam); 
@@ -413,11 +414,13 @@ malloc_mat(*pg,(*px)*(*Ntimes),M1M2n);
 //	  mat_copy(Ct,C[s]);
          for (j=0;j<*pg;j++) for (i=0;i<*px;i++)  {
 	    ME(XZAIn,(s-1)*(*px)+i,j)=ME(XWZAI,i,j); 
-	    ME(Cn,(s-1)*(*px)+i,j)=ME(Ct,i,j); 
+//	    ME(Cn,(s-1)*(*px)+i,j)=ME(Ct,i,j); 
 	 }
 
 	  if (stat==1) {
 		  vcu[l]=time; cu[l]=time; times[l]=time; 
+
+         for (j=0;j<*pg;j++) for (i=0;i<*px;i++)  ME(Cn,l*(*px)+i,j)=ME(Ct,i,j); 
 
 		  for (k=0;k<*pg;k++){ 
 			  for (j=0;j<*pg;j++) ME(dVargam,k,j)= VE(ZHdN,j)*VE(ZHdN,k);
@@ -467,7 +470,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),M1M2n);
   for (s=1;s<*Nalltimes;s++) {
     time=alltimes[s]; dtime=time-alltimes[s-1]; stat=0; 
 
-    if (*robust==1) { 
+    if (*robust==1) {  // {{{ 
   // {{{ reading design and making matrix products
    if (s==1)  { // {{{ reading start design 
      for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) {
@@ -527,7 +530,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),M1M2n);
     }
     // }}}
     // }}}
-    }
+    } // }}} 
 
     if (stats[s]==1) l=l+1; 
     if (stats[s]==1) for (k=1;k<=*px;k++) VE(dA,k-1)=cu[k*(*Ntimes)+l]; else vec_zeros(dA);
@@ -601,7 +604,8 @@ malloc_mat(*pg,(*px)*(*Ntimes),M1M2n);
       for (k=1;k<=*px;k++) cu[k*(*Ntimes)+l]=cu[k*(*Ntimes)+l-1]+cu[k*(*Ntimes)+l]+VE(dAoff,k-1); 
 
       for (j=0;j<*pg;j++){
-	 for (i=0;i<*px;i++) ME(Ct,i,j)=ME(Cn,(ls[l]-1)*(*px)+i,j);
+//	 for (i=0;i<*px;i++) ME(Ct,i,j)=ME(Cn,(ls[l]-1)*(*px)+i,j);
+	 for (i=0;i<*px;i++) ME(Ct,i,j)=ME(Cn,l*(*px)+i,j);
          for (i=0;i<*px;i++) ME(M1M2t,j,i)=ME(M1M2n,j,l*(*px)+i); 
       }
 
@@ -619,11 +623,12 @@ malloc_mat(*pg,(*px)*(*Ntimes),M1M2n);
  if (detail>=2) Rprintf("Offsets adjustment and MG variances for gamma \n"); 
 //  loglike[0]=loglike[0]-vec_sum(rowZ); 
 
+  l=0; 
   for (s=1;s<*Ntimes;s++) {
 
-      for (j=0;j<*pg;j++)
-      for (i=0;i<*px;i++) ME(Ct,i,j)=ME(Cn,(ls[l]-1)*(*px)+i,j);
-
+    for (j=0;j<*pg;j++)
+    for (i=0;i<*px;i++) ME(Ct,i,j)=ME(Cn,s*(*px)+i,j);
+//    for (i=0;i<*px;i++) ME(Ct,i,j)=ME(Cn,(ls[l]-1)*(*px)+i,j);
 //    Mv(C[ls[s]],gam,korG); 
     Mv(Ct,gam,korG); 
     for (k=1;k<=*px;k++) cu[k*(*Ntimes)+s]=cu[k*(*Ntimes)+s]-VE(korG,k-1); 
