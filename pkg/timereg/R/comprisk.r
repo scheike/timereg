@@ -234,10 +234,10 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
   if (is.null(time.pow.test)==TRUE & model=="logistic2" ) time.pow.test<-rep(0,px); 
   if (length(time.pow.test)!=px) time.pow.test <- rep(time.pow.test[1],px); 
 
-  if (ntimes>1) silent <- c(silent,rep(0,ntimes-1)) else silent <- c(silent,0) 
+  if (ntimes>1) silent <- c(silent,rep(0,ntimes-1))
   ## }}}
 
-###  dyn.load("comprisk.so")
+  ###  dyn.load("comprisk.so")
   ssf <- 0; 
   out<-.C("itfit", ## {{{
           as.double(times),as.integer(ntimes),as.double(time2),
@@ -264,7 +264,7 @@ if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncatio
   gamma<-matrix(out[[24]],pg,1); var.gamma<-matrix(out[[25]],pg,pg); 
   gamma2<-matrix(out[[30]],ps,1); 
   rownames(gamma2)<-covnamesX; 
-
+  
   conv <- list(convp=out[[41]],convd=out[[42]]); 
 
   if (fixed==0) gamma<-NULL; 
@@ -358,7 +358,7 @@ print.comprisk <- function (x,...) { ## {{{
   if (is.null(object$gamma)==TRUE) semi<-FALSE else semi<-TRUE
     
    # We print information about object:  
-  cat(paste("Competing risks model with",object$model,"\n\n"))
+  cat(paste("\nCompeting risks model with",object$model,"\n\n"))
   cat(" Nonparametric terms : ");
   cat(colnames(object$cum)[-1]); cat("   \n");  
   if (semi) {
@@ -368,9 +368,18 @@ print.comprisk <- function (x,...) { ## {{{
   } 
 
   if (object$conv$convd>=1) {
-       cat("Warning problem with convergence for time points:\n")
-       cat(object$cum[object$conv$convp>0,1])
-       cat("\nReadjust analyses by removing points\n") }
+      if (all(object$conv$convp==1)){
+          if (NROW(object$cum)>1){
+              cat("\nWarning: problem with convergence at all time points\n")
+          } else{
+              cat("\nWarning: problem with convergence at the evaluation time.\n")
+          }
+      }else{
+          cat("Warning: problem with convergence at the following time points:\n")
+          cat(object$cum[object$conv$convp>0,1])
+          cat("\nYou may try to readjust analyses by removing these time points\n")
+      }
+  }
   cat("   \n");  
 } ## }}}
 
