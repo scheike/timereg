@@ -469,6 +469,8 @@ if (*betafixed==0)  {
   mat_zeros(X); mat_zeros(Z); mat_zeros(WX); mat_zeros(WZ); 
   vec_zeros(zav); 
 
+  if (*detail==1) Rprintf("robust==%d \n",*robust); 
+
   if (*robust==1) 
   {
   for (s=1;s<*Ntimes;s++) // {{{ terms for robust variances 
@@ -666,8 +668,6 @@ if (*betafixed==0)  {
     for (k=1;k<=*pg;k++) Ut[k*(*maxtimepoint)+timegroup[s]]=ME(Utt,timegroup[s],k-1);
   }   // }}}
   }  
-
-
 
   if (timing==2) { // {{{
   c1=clock();
@@ -878,7 +878,7 @@ if (*betafixed==0)  {
 
 
 //  for(j=0;j<*antclust;j++)  print_mat(Uti[j]); 
-  if (*detail==1)  Rprintf("Ready for simulations \n");
+  if (*detail==1)  Rprintf("Ready for simulations sim=%d\n",sim[0]);
 
   if (sim[0]>=1) // {{{ score process simulations
   {
