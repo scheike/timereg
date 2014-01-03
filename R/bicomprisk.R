@@ -184,7 +184,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
 
   if (return.data==2) return(list(data=mydata)) else {
   if (!prodlim) {
-    ff <- paste("Surv(",timevar,",",causes,"!=",cens,") ~ 1",sep="")
+    ff <- paste("Hist(",timevar,",",causes,",cens.code=",cens,") ~ 1",sep="")
     if (length(c(covars,indiv))>0) {
       xx <- c(covars,indiv2)
      for (i in seq_len(length(xx)))
@@ -200,7 +200,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
     }
 
     add<-comp.risk(as.formula(ff),data=mydata,
-    status,causeS=1,n.sim=0,resample.iid=resample.iid,model=model,conservative=conservative,
+    cause=1,n.sim=0,resample.iid=resample.iid,model=model,conservative=conservative,
     clusters=lse.clusters, max.clust=max.clust)
     padd <- predict(add,X=1,se=1,uniform=uniform,resample.iid=resample.iid)
     padd$cluster.names <- lse.clusters
