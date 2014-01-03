@@ -1,6 +1,6 @@
 Package: timereg
 Title: Flexible regression models for survival data.
-Version: 1.8.3
+Version: 1.8.4
 Date: 2013-11-22
 Author: Thomas Scheike with contributions from Torben Martinussen and Jeremy
     Silver
@@ -13,6 +13,7 @@ Description: Programs for Martinussen and Scheike (2006), `Dynamic Regression
     PLS for the additive risk model. Lasso in ahaz package.
 Depends:
     survival,
+    prodlim,
     R (>= 2.4.0)
 LazyLoad: yes
 License: GPL (>= 2)

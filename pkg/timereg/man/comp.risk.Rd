@@ -44,7 +44,7 @@ In general p may be powers of the same length as z.
 \usage{
 comp.risk(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="fg",
-causeS=1,cens.code=0,detail=0,interval=0.01,resample.iid=1,
+cens.code=0,detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",cens.formula=NULL,
 time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
 weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,
@@ -59,10 +59,9 @@ estimator=1,trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conser
   wrapper cluster().
 }
 \item{data}{a data.frame with the variables.}
-\item{cause}{specifies the causes  related to the death
-	times, the value 0 is the censoring value.}
+\item{cause}{For competing risk models specificies which cause we consider.}
 \item{times}{specifies the times at which the estimator is
-	considered. The default is cause "1" jump times, with the first 
+	considered. Defaults to all the times where an event of interest occurs, with the first 
  10 percent or max 20 jump points removed for numerical stability in simulations.}
 \item{Nit}{number of iterations for Newton-Raphson algorithm.}
 \item{clusters}{specifies cluster structure, for backwards compability.}
@@ -72,8 +71,6 @@ estimator=1,trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conser
 \item{n.sim}{number of simulations in resampling.}
 \item{weighted}{Not implemented. To compute a variance weighted version of the test-processes used for testing time-varying effects.}
 \item{model}{"additive", "prop"ortional, "rcif", or "logistic".}
-\item{causeS}{specificies which cause we consider.}
-\item{cens.code}{specificies the code for the censoring.}
 \item{detail}{if 0 no details are printed during iterations, if 1 details are given.}
 \item{interval}{specifies that we only consider timepoints where the Kaplan-Meier of the censoring distribution  is larger than this value.}
 \item{resample.iid}{to return the iid decomposition, that can be used to construct confidence bands for predictions}
@@ -93,7 +90,8 @@ additive model and 0 for the proportional model.}
 \item{max.clust}{sets the total number of i.i.d. terms in i.i.d. decompostition. This can limit the amount of memory used by coarsening 
 the clusters. When NULL then all clusters are used. 
 Default is 1000 to save memory and time. } 
-\item{first.time.p}{first point for estimation is pth percentile of causeS jump times.}
+\item{first.time.p}{first point for estimation is pth percentile of
+  cause jump times.}
 \item{n.times}{only uses 50 points for estimation, if NULL then uses all points, subject to p.start condition.}
 \item{estimator}{default estimator is 1.}
 \item{trunc.p}{truncation weight for delayed entry, P(T > entry.time | Z_i), typically Cox model.}
@@ -101,7 +99,22 @@ Default is 1000 to save memory and time. }
 \item{cens.weight}{censoring weights can be given here rather than calculated using the KM, cox or aalen models.}
 \item{admin.cens}{censoring times for the administrative censoring}
 \item{conservative}{set to 0 to compute correct variances based on censoring weights, default is conservative
-	estimates that are much quicker.}
+  estimates that are much quicker.}
+}
+\details{
+Since timereg version 1.8.4. the response must be specified with the
+\code{\link{Hist}} function instead of the \code{\link{Surv}}
+function and the arguments. For example, if the old code was
+
+comp.risk(Surv(time,cause>0)~x1+x2,data=mydata,cause=mydata$cause,causeS=1)
+
+the new code is 
+
+comp.risk(Hist(time,cause)~x1+x2,data=mydata,cause=1)
+
+Also the argument cens.code is now obsolete since cens.code is an
+argument of \code{\link{Hist}}.
+
 }
 \value{returns an object of type 'comprisk'. With the following arguments:
 \item{cum}{cumulative timevarying regression coefficient estimates are 
@@ -139,16 +152,16 @@ Martinussen and Scheike (2006), Dynamic regression models for survival data, Spr
 data(bmt); 
 
 clust <- rep(1:204,each=2)
-addclust<-comp.risk(Surv(time,cause>0)~platelet+age+tcell+cluster(clust),data=bmt,
-bmt$cause,causeS=1,resample.iid=1,n.sim=100,model="additive")
+addclust<-comp.risk(Hist(time,cause)~platelet+age+tcell+cluster(clust),data=bmt,
+cause=1,resample.iid=1,n.sim=100,model="additive")
 
-addclust<-comp.risk(Surv(time,cause>0)~+1+cluster(clust),data=bmt,
-bmt$cause,causeS=1,resample.iid=1,n.sim=100,model="additive")
+addclust<-comp.risk(Hist(time,cause)~+1+cluster(clust),data=bmt,
+bmt$cause,cause=1,resample.iid=1,n.sim=100,model="additive")
 pad <- predict(addclust,X=1)
 plot(pad)
 
-add<-comp.risk(Surv(time,cause>0)~platelet+age+tcell,data=bmt,
-bmt$cause,causeS=1,resample.iid=1,n.sim=100,model="additive")
+add<-comp.risk(Hist(time,cause)~platelet+age+tcell,data=bmt,
+cause=1,resample.iid=1,n.sim=100,model="additive")
 summary(add)
 
 par(mfrow=c(2,4))
@@ -161,8 +174,8 @@ out<-predict(add,ndata,uniform=1,n.sim=100)
 par(mfrow=c(2,2))
 plot(out,multiple=0,uniform=1,col=1:3,lty=1,se=1)
 
-add<-comp.risk(Surv(time,cause>0)~platelet+age+tcell,data=bmt,
-	       bmt$cause,causeS=1,resample.iid=0,n.sim=0,cens.model="cox",
+add<-comp.risk(Hist(time,cause)~platelet+age+tcell,data=bmt,
+	       cause=1,resample.iid=0,n.sim=0,cens.model="cox",
 	       cens.formula=~factor(platelet),model="additive")
 
 out<-predict(add,ndata,se=0,uniform=0)
@@ -170,9 +183,9 @@ par(mfrow=c(2,2))
 plot(out,multiple=0,se=0,uniform=0,col=1:3,lty=1)
 
 ## fits additive model with some constant effects 
-add.sem<-comp.risk(Surv(time,cause>0)~
+add.sem<-comp.risk(Hist(time,cause)~
 const(platelet)+const(age)+const(tcell),data=bmt,
-bmt$cause,causeS=1,resample.iid=1,n.sim=100,model="additive")
+cause=1,resample.iid=1,n.sim=100,model="additive")
 summary(add.sem)
 
 out<-predict(add.sem,ndata,uniform=1,n.sim=100)
@@ -180,9 +193,9 @@ par(mfrow=c(2,2))
 plot(out,multiple=0,uniform=1,col=1:3,lty=1,se=0)
 
 ## Fine & Gray model 
-fg<-comp.risk(Surv(time,cause>0)~
+fg<-comp.risk(Hist(time,cause)~
 const(platelet)+const(age)+const(tcell),data=bmt,
-bmt$cause,causeS=1,resample.iid=1,model="fg",n.sim=100)
+cause=1,resample.iid=1,model="fg",n.sim=100)
 summary(fg)
 
 out<-predict(fg,ndata,uniform=1,n.sim=100)
@@ -191,8 +204,8 @@ par(mfrow=c(2,2))
 plot(out,multiple=1,uniform=0,col=1:3,lty=1,se=0)
 
 ## extended model with time-varying effects
-fg.npar<-comp.risk(Surv(time,cause>0)~platelet+age+const(tcell),
-data=bmt,bmt$cause,causeS=1,resample.iid=1,model="prop",n.sim=100)
+fg.npar<-comp.risk(Hist(time,cause)~platelet+age+const(tcell),
+data=bmt,cause=1,resample.iid=1,model="prop",n.sim=100)
 summary(fg.npar); 
 
 out<-predict(fg.npar,ndata,uniform=1,n.sim=100)
@@ -202,8 +215,8 @@ par(mfrow=c(2,2))
 plot(out,multiple=1,uniform=0,col=1:3,lty=1,se=0)
 
 ## Fine & Gray model with alternative parametrization for baseline
-fg2<-comp.risk(Surv(time,cause>0)~ const(platelet)+const(age)+const(tcell),data=bmt,
-bmt$cause,causeS=1,resample.iid=1,model="prop",n.sim=100)
+fg2<-comp.risk(Hist(time,cause)~ const(platelet)+const(age)+const(tcell),data=bmt,
+cause=1,resample.iid=1,model="prop",n.sim=100)
 summary(fg2)
 }
 \keyword{survival}
