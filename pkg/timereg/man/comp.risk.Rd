@@ -44,11 +44,11 @@ In general p may be powers of the same length as z.
 \usage{
 comp.risk(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="fg",
-cens.code=0,detail=0,interval=0.01,resample.iid=1,
+detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",cens.formula=NULL,
 time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
 weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,
-estimator=1,trunc.p=NULL,entry.time=NULL,cens.weight=NULL,admin.cens=NULL,conservative=1)
+estimator=1,trunc.p=NULL,cens.weight=NULL,admin.cens=NULL,conservative=1)
 }
 \arguments{
 \item{formula}{a formula object, with the response on the left of a '~'
@@ -95,7 +95,6 @@ Default is 1000 to save memory and time. }
 \item{n.times}{only uses 50 points for estimation, if NULL then uses all points, subject to p.start condition.}
 \item{estimator}{default estimator is 1.}
 \item{trunc.p}{truncation weight for delayed entry, P(T > entry.time | Z_i), typically Cox model.}
-\item{entry.time}{entry times, under development}
 \item{cens.weight}{censoring weights can be given here rather than calculated using the KM, cox or aalen models.}
 \item{admin.cens}{censoring times for the administrative censoring}
 \item{conservative}{set to 0 to compute correct variances based on censoring weights, default is conservative
