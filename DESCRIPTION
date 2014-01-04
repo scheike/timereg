@@ -7,7 +7,10 @@ Author: Klaus K. Holst and Thomas Scheike
 Maintainer: Klaus K. Holst <kkho@biostat.ku.dk>
 Description: Implementation of various statistical models for multivariate
     event history data. Including multivariate cumulative incidence models, and
-    bivariate random effects probit models (Liability models)
+    bivariate random effects probit models (Liability models). Also contains
+    two-stage binomial modelling that can do pairwise odds-ratio dependence
+    modelling based marginal logistic regression models. This is an alternative
+    to the alternating logistic regression approach (ALR).
 License: GPL (>=2)
 LazyLoad: yes
 URL: http://lava.r-forge.r-project.org/

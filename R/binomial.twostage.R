@@ -3,9 +3,12 @@
 ##' If clusters contain more than two times, the algoritm uses a compososite likelihood
 ##' based on all pairwise bivariate models.
 ##'
+##' The pairwise pairwise odds ratio model provides an alternative to the alternating logistic
+##' regression (ALR).
+##'
 ##' The reported standard errors are based on a cluster corrected score equations from the 
 ##' pairwise likelihoods assuming that the marginals are known. This gives correct standard errors
-##' in the case of the plackett distribution (OR model for dependence), but incorrect standard
+##' in the case of the Plackett distribution (OR model for dependence), but incorrect standard
 ##' errors for the clayton-oakes types model.
 ##'
 ##' @export
