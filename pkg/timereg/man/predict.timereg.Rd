@@ -64,6 +64,7 @@ models for survival data, Springer.
 }
 \author{Thomas Scheike, Jeremy Silver}
 \examples{
+library(timereg)
 data(bmt); 
 
 add<-comp.risk(Hist(time,cause)~platelet+age+tcell,data=bmt)
