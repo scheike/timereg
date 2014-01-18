@@ -4,7 +4,7 @@ cox.aalen<-function(formula=formula(data),data=sys.parent(),
 beta=NULL,Nit=20,detail=0,start.time=0,max.time=NULL, id=NULL, 
 clusters=NULL, n.sim=500, residuals=0,robust=1,
 weighted.test=0,covariance=0,resample.iid=1,weights=NULL,
-rate.sim=1,beta.fixed=0,max.clust=1000,exact.deriv=1,silent=1,
+rate.sim=0,beta.fixed=0,max.clust=1000,exact.deriv=1,silent=1,
 max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL)
 { ## {{{
 # {{{ set up variables 
@@ -43,17 +43,17 @@ max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL)
   if (!is.null(id)) {
 	  if (length(id)!=nrow(Z)) stop("id length and data not the same\n"); 
   }
-  if (nrow(Z)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
 
-  ### if clusters=null perhaps given through cluster() special 
+  ### if clusters=null perhaps given through cluster() special that can be NULL also 
   if (is.null(clusters)) clusters <- des$clusters  
   cluster.call<-clusters; 
 
   survs<-read.surv(m,id,npar,clusters,start.time,max.time,model="cox.aalen",silent=silent)
   times<-survs$times;
   id<-id.call<-survs$id.cal;
-  clusters<-gclusters <- survs$clusters; 
-  if (is.null(clusters)) clusters <- des$clusters  
+  ### if no clusters then return "id" as cluster variable
+  clusters<- gclusters <- survs$clusters; 
+
   start.call <- start <-  survs$start; 
   stop.call <- time2 <- survs$stop; 
   status<-survs$status;
@@ -75,15 +75,8 @@ max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL)
     else strata<- as.integer(factor(strata, labels = seq(antiid)))-1
   } 
 
-###  if ((!is.null(cluster.call)) || (!is.null(gclusters))) max.clust <- NULL
 
-###  if (rate.sim==0 && is.null(max.clust)) {
-###	  gclusters <-rep(nobs,nobs)
-###	  gclusters[status==1] <- (1:nobs)[status==1]
-###	  max.clust <- sum(status)+1
-###  }
-###  print(max.clust)
-
+  if (rate.sim==1) 
   if ((!is.null(max.clust))) if (max.clust<survs$antclust) {
 	qq <- unique(quantile(clusters, probs = seq(0, 1, by = 1/max.clust)))
 	qqc <- cut(clusters, breaks = qq, include.lowest = TRUE)    
@@ -92,6 +85,17 @@ max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL)
 ###	clusters <- as.integer(factor(qqc, labels = 1:max.clust)) -1
 	survs$antclust <- max.clust    
   }                                                         
+
+### if rate.sim==0 and no clusters then it suffices with jump processes and the rest is 0
+  Ntimes <- sum(status)
+  if (rate.sim==0 && is.null(cluster.call)) {
+     clusters <-rep(nobs+1,nobs)
+     clusters[status==1] <- (1:nobs)[status==1]
+     max.clust <- Ntimes+1
+     gclusters <-  clusters <- as.integer(factor(clusters, labels = 1:max.clust)) -1
+###   print(clusters) ; print(max.clust); print(c(max.clust,survs$antclust))
+     survs$antclust <- max.clust
+  }
 
   if ((length(beta)!=pz) && (is.null(beta)==FALSE)) beta <- rep(beta[1],pz); 
   if ((is.null(beta))) {
@@ -142,7 +146,7 @@ if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
 } ## }}}
 ###  print(cbind(Z,start,stop,etimes,id,entry))
 
-ldata<-list(start=start,stop=stop, antpers=survs$antpers,antclust=survs$antclust);
+ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust);
 ## }}}
 
   if (npar==FALSE) covar<-data.matrix(cbind(X,Z)) else 
