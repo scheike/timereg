@@ -423,7 +423,7 @@ if (!is.null(margsurv))
   attr(ud, "Formula") <- formula
   attr(ud, "clusters") <- clusters
   attr(ud, "cluster.call") <- cluster.call
-  attr(ud, "secluster") <- se.clusters
+  attr(ud, "secluster") <- c(se.clusters)
   attr(ud,"sym")<-sym; 
   attr(ud,"var.link")<-var.link; 
   attr(ud,"antpers")<-antpers; 
