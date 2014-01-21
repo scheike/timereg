@@ -172,6 +172,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 	   Z <- matrix(1,antpers,length(coef(margsurv)));
 
 	   if (is.null(clusters)) stop("must give clusters for coxph\n");
+	   cluster.call <- clusters; 
 	   X <- matrix(1,antpers,1); ### Z <- matrix(0,antpers,1); ### no use for these
 	   px <- 1; pz <- ncol(Z); 
 	   if (sum(abs(start.time))>0) lefttrunk <- 1 else lefttrunk <- 0
@@ -422,6 +423,7 @@ if (!is.null(margsurv))
   attr(ud, "Formula") <- formula
   attr(ud, "clusters") <- clusters
   attr(ud, "cluster.call") <- cluster.call
+  attr(ud, "secluster") <- se.clusters
   attr(ud,"sym")<-sym; 
   attr(ud,"var.link")<-var.link; 
   attr(ud,"antpers")<-antpers; 
