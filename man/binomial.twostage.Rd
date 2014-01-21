@@ -61,10 +61,14 @@ based on all pairwise bivariate models.}
   derivative if 0, otherwise numerical derivatives}
 }
 \description{
+  The pairwise pairwise odds ratio model provides an
+  alternative to the alternating logistic regression (ALR).
+}
+\details{
   The reported standard errors are based on a cluster
   corrected score equations from the pairwise likelihoods
   assuming that the marginals are known. This gives correct
-  standard errors in the case of the plackett distribution
+  standard errors in the case of the Plackett distribution
   (OR model for dependence), but incorrect standard errors
   for the clayton-oakes types model.
 }

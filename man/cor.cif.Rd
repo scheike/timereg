@@ -142,10 +142,10 @@ zyg <- rep(rbinom(200,1,0.5),each=2)
 theta.des <- model.matrix(~-1+factor(zyg))
 
 times=seq(0.05,1,by=0.05) # to speed up computations use only these time-points
-add<-comp.risk(Surv(time,cause>0)~+1+cluster(id),data=multcif,causeS=1,
-               multcif$cause,n.sim=0,times=times,model="fg",max.clust=NULL)
-add2<-comp.risk(Surv(time,cause>0)~+1+cluster(id),data=multcif,causeS=2,
-               multcif$cause,n.sim=0,times=times,model="fg",max.clust=NULL)
+add<-comp.risk(Hist(time,cause)~+1+cluster(id),data=multcif,cause=1,
+               n.sim=0,times=times,model="fg",max.clust=NULL)
+add2<-comp.risk(Hist(time,cause)~+1+cluster(id),data=multcif,cause=2,
+               n.sim=0,times=times,model="fg",max.clust=NULL)
 
 out1<-cor.cif(add,data=multcif,cause1=1,cause2=1)
 summary(out1)
@@ -165,8 +165,8 @@ prt$status <-prt$cause
 table(prt$status)
 
 times <- seq(40,100,by=10)
-cifmod <- comp.risk(Surv(time,status>0)~+1+cluster(id),data=prt,
-                    prt$status,causeS=1,n.sim=0,
+cifmod <- comp.risk(Hist(time,cause)~+1+cluster(id),data=prt,
+                    cause=1,n.sim=0,
                     times=times,conservative=1,max.clust=NULL,model="fg")
 theta.des <- model.matrix(~-1+factor(zyg),data=prt)
 

@@ -26,7 +26,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   if (missing(cause)) cause <- attr(cif,"cause"); 
   delta<-(cause!=cens.code)
 
-  if (cause1!=attr(cif,"causeS")) cat("Cause for marginal model and correlation not the same\n"); 
+  if (cause1!=attr(cif,"cause")) cat("Cause for marginal model and correlation not the same\n"); 
   if ((cause1[1]!=cause2[1])) {
     if (is.null(cif2)==TRUE) stop("Must provide marginal model for both causes"); 
     formula2<-attr(cif2,"Formula"); 
@@ -449,10 +449,10 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' theta.des <- model.matrix(~-1+factor(zyg))
 ##' 
 ##' times=seq(0.05,1,by=0.05) # to speed up computations use only these time-points
-##' add<-comp.risk(Surv(time,cause>0)~+1+cluster(id),data=multcif,causeS=1,
-##'                multcif$cause,n.sim=0,times=times,model="fg",max.clust=NULL)
-##' add2<-comp.risk(Surv(time,cause>0)~+1+cluster(id),data=multcif,causeS=2,
-##'                multcif$cause,n.sim=0,times=times,model="fg",max.clust=NULL)
+##' add<-comp.risk(Hist(time,cause)~+1+cluster(id),data=multcif,cause=1,
+##'                n.sim=0,times=times,model="fg",max.clust=NULL)
+##' add2<-comp.risk(Hist(time,cause)~+1+cluster(id),data=multcif,cause=2,
+##'                n.sim=0,times=times,model="fg",max.clust=NULL)
 ##' 
 ##' out1<-cor.cif(add,data=multcif,cause1=1,cause2=1)
 ##' summary(out1)
@@ -472,8 +472,8 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' table(prt$status)
 ##' 
 ##' times <- seq(40,100,by=10)
-##' cifmod <- comp.risk(Surv(time,status>0)~+1+cluster(id),data=prt,
-##'                     prt$status,causeS=1,n.sim=0,
+##' cifmod <- comp.risk(Hist(time,cause)~+1+cluster(id),data=prt,
+##'                     cause=1,n.sim=0,
 ##'                     times=times,conservative=1,max.clust=NULL,model="fg")
 ##' theta.des <- model.matrix(~-1+factor(zyg),data=prt)
 ##' 
@@ -639,8 +639,8 @@ or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 ##' data(multcif)
 ##' 
 ##' times <- seq(0.3,1,length=4)
-##' add<-comp.risk(Surv(time,cause>0)~+1+cluster(id),data=multcif,multcif$cause,
-##'                n.sim=0,causeS=1, times=times,max.clust=NULL)
+##' add<-comp.risk(Hist(time,cause)~+1+cluster(id),data=multcif,cause=1,
+##'                n.sim=0,times=times,max.clust=NULL)
 ##' 
 ##' out1<-random.cif(add,data=multcif,cause1=1,cause2=1)
 ##' summary(out1)
@@ -657,9 +657,9 @@ or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 ##' ## multcif$cause[multcif$cause==0] <- 2
 ##' 
 ##' ## ###times<-sort(multcif$time[multcif$status \%in\% c(1,2)])
-##' ## add1<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,causeS=1,
+##' ## add1<-comp.risk(Hist(time,status)~const(X)+cluster(id),data=multcif,cause=1,
 ##' ## 		  multcif$cause,n.sim=0,times=times)
-##' ## add2<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,causeS=2,
+##' ## add2<-comp.risk(Hist(time,status)~const(X)+cluster(id),data=multcif,cause=2,
 ##' ## 		  multcif$cause,n.sim=0,times=times)
 ##' 
 ##' ## out1<-random.cif(add1,data=multcif,cause1=1,cause2=2,cif2=add2)
