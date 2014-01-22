@@ -132,7 +132,8 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
     mleft <- mleft[-na.idx]
     ww0 <- ww0[-na.idx,,drop=FALSE]
   }
-  if (sum(mleft)==0) stop("No data selected\n"); 
+  if (sum(mleft)==0) cat("No data selected\n"); 
+  if (sum(mleft)!=0) {
   ww0 <- ww0[which(mleft),,drop=FALSE]
 
   right1 <- which(ww0[,timevar2[1]] > right.cens[1])
@@ -162,5 +163,6 @@ surv.boxarea <- function(left.trunc,right.cens,data,timevar="time",status="statu
   lr.data[,boxtimevar] <- lr.data[,timevar]-lr.data[,"left"]
 ###  print(head(lr.data))
  return(structure(lr.data,num=num,time=boxtimevar,status=status,covars=covars,id=id))
+} else return(NULL); 
 } ## }}}
 
