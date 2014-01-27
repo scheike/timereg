@@ -179,6 +179,8 @@ if (*ratesim==0 && mjump==1) {
      for (s=1;s<*Ntimes;s++)  // {{{ going through time
      {
          time=times[s]; //  vec_zeros(lamt);
+         if (it==(*Nit-1)) { time=times[s]; cu[s]=times[s]; vcu[s]=times[s]; 
+                             Rvcu[timegroup[s]]=times[s]; cug[timegroup[s]]=times[s]; }
     
 //   if (*detail==1) Rprintf("Starting Data reading, time %d \n",s); 
     // {{{ reading design and computing matrix products
@@ -475,7 +477,7 @@ if (*betafixed==0)  {
   {
   for (s=1;s<*Ntimes;s++) // {{{ terms for robust variances 
   {
-    time=times[s]; cu[s]=times[s]; vcu[s]=times[s]; 
+//    time=times[s]; cu[s]=times[s]; vcu[s]=times[s]; 
     Rvcu[timegroup[s]]=times[s]; cug[timegroup[s]]=times[s]; 
     timesg[timegroup[s]]=times[s]; Ut[timegroup[s]]=times[s]; 
 

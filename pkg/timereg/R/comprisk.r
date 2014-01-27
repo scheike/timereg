@@ -357,6 +357,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
     attr(ud, "Call") <- sys.call()
     attr(ud, "Formula") <- formula
     attr(ud, "time.pow") <- time.pow
+    attr(ud, "causeS") <- cause
     attr(ud, "cluster.call") <- cluster.call
     attr(ud, "coarse.clust") <- coarse.clust
     attr(ud, "max.clust") <- max.clust

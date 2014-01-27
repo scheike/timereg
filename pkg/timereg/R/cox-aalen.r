@@ -90,9 +90,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   RVarbeta <- -matrix(nparout[[28]], pg, pg)
   rvcu <- matrix(nparout[[27]], mts , px + 1); ## convert to approx for times 
   Rvcu <- times; 
-  if (robust==1)  {
   for (i  in 2:(px+1)) Rvcu <- cbind(Rvcu,approx(rvcu[,1],rvcu[,i],times,f=0.5)$y)
-  } else Rvcu <- NULL
 
   Varbeta <- -matrix(nparout[[20]], pg, pg); 
   cumint <- matrix(nparout[[14]], Ntimes, px + 1); 

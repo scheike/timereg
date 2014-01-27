@@ -16,7 +16,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
 // {{{ defining variables
   matrix *ldesG0,*cdesX2,*Ftilde,*Gtilde;
   matrix *destheta,*d2UItheta,*d2Utheta,*varthetascore,*Stheta,*mattheta; 
-  matrix *Biid[*antsecluster],*Sthetaiid[*antsecluster];
+  matrix *Biid[*antsecluster]; // ,*Sthetaiid[*antsecluster];
   vector *dAiid[*antsecluster],*gammaiid[*antsecluster],*thetaiid[*antsecluster]; 
   vector *lamt,*lamtt,*offset,*weight,*one;
   vector *tmpv1,*xi,*zi,*reszpbeta,*res1dim; 
@@ -42,7 +42,9 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
 
   for (j=0;j<*antclust;j++) { 
       Nt[j]=0; NH[j]=0; multitrunc[j]=0; 
-   if ((j<*antsecluster)) {
+  }
+
+  for (j=0;j<*antsecluster;j++) { 
 	   insecluster[j]=0; 
       if ((*notaylor==0)) {
 	malloc_vec(*pg,gammaiid[j]); 
@@ -50,8 +52,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
        }
        malloc_vec(*ptheta,dAiid[j]); 
        malloc_vec(*ptheta,thetaiid[j]); 
-       malloc_mat(*ptheta,*ptheta,Sthetaiid[j]); 
-   }
+//       malloc_mat(*ptheta,*ptheta,Sthetaiid[j]); 
   }
 
   malloc_mat(*ptheta,*px,Ftilde); 
@@ -86,8 +87,8 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
 // for (j=0;j<*antpers;j++) Rprintf("%d %d %d %lf %lf %lf  \n",j,id[j],cluster[id[j]],cumhaz[j],Nti[j],cumhazleft[j]); 
 
   if (*notaylor==0) {
-if (*semi==1) for (i=0;i<*antsecluster;i++) 
-	      for (j=0;j<*pg;j++) VE(gammaiid[i],j)=gamiid[j*(*antclust)+i]; 
+  if (*semi==1) for (i=0;i<*antsecluster;i++) 
+       for (j=0;j<*pg;j++) VE(gammaiid[i],j)=gamiid[j*(*antclust)+i]; 
 //     if (*semi==1)  for (i=0;i<*antclust;i++) for (j=0;j<*pg;j++) VE(gammaiid[i],j)=0;
 //     for (i=0;i<*antclust;i++) for (j=0;j<*pg;j++) 
 //     printf("%d %d %d %lf \n",*antclust,j,i,gamiid[j*(*antclust)+i]); 
@@ -184,15 +185,13 @@ for(j=0;j<pmax;j++) {
     Rprintf(" %d %d %lf %lf %lf \n",j,multitrunc[j],Rthetaleft[j],HeHleft[j],H2eHleft[j]); 
   }
 
- thetaiidscale[j]=sumscore+
-	          log(Rtheta[j])/(theta0*theta0)-(1/theta0+Nt[j])*HeH[j]/Rtheta[j]+NH[j]; 
+ thetaiidscale[j]=sumscore+ log(Rtheta[j])/(theta0*theta0)-(1/theta0+Nt[j])*HeH[j]/Rtheta[j]+NH[j]; 
 // printf(" %d %d %lf \n",j,clustsize[j],thetaiidscale[j]); 
  if (*lefttrunk==1 && multitrunc[j]>=2) 
- thetaiidscale[j]=thetaiidscale[j]-
-	          log(Rthetaleft[j])/(theta0*theta0)+(1/theta0)*HeHleft[j]/Rthetaleft[j]; 
+ thetaiidscale[j]=thetaiidscale[j]- log(Rthetaleft[j])/(theta0*theta0)+(1/theta0)*HeHleft[j]/Rthetaleft[j]; 
 // printf("%d %d %lf \n",j,multitrunc[j],thetaiidscale[j]); 
 
-    scl_vec_mult(thetaiidscale[j]*Dthetanu,vtheta2,vtheta3); 
+  scl_vec_mult(thetaiidscale[j]*Dthetanu,vtheta2,vtheta3); 
 
   if (isnan(thetaiidscale[j])) {
   if (theta0<0) Rprintf("negative value of random effect variances causes problems, try step.size=0.1\n"); 
@@ -282,7 +281,7 @@ for(j=0;j<pmax;j++) {
       } // }}} 
 
     if (*notaylor==0) 
-      for (s=1;s<*maxtimesim;s++) { // {{{
+      for (s=1;s<*maxtimesim;s++) { // {{{  derivatve D_baseline(t)
          engang=0; 
     for (k=0;k<*antsecluster;k++) if (insecluster[k]>0) { 
 //    for (k=0;k<*antclust;k++) if (clustsize[k]>=2) {
@@ -321,11 +320,11 @@ for(j=0;j<pmax;j++) {
 	vec_subtr(tmpv1,xi,xi); 
 	Mv(Ftilde,xi,vtheta2); 
 	vec_add(dAiid[k],vtheta2,dAiid[k]); 
-      }  /* k=0..antseclust */ // }}}
-    } // s=1, maxtimesim 
+      }  /* k=0..antseclust */ 
+    } // s=1, maxtimesim // }}}
 
     for (j=0;j<*antsecluster;j++) { // {{{ iid 
-//	    printf("-------------------- %d \n",j); 
+//    printf("-------------------- %d \n",j); 
       if (*notaylor==0) {
       if (insecluster[j]>0) 
       if (*semi==1) {
@@ -339,8 +338,7 @@ for(j=0;j<pmax;j++) {
       for (i=0;i<*ptheta;i++) 
       {
           thetiid[j*(*ptheta)+i]=VE(thetaiid[j],i); 
-          for (k=0;k<*ptheta;k++)  
-	   ME(varthetascore,i,k)=ME(varthetascore,i,k)+VE(thetaiid[j],i)*VE(thetaiid[j],k);
+          for (k=0;k<*ptheta;k++)  ME(varthetascore,i,k)=ME(varthetascore,i,k)+VE(thetaiid[j],i)*VE(thetaiid[j],k);
       }
     } // }}} 
 
@@ -356,19 +354,14 @@ for(j=0;j<pmax;j++) {
   }
 
   // {{{ freeing everything
-  
   for (j=0;j<*antsecluster;j++) {
   if (*notaylor==0) { free_vec(gammaiid[j]); free_mat(Biid[j]); }
-    free_vec(dAiid[j]); 
-    free_vec(thetaiid[j]); 
-    free_mat(Sthetaiid[j]); 
+    free_vec(dAiid[j]); free_vec(thetaiid[j]); 
+//    free_mat(Sthetaiid[j]); 
   }
 
-  free_mats(&mattheta,&destheta, &d2Utheta, &d2UItheta, &Stheta, &Ftilde, &Gtilde,
-	      &varthetascore, &cdesX2, &ldesG0,NULL); 
-
-  free_vecs(&weight,&lamtt,&lamt, &one,&offset,&xi,&zi,&tmpv1,
-	      &vthetascore,&vtheta3,&vtheta1,&dtheta,&vtheta2,&reszpbeta, &res1dim,NULL); 
+  free_mats(&mattheta,&destheta, &d2Utheta, &d2UItheta, &Stheta, &Ftilde, &Gtilde, &varthetascore, &cdesX2, &ldesG0,NULL); 
+  free_vecs(&weight,&lamtt,&lamt, &one,&offset,&xi,&zi,&tmpv1, &vthetascore,&vtheta3,&vtheta1,&dtheta,&vtheta2,&reszpbeta, &res1dim,NULL); 
 
   free(Nt); free(Nti); free(thetaiidscale); free(NH); free(HeH); free(H2eH); 
   free(HeHleft); free(H2eHleft); free(Rtheta); free(Rthetaleft); 

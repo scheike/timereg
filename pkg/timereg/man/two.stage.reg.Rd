@@ -30,7 +30,7 @@ The modelling formula uses the standard survival modelling given in the
 \usage{
 two.stage(margsurv,data=sys.parent(),Nit=60, detail=0,
 start.time=0,max.time=NULL,id=NULL,clusters=NULL,robust=1,
-theta=NULL,theta.des=NULL,var.link=0,step=0.5,notaylor=0)
+theta=NULL,theta.des=NULL,var.link=0,step=0.5,notaylor=0,se.clusters=NULL)
 }
 \arguments{
 \item{margsurv}{fit of marginal survival cox.aalen model with residuals=2, and
@@ -53,6 +53,7 @@ variances is without a link, and "1" uses the link function exp. }
 \item{step}{step size for Newton-Raphson.}
 \item{notaylor}{if 1 then ignores variation due to survival model, this is quicker
 and then resample.iid=0 and residuals=0 is ok for marginal survival model that then is much quicker.}
+\item{se.clusters}{cluster variable for sandwich estimator of variance.}
 }
 \details{
 The data for a subject is presented as multiple rows or 'observations',
