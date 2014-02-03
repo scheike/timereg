@@ -276,7 +276,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
   rownames(gamma2)<-covnamesX; 
   
     conv <- list(convp=out[[41]],convd=out[[42]]);
-
+    
     if (fixed==0) gamma<-NULL; 
 
   if (resample.iid==1)  {
