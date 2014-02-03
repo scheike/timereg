@@ -704,6 +704,7 @@ malloc_vec((*px)+(*pg),qs);
 
       if (*detail==1) { 
 	Rprintf(" iteration %d %d \n",itt,*Nit); 
+	Rprintf("Total sum of squares %lf \n",ssf[0]); 
 	Rprintf("Total sum of changes %lf \n",dummy); 
 	Rprintf("Gamma parameters \n"); print_vec(gam); 
 	Rprintf("Change in Gamma \n"); print_vec(dgam); 
