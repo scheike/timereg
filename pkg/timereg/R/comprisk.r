@@ -53,7 +53,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
     delayed <- !(is.null(attr(event.history,"entry.type"))) && !(attr(event.history,"entry.type")=="")
     model.type <- attr(event.history,"model")
     if (model.type %in% c("competing.risks","survival")){
-        if (cens.type == "rightCensored"){
+        if (cens.type %in% c("rightCensored","uncensored")){
             delta <- event.history[,"status"]
             if (model.type=="competing.risks"){
                 states <- attr(event.history,"states")
