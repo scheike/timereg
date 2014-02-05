@@ -272,6 +272,7 @@ if (*ratesim==0 && mjump==1) {
     // }}}
    ipers[s]=pers;
 
+//   if (s<3) { head_matrix(X); head_matrix(WX); head_matrix(Z); head_matrix(WZ); }
 //   if (*detail==1) Rprintf(" Data read, time %d \n",s); 
 
    if (*detail==2) {
@@ -477,7 +478,7 @@ if (*betafixed==0)  {
   {
   for (s=1;s<*Ntimes;s++) // {{{ terms for robust variances 
   {
-//    time=times[s]; cu[s]=times[s]; vcu[s]=times[s]; 
+    time=times[s]; cu[s]=times[s]; vcu[s]=times[s]; 
     Rvcu[timegroup[s]]=times[s]; cug[timegroup[s]]=times[s]; 
     timesg[timegroup[s]]=times[s]; Ut[timegroup[s]]=times[s]; 
 
@@ -557,6 +558,7 @@ if (*betafixed==0)  {
    ipers[s]=pers;
     // }}} 
     
+//   if (s<3) { head_matrix(X); head_matrix(WX); head_matrix(Z); head_matrix(WZ); }
 //    extract_row(WX,pers,xi); 
      extract_row(dAt,s,dA); 
 //    hati=vec_prod(xi,dA);    lle=lle+log(hati);
@@ -565,6 +567,7 @@ if (*betafixed==0)  {
     if (basesim>=0) {
         for (j=0;j<*px;j++) for (i=0;i<*px;i++)  ME(AI,j,i)=ME(AIn,(s-1)*(*px)+j,i);
     }
+//    print_mat(ZXAI); print_vec(dA); 
 
     if (*ratesim==1 || *retur>=1)
     for (i=0;i<*antpers;i++)   // {{{

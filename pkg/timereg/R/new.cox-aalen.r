@@ -75,7 +75,6 @@ max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL)
     else strata<- as.integer(factor(strata, labels = seq(antiid)))-1
   } 
 
-
   if (rate.sim==1) 
   if ((!is.null(max.clust))) if (max.clust<survs$antclust) {
 	qq <- unique(quantile(clusters, probs = seq(0, 1, by = 1/max.clust)))
