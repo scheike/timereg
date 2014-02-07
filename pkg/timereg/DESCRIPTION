@@ -11,11 +11,11 @@ Description: Programs for Martinussen and Scheike (2006), `Dynamic Regression
     residuals, excess risk models and more. Flexible competing risks regression
     including GOF-tests. Two-stage frailty modelling. 
     PLS for the additive risk model. Lasso in ahaz package.
+LazyLoad: yes
 Depends:
     R (>= 2.15),
     survival,
     prodlim
-LazyLoad: yes
 License: GPL (>= 2)
 Collate:
     'aalenC.r'
