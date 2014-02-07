@@ -347,7 +347,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),M1M2n);
 			  for(j=0;j<*pg;j++) VE(zi,j)=designG[j*(*nx)+ci]; 
 			  //            print_vec(xi); print_vec(zi); 
 			  if (entry[ci]==1)  {
-				  VE(offset,id[ci])=offsets[ci]; 
+				  if (*mof==1) VE(offset,id[ci])=offsets[ci]; 
 				  replace_row(X,id[ci],xi); replace_row(Z,id[ci],zi); 
 				  scl_vec_mult(weights[ci],xi,tmpv1); 
 				  replace_row(WX,id[ci],tmpv1); 
@@ -355,7 +355,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),M1M2n);
 				  replace_row(WZ,id[ci],tmpv2); 
 			  } 
 			  else {
-				  VE(offset,id[ci])=0; 
+				  if (*mof==1) VE(offset,id[ci])=0; 
 				  replace_row(X,id[ci],rowX);replace_row(Z,id[ci],rowZ);
 				  replace_row(WX,id[ci],rowX);replace_row(WZ,id[ci],rowZ);
 			  }
@@ -430,7 +430,8 @@ malloc_mat(*pg,(*px)*(*Ntimes),M1M2n);
 		  mat_add(dVargam,Vargam,Vargam);
 		  mat_add(dM1M2,M1M2t,M1M2t);
 //		  mat_copy(M1M2t,M1M2[l]);
-                 for (j=0;j<*pg;j++) for (i=0;i<*px;i++) ME(M1M2n,j,l*(*px)+i)=ME(M1M2t,j,i); 
+//for (i=0;i<*px;i++) Rprintf(" %d %d %d %d \n",*Ntimes,l,(*Ntimes)*(*px),l*(*px)+i); 
+        for (j=0;j<*pg;j++) for (i=0;i<*px;i++) ME(M1M2n,j,l*(*px)+i)=ME(M1M2t,i,j); 
 
 	for (k=1;k<=*px;k++) {
 	  cu[k*(*Ntimes)+l]=VE(AIXWdN,k-1); 
@@ -500,7 +501,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),M1M2n);
             for(j=0;j<*px;j++) VE(xi,j)=designX[j*(*nx)+ci]; 
             for(j=0;j<*pg;j++) VE(zi,j)=designG[j*(*nx)+ci]; 
 	    if (entry[ci]==1)  {
-                VE(offset,id[ci])=offsets[ci]; 
+                if (*mof==1) VE(offset,id[ci])=offsets[ci]; 
 	        replace_row(X,id[ci],xi); replace_row(Z,id[ci],zi); 
 	        scl_vec_mult(weights[ci],xi,tmpv1); 
 	        replace_row(WX,id[ci],tmpv1); 
@@ -508,7 +509,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),M1M2n);
 	        replace_row(WZ,id[ci],tmpv2); 
 	    } 
 	    else {
-                  VE(offset,id[ci])=0; 
+                  if (*mof==1) VE(offset,id[ci])=0; 
 		  replace_row(X,id[ci],rowX);replace_row(Z,id[ci],rowZ);
 		  replace_row(WX,id[ci],rowX);replace_row(WZ,id[ci],rowZ);
 	    }
@@ -606,7 +607,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),M1M2n);
       for (j=0;j<*pg;j++){
 //	 for (i=0;i<*px;i++) ME(Ct,i,j)=ME(Cn,(ls[l]-1)*(*px)+i,j);
 	 for (i=0;i<*px;i++) ME(Ct,i,j)=ME(Cn,l*(*px)+i,j);
-         for (i=0;i<*px;i++) ME(M1M2t,j,i)=ME(M1M2n,j,l*(*px)+i); 
+         for (i=0;i<*px;i++) ME(M1M2t,i,j)=ME(M1M2n,j,l*(*px)+i); 
       }
 
 //      MxA(C[ls[l]],Vargam,tmpM4); MAt(tmpM4,C[ls[l]],VarKorG);
