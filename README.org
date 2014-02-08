@@ -1,0 +1,90 @@
+* Multivariate Event Times (=mets=)
+  Implementation of various statistical models for multivariate event
+  history data. Including multivariate cumulative incidence models,
+  and bivariate random effects probit models (Liability models)
+
+** Installation
+#+BEGIN_SRC R :exports both :eval never
+install.packages("mets",dependencies=TRUE)
+#+END_SRC
+
+The development version may be installed directly from [[https://r-forge.r-project.org/projects/lava/][R-forge]]
+(requires [[http://cran.r-project.org/bin/windows/Rtools/][Rtools]] on windows
+and [[http://cran.r-project.org/bin/macosx/tools/][development tools]] (+Xcode) for Mac OS X):
+#+BEGIN_SRC R :exports both :eval never
+install.packages("mets", repos="http://R-Forge.R-project.org")
+#+END_SRC
+or github 
+#+BEGIN_EXAMPLE
+git@github.com:kkholst/mets.git
+#+END_EXAMPLE
+
+** Citation
+
+To cite the =mets= package please use the following reference
+
+#+BEGIN_EXAMPLE
+  Thomas H. Scheike and Klaus K. Holst and Jacob B. Hjelmborg (2013). 
+  Estimating heritability for cause specific mortality based on twin studies.
+  Lifetime Data Analysis. http://dx.doi.org/10.1007/s10985-013-9244-x
+
+  BibTeX
+  @Article{
+    title={Estimating heritability for cause specific mortality based on twin studies},
+    author={Scheike, Thomas H. and Holst, Klaus K. and Hjelmborg, Jacob B.},
+    year={2013},
+    issn={1380-7870},
+    journal={Lifetime Data Analysis},
+    doi={10.1007/s10985-013-9244-x},
+    url={http://dx.doi.org/10.1007/s10985-013-9244-x},
+    publisher={Springer US},
+    keywords={Cause specific hazards; Competing risks; Delayed entry; 
+              Left truncation; Heritability; Survival analysis},
+    pages={1-24},
+    language={English}
+  }
+#+END_EXAMPLE
+       
+** Examples
+
+#+BEGIN_SRC R :exports both :file mets1.png :cache yes
+  library(mets)
+  
+  data(prt) ## Prostate data example (sim)
+  
+  ## Bivariate competing risk, concordance estimates
+  p33 <- bicomprisk(Hist(time,status)~strata(zyg)+id(id),
+                    data=prt,cause=c(2,2),return.data=1,prodlim=TRUE)
+  
+  p33dz <- p33$model$"DZ"$comp.risk
+  p33mz <- p33$model$"MZ"$comp.risk
+  
+  ## Probability weights based on Aalen's additive model 
+  prtw <- ipw(Surv(time,status==0)~country, data=prt,
+              cluster="id",weightname="w")
+  
+  
+  ## Marginal model (wrongly ignoring censorings)
+  bpmz <- biprobit(cancer~1 + cluster(id), 
+                   data=subset(prt,zyg=="MZ"), eqmarg=TRUE)
+  
+  ## Extended liability model
+  bpmzIPW <- biprobit(cancer~1 + cluster(id), 
+                      data=subset(prtw,zyg=="MZ"), 
+                      weight="w")
+  smz <- summary(bpmzIPW)
+  
+  ## Concordance
+  plot(p33mz,ylim=c(0,0.1),axes=FALSE,automar=FALSE,atrisk=FALSE)
+  axis(2); axis(1)
+    
+  abline(h=smz$prob["Concordance",],lwd=c(2,1,1),col="darkblue")
+  ## Wrong estimates:
+  abline(h=summary(bpmz)$prob["Concordance",],lwd=c(2,1,1),col="lightgray")
+#+END_SRC
+
+#+RESULTS[<2013-04-30 23:38:24> b29852b2087096fe1b380ed24a55d3f434355218]:
+:RESULTS:
+[[file:examples/mets1.png]]
+:END:
+
