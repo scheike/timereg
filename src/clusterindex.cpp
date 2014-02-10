@@ -29,15 +29,18 @@ END_RCPP
  } // }}}
 
 /* organize indeces to different clusters in matrix  of size nclust x maxclust */ 
-RcppExport SEXP clusterindexM(SEXP iclusters, SEXP imednum, SEXP inum) {
+/* If optionally matrix 'mat' is supplied, the rows of mat corresponding to clusters is returned */
+RcppExport SEXP clusterindexM(SEXP iclusters, SEXP imednum, SEXP inum, SEXP x, SEXP all) {
 // {{{
 BEGIN_RCPP
   ivec clusters = Rcpp::as<ivec>(iclusters);
   int n = clusters.n_elem;
- 
+  bool All = Rcpp::as<bool>(all);
   int  uniqueclust=0; 
   int  maxclust=0;
   ivec nclust(n); nclust.fill(0);
+  bool hasX = !((Rf_isNull)(x));
+
     
   for (int  i=0;i<n;i++) {
     if (nclust[clusters[i]]==0) uniqueclust+=1; 
@@ -71,6 +74,29 @@ BEGIN_RCPP
       if (clustsize[clusters[i]]==1) firstclustid[clusters[i]]=i; 
     } 
   }
+ 
+ if (hasX) {   
+   mat X = Rcpp::as<mat>(x); 
+   //if (X.n_rows!=n) 
+   mat res(uniqueclust,X.n_cols); res.fill(0);
+   for (int i=0; i<idclust.n_rows; i++) {
+     for (int k=0; k<clustsize[i]; k++) {
+       res.row(i) += X.row(idclust(i,k));
+     }
+   }
+   if (!All) { return(Rcpp::wrap(res)); }
+   return(List::create(Named("clusters")=clusters,
+		       Named("maxclust")=maxclust,
+		       Named("idclustmat")=idclust,
+		       Named("cluster.size")=clustsize,
+		       Named("antclust")=clustsize,
+		       Named("uniqueclust")=uniqueclust,
+		       Named("firstclustid")=firstclustid,
+		       Named("X")=res
+		       ));    
+ }
+
+
   return(List::create(Named("clusters")=clusters,
 		      Named("maxclust")=maxclust,
 		      Named("idclustmat")=idclust,
