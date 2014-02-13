@@ -7,6 +7,10 @@
 \alias{familycluster.index}
 \alias{faster.reshape}
 \alias{nonparcuminc}
+\alias{normal_gradient.lvm}
+\alias{normal_logLik.lvm}
+\alias{normal_method.lvm}
+\alias{normal_objective.lvm}
 \alias{npc}
 \alias{piecewise.data}
 \alias{piecewise.twostage}

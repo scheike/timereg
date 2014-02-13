@@ -1,5 +1,5 @@
 *
-*    $Id: mvt.f 231 2011-11-07 13:48:07Z thothorn $
+*    $Id: mvt.f 245 2013-05-29 14:10:53Z thothorn $
 *
       SUBROUTINE MVTDST( N, NU, LOWER, UPPER, INFIN, CORREL, DELTA, 
      &                   MAXPTS, ABSEPS, RELEPS, ERROR, VALUE, INFORM )       
@@ -19,7 +19,7 @@
 *	Original source available from
 *	http://www.math.wsu.edu/faculty/genz/software/fort77/mvtdstpack.f
 *
-*	This is version 7/10 with better support for 100 < dimension < 1000
+*	This is version 28/05/2013
 *
 *  Parameters
 *
@@ -139,7 +139,6 @@
 *  Code added to fix ND = 0 bug, 24/03/2009 ->
             VL = 1
 *  <- Code added to fix ND = 0 bug, 24/03/2009
-
          ELSE IF ( ND.EQ.1 .AND. ( NU.LT.1 .OR. ABS(DL(1)).EQ.0 ) ) THEN
 *     
 *           1-d case for normal or central t
@@ -185,8 +184,9 @@
                END IF
                IF ( INFI(1) .NE. INFI(2) ) INFI(1) = 2
                VL = 1
-               IF ( INFI(1) .NE. 1 ) VL = MVSTDT( NU, B(1)-DL(1) ) 
-               IF ( INFI(1) .NE. 0 ) VL = VL - MVSTDT( NU, A(1)-DL(1) )      
+*  A(1), B(1) Bug Fixed, 28/05/2013
+               IF ( INFI(1) .NE. 1 ) VL = MVSTDT( NU, B(1) ) 
+               IF ( INFI(1) .NE. 0 ) VL = VL - MVSTDT( NU, A(1) )      
                IF ( VL .LT. 0 ) VL = 0
                ER = 2D-16
             END IF
@@ -818,13 +818,23 @@
                XS = AS*(-X(I,NG)+1)**2/4
                RS = SQRT( 1 - XS )
                BVN = BVN + A*W(I,NG)*EXP( -(BS/XS + HK)/2 )
-     +                    *( EXP( -HK*(1-RS)/(2*(1+RS)) )/RS 
+     +                    *( EXP( -HK*XS/(2*(1+RS)**2) )/RS 
      +                       - ( 1 + C*XS*( 1 + D*XS ) ) )
             END DO
             BVN = -BVN/TWOPI
          ENDIF
-         IF ( R .GT. 0 ) BVN =  BVN + MVPHI( -MAX( H, K ) )
-         IF ( R .LT. 0 ) BVN = -BVN + MAX( ZERO, MVPHI(-H) - MVPHI(-K) )     
+         IF ( R .GT. 0 ) THEN
+            BVN =  BVN + MVPHI( -MAX( H, K ) )
+         ELSE
+            BVN = -BVN 
+            IF ( K .GT. H ) THEN
+               IF ( H .LT. 0 ) THEN
+                  BVN = BVN + MVPHI(K)  - MVPHI(H) 
+               ELSE
+                  BVN = BVN + MVPHI(-H) - MVPHI(-K) 
+               ENDIF
+            ENDIF
+         ENDIF
       ENDIF
       MVBVU = BVN
       END

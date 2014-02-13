@@ -52,18 +52,34 @@ vecmat Dbvn(double y1, double y2, double R);
 double dbvnorm(double y1, double y2, double R);
 
 
+
 extern "C" double mvtdst_(const int *N, 
-			  const int *NU,
-			  const double *LOWER, 
-			  const double *UPPER,
-			  const int *INFIN,
-			  const double *CORREL,
-			  const double *DELTA,
-			  const int *MAXPTS,
-			  const double *ABSEPS,
-			  const double *RELEPS,
-			  const double *ERS,
-			  const double *VAL,
-			  const int *INFORM);
+		      const int *NU,
+		      const double *LOWER, 
+		      const double *UPPER,
+		      const int *INFIN,
+		      const double *CORREL,
+		      const double *DELTA,
+		      const int *MAXPTS,
+		      const double *ABSEPS,
+		      const double *RELEPS,
+		      const double *ERS,
+		      const double *VAL,
+		      const int *INFORM);
+
+double mvtdst(int* n,
+	      int* nu,
+	      double* lower,
+	      double* upper,
+	      int* infin,
+	      double* correl,
+	      double* delta,
+	      int* maxpts,  
+	      double* abseps,
+	      double* releps,
+	      double* error, 
+	      double* value, 
+	      int* inform);  
+
 
 #endif /* MVN_H */
