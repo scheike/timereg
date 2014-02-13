@@ -365,7 +365,7 @@ simple.reshape <- function (data, id = "id", num = NULL) {
 
 
 
-fast.reshape2 <- function(data,varying,id,num,sep="",keep,
+fast.reshape.obs <- function(data,varying,id,num,sep="",keep,
                          idname="id",numname="num",factors.keep=TRUE,
                          idcombine=TRUE,labelnum=FALSE,...) {
     if (!is.data.frame(data) & is.list(data)) {
