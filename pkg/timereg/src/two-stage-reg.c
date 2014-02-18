@@ -295,6 +295,8 @@ for(j=0;j<pmax;j++) {
       for (j=0;j<*antclust;j++) if (clustsize[j]>=2) {
       for (v=0;v<clustsize[j];v++) {
 	   i=idiclust[v*(*antclust)+j]; 
+//	   printf(" %d %d %d %d \n",i,s,*maxtimesim,*antpers); 
+//	   printf(" %lf %lf \n",stop[i],timereso[s]); 
            if ((stop[i]>=timereso[s])) {
 	      theta0=VE(lamtt,i); 
               if (*inverse==1) theta0=exp(theta0); 

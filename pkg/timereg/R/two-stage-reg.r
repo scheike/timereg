@@ -155,7 +155,7 @@ if (class(margsurv)!="coxph") {
     if (is.null(margsurv$time.sim.resolution)) { 
 	   time.group <- (1:nrow(Biid))-1; 
            maxtimesim <- nrow(Biid); 
-	   timereso <- margsurv$time.sim.resolution
+	   timereso <- margsurv$cum[,1] 
     }  
     else {
       timereso <- margsurv$time.sim.resolution

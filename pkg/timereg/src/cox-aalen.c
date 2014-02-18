@@ -549,7 +549,7 @@ if (*betafixed==0)  {
 		    if (*mof==1) VE(offset,id[ci])=0;  
 	    }
 	    S0+=entry[ci]*RR*weights[ci]; 
-	    S0strata[stratum[ci+2]]+=entry[ci]*RR*weights[c]; 
+	    S0strata[stratum[ci+2]]+=entry[ci]*RR*weights[ci]; 
 	  ci=ci-1; 
 	  pers=id[ci]; 
 	  stratpers=stratum[ci+2]; 
