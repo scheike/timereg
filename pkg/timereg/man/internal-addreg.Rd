@@ -48,6 +48,7 @@
 \alias{cluster.index}
 \alias{coefBase}
 \alias{des.aalen}
+\alias{des.aalen2}
 \alias{timetest}
 \alias{print.pe.sasieni} 
 \alias{print.predict.timereg}
