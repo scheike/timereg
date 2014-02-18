@@ -108,8 +108,8 @@ summary.bptwin <- function(object,level=0.05,...) {
       m <- p[1]
       ##else m <- p[length(object$midx0)+1]
       S <- object$SigmaFun(p)
-      conc1 <- pmvn(upper=c(m,m),sigma=S[[1]])
-      conc2 <- pmvn(upper=c(m,m),sigma=S[[2]])
+      conc1 <- pbvn(upper=c(m,m),sigma=S[[1]])
+      conc2 <- pbvn(upper=c(m,m),sigma=S[[2]])
       marg <- pnorm(m,sd=S[[1]][1,1]^0.5)      
       return(logit((conc1-conc2)/(marg*(1-marg))))
     }
@@ -119,7 +119,7 @@ summary.bptwin <- function(object,level=0.05,...) {
     else m <- p[length(object$midx0)+1]
     mu.cond <- function(x) m+S[1,2]/S[2,2]*(x-m)
     var.cond <- S[1,1]-S[1,2]^2/S[2,2]    
-    conc <- pmvn(upper=c(m,m),sigma=S)
+    conc <- pbvn(upper=c(m,m),sigma=S)
     marg <- pnorm(m,sd=S[1,1]^0.5)
     cond <- conc/marg
     logit(c(conc,cond,marg))
@@ -151,7 +151,7 @@ summary.bptwin <- function(object,level=0.05,...) {
   ##   conc <- function()
   ##   mu.cond <- function(x) mu+Sigma[[i]][1,2]/Sigma[[i]][2,2]*(x-mu[i])
   ##   var.cond <- Sigma[[i]][1,1]-Sigma[[i]][1,2]^2/Sigma[[i]][2,2]    
-  ##   cc0 <- pmvn(upper=c(mu[i],mu[i]),sigma=Sigma[[i]])
+  ##   cc0 <- pbvn(upper=c(mu[i],mu[i]),sigma=Sigma[[i]])
   ##   px <- pnorm(mu[i],sd=Sigma[[i]][2,2]^0.5)
   ##   concordance <- c(concordance,cc0)
   ##   marg <- c(marg,px)

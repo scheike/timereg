@@ -21,7 +21,7 @@ summary.biprobit <- function(object,level=0.05,...) {
     }
     mu.cond <- function(x) m[1]+S[1,2]/S[2,2]*(x-m[2])
     var.cond <- S[1,1]-S[1,2]^2/S[2,2]
-    conc <- pmvn(upper=m,sigma=S)
+    conc <- pbvn(upper=m,sigma=S)
     marg <- pnorm(m[1],sd=S[1,1]^0.5)
     cond <- conc/marg
     logit(c(conc,cond,marg))

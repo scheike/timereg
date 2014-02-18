@@ -12,9 +12,11 @@
 \alias{normal_method.lvm}
 \alias{normal_objective.lvm}
 \alias{npc}
+\alias{pbvn}
 \alias{piecewise.data}
 \alias{piecewise.twostage}
 \alias{plotcr}
+\alias{pmvn}
 \alias{sim}
 \alias{simBinFam}
 \alias{simBinFam2}
