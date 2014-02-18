@@ -1,3 +1,10 @@
+* Version 0.2.7 <2014-02-18 Tue>
+  - Adapted to changes in 'timereg::comp.risk'
+  - cluster.index with 'mat' argument for stacking rows of a matrix
+    according to cluster-variable
+  - New lava-estimator: 'normal', for ordinal data (cumulative probit)
+  - fast.reshape more robust. Now also supports 'varying arguments of
+    the type 'varying=-c(...)' choosing everything except '...'.
 
 * Version 0.2.6 <2013-12-07 Sat>
   - C++ source code cleanup
