@@ -562,9 +562,8 @@ BEGIN_RCPP
   // 	  &_mvt_delta[0], &_mvt_maxpts,
   // 	  &_mvt_abseps, &_mvt_releps,
   // 	  &_mvt_error[0], &val, &_mvt_inform);  
-  List res;
   double val;
-    List res;
+  List res;
   res["val"] = val;
   return(res);
 END_RCPP
