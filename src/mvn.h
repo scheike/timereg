@@ -34,7 +34,7 @@ RcppExport SEXP loglikMVN(SEXP yl, SEXP yu,
 			  SEXP z, SEXP su, SEXP dsu,
 			  SEXP threshold, SEXP dthreshold);
 
-RcppExport SEXP pmvn(SEXP upper, SEXP cor);
+//RcppExport SEXP pmvn(SEXP upper, SEXP cor);
 
 extern "C" double bvnd_(const double *dh, const double *dk, const double *r);
 

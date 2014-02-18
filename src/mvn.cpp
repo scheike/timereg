@@ -509,27 +509,63 @@ END_RCPP
 // }
 
 
-RcppExport SEXP pmvn(SEXP upper, SEXP cor) { 
-  NumericVector Upper(upper); int n = Upper.size();
-  NumericVector Lower(n);
-  IntegerVector infin(n); 
-  // INFIN(I) < 0, Ith limits are (-infinity, infinity);
-  // INFIN(I) = 0, Ith limits are (-infinity, UPPER(I)];
-  // INFIN(I) = 1, Ith limits are [LOWER(I), infinity);
-  // INFIN(I) = 2, Ith limits are [LOWER(I), UPPER(I)].
-  NumericVector Cor(cor);
-  NumericVector _mvt_delta(n); 
+mat cov2cor0(mat &x) {
+  int n = x.n_cols;
+  unsigned ncor = n*(n-1)/2;
+  rowvec Cor(ncor);
+  int j = 0;
+  for (int r=0; r<n; r++) {
+    for (int c=r+1; c<n; c++) {
+      Cor(j) = x(r,c); 
+      j++;
+    }
+  }
+  
+  return(Cor);
+}
 
-  double val;
-  mvtdst_(&n, &_mvt_df,
-	  &Lower[0], &Upper[0], 
-	  &infin[0], &Cor[0],
-	  &_mvt_delta[0], &_mvt_maxpts,
-	  &_mvt_abseps, &_mvt_releps,
-	  &_mvt_error[0], &val, &_mvt_inform);  
+RcppExport SEXP pmvn(SEXP lower, SEXP upper, SEXP mu, SEXP sigma) { 
+BEGIN_RCPP  
+  mat Sigma = Rcpp::as<mat>(sigma);
+  mat Mu = Rcpp::as<mat>(mu);
+  mat Lower = Rcpp::as<mat>(lower);
+  mat Upper = Rcpp::as<mat>(upper);
+
+
+  // irowvec infin(n); infin.fill(0); //
+  // for (int j=0; j<nNonObs; j++) {
+  //   if (upper(j)==datum::inf && StatusNonObs(j)==1) infin(j) = 1;
+  //   if (lower(j)==-datum::inf && StatusNonObs(j)==1) infin(j) = 0;
+  // }
+  
+  
+  // uvec Status = Rcpp::as<uvec>(status);
+  // mat Yu = Rcpp::as<mat>(yu);
+  // mat Mu = Rcpp::as<mat>(mu);  
+  // mat S = Rcpp::as<mat>(s);  
+
+  // NumericVector Upper(upper); int n = Upper.size();
+  // NumericVector Lower(n);
+  // IntegerVector infin(n); 
+  // // INFIN(I) < 0, Ith limits are (-infinity, infinity);
+  // // INFIN(I) = 0, Ith limits are (-infinity, UPPER(I)];
+  // // INFIN(I) = 1, Ith limits are [LOWER(I), infinity);
+  // // INFIN(I) = 2, Ith limits are [LOWER(I), UPPER(I)].
+  // NumericVector Cor(cor);
+  // NumericVector _mvt_delta(n); 
+
+  // double val;
+  // mvtdst_(&n, &_mvt_df,
+  // 	  &Lower[0], &Upper[0], 
+  // 	  &infin[0], &Cor[0],
+  // 	  &_mvt_delta[0], &_mvt_maxpts,
+  // 	  &_mvt_abseps, &_mvt_releps,
+  // 	  &_mvt_error[0], &val, &_mvt_inform);  
   List res;
+  double val;
   res["val"] = val;
   return(res);
+END_RCPP
 }
 
 
