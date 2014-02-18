@@ -17,7 +17,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   delta<-(cause!=cens.code)
   if (length(cause)!=length(time)) stop("cause and time not of same length\n"); 
   formula <- attr(cif,"Formula")
-  ldata <- timereg:::aalen.des2(formula(delete.response(terms(formula))),data=data,model="aalen")
+  ldata <- aalen.des2(formula(delete.response(terms(formula))),data=data,model="aalen")
   X<-ldata$X;  Z<-ldata$Z;  
 
   antpers<-nrow(X); 
@@ -37,7 +37,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
     if (is.null(cif2)==TRUE) stop("Must provide marginal model for both causes"); 
     formula2<-attr(cif2,"Formula"); 
 
-    ldata2 <- timereg:::aalen.des2(formula(delete.response(terms(formula2))),data=data,model="aalen");
+    ldata2 <- aalen.des2(formula(delete.response(terms(formula2))),data=data,model="aalen");
     X2<-ldata2$X; Z2<-ldata$Z;  
     if (is.null(Z2)==TRUE) {npar2<-TRUE; semi2<-0;}  else {Z2<-as.matrix(Z2); npar2<-FALSE; semi2<-1;}
     if (npar2==TRUE) {Z2<-matrix(0,antpers,1); pg2<-1; fixed2<-0;} else {fixed2<-1;pg2<-ncol(Z2);} 
