@@ -351,13 +351,17 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
     ud$clusters <- clusters
     ud$formula<-formula;
     ud$response <- event.history
-    if (model.type=="competing.risks")
-        ud$cause <- states[cause]
+    if (model.type=="competing.risks") ud$cause <- states[cause]
     class(ud)<-"comprisk"; 
     attr(ud, "Call") <- sys.call()
     attr(ud, "Formula") <- formula
     attr(ud, "time.pow") <- time.pow
     attr(ud, "causeS") <- cause
+    if (model.type=="competing.risks") cause.call <- event.history[,"event"] else
+    cause.call <- event.history[,"status"] 
+    cause.call <- as.numeric(cause.call)
+    cause.call[event.history[,"status"]==cens.code] <- cens.code
+    attr(ud, "cause") <- cause.call
     attr(ud, "cluster.call") <- cluster.call
     attr(ud, "coarse.clust") <- coarse.clust
     attr(ud, "max.clust") <- max.clust

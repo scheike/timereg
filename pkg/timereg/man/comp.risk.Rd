@@ -153,9 +153,10 @@ data(bmt);
 clust <- rep(1:204,each=2)
 addclust<-comp.risk(Hist(time,cause)~platelet+age+tcell+cluster(clust),data=bmt,
 cause=1,resample.iid=1,n.sim=100,model="additive")
+###
 
-addclust<-comp.risk(Hist(time,cause)~+1+cluster(clust),data=bmt,
-bmt$cause,cause=1,resample.iid=1,n.sim=100,model="additive")
+addclust<-comp.risk(Hist(time,cause)~+1+cluster(clust),data=bmt,cause=1,
+		    resample.iid=1,n.sim=100,model="additive")
 pad <- predict(addclust,X=1)
 plot(pad)
 
@@ -214,7 +215,7 @@ par(mfrow=c(2,2))
 plot(out,multiple=1,uniform=0,col=1:3,lty=1,se=0)
 
 ## Fine & Gray model with alternative parametrization for baseline
-fg2<-comp.risk(Hist(time,cause)~ const(platelet)+const(age)+const(tcell),data=bmt,
+fg2<-comp.risk(Hist(time,cause)~const(platelet)+const(age)+const(tcell),data=bmt,
 cause=1,resample.iid=1,model="prop",n.sim=100)
 summary(fg2)
 }
