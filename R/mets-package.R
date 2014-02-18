@@ -128,7 +128,7 @@ NULL
 ##' @aliases plotcr npc nonparcuminc simnordic corsim.prostate
 ##' alpha2kendall alpha2spear coefmat piecewise.twostage surv.boxarea
 ##' cluster.index familycluster.index faster.reshape piecewise.data
-##' simBinPlack simBinFam simBinFam2 simSurvFam simCox sim
+##' simBinPlack simBinFam simBinFam2 simSurvFam simCox sim pmvn pbvn
 ##' normal_logLik.lvm normal_method.lvm normal_objective.lvm normal_gradient.lvm
 NULL
 
