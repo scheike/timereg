@@ -56,7 +56,6 @@
 \alias{residualsTimereg}
 \alias{summary.pe.sasieni}
 \alias{summary.predict.timereg}
-\alias{sindex.prodlim}
 \alias{coef.dynreg}
 \alias{coef.timecox}
 \alias{dynregBase}
