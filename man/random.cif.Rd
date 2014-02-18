@@ -3,8 +3,8 @@
 \title{Random effects model for competing risks data}
 \usage{
   random.cif(cif, data, cause, cif2 = NULL, cause1 = 1,
-    cause2 = 1, cens.code = 0, cens.model = "KM", Nit = 40,
-    detail = 0, clusters = NULL, theta = NULL,
+    cause2 = 1, cens.code = NULL, cens.model = "KM",
+    Nit = 40, detail = 0, clusters = NULL, theta = NULL,
     theta.des = NULL, step = 1, same.cens = FALSE,
     exp.link = 0, score.method = "nlminb", entry = NULL,
     trunkp = 1, ...)
@@ -27,7 +27,8 @@
 
   \item{cause2}{cause of second coordinate.}
 
-  \item{cens.code}{specificies the code for the censoring.}
+  \item{cens.code}{specificies the code for the censoring
+  if NULL then uses the one from the marginal cif model.}
 
   \item{cens.model}{specified which model to use for the
   ICPW, KM is Kaplan-Meier alternatively it may be "cox"}

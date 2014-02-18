@@ -43,8 +43,8 @@ data(multcif) # simulated data
 multcif$cause[multcif$cause==0] <- 2
 
 times=seq(0.05,3,by=0.1) # to speed up computations use only these time-points
-add<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,
-               multcif$cause,n.sim=0,times=times)
+add<-comp.risk(Hist(time,cause)~const(X)+cluster(id),data=multcif,
+               n.sim=0,times=times)
 ###
 out1<-cor.cif(add,data=multcif,cause1=1,cause2=1,theta=log(2+1))
 summary(out1)

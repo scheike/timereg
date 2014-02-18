@@ -3,7 +3,7 @@
 \title{Additive Random effects model for competing risks data for polygenetic modelling}
 \usage{
   Grandom.cif(cif, data, cause, cif2 = NULL, times = NULL,
-    cause1 = 1, cause2 = 1, cens.code = 0,
+    cause1 = 1, cause2 = 1, cens.code = NULL,
     cens.model = "KM", Nit = 40, detail = 0,
     clusters = NULL, theta = NULL, theta.des = NULL,
     weights = NULL, step = 1, sym = 0, same.cens = FALSE,
@@ -32,7 +32,8 @@
 
   \item{cause2}{cause of second coordinate.}
 
-  \item{cens.code}{specificies the code for the censoring.}
+  \item{cens.code}{specificies the code for the censoring
+  if NULL then uses the one from the marginal cif model.}
 
   \item{cens.model}{specified which model to use for the
   ICPW, KM is Kaplan-Meier alternatively it may be "cox"}
@@ -132,8 +133,8 @@
 \examples{
 data(multcif)
 multcif$cause[multcif$cause==0] <- 2
-addm<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,
-              multcif$cause,n.sim=0)
+addm<-comp.risk(Hist(time,cause)~const(X)+cluster(id),data=multcif,
+              cause=1,n.sim=0)
 
 ### making group indidcator
 g.des<-data.frame(group2=rep(rbinom(200,1,0.5),rep(2,200)))

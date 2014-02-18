@@ -1,5 +1,5 @@
 dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
-                  cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
+                  cause1=1,cause2=1,cens.code=NULL,cens.model="KM",Nit=40,detail=0,
                   clusters=NULL,theta=NULL,theta.des=NULL,step=1,sym=1,weights=NULL,
 		  same.cens=FALSE,censoring.probs=NULL,silent=1,entry=NULL,estimator=1,
 		  trunkp=1,admin.cens=NULL,control=list(),par.func=NULL,dpar.func=NULL,dimpar=NULL,
@@ -8,10 +8,18 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   ## {{{ set up data and design
   multi<-0; dscore=1; stab.cens<-FALSE; entry.call<-entry; inverse<-exp.link
   notaylor<-1; flex.func<-0; 
-  formula<-attr(cif,"Formula"); 
-  ldata<-aalen.des(formula,data,model="aalen");
-  X<-ldata$X; time<-ldata$time2; Z<-ldata$Z;  status<-ldata$status;
-                                        #print(dim(X)); print(dim(Z)); 
+
+  ## extract design and time and cause from cif object 
+  time <- cif$response[,"time"]
+  if (missing(cause)) cause <- attr(cif,"cause"); 
+  cause <- as.numeric(cause)
+  if (is.null(cens.code)) cens.code <- attr(cif,"cens.code")
+  delta<-(cause!=cens.code)
+  if (length(cause)!=length(time)) stop("cause and time not of same length\n"); 
+  formula <- attr(cif,"Formula")
+  ldata <- timereg:::aalen.des2(formula(delete.response(terms(formula))),data=data,model="aalen")
+  X<-ldata$X;  Z<-ldata$Z;  
+
   antpers<-nrow(X); 
   if (is.null(Z)==TRUE) {npar<-TRUE; semi<-0;}  else {Z<-as.matrix(Z); npar<-FALSE; semi<-1;}
   if (npar==TRUE) {Z<-matrix(0,antpers,1); pg<-1; fixed<-0;} else {fixed<-1;pg<-ncol(Z);} 
@@ -23,15 +31,14 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   if ((cif$model!="additive") && (cif$model!="fg")) 
     stop("Marginal Cumulative incidence model, must be either additive or extended Fine-Gray model\n")
   cif.model <- switch(cif$model,additive=1,fg=2)
-  if (missing(cause)) cause <- attr(cif,"cause"); 
-  delta<-(cause!=cens.code)
 
-  if (cause1!=attr(cif,"cause")) cat("Cause for marginal model and correlation not the same\n"); 
+  if (cause1!=attr(cif,"causeS")) cat("Cause for marginal model and correlation not the same\n"); 
   if ((cause1[1]!=cause2[1])) {
     if (is.null(cif2)==TRUE) stop("Must provide marginal model for both causes"); 
     formula2<-attr(cif2,"Formula"); 
-    ldata2<-aalen.des(formula2,data,model="aalen");
-    X2<-ldata2$X; timec2<-ldata2$time2; Z2<-ldata$Z;  status2<-ldata2$status;
+
+    ldata2 <- timereg:::aalen.des2(formula(delete.response(terms(formula2))),data=data,model="aalen");
+    X2<-ldata2$X; Z2<-ldata$Z;  
     if (is.null(Z2)==TRUE) {npar2<-TRUE; semi2<-0;}  else {Z2<-as.matrix(Z2); npar2<-FALSE; semi2<-1;}
     if (npar2==TRUE) {Z2<-matrix(0,antpers,1); pg2<-1; fixed2<-0;} else {fixed2<-1;pg2<-ncol(Z2);} 
     px2<-ncol(X2);  
@@ -410,7 +417,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' @param times time-vector that specifies the times used for the estimating euqations for the cross-odds-ratio estimation.
 ##' @param cause1 specificies the cause considered.
 ##' @param cause2 specificies the cause that is conditioned on.
-##' @param cens.code specificies the code for the censoring.
+##' @param cens.code specificies the code for the censoring if NULL then uses the one from the marginal cif model.
 ##' @param cens.model specified which model to use for the ICPW, KM is Kaplan-Meier alternatively it may be "cox"
 ##' @param Nit number of iterations for Newton-Raphson algorithm.
 ##' @param detail if 0 no details are printed during iterations, if 1 details are given.
@@ -539,7 +546,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' @export
 ##' @keywords survival
 cor.cif<-function(cif,data,cause,times=NULL,
-                  cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
+                  cause1=1,cause2=1,cens.code=NULL,cens.model="KM",Nit=40,detail=0,
                   clusters=NULL, theta=NULL,theta.des=NULL,step=1,sym=0,weights=NULL, 
 		  par.func=NULL,dpar.func=NULL,dimpar=NULL,
 		  score.method="nlminb",same.cens=FALSE,censoring.probs=NULL,silent=1,...)
@@ -555,7 +562,7 @@ cor.cif<-function(cif,data,cause,times=NULL,
 } ## }}}
 ##' @export
 rr.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
-                 cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
+                 cause1=1,cause2=1,cens.code=NULL,cens.model="KM",Nit=40,detail=0,
                  clusters=NULL, theta=NULL,theta.des=NULL, step=1,sym=0,weights=NULL,
                  same.cens=FALSE,censoring.probs=NULL,silent=1,par.func=NULL,dpar.func=NULL,dimpar=NULL,
 		 score.method="nlminb",entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,...)
@@ -571,7 +578,7 @@ rr.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 } ## }}}
 ##' @export
 or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
-                 cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
+                 cause1=1,cause2=1,cens.code=NULL,cens.model="KM",Nit=40,detail=0,
                  clusters=NULL, theta=NULL,theta.des=NULL, step=1,sym=0, weights=NULL,
                  same.cens=FALSE,censoring.probs=NULL,silent=1,par.func=NULL,dpar.func=NULL,dimpar=NULL,
 		 score.method="nlminb",entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,...)
@@ -607,7 +614,7 @@ or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 ##' @param cif2 specificies model for cause2 if different from cause1.
 ##' @param cause1 cause of first coordinate.
 ##' @param cause2 cause of second coordinate.
-##' @param cens.code specificies the code for the censoring.
+##' @param cens.code specificies the code for the censoring if NULL then uses the one from the marginal cif model.
 ##' @param cens.model specified which model to use for the ICPW, KM is Kaplan-Meier alternatively it may be "cox"
 ##' @param Nit number of iterations for Newton-Raphson algorithm.
 ##' @param detail if 0 no details are printed during iterations, if 1 details are given.
@@ -671,7 +678,7 @@ or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 ##' @keywords survival
 ##' @author Thomas Scheike
 random.cif<-function(cif,data,cause,cif2=NULL,
-                     cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
+                     cause1=1,cause2=1,cens.code=NULL,cens.model="KM",Nit=40,detail=0,
                      clusters=NULL,theta=NULL,theta.des=NULL,
                      step=1,same.cens=FALSE,exp.link=0,score.method="nlminb",
                      entry=NULL,trunkp=1,...)
@@ -730,7 +737,7 @@ random.cif<-function(cif,data,cause,cif2=NULL,
 ##' @param times time points
 ##' @param cause1 cause of first coordinate.
 ##' @param cause2 cause of second coordinate.
-##' @param cens.code specificies the code for the censoring.
+##' @param cens.code specificies the code for the censoring if NULL then uses the one from the marginal cif model.
 ##' @param cens.model specified which model to use for the ICPW, KM is Kaplan-Meier alternatively it may be "cox"
 ##' @param Nit number of iterations for Newton-Raphson algorithm.
 ##' @param detail if 0 no details are printed during iterations, if 1 details are given.
@@ -770,8 +777,8 @@ random.cif<-function(cif,data,cause,cif2=NULL,
 ##' @examples
 ##' data(multcif)
 ##' multcif$cause[multcif$cause==0] <- 2
-##' addm<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,
-##'               multcif$cause,n.sim=0)
+##' addm<-comp.risk(Hist(time,cause)~const(X)+cluster(id),data=multcif,
+##'               cause=1,n.sim=0)
 ##'
 ##' ### making group indidcator 
 ##' g.des<-data.frame(group2=rep(rbinom(200,1,0.5),rep(2,200)))
@@ -815,7 +822,7 @@ random.cif<-function(cif,data,cause,cif2=NULL,
 ##' @author Thomas Scheike
 ##' @export
 Grandom.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
-cause1=1,cause2=1,cens.code=0,cens.model="KM",Nit=40,detail=0,
+cause1=1,cause2=1,cens.code=NULL,cens.model="KM",Nit=40,detail=0,
 clusters=NULL, theta=NULL,theta.des=NULL, weights=NULL, step=1,sym=0,
 same.cens=FALSE,censoring.probs=NULL,silent=1,exp.link=1,score.method="nlminb",
 entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,random.design=NULL,...)
@@ -887,8 +894,8 @@ print.summary.cor <- function(x,digits=3,...)
 ##' multcif$cause[multcif$cause==0] <- 2
 ##' 
 ##' times=seq(0.05,3,by=0.1) # to speed up computations use only these time-points
-##' add<-comp.risk(Surv(time,status>0)~const(X)+cluster(id),data=multcif,
-##'                multcif$cause,n.sim=0,times=times)
+##' add<-comp.risk(Hist(time,cause)~const(X)+cluster(id),data=multcif,
+##'                n.sim=0,times=times)
 ##' ###
 ##' out1<-cor.cif(add,data=multcif,cause1=1,cause2=1,theta=log(2+1))
 ##' summary(out1)
