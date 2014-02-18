@@ -510,62 +510,83 @@ END_RCPP
 // }
 
 
-mat cov2cor0(mat &x) {
-  int n = x.n_cols;
-  unsigned ncor = n*(n-1)/2;
-  rowvec Cor(ncor);
-  int j = 0;
-  for (int r=0; r<n; r++) {
-    for (int c=r+1; c<n; c++) {
-      Cor(j) = x(r,c); 
+void cov2cor0(const mat &x, mat &Cor, rowvec &sx, bool nrm=true) {
+  unsigned p = x.n_cols;
+  if (nrm) for (unsigned j=0; j<p; j++) sx(j) = 1/sqrt(x(j,j));
+  unsigned j=0;
+  for (unsigned r=0; r<(p-1); r++) {
+    for (unsigned c=r+1; c<p; c++) {
+      if (nrm)
+	Cor(j) = x(r,c)*sx(r)*sx(c);
+      else 
+	Cor(j) = x(r,c);
       j++;
     }
-  }
-  
-  return(Cor);
+  }  
 }
 
-RcppExport SEXP pmvn(SEXP lower, SEXP upper, SEXP mu, SEXP sigma) { 
+RcppExport SEXP pmvn(SEXP lower, SEXP upper, SEXP mu, SEXP sigma, SEXP notcor) { 
 BEGIN_RCPP  
   mat Sigma = Rcpp::as<mat>(sigma);
+  bool notCor = Rcpp::as<bool>(notcor);
   mat Mu = Rcpp::as<mat>(mu);
   mat Lower = Rcpp::as<mat>(lower);
   mat Upper = Rcpp::as<mat>(upper);
+  unsigned n = Mu.n_rows;
+  int p = Mu.n_cols;
 
+  NumericVector _mvt_delta(n);
+  unsigned ncor = p*(p-1)/2;
+  vec Cor(ncor); // Vector of correlation coefficients (upper-tri, colwise)
+  rowvec L(p); // Std.deviations    
+  if (Sigma.n_rows==(unsigned)p) {
+    cov2cor0(Sigma,Cor,L,notCor);
+  }
+   
+  ivec infin(p); infin.fill(2); //
+  for (unsigned j=0; j<(unsigned)p; j++) {
+    if (Upper(0,j)==datum::inf) infin(j) = 1;
+    if (Lower(0,j)==-datum::inf) infin(j) = 0;
+  }
 
-  // irowvec infin(n); infin.fill(0); //
-  // for (int j=0; j<nNonObs; j++) {
-  //   if (upper(j)==datum::inf && StatusNonObs(j)==1) infin(j) = 1;
-  //   if (lower(j)==-datum::inf && StatusNonObs(j)==1) infin(j) = 0;
-  // }
-  
-  
-  // uvec Status = Rcpp::as<uvec>(status);
-  // mat Yu = Rcpp::as<mat>(yu);
-  // mat Mu = Rcpp::as<mat>(mu);  
-  // mat S = Rcpp::as<mat>(s);  
-
-  // NumericVector Upper(upper); int n = Upper.size();
-  // NumericVector Lower(n);
-  // IntegerVector infin(n); 
-  // // INFIN(I) < 0, Ith limits are (-infinity, infinity);
-  // // INFIN(I) = 0, Ith limits are (-infinity, UPPER(I)];
-  // // INFIN(I) = 1, Ith limits are [LOWER(I), infinity);
-  // // INFIN(I) = 2, Ith limits are [LOWER(I), UPPER(I)].
-  // NumericVector Cor(cor);
-  // NumericVector _mvt_delta(n); 
-
-  // double val;
-  // mvtdst_(&n, &_mvt_df,
-  // 	  &Lower[0], &Upper[0], 
-  // 	  &infin[0], &Cor[0],
-  // 	  &_mvt_delta[0], &_mvt_maxpts,
-  // 	  &_mvt_abseps, &_mvt_releps,
-  // 	  &_mvt_error[0], &val, &_mvt_inform);  
-  double val;
-  List res;
-  res["val"] = val;
-  return(res);
+  rowvec Lower0(p);
+  rowvec Upper0(p);
+  vec res(n);  
+  for  (unsigned i=0; i<n; i++) {
+    double val;
+    if (Lower.n_rows==n) {
+      Lower0 = Lower.row(i)-Mu.row(i);
+      Upper0 = Upper.row(i)-Mu.row(i);
+      infin.fill(2); // (a,b)
+      for (unsigned j=0; j<(unsigned)p; j++) {		
+	if (Upper0(0,j)==datum::inf) infin(j) = 1; // (a,Inf)
+	if (Lower0(0,j)==-datum::inf) {
+	  if (infin(j)==1) infin(j) = -1; // (-Inf,Inf)
+	  else infin(j) = 0; // (-Inf,b)
+	}
+      }
+    } else {
+      Lower0 = Lower.row(0)-Mu.row(i);
+      Upper0 = Upper.row(0)-Mu.row(i);
+    }
+    if (Sigma.n_rows!=(unsigned)p) {      
+      mat Sigma0 = Sigma.row(i);
+      Sigma0.reshape(p,p);
+      cov2cor0(Sigma0,Cor,L,notCor);
+    }
+    if (notCor) {
+      Lower0 = Lower0%L;
+      Upper0 = Upper0%L;
+    }
+    mvtdst(&p, &_mvt_df,
+	   &Lower0[0], &Upper0[0], 
+	   &infin[0], &Cor[0],
+	   &_mvt_delta[0], &_mvt_maxpts,
+	   &_mvt_abseps, &_mvt_releps,
+	   &_mvt_error[0], &val, &_mvt_inform);      
+    res(i) = val;
+  }
+  return(Rcpp::wrap(res));
 END_RCPP
 }
 
