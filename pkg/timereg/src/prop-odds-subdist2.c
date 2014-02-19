@@ -306,7 +306,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 
    if (timing==1) { // {{{ 
 	  c1=clock();
-	  Rprintf ("\telapsed CPU time:   ude af løkke   %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+	  Rprintf ("\telapsed CPU time:   out of loop  %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
 	  c0=clock();
    } // }}} 	
 

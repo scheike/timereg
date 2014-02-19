@@ -314,7 +314,7 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
 
       Mv(tmpM1,xi,tmpv3); vec_subtr(zi,tmpv3,ZHdN); 
       scl_vec_mult(zpers,ZHdN,ZHdp); vec_add(ZHdp,IZHdp,IZHdp); 
-      if (s<0) { Rprintf(" %d %d ±n",pers,s);print_vec(zi);print_vec(xi);} 
+      if (s<0) { Rprintf(" %d %d \n",pers,s);print_vec(zi);print_vec(xi);} 
 
       /* LY korrektion */ 
       scl_vec_mult(zpers-YoneN,ZHdN,korgamly); 

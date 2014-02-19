@@ -29,7 +29,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
   int *pg=calloc(1,sizeof(int)),c,robust=1,pers=0,ci=0,i,j,k,l,s,t,it,count,*ipers=calloc(*Ntimes,sizeof(int));
   int *cluster=calloc(*antpers,sizeof(int));
   double RR,S0star,time,dummy,ll;
-  double S0,S0p=0,S0cox=0,tau,random,scale,sumscore;
+  double S0,tau,random,scale,sumscore;
   double norm_rand();
   void GetRNGstate(),PutRNGstate();
 
@@ -109,7 +109,8 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	  time=times[s];  
 //	  vec_zeros(risk); 
 	  vec_zeros(dS0);  mat_zeros(d2S0);  mat_zeros(dS1);  vec_zeros(S1star);
-	  S0star=0; S0=0; S0p=0; S0cox=0; 
+	  S0star=0; S0=0; 
+//	  S0p=0; S0cox=0; 
 //	  vec_zeros(Gbeta); vec_zeros(plamt); vec_zeros(dlamt); 
 	  vec_zeros(S1); 
 
@@ -327,7 +328,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 
    if (timing==1) { // {{{ 
 	  c1=clock();
-	  Rprintf ("\telapsed CPU time:   ude af løkke   %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+	  Rprintf ("\telapsed CPU time:  out of loop  %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
 	  c0=clock();
    } // }}} 	
 

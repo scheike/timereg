@@ -30,7 +30,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
   matrix *A,*AI,*cumX,*cumXAI,*cumZP,*XPZ,*tmp2,*dS,*S,*St[*nmgt]; 
   matrix *Z,*dS1,*S1,*cumX1,*cumXAI1,*cumZP1,*tmp21,*cummat1;
   vector *Deltazsd,*Deltaz,*tmpM1z,*vtmp2,*vtmp1,*cumdB1,*VdB1,*respm1;
-  vector *dNt[*nmgt],*dMGt[*nmgt],*cumdB,*dB,*VdB,*xi,*rowX,*rowcum,*difX,*vtmp,*respm,*gamma;
+  vector *dMGt[*nmgt],*cumdB,*dB,*VdB,*xi,*rowX,*rowcum,*difX,*vtmp,*respm,*gamma;
   vector *risk,*cumA[*antclust],*cum,*vecX;
   vector *Gbeta,*dA,*xtilde,*zi,*gammaiid[*antclust];
   vector *tmpv1,*rowZ,*rvec,*dB1[*antclust];

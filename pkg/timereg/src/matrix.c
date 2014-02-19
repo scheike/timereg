@@ -311,19 +311,19 @@ void choleskyunsafe(matrix *A, matrix *AI){ // {{{
   //unsafe because it assumes A and AI are both square and of the same
   //dimensions, and that they occupy different memory
 
-  char uplo = 'U'; // lower version 
+//  char uplo = 'U'; // lower version 
   int i, j;
   int n = nrow_matrix(A);
-  int lda = n; // matrix A has dimensions *n x *n
+//  int lda = n; // matrix A has dimensions *n x *n
   int info = -999;
-  double rcond;
-  int pivot[n];
-  double z[n];
-  double qraux[n];
-  double work[2*n];
-  int rank = 0;
-  int job=1;
-  double tol = 1.0e-07;
+//    double rcond;
+//  int pivot[n];
+//  double z[n];
+//  double qraux[n];
+//  double work[2*n];
+//  int rank = 0;
+//  int job=1;
+//  double tol = 1.0e-07;
   
 // First copy the matrix A into the matrix AI
 //  print_mat(A); 
@@ -331,8 +331,8 @@ void choleskyunsafe(matrix *A, matrix *AI){ // {{{
 //  print_mat(AI); 
 
 //  printf("sssssssssss======================\n"); 
-  job = 1; // Indicates that AI is upper triangular
-  rcond = 999.0;
+//  job = 1; // Indicates that AI is upper triangular
+//  rcond = 999.0;
 
     // First find the Cholesky factorization of A,
     // stored as an upper triangular matrix
