@@ -5,12 +5,12 @@ normal_method.lvm <- "nlminb0"
 normal_objective.lvm <- function(x,p,data,weight2=NULL,indiv=FALSE,...) {
     save.seed <- .Random.seed; set.seed(1)
     on.exit(set.seed(save.seed))
-    y.idx <- lava::index(x)$endo.idx
+    y.idx <- index(x)$endo.idx
     mu <- predict(x,data=data,p=p)
     S <- attributes(mu)$cond.var
     class(mu) <- "matrix"
-    y <- lava::endogenous(x)
-    ord <- lava::ordinal(x)
+    y <- endogenous(x)
+    ord <- ordinal(x)
     status <- rep(0,length(y))
     if (exists("binary.lvm")) status[match(binary(x),y)] <- 2
     status[match(ord,y)] <- 2
