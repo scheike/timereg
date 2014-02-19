@@ -79,7 +79,7 @@ BEGIN_RCPP
    mat X = Rcpp::as<mat>(x); 
    //if (X.n_rows!=n) 
    mat res(uniqueclust,X.n_cols); res.fill(0);
-   for (int i=0; i<idclust.n_rows; i++) {
+   for (unsigned i=0; i<idclust.n_rows; i++) {
      for (int k=0; k<clustsize[i]; k++) {
        res.row(i) += X.row(idclust(i,k));
      }

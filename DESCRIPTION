@@ -28,7 +28,6 @@ Suggests:
     prodlim,
     testthat,
     ucminf
-Enhances: alr
 LinkingTo: Rcpp, RcppArmadillo
 Collate:
     'biprobit.R'

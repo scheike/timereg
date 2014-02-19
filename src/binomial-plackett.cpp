@@ -9,10 +9,10 @@ using namespace Rcpp;
 
 double claytonoakesP(double theta,int status1,int status2,double cif1,double cif2,vec &dp) 
 { // {{{
-double S,valr=1,cifs,x,y,z;
+double valr=1,x,y,z;
 double p00,p10,p01,p11; 
 
-cifs=cif1+cif2; S=1+(cifs*(theta-1)); 
+//double cifs=cif1+cif2; //double S=1+(cifs*(theta-1)); 
 x=theta; y=cif1; z=cif2; 
 
 valr=  pow((1/pow(y,1/x) + 1/pow(z,1/x)) - 1,-x);
@@ -55,8 +55,8 @@ double placklikeP(double theta,int status1,int status2,double cif1,double cif2,v
 { // {{{
 //double S,S2,a;
 //S=1+cifs*(theta-1); S2=4*cif1*cif2*theta*(theta-1);
-double x,y,z,cifs,valr=1,p11,p10,p01,p00; 
-cifs=cif1+cif2; 
+double x,y,z,valr=1,p11,p10,p01,p00; 
+//double cifs=cif1+cif2; 
 //a=(1+(theta-1)*(cifs)); 
 x=theta; y=cif1; z=cif2; 
 
@@ -181,8 +181,10 @@ RcppExport SEXP twostageloglikebin(
   } // }}}
 
   int ci,ck,i,j,c,s=0,k,v,c1,v1; 
-  double ll=1,Li,Lk,sdj=0,diff=0;
-  double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0; 
+  double ll=1,Li,Lk,diff=0;
+  //double sdj=0;
+  //  double Lit=1,Lkt=1,llt=1;
+  double deppar=1,ssf=0,thetak=0; 
 //  double plack(); 
   vec dplack(4); dplack.fill(0);
   vec dplackt(4); dplackt.fill(0);
@@ -209,7 +211,7 @@ RcppExport SEXP twostageloglikebin(
 
 for (j=0;j<antclust;j++) if (clustsize(j)>=2) { 
 
-   R_CheckUserInterrupt(); diff=0; sdj=0; 
+    R_CheckUserInterrupt(); diff=0; //sdj=0; 
 
   for (c=0;c<clustsize(j)-1;c++) for (v=c+1;v<clustsize(j);v++) // {{{ //  if ((c<v)) 
   { 
@@ -239,12 +241,12 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 //	printf(" %d %d %d %d %d %d %d %lf %lf %lf %lf %lf %lf \n",j,c,v,i,k,ci,ck,thetak,Li,Lk,weights(i),ll,log(ll)); 
 	   if (varlink==1) diff=pow(deppar,1)*diff;  
 	   if (varlink==0) diff=1*pow(deppar,2)*diff; 
-	   sdj=-pow(diff,2); 
+	   //sdj=-pow(diff,2); 
 	   // }}}
 	} else if (depmodel==2) { // plackett model  // {{{
            ll=placklikeP(deppar,ci,ck,Li,Lk,dplack);
 	   ssf+=weights(i)*log(ll); 
-	   sdj=pow(dplack(0)/ll,2); 
+	   // sdj=pow(dplack(0)/ll,2); 
 	   if (varlink==1) diff=-deppar*dplack(0)/ll; 
 	   if (varlink==0) diff=-dplack(0)/ll;
 	} // }}}
