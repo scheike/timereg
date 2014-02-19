@@ -6,11 +6,8 @@
 \alias{corsim.prostate}
 \alias{familycluster.index}
 \alias{faster.reshape}
+\alias{loglikMVN}
 \alias{nonparcuminc}
-\alias{normal_gradient.lvm}
-\alias{normal_logLik.lvm}
-\alias{normal_method.lvm}
-\alias{normal_objective.lvm}
 \alias{npc}
 \alias{pbvn}
 \alias{piecewise.data}
