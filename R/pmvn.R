@@ -13,6 +13,13 @@ pbvn <- function(upper,rho,sigma) {
     return(res)
 }
 
+
+## lower <- rbind(c(0,-Inf),(-Inf,0))
+## upper <- rbind(c(Inf,0),(0,Inf))
+## mu <- rbind(c(1,1),c(-1,1))
+## sigma <- diag(2)+1
+## pmvn(lower=lower,upper=upper,mu=mu,sigma=sigma)
+
 ##' @export
 pmvn <- function(lower,upper,mu=rep(0,ncol(sigma)),sigma,notcor=TRUE) {
     if (missing(sigma)) stop("Specify variance matrix 'sigma'")

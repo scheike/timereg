@@ -569,6 +569,7 @@ BEGIN_RCPP
       Lower0 = Lower.row(0)-Mu.row(i);
       Upper0 = Upper.row(0)-Mu.row(i);
     }
+    // We use that Phi(a,b,S,mu) = Phi(L(a-mu),L(b-mu),R,0); R=LSL
     if (Sigma.n_rows!=(unsigned)p) {      
       mat Sigma0 = Sigma.row(i);
       Sigma0.reshape(p,p);
