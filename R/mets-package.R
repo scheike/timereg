@@ -8,7 +8,7 @@
 ##' @docType package
 ##' @author Klaus K. Holst and Thomas Scheike
 ##' @useDynLib mets
-##' @import stats lava splines timereg
+##' @import stats lava splines timereg Rcpp
 ##' @keywords package
 ##' @examples
 ##' 

@@ -21,6 +21,7 @@ Depends:
 Imports:
     numDeriv,
     compiler,
+    Rcpp,
     splines
 Suggests:
     lava.tobit (>= 0.4-7),
