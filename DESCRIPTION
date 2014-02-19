@@ -16,8 +16,8 @@ LazyLoad: yes
 URL: http://lava.r-forge.r-project.org/
 Depends:
     R (>= 2.15),
-    timereg (>= 1.8.2),
-    lava (>= 1.2.4),
+    timereg (>= 1.8.4),
+    lava (>= 1.2.4)
 Imports:
     numDeriv,
     compiler,
