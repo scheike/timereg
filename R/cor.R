@@ -236,7 +236,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 		 iKMtimes=Gctimes,isilent=silent,
                  icifmodel=cif.model,idepmodel=dep.model,
                  iestimator=estimator,ientryage=entry,icif1entry=cif1entry,
-                 icif2entry=cif2entry,itrunkp=trunkp,irvdes=random.design,DUP=FALSE) 
+                 icif2entry=cif2entry,itrunkp=trunkp,irvdes=random.design) 
       ## }}}
 
       attr(outl,"gradient") <-outl$score 

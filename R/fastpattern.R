@@ -11,6 +11,6 @@
 ##' @export
 fast.pattern <- function(x,y,...) {
   if (missing(y)) y <- NULL
-   .Call("FastPattern",x,y,DUP=FALSE)
+   .Call("FastPattern",x,y)
 }
  

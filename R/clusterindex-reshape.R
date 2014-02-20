@@ -71,7 +71,7 @@ faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=1)
     else num <- as.integer(factor(num, labels = seq(length(unique(clusters))))) -1
   } else { num <- 0; mednum <- 0; }
 
-  clustud <- .Call("clusterindexdata",as.integer(clusters),as.integer(mednum), as.integer(num),iddata=data,DUP=FALSE)
+  clustud <- .Call("clusterindexdata",as.integer(clusters),as.integer(mednum), as.integer(num),iddata=data)
 
   if (Rindex==1) clustud$idclust  <- clustud$idclust+1
 ###  if(Rindex==1) idclust[idclust==0] <- NA 

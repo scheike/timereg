@@ -176,7 +176,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),score.method="nlminb",
                         itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
                         icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
                         ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
-                        itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid,DUP=FALSE) 
+                        itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid) 
             ## }}}
 
             if (detail==3) print(c(par,outl$loglike))

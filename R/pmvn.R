@@ -8,7 +8,7 @@ pbvn <- function(upper,rho,sigma) {
                     a=upper[1],
                     b=upper[2],
                     r=rho,
-                    DUP=FALSE,PACKAGE="mets")
+                    PACKAGE="mets")
     res <- do.call(".Call",arglist)
     return(res)
 }

@@ -19,7 +19,7 @@ fast.approx <- function(time,new.time,equal=FALSE,...) {
                   time=sort(time),
                   newtime=new.time,
                   equal=equal,
-                  DUP=FALSE,PACKAGE="mets")
+                  PACKAGE="mets")
   res <- do.call(".Call",arglist)
   return(res)
 }
