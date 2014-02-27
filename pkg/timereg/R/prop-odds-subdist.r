@@ -59,7 +59,12 @@ start<-time; stop<-time2;
 dtimes<-time2[status==causeS]; 
 times<-time2[cause==causeS]; 
 index<-(1:length(time2))[cause==causeS];
-index <- index[order(times)]; times<-sort(times);
+index <- index[order(times)]; 
+times<-sort(times);
+times <- c(start.time,times)
+index <- c(0,index)
+
+
 if (is.null(max.time)==TRUE) maxtimes<-max(times)+0.1 else maxtimes<-max.time; 
 times<-times[times<=maxtimes]
 Ntimes <- length(times); 

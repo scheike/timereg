@@ -48,7 +48,8 @@ time2[index]<-time2[index]+runif(nties,0,min(0.001,dt/2));
 
 start<-time; stop<-time2; 
 dtimes<-time2[status==1]; 
-times<-c(start.time,dtimes[dtimes>start.time]); times<-sort(times);
+times<-c(start.time,dtimes[dtimes>start.time]); 
+times<-sort(times);
 if (is.null(max.time)==TRUE) maxtimes<-max(times)+0.1 else maxtimes<-max.time; 
 times<-times[times<=maxtimes]
 Ntimes <- length(times); 
