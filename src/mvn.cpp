@@ -519,10 +519,11 @@ void cov2cor0(const mat &x, rowvec &Cor, rowvec &sx, bool nrm=true) {
   }  
 }
 
-RcppExport SEXP pmvn(SEXP lower, SEXP upper, SEXP mu, SEXP sigma, SEXP notcor) { 
+RcppExport SEXP pmvn(SEXP lower, SEXP upper, 
+		     SEXP mu, SEXP sigma, SEXP cor) { 
 BEGIN_RCPP  
   mat Sigma = Rcpp::as<mat>(sigma);
-  bool notCor = Rcpp::as<bool>(notcor);
+  bool asCor = Rcpp::as<bool>(cor); 
   mat Mu = Rcpp::as<mat>(mu);
   mat Lower = Rcpp::as<mat>(lower);
   mat Upper = Rcpp::as<mat>(upper);
@@ -530,24 +531,23 @@ BEGIN_RCPP
   int p = Mu.n_cols;
   unsigned ncor = p*(p-1)/2;
   bool nSigma = false;
-  if (Sigma.n_cols==ncor || Sigma.n_cols==(unsigned)(p*p)) { // Sigma in row-format (otherwise as actual matrix)
-    if (Sigma.n_rows>1) {
-      nSigma = true;
-      n = Sigma.n_rows;
-    }
+
+  if ((asCor && Sigma.n_rows>1) || (!asCor && Sigma.n_cols==p*p && Sigma.n_rows>1)) {
+    nSigma = true;
+    n = Sigma.n_rows;
   }
 
-  rowvec _mvt_delta(p); _mvt_delta.fill(0); // Non-centrality par. 0:=MVN
+  rowvec _mvt_delta(p); _mvt_delta.fill(0); // Non-centrality par.
   rowvec Cor(ncor); // Vector of correlation coefficients (upper-tri, colwise)
   rowvec L(p); // Std.deviations
 
   //bool nSigma = Sigma.n_rows==n && Sigma.n_cols!=(unsigned)p;
-  if (!nSigma && Sigma.n_cols==(unsigned)p) {
-    cov2cor0(Sigma,Cor,L,notCor);
-  }
-  if (Sigma.n_cols==ncor) {
-    notCor = false;
-    if (!nSigma) Cor = Sigma.row(0);
+  if (!nSigma) {
+    if (!asCor) {
+      cov2cor0(Sigma,Cor,L,true);
+    } else {
+      Cor = Sigma.row(0);
+    }    
   }
    
   irowvec infin(p); infin.fill(2); //
@@ -580,21 +580,24 @@ BEGIN_RCPP
     }
     // We use that Phi(a,b,S,mu) = Phi(L(a-mu),L(b-mu),R,0); R=LSL  
     if (nSigma) {
-      if (Sigma.n_cols==ncor) {
+      if (asCor) {
 	Cor = Sigma.row(i);
       } else { // p*p row
 	mat Sigma0 = Sigma.row(i);
 	Sigma0.reshape(p,p);
-	cov2cor0(Sigma0,Cor,L,notCor);
+	cov2cor0(Sigma0,Cor,L,true);
       }
     }
-    if (notCor) {
+    if (!asCor) {
       Lower0 = Lower0%L;
       Upper0 = Upper0%L;
     }
     // std::cerr << "Lower" << Lower0;
     // std::cerr << "Upper" << Upper0;
     // std::cerr << "Infin" << infin;
+    // std::cerr << "Cor" << Cor;
+    // std::cerr << "mvtdelta" << _mvt_delta;
+    // std::cerr << "mvt_df" << _mvt_df;
     mvtdst(&p, &_mvt_df,
 	   &Lower0[0], &Upper0[0], 
 	   &infin[0], &Cor[0],

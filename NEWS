@@ -1,3 +1,6 @@
+* Version 0.2.8 <2014-02-28 Fri>
+  - Normal orthant probabilities via 'pmvn' (vectorized) 
+  
 * Version 0.2.7 <2014-02-18 Tue>
   - Adapted to changes in 'timereg::comp.risk'
   - cluster.index with 'mat' argument for stacking rows of a matrix

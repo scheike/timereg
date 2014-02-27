@@ -25,6 +25,8 @@ struct vecmat
 };
 
 
+RcppExport SEXP pmvn(SEXP lower, SEXP upper, SEXP mu, SEXP sigma, SEXP cor);
+
 RcppExport SEXP Dpmvn(SEXP lower, SEXP upper, SEXP mu, SEXP sigma, SEXP std);
 
 RcppExport SEXP loglikMVN(SEXP yl, SEXP yu, 
@@ -33,8 +35,6 @@ RcppExport SEXP loglikMVN(SEXP yl, SEXP yu,
 			  SEXP s, SEXP ds,
 			  SEXP z, SEXP su, SEXP dsu,
 			  SEXP threshold, SEXP dthreshold);
-
-//RcppExport SEXP pmvn(SEXP upper, SEXP cor);
 
 extern "C" double bvnd_(const double *dh, const double *dk, const double *r);
 

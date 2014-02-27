@@ -21,7 +21,7 @@ pbvn <- function(upper,rho,sigma) {
 ## pmvn(lower=lower,upper=upper,mu=mu,sigma=sigma)
 
 ##' @export
-pmvn <- function(lower,upper,mu=rep(0,ncol(sigma)),sigma,notcor=TRUE) {
+pmvn <- function(lower,upper,mu=rep(0,ncol(sigma)),sigma,cor=FALSE) {
     if (missing(sigma)) stop("Specify variance matrix 'sigma'")
     if (missing(lower)) {
         if (missing(upper)) stop("Lower or upper integration bounds needed")
@@ -42,7 +42,7 @@ pmvn <- function(lower,upper,mu=rep(0,ncol(sigma)),sigma,notcor=TRUE) {
                     upper=rbind(upper),
                     mu=rbind(mu),
                     sigma=rbind(sigma),
-                    notcor=as.logical(notcor[1]))
+                    cor=as.logical(cor[1]))
     res <- do.call(".Call",arglist)
     return(as.vector(res))
 }
