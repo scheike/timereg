@@ -31,8 +31,10 @@ pmvn <- function(lower,upper,mu=rep(0,ncol(sigma)),sigma,notcor=TRUE) {
     if (missing(upper)) {
         upper <- lower; upper[] <- Inf
     }
-    if (ncol(rbind(sigma))!=p)
-        stop("Incompatible dimensions of mean and variance")
+    sigma <- rbind(sigma)
+    ncor <- p*(p-1)/2
+    if (ncol(sigma)!=p && ncol(sigma)!=ncor)
+        stop("Incompatible dimensions of mean and variance")    
     if (ncol(rbind(lower))!=p || ncol(rbind(upper))!=p)
         stop("Incompatible integration bounds")    
     arglist <- list("pmvn",

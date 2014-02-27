@@ -77,7 +77,7 @@ double dmvn(const vec &y, const mat &W,
 double cdfmvn(mat &upper, mat &cor) {  
   double val=0;
   int n = cor.n_cols;
-  NumericVector _mvt_delta(n);   
+  rowvec _mvt_delta(n); _mvt_delta.fill(0);
   unsigned ncor = n*(n-1)/2;
   rowvec Cor(ncor);
   int j = 0;
@@ -252,7 +252,7 @@ vec loglikmvn(mat &Yl, mat &Yu, uvec &Status,
 
 
   if (nNonObs>0) {
-    NumericVector _mvt_delta(nNonObs); 
+    rowvec _mvt_delta(nNonObs); _mvt_delta.fill(0);
 
     mat MuNonObs = Mu.cols(NonObs);
     mat SNonObs = S.submat(NonObs,NonObs);
@@ -378,12 +378,6 @@ vec loglikmvn(mat &Yl, mat &Yu, uvec &Status,
       upper = (upper-Mi)%trans(il);
 
       double val;
-      // mvtdst_(&nNonObs, &_mvt_df,
-      // 	      &lower[0], &upper[0], 
-      // 	      &infin[0], &Cor[0],
-      // 	      &_mvt_delta[0], &_mvt_maxpts,
-      // 	      &_mvt_abseps, &_mvt_releps,
-      // 	      &_mvt_error[0], &val, &_mvt_inform); 
       val = mvtdst(&nNonObs, &_mvt_df,
       		   &lower[0], &upper[0], 
       		   &infin[0], &Cor[0],
@@ -510,11 +504,11 @@ END_RCPP
 // }
 
 
-void cov2cor0(const mat &x, mat &Cor, rowvec &sx, bool nrm=true) {
+void cov2cor0(const mat &x, rowvec &Cor, rowvec &sx, bool nrm=true) {
   unsigned p = x.n_cols;
   if (nrm) for (unsigned j=0; j<p; j++) sx(j) = 1/sqrt(x(j,j));
   unsigned j=0;
-  for (unsigned r=0; r<(p-1); r++) {
+  for (unsigned r=0; r<p; r++) {
     for (unsigned c=r+1; c<p; c++) {
       if (nrm)
 	Cor(j) = x(r,c)*sx(r)*sx(c);
@@ -534,16 +528,29 @@ BEGIN_RCPP
   mat Upper = Rcpp::as<mat>(upper);
   unsigned n = Mu.n_rows;
   int p = Mu.n_cols;
-
-  NumericVector _mvt_delta(n);
   unsigned ncor = p*(p-1)/2;
-  vec Cor(ncor); // Vector of correlation coefficients (upper-tri, colwise)
-  rowvec L(p); // Std.deviations    
-  if (Sigma.n_rows==(unsigned)p) {
+  bool nSigma = false;
+  if (Sigma.n_cols==ncor || Sigma.n_cols==(unsigned)(p*p)) { // Sigma in row-format (otherwise as actual matrix)
+    if (Sigma.n_rows>1) {
+      nSigma = true;
+      n = Sigma.n_rows;
+    }
+  }
+
+  rowvec _mvt_delta(p); _mvt_delta.fill(0); // Non-centrality par. 0:=MVN
+  rowvec Cor(ncor); // Vector of correlation coefficients (upper-tri, colwise)
+  rowvec L(p); // Std.deviations
+
+  //bool nSigma = Sigma.n_rows==n && Sigma.n_cols!=(unsigned)p;
+  if (!nSigma && Sigma.n_cols==(unsigned)p) {
     cov2cor0(Sigma,Cor,L,notCor);
   }
+  if (Sigma.n_cols==ncor) {
+    notCor = false;
+    if (!nSigma) Cor = Sigma.row(0);
+  }
    
-  ivec infin(p); infin.fill(2); //
+  irowvec infin(p); infin.fill(2); //
   for (unsigned j=0; j<(unsigned)p; j++) {
     if (Upper(0,j)==datum::inf) infin(j) = 1;
     if (Lower(0,j)==-datum::inf) infin(j) = 0;
@@ -551,12 +558,14 @@ BEGIN_RCPP
 
   rowvec Lower0(p);
   rowvec Upper0(p);
+  rowvec Mu0 = Mu.row(0);  
   vec res(n);  
   for  (unsigned i=0; i<n; i++) {
     double val;
+    if (Mu.n_rows>1) Mu0 = Mu.row(i);
     if (Lower.n_rows==n) {
-      Lower0 = Lower.row(i)-Mu.row(i);
-      Upper0 = Upper.row(i)-Mu.row(i);
+      Lower0 = Lower.row(i)-Mu0;
+      Upper0 = Upper.row(i)-Mu0;
       infin.fill(2); // (a,b)
       for (unsigned j=0; j<(unsigned)p; j++) {		
 	if (Upper0(0,j)==datum::inf) infin(j) = 1; // (a,Inf)
@@ -566,19 +575,26 @@ BEGIN_RCPP
 	}
       }
     } else {
-      Lower0 = Lower.row(0)-Mu.row(i);
-      Upper0 = Upper.row(0)-Mu.row(i);
+      Lower0 = Lower.row(0)-Mu0;
+      Upper0 = Upper.row(0)-Mu0;
     }
-    // We use that Phi(a,b,S,mu) = Phi(L(a-mu),L(b-mu),R,0); R=LSL
-    if (Sigma.n_rows!=(unsigned)p) {      
-      mat Sigma0 = Sigma.row(i);
-      Sigma0.reshape(p,p);
-      cov2cor0(Sigma0,Cor,L,notCor);
+    // We use that Phi(a,b,S,mu) = Phi(L(a-mu),L(b-mu),R,0); R=LSL  
+    if (nSigma) {
+      if (Sigma.n_cols==ncor) {
+	Cor = Sigma.row(i);
+      } else { // p*p row
+	mat Sigma0 = Sigma.row(i);
+	Sigma0.reshape(p,p);
+	cov2cor0(Sigma0,Cor,L,notCor);
+      }
     }
     if (notCor) {
       Lower0 = Lower0%L;
       Upper0 = Upper0%L;
     }
+    // std::cerr << "Lower" << Lower0;
+    // std::cerr << "Upper" << Upper0;
+    // std::cerr << "Infin" << infin;
     mvtdst(&p, &_mvt_df,
 	   &Lower0[0], &Upper0[0], 
 	   &infin[0], &Cor[0],
