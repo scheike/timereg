@@ -163,7 +163,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
                 baseout <- basehaz(ud.cens,centered=FALSE); 
                 baseout <- cbind(baseout$time,baseout$hazard)
                 Gcx<-Cpred(baseout,eventtime)[,2];
-                RR<-exp(XZ %*% coef(ud.cens))
+                RR<-exp(as.matrix(XZ) %*% coef(ud.cens))
                 Gcx<-exp(-Gcx*RR)
                 Gfit<-rbind(c(0,1),cbind(eventtime,Gcx)); 
                 Gcx <- Gcx/Gcxe; 
