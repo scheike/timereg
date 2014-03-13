@@ -130,12 +130,8 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
   ww0 <- na.omit(ww0)
  
   status <- rep(0,nrow(ww0))
-  time <- ww0[,timevar2[2]]
-  mycauses <- setdiff(unique(data[,causes]),0)
-
-  time <- status <- rep(0,nrow(ww0))
-  time <- ww0[,"time1"]
-
+  time <- ww0[,timevar2[1]]
+  
   ## {{{ (i,j) causes 
   idx2 <- which(ww0[,causes2[1]]==cause[1] & ww0[,causes2[2]]==cause[2])
   if (length(idx2)>0) {
