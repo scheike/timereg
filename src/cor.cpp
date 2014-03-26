@@ -227,7 +227,7 @@ void ckrvdes2(vec &alphai,vec &alphak, // {{{
 		double beta, double x,double y,
 		vec &ckij, vec &dckij,vec &rvi,vec &rvk)
 {
-double val,val1,val2,val3,alphi=0,alphk=0,alph,betai,betak;
+double val,val1,alphi=0,alphk=0,alph,betai,betak;
 double test=1; //lapgam(),ilapgam(),Dtlapgam(), Dalphalapgam(),Dilapgam(),Dbetalapgam(),Dbetailapgam();
 int prv,k,nn,i; 
 //void funkdes2(); 
@@ -269,10 +269,10 @@ ckij(0)=1-exp(-x)-exp(-y)+val;
 //double epsilon=0; 
 double epsilon=1E-20; 
 epsilon=1E-6; 
-double Calpht,Calphit,Calphkt,Cbetait,Cbetakt;
-vec Calphait(prv),Calphakt(prv); 
-
-nn=prv; 
+//double Calpht,Calphit,Calphkt,Cbetait,Cbetakt;
+//vec Calphait(prv),Calphakt(prv); 
+//
+//nn=prv; 
 
 //for (i=0;i< prv;i++) { // {{{ 
 //	for (k=0;k< prv;k++) {
@@ -350,7 +350,7 @@ void ckrvdestheta(mat &thetades,vec &theta, // {{{
 		int inverse, double x,double y,
 		vec &ckij, vec &dckij,vec &rvi,vec &rvk)
 {
-double val,val1,val2,val3,alphi=0,alphk=0,alph,betai,betak;
+double val,val1,alphi=0,alphk=0,alph,betai,betak;
 double test=1; //lapgam(),ilapgam(),Dtlapgam(), Dalphalapgam(),Dilapgam(),Dbetalapgam(),Dbetailapgam();
 int ntheta,prv,k,nn,i; 
 //void funkdes2(); 
