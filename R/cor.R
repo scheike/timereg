@@ -3,7 +3,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
                   clusters=NULL,theta=NULL,theta.des=NULL,step=1,sym=1,weights=NULL,
 		  same.cens=FALSE,censoring.probs=NULL,silent=1,entry=NULL,estimator=1,
 		  trunkp=1,admin.cens=NULL,control=list(),par.func=NULL,dpar.func=NULL,dimpar=NULL,
-		  score.method="nlminb",random.design=NULL,exp.link=1,...)
+		  score.method="nlminb",random.design=NULL,exp.link=0,...)
 { ## {{{
   ## {{{ set up data and design
   multi<-0; dscore=1; stab.cens<-FALSE; entry.call<-entry; inverse<-exp.link
@@ -148,7 +148,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
      dimpar <- ncol(theta.des); 
  
      if (nrow(theta.des)!=ncol(random.design)) stop("nrow(theta.des)!= ncol(random.design)"); 
-     score.method <- "nlminb"; ### force nlminb because derivatives are not working
+###     score.method <- "nlminb"; ### force nlminb because derivatives are not working
  } else random.design <- matrix(0,1,1); 
 
   if ( (!is.null(par.func)) && is.null(dimpar) ) 
@@ -250,6 +250,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
     if (Nit>0) 
     for (i in 1:Nit)
     {
+        oout <- 2
         out <- obj(p)
 	hess <- out$Dscore
 	if (!is.na(sum(hess))) hessi <- lava::Inverse(out$Dscore) else hessi <- hess 
@@ -259,18 +260,24 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
           cat("score:");print(c(out$score)); 
 	  cat("hess:"); print(hess); 
         }## }}}
-        delta <- hessi %*% out$score *step 
+        delta <- hessi %*% out$score 
+	### for test purposes
+###     oout <- 0;  ### output control for obj
+###     score1 <- numDeriv::jacobian(obj,p)
+###	hess1 <-  numDeriv::hessian(obj,p)
+###	print(score1)
+###	print(hess1)
         p <- p-delta* step
 	if (is.nan(sum(out$score))) break; 
         if (sum(abs(out$score))<0.00001) break; 
         if (max(theta)>20) break; 
     }
     if (!is.nan(sum(p))) { 
+    oout <- 2
     theta <- p
     iid <- 1; 
     out <- obj(p) 
     score <- out$score
-    score1 <- score
     hess <- out$Dscore
     }
     if (detail==1 & Nit==0) {## {{{
@@ -280,6 +287,8 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 	  cat("hess:"); print(hess); 
     }## }}}
     if (!is.na(sum(hess))) hessi <- lava::Inverse(out$Dscore) else hessi <- diag(nrow(hess))
+###    score1 <- numDeriv::jacobian(obj,p)
+    score1 <- score; 
     ## }}}
   } else if (score.method=="nlminb") { ## {{{ nlminb optimizer
     iid <- 0; oout <- 0; 
@@ -680,7 +689,7 @@ or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 random.cif<-function(cif,data,cause,cif2=NULL,
                      cause1=1,cause2=1,cens.code=NULL,cens.model="KM",Nit=40,detail=0,
                      clusters=NULL,theta=NULL,theta.des=NULL,
-                     step=1,same.cens=FALSE,exp.link=0,score.method="nlminb",
+                     step=1,same.cens=FALSE,exp.link=0,score.method="fisher.scoring",
                      entry=NULL,trunkp=1,...)
 { ## {{{
   fit <- dep.cif(cif=cif,data=data,cause=cause,model="RANCIF",cif2=cif2,
@@ -824,7 +833,7 @@ random.cif<-function(cif,data,cause,cif2=NULL,
 Grandom.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 cause1=1,cause2=1,cens.code=NULL,cens.model="KM",Nit=40,detail=0,
 clusters=NULL, theta=NULL,theta.des=NULL, weights=NULL, step=1,sym=0,
-same.cens=FALSE,censoring.probs=NULL,silent=1,exp.link=1,score.method="nlminb",
+same.cens=FALSE,censoring.probs=NULL,silent=1,exp.link=0,score.method="fisher.scoring",
 entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,random.design=NULL,...)
 { ## {{{
 fit <- dep.cif(cif=cif,data=data,cause=cause,model="ARANCIF",cif2=cif2,times=times,
