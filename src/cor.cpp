@@ -1044,7 +1044,8 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 //		rvvec.print("rv"); rvvec1.print("rv1"); 
 //		alphai.print("alpi"); alphaj.print("alpj");
 //	       ckrvdes2(alphai,alphaj,1.0,Li,Lk,ckij,rvvec2,rvvec,rvvec1); 
-	       p11t=ckrvdesp11t(theta,thetades,inverse,Li,Lk,rvvec,rvvec1); 
+	       ckrvdestheta(thetades,theta,inverse,Li,Lk,ckij,vthetascore,rvvec,rvvec1); 
+	       p11t=ckij(0); // crvdesp11t(theta,thetades,inverse,Li,Lk,rvvec,rvvec1); 
 	       p11tvec(j)=p11t; 
 //	       printf("3 %lf %lf d \n",p11t,ckij(0)); 
 	       diff=(resp2-p11t); 
@@ -1055,24 +1056,18 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 		  rvvec2.print("rvvec2"); 
 		  vthetascore.print("vthetascore 0"); 
 	  }
-	       ckrvdestheta(thetades,theta,inverse,Li,Lk,ckij,vthetascore,rvvec,rvvec1); 
 	  if (j<0)   {  printf("-----------------------------  %lf   %lf \n",p11t,ckij(0)); 
 vec alphail= thetades * vtheta2;
 alphail.print("alphil"); 
 	                vthetascore.print("vthetascore 1"); 
 	  }
-//	       vthetascore.print("deriv complex"); 
-//	       afledet via standard differens
-//	       ckrvdes3(theta,thetades,inverse,Li,Lk,ckij,vthetascore,rvvec,rvvec1); 
 	  if (j<0)   {  
 	       vthetascore.print("deriv 2"); 
 	  }
 //	       rvvec2.print("f3"); 
 //	       vM(pardes(i),rvvec2,vthetascore); 
 	       ssf=ssf+weights(i)*pow(diff,2); 
-	       }
-//	rvvec.print("rvec "); vthetascore.print("vt s"); vtheta2.print("vt 2"); 
-//      if (inverse==1)  vthetascore=vthetascore%vtheta2;
+	     }
 
 	  for (c1=0;c1<pt;c1++) 
 	  for (v1=0;v1<pt;v1++) DUtheta(c1,v1)+=2*weights(i)*vthetascore(c1)*vthetascore(v1);
