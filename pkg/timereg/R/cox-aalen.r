@@ -9,7 +9,8 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   Ntimes <- length(times)
   sim <- rep(sim,3); 
   sim[2] <- basesim; ##  tmp tmp tmp  
-  if (ratesim==0 && (max(by(status,clusters,sum))>1)) mjump <- 1 else mjump <- 0; 
+###  if (ratesim==0 && (max(by(status,clusters,sum))>1)) mjump <- 1 else mjump <- 0; 
+  mjump <- 0        ### not working
   sim[3] <- mjump;  ### multiple jumps within cluster
 
   if (ratesim==0 && mjump==1) cat("Multiple jumps in some clusters, use rate.sim=1\n"); 
@@ -24,6 +25,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   } else { time.resolution <- qq <- times; time.group <- 0:(Ntimes-1); 
             max.timepoint.sim <- mts <- Ntimes;
   } ## }}}
+  if (robust==1) antclust <- fdata$antclust else antclust <- 1
 
   designX <- as.matrix(designX); designG <- as.matrix(designG)
   if (is.matrix(designX) == TRUE) px <- as.integer(dim(designX)[2])
@@ -80,7 +82,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
                 as.double(dM.iid), as.integer(residuals), as.integer(robust), 
                 as.integer(covariance), as.double(covs), as.integer(additive.resamp),
                 as.double(baseproc), as.integer(resample.iid), as.double(gamiid), 
-                as.double(biid),as.integer(clusters),as.integer(fdata$antclust),
+                as.double(biid),as.integer(clusters),as.integer(antclust),
                 as.double(var.score),as.integer(beta.fixed),
 		as.double(weights),as.integer(entry) ,as.integer(exactderiv),
 	        as.integer(time.group), as.integer(max.timepoint.sim),as.integer(stratum),
