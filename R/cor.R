@@ -224,19 +224,20 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
       outl<-.Call("cor", ## {{{
                  itimes=times,iy=time,icause=cause,iCA1=cause1,iKMc=Gcx, 
                  iz=X,iest=matrix(est[,-1],ncol=ncol(est)-1),iZgamma=c(Zgamma),isemi=semi,izsem=Z, 
-                 ### Biid,gamma.iid,time.pow, 
                  itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),
 		 ithetades=theta.des,
                  icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
                  iinverse=inverse,iCA2=cause2,
                  ix2=X2,isemi2=semi2,iest2=as.matrix(est2[,-1]),iZgamma2=c(Z2gamma2),
-                 ### B2iid,gamma2.iid,body(htheta),body(dhtheta),new.env(),
                  iflexfunc=flex.func,iiid=iid,isym=sym,iweights=weights, 
                  isamecens=as.numeric(same.cens),istabcens=as.numeric(stab.cens),
 		 iKMtimes=Gctimes,isilent=silent,
                  icifmodel=cif.model,idepmodel=dep.model,
                  iestimator=estimator,ientryage=entry,icif1entry=cif1entry,
-                 icif2entry=cif2entry,itrunkp=trunkp,irvdes=random.design) 
+                 icif2entry=cif2entry,itrunkp=trunkp,irvdes=random.design
+                 ### Biid,gamma.iid,time.pow, 
+                 ### B2iid,gamma2.iid,body(htheta),body(dhtheta),new.env(),
+		 ) 
       ## }}}
 
       attr(outl,"gradient") <-outl$score 
