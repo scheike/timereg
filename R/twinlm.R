@@ -71,7 +71,11 @@
 ##' @param control Control argument parsed on to the optimization routine
 ##' @param messages Control amount of messages shown 
 ##' @param ... Additional arguments parsed on to lower-level functions
-twinlm <- function(formula, data, id, zyg, DZ, group=NULL, group.equal=FALSE, strata=NULL, weight=NULL, type=c("ace"), twinnum="twinnum", binary=FALSE,keep=weight,estimator="gaussian",constrain=TRUE,control=list(),messages=1,...) {
+twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
+group.equal=FALSE, strata=NULL, weight=NULL, type=c("ace"),
+twinnum="twinnum",
+binary=FALSE,keep=weight,estimator="gaussian",constrain=TRUE,control=list(),messages=1,...)
+{
     
   cl <- match.call(expand.dots=TRUE)
   opt <- options(na.action="na.pass")
@@ -214,7 +218,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL, group.equal=FALSE, st
     require("lava.tobit")
     if (is.null(optim$method))
        optim$method <- "nlminb1"
-    e <- estimate(mm,dd,control=optim,...)
+    e <- estimate(mm,dd,control=optim,missing=missing,...)
   } else {
     e <- estimate(mm,dd,weight=weight,estimator=estimator,fix=FALSE,control=optim,...)
   }

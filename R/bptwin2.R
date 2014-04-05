@@ -22,7 +22,7 @@ bptwin2 <- function(formula, data, id, zyg, DZ, group=NULL,
 
     OSon <- FALSE
     idx2 <- NULL
-
+    
   mycall <- match.call()
   formulaId <- unlist(Specials(formula,"cluster"))
   formulaStrata <- unlist(Specials(formula,"strata"))
