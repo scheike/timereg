@@ -7,10 +7,10 @@
     cens.model = "KM", Nit = 40, detail = 0,
     clusters = NULL, theta = NULL, theta.des = NULL,
     weights = NULL, step = 1, sym = 0, same.cens = FALSE,
-    censoring.probs = NULL, silent = 1, exp.link = 1,
-    score.method = "nlminb", entry = NULL, estimator = 1,
-    trunkp = 1, admin.cens = NULL, random.design = NULL,
-    ...)
+    censoring.probs = NULL, silent = 1, exp.link = 0,
+    score.method = "fisher.scoring", entry = NULL,
+    estimator = 1, trunkp = 1, admin.cens = NULL,
+    random.design = NULL, ...)
 }
 \arguments{
   \item{cif}{a model object from the comp.risk function
@@ -144,7 +144,6 @@ out1m<-random.cif(addm,data=multcif,cause1=1,cause2=1,Nit=15,detail=0,
 theta=2,theta.des=theta.des,step=1.0)
 summary(out1m)
 
-\donttest{
 ## this model can also be formulated as a random effects model
 ## but with different parameters
 out2m<-Grandom.cif(addm,data=multcif,cause1=1,cause2=1,Nit=10,detail=0,
@@ -152,9 +151,7 @@ random.design=theta.des,step=1.0)
 summary(out2m)
 1/out2m$theta
 out1m$theta
-}
 
-\donttest{
 ####################################################################
 ################### ACE modelling of twin data #####################
 ####################################################################
@@ -168,10 +165,12 @@ des.rv <- cbind(theta.des,(zygbin==1)*rep(c(1,0)),(zygbin==1)*rep(c(0,1)),1)
 ### design making parameters half the variance for dizygotic components
 pardes <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0), c(0,1))
 
+\donttest{
 outacem <-Grandom.cif(addm,data=multcif,causeS=1,Nit=30,detail=0,
           theta=c(-1.21,2.1),theta.des=pardes,step=1.0,random.design=des.rv)
 summary(outacem)
 ### genetic variance is
+### here some problems because of negative estimates (but otherwise)
 exp(outacem$theta[1])/sum(exp(outacem$theta))^2
 }
 }

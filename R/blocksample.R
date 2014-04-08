@@ -12,21 +12,28 @@
 ##' @export
 ##' @examples
 ##' 
-##' dd <- data.frame(x=rnorm(6), z=rnorm(6), id=c(4,4,10,10,5,5), v=rnorm(6))
-##' blocksample(dd,idvar="id",ids=c(4,5))
-##' blocksample(dd,size=10)
-##'
+##' d <- data.frame(x=rnorm(5), z=rnorm(5), id=c(4,10,10,5,5), v=rnorm(5))
+##' dd <- blocksample(d,size=20)
+##' attributes(dd)$id
+##' 
+##' \dontrun{
+##' blocksample(data.table::data.table(d),1e6)
+##' }
 blocksample <- function(data, size, idvar="id", replace=TRUE, ids, ...) {
-  if (is.matrix(data))    
-      data <- as.data.frame(data)
-  if (length(idvar)==1 && is.character(idvar)) {
-      idvar <- data[,idvar]
+  if (length(idvar)==nrow(data)) {
+      id0 <- idvar
+  } else {
+      if (inherits(data,"data.table")) {          
+          id0 <- as.data.frame(data[,idvar,with=FALSE])[,1]
+      } else id0 <- data[,idvar]
   }
-  ii <-  cluster.index(idvar)
-  id0 <- idvar[ii$firstclust+1]
-  ids <- sample(seq(ii$uniqueclust), size=ifelse(missing(size),length(idvar),size),replace=replace)
+  ii <-  cluster.index(id0)
+  size <- ifelse(missing(size),ii$uniqueclust,size)
+  ids <- sample(seq(ii$uniqueclust), size=size,replace=replace)  
   idx <- na.omit(as.vector(t(ii$idclustmat[ids,])))+1
-  len <- unlist(lapply(ids,function(x) rep(x,ii$cluster.size[x])))
-  
-  return(data[idx,])
+  newid <- rep(seq(size), ii$cluster.size[ids])
+  oldid <- id0[idx]
+  res <- data[idx,]; res[,idvar] <- newid
+  attributes(res)$id <- oldid
+  return(res)
 }

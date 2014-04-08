@@ -78,4 +78,5 @@ Collate:
     'mets-package.R'
     'bptwin2.R'
     'normal0.R'
-    'normal.R'
+    'blocksample.R'
+    'newbptwin.R'
