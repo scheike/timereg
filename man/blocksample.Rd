@@ -25,9 +25,13 @@
   Sample blockwise from clustered data
 }
 \examples{
-dd <- data.frame(x=rnorm(6), z=rnorm(6), id=c(4,4,10,10,5,5), v=rnorm(6))
-blocksample(dd,idvar="id",ids=c(4,5))
-blocksample(dd,size=10)
+d <- data.frame(x=rnorm(5), z=rnorm(5), id=c(4,10,10,5,5), v=rnorm(5))
+dd <- blocksample(d,size=20)
+attributes(dd)$id
+
+\dontrun{
+blocksample(data.table::data.table(d),1e6)
+}
 }
 \author{
   Klaus K. Holst

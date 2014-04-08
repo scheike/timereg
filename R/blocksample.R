@@ -13,13 +13,13 @@
 ##' @examples
 ##' 
 ##' d <- data.frame(x=rnorm(5), z=rnorm(5), id=c(4,10,10,5,5), v=rnorm(5))
-##' dd <- blocksample(d,size=20)
+##' (dd <- blocksample(d,size=20)) 
 ##' attributes(dd)$id
 ##' 
 ##' \dontrun{
 ##' blocksample(data.table::data.table(d),1e6)
 ##' }
-blocksample <- function(data, size, idvar="id", replace=TRUE, ids, ...) {
+blocksample <- function(data, size, idvar="id", replace=TRUE, ...) {
   if (length(idvar)==nrow(data)) {
       id0 <- idvar
   } else {
