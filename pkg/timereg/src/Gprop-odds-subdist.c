@@ -116,6 +116,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
 	weights=weights*risks; // censoring weights
 	VE(weight,j)=weights; // censoring weights
 //	if (j==pers) printf(" %d %d %lf %d  \n",j,status[j],weights,risks); 
+//	if (j!=pers) printf(" %d %d %lf %d  \n",j,status[j],weights,risks); 
 
 	extract_row(ldesignX,j,xi); 
 	extract_row(ldesignG,j,zi); 
@@ -166,9 +167,13 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
       if (s<0) Rprintf(" %lf \n",cu[1*(*Ntimes)+s]);
 
       /* First derivative U and Second derivative S  */ 
+//      printf("VE(weight,pers) \n",VE(weight,pers)); 
       extract_row(ldesignG,pers,zi); 
       scl_vec_mult(VE(weight,pers),zi,zi); 
       Mv(ZX, dA, ZXdA[s]); 
+//      print_vec(ZXdA[s]); 
+//      print_vec(zi); 
+//      printf("=====================  \n"); 
       vec_subtr(zi,ZXdA[s],difzzav); 
       vec_add(difzzav,U,U); 
 
@@ -277,6 +282,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
    } // }}} 	
 
     invertS(S1,SI,1); 
+//    print_vec(U); 
     Mv(SI,U,delta); 
     vec_add(beta,delta,beta); 
 

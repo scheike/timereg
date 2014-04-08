@@ -147,8 +147,9 @@ Ut<-matrix(0,Ntimes,pg+1); simUt<-matrix(0,antsim,pg);
 loglike<-0; 
 ## }}}
 
-#cat("Generalised Proportional odds model \n"); 
-
+###cat("Generalised Proportional odds model \n"); 
+###print(head(desX)); 
+###print(head(desZ)); 
 
 ## {{{ C-call
 nparout<- .C("Gpropoddssubdist",

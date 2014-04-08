@@ -168,13 +168,17 @@ method="basic",weighted.test=0,degree=1,covariance=0)
   attr(ud,"Formula")<-formula;
   attr(ud,"id")<-id.call;
   attr(ud,"cluster")<-cluster.call;
-  attr(ud,"start")<-start.time;
+  attr(ud,"start.time") <- start.time
+  attr(ud,"start")<- time;
+  attr(ud,"stop")<- time2;
+  attr(ud,"status")<-status;
   attr(ud,"time2")<-time2;
+  attr(ud,"residuals")<-residuals;
+  attr(ud,"max.time")<-max.time;
+  attr(ud,"stratum")<-0;
   ud$call<-call
-
   return(ud); 
 }
-
 
 "plot.timecox" <-  function (x,..., pointwise.ci=1,
 hw.ci=0, sim.ci=0, robust=0, specific.comps=FALSE,level=0.05,

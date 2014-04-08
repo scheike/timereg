@@ -46,5 +46,6 @@ Collate:
     'prop-odds.r'
     'prop-odds-subdist.r'
     'read-design.r'
+    'restricted.residual.mean.r'
     'two-stage-reg.r'
     'timecox.r'

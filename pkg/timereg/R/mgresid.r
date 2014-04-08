@@ -5,10 +5,7 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
 ###  if (weighted.test==1) { cat(" Can only use weighted.test=0, under development\n"); 
 ###	                  weighted.test <- 0; 
 ###  }
-  start.design<-1; 
-  silent <- 1; 
-  offsets <- NULL; 
-  stratum <- attr(object,"stratum"); 
+  start.design<-1; silent <- 1; offsets <- NULL; 
   if (!(class(object)!="aalen" | class(object)!="timecox" | class(object)!="cox.aalen" ))
     stop ("Must be output from aalen() timecox() or cox.aalen() functions\n") 
   if (class(object)=="timecox") if (object$method!="basic") 
@@ -20,8 +17,9 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   if (is.null(object$residuals$dM)==TRUE) stop("Residuals not computed, add option residuals=1\n");
   if (sum(modelmatrix)==0 && cum.resid==0) 
 	  stop("No modelmatrix or continous covariates given to cumulate residuals\n"); 
-
-  rate.sim <- 1; weights1 <- NULL
+  stratum <- attr(object,"stratum"); 
+  rate.sim <- 1; 
+  weights1 <- NULL
 ###  if (class(object)=="cox.aalen") 
 ###	  if (attr(object,"rate.sim")==0)  stop("Only works with rate.sim=1, in cox.aalen call\n"); 
   if (class(object)=="cox.aalen") {
@@ -36,8 +34,6 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   id<-attr(object,"id"); 
 ###  cluster<-attr(object,"cluster");  gruperet cluster men skal være for sortering
   cluster<-attr(object,"cluster"); 
-###  print(id)
-###  print(cluster)
   formula<-attr(object,"Formula"); 
   start.time<-attr(object,"start.time"); 
   pers<-unique(id); 
@@ -49,6 +45,7 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   ldata<-aalen.des(formula,data,model="cox.aalen") else ldata<-aalen.des(formula,data) 
 
   X<-ldata$X; covar<-X; px<-ldata$px; 
+
   time<-attr(object,"start"); 
   time2<-attr(object,"stop"); 
   if (sum(time)==0) type <- "right" else type <- "counting"
@@ -72,6 +69,8 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
    covnames<-colnames(modelmatrix); 
   }
 
+###  print(id); print(cluster)
+
   times<-c(start.time,time2[status==1]); 
   times<-sort(times);
   antpers=length(unique(id)); 
@@ -88,7 +87,7 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
 ###  print(head(X))
 ###   start <- rep(0,length(time2))
    start <- time[ot] ### fra call 
-   stop<-time2;
+   stop<-time2;      ### fra call
    cluster<-cluster[ot]
    id<-id[ot];
    weightsmg <- weights[ot]
@@ -120,9 +119,6 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
                      covar<-cbind(X,Z);
                      ptot<-px+pg;
   } else { covar<-covar; ptot<-px; gamma.iid<-0; }
-
-### print(head(cbind(id,X,Z,start,stop,status,cluster)))
-### print(head(cbind(weights,weights1,offsets)))
 
   covnames0<-colnames(covar); 
   if (is.null(covnames0)) covnames0  <- rep("",ptot); 
@@ -171,7 +167,6 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   ant<-ant[keepcumz]; 
 
   Ut<- cummgt<- robvarcum <- matrix(0,lmgresids,pm+1); 
-###  Ut<- cummgt<- robvarcum <- matrix(0,lmgresids,px+1); 
   simUt<-matrix(0,lmgresids,pm*50); test<-matrix(0,n.sim,3*pm); 
   testOBS <- rep(0,3*pm); 
   ## }}}
