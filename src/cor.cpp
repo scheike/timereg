@@ -1120,7 +1120,9 @@ if (j<0) Rprintf("uu2 %lf %lf %lf %lf %lf %lf %d %d \n",pbhat(i),pbhat(k),0*pbha
 	       Utheta.print("DU"); 
 	       vthetascore.print("vt"); 
        }
-       if (iid==1) for (c1=0;c1<pt;c1++) thetiid(j,c1)+=vthetascore(c1); 
+       if (iid==1)  { 
+	       for (c1=0;c1<pt;c1++) thetiid(j,c1)+=vthetascore(c1); 
+       }
    }
  } /* j in antclust */ 
  } // s < Ntimes
