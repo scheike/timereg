@@ -824,7 +824,6 @@ random.cif<-function(cif,data,cause,cif2=NULL,
 ##'           theta=c(-1.21,2.1),theta.des=pardes,step=1.0,random.design=des.rv)
 ##' summary(outacem)
 ##' ### genetic variance is 
-##' ### here some problems because of negative estimates (but otherwise) 
 ##' exp(outacem$theta[1])/sum(exp(outacem$theta))^2
 ##' }
 ##' @keywords survival

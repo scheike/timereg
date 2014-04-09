@@ -3,7 +3,7 @@
 \title{Block sampling}
 \usage{
   blocksample(data, size, idvar = "id", replace = TRUE,
-    ids, ...)
+    ...)
 }
 \arguments{
   \item{data}{Data frame}
@@ -26,7 +26,7 @@
 }
 \examples{
 d <- data.frame(x=rnorm(5), z=rnorm(5), id=c(4,10,10,5,5), v=rnorm(5))
-dd <- blocksample(d,size=20)
+(dd <- blocksample(d,size=20))
 attributes(dd)$id
 
 \dontrun{
