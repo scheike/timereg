@@ -2,7 +2,7 @@
 \alias{test.conc}
 \title{Concordance test Compares two concordance estimates}
 \usage{
-  test.conc(conc1, conc2, same.cluster = FALSE)
+test.conc(conc1, conc2, same.cluster = FALSE)
 }
 \arguments{
   \item{conc1}{Concordance estimate of group 1}
@@ -13,9 +13,9 @@
   otherwise estimates are based on same data.}
 }
 \description{
-  .. content for description (no empty lines) ..
+.. content for description (no empty lines) ..
 }
 \author{
-  Thomas Scheike
+Thomas Scheike
 }
 

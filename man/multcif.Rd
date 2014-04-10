@@ -3,12 +3,10 @@
 \alias{multcif}
 \title{Multivariate Cumulative Incidence Function example data set}
 \source{
-  Simulated data
+Simulated data
 }
 \description{
-  Multivariate Cumulative Incidence Function example data
-  set
+Multivariate Cumulative Incidence Function example data set
 }
 \keyword{data}
-\keyword{datasets}
 

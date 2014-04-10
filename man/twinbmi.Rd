@@ -10,8 +10,7 @@ age: Age
 gender: (male/female)
 zyg: zygosity, MZ:=mz, DZ(same sex):=dz, DZ(opposite sex):=os}
 \description{
-  BMI data set
+BMI data set
 }
 \keyword{data}
-\keyword{datasets}
 

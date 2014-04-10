@@ -19,15 +19,15 @@
 \alias{simBinFam2}
 \alias{simBinPlack}
 \alias{simCox}
-\alias{simnordic}
 \alias{simSurvFam}
+\alias{simnordic}
 \alias{surv.boxarea}
 \title{For internal use}
 \description{
-  For internal use
+For internal use
 }
 \author{
-  Klaus K. Holst
+Klaus K. Holst
 }
 \keyword{utilities}
 

@@ -2,12 +2,11 @@
 \alias{random.cif}
 \title{Random effects model for competing risks data}
 \usage{
-  random.cif(cif, data, cause, cif2 = NULL, cause1 = 1,
-    cause2 = 1, cens.code = NULL, cens.model = "KM",
-    Nit = 40, detail = 0, clusters = NULL, theta = NULL,
-    theta.des = NULL, step = 1, same.cens = FALSE,
-    exp.link = 0, score.method = "fisher.scoring",
-    entry = NULL, trunkp = 1, ...)
+random.cif(cif, data, cause, cif2 = NULL, cause1 = 1, cause2 = 1,
+  cens.code = NULL, cens.model = "KM", Nit = 40, detail = 0,
+  clusters = NULL, theta = NULL, theta.des = NULL, step = 1,
+  same.cens = FALSE, exp.link = 0, score.method = "fisher.scoring",
+  entry = NULL, trunkp = 1, ...)
 }
 \arguments{
   \item{cif}{a model object from the comp.risk function
@@ -68,24 +67,24 @@
   \item{...}{extra arguments.}
 }
 \value{
-  returns an object of type 'cor'. With the following
-  arguments: \item{theta}{estimate of proportional odds
-  parameters of model.} \item{var.theta}{variance for
-  gamma.  } \item{hess}{the derivative of the used score.}
-  \item{score}{scores at final stage.} \item{score}{scores
-  at final stage.} \item{theta.iid}{matrix of iid
-  decomposition of parametric effects.}
+returns an object of type 'cor'. With the following
+arguments: \item{theta}{estimate of proportional odds
+parameters of model.} \item{var.theta}{variance for gamma.
+} \item{hess}{the derivative of the used score.}
+\item{score}{scores at final stage.} \item{score}{scores at
+final stage.} \item{theta.iid}{matrix of iid decomposition
+of parametric effects.}
 }
 \description{
-  Fits a random effects model describing the dependence in
-  the cumulative incidence curves for subjects within a
-  cluster.  Given the gamma distributed random effects it
-  is assumed that the cumulative incidence curves are
-  indpendent, and that the marginal cumulative incidence
-  curves are on the form \deqn{ P(T \leq t, cause=1 | x,z)
-  = P_1(t,x,z) = 1- exp( -x^T A(t) exp(z^T \beta)) } We
-  allow a regression structure for the random effects
-  variances that may depend on cluster covariates.
+Fits a random effects model describing the dependence in
+the cumulative incidence curves for subjects within a
+cluster.  Given the gamma distributed random effects it is
+assumed that the cumulative incidence curves are
+indpendent, and that the marginal cumulative incidence
+curves are on the form \deqn{ P(T \leq t, cause=1 | x,z) =
+P_1(t,x,z) = 1- exp( -x^T A(t) exp(z^T \beta)) } We allow a
+regression structure for the random effects variances that
+may depend on cluster covariates.
 }
 \examples{
 data(multcif)
@@ -122,16 +121,16 @@ summary(out2)
 ## summary(out1g)
 }
 \author{
-  Thomas Scheike
+Thomas Scheike
 }
 \references{
-  A Semiparametric Random Effects Model for Multivariate
-  Competing Risks Data, Scheike, Zhang, Sun, Jensen (2010),
-  Biometrika.
+A Semiparametric Random Effects Model for Multivariate
+Competing Risks Data, Scheike, Zhang, Sun, Jensen (2010),
+Biometrika.
 
-  Cross odds ratio Modelling of dependence for Multivariate
-  Competing Risks Data, Scheike and Sun (2012), work in
-  progress.
+Cross odds ratio Modelling of dependence for Multivariate
+Competing Risks Data, Scheike and Sun (2012), work in
+progress.
 }
 \keyword{survival}
 

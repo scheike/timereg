@@ -2,7 +2,7 @@
 \alias{casewise.test}
 \title{Estimates the casewise concordance based on Concordance and marginal estimate using timereg and performs test for independence}
 \usage{
-  casewise.test(conc, marg, test = "no-test", p = 0.01)
+casewise.test(conc, marg, test = "no-test", p = 0.01)
 }
 \arguments{
   \item{conc}{Concordance}
@@ -17,13 +17,13 @@
   some point than p}
 }
 \description{
-  Estimates the casewise concordance based on Concordance
-  and marginal estimate using timereg and performs test for
-  independence
+Estimates the casewise concordance based on Concordance and
+marginal estimate using timereg and performs test for
+independence
 }
 \details{
-  Uses cluster based conservative standard errors for
-  marginal
+Uses cluster based conservative standard errors for
+marginal
 }
 \examples{
 \donttest{
@@ -62,6 +62,6 @@ plot(cdz,ylim=c(0,0.7),xlim=c(60,100))
 }
 }
 \author{
-  Thomas Scheike
+Thomas Scheike
 }
 

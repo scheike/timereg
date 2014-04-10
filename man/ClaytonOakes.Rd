@@ -2,9 +2,9 @@
 \alias{ClaytonOakes}
 \title{Clayton-Oakes model with piece-wise constant hazards}
 \usage{
-  ClaytonOakes(formula, data = parent.frame(), cluster,
-    var.formula = ~1, cuts = NULL, type = "piecewise",
-    start, control = list(), var.invlink = exp, ...)
+ClaytonOakes(formula, data = parent.frame(), cluster, var.formula = ~1,
+  cuts = NULL, type = "piecewise", start, control = list(),
+  var.invlink = exp, ...)
 }
 \arguments{
   \item{formula}{formula specifying the marginal
@@ -43,7 +43,7 @@
   \item{...}{Additional arguments}
 }
 \description{
-  Clayton-Oakes frailty model
+Clayton-Oakes frailty model
 }
 \examples{
 set.seed(1)
@@ -73,6 +73,6 @@ e3 <- ClaytonOakes(Surv(time,status)~x1+cluster(~1,cluster),cuts=c(0,0.5,1,2),
 e3
 }
 \author{
-  Klaus K. Holst
+Klaus K. Holst
 }
 

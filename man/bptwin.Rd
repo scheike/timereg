@@ -4,14 +4,12 @@
 \alias{cumh}
 \title{Liability model for twin data}
 \usage{
-  bptwin(formula, data, id, zyg, DZ, group = NULL,
-    num = NULL, weight = NULL,
-    biweight = function(x) 1/min(x), strata = NULL,
-    messages = 1, control = list(trace = 0), type = "ace",
-    eqmean = TRUE, pairsonly = FALSE, samecens = TRUE,
-    allmarg = samecens & !is.null(weight), stderr = TRUE,
-    robustvar = TRUE, p, indiv = FALSE, constrain,
-    bound = FALSE, varlink, ...)
+bptwin(formula, data, id, zyg, DZ, group = NULL, num = NULL,
+  weight = NULL, biweight = function(x) 1/min(x), strata = NULL,
+  messages = 1, control = list(trace = 0), type = "ace", eqmean = TRUE,
+  pairsonly = FALSE, samecens = TRUE, allmarg = samecens &
+  !is.null(weight), stderr = TRUE, robustvar = TRUE, p, indiv = FALSE,
+  constrain, bound = FALSE, varlink, ...)
 }
 \arguments{
   \item{formula}{Formula specifying effects of covariates
@@ -84,7 +82,7 @@
   \item{...}{Additional arguments to lower level functions}
 }
 \description{
-  Liability-threshold model for twin data
+Liability-threshold model for twin data
 }
 \examples{
 \donttest{
@@ -96,6 +94,6 @@ summary(b0)
 }
 }
 \author{
-  Klaus K. Holst
+Klaus K. Holst
 }
 

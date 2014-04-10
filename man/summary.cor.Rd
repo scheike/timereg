@@ -2,8 +2,8 @@
 \alias{summary.cor}
 \title{Summary for dependence models for competing risks}
 \usage{
-  \method{summary}{cor} (object, marg.cif = NULL,
-    marg.cif2 = NULL, digits = 3, ...)
+\method{summary}{cor}(object, marg.cif = NULL, marg.cif2 = NULL,
+  digits = 3, ...)
 }
 \arguments{
   \item{object}{object from cor.cif rr.cif or or.cif for
@@ -22,21 +22,21 @@
   \item{...}{Additional arguments.}
 }
 \value{
-  prints summary for dependence model.
-  \item{probandwise}{gives probandwise concordance that is,
-  probability of cause 2 (related to cif2) given that cause
-  1 (related to cif1) has occured.}
-  \item{concordance}{gives concordance that is, probability
-  of cause 2 (related to cif2) and cause 1 (related to
-  cif1).} \item{cif1}{cumulative incidence for cause1.}
-  \item{cif2}{cumulative incidence for cause1.}
+prints summary for dependence model.
+\item{probandwise}{gives probandwise concordance that is,
+probability of cause 2 (related to cif2) given that cause 1
+(related to cif1) has occured.} \item{concordance}{gives
+concordance that is, probability of cause 2 (related to
+cif2) and cause 1 (related to cif1).}
+\item{cif1}{cumulative incidence for cause1.}
+\item{cif2}{cumulative incidence for cause1.}
 }
 \description{
-  Computes concordance and probandwise concordance for
-  dependence models for competing risks models of the type
-  cor.cif, rr.cif or or.cif for the given cumulative
-  incidences and the different dependence measures in the
-  object.
+Computes concordance and probandwise concordance for
+dependence models for competing risks models of the type
+cor.cif, rr.cif or or.cif for the given cumulative
+incidences and the different dependence measures in the
+object.
 }
 \examples{
 data(multcif) # simulated data
@@ -53,16 +53,16 @@ pad <- predict(add,X=1,Z=0,se=0,uniform=0)$P1
 summary(out1,marg.cif=pad)
 }
 \author{
-  Thomas Scheike
+Thomas Scheike
 }
 \references{
-  Cross odds ratio Modelling of dependence for Multivariate
-  Competing Risks Data, Scheike and Sun (2012),
-  Biostatistics to appear.
+Cross odds ratio Modelling of dependence for Multivariate
+Competing Risks Data, Scheike and Sun (2012), Biostatistics
+to appear.
 
-  A Semiparametric Random Effects Model for Multivariate
-  Competing Risks Data, Scheike, Zhang, Sun, Jensen (2010),
-  Biometrika.
+A Semiparametric Random Effects Model for Multivariate
+Competing Risks Data, Scheike, Zhang, Sun, Jensen (2010),
+Biometrika.
 }
 \keyword{survival}
 

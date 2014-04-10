@@ -2,8 +2,7 @@
 \alias{simClaytonOakes}
 \title{Simulate from the Clayton-Oakes frailty model}
 \usage{
-  simClaytonOakes(K, n, eta, beta, stoptime, left = 0,
-    pairleft = 0)
+simClaytonOakes(K, n, eta, beta, stoptime, left = 0, pairleft = 0)
 }
 \arguments{
   \item{K}{Number of clusters}
@@ -22,10 +21,10 @@
   individual (0)}
 }
 \description{
-  Simulate observations from the Clayton-Oakes copula model
-  with piecewise constant marginals.
+Simulate observations from the Clayton-Oakes copula model
+with piecewise constant marginals.
 }
 \author{
-  Klaus K. Holst
+Klaus K. Holst
 }
 

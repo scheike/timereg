@@ -2,9 +2,8 @@
 \alias{ipw}
 \title{Inverse Probability of Censoring Weights}
 \usage{
-  ipw(formula, data, cluster, samecens = FALSE,
-    obsonly = TRUE, weightname = "w", cens.model = "aalen",
-    pairs = FALSE, ...)
+ipw(formula, data, cluster, samecens = FALSE, obsonly = TRUE,
+  weightname = "w", cens.model = "aalen", pairs = FALSE, ...)
 }
 \arguments{
   \item{formula}{Formula specifying the censoring model}
@@ -32,8 +31,8 @@
   \item{...}{Additional arguments to censoring model}
 }
 \description{
-  Calculates Inverse Probability of Censoring Weights
-  (IPCW) and adds them to a data.frame
+Calculates Inverse Probability of Censoring Weights (IPCW)
+and adds them to a data.frame
 }
 \examples{
 data(prt)
@@ -50,6 +49,6 @@ for (l in unique(prtw$country)) {
 legend("topright",legend=unique(prtw$country),col=1:4,pch=-1,lty=1)
 }
 \author{
-  Klaus K. Holst
+Klaus K. Holst
 }
 

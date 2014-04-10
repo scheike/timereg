@@ -3,8 +3,7 @@
 \alias{migr}
 \title{Migraine data}
 \description{
-  Migraine data
+Migraine data
 }
 \keyword{data}
-\keyword{datasets}
 

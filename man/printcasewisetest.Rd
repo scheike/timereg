@@ -2,7 +2,7 @@
 \alias{printcasewisetest}
 \title{prints Concordance test}
 \usage{
-  printcasewisetest(x, digits = 3, ...)
+printcasewisetest(x, digits = 3, ...)
 }
 \arguments{
   \item{x}{output from casewise.test}
@@ -13,9 +13,9 @@
   functions}
 }
 \description{
-  .. content for description (no empty lines) ..
+.. content for description (no empty lines) ..
 }
 \author{
-  Thomas Scheike
+Thomas Scheike
 }
 

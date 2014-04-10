@@ -2,11 +2,10 @@
 \alias{twinlm}
 \title{Classic twin model for quantitative traits}
 \usage{
-  twinlm(formula, data, id, zyg, DZ, group = NULL,
-    group.equal = FALSE, strata = NULL, weight = NULL,
-    type = c("ace"), twinnum = "twinnum", binary = FALSE,
-    keep = weight, estimator = "gaussian",
-    constrain = TRUE, control = list(), messages = 1, ...)
+twinlm(formula, data, id, zyg, DZ, group = NULL, group.equal = FALSE,
+  strata = NULL, weight = NULL, type = c("ace"), twinnum = "twinnum",
+  binary = FALSE, keep = weight, estimator = "gaussian",
+  constrain = TRUE, control = list(), messages = 1, ...)
 }
 \arguments{
   \item{formula}{Formula specifying effects of covariates
@@ -72,10 +71,10 @@
   functions}
 }
 \value{
-  Returns an object of class \code{twinlm}.
+Returns an object of class \code{twinlm}.
 }
 \description{
-  Fits a classical twin model for quantitative traits.
+Fits a classical twin model for quantitative traits.
 }
 \examples{
 ## Simulate data
@@ -108,10 +107,10 @@ plot(ace4)
 }
 }
 \author{
-  Klaus K. Holst
+Klaus K. Holst
 }
 \seealso{
-  \code{\link{bptwin}}, \code{\link{twinsim}}
+\code{\link{bptwin}}, \code{\link{twinsim}}
 }
 \keyword{models}
 \keyword{regression}
