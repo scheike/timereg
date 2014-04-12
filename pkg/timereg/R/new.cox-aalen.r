@@ -190,8 +190,8 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
   }
   namematrix(ud$D2linv,covnamesZ); 
 
-  attr(ud,"Call")<-sys.call(); 
   class(ud)<-"cox.aalen"
+  attr(ud,"Call")<-sys.call(); 
   attr(ud,"stratum")<-ud$stratum; 
   attr(ud,"Formula")<-formula;
   attr(ud,"rate.sim")<-rate.sim;

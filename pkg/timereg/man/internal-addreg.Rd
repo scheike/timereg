@@ -1,6 +1,6 @@
 \name{pval}
 \alias{pval}
-\alias{restricted.residualmean}
+\alias{restricted.residual.mean}
 \alias{additive.compSs}
 \alias{CsmoothB}
 \alias{mypbc}
