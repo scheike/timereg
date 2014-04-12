@@ -89,6 +89,7 @@ times<-times[times<maxtimes]
 Ntimes <- length(times); 
 ## }}}
 
+stop("Under development, not working yet\n"); 
 if (is.null(cause)) stop(" cause must be given\n"); 
 
 ## {{{ censoring and estimator
