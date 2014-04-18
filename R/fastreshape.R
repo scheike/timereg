@@ -96,7 +96,7 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
         varsubst <- substitute(varying)
         if (as.character(varsubst)[1]=="-") {
             notvarying <- varsubst[[-1]]
-            vars0 <- setdiff(nn,eval(notvarying))
+            vars0 <- setdiff(nn,eval(notvarying,parent.frame()))
             varying <- unique(gsub("(\\d+)$","",vars0))
         }
     }
