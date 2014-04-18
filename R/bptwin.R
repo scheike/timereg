@@ -154,14 +154,15 @@ bptwin <- function(formula, data, id, zyg, DZ, group=NULL,
   ## time <- "time"
   ## while (time%in%names(data)) time <- paste(time,"_",sep="")
   ## data[,time] <- unlist(lapply(idtab,seq))
-  
-  ## ff <- paste(as.character(formula)[3],"+",time,"+",id,"+",zyg)
-  ff <- paste(as.character(formula)[3],"+",
-              paste(c(id,zyg,weight,num),collapse="+"))
-  ff <- paste("~",yvar,"+",ff)
-  formula0 <- as.formula(ff)
+
+
+  ## ff <- paste(as.character(formula)[3],"+",
+  ##             paste(c(id,zyg,weight,num),collapse="+"))
+  ## ff <- paste("~",yvar,"+",ff)
+  ##formula0 <- as.formula(ff)
   opt <- options(na.action="na.pass")
-  Data <- model.matrix(formula0,data)
+  ##  Data <- model.matrix(formula0,data)
+  Data <- cbind(model.matrix(formula,data),data[,c(yvar,id,zyg,weight,num)])
   options(opt)
   ## rnames1 <- setdiff(colnames(Data),c(yvar,time,id,weight,zyg))
   rnames1 <- setdiff(colnames(Data),c(yvar,id,weight,zyg,num))
@@ -626,8 +627,9 @@ bptwin <- function(formula, data, id, zyg, DZ, group=NULL,
                ACDU=ACDU[-4]*1)
   
   npar[unlist(lapply(npar,length))==0] <- 0
-  
+
   val <- list(coef=cc,vcov=V,score=UU,logLik=attributes(UU)$logLik,opt=op,
+              id=Wide[,id], model.frame=Wide,
               Sigma0=S$Sigma0, Sigma1=S$Sigma1, Sigma2=S$Sigma2,
               dS0=dS0, dS1=dS1, dS2=dS2,
               N=N,
@@ -635,7 +637,7 @@ bptwin <- function(formula, data, id, zyg, DZ, group=NULL,
               vidx0=vidx0, vidx1=vidx1, vidx2=vidx2,
               eqmean=eqmean, I=I,J=J, robustvar=robustvar,
               transform=list(tr=mytr, invtr=myinvtr, dtr=dmytr,
-                name=trname, invname=invtrname),
+                  name=trname, invname=invtrname),
               SigmaFun=Sigma,
               npar=npar,
               OS=OSon
@@ -646,4 +648,7 @@ bptwin <- function(formula, data, id, zyg, DZ, group=NULL,
 
 ###}}} return
 
-
+##' @S3method model.frame bptwin
+model.frame.bptwin <- function(formula,...) {
+    formula$Wide
+}
