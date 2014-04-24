@@ -31,7 +31,7 @@ read.design<-function(m,Terms,model="aalen"){
   } else {
     npar<-TRUE;
   }
-Zterms<-semicov # ts 25-6-2008
+  Zterms<-semicov # ts 25-6-2008
 
   if (length(semicov)>0) {
    covnamesX <- colnames(XZ)[-c(Zterms,clusterTerms)];

@@ -24,10 +24,11 @@ max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL)
 
   special <- c("prop","cluster")
   Terms <- if(missing(data)) terms(formula, special)
-  else          terms(formula, special, data=data)
+  else  terms(formula, special, data=data)
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
   m <- eval(m, sys.parent())
+  m <- na.omit(m)
   mt <- attr(m, "terms")
   intercept<-attr(mt, "intercept")
   Y <- model.extract(m, "response")
@@ -39,7 +40,7 @@ max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL)
   pxz <- px + pz;
 
 ###  if ( (nrow(Z)!=nrow(data)) && (!is.null(id))) stop("Missing values in design matrix not allowed with id\n"); 
-  if (nrow(Z)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
+###  if (nrow(Z)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
   if (!is.null(id)) {
 	  if (length(id)!=nrow(Z)) stop("id length and data not the same\n"); 
   }
