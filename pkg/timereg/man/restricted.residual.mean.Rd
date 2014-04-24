@@ -12,17 +12,14 @@ cox.aalen or aalen function.
 restricted.residual.mean(out,x=0,tau=10,iid=0)
 }
 \arguments{
-\item{out}{
-  an "cox.aalen" with a Cox model or an "aalen" model.
-}
-\item{x}{matrix with covariates for Cox model or additive hazards model (aalen).
-}
+\item{out}{ an "cox.aalen" with a Cox model or an "aalen" model.  }
+\item{x}{matrix with covariates for Cox model or additive hazards model (aalen).}
 \item{tau}{restricted residual mean.}
 \item{iid}{if iid=1 then uses iid decomposition for estimation of standard errors.}
 }
 \details{
-must have computed iid decomposition of survival models. Note that competing risks models can be
-fitted but then the interpretation is not clear. 
+must have computed iid decomposition of survival models for standard errors to be computed.
+Note that competing risks models can be fitted but then the interpretation is not clear. 
 }
 \value{
 Returns an object. With the following arguments:
@@ -33,7 +30,8 @@ Returns an object. With the following arguments:
 \item{timetau}{vector of time arguments for S0tau.}
 }
 \references{
-   D. M. Zucker, Restricted mean life with covariates: Modification and extension of a useful survival analysis method, J. Amer. Statist. Assoc. vol. 93 pp. 702–709, 1998.
+   D. M. Zucker, Restricted mean life with covariates: Modification and extension of a useful survival 
+   analysis method, J. Amer. Statist. Assoc. vol. 93 pp. 702-709, 1998.
 
   Martinussen and Scheike, Dynamic Regression Models for Survival Data, Springer (2006).  
 }
