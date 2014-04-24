@@ -19,14 +19,17 @@
 ##' fitco1<-two.stage(margph,data=diabetes,theta=1.0,detail=0,Nit=40,clusters=diabetes$id)
 ##' summary(fitco1)
 ##' ### Plackett model
-##' fitp<-twostage(margph,data=diabetes,theta=0.0,Nit=40,
+##' fitp<-twostage(margph,data=diabetes,theta=3.0,Nit=40,
 ##'                clusters=diabetes$id,var.link=1)
 ##' summary(fitp)
 ##' ### Clayton-Oakes
-##' fitco2<-twostage(margph,data=diabetes,theta=1.0,detail=0,Nit=40,
+##' fitco2<-twostage(margph,data=diabetes,theta=0.0,detail=0,
 ##'                  clusters=diabetes$id,var.link=1,model="clayton.oakes")
 ##' summary(fitco2)
-##' 
+##' fitco3<-twostage(margph,data=diabetes,theta=1.0,detail=0,
+##'                  clusters=diabetes$id,var.link=0,model="clayton.oakes")
+##' summary(fitco3)
+##'
 ##' ### without covariates using Aalen for marginals
 ##' marg <- aalen(Surv(time,status)~+1,data=diabetes,n.sim=0,max.clust=NULL,robust=0)
 ##' fitpa<-twostage(marg,data=diabetes,theta=1.0,detail=0,Nit=40,
