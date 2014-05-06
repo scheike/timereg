@@ -2,8 +2,8 @@
 \alias{concordance}
 \title{Concordance Computes concordance and probandwise concordance}
 \usage{
-concordance(object, cif1, cif2 = NULL, messages = TRUE, model = NULL,
-  coefs = NULL, ...)
+  concordance(object, cif1, cif2 = NULL, messages = TRUE,
+    model = NULL, coefs = NULL, ...)
 }
 \arguments{
   \item{object}{Output from the cor.cif, rr.cif or or.cif
@@ -25,9 +25,9 @@ concordance(object, cif1, cif2 = NULL, messages = TRUE, model = NULL,
   \item{...}{Extra arguments, not used.}
 }
 \description{
-Concordance
+  Concordance
 }
 \author{
-Thomas Scheike
+  Thomas Scheike
 }
 

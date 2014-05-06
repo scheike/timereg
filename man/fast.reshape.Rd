@@ -3,9 +3,9 @@
 \title{Fast reshape
 Simple reshape/tranpose of data}
 \usage{
-fast.reshape(data, varying, id, num, sep = "", keep, idname = "id",
-  numname = "num", factors.keep = TRUE, idcombine = TRUE,
-  labelnum = FALSE, ...)
+  fast.reshape(data, varying, id, num, sep = "", keep,
+    idname = "id", numname = "num", factors.keep = TRUE,
+    idcombine = TRUE, labelnum = FALSE, ...)
 }
 \arguments{
   \item{data}{data.frame or matrix}
@@ -44,7 +44,7 @@ fast.reshape(data, varying, id, num, sep = "", keep, idname = "id",
   \item{...}{Optional additional arguments}
 }
 \description{
-Fast reshape Simple reshape/tranpose of data
+  Fast reshape Simple reshape/tranpose of data
 }
 \examples{
 library(lava)
@@ -116,6 +116,6 @@ ftable(cancer1~cancer2,data=prtw)
 rm(prtw)
 }
 \author{
-Thomas Scheike, Klaus K. Holst
+  Thomas Scheike, Klaus K. Holst
 }
 

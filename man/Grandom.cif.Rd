@@ -2,13 +2,15 @@
 \alias{Grandom.cif}
 \title{Additive Random effects model for competing risks data for polygenetic modelling}
 \usage{
-Grandom.cif(cif, data, cause, cif2 = NULL, times = NULL, cause1 = 1,
-  cause2 = 1, cens.code = NULL, cens.model = "KM", Nit = 40,
-  detail = 0, clusters = NULL, theta = NULL, theta.des = NULL,
-  weights = NULL, step = 1, sym = 0, same.cens = FALSE,
-  censoring.probs = NULL, silent = 1, exp.link = 0,
-  score.method = "fisher.scoring", entry = NULL, estimator = 1,
-  trunkp = 1, admin.cens = NULL, random.design = NULL, ...)
+  Grandom.cif(cif, data, cause, cif2 = NULL, times = NULL,
+    cause1 = 1, cause2 = 1, cens.code = NULL,
+    cens.model = "KM", Nit = 40, detail = 0,
+    clusters = NULL, theta = NULL, theta.des = NULL,
+    weights = NULL, step = 1, sym = 0, same.cens = FALSE,
+    censoring.probs = NULL, silent = 1, exp.link = 0,
+    score.method = "fisher.scoring", entry = NULL,
+    estimator = 1, trunkp = 1, admin.cens = NULL,
+    random.design = NULL, ...)
 }
 \arguments{
   \item{cif}{a model object from the comp.risk function
@@ -86,46 +88,47 @@ Grandom.cif(cif, data, cause, cif2 = NULL, times = NULL, cause1 = 1,
   \item{...}{extra arguments.}
 }
 \value{
-returns an object of type 'random.cif'. With the following
-arguments: \item{theta}{estimate of parameters of model.}
-\item{var.theta}{variance for gamma.  } \item{hess}{the
-derivative of the used score.} \item{score}{scores at final
-stage.} \item{theta.iid}{matrix of iid decomposition of
-parametric effects.}
+  returns an object of type 'random.cif'. With the
+  following arguments: \item{theta}{estimate of parameters
+  of model.} \item{var.theta}{variance for gamma.  }
+  \item{hess}{the derivative of the used score.}
+  \item{score}{scores at final stage.}
+  \item{theta.iid}{matrix of iid decomposition of
+  parametric effects.}
 }
 \description{
-Fits a random effects model describing the dependence in
-the cumulative incidence curves for subjects within a
-cluster.  Given the gamma distributed random effects it is
-assumed that the cumulative incidence curves are
-indpendent, and that the marginal cumulative incidence
-curves are on additive form \deqn{ P(T \leq t, cause=1 |
-x,z) = P_1(t,x,z) = 1- exp( -x^T A(t) - t z^T \beta) }
+  Fits a random effects model describing the dependence in
+  the cumulative incidence curves for subjects within a
+  cluster.  Given the gamma distributed random effects it
+  is assumed that the cumulative incidence curves are
+  indpendent, and that the marginal cumulative incidence
+  curves are on additive form \deqn{ P(T \leq t, cause=1 |
+  x,z) = P_1(t,x,z) = 1- exp( -x^T A(t) - t z^T \beta) }
 }
 \details{
-We allow a regression structure for the indenpendent gamma
-distributed random effects and their variances that may
-depend on cluster covariates.
+  We allow a regression structure for the indenpendent
+  gamma distributed random effects and their variances that
+  may depend on cluster covariates.
 
-random.design specificies the random effects for each
-subject within a cluster. This is a matrix of 1's and 0's
-with dimension n x d.  With d random effects. For a cluster
-with two subjects, we let the random.design rows be
-\eqn{v_1} and \eqn{v_2}. Such that the random effects for
-subject 1 is \deqn{v_1^T (Z_1,...,Z_d)}, for d random
-effects. Each random effect has an associated parameter
-\eqn{(\lambda_1,...,\lambda_d)}. By construction subjects
-1's random effect are Gamma distributed with mean
-\eqn{\lambda_1/v_1^T \lambda} and variance
-\eqn{\lambda_1/(v_1^T \lambda)^2}. Note that the random
-effect \eqn{v_1^T (Z_1,...,Z_d)} has mean 1 and variance
-\eqn{1/(v_1^T \lambda)}.
+  random.design specificies the random effects for each
+  subject within a cluster. This is a matrix of 1's and 0's
+  with dimension n x d.  With d random effects. For a
+  cluster with two subjects, we let the random.design rows
+  be \eqn{v_1} and \eqn{v_2}. Such that the random effects
+  for subject 1 is \deqn{v_1^T (Z_1,...,Z_d)}, for d random
+  effects. Each random effect has an associated parameter
+  \eqn{(\lambda_1,...,\lambda_d)}. By construction subjects
+  1's random effect are Gamma distributed with mean
+  \eqn{\lambda_1/v_1^T \lambda} and variance
+  \eqn{\lambda_1/(v_1^T \lambda)^2}. Note that the random
+  effect \eqn{v_1^T (Z_1,...,Z_d)} has mean 1 and variance
+  \eqn{1/(v_1^T \lambda)}.
 
-The parameters \eqn{(\lambda_1,...,\lambda_d)} are related
-to the parameters of the model by a regression construction
-\eqn{pard} (d x k), that links the \eqn{d} \eqn{\lambda}
-parameters with the (k) underlying \eqn{\theta} parameters
-\deqn{ \lambda = pard \theta }
+  The parameters \eqn{(\lambda_1,...,\lambda_d)} are
+  related to the parameters of the model by a regression
+  construction \eqn{pard} (d x k), that links the \eqn{d}
+  \eqn{\lambda} parameters with the (k) underlying
+  \eqn{\theta} parameters \deqn{ \lambda = pard \theta }
 }
 \examples{
 data(multcif)
@@ -171,20 +174,20 @@ exp(outacem$theta[1])/sum(exp(outacem$theta))^2
 }
 }
 \author{
-Thomas Scheike
+  Thomas Scheike
 }
 \references{
-A Semiparametric Random Effects Model for Multivariate
-Competing Risks Data, Scheike, Zhang, Sun, Jensen (2010),
-Biometrika.
+  A Semiparametric Random Effects Model for Multivariate
+  Competing Risks Data, Scheike, Zhang, Sun, Jensen (2010),
+  Biometrika.
 
-Cross odds ratio Modelling of dependence for Multivariate
-Competing Risks Data, Scheike and Sun (2012),
-Biostatitistics, to appear.
+  Cross odds ratio Modelling of dependence for Multivariate
+  Competing Risks Data, Scheike and Sun (2012),
+  Biostatitistics, to appear.
 
-Scheike, Holst, Hjelmborg (2012), LIDA, to appear.
-Estimating heritability for cause specific hazards based on
-twin data
+  Scheike, Holst, Hjelmborg (2012), LIDA, to appear.
+  Estimating heritability for cause specific hazards based
+  on twin data
 }
 \keyword{survival}
 

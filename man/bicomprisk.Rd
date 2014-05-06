@@ -2,10 +2,12 @@
 \alias{bicomprisk}
 \title{Estimation of concordance in bivariate competing risks data}
 \usage{
-bicomprisk(formula, data, cause = c(1, 1), cens = 0, causes, indiv,
-  strata = NULL, id, num, max.clust = 1000, marg = NULL,
-  se.clusters = NULL, prodlim = FALSE, messages = TRUE, model,
-  return.data = 0, uniform = 0, conservative = 1, resample.iid = 1, ...)
+  bicomprisk(formula, data, cause = c(1, 1), cens = 0,
+    causes, indiv, strata = NULL, id, num,
+    max.clust = 1000, marg = NULL, se.clusters = NULL,
+    prodlim = FALSE, messages = TRUE, model,
+    return.data = 0, uniform = 0, conservative = 1,
+    resample.iid = 1, ...)
 }
 \arguments{
   \item{formula}{Formula with left-hand-side being a
@@ -66,9 +68,10 @@ bicomprisk(formula, data, cause = c(1, 1), cens = 0, causes, indiv,
   \item{...}{Additional arguments to lower level functions}
 }
 \description{
-Estimation of concordance in bivariate competing risks data
+  Estimation of concordance in bivariate competing risks
+  data
 }
 \author{
-Thomas Scheike, Klaus K. Holst
+  Thomas Scheike, Klaus K. Holst
 }
 

@@ -2,7 +2,8 @@
 \alias{blocksample}
 \title{Block sampling}
 \usage{
-blocksample(data, size, idvar = "id", replace = TRUE, ...)
+  blocksample(data, size, idvar = "id", replace = TRUE,
+    ...)
 }
 \arguments{
   \item{data}{Data frame}
@@ -18,10 +19,10 @@ blocksample(data, size, idvar = "id", replace = TRUE, ...)
   functions}
 }
 \value{
-\code{data.frame}
+  \code{data.frame}
 }
 \description{
-Sample blockwise from clustered data
+  Sample blockwise from clustered data
 }
 \examples{
 d <- data.frame(x=rnorm(5), z=rnorm(5), id=c(4,10,10,5,5), v=rnorm(5))
@@ -33,7 +34,7 @@ blocksample(data.table::data.table(d),1e6)
 }
 }
 \author{
-Klaus K. Holst
+  Klaus K. Holst
 }
 \keyword{models}
 \keyword{utilities}

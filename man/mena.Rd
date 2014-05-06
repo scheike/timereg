@@ -3,10 +3,11 @@
 \alias{mena}
 \title{Menarche data set}
 \source{
-Simulated data
+  Simulated data
 }
 \description{
-Menarche data set
+  Menarche data set
 }
 \keyword{data}
+\keyword{datasets}
 

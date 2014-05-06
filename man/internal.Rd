@@ -6,7 +6,8 @@
 \alias{corsim.prostate}
 \alias{familycluster.index}
 \alias{faster.reshape}
-\alias{loglikMVN}
+\alias{grouptable}
+\alias{loglikMVN,}
 \alias{nonparcuminc}
 \alias{npc}
 \alias{pbvn}
@@ -19,15 +20,15 @@
 \alias{simBinFam2}
 \alias{simBinPlack}
 \alias{simCox}
-\alias{simSurvFam}
 \alias{simnordic}
+\alias{simSurvFam}
 \alias{surv.boxarea}
 \title{For internal use}
 \description{
-For internal use
+  For internal use
 }
 \author{
-Klaus K. Holst
+  Klaus K. Holst
 }
 \keyword{utilities}
 

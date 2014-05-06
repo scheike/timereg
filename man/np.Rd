@@ -3,10 +3,11 @@
 \alias{np}
 \title{np data set}
 \source{
-Simulated data
+  Simulated data
 }
 \description{
-np data set
+  np data set
 }
 \keyword{data}
+\keyword{datasets}
 

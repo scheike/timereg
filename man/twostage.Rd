@@ -5,12 +5,15 @@ using marginals that are on Cox or addtive form.
 If clusters contain more than two times, the algoritm uses a compososite likelihood
 based on the pairwise bivariate models.}
 \usage{
-twostage(margsurv, data = sys.parent(), score.method = "nlminb", Nit = 60,
-  detail = 0, clusters = NULL, silent = 1, weights = NULL,
-  control = list(), theta = NULL, theta.des = NULL, var.link = 1,
-  iid = 1, step = 0.5, notaylor = 0, model = "plackett",
-  marginal.trunc = NULL, marginal.survival = NULL, marginal.status = NULL,
-  strata = NULL, se.clusters = NULL, max.clust = NULL, numDeriv = 1)
+  twostage(margsurv, data = sys.parent(),
+    score.method = "nlminb", Nit = 60, detail = 0,
+    clusters = NULL, silent = 1, weights = NULL,
+    control = list(), theta = NULL, theta.des = NULL,
+    var.link = 1, iid = 1, step = 0.5, notaylor = 0,
+    model = "plackett", marginal.trunc = NULL,
+    marginal.survival = NULL, marginal.status = NULL,
+    strata = NULL, se.clusters = NULL, max.clust = NULL,
+    numDeriv = 1)
 }
 \arguments{
   \item{margsurv}{Marginal model}
@@ -66,9 +69,9 @@ twostage(margsurv, data = sys.parent(), score.method = "nlminb", Nit = 60,
   derivative, otherwise uses sum of squared score}
 }
 \description{
-The reported standard errors are based on the estimated
-information from the likelihood assuming that the marginals
-are known.
+  The reported standard errors are based on the estimated
+  information from the likelihood assuming that the
+  marginals are known.
 }
 \examples{
 data(diabetes)
@@ -152,11 +155,11 @@ summary(fitp4)
 }
 }
 \author{
-Thomas Scheike
+  Thomas Scheike
 }
 \references{
-Clayton-Oakes and Plackett bivariate survival
-distributions,
+  Clayton-Oakes and Plackett bivariate survival
+  distributions,
 }
 \keyword{survival}
 

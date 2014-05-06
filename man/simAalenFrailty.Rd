@@ -2,8 +2,8 @@
 \alias{simAalenFrailty}
 \title{Simulate from the Aalen Frailty model}
 \usage{
-simAalenFrailty(n = 5000, theta = 0.3, K = 2, beta0 = 1.5, beta = 1,
-  cens = 1.5, cuts = 0, ...)
+  simAalenFrailty(n = 5000, theta = 0.3, K = 2,
+    beta0 = 1.5, beta = 1, cens = 1.5, cuts = 0, ...)
 }
 \arguments{
   \item{n}{Number of observations in each cluster}
@@ -23,10 +23,10 @@ simAalenFrailty(n = 5000, theta = 0.3, K = 2, beta0 = 1.5, beta = 1,
   \item{...}{Additional arguments}
 }
 \description{
-Simulate observations from Aalen Frailty model with Gamma
-distributed frailty and constant intensity.
+  Simulate observations from Aalen Frailty model with Gamma
+  distributed frailty and constant intensity.
 }
 \author{
-Klaus K. Holst
+  Klaus K. Holst
 }
 

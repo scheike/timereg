@@ -2,7 +2,7 @@
 \alias{casewise}
 \title{Estimates the casewise concordance based on Concordance and marginal estimate using prodlim but no testing}
 \usage{
-casewise(conc, marg, cause.marg)
+  casewise(conc, marg, cause.marg)
 }
 \arguments{
   \item{conc}{Concordance}
@@ -13,7 +13,7 @@ casewise(conc, marg, cause.marg)
   used for marginal cif based on prodlim}
 }
 \description{
-.. content for description (no empty lines) ..
+  .. content for description (no empty lines) ..
 }
 \examples{
 \donttest{
@@ -43,6 +43,6 @@ summary(cmz)
 }
 }
 \author{
-Thomas Scheike
+  Thomas Scheike
 }
 

@@ -2,9 +2,9 @@
 \alias{twinsim}
 \title{Simulate twin data}
 \usage{
-twinsim(nMZ = 100, nDZ = nMZ, b1 = c(), b2 = c(), mu = 0,
-  acde = c(1, 1, 0, 1), randomslope = NULL, threshold = 0, cens = FALSE,
-  wide = FALSE, ...)
+  twinsim(nMZ = 100, nDZ = nMZ, b1 = c(), b2 = c(), mu = 0,
+    acde = c(1, 1, 0, 1), randomslope = NULL,
+    threshold = 0, cens = FALSE, wide = FALSE, ...)
 }
 \arguments{
   \item{nMZ}{Number of monozygotic twin pairs}
@@ -40,13 +40,13 @@ twinsim(nMZ = 100, nDZ = nMZ, b1 = c(), b2 = c(), mu = 0,
   functions}
 }
 \description{
-Simulate twin data from a linear normal ACE/ADE/AE model.
+  Simulate twin data from a linear normal ACE/ADE/AE model.
 }
 \author{
-Klaus K. Holst
+  Klaus K. Holst
 }
 \seealso{
-\code{\link{twinlm}}
+  \code{\link{twinlm}}
 }
 \keyword{models}
 \keyword{regression}

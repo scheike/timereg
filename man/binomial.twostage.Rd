@@ -5,12 +5,13 @@ using marginals that are on logistic form.
 If clusters contain more than two times, the algoritm uses a compososite likelihood
 based on all pairwise bivariate models.}
 \usage{
-binomial.twostage(margbin, data = sys.parent(), score.method = "nlminb",
-  Nit = 60, detail = 0, clusters = NULL, silent = 1, weights = NULL,
-  control = list(), theta = NULL, theta.des = NULL, var.link = 1,
-  iid = 1, step = 0.5, notaylor = 1, model = "plackett",
-  marginal.p = NULL, strata = NULL, max.clust = NULL,
-  se.clusters = NULL, numDeriv = 0)
+  binomial.twostage(margbin, data = sys.parent(),
+    score.method = "nlminb", Nit = 60, detail = 0,
+    clusters = NULL, silent = 1, weights = NULL,
+    control = list(), theta = NULL, theta.des = NULL,
+    var.link = 1, iid = 1, step = 0.5, notaylor = 1,
+    model = "plackett", marginal.p = NULL, strata = NULL,
+    max.clust = NULL, se.clusters = NULL, numDeriv = 0)
 }
 \arguments{
   \item{margbin}{Marginal binomial model}
@@ -60,16 +61,16 @@ binomial.twostage(margbin, data = sys.parent(), score.method = "nlminb",
   derivative if 0, otherwise numerical derivatives}
 }
 \description{
-The pairwise pairwise odds ratio model provides an
-alternative to the alternating logistic regression (ALR).
+  The pairwise pairwise odds ratio model provides an
+  alternative to the alternating logistic regression (ALR).
 }
 \details{
-The reported standard errors are based on a cluster
-corrected score equations from the pairwise likelihoods
-assuming that the marginals are known. This gives correct
-standard errors in the case of the Plackett distribution
-(OR model for dependence), but incorrect standard errors
-for the clayton-oakes types model.
+  The reported standard errors are based on a cluster
+  corrected score equations from the pairwise likelihoods
+  assuming that the marginals are known. This gives correct
+  standard errors in the case of the Plackett distribution
+  (OR model for dependence), but incorrect standard errors
+  for the clayton-oakes types model.
 }
 \examples{
 data(twinstut)
@@ -115,10 +116,10 @@ out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
 summary(out3)
 }
 \author{
-Thomas Scheike
+  Thomas Scheike
 }
 \references{
-Two-stage binomial modelling
+  Two-stage binomial modelling
 }
 \keyword{binomial}
 \keyword{regression}

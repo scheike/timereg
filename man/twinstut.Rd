@@ -8,8 +8,9 @@ stutter: stutter status (yes/no)
 age: age
 nr: number within twin-pair}
 \description{
-Based on nation-wide questionnaire answers from 33,317
-Danish twins
+  Based on nation-wide questionnaire answers from 33,317
+  Danish twins
 }
 \keyword{data}
+\keyword{datasets}
 

@@ -2,7 +2,7 @@
 \alias{aalenfrailty}
 \title{Aalen frailty model}
 \usage{
-aalenfrailty(time, status, X, id, theta, B = NULL, ...)
+  aalenfrailty(time, status, X, id, theta, B = NULL, ...)
 }
 \arguments{
   \item{time}{Time variable}
@@ -23,13 +23,13 @@ aalenfrailty(time, status, X, id, theta, B = NULL, ...)
   \item{...}{Additional arguments to lower level functions}
 }
 \value{
-Parameter estimates
+  Parameter estimates
 }
 \description{
-Additive hazards model with (gamma) frailty
+  Additive hazards model with (gamma) frailty
 }
 \details{
-Aalen frailty model
+  Aalen frailty model
 }
 \examples{
 dd <- simAalenFrailty(5000)
@@ -54,6 +54,6 @@ op <- aalenfrailty(dd$time,dd$status,X,dd$id)
 op}
 }
 \author{
-Klaus K. Holst
+  Klaus K. Holst
 }
 
