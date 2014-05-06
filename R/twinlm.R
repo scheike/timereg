@@ -6,6 +6,7 @@
 ##' @return   Returns an object of class \code{twinlm}.
 ##' @author Klaus K. Holst
 ##' @seealso \code{\link{bptwin}}, \code{\link{twinsim}}
+##' @aliases twinlm twinlm.time
 ##' @export
 ##' @examples
 ##' ## Simulate data
