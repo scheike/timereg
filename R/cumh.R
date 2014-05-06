@@ -1,4 +1,4 @@
-##' @export
+
 cumh <- function(formula,data,...,time,
                  timestrata=quantile(data[,time],c(0.25,0.5,0.75,1)),
                  cens.formula=NULL,cens.model="aalen",
@@ -16,10 +16,9 @@ cumh <- function(formula,data,...,time,
     censMod <- eval(m, parent.frame())
     censtime <- model.extract(m, "response")
     status <- censtime[,2]
-###    data[,"_status"] <- 
+###  data[,"_status"] <- 
   }
 
-  browser()
   res <- list(); i <- 0
   ht <- c()
   outcome <- as.character(terms(formula)[[2]])
@@ -89,10 +88,6 @@ print.cumh <- function(x,type=seq(nrow(x$coef[[1]])),...) {
   invisible(x)
 }
 
-Col <- function (col, alpha = 0.2) {
-    sapply(col, function(x) do.call(rgb, as.list(c(col2rgb(x)/255, 
-        alpha))))
-}
 
 ##' @S3method plot cumh
 plot.cumh <- function(x,...,type=1,lwd=2,col,fillcol,alpha=0.2,ylim=c(0,1),xlab=x$timevar,ylab="Heritability",idx=seq(nrow(x$ht)),legend=TRUE,legendpos="topleft") {
@@ -119,60 +114,3 @@ plot.cumh <- function(x,...,type=1,lwd=2,col,fillcol,alpha=0.2,ylim=c(0,1),xlab=
 }
 
 
-###{{{ cumh2 - Deprecated
-
-cumh2 <- function(formula,data,...,time,
-                 timestrata=quantile(data[,time],c(0.25,0.5,0.75,1)),
-                 cumulative=TRUE, 
-                 silent=FALSE) {
-
-    time.  <- substitute(time)
-  if (!is.character(time.)) time. <- deparse(time.)
-  time <- time.
-  
-  res <- list(); i <- 0
-  ht <- c()
-  outcome <- as.character(terms(formula)[[2]])
-  coefs <- c()
-  y0 <- data[,outcome]
-  for (i in seq(length(timestrata))) {
-    t <- timestrata[i]
-    data[,outcome] <- y0
-    newdata <- data
-    if (!cumulative) {
-      if (i==1) {
-        idx <- data[,time]<t
-      } else {
-        idx <- (timestrata[i-1]<=data[,time] & data[,time]<t)
-      }
-    } else {
-      data[,outcome] <- data[,outcome]*(data[,time]<t)
-    }
-    if (!silent) {
-      message(t)
-    }
-    if (!cumulative)
-      res[[i]] <- summary(twinlm(formula,data=data[idx,],binary=cumulative,...))
-    else
-      res[[i]] <- summary(bptwin(formula,data=data,...))
-
-    coefs <- c(coefs, list(res[[i]]$all))
-    ht <- rbind(ht,c(t,res[[i]]$heritability[1,]))
-  }
-  
-  coeftype <- c()
-  for (i in seq(nrow(coefs[[1]]))) {
-    rr <- matrix(unlist(lapply(coefs,function(z) z[i,])),ncol=3,byrow=TRUE)
-    colnames(rr) <- colnames(coefs[[1]])
-    rr <- cbind(time=timestrata,rr)
-    coeftype <- c(coeftype,list(rr)); names(coeftype)[length(coeftype)] <- rownames(coefs[[1]])[i]
-  }
-  
-  rownames(ht) <- timestrata
-  colnames(ht) <- c("time","Heritability","Std.Err","2.5%","97.5%")
-  res <- (list(time=timestrata, ht=ht,models=res,coef=coefs,
-               coeftype=coeftype, timevar=time))
-  class(res) <- "cumh"
-  res
-}
-###}}} cumh2
