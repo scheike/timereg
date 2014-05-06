@@ -26,7 +26,16 @@
 ###{{{ Weibull
 
 info.weibull <- function(...) {
-    list(npar=2,start=c(-1,-1),name="weibull")
+    list(npar=2,
+         start=c(-1,-1),
+         name="weibull",
+         partrans=function(theta) {
+             exp(theta)
+         },
+         cumhaz=function(t,theta) {
+             (theta[1]*t)^theta[2]
+         }
+         )
 }
 
 logl.weibull <- function(theta,time,status,X=NULL,theta.idx=NULL,indiv=FALSE) {
@@ -318,7 +327,9 @@ phreg.par <- function(formula,data=parent.frame(),
     mynames <- mynames[na.omit(unique(theta.idx))]
   }
   rownames(coefs) <- mynames
-  structure(list(call=match.call(), coef=coefs[,1], coefmat=coefs, vcov=V,
+  structure(list(call=match.call(), coef=coefs[,1],
+                 coefmat=coefs, vcov=V,
+                 formula=eval(formula),
                  model=model,
                  time=time, status=status, X=X),class=c("phreg.par","phreg"))
 }
@@ -357,6 +368,17 @@ logLik.phreg.par <- function(object,p=coef(object),...) {
 ##' @S3method model.frame phreg.par
 model.frame.phreg.par <- function(formula,...) {
     formula$X
+}
+
+##' @S3method predict phreg.par
+predict.phreg.par <- function(object,p=coef(object),X=object$X,time=object$time,...) {
+    info <- do.call(paste("info",object$model,sep="."),list())
+    cc <- coef(object)
+    eta <- 0
+    if (length(cc)>info$npar) {
+        eta <- X%*%cc[-seq(info$npar)]
+    } 
+    exp(-(info$cumhaz(time,info$partrans(p))*exp(eta)))
 }
 
 ###}}} phreg.par + methods
