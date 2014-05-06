@@ -1051,12 +1051,12 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	       diff=(resp2-p11t); 
 //	       rvvec2.print("rvv2");   thetades.print("td"); 
 //	       vthetascore= trans(thetades) * rvvec2; 
-	  if (j<0)   {  printf("=============================== %lf  %lf \n",p11t,ckij(0)); 
+	  if (j<0)   {  Rprintf("=============================== %lf  %lf \n",p11t,ckij(0)); 
 		  alphai.print("alphai"); 
 		  rvvec2.print("rvvec2"); 
 		  vthetascore.print("vthetascore 0"); 
 	  }
-	  if (j<0)   {  printf("-----------------------------  %lf   %lf \n",p11t,ckij(0)); 
+	  if (j<0)   {  Rprintf("-----------------------------  %lf   %lf \n",p11t,ckij(0)); 
 vec alphail= thetades * vtheta2;
 alphail.print("alphil"); 
 	                vthetascore.print("vthetascore 1"); 

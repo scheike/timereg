@@ -14,7 +14,7 @@
 ##' @author Klaus K. Holst
 ##' @examples
 ##' data(prt)
-##' prtw <- ipcw(Surv(time,status==0)~country, data=prt[sample(nrow(prt),5000),],
+##' prtw <- IPCW(Surv(time,status==0)~country, data=prt[sample(nrow(prt),5000),],
 ##'             cluster="id",weightname="w")
 ##' plot(0,type="n",xlim=range(prtw$time),ylim=c(0,1),xlab="Age",ylab="Probability")
 ##' count <- 0
@@ -26,16 +26,15 @@
 ##' }
 ##' legend("topright",legend=unique(prtw$country),col=1:4,pch=-1,lty=1)
 ##' @export
-ipcw <- function(formula,data,cluster,
+IPCW <- function(formula,data,cluster,
                  samecens=FALSE,obsonly=TRUE,weightname="w",
-                 iid=TRUE,
                  cens.model="aalen", pairs=FALSE, ...) {
-
+                 ##iid=TRUE,
 
     XZ <- model.matrix(formula,data)
     cens.args <- c(list(formula,n.sim=0,robust=0,data=data),list(...))
     if (tolower(cens.model)%in%c("weibull","phreg.par","phreg.weibull")) {
-        ud.cens <- do.call(mets:::phreg.par,cens.args)
+        ud.cens <- do.call(mets::phreg.par,cens.args)
         pr <- predict(ud.cens)
         noncens <- which(!ud.cens$status)        
     } else {

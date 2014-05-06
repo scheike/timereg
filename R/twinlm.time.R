@@ -26,7 +26,7 @@ twinlm.time <- function(formula,data,id,type="u",...,
         data0[cond0,outcome] <- FALSE
         time0[cond0] <- tau
         data0$S <- Surv(time0,status0==1)        
-        dataw <- ipcw(S~zyg, data=data0,
+        dataw <- IPCW(S~zyg, data=data0,
                       cluster=id,weightname="w",pairs=TRUE)
         b <- bptwin(formula, data=dataw, id=id, weight="w",type=type,...)
         res <- c(res,list(summary(b)))
