@@ -1,5 +1,5 @@
 ##' @S3method summary bptwin
-summary.bptwin <- function(object,level=0.05,...) {
+summary.bptwin <- function(object,level=0.05,transform=FALSE,...) {
   logit <- function(p) log(p/(1-p))
   tigol <- function(z) 1/(1+exp(-z))
   dlogit <- function(p) 1/(p*(1-p))
@@ -34,29 +34,34 @@ summary.bptwin <- function(object,level=0.05,...) {
     corr <- NULL
   }
   if (length(idx1)>0) {
-    idx <- idx1
-    V <- vcov(object)[idx,idx]
-    ACD <- match(names(coef(object))[idx1],vcoef1)
-    nn <- c(c("A","C","D")[ACD],"E")
-    dzsc <- c(1/2,1,1/4)[ACD]
-    pp <- coef(object)[idx1]
-    cc <- multinomlogit(pp,object$transform$tr,object$transform$dtr); names(cc) <- nn
-    D <- attributes(cc)$gradient  
-    cc2 <- logit(cc)
-    D2 <- diag(dlogit(cc))
-    DD <- D2%*%D
-    Vc2 <- DD%*%V%*%t(DD)
-    CIs <- tigol(cc2%x%cbind(1,1)+diag(Vc2)^0.5%x%cbind(-1,1)*qnorm(1-alpha))
-    K <- length(ACD)
-    Ki <- seq_len(K)
-    corMZ <- sum(cc[Ki]); corDZ <- sum(cc[Ki]*dzsc)
-    i1 <- na.omit(match(c("D","A"),nn))
-    h <- function(x) sum(x)
-    dh <- function(x) rep(1,length(i1))
-    ##    dh <- function(x) { res <- rep(0,length(x)); res[i1] <- 1; res }
-    ##    h <- function(x) 2*(sum(x[i1])-sum(x[i1]*dzsc))
-    ##    dh <- function(x) 2*(1-dzsc)
-    
+      idx <- idx1
+      V <- vcov(object)[idx,idx]
+      ACD <- match(names(coef(object))[idx1],vcoef1)
+      nn <- c(c("A","C","D")[ACD],"E")
+      dzsc <- c(1/2,1,1/4)[ACD]
+      pp <- coef(object)[idx1]
+      cc <- multinomlogit(pp,object$transform$tr,object$transform$dtr); names(cc) <- nn
+      D <- attributes(cc)$gradient
+      vcovACDE <- (D%*%V%*%t(D))
+      if (transform) {
+          cc2 <- logit(cc)
+          D2 <- diag(dlogit(cc))
+          DD <- D2%*%D
+          Vc2 <- DD%*%V%*%t(DD)
+          CIs <- tigol(cc2%x%cbind(1,1)+diag(Vc2)^0.5%x%cbind(-1,1)*qnorm(1-alpha))
+      } else {
+          CIs <- cbind(cc-qnorm(1-alpha)*sqrt(diag(vcovACDE)),cc+qnorm(1-alpha)*sqrt(diag(vcovACDE)))
+      }
+      K <- length(ACD)
+      Ki <- seq_len(K)
+      corMZ <- sum(cc[Ki]); corDZ <- sum(cc[Ki]*dzsc)
+      i1 <- na.omit(match(c("D","A"),nn))
+      h <- function(x) sum(x)
+      dh <- function(x) rep(1,length(i1))
+      ##    dh <- function(x) { res <- rep(0,length(x)); res[i1] <- 1; res }
+      ##    h <- function(x) 2*(sum(x[i1])-sum(x[i1]*dzsc))
+      ##    dh <- function(x) 2*(1-dzsc)
+      
   }
   Vc <- D%*%V%*%t(D)
   datanh <- function(r) 1/(1-r^2)
@@ -79,13 +84,17 @@ summary.bptwin <- function(object,level=0.05,...) {
   ##  CIs <- rbind(CIs,c(NA,NA),c(NA,NA))
   ##  newcoef <- cbind(newcoef,CIs)
   colnames(newcoef) <- c("Estimate","Std.Err",CIlab)
-  logith <- function(x) logit(h(x))  
-  dlogith <- function(x) dlogit(h(x))*dh(x)  
-  Dlh <- dlogith(cc[i1])
-  sdlh <- (t(Dlh)%*%Vc[i1,i1]%*%(Dlh))[1]^0.5
   H <- h(cc[i1])
-  hstd <- t(dh(cc[i1]))%*%Vc[i1,i1]%*%dh(cc[i1])
-  suppressWarnings(ci <- tigol(logith(cc[i1]) + qnorm(1-alpha)*c(-1,1)*sdlh))
+  hstd <- (t(dh(cc[i1]))%*%Vc[i1,i1]%*%dh(cc[i1]))^.5
+  if (!transform) {
+      ci <- c(H-hstd*qnorm(1-alpha),H+hstd*qnorm(1-alpha))
+  } else {
+      logith <- function(x) logit(h(x))  
+      dlogith <- function(x) dlogit(h(x))*dh(x)  
+      Dlh <- dlogith(cc[i1])
+      sdlh <- (t(Dlh)%*%Vc[i1,i1]%*%(Dlh))[1]^0.5      
+      suppressWarnings(ci <- tigol(logith(cc[i1]) + qnorm(1-alpha)*c(-1,1)*sdlh))
+  }
 
   rhoOS <- NULL
   if (object$OS) {
@@ -99,17 +108,15 @@ summary.bptwin <- function(object,level=0.05,...) {
       rownames(rhoOS) <- "Kinship OS"    
     }
   }
-  
-    
+      
   concordance <-  conditional <- marg <- c()
-
   probs <- function(p,idx=1) {
     if (idx==0) {
       m <- p[1]
       ##else m <- p[length(object$midx0)+1]
       S <- object$SigmaFun(p)
-      conc1 <- pbvn(upper=c(m,m),sigma=S[[1]])
-      conc2 <- pbvn(upper=c(m,m),sigma=S[[2]])
+      conc1 <- pmvn(upper=c(m,m),sigma=S[[1]])
+      conc2 <- pmvn(upper=c(m,m),sigma=S[[2]])
       marg <- pnorm(m,sd=S[[1]][1,1]^0.5)      
       return(logit((conc1-conc2)/(marg*(1-marg))))
     }
@@ -119,10 +126,11 @@ summary.bptwin <- function(object,level=0.05,...) {
     else m <- p[length(object$midx0)+1]
     mu.cond <- function(x) m+S[1,2]/S[2,2]*(x-m)
     var.cond <- S[1,1]-S[1,2]^2/S[2,2]    
-    conc <- pbvn(upper=c(m,m),sigma=S)
+    conc <- pmvn(upper=c(m,m),sigma=S)
     marg <- pnorm(m,sd=S[1,1]^0.5)
     cond <- conc/marg
-    logit(c(conc,cond,marg))
+    lambdaR <- cond/marg
+    c(logit(c(conc,cond,marg)),lambdaR)
   }
 
   mycoef <- coef(object)
@@ -140,9 +148,11 @@ summary.bptwin <- function(object,level=0.05,...) {
   Dp1 <- numDeriv::jacobian(probs,mycoef)
   sprobMZ <- diag((Dp0)%*%vcov(object)%*%t(Dp0))^0.5
   sprobDZ <- diag((Dp1)%*%vcov(object)%*%t(Dp1))^0.5
-  probMZ <- tigol(cbind(probMZ,probMZ-qnorm(1-alpha)*sprobMZ,probMZ+qnorm(1-alpha)*sprobMZ))
-  probDZ <- tigol(cbind(probDZ,probDZ-qnorm(1-alpha)*sprobDZ,probDZ+qnorm(1-alpha)*sprobDZ))
-  rownames(probMZ) <- rownames(probDZ) <- c("Concordance","Casewise Concordance","Marginal")
+  probMZ <- cbind(probMZ,probMZ-qnorm(1-alpha)*sprobMZ,probMZ+qnorm(1-alpha)*sprobMZ)
+  probMZ[1:3,] <- tigol(probMZ[1:3,])
+  probDZ <- cbind(probDZ,probDZ-qnorm(1-alpha)*sprobDZ,probDZ+qnorm(1-alpha)*sprobDZ)
+  probDZ[1:3,] <- tigol(probDZ[1:3,])
+  rownames(probMZ) <- rownames(probDZ) <- c("Concordance","Casewise Concordance","Marginal","Rel.Recur.Risk")
   colnames(probMZ) <- colnames(probDZ) <- c("Estimate",CIlab)
  
   ## mu <- coef(object)[c(object$bidx0[1],object$bidx1[1])]
@@ -151,7 +161,7 @@ summary.bptwin <- function(object,level=0.05,...) {
   ##   conc <- function()
   ##   mu.cond <- function(x) mu+Sigma[[i]][1,2]/Sigma[[i]][2,2]*(x-mu[i])
   ##   var.cond <- Sigma[[i]][1,1]-Sigma[[i]][1,2]^2/Sigma[[i]][2,2]    
-  ##   cc0 <- pbvn(upper=c(mu[i],mu[i]),sigma=Sigma[[i]])
+  ##   cc0 <- pmvn(upper=c(mu[i],mu[i]),sigma=Sigma[[i]])
   ##   px <- pnorm(mu[i],sd=Sigma[[i]][2,2]^0.5)
   ##   concordance <- c(concordance,cc0)
   ##   marg <- c(marg,px)
@@ -159,7 +169,7 @@ summary.bptwin <- function(object,level=0.05,...) {
   ## }
   ## names(concordance) <- names(conditional) <- c("MZ","DZ")
   
-  hval <- rbind(c(H,hstd^0.5,ci)); colnames(hval) <- c("Estimate","Std.Err",CIlab);
+  hval <- rbind(c(H,hstd,ci)); colnames(hval) <- c("Estimate","Std.Err",CIlab);
   if (hval[1]>1) hval[1,] <- c(1,NaN,NaN,NaN)
 
 ##  hval <- rbind(hval, tigol(c(hp,NA,hp-qnorm(1-alpha)*shp,hp+qnorm(1-alpha)*shp)))
@@ -177,17 +187,23 @@ summary.bptwin <- function(object,level=0.05,...) {
   colnames(Nstr) <-
     unlist(lapply(strsplit(colnames(object$N)[(1:3)*ngroups],".",fixed=TRUE),
                                   function(x) paste(x[1], postn)))
-  
+
   all  <-  rbind(hval[,c(1,3,4),drop=FALSE],newcoef[,c(1,3,4),drop=FALSE])
   allprob <- rbind(probMZ,probDZ); rownames(allprob) <-
-    c(paste("MZ",rownames(probMZ)),paste("DZ",rownames(probDZ)))
-  all <- rbind(all,allprob)
-    
+      c(paste("MZ",rownames(probMZ)),paste("DZ",rownames(probDZ)))
+  all <- rbind(all,allprob)  
+  
+  cc <- object$coef; cc[,2] <- diag(vcov(object))^.5;
+  cc[,3] <- cc[,1]/cc[,2]; cc[,4] <- 2*(pnorm(abs(cc[,1]/cc[,2]),lower.tail=FALSE))
   res <- list(heritability=hval,
-              par=object$coef,
+              par=cc,
               probMZ=probMZ, probDZ=probDZ, Nstr=Nstr,
               rhoOS=rhoOS,
-              coef=newcoef, all=all) ##, concordance=concordance, conditional=conditional)
+              coef=newcoef, all=all,
+              vcov=vcov(object),
+              AIC=AIC(object),
+              logLik=logLik(object)) ##, concordance=concordance, conditional=conditional)
+
   class(res) <- "summary.bptwin"
   res
 }
