@@ -7,21 +7,18 @@ twinlm.time <- function(formula,data,id,type="u",...,
     Terms <- terms(cens.formula, data = data)
     m$formula <- Terms
     m[[1]] <- as.name("model.frame")
-    ##censMod <- eval(cens.time(m, parent.frame())
     M <- eval(m)
     censtime <- model.extract(M, "response")
     status <- censtime[,2]
     time <- censtime[,1]
     outcome <- as.character(terms(formula)[[2]])    
-    ##  if (missing(breaks)) breaks <-  quantile(time,c(0.25,0.5,0.75,1))
+    if (is.null(breaks)) breaks <-  quantile(time,c(0.25,0.5,0.75,1))
 
     outcome0 <- paste(outcome,"_dummy")
     res <- list()
     for (tau in breaks) {
         if (length(breaks)>1) message(tau)
         data0 <- data
-        ##<- prt0$crstatus
-        data0[,outcome]
         time0 <- time
         cond0 <- time0>tau
         status0 <- status
@@ -90,6 +87,9 @@ plot.timetwinlm <- function(x,...,which=1,
         confband(zz[,1],zz[,3],zz[,4],polygon=TRUE,step=(type=="s"),col=fillcol[count],border=0)
         lines(zz[,1:2,drop=FALSE],lwd=lwd[count],lty=lty[count],col=col[count],type=type,...)
     }
-    if (legend) graphics::legend(legendpos,legend=rownames(x$coef[[1]])[which],col=col,lwd=lwd,lty=lty)
+    if (!is.null(legend) || !legend[1]) {
+        if (is.logical(legend) || length(legend)==1) legend <- rownames(x$coef[[1]])[which]
+        graphics::legend(legendpos,legend=legend,col=col,lwd=lwd,lty=lty)
+    }
     invisible(x)    
 }
