@@ -7,7 +7,7 @@
 \alias{familycluster.index}
 \alias{faster.reshape}
 \alias{grouptable}
-\alias{loglikMVN,}
+\alias{loglikMVN}
 \alias{nonparcuminc}
 \alias{npc}
 \alias{pbvn}
