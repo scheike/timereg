@@ -649,6 +649,5 @@ bptwin <- function(formula, data, id, zyg, DZ, group=NULL,
 
 ##' @S3method model.frame bptwin
 model.frame.bptwin <- function(formula,...) {
-    formula$Wide
-
+    formula$model.frame
 }

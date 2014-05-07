@@ -1,7 +1,7 @@
 ##' @export
 twinlm.time <- function(formula,data,id,type="u",...,
                         breaks=Inf,
-                        cens.formula,cens.model="aalen") {
+                        cens.formula,cens.model="aalen",weight="w") {
 
     m <- match.call(expand.dots = TRUE)[1:3]
     Terms <- terms(cens.formula, data = data)
@@ -27,8 +27,8 @@ twinlm.time <- function(formula,data,id,type="u",...,
         time0[cond0] <- tau
         data0$S <- Surv(time0,status0==1)        
         dataw <- ipw(S~zyg, data=data0,
-                     cluster=id,weightname="w",pairs=TRUE)
-        b <- bptwin(formula, data=dataw, id=id, weight="w",type=type,...)
+                     cluster=id,weightname=weight,pairs=TRUE)
+        b <- bptwin(formula, data=dataw, id=id, weight=weight,type=type,...)
         res <- c(res,list(summary(b)))
     }
     if (length(breaks)==1) return(b)
