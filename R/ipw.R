@@ -14,7 +14,7 @@
 ##' @author Klaus K. Holst
 ##' @examples
 ##' data(prt)
-##' prtw <- IPCW(Surv(time,status==0)~country, data=prt[sample(nrow(prt),5000),],
+##' prtw <- ipw(Surv(time,status==0)~country, data=prt[sample(nrow(prt),5000),],
 ##'             cluster="id",weightname="w")
 ##' plot(0,type="n",xlim=range(prtw$time),ylim=c(0,1),xlab="Age",ylab="Probability")
 ##' count <- 0
@@ -26,7 +26,7 @@
 ##' }
 ##' legend("topright",legend=unique(prtw$country),col=1:4,pch=-1,lty=1)
 ##' @export
-IPCW <- function(formula,data,cluster,
+ipw <- function(formula,data,cluster,
                  samecens=FALSE,obsonly=TRUE,weightname="w",
                  cens.model="aalen", pairs=FALSE, ...) {
                  ##iid=TRUE,

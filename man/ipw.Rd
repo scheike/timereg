@@ -1,8 +1,8 @@
-\name{IPCW}
-\alias{IPCW}
+\name{ipw}
+\alias{ipw}
 \title{Inverse Probability of Censoring Weights}
 \usage{
-IPCW(formula, data, cluster, samecens = FALSE, obsonly = TRUE,
+ipw(formula, data, cluster, samecens = FALSE, obsonly = TRUE,
   weightname = "w", cens.model = "aalen", pairs = FALSE, ...)
 }
 \arguments{
@@ -36,7 +36,7 @@ and adds them to a data.frame
 }
 \examples{
 data(prt)
-prtw <- IPCW(Surv(time,status==0)~country, data=prt[sample(nrow(prt),5000),],
+prtw <- ipw(Surv(time,status==0)~country, data=prt[sample(nrow(prt),5000),],
             cluster="id",weightname="w")
 plot(0,type="n",xlim=range(prtw$time),ylim=c(0,1),xlab="Age",ylab="Probability")
 count <- 0
