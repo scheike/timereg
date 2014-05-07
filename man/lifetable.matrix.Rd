@@ -4,11 +4,11 @@
 \alias{lifetable.matrix}
 \title{Life table}
 \usage{
-  \method{lifetable}{matrix}(x, strata = list(), breaks =
-    c(), confint = FALSE, ...)
+\method{lifetable}{matrix}(x, strata = list(), breaks = c(),
+   confint = FALSE, ...)
 
-  \method{lifetable}{formula}(x, data=parent.frame(),
-    breaks = c(), confint = FALSE, ...)
+ \method{lifetable}{formula}(x, data=parent.frame(), breaks = c(),
+   confint = FALSE, ...)
 }
 \arguments{
   \item{x}{time formula (Surv) or matrix/data.frame with
@@ -26,7 +26,7 @@
   \item{...}{Additional arguments to lower level functions}
 }
 \description{
-  Create simple life table
+Create simple life table
 }
 \examples{
 library(timereg)
@@ -41,6 +41,6 @@ summary(glm(events ~ offset(log(atrisk))+interval*vf + sex*vf,
             data=d,poisson))
 }
 \author{
-  Klaus K. Holst
+Klaus K. Holst
 }
 

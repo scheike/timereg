@@ -5,14 +5,13 @@ using marginals that are on logistic form using the binomial.twostage funcion, b
 call is different and easier and the data manipulation is build into the function.
 Useful in particular for family design data.}
 \usage{
-  easy.binomial.twostage(margbin = NULL,
-    data = sys.parent(), score.method = "nlminb",
-    response = "response", id = "id", Nit = 60, detail = 0,
-    silent = 1, weights = NULL, control = list(),
-    theta = NULL, theta.formula = NULL, desnames = NULL,
-    deshelp = 0, var.link = 1, iid = 1, step = 0.5,
-    model = "plackett", marginal.p = NULL, strata = NULL,
-    max.clust = NULL, se.clusters = NULL)
+easy.binomial.twostage(margbin = NULL, data = sys.parent(),
+  score.method = "nlminb", response = "response", id = "id", Nit = 60,
+  detail = 0, silent = 1, weights = NULL, control = list(),
+  theta = NULL, theta.formula = NULL, desnames = NULL, deshelp = 0,
+  var.link = 1, iid = 1, step = 0.5, model = "plackett",
+  marginal.p = NULL, strata = NULL, max.clust = NULL,
+  se.clusters = NULL)
 }
 \arguments{
   \item{margbin}{Marginal binomial model}
@@ -64,19 +63,18 @@ Useful in particular for family design data.}
   roubst standard errors}
 }
 \description{
-  If clusters contain more than two times, the algoritm
-  uses a compososite likelihood based on the pairwise
-  bivariate models.
+If clusters contain more than two times, the algoritm uses
+a compososite likelihood based on the pairwise bivariate
+models.
 }
 \details{
-  The reported standard errors are based on the estimated
-  information from the likelihood assuming that the
-  marginals are known. This gives correct standard errors
-  in the case of the plackett distribution (OR model for
-  dependence), but incorrect for the clayton-oakes types
-  model. The OR model is often known as the ALR model, but
-  our fitting procedures gives correct standard errors and
-  is quite a bit quicker.
+The reported standard errors are based on the estimated
+information from the likelihood assuming that the marginals
+are known. This gives correct standard errors in the case
+of the plackett distribution (OR model for dependence), but
+incorrect for the clayton-oakes types model. The OR model
+is often known as the ALR model, but our fitting procedures
+gives correct standard errors and is quite a bit quicker.
 }
 \examples{
 data(twinstut)

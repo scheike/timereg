@@ -1,8 +1,9 @@
 \name{phreg}
 \alias{phreg}
+\alias{phreg.par}
 \title{Fast Cox PH regression}
 \usage{
-  phreg(formula, data, ...)
+phreg(formula, data, ...)
 }
 \arguments{
   \item{formula}{formula with 'Surv' outcome (see
@@ -13,7 +14,7 @@
   \item{...}{Additional arguments to lower level funtions}
 }
 \description{
-  Fast Cox PH regression
+Fast Cox PH regression
 }
 \examples{
 simcox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
@@ -49,6 +50,6 @@ m
 plot(m,ylim=c(0,1))
 }
 \author{
-  Klaus K. Holst
+Klaus K. Holst
 }
 

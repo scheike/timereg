@@ -4,13 +4,12 @@
 \alias{rr.cif}
 \title{Cross-odds-ratio, OR or RR risk regression for competing risks}
 \usage{
-  cor.cif(cif, data, cause, times = NULL, cause1 = 1,
-    cause2 = 1, cens.code = NULL, cens.model = "KM",
-    Nit = 40, detail = 0, clusters = NULL, theta = NULL,
-    theta.des = NULL, step = 1, sym = 0, weights = NULL,
-    par.func = NULL, dpar.func = NULL, dimpar = NULL,
-    score.method = "nlminb", same.cens = FALSE,
-    censoring.probs = NULL, silent = 1, ...)
+cor.cif(cif, data, cause, times = NULL, cause1 = 1, cause2 = 1,
+  cens.code = NULL, cens.model = "KM", Nit = 40, detail = 0,
+  clusters = NULL, theta = NULL, theta.des = NULL, step = 1, sym = 0,
+  weights = NULL, par.func = NULL, dpar.func = NULL, dimpar = NULL,
+  score.method = "nlminb", same.cens = FALSE, censoring.probs = NULL,
+  silent = 1, ...)
 }
 \arguments{
   \item{cif}{a model object from the comp.risk function
@@ -83,58 +82,58 @@
   \item{...}{Not used.}
 }
 \value{
-  returns an object of type 'cor'. With the following
-  arguments: \item{theta}{estimate of proportional odds
-  parameters of model.} \item{var.theta}{variance for
-  gamma.  } \item{hess}{the derivative of the used score.}
-  \item{score}{scores at final stage.} \item{score}{scores
-  at final stage.} \item{theta.iid}{matrix of iid
-  decomposition of parametric effects.}
+returns an object of type 'cor'. With the following
+arguments: \item{theta}{estimate of proportional odds
+parameters of model.} \item{var.theta}{variance for gamma.
+} \item{hess}{the derivative of the used score.}
+\item{score}{scores at final stage.} \item{score}{scores at
+final stage.} \item{theta.iid}{matrix of iid decomposition
+of parametric effects.}
 }
 \description{
-  Fits a parametric model for the log-cross-odds-ratio for
-  the predictive effect of for the cumulative incidence
-  curves for \eqn{T_1} experiencing cause i given that
-  \eqn{T_2} has experienced a cause k : \deqn{
-  \log(COR(i|k)) = h(\theta,z_1,i,z_2,k,t)=_{default}
-  \theta^T z = } with the log cross odds ratio being \deqn{
-  COR(i|k) = \frac{O(T_1 \leq t,cause_1=i | T_2 \leq
-  t,cause_2=k)}{ O(T_1 \leq t,cause_1=i)} } the conditional
-  odds divided by the unconditional odds, with the odds
-  being, respectively \deqn{ O(T_1 \leq t,cause_1=i | T_2
-  \leq t,cause_1=k) = \frac{ P_x(T_1 \leq t,cause_1=i | T_2
-  \leq t,cause_2=k)}{ P_x((T_1 \leq t,cause_1=i)^c | T_2
-  \leq t,cause_2=k)} } and \deqn{ O(T_1 \leq t,cause_1=i) =
-  \frac{P_x(T_1 \leq t,cause_1=i )}{P_x((T_1 \leq
-  t,cause_1=i)^c )}. } Here \eqn{B^c} is the complement
-  event of \eqn{B}, \eqn{P_x} is the distribution given
-  covariates (\eqn{x} are subject specific and \eqn{z} are
-  cluster specific covariates), and \eqn{h()} is a function
-  that is the simple identity \eqn{\theta^T z} by default.
+Fits a parametric model for the log-cross-odds-ratio for
+the predictive effect of for the cumulative incidence
+curves for \eqn{T_1} experiencing cause i given that
+\eqn{T_2} has experienced a cause k : \deqn{ \log(COR(i|k))
+= h(\theta,z_1,i,z_2,k,t)=_{default} \theta^T z = } with
+the log cross odds ratio being \deqn{ COR(i|k) =
+\frac{O(T_1 \leq t,cause_1=i | T_2 \leq t,cause_2=k)}{
+O(T_1 \leq t,cause_1=i)} } the conditional odds divided by
+the unconditional odds, with the odds being, respectively
+\deqn{ O(T_1 \leq t,cause_1=i | T_2 \leq t,cause_1=k) =
+\frac{ P_x(T_1 \leq t,cause_1=i | T_2 \leq t,cause_2=k)}{
+P_x((T_1 \leq t,cause_1=i)^c | T_2 \leq t,cause_2=k)} } and
+\deqn{ O(T_1 \leq t,cause_1=i) = \frac{P_x(T_1 \leq
+t,cause_1=i )}{P_x((T_1 \leq t,cause_1=i)^c )}. } Here
+\eqn{B^c} is the complement event of \eqn{B}, \eqn{P_x} is
+the distribution given covariates (\eqn{x} are subject
+specific and \eqn{z} are cluster specific covariates), and
+\eqn{h()} is a function that is the simple identity
+\eqn{\theta^T z} by default.
 }
 \details{
-  The OR dependence measure is given by \deqn{ OR(i,k) =
-  \log ( \frac{O(T_1 \leq t,cause_1=i | T_2 \leq
-  t,cause_2=k)}{ O(T_1 \leq t,cause_1=i) | T_2 \leq
-  t,cause_2=k)} } This measure is numerically more stabile
-  than the COR measure, and is symetric in i,k.
+The OR dependence measure is given by \deqn{ OR(i,k) = \log
+( \frac{O(T_1 \leq t,cause_1=i | T_2 \leq t,cause_2=k)}{
+O(T_1 \leq t,cause_1=i) | T_2 \leq t,cause_2=k)} } This
+measure is numerically more stabile than the COR measure,
+and is symetric in i,k.
 
-  The RR dependence measure is given by \deqn{ RR(i,k) =
-  \log ( \frac{P(T_1 \leq t,cause_1=i , T_2 \leq
-  t,cause_2=k)}{ P(T_1 \leq t,cause_1=i) P(T_2 \leq
-  t,cause_2=k)} } This measure is numerically more stabile
-  than the COR measure, and is symetric in i,k.
+The RR dependence measure is given by \deqn{ RR(i,k) = \log
+( \frac{P(T_1 \leq t,cause_1=i , T_2 \leq t,cause_2=k)}{
+P(T_1 \leq t,cause_1=i) P(T_2 \leq t,cause_2=k)} } This
+measure is numerically more stabile than the COR measure,
+and is symetric in i,k.
 
-  The model is fitted under symmetry (sym=1), i.e., such
-  that it is assumed that \eqn{T_1} and \eqn{T_2} can be
-  interchanged and leads to the same cross-odd-ratio (i.e.
-  \eqn{COR(i|k) = COR(k|i))}, as would be expected for
-  twins or without symmetry as might be the case with
-  mothers and daughters (sym=0).
+The model is fitted under symmetry (sym=1), i.e., such that
+it is assumed that \eqn{T_1} and \eqn{T_2} can be
+interchanged and leads to the same cross-odd-ratio (i.e.
+\eqn{COR(i|k) = COR(k|i))}, as would be expected for twins
+or without symmetry as might be the case with mothers and
+daughters (sym=0).
 
-  \eqn{h()} may be specified as an R-function of the
-  parameters, see example below, but the default is that it
-  is simply \eqn{\theta^T z}.
+\eqn{h()} may be specified as an R-function of the
+parameters, see example below, but the default is that it
+is simply \eqn{\theta^T z}.
 }
 \examples{
 data(multcif);
@@ -232,16 +231,16 @@ head(or1g$theta.iid)
 }
 }
 \author{
-  Thomas Scheike
+Thomas Scheike
 }
 \references{
-  Cross odds ratio Modelling of dependence for Multivariate
-  Competing Risks Data, Scheike and Sun (2010), work in
-  progress.
+Cross odds ratio Modelling of dependence for Multivariate
+Competing Risks Data, Scheike and Sun (2010), work in
+progress.
 
-  A Semiparametric Random Effects Model for Multivariate
-  Competing Risks Data, Scheike, Zhang, Sun, Jensen (2010),
-  Biometrika.
+A Semiparametric Random Effects Model for Multivariate
+Competing Risks Data, Scheike, Zhang, Sun, Jensen (2010),
+Biometrika.
 }
 \keyword{survival}
 

@@ -5,14 +5,13 @@ using marginals that are on cox or aalen form using the twostage funcion, but
 call is different and easier and the data manipulation  build into the function.
 Useful in particular for family design data.}
 \usage{
-  easy.twostage(margsurv = NULL, data = sys.parent(),
-    score.method = "nlminb", status = "status",
-    time = "time", entry = NULL, id = "id", Nit = 60,
-    detail = 0, silent = 1, weights = NULL,
-    control = list(), theta = NULL, theta.formula = NULL,
-    desnames = NULL, deshelp = 0, var.link = 1, iid = 1,
-    step = 0.5, model = "plackett", marginal.surv = NULL,
-    strata = NULL, max.clust = NULL, se.clusters = NULL)
+easy.twostage(margsurv = NULL, data = sys.parent(),
+  score.method = "nlminb", status = "status", time = "time",
+  entry = NULL, id = "id", Nit = 60, detail = 0, silent = 1,
+  weights = NULL, control = list(), theta = NULL, theta.formula = NULL,
+  desnames = NULL, deshelp = 0, var.link = 1, iid = 1, step = 0.5,
+  model = "plackett", marginal.surv = NULL, strata = NULL,
+  max.clust = NULL, se.clusters = NULL)
 }
 \arguments{
   \item{margsurv}{model}
@@ -69,14 +68,14 @@ Useful in particular for family design data.}
   roubst standard errors}
 }
 \description{
-  If clusters contain more than two times, the algoritm
-  uses a composite likelihood based on the pairwise
-  bivariate models.
+If clusters contain more than two times, the algoritm uses
+a composite likelihood based on the pairwise bivariate
+models.
 }
 \details{
-  The reported standard errors are based on the estimated
-  information from the likelihood assuming that the
-  marginals are known.
+The reported standard errors are based on the estimated
+information from the likelihood assuming that the marginals
+are known.
 }
 \examples{
 data(prt)

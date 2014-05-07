@@ -236,6 +236,7 @@ info.gengamma <- function(...) {
 
 ###{{{ phreg.par + methods
 
+##' @export
 phreg.par <- function(formula,data=parent.frame(),
                       time,status,X=NULL,model="weibull",
                       theta.idx=NULL,theta0,niter=100,tol1=1e-9,tol2=1e-9,lambda1=0.5,lambda2=1,trace=0,...) {

@@ -116,6 +116,7 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Klaus K. Holst
 ##' @export
+##' @aliases phreg phreg.par
 ##' @examples
 ##' simcox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##'   if (!is.null(seed))
