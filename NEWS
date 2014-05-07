@@ -1,6 +1,12 @@
-* Version 0.2.8 <2014-03-13 Thu>
+* Version 0.2.8 <2014-05-07 Wed>
   - Normal orthant probabilities via 'pmvn' (vectorized)   
-
+  - Parametric proportional hazards models via 'phreg.par'
+  - twinlm.time function for censored twin data. Wraps the 'ipw'
+    function that now also supports parametric survival models via
+    phreg.par. 'grouptable' for tabulating twin-data.
+  - Relative recurrence risk ratios now reported with bptwin/twinlm.
+  - Grandom.cif more stable
+    
 * Version 0.2.7 <2014-02-18 Tue>
   - Adapted to changes in 'timereg::comp.risk'
   - cluster.index with 'mat' argument for stacking rows of a matrix
