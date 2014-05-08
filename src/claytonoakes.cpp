@@ -10,6 +10,7 @@ using namespace Rcpp;
 RcppExport SEXP claytonoakes(SEXP ds, SEXP ts, SEXP es, 
 			     SEXP allcs, SEXP cs, SEXP cuts, 
 			     SEXP hs, SEXP mulths, SEXP var ) {
+BEGIN_RCPP
   // try {
   colvec event = Rcpp::as<colvec>(ds);
   colvec time = Rcpp::as<colvec>(ts);
@@ -88,12 +89,6 @@ RcppExport SEXP claytonoakes(SEXP ds, SEXP ts, SEXP es,
   }
   
   return(Rcpp::List::create(Rcpp::Named("logLik")=logLik));  
-//  } catch( std::exception &ex ) {
-//   forward_exception_to_r( ex );
-//  } catch(...) { 
-//   ::Rf_error( "C++ exception (unknown reason)" ); 
-//  }
-// return R_NilValue; // -Wall
-
+END_RCPP
 }
 
