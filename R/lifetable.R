@@ -9,7 +9,7 @@
 ##' @param strata Strata
 ##' @param data data.frame
 ##' @param breaks Time intervals
-##' @param confint If TRUE 95% confidence limits are calculated
+##' @param confint If TRUE 95\% confidence limits are calculated
 ##' @param ... Additional arguments to lower level functions
 ##' @author Klaus K. Holst
 ##' @aliases lifetable lifetable.matrix lifetable.formula

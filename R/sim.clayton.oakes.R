@@ -113,3 +113,10 @@ if (left>0) {
   return(ud)
 } ## }}} 
 
+
+## sim.clayton <- function(n=100,K=2,eta=0.5,beta,...) {
+##     m <- lvm(T~x)
+##     rates <- c(0.3,0.5); cuts <- c(0,5)
+##     distribution(m,~) <- coxExponential.lvm(rate=rates,timecut=cuts)    
+## }
+
