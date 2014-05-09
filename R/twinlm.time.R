@@ -1,7 +1,7 @@
-d <- twinsim(1000,b1=c(1,-1),b2=c(),acde=c(1,1,0,1))
-b <- twinlm.strata(y~x1,data=d,id="id",zyg="zyg",DZ="DZ",var="x2",quantiles=c(0,0.25,0.5,0.75,1))
-plot(b,which=5:6,ylim=c(0,1),type="l")
-plot(b,which=5:6,ylim=c(0,1),col=c("darkred","darkblue"),legend=c("MZ","DZ"),lty=1:2)
+## d <- twinsim(1000,b1=c(1,-1),b2=c(),acde=c(1,1,0,1))
+## b <- twinlm.strata(y~x1,data=d,id="id",zyg="zyg",DZ="DZ",var="x2",quantiles=c(0,0.25,0.5,0.75,1))
+## plot(b,which=5:6,ylim=c(0,1),type="l")
+## plot(b,which=5:6,ylim=c(0,1),col=c("darkred","darkblue"),legend=c("MZ","DZ"),lty=1:2)
 
 ##' @export
 twinlm.strata <- function(formula,data,var,breaks,quantiles,...) {
