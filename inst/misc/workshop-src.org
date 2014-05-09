@@ -1,0 +1,395 @@
+#+PROPERTY: session *R*
+f+PROPERTY: cache yes
+#+PROPERTY: results output graphics verbatim drawer replace 
+#+PROPERTY: exports both
+#+PROPERTY: eval never
+#+PROPERTY: results silent
+
+* Installation
+
+Install dependencies (=R>=2.15=) :
+
+#+BEGIN_SRC R :exports none
+palette(c("darkblue","darkred","orange","olivedrab"))
+#+END_SRC
+
+#+BEGIN_SRC R :exports code :eval never
+install.packages(c("mets","cmprsk"), dependencies=TRUE)
+#+END_SRC
+
+/OBS:/ At this point you might have to restart =R= to flush the cache
+of previously installed versions of the packages. If you have
+previously installed =timereg= and =lava=, make sure that you have the
+current versions installed (timereg: 1.7.5, lava: 1.2.1).
+
+* Load simulated data 
+
+#+NAME: Loading
+#+BEGIN_SRC R :exports code :wrap example
+library(mets)
+#+END_SRC
+
+The dataset =prt= contains (simulated) observations on prostate cancer
+with the following columns
+
+- =country= :: Country (Denmark,Finland,Norway,Sweden)
+- =time= :: exit time (censoring,death or prostate cancer)
+- =status= :: Status (censoring=0,death=1 or prostate cancer=2)
+- =zyg= :: Zygosity (DZ,MZ)
+- =id= :: Twin id number
+- =cancer= :: cancer indicator (status=2)
+
+#+NAME: Loading
+#+BEGIN_SRC R :wrap example
+data(prt)
+head(prt)
+#+END_SRC
+
+Status table
+
+#+BEGIN_SRC R :wrap example
+  prtwide <- fast.reshape(prt,id="id")
+  ftable(status1~status2,prtwide)  
+#+END_SRC
+
+
+* Estimation of cumulative incidence
+
+#+BEGIN_SRC R  :wrap example
+  times <- seq(40,100,by=2)
+  cifmod <- comp.risk(Hist(time,status)~+1+cluster(id),data=prt,
+                      cause=2,n.sim=0,
+                      times=times,conservative=1,max.clust=NULL,model="fg")
+  
+  theta.des <- model.matrix(~-1+factor(zyg),data=prt) ## design for MZ/DZ status
+  or1 <- or.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des,
+                score.method="fisher.scoring",same.cens=TRUE)
+  summary(or1)
+  or1$score
+#+END_SRC
+
+#+BEGIN_SRC R  :file pcif.png
+  pcif <- predict(cifmod,X=1,resample.iid=0,uniform=0,se=0)
+  plot(pcif,multiple=1,se=0,uniform=0,ylim=c(0,0.15))
+#+END_SRC
+
+
+Assumes that the censoring of the two twins are independent (when they
+are the same):
+
+#+BEGIN_SRC R  :wrap example
+  incorrect.or1 <- or.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des, 
+                          theta=c(2.8,8.6),score.method="fisher.scoring")
+  summary(incorrect.or1)
+  ## not  bad
+  incorrect.or1$score  
+#+END_SRC
+
+
+
+* Correcting for country
+
+#+BEGIN_SRC R  :file pcifl.png
+  table(prt$country)
+  
+  times <- seq(40,100,by=2)
+  cifmodl <-comp.risk(Hist(time,status)~-1+factor(country)+cluster(id),data=prt,
+                      cause=2,n.sim=0,times=times,conservative=1,
+                      max.clust=NULL,cens.model="aalen")
+  pcifl <- predict(cifmodl,X=diag(4),se=0,uniform=0)
+  plot(pcifl,multiple=1,se=0,uniform=0,col=1:4,ylim=c(0,0.2))
+  legend("topleft",levels(prt$country),col=1:4,lty=1)    
+#+END_SRC
+
+Design for MZ/DZ status
+
+#+BEGIN_SRC R  :wrap example
+  theta.des <- model.matrix(~-1+factor(zyg),data=prt) 
+  or.country <- or.cif(cifmodl,data=prt,cause1=2,cause2=2,theta.des=theta.des,
+                       theta=c(0.8,2.1),score.method="fisher.scoring",same.cens=TRUE)
+  
+  summary(or.country)  
+#+END_SRC
+
+
+* Concordance estimation
+
+Ignoring country. Computing casewise, using =prodlim=. CIF:
+
+#+BEGIN_SRC R :exports code :wrap example
+ outm <- prodlim(Hist(time,status)~+1,data=prt)
+     
+ times <- 60:100
+ ## cause is 2 (second cause)
+ cifmz <- predict(outm,cause=2,time=times,newdata=data.frame(zyg="MZ"))
+ cifdz <- predict(outm,cause=2,time=times,newdata=data.frame(zyg="DZ"))
+#+END_SRC
+
+#+BEGIN_SRC R :exports code
+  ### casewise 
+  pp33 <- bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2),prodlim=TRUE)
+  pp33dz <- pp33$model$"DZ"
+  pp33mz <- pp33$model$"MZ"
+  concdz <- predict(pp33dz,cause=1,time=times,newdata=data.frame(zyg="DZ"))
+  concmz <- predict(pp33mz,cause=1,time=times,newdata=data.frame(zyg="MZ"))
+#+END_SRC
+
+#+BEGIN_SRC R  :file concordance.png
+  par(mfrow=c(1,2))
+  plot(times,concdz,ylim=c(0,0.1),type="s")
+  lines(pcif$time,pcif$P1^2,col=2)
+  title(main="DZ Conc. Prostate cancer")
+  plot(times,concmz,ylim=c(0,0.1),type="s")
+  title(main="MZ Conc. Prostate cancer")
+  lines(pcif$time,pcif$P1^2,col=2)
+#+END_SRC
+
+#+BEGIN_SRC R  :file casewisea.png  
+  par(mfrow=c(1,1))
+  cdz <- casewise(pp33dz,outm,cause.marg=2)
+  cmz <- casewise(pp33mz,outm,cause.marg=2)             
+  plot(cmz,ci=NULL,ylim=c(0,0.5),xlim=c(60,100),legend=TRUE,col=c(3,2,1))
+  par(new=TRUE)
+  plot(cdz,ci=NULL,ylim=c(0,0.5),xlim=c(60,100),legend=TRUE)
+#+END_SRC
+
+Similar analyses using =comp.risk= for competing risks
+leads to tests for equal concordance and more correct standard 
+errors 
+
+#+BEGIN_SRC R :exports code
+  p33 <- bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2),return.data=1)
+  
+  p33dz <- p33$model$"DZ"$comp.risk
+  p33mz <- p33$model$"MZ"$comp.risk
+#+END_SRC
+
+#+BEGIN_SRC R  :wrap example
+  head(cbind(p33mz$time, p33mz$P1, p33mz$se.P1))
+  head(cbind(p33dz$time, p33dz$P1, p33dz$se.P1))
+#+END_SRC
+
+Test for genetic effect, needs other form of bicomprisk with iid decomp 
+
+#+BEGIN_SRC R  :wrap example
+  conc1 <- p33dz
+  conc2 <- p33mz
+  
+  test.conc(p33dz,p33mz);
+#+END_SRC
+
+OR expression of difference in concordance functions and Gray test
+
+#+BEGIN_SRC R  :wrap example
+  data33mz <- p33$model$"MZ"$data
+  data33mz$zyg <- 1
+  data33dz <- p33$model$"DZ"$data
+  data33dz$zyg <- 0
+  data33 <- rbind(data33mz,data33dz)
+  
+  library(cmprsk)
+  ftime <- data33$time
+  fstatus <- data33$status
+  table(fstatus)
+#+END_SRC
+
+#+BEGIN_SRC R  :wrap example
+  group <- data33$zyg
+  graytest <- cuminc(ftime,fstatus,group)
+  graytest
+#+END_SRC
+
+#+BEGIN_SRC R  :wrap example
+  zygeffect <- comp.risk(Hist(time,status)~const(zyg),
+                    data=data33,cause=1,
+                    cens.model="aalen",model="logistic",conservative=1)
+  summary(zygeffect)
+#+END_SRC
+
+
+* Liability model, ignoring censoring
+
+#+BEGIN_SRC R  :wrap example
+  (M <- with(prt, table(cancer,zyg)))
+#+END_SRC
+
+#+BEGIN_SRC R  :wrap example
+  coef(lm(cancer~-1+zyg,prt))
+#+END_SRC
+
+Saturated model
+
+#+BEGIN_SRC R  :wrap example
+  bpmz <- biprobit(cancer~1 + cluster(id), 
+               data=subset(prt,zyg=="MZ"), eqmarg=TRUE)
+  
+  logLik(bpmz) # Log-likelihood
+  AIC(bpmz) # AIC
+  coef(bpmz) # Parameter estimates
+  vcov(bpmz) # Asymptotic covariance
+  summary(bpmz) # concordance, case-wise, tetrachoric correlations, ...
+#+END_SRC
+
+#+BEGIN_SRC R :exports code
+  bp0 <- biprobit(cancer~1 + cluster(id)+strata(zyg), data=prt)
+#+END_SRC
+
+#+BEGIN_SRC R  :wrap example
+  summary(bp0)
+#+END_SRC
+
+Equal marginals MZ/DZ
+
+#+BEGIN_SRC R  :wrap example
+  bp1 <- bptwin(cancer~1,zyg="zyg",DZ="DZ",id="id",type="u",data=prt)
+  (s <- summary(bp1))
+#+END_SRC
+
+Components (concordance,cor,...) can be extracted from returned list
+
+#+BEGIN_SRC R  :wrap example
+  s$all
+#+END_SRC
+
+
+Likelihood Ratio Test
+#+BEGIN_SRC R  :wrap example
+  compare(bp0,bp1)
+#+END_SRC
+
+
+Polygenic Libability model via te =bptwin= function (=type= can be a
+subset of "acde", or "flex" for stratitified, "u" for random effects
+model with same marginals for MZ and DZ)
+
+#+BEGIN_SRC R  :wrap example
+  bp2 <- bptwin(cancer~1,zyg="zyg",DZ="DZ",id="id",type="ace",data=prt)
+  summary(bp2)
+#+END_SRC
+
+* Liability model, Inverse Probability Weighting
+
+Probability weights based on Aalen's additive model 
+
+#+BEGIN_SRC R  :file ipw.png
+  prtw <- ipw(Surv(time,status==0)~country, data=prt,
+              cluster="id",weightname="w") 
+  plot(0,type="n",xlim=range(prtw$time),ylim=c(0,1),xlab="Age",ylab="Probability")
+  count <- 0
+  for (l in unique(prtw$country)) {
+      count <- count+1
+      prtw <- prtw[order(prtw$time),]
+      with(subset(prtw,country==l), 
+           lines(time,w,col=count,lwd=2))
+  }
+  legend("topright",legend=unique(prtw$country),col=1:4,pch=-1,lty=1)
+#+END_SRC
+
+
+#+BEGIN_SRC R  :wrap example
+  bpmzIPW <- biprobit(cancer~1 + cluster(id), 
+                      data=subset(prtw,zyg=="MZ"), 
+                      weight="w")
+  (smz <- summary(bpmzIPW))
+#+END_SRC
+
+Comparison with CIF
+
+#+BEGIN_SRC R  :file cifMZ.png
+  plot(pcif,multiple=1,se=1,uniform=0,ylim=c(0,0.15))
+  abline(h=smz$prob["Marginal",],lwd=c(2,1,1))
+  ## Wrong estimates:
+  abline(h=summary(bpmz)$prob["Marginal",],lwd=c(2,1,1),col="lightgray")
+#+END_SRC
+
+Concordance estimates
+
+#+BEGIN_SRC R  :file conc2.png
+  plot(pp33mz,ylim=c(0,0.1))
+  abline(h=smz$prob["Concordance",],lwd=c(2,1,1))
+  ## Wrong estimates:
+  abline(h=summary(bpmz)$prob["Concordance",],lwd=c(2,1,1),col="lightgray")
+#+END_SRC
+
+
+ACE model with IPW
+
+#+BEGIN_SRC R  :wrap example
+  bp3 <- bptwin(cancer~1,zyg="zyg",DZ="DZ",id="id",
+                type="ace",data=prtw,weight="w")
+  summary(bp3)
+#+END_SRC
+
+Equal marginals but free variance structure between MZ and DZ
+
+#+BEGIN_SRC R  :wrap example
+  bp4 <- bptwin(cancer~1,zyg="zyg",DZ="DZ",id="id",
+                type="u",data=prtw,weight="w")
+  summary(bp4)
+#+END_SRC
+
+Check convergence
+#+BEGIN_SRC R  :wrap example
+  mean(score(bp4)^2)
+#+END_SRC
+
+* Liability model, adjusting for covariates
+
+Main effect of country
+
+#+BEGIN_SRC R  :wrap example
+  bp6 <- bptwin(cancer~country,zyg="zyg",DZ="DZ",id="id",
+                type="ace",data=prtw,weight="w")
+  summary(bp6)
+#+END_SRC
+
+#+BEGIN_SRC R  :wrap example
+  bp7 <- bptwin(cancer~country,zyg="zyg",DZ="DZ",id="id",
+                type="u",data=prtw,weight="w")
+  summary(bp7)
+#+END_SRC
+
+Stratified analysis
+
+#+BEGIN_SRC R :exports code :results value
+  bp8 <- bptwin(cancer~strata(country),zyg="zyg",DZ="DZ",id="id",
+                type="u",data=prtw,weight="w")
+#+END_SRC
+
+
+#+BEGIN_SRC R  :wrap example
+  summary(bp8)
+#+END_SRC
+
+Wald test (stratified vs main effect)
+
+#+BEGIN_SRC R  :wrap example
+  B <- contr(3,4)[-(1:3),]
+  compare(bp8,contrast=B)
+#+END_SRC
+
+* COMMENT Cumulative heritability 
+
+#+BEGIN_SRC R  :wrap example
+  args(cumh)
+#+END_SRC
+
+#+BEGIN_SRC R  :exports code
+  ch1 <- cumh(cancer~1,time="time",zyg="zyg",DZ="DZ",id="id",
+              type="ace",data=prtw,weight="w")
+#+END_SRC
+
+#+BEGIN_SRC R  :wrap example
+  summary(ch1)
+#+END_SRC
+
+	    
+#+BEGIN_SRC R  :file cumh.png
+  plot(ch1)
+#+END_SRC
+
+
+
+-----
+
+
