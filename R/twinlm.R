@@ -5,8 +5,8 @@
 ##' @title Classic twin model for quantitative traits
 ##' @return   Returns an object of class \code{twinlm}.
 ##' @author Klaus K. Holst
-##' @seealso \code{\link{bptwin}}, \code{\link{twinsim}}
-##' @aliases twinlm twinlm.time
+##' @seealso \code{\link{bptwin}}, \code{\link{twinlm.time}}, \code{\link{twinlm.strata}}, \code{\link{twinsim}}
+##' @aliases twinlm twinlm.strata
 ##' @export
 ##' @examples
 ##' ## Simulate data

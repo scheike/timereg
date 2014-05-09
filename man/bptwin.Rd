@@ -2,7 +2,7 @@
 \name{bptwin}
 \alias{biprobit}
 \alias{bptwin}
-\alias{cumh}
+\alias{twinlm.time}
 \title{Liability model for twin data}
 \usage{
 bptwin(formula, data, id, zyg, DZ, group = NULL, num = NULL,
@@ -86,5 +86,8 @@ summary(b0)
 }
 \author{
 Klaus K. Holst
+}
+\seealso{
+\code{\link{twinlm}}, \code{\link{twinlm.time}}, \code{\link{twinlm.strata}}, \code{\link{twinsim}}
 }
 

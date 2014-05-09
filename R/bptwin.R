@@ -1,7 +1,8 @@
 ##' Liability-threshold model for twin data
 ##'
-##' @aliases biprobit cumh
+##' @aliases biprobit twinlm.time
 ##' @title Liability model for twin data
+##' @seealso \code{\link{twinlm}}, \code{\link{twinlm.time}}, \code{\link{twinlm.strata}}, \code{\link{twinsim}}
 ##' @param formula Formula specifying effects of covariates on the response.
 ##' @param data \code{data.frame} with one observation pr row. In
 ##'     addition a column with the zygosity (DZ or MZ given as a factor) of
