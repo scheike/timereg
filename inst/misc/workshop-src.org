@@ -1,5 +1,5 @@
 #+PROPERTY: session *R*
-f+PROPERTY: cache yes
+#+PROPERTY: cache yes
 #+PROPERTY: results output graphics verbatim drawer replace 
 #+PROPERTY: exports both
 #+PROPERTY: eval never
@@ -20,7 +20,7 @@ install.packages(c("mets","cmprsk"), dependencies=TRUE)
 /OBS:/ At this point you might have to restart =R= to flush the cache
 of previously installed versions of the packages. If you have
 previously installed =timereg= and =lava=, make sure that you have the
-current versions installed (timereg: 1.7.5, lava: 1.2.1).
+current versions installed (timereg: 1.8.4, lava: 1.2.6).
 
 * Load simulated data 
 

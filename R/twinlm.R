@@ -154,6 +154,7 @@ binary=FALSE,keep=weight,estimator="gaussian",constrain=TRUE,control=list(),mess
   zyglev <- levels(zygstat)
   if (length(zyglev)>2) stop("More than two zygosity levels found. For opposite sex (OS) analysis use the 'group' argument (and regroup OS group as DZ, e.g. DZ=c('OS','DZ'))")
 
+  if (tolower(type)=="cor") type <- "u"
   if (!is.null(group) && type%in%c("u","flex","sat")) stop("Only polygenic models are allowed with 'group' ('type' subset of 'acde'). See also the 'strata' argument.")      
   ## To wide format:
   num <- NULL; if (twinnum%in%colnames(data)) num <- twinnum

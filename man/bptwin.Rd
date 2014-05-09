@@ -48,7 +48,7 @@ performed. Should be a subset of "acde" (additive genetic factors, common
 environmental factors, dominant
 genetic factors, unique environmental factors).}
 
-\item{eqmean}{Equal means (with type="u")?}
+\item{eqmean}{Equal means (with type="cor")?}
 
 \item{pairsonly}{Include complete pairs only?}
 

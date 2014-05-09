@@ -24,7 +24,7 @@
 ##'     performed. Should be a subset of "acde" (additive genetic factors, common
 ##'     environmental factors, dominant
 ##'     genetic factors, unique environmental factors).
-##' @param eqmean Equal means (with type="u")?
+##' @param eqmean Equal means (with type="cor")?
 ##' @param pairsonly Include complete pairs only?
 ##' @param stderr Should standard errors be calculated?
 ##' @param robustvar If TRUE robust (sandwich) variance estimates of the variance are used
@@ -113,6 +113,7 @@ bptwin <- function(formula, data, id, zyg, DZ, group=NULL,
         } else control$method <- "nlminb"
       }
   }
+  if (tolower(type)=="cor") type <- "u"
   if (length(grep("flex",tolower(type)))>0) { type <- "u"; eqmean <- FALSE }
 
   yvar <- paste(deparse(formula[[2]]),collapse="")
@@ -350,7 +351,7 @@ bptwin <- function(formula, data, id, zyg, DZ, group=NULL,
 ###}}} Mean/Var function
   
 ###{{{ U  
-  
+
   p0 <- rep(-1,plen); ##p0[vidx] <- 0
   if (!missing(varlink) && is.null(varlink)) p0 <- rep(0.5,plen)
   if (OSon) p0[length(p0)] <- 0.3
