@@ -66,7 +66,7 @@ bptwin <- function(formula, data, id, zyg, DZ, group=NULL,
                    bound=FALSE,
                    varlink,
                    ...) {
-
+    
 ###{{{ setup
 
   mycall <- match.call()

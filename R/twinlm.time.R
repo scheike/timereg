@@ -1,7 +1,31 @@
-## d <- twinsim(1000,b1=c(1,-1),b2=c(),acde=c(1,1,0,1))
-## b <- twinlm.strata(y~x1,data=d,id="id",zyg="zyg",DZ="DZ",var="x2",quantiles=c(0,0.25,0.5,0.75,1))
+## d <- twinsim(5000,b1=c(0),acde=c(0.6,0.2,0,0.2)); d$group <- factor(d$y0,labels=c("A","B"))
+## b <- twinlm.strata(y~1,data=d,id="id",zyg="zyg",DZ="DZ",var="x1",quantiles=c(0,0.25,0.5,0.75,1))
+## b2 <- twinlm.strata(y~1,data=d,id="id",zyg="zyg",DZ="DZ",var="group",type="ae")
+## plot(b2,which=c(2,3),ylim=c(0,1),col=c("darkblue","darkred"),lwd=3,delta=.02,pch=16)
+## b2 <- twinlm.strata(y0~1,data=d,id="id",zyg="zyg",DZ="DZ",var="x1",quantiles=c(0,0.25,0.5,0.75),binary=TRUE)
 ## plot(b,which=5:6,ylim=c(0,1),type="l")
 ## plot(b,which=5:6,ylim=c(0,1),col=c("darkred","darkblue"),legend=c("MZ","DZ"),lty=1:2)
+
+##' @S3method coef multitwinlm
+coef.multitwinlm <- function(object,...) {    
+    res <- unlist(lapply(object$summary,function(x) x$estimate[,1]))
+    if (!is.null(names(object$var))) {
+        nn <- names(object$var)[seq(length(object$summary))]
+    } else {
+        nn <- object$var[seq(length(object$summary))]
+    }
+    names(res) <- paste(names(res),rep(nn,length(res)/length(nn)),sep=":")
+    return(res)
+}
+
+##' @S3method vcov multitwinlm
+vcov.multitwinlm <- function(object,...) {
+    if (object$type=="strata") {
+        return(do.call(blockdiag,
+                       lapply(object$summary, function(x) x$vcov)))
+    }
+}
+
 
 ##' @export
 twinlm.strata <- function(formula,data,var,breaks,quantiles,...) {
@@ -20,14 +44,15 @@ twinlm.strata <- function(formula,data,var,breaks,quantiles,...) {
     res <- list()
     for (i in seq_along(lev)) {
         tau <- lev[i]
-        if (length(breaks)>1) message(tau)
+        if (length(lev)>1) message(tau)
         data0 <- data[var==tau,,drop=FALSE]
         suppressWarnings(b <- twinlm(formula,data=data0,...))
         res <- c(res,list(summary(b)))
     }
-    if (length(breaks)==1) return(b)
+    if (length(lev)==1) return(b)
+    if (!missing(breaks)) lev <- breaks
     coef <- c(lapply(res,function(x) x$all),list(res[[length(res)]]$all))
-    res <- list(varname=varname,var=breaks,coef=coef,summary=res,type="strata")
+    res <- list(varname=varname,var=lev,coef=coef,summary=res,type="strata")
     class(res) <- "multitwinlm"
     return(res)
 }
@@ -68,7 +93,7 @@ twinlm.time <- function(formula,data,id,type="u",...,
         data0$S <- Surv(time0,status0==1)        
         dataw <- ipw(S~zyg, data=data0,
                      cluster=id,weightname=weight,pairs=TRUE)
-        b <- bptwin(formula, data=dataw, id=id, weight=weight,type=type,...)
+        suppressWarnings(b <- bptwin(formula, data=dataw, id=id, weight=weight,type=type,...))
         res <- c(res,list(summary(b)))
     }
     if (length(breaks)==1) return(b)
@@ -83,7 +108,7 @@ summary.multitwinlm <- function(object,which=seq(nrow(object$coef[[1]])),...) {
     for (i in which) {    
         rr <- matrix(unlist(lapply(object$coef,function(z) z[i,])),ncol=3,byrow=TRUE)
         colnames(rr) <- colnames(object$coef[[1]])
-        rr <- cbind(object$var,rr)
+        rr <- cbind(object$var,as.data.frame(rr[seq_along(object$var),,drop=FALSE]))
         colnames(rr)[1] <- object$varname
         res <- c(res,list(rr))
     }
@@ -93,11 +118,12 @@ summary.multitwinlm <- function(object,which=seq(nrow(object$coef[[1]])),...) {
 
 
 ##' @S3method print multitwinlm
-print.multitwinlm <- function(x,...) {
+print.multitwinlm <- function(x,row.names=FALSE,...) {
     res <- summary(x,...)
     for (i in seq_along(res)) {
         cat(i, ": ", names(res)[i], "\n",sep="")
-        printCoefmat(res[[i]],...)
+        print(res[[i]],...,row.names=row.names)
+        cat("\n")
     }
     invisible(x)
 }
@@ -121,17 +147,21 @@ plot.multitwinlm <- function(x,...,which=1,
     for (tt in seq_along(which)) {
         count <- count+1
         zz <- ss[[tt]][idx,,drop=FALSE]
-        if (!add) {    
-            plot(zz[,1:2,drop=FALSE],type=type,lwd=lwd[count],lty=lty[count],
-                 ylab=ylab,xlab=xlab,col=col[count],...)
+        if (!add) {
+            plot(zz[,1:2,drop=FALSE],lty=0,
+                 ylab=ylab,xlab=xlab,type="n",...)
             dev <- devcoords()
         }
-        if (lasttick && type=="s") {
+        if (lasttick && type=="s" && !is.factor(zz[,1])) {
             zz2 <- rbind(zz,tail(zz,1))
             zz2[nrow(zz2),1] <- dev$fig.x2
             confband(zz2[,1],zz2[,3],zz2[,4],polygon=TRUE,step=(type=="s"),col=fillcol[count],border=0)
         } else {
-            confband(zz[,1],zz[,3],zz[,4],polygon=TRUE,step=(type=="s"),col=fillcol[count],border=0)
+            if (is.factor(zz[,1])) {
+                confband(x=seq(nrow(zz)),lower=zz[,3],upper=zz[,4],center=zz[,2],col=col[count],lwd=lwd[count],lty=lty[count],...)
+            } else {
+                confband(zz[,1],zz[,3],zz[,4],polygon=TRUE,step=(type=="s"),col=fillcol[count],border=0)
+            }
         }
         add <- TRUE
         ## if (lasttick && type=="s") {
@@ -140,7 +170,8 @@ plot.multitwinlm <- function(x,...,which=1,
         ##     axis(4,at=zz[nrow(zz),4],labels=FALSE,
         ##          lwd=lwd[count],col=fillcol[count],tcl=.5,...)
         ## }
-        lines(zz[,1:2,drop=FALSE],lwd=lwd[count],lty=lty[count],col=col[count],type=type,...)        
+        if (!is.factor(zz[,1]))
+            lines(zz[,1:2,drop=FALSE],lwd=lwd[count],lty=lty[count],col=col[count],type=type,...)        
     }
     if (!is.null(legend) || !legend[1]) {
         if (is.logical(legend) || length(legend)==1) legend <- rownames(x$coef[[1]])[which]

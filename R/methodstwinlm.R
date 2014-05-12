@@ -98,7 +98,8 @@ summary.twinlm <- function(object,transform=FALSE,...) {
         res <- list(estimate=aa, zyg=zygtab,
                     varEst=NULL, varSigma=NULL, heritability=NULL,
                     corMZ=corMZ, corDZ=corDZ, 
-                    logLik=logLik(e), AIC=AIC(e), BIC=BIC(e), type=object$type
+                    logLik=logLik(e), AIC=AIC(e), BIC=BIC(e), type=object$type,
+                    vcov=vcov(e)                    
                     )                
         class(res) <- "summary.twinlm"
         return(res)
@@ -210,7 +211,7 @@ summary.twinlm <- function(object,transform=FALSE,...) {
                 KinshipGroup=KinshipGroup,
                 varSigma=varSigma, heritability=hrow, corMZ=corMZ, corDZ=corDZ,
                 acde=acde, logLik=logLik(e), AIC=AIC(e), BIC=BIC(e),
-                type=object$type, coef=coef, all=all);
+                type=object$type, coef=coef, all=all, vcov=vcov(e));
     class(res) <- "summary.twinlm"
     return(res)
 }
