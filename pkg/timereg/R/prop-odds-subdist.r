@@ -64,7 +64,6 @@ times<-sort(times);
 times <- c(start.time,times)
 index <- c(0,index)
 
-
 if (is.null(max.time)==TRUE) maxtimes<-max(times)+0.1 else maxtimes<-max.time; 
 times<-times[times<=maxtimes]
 Ntimes <- length(times); 
@@ -163,7 +162,8 @@ nparout<- .C("posubdist2",
 	as.double(loglike),as.integer(profile),as.integer(sym),
 	as.double(KMtimes),as.double(KMti),as.double(time2),as.integer(causeS),
 	as.integer(index-1),
-	as.integer(baselinevar),as.integer(clusters), as.integer(antclust), PACKAGE="timereg");
+	as.integer(baselinevar),as.integer(clusters),
+       	as.integer(antclust), as.integer(cens.code), PACKAGE="timereg");
 
 ## {{{ output handling
 
