@@ -221,21 +221,23 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
     require("lava.tobit")
     if (is.null(optim$method))
        optim$method <- "nlminb1"
-    e <- estimate(mm,dd,control=optim,missing=missing,...)
+    suppressWarnings(e <- estimate(mm,dd,control=optim,missing=missing,...))
   } else {
-    e <- estimate(mm,dd,weight=weight,estimator=estimator,fix=FALSE,control=optim,...)
+      suppressWarnings(e <- estimate(mm,dd,weight=weight,estimator=estimator,fix=FALSE,control=optim,...))
   }
 
   if (!is.null(optim$refit) && optim$refit) {
     optim$method <- "NR"
     optim$start <- pars(e)
     if (is.Surv(data[,yvar])) {
-      e <- estimate(mm,dd,estimator=estimator,fix=FALSE,control=optim,...)      
+        suppressWarnings(e <- estimate(mm,dd,estimator=estimator,fix=FALSE,control=optim,...))
     } else {
-      e <- estimate(mm,dd,weight=weight,estimator=estimator,fix=FALSE,control=optim,...)
+        suppressWarnings(e <- estimate(mm,dd,weight=weight,estimator=estimator,fix=FALSE,control=optim,...))
     }
   }
 
+  e$vcov <- Inverse(information(e,type="hessian"))
+  
   counts <- function(dd) {
     dd0 <- apply(dd,2,function(x) !is.na(x))
     pairs <- sum(dd0[,1]*dd0[,2])
@@ -252,7 +254,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
       names(zygtab) <- c("MZ-pairs/singletons","DZ-pairs/singletons")
   }
 
-  res <- list(coefficients=e$opt$estimate, vcov=Inverse(information(e)),
+  res <- list(coefficients=e$opt$estimate, vcov=e$vcov,
               estimate=e, model=mm, call=cl, data=data, zyg=zyg,
               id=id, twinnum=twinnum, type=type,  group=group,
               constrain=constrain, outcomes=outcomes, zygtab=zygtab,
@@ -470,35 +472,33 @@ twinlmStart <- function(formula,mf,type,hasIntercept,surv=FALSE,model,group=NULL
         l <- lm(formula,mf)
         beta <- coef(l)
         sigma <- summary(l)$sigma
-    }
+    }    
     start <- rep(sigma/sqrt(nchar(type)),nchar(type))
     if (hasIntercept) {
         start <- c(beta[1],start)
         start <- c(start,beta[-1])
     } else start <- c(start,beta)
     if (type=="sat") {
-        start <- c(rep(log(sigma^2),2),0.5)
+        varp <- c(rep(log(sigma^2),2),0.5)
+        start <- c()
         if (hasIntercept) {
-            start <- c(rep(beta[1],2),start)
+            start <- rep(beta[1],4)
             beta <- beta[-1]
         }
-        start <- c(rep(start,2),rep(beta,4))
+        start <- c(start,rep(c(rep(beta,2),varp),2))
     }
     if (type=="flex") {
-        start <- c(log(sigma^2),0.5)
+        varp <- c(log(sigma^2),0.5)
+        start <- c()
         if (hasIntercept) {
-            start <- c(beta[1],start)
+            start <- c(beta[1],beta[1])
             beta <- beta[-1]
         }
-        start <- c(rep(start,2),rep(beta,2))
+        start <- c(start,rep(c(beta,varp),2))
     }
     if (type=="u") {
         start <- c(log(sigma^2),0.5,0.5)
-        if (hasIntercept) {
-            start <- c(beta[1],start)
-            beta <- beta[-1]
-        }
-        start <- c(start,beta)
+        start <- c(beta,start)
     }
     names(start) <- NULL
 
