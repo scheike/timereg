@@ -32,17 +32,18 @@ ipw <- function(formula,data,cluster,
                  ##iid=TRUE,
 
     XZ <- model.matrix(formula,data)
-    cens.args <- c(list(formula,n.sim=0,robust=0,data=data),list(...))
+    cens.args <- c(list(formula,n.sim=0,robust=0,data=eval(data)),list(...))
     if (tolower(cens.model)%in%c("weibull","phreg.par","phreg.weibull")) {
         ud.cens <- do.call(mets::phreg.par,cens.args)
         pr <- predict(ud.cens)
         noncens <- which(!ud.cens$status)        
     } else {
         m <- match.call(expand.dots = TRUE)[1:3]
-        Terms <- terms(formula, data = data, env=parent.frame())
+        Terms <- terms(formula, data = cens.args$data, env=parent.frame())
         m$formula <- Terms
+        m$data <- cens.args$data
         m[[1]] <- as.name("model.frame")
-        M <- eval(m,parent.frame())
+        M <- eval(m)
         censtime <- model.extract(M, "response")
         status <- censtime[,2]
         otimes <- censtime[,1]
