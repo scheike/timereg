@@ -3,8 +3,8 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<title>Analyzing twin data with 'mets'</title>
-<!-- 2013-05-14 Tue 14:36 -->
+<title>Analyzing twin survival data with 'mets'</title>
+<!-- 2014-05-09 Fri 12:12 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <style type="text/css">
@@ -54,6 +54,8 @@
   pre.src-sql:before   { content: 'SQL'; }
 
   table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
   td, th { vertical-align:top;  }
   th.right  { text-align: center;  }
   th.left   { text-align: center;   }
@@ -93,7 +95,7 @@
 @licstart  The following is the entire license notice for the
 JavaScript code in this tag.
 
-Copyright (C) 2012  Free Software Foundation, Inc.
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
 
 The JavaScript code in this tag is free software: you can
 redistribute it and/or modify it under the terms of the GNU
@@ -137,7 +139,7 @@ for the JavaScript code in this tag.
 </head>
 <body>
 <div id="content">
-<h1 class="title">Analyzing twin data with 'mets'</h1>
+<h1 class="title">Analyzing twin survival data with 'mets'</h1>
 <div id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
@@ -146,11 +148,10 @@ for the JavaScript code in this tag.
 <li><a href="#sec-2">Load simulated data</a></li>
 <li><a href="#sec-3">Estimation of cumulative incidence</a></li>
 <li><a href="#sec-4">Correcting for country</a></li>
-<li><a href="#sec-5">Advanced modelling (Extra)</a></li>
-<li><a href="#sec-6">Concordance estimation</a></li>
-<li><a href="#sec-7">Liability model, ignoring censoring</a></li>
-<li><a href="#sec-8">Liability model, Inverse Probability Weighting</a></li>
-<li><a href="#sec-9">Liability model, adjusting for covariates</a></li>
+<li><a href="#sec-5">Concordance estimation</a></li>
+<li><a href="#sec-6">Liability model, ignoring censoring</a></li>
+<li><a href="#sec-7">Liability model, Inverse Probability Weighting</a></li>
+<li><a href="#sec-8">Liability model, adjusting for covariates</a></li>
 </ul>
 </div>
 </div>
@@ -172,7 +173,7 @@ Install dependencies (<code>R&gt;=2.15</code>) :
 <i>OBS:</i> At this point you might have to restart <code>R</code> to flush the cache
 of previously installed versions of the packages. If you have
 previously installed <code>timereg</code> and <code>lava</code>, make sure that you have the
-current versions installed (timereg: 1.7.5, lava: 1.2.1).
+current versions installed (timereg: 1.8.4, lava: 1.2.6).
 </p>
 </div>
 </div>
@@ -181,7 +182,7 @@ current versions installed (timereg: 1.7.5, lava: 1.2.1).
 <div class="outline-text-2" id="text-2">
 <div class="org-src-container">
 
-<pre class="src src-R" id="Loading"><span style="color: #2aa198;">library</span>(mets)
+<pre class="src src-R" id="Loading"><span style="color: #268bd2; font-weight: bold;">library</span>(mets)
 </pre>
 </div>
 
@@ -218,7 +219,7 @@ Status table
 
 <div class="org-src-container">
 
-<pre class="src src-R">prtwide <span style="color: #2aa198;">&lt;-</span> fast.reshape(prt,id=<span style="color: #2aa198;">"id"</span>)
+<pre class="src src-R">prtwide <span style="color: #268bd2; font-weight: bold;">&lt;-</span> fast.reshape(prt,id=<span style="color: #2aa198;">"id"</span>)
 ftable(status1~status2,prtwide)
 </pre>
 </div>
@@ -230,13 +231,13 @@ ftable(status1~status2,prtwide)
 <div class="outline-text-2" id="text-3">
 <div class="org-src-container">
 
-<pre class="src src-R">times <span style="color: #2aa198;">&lt;-</span> seq(40,100,by=2)
-cifmod <span style="color: #2aa198;">&lt;-</span> comp.risk(Surv(time,status&gt;0)~+1+cluster(id),data=prt,
-                    prt$status,causeS=2,n.sim=0,
+<pre class="src src-R">times <span style="color: #268bd2; font-weight: bold;">&lt;-</span> seq(40,100,by=2)
+cifmod <span style="color: #268bd2; font-weight: bold;">&lt;-</span> comp.risk(Hist(time,status)~+1+cluster(id),data=prt,
+                    cause=2,n.sim=0,
                     times=times,conservative=1,max.clust=<span style="color: #b58900;">NULL</span>,model=<span style="color: #2aa198;">"fg"</span>)
 
-theta.des <span style="color: #2aa198;">&lt;-</span> model.matrix(~-1+factor(zyg),data=prt) <span style="color: #586e75; font-style: italic;">## </span><span style="color: #586e75; font-style: italic;">design for MZ/DZ status</span>
-or1 <span style="color: #2aa198;">&lt;-</span> or.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des,
+theta.des <span style="color: #268bd2; font-weight: bold;">&lt;-</span> model.matrix(~-1+factor(zyg),data=prt) <span style="color: #586e75;">## </span><span style="color: #586e75;">design for MZ/DZ status</span>
+or1 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> or.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des,
               score.method=<span style="color: #2aa198;">"fisher.scoring"</span>,same.cens=<span style="color: #b58900;">TRUE</span>)
 summary(or1)
 or1$score
@@ -245,7 +246,7 @@ or1$score
 
 <div class="org-src-container">
 
-<pre class="src src-R">pcif <span style="color: #2aa198;">&lt;-</span> predict(cifmod,X=1,resample.iid=0,uniform=0,se=0)
+<pre class="src src-R">pcif <span style="color: #268bd2; font-weight: bold;">&lt;-</span> predict(cifmod,X=1,resample.iid=0,uniform=0,se=0)
 plot(pcif,multiple=1,se=0,uniform=0,ylim=c(0,0.15))
 </pre>
 </div>
@@ -258,10 +259,10 @@ are the same):
 
 <div class="org-src-container">
 
-<pre class="src src-R">incorrect.or1 <span style="color: #2aa198;">&lt;-</span> or.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des, 
+<pre class="src src-R">incorrect.or1 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> or.cif(cifmod,data=prt,cause1=2,cause2=2,theta.des=theta.des, 
                         theta=c(2.8,8.6),score.method=<span style="color: #2aa198;">"fisher.scoring"</span>)
 summary(incorrect.or1)
-<span style="color: #586e75; font-style: italic;">## </span><span style="color: #586e75; font-style: italic;">not  bad</span>
+<span style="color: #586e75;">## </span><span style="color: #586e75;">not  bad</span>
 incorrect.or1$score
 </pre>
 </div>
@@ -276,11 +277,11 @@ incorrect.or1$score
 
 <pre class="src src-R">table(prt$country)
 
-times <span style="color: #2aa198;">&lt;-</span> seq(40,100,by=2)
-cifmodl <span style="color: #2aa198;">&lt;-</span>comp.risk(Surv(time,status&gt;0)~-1+factor(country)+cluster(id),data=prt,
-                    prt$status,causeS=2,n.sim=0,times=times,conservative=1,
+times <span style="color: #268bd2; font-weight: bold;">&lt;-</span> seq(40,100,by=2)
+cifmodl <span style="color: #268bd2; font-weight: bold;">&lt;-</span>comp.risk(Hist(time,status)~-1+factor(country)+cluster(id),data=prt,
+                    cause=2,n.sim=0,times=times,conservative=1,
                     max.clust=<span style="color: #b58900;">NULL</span>,cens.model=<span style="color: #2aa198;">"aalen"</span>)
-pcifl <span style="color: #2aa198;">&lt;-</span> predict(cifmodl,X=diag(4),se=0,uniform=0)
+pcifl <span style="color: #268bd2; font-weight: bold;">&lt;-</span> predict(cifmodl,X=diag(4),se=0,uniform=0)
 plot(pcifl,multiple=1,se=0,uniform=0,col=1:4,ylim=c(0,0.2))
 legend(<span style="color: #2aa198;">"topleft"</span>,levels(prt$country),col=1:4,lty=1)
 </pre>
@@ -292,8 +293,8 @@ Design for MZ/DZ status
 
 <div class="org-src-container">
 
-<pre class="src src-R">theta.des <span style="color: #2aa198;">&lt;-</span> model.matrix(~-1+factor(zyg),data=prt) 
-or.country <span style="color: #2aa198;">&lt;-</span> or.cif(cifmodl,data=prt,cause1=2,cause2=2,theta.des=theta.des,
+<pre class="src src-R">theta.des <span style="color: #268bd2; font-weight: bold;">&lt;-</span> model.matrix(~-1+factor(zyg),data=prt) 
+or.country <span style="color: #268bd2; font-weight: bold;">&lt;-</span> or.cif(cifmodl,data=prt,cause1=2,cause2=2,theta.des=theta.des,
                      theta=c(0.8,2.1),score.method=<span style="color: #2aa198;">"fisher.scoring"</span>,same.cens=<span style="color: #b58900;">TRUE</span>)
 
 summary(or.country)
@@ -302,76 +303,42 @@ summary(or.country)
 </div>
 </div>
 
-
 <div id="outline-container-sec-5" class="outline-2">
-<h2 id="sec-5">Advanced modelling (Extra)</h2>
+<h2 id="sec-5">Concordance estimation</h2>
 <div class="outline-text-2" id="text-5">
-<div class="org-src-container">
-
-<pre class="src src-R">cifmodlr <span style="color: #2aa198;">&lt;-</span> comp.risk(Surv(time,status&gt;0)~+1+const(factor(country))+cluster(id),
-                      data=prt, prt$status, causeS=2, n.sim=0,
-                      times=times,conservative=1,max.clust=<span style="color: #b58900;">NULL</span>,model=<span style="color: #2aa198;">"fg"</span>,
-                      cens.model=<span style="color: #2aa198;">"aalen"</span>,cens.formula=~factor(country))
-pciflr <span style="color: #2aa198;">&lt;-</span> predict(cifmodlr,X=rep(1,4),
-                  Z=rbind(c(0,0,0),c(1,0,0),c(0,1,0),c(0,0,1)),
-                  se=0,uniform=0)
-</pre>
-</div>
-
-<div class="org-src-container">
-
-<pre class="src src-R">par(mfrow=c(1,2))
-plot(pcifl,multiple=1,se=0,uniform=0,col=1:4,ylim=c(0,0.2))
-legend(<span style="color: #2aa198;">"topleft"</span>,levels(prt$country),col=1:4,lty=1)
-plot(pciflr,multiple=1,se=0,uniform=0,col=1:4,ylim=c(0,0.2))
-legend(<span style="color: #2aa198;">"topleft"</span>,levels(prt$country),col=1:4,lty=1)
-</pre>
-</div>
-
-
-<div class="org-src-container">
-
-<pre class="src src-R">or.countryr <span style="color: #2aa198;">&lt;-</span> or.cif(cifmodlr,data=prt,cause1=2,cause2=2,theta.des=theta.des,
-                     theta=c(0.8,2.1),score.method=<span style="color: #2aa198;">"fisher.scoring"</span>,same.cens=<span style="color: #b58900;">TRUE</span>)
-summary(or.countryr)
-</pre>
-</div>
-</div>
-</div>
-<div id="outline-container-sec-6" class="outline-2">
-<h2 id="sec-6">Concordance estimation</h2>
-<div class="outline-text-2" id="text-6">
 <p>
 Ignoring country. Computing casewise, using <code>prodlim</code>. CIF:
 </p>
 
 <div class="org-src-container">
 
-<pre class="src src-R">outm <span style="color: #2aa198;">&lt;-</span> prodlim(Hist(time,status)~+1,data=prt)
+<pre class="src src-R">outm <span style="color: #268bd2; font-weight: bold;">&lt;-</span> prodlim(Hist(time,status)~+1,data=prt)
 
-times <span style="color: #2aa198;">&lt;-</span> 60:100
-<span style="color: #586e75; font-style: italic;">## </span><span style="color: #586e75; font-style: italic;">cause is 2 (second cause)</span>
-cifmz <span style="color: #2aa198;">&lt;-</span> predict(outm,cause=2,time=times,newdata=data.frame(zyg=<span style="color: #2aa198;">"MZ"</span>))
-cifdz <span style="color: #2aa198;">&lt;-</span> predict(outm,cause=2,time=times,newdata=data.frame(zyg=<span style="color: #2aa198;">"DZ"</span>))
+times <span style="color: #268bd2; font-weight: bold;">&lt;-</span> 60:100
+<span style="color: #586e75;">## </span><span style="color: #586e75;">cause is 2 (second cause)</span>
+cifmz <span style="color: #268bd2; font-weight: bold;">&lt;-</span> predict(outm,cause=2,time=times,newdata=data.frame(zyg=<span style="color: #2aa198;">"MZ"</span>))
+cifdz <span style="color: #268bd2; font-weight: bold;">&lt;-</span> predict(outm,cause=2,time=times,newdata=data.frame(zyg=<span style="color: #2aa198;">"DZ"</span>))
 </pre>
 </div>
 
 <div class="org-src-container">
 
-<pre class="src src-R"><span style="color: #586e75; font-style: italic;">### </span><span style="color: #586e75; font-style: italic;">casewise </span>
-pp33 <span style="color: #2aa198;">&lt;-</span> bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2),prodlim=<span style="color: #b58900;">TRUE</span>)
-pp33dz <span style="color: #2aa198;">&lt;-</span> pp33$model$<span style="color: #2aa198;">"DZ"</span>
-pp33mz <span style="color: #2aa198;">&lt;-</span> pp33$model$<span style="color: #2aa198;">"MZ"</span>
+<pre class="src src-R"><span style="color: #586e75;">### </span><span style="color: #586e75;">casewise </span>
+pp33 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2),prodlim=<span style="color: #b58900;">TRUE</span>)
+pp33dz <span style="color: #268bd2; font-weight: bold;">&lt;-</span> pp33$model$<span style="color: #2aa198;">"DZ"</span>
+pp33mz <span style="color: #268bd2; font-weight: bold;">&lt;-</span> pp33$model$<span style="color: #2aa198;">"MZ"</span>
+concdz <span style="color: #268bd2; font-weight: bold;">&lt;-</span> predict(pp33dz,cause=1,time=times,newdata=data.frame(zyg=<span style="color: #2aa198;">"DZ"</span>))
+concmz <span style="color: #268bd2; font-weight: bold;">&lt;-</span> predict(pp33mz,cause=1,time=times,newdata=data.frame(zyg=<span style="color: #2aa198;">"MZ"</span>))
 </pre>
 </div>
 
 <div class="org-src-container">
 
 <pre class="src src-R">par(mfrow=c(1,2))
-plot(pp33dz,ylim=c(0,0.1),atrisk=<span style="color: #b58900;">FALSE</span>)
+plot(times,concdz,ylim=c(0,0.1),type=<span style="color: #2aa198;">"s"</span>)
 lines(pcif$time,pcif$P1^2,col=2)
 title(main=<span style="color: #2aa198;">"DZ Conc. Prostate cancer"</span>)
-plot(pp33mz,ylim=c(0,0.1),atrisk=<span style="color: #b58900;">FALSE</span>)
+plot(times,concmz,ylim=c(0,0.1),type=<span style="color: #2aa198;">"s"</span>)
 title(main=<span style="color: #2aa198;">"MZ Conc. Prostate cancer"</span>)
 lines(pcif$time,pcif$P1^2,col=2)
 </pre>
@@ -380,8 +347,8 @@ lines(pcif$time,pcif$P1^2,col=2)
 <div class="org-src-container">
 
 <pre class="src src-R">par(mfrow=c(1,1))
-cdz <span style="color: #2aa198;">&lt;-</span> casewise(pp33dz,outm,cause.marg=2)
-cmz <span style="color: #2aa198;">&lt;-</span> casewise(pp33mz,outm,cause.marg=2)             
+cdz <span style="color: #268bd2; font-weight: bold;">&lt;-</span> casewise(pp33dz,outm,cause.marg=2)
+cmz <span style="color: #268bd2; font-weight: bold;">&lt;-</span> casewise(pp33mz,outm,cause.marg=2)             
 plot(cmz,ci=<span style="color: #b58900;">NULL</span>,ylim=c(0,0.5),xlim=c(60,100),legend=<span style="color: #b58900;">TRUE</span>,col=c(3,2,1))
 par(new=<span style="color: #b58900;">TRUE</span>)
 plot(cdz,ci=<span style="color: #b58900;">NULL</span>,ylim=c(0,0.5),xlim=c(60,100),legend=<span style="color: #b58900;">TRUE</span>)
@@ -396,10 +363,10 @@ errors
 
 <div class="org-src-container">
 
-<pre class="src src-R">p33 <span style="color: #2aa198;">&lt;-</span> bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2),return.data=1)
+<pre class="src src-R">p33 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> bicomprisk(Hist(time,status)~strata(zyg)+id(id),data=prt,cause=c(2,2),return.data=1)
 
-p33dz <span style="color: #2aa198;">&lt;-</span> p33$model$<span style="color: #2aa198;">"DZ"</span>$comp.risk
-p33mz <span style="color: #2aa198;">&lt;-</span> p33$model$<span style="color: #2aa198;">"MZ"</span>$comp.risk
+p33dz <span style="color: #268bd2; font-weight: bold;">&lt;-</span> p33$model$<span style="color: #2aa198;">"DZ"</span>$comp.risk
+p33mz <span style="color: #268bd2; font-weight: bold;">&lt;-</span> p33$model$<span style="color: #2aa198;">"MZ"</span>$comp.risk
 </pre>
 </div>
 
@@ -416,8 +383,8 @@ Test for genetic effect, needs other form of bicomprisk with iid decomp
 
 <div class="org-src-container">
 
-<pre class="src src-R">conc1 <span style="color: #2aa198;">&lt;-</span> p33dz
-conc2 <span style="color: #2aa198;">&lt;-</span> p33mz
+<pre class="src src-R">conc1 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> p33dz
+conc2 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> p33mz
 
 test.conc(p33dz,p33mz);
 </pre>
@@ -429,55 +396,44 @@ OR expression of difference in concordance functions and Gray test
 
 <div class="org-src-container">
 
-<pre class="src src-R">data33mz <span style="color: #2aa198;">&lt;-</span> p33$model$<span style="color: #2aa198;">"MZ"</span>$data
-data33mz$zyg <span style="color: #2aa198;">&lt;-</span> 1
-data33dz <span style="color: #2aa198;">&lt;-</span> p33$model$<span style="color: #2aa198;">"DZ"</span>$data
-data33dz$zyg <span style="color: #2aa198;">&lt;-</span> 0
-data33 <span style="color: #2aa198;">&lt;-</span> rbind(data33mz,data33dz)
+<pre class="src src-R">data33mz <span style="color: #268bd2; font-weight: bold;">&lt;-</span> p33$model$<span style="color: #2aa198;">"MZ"</span>$data
+data33mz$zyg <span style="color: #268bd2; font-weight: bold;">&lt;-</span> 1
+data33dz <span style="color: #268bd2; font-weight: bold;">&lt;-</span> p33$model$<span style="color: #2aa198;">"DZ"</span>$data
+data33dz$zyg <span style="color: #268bd2; font-weight: bold;">&lt;-</span> 0
+data33 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> rbind(data33mz,data33dz)
 
-<span style="color: #2aa198;">library</span>(cmprsk)
-ftime <span style="color: #2aa198;">&lt;-</span> data33$time
-fstatus <span style="color: #2aa198;">&lt;-</span> data33$status
+<span style="color: #268bd2; font-weight: bold;">library</span>(cmprsk)
+ftime <span style="color: #268bd2; font-weight: bold;">&lt;-</span> data33$time
+fstatus <span style="color: #268bd2; font-weight: bold;">&lt;-</span> data33$status
 table(fstatus)
 </pre>
 </div>
 
 <div class="org-src-container">
 
-<pre class="src src-R">group <span style="color: #2aa198;">&lt;-</span> data33$zyg
-graytest <span style="color: #2aa198;">&lt;-</span> cuminc(ftime,fstatus,group)
+<pre class="src src-R">group <span style="color: #268bd2; font-weight: bold;">&lt;-</span> data33$zyg
+graytest <span style="color: #268bd2; font-weight: bold;">&lt;-</span> cuminc(ftime,fstatus,group)
 graytest
 </pre>
 </div>
 
 <div class="org-src-container">
 
-<pre class="src src-R">zygeffect <span style="color: #2aa198;">&lt;-</span> comp.risk(Surv(time,status==0)~const(zyg),
-                  data=data33,data33$status,causeS=1,
+<pre class="src src-R">zygeffect <span style="color: #268bd2; font-weight: bold;">&lt;-</span> comp.risk(Hist(time,status)~const(zyg),
+                  data=data33,cause=1,
                   cens.model=<span style="color: #2aa198;">"aalen"</span>,model=<span style="color: #2aa198;">"logistic"</span>,conservative=1)
 summary(zygeffect)
 </pre>
 </div>
+</div>
+</div>
 
-<p>
-Adjusting for country&#x2026;
-</p>
-
+<div id="outline-container-sec-6" class="outline-2">
+<h2 id="sec-6">Liability model, ignoring censoring</h2>
+<div class="outline-text-2" id="text-6">
 <div class="org-src-container">
 
-<pre class="src src-R">p33l <span style="color: #2aa198;">&lt;-</span> bicomprisk(Hist(time,status)~country+strata(zyg)+id(id),
-                data=prt,cause=c(2,2),return.data=1,robust=1)
-</pre>
-</div>
-</div>
-</div>
-
-<div id="outline-container-sec-7" class="outline-2">
-<h2 id="sec-7">Liability model, ignoring censoring</h2>
-<div class="outline-text-2" id="text-7">
-<div class="org-src-container">
-
-<pre class="src src-R">(M <span style="color: #2aa198;">&lt;-</span> with(prt, table(cancer,zyg)))
+<pre class="src src-R">(M <span style="color: #268bd2; font-weight: bold;">&lt;-</span> with(prt, table(cancer,zyg)))
 </pre>
 </div>
 
@@ -493,20 +449,20 @@ Saturated model
 
 <div class="org-src-container">
 
-<pre class="src src-R">bpmz <span style="color: #2aa198;">&lt;-</span> biprobit(cancer~1 + cluster(id), 
+<pre class="src src-R">bpmz <span style="color: #268bd2; font-weight: bold;">&lt;-</span> biprobit(cancer~1 + cluster(id), 
              data=subset(prt,zyg==<span style="color: #2aa198;">"MZ"</span>), eqmarg=<span style="color: #b58900;">TRUE</span>)
 
-logLik(bpmz) <span style="color: #586e75; font-style: italic;"># </span><span style="color: #586e75; font-style: italic;">Log-likelihood</span>
-AIC(bpmz) <span style="color: #586e75; font-style: italic;"># </span><span style="color: #586e75; font-style: italic;">AIC</span>
-coef(bpmz) <span style="color: #586e75; font-style: italic;"># </span><span style="color: #586e75; font-style: italic;">Parameter estimates</span>
-vcov(bpmz) <span style="color: #586e75; font-style: italic;"># </span><span style="color: #586e75; font-style: italic;">Asymptotic covariance</span>
-summary(bpmz) <span style="color: #586e75; font-style: italic;"># </span><span style="color: #586e75; font-style: italic;">concordance, case-wise, tetrachoric correlations, ...</span>
+logLik(bpmz) <span style="color: #586e75;"># </span><span style="color: #586e75;">Log-likelihood</span>
+AIC(bpmz) <span style="color: #586e75;"># </span><span style="color: #586e75;">AIC</span>
+coef(bpmz) <span style="color: #586e75;"># </span><span style="color: #586e75;">Parameter estimates</span>
+vcov(bpmz) <span style="color: #586e75;"># </span><span style="color: #586e75;">Asymptotic covariance</span>
+summary(bpmz) <span style="color: #586e75;"># </span><span style="color: #586e75;">concordance, case-wise, tetrachoric correlations, ...</span>
 </pre>
 </div>
 
 <div class="org-src-container">
 
-<pre class="src src-R">bp0 <span style="color: #2aa198;">&lt;-</span> biprobit(cancer~1 + cluster(id)+strata(zyg), data=prt)
+<pre class="src src-R">bp0 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> biprobit(cancer~1 + cluster(id)+strata(zyg), data=prt)
 </pre>
 </div>
 
@@ -522,8 +478,8 @@ Equal marginals MZ/DZ
 
 <div class="org-src-container">
 
-<pre class="src src-R">bp1 <span style="color: #2aa198;">&lt;-</span> bptwin(cancer~1,zyg=<span style="color: #2aa198;">"zyg"</span>,DZ=<span style="color: #2aa198;">"DZ"</span>,id=<span style="color: #2aa198;">"id"</span>,type=<span style="color: #2aa198;">"u"</span>,data=prt)
-(s <span style="color: #2aa198;">&lt;-</span> summary(bp1))
+<pre class="src src-R">bp1 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> bptwin(cancer~1,zyg=<span style="color: #2aa198;">"zyg"</span>,DZ=<span style="color: #2aa198;">"DZ"</span>,id=<span style="color: #2aa198;">"id"</span>,type=<span style="color: #2aa198;">"u"</span>,data=prt)
+(s <span style="color: #268bd2; font-weight: bold;">&lt;-</span> summary(bp1))
 </pre>
 </div>
 
@@ -556,28 +512,28 @@ model with same marginals for MZ and DZ)
 
 <div class="org-src-container">
 
-<pre class="src src-R">bp2 <span style="color: #2aa198;">&lt;-</span> bptwin(cancer~1,zyg=<span style="color: #2aa198;">"zyg"</span>,DZ=<span style="color: #2aa198;">"DZ"</span>,id=<span style="color: #2aa198;">"id"</span>,type=<span style="color: #2aa198;">"ace"</span>,data=prt)
+<pre class="src src-R">bp2 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> bptwin(cancer~1,zyg=<span style="color: #2aa198;">"zyg"</span>,DZ=<span style="color: #2aa198;">"DZ"</span>,id=<span style="color: #2aa198;">"id"</span>,type=<span style="color: #2aa198;">"ace"</span>,data=prt)
 summary(bp2)
 </pre>
 </div>
 </div>
 </div>
-<div id="outline-container-sec-8" class="outline-2">
-<h2 id="sec-8">Liability model, Inverse Probability Weighting</h2>
-<div class="outline-text-2" id="text-8">
+<div id="outline-container-sec-7" class="outline-2">
+<h2 id="sec-7">Liability model, Inverse Probability Weighting</h2>
+<div class="outline-text-2" id="text-7">
 <p>
 Probability weights based on Aalen's additive model 
 </p>
 
 <div class="org-src-container">
 
-<pre class="src src-R">prtw <span style="color: #2aa198;">&lt;-</span> ipw(Surv(time,status==0)~country, data=prt,
+<pre class="src src-R">prtw <span style="color: #268bd2; font-weight: bold;">&lt;-</span> ipw(Surv(time,status==0)~country, data=prt,
             cluster=<span style="color: #2aa198;">"id"</span>,weightname=<span style="color: #2aa198;">"w"</span>) 
 plot(0,type=<span style="color: #2aa198;">"n"</span>,xlim=range(prtw$time),ylim=c(0,1),xlab=<span style="color: #2aa198;">"Age"</span>,ylab=<span style="color: #2aa198;">"Probability"</span>)
-count <span style="color: #2aa198;">&lt;-</span> 0
-<span style="color: #859900;">for</span> (l <span style="color: #859900;">in</span> unique(prtw$country)) {
-    count <span style="color: #2aa198;">&lt;-</span> count+1
-    prtw <span style="color: #2aa198;">&lt;-</span> prtw[order(prtw$time),]
+count <span style="color: #268bd2; font-weight: bold;">&lt;-</span> 0
+<span style="color: #859900; font-weight: bold;">for</span> (l <span style="color: #859900; font-weight: bold;">in</span> unique(prtw$country)) {
+    count <span style="color: #268bd2; font-weight: bold;">&lt;-</span> count+1
+    prtw <span style="color: #268bd2; font-weight: bold;">&lt;-</span> prtw[order(prtw$time),]
     with(subset(prtw,country==l), 
          lines(time,w,col=count,lwd=2))
 }
@@ -588,10 +544,10 @@ legend(<span style="color: #2aa198;">"topright"</span>,legend=unique(prtw$countr
 
 <div class="org-src-container">
 
-<pre class="src src-R">bpmzIPW <span style="color: #2aa198;">&lt;-</span> biprobit(cancer~1 + cluster(id), 
+<pre class="src src-R">bpmzIPW <span style="color: #268bd2; font-weight: bold;">&lt;-</span> biprobit(cancer~1 + cluster(id), 
                     data=subset(prtw,zyg==<span style="color: #2aa198;">"MZ"</span>), 
                     weight=<span style="color: #2aa198;">"w"</span>)
-(smz <span style="color: #2aa198;">&lt;-</span> summary(bpmzIPW))
+(smz <span style="color: #268bd2; font-weight: bold;">&lt;-</span> summary(bpmzIPW))
 </pre>
 </div>
 
@@ -603,7 +559,7 @@ Comparison with CIF
 
 <pre class="src src-R">plot(pcif,multiple=1,se=1,uniform=0,ylim=c(0,0.15))
 abline(h=smz$prob[<span style="color: #2aa198;">"Marginal"</span>,],lwd=c(2,1,1))
-<span style="color: #586e75; font-style: italic;">## </span><span style="color: #586e75; font-style: italic;">Wrong estimates:</span>
+<span style="color: #586e75;">## </span><span style="color: #586e75;">Wrong estimates:</span>
 abline(h=summary(bpmz)$prob[<span style="color: #2aa198;">"Marginal"</span>,],lwd=c(2,1,1),col=<span style="color: #2aa198;">"lightgray"</span>)
 </pre>
 </div>
@@ -616,7 +572,7 @@ Concordance estimates
 
 <pre class="src src-R">plot(pp33mz,ylim=c(0,0.1))
 abline(h=smz$prob[<span style="color: #2aa198;">"Concordance"</span>,],lwd=c(2,1,1))
-<span style="color: #586e75; font-style: italic;">## </span><span style="color: #586e75; font-style: italic;">Wrong estimates:</span>
+<span style="color: #586e75;">## </span><span style="color: #586e75;">Wrong estimates:</span>
 abline(h=summary(bpmz)$prob[<span style="color: #2aa198;">"Concordance"</span>,],lwd=c(2,1,1),col=<span style="color: #2aa198;">"lightgray"</span>)
 </pre>
 </div>
@@ -628,7 +584,7 @@ ACE model with IPW
 
 <div class="org-src-container">
 
-<pre class="src src-R">bp3 <span style="color: #2aa198;">&lt;-</span> bptwin(cancer~1,zyg=<span style="color: #2aa198;">"zyg"</span>,DZ=<span style="color: #2aa198;">"DZ"</span>,id=<span style="color: #2aa198;">"id"</span>,
+<pre class="src src-R">bp3 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> bptwin(cancer~1,zyg=<span style="color: #2aa198;">"zyg"</span>,DZ=<span style="color: #2aa198;">"DZ"</span>,id=<span style="color: #2aa198;">"id"</span>,
               type=<span style="color: #2aa198;">"ace"</span>,data=prtw,weight=<span style="color: #2aa198;">"w"</span>)
 summary(bp3)
 </pre>
@@ -640,7 +596,7 @@ Equal marginals but free variance structure between MZ and DZ
 
 <div class="org-src-container">
 
-<pre class="src src-R">bp4 <span style="color: #2aa198;">&lt;-</span> bptwin(cancer~1,zyg=<span style="color: #2aa198;">"zyg"</span>,DZ=<span style="color: #2aa198;">"DZ"</span>,id=<span style="color: #2aa198;">"id"</span>,
+<pre class="src src-R">bp4 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> bptwin(cancer~1,zyg=<span style="color: #2aa198;">"zyg"</span>,DZ=<span style="color: #2aa198;">"DZ"</span>,id=<span style="color: #2aa198;">"id"</span>,
               type=<span style="color: #2aa198;">"u"</span>,data=prtw,weight=<span style="color: #2aa198;">"w"</span>)
 summary(bp4)
 </pre>
@@ -656,16 +612,16 @@ Check convergence
 </div>
 </div>
 </div>
-<div id="outline-container-sec-9" class="outline-2">
-<h2 id="sec-9">Liability model, adjusting for covariates</h2>
-<div class="outline-text-2" id="text-9">
+<div id="outline-container-sec-8" class="outline-2">
+<h2 id="sec-8">Liability model, adjusting for covariates</h2>
+<div class="outline-text-2" id="text-8">
 <p>
 Main effect of country
 </p>
 
 <div class="org-src-container">
 
-<pre class="src src-R">bp6 <span style="color: #2aa198;">&lt;-</span> bptwin(cancer~country,zyg=<span style="color: #2aa198;">"zyg"</span>,DZ=<span style="color: #2aa198;">"DZ"</span>,id=<span style="color: #2aa198;">"id"</span>,
+<pre class="src src-R">bp6 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> bptwin(cancer~country,zyg=<span style="color: #2aa198;">"zyg"</span>,DZ=<span style="color: #2aa198;">"DZ"</span>,id=<span style="color: #2aa198;">"id"</span>,
               type=<span style="color: #2aa198;">"ace"</span>,data=prtw,weight=<span style="color: #2aa198;">"w"</span>)
 summary(bp6)
 </pre>
@@ -673,7 +629,7 @@ summary(bp6)
 
 <div class="org-src-container">
 
-<pre class="src src-R">bp7 <span style="color: #2aa198;">&lt;-</span> bptwin(cancer~country,zyg=<span style="color: #2aa198;">"zyg"</span>,DZ=<span style="color: #2aa198;">"DZ"</span>,id=<span style="color: #2aa198;">"id"</span>,
+<pre class="src src-R">bp7 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> bptwin(cancer~country,zyg=<span style="color: #2aa198;">"zyg"</span>,DZ=<span style="color: #2aa198;">"DZ"</span>,id=<span style="color: #2aa198;">"id"</span>,
               type=<span style="color: #2aa198;">"u"</span>,data=prtw,weight=<span style="color: #2aa198;">"w"</span>)
 summary(bp7)
 </pre>
@@ -685,7 +641,7 @@ Stratified analysis
 
 <div class="org-src-container">
 
-<pre class="src src-R">bp8 <span style="color: #2aa198;">&lt;-</span> bptwin(cancer~strata(country),zyg=<span style="color: #2aa198;">"zyg"</span>,DZ=<span style="color: #2aa198;">"DZ"</span>,id=<span style="color: #2aa198;">"id"</span>,
+<pre class="src src-R">bp8 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> bptwin(cancer~strata(country),zyg=<span style="color: #2aa198;">"zyg"</span>,DZ=<span style="color: #2aa198;">"DZ"</span>,id=<span style="color: #2aa198;">"id"</span>,
               type=<span style="color: #2aa198;">"u"</span>,data=prtw,weight=<span style="color: #2aa198;">"w"</span>)
 </pre>
 </div>
@@ -703,7 +659,7 @@ Wald test (stratified vs main effect)
 
 <div class="org-src-container">
 
-<pre class="src src-R">B <span style="color: #2aa198;">&lt;-</span> contr(3,4)[-(1:3),]
+<pre class="src src-R">B <span style="color: #268bd2; font-weight: bold;">&lt;-</span> contr(3,4)[-(1:3),]
 compare(bp8,contrast=B)
 </pre>
 </div>
@@ -711,7 +667,7 @@ compare(bp8,contrast=B)
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2013-05-14 Tue 14:36</p>
+<p class="date">Created: 2014-05-09 Fri 12:12</p>
 <p class="validation"></p>
 </div>
 </body>
