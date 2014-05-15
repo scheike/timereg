@@ -117,20 +117,24 @@ Springer (2006).
 data(bmt)
 # Fits Proportional odds model 
 out <- prop.odds.subdist(Surv(time,cause==1)~platelet+age+tcell,data=bmt,
-		 cause=bmt$cause,cens.code=0,cens.model="KM",causeS=1,detail=0,n.sim=1000)
+ cause=bmt$cause,cens.code=0,cens.model="KM",
+ causeS=1,detail=0,n.sim=1000)
 summary(out) 
 par(mfrow=c(2,3))
-plot(out,sim.ci=2); plot(out,score=1) 
+plot(out,sim.ci=2); 
+plot(out,score=1) 
 
 pout <- predictpropodds(out,X=model.matrix(~platelet+age+tcell,data=bmt)[,-1])
 matplot(pout$time,pout$pred,type="l")
 
-# Fits Proportional odds model with stratified baseline, slow  !
-out <- Gprop.odds.subdist(Surv(time,cause==1)~-1+factor(platelet)+prop(age)+prop(tcell),data=bmt,
-		 cause=bmt$cause,cens.code=0,cens.model="KM",causeS=1,detail=0,n.sim=1000)
-summary(out) 
-par(mfrow=c(2,3))
-plot(out,sim.ci=2); plot(out,score=1) 
+# Fits Proportional odds model with stratified baseline, does not work yet!
+###out <- Gprop.odds.subdist(Surv(time,cause==1)~-1+factor(platelet)+
+###prop(age)+prop(tcell),data=bmt,cause=bmt$cause,
+###cens.code=0,cens.model="KM",causeS=1,detail=0,n.sim=1000)
+###summary(out) 
+###par(mfrow=c(2,3))
+###plot(out,sim.ci=2); 
+###plot(out,score=1) 
 }
 }
 \keyword{survival}
