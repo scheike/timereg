@@ -12,8 +12,8 @@ models for the cumulative incidence function
 confidence bands based on resampling. 
 }
 \usage{
-\method{predict}{timereg}(object,newdata=NULL,X=NULL,Z=NULL,
-n.sim=500,uniform=TRUE,se=TRUE,alpha=0.05,resample.iid,...)
+\method{predict}{timereg}(object,newdata=NULL,X=NULL,times=NULL,Z=NULL,
+n.sim=500,uniform=TRUE,se=TRUE,alpha=0.05,resample.iid=0,...)
 }
 \arguments{
   \item{object}{an object belonging to one of the following
@@ -24,6 +24,7 @@ n.sim=500,uniform=TRUE,se=TRUE,alpha=0.05,resample.iid,...)
     nonparametric components for predictions.}
   \item{Z}{alternative to newdata, specifies the
     parametric components of the model for predictions.}
+  \item{times}{times in which predictions are computed, default is all time-points for baseline}
   \item{n.sim}{number of simulations in resampling.}
   \item{uniform}{computes resampling based uniform
     confidence bands.}
