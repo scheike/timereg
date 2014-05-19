@@ -67,7 +67,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,
                            se=TRUE,alpha=0.05,resample.iid=0,...)
 {
     ## {{{
-    if (object$conv$convd>=1) stop("Model did not converge.")
+###    if (object$conv$convd>=1) stop("Model did not converge.")
     if (!(inherits(object,'comprisk') || inherits(object,'aalen')
           || inherits(object,'cox.aalen')))
         stop ("Must be output from comp.risk function")
@@ -78,6 +78,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,
   n <- length(object$B.iid) ## Number of clusters (or number of individuals
                             ## if no cluster structure is specified)
 
+  if (se==FALSE) uniform <- FALSE
   if (is.null(object$B.iid)==TRUE & (se==TRUE | uniform==TRUE)) {
     stop("resample processes necessary for these computations, set resample.iid=1");
   }
