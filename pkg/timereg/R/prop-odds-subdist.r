@@ -1,4 +1,4 @@
-prop.odds.subdist<-function(formula,data=sys.parent(),cause=NULL,causeS=1,beta=NULL,
+prop.odds.subdist<-function(formula,data=sys.parent(),cause=1,beta=NULL,
 Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
 profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=100,baselinevar=1)
 {
@@ -12,7 +12,7 @@ profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=100,baselinevar=1)
     m<-match.call(expand.dots=FALSE);
     id.call<-id; 
     residuals<-0;  robust<-0; ratesim<-0; 
-    m$causeS <- m$cens.model <- m$cause <- 
+    m$cens.model <- m$cause <- 
     m$sym<-m$profile <- m$max.time<- m$start.time<- m$weighted.test<- m$n.sim<-
     m$id<-m$Nit<-m$detail<-m$beta <- m$baselinevar <- m$clusters <- m$max.clust <- NULL
     if (n.sim==0) sim<-0 else sim<-1; 
