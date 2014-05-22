@@ -1,34 +1,154 @@
 prop.odds.subdist<-function(formula,data=sys.parent(),cause=NULL,causeS=1,beta=NULL,
 Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
-profile=1,sym=0,cens.code=0,cens.model="KM",clusters=NULL,max.clust=100,baselinevar=1)
+profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=100,baselinevar=1)
 {
 ## {{{ 
-call<-match.call(); 
-id.call<-id; 
-residuals<-0;  robust<-0; ratesim<-0; # profile<-0; 
-m<-match.call(expand.dots = FALSE);
-m$causeS <- m$cens.code <- m$cens.model <- m$cause <- 
-m$sym<-m$profile<- m$max.time<- m$start.time<- m$weighted.test<- m$n.sim<-
-m$id<-m$Nit<-m$detail<-m$beta <- m$baselinevar<-m$clusters <- m$max.clust <- NULL
-if (n.sim==0) sim<-0 else sim<-1; 
-antsim<-n.sim; 
 
-Terms <- if(missing(data)) terms(formula)
-           else              terms(formula, data=data)
-m$formula <- Terms
-m[[1]] <- as.name("model.frame")
-m <- eval(m, sys.parent())
-mt <- attr(m, "terms")
-intercept<-attr(mt, "intercept")
-Y <- model.extract(m, "response")
-if (!inherits(Y, "Surv")) stop("Response must be a survival object")
+ if (!missing(cause)){
+    if (length(cause)!=1) stop("Argument cause specifies the cause of interest, see help(prop.odds.subdist) for details.")
+ } 
 
-if (attr(m[, 1], "type") == "right") {
-  time2  <- m[, 1][, "time"]; time   <- rep(0,length(time2));
-  status <- m[, 1][, "status"]    } else 
-if (attr(m[, 1], "type") == "counting") {
-  time   <- m[, 1][,1]; time2  <- m[, 1][,2]; status <- m[, 1][,3]; } else {
-  stop("only right-censored or counting processes data") } 
+    ## {{{ reading formula
+    m<-match.call(expand.dots=FALSE);
+    id.call<-id; 
+    residuals<-0;  robust<-0; ratesim<-0; 
+    m$causeS <- m$cens.model <- m$cause <- 
+    m$sym<-m$profile <- m$max.time<- m$start.time<- m$weighted.test<- m$n.sim<-
+    m$id<-m$Nit<-m$detail<-m$beta <- m$baselinevar <- m$clusters <- m$max.clust <- NULL
+    if (n.sim==0) sim<-0 else sim<-1; 
+    antsim<-n.sim; 
+    causeS <- cause
+  
+    special <- c("cluster")
+    if (missing(data)) {
+        Terms <- terms(formula, special)
+    }  else {
+        Terms <- terms(formula, special, data = data)
+    }
+    m$formula <- Terms
+    m[[1]] <- as.name("model.frame")
+    m <- eval(m, sys.parent())
+    if (NROW(m) == 0) stop("No (non-missing) observations")
+    mt <- attr(m, "terms")
+    intercept <- attr(mt, "intercept")
+    event.history <- model.extract(m, "response")
+
+    if (match("Hist",class(event.history),nomatch=0)==0){
+        stop("Since timereg version 1.8.4., the right hand side of the formula must be specified as Hist(time, event) or Hist(time, event, cens.code).")
+    }
+    ## if (!inherits(Y, "Surv")) stop("Response must be a survival object")
+    cens.type <- attr(event.history,"cens.type")
+    cens.code <- attr(event.history,"cens.code")
+    delayed <- !(is.null(attr(event.history,"entry.type"))) && !(attr(event.history,"entry.type")=="")
+    model.type <- attr(event.history,"model")
+    if (model.type %in% c("competing.risks","survival")){
+        if (cens.type %in% c("rightCensored","uncensored")){
+            delta <- event.history[,"status"]
+            if (model.type=="competing.risks"){
+                states <- attr(event.history,"states")
+                ## if (missing(cause)) stop("Argument cause is needed for competing risks models.")
+                if (missing(cause)) {
+                    cause <- states[1]
+                    warning(paste("Argument cause is missing, analysing cause 1: ",cause,". Other causes are:",paste(states[-1],collapse=","),sep=""))
+                }else {
+                    if (!(cause %in% states)) stop(paste("Cause",cause," is not among the causes in data; these are:",paste(states,collapse=",")))
+                    cause <- match(cause,states,nomatch=0)
+                }
+                ## event is 1 if the event of interest occured and 0 otherwise
+                event <-  event.history[,"event"] == cause
+                if (sum(event)==0) stop(paste("No events of type:", cause, "in data."))
+            }
+            else
+                event <- delta
+            if (delayed){
+                stop("Delayed entry is not (not yet) supported.")
+                entrytime <- event.history[,"entry"]
+                eventtime <- event.history[,"time"]
+            }else{
+                eventtime <- event.history[,"time"]
+                entrytime <- rep(0,length(eventtime))
+            }
+        }else{
+            stop("Works only for right-censored data")
+        }
+    }else{stop("Response is neither competing risks nor survival.")}
+
+    start <- entrytime
+    stop <- time2 <- eventtime
+    states <- as.integer(states)
+    cens.code <- as.integer(cens.code)
+    ccc <- status <- event.history[,"event"]
+    ### back to orignal coding 
+    ccc[status==(length(states)+1)] <- cens.code
+    for (i in 1:length(states)) ccc[status==i] <- states[i]
+    status <- event <- ccc
+
+    if (n.sim==0) sim<-0 else sim<-1; antsim<-n.sim;
+###    des<-read.design(m,Terms)
+###    X<-des$X; Z<-des$Z; npar<-des$npar; px<-des$px; pz<-des$pz;
+###    print(head(Z))
+###    covnamesX<-des$covnamesX; covnamesZ<-des$covnamesZ;
+
+###  if (nrow(X)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
+
+###  if(is.null(clusters)){ clusters <- des$clusters}
+###  if(is.null(clusters)){
+###    cluster.call<-clusters; 
+###    clusters <- 0:(nrow(X) - 1)
+###    antclust <- nrow(X)
+###  } else {
+###    cluster.call<-clusters; 
+###    antclust <- length(unique(clusters))
+###    clusters <- as.integer(factor(clusters,labels=1:antclust))-1
+###  }
+###
+###    coarse.clust <- FALSE; 
+###    if ((!is.null(max.clust))) if (max.clust< antclust) {
+###        coarse.clust <- TRUE
+###	qq <- unique(quantile(clusters, probs = seq(0, 1, by = 1/max.clust)))
+###	qqc <- cut(clusters, breaks = qq, include.lowest = TRUE)    
+###	clusters <- as.integer(qqc)-1
+###	max.clusters <- length(unique(clusters))
+###	antclust <- max.clust    
+###    }                                                         
+    
+###    pxz <-px+pz;
+    
+###  n<-nrow(X); ntimes<-length(times);
+###  if (npar==TRUE) {Z<-matrix(0,n,1); pg<-1; fixed<-0;} else {fixed<-1;pg<-pz;} 
+###  if (is.null(weights)==TRUE) weights <- rep(1,n); 
+
+  ## }}}
+###
+###  ## {{{ 
+###call<-match.call(expand.dots=FALSE); 
+###id.call<-id; 
+###residuals<-0;  robust<-0; ratesim<-0; # profile<-0; 
+###m<-match.call(expand.dots = FALSE);
+###m$causeS <- m$cens.code <- m$cens.model <- m$cause <- 
+###m$sym<-m$profile<- m$max.time<- m$start.time<- m$weighted.test<- m$n.sim<-
+###m$id<-m$Nit<-m$detail<-m$beta <- m$baselinevar<-m$clusters <- m$max.clust <- NULL
+###if (n.sim==0) sim<-0 else sim<-1; 
+###antsim<-n.sim; 
+###
+###Terms <- if(missing(data)) terms(formula)
+###           else              terms(formula, data=data)
+###m$formula <- Terms
+###m[[1]] <- as.name("model.frame")
+###m <- eval(m, sys.parent())
+###mt <- attr(m, "terms")
+###intercept<-attr(mt, "intercept")
+###Y <- model.extract(m, "response")
+###if (!inherits(Y, "Surv")) stop("Response must be a survival object")
+###
+###if (attr(m[, 1], "type") == "right") {
+###  time2  <- m[, 1][, "time"]; time   <- rep(0,length(time2));
+###  status <- m[, 1][, "status"]    } else 
+###if (attr(m[, 1], "type") == "counting") {
+###  time   <- m[, 1][,1]; time2  <- m[, 1][,2]; status <- m[, 1][,3]; } else {
+###  stop("only right-censored or counting processes data") } 
+##### }}} 
+###
 
 desX <- model.matrix(Terms, m)[,-1,drop=FALSE]; 
 covnamesX<-dimnames(desX)[[2]]; 
@@ -36,29 +156,25 @@ covnamesX<-dimnames(desX)[[2]];
 if(is.matrix(desX) == TRUE) pg <- as.integer(dim(desX)[2])
 if(is.matrix(desX) == TRUE) nx <- as.integer(dim(desX)[1])
 px<-1; 
-Ntimes <- sum(status); 
 
 if ( (nx!=nrow(data)) & (!is.null(id))) stop("Missing values in design matrix not allowed with id \n"); 
-###if (nrow(Z)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
-
-if (is.null(cause)) stop(" cause must be given\n"); 
-status <- cause
+Ntimes <- sum(event==cause); 
 
 # adds random noise to make survival times unique
-if (sum(duplicated(time2[status==causeS]))>0) {
+if (sum(duplicated(time2[event==cause]))>0) {
 ties<-TRUE
-index<-(1:length(time2))[status==causeS]
-dtimes<-time2[status==causeS]; ties<-duplicated(dtimes); 
+index<-(1:length(time2))[event==cause]
+dtimes<-time2[event==cause]; ties<-duplicated(dtimes); 
 ties<-duplicated(dtimes); nties<-sum(ties); index<-index[ties]
 dt<-diff(sort(time2)); 
 dt<-min(dt[dt>0]);
 time2[index]<-time2[index]+runif(nties,0,min(0.001,dt/2));
 } else ties<-FALSE; 
 
-start<-time; stop<-time2; 
-dtimes<-time2[status==causeS]; 
-times<-time2[cause==causeS]; 
-index<-(1:length(time2))[cause==causeS];
+stop<-time2; 
+dtimes<-time2[event==cause]; 
+times<-time2[event==cause]; 
+index<-(1:length(time2))[event==cause];
 index <- index[order(times)]; 
 times<-sort(times);
 times <- c(start.time,times)
@@ -69,7 +185,7 @@ times<-times[times<=maxtimes]
 Ntimes <- length(times); 
 
 ########################################################################
-if (is.null(id)==TRUE) {antpers<-length(time); id<-0:(antpers-1); }
+if (is.null(id)==TRUE) {antpers<-length(time2); id<-0:(antpers-1); }
 else { pers<-unique(id); antpers<-length(pers); 
        id<-as.integer(factor(id,labels=1:(antpers)))-1; 
 }
@@ -92,8 +208,10 @@ if ((!is.null(max.clust))) if (max.clust<antclust) {
 if ((is.null(beta)==FALSE)) {
 	if (length(beta)!=pg) beta <- rep(beta[1],pg); 
 } else {
-     if ( (attr(m[, 1], "type") == "right" ) ) beta<-coxph(Surv(stop,status==causeS)~desX)$coef
-     else beta<-coxph(Surv(start,stop,status==causeS)~desX)$coef; 
+      beta<-coxph(Surv(time2,status==cause)~desX)$coef
+     if (max(abs(beta))>5) {
+	     cat("Warning, starting values from Cox model large, may set beta=\n")
+     }
 }
 
 if (residuals==1) {
@@ -119,13 +237,13 @@ loglike<-0;
 ## {{{ censoring and estimator
 
 if (cens.model=="KM") { ## {{{
-    ud.cens<-survfit(Surv(time2,cause==cens.code)~+1);
+    ud.cens<-survfit(Surv(time2,status==cens.code)~+1);
     Gfit<-cbind(ud.cens$time,ud.cens$surv)
     Gfit<-rbind(c(0,1),Gfit); 
     KMti<-Cpred(Gfit,time2)[,2];
     KMtimes<-Cpred(Gfit,times)[,2]; ## }}}
   } else if (cens.model=="cox") { ## {{{
-    ud.cens<-coxph(Surv(time2,cause==cens.code)~desX)
+    ud.cens<-coxph(Surv(time2,status==cens.code)~desX)
     aseout <- basehaz(ud.cens,centered=FALSE); 
     baseout <- cbind(baseout$time,baseout$hazard)
     Gcx<-Cpred(baseout,time2)[,2];
@@ -134,7 +252,7 @@ if (cens.model=="KM") { ## {{{
     KMtimes<-Cpred(Gfit,times)[,2]; 
     ## }}}
   } else if (cens.model=="aalen") {  ## {{{
-    ud.cens<-aalen(Surv(time2,cause==cens.code)~desX+cluster(clusters),n.sim=0,residuals=0,robust=0,silent=1)
+    ud.cens<-aalen(Surv(time2,status==cens.code)~desX+cluster(clusters),n.sim=0,residuals=0,robust=0,silent=1)
     KMti <- Cpred(ud.cens$cum,time2)[,-1];
     Gcx<-exp(-apply(Gcx*desX,1,sum))
     Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0

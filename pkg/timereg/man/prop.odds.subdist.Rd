@@ -25,7 +25,7 @@ The modelling formula uses the standard survival modelling given in the
 \usage{
 prop.odds.subdist(formula,data=sys.parent(),cause=NULL,causeS=1,beta=NULL,
 Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
-profile=1,sym=0,cens.code=0,cens.model="KM",clusters=NULL,max.clust=100,baselinevar=1)
+profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=100,baselinevar=1)
 }
 \arguments{
 \item{formula}{
@@ -116,9 +116,8 @@ Springer (2006).
 \donttest{
 data(bmt)
 # Fits Proportional odds model 
-out <- prop.odds.subdist(Surv(time,cause==1)~platelet+age+tcell,data=bmt,
- cause=bmt$cause,cens.code=0,cens.model="KM",
- causeS=1,detail=0,n.sim=1000)
+out <- prop.odds.subdist(Hist(time,cause)~platelet+age+tcell,data=bmt,
+ cause=1,cens.model="KM",detail=0,n.sim=1000)
 summary(out) 
 par(mfrow=c(2,3))
 plot(out,sim.ci=2); 

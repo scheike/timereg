@@ -9,6 +9,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
     if (!missing(cause)){
         if (length(cause)!=1) stop("Argument cause has new meaning since timereg version 1.8.4., it now specifies the cause of interest, see help(comp.risk) for details.")
     } 
+
     ## {{{
     # trans=1 P_1=1-exp( - ( x' b(b)+ z' gam t) ), 
     # trans=2 P_1=1-exp(-exp(x a(t)+ z` b )  Fine-Gray model, with baseline exp(x a(t)) 
@@ -62,7 +63,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
                     cause <- states[1]
                     warning(paste("Argument cause is missing, analysing cause 1: ",cause,". Other causes are:",paste(states[-1],collapse=","),sep=""))
                 }else {
-                    if (!(cause %in% states)) stop(paste("Cause",cause," is not among the causes in data; these are:",paste(states,collapse=",")))
+                   if (!(cause %in% states)) stop(paste("Cause",cause," is not among the causes in data; these are:",paste(states,collapse=",")))
                     cause <- match(cause,states,nomatch=0)
                 }
                 ## event is 1 if the event of interest occured and 0 otherwise
@@ -141,7 +142,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
                 Gfit<-cbind(ud.cens$time,ud.cens$surv)
                 Gfit<-rbind(c(0,1),Gfit); 
                 Gcx<-Cpred(Gfit,eventtime)[,2];
-                ###    cumhazcens<-Cpred(ud.censcum$cum,eventtime[ordertime])[,2];
+                ###    cumhazcens<-Cpred(ud.censcum$cum,eventtime[ordertime])[,3];
                 ###    dcumhazcens <- diff(c(0,cumhazcens));
                 Gcx <- Gcx/Gcxe; 
                 Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
