@@ -105,17 +105,17 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 
           for (j=0;j<*antpers;j++) { // {{{ 
 		  int other=((status[j]!=*causeS) &&  (status[j]!=*ccode))*1; 
-		  int nocens=((status[j]!=*ccode))*1; 
+//		  int nocens=((status[j]!=*ccode))*1; 
 		  weights=1; 
 		  if (etime[j]<time && other==1) weights=KMtimes[s]/KMti[j]; 
                   if (etime[j]<time) {
 		     if (other==1) risks=1; else risks=0; 
 		  } else risks=1; 
 		  weights=weights*risks; // censoring weights
-                  if (isnan(weights))  {
-                      printf("%lf %lf %d %d %d \n",etime[j],time,*ccode,status[j],*causeS);
-		      printf("%lf %lf \n",risks,weights); 
-                  }
+//                  if (isnan(weights))  {
+//                    Rprintf("%lf %lf %d %d %d \n",etime[j],time,*ccode,status[j],*causeS);
+//		      Rprintf("%lf %lf \n",risks,weights); 
+//                  }
 		  weightp=1; 
 
 		  extract_row(WX,j,xi); 
@@ -354,7 +354,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 
       for (i=0;i<*antpers;i++) {
 	  int other=((status[i]!=*causeS) &&  (status[i]!=*ccode))*1; 
-	  int nocens=((status[i]!=*ccode))*1; 
+//	  int nocens=((status[i]!=*ccode))*1; 
 	  weights=1; 
 	  if (etime[i]<time && other==1) weights=KMtimes[s]/KMti[i]; 
 	  if (etime[i]<time) {
