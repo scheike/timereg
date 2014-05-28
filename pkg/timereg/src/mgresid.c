@@ -517,7 +517,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 
     MxA(cumX1,AI,cumXAI1);
     if (s < 0) {
-    printf(" %d \n",s); 
+//    printf(" %d \n",s); 
     head_matrix(A); 
     head_matrix(AI); 
     head_matrix(cumX1); 
