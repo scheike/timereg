@@ -8,8 +8,9 @@ biprobit.table <- function(x,eqmarg=TRUE,...) {
 
 ##' @S3method biprobit default
 biprobit.default <- function(x,id,
-                             weight=NULL,biweight=function(x) 1/min(x),
+                             weight=NULL,biweight=function(x) { u <- min(x); ifelse(u==0,0,1/u) },
                              eqmarg=TRUE,ref,...) {
+
     
     x <- as.factor(x)
     lev <- levels(x)
@@ -48,7 +49,7 @@ biprobit.default <- function(x,id,
     if (length(weight)<2) {
         w0 <- as.vector(t(M))
     } else {
-        w <- apply(dd[,c("weight1","weight2")],1,biweight)        
+        w <- apply(dd[,c("weight1","weight2")],1,biweight)
         pos <- (dd[,"x1"]==ref)*1+(dd[,"x2"]==ref)*2+1    
         w0 <- as.vector(by(w,pos,sum))
     }

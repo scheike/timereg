@@ -586,12 +586,13 @@ bptwin.formula <- function(x, data, id, zyg, DZ, group=NULL,
     UU <- U(op$par,indiv=TRUE)    
     I <- -numDeriv::jacobian(U,op$par)
     tol <- 1e-15
-    V <- Inverse(I,tol)
+    iI <- Inverse(I,tol)
+    V <- iI
     sqrteig <- attributes(V)$sqrteig
     J <- NULL
     if (robustvar) {
       J <- crossprod(UU)
-      V <- V%*%J%*%V
+      V <- iI%*%J%*%iI
     }
     if (any(sqrteig<tol)) warning("Near-singular covariance matrix (pseudo-inverse used)")
   } else {
@@ -638,7 +639,7 @@ bptwin.formula <- function(x, data, id, zyg, DZ, group=NULL,
   
   npar[unlist(lapply(npar,length))==0] <- 0
 
-  val <- list(coef=cc,vcov=V,I=I,score=UU,logLik=attributes(UU)$logLik,opt=op,
+  val <- list(coef=cc,vcov=V,bread=iI,I=I,score=UU,logLik=attributes(UU)$logLik,opt=op,
               id=Wide[,id], model.frame=Wide,
               Sigma0=S$Sigma0, Sigma1=S$Sigma1, Sigma2=S$Sigma2,
               dS0=dS0, dS1=dS1, dS2=dS2,
