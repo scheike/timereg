@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iostream>
 #include <vector>
+#include <complex.h>
 
 using namespace arma;
 using namespace Rcpp;
@@ -76,6 +77,123 @@ if (status1==1 && status2==1) { valr=p11; dp(0)= dp(0); }
 if (status1==1 && status2==0) { valr=p10; dp(0)=-dp(0); }
 if (status1==0 && status2==1) { valr=p01; dp(0)=-dp(0); }
 if (status1==0 && status2==0) { valr=p00; dp(0)= dp(0); } 
+
+return(valr); 
+} // }}}
+
+// double CclaytonoakesP(double theta,int status1,int status2,double cif1,double cif2,vec &dp) 
+//{ // {{{
+//double valr=1,x,y,z;
+//double p00,p10,p01,p11; 
+//
+////double cifs=cif1+cif2; //double S=1+(cifs*(theta-1)); 
+//x=theta; y=cif1; z=cif2; 
+//
+//valr=  pow((1/pow(y,1/x) + 1/pow(z,1/x)) - 1,-x);
+//dp(0)= (-((x*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x))) - log(-1 + pow(y,-1/x) + pow(z,-1/x)))/pow(-1 + pow(y,-1/x) + pow(z,-1/x),x);
+//
+//p11=valr; 
+//p10=x-p11; 
+//p01=y-p11; 
+//p00=1-x-y+p11; 
+//
+//double epsilon=1E-20; 
+//cx_double Ctheta,Cvalr,Cy,Cz; 
+//Ctheta=cx_double(theta,epsilon); 
+//Cy=cx_double(y,0); 
+//Cz=cx_double(z,0); 
+//
+//printf(" mig \n"); 
+////Cvalr=  pow((1/pow(Cy,1/Ctheta) + 1/pow(Cz,1/Ctheta)) - 1,-Ctheta);
+//double dd=imag(Cvalr)/epsilon; 
+//
+//printf("complex  %lf ",dd); 
+//
+//if (status1==1 && status2==1) { valr=p11; dp(0)= dp(0); }
+//if (status1==1 && status2==0) { valr=p10; dp(0)=-dp(0); }
+//if (status1==0 && status2==1) { valr=p01; dp(0)=-dp(0); }
+//if (status1==0 && status2==0) { valr=p00; dp(0)= dp(0); } 
+//
+//if (status1==0 && status2==0) { // {{{
+//valr=  pow((1/pow(y,1/x) + 1/pow(z,1/x)) - 1,-x);
+//dp(0)= (-((x*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x))) - log(-1 + pow(y,-1/x) + pow(z,-1/x)))/pow(-1 + pow(y,-1/x) + pow(z,-1/x),x);
+//} // }}}
+//
+//if (status1==1 && status2==0) { // {{{
+//valr=pow(y,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x);
+//dp(0)=(pow(y,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*log(y))/pow(x,2) + pow(y,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*(((-1 - x)*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x)) - log(-1 + pow(y,-1/x) + pow(z,-1/x)));
+//} // }}}
+//
+//if (status1==0 && status2==1) { // {{{
+//valr=pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x);
+//dp(0)=(pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*log(z))/pow(x,2) + pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*(((-1 - x)*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x)) - log(-1 + pow(y,-1/x) + pow(z,-1/x)));
+//} // }}}
+//
+//if (status1==1 && status2==1) { // {{{
+//valr= -(((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x))/x);
+//dp(0)=((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x))/pow(x,2) + (pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x))/x - ((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x)*log(y))/pow(x,3) - ((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x)*log(z))/pow(x,3) - ((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x)*(((-2 - x)*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x)) - log(-1 + pow(y,-1/x) + pow(z,-1/x))))/x;
+//} // }}}
+//
+//printf(" %lf \n",dp(0)); 
+//return(valr); 
+//} // }}}
+
+cx_double Cpij(cx_double x, cx_double y, cx_double z,int status1, int status2)
+{ // {{{ 
+cx_double p11,one,two,four; 
+one=cx_double(1,0); two=cx_double(2,0); four=cx_double(4,0); 
+//p11=(1+(y+z)*(x-1)-sqrt(exp(ln(1+(y+z)*(x-1))*2)-4*x*(x-1)*y*z))/(2*(x-1));
+p11=(one+(y+z)*(x-one)-sqrt(pow((one+(y+z)*(x-one)),two)-four*x*(x-one)*y*z));
+//p11=one+(y+z)*(x-one); 
+p11=p11/(two*(x-one));
+
+// calculates probs depending on status 
+if (status1==1 && status2==0) p11=y-p11;
+if (status1==0 && status2==1) p11=z-p11; 
+if (status1==0 && status2==0) p11=one-y-z+p11; 
+
+return(p11); 
+} // }}}
+
+double CplacklikeP(double theta,int status1,int status2,double cif1,double cif2,vec &dp) 
+{ // {{{
+//double S,S2,a;
+//S=1+cifs*(theta-1); S2=4*cif1*cif2*theta*(theta-1);
+double x,y,z,valr=1,p11,p10,p01,p00; 
+//double cifs=cif1+cif2; 
+//a=(1+(theta-1)*(cifs)); 
+x=theta; y=cif1; z=cif2; 
+
+dp(0)=0; 
+
+if (theta!=1) {
+p11=(1+(y+z)*(x-1)-sqrt(pow(1+(y+z)*(x-1),2)-4*x*(x-1)*y*z))/(2*(x-1));
+dp(0)= (y + z - (-4*(-1 + x)*y*z - 4*x*y*z + 2*(y + z)*(1 + (-1 + x)*(y + z)))/(2.*sqrt(-4*(-1 + x)*x*y*z + pow(1 + (  -1 + x)*(y + z),2))))/(2.*(-1 + x)) - (1 + (-1 + x)*(y + z) - sqrt(-4*(-1 + x)*x*y*z + pow(1 + (-1 + x)*(y + z  ),2)))/(2.*pow(-1 + x,2));
+} else p11=cif1*cif2;
+
+//det komplekse trick, derivative wrt y og zi, dvs D_1 P(y,z,theta) og D_2 P
+cx_double CCp11,Ctheta,Cy,Cz; 
+Ctheta=cx_double(theta,0); 
+Cy=cx_double(y,1E-20); 
+Cz=(cx_double) z; 
+CCp11=Cpij(Ctheta,Cy,Cz,status1,status2); 
+dp(1)=imag(CCp11)/1E-20; 
+Cz=cx_double(z,1E-20); 
+Cy=(cx_double) y; 
+CCp11=Cpij(Ctheta,Cy,Cz,status1,status2); 
+dp(2)=imag(CCp11)/1E-20; 
+//printf(" %lf  ",imag(CCp11)/1E-20); 
+
+p11=p11;
+p10=y-p11; 
+p01=z-p11; 
+p00=1-y-z+p11; 
+
+if (status1==1 && status2==1) { valr=p11; dp(0)= dp(0); }
+if (status1==1 && status2==0) { valr=p10; dp(0)=-dp(0); }
+if (status1==0 && status2==1) { valr=p01; dp(0)=-dp(0); }
+if (status1==0 && status2==0) { valr=p00; dp(0)= dp(0); } 
+//printf(" %lf \n",dp(0)); 
 
 return(valr); 
 } // }}}
@@ -272,3 +390,4 @@ if (iid==1) res["theta.iid"]=thetiid;
 
 return(res); 
 } // }}}
+
