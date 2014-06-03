@@ -1,4 +1,18 @@
 
+## n <- 1e4; ACE <- c(1,1,1)/3
+## logscale <- -4.5; logshape <- .7
+## p2 <- .065
+## a2 <- -10; b2 <- 0.15 
+## a1 <- 85; b1 <- 0.1
+
+## pmvn(upper=c(q2,q2),sigma=diag(2)*(1-2/3)+2/3)
+## pmvn(c(q2,q2),sigma=diag(2)*(1-2/3)+2/3)
+
+## pnorm(q2,sd=1) ## Marginal / Perfect dependence
+## pmvn(upper=c(q2,q2),sigma=diag(2)*(1-2/3)+2/3) ## Concordance
+## pnorm(q2,sd=1)^2 ## Independence
+## (lambdaR <- pmvn(upper=c(q2,q2),sigma=diag(2)*(1-2/3)+2/3)/pnorm(q2,sd=1)^2)
+
 bicomprisksim <- function(n=1e4,
                           ACE=c(1/3,1/3,1/3),
                           logscale=-4.5,logshape=.7,
