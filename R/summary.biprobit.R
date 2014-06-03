@@ -1,14 +1,24 @@
 ##' @S3method summary biprobit
-summary.biprobit <- function(object,level=0.05,...) {
+summary.biprobit <- function(object,level=0.05,transform,...) {
   alpha <- level/2
   varcomp <- object$coef[length(coef(object)),1:2]
   varcomp <- rbind(object$model$tr(c(varcomp[1],varcomp[1]%x%cbind(1,1) + qnorm(1-alpha)*varcomp[2]%x%cbind(-1,1))))
   colnames(varcomp)[2:3] <- paste(c(alpha*100,100*(1-alpha)),"%",sep="")
   rownames(varcomp) <- ifelse(is.null(object$model$varcompname),"Variance component",object$model$varcompname)
 
-  logit <- function(p) log(p/(1-p))
-  tigol <- function(z) 1/(1+exp(-z))
-  dlogit <- function(p) 1/(p*(1-p))
+
+  h <- function(p) log(p/(1-p)) ## logit
+  ih <- function(z) 1/(1+exp(-z)) ## expit
+  ##dlogit <- function(p) 1/(p*(1-p))
+  if (!missing(transform)) {
+      h <- asin; ih <- sin      
+      if (is.null(transform)) {
+          h <- ih <- identity
+      }
+      if (is.list(transform)) {
+          h <- transform[[1]]; ih <- transform[[2]]
+      }     
+  }
   probs <- function(p) {
     ##    S <- diag(2); S[1,2] <- S[2,1] <- exp(tail(p,1))
     S <- object$SigmaFun(p[length(p)])
@@ -24,7 +34,8 @@ summary.biprobit <- function(object,level=0.05,...) {
     conc <- pmvn(upper=m,sigma=S)
     marg <- pnorm(m[1],sd=S[1,1]^0.5)
     cond <- conc/marg
-    logit(c(conc,cond,marg))
+    lambda <- cond/marg
+    c(h(c(conc,cond,marg)),lambda)
   }
   alpha <- level/2
   CIlab <- paste(c(alpha*100,100*(1-alpha)),"%",sep="")
@@ -32,8 +43,9 @@ summary.biprobit <- function(object,level=0.05,...) {
   prob <- probs(mycoef)
   Dprob <- numDeriv::jacobian(probs,mycoef)
   sprob <- diag((Dprob)%*%vcov(object)%*%t(Dprob))^0.5
-  pp <- tigol(cbind(prob,prob-qnorm(1-alpha)*sprob,prob+qnorm(1-alpha)*sprob))
-  rownames(pp) <- c("Concordance","Case-wise/Conditional","Marginal")
+  pp <- cbind(prob,prob-qnorm(1-alpha)*sprob,prob+qnorm(1-alpha)*sprob)
+  pp[1:3,] <- ih(pp[1:3,])  
+  rownames(pp) <- c("Concordance","Casewise Concordance","Marginal","Rel.Recur.Risk")
   colnames(pp) <- c("Estimate",CIlab)
   
   res <- list(varcomp=varcomp,prob=pp,coef=object$coef,score=object$score,logLik=object$logLik,msg=object$msg,N=object$N)
