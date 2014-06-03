@@ -112,6 +112,7 @@ biprobit.formula <- function(x, data, id, num=NULL, strata=NULL, eqmarg=TRUE,
                              control=list(trace=0,method="quasi"),
                              bound=FALSE,
                              messages=1,
+                             table=TRUE,
                              p,...) {
 
   mycall <- match.call()
@@ -159,7 +160,7 @@ biprobit.formula <- function(x, data, id, num=NULL, strata=NULL, eqmarg=TRUE,
 
   yx <- getoutcome(formula)
   
-  if (length(attributes(yx)$x)==0 && pairsonly) {
+  if (length(attributes(yx)$x)==0 && pairsonly && table) {
       if (!is.null(weight)) weight <- data[,weight]      
       return(biprobit(data[,yx],data[,id],weight,eqmarg=eqmarg,...))
   }
