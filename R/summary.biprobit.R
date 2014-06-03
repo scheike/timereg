@@ -11,7 +11,7 @@ summary.biprobit <- function(object,level=0.05,...) {
   dlogit <- function(p) 1/(p*(1-p))
   probs <- function(p) {
     ##    S <- diag(2); S[1,2] <- S[2,1] <- exp(tail(p,1))
-    S <- object$SigmaFun(p)
+    S <- object$SigmaFun(p[length(p)])
     m <- c(0,0)
     if (object$npar$intercept==1) m[1:2] <- p[1]
     if (object$npar$intercept==2) {

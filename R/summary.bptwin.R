@@ -214,7 +214,7 @@ print.summary.bptwin <- function(x,digits = max(3, getOption("digits") - 2),...)
   printCoefmat(x$par,digits=digits,...)
   cat("\n")
   ##  x$Nstr <- x$Nstr[,which((colnames(x$Nstr)!="Complete MZ/DZ")),drop=FALSE]
-  NN <- x$Nstr[,2:3,drop=FALSE]; colnames(NN)[1] <- gsub("Complete ","",colnames(NN)[1])
+  NN <- x$Nstr[,c(1,3),drop=FALSE]; colnames(NN)[1] <- gsub("Complete ","",colnames(NN)[1])
   print(NN,quote=FALSE)
   cat("\n")
   cc <- rbind(x$coef[,-2,drop=FALSE],x$rhoOS)

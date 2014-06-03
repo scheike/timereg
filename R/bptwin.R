@@ -1,9 +1,17 @@
+##' @export
+bptwin <- function(x,...) UseMethod("bptwin")
+
+##' @S3method bptwin table
+bptwin.table <- function(x,...) {
+    return(x)
+}
+
 ##' Liability-threshold model for twin data
 ##'
-##' @aliases biprobit twinlm.time
+##' @aliases bptwin bptwin.formula bptwin.default biprobit twinlm.time
 ##' @title Liability model for twin data
 ##' @seealso \code{\link{twinlm}}, \code{\link{twinlm.time}}, \code{\link{twinlm.strata}}, \code{\link{twinsim}}
-##' @param formula Formula specifying effects of covariates on the response.
+##' @param x Formula specifying effects of covariates on the response.
 ##' @param data \code{data.frame} with one observation pr row. In
 ##'     addition a column with the zygosity (DZ or MZ given as a factor) of
 ##'     each individual much be
@@ -38,6 +46,7 @@
 ##' @param varlink Link function for variance parameters
 ##' @param ... Additional arguments to lower level functions
 ##' @author Klaus K. Holst
+##' @S3method bptwin formula
 ##' @export
 ##' @examples
 ##' \donttest{
@@ -47,33 +56,33 @@
 ##'              id="tvparnr",zyg="zyg",DZ="dz",type="ae")
 ##' summary(b0)
 ##' }
-bptwin <- function(formula, data, id, zyg, DZ, group=NULL,
-                   num=NULL,
-                   weight=NULL,
-                   biweight=function(x) 1/min(x),
-                   strata=NULL,
-                   messages=1,
-                   control=list(trace=0),
-                   type="ace",
-                   eqmean=TRUE,
-                   pairsonly=FALSE,
-                   samecens=TRUE,
-                   allmarg=samecens&!is.null(weight),
-                   stderr=TRUE,                  
-                   robustvar=TRUE,                   
-                   p, indiv=FALSE,
-                   constrain,
-                   bound=FALSE,
-                   varlink,
-                   ...) {
+bptwin.formula <- function(x, data, id, zyg, DZ, group=NULL,
+                           num=NULL,
+                           weight=NULL,
+                           biweight=function(x) 1/min(x),
+                           strata=NULL,
+                           messages=1,
+                           control=list(trace=0),
+                           type="ace",
+                           eqmean=TRUE,
+                           pairsonly=FALSE,
+                           samecens=TRUE,
+                           allmarg=samecens&!is.null(weight),
+                           stderr=TRUE,                  
+                           robustvar=TRUE,                   
+                           p, indiv=FALSE,
+                           constrain,
+                           bound=FALSE,
+                           varlink,
+                           ...) {
     
 ###{{{ setup
 
   mycall <- match.call()
-  formulaId <- unlist(Specials(formula,"cluster"))
-  formulaStrata <- unlist(Specials(formula,"strata"))
+  formulaId <- unlist(Specials(x,"cluster"))
+  formulaStrata <- unlist(Specials(x,"strata"))
   formulaSt <- paste("~.-cluster(",formulaId,")-strata(",paste(formulaStrata,collapse="+"),")")
-  formula <- update(formula,formulaSt)
+  formula <- update(x,formulaSt)
   if (!is.null(formulaId)) {
     id <- formulaId
     mycall$id <- id
