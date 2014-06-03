@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <iostream>
 #include <vector>
-#include <complex.h>
+#include <complex>
 
 using namespace arma;
 using namespace Rcpp;
