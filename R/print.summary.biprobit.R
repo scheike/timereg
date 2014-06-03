@@ -16,8 +16,11 @@ print.summary.biprobit <- function(x,digits = max(3, getOption("digits") - 2),..
     res <- x$varcomp
     if (!is.null(x$prob)) {
       res <- rbind(res,x$prob)
-    }    
-    print(RoundMat(res,digits=digits),quote=FALSE)
+    }
+    idx <- unlist(sapply(c("Concordance","Marginal"),function(x) grep(x,rownames(res))))
+    idx2 <- setdiff(seq(nrow(res)),idx)
+    res2 <- rbind(res[idx2,],rep(NA,ncol(res)),res[idx,])
+    print(RoundMat(res2,digits=digits,na=FALSE),quote=FALSE)
   }
   cat("\n")
 }

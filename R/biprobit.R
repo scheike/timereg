@@ -3,7 +3,7 @@ biprobit <- function(x,...) UseMethod("biprobit")
 
 ##' @S3method biprobit table
 biprobit.table <- function(x,eqmarg=TRUE,...) {
-    x    
+    x
 }
 
 ##' @S3method biprobit default

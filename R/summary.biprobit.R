@@ -54,7 +54,7 @@ summary.biprobit <- function(object,level=0.05,transform,...) {
   rownames(pp) <- nn
   colnames(pp) <- c("Estimate",CIlab)
   
-  res <- list(varcomp=varcomp,prob=pp,coef=object$coef,score=object$score,logLik=object$logLik,msg=object$msg,N=object$N)
+  res <- list(varcomp=varcomp,prob=pp,coef=object$coef,score=colSums(object$score),logLik=object$logLik,msg=object$msg,N=object$N)
   class(res) <- "summary.biprobit"
   res
 }
