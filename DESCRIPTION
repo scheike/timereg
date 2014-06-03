@@ -50,7 +50,6 @@ Collate:
     'fastapprox.R'
     'fastpattern.R'
     'fastreshape.R'
-    'fastreshapeobs.R'
     'ipw.R'
     'lifetable.R'
     'logLik.biprobit.R'
