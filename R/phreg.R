@@ -15,6 +15,8 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
                        entry[ii],exit[ii],status[ii],
                        as.matrix(X)[ii,,drop=FALSE],
                        id[ii],
+                       !is.null(id),
+                       !is.null(entry),
                        package="mets"))
     if (!is.null(id))
       id <- unlist(lapply(dd,function(x) x$id[x$jumps+1]))
@@ -40,7 +42,13 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
       structure(-ploglik,gradient=-gradient,hessian=-hessian)
     }
   } else {
-      dd <- .Call("FastCoxPrep",entry,exit,status,X,id,package="mets")
+      browser()      
+      system.time(dd <- .Call("mets_FastCoxPrep",
+                              entry,exit,status,X,
+                              as.integer(seq_along(entry)),
+                              is.null(id),
+                              !is.null(entry),
+                              package="mets"))
       if (!is.null(id))
           id <- dd$id[dd$jumps+1]
       obj <- function(pp,U=FALSE,all=FALSE) {
@@ -54,7 +62,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
               val$nevent <- length(val$S0)
               return(val)
           }
-      with(val, structure(-ploglik,gradient=-gradient,hessian=-hessian))
+          with(val, structure(-ploglik,gradient=-gradient,hessian=-hessian))
       }
   }
   opt <- NULL
