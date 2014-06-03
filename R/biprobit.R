@@ -95,6 +95,7 @@ biprobit.default <- function(x,id,
                 call=mycall,
                 model=model,
                 msg=msg,
+                table=M,
                 npar=list(intercept=1+!eqmarg,pred=NULL,var=1),
                 SigmaFun=SigmaFun)
     class(val) <- "biprobit"

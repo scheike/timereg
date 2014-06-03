@@ -32,10 +32,14 @@ summary.biprobit <- function(object,level=0.05,transform,...) {
     mu.cond <- function(x) m[1]+S[1,2]/S[2,2]*(x-m[2])
     var.cond <- S[1,1]-S[1,2]^2/S[2,2]
     conc <- pmvn(upper=m,sigma=S)
+    disconc <- pmvn(lower=c(-Inf,m[1]),upper=c(m[2],Inf),sigma=S)
     marg <- pnorm(m[1],sd=S[1,1]^0.5)
     cond <- conc/marg
     lambda <- cond/marg
-    c(h(c(conc,cond,marg)),lambda)
+    discond <- disconc/(1-marg)
+    logOR <- log(cond)-log(1-cond)-log(discond)+log(1-discond)
+    logOR <- log(cond/(1-cond)/(discond/(1-discond)))
+    c(h(c(conc,cond,marg)),lambda,logOR)
   }
   alpha <- level/2
   CIlab <- paste(c(alpha*100,100*(1-alpha)),"%",sep="")
@@ -44,8 +48,10 @@ summary.biprobit <- function(object,level=0.05,transform,...) {
   Dprob <- numDeriv::jacobian(probs,mycoef)
   sprob <- diag((Dprob)%*%vcov(object)%*%t(Dprob))^0.5
   pp <- cbind(prob,prob-qnorm(1-alpha)*sprob,prob+qnorm(1-alpha)*sprob)
-  pp[1:3,] <- ih(pp[1:3,])  
-  rownames(pp) <- c("Concordance","Casewise Concordance","Marginal","Rel.Recur.Risk")
+  pp[1:3,] <- ih(pp[1:3,])
+  nn <- c("Concordance","Casewise Concordance","Marginal","Rel.Recur.Risk","log(OR)")
+  if (nrow(pp)-length(nn)>0) nn <- c(nn,rep("",nrow(pp)-length(nn)))
+  rownames(pp) <- nn
   colnames(pp) <- c("Estimate",CIlab)
   
   res <- list(varcomp=varcomp,prob=pp,coef=object$coef,score=object$score,logLik=object$logLik,msg=object$msg,N=object$N)
