@@ -38,7 +38,6 @@ summary.biprobit <- function(object,level=0.05,transform,...) {
     lambda <- cond/marg
     discond <- disconc/(1-marg)
     logOR <- log(cond)-log(1-cond)-log(discond)+log(1-discond)
-    logOR <- log(cond/(1-cond)/(discond/(1-discond)))
     c(h(c(conc,cond,marg)),lambda,logOR)
   }
   alpha <- level/2
@@ -54,7 +53,7 @@ summary.biprobit <- function(object,level=0.05,transform,...) {
   rownames(pp) <- nn
   colnames(pp) <- c("Estimate",CIlab)
   
-  res <- list(varcomp=varcomp,prob=pp,coef=object$coef,score=colSums(object$score),logLik=object$logLik,msg=object$msg,N=object$N)
+  res <- list(all=rbind(varcomp,pp),varcomp=varcomp,prob=pp,coef=object$coef,score=colSums(object$score),logLik=object$logLik,msg=object$msg,N=object$N)
   class(res) <- "summary.biprobit"
   res
 }

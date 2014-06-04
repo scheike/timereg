@@ -127,10 +127,13 @@ summary.bptwin <- function(object,level=0.05,transform=FALSE,...) {
     mu.cond <- function(x) m+S[1,2]/S[2,2]*(x-m)
     var.cond <- S[1,1]-S[1,2]^2/S[2,2]    
     conc <- pmvn(upper=c(m,m),sigma=S)
+    disconc <- pmvn(lower=c(-Inf,m),upper=c(m,Inf),sigma=S)
     marg <- pnorm(m,sd=S[1,1]^0.5)
     cond <- conc/marg
+    discond <- disconc/(1-marg)
+    logOR <- log(cond)-log(1-cond)-log(discond)+log(1-discond)
     lambdaR <- cond/marg
-    c(logit(c(conc,cond,marg)),lambdaR)
+    c(logit(c(conc,cond,marg)),lambdaR,logOR)
   }
 
   mycoef <- coef(object)
@@ -152,7 +155,7 @@ summary.bptwin <- function(object,level=0.05,transform=FALSE,...) {
   probMZ[1:3,] <- tigol(probMZ[1:3,])
   probDZ <- cbind(probDZ,probDZ-qnorm(1-alpha)*sprobDZ,probDZ+qnorm(1-alpha)*sprobDZ)
   probDZ[1:3,] <- tigol(probDZ[1:3,])
-  rownames(probMZ) <- rownames(probDZ) <- c("Concordance","Casewise Concordance","Marginal","Rel.Recur.Risk")
+  rownames(probMZ) <- rownames(probDZ) <- c("Concordance","Casewise Concordance","Marginal","Rel.Recur.Risk","log(OR)")
   colnames(probMZ) <- colnames(probDZ) <- c("Estimate",CIlab)
  
   ## mu <- coef(object)[c(object$bidx0[1],object$bidx1[1])]

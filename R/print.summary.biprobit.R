@@ -2,7 +2,7 @@
 print.summary.biprobit <- function(x,digits = max(3, getOption("digits") - 2),...) {
   cat("\n")
   printCoefmat(x$coef,digits=digits,...)
-  S <- colSums(x$score);  names(S) <- rep("",length(S))
+  S <- x$score;  names(S) <- rep("",length(S))
   cat("\n")
   print(x$N,quote=FALSE)
   cat("Score: "); cat(formatC(S,...));

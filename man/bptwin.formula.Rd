@@ -1,5 +1,6 @@
 \name{bptwin.formula}
 \alias{biprobit}
+\alias{biprobit.time}
 \alias{bptwin}
 \alias{bptwin.default}
 \alias{bptwin.formula}

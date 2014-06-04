@@ -91,8 +91,8 @@ twinlm.time <- function(formula,data,id,type="u",...,
         data0[cond0,outcome] <- FALSE
         time0[cond0] <- tau
         data0$S <- Surv(time0,status0==1)        
-        dataw <- ipw(S~zyg, data=data0,
-                     cluster=id,weightname=weight,pairs=TRUE)
+        dataw <- ipw(update(cens.formula,S~.), data=data0, cens.model=cens.model,
+                     cluster=id,weightname=weight,obsonly=TRUE)
         suppressWarnings(b <- bptwin(formula, data=dataw, id=id, weight=weight,type=type,...))
         res <- c(res,list(summary(b)))
     }

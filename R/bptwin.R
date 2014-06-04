@@ -8,7 +8,7 @@ bptwin.table <- function(x,...) {
 
 ##' Liability-threshold model for twin data
 ##'
-##' @aliases bptwin bptwin.formula bptwin.default biprobit twinlm.time
+##' @aliases bptwin bptwin.formula bptwin.default biprobit twinlm.time biprobit.time
 ##' @title Liability model for twin data
 ##' @seealso \code{\link{twinlm}}, \code{\link{twinlm.time}}, \code{\link{twinlm.strata}}, \code{\link{twinsim}}
 ##' @param x Formula specifying effects of covariates on the response.

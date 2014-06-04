@@ -84,3 +84,4 @@ Collate:
     'uniprobit.R'
     'utils.R'
     'vcov.biprobit.R'
+    'bicomprisksim.R'
