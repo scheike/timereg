@@ -455,10 +455,14 @@ binomial.twostage.time <- function(formula,data,id,...,
         res <- c(res,list(coef(b),concordance=concordance,cif=prev0))
     }
     if (length(breaks)==1) return(b)
-    res <- list(varname="Time",var=breaks,concordance=conc,cif=cif,time=breaks,
+
+###    res <- list(varname="Time",var=breaks,concordance=conc,cif=cif,time=breaks,
 ###		coef=lapply(res,function(x) x$all),
-		summary=res,call=m,type="time",logor=logor)
+###		summary=res,call=m,type="time",logor=logor)
 ###    class(res) <- ""
+
+res <- list(varname="Time",var=breaks,concordance=conc,cif=cif,time=breaks,
+		summary=res,call=m,type="time",logor=logor)
     return(res)    
 } ## }}} 
 
