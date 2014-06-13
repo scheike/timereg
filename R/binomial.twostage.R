@@ -374,7 +374,7 @@ binomial.twostage.time <- function(formula,data,id,...,
         theta0 <- b$theta[1,1]
         prev <- prev0 <- exp(coef(marg.bin)[1])/(1+exp(coef(marg.bin)[1]))
 	if (!is.null(fix.marg)) prev <- fix.marg[k]
-        concordance <- plack.cif(prev,prev,exp(theta0))
+        concordance <- plack.cif2(prev,prev,theta0)
 	conc <- c(conc,concordance)
 	cif <- c(cif,prev0)
 	logor <- rbind(logor,coef(b))
