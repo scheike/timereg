@@ -330,6 +330,66 @@ binomial.twostage.time <- function(formula,data,id,...,
                           cens.formula,cens.model="aalen",weight="w") {
    ## {{{ 
 
+	## {{{  specifik kode der viker
+###mz <- ipw(Surv(time,crstatus==0)~+1,data=prtmz)
+###ddz <- mz
+###
+###udz <- glm(cancer~+1,data=ddz,weights=1/w,family="quasibinomial")
+###summary(udz)
+###pudz <- predict(udz,type="response")
+###ddz <- cbind(ddz,pudz)
+###prev <- exp(coef(udz))/(1+exp(coef(udz)))
+###prev
+######
+###ddz <- ddz[,c("cancer","crstatus","tvparnrs","zygo","time","w","pudz")]
+###dobmz <- fast.reshape(ddz,id="tvparnrs")
+######dobmz <- dobmz[!is.na(dobmz$cancer2),]
+###dobmz$minw <- pmin(dobmz$w1,dobmz$w2)
+###with(dobmz,table(crstatus1,crstatus2))
+###dobmz$dobbelt <-1*(!is.na(dobmz$crstatus2))
+###mz <- fast.reshape(dobmz)
+###mz <- subset(mz,!is.na(zygo))
+###table(dobmz$dobbelt)
+###table(mz$dobbelt)
+###udw <- binomial.twostage(mz$cancer,data=mz,clusters=mz$tvparnrs,marginal.p=mz$pudz,
+###		 weights=mz$dobbelt/mz$minw)
+###summary(udw)
+###thetav <- theta.des %*% udw$theta
+###thetadz <- udw$theta[1,1]
+###thetamz <- udw$theta[2,1]
+###concordance <- plack.cif(prev[1],prev[1],exp(thetadz))
+
+   
+###mz <- ipw(Surv(time,crstatus==0)~+1,data=prtmz)
+###dz <- ipw(Surv(time,crstatus==0)~+1,data=prtdz)
+###ddz <- rbind(dz,mz)
+###
+###udz <- glm(cancer~-1+factor(zygo),data=ddz,weights=1/w,family="quasibinomial")
+###summary(udz)
+###pudz <- predict(udz,type="response")
+###ddz <- cbind(ddz,pudz)
+###prev <- exp(coef(udz))/(1+exp(coef(udz)))
+###prev
+######
+###ddz <- ddz[,c("cancer","crstatus","tvparnrs","zygo","time","w","pudz")]
+###dobmz <- fast.reshape(ddz,id="tvparnrs")
+######dobmz <- dobmz[!is.na(dobmz$cancer2),]
+###dobmz$minw <- pmin(dobmz$w1,dobmz$w2)
+###with(dobmz,table(crstatus1,crstatus2))
+###dobmz$dobbelt <-1*(!is.na(dobmz$crstatus2))
+###mz <- fast.reshape(dobmz)
+###mz <- subset(mz,!is.na(zygo))
+###table(dobmz$dobbelt)
+###table(mz$dobbelt)
+###theta.des <- model.matrix(~-1+ factor(zygo),data=mz)
+###udw <- binomial.twostage(mz$cancer,data=mz,clusters=mz$tvparnrs,marginal.p=mz$pudz,
+###		 weights=mz$dobbelt/mz$minw,theta.des=theta.des)
+###summary(udw)
+###thetav <- theta.des %*% udw$theta
+###thetadz <- udw$theta[1,1]
+###thetamz <- udw$theta[2,1]
+	## }}} 
+
     m <- match.call(expand.dots = TRUE)[1:3]
     Terms <- terms(cens.formula, data = data)
     m$formula <- Terms
@@ -357,19 +417,31 @@ binomial.twostage.time <- function(formula,data,id,...,
         data0$S <- Surv(time0,status0==1)        
         dataw <- ipw(update(cens.formula,S~.), data=data0, cens.model=cens.model,
                      cluster=id,weightname=weight,obsonly=TRUE)
+###	print(head(dataw))
 
+###	with(dataw,print(table(cancer)))
 	marg.bin <- glm(formula,data=dataw,weight=1/w,family="quasibinomial")
         pudz <- predict(marg.bin,type="response")
 	dataw$pudz <- pudz
+###	print(head(pudz))
+###	print(dim(dataw))
 	datawdob <- fast.reshape(dataw,id=id)
+###	print(dim(datawdob))
         datawdob$minw <- pmin(datawdob$w1,datawdob$w2)
         datawdob <-datawdob[!is.na(datawdob$w2),]
+###	print(dim(datawdob))
         dataw <- fast.reshape(datawdob)
+###	print(dim(dataw))
 	dataw$dobbelt <- 1*(!is.na(dataw$w))
+###	print(table(dataw$dobbelt))
+###	print(head(dataw$id))
+###	print(table(dataw$id))
+###	print(sum(table(dataw[,id])==2))
+###	with(dataw,print(table(cancer)))
 	k <- k+1
 	if (!is.null(fix.marg)) dataw$pudz <- fix.marg[k]
 
-        suppressWarnings( b <- binomial.twostage(dataw$cancer,data=dataw,clusters=dataw[,id],
+        suppressWarnings( b <- binomial.twostage(dataw$cancer, data=dataw, clusters=dataw[,id],
 						 marginal.p=dataw$pudz,
 						 weight=dataw$dobbelt/dataw$minw,...))
         theta0 <- b$theta[1,1]
@@ -389,7 +461,6 @@ binomial.twostage.time <- function(formula,data,id,...,
 ###    class(res) <- ""
     return(res)    
 } ## }}} 
-
 
 
 ##' Fits two-stage binomial for describing depdendence in binomial data
