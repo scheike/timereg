@@ -324,6 +324,73 @@ binomial.twostage <- function(margbin,data=sys.parent(),score.method="nlminb",
 
 } ## }}}
 
+##' @export
+binomial.twostage.time <- function(formula,data,id,...,
+                          breaks=Inf,pairsonly=TRUE,fix.marg=NULL,
+                          cens.formula,cens.model="aalen",weight="w") {
+   ## {{{ 
+
+    m <- match.call(expand.dots = TRUE)[1:3]
+    Terms <- terms(cens.formula, data = data)
+    m$formula <- Terms
+    m[[1]] <- as.name("model.frame")
+    M <- eval(m)
+    censtime <- model.extract(M, "response")
+    status <- censtime[,2]
+    time <- censtime[,1]
+    outcome <- as.character(terms(formula)[[2]])    
+    if (is.null(breaks)) breaks <-  quantile(time,c(0.25,0.5,0.75,1))
+
+    outcome0 <- paste(outcome,"_dummy")
+    res <- list()
+    logor <- cif <- conc <- c()
+    k <- 0
+    for (tau in breaks) {
+        if (length(breaks)>1) message(tau)
+        data0 <- data
+        time0 <- time
+        cond0 <- time0>tau
+        status0 <- status
+        status0[cond0 & status==1] <- 3 ## Censored
+        data0[cond0,outcome] <- FALSE
+        time0[cond0] <- tau
+        data0$S <- Surv(time0,status0==1)        
+        dataw <- ipw(update(cens.formula,S~.), data=data0, cens.model=cens.model,
+                     cluster=id,weightname=weight,obsonly=TRUE)
+
+	marg.bin <- glm(formula,data=dataw,weight=1/w,family="quasibinomial")
+        pudz <- predict(marg.bin,type="response")
+	dataw$pudz <- pudz
+	datawdob <- fast.reshape(dataw,id=id)
+        datawdob$minw <- pmin(datawdob$w1,datawdob$w2)
+        datawdob <-datawdob[!is.na(datawdob$w2),]
+        dataw <- fast.reshape(datawdob)
+	dataw$dobbelt <- 1*(!is.na(dataw$w))
+	k <- k+1
+	if (!is.null(fix.marg)) dataw$pudz <- fix.marg[k]
+
+        suppressWarnings( b <- binomial.twostage(dataw$cancer,data=dataw,clusters=dataw[,id],
+						 marginal.p=dataw$pudz,
+						 weight=dataw$dobbelt/dataw$minw,...))
+        theta0 <- b$theta[1,1]
+        prev <- prev0 <- exp(coef(marg.bin)[1])/(1+exp(coef(marg.bin)[1]))
+	if (!is.null(fix.marg)) prev <- fix.marg[k]
+        concordance <- plack.cif(prev,prev,exp(theta0))
+	conc <- c(conc,concordance)
+	cif <- c(cif,prev0)
+	logor <- rbind(logor,coef(b))
+
+        res <- c(res,list(coef(b),concordance=concordance,cif=prev0))
+    }
+    if (length(breaks)==1) return(b)
+    res <- list(varname="Time",var=breaks,concordance=conc,cif=cif,time=breaks,
+###		coef=lapply(res,function(x) x$all),
+		summary=res,call=m,type="time",logor=logor)
+###    class(res) <- ""
+    return(res)    
+} ## }}} 
+
+
 
 ##' Fits two-stage binomial for describing depdendence in binomial data
 ##' using marginals that are on logistic form using the binomial.twostage funcion, but

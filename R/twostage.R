@@ -438,15 +438,15 @@ if (!is.null(margsurv))
 } ## }}}
 
 ##' @S3method summary twostage
-summary.twostage <-function (object,digits = 3,...) { ## {{{
+summary.twostage <-function (object,digits = 3,silent=0,...) { ## {{{
   if (!(inherits(object,"twostage"))) stop("Must be a Two-Stage object")
   
   var.link<-attr(object,"var.link");
-  if (object$model=="plackett") cat("Dependence parameter for Plackett model \n"); 
+  if ((object$model=="plackett") & (silent==0)) cat("Dependence parameter for Plackett model \n"); 
   if (attr(object,"response")=="binomial") response <- "binomial" else response <- "survival"
-  if (object$model=="clayton.oakes") cat("Dependence parameter for Clayton-Oakes model \n"); 
+  if ((object$model=="clayton.oakes") & (silent==0)) cat("Dependence parameter for Clayton-Oakes model \n"); 
 
-  if (sum(abs(object$score)>0.0001) ) {
+  if ((sum(abs(object$score))>0.0001) & (silent==0))  {
 	  cat("    Variance parameters did not converge, allow more iterations.\n"); 
 	  cat(paste("    Score:",object$score,"  \n")); 
   }
