@@ -20,7 +20,7 @@ revdiag <- function(x) {
 
 ###{{{ ExMarg
 
-ExMarg <- function(Y0,XX0,W0,dS0,midx1=seq(ncol(XX0)/2),midx2=seq(ncol(XX0)/2)+ncol(XX0)/2,eqmarg=TRUE,allmarg=FALSE) {  
+ExMarg <- function(Y0,XX0,W0,dS0,midx1=seq(ncol(XX0)/2),midx2=seq(ncol(XX0)/2)+ncol(XX0)/2,eqmarg=TRUE,allmarg=FALSE,Z0=NULL,...) {  
   ii1 <- which(is.na(Y0[,2]) & !is.na(Y0[,1]))
   ii2 <- which(is.na(Y0[,1]) & !is.na(Y0[,2]))
   ii0 <- which(is.na(Y0[,1]) & is.na(Y0[,2]))
@@ -51,15 +51,17 @@ ExMarg <- function(Y0,XX0,W0,dS0,midx1=seq(ncol(XX0)/2),midx2=seq(ncol(XX0)/2)+n
       W0 <- W0[-c(margidx,ii0),,drop=FALSE]
     }
     Y0 <- Y0[-c(margidx,ii0),,drop=FALSE]
+    if (!is.null(Z0))  Z0 <- Z0[-c(margidx,ii0),,drop=FALSE]
     XX0 <- XX0[-c(margidx,ii0),,drop=FALSE]    
   }
   res <- list(Y0=Y0,XX0=XX0,W0=W0,
               Y0_marg=Y0_marg, XX0_marg=XX0_marg,
               X0_marg1=X0_marg1, X0_marg2=X0_marg2,
-              dS0_marg=dS0_marg, W0_marg=W0_marg,
+              dS0_marg=dS0_marg, W0_marg=W0_marg,              
               id=id, idmarg=c(id1,id2),
               ii1=ii1,
-              margidx=margidx)
+              margidx=margidx,
+              Z0=Z0)
 }
 
 ###}}} ExMarg

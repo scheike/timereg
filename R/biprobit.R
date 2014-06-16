@@ -10,7 +10,6 @@ biprobit.table <- function(x,eqmarg=TRUE,...) {
 biprobit.default <- function(x,id,
                              weight=NULL,biweight=function(x) { u <- min(x); ifelse(u==0,0,1/min(u,1e-2)) },
                              eqmarg=TRUE,ref,...) {
-
     
     x <- as.factor(x)
     lev <- levels(x)
@@ -34,9 +33,10 @@ biprobit.default <- function(x,id,
     dvartr <- dtanh; varitr <- atanh
     trname <- "tanh"; itrname <- "atanh"    
     dS <- rbind(c(0,1,1,0))
-    varcompname <- "Tetrachoric correlation"
-    msg <- "Variance of latent residual sterm = 1 (standard probit link)"
-    model <- list(tr=vartr,name=trname,inv=itrname,invname=itrname,deriv=dvartr,varcompname=varcompname,dS=dS,eqmarg=eqmarg)
+    varcompname <- "Tetrachoric correlation"    
+    ##msg <- "Variance of latent residual sterm = 1 (standard probit link)"
+    msg <- NULL
+    model <- list(tr=vartr,name=trname,inv=itrname,invname=itrname,deriv=dvartr,varcompname=varcompname,dS=dS,eqmarg=eqmarg,...)
     SigmaFun <- function(p,...) {
         Sigma1 <- diag(2)  
         Sigma2 <- matrix(c(0,1,1,0),2,2)
@@ -54,7 +54,7 @@ biprobit.default <- function(x,id,
         w0 <- as.vector(by(w,pos,sum))
     }
     p0 <- c(rep(M[2,1]/(M[2,1]+M[1,1]),1+!eqmarg),0.5)
-
+    
     U <- function(p,w0) {
         val <- Ubiprobit(p,SigmaFun,dS,eqmarg,1,MyData,indiv=TRUE)
         logl <- w0*attributes(val)$logLik
@@ -82,8 +82,8 @@ biprobit.default <- function(x,id,
     colnames(cc) <- c("Estimate","Std.Err","Z","p-value")
     nn <- c("Intercept")
     if (!eqmarg) nn <- paste(nn,1:2,sep=".")
-    rho <- ifelse(itrname=="log","U","rho")
-    nn <- c(nn,paste(itrname,"(",rho,")",sep=""))
+    rhonam <- ifelse(itrname=="log","U","rho")
+    nn <- c(nn,paste(itrname,"(",rhonam,")",sep=""))
     rownames(cc) <- nn   
     
     val <- list(coef=cc,
@@ -105,13 +105,14 @@ biprobit.default <- function(x,id,
 
 
 ##' @export
-biprobit.formula <- function(x, data, id, num=NULL, strata=NULL, eqmarg=TRUE,
+biprobit.formula <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
                              indep=FALSE, weight=NULL,
                              biweight=function(x) 1/min(x),
                              samecens=TRUE, randomeffect=FALSE, vcov="robust",
-                             pairsonly=FALSE,
+                             pairsonly=FALSE,                             
                              allmarg=samecens&!is.null(weight),
                              control=list(trace=0,method="quasi"),
+                             constrain,
                              bound=FALSE,
                              messages=1,
                              table=TRUE,
@@ -168,7 +169,7 @@ biprobit.formula <- function(x, data, id, num=NULL, strata=NULL, eqmarg=TRUE,
   }
   
   mycall <- match.call()
-  DD <- procdatabiprobit(formula,data,id,num=num,weight=weight,pairsonly=pairsonly,...)
+  DD <- procdatabiprobit(formula,data,id,num=num,weight=weight,pairsonly=pairsonly,rho,...)
   rnames1 <- DD$rnames1
 
   nx <- length(rnames1)
@@ -176,7 +177,9 @@ biprobit.formula <- function(x, data, id, num=NULL, strata=NULL, eqmarg=TRUE,
   midx1 <- seq(nx)
   midx2 <- midx1+nx
   midx <- seq(2*nx)
-  plen <- ifelse(eqmarg,nx+1,2*nx+1)
+  blen <- ifelse(eqmarg,nx,2*nx)
+  zlen <- ncol(DD$Z0)      
+  plen <- blen+zlen
   
   datanh <- function(r) 1/(1-r^2)
   dtanh <- function(z) 4*exp(2*z)/(exp(2*z)+1)^2
@@ -186,18 +189,20 @@ biprobit.formula <- function(x, data, id, num=NULL, strata=NULL, eqmarg=TRUE,
   Sigma1 <- diag(2)  
   Sigma2 <- matrix(c(0,1,1,0),2,2)
   dS0 <- rbind(c(0,1,1,0))
+  
   varcompname <- "Tetrachoric correlation"
-  msg <- "Variance of latent residual term = 1 (standard probit link)"
+  msg <- NULL
+  if (randomeffect) msg <- "Variance of latent residual term = 1 (standard probit link)"
   if (randomeffect) {
       dS0 <- rbind(rep(1,4))
-        vartr <- dvartr <- exp; inv <- log
+      vartr <- dvartr <- exp; inv <- log
       trname <- "exp"; itrname <- "log"
       Sigma2 <- 1
       varcompname <- NULL
   }
-  model <- list(tr=vartr,name=trname,inv=itrname,invname=itrname,deriv=dvartr,varcompname=varcompname,dS=dS0,eqmarg=eqmarg)
+  model <- list(tr=vartr,name=trname,inv=itrname,invname=itrname,deriv=dvartr,varcompname=varcompname,dS=dS0,eqmarg=eqmarg,randomeffect=randomeffect,blen=blen,zlen=zlen)
 
-  MyData <- with(DD,ExMarg(Y0,XX0,W0,dS0,midx1,midx2,eqmarg=eqmarg,allmarg=allmarg))
+  MyData <- with(DD,ExMarg(Y0,XX0,W0,dS0,midx1,midx2,eqmarg=eqmarg,allmarg=allmarg,Z0))
   if (samecens & !is.null(weight)) {
       MyData$W0 <- cbind(apply(MyData$W0,1,biweight))
       if (!is.null(MyData$Y0_marg)) {
@@ -205,24 +210,32 @@ biprobit.formula <- function(x, data, id, num=NULL, strata=NULL, eqmarg=TRUE,
       }
   }
   
-  SigmaFun <- function(p,...) {
-    Sigma <- Sigma1+Sigma2*vartr(p)
-    if (indep) Sigma <- diag(2)
-    attributes(Sigma)$dvartr <- dvartr
-    return(Sigma)
+  SigmaFun <- function(p,Z=MyData$Z0,cor=!randomeffect,...) {
+      if (!cor) {
+          r <- vartr(p[1])
+          Sigma <- Sigma1+Sigma2*vartr(p)
+          if (indep) Sigma <- diag(2)
+          attributes(Sigma)$dvartr <- dvartr
+          return(Sigma)
+      }
+      val <- Z%*%p
+      dr <- apply(Z,2,function(x) x*dvartr(val))
+      structure(list(rho=vartr(val),lp=val,drho=dr),dvartr=dvartr,vartr=vartr)
   }
 
   U <- function(p,indiv=FALSE) {
-      if (bound) p[plen] <- min(p[plen],20)
-      Sigma <- SigmaFun(p[plen])
-      lambda <- eigen(Sigma)$values
-      if (any(lambda<1e-12 | lambda>1e9)) stop("Variance matrix out of bounds")
+      gamma <- p[seq(zlen)+blen]
+      if (bound) gamma <- min(gamma,20)
+      Sigma <- SigmaFun(gamma)
+      if (randomeffect) {
+          lambda <- eigen(Sigma)$values
+          if (any(lambda<1e-12 | lambda>1e9)) stop("Variance matrix out of bounds")
+      }
       Mu_marg <- NULL
       if (eqmarg) {
           B <- cbind(p[midx1])
           Mu <- with(MyData,
                      cbind(XX0[,midx1,drop=FALSE]%*%B,XX0[,midx2,drop=FALSE]%*%B))     
-          ##      Mu <- with(MyData, matrix(X0%*%B,ncol=2,byrow=TRUE))
           if (!is.null(MyData$Y0_marg)) 
               Mu_marg <- with(MyData, XX0_marg%*%B)
       } else {
@@ -233,23 +246,35 @@ biprobit.formula <- function(x, data, id, num=NULL, strata=NULL, eqmarg=TRUE,
           if (!is.null(MyData$Y0_marg))
               Mu_marg <- with(MyData, rbind(X0_marg1%*%B1,X0_marg2%*%B2))
       }
-      
-      U <- with(MyData, .Call("biprobit2",
-                              Mu,XX0,
-                              Sigma,dS0*attributes(Sigma)$dvartr(p[plen]),Y0,W0,
-                              !is.null(W0),TRUE,eqmarg))
+
+      if (randomeffect) {
+          U <- with(MyData, .Call("biprobit2",
+                                  Mu,XX0,
+                                  Sigma,dS0*attributes(Sigma)$dvartr(p[plen]),Y0,W0,
+                                  !is.null(W0),TRUE,eqmarg,FALSE))
+      } else {
+          U <- with(MyData, .Call("biprobit2",
+                                  Mu,XX0,
+                                  Sigma$rho,Sigma$drho,
+                                  Y0,W0,
+                                  !is.null(W0),TRUE,eqmarg,TRUE))
+      }
       
       if (!is.null(MyData$Y0_marg)) {
-          ## U_marg <- uniprobit(Mu_marg[,1],XX0_marg,
-          ##                     Sigma[1,1],dS0_marg*dvartr(p[plen]),Y0_marg,
-          ##                     W0_marg,indiv=TRUE)
-          ## U$score <- rbind(U$score,U_marg)
-          ## U$loglik <- c(U$loglik,attributes(U_marg)$logLik)
-          ##      W0_marg <- rep(1,nrow(XX0_marg))
-          U_marg <- with(MyData, .Call("uniprobit",
-                                       Mu_marg,XX0_marg,
-                                       Sigma[1,1],dS0_marg*attributes(Sigma)$dvartr(p[plen]),Y0_marg,
-                                       W0_marg,!is.null(W0_marg),TRUE))
+          if (randomeffect) {
+              U_marg <- with(MyData, .Call("uniprobit",
+                                           Mu_marg,XX0_marg,
+                                           Sigma[1,1],dS0_marg*attributes(Sigma)$dvartr(p[plen]),Y0_marg,
+                                           W0_marg,!is.null(W0_marg),TRUE))
+          } else {
+              U_marg0 <- matrix(0,length(MyData$Y0_marg),ncol=plen)
+              U_marg <- with(MyData, .Call("uniprobit",
+                                           Mu_marg,XX0_marg,
+                                           1,matrix(ncol=0,nrow=0),Y0_marg,
+                                           W0_marg,!is.null(W0_marg),TRUE))
+              U_marg0[,seq(blen)] <-  U_marg[[1]]
+              U_marg[[1]] <- U_marg0
+          }
           U$score <- rbind(U$score,U_marg$score)
           U$loglik <- c(U$loglik,U_marg$loglik)
       }
@@ -321,7 +346,6 @@ biprobit.formula <- function(x, data, id, num=NULL, strata=NULL, eqmarg=TRUE,
       }
   } else op <- list(par=p)
   
-  
   UU <- U(op$par,indiv=TRUE)
   J <- crossprod(UU)
   ##  iJ <- Inverse(J)
@@ -333,15 +357,21 @@ biprobit.formula <- function(x, data, id, num=NULL, strata=NULL, eqmarg=TRUE,
               outer=Inverse(J),
               hessian=iI              
               )
+  
   cc <- cbind(op$par,sqrt(diag(V)))
   cc <- cbind(cc,cc[,1]/cc[,2],2*(pnorm(abs(cc[,1]/cc[,2]),lower.tail=FALSE)))
   colnames(cc) <- c("Estimate","Std.Err","Z","p-value")
-  rho <- ifelse(itrname=="log","U","rho")
+
+  p1 <- "("; p2 <- ")"
+  if (itrname=="log") rhonam <- "U" else {
+      rhonam <- DD$znames
+      p1 <- p2 <- ""; itrname <- "r:" 
+  }
   if (!eqmarg)
     rownames(cc) <- c(paste(rnames1,rep(c(1,2),each=length(rnames1)),sep="."),
-                      paste(itrname,"(",rho,")",sep=""))
+                      paste(itrname,p1,rhonam,p2,sep=""))
   else
-    rownames(cc) <- c(rnames1,paste(itrname,"(",rho,")",sep=""))
+    rownames(cc) <- c(rnames1,paste(itrname,p1,rhonam,p2,sep=""))
   rownames(V) <- colnames(V) <- rownames(cc)
   npar <- list(intercept=attributes(terms(formula))$intercept,
               pred=nrow(attributes(terms(formula))$factor)-1)
@@ -356,7 +386,7 @@ biprobit.formula <- function(x, data, id, num=NULL, strata=NULL, eqmarg=TRUE,
 
 
 
-procdatabiprobit <- function(formula,data,id,num=NULL,weight=NULL,pairsonly=FALSE,...) {
+procdatabiprobit <- function(formula,data,id,num=NULL,weight=NULL,pairsonly=FALSE,rho=~1,...) {
 
     data <- data[order(data[,id]),]
     idtab <- table(data[,id])
@@ -381,8 +411,15 @@ procdatabiprobit <- function(formula,data,id,num=NULL,weight=NULL,pairsonly=FALS
     options(opt)
     rnames1 <- setdiff(colnames(Data),c(yvar,num,id,weight))
     X0 <- as.matrix(Data[,rnames1])
-    
+
+    ex <- 1+!is.null(num)
+    rho <- update(rho,paste("~.+",
+                           paste(c(id,num),collapse="+")))
+    Z0 <- model.matrix(rho,data);
+    znames <- setdiff(colnames(Z0),c(id,num))
+    Z0 <- as.matrix(subset(fast.reshape(Z0,id=id),select=-c(id,num))[,seq(ncol(Z0)-ex),drop=FALSE])
     Wide <- fast.reshape(as.data.frame(Data),id=id,num=num,sep=".",labelnum=TRUE)
+    
     W0 <- NULL
     yidx <- paste(yvar,1:2,sep=".")
     rmidx <- c(id,yidx)
@@ -391,12 +428,12 @@ procdatabiprobit <- function(formula,data,id,num=NULL,weight=NULL,pairsonly=FALS
         widx <- paste(weight,1:2,sep=".")
         W0 <- as.matrix(Wide[,widx])
         rmidx <- c(rmidx,widx)
-    }
+    }   
     Y0 <- as.matrix(Wide[,yidx])
     XX0 <- as.matrix(Wide[,setdiff(colnames(Wide),rmidx)])
     XX0[is.na(XX0)] <- 0
 
-    list(Y0=Y0,XX0=XX0,W0=W0,rnames1=rnames1)
+    list(Y0=Y0,XX0=XX0,W0=W0,Z0=Z0,znames=znames,rnames1=rnames1)
 }
 
 
@@ -429,7 +466,7 @@ Ubiprobit <- function(p,S,dS,eqmarg,nx,MyData,indiv=FALSE) {
     U <- with(MyData, .Call("biprobit2",
                             Mu,XX0,
                             Sigma,dS*attributes(Sigma)$dvartr(p[plen]),Y0,W0,
-                            !is.null(W0),TRUE,eqmarg))
+                            !is.null(W0),TRUE,eqmarg,FALSE))
     
     if (!is.null(MyData$Y0_marg)) {
         U_marg <- with(MyData, .Call("uniprobit",
@@ -456,12 +493,14 @@ Ubiprobit <- function(p,S,dS,eqmarg,nx,MyData,indiv=FALSE) {
 biprobit.time <- function(formula,data,id,...,
                           breaks=Inf,pairsonly=TRUE,
                           cens.formula,cens.model="aalen",weight="w") {
-    
-    m <- match.call(expand.dots = TRUE)[1:3]
-    Terms <- terms(cens.formula, data = data)
+
+    m <- match.call(expand.dots = FALSE)
+    m <- m[match(c("","data"),names(m),nomatch = 0)]
+    Terms <- terms(cens.formula,data=data)
     m$formula <- Terms
     m[[1]] <- as.name("model.frame")
-    M <- eval(m)
+    M <- eval(m,envir=parent.frame())
+
     censtime <- model.extract(M, "response")
     status <- censtime[,2]
     time <- censtime[,1]
@@ -494,7 +533,8 @@ biprobit.time <- function(formula,data,id,...,
 biprobit.time2 <- function(formula,data,id,...,
                           breaks=Inf,pairsonly=TRUE,
                           cens.formula,cens.model="aalen",weight="w") {
-    
+
+ 
     m <- match.call(expand.dots = TRUE)[1:3]
     Terms <- terms(cens.formula, data = data)
     m$formula <- Terms

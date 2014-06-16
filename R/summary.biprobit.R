@@ -1,11 +1,10 @@
 ##' @export
-summary.biprobit <- function(object,level=0.05,transform,...) {
+summary.biprobit <- function(object,level=0.05,transform,mean.contrast=NULL,mean.contrast2=NULL,cor.contrast=NULL,...) {
   alpha <- level/2
   varcomp <- object$coef[length(coef(object)),1:2]
   varcomp <- rbind(object$model$tr(c(varcomp[1],varcomp[1]%x%cbind(1,1) + qnorm(1-alpha)*varcomp[2]%x%cbind(-1,1))))
   colnames(varcomp)[2:3] <- paste(c(alpha*100,100*(1-alpha)),"%",sep="")
   rownames(varcomp) <- ifelse(is.null(object$model$varcompname),"Variance component",object$model$varcompname)
-
 
   h <- function(p) log(p/(1-p)) ## logit
   ih <- function(z) 1/(1+exp(-z)) ## expit
@@ -19,26 +18,84 @@ summary.biprobit <- function(object,level=0.05,transform,...) {
           h <- transform[[1]]; ih <- transform[[2]]
       }     
   }
+  convval <- function(val) {
+      i1 <- which(val==1)
+      i2 <- which(val==-1)
+      val <- as.character(val)
+      val[seq_len(length(val)-1)+1] <-
+          paste("+ ", val[seq_len(length(val)-1)+1],sep="")
+      val[i2] <- "- "; val[i1] <- ""
+      return(val)
+  }
+  parfun <- function(p,ref=FALSE) {
+      nn <- paste("[",gsub("r:","",rownames(object$coef),fixed=TRUE),"]",sep="")
+      m <- rep(p[1],2)
+      r <- p[object$model$blen+1]
+      corref <- mref1 <- mref2 <- NULL
+      if (ref) {
+          corref <- nn[object$model$blen+1]
+          mref1 <- mref2 <- nn[1]
+      }
+      if (!is.null(mean.contrast)) {
+          m[1] <- sum(p[seq_along(mean.contrast)]*mean.contrast)
+          if (ref) {
+              idx1 <- which(mean.contrast!=0)
+              mref <- nn[idx1]              
+              mref1 <- mref2 <- paste(convval(mean.contrast[idx1]),mref,sep="")
+          }
+          if (is.null(mean.contrast2)) {
+              idx1 <- which(mean.contrast!=0)
+              idx2 <- idx1+1
+              if (length(object$npar$pred)>0) idx2 <- idx2+object$npar$pred/2
+              mean.contrast2 <- rep(0,object$model$blen)
+              mean.contrast2[idx2] <- mean.contrast[idx1]              
+          }
+      }
+      if (!is.null(mean.contrast2)) {
+          m[2] <- sum(p[seq_len(object$model$blen)]*mean.contrast2[seq_len(object$model$blen)])
+          if (ref) {
+              idx1 <- which(mean.contrast2!=0)
+              mref <- nn[idx1]
+              mref2 <- paste(convval(mean.contrast2[idx1]),mref,sep="")
+          }          
+      } else {
+          if (object$model$eqmarg) { m <- rep(m[1],2) }          
+      }
+      if (!object$model$eqmarg & is.null(mean.contrast) & is.null(mean.contrast2)) {
+          idx <- 2
+          if (length(object$npar$pred)>0) idx <- idx+object$npar$pred/2
+          m[2] <- p[idx]
+          mref2 <- nn[idx]
+      }
+      if (!is.null(cor.contrast)) {
+          p.idx <- seq_len(object$model$zlen)+object$model$blen
+          if (length(cor.contrast)==length(p)) p.idx <- seq(length(p))          
+          r <- sum(p[p.idx]*cor.contrast)
+          if (ref) {
+              idx1 <- which(cor.contrast!=0)
+              corref <- nn[p.idx[idx1]]
+              corref <- paste(convval(cor.contrast[idx1]),corref,sep="")
+          }
+      }
+      return(list(m=m,r=r,mref1=mref1,mref2=mref2,corref=corref))
+  }
+  
   probs <- function(p) {
-    ##    S <- diag(2); S[1,2] <- S[2,1] <- exp(tail(p,1))
-    S <- object$SigmaFun(p[length(p)])
-    m <- c(0,0)
-    if (object$npar$intercept==1) m[1:2] <- p[1]
-    if (object$npar$intercept==2) {
-        idx <- 1:2
-        if (length(object$npar$pred)>0) idx <- c(1,1+object$npar$pred/2+1)
-        m[1:2] <- p[idx]
-    }
-    mu.cond <- function(x) m[1]+S[1,2]/S[2,2]*(x-m[2])
-    var.cond <- S[1,1]-S[1,2]^2/S[2,2]
-    conc <- pmvn(upper=m,sigma=S)
-    disconc <- pmvn(lower=c(-Inf,m[1]),upper=c(m[2],Inf),sigma=S)
-    marg <- pnorm(m[1],sd=S[1,1]^0.5)
-    cond <- conc/marg
-    lambda <- cond/marg
-    discond <- disconc/(1-marg)
-    logOR <- log(cond)-log(1-cond)-log(discond)+log(1-discond)
-    c(h(c(conc,cond,marg)),lambda,logOR)
+      pp <- parfun(p)
+      m <- pp[[1]]
+      r <- pp[[2]]
+      S <- object$SigmaFun(r,cor=FALSE)
+            mu.cond <- function(x) m[1]+S[1,2]/S[2,2]*(x-m[2])
+      var.cond <- S[1,1]-S[1,2]^2/S[2,2]
+      conc <- pmvn(upper=m,sigma=S) 
+      disconc <- pmvn(lower=c(-Inf,m[2]),upper=c(m[1],Inf),sigma=S)
+      marg <- pnorm(m[1],sd=S[1,1]^0.5)
+      cond <- conc/marg
+      lambda <- cond/marg
+      discond <- disconc/(1-marg)
+      logOR <- log(cond)-log(1-cond)-log(discond)+log(1-discond)
+      tetracor <- S[1,2]/S[1,1]
+      c(h(c(conc,cond,marg)),lambda,logOR,r)
   }
   alpha <- level/2
   CIlab <- paste(c(alpha*100,100*(1-alpha)),"%",sep="")
@@ -48,12 +105,15 @@ summary.biprobit <- function(object,level=0.05,transform,...) {
   sprob <- diag((Dprob)%*%vcov(object)%*%t(Dprob))^0.5
   pp <- cbind(prob,prob-qnorm(1-alpha)*sprob,prob+qnorm(1-alpha)*sprob)
   pp[1:3,] <- ih(pp[1:3,])
-  nn <- c("Concordance","Casewise Concordance","Marginal","Rel.Recur.Risk","log(OR)")
+  pp[nrow(pp),] <- object$model$tr(pp[nrow(pp),])
+  nn <- c("Concordance","Casewise Concordance","Marginal","Rel.Recur.Risk","log(OR)","Tetrachoric correlation")
   if (nrow(pp)-length(nn)>0) nn <- c(nn,rep("",nrow(pp)-length(nn)))
   rownames(pp) <- nn
   colnames(pp) <- c("Estimate",CIlab)
-  
-  res <- list(all=rbind(varcomp,pp),varcomp=varcomp,prob=pp,coef=object$coef,score=colSums(object$score),logLik=object$logLik,msg=object$msg,N=object$N)
+
+  contrast <- any(c(!is.null(cor.contrast),!is.null(mean.contrast),!is.null(mean.contrast2)))
+  res <- list(all=pp,varcomp=varcomp,prob=pp,coef=object$coef,score=colSums(object$score),logLik=object$logLik,msg=object$msg,N=object$N,
+              par=parfun(object$coef[,1],ref=TRUE),model=object$model,contrast=contrast)
   class(res) <- "summary.biprobit"
   res
 }
