@@ -329,11 +329,13 @@ binomial.twostage <- function(margbin,data=sys.parent(),score.method="nlminb",
 binomial.twostage.time <- function(formula,data,id,...,silent=1,
                           breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weight="w") {
    ## {{{ 
-    m <- match.call(expand.dots = TRUE)[1:3]
-    Terms <- terms(cens.formula, data = data)
+    m <- match.call(expand.dots = FALSE)
+    m <- m[match(c("","data"),names(m),nomatch = 0)]
+    Terms <- terms(cens.formula,data=data)
     m$formula <- Terms
     m[[1]] <- as.name("model.frame")
-    M <- eval(m)
+    M <- eval(m,envir=parent.frame())
+
     censtime <- model.extract(M, "response")
     status <- censtime[,2]
     time <- censtime[,1]
@@ -350,14 +352,13 @@ binomial.twostage.time <- function(formula,data,id,...,silent=1,
         ### in IPW functionen   
         data0 <- data
         time0 <- time 
-        cond0 <- time0>tau
         status0 <- status 
-        status0[cond0 & status==1] <- 3 
+        cond0 <- time0>tau
+        if (fix.censweights==0) status0[cond0 & status==1] <- 3 
         data0[cond0,outcome] <- FALSE
-        time0[cond0] <- tau
-        data0$S <- Surv(time0,status0==1)        
-
-        dataw <- ipw(update(cens.formula,S~.), data=data0, cens.model=cens.model,cluster=id,obsonly=TRUE)
+	time0[cond0] <- tau
+	data0$S <- Surv(time0,status0==1)        
+        dataw <- ipw(update(cens.formula,S~.),data=data0, cens.model=cens.model,obsonly=TRUE)
 	marg.bin <- glm(formula,data=dataw,weight=1/w,family="quasibinomial")
         pudz <- predict(marg.bin,type="response")
 	dataw$pudz <- pudz
@@ -366,10 +367,8 @@ binomial.twostage.time <- function(formula,data,id,...,silent=1,
         dataw <- fast.reshape(datawdob)
 	### removes second row of singletons 
 	dataw  <- subset(dataw,!is.na(minw)) 
-
 	k <- k+1
 	if (!is.null(fix.marg)) dataw$pudz <- fix.marg[k]
-
         suppressWarnings( b <- binomial.twostage(dataw[,outcome],data=dataw,clusters=dataw[,id],marginal.p=dataw$pudz,weight=1/dataw$minw,...))
         theta0 <- b$theta[1,1]
         prev <- prev0 <- exp(coef(marg.bin)[1])/(1+exp(coef(marg.bin)[1]))
@@ -701,7 +700,7 @@ simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{
 } ## }}} 
 
 
-#####' @export
+#####' @S3method summary twostage
 ###summary.twostage <-function (object,digits = 3,...) { ## {{{
 ###  if (!(inherits(object,"twostage"))) stop("Must be a Two-Stage object")
 ###  
@@ -721,7 +720,7 @@ simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{
 ###  res
 ###} ## }}}
 ###
-#####' @export
+#####' @S3method coef twostage
 ###coef.twostage <- function(object,var.link=NULL,...)
 ###{ ## {{{
 ###  theta <- object$theta
@@ -770,7 +769,7 @@ simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{
 ###   return(1/(1+2/theta)) 
 ###}
 ###
-#####' @export
+#####' @S3method print twostage
 ###print.twostage<-function(x,digits=3,...)
 ###{ ## {{{
 ###  print(x$call); 
@@ -778,7 +777,7 @@ simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{
 ###  print(summary(x)); 
 ###} ## }}}
 ###
-#####' @export
+#####' @S3method plot twostage
 ###plot.twostage<-function(x,pointwise.ci=1,robust=0,specific.comps=FALSE,
 ###		level=0.05, 
 ###		start.time=0,stop.time=0,add.to.plot=FALSE,mains=TRUE,
@@ -818,7 +817,7 @@ simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{
 ###  }
 ###}  ## }}}
 ###
-#####' @export
+#####' @S3method predict twostage
 ###predict.twostage <- function(object,X=NULL,Z=NULL,times=NULL,times2=NULL,theta.des=NULL,diag=TRUE,...)
 ###{ ## {{{
 ###time.coef <- data.frame(object$cum)
@@ -929,7 +928,7 @@ simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{
 ###return(ud);
 ###} ## }}}
 ###
-#####' @export
+#####' @S3method summary pc.twostage
 ###summary.pc.twostage <- function(object,var.link=NULL,...)
 ###{ ## {{{
 ###  if (!(inherits(object,"pc.twostage"))) stop("Must be a Piecewise constant two-Stage object")
@@ -942,14 +941,14 @@ simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{
 ###  res
 ###} ## }}}
 ###
-#####' @export
+#####' @S3method print pc.twostage
 ###print.pc.twostage <- function(x,var.link=NULL,...)
 ###{ ## {{{
 ###   if (!(inherits(x,"pc.twostage"))) stop("Must be a Piecewise constant two-Stage object")
 ###   print( summary(x,var.link=var.link,...))
 ###} ## }}}
 ###
-#####' @export
+#####' @S3method print summary.pc.twostage
 ###print.summary.pc.twostage <- function(x,var.link=NULL, digits=3,...)
 ###{ ## {{{
 ###  
