@@ -174,12 +174,12 @@ ClaytonOakes <- function(formula,data=parent.frame(),cluster,var.formula=~1,cuts
 
 ##################################################
 
-##' @S3method print claytonoakes
+##' @export
 print.claytonoakes <- function(x,...) {
   print(summary(x))
 }
 
-##' @S3method print summary.claytonoakes
+##' @export
 print.summary.claytonoakes <- function(x,...) {
   printCoefmat(x$coef[,c(1,3,4)],...)
   cat("\nDependence parameters:\n")
@@ -187,7 +187,7 @@ print.summary.claytonoakes <- function(x,...) {
   invisible(x)
 }
 
-##' @S3method summary claytonoakes
+##' @export
 summary.claytonoakes <- function(object,...) {
   mycoef <- matrix(nrow=length(object$coef),ncol=4)
   mycoef[,1:2] <- cbind(object$coef,sqrt(diag(object$vcov)))
@@ -207,7 +207,7 @@ summary.claytonoakes <- function(object,...) {
   res
 }
 
-##' @S3method plot claytonoakes
+##' @export
 plot.claytonoakes <- function(x,chaz=TRUE,add=!is.null(dev.list()),col="darkblue",...) {
   haz <- summary(x)$coef[-seq(x$nbeta+x$ngamma),,drop=FALSE]
   t <- x$cuts

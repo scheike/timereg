@@ -6,7 +6,7 @@
 ## plot(b,which=5:6,ylim=c(0,1),type="l")
 ## plot(b,which=5:6,ylim=c(0,1),col=c("darkred","darkblue"),legend=c("MZ","DZ"),lty=1:2)
 
-##' @S3method coef multitwinlm
+##' @export
 coef.multitwinlm <- function(object,...) {    
     res <- unlist(lapply(object$summary,function(x) x$estimate[,1]))
     if (!is.null(names(object$var))) {
@@ -18,7 +18,7 @@ coef.multitwinlm <- function(object,...) {
     return(res)
 }
 
-##' @S3method vcov multitwinlm
+##' @export
 vcov.multitwinlm <- function(object,...) {
     if (object$type=="strata") {
         return(do.call(blockdiag,
@@ -102,7 +102,7 @@ twinlm.time <- function(formula,data,id,type="u",...,
     return(res)    
 }
 
-##' @S3method summary multitwinlm
+##' @export
 summary.multitwinlm <- function(object,which=seq(nrow(object$coef[[1]])),...) {
     res <- list()
     for (i in which) {    
@@ -117,7 +117,7 @@ summary.multitwinlm <- function(object,which=seq(nrow(object$coef[[1]])),...) {
 }
 
 
-##' @S3method print multitwinlm
+##' @export
 print.multitwinlm <- function(x,row.names=FALSE,...) {
     res <- summary(x,...)
     for (i in seq_along(res)) {
@@ -128,7 +128,7 @@ print.multitwinlm <- function(x,row.names=FALSE,...) {
     invisible(x)
 }
 
-##' @S3method plot multitwinlm
+##' @export
 plot.multitwinlm <- function(x,...,which=1,
                             type="s",
                             lwd=2,lty=1,col,fillcol,alpha=0.2,

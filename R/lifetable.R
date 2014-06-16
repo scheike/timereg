@@ -30,7 +30,7 @@
 ##' d <- with(TRACE,lifetable(Surv(time,status==9)~sex+vf,breaks=c(0.2,0.5)))
 ##' summary(glm(events ~ offset(log(atrisk))+interval*vf + sex*vf,
 ##'             data=d,poisson))
-##' @S3method lifetable matrix
+##' @export
 lifetable.matrix <- function(x,strata=list(),breaks=c(),confint=FALSE,...) {
     if (ncol(x)==3) {
         status <- x[,3]
@@ -44,7 +44,7 @@ lifetable.matrix <- function(x,strata=list(),breaks=c(),confint=FALSE,...) {
     LifeTable(time,status,entry,strata,breaks,confint,...)
 }
 
-##' @S3method lifetable formula
+##' @export
 lifetable.formula <- function(x,data=parent.frame(),breaks=c(),confint=FALSE,...) {
     cl <- match.call()
     mf <- model.frame(x,data)

@@ -140,7 +140,7 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##'   else d <- subset(d, time>entry,select=-c(T,C))
 ##'   return(d)
 ##' }
-##' 
+##' \dontrun{
 ##' n <- 1e3;
 ##' d <- mets:::simCox(n); d$id <- seq(nrow(d)); d$group <- factor(rbinom(nrow(d),1,0.5))
 ##' 
@@ -148,15 +148,15 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' (m2 <- coxph(Surv(entry,time,status)~X1+X2+cluster(id),data=d))
 ##' (coef(m3 <-cox.aalen(Surv(entry,time,status)~prop(X1)+prop(X2),data=d)))
 ##' 
-##' \dontrun{
+##' 
 ##' (m1b <- phreg(Surv(entry,time,status)~X1+X2+strata(group),data=d))
 ##' (m2b <- coxph(Surv(entry,time,status)~X1+X2+cluster(id)+strata(group),data=d))
 ##' (coef(m3b <-cox.aalen(Surv(entry,time,status)~-1+group+prop(X1)+prop(X2),data=d)))
-##' }
 ##' 
 ##' m <- phreg(Surv(entry,time,status)~X1*X2+strata(group)+cluster(id),data=d)
 ##' m
 ##' plot(m,ylim=c(0,1))
+##' }
 phreg <- function(formula,data,...) {
   cl <- match.call()
   m <- match.call(expand.dots = TRUE)[1:3]
@@ -200,7 +200,8 @@ phreg <- function(formula,data,...) {
 ###}}} phreg
 
 ###{{{ vcov
-##' @S3method vcov phreg
+
+##' @export
 vcov.phreg  <- function(object,...) {    
   res <- crossprod(ii <- iid(object,...))
   attributes(res)$ncluster <- attributes(ii)$ncluster
@@ -208,17 +209,21 @@ vcov.phreg  <- function(object,...) {
   colnames(res) <- rownames(res) <- names(coef(object))
   res
 }
+
 ###}}} vcov
 
 ###{{{ coef
-##' @S3method coef phreg
+
+##' @export
 coef.phreg  <- function(object,...) {
   object$coef
 }
+
 ###}}} coef
 
 ###{{{ iid
-##' @S3method iid phreg
+
+##' @export
 iid.phreg  <- function(x,...) {
     invhess <- solve(x$hessian)
   ncluster <- NULL
@@ -234,10 +239,12 @@ iid.phreg  <- function(x,...) {
   }
   structure(UU%*%invhess,invhess=invhess,ncluster=ncluster)
 }
+
 ###}}}
 
 ###{{{ summary
-##' @S3method summary phreg
+
+##' @export
 summary.phreg <- function(object,se="robust",...) {
   cc <- ncluster <- NULL
   if (object$p>0) {
@@ -260,10 +267,12 @@ summary.phreg <- function(object,se="robust",...) {
   class(res) <- "summary.phreg"
   res
 }
+
 ###}}} summary
 
 ###{{{ print.summary
-##' @S3method print summary.phreg
+
+##' @export
 print.summary.phreg  <- function(x,max.strata=5,...) {
   cat("\n")
   nn <- cbind(x$n, x$nevent)
@@ -282,6 +291,7 @@ print.summary.phreg  <- function(x,max.strata=5,...) {
   }
   cat("\n")
 }
+
 ###}}} print.summary
 
 ###{{{ predict
@@ -316,7 +326,7 @@ predictPhreg <- function(jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
     return(chaz)
 }
 
-##' @S3method predict phreg
+##' @export
 predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,strata=object$strata,...) {
     if (!is.null(object$strata)) {
         lev <- levels(object$strata)
@@ -344,11 +354,12 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
     }
     return(chaz)
 }
+
 ###}}} predict
 
 ###{{{ plot
 
-##' @S3method plot phreg
+##' @export
 plot.phreg  <- function(x,surv=TRUE,X=NULL,time=NULL,add=FALSE,...) {
     if (!is.null(X) && nrow(X)>1) {
         P <- lapply(split(X,seq(nrow(X))),function(xx) predict(x,X=xx,time=time,surv=surv))
@@ -378,7 +389,7 @@ plot.phreg  <- function(x,surv=TRUE,X=NULL,time=NULL,add=FALSE,...) {
 ###}}} plot
 
 ###{{{ print
-##' @S3method print phreg
+##' @export
 print.phreg  <- function(x,...) {
   cat("Call:\n")
   dput(x$call)

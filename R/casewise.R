@@ -216,7 +216,7 @@ casewise <- function(conc,marg,cause.marg)
   return(out)
 } ## }}}
 
-##' @S3method plot casewise 
+##' @export
 plot.casewise <- function(x,ci=NULL,lty=NULL,ylim=NULL,col=NULL,xlab="time",ylab="concordance",legend=FALSE,...)
 { ## {{{
   if (is.null(col)) col <- 1:3
@@ -235,7 +235,7 @@ plot.casewise <- function(x,ci=NULL,lty=NULL,ylim=NULL,col=NULL,xlab="time",ylab
   if (legend==TRUE) legend("topleft",lty=lty[1:2],col=col[1:2],c("Casewise concordance","Marginal estimate"))
 } ## }}}
 
-##' @S3method summary casewise 
+##' @export
 summary.casewise <- function(object,marg=FALSE,...)
 { ## {{{
    cat("Casewise concordance and standard errors \n"); 

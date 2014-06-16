@@ -1,4 +1,4 @@
-##' @S3method plot bptwin
+##' @export
 plot.bptwin <- function(x,n=50,rg=range(x$B[,1]),xlab="Time",ylab="Concordance",...) {
   if (x$Blen>0) {
     ##    rg <- range(x$B[,1])

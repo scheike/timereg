@@ -845,7 +845,7 @@ fit <- dep.cif(cif=cif,data=data,cause=cause,model="ARANCIF",cif2=cif2,times=tim
     fit
 } ## }}}
 
-##' @S3method print summary.cor
+##' @export
 print.summary.cor <- function(x,digits=3,...)
 { ## {{{
   if (x$type=="cor") {
@@ -962,7 +962,7 @@ summary.cor <- function(object,marg.cif=NULL,marg.cif2=NULL,digits=3,...) { ## {
   res
 } ## }}}
 
-##' @S3method coef cor
+##' @export
 coef.cor <- function(object,...)
 { ## {{{
   res <- cbind(object$theta, diag(object$var.theta)^0.5)
@@ -979,7 +979,7 @@ coef.cor <- function(object,...)
   return(res)
 } ## }}}
 
-##' @S3method print cor
+##' @export
 print.cor<-function(x,digits=3,...)
 { ## {{{
   print(x$call); 
@@ -1115,7 +1115,7 @@ plack.cif2 <- function(cif1,cif2,theta)
   return(valr); 
 } ## }}}
 
-##' @S3method summary randomcif
+##' @export
 summary.randomcif<-function (object, ...) 
 { ## {{{
   if (!inherits(object, "randomcif")) 
@@ -1129,7 +1129,7 @@ summary.randomcif<-function (object, ...)
   coef.randomcif(object, ...)
 } ## }}}
 
-##' @S3method coef randomcif
+##' @export
 coef.randomcif<- function (object, digits = 3, ...) 
 { ## {{{
   res <- cbind(object$theta, diag(object$var.theta)^0.5)
@@ -1143,12 +1143,12 @@ coef.randomcif<- function (object, digits = 3, ...)
   prmatrix(signif(res, digits))
 } ## }}}
 
-##' @S3method print randomcif
+##' @export
 print.randomcif<- function (x , digits = 3, ...) 
 { ## {{{
 } ## }}}
 
-##' @S3method summary randomcifrv
+##' @export
 summary.randomcifrv<-function (object, ...) 
 { ## {{{
     if (!inherits(object, "randomcifrv")) 
@@ -1163,7 +1163,7 @@ summary.randomcifrv<-function (object, ...)
     coef.randomcifrv(object, ...)
 } ## }}}
 
-##' @S3method coef randomcifrv
+##' @export
 coef.randomcifrv<- function (object, digits = 3, ...) 
 { ## {{{
     if (attr(object,"inverse")==1) elog <- 1 else elog  <- 0; 
@@ -1202,7 +1202,7 @@ coef.randomcifrv<- function (object, digits = 3, ...)
 
 } ## }}}
 
-##' @S3method print randomcifrv
+##' @export
 print.randomcifrv<- function (x , digits = 3, ...) 
 { ## {{{
  summary(x, ...)

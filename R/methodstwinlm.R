@@ -1,6 +1,6 @@
 ###{{{ print.twinlm
 
-##' @S3method print twinlm
+##' @export
 print.twinlm <- function(x,...) {  
     print(summary(x,...))
     invisible(x)
@@ -47,7 +47,7 @@ summarygroup.twinlm <- function(object,...) {
     structure(list(coef=c0,coefmat=coefs,vcov=vcov,acde=acde,kinship=kinship,fit=fit),class="summary.twinlm.group")
 }
 
-##' @S3method print summary.twinlm.group
+##' @export
 print.summary.twinlm.group <- function(x,...) {
     for (i in seq(length(x$coefmat))) {
         cat(names(x$coefmat)[i],"\n")
@@ -63,7 +63,7 @@ print.summary.twinlm.group <- function(x,...) {
 }
 
 
-##' @S3method summary twinlm
+##' @export
 summary.twinlm <- function(object,transform=FALSE,...) {
     if (!is.null(object$group) && !object$group.equal) {
         return(summarygroup.twinlm(object,...))
@@ -220,7 +220,7 @@ summary.twinlm <- function(object,transform=FALSE,...) {
 
 ###{{{ print.summary.twinlm
 
-##' @S3method print summary.twinlm
+##' @export
 print.summary.twinlm <- function(x,signif.stars=FALSE,...) {
     
     if (x$type%in%c("flex","u","sat")) {
@@ -263,7 +263,7 @@ print.summary.twinlm <- function(x,signif.stars=FALSE,...) {
 
 ###{{{ compare.twinlm
 
-##' @S3method compare twinlm
+##' @export
 compare.twinlm <- function(object,...) {
     if (length(list(...))==0) return(compare(object$estimate))
     lava:::compare.default(object,...)
@@ -272,7 +272,7 @@ compare.twinlm <- function(object,...) {
 
 ###{{{ plot.twinlm
 
-##' @S3method plot twinlm
+##' @export
 plot.twinlm <- function(x,diag=TRUE,labels=TRUE,...) {
     op <- par(mfrow=c(2,1))
     plot(x$model,...)
@@ -282,7 +282,7 @@ plot.twinlm <- function(x,diag=TRUE,labels=TRUE,...) {
 
 ###{{{ vcov.twinlm
 
-##' @S3method vcov twinlm
+##' @export
 vcov.twinlm <- function(object,...) {
     return(object$vcov)
 }
@@ -290,18 +290,18 @@ vcov.twinlm <- function(object,...) {
 
 ###{{{ logLik.twinlm
 
-##' @S3method logLik twinlm
+##' @export
 logLik.twinlm <- function(object,...) logLik(object$estimate,...)
 ###}}} logLik.twinlm
 
 ###{{{ score.twinlm
-##' @S3method score twinlm
+##' @export
 score.twinlm <- function(x,...) score(x$estimate,...)
 ###}}} score.twinlm
 
 ###{{{ model.frame.twinlm
 
-##' @S3method model.frame twinlm
+##' @export
 model.frame.twinlm <- function(formula,...) {
     return(formula$estimate$model$data)
 }
@@ -345,10 +345,10 @@ acde.twinlm <- function(x,index,transform=FALSE,estimate.return=FALSE,...) {
 
 ###}}} acde
 
-##' @S3method coef twinlm
+##' @export
 coef.twinlm <- function(object,...) coef(object$estimate,...)
 
-##' @S3method iid twinlm
+##' @export
 iid.twinlm <- function(x,...) {
     U <- score(x$estimate,indiv=TRUE)
     U <- lapply(U,function(x) {x[is.na(x)] <- 0; return(x)})

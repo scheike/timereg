@@ -1,4 +1,4 @@
-##' @S3method summary biprobit
+##' @export
 summary.biprobit <- function(object,level=0.05,transform,...) {
   alpha <- level/2
   varcomp <- object$coef[length(coef(object)),1:2]

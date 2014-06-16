@@ -1,4 +1,4 @@
-##' @S3method logLik biprobit
+##' @export
 logLik.biprobit <- function(object,indiv=FALSE,...) {
   if (indiv) return(object$logLik)
   n <- sum(object$N[1])

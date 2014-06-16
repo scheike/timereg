@@ -5,7 +5,7 @@ do.twinlm.strata <- function(x,fun,...) {
   return(res)
 }
 
-##' @S3method print do.twinlm.strata
+##' @export
 print.do.twinlm.strata <- function(x,...) {
   for (i in seq_len(length(x))) {    
     message(rep("-",60),sep="")
@@ -16,22 +16,22 @@ print.do.twinlm.strata <- function(x,...) {
 }
 
 
-##' @S3method plot twinlm.strata
+##' @export
 plot.twinlm.strata <- function(x,...)
   suppressMessages(do.twinlm.strata(x,"plot",...))
 
-##' @S3method print twinlm.strata
+##' @export
 print.twinlm.strata <- function(x,...)
   print.do.twinlm.strata(x$model,...)
 
-##' @S3method summary twinlm.strata
+##' @export
 summary.twinlm.strata <- function(object,...)
   do.twinlm.strata(object,"summary",...)
 
-##' @S3method coef twinlm.strata
+##' @export
 coef.twinlm.strata <- function(object,...) object$coef
 
-##' @S3method logLik twinlm.strata
+##' @export
 logLik.twinlm.strata <- function(object,indiv=FALSE,list=FALSE,...) {
   ll <- lapply(object$model,function(x) logLik(x,indiv=indiv,...))
   if (list) return(ll)
@@ -49,7 +49,7 @@ logLik.twinlm.strata <- function(object,indiv=FALSE,list=FALSE,...) {
   return(unlist(ll))
 }
 
-##' @S3method score twinlm.strata
+##' @export
 score.twinlm.strata <- function(x,...) {
   ss <- lapply(x$model,function(m) score(m,indiv=FALSE,...))
   return(unlist(ss))

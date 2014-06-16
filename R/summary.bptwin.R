@@ -1,4 +1,4 @@
-##' @S3method summary bptwin
+##' @export
 summary.bptwin <- function(object,level=0.05,transform=FALSE,...) {
   logit <- function(p) log(p/(1-p))
   tigol <- function(z) 1/(1+exp(-z))
@@ -211,7 +211,7 @@ summary.bptwin <- function(object,level=0.05,transform=FALSE,...) {
   res
 }
 
-##' @S3method print summary.bptwin
+##' @export
 print.summary.bptwin <- function(x,digits = max(3, getOption("digits") - 2),...) {
   cat("\n")
   printCoefmat(x$par,digits=digits,...)

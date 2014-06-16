@@ -1,12 +1,12 @@
 ##' @export
 biprobit <- function(x,...) UseMethod("biprobit")
 
-##' @S3method biprobit table
+##' @export
 biprobit.table <- function(x,eqmarg=TRUE,...) {
     x
 }
 
-##' @S3method biprobit default
+##' @export
 biprobit.default <- function(x,id,
                              weight=NULL,biweight=function(x) { u <- min(x); ifelse(u==0,0,1/min(u,1e-2)) },
                              eqmarg=TRUE,ref,...) {
@@ -104,7 +104,7 @@ biprobit.default <- function(x,id,
 }
 
 
-##' @S3method biprobit formula
+##' @export
 biprobit.formula <- function(x, data, id, num=NULL, strata=NULL, eqmarg=TRUE,
                              indep=FALSE, weight=NULL,
                              biweight=function(x) 1/min(x),
@@ -213,67 +213,65 @@ biprobit.formula <- function(x, data, id, num=NULL, strata=NULL, eqmarg=TRUE,
   }
 
   U <- function(p,indiv=FALSE) {
-    if (bound) p[plen] <- min(p[plen],20)
-    Sigma <- SigmaFun(p[plen])
-    lambda <- eigen(Sigma)$values
-    if (any(lambda<1e-12 | lambda>1e9)) stop("Variance matrix out of bounds")
-    Mu_marg <- NULL
-    if (eqmarg) {
-      B <- cbind(p[midx1])
-      Mu <- with(MyData,
-                 cbind(XX0[,midx1,drop=FALSE]%*%B,XX0[,midx2,drop=FALSE]%*%B))     
-##      Mu <- with(MyData, matrix(X0%*%B,ncol=2,byrow=TRUE))
-      if (!is.null(MyData$Y0_marg)) 
-        Mu_marg <- with(MyData, XX0_marg%*%B)
-    } else {
-      B1 <- cbind(p[midx1])
-      B2 <- cbind(p[midx2])
-      Mu <- with(MyData,
-                 cbind(XX0[,midx1,drop=FALSE]%*%B1,XX0[,midx2,drop=FALSE]%*%B2))
-      if (!is.null(MyData$Y0_marg))
-        Mu_marg <- with(MyData, rbind(X0_marg1%*%B1,X0_marg2%*%B2))
-    }
-    
-    U <- with(MyData, .Call("biprobit2",
-                             Mu,XX0,
-                             Sigma,dS0*attributes(Sigma)$dvartr(p[plen]),Y0,W0,
-                             !is.null(W0),TRUE,eqmarg))
-    
-    if (!is.null(MyData$Y0_marg)) {
-      ## U_marg <- uniprobit(Mu_marg[,1],XX0_marg,
-      ##                     Sigma[1,1],dS0_marg*dvartr(p[plen]),Y0_marg,
-      ##                     W0_marg,indiv=TRUE)
-      ## U$score <- rbind(U$score,U_marg)
-      ## U$loglik <- c(U$loglik,attributes(U_marg)$logLik)
-      ##      W0_marg <- rep(1,nrow(XX0_marg))
-      U_marg <- with(MyData, .Call("uniprobit",
-                                   Mu_marg,XX0_marg,
-                                   Sigma[1,1],dS0_marg*attributes(Sigma)$dvartr(p[plen]),Y0_marg,
-                                   W0_marg,!is.null(W0_marg),TRUE))
-      U$score <- rbind(U$score,U_marg$score)
-      U$loglik <- c(U$loglik,U_marg$loglik)
-    }
-
-    if (indiv) {
-      val <- with(MyData, cluster.index(c(id,idmarg),mat=U$score))
-      attributes(val)$logLik <- U$loglik
-      ## val <- U$score[MyData$id,,drop=FALSE]
-      ## N <- length(MyData$id)
-      ## idxs <- seq_len(N)
-      ## browser()
-      ## for (i in seq_len(N)) {
-      ##   idx <- which((MyData$idmarg)==(MyData$id[i]))+N
-      ##   cluster.index
-      ##   idxs <- c(idxs,idx)
-      ##   val[i,] <- val[i,]+colSums(U$score[idx,,drop=FALSE])
-      ## }      
-      ## val <- rbind(val, U$score[-idxs,,drop=FALSE])
-      ## attributes(val)$logLik <- U$loglik
+      if (bound) p[plen] <- min(p[plen],20)
+      Sigma <- SigmaFun(p[plen])
+      lambda <- eigen(Sigma)$values
+      if (any(lambda<1e-12 | lambda>1e9)) stop("Variance matrix out of bounds")
+      Mu_marg <- NULL
+      if (eqmarg) {
+          B <- cbind(p[midx1])
+          Mu <- with(MyData,
+                     cbind(XX0[,midx1,drop=FALSE]%*%B,XX0[,midx2,drop=FALSE]%*%B))     
+          ##      Mu <- with(MyData, matrix(X0%*%B,ncol=2,byrow=TRUE))
+          if (!is.null(MyData$Y0_marg)) 
+              Mu_marg <- with(MyData, XX0_marg%*%B)
+      } else {
+          B1 <- cbind(p[midx1])
+          B2 <- cbind(p[midx2])
+          Mu <- with(MyData,
+                     cbind(XX0[,midx1,drop=FALSE]%*%B1,XX0[,midx2,drop=FALSE]%*%B2))
+          if (!is.null(MyData$Y0_marg))
+              Mu_marg <- with(MyData, rbind(X0_marg1%*%B1,X0_marg2%*%B2))
+      }
+      
+      U <- with(MyData, .Call("biprobit2",
+                              Mu,XX0,
+                              Sigma,dS0*attributes(Sigma)$dvartr(p[plen]),Y0,W0,
+                              !is.null(W0),TRUE,eqmarg))
+      
+      if (!is.null(MyData$Y0_marg)) {
+          ## U_marg <- uniprobit(Mu_marg[,1],XX0_marg,
+          ##                     Sigma[1,1],dS0_marg*dvartr(p[plen]),Y0_marg,
+          ##                     W0_marg,indiv=TRUE)
+          ## U$score <- rbind(U$score,U_marg)
+          ## U$loglik <- c(U$loglik,attributes(U_marg)$logLik)
+          ##      W0_marg <- rep(1,nrow(XX0_marg))
+          U_marg <- with(MyData, .Call("uniprobit",
+                                       Mu_marg,XX0_marg,
+                                       Sigma[1,1],dS0_marg*attributes(Sigma)$dvartr(p[plen]),Y0_marg,
+                                       W0_marg,!is.null(W0_marg),TRUE))
+          U$score <- rbind(U$score,U_marg$score)
+          U$loglik <- c(U$loglik,U_marg$loglik)
+      }
+      
+      if (indiv) {
+          ## val <- with(MyData, cluster.index(c(id,idmarg),mat=U$score))
+          ## attributes(val)$logLik <- U$loglik
+          val <- U$score[MyData$id,,drop=FALSE]
+          N <- length(MyData$id)
+          idxs <- seq_len(N)
+          for (i in seq_len(N)) {
+              idx <- which((MyData$idmarg)==(MyData$id[i]))+N
+              idxs <- c(idxs,idx)
+              val[i,] <- val[i,]+colSums(U$score[idx,,drop=FALSE])
+          }      
+          val <- rbind(val, U$score[-idxs,,drop=FALSE])
+          attributes(val)$logLik <- U$loglik
+          return(val)
+      }
+      val <- colSums(U$score)
+      attributes(val)$logLik <- sum(U$loglik)
       return(val)
-    }
-    val <- colSums(U$score)
-    attributes(val)$logLik <- sum(U$loglik)
-    return(val)
   }
   
   p0 <- rep(0,plen)  
@@ -443,15 +441,7 @@ Ubiprobit <- function(p,S,dS,eqmarg,nx,MyData,indiv=FALSE) {
     }
 
     if (indiv) {
-        val <- U$score[MyData$id,,drop=FALSE]
-        N <- length(MyData$id)
-        idxs <- seq_len(N)
-        for (i in seq_len(N)) {
-            idx <- which((MyData$idmarg)==(MyData$id[i]))+N
-            idxs <- c(idxs,idx)
-            val[i,] <- val[i,]+colSums(U$score[idx,,drop=FALSE])
-        }
-        val <- rbind(val, U$score[-idxs,,drop=FALSE])
+        val <- with(MyData, cluster.index(c(id,idmarg),mat=U$score))
         attributes(val)$logLik <- U$loglik
         return(val)
     }

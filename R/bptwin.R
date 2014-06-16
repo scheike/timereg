@@ -1,7 +1,7 @@
 ##' @export
 bptwin <- function(x,...) UseMethod("bptwin")
 
-##' @S3method bptwin table
+##' @export
 bptwin.table <- function(x,...) {
     return(x)
 }
@@ -46,7 +46,6 @@ bptwin.table <- function(x,...) {
 ##' @param varlink Link function for variance parameters
 ##' @param ... Additional arguments to lower level functions
 ##' @author Klaus K. Holst
-##' @S3method bptwin formula
 ##' @export
 ##' @examples
 ##' \donttest{
@@ -659,7 +658,7 @@ bptwin.formula <- function(x, data, id, zyg, DZ, group=NULL,
 
 ###}}} return
 
-##' @S3method model.frame bptwin
+##' @export
 model.frame.bptwin <- function(formula,...) {
     formula$model.frame
 }

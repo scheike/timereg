@@ -1,4 +1,4 @@
-##' @S3method print summary.biprobit
+##' @export
 print.summary.biprobit <- function(x,digits = max(3, getOption("digits") - 2),...) {
   cat("\n")
   printCoefmat(x$coef,digits=digits,...)

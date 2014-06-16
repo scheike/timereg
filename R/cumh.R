@@ -73,10 +73,10 @@ cumh <- function(formula,data,...,time,
 }
 
 
-##' @S3method summary cumh
+##' @export
 summary.cumh <- function(object,...) object 
 
-##' @S3method print cumh
+##' @export
 print.cumh <- function(x,type=seq(nrow(x$coef[[1]])),...) {
   for (i in type) {    
     cat(i, ": ", names(x$coeftype)[i], "\n",sep="")
@@ -89,7 +89,7 @@ print.cumh <- function(x,type=seq(nrow(x$coef[[1]])),...) {
 }
 
 
-##' @S3method plot cumh
+##' @export
 plot.cumh <- function(x,...,type=1,lwd=2,col,fillcol,alpha=0.2,ylim=c(0,1),xlab=x$timevar,ylab="Heritability",idx=seq(nrow(x$ht)),legend=TRUE,legendpos="topleft") {
 
   add <- FALSE

@@ -1,2 +1,2 @@
-##' @S3method vcov biprobit
+##' @export
 vcov.biprobit <- function(object,...) object$vcov

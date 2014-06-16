@@ -701,7 +701,7 @@ simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{
 } ## }}} 
 
 
-#####' @S3method summary twostage
+#####' @export
 ###summary.twostage <-function (object,digits = 3,...) { ## {{{
 ###  if (!(inherits(object,"twostage"))) stop("Must be a Two-Stage object")
 ###  
@@ -721,7 +721,7 @@ simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{
 ###  res
 ###} ## }}}
 ###
-#####' @S3method coef twostage
+#####' @export
 ###coef.twostage <- function(object,var.link=NULL,...)
 ###{ ## {{{
 ###  theta <- object$theta
@@ -770,7 +770,7 @@ simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{
 ###   return(1/(1+2/theta)) 
 ###}
 ###
-#####' @S3method print twostage
+#####' @export
 ###print.twostage<-function(x,digits=3,...)
 ###{ ## {{{
 ###  print(x$call); 
@@ -778,7 +778,7 @@ simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{
 ###  print(summary(x)); 
 ###} ## }}}
 ###
-#####' @S3method plot twostage
+#####' @export
 ###plot.twostage<-function(x,pointwise.ci=1,robust=0,specific.comps=FALSE,
 ###		level=0.05, 
 ###		start.time=0,stop.time=0,add.to.plot=FALSE,mains=TRUE,
@@ -818,7 +818,7 @@ simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{
 ###  }
 ###}  ## }}}
 ###
-#####' @S3method predict twostage
+#####' @export
 ###predict.twostage <- function(object,X=NULL,Z=NULL,times=NULL,times2=NULL,theta.des=NULL,diag=TRUE,...)
 ###{ ## {{{
 ###time.coef <- data.frame(object$cum)
@@ -929,7 +929,7 @@ simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{
 ###return(ud);
 ###} ## }}}
 ###
-#####' @S3method summary pc.twostage
+#####' @export
 ###summary.pc.twostage <- function(object,var.link=NULL,...)
 ###{ ## {{{
 ###  if (!(inherits(object,"pc.twostage"))) stop("Must be a Piecewise constant two-Stage object")
@@ -942,14 +942,14 @@ simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{
 ###  res
 ###} ## }}}
 ###
-#####' @S3method print pc.twostage
+#####' @export
 ###print.pc.twostage <- function(x,var.link=NULL,...)
 ###{ ## {{{
 ###   if (!(inherits(x,"pc.twostage"))) stop("Must be a Piecewise constant two-Stage object")
 ###   print( summary(x,var.link=var.link,...))
 ###} ## }}}
 ###
-#####' @S3method print summary.pc.twostage
+#####' @export
 ###print.summary.pc.twostage <- function(x,var.link=NULL, digits=3,...)
 ###{ ## {{{
 ###  
