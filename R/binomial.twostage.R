@@ -324,10 +324,9 @@ binomial.twostage <- function(margbin,data=sys.parent(),score.method="nlminb",
 
 } ## }}}
 
-
 ##' @export
-binomial.twostage.time <- function(formula,data,id,...,silent=1,
-                          breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weight="w") {
+binomial.twostage.time <- function(formula,data,id,...,silent=1,fix.censweights=1,
+breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weight="w") {
    ## {{{ 
     m <- match.call(expand.dots = FALSE)
     m <- m[match(c("","data"),names(m),nomatch = 0)]
@@ -339,6 +338,7 @@ binomial.twostage.time <- function(formula,data,id,...,silent=1,
     censtime <- model.extract(M, "response")
     status <- censtime[,2]
     time <- censtime[,1]
+    timevar <- colnames(censtime)[1]
     outcome <- as.character(terms(formula)[[2]])    
     if (is.null(breaks)) breaks <-  quantile(time,c(0.25,0.5,0.75,1))
 
@@ -346,30 +346,39 @@ binomial.twostage.time <- function(formula,data,id,...,silent=1,
     res <- list()
     logor <- cif <- conc <- c()
     k <- 0
-    for (tau in breaks) {
+    for (tau in rev(breaks)) {
         if ((length(breaks)>1) & (silent==0)) message(tau)
-        ### construct min(T_i,tau) and related censoring variable, thus G_c(min(T_i,tau)) as weights
-        ### in IPW functionen   
+        ### construct min(T_i,tau) or T_i and related censoring variable, 
+        ### thus G_c(min(T_i,tau)) or G_c(T_i) as weights
+        if ((fix.censweights==1 & k==0) | (fix.censweights==0)) {
         data0 <- data
         time0 <- time 
         status0 <- status 
-        cond0 <- time0>tau
+        }
+        cond0 <- (time>tau)
         if (fix.censweights==0) status0[cond0 & status==1] <- 3 
+        data0[,outcome] <- data[,outcome]
         data0[cond0,outcome] <- FALSE
-	time0[cond0] <- tau
-	data0$S <- Surv(time0,status0==1)        
-        dataw <- ipw(update(cens.formula,S~.),data=data0, cens.model=cens.model,obsonly=TRUE)
+        if (fix.censweights==0) time0[cond0] <- tau
+        if ((fix.censweights==1 & k==0) | (fix.censweights==0)) {
+		data0$S <- Surv(time0,status0==1)        
+	}
+	if ((fix.censweights==1 & k==0) | (fix.censweights==0))
+        dataw <- ipw(update(cens.formula,S~.),data=data0,cens.model=cens.model,
+		     obsonly=TRUE)
+        if ((fix.censweights==1)) 
+		dataw[,outcome] <- (dataw[,outcome])*(dataw[,timevar]<tau)
 	marg.bin <- glm(formula,data=dataw,weight=1/w,family="quasibinomial")
-        pudz <- predict(marg.bin,type="response")
+        pudz <- predict(marg.bin,newdata=dataw,type="response")
 	dataw$pudz <- pudz
 	datawdob <- fast.reshape(dataw,id=id)
         datawdob$minw <- pmin(datawdob$w1,datawdob$w2)
-        dataw <- fast.reshape(datawdob)
+        dataw2 <- fast.reshape(datawdob)
 	### removes second row of singletons 
-	dataw  <- subset(dataw,!is.na(minw)) 
+	dataw2  <- subset(dataw2,!is.na(minw)) 
 	k <- k+1
-	if (!is.null(fix.marg)) dataw$pudz <- fix.marg[k]
-        suppressWarnings( b <- binomial.twostage(dataw[,outcome],data=dataw,clusters=dataw[,id],marginal.p=dataw$pudz,weight=1/dataw$minw,...))
+	if (!is.null(fix.marg)) dataw2$pudz <- fix.marg[k]
+        suppressWarnings( b <- binomial.twostage(dataw2[,outcome],data=dataw2,clusters=dataw2[,id],marginal.p=dataw2$pudz,weight=1/dataw2$minw,...))
         theta0 <- b$theta[1,1]
         prev <- prev0 <- exp(coef(marg.bin)[1])/(1+exp(coef(marg.bin)[1]))
 	if (!is.null(fix.marg)) prev <- fix.marg[k]
@@ -377,12 +386,11 @@ binomial.twostage.time <- function(formula,data,id,...,silent=1,
 	conc <- c(conc,concordance)
 	cif <- c(cif,prev0)
 	logor <- rbind(logor,coef(b))
-
-        res <- c(res,list(coef(b),concordance=concordance,cif=prev0))
+###        res <- c(res,list(coef(b),concordance=concordance,cif=prev0))
     }
     if (length(breaks)==1) return(b)
-    res <- list(varname="Time",var=breaks,concordance=conc,cif=cif,time=breaks,
-		summary=res,call=m,type="time",logor=logor)
+    res <- list(varname="Time",var=breaks,concordance=rev(conc),cif=rev(cif),
+		time=breaks,call=m,type="time",logor=logor[k:1,])
 ###	coef=lapply(res,function(x) x$all),
 ###    class(res) <- ""
     return(res)    
