@@ -43,7 +43,7 @@ summary.biprobit <- function(object,level=0.05,transform,mean.contrast=NULL,mean
               mref <- nn[idx1]              
               mref1 <- mref2 <- paste(convval(mean.contrast[idx1]),mref,sep="")
           }
-          if (is.null(mean.contrast2)) {
+          if (is.null(mean.contrast2) && !object$model$eqmarg) {
               idx1 <- which(mean.contrast!=0)
               idx2 <- idx1+1
               if (length(object$npar$pred)>0) idx2 <- idx2+object$npar$pred/2
@@ -79,7 +79,6 @@ summary.biprobit <- function(object,level=0.05,transform,mean.contrast=NULL,mean
       }
       return(list(m=m,r=r,mref1=mref1,mref2=mref2,corref=corref))
   }
-  
   probs <- function(p) {
       pp <- parfun(p)
       m <- pp[[1]]

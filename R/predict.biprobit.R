@@ -19,7 +19,7 @@ predict.biprobit <- function(object,newdata,X,Z,which=NULL,fun=NULL,type,...) {
         }
     }
         
-    prob <- function(p,all=TRUE,which=NULL,fun=NULL,...) {
+    prob <- function(p,which=NULL,fun=NULL,...) {
         blen <- object$model$blen    
         beta1 <- p[seq(blen)]
         if (object$model$eqmarg) {
@@ -38,8 +38,8 @@ predict.biprobit <- function(object,newdata,X,Z,which=NULL,fun=NULL,type,...) {
         p01 <- with(pp, pmvn(lower=c(-Inf,0),upper=c(0,Inf),mu=cbind(mu1,mu2),sigma=cbind(rho),cor=TRUE))
         p00 <- with(pp, pmvn(lower=c(-Inf,-Inf),upper=c(0,0),mu=cbind(mu1,mu2),sigma=cbind(rho),cor=TRUE))
         p1 <- p11+p10
-        p2 <- p11+p01 
-        res <- cbind(p11,p10,p01,p00,p1,p2)
+        p2 <- p11+p01
+        res <- cbind(p11,p10,p01,p00,p1,p2,as.matrix(pp))
         if (!is.null(fun)) return(fun(res))
         if (!is.null(which)) {
             tr.idx <- base::which(which<7)
@@ -47,8 +47,7 @@ predict.biprobit <- function(object,newdata,X,Z,which=NULL,fun=NULL,type,...) {
             if (length(tr.idx)>0) res[,tr.idx] <- h(res[,tr.idx])
             return(structure(res,tr.idx=tr.idx))
         }
-        if (all) return(cbind(res,pp))
-        return(p11)        
+        return(res)
     }
     pp <- prob(p,which=which,fun=fun)
     if (!is.null(fun)) {
