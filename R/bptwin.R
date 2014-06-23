@@ -1,14 +1,6 @@
-##' @export
-bptwin <- function(x,...) UseMethod("bptwin")
-
-##' @export
-bptwin.table <- function(x,...) {
-    return(x)
-}
-
 ##' Liability-threshold model for twin data
 ##'
-##' @aliases bptwin bptwin.formula bptwin.default biprobit twinlm.time biprobit.time
+##' @aliases bptwin twinlm.time
 ##' @title Liability model for twin data
 ##' @seealso \code{\link{twinlm}}, \code{\link{twinlm.time}}, \code{\link{twinlm.strata}}, \code{\link{twinsim}}
 ##' @param x Formula specifying effects of covariates on the response.
@@ -24,7 +16,7 @@ bptwin.table <- function(x,...) {
 ##' corresponding to the dyzogitic twins. 
 ##' @param group Optional. Variable name defining group for interaction analysis (e.g., gender)
 ##' @param num Optional twin number variable
-##' @param weight Weight matrix if needed by the chosen estimator (IPCW)
+##' @param weights Weight matrix if needed by the chosen estimator (IPCW)
 ##' @param biweight Function defining the bivariate weight in each cluster
 ##' @param strata Strata
 ##' @param messages Control amount of messages shown 
@@ -55,25 +47,25 @@ bptwin.table <- function(x,...) {
 ##'              id="tvparnr",zyg="zyg",DZ="dz",type="ae")
 ##' summary(b0)
 ##' }
-bptwin.formula <- function(x, data, id, zyg, DZ, group=NULL,
-                           num=NULL,
-                           weight=NULL,
-                           biweight=function(x) 1/min(x),
-                           strata=NULL,
-                           messages=1,
-                           control=list(trace=0),
-                           type="ace",
-                           eqmean=TRUE,
-                           pairsonly=FALSE,
-                           samecens=TRUE,
-                           allmarg=samecens&!is.null(weight),
-                           stderr=TRUE,                  
-                           robustvar=TRUE,                   
-                           p, indiv=FALSE,
-                           constrain,
-                           bound=FALSE,
-                           varlink,
-                           ...) {
+bptwin <- function(x, data, id, zyg, DZ, group=NULL,
+                   num=NULL,
+                   weights=NULL,
+                   biweight=function(x) 1/min(x),
+                   strata=NULL,
+                   messages=1,
+                   control=list(trace=0),
+                   type="ace",
+                   eqmean=TRUE,
+                   pairsonly=FALSE,
+                   samecens=TRUE,
+                   allmarg=samecens&!is.null(weights),
+                   stderr=TRUE,                  
+                   robustvar=TRUE,                   
+                   p, indiv=FALSE,
+                   constrain,
+                   bound=FALSE,
+                   varlink,
+                   ...) {
     
 ###{{{ setup
 
@@ -114,7 +106,7 @@ bptwin.formula <- function(x, data, id, zyg, DZ, group=NULL,
 ##################################################
 ### No strata
   if (is.null(control$method)) {
-      if (!samecens & !is.null(weight)) {
+      if (!samecens & !is.null(weights)) {
         control$method <- "bhhh"
       } else {
         if (suppressWarnings(suppressPackageStartupMessages(require(ucminf)))) {
@@ -167,15 +159,15 @@ bptwin.formula <- function(x, data, id, zyg, DZ, group=NULL,
 
 
   ## ff <- paste(as.character(formula)[3],"+",
-  ##             paste(c(id,zyg,weight,num),collapse="+"))
+  ##             paste(c(id,zyg,weights,num),collapse="+"))
   ## ff <- paste("~",yvar,"+",ff)
   ##formula0 <- as.formula(ff)
   opt <- options(na.action="na.pass")
   ##  Data <- model.matrix(formula0,data)
-  Data <- cbind(model.matrix(formula,data),data[,c(yvar,id,zyg,weight,num)])
+  Data <- cbind(model.matrix(formula,data),data[,c(yvar,id,zyg,weights,num)])
   options(opt)
-  ## rnames1 <- setdiff(colnames(Data),c(yvar,time,id,weight,zyg))
-  rnames1 <- setdiff(colnames(Data),c(yvar,id,weight,zyg,num))
+  ## rnames1 <- setdiff(colnames(Data),c(yvar,time,id,weights,zyg))
+  rnames1 <- setdiff(colnames(Data),c(yvar,id,weights,zyg,num))
   nx <- length(rnames1) 
   if (nx==0) stop("Zero design not allowed")
   
@@ -264,8 +256,8 @@ bptwin.formula <- function(x, data, id, zyg, DZ, group=NULL,
   rmidx <- c(id,yidx,zyg)
     
   W0 <- W1 <- W2 <- NULL
-  if (!is.null(weight)) {
-    widx <- paste(weight,1:2,sep=".")
+  if (!is.null(weights)) {
+    widx <- paste(weights,1:2,sep=".")
     rmidx <- c(rmidx,widx)
     W0 <- as.matrix(Wide[which(Wide[,zyg]==0),widx,drop=FALSE])
     W1 <- as.matrix(Wide[which(Wide[,zyg]==1),widx,drop=FALSE])
@@ -306,7 +298,7 @@ bptwin.formula <- function(x, data, id, zyg, DZ, group=NULL,
   rownames(N) <- rep("",nrow(N))
   if (!OSon) N <- N[,-c(3,6,9),drop=FALSE]
   
-  if (samecens & !is.null(weight)) {
+  if (samecens & !is.null(weights)) {
     MyData0$W0 <- cbind(apply(MyData0$W0,1,biweight))
     if (!is.null(MyData0$Y0_marg))
       MyData0$W0_marg <- cbind(apply(MyData0$W0_marg,1,biweight))
