@@ -123,6 +123,7 @@ multinomlogit <- function(x,tr=exp,dtr=exp) {
 
 Inverse <- function(X,tol=1e-9) {
   n <- nrow(X)
+  if (any(is.nan(X)) | any(is.na(X)) | any(!is.finite(X))) return(matrix(NA,n,n))
   if (nrow(X)==1) {
     res <- 1/X
     if (det) attributes(res)$det <- X
