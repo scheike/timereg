@@ -9,9 +9,10 @@
 ##' The reported standard errors are based on a cluster corrected score equations from the 
 ##' pairwise likelihoods assuming that the marginals are known. This gives correct standard errors
 ##' in the case of the Plackett distribution (OR model for dependence), but incorrect standard
-##' errors for the clayton-oakes types model.
+##' errors for the Clayton-Oakes types model.
 ##'
 ##' @export
+##' @aliases binomial.twostage binomial.twostage.time
 ##' @references
 ##' Two-stage binomial modelling 
 ##' @examples
@@ -326,7 +327,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),score.method="nlminb",
 
 ##' @export
 binomial.twostage.time <- function(formula,data,id,...,silent=1,fix.censweights=1,
-breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weight="w") {
+breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weights="w") {
    ## {{{ 
     m <- match.call(expand.dots = FALSE)
     m <- m[match(c("","data"),names(m),nomatch = 0)]
@@ -368,7 +369,7 @@ breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weight="
 		     obsonly=TRUE)
         if ((fix.censweights==1)) 
 		dataw[,outcome] <- (dataw[,outcome])*(dataw[,timevar]<tau)
-	marg.bin <- glm(formula,data=dataw,weight=1/w,family="quasibinomial")
+	marg.bin <- glm(formula,data=dataw,weights=1/w,family="quasibinomial")
         pudz <- predict(marg.bin,newdata=dataw,type="response")
 	dataw$pudz <- pudz
 	datawdob <- fast.reshape(dataw,id=id)
@@ -378,7 +379,7 @@ breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weight="
 	dataw2  <- subset(dataw2,!is.na(minw)) 
 	k <- k+1
 	if (!is.null(fix.marg)) dataw2$pudz <- fix.marg[k]
-        suppressWarnings( b <- binomial.twostage(dataw2[,outcome],data=dataw2,clusters=dataw2[,id],marginal.p=dataw2$pudz,weight=1/dataw2$minw,...))
+        suppressWarnings( b <- binomial.twostage(dataw2[,outcome],data=dataw2,clusters=dataw2[,id],marginal.p=dataw2$pudz,weights=1/dataw2$minw,...))
         theta0 <- b$theta[1,1]
         prev <- prev0 <- exp(coef(marg.bin)[1])/(1+exp(coef(marg.bin)[1]))
 	if (!is.null(fix.marg)) prev <- fix.marg[k]
