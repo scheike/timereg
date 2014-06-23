@@ -7,7 +7,7 @@ biprobit.table <- function(x,eqmarg=TRUE,...) {
 }
 
 ##' @export
-biprobit.default <- function(x,id,
+biprobit.default <- function(x,id,X=NULL,Z=NULL,
                              weight=NULL,biweight=function(x) { u <- min(x); ifelse(u==0,0,1/min(u,1e-2)) },
                              eqmarg=TRUE,ref,...) {
     
@@ -27,6 +27,7 @@ biprobit.default <- function(x,id,
     MyData <- ExMarg(Y0,XX0,W0=NULL,NULL,
                      midx1=1,midx2=2,eqmarg=eqmarg,allmarg=FALSE)
 
+ 
     datanh <- function(r) 1/(1-r^2)
     dtanh <- function(z) 4*exp(2*z)/(exp(2*z)+1)^2
     vartr <- tanh
@@ -36,7 +37,20 @@ biprobit.default <- function(x,id,
     varcompname <- "Tetrachoric correlation"    
     ##msg <- "Variance of latent residual sterm = 1 (standard probit link)"
     msg <- NULL
-    model <- list(tr=vartr,name=trname,inv=itrname,invname=itrname,deriv=dvartr,varcompname=varcompname,dS=dS,eqmarg=eqmarg,...)
+        model <- list(tr=vartr,name=trname,inv=itrname,invname=itrname,deriv=dvartr,varcompname=varcompname,dS=dS,eqmarg=eqmarg,...)
+        SigmaFun <- function(p,Z=MyData$Z0,cor=!randomeffect,...) {
+            if (!cor) {
+                r <- vartr(p[1])
+                Sigma <- Sigma1+Sigma2*vartr(p)
+                if (indep) Sigma <- diag(2)
+                attributes(Sigma)$dvartr <- dvartr
+                return(Sigma)
+            }
+            val <- Z%*%p
+            dr <- apply(Z,2,function(x) x*dvartr(val))
+            structure(list(rho=vartr(val),lp=val,drho=dr),dvartr=dvartr,vartr=vartr)
+        }
+
     SigmaFun <- function(p,...) {
         Sigma1 <- diag(2)  
         Sigma2 <- matrix(c(0,1,1,0),2,2)
