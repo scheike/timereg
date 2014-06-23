@@ -66,7 +66,7 @@ twinlm.strata <- function(formula,data,var,breaks,quantiles,...) {
 ##' @export
 twinlm.time <- function(formula,data,id,type="u",...,
                         breaks=Inf,
-                        cens.formula,cens.model="aalen",weight="w") {
+                        cens.formula,cens.model="aalen",weights="w") {
 
     m <- match.call(expand.dots = TRUE)[1:3]
     Terms <- terms(cens.formula, data = data)
@@ -92,8 +92,8 @@ twinlm.time <- function(formula,data,id,type="u",...,
         time0[cond0] <- tau
         data0$S <- Surv(time0,status0==1)        
         dataw <- ipw(update(cens.formula,S~.), data=data0, cens.model=cens.model,
-                     cluster=id,weightname=weight,obsonly=TRUE)
-        suppressWarnings(b <- bptwin(formula, data=dataw, id=id, weight=weight,type=type,...))
+                     cluster=id,weightname=weights,obsonly=TRUE)
+        suppressWarnings(b <- bptwin(formula, data=dataw, id=id, weights=weights,type=type,...))
         res <- c(res,list(summary(b)))
     }
     if (length(breaks)==1) return(b)
@@ -118,14 +118,23 @@ summary.multitwinlm <- function(object,which=seq(nrow(object$coef[[1]])),...) {
 
 
 ##' @export
-print.multitwinlm <- function(x,row.names=FALSE,...) {
+print.multitwinlm <- function(x,row.names=FALSE,digits=4,width=10,...) {
     res <- summary(x,...)
+    M <- res[[1]][,1]
+    nn <- c()
     for (i in seq_along(res)) {
-        cat(i, ": ", names(res)[i], "\n",sep="")
-        print(res[[i]],...,row.names=row.names)
-        cat("\n")
+        nn <- c(nn,names(res)[i])
+        M <- cbind(M,res[[i]][,2])
     }
-    invisible(x)
+    nn <- unlist(lapply(nn,
+                        function(x) {
+                            res <- toString(x,width)
+                            substr(res,1,nchar(res)-1)
+                        }))
+    nn <- paste(seq(ncol(M)-1),":",nn,sep="")
+    colnames(M) <- c("Time",nn)    
+    print(round(M,digits=digits),row.names=row.names)
+    invisible(M)
 }
 
 ##' @export
