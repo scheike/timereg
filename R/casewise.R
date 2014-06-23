@@ -123,7 +123,7 @@ casewise.test <- function(conc,marg,test="no-test",p=0.01)
    colnames(casewiseout) <- c("time","casewise","se","se2")
    difout <- cbind(timer,concP1-margtime^2,apply(conciid^2,1,sum)^.5)
 
-  out <- list(casewise=casewiseout,marg=margout,conc=concout,
+  out <- list(casewise=casewiseout,marg=margout,conc=concout,casewise.iid=casewise.iid, 
 	      test=outtest,mintime=mintime,maxtime=maxtime,same.cluster=TRUE,testtype=test)
   class(out) <- "casewise"
   return(out)
