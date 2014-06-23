@@ -1,5 +1,6 @@
 \name{binomial.twostage}
 \alias{binomial.twostage}
+\alias{binomial.twostage.time}
 \title{Fits Clayton-Oakes or bivariate Plackett (OR) models for binary data
 using marginals that are on logistic form.
 If clusters contain more than two times, the algoritm uses a compososite likelihood
@@ -67,7 +68,7 @@ regression (ALR).
 The reported standard errors are based on a cluster corrected score equations from the
 pairwise likelihoods assuming that the marginals are known. This gives correct standard errors
 in the case of the Plackett distribution (OR model for dependence), but incorrect standard
-errors for the clayton-oakes types model.
+errors for the Clayton-Oakes types model.
 }
 \examples{
 data(twinstut)
