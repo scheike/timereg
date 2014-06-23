@@ -661,7 +661,9 @@ procdatabiprobit <- function(formula,data,id,num=NULL,weights=NULL,pairsonly=FAL
                            paste(c(id,num),collapse="+")))
     Z0 <- model.matrix(rho,data);
     znames <- setdiff(colnames(Z0),c(id,num))
-    Z0 <- as.matrix(subset(fast.reshape(Z0,id=id),select=-c(id,num))[,seq(ncol(Z0)-ex),drop=FALSE])
+    znames1 <- paste(znames,1,sep="")
+    Z0 <- as.matrix(subset(fast.reshape(Z0,id=id),select=znames1))
+    colnames(Z0) <- znames1
     Wide <- fast.reshape(as.data.frame(Data),id=id,num=num,sep=".",labelnum=TRUE)
     
     W0 <- NULL
