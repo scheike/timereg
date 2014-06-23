@@ -10,7 +10,7 @@ biprobit(x, data, id, rho = ~1, num = NULL, strata = NULL,
   1/min(x), samecens = TRUE, randomeffect = FALSE, vcov = "robust",
   pairsonly = FALSE, allmarg = samecens & !is.null(weights),
   control = list(trace = 0, method = "quasi"), messages = 1,
-  table = pairsonly, p, ...)
+  constrain = NULL, table = pairsonly, p, ...)
 }
 \arguments{
 \item{x}{formula (or vector)}
@@ -47,6 +47,8 @@ biprobit(x, data, id, rho = ~1, num = NULL, strata = NULL,
 
 \item{messages}{Control amount of messages shown}
 
+\item{constrain}{Vector of parameter constraints (NA where free). Use this to set an offset.}
+
 \item{table}{Type of estimation procedure}
 
 \item{p}{Parameter vector p in which to evaluate log-Likelihood and score function}
@@ -59,7 +61,7 @@ Bivariate Probit model
 \examples{
 data(prt)
 prt0 <- subset(prt,country=="Denmark")
-a <- biprobit(cancer~1+zyg, ~1+zyg, data=prt0, id="id",pairsonly=FALSE)
+a <- biprobit(cancer~1+zyg, ~1+zyg, data=prt0, id="id")
 b <- biprobit(cancer~1+zyg, ~1+zyg, data=prt0, id="id",pairsonly=TRUE)
 predict(b,newdata=Expand(prt,zyg=c("MZ")))
 predict(b,newdata=Expand(prt,zyg=c("MZ","DZ")))
@@ -87,6 +89,22 @@ with(predict(a,data.frame(x=seq(-1,1,by=.1))), plot(p00~x,type="l"))
 pp <- predict(a,data.frame(x=seq(-1,1,by=.1)),which=c(1))
 plot(pp[,1]~pp$x, type="l", xlab="x", ylab="Concordance", lwd=2, xaxs="i")
 confband(pp$x,pp[,2],pp[,3],polygon=TRUE,lty=0,col=Col(1))
+
+pp <- predict(a,data.frame(x=seq(-1,1,by=.1)),which=c(9)) ## rho
+plot(pp[,1]~pp$x, type="l", xlab="x", ylab="Correlation", lwd=2, xaxs="i")
+confband(pp$x,pp[,2],pp[,3],polygon=TRUE,lty=0,col=Col(1))
+with(pp, lines(x,tanh(-x),lwd=2,lty=2))
+}
+##'
+## Time
+\dontrun{
+    prt0 <- subset(prt,zyg=="MZ" & country=="Denmark")
+    a <- biprobit.time(cancer~1, id="id", data=prt0, eqmarg=FALSE,
+                       cens.formula=Surv(time,status==0)~1,
+                       breaks=c(75,100,by=5))
+
+
+a <- biprobit.time(
 }
 }
 
