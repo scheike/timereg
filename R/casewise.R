@@ -41,6 +41,11 @@
 ##' plot(cmz,ylim=c(0,0.7),xlim=c(60,100))
 ##' par(new=TRUE)
 ##' plot(cdz,ylim=c(0,0.7),xlim=c(60,100))
+##' 
+##' slope.process(cdz$casewise[,1],cdz$casewise[,2],iid=cdz$casewise.iid)
+##' 
+##' slope.process(cmz$casewise[,1],cmz$casewise[,2],iid=cmz$casewise.iid)
+##'
 ##' }
 ##' @export
 casewise.test <- function(conc,marg,test="no-test",p=0.01)
@@ -128,6 +133,31 @@ casewise.test <- function(conc,marg,test="no-test",p=0.01)
   class(out) <- "casewise"
   return(out)
 } ## }}}
+
+##' @export
+slope.process  <-  function(time,y,iid=NULL)
+{ ## {{{ 
+ctime <- scale(time)
+caselm <- lm(y ~ ctime)
+slope <- coef(caselm)[2]
+
+if (!is.null(iid)) {
+diff.iid <- iid 
+lm.iid <- c()
+for (i in 1:ncol(iid))
+{
+lmiid <- lm(iid[,i] ~ ctime)
+lm.iid <- rbind(lm.iid,coef(lmiid))
+}
+se.slope <- apply(lm.iid,2,sd)^.5
+} else {se.slop <- NULL}
+
+z.slope <- slope/se.slope[2]
+pval <- 2*(1-pnorm(abs(z.slope)))
+
+out <- list(intercept=coef(caselm)[1],slope=slope,se.slope=se.slope,pval.slope=pval)
+return(out)
+} ## }}} 
 
 ##' .. content for description (no empty lines) ..
 ##'
