@@ -300,7 +300,7 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
 ##' pp <- predict(a,data.frame(x=seq(-1,1,by=.1)),which=c(1))
 ##' plot(pp[,1]~pp$x, type="l", xlab="x", ylab="Concordance", lwd=2, xaxs="i")
 ##' confband(pp$x,pp[,2],pp[,3],polygon=TRUE,lty=0,col=Col(1))
-##'
+##' ##'
 ##' pp <- predict(a,data.frame(x=seq(-1,1,by=.1)),which=c(9)) ## rho
 ##' plot(pp[,1]~pp$x, type="l", xlab="x", ylab="Correlation", lwd=2, xaxs="i")
 ##' confband(pp$x,pp[,2],pp[,3],polygon=TRUE,lty=0,col=Col(1))
@@ -309,13 +309,24 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
 ##' ##'
 ##' ## Time
 ##' \dontrun{
-##'     prt0 <- subset(prt,zyg=="MZ" & country=="Denmark")
-##'     a <- biprobit.time(cancer~1, id="id", data=prt0, eqmarg=FALSE,
+##'     a <- biprobit.time(cancer~1, rho=~1+zyg, id="id", data=prt, eqmarg=TRUE,
 ##'                        cens.formula=Surv(time,status==0)~1,
-##'                        breaks=c(75,100,by=5))
+##'                        breaks=seq(75,100,by=3),fix.censweights=TRUE)
+##' 
+##'     a <- biprobit.time2(cancer~1+zyg, rho=~1+zyg, id="id", data=prt0, eqmarg=TRUE,
+##'                        cens.formula=Surv(time,status==0)~zyg,
+##'                        breaks=100)
+##' 
+##'     a1 <- biprobit.time2(cancer~1, rho=~1, id="id", data=subset(prt0,zyg=="MZ"), eqmarg=TRUE,
+##'                        cens.formula=Surv(time,status==0)~1,
+##'                        breaks=100,pairsonly=TRUE)
+##' 
+##'     a2 <- biprobit.time2(cancer~1, rho=~1, id="id", data=subset(prt0,zyg=="DZ"), eqmarg=TRUE,
+##'                         cens.formula=Surv(time,status==0)~1,
+##'                         breaks=100,pairsonly=TRUE)
 ##' 
 ##' 
-##' a <- biprobit.time(
+##'     plot(a,which=3,ylim=c(0,0.1))
 ##' }
 biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
                              indep=FALSE, weights=NULL, 
@@ -538,10 +549,10 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
       free <- which(is.na(constrain))
       p0 <- p0[free]
       U0 <- U
-      U <- function(p,...) {
+      U <- function(p,indiv=FALSE) {
           p1 <- constrain
           p1[free] <- p
-          res <- U0(p1,...)
+          res <- U0(p1,indiv)
           if (is.matrix(res)) {              
               return(structure(res[,free,drop=FALSE],logLik=attributes(res)$logLik))
           } 
@@ -740,3 +751,45 @@ Ubiprobit <- function(p,Rho,eqmarg,nx,MyData,indiv=FALSE) {
     return(val)
 }
 
+
+
+
+biprobit.time2 <- function(formula,data,id,...,
+                          breaks=Inf,pairsonly=TRUE,
+                          cens.formula,cens.model="aalen",weight="w") {
+
+    m <- match.call(expand.dots = FALSE)
+    m <- m[match(c("","data"),names(m),nomatch = 0)]
+    Terms <- terms(cens.formula,data=data)
+    m$formula <- Terms
+    m[[1]] <- as.name("model.frame")
+    M <- eval(m,envir=parent.frame())
+
+    censtime <- model.extract(M, "response")
+    status <- censtime[,2]
+    time <- censtime[,1]
+    outcome <- as.character(terms(formula)[[2]])    
+    if (is.null(breaks)) breaks <-  quantile(time,c(0.25,0.5,0.75,1))
+
+    outcome0 <- paste(outcome,"_dummy")
+    res <- list()
+    for (tau in breaks) {
+        if (length(breaks)>1) message(tau)
+        data0 <- data
+        time0 <- time
+        cond0 <- time0>tau
+        status0 <- status
+        status0[cond0 & status==1] <- 3 ## Censored
+        data0[cond0,outcome] <- FALSE
+        time0[cond0] <- tau
+        data0$S <- Surv(time0,status0==1)        
+        dataw <- ipw(update(cens.formula,S~.), data=data0, cens.model=cens.model,
+                     cluster=id,weightname=weight,obsonly=TRUE)
+        suppressWarnings(b <- biprobit(formula, data=dataw, id=id, weight=weight, pairsonly=pairsonly,...))
+        res <- c(res,list(summary(b)))
+    }
+    if (length(breaks)==1) return(b)
+    res <- list(varname="Time",var=breaks,coef=lapply(res,function(x) x$all),summary=res,call=m,type="time")
+    class(res) <- "multitwinlm"
+    return(res)    
+}
