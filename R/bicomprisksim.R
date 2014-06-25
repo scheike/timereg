@@ -25,6 +25,8 @@ bicomprisksim <- function(n=1e4,
     ialpha <- function(v,a,b) -(log(-v)+a)/b    
     q2 <- qnorm(p2) ## p2: Prostata cancer prevalence 
     p1 <- 1-p2; q1 <- qnorm(p1) ## Death without cancer
+    alpha <- function(t,a,b) -exp(-(b*t+a))
+    F2s <- function(t) pnorm(alpha(t,b=b2,a=a2)+q2) ## Marginal Cumulative Incidence (cancer)
 ### Random effects
     R <- diag(2)*.5+.5
     J <- matrix(1,ncol=2,nrow=2)
@@ -63,8 +65,13 @@ bicomprisksim <- function(n=1e4,
     dd <- fast.reshape(d)
     dd$cancer <- (dd$cause==2)*1
 
+    tt <- seq(0,max(dd$time))    
     Smz <- J*ACE[1]+J*ACE[2]+I*ACE[3]
     Sdz <- R*ACE[1]+J*ACE[2]+I*ACE[3]
+    rr <- alpha(tt,b=b2,a=a2)+q2
+    Cmz <- pmvn(upper=cbind(rr,rr),mu=matrix(0,ncol=2,nrow=length(rr)),sigma=Smz)
+    Cdz <- pmvn(upper=cbind(rr,rr),mu=matrix(0,ncol=2,nrow=length(rr)),sigma=Sdz)
+    
     true <- list(p2=p2,
                  p22mz=pmvn(lower=c(-Inf,-Inf),upper=c(q2,q2),sigma=Smz),
                  p12mz=pmvn(lower=c(q2,-Inf),upper=c(Inf,q2),sigma=Smz),
@@ -73,7 +80,12 @@ bicomprisksim <- function(n=1e4,
                  p22dz=pmvn(lower=c(-Inf,-Inf),upper=c(q2,q2),sigma=Sdz),
                  p12dz=pmvn(lower=c(q2,-Inf),upper=c(Inf,q2),sigma=Sdz),
                  p12dz=pmvn(lower=c(q2,-Inf),upper=c(Inf,q2),sigma=Sdz),
-                 p11dz=pmvn(lower=c(q2,q2),upper=c(Inf,Inf),sigma=Sdz))
+                 p11dz=pmvn(lower=c(q2,q2),upper=c(Inf,Inf),sigma=Sdz),
+                 time=tt,
+                 F2=F2s(tt),
+                 Cmz=Cmz,
+                 Cdz=Cdz
+                 )
     attributes(dd) <- c(attributes(dd),true)                  
     return(dd)
 }
