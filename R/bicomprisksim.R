@@ -19,6 +19,7 @@ bicomprisksim <- function(n=1e4,
                           a1=85,b1=0.1,
                           a2=-10,b2=0.15,
                           p2=.065,
+                          tt,
                           ...) {
 
     ACE <- ACE/sum(ACE)
@@ -65,7 +66,7 @@ bicomprisksim <- function(n=1e4,
     dd <- fast.reshape(d)
     dd$cancer <- (dd$cause==2)*1
 
-    tt <- seq(0,max(dd$time))    
+    if (missing(tt)) tt <- seq(0,max(dd$time))    
     Smz <- J*ACE[1]+J*ACE[2]+I*ACE[3]
     Sdz <- R*ACE[1]+J*ACE[2]+I*ACE[3]
     rr <- alpha(tt,b=b2,a=a2)+q2
