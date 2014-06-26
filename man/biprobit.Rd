@@ -8,9 +8,9 @@
 biprobit(x, data, id, rho = ~1, num = NULL, strata = NULL,
   eqmarg = TRUE, indep = FALSE, weights = NULL, biweight = function(x)
   1/min(x), samecens = TRUE, randomeffect = FALSE, vcov = "robust",
-  pairsonly = FALSE, allmarg = samecens & !is.null(weights),
-  control = list(trace = 0, method = "quasi"), messages = 1,
-  constrain = NULL, table = pairsonly, p, ...)
+  pairs.only = FALSE, allmarg = samecens & !is.null(weights),
+  control = list(trace = 0), messages = 1, constrain = NULL,
+  table = pairs.only, p, ...)
 }
 \arguments{
 \item{x}{formula (or vector)}
@@ -39,7 +39,7 @@ biprobit(x, data, id, rho = ~1, num = NULL, strata = NULL,
 
 \item{vcov}{Type of standard errors to be calculated}
 
-\item{pairsonly}{Include complete pairs only?}
+\item{pairs.only}{Include complete pairs only?}
 
 \item{allmarg}{Should all marginal terms be included}
 
@@ -62,14 +62,14 @@ Bivariate Probit model
 data(prt)
 prt0 <- subset(prt,country=="Denmark")
 a <- biprobit(cancer~1+zyg, ~1+zyg, data=prt0, id="id")
-b <- biprobit(cancer~1+zyg, ~1+zyg, data=prt0, id="id",pairsonly=TRUE)
+b <- biprobit(cancer~1+zyg, ~1+zyg, data=prt0, id="id",pairs.only=TRUE)
 predict(b,newdata=Expand(prt,zyg=c("MZ")))
 predict(b,newdata=Expand(prt,zyg=c("MZ","DZ")))
 
 \donttest{
 prtw <- ipw(Surv(time,status==0)~1,data=prt0)
-b1 <- biprobit(cancer~1+zyg, ~1+zyg, data=prtw, id="id", weights="w", pairsonly=TRUE,table=FALSE)
-b2 <- biprobit(cancer~1+zyg, ~1+zyg, data=prtw, id="id", weights="w", pairsonly=TRUE)
+b1 <- biprobit(cancer~1+zyg, ~1+zyg, data=prtw, id="id", weights="w", pairs.only=TRUE,table=FALSE)
+b2 <- biprobit(cancer~1+zyg, ~1+zyg, data=prtw, id="id", weights="w", pairs.only=TRUE)
 }
 
 
@@ -89,7 +89,7 @@ with(predict(a,data.frame(x=seq(-1,1,by=.1))), plot(p00~x,type="l"))
 pp <- predict(a,data.frame(x=seq(-1,1,by=.1)),which=c(1))
 plot(pp[,1]~pp$x, type="l", xlab="x", ylab="Concordance", lwd=2, xaxs="i")
 confband(pp$x,pp[,2],pp[,3],polygon=TRUE,lty=0,col=Col(1))
-
+##'
 pp <- predict(a,data.frame(x=seq(-1,1,by=.1)),which=c(9)) ## rho
 plot(pp[,1]~pp$x, type="l", xlab="x", ylab="Correlation", lwd=2, xaxs="i")
 confband(pp$x,pp[,2],pp[,3],polygon=TRUE,lty=0,col=Col(1))
@@ -98,13 +98,24 @@ with(pp, lines(x,tanh(-x),lwd=2,lty=2))
 ##'
 ## Time
 \dontrun{
-    prt0 <- subset(prt,zyg=="MZ" & country=="Denmark")
-    a <- biprobit.time(cancer~1, id="id", data=prt0, eqmarg=FALSE,
+    a <- biprobit.time(cancer~1, rho=~1+zyg, id="id", data=prt, eqmarg=TRUE,
                        cens.formula=Surv(time,status==0)~1,
-                       breaks=c(75,100,by=5))
+                       breaks=seq(75,100,by=3),fix.censweights=TRUE)
+
+    a <- biprobit.time2(cancer~1+zyg, rho=~1+zyg, id="id", data=prt0, eqmarg=TRUE,
+                       cens.formula=Surv(time,status==0)~zyg,
+                       breaks=100)
+
+    a1 <- biprobit.time2(cancer~1, rho=~1, id="id", data=subset(prt0,zyg=="MZ"), eqmarg=TRUE,
+                       cens.formula=Surv(time,status==0)~1,
+                       breaks=100,pairs.only=TRUE)
+
+    a2 <- biprobit.time2(cancer~1, rho=~1, id="id", data=subset(prt0,zyg=="DZ"), eqmarg=TRUE,
+                        cens.formula=Surv(time,status==0)~1,
+                        breaks=100,pairs.only=TRUE)
 
 
-a <- biprobit.time(
+    plot(a,which=3,ylim=c(0,0.1))
 }
 }
 

@@ -7,7 +7,7 @@
 bptwin(x, data, id, zyg, DZ, group = NULL, num = NULL, weights = NULL,
   biweight = function(x) 1/min(x), strata = NULL, messages = 1,
   control = list(trace = 0), type = "ace", eqmean = TRUE,
-  pairsonly = FALSE, samecens = TRUE, allmarg = samecens &
+  pairs.only = FALSE, samecens = TRUE, allmarg = samecens &
   !is.null(weights), stderr = TRUE, robustvar = TRUE, p, indiv = FALSE,
   constrain, bound = FALSE, varlink, ...)
 }
@@ -49,7 +49,7 @@ genetic factors, unique environmental factors).}
 
 \item{eqmean}{Equal means (with type="cor")?}
 
-\item{pairsonly}{Include complete pairs only?}
+\item{pairs.only}{Include complete pairs only?}
 
 \item{stderr}{Should standard errors be calculated?}
 

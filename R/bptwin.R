@@ -26,7 +26,7 @@
 ##'     environmental factors, dominant
 ##'     genetic factors, unique environmental factors).
 ##' @param eqmean Equal means (with type="cor")?
-##' @param pairsonly Include complete pairs only?
+##' @param pairs.only Include complete pairs only?
 ##' @param stderr Should standard errors be calculated?
 ##' @param robustvar If TRUE robust (sandwich) variance estimates of the variance are used
 ##' @param p Parameter vector p in which to evaluate log-Likelihood and score function
@@ -56,7 +56,7 @@ bptwin <- function(x, data, id, zyg, DZ, group=NULL,
                    control=list(trace=0),
                    type="ace",
                    eqmean=TRUE,
-                   pairsonly=FALSE,
+                   pairs.only=FALSE,
                    samecens=TRUE,
                    allmarg=samecens&!is.null(weights),
                    stderr=TRUE,                  
@@ -123,7 +123,7 @@ bptwin <- function(x, data, id, zyg, DZ, group=NULL,
   if (sum(idtab>2)) stop("More than two individuals with the same id ")
 
   ##  suppressMessages(browser())
-  if (pairsonly) {
+  if (pairs.only) {
     data <- data[as.character(data[,id])%in%names(idtab)[idtab==2],]
     idtab <- table(data[,id])
   }
@@ -288,9 +288,9 @@ bptwin <- function(x, data, id, zyg, DZ, group=NULL,
 
   N <- cbind(length(idx0),length(idx1),length(idx2)); 
   N <- cbind(N,
-             2*nrow(MyData0$Y0)+if (!pairsonly) NROW(MyData0$Y0_marg) else 0, 
-             2*nrow(MyData1$Y0)+if (!pairsonly) NROW(MyData1$Y0_marg) else 0,
-             2*nrow(MyData2$Y0)+if (!pairsonly) NROW(MyData2$Y0_marg) else 0,
+             2*nrow(MyData0$Y0)+if (!pairs.only) NROW(MyData0$Y0_marg) else 0, 
+             2*nrow(MyData1$Y0)+if (!pairs.only) NROW(MyData1$Y0_marg) else 0,
+             2*nrow(MyData2$Y0)+if (!pairs.only) NROW(MyData2$Y0_marg) else 0,
              NROW(MyData0$Y0),NROW(MyData1$Y0),NROW(MyData2$Y0))
 
   
@@ -384,7 +384,7 @@ bptwin <- function(x, data, id, zyg, DZ, group=NULL,
                              Mu0,
                              S$Sigma0,dS0,Y0,XX0,W0,!is.null(W0),samecens))
 
-    if (!is.null(MyData0$Y0_marg) &&!pairsonly) {
+    if (!is.null(MyData0$Y0_marg) &&!pairs.only) {
       mum <- with(MyData0, XX0_marg%*%b00)
       dSmarg <- dS0[,1,drop=FALSE]
        U_marg <- with(MyData0, .Call("uniprobit",
@@ -401,7 +401,7 @@ bptwin <- function(x, data, id, zyg, DZ, group=NULL,
     U1 <- with(MyData1, .Call("biprobit0",
                              Mu1,
                              S$Sigma1,dS1,Y0,XX0,W0,!is.null(W0),samecens))
-    if (!is.null(MyData1$Y0_marg) &&!pairsonly) {
+    if (!is.null(MyData1$Y0_marg) &&!pairs.only) {
       mum <- with(MyData1, XX0_marg%*%b11)
       dSmarg <- dS1[,1,drop=FALSE]
       U_marg <- with(MyData1, .Call("uniprobit",
@@ -419,7 +419,7 @@ bptwin <- function(x, data, id, zyg, DZ, group=NULL,
       U2 <- with(MyData2, .Call("biprobit0",
                                 Mu2,
                                 S$Sigma2,S$dS2,Y0,XX0,W0,!is.null(W0),samecens))
-      if (!is.null(MyData2$Y0_marg) &&!pairsonly) {
+      if (!is.null(MyData2$Y0_marg) &&!pairs.only) {
         mum <- with(MyData2, XX0_marg%*%b22)
         dSmarg <- S$dS2[,1,drop=FALSE]
         U_marg <- with(MyData2, .Call("uniprobit",
