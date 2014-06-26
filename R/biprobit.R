@@ -774,7 +774,7 @@ Ubiprobit <- function(p,Rho,eqmarg,nx,MyData,indiv=FALSE) {
 
 biprobit.time2 <- function(formula,data,id,...,
                           breaks=Inf,pairs.only=TRUE,
-                          cens.formula,cens.model="aalen",weight="w") {
+                          cens.formula,cens.model="aalen",weights="w") {
 
     m <- match.call(expand.dots = FALSE)
     m <- m[match(c("","data"),names(m),nomatch = 0)]
@@ -802,9 +802,9 @@ biprobit.time2 <- function(formula,data,id,...,
         time0[cond0] <- tau
         data0$S <- Surv(time0,status0==1)        
         dataw <- ipw(update(cens.formula,S~.), data=data0, cens.model=cens.model,
-                     cluster=id,weightname=weight,obsonly=TRUE)
+                     cluster=id,weightname=weights,obsonly=TRUE)
         message("control")
-        suppressWarnings(b <- biprobit(formula, data=dataw, id=id, weight=weight, pairs.only=pairs.only,...))
+        suppressWarnings(b <- biprobit(formula, data=dataw, id=id, weights=weights, pairs.only=pairs.only,...))
         res <- c(res,list(summary(b)))
     }
     if (length(breaks)==1) return(b)

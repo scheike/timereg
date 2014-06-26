@@ -33,7 +33,7 @@ ipw <- function(formula,data,cluster,
 
     ##cens.args <- c(list(formula,n.sim=0,robust=0,data=eval(data)),list(...))
     if (tolower(cens.model)%in%c("weibull","phreg.par","phreg.weibull")) {
-        ud.cens <- do.call(mets::phreg.par,cens.args)
+	ud.cens <- phreg.par(formula,data,...)
         pr <- predict(ud.cens)
         noncens <- which(!ud.cens$status)        
     } else {
