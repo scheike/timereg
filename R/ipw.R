@@ -31,26 +31,38 @@ ipw <- function(formula,data,cluster,
                  cens.model="aalen", pairs=FALSE, ...) {
                  ##iid=TRUE,
 
-    XZ <- model.matrix(formula,data)
-    cens.args <- c(list(formula,n.sim=0,robust=0,data=eval(data)),list(...))
+    ##cens.args <- c(list(formula,n.sim=0,robust=0,data=eval(data)),list(...))
     if (tolower(cens.model)%in%c("weibull","phreg.par","phreg.weibull")) {
         ud.cens <- do.call(mets::phreg.par,cens.args)
         pr <- predict(ud.cens)
         noncens <- which(!ud.cens$status)        
     } else {
-        m <- match.call(expand.dots = TRUE)[1:3]
-        Terms <- terms(formula, data = cens.args$data, env=parent.frame())
+        m <- match.call(expand.dots = FALSE)
+        m <- m[match(c("", "formula", "data", "subset", "na.action"), 
+                     names(m), nomatch = 0)]
+        special <- c("strata", "factor", "NN", "cluster", "dummy")
+        if (missing(data)) 
+            Terms <- terms(formula)
+        else Terms <- terms(formula, data = data)
         m$formula <- Terms
-        m$data <- cens.args$data
         m[[1]] <- as.name("model.frame")
-        M <- eval(m)
+        M <- eval(m, parent.frame())
         censtime <- model.extract(M, "response")
         status <- censtime[,2]
         otimes <- censtime[,1]
         noncens <- !status
-        ud.cens <- do.call(cens.model,cens.args)
-        Gcx<-Cpred(ud.cens$cum,otimes)[,-1];
-        Gcx<-exp(-apply(Gcx*XZ,1,sum))
+        if (is.null(attr(terms(formula,"prop"),"specials")$prop)) {
+            ud.cens <- aalen(formula,n.sim=0,robust=0,data=data,...)
+            XZ <- model.matrix(formula,data)
+            Gcx<-Cpred(ud.cens$cum,otimes)[,-1];
+            Gcx<-exp(-apply(Gcx*XZ,1,sum))            
+        } else {
+            ud.cens <- cox.aalen(formula,n.sim=0,robust=0,data=data,...)
+            XZ <- model.matrix(formula,data)
+            Gcx<-Cpred(ud.cens$cum,otimes)[,-1];
+            Gcx<-exp(-apply(Gcx*XZ,1,sum))            
+        }
+        ##ud.cens <- do.call(cens.model,cens.args)
         Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
         pr <- Gcx
     }
