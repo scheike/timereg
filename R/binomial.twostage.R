@@ -387,9 +387,9 @@ breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weights=
 	conc <- c(conc,concordance)
 	cif <- c(cif,prev0)
 	logor <- rbind(logor,coef(b))
-###        res <- c(res,list(coef(b),concordance=concordance,cif=prev0))
+###     res <- c(res,list(coef(b),concordance=concordance,cif=prev0))
     }
-    if (length(breaks)==1) return(b)
+###    if (length(breaks)==1) return(b)
     res <- list(varname="Time",var=breaks,concordance=rev(conc),cif=rev(cif),
 		time=breaks,call=m,type="time",logor=logor[k:1,])
 ###	coef=lapply(res,function(x) x$all),
