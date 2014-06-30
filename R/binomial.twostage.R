@@ -357,10 +357,12 @@ breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weights=
         status0 <- status 
         }
         cond0 <- (time>tau)
+        if ((fix.censweights==1 & k==0) | (fix.censweights==0)) status0[cond0 & status==1] <- 3 
         if (fix.censweights==0) status0[cond0 & status==1] <- 3 
         data0[,outcome] <- data[,outcome]
         data0[cond0,outcome] <- FALSE
-        if (fix.censweights==0) time0[cond0] <- tau
+        if ((fix.censweights==1 & k==0) | (fix.censweights==0)) time0[cond0] <- tau
+###        if (fix.censweights==0 ) time0[cond0] <- tau
         if ((fix.censweights==1 & k==0) | (fix.censweights==0)) {
 		data0$S <- Surv(time0,status0==1)        
 	}
