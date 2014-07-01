@@ -1,6 +1,6 @@
 ##' @export
 biprobit.time <- function(formula,data,id,...,
-                          breaks=Inf,pairs.only=TRUE,fix.censweights=TRUE,
+                          breaks=Inf,pairs.only=TRUE,fix.censweights=FALSE,
                           cens.formula,cens.model="aalen",weights="w",messages=FALSE,
                           return.data=FALSE) {
 
@@ -46,11 +46,11 @@ biprobit.time <- function(formula,data,id,...,
         k <- k+1
         if (return.data) return(dataw)
         suppressWarnings(b <- biprobit(formula, data=dataw, id=id, weights=weights, pairs.only=pairs.only,...))
-        res <- c(res,list(summary(b)))
+        res <- c(res,list(summary(b,...)))
     }
     if (length(breaks)==1) return(b)
     res <- list(varname="Time",var=rev(breaks),coef=lapply(rev(res),function(x) x$all),summary=rev(res),call=m,type="time")
-    class(res) <- "multitwinlm"
+    class(res) <- "timemets"
     return(res)    
 }
 
@@ -212,7 +212,7 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
     }
     f0 <- function(p) -sum(attributes(U(p,w0))$logLik)
     g0 <- function(p) -as.numeric(colSums(U(p,w0)))    
-    suppressWarnings(op <- nlminb(p0,f0,gradient=g0,control=control,...))
+    suppressWarnings(op <- nlminb(p0,f0,gradient=g0,control=control))
     
     iI <- Inverse(numDeriv::jacobian(g0,op$par))
     V <- iI
@@ -590,7 +590,7 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
           op <- nlminb(p0,f,control=control,...)
       } else if (control$method=="quasi") {
           control$method <- NULL
-          suppressWarnings(op <- nlminb(p0,f0,gradient=g0,control=control,...))
+          suppressWarnings(op <- nlminb(p0,f0,gradient=g0,control=control))
           ## }
   ## else if (control$method=="bhhh") {
   ##   controlnr <- list(stabil=FALSE,
@@ -606,7 +606,7 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
   ##   op <- lava:::NR(start=p0,NULL,g0, h0,control=controlnr)
       } else {
           control$method <- NULL
-          op <- nlminb(p0,f0,control=control,...)
+          op <- nlminb(p0,f0,control=control)
       }
   } else op <- list(par=p)
 
@@ -809,6 +809,6 @@ biprobit.time2 <- function(formula,data,id,...,
     }
     if (length(breaks)==1) return(b)
     res <- list(varname="Time",var=breaks,coef=lapply(res,function(x) x$all),summary=res,call=m,type="time")
-    class(res) <- "multitwinlm"
+    class(res) <- "timemets"
     return(res)    
 }

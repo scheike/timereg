@@ -1,11 +1,20 @@
 ##' @export
-summary.biprobit <- function(object,level=0.05,transform,mean.contrast=NULL,mean.contrast2=NULL,cor.contrast=NULL,...) {
+summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=NULL,mean.contrast2=NULL,cor.contrast=NULL,...) {
   alpha <- level/2
   varcomp <- object$coef[length(coef(object)),1:2]
   varcomp <- rbind(object$model$tr(c(varcomp[1],varcomp[1]%x%cbind(1,1) + qnorm(1-alpha)*varcomp[2]%x%cbind(-1,1))))
   colnames(varcomp)[2:3] <- paste(c(alpha*100,100*(1-alpha)),"%",sep="")
   rownames(varcomp) <- ifelse(is.null(object$model$varcompname),"Variance component",object$model$varcompname)
-
+  if (!missing(contrast)) {
+      contrast <- rbind(contrast)
+      mean.contrast <- contrast[,seq(object$model$blen),drop=FALSE]
+      cor.contrast <- contrast[,seq(object$model$zlen)+object$model$blen,drop=FALSE]
+      if (!object$model$eqmarg) {          
+          mean.contrast2 <- mean.contrast[,seq(ncol(mean.contrast)/2)+ncol(mean.contrast)/2,drop=FALSE]
+          mean.contrast <- mean.contrast[,seq(ncol(mean.contrast)/2),drop=FALSE]
+      }
+  }
+  
   h <- function(p) log(p/(1-p)) ## logit
   ih <- function(z) 1/(1+exp(-z)) ## expit
   ##dlogit <- function(p) 1/(p*(1-p))
@@ -24,10 +33,12 @@ summary.biprobit <- function(object,level=0.05,transform,mean.contrast=NULL,mean
       val <- as.character(val)
       val[seq_len(length(val)-1)+1] <-
           paste("+ ", val[seq_len(length(val)-1)+1],sep="")
-      val[i2] <- "- "; val[i1] <- ""
+      val[i2] <- "- ";
+      val[i1] <- "+ "
+      val[intersect(1,i1)] <- ""
       return(val)
   }
-  parfun <- function(p,ref=FALSE) {
+  parfun <- function(p,ref=FALSE,mean.contrast,mean.contrast2,cor.contrast) {
       nn <- paste("[",gsub("r:","",rownames(object$coef),fixed=TRUE),"]",sep="")
       m <- rep(p[1],2)
       r <- p[object$model$blen+1]
@@ -79,8 +90,8 @@ summary.biprobit <- function(object,level=0.05,transform,mean.contrast=NULL,mean
       }
       return(list(m=m,r=r,mref1=mref1,mref2=mref2,corref=corref))
   }
-  probs <- function(p) {
-      pp <- parfun(p)
+  probs <- function(p,...) {
+      pp <- parfun(p,...)
       m <- pp[[1]]
       r <- pp[[2]]
       S <- object$SigmaFun(r,cor=FALSE)
@@ -95,24 +106,38 @@ summary.biprobit <- function(object,level=0.05,transform,mean.contrast=NULL,mean
       logOR <- log(cond)-log(1-cond)-log(discond)+log(1-discond)
       tetracor <- S[1,2]/S[1,1]
       c(h(c(conc,cond,marg)),lambda,logOR,r)
-  }
+  }  
   alpha <- level/2
   CIlab <- paste(c(alpha*100,100*(1-alpha)),"%",sep="")
   mycoef <- coef(object)
-  prob <- probs(mycoef)
-  Dprob <- numDeriv::jacobian(probs,mycoef)
-  sprob <- diag((Dprob)%*%vcov(object)%*%t(Dprob))^0.5
-  pp <- cbind(prob,prob-qnorm(1-alpha)*sprob,prob+qnorm(1-alpha)*sprob)
-  pp[1:3,] <- ih(pp[1:3,])
-  pp[nrow(pp),] <- object$model$tr(pp[nrow(pp),])
-  nn <- c("Concordance","Casewise Concordance","Marginal","Rel.Recur.Risk","log(OR)","Tetrachoric correlation")
-  if (nrow(pp)-length(nn)>0) nn <- c(nn,rep("",nrow(pp)-length(nn)))
-  rownames(pp) <- nn
-  colnames(pp) <- c("Estimate",CIlab)
 
+  cor.contrast <- rbind(cor.contrast)
+  mean.contrast <- rbind(mean.contrast)
+  mean.contrast2 <- rbind(mean.contrast2)
+  KK <- lapply(list(cor.contrast,mean.contrast,mean.contrast2),nrow)
+  if (all(is.null(unlist(KK)))) K <- 1 else  K <- max(unlist(KK))
+  res <- pa <- c()
+  for (i in seq(K)) {      
+      prob <- probs(mycoef,cor.contrast=cor.contrast[i,],mean.contrast=mean.contrast[i,],mean.contrast2=mean.contrast2[i,])  
+      Dprob <- numDeriv::jacobian(probs,mycoef,cor.contrast=cor.contrast[i,],mean.contrast=mean.contrast[i,],mean.contrast2=mean.contrast2[i,])
+      sprob <- diag((Dprob)%*%vcov(object)%*%t(Dprob))^0.5
+      pp <- cbind(prob,prob-qnorm(1-alpha)*sprob,prob+qnorm(1-alpha)*sprob)
+      pp[1:3,] <- ih(pp[1:3,])      
+      pp[nrow(pp),] <- object$model$tr(pp[nrow(pp),])      
+      nn <- c("Concordance","Casewise Concordance","Marginal","Rel.Recur.Risk","log(OR)","Tetrachoric correlation")
+      if (K>1) nn <- paste("c",i,":",nn,sep="")
+      if (nrow(pp)-length(nn)>0) nn <- c(nn,rep("",nrow(pp)-length(nn)))
+      rownames(pp) <- nn
+      colnames(pp) <- c("Estimate",CIlab)
+      P <- nrow(pp)
+      pa <- c(pa, list(parfun(object$coef[,1],ref=TRUE,cor.contrast=cor.contrast[i,],mean.contrast[i,],mean.contrast2[i,])))
+      res <- rbind(res,pp)
+  }      
+  
+  
   contrast <- any(c(!is.null(cor.contrast),!is.null(mean.contrast),!is.null(mean.contrast2)))
-  res <- list(all=pp,varcomp=varcomp,prob=pp,coef=object$coef,score=colSums(object$score),logLik=object$logLik,msg=object$msg,N=object$N,
-              par=parfun(object$coef[,1],ref=TRUE),model=object$model,contrast=contrast)
+  res <- list(all=res,varcomp=varcomp,prob=res,coef=object$coef,score=colSums(object$score),logLik=object$logLik,msg=object$msg,N=object$N,ncontrasts=K,nstat=P,
+              par=pa,model=object$model,contrast=contrast)
   class(res) <- "summary.biprobit"
   res
 }
