@@ -10,25 +10,11 @@ print.summary.biprobit <- function(x,digits = max(3, getOption("digits") - 2),..
       cat(x$msg,"\n")
   }
 
-  for (i in seq(x$ncontrasts)) {     
-      if (!is.null(x$varcomp)) {
-          cat("\n")
-          ##res <- x$varcomp
-          res <- c()
-          P <- x$prob[seq(x$nstat)+x$nstat*(i-1),,drop=FALSE]
-          if (!is.null(P)) {
-              res <- rbind(res,P)
-          }
-          idx <- unlist(sapply(c("Concordance","Marginal"),function(x) grep(x,rownames(res))))
-          idx2 <- setdiff(seq(nrow(res)),idx)
-          res2 <- rbind(res[idx2,],rep(NA,ncol(res)),res[idx,])
-          print(RoundMat(res2,digits=digits,na=FALSE),quote=FALSE)
-      }
-      cat("\n")
+  for (i in seq(x$ncontrasts)) {
       corcontr <- x$model$zlen>1
       mcontr2 <- !x$model$eqmarg && x$model$blen>2
       mcontr1 <- x$model$eqmarg & x$model$blen>1
-      if (corcontr || mcontr2 || mcontr1 || x$contrast) cat("Contrast:\n")
+      if (corcontr || mcontr2 || mcontr1 || x$contrast) cat("\nContrast:\n")
       if (corcontr || x$contrast) {
           cat("\tDependence   ", x$par[[i]]$corref, "\n")
       }
@@ -38,6 +24,20 @@ print.summary.biprobit <- function(x,digits = max(3, getOption("digits") - 2),..
       } 
       if (mcontr1 || (x$contrast & x$model$eqmarg))
           cat("\tMean         ", x$par[[i]]$mref1, "\n")
+
+      if (!is.null(x$varcomp)) {
+          cat("\n")
+          ##res <- x$varcomp
+          res <- c()
+          P <- x$prob[seq(x$nstat)+x$nstat*(i-1),,drop=FALSE]
+          if (!is.null(P)) {
+              res <- rbind(res,P)
+          }
+          idx <- unlist(sapply(c("Concordance","Marginal","P\\(Y"),function(x) grep(x,rownames(res))))
+          idx2 <- setdiff(seq(nrow(res)),idx)
+          res2 <- rbind(res[idx2,],rep(NA,ncol(res)),res[idx,])
+          print(RoundMat(res2,digits=digits,na=FALSE),quote=FALSE)
+      }
 
   }
 }

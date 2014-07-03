@@ -1,5 +1,6 @@
 ##' @export
 predict.biprobit <- function(object,newdata,X,Z,which=NULL,fun=NULL,type,...) {
+    if (missing(newdata)) newdata <- data.frame(1)
     if (missing(X)) {
         ff <- object$formula; ff[2] <- NULL
         X <- model.matrix(ff,newdata)

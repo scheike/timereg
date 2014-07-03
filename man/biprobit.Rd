@@ -3,6 +3,8 @@
 \alias{biprobit}
 \alias{biprobit.time}
 \alias{biprobit.vector}
+\alias{or2prob}
+\alias{tetrachoric}
 \title{Bivariate Probit model}
 \usage{
 biprobit(x, data, id, rho = ~1, num = NULL, strata = NULL,
@@ -10,7 +12,7 @@ biprobit(x, data, id, rho = ~1, num = NULL, strata = NULL,
   1/min(x), samecens = TRUE, randomeffect = FALSE, vcov = "robust",
   pairs.only = FALSE, allmarg = samecens & !is.null(weights),
   control = list(trace = 0), messages = 1, constrain = NULL,
-  table = pairs.only, p, ...)
+  table = pairs.only, p = NULL, ...)
 }
 \arguments{
 \item{x}{formula (or vector)}

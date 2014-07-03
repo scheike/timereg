@@ -58,7 +58,7 @@ biprobit.time <- function(formula,data,id,...,
 ##' @export
 biprobit.vector <- function(x,id,X=NULL,Z=NULL,
                              weights=NULL,biweight=function(x) { u <- min(x); ifelse(u==0,0,1/min(u,1e-2)) },
-                             eqmarg=TRUE,add=NULL,control=list(),...) {
+                             eqmarg=TRUE,add=NULL,control=list(),p=NULL,...) {
 
     if (is.factor(x)) x <- factor(x,labels=c(0,1))
     else x <- factor(x*1,levels=c(0,1))
@@ -211,8 +211,10 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
         return(structure(score,logLik=logl))
     }
     f0 <- function(p) -sum(attributes(U(p,w0))$logLik)
-    g0 <- function(p) -as.numeric(colSums(U(p,w0)))    
-    suppressWarnings(op <- nlminb(p0,f0,gradient=g0,control=control))
+    g0 <- function(p) -as.numeric(colSums(U(p,w0)))   
+    if (!is.null(p)) op <- list(par=p) else {
+        suppressWarnings(op <- nlminb(p0,f0,gradient=g0,control=control))
+    }
     
     iI <- Inverse(numDeriv::jacobian(g0,op$par))
     V <- iI
@@ -265,7 +267,7 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
 ##' Bivariate Probit model
 ##' 
 ##' @export
-##' @aliases biprobit biprobit.vector biprobit.time
+##' @aliases biprobit biprobit.vector biprobit.time tetrachoric or2prob
 ##' @param x formula (or vector)
 ##' @param data data.frame
 ##' @param id The name of the column in the dataset containing the cluster id-variable.
@@ -355,7 +357,7 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
                              control=list(trace=0),
                              messages=1, constrain=NULL,                     
                              table=pairs.only,
-                             p,...) {
+                             p=NULL,...) {
 
   mycall <- match.call()
   formulaId <- unlist(Specials(x,"cluster"))
@@ -409,7 +411,7 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
       if (table && NCOL(Z)<10 && length(unique(sample(Z,min(1000,length(Z)))))<10) { ## Not quantitative?
           if (!is.null(weights)) weights <- data[,weights]
           if (length(attr(yx,"x")>0)) X <- model.matrix(x,data);
-          return(biprobit.vector(data[,yx],X=X,Z=Z,id=data[,id],weights,biweight=biweight,eqmarg=eqmarg,add=list(formula=formula,rho.formula=rho),control=control,...))
+          return(biprobit.vector(data[,yx],X=X,Z=Z,id=data[,id],weights,biweight=biweight,eqmarg=eqmarg,add=list(formula=formula,rho.formula=rho),control=control,p=p,...))
       }
   }
   
@@ -584,7 +586,7 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
   }
   control$method <- tolower(control$method)
   
-  if (missing(p)) {
+  if (is.null(p)) {
       if (control$method=="score") {
           control$method <- NULL
           op <- nlminb(p0,f,control=control,...)

@@ -1,5 +1,5 @@
 ##' @export
-summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=NULL,mean.contrast2=NULL,cor.contrast=NULL,...) {
+summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=NULL,mean.contrast2=NULL,cor.contrast=NULL,marg.idx=1,...) {
   alpha <- level/2
   varcomp <- object$coef[length(coef(object)),1:2]
   varcomp <- rbind(object$model$tr(c(varcomp[1],varcomp[1]%x%cbind(1,1) + qnorm(1-alpha)*varcomp[2]%x%cbind(-1,1))))
@@ -95,17 +95,23 @@ summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=
       m <- pp[[1]]
       r <- pp[[2]]
       S <- object$SigmaFun(r,cor=FALSE)
-            mu.cond <- function(x) m[1]+S[1,2]/S[2,2]*(x-m[2])
-      var.cond <- S[1,1]-S[1,2]^2/S[2,2]
-      conc <- pmvn(upper=m,sigma=S) 
-      disconc <- pmvn(lower=c(-Inf,m[2]),upper=c(m[1],Inf),sigma=S)
-      marg <- pnorm(m[1],sd=S[1,1]^0.5)
-      cond <- conc/marg
-      lambda <- cond/marg
-      discond <- disconc/(1-marg)
-      logOR <- log(cond)-log(1-cond)-log(discond)+log(1-discond)
-      tetracor <- S[1,2]/S[1,1]
-      c(h(c(conc,cond,marg)),lambda,logOR,r)
+      ##mu.cond <- function(x) m[1]+S[1,2]/S[2,2]*(x-m[2])
+      ##var.cond <- S[1,1]-S[1,2]^2/S[2,2]
+      p11 <- pmvn(lower=c(0,0),mu=m,sigma=S) 
+      p01 <- pmvn(lower=c(-Inf,0),upper=c(0,Inf),mu=m,sigma=S)
+      p10 <- pmvn(lower=c(0,-Inf),upper=c(Inf,0),mu=m,sigma=S)
+      p00 <- 1-p11-p10-p01
+      marg1 <- p11+p10
+      marg2 <- p11+p01
+      cond1 <- p11/marg2
+      lambda <- cond1/marg1
+      discond1 <- p10/(1-marg2)
+      logOR <- log(cond1)-log(1-cond1)-log(discond1)+log(1-discond1)
+      ##rho <- S[1,2]/S[1,1]
+      if (object$model$eqmarg) {
+          return(c(h(c(p11,cond1,marg1)),lambda,logOR,r))
+      }
+      return(c(h(c(p11,p10,p01,p00,marg1,marg2)),logOR,r))
   }  
   alpha <- level/2
   CIlab <- paste(c(alpha*100,100*(1-alpha)),"%",sep="")
@@ -122,13 +128,20 @@ summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=
       Dprob <- numDeriv::jacobian(probs,mycoef,cor.contrast=cor.contrast[i,],mean.contrast=mean.contrast[i,],mean.contrast2=mean.contrast2[i,])
       sprob <- diag((Dprob)%*%vcov(object)%*%t(Dprob))^0.5
       pp <- cbind(prob,prob-qnorm(1-alpha)*sprob,prob+qnorm(1-alpha)*sprob)
-      pp[1:3,] <- ih(pp[1:3,])      
-      pp[nrow(pp),] <- object$model$tr(pp[nrow(pp),])      
-      nn <- c("Concordance","Casewise Concordance","Marginal","Rel.Recur.Risk","log(OR)","Tetrachoric correlation")
+      pp[nrow(pp),] <- object$model$tr(pp[nrow(pp),])
+      pp[nrow(pp)-1,] <- exp(pp[nrow(pp)-1,])      
+      if (!object$model$eqmarg) {
+          pp[1:6,] <- ih(pp[1:6,])      
+          nn <- c("P(Y1=1,Y2=1)","P(Y1=1,Y2=0)","P(Y1=0,Y2=1)","P(Y1=0,Y2=0)","P(Y1=1)","P(Y2=1)","OR","Tetrachoric correlation")
+      } else {
+          pp[1:3,] <- ih(pp[1:3,])      
+          nn <- c("Concordance","Casewise Concordance","Marginal","Rel.Recur.Risk","OR","Tetrachoric correlation")
+      }
       if (K>1) nn <- paste("c",i,":",nn,sep="")
       if (nrow(pp)-length(nn)>0) nn <- c(nn,rep("",nrow(pp)-length(nn)))
       rownames(pp) <- nn
       colnames(pp) <- c("Estimate",CIlab)
+      
       P <- nrow(pp)
       pa <- c(pa, list(parfun(object$coef[,1],ref=TRUE,cor.contrast=cor.contrast[i,],mean.contrast[i,],mean.contrast2[i,])))
       res <- rbind(res,pp)
