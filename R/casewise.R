@@ -251,8 +251,9 @@ casewise <- function(conc,marg,cause.marg)
 casewise.bin <- function(nc,nd)
 { ## {{{
 ud <- 	glm(cbind(nc,round(0.5*nd+nc))~ +1,family=binomial())
-pud <- predict(glm,se.fit=TRUE)
-return(list(glm=ud,predict=pud))
+udci <- confint(ud)
+pud <- predict(ud,se.fit=TRUE,type="response")
+return(list(p.casewise=pud$fit,ci.casewise=exp(udci)))
 } ## }}}
 
 
