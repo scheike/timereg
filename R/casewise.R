@@ -248,6 +248,15 @@ casewise <- function(conc,marg,cause.marg)
 } ## }}}
 
 ##' @export
+casewise.bin <- function(nc,nd)
+{ ## {{{
+ud <- 	glm(cbind(nc,round(0.5*nd+nc))~ +1,family=binomial())
+pud <- predict(glm,se.fit=TRUE)
+return(list(glm=ud,predict=pud))
+} ## }}}
+
+
+##' @export
 plot.casewise <- function(x,ci=NULL,lty=NULL,ylim=NULL,col=NULL,xlab="time",ylab="concordance",legend=FALSE,...)
 { ## {{{
   if (is.null(col)) col <- 1:3
