@@ -23,6 +23,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
     ###  if (model=="rcif")      trans<-4; if (model=="rcif2")     trans<-5; if (model=="fg")        trans<-6; 
     ###  if (model=="logistic2") trans<-7; 
     line <- 0
+    cause.call <- causeS <- cause
     m<-match.call(expand.dots=FALSE);
     m$gamma<-m$times<-m$n.times<-m$cause<-m$Nit<-m$weighted<-m$n.sim<-
         m$model<-m$detail<- m$cens.model<-m$time.pow<-m$silent<- 
@@ -357,7 +358,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
     attr(ud, "Call") <- sys.call()
     attr(ud, "Formula") <- formula
     attr(ud, "time.pow") <- time.pow
-    attr(ud, "causeS") <- cause
+    attr(ud, "causeS") <- causeS
     if (model.type=="competing.risks") cause.call <- event.history[,"event"] else
     cause.call <- event.history[,"status"] 
     cause.call <- as.numeric(cause.call)
