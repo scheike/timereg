@@ -22,7 +22,15 @@ the proportional setting that includes the Fine & Gray (FG) "prop" model and
 some extensions where 
 \eqn{h(x)=1-\exp(-\exp(x))} and 
 \deqn{
-g(t,x,z) = \exp(x^T A(t) + (diag(t^p) z)^T \beta)
+g(t,x,z) = (x^T A(t) + (diag(t^p) z)^T \beta)
+}
+The FG model is obtained when \eqn{x=1},  but the baseline is 
+parametrized as \eqn{\exp(A(t))}.
+
+The "fg" model is a different parametrization that contains the FG model,
+where \eqn{h(x)=1-\exp(-x)} and 
+\deqn{
+g(t,x,z) = (x^T A(t)) \epx((diag(t^p) z)^T \beta)
 }
 The FG model is obtained when \eqn{x=1}. 
 
@@ -32,14 +40,28 @@ The FG model is obtained when \eqn{x=1}.
 g(t,x,z) = x^T A(t) + (diag(t^p) z)^T \beta
 }
 
+The "logistic2" is 
+\deqn{
+P_1(t,x,z) = x^T A(t) exp((diag(t^p) z)^T \beta)/ (1+ x^T A(t) exp((diag(t^p) z)^T \beta))
+}
+
+
 4) the relative cumulative incidence function "rcif" model where
 \eqn{h(x)=\exp(x)} and 
 \deqn{
 g(t,x,z) = x^T A(t) + (diag(t^p) z)^T \beta
-}) 
+} 
+
+The "rcif2" 
+\deqn{
+P_1(t,x,z) = (x^T A(t)) \epx((diag(t^p) z)^T \beta)
+}
+
+
 Where p by default is 1 for the additive model and 0 for 
 the other models.
 In general p may be powers of the same length as z. 
+
 }
 \usage{
 comp.risk(formula,data=sys.parent(),cause,times=NULL,Nit=50,

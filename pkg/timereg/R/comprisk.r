@@ -148,15 +148,18 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
                 Gcx <- Gcx/Gcxe; 
                 Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
             } else if (cens.model=="strat-KM") { ## {{{
-                ud.cens<-survfit(Surv(eventtime,delta==cens.code)~XZ) 
+	        XZ <- model.matrix(cens.formula,data=data); 
                 stop("survfit based predictions strat-KM, under construction\n");
+                ud.cens<-survfit(Surv(eventtime,delta==cens.code)~XZ) 
+	        print(head(XZ))
                 Gfit<-cbind(ud.cens$time,ud.cens$surv)
                 Gfit<-rbind(c(0,1),Gfit); 
                 Gcx<-Cpred(Gfit,eventtime)[,2];
                 Gcx <- Gcx/Gcxe; 
                 Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
             } else if (cens.model=="cox") { ## {{{
-                if (!is.null(cens.formula)) { XZ <- model.matrix(cens.formula,data=data); 
+                if (!is.null(cens.formula)) { 
+			                      XZ <- model.matrix(cens.formula,data=data); 
                                               if (sum(XZ[,1])==nrow(XZ)) XZ <- as.matrix(XZ[,-1])
                                           } else {
                                               if (npar==TRUE) XZ<-X[,-1] else XZ <-cbind(X,Z)[,-1];

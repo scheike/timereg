@@ -296,7 +296,6 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
   } else if (modelType == 'aalen' || modelType == 'cox.aalen'){
     out$S0 <- S0;
     out$se.S0 <- se.S0;    
-    print(names(out))
     if (resample.iid==1) {out$S0.iid <- S0.iid[1,,]; colnames(out$S0.iid)<-paste(unique(out$clusters));}
   }
    # e.g. for an compound risk model, className = predictComprisk
