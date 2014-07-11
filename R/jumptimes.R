@@ -25,8 +25,8 @@ jumptimes <- function(time, status=TRUE,
         dup <- duplicated(ii)
         ii[dup] <- ii[dup]-1
         time <- unique(time[ii])
-    }
-    return(time)
+    } 
+    return(sort(time))
 }
 
 ## with(prt, jumptimes(time,status==2,id=id,sample=10))
