@@ -1,14 +1,18 @@
 ##' @export
 or2prob <- function(OR,marg) {
     p1 <- marg[1]; p2 <- marg[2]
+    if (length(marg)==1) p2 <- p1
     if (OR==1) {
         PP <- outer(c(p1,1-p1),c(p2,1-p2))
     } else {
+        ## OR (p11*p00)/(p10*p01) = p11*(1+p11-p1-p2)/(p1-p11)*(p2-p11)
+        ## (OR-1)p11^2-(OR(p1+p2)+(1-p1-p2))*p11+OR*p1*p2 = 0
+        ## (1-OR)p11^2+(OR(p1+p2)+(1-p1-p2))*p11-OR*p1*p2 = 0
+        a <- (1-OR)       
         b <- 1+(p1+p2)*(OR-1)
-        a <- (1-OR)
-        ac <- -OR*(1-OR)*p1*p2
+        ac <- -OR*p1*p2*a
         d <- sqrt(b^2-4*ac)
-        ##p11b <- (-b-d)/(2*a)
+        ## Only one solution 
         p11 <- (-b+d)/(2*a)
         PP <- c(p11,p1-p11,p2-p11)
         PP <- c(PP,1-sum(PP))
@@ -34,7 +38,7 @@ tetrachoric <- function(P,OR,approx=0,...) {
         p1 <- colSums(P)[1]
         p2 <- rowSums(P)[1]
     }
-    if (approx>0) {
+    if (approx>0) { ## Bonnet & Price 2005
         k <- (1-abs(p1-p2)/5 - (.5-min(p1,p2))^2)/2
         if (missing(OR)) OR <- prod(diag(P))/prod(revdiag(P))
         return(cos(pi/(1+OR^k)))
@@ -53,7 +57,9 @@ tetrachoric <- function(P,OR,approx=0,...) {
 }
 
 
-assoc <- function(x,...) {
+
+
+assoc <- function(x,id,...) {
     N <- sum(x)
     P <- x
     if (N!=1) P <- P/N
@@ -63,3 +69,10 @@ assoc <- function(x,...) {
     rho <- tetrachoric(P)
     list(P=P, OR=OR, rho=rho)
 }
+
+## library(vcd)
+## data(prt)
+## mosaic(cancer ~country*zyg,prt)
+## (ftable(cancer ~ country, prt))
+
+
