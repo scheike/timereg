@@ -8,6 +8,7 @@
 \alias{familycluster.index}
 \alias{faster.reshape}
 \alias{grouptable}
+\alias{jumptimes}
 \alias{loglikMVN}
 \alias{nonparcuminc}
 \alias{npc}

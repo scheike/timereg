@@ -74,5 +74,6 @@ assoc <- function(x,id,...) {
 ## data(prt)
 ## mosaic(cancer ~country*zyg,prt)
 ## (ftable(cancer ~ country, prt))
+## grouptable(...)
 
 
