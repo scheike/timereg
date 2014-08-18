@@ -1,6 +1,6 @@
 ##' @export
 biprobit.time <- function(formula,data,id,...,
-                          breaks=NULL,n.times=20,pairs.only=TRUE,fix.censweights=FALSE,
+                          breaks=NULL,n.times=20,pairs.only=TRUE,fix.cens.weights=FALSE,
                           cens.formula,cens.model="aalen",weights="w",messages=FALSE,
                           return.data=FALSE) {
 
@@ -26,22 +26,22 @@ biprobit.time <- function(formula,data,id,...,
         if (length(breaks)>1 && messages) message(tau)
         ## construct min(T_i,tau) or T_i and related censoring variable, 
         ## thus G_c(min(T_i,tau)) or G_c(T_i) as weights
-        if ((fix.censweights==1 & k==0) | (fix.censweights==0)) {
+        if ((fix.cens.weights==1 & k==0) | (fix.cens.weights==0)) {
             data0 <- data
             time0 <- time
             status0 <- status
         }
         cond0 <- time0>tau
-        if (!fix.censweights) status0[cond0 & status==1] <- 3 ## Censored
+        if (!fix.cens.weights) status0[cond0 & status==1] <- 3 ## Censored
         data0[,outcome] <- data[outcome]
         data0[cond0,outcome] <- FALSE
-        if (!fix.censweights) time0[cond0] <- tau
-        if ((fix.censweights & k==0) | (!fix.censweights)) {
+        if (!fix.cens.weights) time0[cond0] <- tau
+        if ((fix.cens.weights & k==0) | (!fix.cens.weights)) {
             data0$S <- Surv(time0,status0==1)
             dataw <- ipw(update(cens.formula,S~.), data=data0, cens.model=cens.model,
-                         cluster=id,weightname=weights,obsonly=TRUE)
+                         cluster=id,weight.name=weights,obs.only=TRUE)
         }
-        if (fix.censweights) {
+        if (fix.cens.weights) {
             timevar <- dataw$S[,1]
             dataw[,outcome] <- (dataw[,outcome])*(timevar<tau)
         }
@@ -87,7 +87,7 @@ biprobit.time2 <- function(formula,data,id,...,
         time0[cond0] <- tau
         data0$S <- Surv(time0,status0==1)        
         dataw <- ipw(update(cens.formula,S~.), data=data0, cens.model=cens.model,
-                     cluster=id,weightname=weights,obsonly=TRUE)
+                     cluster=id,weight.name=weights,obs.only=TRUE)
         message("control")
         suppressWarnings(b <- biprobit(formula, data=dataw, id=id, weights=weights, pairs.only=pairs.only,...))
         res <- c(res,list(summary(b)))

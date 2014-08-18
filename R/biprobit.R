@@ -2,7 +2,7 @@
 ##' @export
 biprobit.vector <- function(x,id,X=NULL,Z=NULL,
                             weights=NULL,
-                            biweight=function(x) { u <- min(x); 1/u },
+                            biweight=function(x) { u <- min(x); ifelse(u==0,u,1/u) },
                             ## biweight=function(x) { u <- min(x); ifelse(u==0,0,1/max(u,lava.options()$min.weight)) },
                             eqmarg=TRUE,add=NULL,control=list(),p=NULL,
                             cells,
@@ -139,7 +139,6 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
         idx <- unlist(apply(MyData$Y0,1,function(x) all(x==cells)))
         w0[!idx] <- 0
     }
-
     if (!is.null(control$start)) {
         p0 <- control$start
         control$start <- NULL
@@ -303,7 +302,7 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
 ##' }
 biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
                              indep=FALSE, weights=NULL, 
-                             biweight=function(x) 1/min(x),
+                             biweight=function(x) { u=min(x); ifelse(u==0,0,1/min(u)) },
                              samecens=TRUE, randomeffect=FALSE, vcov="robust",
                              pairs.only=FALSE,                             
                              allmarg=samecens&!is.null(weights),

@@ -5,9 +5,9 @@
 ##' @param formula Formula specifying the censoring model 
 ##' @param data data frame
 ##' @param cluster clustering variable
-##' @param samecens For clustered data, should same censoring be assumed (bivariate probability calculated as mininum of the marginal probabilities)
-##' @param obsonly Return data with uncensored observations only
-##' @param weightname Name of weight variable in the new data.frame
+##' @param same.cens For clustered data, should same censoring be assumed (bivariate probability calculated as mininum of the marginal probabilities)
+##' @param obs.only Return data with uncensored observations only
+##' @param weight.name Name of weight variable in the new data.frame
 ##' @param cens.model Censoring model (default Aalens additive model)
 ##' @param pairs For paired data (e.g. twins) only the complete pairs are returned (With pairs=TRUE)
 ##' @param ... Additional arguments to censoring model 
@@ -15,7 +15,7 @@
 ##' @examples
 ##' data(prt)
 ##' prtw <- ipw(Surv(time,status==0)~country, data=prt[sample(nrow(prt),5000),],
-##'             cluster="id",weightname="w")
+##'             cluster="id",weight.name="w")
 ##' plot(0,type="n",xlim=range(prtw$time),ylim=c(0,1),xlab="Age",ylab="Probability")
 ##' count <- 0
 ##' for (l in unique(prtw$country)) {
@@ -27,7 +27,7 @@
 ##' legend("topright",legend=unique(prtw$country),col=1:4,pch=-1,lty=1)
 ##' @export
 ipw <- function(formula,data,cluster,
-                 samecens=FALSE,obsonly=TRUE,weightname="w",
+                 same.cens=FALSE,obs.only=TRUE,weight.name="w",
                  cens.model="aalen", pairs=FALSE, ...) {
                  ##iid=TRUE,
 
@@ -66,9 +66,9 @@ ipw <- function(formula,data,cluster,
         Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
         pr <- Gcx
     }
-    data[,weightname] <- pr
+    data[,weight.name] <- pr
     
-    if (samecens & !missing(cluster)) {        
+    if (same.cens & !missing(cluster)) {        
         message("Minimum weights...")
         myord <- order(data[,cluster])
         data <- data[myord,,drop=FALSE]
@@ -78,16 +78,16 @@ ipw <- function(formula,data,cluster,
             id <- id[id==2]
             data <- data[gem,]
         }
-        d0 <- subset(data,select=c(cluster,weightname))
+        d0 <- subset(data,select=c(cluster,weight.name))
         noncens <- with(data,!eval(terms(formula)[[2]][[3]]))
         d0[,"observed."] <- noncens
-        timevar <- paste("_",cluster,weightname,sep="")
+        timevar <- paste("_",cluster,weight.name,sep="")
         d0[,timevar] <- unlist(lapply(id,seq))
         Wide <- reshape(d0,direction="wide",timevar=timevar,idvar=cluster)
-        W <- apply(Wide[,paste(weightname,1:2,sep=".")],1,
+        W <- apply(Wide[,paste(weight.name,1:2,sep=".")],1,
                    function(x) min(x,na.rm=TRUE))
-        Wmarg <- d0[,weightname]
-        data[,weightname] <- 1/Wmarg
+        Wmarg <- d0[,weight.name]
+        data[,weight.name] <- 1/Wmarg
         Wmin <- rep(W,id)
         
         obs1only <- rep(with(Wide, observed..1 & (is.na(observed..2) | !observed..2)),id)
@@ -95,13 +95,13 @@ ipw <- function(formula,data,cluster,
         obsOne <- which(na.omit(obs1only|obs2only))
         obsBoth <- rep(with(Wide, !is.na(observed..1) & !is.na(observed..2) & observed..2 & observed..1),id)
         
-        data[obsBoth,weightname] <-
+        data[obsBoth,weight.name] <-
             ifelse(noncens[obsBoth],1/Wmin[obsBoth],0)    
-        data[obsOne,weightname] <-
+        data[obsOne,weight.name] <-
             ifelse(noncens[obsOne],1/Wmarg[obsOne],0)
     }
-    
-    if (obsonly)
+
+    if (obs.only)
         data <- data[noncens,,drop=FALSE]
     
     return(data)    

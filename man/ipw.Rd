@@ -3,8 +3,8 @@
 \alias{ipw}
 \title{Inverse Probability of Censoring Weights}
 \usage{
-ipw(formula, data, cluster, samecens = FALSE, obsonly = TRUE,
-  weightname = "w", cens.model = "aalen", pairs = FALSE, ...)
+ipw(formula, data, cluster, same.cens = FALSE, obs.only = TRUE,
+  weight.name = "w", cens.model = "aalen", pairs = FALSE, ...)
 }
 \arguments{
 \item{formula}{Formula specifying the censoring model}
@@ -13,11 +13,11 @@ ipw(formula, data, cluster, samecens = FALSE, obsonly = TRUE,
 
 \item{cluster}{clustering variable}
 
-\item{samecens}{For clustered data, should same censoring be assumed (bivariate probability calculated as mininum of the marginal probabilities)}
+\item{same.cens}{For clustered data, should same censoring be assumed (bivariate probability calculated as mininum of the marginal probabilities)}
 
-\item{obsonly}{Return data with uncensored observations only}
+\item{obs.only}{Return data with uncensored observations only}
 
-\item{weightname}{Name of weight variable in the new data.frame}
+\item{weight.name}{Name of weight variable in the new data.frame}
 
 \item{cens.model}{Censoring model (default Aalens additive model)}
 
@@ -32,7 +32,7 @@ adds them to a data.frame
 \examples{
 data(prt)
 prtw <- ipw(Surv(time,status==0)~country, data=prt[sample(nrow(prt),5000),],
-            cluster="id",weightname="w")
+            cluster="id",weight.name="w")
 plot(0,type="n",xlim=range(prtw$time),ylim=c(0,1),xlab="Age",ylab="Probability")
 count <- 0
 for (l in unique(prtw$country)) {
