@@ -3,15 +3,16 @@
 \alias{fast.pattern}
 \title{Fast pattern}
 \usage{
-fast.pattern(x, y, ...)
+fast.pattern(x, y, categories = 2, ...)
 }
 \arguments{
 \item{x}{Matrix (binary) of patterns. Optionally if \code{y} is
 also passed as argument, then the pattern matrix is defined as the
 elements agreeing in the two matrices.}
 
-\item{y}{Optional matrix argument with same dimensions as
-\code{x} (see above)}
+\item{y}{Optional matrix argument with same dimensions as \code{x} (see above)}
+
+\item{categories}{Default 2 (binary)}
 
 \item{...}{Optional additional arguments}
 }

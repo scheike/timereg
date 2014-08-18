@@ -130,11 +130,11 @@ BEGIN_RCPP
 END_RCPP
 }
 
-void fastpattern(const umat &y, umat &pattern, uvec &group)  {
+void fastpattern(const umat &y, umat &pattern, uvec &group, unsigned categories /*=2*/) {
   unsigned n = y.n_rows;
   unsigned k = y.n_cols;  
   uvec mygroup(n);
-  unsigned npattern = (unsigned) pow((double) 2,(double) k);
+  unsigned npattern = (unsigned) pow((double) categories,(double) k);
   umat mypattern(npattern,k);
   mypattern.fill(1);
   unsigned K=0;
@@ -159,11 +159,12 @@ void fastpattern(const umat &y, umat &pattern, uvec &group)  {
   group = mygroup;
 }
 
-SEXP FastPattern(SEXP y1,SEXP y2)  {
+SEXP FastPattern(SEXP y1,SEXP y2,SEXP cat)  {
 BEGIN_RCPP
   mat Y1 = Rcpp::as<mat>(y1);
   unsigned n = Y1.n_rows;
   unsigned k = Y1.n_cols;
+  unsigned Cat = Rcpp::as<unsigned>(cat);
   umat stat;
   if (!Rf_isNull(y2)) {
     mat Y2 = Rcpp::as<mat>(y2);   
@@ -176,7 +177,7 @@ BEGIN_RCPP
   uvec group(n);
   //  unsigned npattern = (unsigned) pow(2,(double) k);
   umat pattern; //(npattern,k);  
-  fastpattern(stat,pattern,group);
+  fastpattern(stat,pattern,group,Cat);
   
   return(Rcpp::List::create(
 			    Rcpp::Named("pattern")=pattern,

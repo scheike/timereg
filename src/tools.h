@@ -12,14 +12,12 @@ using namespace std;
 using namespace Rcpp;
 using namespace arma;
 
-
-
 RcppExport SEXP FastLong2(SEXP idata, SEXP inclust, SEXP infixed, SEXP invarying);
 RcppExport SEXP FastLong(SEXP idata, SEXP inclust, SEXP infixed, SEXP invarying, SEXP missing);
 RcppExport SEXP FastApprox(const SEXP time, const SEXP newtime, const SEXP equal);
-RcppExport SEXP FastPattern(SEXP y1,SEXP y2);
+RcppExport SEXP FastPattern(SEXP y1,SEXP y2, SEXP cat);
 
-void fastpattern(const umat &y, umat &pattern, uvec &group);
+void fastpattern(const umat &y, umat &pattern, uvec &group, unsigned categories=2);
 
 template <class T>
 string numStr(T x) {
