@@ -99,7 +99,10 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
             vars0 <- setdiff(nn,eval(notvarying,parent.frame()))
             varying <- unique(gsub("(\\d+)$","",vars0))
         }
+        if (!missing(id)) varying <- setdiff(varying,id)
+        if (!missing(num)) varying <- setdiff(varying,num)
     }
+    
     if (missing(id)) {
         ## reshape from wide to long format. 
         nsep <- nchar(sep)
