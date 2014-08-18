@@ -1,7 +1,7 @@
 ##' @export
 jumptimes <- function(time, status=TRUE, 
                       id,cause,
-                      sample,
+                      sample,sample.all=TRUE,
                       strata=NULL,num=NULL, ...) {
     if (missing(id)) {
         time <- if (missing(cause)) time[status>0]
@@ -18,13 +18,17 @@ jumptimes <- function(time, status=TRUE,
             time <- na.omit(do.call(pmax,as.list(ww[idx,timevar])))
     }
 
-    if (!missing(sample)) {
-        time <- sort(time)
+    if (!missing(sample) && sample<length(time)) {
+        time <- sort(unique(time))
         t0 <- seq(min(time),max(time),length.out=min(sample,length(time)))
         ii <- fast.approx(time,t0)
-        dup <- duplicated(ii)
-        ii[dup] <- ii[dup]-1
-        time <- unique(time[ii])
+        ii <- unique(ii)
+        time0 <- time[ii]
+        if (length(ii)<sample && sample.all) {
+            remain <- setdiff(seq(length(time)),ii)
+            time0 <- c(time0,time[base::sample(remain,sample-length(ii))])
+        }
+        time <- time0
     } 
     return(sort(time))
 }
