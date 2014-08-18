@@ -341,7 +341,10 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
             dataw <- data[obs1,,drop=FALSE]
             mnames <- names(data);
             dataw[,vidx] <- data[idclust[,i]+1,vidx,drop=FALSE]
-            mnames[vidx] <- paste(mnames[vidx],sep,i,sep="")
+            if (!is.null(unum)) 
+                mnames[vidx] <- paste(varying,sep,unum[i],sep="")
+            else 
+                mnames[vidx] <- paste(mnames[vidx],sep,i,sep="")
         } else {
             dataw <- cbind(dataw,data[idclust[,i]+1,varying,drop=FALSE])
             if (!is.null(unum)) 
