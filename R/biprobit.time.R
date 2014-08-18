@@ -15,9 +15,16 @@ biprobit.time <- function(formula,data,id,...,
     status <- censtime[,2]
     time <- censtime[,1]
     outcome <- as.character(terms(formula)[[2]])
+    jj <- jumptimes(time,data[,outcome],data[,id],sample=n.times)
+    lastjump <- tail(jj,1)
     if (is.null(breaks)) {
-        breaks <- jumptimes(time,data[,outcome],data[,id],sample=n.times)
+        breaks <- jj
     }
+    if (any(breaks>lastjump)) {
+        if (messages) message("Do not go beyond last jump-time.")        
+        breaks <- unique(pmin(breaks,tail(jj,1)))        
+    }
+    
 
     outcome0 <- paste(outcome,"_dummy")
     res <- list(); k <- 0
@@ -32,14 +39,19 @@ biprobit.time <- function(formula,data,id,...,
             status0 <- status
         }
         cond0 <- time0>tau
-        if (!fix.cens.weights) status0[cond0 & status==1] <- 3 ## Censored
+        if (!fix.cens.weights) {
+            status0[cond0 & status==1] <- 3 ## Not-censored if T>tau
+        }
         data0[,outcome] <- data[outcome]
-        data0[cond0,outcome] <- FALSE
+        data0[cond0,outcome] <- FALSE ## Non-case if T>tau
         if (!fix.cens.weights) time0[cond0] <- tau
         if ((fix.cens.weights & k==0) | (!fix.cens.weights)) {
             data0$S <- Surv(time0,status0==1)
+            ## data0$status0 <- status0
+            ## data0$time0 <- time0
+            ## data0$y0 <- data0[,outcome]
             dataw <- ipw(update(cens.formula,S~.), data=data0, cens.model=cens.model,
-                         cluster=id,weight.name=weights,obs.only=TRUE)
+                         cluster=id,weight.name=weights,obs.only=TRUE)            
         }
         if (fix.cens.weights) {
             timevar <- dataw$S[,1]
