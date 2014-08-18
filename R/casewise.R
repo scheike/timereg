@@ -7,7 +7,7 @@
 ##' @param test Type of test for independence assumption. "conc" makes test on concordance scale and "case" means a test on the casewise concordance
 ##' @param p check that marginal probability is greater at some point than p
 ##' @author Thomas Scheike
-##' @aliases casewise.test slope.process
+##' @aliases casewise.test slope.process casewise.bin
 ##' @examples
 ##' \donttest{
 ##' data(prt);

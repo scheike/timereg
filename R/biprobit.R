@@ -155,13 +155,15 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
             p0[midx2] <- coef(b2)
         }     
     }
-    
+   
     U <- function(p,w0) {
         val <- Ubiprobit(p,SigmaFun,eqmarg,nx,MyData,indiv=TRUE)
         logl <- w0*as.vector(attributes(val)$logLik)
         score <- apply(val,2,function(x) w0*x)
         return(structure(score,logLik=logl))
     }
+
+
     f0 <- function(p) -sum(attributes(U(p,w0))$logLik)
     g0 <- function(p) -as.numeric(colSums(U(p,w0)))   
     if (!is.null(p)) op <- list(par=p) else {
@@ -302,7 +304,7 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
 ##' }
 biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
                              indep=FALSE, weights=NULL, 
-                             biweight=function(x) { u=min(x); ifelse(u==0,0,1/min(u)) },
+                             biweight,
                              samecens=TRUE, randomeffect=FALSE, vcov="robust",
                              pairs.only=FALSE,                             
                              allmarg=samecens&!is.null(weights),
@@ -312,6 +314,9 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
                              p=NULL,...) {
 
   mycall <- match.call()
+  if (missing(biweight)) {
+      biweight <- mycall$biweight <- function(x) { u=min(x); ifelse(u==0,0,1/min(u)) }
+  }
   formulaId <- unlist(Specials(x,"cluster"))
   if (is.null(formulaId)) {
     formulaId <- unlist(Specials(x,"id"))
