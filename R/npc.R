@@ -19,7 +19,8 @@ npc <- function(T,cause,same.cens=TRUE,sep=FALSE) {
     Gfit2<-cbind(ud.cens2$time,ud.cens2$surv)
     Gfit2<-rbind(c(0,1),Gfit2);
   }
-  cweights1<-fast.approx(Gfit1[,1],T[,1],Gfit1[,2])[[1]]
+  i1 <- fast.approx(Gfit1[,1],T[,1])
+  cweights1<-fast.approx(,Gfit1[,2])[[1]]
   cweights2<-fast.approx(Gfit2[,1],T[,2],Gfit2[,2])[[1]];
   weight11 <- apply(cbind(cweights1,cweights2),1,min)
 
