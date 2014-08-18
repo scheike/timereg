@@ -247,7 +247,7 @@ iid.phreg  <- function(x,...) {
 ##' @export
 summary.phreg <- function(object,se="robust",...) {
   cc <- ncluster <- NULL
-  if (object$p>0) {
+  if (length(object$p)>0) {
     I <- -solve(object$hessian)
     V <- vcov(object)
     cc <- cbind(coef(object),diag(V)^0.5,diag(I)^0.5)
