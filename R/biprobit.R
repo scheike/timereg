@@ -332,7 +332,7 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
     mycall$id <- id
   }
   if (!is.null(formulaStrata)) strata <- formulaStrata
-  mycall$formula <- formula
+  mycall$x <- formula
 
   if (!is.null(strata)) {
     dd <- split(data,interaction(data[,strata]))

@@ -147,10 +147,9 @@ summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=
       res <- rbind(res,pp)
   }      
   
-  
   contrast <- any(c(!is.null(cor.contrast),!is.null(mean.contrast),!is.null(mean.contrast2)))
   res <- list(all=res,varcomp=varcomp,prob=res,coef=object$coef,score=colSums(object$score),logLik=object$logLik,msg=object$msg,N=object$N,ncontrasts=K,nstat=P,
-              par=pa,model=object$model,contrast=contrast)
+              par=pa,model=object$model,contrast=contrast, time=attributes(object)$time)
   class(res) <- "summary.biprobit"
   res
 }

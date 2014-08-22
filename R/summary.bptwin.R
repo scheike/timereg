@@ -205,6 +205,7 @@ summary.bptwin <- function(object,level=0.05,transform=FALSE,...) {
               coef=newcoef, all=all,
               vcov=vcov(object),
               AIC=AIC(object),
+              time=attributes(object)$time,
               logLik=logLik(object)) ##, concordance=concordance, conditional=conditional)
 
   class(res) <- "summary.bptwin"
@@ -231,4 +232,9 @@ print.summary.bptwin <- function(x,digits = max(3, getOption("digits") - 2),...)
   cat("\n")
   print(RoundMat(x$heritability[,-2,drop=FALSE],digits=digits),quote=FALSE)
   cat("\n")
+  if (!is.null(x$time)) {
+      cat("\n")
+      cat("Event of interest before time ", x$time, "\n", sep="")
+  }
+
 }

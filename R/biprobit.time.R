@@ -2,7 +2,8 @@
 biprobit.time <- function(formula,data,id,...,
                           breaks=NULL,n.times=20,pairs.only=TRUE,fix.cens.weights=FALSE,
                           cens.formula,cens.model="aalen",weights="w",messages=FALSE,
-                          return.data=FALSE) {
+                          return.data=FALSE,
+                          estimator="biprobit", summary.function) {
 
     m <- match.call(expand.dots = FALSE)
     m <- m[match(c("","data"),names(m),nomatch = 0)]
@@ -21,10 +22,9 @@ biprobit.time <- function(formula,data,id,...,
         breaks <- jj
     }
     if (any(breaks>lastjump)) {
-        if (messages) message("Do not go beyond last jump-time.")        
         breaks <- unique(pmin(breaks,tail(jj,1)))        
-    }
-    
+        if (messages) message("Looking at event before time ",max(breaks))
+    }    
 
     outcome0 <- paste(outcome,"_dummy")
     res <- list(); k <- 0
@@ -51,7 +51,7 @@ biprobit.time <- function(formula,data,id,...,
             ## data0$time0 <- time0
             ## data0$y0 <- data0[,outcome]
             dataw <- ipw(update(cens.formula,S~.), data=data0, cens.model=cens.model,
-                         cluster=id,weight.name=weights,obs.only=TRUE)            
+                         weight.name=weights,obs.only=TRUE)            
         }
         if (fix.cens.weights) {
             timevar <- dataw$S[,1]
@@ -59,11 +59,19 @@ biprobit.time <- function(formula,data,id,...,
         }
         k <- k+1
         if (return.data) return(dataw)
-        suppressWarnings(b <- biprobit(formula, data=dataw, id=id, weights=weights, pairs.only=pairs.only,...))
+        args <- c(list(x=formula,data=dataw,id=id,weights=weights, pairs.only=pairs.only), list(...))
+        suppressWarnings(b <- do.call(estimator, args))
+        ## suppressWarnings(b <- biprobit(formula, data=dataw, id=id, weights=weights, pairs.only=pairs.only,...))
         res <- c(res,list(summary(b,...)))
     }
-    if (length(breaks)==1) return(b)
-    res <- list(varname="Time",var=rev(breaks),coef=lapply(rev(res),function(x) x$all),summary=rev(res),call=m,type="time")
+    if (length(breaks)==1) {        
+        return(structure(b,time=breaks))
+    }
+    if (missing(summary.function)) {
+        summary.function <- function(x,...) x$all
+    } 
+    mycoef <- lapply(rev(res),function(x) summary.function(x))
+    res <- list(varname="Time",var=rev(breaks),coef=mycoef,summary=rev(res),call=m,type="time")
     class(res) <- "timemets"
     return(res)    
 }

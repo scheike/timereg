@@ -54,7 +54,8 @@ ipw <- function(formula,data,cluster,
         if (is.null(attr(terms(formula,"prop"),"specials")$prop)) {
             ud.cens <- aalen(formula,n.sim=0,robust=0,data=data,...)
             XZ <- model.matrix(formula,data)
-            Gcx<-Cpred(ud.cens$cum,otimes)[,-1];
+            Gcx <- ud.cens$cum[prodlim::sindex(ud.cens$cum[,1],otimes),-1]
+            ##Gcx<-Cpred(ud.cens$cum,otimes)[,-1];            
             Gcx<-exp(-apply(Gcx*XZ,1,sum))            
         } else {
             ud.cens <- cox.aalen(formula,n.sim=0,robust=0,data=data,...)

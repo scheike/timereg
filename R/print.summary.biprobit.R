@@ -40,4 +40,8 @@ print.summary.biprobit <- function(x,digits = max(3, getOption("digits") - 2),..
       }
 
   }
+  if (!is.null(x$time)) {
+      cat("\n")
+      cat("Event of interest before time ", x$time, "\n", sep="")
+  }
 }

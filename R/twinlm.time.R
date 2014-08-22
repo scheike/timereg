@@ -64,42 +64,13 @@ twinlm.strata <- function(formula,data,var,breaks,quantiles,...) {
 ## plot(bb,which=c(7,11),ylim=c(0,28),legendpos="topright",col=c("darkred","darkblue"),lty=c(1,2),legend=c("MZ","DZ"),ylab="Relative recurrence risk ratio",type="l")
 
 ##' @export
-twinlm.time <- function(formula,data,id,type="u",...,
-                        breaks=Inf,
-                        cens.formula,cens.model="aalen",weights="w") {
+twinlm.time <- function(formula,...) {
+    biprobit.time(formula,estimator="bptwin",...)
+}
 
-    m <- match.call(expand.dots = TRUE)[1:3]
-    Terms <- terms(cens.formula, data = data)
-    m$formula <- Terms
-    m[[1]] <- as.name("model.frame")
-    M <- eval(m)
-    censtime <- model.extract(M, "response")
-    status <- censtime[,2]
-    time <- censtime[,1]
-    outcome <- as.character(terms(formula)[[2]])    
-    if (is.null(breaks)) breaks <-  quantile(time,c(0.25,0.5,0.75,1))
-
-    outcome0 <- paste(outcome,"_dummy")
-    res <- list()
-    for (tau in breaks) {
-        if (length(breaks)>1) message(tau)
-        data0 <- data
-        time0 <- time
-        cond0 <- time0>tau
-        status0 <- status
-        status0[cond0 & status==1] <- 3
-        data0[cond0,outcome] <- FALSE
-        time0[cond0] <- tau
-        data0$S <- Surv(time0,status0==1)        
-        dataw <- ipw(update(cens.formula,S~.), data=data0, cens.model=cens.model,
-                     cluster=id,weightname=weights,obsonly=TRUE)
-        suppressWarnings(b <- bptwin(formula, data=dataw, id=id, weights=weights,type=type,...))
-        res <- c(res,list(summary(b)))
-    }
-    if (length(breaks)==1) return(b)
-    res <- list(varname="Time",var=breaks,coef=lapply(res,function(x) x$all),summary=res,call=m,type="time")
-    class(res) <- "timemets"
-    return(res)    
+##' @export
+bptwin.time <- function(formula,...) {
+    biprobit.time(formula,estimator="bptwin",...)
 }
 
 ##' @export

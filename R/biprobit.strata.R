@@ -2,6 +2,8 @@ do.twinlm.strata <- function(x,fun,...) {
   res <- lapply(x$model,function(m) do.call(fun,c(list(m),list(...))))
   names(res) <- names(x$model)
   class(res) <- "do.twinlm.strata"
+  newattr <- setdiff(names(attributes(x)),names(attributes(res)))
+  attributes(res) <- c(attributes(res),attributes(x)[newattr])
   return(res)
 }
 
@@ -11,6 +13,11 @@ print.do.twinlm.strata <- function(x,...) {
     message(rep("-",60),sep="")
     message("Strata '",names(x)[i],"'",sep="")
     print(x[[i]])
+  }
+  if (!is.null(attributes(x)$time)) {
+      message(rep("-",60),sep="")
+      cat("\n")
+      cat("Event of interest before time ", attributes(x)$time, "\n", sep="")      
   }
   return(invisible(x))
 }
@@ -25,7 +32,7 @@ print.twinlm.strata <- function(x,...)
   print.do.twinlm.strata(x$model,...)
 
 ##' @export
-summary.twinlm.strata <- function(object,...)
+summary.twinlm.strata <- function(object,...) 
   do.twinlm.strata(object,"summary",...)
 
 ##' @export

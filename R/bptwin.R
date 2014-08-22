@@ -1,6 +1,6 @@
 ##' Liability-threshold model for twin data
 ##'
-##' @aliases bptwin twinlm.time
+##' @aliases bptwin twinlm.time bptwin.time
 ##' @title Liability model for twin data
 ##' @seealso \code{\link{twinlm}}, \code{\link{twinlm.time}}, \code{\link{twinlm.strata}}, \code{\link{twinsim}}
 ##' @param x Formula specifying effects of covariates on the response.
