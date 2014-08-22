@@ -62,7 +62,7 @@ biprobit.time <- function(formula,data,id,...,
         args <- c(list(x=formula,data=dataw,id=id,weights=weights, pairs.only=pairs.only), list(...))
         suppressWarnings(b <- do.call(estimator, args))
         ## suppressWarnings(b <- biprobit(formula, data=dataw, id=id, weights=weights, pairs.only=pairs.only,...))
-        res <- c(res,list(summary(b,...)))
+        if (length(breaks)>1) res <- c(res,list(summary(b,...)))
     }
     if (length(breaks)==1) {        
         return(structure(b,time=breaks))

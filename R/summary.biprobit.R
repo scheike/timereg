@@ -74,7 +74,7 @@ summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=
       }
       if (!object$model$eqmarg & is.null(mean.contrast) & is.null(mean.contrast2)) {
           idx <- 2
-          if (length(object$npar$pred)>0) idx <- idx+object$npar$pred/2
+          if (length(object$npar$pred)>0) idx <- object$npar$pred/2+1
           m[2] <- p[idx]
           mref2 <- nn[idx]
       }
@@ -103,6 +103,7 @@ summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=
       p00 <- 1-p11-p10-p01
       marg1 <- p11+p10
       marg2 <- p11+p01
+      ##browser()      
       cond1 <- p11/marg2
       lambda <- cond1/marg1
       discond1 <- p10/(1-marg2)
@@ -123,7 +124,7 @@ summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=
   KK <- lapply(list(cor.contrast,mean.contrast,mean.contrast2),nrow)
   if (all(is.null(unlist(KK)))) K <- 1 else  K <- max(unlist(KK))
   res <- pa <- c()
-  for (i in seq(K)) {      
+  for (i in seq(K)) {
       prob <- probs(mycoef,cor.contrast=cor.contrast[i,],mean.contrast=mean.contrast[i,],mean.contrast2=mean.contrast2[i,])  
       Dprob <- numDeriv::jacobian(probs,mycoef,cor.contrast=cor.contrast[i,],mean.contrast=mean.contrast[i,],mean.contrast2=mean.contrast2[i,])
       sprob <- diag((Dprob)%*%vcov(object)%*%t(Dprob))^0.5

@@ -195,7 +195,7 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
     rownames(V) <- colnames(V) <- rownames(cc)
 
     npar <- list(intercept=1,
-                 pred=blen-1)
+                 pred=blen-2+eqmarg)
     if (!eqmarg) npar <- lapply(npar,function(x) x*2)
     npar$var <- zlen
     N <- with(MyData, c(pairs=sum(NN)))
@@ -605,6 +605,8 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
   else
     rownames(cc) <- c(rnames1,paste(itrname,p1,rhonam,p2,sep=""))
   rownames(V) <- colnames(V) <- rownames(cc)
+  browser()
+
   npar <- list(intercept=attributes(terms(formula))$intercept,
               pred=nrow(attributes(terms(formula))$factor)-1)
   if (!eqmarg) npar <- lapply(npar,function(x) x*2)
