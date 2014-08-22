@@ -605,7 +605,6 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
   else
     rownames(cc) <- c(rnames1,paste(itrname,p1,rhonam,p2,sep=""))
   rownames(V) <- colnames(V) <- rownames(cc)
-  browser()
 
   npar <- list(intercept=attributes(terms(formula))$intercept,
               pred=nrow(attributes(terms(formula))$factor)-1)

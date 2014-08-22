@@ -103,7 +103,6 @@ summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=
       p00 <- 1-p11-p10-p01
       marg1 <- p11+p10
       marg2 <- p11+p01
-      ##browser()      
       cond1 <- p11/marg2
       lambda <- cond1/marg1
       discond1 <- p10/(1-marg2)
