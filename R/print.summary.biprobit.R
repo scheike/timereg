@@ -36,6 +36,8 @@ print.summary.biprobit <- function(x,digits = max(3, getOption("digits") - 2),..
           idx <- unlist(sapply(c("Concordance","Marginal","P\\(Y"),function(x) grep(x,rownames(res))))
           idx2 <- setdiff(seq(nrow(res)),idx)
           res2 <- rbind(res[idx2,],rep(NA,ncol(res)),res[idx,])
+          nn <- rownames(res2)
+          rownames(res2) <- unlist(lapply(nn,function(x) gsub(paste("c",i,":",sep=""),"",x)))
           print(RoundMat(res2,digits=digits,na=FALSE),quote=FALSE)
       }
 
