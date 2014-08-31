@@ -28,7 +28,7 @@
 ##' }
 ##' 
 ##' d <- with(TRACE,lifetable(Surv(time,status==9)~sex+vf,breaks=c(0.2,0.5)))
-##' summary(glm(events ~ offset(log(atrisk))+interval*vf + sex*vf,
+##' summary(glm(events ~ offset(log(atrisk))+factor(int.end)*vf + sex*vf,
 ##'             data=d,poisson))
 ##' @export
 lifetable.matrix <- function(x,strata=list(),breaks=c(),confint=FALSE,...) {
@@ -110,11 +110,12 @@ LifeTable <- function(time,status,entry=NULL,strata=list(),breaks=c(),confint=FA
                       atrisk=atrisk,
                       lost=lost,
                       events=events,
-                      interval=as.factor(c(breaks,Inf)),
+                      int.start=c(-Inf,breaks),
+                      int.end=c(breaks,Inf),
                       rate=events/atrisk)
     if (confint) {
         ff <- events ~ offset(log(atrisk))
-        if (length(breaks)>0) ff <- update(ff,.~.+factor(interval)-1)
+        if (length(breaks)>0) ff <- update(ff,.~.+factor(int.end)-1)
         g <- glm(ff,data=res,poisson)
         suppressMessages(ci <- rbind(exp(stats::confint(g))))
         res[,"2.5%"] <- ci[,1]
