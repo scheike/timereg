@@ -36,7 +36,7 @@ data(TRACE)
 }
 
 d <- with(TRACE,lifetable(Surv(time,status==9)~sex+vf,breaks=c(0.2,0.5)))
-summary(glm(events ~ offset(log(atrisk))+interval*vf + sex*vf,
+summary(glm(events ~ offset(log(atrisk))+factor(int.end)*vf + sex*vf,
             data=d,poisson))
 }
 \author{
