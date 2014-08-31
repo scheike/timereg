@@ -52,6 +52,16 @@ bicomprisk(formula, data, cause = c(1, 1), cens = 0, causes, indiv,
 \description{
 Estimation of concordance in bivariate competing risks data
 }
+\examples{
+data(prt) ## Prostate data example (sim)
+## Bivariate competing risk, concordance estimates
+p33 <- bicomprisk(Hist(time,status)~strata(zyg)+id(id),
+                  data=prt,cause=c(2,2),return.data=1,prodlim=TRUE)
+
+p33mz <- p33$model$"MZ"$comp.risk
+## Concordance
+plot(p33mz,ylim=c(0,0.1),axes=FALSE,automar=FALSE,atrisk=FALSE); axis(2); axis(1)
+}
 \author{
 Thomas Scheike, Klaus K. Holst
 }

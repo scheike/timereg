@@ -19,6 +19,13 @@ elements agreeing in the two matrices.}
 \description{
 Fast pattern
 }
+\examples{
+X <- matrix(rbinom(100,1,0.5),ncol=4)
+fast.pattern(X)
+
+X <- matrix(rbinom(100,3,0.5),ncol=4)
+fast.pattern(X,categories=4)
+}
 \author{
 Klaus K. Holst
 }

@@ -23,6 +23,16 @@
 ##' @param ... Additional arguments to lower level functions
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
+##' @examples
+##' 
+##' data(prt) ## Prostate data example (sim)
+##' ## Bivariate competing risk, concordance estimates
+##' p33 <- bicomprisk(Hist(time,status)~strata(zyg)+id(id),
+##'                   data=prt,cause=c(2,2),return.data=1,prodlim=TRUE)
+##' 
+##' p33mz <- p33$model$"MZ"$comp.risk
+##' ## Concordance
+##' plot(p33mz,ylim=c(0,0.1),axes=FALSE,automar=FALSE,atrisk=FALSE); axis(2); axis(1)
 bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv, 
  strata=NULL, id,num, max.clust=1000, marg=NULL,se.clusters=NULL,
  prodlim=FALSE,messages=TRUE,model,return.data=0,uniform=0,conservative=1,resample.iid=1,...) {

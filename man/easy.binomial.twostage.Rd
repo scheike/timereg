@@ -115,7 +115,7 @@ summary(out3)
 \donttest{
 n <- 10000
 set.seed(100)
-dd <- simbinfam(n,beta=0.3)
+dd <- simBinFam(n,beta=0.3)
 binfam <- fast.reshape(dd,varying=c("age","x","y"))
 ## mother, father, children  (ordered)
 head(binfam)
