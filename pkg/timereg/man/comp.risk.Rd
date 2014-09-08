@@ -57,11 +57,8 @@ The "rcif2"
 P_1(t,x,z) = (x^T A(t)) \epx((diag(t^p) z)^T \beta)
 }
 
-
-Where p by default is 1 for the additive model and 0 for 
-the other models.
+Where p by default is 1 for the additive model and 0 for the other models.
 In general p may be powers of the same length as z. 
-
 }
 \usage{
 comp.risk(formula,data=sys.parent(),cause,times=NULL,Nit=50,
