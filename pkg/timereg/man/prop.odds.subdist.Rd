@@ -25,7 +25,7 @@ The modelling formula uses the standard survival modelling given in the
 \usage{
 prop.odds.subdist(formula,data=sys.parent(),cause=1,beta=NULL,
 Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
-profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=100,baselinevar=1)
+profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=1000,baselinevar=1,weights=NULL)
 }
 \arguments{
 \item{formula}{
@@ -53,6 +53,7 @@ This may improve the numerical performance.  }
 \item{clusters}{to compute cluster based standard errors.}
 \item{max.clust}{number of maximum clusters to be used, to save time in iid decomposition.}
 \item{baselinevar}{set to 0 to save time on computations.}
+\item{weights}{additional weights.}
 }
 \details{
 The data for a subject is presented as multiple rows or "observations",
@@ -112,6 +113,7 @@ Springer (2006).
 \author{Thomas Scheike}
 \examples{
 \donttest{
+library(timereg)
 data(bmt)
 # Fits Proportional odds model 
 out <- prop.odds.subdist(Hist(time,cause)~platelet+age+tcell,data=bmt,
@@ -121,8 +123,16 @@ par(mfrow=c(2,3))
 plot(out,sim.ci=2); 
 plot(out,score=1) 
 
+# simple predict function without confidence calculations 
 pout <- predictpropodds(out,X=model.matrix(~platelet+age+tcell,data=bmt)[,-1])
 matplot(pout$time,pout$pred,type="l")
+
+# predict function with confidence intervals
+pout2 <- predict(out,Z=c(1,0,1))
+plot(pout2,col=2)
+pout1 <- predictpropodds(out,X=c(1,0,1))
+lines(pout1$time,pout1$pred,type="l")
+
 
 # Fits Proportional odds model with stratified baseline, does not work yet!
 ###out <- Gprop.odds.subdist(Surv(time,cause==1)~-1+factor(platelet)+

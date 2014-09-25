@@ -20,6 +20,7 @@
 \alias{semiaalen}
 \alias{semiregBase}
 \alias{check.missing} 
+\alias{sindex.prodlim} 
 \alias{read.design}
 \alias{read.surv}
 \alias{risk.index}

@@ -70,6 +70,7 @@ method="basic",weighted.test=0,degree=1,covariance=0)
   times<-times[times<maxtimes];
   bandwidth<-(maxtimes-start.time)*bandwidth; 
 
+###  if (sum(time)>0) stop("Delayed entry data not allowed for this function \n"); 
 
   if (method=="breslow") 
     beta<-coxph(Surv(time,time2,status)~XZ)$coef
@@ -87,7 +88,7 @@ method="basic",weighted.test=0,degree=1,covariance=0)
   }
 
   if (npar==TRUE) {
-                                        #cat("Nonparametric Multiplicative Hazard Model"); cat("\n");
+    #cat("Nonparametric Multiplicative Hazard Model"); cat("\n");
     ud<-timecoxBase(times,ldata,X,status,id,bhat,
                     sim=sim,antsim=n.sim,degree=degree,robust=robust,
                     band=bandwidth,it=Nit,method=method,retur=residuals,sim2=sim2,
@@ -98,7 +99,7 @@ method="basic",weighted.test=0,degree=1,covariance=0)
     if (robust==1) colnames(ud$robvar.cum)<-c("time",covnamesX)
 
     if (sim==1) {
-                                        #if (method=="breslow") covnamesX<-covnamesX[-1]; 
+      #if (method=="breslow") covnamesX<-covnamesX[-1]; 
       colnames(ud$test.procBeqC)<- c("time",covnamesX)
       names(ud$conf.band)<-names(ud$pval.testBeq0)<- 
         names(ud$pval.testBeqC)<- names(ud$pval.testBeqC.is)<- 

@@ -107,16 +107,17 @@ Springer (2006).
 }
 \author{Thomas Scheike}
 \examples{
-library(survival)
+library(timereg)
 data(sTRACE)
 # Fits Proportional odds model 
 out<-prop.odds(Surv(time,status==9)~age+diabetes+chf+vf+sex,
 sTRACE,max.time=7,n.sim=100)
 
-summary(out) 
-
 par(mfrow=c(2,3))
 plot(out,sim.ci=2)
 plot(out,score=1) 
+
+pout <- predict(out,Z=c(70,0,0,0,0))
+plot(pout)
 }
 \keyword{survival}

@@ -6,10 +6,9 @@
                  
 void transsurv(times,Ntimes,designX,nx,px,antpers,start,stop,betaS,Nit,cu,vcu,Iinv,
 Vbeta,detail,sim,antsim,rani,Rvcu,RVbeta,test,testOBS,Ut,simUt,Uit,id,status,
-weighted,ratesim,score,dhatMit,dhatMitiid,retur,loglike,profile,sym,baselinevar,clusters,antclust)
-double *designX,*times,*betaS,*start,*stop,*cu,*Vbeta,*RVbeta,*vcu,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*score,*dhatMit,*dhatMitiid,*loglike;
-int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weighted,*ratesim,*retur,*profile,*sym,
-    *baselinevar,*clusters,*antclust;
+weighted,ratesim,score,dhatMit,dhatMitiid,retur,loglike,profile,sym,baselinevar,clusters,antclust,biid,gamiid)
+double *designX,*times,*betaS,*start,*stop,*cu,*Vbeta,*RVbeta,*vcu,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*score,*dhatMit,*dhatMitiid,*loglike,*biid,*gamiid;
+int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weighted,*ratesim,*retur,*profile,*sym,*baselinevar,*clusters,*antclust;
 {
 // {{{  setting up
   matrix *ldesignX,*WX,*ldesignG,*CtVUCt,*A,*AI;
@@ -94,6 +93,8 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
   {
       vec_zeros(U); vec_zeros(Upl); mat_zeros(S2pl); mat_zeros(S2); ll=0; sumscore=0; 
       mat_zeros(COV); 
+
+   R_CheckUserInterrupt();
 
    if (timing==1) { // {{{ 
 	  c1=clock();
@@ -431,6 +432,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	vec_add(rowZ,zi,zi); 
 	if (i==-5) print_vec(zi); 
 	replace_row(W4t[i],s,zi);
+	biid[i*(*Ntimes)+s]=VE(zi,0);
 	vec_star(zi,zi,rowZ); vec_add(rowZ,VdB,VdB);
 
 	extract_row(W2t[i],s,xi); Mv(St[s],tmpv1,rowX); 
@@ -439,8 +441,13 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	vec_star(tmpv1,tmpv1,xi); vec_add(xi,varUthat[s],varUthat[s]);
 
 	if (s==1) { 
-	  for (j=0;j<*px;j++) for (k=0;k<*px;k++)
-	    ME(RobVbeta,j,k)=ME(RobVbeta,j,k)+VE(W2[i],j)*VE(W2[i],k); }
+	  for (j=0;j<*px;j++) 
+	  {
+	  gamiid[j*(*antclust)+i]=VE(W2[i],j); 
+	  for (k=0;k<*px;k++)
+	  ME(RobVbeta,j,k)=ME(RobVbeta,j,k)+VE(W2[i],j)*VE(W2[i],k); 
+	  }
+	}
 
 	if (*retur==1 && j==0) { // {{{ 
 

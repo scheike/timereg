@@ -1,4 +1,4 @@
-Cpred<-function(cum,xval,start.val=0,cum.startval=0,order=FALSE,comp="smaller",strict=FALSE) 
+Cpred<-function(cum,xval,start.val=0,cum.startval=0,order=FALSE,comp="smaller",strict=TRUE) 
 {
 designX<-as.matrix(cum); 
 cumtimes <- designX[,1]
@@ -13,7 +13,7 @@ pred<-rep(0,nval);
 ###as.integer(Tminus),PACKAGE="timereg")
 
 ### sindex from prodlim
-xval.order <- sindex.prodlim(cumtimes,xval, comp=comp,strict=strict)
+xval.order <- sindex.prodlim(cumtimes,xval,comp=comp,strict=strict)
 pred.begin <-  xval.order
 pred.begin[xval.order==0] <- 1
 predcum <- as.matrix(designX[pred.begin,-1])

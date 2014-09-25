@@ -68,7 +68,7 @@ models for survival data, Springer.
 library(timereg)
 data(bmt); 
 
-add<-comp.risk(Hist(time,cause)~platelet+age+tcell,data=bmt)
+add<-comp.risk(Hist(time,cause)~platelet+age+tcell,data=bmt,cause=1)
 
 ndata<-data.frame(platelet=c(1,0,0),age=c(0,1,0),tcell=c(0,0,1))
 out<-predict(add,newdata=ndata,uniform=1,n.sim=1000)
@@ -76,7 +76,7 @@ par(mfrow=c(2,2))
 plot(out,multiple=0,uniform=1,col=1:3,lty=1,se=1)
 # see comp.risk for further examples. 
 
-add<-comp.risk(Hist(time,cause)~factor(tcell),data=bmt)
+add<-comp.risk(Hist(time,cause)~factor(tcell),data=bmt,cause=1)
 summary(add)
 out<-predict(add,newdata=ndata,uniform=1,n.sim=1000)
 plot(out,multiple=1,uniform=1,col=1:3,lty=1,se=1)

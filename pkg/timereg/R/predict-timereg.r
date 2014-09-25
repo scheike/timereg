@@ -74,7 +74,13 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
 
   if(inherits(object,'aalen')) { modelType <- 'aalen';
   } else if(inherits(object,'comprisk')) { modelType <- object$model;
-  } else if(inherits(object,'cox.aalen')) { modelType <- 'cox.aalen'; }
+  } else if(inherits(object,'cox.aalen')) { 
+	  if (is.null(object$prop.odds)) modelType <- 'cox.aalen' else  modelType <- 'prop.odds'; 
+	  
+  }
+  type <- "na"
+  if (modelType=="prop.odds")  type <- attr(object,'type')
+
   n <- length(object$B.iid) ## Number of clusters (or number of individuals
                             ## if no cluster structure is specified)
 
@@ -117,7 +123,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     if (!is.null(X)) X <- matrix(X,ncol=xcol)
     else {
       if (xcol==1) X<-time.vars<-matrix(1,xcol,1) 
-      else stop("When X is not specified we assume that it an intercept terms\n");
+      else stop("When X is not specified we assume that it an intercept term\n");
     }
     if (!is.null(Z)) Z <- matrix(Z,ncol=zcol)
     if (semi & is.null(Z)) Z <- matrix(0,nrow=nrow(X),ncol=zcol); 
@@ -195,7 +201,15 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
       if (semi==FALSE){ RR<-cumhaz; }   else { RR<-cumhaz*exp(constant.part); }
       P1<-RR/(1+RR);
     } ## }}}
-    } else {  # survival model  ## {{{
+    } 
+    else if (modelType=="prop.odds")
+    {
+       RR <- exp(constant.part)
+       HRR <- cumhaz* RR 
+       P1 <- HRR/(1+HRR) 
+       S0 <- 1/(1+HRR) 
+    }
+    else {  # aalen or cox.aalen survival model  ## {{{
        if (modelType == "aalen") {    #Aalen model
           if (semi==FALSE){ S0=exp(-cumhaz); } else { S0=exp(-cumhaz-constant.part) }
        RR<-NULL; 
@@ -205,6 +219,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
          S0 <- exp(-cumhaz * RR);
        }
      }
+     else stop("model class not supported by predict\n")
     } ## }}}
 
     ## }}}
@@ -234,7 +249,9 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
           print(tmp.const %*% matrix(1,1,nt));
         } else if (modelType=="cox.aalen") {
           tmp <- RR * tmp + RR * cumhaz * matrix(tmp.const,nobs,nt);
-        }
+        } else if (modelType=="prop.odds") {
+
+	}
       } ## }}} 
 
       if (semi==TRUE){
@@ -243,6 +260,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
 	else if (modelType=="logistic" || modelType=="rcif2") { tmp<-RR*tmp+RR*tmp.const; } 
 	else if (modelType=="logistic2") { tmp<-RR*tmp+RR*tmp.const; } 
 	else if (modelType=="cox.aalen") { tmp <- RR * tmp + RR * cumhaz * tmp.const }
+	else if (modelType=="prop.odds") { tmp <- RR * tmp + RR * cumhaz * tmp.const; }
       }
       delta<-cbind(delta,c(tmp)); 
     }
@@ -257,8 +275,19 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     else if (modelType == 'logistic' || modelType == 'logistic2'){ se.P1<-matrix(se,nobs,nt)*P1/(1+RR) 
        if (resample.iid==1) P1.iid <- array(delta*c(P1/(1+RR),c(nobs,nt,n)));   
     } 
-    else if (modelType == 'aalen' || modelType == 'cox.aalen'){ se.S0<-matrix(se,nobs,nt)*S0 
+    else if (modelType == 'aalen' || modelType == 'cox.aalen'){ 
+       se.S0<-matrix(se,nobs,nt)*S0 
        if (resample.iid==1) S0.iid <- array(delta*c(S0),c(nobs,nt,n));   
+    }
+    else if (modelType == 'prop.odds'){ 
+       if (attr(object,'type')=="comprisk") {
+          se.P1 <-matrix(se,nobs,nt)*S0^2
+          if (resample.iid==1) P1.iid <- array(delta*c(S0^2),c(nobs,nt,n));   
+       }
+       if (attr(object,'type')=="survival") {
+          se.S0<-matrix(se,nobs,nt)*S0^2 
+          if (resample.iid==1) S0.iid <- array(delta*c(S0^2),c(nobs,nt,n));   
+       }
     }
     }
     ## }}}
@@ -281,26 +310,37 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
   } else if (modelType == 'aalen' || modelType == 'cox.aalen'){
     S0<-matrix(S0,nrow=nobs);
   }
+  else if (modelType == 'prop.odds'){
+   if (attr(object,'type')=="comprisk") P1<-matrix(P1,nrow=nobs);
+   if (attr(object,'type')=="survival") S0<-matrix(S0,nrow=nobs);
+  }
 
   out<-list(time=time,unif.band=uband,model=modelType,alpha=alpha,
             newdata=list(X = time.vars, Z = constant.covs),RR=RR,
             call=sys.calls()[[1]], initial.call = attr(object,'Call'));
 
   if(modelType == 'additive' || modelType == 'prop' || modelType=="logistic"
-     || modelType=='rcif2' || modelType=='rcif' || modelType=='fg' || modelType=='logistic2'){
+     || modelType=='rcif2' || modelType=='rcif' || modelType=='fg' || modelType=='logistic2' ||
+     ((modelType=='prop.odds') && type=="comprisk")){
     if (nrow(P1)==1)  { P1 <- c(P1); se.P1 <- c(se.P1); }
     out$P1 <- P1;
     out$se.P1 <- se.P1;    
     out$clusters <- attr(object,"clusters"); 
     if (resample.iid==1) {out$P1.iid <- P1.iid[1,,]; colnames(out$P1.iid)<-paste(unique(out$clusters));}
-  } else if (modelType == 'aalen' || modelType == 'cox.aalen'){
+  } else if (modelType == 'aalen' || modelType == 'cox.aalen' || 
+     ((modelType=='prop.odds') && type=="survival")){
     out$S0 <- S0;
     out$se.S0 <- se.S0;    
     if (resample.iid==1) {out$S0.iid <- S0.iid[1,,]; colnames(out$S0.iid)<-paste(unique(out$clusters));}
   }
    # e.g. for an compound risk model, className = predictComprisk
   className <- switch(class(object),aalen='predictAalen',cox.aalen='predictCoxAalen',comprisk='predictComprisk')
+
+
+  subclass <- switch(type,comprisk="comprisk",survival="survival",na="na")
   class(out) <- "predict.timereg"
+  attr(out,'className') <- className
+  attr(out,'subclass') <- subclass
 
   return(out)
 } ## }}}
@@ -320,7 +360,7 @@ plot.predict.timereg<-function(x,uniform=1,new=1,se=1,col=1,lty=1,lwd=2,multiple
 xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
 { ## {{{
   object <- x; rm(x);
-  modelType <- object$model;
+  modelType <- object$model
   time<-object$time;
   uband<-object$unif.band;
   nobs<-nrow(object$newdata$X);
@@ -331,7 +371,16 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
   ### between the case when we want to plot a predicted survival function
   ### and the case when we want to plot a predicted risk funcion
   
-  if (modelType == 'aalen' || modelType == 'cox.aalen'){
+  subtype <- attr(object,'subclass')
+
+###  if  ((modelType=='prop.odds')) {
+###	  subtype <- attr(object,'type'); 
+###  } else subtype <- ""
+###  print(modelType)
+###  print(subtype) 
+
+  if (modelType == 'aalen' || modelType == 'cox.aalen' ||
+     ((modelType=='prop.odds') && subtype=='survival')){
     type<-"surv"
     mainLine <- as.matrix(object$S0);
     if (monotone==TRUE) { mainLine<--t(apply(as.matrix(-mainLine),1,pava)); 
@@ -340,7 +389,8 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
     }
     if (is.null(object$se.S0))  mainLine.se <- NULL else mainLine.se <- as.matrix(object$se.S0);    
   } else if(modelType == 'additive' || modelType == 'prop' || modelType=="logistic"
-     || modelType=='rcif2' || modelType=='rcif' || modelType=='fg' || modelType=='logistic2'){
+     || modelType=='rcif2' || modelType=='rcif' || modelType=='fg' || modelType=='logistic2' ||
+     ((modelType=='prop.odds') && subtype=='comprisk')){
     type<-"cif"
     mainLine <- as.matrix(object$P1);
     if (monotone==TRUE) { mainLine<-t(apply(as.matrix(mainLine),1,pava)); 

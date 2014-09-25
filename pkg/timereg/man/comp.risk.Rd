@@ -30,7 +30,7 @@ parametrized as \eqn{\exp(A(t))}.
 The "fg" model is a different parametrization that contains the FG model,
 where \eqn{h(x)=1-\exp(-x)} and 
 \deqn{
-g(t,x,z) = (x^T A(t)) \epx((diag(t^p) z)^T \beta)
+g(t,x,z) = (x^T A(t)) \exp((diag(t^p) z)^T \beta)
 }
 The FG model is obtained when \eqn{x=1}. 
 
@@ -54,7 +54,7 @@ g(t,x,z) = x^T A(t) + (diag(t^p) z)^T \beta
 
 The "rcif2" 
 \deqn{
-P_1(t,x,z) = (x^T A(t)) \epx((diag(t^p) z)^T \beta)
+P_1(t,x,z) = (x^T A(t)) \exp((diag(t^p) z)^T \beta)
 }
 
 Where p by default is 1 for the additive model and 0 for the other models.

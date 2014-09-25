@@ -7,9 +7,9 @@
 void posubdist2(times,Ntimes,designX,nx,px,antpers,start,stop,betaS,Nit,cu,vcu,Iinv,
 Vbeta,detail,sim,antsim,rani,Rvcu,RVbeta,test,testOBS,Ut,simUt,Uit,id,status,
 weighted,ratesim,score,dhatMit,dhatMitiid,retur,loglike,profile,sym,
-KMtimes,KMti,etime,causeS,ipers,baselinevar,clusters,antclust,ccode)
+KMtimes,KMti,etime,causeS,ipers,baselinevar,clusters,antclust,ccode,biid,gamiid,wweights)
 double *designX,*times,*betaS,*start,*stop,*cu,*Vbeta,*RVbeta,*vcu,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*score,*dhatMit,*dhatMitiid,*loglike,
-       *KMtimes,*KMti,*etime;
+       *KMtimes,*KMti,*etime,*biid,*gamiid,*wweights;
 int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weighted,*ratesim,*retur,*profile,*sym,*causeS,*ipers,*baselinevar,*clusters,*antclust,*ccode; 
 {
 // {{{  setting up
@@ -94,6 +94,8 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
       vec_zeros(U); vec_zeros(Upl); mat_zeros(S2pl); mat_zeros(S2); mat_zeros(COV); 
       ll=0; sumscore=0; 
 
+      R_CheckUserInterrupt();
+
       Mv(WX,beta,Gbeta); 
 
       for (s=1;s<*Ntimes;s++)
@@ -117,6 +119,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 //		      Rprintf("%lf %lf \n",risks,weights); 
 //                  }
 		  weightp=1; 
+		  weights=weights*wweights[j];
 
 		  extract_row(WX,j,xi); 
 		  RR=exp(-VE(Gbeta,j));
@@ -422,7 +425,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 
 
     /* ROBUST VARIANCES  Estimation   */
-   if (*baselinevar==1) 
+   if (*baselinevar==1) {
     for (s=1;s<*Ntimes;s++) {
       vec_zeros(VdB);
 
@@ -441,6 +444,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	vec_add(rowZ,zi,zi); 
 	if (i==-5) print_vec(zi); 
 	replace_row(W4t[i],s,zi);
+	biid[i*(*Ntimes)+s]=VE(zi,0);
 	vec_star(zi,zi,rowZ); vec_add(rowZ,VdB,VdB);
 
 	extract_row(W2t[i],s,xi); Mv(St[s],tmpv1,rowX); 
@@ -449,8 +453,11 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	vec_star(tmpv1,tmpv1,xi); vec_add(xi,varUthat[s],varUthat[s]);
 
 	if (s==1) { 
-	  for (j=0;j<*px;j++) for (k=0;k<*px;k++)
-	    ME(RobVbeta,j,k)=ME(RobVbeta,j,k)+VE(W2[i],j)*VE(W2[i],k); }
+	  for (j=0;j<*px;j++) {
+	  gamiid[j*(*antclust)+i]=VE(W2[i],j); 
+	  for (k=0;k<*px;k++) ME(RobVbeta,j,k)=ME(RobVbeta,j,k)+VE(W2[i],j)*VE(W2[i],k); 
+	  }
+	}
 
 	if (*retur==1 && j==0) { // {{{ 
 
@@ -474,11 +481,17 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
       } /* i =1 ..Antclust*/
       for (k=1;k<*pg+1;k++) Rvcu[k*(*Ntimes)+s]=VE(VdB,k-1);
       for (k=1;k<*pg+1;k++) vcu[k*(*Ntimes)+s]=VE(VdB,k-1);
-    }  /*  s=1 ..Ntimes */ 
+     /*  s=1 ..Ntimes */ 
+    }
+   }
    else {
        for (i=0;i<*antclust;i++) 
-       for (j=0;j<*px;j++) for (k=0;k<*px;k++)
-	    ME(RobVbeta,j,k)=ME(RobVbeta,j,k)+VE(W2[i],j)*VE(W2[i],k); 
+       for (j=0;j<*px;j++) 
+        {
+	  gamiid[j*(*antclust)+i]=VE(W2[i],j); 
+	  for (k=0;k<*px;k++)
+	  ME(RobVbeta,j,k)=ME(RobVbeta,j,k)+VE(W2[i],j)*VE(W2[i],k); 
+	  }
    }
 
     MxA(RobVbeta,SI,tmp1); MxA(SI,tmp1,RobVbeta);

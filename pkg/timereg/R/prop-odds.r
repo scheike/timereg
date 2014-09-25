@@ -3,10 +3,11 @@ Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
 profile=1,sym=0,baselinevar=1,clusters=NULL,max.clust=1000)
 {
 id.call<-id; call<-match.call(); residuals<-0;  
-robust<-0; ratesim<-0; # profile<-0; 
+robust<-0; ratesim<-0; 
+resample.iid <- 1 # profile<-0; 
 m<-match.call(expand.dots = FALSE);
 m$sym<-m$profile<-m$max.time<-m$start.time<-m$weighted.test<-m$n.sim<-
-m$id<-m$Nit<-m$detail<-m$beta <- m$baselinevar<-m$clusters <- m$max.clust <- NULL
+m$id<-m$Nit<-m$detail<-m$beta <- m$baselinevar<-m$clusters <- m$max.clust  <-  NULL
 if (n.sim==0) sim<-0 else sim<-1; 
 antsim<-n.sim; 
 
@@ -78,6 +79,14 @@ if ((!is.null(max.clust))) if (max.clust<antclust) {
 	antclust <- max.clust    
   }                
 
+
+  if (resample.iid == 1) {
+    biid <- double(Ntimes* antclust );
+    gamiid<- double(antclust *pg);
+  } else {
+    gamiid <- biid <- NULL;
+  }
+
   if ((length(beta)!=pg) && (is.null(beta)==FALSE)) beta <- rep(beta[1],pg); 
   if ((is.null(beta))) {
         if ( (attr(m[, 1], "type") == "right" ) ) beta<-coxph(Surv(stop,status)~X)$coef
@@ -109,6 +118,7 @@ loglike<-0;
 ###cat("Proportional odds model \n"); 
 ###dyn.load("Gprop-odds.so")
 
+
 nparout<- .C("transsurv",
 as.double(times),as.integer(Ntimes),as.double(desX),
 as.integer(nx),as.integer(pg),as.integer(antpers),
@@ -122,7 +132,9 @@ as.double(Uit),as.integer(id),as.integer(status),
 as.integer(weighted.test),as.integer(ratesim),as.double(score),
 as.double(cumAi),as.double(cumAiiid),as.integer(residuals),
 as.double(loglike),as.integer(profile),as.integer(sym),
-as.integer(baselinevar),as.integer(clusters),as.integer(antclust), PACKAGE="timereg");
+as.integer(baselinevar),as.integer(clusters),as.integer(antclust), 
+as.double(biid),as.double(gamiid),PACKAGE="timereg");
+
 
 gamma<-matrix(nparout[[9]],pg,1);
 cumint<-matrix(nparout[[11]],Ntimes,px+1);
@@ -139,6 +151,19 @@ if (residuals==1) {
 cumAi<-matrix(nparout[[31]],Ntimes,antpers*1);
 cumAiiid<-matrix(nparout[[32]],Ntimes,antpers*1);
 cumAi<-list(time=times,dmg=cumAi,dmg.iid=cumAiiid);} else cumAi<-NULL;
+
+ if (resample.iid==1)  {
+    biid<-matrix(nparout[[40]],Ntimes,antclust);
+    gamiid<-matrix(nparout[[41]],antclust,pg) 
+    gamiid  <-  t(Iinv %*% t(gamiid))
+    B.iid<-list();
+    for (i in (1:antclust)) {
+    B.iid[[i]]<-matrix(biid[,i],ncol=1);
+    colnames(B.iid[[i]])<-"Baselineiid"; 
+    }
+      colnames(gamiid)<-covnamesX
+  } else B.iid<-gamiid<-NULL;
+
 
 if (sim==1) {
 Uit<-matrix(nparout[[25]],Ntimes,50*pg); UIt<-list();
@@ -174,7 +199,7 @@ obs.testBeq0=obs.testBeq0,obs.testBeqC=obs.testBeqC,
 sim.testBeq0= sim.testBeq0,sim.testBeqC=sim.testBeqC,
 conf.band=unifCI,
 test.procProp=Ut,sim.test.procProp=UIt,pval.Prop=testUt,
-sim.supProp=sim.supUt,prop.odds=TRUE)
+sim.supProp=sim.supUt,prop.odds=TRUE,gamma.iid=gamiid,B.iid=B.iid)
 
 colnames(ud$cum)<-colnames(ud$var.cum)<- c("time","Baseline")
 if (robust==1) colnames(ud$robvar.cum)<- c("time","Baseline"); 
@@ -199,6 +224,7 @@ attr(ud,"Call")<-sys.call();
 attr(ud,"Formula")<-formula; 
 attr(ud,"id")<-id.call; 
 attr(ud,"basesim") <- 1
+attr(ud,"type") <- "survival"
 class(ud)<-"cox.aalen"
 return(ud); 
 }
