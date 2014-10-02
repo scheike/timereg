@@ -118,14 +118,17 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     nobs <- nrow(newdata)
   } else if ((is.null(Z)==FALSE) || (is.null(X)==FALSE)){ 
 
+    if (semi) zcol <- length(c(object$gamma)) else zcol <- NULL
+    if (!is.null(Z)) { prow <- nrow(Z); } 
+    if (!is.null(Z)) Z <- matrix(Z,ncol=zcol)
+    if (semi & is.null(Z)) Z <- matrix(0,nrow=nrow(X),ncol=zcol); 
+
     xcol<-ncol(object$cum)-1
-    if (semi) zcol <- length(c(object$gamma))
     if (!is.null(X)) X <- matrix(X,ncol=xcol)
     else {
-      if (xcol==1) X<-time.vars<-matrix(1,xcol,1) 
-      else stop("When X is not specified we assume that it an intercept term\n");
+	    X <-   matrix(0,xcol,1)
+	    X[,1] <- 1
     }
-    if (!is.null(Z)) Z <- matrix(Z,ncol=zcol)
     if (semi & is.null(Z)) Z <- matrix(0,nrow=nrow(X),ncol=zcol); 
 
     time.vars <- X

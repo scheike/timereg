@@ -14,6 +14,7 @@ RR <- c( exp( x %*% beta) )
 cumhaz<- matrix(1,nrow=nrow(x)) %*% t(matrix(cumhaz,ncol=(ncol(out$cum)-1)))
 S0 <- exp(-cumhaz*RR)
 S0t <- Cpred(cbind(time,t(S0)),timetau)[,-1,drop=FALSE]
+S0t[,-1]
 Lam0t <- Cpred(cbind(time,t(cumhaz)),timetau)[,-1,drop=FALSE]
 ll <- length(timetau)
 ee <- apply(diff(timetau)*S0t[-ll,,drop=FALSE],2,sum)
@@ -67,7 +68,7 @@ if (iid==1) {
 } else { var.mean <- se <- NULL }
 } ## }}}
 
-out <- list(mean=ee,var.mean=variid,se=se,S0tau=S0t,timetau=timetau)
+out <- list(mean=ee,var.mean=variid,se=se,S0tau=S0t[,-1],timetau=timetau[-1])
 return(out)
 } ## }}} 
 
