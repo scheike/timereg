@@ -5,6 +5,7 @@
 \alias{mypbc}
 \alias{Csmooth2B}
 \alias{pval}
+\alias{Event}
 \alias{kernel}
 \alias{percen}
 \alias{localTimeReg}
