@@ -43,7 +43,7 @@ res
 ##' library(timereg)
 ##' data(TRACE)
 ##' \donttest{
-##' a2 <- divide.conquer.timereg(prop.odds,TRACE,
+##' a <- divide.conquer.timereg(prop.odds,TRACE,
 ##' 	     formula=Surv(time,status==9)~chf+vf+age,n.sim=0,size=200)
 ##' coef(a)
 ##' a2 <- divide.conquer.timereg(prop.odds,TRACE,
