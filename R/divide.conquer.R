@@ -17,7 +17,7 @@ folds<- function (n, folds = 10)
 ##' library(timereg)
 ##' data(TRACE)
 ##' \donttest{
-##' res <- divide.conquer.timereg(prop.odds,,
+##' res <- divide.conquer(prop.odds,TRACE,
 ##' 	     formula=Surv(time,status==9)~chf+vf+age,n.sim=0,size=200)
 ##' }
 divide.conquer <- function(func=NULL,data,size,...)
