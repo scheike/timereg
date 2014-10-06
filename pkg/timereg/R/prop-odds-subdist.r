@@ -35,48 +35,66 @@ profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=1000,baselinevar=1,weigh
     event.history <- model.extract(m, "response")
     ## }}} 
 
-    ## {{{  Hist stuff
-    if (match("Hist",class(event.history),nomatch=0)==0){
-        stop("Since timereg version 1.8.4., the right hand side of the formula must be specified as Hist(time, event) or Hist(time, event, cens.code).")
+    ## {{{  Hist to Event  stuff
+    if (match("Hist",class(event.history),nomatch=0)==1){
+        stop("Since timereg version 1.8.6., the right hand side of the formula must be specified as Event(time, event) or Event(time, event, cens.code=0).")
     }
-    ## if (!inherits(Y, "Surv")) stop("Response must be a survival object")
-    cens.type <- attr(event.history,"cens.type")
-    cens.code <- attr(event.history,"cens.code")
-    delayed <- !(is.null(attr(event.history,"entry.type"))) && !(attr(event.history,"entry.type")=="")
-    model.type <- attr(event.history,"model")
-    if (model.type %in% c("competing.risks","survival")){
-        if (cens.type %in% c("rightCensored","uncensored")){
-            delta <- event.history[,"status"]
-            if (model.type=="competing.risks"){
-                states <- attr(event.history,"states")
-                ## if (missing(cause)) stop("Argument cause is needed for competing risks models.")
-                if (missing(cause)) {
-                    cause <- states[1]
-                    warning(paste("Argument cause is missing, analysing cause 1: ",cause,". Other causes are:",paste(states[-1],collapse=","),sep=""))
-                }else {
-                    if (!(cause %in% states)) stop(paste("Cause",cause," is not among the causes in data; these are:",paste(states,collapse=",")))
-                    cause <- match(cause,states,nomatch=0)
-                }
-                ## event is 1 if the event of interest occured and 0 otherwise
-                event <-  event.history[,"event"] == cause
-                if (sum(event)==0) stop(paste("No events of type:", cause, "in data."))
-            }
-            else
-                event <- delta
-            if (delayed){
-                stop("Delayed entry is not (not yet) supported.")
-                entrytime <- event.history[,"entry"]
-                eventtime <- event.history[,"time"]
-            }else{
-                eventtime <- event.history[,"time"]
-                entrytime <- rep(0,length(eventtime))
-            }
-        }else{
-            stop("Works only for right-censored data")
-        }
-    }else{stop("Response is neither competing risks nor survival.")}
-    ## }}}
 
+###
+###    ## {{{ hist 
+###    ## if (!inherits(Y, "Surv")) stop("Response must be a survival object")
+###    cens.type <- attr(event.history,"cens.type")
+###    cens.code <- attr(event.history,"cens.code")
+###    delayed <- !(is.null(attr(event.history,"entry.type"))) && !(attr(event.history,"entry.type")=="")
+###    model.type <- attr(event.history,"model")
+###    if (model.type %in% c("competing.risks","survival")){
+###        if (cens.type %in% c("rightCensored","uncensored")){
+###            delta <- event.history[,"status"]
+###            if (model.type=="competing.risks"){
+###                states <- attr(event.history,"states")
+###                ## if (missing(cause)) stop("Argument cause is needed for competing risks models.")
+###                if (missing(cause)) {
+###                    cause <- states[1]
+###                    warning(paste("Argument cause is missing, analysing cause 1: ",cause,". Other causes are:",paste(states[-1],collapse=","),sep=""))
+###                }else {
+###                    if (!(cause %in% states)) stop(paste("Cause",cause," is not among the causes in data; these are:",paste(states,collapse=",")))
+###                    cause <- match(cause,states,nomatch=0)
+###                }
+###                ## event is 1 if the event of interest occured and 0 otherwise
+###                event <-  event.history[,"event"] == cause
+###                if (sum(event)==0) stop(paste("No events of type:", cause, "in data."))
+###            }
+###            else
+###	    { 
+###                states <- attr(event.history,"states")
+###		event <- delta
+###	    }
+###            if (delayed){
+###                stop("Delayed entry is not (not yet) supported.")
+###                entrytime <- event.history[,"entry"]
+###                eventtime <- event.history[,"time"]
+###            }else{
+###                eventtime <- event.history[,"time"]
+###                entrytime <- rep(0,length(eventtime))
+###            }
+###        }else{
+###            stop("Works only for right-censored data")
+###        }
+###    }else{stop("Response is neither competing risks nor survival.")}
+###    ## }}}
+###
+    ## }}} 
+
+   ## {{{ Event stuff
+    cens.code <- attr(event.history,"cens.code")
+    time2 <- eventtime <- event.history[,1]
+    status <- delta  <- event.history[,2]
+    event <- (status==cause)
+    entrytime <- rep(0,length(time2))
+    print(table(status))
+    if (sum(event)==0) stop("No events of interest in data\n"); 
+
+    ## }}} 
 
     ## {{{ 
 
@@ -87,7 +105,6 @@ profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=1000,baselinevar=1,weigh
     if(is.matrix(desX) == TRUE) pg <- as.integer(dim(desX)[2])
     if(is.matrix(desX) == TRUE) nx <- as.integer(dim(desX)[1])
     px<-1; 
-
     if ( (nx!=nrow(data)) & (!is.null(id))) stop("Missing values in design matrix not allowed with id \n"); 
 
     # adds random noise to make survival times unique
@@ -113,15 +130,19 @@ profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=1000,baselinevar=1,weigh
 
    start <- entrytime
    stop <- time2 
-   states <- as.integer(states)
-   cens.code <- as.integer(cens.code)
+
+###   states <- as.integer(states)
+###   cens.code <- as.integer(cens.code)
 
 ###   ### back to orignal coding 
-   status <- ccc <- event.history[,"event"]
-   ccc <- event.history[,"event"]
-   ccc[status==(length(states)+1)] <- cens.code
-   for (i in 1:length(states)) ccc[status==i] <- states[i]
-   status <- event <- ccc
+###   print(event.history)
+###   print(names(event.history))
+###
+###   status <- ccc <- event.history[,"event"]
+###   ccc <- event.history[,"event"]
+###   ccc[status==(length(states)+1)] <- cens.code
+###   for (i in 1:length(states)) ccc[status==i] <- states[i]
+###   status <- event <- ccc
 ###   
 
 if (is.null(max.time)==TRUE) maxtimes<-max(times)+0.1 else maxtimes<-max.time; 
@@ -164,7 +185,7 @@ if ((!is.null(max.clust))) if (max.clust<antclust) {
 if ((is.null(beta)==FALSE)) {
 	if (length(beta)!=pg) beta <- rep(beta[1],pg); 
 } else {
-      beta<-coxph(Surv(eventtime,event==causeS)~desX)$coef
+      beta<-coxph(Surv(eventtime,event)~desX)$coef
      if (max(abs(beta))>5) {
 	     cat("Warning, starting values from Cox model large, may set beta=\n")
      }
@@ -217,7 +238,6 @@ if (cens.model=="KM") { ## {{{
     KMtimes<-Cpred(Gfit,times)[,2]; ## }}}
     } else  stop('Unknown censoring model') 
 ## }}}
-
 
     if (is.null(weights)) weights <- rep(1,nx); 
     if (length(weights)!=nx) stop("weights must have same length as data\n"); 

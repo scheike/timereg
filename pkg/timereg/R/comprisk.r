@@ -7,8 +7,10 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
     # {{{
 {
     if (!missing(cause)){
-        if (length(cause)!=1) stop("Argument cause has new meaning since timereg version 1.8.4., it now specifies the cause of interest, see help(comp.risk) for details.")
-    } 
+       if (length(cause)!=1) stop("Argument cause has new meaning since 
+   timereg version 1.8.4., it now specifies the cause of interest, 
+   see help(comp.risk) for details.")
+   } 
 
     ## {{{
     # trans=1 P_1=1-exp( - ( x' b(b)+ z' gam t) ), 
@@ -45,47 +47,69 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
     intercept <- attr(mt, "intercept")
     event.history <- model.extract(m, "response")
 
-    ## {{{ Hist stuff
-    if (match("Hist",class(event.history),nomatch=0)==0){
-        stop("Since timereg version 1.8.4., the right hand side of the formula must be specified as Hist(time, event) or Hist(time, event, cens.code).")
+###
+###    ## {{{ Hist stuff
+###    if (match("Hist",class(event.history),nomatch=0)==0){
+###        stop("Since timereg version 1.8.4., the right hand side of the formula must be specified as Hist(time, event) or Hist(time, event, cens.code).")
+###    }
+###    ## if (!inherits(Y, "Surv")) stop("Response must be a survival object")
+###    cens.type <- attr(event.history,"cens.type")
+###    cens.code <- attr(event.history,"cens.code")
+###    delayed <- !(is.null(attr(event.history,"entry.type"))) && !(attr(event.history,"entry.type")=="")
+###    model.type <- attr(event.history,"model")
+###    if (model.type %in% c("competing.risks","survival")){
+###        if (cens.type %in% c("rightCensored","uncensored")){
+###            delta <- event.history[,"status"]
+###            if (model.type=="competing.risks"){
+###                states <- attr(event.history,"states")
+###                ## if (missing(cause)) stop("Argument cause is needed for competing risks models.")
+###                if (missing(cause)) {
+###                    cause <- states[1]
+###                    warning(paste("Argument cause is missing, analysing cause 1: ",cause,". Other causes are:",paste(states[-1],collapse=","),sep=""))
+###                }else {
+###                   if (!(cause %in% states)) stop(paste("Cause",cause," is not among the causes in data; these are:",paste(states,collapse=",")))
+###                    cause <- match(cause,states,nomatch=0)
+###                }
+###                ## event is 1 if the event of interest occured and 0 otherwise
+###                event <-  event.history[,"event"] == cause
+###                if (sum(event)==0) stop(paste("No events of type:", cause, "in data."))
+###            }
+###            else
+###                event <- delta
+###            if (delayed){
+###                stop("Delayed entry is not (not yet) supported.")
+###                entrytime <- event.history[,"entry"]
+###                eventtime <- event.history[,"time"]
+###            }else{
+###                eventtime <- event.history[,"time"]
+###                entrytime <- rep(0,length(eventtime))
+###            }
+###        }else{
+###            stop("Works only for right-censored data")
+###        }
+###    }else{stop("Response is neither competing risks nor survival.")}
+###    ## }}} 
+###
+
+  if (match("Hist",class(event.history),nomatch=0)==1){
+        stop("Since timereg version 1.8.6., the right hand side of the formula must be specified as Event(time, event) or Event(time, event, cens.code=0).")
     }
-    ## if (!inherits(Y, "Surv")) stop("Response must be a survival object")
-    cens.type <- attr(event.history,"cens.type")
+
+  model.type <- "competing.risks"
+
+
+   ## {{{ Event stuff
     cens.code <- attr(event.history,"cens.code")
-    delayed <- !(is.null(attr(event.history,"entry.type"))) && !(attr(event.history,"entry.type")=="")
-    model.type <- attr(event.history,"model")
-    if (model.type %in% c("competing.risks","survival")){
-        if (cens.type %in% c("rightCensored","uncensored")){
-            delta <- event.history[,"status"]
-            if (model.type=="competing.risks"){
-                states <- attr(event.history,"states")
-                ## if (missing(cause)) stop("Argument cause is needed for competing risks models.")
-                if (missing(cause)) {
-                    cause <- states[1]
-                    warning(paste("Argument cause is missing, analysing cause 1: ",cause,". Other causes are:",paste(states[-1],collapse=","),sep=""))
-                }else {
-                   if (!(cause %in% states)) stop(paste("Cause",cause," is not among the causes in data; these are:",paste(states,collapse=",")))
-                    cause <- match(cause,states,nomatch=0)
-                }
-                ## event is 1 if the event of interest occured and 0 otherwise
-                event <-  event.history[,"event"] == cause
-                if (sum(event)==0) stop(paste("No events of type:", cause, "in data."))
-            }
-            else
-                event <- delta
-            if (delayed){
-                stop("Delayed entry is not (not yet) supported.")
-                entrytime <- event.history[,"entry"]
-                eventtime <- event.history[,"time"]
-            }else{
-                eventtime <- event.history[,"time"]
-                entrytime <- rep(0,length(eventtime))
-            }
-        }else{
-            stop("Works only for right-censored data")
-        }
-    }else{stop("Response is neither competing risks nor survival.")}
+    time2 <- eventtime <- event.history[,1]
+    status <- delta  <- event.history[,2]
+    event <- (status==cause)
+    entrytime <- rep(0,length(time2))
+    print(table(status))
+    if (sum(event)==0) stop("No events of interest in data\n"); 
+
     ## }}} 
+
+
 
     if (n.sim==0) sim<-0 else sim<-1; antsim<-n.sim;
     des<-read.design(m,Terms)
@@ -162,20 +186,20 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
                 Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
             } else if (cens.model=="cox") { ## {{{
                 if (!is.null(cens.formula)) { 
-			                      XZ <- model.matrix(cens.formula,data=data); 
-                                              if (sum(XZ[,1])==nrow(XZ)) XZ <- as.matrix(XZ[,-1])
+		      XZ <- model.matrix(cens.formula,data=data); 
+                      if (sum(XZ[,1])==nrow(XZ)) XZ <- as.matrix(XZ[,-1])
                                           } else {
-                                              if (npar==TRUE) XZ<-X[,-1] else XZ <-cbind(X,Z)[,-1];
-                                          }
-                ud.cens<-coxph(Surv(eventtime,delta==cens.code)~XZ)                
-                baseout <- basehaz(ud.cens,centered=FALSE); 
-                baseout <- cbind(baseout$time,baseout$hazard)
-                Gcx<-Cpred(baseout,eventtime,strict=TRUE)[,2];
-                RR<-exp(as.matrix(XZ) %*% coef(ud.cens))
-                Gcx<-exp(-Gcx*RR)
-                Gfit<-rbind(c(0,1),cbind(eventtime,Gcx)); 
-                Gcx <- Gcx/Gcxe; 
-                Gctimes<-Cpred(Gfit,times,strict=TRUE)[,2]; 
+                       if (npar==TRUE) XZ<-X[,-1] else XZ <-cbind(X,Z)[,-1];
+                     }
+			ud.cens<-coxph(Surv(eventtime,delta==cens.code)~XZ)                
+			baseout <- basehaz(ud.cens,centered=FALSE); 
+			baseout <- cbind(baseout$time,baseout$hazard)
+			Gcx<-Cpred(baseout,eventtime,strict=TRUE)[,2];
+			RR<-exp(as.matrix(XZ) %*% coef(ud.cens))
+			Gcx<-exp(-Gcx*RR)
+			Gfit<-rbind(c(0,1),cbind(eventtime,Gcx)); 
+			Gcx <- Gcx/Gcxe; 
+			Gctimes<-Cpred(Gfit,times,strict=TRUE)[,2]; 
                 ## }}}
             } else if (cens.model=="aalen") {  ## {{{
                 if (!is.null(cens.formula)) { XZ <- model.matrix(cens.formula,data=data); 
@@ -254,13 +278,6 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 
   if (ntimes>1) silent <- c(silent,rep(0,ntimes-1))
   ## }}}
-
-###print(head(event))
-###print(head(delta))
-###print(cbind(event,delta))
-###print(cause)
-###print(cens.code)
-
 
   ###  dyn.load("comprisk.so")
   ssf <- 0; 
@@ -366,17 +383,13 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
     ud$clusters <- clusters
     ud$formula<-formula;
     ud$response <- event.history
-    if (model.type=="competing.risks") ud$cause <- states[cause]
+    ud$cause <- status
     class(ud)<-"comprisk"; 
     attr(ud, "Call") <- sys.call()
     attr(ud, "Formula") <- formula
     attr(ud, "time.pow") <- time.pow
     attr(ud, "causeS") <- causeS
-    if (model.type=="competing.risks") cause.call <- event.history[,"event"] else
-    cause.call <- event.history[,"status"] 
-    cause.call <- as.numeric(cause.call)
-    cause.call[event.history[,"status"]==cens.code] <- cens.code
-    attr(ud, "cause") <- cause.call
+    attr(ud, "cause") <- status
     attr(ud, "cluster.call") <- cluster.call
     attr(ud, "coarse.clust") <- coarse.clust
     attr(ud, "max.clust") <- max.clust
@@ -392,9 +405,9 @@ print.comprisk <- function (x,...) { ## {{{
   if (is.null(object$gamma)==TRUE) semi<-FALSE else semi<-TRUE
     
   # We print information about object:
-  print(object$response)
-  if (!is.null(object$cause))
-      cat(paste("\nAnalysed cause:",object$cause,"\n"))      
+  causeS <- attr(object,"causeS")
+  print(causeS)
+  cat(paste("\nAnalysed cause:",causeS,"\n"))      
   cat(paste("\nLink _function:",object$model,"\n\n"))
   cat(" Nonparametric terms : ");
   cat(colnames(object$cum)[-1]); cat("   \n");  
