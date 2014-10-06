@@ -270,7 +270,7 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
       obs.test=uni.testOBS,pval.test=uni.pval, sim.test=uni.test,
       proc.cumz=univar.proc,sim.test.proccumz=UIz)
 
-  attr(ud,"Call")<-sys.call(); 
+  attr(ud,"Call")<-call; 
   class(ud)<-"cum.residuals"
   return(ud); 
 } ## }}}
@@ -512,7 +512,7 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
     cat("Residual versus covariates consistent with model \n\n")
     prmatrix(round(test0,digits))
   }
-  cat("  \n");cat("  Call: \n");dput(attr(object, "Call"));
+###  cat("  \n");cat("  Call: \n");dput(attr(object, "Call"));
   cat("\n");
 } ## }}}
 

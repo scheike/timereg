@@ -230,7 +230,7 @@ if (class(margsurv)!="coxph") {
 		names(ud$theta.score)<- rownames(ud$theta)<-"intercept" } 
 
 
-  attr(ud,"Call")<-sys.call(); 
+  attr(ud,"Call")<-call; 
   class(ud)<-"two.stage"
   attr(ud,"Formula")<-formula;
   attr(ud,"id")<-id;
@@ -299,7 +299,8 @@ if (class(margsurv)!="coxph") {
 
   }
   }
-   cat("   \n");  cat("  Call: \n"); dput(attr(object, "Call")); cat("\n");
+###   cat("   \n");  cat("  Call: \n"); dput(attr(object, "Call")); 
+  cat("\n");
 } ## }}}
 
 print.two.stage <- function (x,digits = 3,...) { ## {{{

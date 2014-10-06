@@ -57,7 +57,7 @@ tol=0.0001,max.time=NULL,n.sim=1000,alpha=1,frac=1)
                                         #namematrix(ud$robvar.gamma,covnamesZ); 
                                         #namematrix(ud$D2linv,covnamesZ); 
 
-    attr(ud,"Call")<-sys.call(); 
+    attr(ud,"Call")<-call; 
     ud$call<-call
 
     class(ud)<-"prop.excess"

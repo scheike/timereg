@@ -123,7 +123,7 @@ id=NULL,start.time=0,max.time=NULL,offsets=0,Nit=50,detail=0,n.sim=500)
   rownames(ud$score) <- c(covnamesZ)
   colnames(ud$D2linv) <- c(covnamesZ)
 
-  attr(ud, "Call") <- sys.call()
+  attr(ud, "Call") <- call
   attr(ud, "Formula") <- formula
   attr(ud, "start") <- start.time
   attr(ud, "time2") <- time2

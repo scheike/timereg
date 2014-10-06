@@ -203,7 +203,7 @@ namematrix(ud$robvar.gamma,covnamesX);
 namematrix(ud$D2linv,covnamesX);
 
 
-attr(ud,"Call")<-sys.call(); 
+attr(ud,"Call")<-call; 
 attr(ud,"Formula")<-formula; 
 attr(ud,"id")<-id.call; 
 class(ud)<-"cox.aalen"

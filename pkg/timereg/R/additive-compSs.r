@@ -97,7 +97,7 @@ intZHdN=matrix(semiout[[17]],pz,1);
 
 ud<-list(intZHZ=intZHZ,intZHdN=intZHdN)
 class(ud) <- "pls"
-attr(ud, "Call") <- sys.call()
+attr(ud, "Call") <- call
 attr(ud, "Formula") <- formula
 ud$call <- call
 

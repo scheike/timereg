@@ -164,7 +164,7 @@ method="basic",weighted.test=0,degree=1,covariance=0)
   }
 
   ud$method<-method
-  attr(ud,"Call")<-sys.call(); 
+  attr(ud,"Call")<-call; 
   class(ud)<-"timecox"
   attr(ud,"Formula")<-formula;
   attr(ud,"id")<-id.call;

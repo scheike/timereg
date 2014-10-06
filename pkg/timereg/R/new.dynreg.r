@@ -160,7 +160,7 @@ ud<-semiregBase(times,status,Y,ldata,X,Z,covarA,id,clusters,
 #ud$robvar.gamma.ef<-namematrix(ud$robvar.gamma.ef,covnamesZ); 
 ud$mean.response<-meanY;
   }
-  attr(ud,"Call")<-sys.call(); 
+  attr(ud,"Call")<-call; 
   class(ud)<-"dynreg"
   return(ud); 
 }
@@ -301,8 +301,8 @@ if (is.null(dynreg.object$gamma0)==TRUE) semi<-FALSE else semi<-TRUE
     cat("   \n");  
   }
 
-  cat("  Call: \n")
-  dput(attr(dynreg.object, "Call"))
+###  cat("  Call: \n")
+###  dput(attr(dynreg.object, "Call"))
   cat("\n")
 }
 
