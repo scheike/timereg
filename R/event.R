@@ -17,13 +17,15 @@ Event <- function(time,time2=TRUE,cause=NULL,cens.code=0,...) {
     return(out)
 }
 
+as.matrix.Event <- function(x,...) structure(x,class="matrix")
+
 as.character.Event <- function(x,...) {
     if (ncol(x)==3) { 
-        res <- paste("(",formatC(x[,1],...),";",
-                     formatC(x[,2],...),":",
-                     formatC(x[,3],...),"]",sep="")
+        res <- paste("(",format(x[,1],...),";",
+                     format(x[,2],...),":",
+                     format(x[,3],...),"]",sep="")
     } else {
-        res <- paste(formatC(x[,1],...),":",formatC(x[,3],...),sep="")
+        res <- paste(format(x[,1],...),":",format(x[,2],...),sep="")
     }
     return(res)
 }
@@ -31,8 +33,14 @@ format.Event <- function(x, ...) format(as.character.Event(x), ...)
 as.data.frame.Event <- as.data.frame.model.matrix
 
 print.Event <- function(x,...) {
-    print(as.character(x,...),quote=FALSE)
+    print(as.matrix(x),...,quote=FALSE)
 }
+
+summary.Event <- function(object,...) {    
+    print(table(x[,"cause"]))
+    print(summary(x[,"exit"]))
+}
+
 
 "[.Event" <- function (x, i, j, drop = FALSE) 
 {
@@ -50,8 +58,7 @@ print.Event <- function(x,...) {
     }
 }
 
-rbind.Event <- function(...) 
-{
+rbind.Event <- function(...) {
   dots <- list(...)
   cens.code <- attributes(dots[[1]])$cens.code
   type <- attributes(dots[[1]])$type
