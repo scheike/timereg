@@ -14,10 +14,13 @@ folds<- function (n, folds = 10)
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
 ##' @examples
+##' library(timereg)
+##' data(TRACE)
+##' \donttest{
 ##' res <- divide.conquer.timereg(prop.odds,,
 ##' 	     formula=Surv(time,status==9)~chf+vf+age,n.sim=0,size=200)
-##' 
-divide.conquer <- function(func=NULL,data=data,size,...)
+##' }
+divide.conquer <- function(func=NULL,data,size,...)
 { ## {{{ 
 nn <- nrow(data)
 K <- round(nn/size)
@@ -37,9 +40,9 @@ res
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
 ##' @examples
-##' \donttest{
-##'  library(timereg)
+##' library(timereg)
 ##' data(TRACE)
+##' \donttest{
 ##' a2 <- divide.conquer.timereg(prop.odds,TRACE,
 ##' 	     formula=Surv(time,status==9)~chf+vf+age,n.sim=0,size=200)
 ##' coef(a)
@@ -52,10 +55,10 @@ res
 ##' plot(a2,xlim=c(0,8),ylim=c(0,0.01))
 ##' }
 ##' 
-divide.conquer.timereg <- function(func=NULL,data=data,size,...)
+divide.conquer.timereg <- function(func=NULL,data,size,...)
 { ## {{{ 
 
-res <- divide.conquer(func=func,data=data,size,...)
+res <- divide.conquer(func=func,data,size,...)
 K <- length(res)
 
 gamma <- Reduce("+", lapply(res,function(x) x$gamma))/K
