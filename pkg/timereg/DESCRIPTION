@@ -29,6 +29,7 @@ Collate:
     'Cpred.r'
     'Csmooth.r'
     'dynadd.r'
+    'event.r'
     'faster.reshape.r'
     'Gprop-odds.r'
     'Gprop-odds-subdist.r'
