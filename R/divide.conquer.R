@@ -1,8 +1,22 @@
+##' @export
 folds<- function (n, folds = 10) 
-{
+{ ## {{{ 
    split(sample(1:n), rep(1:folds, length = n))
-}
+} ## }}} 
 
+##' Split a data set and run function 
+##'
+##' @title Split a data set and run function 
+##' @param func called function
+##' @param data data-frame
+##' @param size size of splits
+##' @param ... Additional arguments to lower level functions
+##' @author Thomas Scheike, Klaus K. Holst
+##' @export
+##' @examples
+##' res <- divide.conquer.timereg(prop.odds,,
+##' 	     formula=Surv(time,status==9)~chf+vf+age,n.sim=0,size=200)
+##' 
 divide.conquer <- function(func=NULL,data=data,size,...)
 { ## {{{ 
 nn <- nrow(data)
@@ -13,6 +27,31 @@ res <- lapply(all.folds, function(i)
 res
 } ## }}} 
 
+##' Split a data set and run function of cox-aalen type from timereg to aggregate results 
+##'
+##' @title Split a data set and run function from timereg 
+##' @param func called function
+##' @param data data-frame
+##' @param size size of splits
+##' @param ... Additional arguments to lower level functions
+##' @author Thomas Scheike, Klaus K. Holst
+##' @export
+##' @examples
+##' \donttest{
+##'  library(timereg)
+##' data(TRACE)
+##' a2 <- divide.conquer.timereg(prop.odds,TRACE,
+##' 	     formula=Surv(time,status==9)~chf+vf+age,n.sim=0,size=200)
+##' coef(a)
+##' a2 <- divide.conquer.timereg(prop.odds,TRACE,
+##'	     formula=Surv(time,status==9)~chf+vf+age,n.sim=0,size=500)
+##' coef(a2)
+##' par(mfrow=c(1,1))
+##' plot(a,xlim=c(0,8),ylim=c(0,0.01))
+##' par(new=TRUE)
+##' plot(a2,xlim=c(0,8),ylim=c(0,0.01))
+##' }
+##' 
 divide.conquer.timereg <- function(func=NULL,data=data,size,...)
 { ## {{{ 
 
@@ -39,14 +78,4 @@ class(res) <- "cox.aalen"
 return(res)
 } ## }}} 
 
-###a2 <- divide.conquer.timereg(prop.odds,TRACE,
-###	     formula=Surv(time,status==9)~chf+vf+age,n.sim=0,size=200)
-###coef(a)
-###a2 <- divide.conquer.timereg(prop.odds,TRACE,
-###	     formula=Surv(time,status==9)~chf+vf+age,n.sim=0,size=500)
-###coef(a2)
-###par(mfrow=c(1,1))
-###plot(a,xlim=c(0,8),ylim=c(0,0.01))
-###par(new=TRUE)
-###plot(a2,xlim=c(0,8),ylim=c(0,0.01))
 
