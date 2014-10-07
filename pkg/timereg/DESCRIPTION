@@ -15,7 +15,6 @@ LazyLoad: yes
 Depends:
     R (>= 2.15),
     survival,
-    prodlim
 License: GPL (>= 2)
 Collate:
     'aalenC.r'

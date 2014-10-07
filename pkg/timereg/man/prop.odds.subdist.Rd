@@ -30,8 +30,8 @@ profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=1000,baselinevar=1,weigh
 \arguments{
 \item{formula}{
 a formula object, with the response on the left of a '~' operator, and
-the terms on the right.  The response must be a survival object as
-returned by the `Surv' function.
+the terms on the right.  The response must be an object as
+returned by the `Event' function.
 }
 j\item{data}{a data.frame with the variables.}
 \item{cause}{cause indicator for competing risks.}
@@ -116,7 +116,7 @@ Springer (2006).
 library(timereg)
 data(bmt)
 # Fits Proportional odds model 
-out <- prop.odds.subdist(Hist(time,cause)~platelet+age+tcell,data=bmt,
+out <- prop.odds.subdist(Event(time,cause)~platelet+age+tcell,data=bmt,
  cause=1,cens.model="KM",detail=0,n.sim=1000)
 summary(out) 
 par(mfrow=c(2,3))

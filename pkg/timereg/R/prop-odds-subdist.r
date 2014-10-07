@@ -91,7 +91,6 @@ profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=1000,baselinevar=1,weigh
     status <- delta  <- event.history[,2]
     event <- (status==cause)
     entrytime <- rep(0,length(time2))
-    print(table(status))
     if (sum(event)==0) stop("No events of interest in data\n"); 
 
     ## }}} 

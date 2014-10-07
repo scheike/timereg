@@ -93,10 +93,9 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 
   if (match("Hist",class(event.history),nomatch=0)==1){
         stop("Since timereg version 1.8.6., the right hand side of the formula must be specified as Event(time, event) or Event(time, event, cens.code=0).")
-    }
+  }
 
   model.type <- "competing.risks"
-
 
    ## {{{ Event stuff
     cens.code <- attr(event.history,"cens.code")
@@ -109,12 +108,10 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 
     ## }}} 
 
-
-
-    if (n.sim==0) sim<-0 else sim<-1; antsim<-n.sim;
-    des<-read.design(m,Terms)
-    X<-des$X; Z<-des$Z; npar<-des$npar; px<-des$px; pz<-des$pz;
-    covnamesX<-des$covnamesX; covnamesZ<-des$covnamesZ;
+  if (n.sim==0) sim<-0 else sim<-1; antsim<-n.sim;
+  des<-read.design(m,Terms)
+  X<-des$X; Z<-des$Z; npar<-des$npar; px<-des$px; pz<-des$pz;
+  covnamesX<-des$covnamesX; covnamesZ<-des$covnamesZ;
 
   if (nrow(X)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
 

@@ -1,7 +1,6 @@
 useDynLib(timereg) 
 
 import(survival)
-import(prodlim)
 
 export("aalen",
        "aalen.des",
