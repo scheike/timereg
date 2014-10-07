@@ -371,14 +371,14 @@ breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weights=
 		     obsonly=TRUE)
         if ((fix.censweights==1)) 
 		dataw[,outcome] <- (dataw[,outcome])*(dataw[,timevar]<tau)
-	marg.bin <- glm(formula,data=dataw,weights=1/w,family="quasibinomial")
+	marg.bin <- glm(formula,data=dataw,weights=1/dataw[,weights],family="quasibinomial")
         pudz <- predict(marg.bin,newdata=dataw,type="response")
 	dataw$pudz <- pudz
 	datawdob <- fast.reshape(dataw,id=id)
         datawdob$minw <- pmin(datawdob$w1,datawdob$w2)
         dataw2 <- fast.reshape(datawdob)
 	### removes second row of singletons 
-	dataw2  <- subset(dataw2,!is.na(minw)) 
+	dataw2  <- subset(dataw2,!is.na(dataw2$minw)) 
 	k <- k+1
 	if (!is.null(fix.marg)) dataw2$pudz <- fix.marg[k]
         suppressWarnings( b <- binomial.twostage(dataw2[,outcome],data=dataw2,clusters=dataw2[,id],marginal.p=dataw2$pudz,weights=1/dataw2$minw,...))
