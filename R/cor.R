@@ -466,9 +466,9 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' theta.des <- model.matrix(~-1+factor(zyg))
 ##' 
 ##' times=seq(0.05,1,by=0.05) # to speed up computations use only these time-points
-##' add<-comp.risk(Hist(time,cause)~+1+cluster(id),data=multcif,cause=1,
+##' add<-comp.risk(Event(time,cause)~+1+cluster(id),data=multcif,cause=1,
 ##'                n.sim=0,times=times,model="fg",max.clust=NULL)
-##' add2<-comp.risk(Hist(time,cause)~+1+cluster(id),data=multcif,cause=2,
+##' add2<-comp.risk(Event(time,cause)~+1+cluster(id),data=multcif,cause=2,
 ##'                n.sim=0,times=times,model="fg",max.clust=NULL)
 ##' 
 ##' out1<-cor.cif(add,data=multcif,cause1=1,cause2=1)
@@ -489,7 +489,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' table(prt$status)
 ##' 
 ##' times <- seq(40,100,by=10)
-##' cifmod <- comp.risk(Hist(time,cause)~+1+cluster(id),data=prt,
+##' cifmod <- comp.risk(Event(time,cause)~+1+cluster(id),data=prt,
 ##'                     cause=1,n.sim=0,
 ##'                     times=times,conservative=1,max.clust=NULL,model="fg")
 ##' theta.des <- model.matrix(~-1+factor(zyg),data=prt)
@@ -656,7 +656,7 @@ or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 ##' data(multcif)
 ##' 
 ##' times <- seq(0.3,1,length=4)
-##' add<-comp.risk(Hist(time,cause)~+1+cluster(id),data=multcif,cause=1,
+##' add<-comp.risk(Event(time,cause)~+1+cluster(id),data=multcif,cause=1,
 ##'                n.sim=0,times=times,max.clust=NULL)
 ##' 
 ##' out1<-random.cif(add,data=multcif,cause1=1,cause2=1)
@@ -674,9 +674,9 @@ or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 ##' ## multcif$cause[multcif$cause==0] <- 2
 ##' 
 ##' ## ###times<-sort(multcif$time[multcif$status \%in\% c(1,2)])
-##' ## add1<-comp.risk(Hist(time,status)~const(X)+cluster(id),data=multcif,cause=1,
+##' ## add1<-comp.risk(Event(time,status)~const(X)+cluster(id),data=multcif,cause=1,
 ##' ## 		  multcif$cause,n.sim=0,times=times)
-##' ## add2<-comp.risk(Hist(time,status)~const(X)+cluster(id),data=multcif,cause=2,
+##' ## add2<-comp.risk(Event(time,status)~const(X)+cluster(id),data=multcif,cause=2,
 ##' ## 		  multcif$cause,n.sim=0,times=times)
 ##' 
 ##' ## out1<-random.cif(add1,data=multcif,cause1=1,cause2=2,cif2=add2)
@@ -787,7 +787,7 @@ random.cif<-function(cif,data,cause,cif2=NULL,
 ##' @examples
 ##' data(multcif)
 ##' multcif$cause[multcif$cause==0] <- 2
-##' addm<-comp.risk(Hist(time,cause)~const(X)+cluster(id),data=multcif,
+##' addm<-comp.risk(Event(time,cause)~const(X)+cluster(id),data=multcif,
 ##'               cause=1,n.sim=0)
 ##'
 ##' ### making group indidcator 
@@ -902,7 +902,7 @@ print.summary.cor <- function(x,digits=3,...)
 ##' multcif$cause[multcif$cause==0] <- 2
 ##' 
 ##' times=seq(0.05,3,by=0.1) # to speed up computations use only these time-points
-##' add<-comp.risk(Hist(time,cause)~const(X)+cluster(id),data=multcif,
+##' add<-comp.risk(Event(time,cause)~const(X)+cluster(id),data=multcif,
 ##'                n.sim=0,times=times)
 ##' ###
 ##' out1<-cor.cif(add,data=multcif,cause1=1,cause2=1,theta=log(2+1))

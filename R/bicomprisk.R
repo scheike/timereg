@@ -1,7 +1,7 @@
 ##' Estimation of concordance in bivariate competing risks data
 ##'
 ##' @title Estimation of concordance in bivariate competing risks data
-##' @param formula Formula with left-hand-side being a \code{Hist} object (see example below) and the left-hand-side specying the covariate structure
+##' @param formula Formula with left-hand-side being a \code{Event} object (see example below) and the left-hand-side specying the covariate structure
 ##' @param data Data frame
 ##' @param cause Causes (default (1,1)) for which to estimate the bivariate cumulative incidence
 ##' @param cens The censoring code
@@ -27,7 +27,7 @@
 ##' 
 ##' data(prt) ## Prostate data example (sim)
 ##' ## Bivariate competing risk, concordance estimates
-##' p33 <- bicomprisk(Hist(time,status)~strata(zyg)+id(id),
+##' p33 <- bicomprisk(Event(time,status)~strata(zyg)+id(id),
 ##'                   data=prt,cause=c(2,2),return.data=1,prodlim=TRUE)
 ##' 
 ##' p33mz <- p33$model$"MZ"$comp.risk
@@ -190,7 +190,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
 
   if (return.data==2) return(list(data=mydata)) else {
   if (!prodlim) {
-    ff <- paste("Hist(",timevar,",",causes,",cens.code=",cens,") ~ 1",sep="")
+    ff <- paste("Event(",timevar,",",causes,",cens.code=",cens,") ~ 1",sep="")
     if (length(c(covars,indiv))>0) {
       xx <- c(covars,indiv2)
      for (i in seq_len(length(xx)))
