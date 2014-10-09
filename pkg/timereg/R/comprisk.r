@@ -103,7 +103,6 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
     status <- delta  <- event.history[,2]
     event <- (status==cause)
     entrytime <- rep(0,length(time2))
-    print(table(status))
     if (sum(event)==0) stop("No events of interest in data\n"); 
 
     ## }}} 
