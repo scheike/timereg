@@ -10,8 +10,8 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   notaylor<-1; flex.func<-0; 
 
   ## extract design and time and cause from cif object 
-  time <- cif$response[,"time"]
-  if (missing(cause)) cause <- attr(cif,"cause"); 
+  time <- cif$response[,"exit"]
+  if (missing(cause)) cause <- cif$response[,"cause"]  ##  attr(cif,"cause"); 
   cause <- as.numeric(cause)
   if (is.null(cens.code)) cens.code <- attr(cif,"cens.code")
   delta<-(cause!=cens.code)
