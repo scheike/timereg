@@ -124,7 +124,7 @@ if (class(margsurv)!="coxph") {
        residuals <- residuals(margsurv)
        cumhaz <- status-residuals
        cumhazleft <- rep(0,antpers)
-       RR<- exp(margsurv$linear.predictors-sum(margsurv$means*coef(margsurv))))
+       RR<- exp(margsurv$linear.predictors-sum(margsurv$means*coef(margsurv)))
         if ((lefttrunk==1)) { 
            baseout <- basehaz(margsurv,centered=FALSE); 
            cum <- cbind(baseout$time,baseout$hazard)
