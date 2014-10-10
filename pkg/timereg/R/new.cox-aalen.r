@@ -38,8 +38,6 @@ max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL)
   X<-des$X; Z<-des$Z; npar<-des$npar; px<-des$px; pz<-des$pz;
   covnamesX<-des$covnamesX; covnamesZ<-des$covnamesZ
   pxz <- px + pz;
-  print(head(X))
-  print(head(Z))
 
 ###  if ( (nrow(Z)!=nrow(data)) && (!is.null(id))) stop("Missing values in design matrix not allowed with id\n"); 
 ###  if (nrow(Z)!=nrow(data)) stop("Missing values in design matrix not allowed\n"); 
