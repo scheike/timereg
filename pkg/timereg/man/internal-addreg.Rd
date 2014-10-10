@@ -6,6 +6,13 @@
 \alias{Csmooth2B}
 \alias{pval}
 \alias{Event}
+\alias{as.character.Event}
+\alias{as.matrix.Event} 
+\alias{[.Event} 
+\alias{format.Event}
+\alias{print.Event} 
+\alias{rbind.Event} 
+\alias{summary.Event}
 \alias{kernel}
 \alias{percen}
 \alias{localTimeReg}

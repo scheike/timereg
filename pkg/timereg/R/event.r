@@ -37,8 +37,17 @@ print.Event <- function(x,...) {
 }
 
 summary.Event <- function(object,...) {    
-    print(table(x[,"cause"]))
-    print(summary(x[,"exit"]))
+    cat(paste("cens.code=",attr(object,"cens.code"),"\n"))
+    cat("causes:\n")
+    print(table(object[,"cause"]))
+    cat("exit:\n")
+    print(summary(object[,"exit"]))
+    if (ncol(object)==3) {
+    cat("entry:\n")
+       print(summary(object[,"entry"]))
+    cat("exit-entry:\n")
+       print(summary(object[,"exit"]- object[,"entry"]))
+    }
 }
 
 
