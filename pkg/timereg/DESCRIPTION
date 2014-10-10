@@ -2,8 +2,8 @@ Package: timereg
 Title: Flexible regression models for survival data.
 Version: 1.8.6
 Date: 2014-09-11
-Author: Thomas Scheike with contributions from Torben Martinussen and Jeremy
-    Silver
+Author: Thomas Scheike with contributions from Torben Martinussen, Jeremy Silver 
+        and Klaus Holst 
 Maintainer: Thomas Scheike <ts@biostat.ku.dk>
 Description: Programs for Martinussen and Scheike (2006), `Dynamic Regression
     Models for Survival Data', Springer Verlag.  Plus more recent developments.
