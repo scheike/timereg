@@ -30,21 +30,14 @@ if (class(margsurv)!="coxph") {
  if (is.null(se.clusters)) secluster <- mclusters;
  antsecluster <- length(unique(secluster))
  if (is.numeric(secluster)) secluster <-  sindex.prodlim(unique(secluster),secluster)-1 else  {
-      clusters <- as.integer(factor(clusters, labels = 1:antsecluster))-1
+      seclusters <- as.integer(factor(clusters, labels = 1:antsecluster))-1
  }
 
  if ( (sum(abs(clusters-mclusters))>0)  || (is.null(mclusters)))
  {
-    cat("Warning: Clusters for marginal model different than those specified for two.stage\n"); 
-    cat(" runs without variation from cox.aalen model, sets: notaylor=1\n"); 
     notaylor <- 1
  }
-### else if (sum(abs(clusters-mclusters))>0) 
-###      cat("Warning: Clusters for marginal model different than those specified for two.stage\n"); 
-###  if (!is.null(attr(margsurv,"max.clust")))
-###  if ((attr(margsurv,"max.clust")< attr(margsurv,"orig.max.clust"))  && (!is.null(mclusters)) )
-###	  cat("Warning: Probably want to estimate marginal model with max.clust=NULL\n"); 
-### if (nrow(X)!=length(clusters)) stop("Length of Marginal survival data not consistent with cluster length\n"); 
+
 
 } else { ## coxph ## {{{ 
   notaylor <- 1
@@ -60,7 +53,6 @@ if (class(margsurv)!="coxph") {
 	} else {
 	 start <- Y[, 1]; time2 <- Y[, 2];status <- Y[, 3];
         }
-###   Z <- na.omit(model.matrix(margsurv)[,-1]) ## Discard intercept
    Z <- matrix(1,antpers,length(coef(margsurv)));
 
    if (is.null(clusters)) stop("must give clusters for coxph\n");
