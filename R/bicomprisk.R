@@ -45,6 +45,14 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
                      "-strata(",paste(formulaStrata,collapse="+"),")",
                      "-indiv(",paste(formulaIndiv,collapse="+"),")")
   formula <- update(formula,formulaSt)
+
+  ### ts  11/10 
+  if (substr(as.character(formula)[2],1,4)=="Hist") {
+      stop("Since version : The left hand side of the formula must be specified as 
+      Event(time, event) or with non default censoring codes Event(time, event, cens.code=0).")
+  }
+
+
   if (!is.null(formulaId)) {
     id <- formulaId
     mycall$id <- id

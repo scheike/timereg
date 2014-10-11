@@ -244,13 +244,13 @@ sim.F1clust<-function(n,theta=1,lam0=0.5,beta=0.3,alpha=0,crate=2,
 ## tabd <- table(simd$cancer)
 ## casewise <- tabd["2"]/ ( tabd["2"] + tabd["1"]*0.5)  
 ## ###
-## outm <- prodlim(Hist(time,cause)~+1,data=simdata)
+## outm <- prodlim(Event(time,cause)~+1,data=simdata)
 ## par(mfrow=c(1,3))
 ## plot(outm)
 ## lines(tt,F1t,col=3,lwd=3)
 ## legend("topleft",c("cif","sand"),lty=1,col=c(1,3))
 ## ###          
-## cc <- bicomprisk(Hist(time,cause)~+1+id(id),data=simdata,cause=c(1,1),prodlim=TRUE)
+## cc <- bicomprisk(Event(time,cause)~+1+id(id),data=simdata,cause=c(1,1),prodlim=TRUE)
 ## p11t<- 1 - (1-F1(tt)) - (1-F1(tt)) + lap(theta, 2*ilap(theta,1-F1(tt)) )
 ## plot(cc)
 ## lines(tt,p11t,col=3,lwd=3)
@@ -306,7 +306,7 @@ sim.F1clust<-function(n,theta=1,lam0=0.5,beta=0.3,alpha=0,crate=2,
 ##         lines(tt,F1t,col=3,lwd=3)
 ##         legend("topleft",c("cif","sand"),lty=1,col=c(1,3))
 ## ###          
-##         cc <- bicomprisk(Hist(time,cause)~+1+id(id),data=simdata,cause=c(1,1),prodlim=TRUE)
+##         cc <- bicomprisk(Event(time,cause)~+1+id(id),data=simdata,cause=c(1,1),prodlim=TRUE)
 ##         p11t<- 1 - (1-F1(tt)) - (1-F1(tt)) + lap(theta, 2*ilap(theta,1-F1(tt)) )
 ##         case <- casewise(cc,outm,cause.marg=1)
 ##         case$concordance
@@ -317,7 +317,7 @@ sim.F1clust<-function(n,theta=1,lam0=0.5,beta=0.3,alpha=0,crate=2,
 ##         outm <-comp.risk(Surv(time,cause==0)~+1+cluster(id),data=simdata,simdata$cause,
 ## 		                         causeS=1,times=times,max.clust=200,n.sim=0)
 ##         cifmz <-predict(outm,X=1,uniform=0,resample.iid=1)
-##         cc <-bicomprisk(Hist(time,status)~+1+id(id),data=simdata,
+##         cc <-bicomprisk(Event(time,status)~+1+id(id),data=simdata,
 ##                         cause=c(1,1),se.clusters=outm$clusters)
 ##         cdz <- cc$model$"DZ"
 ##         cmz <- cc$model$"MZ"
@@ -325,8 +325,8 @@ sim.F1clust<-function(n,theta=1,lam0=0.5,beta=0.3,alpha=0,crate=2,
 ##         cdz <- casewise.test(cdz,cifmz,test="case") ## test based on casewise
 ##         cmz <- casewise.test(cmz,cifmz,test="conc") ## based on concordance:w
         
-##         out <- comp.risk(Hist(time,cause)~+1,data=simdata,causeS=1)
-##         cc <- bicomprisk(Hist(time,cause)~+1+id(id),data=simdata,cause=c(1,1))
+##         out <- comp.risk(Event(time,cause)~+1,data=simdata,causeS=1)
+##         cc <- bicomprisk(Event(time,cause)~+1+id(id),data=simdata,cause=c(1,1))
         
         
 ##     }
