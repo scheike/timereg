@@ -27,6 +27,12 @@ profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=1000,baselinevar=1,weigh
         Terms <- terms(formula, special, data = data)
     }
     m$formula <- Terms
+
+    if (substr(as.character(m$formula)[2],1,4)=="Hist") {
+       stop("Since timereg version 1.8.6.: The left hand side of the formula must be specified as 
+       Event(time, event) or with non default censoring codes Event(time, event, cens.code=0).")
+    }
+
     m[[1]] <- as.name("model.frame")
     m <- eval(m, sys.parent())
     if (NROW(m) == 0) stop("No (non-missing) observations")

@@ -40,6 +40,12 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
         Terms <- terms(formula, special, data = data)
     }
     m$formula <- Terms
+
+    if (substr(as.character(m$formula)[2],1,4)=="Hist") {
+       stop("Since timereg version 1.8.6.: The left hand side of the formula must be specified as 
+       Event(time, event) or with non default censoring codes Event(time, event, cens.code=0).")
+    }
+
     m[[1]] <- as.name("model.frame")
     m <- eval(m, sys.parent())
     if (NROW(m) == 0) stop("No (non-missing) observations")
@@ -47,53 +53,11 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
     intercept <- attr(mt, "intercept")
     event.history <- model.extract(m, "response")
 
-###
-###    ## {{{ Hist stuff
-###    if (match("Hist",class(event.history),nomatch=0)==0){
-###        stop("Since timereg version 1.8.4., the right hand side of the formula must be specified as Hist(time, event) or Hist(time, event, cens.code).")
-###    }
-###    ## if (!inherits(Y, "Surv")) stop("Response must be a survival object")
-###    cens.type <- attr(event.history,"cens.type")
-###    cens.code <- attr(event.history,"cens.code")
-###    delayed <- !(is.null(attr(event.history,"entry.type"))) && !(attr(event.history,"entry.type")=="")
-###    model.type <- attr(event.history,"model")
-###    if (model.type %in% c("competing.risks","survival")){
-###        if (cens.type %in% c("rightCensored","uncensored")){
-###            delta <- event.history[,"status"]
-###            if (model.type=="competing.risks"){
-###                states <- attr(event.history,"states")
-###                ## if (missing(cause)) stop("Argument cause is needed for competing risks models.")
-###                if (missing(cause)) {
-###                    cause <- states[1]
-###                    warning(paste("Argument cause is missing, analysing cause 1: ",cause,". Other causes are:",paste(states[-1],collapse=","),sep=""))
-###                }else {
-###                   if (!(cause %in% states)) stop(paste("Cause",cause," is not among the causes in data; these are:",paste(states,collapse=",")))
-###                    cause <- match(cause,states,nomatch=0)
-###                }
-###                ## event is 1 if the event of interest occured and 0 otherwise
-###                event <-  event.history[,"event"] == cause
-###                if (sum(event)==0) stop(paste("No events of type:", cause, "in data."))
-###            }
-###            else
-###                event <- delta
-###            if (delayed){
-###                stop("Delayed entry is not (not yet) supported.")
-###                entrytime <- event.history[,"entry"]
-###                eventtime <- event.history[,"time"]
-###            }else{
-###                eventtime <- event.history[,"time"]
-###                entrytime <- rep(0,length(eventtime))
-###            }
-###        }else{
-###            stop("Works only for right-censored data")
-###        }
-###    }else{stop("Response is neither competing risks nor survival.")}
-###    ## }}} 
-###
-
-  if (match("Hist",class(event.history),nomatch=0)==1){
-        stop("Since timereg version 1.8.6., the right hand side of the formula must be specified as Event(time, event) or Event(time, event, cens.code=0).")
+  if (class(event.history)!="Event"){
+       stop("Since timereg version 1.8.6.: The left hand side of the formula must be specified as 
+       Event(time, event) or with non default censoring codes Event(time, event, cens.code=0).")
   }
+
 
   model.type <- "competing.risks"
 
