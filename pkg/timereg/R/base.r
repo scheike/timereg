@@ -5,7 +5,7 @@ coefBase<- function(object, digits=3, d2logl=0) { ## {{{
   if (d2logl==1) res<-cbind(res,diag(object$D2linv)^.5)
   wald <- object$gamma/diag(object$robvar.gamma)^0.5
   waldp <- (1 - pnorm(abs(wald))) * 2
-  res <- as.matrix(cbind(res, wald, waldp))
+  res <- round(as.matrix(cbind(res, wald, waldp)),digits=digits)
   if (d2logl==1) colnames(res) <- c("Coef.", "SE", "Robust SE","D2log(L)^-1","z","P-val") else colnames(res) <- c("Coef.", "SE", "Robust SE", "z", "P-val")
 ###  prmatrix(signif(res, digits))
 ###  cat("\n")

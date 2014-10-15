@@ -1,4 +1,5 @@
 \name{pval}
+\alias{kmplot}
 \alias{pval}
 \alias{additive.compSs}
 \alias{CsmoothB}

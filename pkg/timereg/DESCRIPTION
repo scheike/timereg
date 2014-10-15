@@ -33,6 +33,7 @@ Collate:
     'Gprop-odds.r'
     'Gprop-odds-subdist.r'
     'krylow.pls.r'
+    'kmplot.r'
     'mgresid.r'
     'new.aalen.r'
     'new.cox-aalen.r'
