@@ -325,18 +325,22 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 
    R_CheckUserInterrupt();
 
-  if (*baselinevar==1) 
-  for (s=1;s<*Ntimes;s++) { // {{{ /* computation of q(t) ===================================== */ 
+//  if (*baselinevar==1) 
+//  også noget med vægt et sted 
     vec_zeros(xi); 
-    for (t=s;t<*Ntimes;t++) {
-      extract_row(gt,t,dA); 
+  for (s=*Ntimes-1;s>0;s--) { // {{{ /* computation of q(infty)-q(t) =============   */ 
+//    for (t=s;t<*Ntimes;t++) {
+      extract_row(gt,s,dA); 
       scl_vec_mult(exp(VE(lht,t))/VE(S0t,t),dA,dA); 
 //      if (s<0) {Rprintf("exp %d %d %lf \n",s,t,exp(-VE(lht,t)+VE(lht,s))); print_vec(dA); }
       vec_add(dA,xi,xi); 
-    }
+//    }
     scl_vec_mult(exp(-VE(lht,s))/VE(S0t,s),xi,xi); 
     replace_row(qt,s,xi); 
   } // }}}
+  // q(t)       = int_t^infty (s_o^star(s)  s_1(s) - s_1^star(s) s_0(s) )/ s_0(s) k(s) dH_0(s) 
+  // hat q(t)   = int_t^infty (s_o^star(s)  s_1(s) - s_1^star(s) s_0(s) )/ s_0(s) k(s) (sum_i  w_i(s) (1/s_0(s)) dN_i(s)) 
+
 
    if (timing==1) { // {{{ 
 	  c1=clock();
@@ -375,6 +379,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	vec_add(rowX,tmpv1,rowX); 
 	scl_vec_mult(weights,rowX,rowX); 
 
+	// noget vægt her 
 	if (i==ipers[s]) for (j=0;j<*px;j++) for (k=0;k<*px;k++)
           	ME(VU,j,k)=ME(VU,j,k)+VE(rowX,j)*VE(rowX,k);
 
@@ -422,7 +427,6 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	}
       */
     } /* s=1 ..Ntimes */ 
-
 
 
    R_CheckUserInterrupt();
