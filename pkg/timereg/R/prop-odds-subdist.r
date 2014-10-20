@@ -249,6 +249,17 @@ if (cens.model=="KM") { ## {{{
 
  ## }}}
 
+###print(table(status))
+###print(head(stop))
+###print(head(times))
+###print(Ntimes)
+###print(sum(KMtimes))
+###print(sum(KMti))
+###print(cens.code)
+###print(table(status))
+###print(causeS)
+
+
 nparout<- .C("posubdist2",
 	as.double(times),as.integer(Ntimes),as.double(desX),
 	as.integer(nx),as.integer(pg),as.integer(antpers),
@@ -258,7 +269,7 @@ nparout<- .C("posubdist2",
 	as.integer(sim),as.integer(antsim),as.integer(rani),
 	as.double(Rvcu),as.double(RVarbeta),as.double(test),
 	as.double(testOBS),as.double(Ut),as.double(simUt),
-	as.double(Uit),as.integer(id),as.integer(event),
+	as.double(Uit),as.integer(id),as.integer(status),
 	as.integer(weighted.test),as.integer(ratesim),as.double(score),
 	as.double(cumAi),as.double(cumAiiid),as.integer(residuals),
 	as.double(loglike),as.integer(profile),as.integer(sym),

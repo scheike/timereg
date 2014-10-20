@@ -29,7 +29,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
   vector *dLamt[*antpers];
   int *pg=calloc(1,sizeof(int)),c,robust=1,pers=0,ci,i,j,k,l,s,t,it;
 //  ,*ipers=calloc(*Ntimes,sizeof(int));
-  double weights,risks,RR,S0star,time,dummy,ll;
+  double weights,risks,RR,S0star,time,alpha,ll;
   double S0,tau,random,scale,sumscore;
   double norm_rand();
   void GetRNGstate(),PutRNGstate();
@@ -102,8 +102,10 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
       {// {{{  
 	  time=times[s];  
 	  pers=ipers[s];  // person with type 1 jump
+          // printf(" pers=%d weight=%lf  cause=%d \n",pers,wweights[pers],status[pers]); 
 	  vec_zeros(dS0);  mat_zeros(d2S0);  mat_zeros(dS1);  vec_zeros(S1star); vec_zeros(S1); 
 	  S0star=0; S0=0; // S0p=0; S0cox=0; 
+	  weightp=1; 
 
           for (j=0;j<*antpers;j++) { // {{{ 
 		  int other=((status[j]!=*causeS) &&  (status[j]!=*ccode))*1; 
@@ -118,16 +120,17 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 //                    Rprintf("%lf %lf %d %d %d \n",etime[j],time,*ccode,status[j],*causeS);
 //		      Rprintf("%lf %lf \n",risks,weights); 
 //                  }
-		  weightp=1; 
 		  weights=weights*wweights[j];
+	          if (j==pers) weightp=weights; 
+		  
 
 		  extract_row(WX,j,xi); 
 		  RR=exp(-VE(Gbeta,j));
 		  scale=(RR+cu[1*(*Ntimes)+s-1]); 
-		  dummy=1/scale; 
-		  plamtj=dummy; 
+		  alpha=1/scale; 
+		  plamtj=alpha; 
 		  if (it==((*Nit)-1)) VE(plamt,j)=plamtj; 
-		  dlamtj=dummy*dummy; 
+		  dlamtj=alpha*alpha; 
 		  S0star=S0star-dlamtj*weights; 
 		  S0=S0+plamtj*weights;
 
@@ -142,14 +145,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
                   
 
 		  if (*profile==0) scl_vec_mult(-dlamtj,xi,dA); else scl_vec_mult(-dlamtj,dA,dA); 
-//		  vec_add(dA,S1star,S1star); 
 		  vec_add_mult(S1star,dA,weights,S1star); 
-
-	//            for (i=0;i<*px;i++) for (k=0;k<*px;k++) { 
-	//	       ME(dS1,i,k)=ME(dS1,i,k)+VE(xi,i)*VE(tmpv1,k); 
-	//	       ME(tmp1,i,k)=-VE(plamt,j)*(ME(d2G[s-1],i,k)+(VE(xi,i)*VE(xi,k))*exp(-VE(Gbeta,j)));
-	//               ME(d2S0,i,k)+=ME(tmp1,i,k)+2*scale*(VE(tmpv1,i)*VE(tmpv1,k)); 
-	//            }
 
 		  for (i=0;i<*px;i++) for (k=0;k<*px;k++) { 
 		       ME(dS1,i,k)=ME(dS1,i,k)+VE(xi,i)*VE(tmpv1,k)*weights;
@@ -189,32 +185,37 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	  mat_add(d2G[s-1],A,d2G[s]); 
 
 	  /* baseline is computed */ 
-	  cu[1*(*Ntimes)+s]=cu[1*(*Ntimes)+s-1]+(1/S0); 
-	  if (s<0) Rprintf(" %lf \n",cu[1*(*Ntimes)+s]); 
+	  cu[1*(*Ntimes)+s]=cu[1*(*Ntimes)+s-1]+(weightp/S0); 
+          if (s<0) Rprintf(" %lf %lf %d %lf \n",cu[1*(*Ntimes)+s],weightp,pers,wweights[pers]); 
 
 	  /* First derivative of U ========================================  */ 
+	  // {{{ 
 	  extract_row(WX,pers,xi); 
 	  scl_vec_mult(1/S0,S1,xav); 
 	  vec_subtr(xi,xav,difxxav); 
-//	  scl_vec_mult(weightp,difxxav,difxxav); 
+	  scl_vec_mult(weightp,difxxav,difxxav); 
 	  vec_add(U,difxxav,U); 
 	  if (it==((*Nit)-1))  if (*profile==0)  replace_row(et,s,xav); 
 
 	  /* profile version of score */ 
-	  dummy=1/(exp(-VE(Gbeta,pers))+cu[1*(*Ntimes)+s-1]); 
+	  alpha=1/(exp(-VE(Gbeta,pers))+cu[1*(*Ntimes)+s-1]); 
 	  scl_vec_mult(-exp(-VE(Gbeta,pers)),xi,tmpv1); 
 	  vec_add(tmpv1,dG[s-1],tmpv1); 
-	  scl_vec_mult(-dummy,tmpv1,tmpv1); 
+	  scl_vec_mult(-alpha,tmpv1,tmpv1); 
 
 	  scl_vec_mult(1/S0,dS0,dA); 
 	  if (it==((*Nit)-1))  if (*profile==1)  replace_row(et,s,dA); 
 	  vec_subtr(tmpv1,dA,dA); 
+	  // 16-10-2014 med rigtige vægte
+	  scl_vec_mult(weightp,dA,dA); 
 	  vec_add(Upl,dA,Upl);
+	  // }}} 
 
 	  /* Second derivative S =========================================== */ 
+	  // {{{ 
 	  for (i=0;i<*px;i++) for (k=0;k<*px;k++) ME(dS2pl,i,k)=(VE(xi,i)*VE(xi,k))*exp(-VE(Gbeta,pers)); 
 	  mat_add(dS2pl,d2G[s-1],dS2pl);
-	  scl_mat_mult(-dummy,dS2pl,dS2pl); 
+	  scl_mat_mult(-alpha,dS2pl,dS2pl); 
 
 	  for (i=0;i<*px;i++) for (k=0;k<*px;k++) ME(dS2pl,i,k)=ME(dS2pl,i,k)+(VE(tmpv1,i)*VE(tmpv1,k)); 
 
@@ -223,6 +224,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	  for (i=0;i<*px;i++) for (k=0;k<*px;k++) ME(A,i,k)=ME(A,i,k)+(VE(dA,i)*VE(dA,k)); 
 
 	  mat_add(A,dS2pl,dS2pl);
+	  scl_mat_mult(weightp,dS2pl,dS2pl); 
 	  mat_add(dS2pl,S2pl,S2pl); 
 
 	  if (*profile==1) St[s]=mat_copy(S2pl,St[s]); 
@@ -237,21 +239,20 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	    print_mat(scl_mat_mult(1/(S0*S0),dS2,NULL)); 
 	  }
 
-	  mat_subtr(M1,dS2,M1); 
+          mat_subtr(M1,dS2,M1); 
+          scl_mat_mult(-1/(S0*S0),M1,M1); 
 
 	  if (*sym==1) {
-	    scl_mat_mult(-1/(S0*S0),M1,M1); mat_transp(M1,dS2); mat_add(M1,dS2,dS2); 
+	    mat_transp(M1,dS2); mat_add(M1,dS2,dS2); 
 	    scl_mat_mult(0.5,dS2,dS2); 
-	  } else scl_mat_mult(-1/(S0*S0),M1,dS2); 
-
-	  if (s<0) print_mat(dS2); 
-
+	  } else scl_mat_mult(1,M1,dS2); 
 	  mat_add(dS2,S2,S2); 
 	  if (*profile==0) St[s]=mat_copy(S2,St[s]); 
+	  // }}} 
 
 	  /* ============================================ */
 	  /* log-likelihood contributions                 */ 
-	  ll=ll+log(dummy)-log(S0);
+	  ll=ll+log(alpha)-log(S0);
 
 	  /* scl_mat_mult(1/S0,dS1,dS1);  */
 
@@ -260,7 +261,8 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	    if (*profile==1) {for (i=1;i<*px+1;i++) Ut[i*(*Ntimes)+s]=VE(Upl,i-1);}  else 
 	    {for (i=1;i<*px+1;i++) Ut[i*(*Ntimes)+s]=VE(U,i-1); } 
 	    for (i=1;i<*px+1;i++) ME(Utt,s,i-1)=Ut[i*(*Ntimes)+s]; 
-	    for (j=0;j<*antpers;j++) VE(dLamt[j],s)=VE(plamt,j)/S0;
+	    // weightp 20/10  check 
+	    for (j=0;j<*antpers;j++) VE(dLamt[j],s)=weightp*VE(plamt,j)/S0;
 
 	    /* // {{{ 
 	      for (i=0;i<*px;i++) for (j=0;j<*pg;j++) ME(dM1M2,j,i)=VE(dA,i)*VE(difzzav,j);
@@ -289,6 +291,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
       if (*profile==1)  scl_mat_mult(-1,S2pl,A); else scl_mat_mult(-1,S2,A);
       invertS(A,SI,1);
       if (*profile==1) Mv(SI,Upl,delta);  else Mv(SI,U,delta); 
+//      scl_vec_mult(*step,delta,delta); 
 
       if (*detail==1) {  // {{{ 
 	Rprintf("====================Iteration %d ==================== \n",it); 
@@ -363,27 +366,28 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	  if (etime[i]<time) {
 	     if (other==1) risks=1; else risks=0; 
 	  } else risks=1; 
-	  weights=weights*risks; // censoring weights
+	  weights=weights*risks*wweights[i]; // censoring weights
 
         ci=cluster[i]; 
 	extract_row(dotwitowit[i],s,rowX); 
 	vec_subtr(rowX,xtilde,rowX); 
 	if (s==0) { print_vec(rowX); print_vec(tmpv1); }
 	vec_add(rowX,tmpv1,rowX); 
+	scl_vec_mult(weights,rowX,rowX); 
 
 	if (i==ipers[s]) for (j=0;j<*px;j++) for (k=0;k<*px;k++)
           	ME(VU,j,k)=ME(VU,j,k)+VE(rowX,j)*VE(rowX,k);
 
 	scl_vec_mult(VE(dLamt[i],s),rowX,xi); 
 
-//	vec_subtr(W2[ci],xi,W2[ci]); 
-        vec_add_mult(W2[ci],xi,-1*weights,W2[ci]); 
+	vec_subtr(W2[ci],xi,W2[ci]); 
+//        vec_add_mult(W2[ci],xi,-1*weights,W2[ci]); 
 
 	if (i==ipers[s]) vec_add(rowX,W2[ci],W2[ci]);
 	if (*ratesim==1) {
-		scl_vec_mult(VE(dLamt[i],s),tmpv2,rowZ); 
-//		vec_subtr(W2[ci],rowZ,W2[ci]);
-                vec_add_mult(W2[ci],rowZ,-1*weights,W2[ci]); 
+		scl_vec_mult(VE(dLamt[i],s),rowX,tmpv1); 
+		vec_subtr(W2[ci],tmpv1,W2[ci]);
+//                vec_add_mult(W2[ci],rowZ,-1*weights,W2[ci]); 
 	}
 	replace_row(W2t[ci],s,W2[ci]); 
 
@@ -463,8 +467,8 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 
 	  for (j=0;j<*antpers;j++)
 	    { extract_row(WX,j,xi); // extract_row(ldesignG,j,zi);
-	      dummy=exp(VE(Gbeta,j)); // *VE(weight,j)*VE(offset,j); 
-	      scl_vec_mult(dummy,xi,xtilde); 
+	      alpha=exp(VE(Gbeta,j)); // *VE(weight,j)*VE(offset,j); 
+	      scl_vec_mult(alpha,xi,xtilde); 
 	      replace_row(ldesignX,j,xtilde); 
 	    }
 

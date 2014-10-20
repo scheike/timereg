@@ -108,24 +108,17 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
       for (s=1;s<*Ntimes;s++)
       {// {{{  
 	  time=times[s];  
-//	  vec_zeros(risk); 
 	  vec_zeros(dS0);  mat_zeros(d2S0);  mat_zeros(dS1);  vec_zeros(S1star);
 	  S0star=0; S0=0; 
-//	  S0p=0; S0cox=0; 
-//	  vec_zeros(Gbeta); vec_zeros(plamt); vec_zeros(dlamt); 
 	  vec_zeros(S1); 
 
 	  for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) { // {{{ reading data and computing things 
 	    if ((start[c]<time) && (stop[c]>=time))  {
-//	      VE(risk,id[c])=1; 
-//	      if (it==((*Nit)-1)) for(j=0;j<*px;j++)  ME(ldesignX,id[c],j)=designX[j*(*nx)+c];  
 	      for(j=0;j<*px;j++) VE(xi,j)=designX[j*(*nx)+c];  
 	      j=id[c];
-//	      extract_row(ldesignX,j,xi); 
 	      if (time==stop[c] && status[c]==1) {pers=id[c]; scl_vec_mult(1,xi,xipers);} 
 	      count=count+1; 
-///          VE(Gbeta,j)=vec_prod(xi,beta); 
-	    RR=exp(-VE(Gbeta,j));
+	      RR=exp(-VE(Gbeta,j));
 
 	    scale=(RR+cu[1*(*Ntimes)+s-1]); 
 	    dummy=1/scale; 
@@ -149,14 +142,9 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	    vec_add(tmpv1,dS0,dS0); 
 	    if (s<0 && j<5 ) {Rprintf(" %d %d \n",s,j); print_vec(tmpv1); }
 
-	    if (*profile==0) scl_vec_mult(-dlamtj,xi,dA); else scl_vec_mult(-dlamtj,dA,dA); 
+	    // 16-10-2014                                                   -dlamtj
+	    if (*profile==0) scl_vec_mult(-dlamtj,xi,dA); else scl_vec_mult(-plamtj,dA,dA); 
 	    vec_add(dA,S1star,S1star); 
-
-//            for (i=0;i<*px;i++) for (k=0;k<*px;k++) { 
-//	       ME(dS1,i,k)=ME(dS1,i,k)+VE(xi,i)*VE(tmpv1,k); 
-//	       ME(tmp1,i,k)=-VE(plamt,j)*(ME(d2G[s-1],i,k)+(VE(xi,i)*VE(xi,k))*exp(-VE(Gbeta,j)));
-//               ME(d2S0,i,k)+=ME(tmp1,i,k)+2*scale*(VE(tmpv1,i)*VE(tmpv1,k)); 
-//            }
 
 	    for (i=0;i<*px;i++) for (k=0;k<*px;k++) { 
 		    ME(dS1,i,k)=ME(dS1,i,k)+VE(xi,i)*VE(tmpv1,k); 
