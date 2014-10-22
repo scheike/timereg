@@ -598,8 +598,8 @@ S1 <- exp(-cumhaz); S2 <- exp(-cumhaz2)
 if (attr(object,"var.link")==1) theta  <- exp(object$theta) else theta <- object$theta
 if (!is.null(theta.des)) theta <- c(theta.des %*% object$theta)
 
-if (diag==FALSE) St1t2<- (outer(c(S1)^{-(1/theta)},c(S2)^{-(1/theta)},FUN="+") - 1)^(-(theta)) else 
-St1t2<- ((S1^{-(1/theta)}+S2^{-(1/theta)})-1)^(-(theta))
+if (diag==FALSE) St1t2<- (outer(c(S1)^{-(theta)},c(S2)^{-(theta)},FUN="+") - 1)^(-(1/theta)) else 
+St1t2<- ((S1^{-(theta)}+S2^{-(theta)})-1)^(-(1/theta))
 
 out=list(St1t2=St1t2,S1=S1,S2=S2,times=times,times2=times2,theta=theta)
 return(out)
