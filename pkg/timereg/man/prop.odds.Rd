@@ -16,19 +16,18 @@ The modelling formula uses the standard survival modelling given in the
 }
 \usage{
 prop.odds(formula,data=sys.parent(),beta=NULL,
-Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
-profile=1,sym=0,baselinevar=1,clusters=NULL,max.clust=1000)
+Nit=20,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
+profile=1,sym=0,baselinevar=1,clusters=NULL,max.clust=1000,weights=NULL)
 }
 \arguments{
 \item{formula}{
 a formula object, with the response on the left of a '~' operator, and
-the terms on the right.  The response must be a survival object as
-returned by the `Surv' function.
+the terms on the right.  The response must be a Event object as
+returned by the `Event' function.
 }
 \item{data}{a data.frame with the variables.}
 \item{start.time}{start of observation period where estimates are computed.}
-\item{max.time}{
-end of observation period where estimates are computed.
+\item{max.time}{end of observation period where estimates are computed.
 Estimates thus computed from [start.time, max.time]. 
 This is very useful to obtain stable estimates, especially for the
 baseline. Default is max of data.}
@@ -47,11 +46,11 @@ partial likelihood is recommended.
 }
 \item{sym}{to use symmetrized second derivative in the case
 of the estimating equation approach (profile=0). 
-This may improve the numerical performance. 
-}
+This may improve the numerical performance.}
+\item{baselinevar}{set to 0 to omit calculations of baseline variance.}
 \item{clusters}{to compute cluster based standard errors.}
 \item{max.clust}{number of maximum clusters to be used, to save time in iid decomposition.}
-\item{baselinevar}{set to 0 to omit calculations of baseline variance.}
+\item{weights}{weights for score equations.}
 }
 \details{
 The data for a subject is presented as multiple rows or "observations",
@@ -107,10 +106,9 @@ Springer (2006).
 }
 \author{Thomas Scheike}
 \examples{
-library(timereg)
 data(sTRACE)
 # Fits Proportional odds model 
-out<-prop.odds(Surv(time,status==9)~age+diabetes+chf+vf+sex,
+out<-prop.odds(Event(time,status==9)~age+diabetes+chf+vf+sex,
 sTRACE,max.time=7,n.sim=100)
 
 par(mfrow=c(2,3))

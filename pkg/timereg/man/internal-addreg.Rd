@@ -70,6 +70,7 @@
 \alias{coef.timecox}
 \alias{dynregBase}
 \alias{prop.excessBase}
+\alias{prop.odds.gam}
 \alias{semicox}
 \alias{timecoxBase}
 \alias{wald.test}

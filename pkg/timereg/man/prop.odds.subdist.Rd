@@ -104,6 +104,9 @@ test-processes for constant proportional odds under the model
 based on resampling.}
 }
 \references{
+Eriksson, Li, Zhang and Scheike (2014), The proportional odds cumulative incidence model for competing risks,
+Biometrics, to appear.
+
 Scheike, A flexible semiparametric transformation model for
 survival data, Lifetime Data Anal. (2007). 
 

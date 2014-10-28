@@ -1,7 +1,20 @@
 prop.odds<-function(formula,data=sys.parent(),beta=NULL,
+Nit=20,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
+profile=1,sym=0,baselinevar=1,clusters=NULL,max.clust=1000,weights=NULL)
+{ ## {{{ 
+
+out <- prop.odds.subdist(formula,data=data,beta=beta,cause=1,
+Nit=Nit,detail=detail,start.time=start.time,max.time=max.time,id=id,n.sim=n.sim,
+weighted.test=weighted.test,
+profile=profile,sym=sym,cens.model="po",clusters=clusters,max.clust=max.clust,baselinevar=1,weights=weights)
+
+return(out); 
+} ## }}} 
+
+prop.odds.gam<-function(formula,data=sys.parent(),beta=NULL,
 Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
 profile=1,sym=0,baselinevar=1,clusters=NULL,max.clust=1000)
-{
+{ ## {{{ 
 id.call<-id; call<-match.call(); residuals<-0;  
 robust<-0; ratesim<-0; 
 resample.iid <- 1 # profile<-0; 
@@ -227,5 +240,5 @@ attr(ud,"basesim") <- 1
 attr(ud,"type") <- "survival"
 class(ud)<-"cox.aalen"
 return(ud); 
-}
+} ## }}} 
 
