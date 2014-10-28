@@ -387,11 +387,11 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	scl_vec_mult(exp(VE(lht,s))/VE(S0t,s),xav,tmpv1); 
 	
 	vec_subtr(rowX,tmpv1,rowX); 
-	scl_vec_mult(weights,rowX,rowX); 
-	if (i==ipers[s]) vec_add(rowX,W2[ci],W2[ci]);
+	scl_vec_mult(weights,rowX,difX); 
+	if (i==ipers[s]) vec_add(difX,W2[ci],W2[ci]);
 
 	if (i==ipers[s]) for (j=0;j<*px;j++) for (k=0;k<*px;k++)
-          	ME(VU,j,k)=ME(VU,j,k)+VE(rowX,j)*VE(rowX,k);
+          	ME(VU,j,k)=ME(VU,j,k)+VE(difX,j)*VE(difX,k);
 
 	if (*ratesim==1) {
 		scl_vec_mult(VE(dLamt[i],s),rowX,tmpv1); 
@@ -399,10 +399,11 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	}
 	replace_row(W2t[ci],s,W2[ci]); 
 
-	VE(rowZ,0)=weights*exp(VE(lht,s))/VE(S0t,s); 
+	VE(rowZ,0)=exp(VE(lht,s))/VE(S0t,s); 
         if (i==ipers[s])  
 	{ 
-		vec_add(rowZ,W3[ci],W3[ci]);
+		VE(W3[ci],0)+=VE(rowZ,0)*weights; 
+//		vec_add(rowZ,W3[ci],W3[ci]);
 //		vec_add(rowZ,W3mg[ci],W3mg[ci]);
 //	        replace_row(W3tmg[ci],s,W3[ci]); 
 	}
@@ -466,7 +467,6 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 //	VE(tmpv2,0)= exp(-VE(lht,s))*VE(tmpv2,0);
 //	TESTER uden beta var 
  	vec_add(rowZ,zi,zi); 
-// 	vec_add(rowZ,tmpv2,tmpv2); 
 
 	if (i==-5) print_vec(zi); 
 	replace_row(W4t[i],s,zi);
@@ -500,11 +500,11 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 	if (*retur==1 && j==0) { // {{{ 
 
 	  for (j=0;j<*antpers;j++)
-	    { extract_row(WX,j,xi); // extract_row(ldesignG,j,zi);
+	  { extract_row(WX,j,xi); // extract_row(ldesignG,j,zi);
 	      alpha=exp(VE(Gbeta,j)); // *VE(weight,j)*VE(offset,j); 
 	      scl_vec_mult(alpha,xi,xtilde); 
 	      replace_row(ldesignX,j,xtilde); 
-	    }
+	  }
 
 	  Mv(ldesignX,dAt[s],dlamt);  
 	  for (j=0;j<*antpers;j++)
@@ -533,6 +533,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 //   }
 
     MxA(RobVbeta,SI,tmp1); MxA(SI,tmp1,RobVbeta);
+
   } // }}} /* Robust =1 , default */ 
 
 //   for (i=0;i<*antpers;i++) print_vec(W2[i]); 

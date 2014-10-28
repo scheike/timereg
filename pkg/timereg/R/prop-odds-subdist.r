@@ -15,7 +15,7 @@ profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=1000,baselinevar=1,weigh
     m<-match.call(expand.dots=FALSE);
     if (n.sim==0) sim<-0 else sim<-1; 
     antsim<-n.sim; id.call<-id; 
-    residuals<-0;  robust<-0; resample.iid <- 1 
+    residuals<-0;  robust<-1; resample.iid <- 1 
     m$cens.model <- m$cause <- m$sym<-m$profile <- m$max.time<- m$start.time<- m$weighted.test<- m$n.sim<-
     m$id<-m$Nit<-m$detail<-m$beta <- m$baselinevar <- m$clusters <- m$max.clust <- m$weights <-  NULL
 
