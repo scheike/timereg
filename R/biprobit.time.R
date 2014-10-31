@@ -101,14 +101,14 @@ biprobit.time <- function(formula,data,id,...,
         k <- k+1
         if (return.data) return(dataw)
         if (ncol(censtime)==3) { ## truncation...
-            dataw[,weight.name] <- dataw[,weights]*dataw[,trunc.weights]
-        }
+            dataw[,weights] <- dataw[,weights]*dataw[,trunc.weights]
+        }        
         args <- c(list(x=formula,data=dataw,id=id,weights=weights, pairs.only=pairs.only), list(...))
         suppressWarnings(b <- do.call(estimator, args))
         ## suppressWarnings(b <- biprobit(formula, data=dataw, id=id, weights=weights, pairs.only=pairs.only,...))
         if (length(breaks)>1) res <- c(res,list(summary(b,...)))
     }
-    if (length(breaks)==1) {        
+    if (length(breaks)==1) {
         return(structure(b,time=breaks))
     }
     if (missing(summary.function)) {
