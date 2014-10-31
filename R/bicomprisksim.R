@@ -59,9 +59,9 @@ bicomprisksim <- function(n=1e4,
     cause[t0>cens] <- 0
     t <- pmin(t0,cens)
     (censtab <- table(cause)/length(cause))    
-### Data.frame                                   
-    d <- data.frame(t,cause,zyg,cancertrue-1);
-    names(d) <- c("time1","time2","cause1","cause2","zyg","cancertrue1","cancertrue2")
+### Data.frame
+    d <- data.frame(t,cause,zyg,cancertrue-1,cens[,1],t0[,1],t0[,2]);
+    names(d) <- c("time1","time2","cause1","cause2","zyg","cancertrue1","cancertrue2","cens.time","T01","T02")
 ### Long format
     dd <- fast.reshape(d)
     dd$cancer <- (dd$cause==2)*1
