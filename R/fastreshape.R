@@ -97,20 +97,22 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
         if (as.character(varsubst)[1]=="-") {
             notvarying <- varsubst[[-1]]
             vars0 <- setdiff(nn,eval(notvarying,parent.frame()))
-            varying <- unique(gsub("(\\d+)$","",vars0))
+            ##numstr <- gsub("([1-9]\\d+)$","",vars0)
+            ##numstr_sanspre0 <- gsub("(^0+)",num)
+            varying <- unique(gsub("([1-9]|[1-9]\\d+)$","",vars0))
         }
         if (!missing(id)) varying <- setdiff(varying,id)
         if (!missing(num)) varying <- setdiff(varying,num)
     }
-    
+        
     if (missing(id)) {
         ## reshape from wide to long format. 
         nsep <- nchar(sep)
         if (missing(varying)) {#stop("Prefix of time-varying variables needed")
-            ## Find all variable names with trailing digits
-            vars0 <- grep("(\\d+)$",nn)            
-            varying <- unique(gsub("(\\d+)$","",nn[vars0]))
-        } 
+            ## Find all variable names with trailing digits (and leading zeros)
+            vars0 <- grep("([1-9]|[1-9]\\d+)$",nn);
+            varying <- unique(gsub("([1-9]|[1-9]\\d+)$","",nn[vars0]))
+        }
         ## nl <- as.list(seq_along(data)); names(nl) <- nn
         ## varying <- eval(substitute(varying),nl,parent.frame())
         vnames <- NULL
