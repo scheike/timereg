@@ -1,10 +1,21 @@
-## t1 <- 1:10
-## t2 <- t1+runif(10)
-## ca <- rbinom(10,2,0.4)
-## x <- Event(t1,t2,ca)
-## h <- Hist(t2,ca)
-## s <- Surv(t2,ca)
-
+##' Constructur for Event History objects 
+##'
+##' ... content for details
+##' @title Event history object
+##' @param time Time 
+##' @param time2 Time 2
+##' @param cause Cause
+##' @param cens.code Censoring code (default 0)
+##' @param ... Additional arguments
+##' @return Object of class Event (a matrix) 
+##' @author Klaus K. Holst
+##' @aliases Event rbind.Event
+##' @export
+##' @examples
+##' t1 <- 1:10
+##' t2 <- t1+runif(10)
+##' ca <- rbinom(10,2,0.4)
+##' (x <- Event(t1,t2,ca))
 Event <- function(time,time2=TRUE,cause=NULL,cens.code=0,...) {
     out <- cbind(time,time2,cause)
     if (!missing(cause)) {
@@ -14,11 +25,14 @@ Event <- function(time,time2=TRUE,cause=NULL,cens.code=0,...) {
     }
     class(out) <- "Event"
     attr(out,"cens.code") <- cens.code
+    attr(out,"entry") <- ncol(out)==3
     return(out)
 }
 
+##' @export
 as.matrix.Event <- function(x,...) structure(x,class="matrix")
 
+##' @export
 as.character.Event <- function(x,...) {
     if (ncol(x)==3) { 
         res <- paste("(",format(x[,1],...),";",
@@ -29,19 +43,26 @@ as.character.Event <- function(x,...) {
     }
     return(res)
 }
-format.Event <- function(x, ...) format(as.character.Event(x), ...)
+
+##' @export
+format.Event <- function(x, ...) as.character.Event(x,...)
+
+##' @export
 as.data.frame.Event <- as.data.frame.model.matrix
 
+##' @export
 print.Event <- function(x,...) {
     print(as.matrix(x),...,quote=FALSE)
 }
 
+##' @export
 summary.Event <- function(object,...) {    
-    print(table(x[,"cause"]))
-    print(summary(x[,"exit"]))
+    print(table(object[,"cause"]))
+    print(summary(object[,"exit"]))
 }
 
 
+##' @export
 "[.Event" <- function (x, i, j, drop = FALSE) 
 {
     if (missing(j)) {
@@ -49,7 +70,8 @@ summary.Event <- function(object,...) {
         class(x) <- "matrix"
         x <- x[i, , drop = FALSE]
         class(x) <- "Event"
-        attributes(x)$cens.code <- atr["cens.code"]
+        atr.keep <- c("cens.code","entry")
+        attributes(x)[atr.keep] <- atr[atr.keep]
         x
     }
     else {
@@ -58,10 +80,10 @@ summary.Event <- function(object,...) {
     }
 }
 
+##' @export
 rbind.Event <- function(...) {
   dots <- list(...)
   cens.code <- attributes(dots[[1]])$cens.code
-  type <- attributes(dots[[1]])$type
   ncol <- dim(dots[[1]])[2]
   nrow <- unlist(lapply(dots,nrow))
   cnrow <- c(0,cumsum(nrow))

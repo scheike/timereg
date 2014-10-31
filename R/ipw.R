@@ -1,5 +1,6 @@
-##' Calculates Inverse Probability of Censoring Weights (IPCW) and
-##' adds them to a data.frame
+##' Internal function.
+##' Calculates Inverse Probability of Censoring
+##' Weights (IPCW) and adds them to a data.frame
 ##'
 ##' @title Inverse Probability of Censoring Weights
 ##' @param formula Formula specifying the censoring model 
@@ -25,10 +26,12 @@
 ##'          lines(time,w,col=count,lwd=2))
 ##' }
 ##' legend("topright",legend=unique(prtw$country),col=1:4,pch=-1,lty=1)
-##' @export
 ipw <- function(formula,data,cluster,
-                 same.cens=FALSE,obs.only=TRUE,weight.name="w",
-                 cens.model="aalen", pairs=FALSE, ...) {
+                same.cens=FALSE,obs.only=TRUE,
+                weight.name="w",
+                trunc.prob=FALSE,weight.name2="wt",
+                cens.model="aalen", pairs=FALSE,
+                theta.formula=~1, ...) {
                  ##iid=TRUE,
 
     ##cens.args <- c(list(formula,n.sim=0,robust=0,data=eval(data)),list(...))
@@ -48,8 +51,14 @@ ipw <- function(formula,data,cluster,
         m[[1]] <- as.name("model.frame")
         M <- eval(m, parent.frame())
         censtime <- model.extract(M, "response")
-        status <- censtime[,2]
-        otimes <- censtime[,1]
+        if (ncol(censtime)==3) {
+            status <- censtime[,3]
+            otimes <- censtime[,2]
+            ltimes <- censtime[,1]
+        } else {
+            status <- censtime[,2]
+            otimes <- censtime[,1]
+        }
         noncens <- !status
         if (is.null(attr(terms(formula,"prop"),"specials")$prop)) {
             ud.cens <- aalen(formula,n.sim=0,robust=0,data=data,...)
@@ -67,8 +76,31 @@ ipw <- function(formula,data,cluster,
         Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
         pr <- Gcx
     }
+    if (trunc.prob & ncol(censtime)==3) { ## truncation
+        browser()
+        data$truncsurv <- Surv(ltimes,otimes,noncens)
+        trunc.formula <- update(formula,truncsurv~.)        
+        ud.trunc <- aalen(trunc.formula,data=data,robust=0,n.sim=0,residuals=0,silent=1,max.clust=NULL,
+                          clusters=data[,cluster], ...)
+        dependX0 <- model.matrix(theta.formula,data)        
+        twostage.fit <-two.stage(ud.trunc,
+                                 data=data,robust=0,detail=0,
+                                 theta.des=dependX0)#,Nit=20,step=1.0,notaylor=1)
+        X <- model.matrix(trunc.formula,data)
+        Xnam <- colnames(X)
+        ww <- fast.reshape(cbind(X,".num"=seq(nrow(X)),".lefttime"=ltimes),varying=c(".num",".lefttime"),id=data[,cluster])
+        dependX <- model.matrix(theta.formula,ww)                
+        Prob <- predict.two.stage(twostage.fit,X=ww[,Xnam],
+                                  times=ww[,".lefttime1"],times2=ww[,".lefttime2"],
+                                  theta.des=dependX)
+        P0 <- numeric(nrow(X))
+        P0[ww[,".num1"]] <- Prob$St1t2
+        P0[ww[,".num2"]] <- Prob$St1t2
+        data[,weight.name2] <- P0
+    }
     data[,weight.name] <- pr
-    
+        
+        
     if (same.cens & !missing(cluster)) {        
         message("Minimum weights...")
         myord <- order(data[,cluster])

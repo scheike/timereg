@@ -2,9 +2,10 @@
 biprobit.time <- function(formula,data,id,...,
                           breaks=NULL,n.times=20,pairs.only=TRUE,fix.cens.weights=FALSE,
                           cens.formula,cens.model="aalen",weights="w",messages=FALSE,
-                          return.data=FALSE,
+                          return.data=FALSE,theta.formula=~1,trunc.weights="w2",
                           estimator="biprobit", summary.function) {
 
+    
     m <- match.call(expand.dots = FALSE)
     m <- m[match(c("","data"),names(m),nomatch = 0)]
     Terms <- terms(cens.formula,data=data)
@@ -13,8 +14,43 @@ biprobit.time <- function(formula,data,id,...,
     M <- eval(m,envir=parent.frame())
 
     censtime <- model.extract(M, "response")
-    status <- censtime[,2]
-    time <- censtime[,1]
+    if (pairs.only) {
+        ii <- sort(as.matrix(na.omit(fast.reshape(seq(nrow(data)),id=data[,id]))))
+        data <- data[ii,,drop=FALSE]
+        censtime <- censtime[ii]
+    }
+
+    ltimes <- 0
+    if (ncol(censtime)==3) {  ## Calculate probability of not being truncated via Clayton-Oakes (ad hoc combining causes)
+        status <- censtime[,3]
+        noncens <- !status
+        time <- censtime[,2]
+        ltimes <- censtime[,1]        
+        data$truncsurv <- Surv(ltimes,time,noncens)
+        trunc.formula <- update(formula,truncsurv~.)       
+        ud.trunc <- aalen(trunc.formula,data=data,robust=0,n.sim=0,residuals=0,silent=1,max.clust=NULL,
+                          clusters=data[,id], ...)
+        X <- model.matrix(trunc.formula,data)
+        ##dependX0 <- model.matrix(theta.formula,data)
+        dependX0 <- X       
+        twostage.fit <- two.stage(ud.trunc,
+                                 data=data,robust=0,detail=0,
+                                 theta.des=dependX0)#,Nit=20,step=1.0,notaylor=1)        
+        Xnam <- colnames(X)
+        ww <- fast.reshape(cbind(X,".num"=seq(nrow(X)),".lefttime"=ltimes),varying=c(".num",".lefttime"),id=data[,id])
+        dependX <- as.matrix(ww[,Xnam,drop=FALSE])
+        nottruncpair.prob <- predict.two.stage(twostage.fit,X=ww[,Xnam],
+                                               times=ww[,".lefttime1"],times2=ww[,".lefttime2"],
+                                               theta.des=dependX)$St1t2
+        data[,trunc.weights] <- 0
+        data[ww[,".num1"],trunc.weights] <- nottruncpair.prob
+        data[ww[,".num2"],trunc.weights] <- nottruncpair.prob
+        
+    } else {
+        status <- censtime[,2]
+        time <- censtime[,1]
+    }
+
     outcome <- as.character(terms(formula)[[2]])
     jj <- jumptimes(time,data[,outcome],data[,id],sample=n.times)
     lastjump <- tail(jj,1)
@@ -46,12 +82,17 @@ biprobit.time <- function(formula,data,id,...,
         data0[cond0,outcome] <- FALSE ## Non-case if T>tau
         if (!fix.cens.weights) time0[cond0] <- tau
         if ((fix.cens.weights & k==0) | (!fix.cens.weights)) {
-            data0$S <- Surv(time0,status0==1)
+            
+            if (ncol(censtime)==3) { ## truncation...
+                suppressWarnings(data0$S <- Surv(ltimes,time0,status0==1))
+            } else {
+                data0$S <- Surv(time0,status0==1)
+            }
             ## data0$status0 <- status0
             ## data0$time0 <- time0
             ## data0$y0 <- data0[,outcome]
-            dataw <- ipw(update(cens.formula,S~.), data=data0, cens.model=cens.model,
-                         weight.name=weights,obs.only=TRUE)            
+            dataw <- ipw(update(cens.formula,S~.), data=subset(data0,ltimes<time0), cens.model=cens.model,
+                         weight.name=weights,obs.only=TRUE,cluster=id)            
         }
         if (fix.cens.weights) {
             timevar <- dataw$S[,1]
@@ -59,6 +100,9 @@ biprobit.time <- function(formula,data,id,...,
         }
         k <- k+1
         if (return.data) return(dataw)
+        if (ncol(censtime)==3) { ## truncation...
+            dataw[,weight.name] <- dataw[,weights]*dataw[,trunc.weights]
+        }
         args <- c(list(x=formula,data=dataw,id=id,weights=weights, pairs.only=pairs.only), list(...))
         suppressWarnings(b <- do.call(estimator, args))
         ## suppressWarnings(b <- biprobit(formula, data=dataw, id=id, weights=weights, pairs.only=pairs.only,...))
@@ -75,6 +119,8 @@ biprobit.time <- function(formula,data,id,...,
     class(res) <- "timemets"
     return(res)    
 }
+
+
 
 
 biprobit.time2 <- function(formula,data,id,...,
