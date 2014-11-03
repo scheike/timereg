@@ -13,6 +13,7 @@ export("aalen",
        "check.missing",
        "rm.missing",
        "coefBase",
+       "cox.ipw",
        "comp.risk",
        "const",       
        "cox",
@@ -69,6 +70,7 @@ export("aalen",
        "timecoxBase",
        "timetest",
        "two.stage",
+       "twin.clustertrunc",
        "wald.test"
        )
 

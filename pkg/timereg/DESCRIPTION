@@ -25,6 +25,7 @@ Collate:
     'clusterindex-reshape.r'
     'comprisk.r'
     'cox-aalen.r'
+    'cox.ipw.r'
     'Cpred.r'
     'Csmooth.r'
     'dynadd.r'
@@ -50,3 +51,4 @@ Collate:
     'restricted.residual.mean.r'
     'two-stage-reg.r'
     'timecox.r'
+    'twin.clustertrunc.r'

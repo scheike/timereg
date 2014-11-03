@@ -53,6 +53,7 @@
 \alias{plot.cox.aalen2}
 \alias{plot.predict}
 \alias{coef.aalen}
+\alias{cox.ipw}
 \alias{coef.cox.aalen}
 \alias{coef.comprisk}
 \alias{coef.two.stage}
@@ -73,6 +74,7 @@
 \alias{prop.odds.gam}
 \alias{semicox}
 \alias{timecoxBase}
+\alias{twin.clustertrunc}
 \alias{wald.test}
 \title{For internal use}
 \description{for internal use}

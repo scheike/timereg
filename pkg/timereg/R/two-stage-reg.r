@@ -384,7 +384,8 @@ plot.two.stage<-function(x,pointwise.ci=1,robust=0,specific.comps=FALSE,
   }
 }  ## }}}
 
-predict.two.stage <- function(object,X=NULL,Z=NULL,times=NULL,times2=NULL,theta.des=NULL,diag=TRUE,...)
+predict.two.stage <- function(object,X=NULL,Z=NULL,times=NULL,times2=NULL,
+			      theta=NULL,theta.des=NULL,diag=TRUE,...)
 { ## {{{
 time.coef <- data.frame(object$cum)
 if (!is.null(times)) {
@@ -418,8 +419,9 @@ if (!is.null(object$gamma)) {
 } 
 S1 <- exp(-cumhaz); S2 <- exp(-cumhaz2)
 
-if (attr(object,"var.link")==1) theta  <- exp(object$theta) else theta <- object$theta
-if (!is.null(theta.des)) theta <- c(theta.des %*% object$theta)
+if (is.null(theta))  theta <- object$theta
+if (!is.null(theta.des)) theta <- c(theta.des %*% theta)
+if (attr(object,"var.link")==1) theta  <- exp(theta) 
 
 if (diag==FALSE) St1t2<- (outer(c(S1)^{-(theta)},c(S2)^{-(theta)},FUN="+") - 1)^(-(1/theta)) else 
 St1t2<- ((S1^{-(theta)}+S2^{-(theta)})-1)^(-(1/theta))
