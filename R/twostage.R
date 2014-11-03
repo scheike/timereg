@@ -410,17 +410,20 @@ if (!is.null(margsurv))
   }  else stop("score.methods = optimize(dim=1) nlm nlminb fisher.scoring\n"); 
 
 ## {{{ handling output
+  loglikeiid <- NULL
   robvar.theta <- NULL
   var.theta <- -1*hessi
   if (iid==1) {
      theta.iid <- out$theta.iid %*% hessi
      if (is.null(call.secluster) & is.null(max.clust)) rownames(theta.iid) <- unique(cluster.call) else rownames(theta.iid) <- unique(se.clusters)
      robvar.theta  <- (t(theta.iid) %*% theta.iid) 
+     loglikeiid <- out$loglikeiid
   }
   if (!is.null(colnames(theta.des))) thetanames <- colnames(theta.des) else thetanames <- rep("intercept",ptheta)
 ###  if (length(thetanames)==nrow(theta)) rownames(theta) <- thetanames
   ud <- list(theta=theta,score=score,hess=hess,hessi=hessi,var.theta=var.theta,model=model,robvar.theta=robvar.theta,
-             theta.iid=theta.iid,thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,margsurv=psurvmarg); 
+             theta.iid=theta.iid,loglikeiid=loglikeiid,
+	     thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,margsurv=psurvmarg); 
   class(ud)<-"twostage" 
   attr(ud, "Formula") <- formula
   attr(ud, "clusters") <- clusters
@@ -665,13 +668,14 @@ datalr$tsstatus <- datalr[,status]
 datalr$tsid <- datalr[,id]
 ###
 
+if (is.null(covars)) 
 f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(",num,")")))
-###f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(num)")))
+else f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(",num,"):",covars)))
 marg1 <- aalen(f,data=datalr,n.sim=0,robust=0)
 
 fitlr<-  twostage(marg1,data=datalr,clusters=datalr$tsid,model=model,score.method=score.method,
-              Nit=Nit,detail=detail,silent=silent,weights=weights,
-              control=control,theta=theta,theta.des=theta.des,var.link=var.link,iid=iid,step=step)
+             Nit=Nit,detail=detail,silent=silent,weights=weights,
+             control=control,theta=theta,theta.des=theta.des,var.link=var.link,iid=iid,step=step)
 ####
 coef <- coef(fitlr)
 theta.mat[i1-1,i2-1] <- fitlr$theta

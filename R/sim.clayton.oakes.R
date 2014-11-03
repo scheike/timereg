@@ -11,7 +11,7 @@
 ##' @param pairleft pairwise (1) left truncation or individual (0)
 ##' @author Klaus K. Holst
 ##' @export
-simClaytonOakes <- function(K,n,eta,beta,stoptime,left=0,pairleft=0)  ## {{{ 
+simClaytonOakes <- function(K,n,eta,beta,stoptime,left=0,pairleft=0,trunc.prob=0.5)  ## {{{ 
 {
   ## K antal clustre, n=antal i clustre
   x<-array(c(runif(n*K),rep(0,n*K),rbinom(n*K,1,0.5)),dim=c(K,n,3))
@@ -26,14 +26,14 @@ simClaytonOakes <- function(K,n,eta,beta,stoptime,left=0,pairleft=0)  ## {{{
 if (left>0) {
      if (pairleft==1) {
      lefttime <- runif(K)*(stoptime-left)
-     left <- rbinom(K,1,0.5) ## not trunation times!
+     left <- rbinom(K,1,trunc.prob) ## not trunation times!
      lefttime <- apply(cbind(lefttime*left,3),1,min)
        trunk <- (lefttime > minstime)
        medleft <- rep(trunk,each=n)
      } else {
 ###       lefttime <- rexp(n*K)*left
        lefttime <- runif(K)*(stoptime-left)
-       left <- rbinom(n*K,1,0.5) ## not trunation times!
+       left <- rbinom(n*K,1,trunc.prob) ## not trunation times!
        lefttime <- apply(cbind(lefttime*left,3),1,min)
        trunk <- (lefttime > ud[,1])
        medleft <- trunk

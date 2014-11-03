@@ -7,6 +7,65 @@
 using namespace arma;
 using namespace Rcpp;
 
+//extern "C" double 
+RcppExport SEXP claytonoakesR(SEXP itheta,SEXP  iistatus1,SEXP  iistatus2,SEXP  icif1,SEXP  icif2) 
+{ // {{{
+ colvec theta = Rcpp::as<colvec>(itheta);
+ colvec cif1 = Rcpp::as<colvec>(icif1);
+ colvec cif2 = Rcpp::as<colvec>(icif2);
+ colvec istatus1 = Rcpp::as<colvec>(iistatus1);
+ colvec istatus2 = Rcpp::as<colvec>(iistatus2);
+
+ colvec L=theta; 
+ colvec dL=theta; 
+ int n=cif1.size(); 
+ double valr=1,dp=0;
+ double x,y,z;
+ int status1,status2; 
+
+//  theta.print("theta"); 
+//  istatus1.print("theta"); istatus2.print("theta"); cif1.print("cif1 "); cif2.print("cif2 "); 
+
+  for (int i=0;i<n;i++)
+  { // {{{
+  x=theta(i); y=cif1(i); z=cif2(i); 
+  status1=istatus1(i); status2=istatus2(i); 
+
+// {{{ 
+
+if (status1==0 && status2==0) { // {{{
+valr=  pow((1/pow(y,1/x) + 1/pow(z,1/x)) - 1,-x);
+dp= (-((x*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x))) - log(-1 + pow(y,-1/x) + pow(z,-1/x)))/pow(-1 + pow(y,-1/x) + pow(z,-1/x),x);
+} // }}}
+
+if (status1==1 && status2==0) { // {{{
+valr=pow(y,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x);
+dp=(pow(y,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*log(y))/pow(x,2) + pow(y,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*(((-1 - x)*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x)) - log(-1 + pow(y,-1/x) + pow(z,-1/x)));
+} // }}}
+
+if (status1==0 && status2==1) { // {{{
+valr=pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x);
+dp=(pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*log(z))/pow(x,2) + pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*(((-1 - x)*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x)) - log(-1 + pow(y,-1/x) + pow(z,-1/x)));
+} // }}}
+
+if (status1==1 && status2==1) { // {{{
+valr= -(((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x))/x);
+dp=((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x))/pow(x,2) + (pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x))/x - ((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x)*log(y))/pow(x,3) - ((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x)*log(z))/pow(x,3) - ((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x)*(((-2 - x)*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x)) - log(-1 + pow(y,-1/x) + pow(z,-1/x))))/x;
+} // }}}
+
+// }}} 
+
+  L(i)=valr;
+  dL(i)=dp; 
+  } // }}} 
+
+List res; 
+res["like"]=L; 
+res["dlike"]=dL; 
+
+return(res);  
+} // }}}
+ 
 double claytonoakes(double theta,int status1,int status2,double cif1,double cif2,vec &dp) 
 { // {{{
   double valr=1,x,y,z;
@@ -180,7 +239,7 @@ RcppExport SEXP twostageloglike(
   } // }}}
 
   int ci,ck,i,j,c,s=0,k,v,c1,v1; 
-  double ll=1,Li,Lk,sdj=0,diff=0;
+  double ll=1,Li,Lk,sdj=0,diff=0,loglikecont;
   double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0; 
 //  double plack(); 
   vec dplack(4); dplack.fill(0);
@@ -190,7 +249,10 @@ RcppExport SEXP twostageloglike(
   i=silent+1; 
 
   mat thetiid(antiid,pt); 
-  if (iid==1) thetiid.fill(0); 
+  colvec loglikeiid(antiid); 
+  if (iid==1) { thetiid.fill(0); 
+	        loglikeiid.fill(0); 
+  }
 
   colvec p11tvec(antclust); 
 //  p11tvec=0; 
@@ -248,10 +310,12 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 		   llt=claytonoakes(deppar,0,0,Lit,Lkt,dplackt);
 		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
 		   ssf+=weights(i)*(log(ll)-log(llt));
+		   loglikecont=(log(ll)-log(llt));
 	           diff=dplack(0)/ll-dplackt(0)/llt; 
 	   } else {
 		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
 		   ssf+=weights(i)*log(ll); 
+		   loglikecont=log(ll);
 	           diff=dplack(0)/ll; 
 //	printf(" %d %d %d %d %d  \n",j,c,v,i,k); 
 //	printf(" %d %d %d %d %d %d %d %lf %lf %lf %lf %lf %lf \n",j,c,v,i,k,ci,ck,thetak,Li,Lk,weights(i),ll,log(ll)); 
@@ -266,11 +330,13 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
            llt=placklike(deppar,0,0,Lit,Lkt,dplackt);
            ll=placklike(deppar,ci,ck,Li,Lk,dplack);
 	   ssf+=weights(i)*(log(ll)-log(llt));
+	   loglikecont=(log(ll)-log(llt));
 	   diff=dplack(0)/ll-dplackt(0)/llt; 
 	   sdj=pow(diff,2); 
 	} else {
            ll=placklike(deppar,ci,ck,Li,Lk,dplack);
 	   ssf+=weights(i)*log(ll); 
+	   loglikecont=log(ll);
 //	printf(" %d %d %d %lf %lf %lf %lf %lf %lf %lf %lf \n",j,ci,ck,thetak,deppar,Li,Lk,weights(i),ll,log(ll),diff); 
 //	printf(" %d %lf \n",j,ll); 
 	}
@@ -284,7 +350,9 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
      vthetascore=weights(i)*diff*vthetascore; 
      Utheta=Utheta+vthetascore; 
 
-     if (iid==1) for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)+=vthetascore(c1); 
+     if (iid==1) { for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)+=vthetascore(c1); 
+	           loglikeiid(secluster(i))+=loglikecont; 
+     }
      } // }}} strata(i)==strata(k) indenfor strata
 
   } /* for (c=0....... */   // }}}
@@ -296,7 +364,9 @@ List res;
 res["loglike"]=ssf; 
 res["score"]=Utheta; 
 res["Dscore"]=DUtheta; 
-if (iid==1) res["theta.iid"]=thetiid; 
+if (iid==1) { res["theta.iid"]=thetiid; 
+	       res["loglikeiid"]=loglikeiid; 
+            }
 
 return(res); 
 } // }}}
