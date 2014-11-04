@@ -282,14 +282,15 @@ if (class(margsurv)!="coxph") {
   if (sum(abs(object$score)>0.000001) && sum(object$gamma)!=0) 
     cat("Marginal model did not converge, allow more iterations\n\n"); 
 
-  if (prop) {
-    if (p.o==FALSE) cat("Proportional Cox terms :  \n") else  cat("Covariate effects \n")
+###  if (prop) {
+###    if (p.o==FALSE) cat("Proportional Cox terms :  \n") else  cat("Covariate effects \n")
+###
+###    out=coef.two.stage(object,digits=digits);
+###    out=signif(out,digits=digits)
+###    print(out)
+###
+###  }
 
-    out=coef.two.stage(object,digits=digits);
-    out=signif(out,digits=digits)
-    print(out)
-
-  }
   }
 ###   cat("   \n");  cat("  Call: \n"); dput(attr(object, "Call")); 
   cat("\n");
