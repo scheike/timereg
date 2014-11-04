@@ -277,11 +277,10 @@ if (class(margsurv)!="coxph") {
   prmatrix(resdep); cat("   \n");  
 
   if (attr(object,"marg.model")!="coxph")
-  if (attr(object,"beta.fixed")==0) {
-  cat("Marginal Cox-Aalen model fit\n\n"); 
+  if (attr(object,"beta.fixed")==0) { ## {{{ 
+###  cat("Marginal Cox-Aalen model fit\n\n"); 
   if (sum(abs(object$score)>0.000001) && sum(object$gamma)!=0) 
     cat("Marginal model did not converge, allow more iterations\n\n"); 
-
 ###  if (prop) {
 ###    if (p.o==FALSE) cat("Proportional Cox terms :  \n") else  cat("Covariate effects \n")
 ###
@@ -291,7 +290,7 @@ if (class(margsurv)!="coxph") {
 ###
 ###  }
 
-  }
+  } ## }}} 
 ###   cat("   \n");  cat("  Call: \n"); dput(attr(object, "Call")); 
   cat("\n");
 } ## }}}
