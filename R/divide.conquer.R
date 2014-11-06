@@ -30,9 +30,9 @@ res <- lapply(all.folds, function(i)
 res
 } ## }}} 
 
-##' Split a data set and run function of cox-aalen type from timereg to aggregate results 
+##' Split a data set and run function of cox-aalen type and aggregate results 
 ##'
-##' @title Split a data set and run function from timereg 
+##' @title Split a data set and run function from timereg and aggregate
 ##' @param func called function
 ##' @param data data-frame
 ##' @param size size of splits

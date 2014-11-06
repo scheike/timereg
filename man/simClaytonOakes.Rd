@@ -3,7 +3,8 @@
 \alias{simClaytonOakes}
 \title{Simulate from the Clayton-Oakes frailty model}
 \usage{
-simClaytonOakes(K, n, eta, beta, stoptime, left = 0, pairleft = 0)
+simClaytonOakes(K, n, eta, beta, stoptime, left = 0, pairleft = 0,
+  trunc.prob = 0.5)
 }
 \arguments{
 \item{K}{Number of clusters}

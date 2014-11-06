@@ -27,8 +27,9 @@ ipw(formula, data, cluster, same.cens = FALSE, obs.only = TRUE,
 \item{...}{Additional arguments to censoring model}
 }
 \description{
-Calculates Inverse Probability of Censoring Weights (IPCW) and
-adds them to a data.frame
+Internal function.
+Calculates Inverse Probability of Censoring
+Weights (IPCW) and adds them to a data.frame
 }
 \examples{
 data(prt)
