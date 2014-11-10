@@ -146,7 +146,7 @@ ClaytonOakes <- function(formula,data=parent.frame(),cluster,var.formula=~1,cuts
            ds=mydata$status,ts=mydata$T,es=mydata$entry,
            allcs=mydata$cluster,cs=ucluster, cuts=cuts,
                  hs=exp(p),mulths=multhaz,
-                 var=theta0)$logLik
+                 var=theta0)$logLik    
     return(-res)
   }
   opt <- tryCatch(nlminb(p0,obj,control=control),error=function(x) NULL)
@@ -218,4 +218,8 @@ plot.claytonoakes <- function(x,chaz=TRUE,add=!is.null(dev.list()),col="darkblue
     plot(t,L(t),type="l",col=col,...)
   }
   invisible(x)  
+}
+
+predict.claytonoakes <- function(x,...) {
+
 }
