@@ -1,4 +1,4 @@
-read.design<-function(m,Terms,model="aalen"){
+read.design<-function(m,Terms,model="aalen"){ ## {{{ 
   mt <- attr(m, "terms")
   intercept <- attr(mt, "intercept")
 
@@ -72,7 +72,7 @@ read.design<-function(m,Terms,model="aalen"){
            covnamesX=covnamesX,covnamesZ=covnamesZ,
            clusters=clusters)
    return(ud)
-}
+} ## }}} 
 
 read.surv<-function(m,id,npar,clusters,start.time,max.time,model="aalen",silent=0){
 
@@ -117,7 +117,7 @@ read.surv<-function(m,id,npar,clusters,start.time,max.time,model="aalen",silent=
   }
 
   ud2<-list(status=status,start=time,stop=time2,antpers=antpers,antclust=antclust,
-            times=times,id.call=id,clusters=clusters)
+            times=times,id.call=id,clusters=clusters,cluster)
   return(ud2)
 }
 

@@ -70,7 +70,6 @@ export("aalen",
        "timecoxBase",
        "timetest",
        "two.stage",
-       "twin.clustertrunc",
        "wald.test"
        )
 

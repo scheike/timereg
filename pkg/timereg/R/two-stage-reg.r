@@ -33,11 +33,9 @@ if (class(margsurv)!="coxph") {
       seclusters <- as.integer(factor(clusters, labels = 1:antsecluster))-1
  }
 
- if ( (sum(abs(clusters-mclusters))>0)  || (is.null(mclusters)))
- {
-    notaylor <- 1
- }
-
+### print("two-stage"); print(head(cluster.call))
+ if (is.null(cluster.call)) notaylor <- 1
+ if (is.null(margsurv$gamma.iid)) notaylor <- 1
 
 } else { ## coxph ## {{{ 
   notaylor <- 1
