@@ -400,7 +400,6 @@ if (is.null(Z2) & (!is.null(object$gamma))) Z2 <- Z
 if (is.null(X2) & (!is.null(Z2)))  {Z2 <- as.matrix(Z2);  X2 <- matrix(1,nrow(Z2),1)}
 if (is.null(Z2) & (!is.null(X2)))  {X2 <- as.matrix(X2);  Z2 <- matrix(0,nrow(X2),1); gamma <- 0}
 
-
 if (diag==FALSE) {
    time.part <-  X %*% t(cum[,-1]) 
    time.part2 <-  X2 %*% t(cum2[,-1]) 
