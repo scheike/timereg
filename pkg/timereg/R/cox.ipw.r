@@ -1,6 +1,7 @@
 cox.ipw <- function(survformula,glmformula,d=sys.parent(),max.clust=NULL,ipw.se=FALSE)
 { ## {{{ 
   ggl <- glm(glmformula,family='binomial',data=d)
+  mat <-  model.matrix(glmformula,data=d);
   glmcovs <- attr(ggl$terms,"term.labels")
   d$ppp <- predict(ggl,type='response')
 
@@ -17,7 +18,7 @@ cox.ipw <- function(survformula,glmformula,d=sys.parent(),max.clust=NULL,ipw.se=
 if (ipw.se==TRUE)  { ## {{{ 
 if (!require(numDeriv)) stop("numDeriv needed")
 glmiid <-   lava::iid(ggl)
-mat <-  model.matrix(glmformula,data=dcc);
+mat <- mat[ggl$y==1,]
 par <- coef(ggl)
 
 coxalpha <- function(par)
