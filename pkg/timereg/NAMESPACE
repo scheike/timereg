@@ -120,6 +120,8 @@ S3method(coef,dynreg)
 S3method(coef,timecox)
 S3method(coef,two.stage)
 
+importFrom(lava,iid)
+
 export("plot.aalen",
        "plot.comprisk",
        "plot.cum.residuals",

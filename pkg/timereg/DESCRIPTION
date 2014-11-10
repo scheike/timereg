@@ -16,7 +16,8 @@ Depends:
     R (>= 2.15),
     survival,
 Suggests:
-    numDeriv,
+    numDeriv
+Imports:
     lava
 License: GPL (>= 2)
 Collate:
