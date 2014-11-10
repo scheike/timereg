@@ -178,12 +178,12 @@ phreg <- function(formula,data,...) {
   }
   id <- strata <- NULL
   if (!is.null(attributes(Terms)$specials$cluster)) {
-    ts <- untangle.specials(Terms, "cluster")
+    ts <- survival::untangle.specials(Terms, "cluster")
     Terms  <- Terms[-ts$terms]
     id <- m[[ts$vars]]
   }
   if (!is.null(stratapos <- attributes(Terms)$specials$strata)) {
-    ts <- untangle.specials(Terms, "strata")
+    ts <- survival::untangle.specials(Terms, "strata")
     Terms  <- Terms[-ts$terms]
     strata <- m[[ts$vars]]
   }  

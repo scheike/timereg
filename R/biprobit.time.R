@@ -26,7 +26,7 @@ biprobit.time <- function(formula,data,id,...,
         noncens <- !status
         time <- censtime[,2]
         ltimes <- censtime[,1]        
-        data$truncsurv <- Surv(ltimes,time,noncens)
+        data$truncsurv <- survival::Surv(ltimes,time,noncens)
         trunc.formula <- update(formula,truncsurv~.)       
         ud.trunc <- aalen(trunc.formula,data=data,robust=0,n.sim=0,residuals=0,silent=1,max.clust=NULL,
                           clusters=data[,id], ...)
@@ -84,9 +84,9 @@ biprobit.time <- function(formula,data,id,...,
         if ((fix.cens.weights & k==0) | (!fix.cens.weights)) {
             
             if (ncol(censtime)==3) { ## truncation...
-                suppressWarnings(data0$S <- Surv(ltimes,time0,status0==1))
+                suppressWarnings(data0$S <- survival::Surv(ltimes,time0,status0==1))
             } else {
-                data0$S <- Surv(time0,status0==1)
+                data0$S <- survival::Surv(time0,status0==1)
             }
             ## data0$status0 <- status0
             ## data0$time0 <- time0
@@ -151,7 +151,7 @@ biprobit.time2 <- function(formula,data,id,...,
         status0[cond0 & status==1] <- 3 ## Censored
         data0[cond0,outcome] <- FALSE
         time0[cond0] <- tau
-        data0$S <- Surv(time0,status0==1)        
+        data0$S <- survival::Surv(time0,status0==1)        
         dataw <- ipw(update(cens.formula,S~.), data=data0, cens.model=cens.model,
                      cluster=id,weight.name=weights,obs.only=TRUE)
         message("control")

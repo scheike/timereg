@@ -68,7 +68,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   if (cens.model!="user.weights") {
     if (is.null(cens.weight) ) {
       if (cens.model=="KM") { ## {{{
-        ud.cens<-survfit(Surv(time,cause==cens.code)~+1); 
+        ud.cens<-survival::survfit(Surv(time,cause==cens.code)~+1); 
         Gfit<-cbind(ud.cens$time,ud.cens$surv)
         Gfit<-rbind(c(0,1),Gfit); 
         Gcx<-Cpred(Gfit,time)[,2];
@@ -903,7 +903,7 @@ print.summary.cor <- function(x,digits=3,...)
 ##' 
 ##' times=seq(0.05,3,by=0.1) # to speed up computations use only these time-points
 ##' add<-comp.risk(Event(time,cause)~const(X)+cluster(id),data=multcif,
-##'                n.sim=0,times=times)
+##'                n.sim=0,times=times,cause=1)
 ##' ###
 ##' out1<-cor.cif(add,data=multcif,cause1=1,cause2=1,theta=log(2+1))
 ##' summary(out1)

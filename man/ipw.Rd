@@ -20,9 +20,15 @@ ipw(formula, data, cluster, same.cens = FALSE, obs.only = TRUE,
 
 \item{weight.name}{Name of weight variable in the new data.frame}
 
+\item{trunc.prob}{If TRUE truncation probabilities are also calculated and stored in 'weight.name2' (based on Clayton-Oakes gamma frailty model)}
+
+\item{weight.name2}{Name of truncation probabilities}
+
 \item{cens.model}{Censoring model (default Aalens additive model)}
 
 \item{pairs}{For paired data (e.g. twins) only the complete pairs are returned (With pairs=TRUE)}
+
+\item{theta.formula}{Model for the dependence parameter in the Clayton-Oakes model (truncation only)}
 
 \item{...}{Additional arguments to censoring model}
 }
@@ -32,6 +38,7 @@ Calculates Inverse Probability of Censoring
 Weights (IPCW) and adds them to a data.frame
 }
 \examples{
+\dontrun{
 data(prt)
 prtw <- ipw(Surv(time,status==0)~country, data=prt[sample(nrow(prt),5000),],
             cluster="id",weight.name="w")
@@ -44,6 +51,7 @@ for (l in unique(prtw$country)) {
          lines(time,w,col=count,lwd=2))
 }
 legend("topright",legend=unique(prtw$country),col=1:4,pch=-1,lty=1)
+}
 }
 \author{
 Klaus K. Holst

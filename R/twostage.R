@@ -205,7 +205,7 @@ if (!is.null(margsurv))
        ptrunc <- rep(1,length(psurvmarg)); 
        RR<- exp(margsurv$linear.predictors-sum(margsurv$means*coef(margsurv)))
         if ((lefttrunk==1)) { 
-         baseout <- basehaz(margsurv,centered=FALSE); 
+         baseout <- survival::basehaz(margsurv,centered=FALSE); 
          cum <- cbind(baseout$time,baseout$hazard)
 	 cum <- Cpred(cum,start.time)[,2]
 	 ptrunc <- exp(-cum * RR)
@@ -882,7 +882,7 @@ if (class(margsurv)[1]=="coxph")
 ###    ps <- survfit(margsurv)$surv
     coxformula <- margsurv$formula
     X <- model.matrix(coxformula,data=data)[,-1]; 
-    baseout <- basehaz(margsurv,centered=FALSE); 
+    baseout <- survival::basehaz(margsurv,centered=FALSE); 
     baseout <- cbind(baseout$time,baseout$hazard)
     cumh <-  Cpred(baseout,data[,time])[,2]
     RR<-exp(X %*% coef(margsurv))
@@ -906,7 +906,6 @@ if (class(margsurv)[1]=="coxph")
   ### make dependency design using wide format for all pairs 
   data.fam.clust <- fast.reshape(data.fam,id="subfam")
   if (is.function(theta.formula)) {
-     library(compiler) 
      desfunction <- compiler::cmpfun(theta.formula)
     if (deshelp==1){
  	  cat("These names appear in wide version of pairs for dependence \n")

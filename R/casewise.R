@@ -201,7 +201,7 @@ casewise <- function(conc,marg,cause.marg)
   time1 <- conc$time
   time2 <- marg$time
 
-  cause.prodlim <- match(as.character(cause.marg),levels(getEvent(marg$model.response)))
+  cause.prodlim <- match(as.character(cause.marg),levels(prodlim::getEvent(marg$model.response)))
   if (is.na(cause.prodlim)) stop("Cause did not match marginal model")
   
   mintime <- max(time1[1],time2[1])

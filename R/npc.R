@@ -6,14 +6,14 @@ npc <- function(T,cause,same.cens=TRUE,sep=FALSE) {
   T <- T[ot,]
   if (!sep) {
     time1 <- as.vector(T[,1:2]); status1 <- as.vector(T[,3:4])
-    ud.cens1<-survfit(Surv(time1,status1==0)~+1);
+    ud.cens1<-survival::survfit(Surv(time1,status1==0)~+1);
     Gfit1<-cbind(ud.cens1$time,ud.cens1$surv)
     Gfit2 <- Gfit1<-rbind(c(0,1),Gfit1);
   } else {
     time1 <- as.vector(T[,1]); status1 <- as.vector(T[,3])
-    ud.cens1<-survfit(Surv(time1,status1==0)~+1);
+    ud.cens1<-survival::survfit(Surv(time1,status1==0)~+1);
     time2 <- as.vector(T[,2]); status2 <- as.vector(T[,4])
-    ud.cens2<-survfit(Surv(time2,status2==0)~+1);
+    ud.cens2<-survival::survfit(Surv(time2,status2==0)~+1);
     Gfit1<-cbind(ud.cens1$time,ud.cens1$surv)
     Gfit1<-rbind(c(0,1),Gfit1);
     Gfit2<-cbind(ud.cens2$time,ud.cens2$surv)
@@ -37,7 +37,7 @@ npc <- function(T,cause,same.cens=TRUE,sep=FALSE) {
 ##' @export
 nonparcuminc <- function(t,status,cens=0) {
   ord <- order(t); t <- t[ord]; status <- status[ord]
-  ud.cens<-survfit(Surv(t,status==cens)~1)
+  ud.cens<-survival::survfit(Surv(t,status==cens)~1)
   Gfit<-cbind(ud.cens$time,ud.cens$surv)
   Gfit<-rbind(c(0,1),Gfit);
   causes <- setdiff(unique(status),cens)

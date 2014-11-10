@@ -364,7 +364,7 @@ breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weights=
         if ((fix.censweights==1 & k==0) | (fix.censweights==0)) time0[cond0] <- tau
 ###        if (fix.censweights==0 ) time0[cond0] <- tau
         if ((fix.censweights==1 & k==0) | (fix.censweights==0)) {
-		data0$S <- Surv(time0,status0==1)        
+		data0$S <- survival::Surv(time0,status0==1)        
 	}
 	if ((fix.censweights==1 & k==0) | (fix.censweights==0))
         dataw <- ipw(update(cens.formula,S~.),data=data0,cens.model=cens.model,
@@ -592,7 +592,6 @@ easy.binomial.twostage <- function(margbin=NULL,data=sys.parent(),score.method="
 ### make dependency design using wide format for all pairs 
     data.fam.clust <- fast.reshape(data.fam,id="subfam")
     if (is.function(theta.formula)) {
-	library(compiler) 
         desfunction <- compiler::cmpfun(theta.formula)
 	if (deshelp==1){
             cat("These names appear in wide version of pairs for dependence \n")

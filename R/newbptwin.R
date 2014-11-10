@@ -493,7 +493,7 @@ twin <- function(formula, data, id, zyg, DZ, group=NULL,
                optim=optim(p0,fn=f0,gr=g0,control=control[ucminfopt]),
                ucminf=,
                quasi=,
-               gradient=ucminf(p0,fn=f0,gr=g0,control=control[ucminfopt],hessian=0),
+               gradient=ucminf::ucminf(p0,fn=f0,gr=g0,control=control[ucminfopt],hessian=0),
                ## ,
                ## bhhh={
                ##   controlnr <- list(stabil=FALSE,

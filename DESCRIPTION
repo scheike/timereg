@@ -22,7 +22,8 @@ Imports:
     numDeriv,
     compiler,
     Rcpp,
-    splines
+    splines,
+    survival
 Suggests:
     lava.tobit (>= 0.4-7),
     prodlim,

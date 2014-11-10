@@ -9,6 +9,7 @@
 ##' @param stoptime Stopping time
 ##' @param left Left truncation
 ##' @param pairleft pairwise (1) left truncation or individual (0)
+##' @param trunc.prob Truncation probability 
 ##' @author Klaus K. Holst
 ##' @export
 simClaytonOakes <- function(K,n,eta,beta,stoptime,left=0,pairleft=0,trunc.prob=0.5)  ## {{{ 

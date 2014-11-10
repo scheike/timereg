@@ -239,7 +239,7 @@ RcppExport SEXP twostageloglike(
   } // }}}
 
   int ci,ck,i,j,c,s=0,k,v,c1,v1; 
-  double ll=1,Li,Lk,sdj=0,diff=0,loglikecont;
+  double ll=1,Li,Lk,sdj=0,diff=0,loglikecont=0;
   double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0; 
 //  double plack(); 
   vec dplack(4); dplack.fill(0);

@@ -214,12 +214,12 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
   if (is.null(estimator)) return(multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep,type=2))
   optim <- list(method="nlminb2",refit=FALSE,gamma=1,start=rep(0.1,length(coef(mm[[1]]))*length(mm)))
 
-    optim$start <- twinlmStart(formula,na.omit(mf),type,hasIntercept,surv=is.Surv(data[,yvar]),model=mm, group=levgrp, group.equal=group.equal)
+    optim$start <- twinlmStart(formula,na.omit(mf),type,hasIntercept,surv=inherits(data[,yvar],"Surv"),model=mm, group=levgrp, group.equal=group.equal)
   if (length(control)>0) {
     optim[names(control)] <- control
   }
 
-  if (is.Surv(data[,yvar])) {
+  if (inherits(data[,yvar],"Surv")) {
     require("lava.tobit")
     if (is.null(optim$method))
        optim$method <- "nlminb1"
@@ -231,7 +231,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
   if (!is.null(optim$refit) && optim$refit) {
     optim$method <- "NR"
     optim$start <- pars(e)
-    if (is.Surv(data[,yvar])) {
+    if (inherits(data[,yvar],"Surv")) {
         suppressWarnings(e <- estimate(mm,dd,estimator=estimator,fix=FALSE,control=optim,...))
     } else {
         suppressWarnings(e <- estimate(mm,dd,weight=weight,estimator=estimator,fix=FALSE,control=optim,...))
@@ -467,7 +467,7 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
 
 twinlmStart <- function(formula,mf,type,hasIntercept,surv=FALSE,model,group=NULL,group.equal,...)  {
     if (surv) {
-        l <- survreg(formula,mf,dist="gaussian")
+        l <- survival::survreg(formula,mf,dist="gaussian")
         beta <- coef(l)
         sigma <- l$scale
     } else {

@@ -9,11 +9,15 @@
 ##' @param same.cens For clustered data, should same censoring be assumed (bivariate probability calculated as mininum of the marginal probabilities)
 ##' @param obs.only Return data with uncensored observations only
 ##' @param weight.name Name of weight variable in the new data.frame
+##' @param trunc.prob If TRUE truncation probabilities are also calculated and stored in 'weight.name2' (based on Clayton-Oakes gamma frailty model)
+##' @param weight.name2 Name of truncation probabilities
 ##' @param cens.model Censoring model (default Aalens additive model)
 ##' @param pairs For paired data (e.g. twins) only the complete pairs are returned (With pairs=TRUE)
+##' @param theta.formula Model for the dependence parameter in the Clayton-Oakes model (truncation only)
 ##' @param ... Additional arguments to censoring model 
 ##' @author Klaus K. Holst
 ##' @examples
+##' \dontrun{
 ##' data(prt)
 ##' prtw <- ipw(Surv(time,status==0)~country, data=prt[sample(nrow(prt),5000),],
 ##'             cluster="id",weight.name="w")
@@ -26,6 +30,7 @@
 ##'          lines(time,w,col=count,lwd=2))
 ##' }
 ##' legend("topright",legend=unique(prtw$country),col=1:4,pch=-1,lty=1)
+##' }
 ipw <- function(formula,data,cluster,
                 same.cens=FALSE,obs.only=TRUE,
                 weight.name="w",

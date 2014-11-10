@@ -190,3 +190,9 @@ plot.timemets <- function(x,...,which=1,
     }
     invisible(x)    
 }
+
+
+##' @export
+bootstrap.timemets <- function(x,R=1000,...) {
+    
+}

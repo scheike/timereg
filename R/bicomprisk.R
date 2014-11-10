@@ -28,11 +28,11 @@
 ##' data(prt) ## Prostate data example (sim)
 ##' ## Bivariate competing risk, concordance estimates
 ##' p33 <- bicomprisk(Event(time,status)~strata(zyg)+id(id),
-##'                   data=prt,cause=c(2,2),return.data=1,prodlim=TRUE)
+##'                   data=prt,cause=c(2,2),return.data=1)
 ##'  
 ##' p33mz <- p33$model$"MZ"$comp.risk
 ##' ## Concordance
-##' plot(p33mz,ylim=c(0,0.1),axes=FALSE,automar=FALSE,atrisk=FALSE); axis(2); axis(1)
+##' plot(p33mz,ylim=c(0,0.1),axes=FALSE); axis(2); axis(1)
 bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv, 
  strata=NULL, id,num, max.clust=1000, marg=NULL,se.clusters=NULL,
  prodlim=FALSE,messages=TRUE,model,return.data=0,uniform=0,conservative=1,resample.iid=1,...) {
@@ -47,11 +47,10 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
   formula <- update(formula,formulaSt)
 
   ### ts  11/10 
-  if (substr(as.character(formula)[2],1,4)=="Hist") {
-      stop("Since version : The left hand side of the formula must be specified as 
-      Event(time, event) or with non default censoring codes Event(time, event, cens.code=0).")
-  }
-
+  ## if (substr(as.character(formula)[2],1,4)=="Hist") {
+  ##     stop("Since version : The left hand side of the formula must be specified as 
+  ##     Event(time, event) or with non default censoring codes Event(time, event, cens.code=0).")
+  ## }
 
   if (!is.null(formulaId)) {
     id <- formulaId
@@ -219,6 +218,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
     padd <- predict(add,X=1,se=1,uniform=uniform,resample.iid=resample.iid)
     padd$cluster.names <- lse.clusters
   } else {
+      if (!require(prodlim)) stop("prodlim requested but not installed")
     ff <- as.formula(paste("Hist(",timevar,",",causes,")~",paste(c("1",covars,indiv2),collapse="+")))
     padd <- prodlim::prodlim(ff,data=mydata)
   }

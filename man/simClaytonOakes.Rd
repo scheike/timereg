@@ -20,6 +20,8 @@ simClaytonOakes(K, n, eta, beta, stoptime, left = 0, pairleft = 0,
 \item{left}{Left truncation}
 
 \item{pairleft}{pairwise (1) left truncation or individual (0)}
+
+\item{trunc.prob}{Truncation probability}
 }
 \description{
 Simulate observations from the Clayton-Oakes copula model with

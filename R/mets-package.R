@@ -9,6 +9,7 @@
 ##' @author Klaus K. Holst and Thomas Scheike
 ##' @useDynLib mets
 ##' @import stats lava splines timereg Rcpp
+##' @importFrom survival Surv is.Surv
 ##' @keywords package
 ##' @examples
 ##' 
