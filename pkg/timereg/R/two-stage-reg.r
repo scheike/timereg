@@ -384,39 +384,51 @@ plot.two.stage<-function(x,pointwise.ci=1,robust=0,specific.comps=FALSE,
   }
 }  ## }}}
 
-predict.two.stage <- function(object,X=NULL,Z=NULL,times=NULL,times2=NULL,
+predict.two.stage <- function(object,X=NULL,Z=NULL,times=NULL,times2=NULL,X2=NULL,Z2=NULL,
 			      theta=NULL,theta.des=NULL,diag=TRUE,...)
 { ## {{{
 time.coef <- data.frame(object$cum)
-if (!is.null(times)) {
-cum <- Cpred(object$cum,times);
-cum2 <- Cpred(object$cum,times);
-} else { cum <- object$cum; cum2 <- object$cum }
-if (!is.null(times2)) cum2 <- Cpred(object$cum,times2);
+if (!is.null(times))   cum <- Cpred(object$cum,times)  else cum <- object$cum; 
+if (!is.null(times2)) cum2 <- Cpred(object$cum,times2) else cum2 <- object$cum;
 
-if (is.null(X)) X <- 1;
-if (is.null(Z) && (!is.null(object$gamma))) Z <- matrix(0,1,nrow(object$gamma));
+if (is.null(Z) & (!is.null(object$gamma))) Z <- matrix(0,1,nrow(object$gamma));
 if (is.null(X) & (!is.null(Z))) { Z <- as.matrix(Z);  X <- matrix(1,nrow(Z),1)}
 if (is.null(Z) & (!is.null(X)))  {X <- as.matrix(X);  Z <- matrix(0,nrow(X),1); gamma <- 0}
+if (is.null(X)) X <- 1;
+
+if (is.null(X2)) X2 <- X;
+if (is.null(Z2)) Z2 <- Z2;
+if (is.null(Z2) & (!is.null(object$gamma))) Z2 <- Z
+if (is.null(X2) & (!is.null(Z2)))  {Z2 <- as.matrix(Z2);  X2 <- matrix(1,nrow(Z2),1)}
+if (is.null(Z2) & (!is.null(X2)))  {X2 <- as.matrix(X2);  Z2 <- matrix(0,nrow(X2),1); gamma <- 0}
+
 
 if (diag==FALSE) {
    time.part <-  X %*% t(cum[,-1]) 
-   time.part2 <-  X %*% t(cum2[,-1]) 
-   if (!is.null(object$gamma)) { RR <- exp( Z %*% gamma ); 
-       cumhaz <- t( t(time.part) * RR ); cumhaz2 <- t( t(time.part2) * RR )}
+   time.part2 <-  X2 %*% t(cum2[,-1]) 
+   if (!is.null(object$gamma)) { 
+	   gamma <- object$gamma
+	   RR <- exp( Z %*% gamma ); 
+	   RR2 <- exp( Z2 %*% gamma ); 
+       cumhaz <- t( t(time.part) * RR ); cumhaz2 <- t( t(time.part2) * RR2 )}
 	    else { cumhaz <- time.part;  cumhaz2 <- time.part2;   }
 } else { 
 	time.part <-  apply(as.matrix(X*cum[,-1]),1,sum) 
-	time.part2 <-  apply(as.matrix(X*cum2[,-1]),1,sum) 
+	time.part2 <-  apply(as.matrix(X2*cum2[,-1]),1,sum) 
 }
 
 if (!is.null(object$gamma)) {
 	RR<- exp(Z%*%object$gamma); 
-	cumhaz <- (time.part) * RR ;  
-	cumhaz2 <- (time.part2) * RR; 
+	RR2 <- exp(Z2 %*%object$gamma); 
+	cumhaz <- c((time.part) * RR) ;  
+	cumhaz2 <- c((time.part2) * RR2); 
 } else {
-	cumhaz <- time.part;  cumhaz2 <- time.part2; 
+	cumhaz <- c(time.part);  cumhaz2 <- c(time.part2); 
 } 
+###print(time.part)
+###print(time.part2)
+###print(cumhaz)
+###print(cumhaz2)
 S1 <- exp(-cumhaz); S2 <- exp(-cumhaz2)
 
 if (is.null(theta))  theta <- object$theta
