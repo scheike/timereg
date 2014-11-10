@@ -26,7 +26,7 @@ biprobit.time <- function(formula,data,id,...,
         noncens <- !status
         time <- censtime[,2]
         ltimes <- censtime[,1]        
-        data$truncsurv <- survival::Surv(ltimes,time,noncens)
+        data$truncsurv <- Surv(ltimes,time,noncens)
         trunc.formula <- update(formula,truncsurv~.)       
         ud.trunc <- aalen(trunc.formula,data=data,robust=0,n.sim=0,residuals=0,silent=1,max.clust=NULL,
                           clusters=data[,id], ...)
@@ -84,9 +84,9 @@ biprobit.time <- function(formula,data,id,...,
         if ((fix.cens.weights & k==0) | (!fix.cens.weights)) {
             
             if (ncol(censtime)==3) { ## truncation...
-                suppressWarnings(data0$S <- survival::Surv(ltimes,time0,status0==1))
+                suppressWarnings(data0$S <- Surv(ltimes,time0,status0==1))
             } else {
-                data0$S <- survival::Surv(time0,status0==1)
+                data0$S <- Surv(time0,status0==1)
             }
             ## data0$status0 <- status0
             ## data0$time0 <- time0
@@ -99,6 +99,9 @@ biprobit.time <- function(formula,data,id,...,
             dataw[,outcome] <- (dataw[,outcome])*(timevar<tau)
         }
         k <- k+1
+        if (ncol(censtime)==3) { ## truncation...
+            
+        }
         if (return.data) return(dataw)
         if (ncol(censtime)==3) { ## truncation...
             dataw[,weights] <- dataw[,weights]*dataw[,trunc.weights]
