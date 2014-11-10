@@ -30,7 +30,7 @@ coxalpha <- function(par)
   ud$score
 } ## }}} 
 
-DU <-  jacobian(coxalpha,par)
+DU <-  numDeriv::jacobian(coxalpha,par)
 IDU <-  udca$D2linv %*% DU 
 alphaiid <-t( IDU %*% t(glmiid))
 ###

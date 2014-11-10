@@ -15,7 +15,7 @@ LazyLoad: yes
 Depends:
     R (>= 2.15),
     survival,
-Suggets:
+Suggests:
     numDeriv,
     mets
 License: GPL (>= 2)
