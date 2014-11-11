@@ -211,6 +211,7 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
   attr(ud,"residuals")<-residuals; 
   attr(ud,"max.clust")<-max.clust; 
   attr(ud,"max.time")<-max.time; 
+  attr(ud,"n")<-ldata$antpers; 
   attr(ud,"orig.max.clust")<- orig.max.clust 
   attr(ud,"max.timepoint.sim")<-max.timepoint.sim; 
   ud$call<-call

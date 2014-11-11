@@ -15,6 +15,8 @@ cox.ipw <- function(survformula,glmformula,d=sys.parent(),max.clust=NULL,ipw.se=
 ###  coxiid <- t(solve(udca$D2linv) %*% t(udca$gamma.iid))
   coxiid <- udca$gamma.iid
 
+  ipw.se <- FALSE; ### still needs to check this  more
+
 if (ipw.se==TRUE)  { ## {{{ 
 if (!require(numDeriv)) stop("numDeriv needed")
 glmiid <-   lava::iid(ggl)
@@ -37,7 +39,6 @@ alphaiid <-t( IDU %*% t(glmiid))
 iidfull <- alphaiid
 ###
 iidfull[ggl$y==1,] <- coxiid - alphaiid[ggl$y==1,]
-iidfull <-t( udca$D2linv %*% t(iidfull))
 ###
 var2 <- t(iidfull) %*% iidfull
 se <- cbind(diag(var2)^.5); colnames(se) <- "se"
