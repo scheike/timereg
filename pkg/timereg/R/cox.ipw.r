@@ -12,10 +12,7 @@ cox.ipw <- function(survformula,glmformula,d=sys.parent(),max.clust=NULL,ipw.se=
   udca <- cox.aalen(survformula,data=dcc,weights=1/ppp,n.sim=0,max.clust=max.clust)  
 
   ### iid of beta for Cox model 
-###  coxiid <- t(solve(udca$D2linv) %*% t(udca$gamma.iid))
   coxiid <- udca$gamma.iid
-
-  ipw.se <- FALSE; ### still needs to check this  more
 
 if (ipw.se==TRUE)  { ## {{{ 
 if (!require(numDeriv)) stop("numDeriv needed")
@@ -28,11 +25,15 @@ coxalpha <- function(par)
   rr <- mat %*% par
   pw <- c(exp(rr)/(1+exp(rr)))
   assign("pw",pw,envir=environment(survformula))
+###  if (coxph==FALSE) 
   ud <- cox.aalen(survformula,data=dcc,weights=1/pw,beta=udca$gamma,Nit=1,n.sim=0,robust=0)  
+###  else { ud <- coxph(survformula,data=dcc,weights=1/pw,iter.max=1,init=udca$gamma)  
+###	 ud <- coxph.detail(ud,data=dcc)
+###  }
   ud$score
 } ## }}} 
 
-DU <-  numDeriv::jacobian(coxalpha,par)
+DU <-  numDeriv::jacobian(coxalpha,par,)
 IDU <-  udca$D2linv %*% DU 
 alphaiid <-t( IDU %*% t(glmiid))
 ###

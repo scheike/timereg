@@ -338,8 +338,10 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   extract_row(Z,pers,zi);  
   Mv(ZX, dA, zav); 
 
+// scale udenfor ? 
   scl_vec_mult(scale,zi,zi); 
   vec_subtr(zi,zav,difzzav); 
+//  scl_vec_mult(scale,difzzav,difzzav); 
 
   vec_add(difzzav,U,U); 
 
