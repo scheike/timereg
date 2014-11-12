@@ -1,16 +1,12 @@
 ##' Estimation of twostage model with cluster truncation in bivariate situation 
 ##'
 ##' @title Estimation of twostage model with cluster truncation in bivariate situation 
-##' @param formula Formula with survival model aalen or cox.aalen, some limitiation on model specification but due to call of fast.reshape (so for example factors should be used cautiously)
+##' @param formula Formula with survival model aalen or cox.aalen, some limitiation on model specification due to call of fast.reshape (so for example interactions and * and : do not work here, expand prior to call)
 ##' @param data Data frame
 ##' @param theta.des design for dependence parameters in two-stage model 
 ##' @param clusters clustering variable for twins
-##' @param entry entry time
-##' @param exit exit (survival) time 
-##' @param status status variable for survival model 
 ##' @param Nit number of iteration 
 ##' @param final.fitting TRUE to do final estimation with SE and ... arguments for marginal models 
-##' @param gout plots baselines of marginal models during itterations 
 ##' @param ... Additional arguments to lower level functions
 ##' @author Thomas Scheike
 ##' @export
@@ -29,14 +25,20 @@
 ##'			 data=diabetes,clusters="id")
 ##' out$two        ## twostage output
 ##' plot(out$marg) ## marginal model output
-twin.clustertrunc <- function(survformula,data=data,theta.des=NULL,clusters=NULL,
-		      entry="v",exit="time",status="status",Nit=10,
-		      final.fitting=FALSE,gout=0,...)
+twin.clustertrunc <- function(survformula,data=sys.parent(),theta.des=NULL,clusters=NULL,
+		      Nit=10,final.fitting=FALSE,...)
 { ## {{{ 
 ## {{{  adding names of covariates from survival model to data frame if needed
 ## adds names that are not in data (typically intercept from additive) or 
 ### expansion of factors, 
 ## also reducing only to needed covariates 
+
+survnames <-  all.vars(update(survformula, .~0)) 
+if (length(survnames)!=3) stop("Must give entry, exit and status")
+entry <- survnames[1]
+exit <- survnames[2]
+status <- survnames[3]
+
 
 tss <- terms(survformula)
 Znames <- attr(tss,"term.labels")
@@ -98,8 +100,7 @@ for (i in 1:Nit)
   }
   if (i==1) { 
    if (model=="cox.aalen") pbeta <- 0*c(aout$gamma,aout$cum[,-1]) else pbeta <- 0*aout$cum[,-1]
-   if (gout==1) plot(aout)
-  } else { if (gout==1) lines(aout$cum,col=2);}
+  } 
   if (i>=2) tout <- two.stage(aout,data=data,clusters=nclusters,theta.des=theta.des,theta=ptheta)
   else tout <- two.stage(aout,data=data,clusters=nclusters,theta.des=theta.des)
   if (!is.null(theta.des)) theta <- c(theta.des %*% tout$theta) else theta <- tout$theta
