@@ -86,11 +86,18 @@ LifeTable <- function(time,status,entry=NULL,strata=list(),breaks=c(),confint=FA
     if (length(strata)>0) {
         a <- by(cbind(entry,time,status), strata,
                 FUN=LifeTable, breaks=breaks, confint=confint)
+        cl <- lapply(strata,class)
+        nulls <- which(unlist(lapply(a,is.null)))
         nn <- do.call("expand.grid",attributes(a)$dimnames)
-        ##  browser()
+        if (length(nulls)>0) nn <- nn[-nulls,,drop=FALSE]
         nam <- nn[rep(seq(NROW(nn)),each=NROW(a[[1]])),,drop=FALSE]
+        xx <- list()
+        for (i in seq(ncol(nam))) {
+            xx <- c(xx, list(do.call(paste("as.",as.character(cl[i]),sep=""),list(nam[,i]))))
+        }
+        xx <- as.data.frame(xx); colnames(xx) <- colnames(nam)
         res <- Reduce("rbind",a)
-        res <- cbind(Reduce("rbind",a),nam)
+        res <- cbind(res,xx)
         return(res)
     }
     if (length(breaks)==0) breaks <- c(0,max(time,na.rm=TRUE))

@@ -53,7 +53,6 @@ ClaytonOakes <- function(formula,data=parent.frame(),cluster,var.formula=~1,cuts
       var.formula <- as.formula(formulaId[[1]])
       formulaId <- formulaId[[2]]
     }
-    browser()
     cluster <- formulaId
     mycall$cluster <- cluster
     formulaSt <- paste(formulaSt,paste("-cluster(",paste(var.formula,collapse=""),
@@ -68,7 +67,6 @@ ClaytonOakes <- function(formula,data=parent.frame(),cluster,var.formula=~1,cuts
   }
   if (missing(cluster)) stop("Missing 'cluster' variable")
   ngamma <- 0
-  browser()
   data <- data[order(data[,cluster]),]
   Z <- model.matrix(var.formula,data)
   ngamma <- ncol(Z)

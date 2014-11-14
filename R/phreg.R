@@ -68,7 +68,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
   opt <- NULL
   if (p>0) {      
       if (tolower(method)=="nr") {
-          opt <- lava:::NR(beta,obj,...)
+          opt <- lava::NR(beta,obj,...)
           opt$estimate <- opt$par
       } else {
           opt <- nlm(obj,beta,...)

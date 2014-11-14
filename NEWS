@@ -1,3 +1,23 @@
+* Version 1.0 <2014-11-10 Mon>
+  - New functions biprobit.time, binomial.twostage.time.
+    Automatically samples time points (approximately equidistant) up to
+    last double jump time. Intial support for left truncation.
+    contrast argument added to biprobit.time.
+  - ipw removed (from namespace)
+  - biprobit optimized for tabular data (non-continuous
+    covariates). Regression design for dependence parameter (tetrachoric
+    correlation) now possible.
+  - predict method implemented for biprobit
+  - arc-sinus transformation used for probability estimates
+  - updated output of bptwin with relative recurrence risk + log-OR estimates
+  - iid method for bptwin (influence function)
+  - survival probabilities and start and end of intervals added to
+    lifetable
+  - new function 'jumptimes' for extracting jump times and possibly sample (equidistant)
+  - fast.pattern updated to handle more than two categories
+  - demos added to the mets package
+  - divide.conquer function, folds function
+
 * Version 0.2.8 <2014-05-07 Wed>
   - Normal orthant probabilities via 'pmvn' (vectorized)   
   - Parametric proportional hazards models via 'phreg.par'
@@ -43,7 +63,7 @@
   - Updated two-stage estimator
   - Improved fast.reshape
 
-* Version 0.2 <2013-03-27 Wed>
+* Version 0.2.0 <2013-03-27 Wed>
   - fast.reshape
   - easy.binomial.twostage
 
