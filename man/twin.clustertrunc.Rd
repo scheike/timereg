@@ -11,8 +11,6 @@ twin.clustertrunc(survformula, data = sys.parent(), theta.des = NULL,
 
 \item{survformula}{formula for survival model using cox.aalen (timereg) syntax}
 
-\item{glmformula}{formula for being observed glm type model}
-
 \item{data}{Data frame}
 
 \item{theta.des}{design for dependence parameters in two-stage model}
