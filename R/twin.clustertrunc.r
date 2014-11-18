@@ -3,7 +3,6 @@
 ##' @title Estimation of twostage model with cluster truncation in bivariate situation 
 ##' @param formula Formula with survival model aalen or cox.aalen, some limitiation on model specification due to call of fast.reshape (so for example interactions and * and : do not work here, expand prior to call)
 ##' @param survformula formula for survival model using cox.aalen (timereg) syntax 
-##' @param glmformula formula for being observed glm type model 
 ##' @param data Data frame
 ##' @param theta.des design for dependence parameters in two-stage model 
 ##' @param clusters clustering variable for twins
