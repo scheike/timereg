@@ -2,6 +2,8 @@
 ##'
 ##' @title Estimation of twostage model with cluster truncation in bivariate situation 
 ##' @param formula Formula with survival model aalen or cox.aalen, some limitiation on model specification due to call of fast.reshape (so for example interactions and * and : do not work here, expand prior to call)
+##' @param survformula formula for survival model using cox.aalen (timereg) syntax 
+##' @param glmformula formula for being observed glm type model 
 ##' @param data Data frame
 ##' @param theta.des design for dependence parameters in two-stage model 
 ##' @param clusters clustering variable for twins
@@ -161,35 +163,35 @@ return(res)
 } ## }}} 
 
 ##' @export
-twin.dobdata <- function(survformula,data=data,clusters=NULL,
-                         entry="v",exit="time",status="status")
-{ ## {{{ 
-## {{{  adding names of covariates from survival model to data frame if needed
-## adds names that are not in data (typically intercept from additive) model
-## also reducing only to needed covariates 
-
-d0 <- data[,c(entry,exit,status,clusters)]
-
-model <- "aalen"
-des <- aalen.des(survformula,data=data,model=model)
-X <- des$X
-###med <- des$covnamesX %in% names(data)
-   colnames(X) <- des$covnamesX
-   d0 <- cbind(d0,X)
-
-data <- d0
-
-d2 <- fast.reshape(data,id=clusters)
-d2 <- na.omit(d2)
-data <- fast.reshape(d2,numlabel=TRUE)
-
-###theta.des <- data.frame(theta.des)
-###theta.des$clusters <- data[,clusters]
+###twin.dobdata <- function(survformula,data=data,clusters=NULL,
+###                         entry="v",exit="time",status="status")
+###{ ## {{{ 
+##### {{{  adding names of covariates from survival model to data frame if needed
+##### adds names that are not in data (typically intercept from additive) model
+##### also reducing only to needed covariates 
 ###
-###t2 <- fast.reshape(theta.des,id=clusters)
-###t2 <- na.omit(t2)
-###theta.des <- fast.reshape(t2,numlabel=TRUE)
-
-return(data)
-}
-
+###d0 <- data[,c(entry,exit,status,clusters)]
+###
+###model <- "aalen"
+###des <- aalen.des(survformula,data=data,model=model)
+###X <- des$X
+######med <- des$covnamesX %in% names(data)
+###   colnames(X) <- des$covnamesX
+###   d0 <- cbind(d0,X)
+###
+###data <- d0
+###
+###d2 <- fast.reshape(data,id=clusters)
+###d2 <- na.omit(d2)
+###data <- fast.reshape(d2,numlabel=TRUE)
+###
+######theta.des <- data.frame(theta.des)
+######theta.des$clusters <- data[,clusters]
+######
+######t2 <- fast.reshape(theta.des,id=clusters)
+######t2 <- na.omit(t2)
+######theta.des <- fast.reshape(t2,numlabel=TRUE)
+###
+###return(data)
+###}
+###
