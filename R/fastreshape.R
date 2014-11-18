@@ -8,7 +8,7 @@
 ##' @param keep Vector of column names to keep
 ##' @param idname Name of id-variable (Wide->Long)
 ##' @param numname Name of number-variable (Wide->Long)
-##' @param factors.keep If false all factors are converted to integers
+##' @param factor If true all factors are kept (otherwise treated as character)
 ##' @param idcombine If TRUE and \code{id} is vector of several variables, the unique id is combined from all the variables.
 ##' Otherwise the first variable is only used as identifier.
 ##' @param labelnum If TRUE varying variables in wide format (going from long->wide) are labeled 1,2,3,... otherwise use 'num' variable. In long-format (going from wide->long) varying variables matching 'varying' prefix are only selected if their postfix is a number.
@@ -84,7 +84,7 @@
 ##' ftable(cancer1~cancer2,data=prtw)
 ##' rm(prtw)
 fast.reshape <- function(data,varying,id,num,sep="",keep,
-                         idname="id",numname="num",factors.keep=TRUE,
+                         idname="id",numname="num",factor=FALSE,
                          idcombine=TRUE,labelnum=FALSE,...) {
     if (!is.data.frame(data) & is.list(data)) {
         data <- as.data.frame(data)
@@ -228,21 +228,23 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
         
         colnames(long) <- cnames
         if (!numlev) {
-            long[,numname] <- factor(long[,numname],labels=thelevels)
+            long[,numname] <- base::factor(long[,numname],labels=thelevels)
         } else {
             if (!identical(order(thelevels),thelevels))
                 long[,numname] <- thelevels[long[,numname]]
         } 
 
-        ## if (is_df && factors.keep) { ## Recreate classes 
-        ##     vars.orig <- c(fixed,unlist(lapply(varying,function(x) x[1])))
-        ##     vars.new <- c(fixed,vnames)
-        ##     factors <- which("factor"==classes[vars.orig])
-        ##     for (i in factors) {
-        ##         long[,vars.new[i]] <- factor(lev[long[,vars.new[i]]],levels=lev)
-        ##     }
-        ## }
-        ##  return(long)
+        if (is_df && factor) { ## Recreate classes            
+            vars.orig <- c(fixed,unlist(lapply(varying,function(x) x[1])))
+            vars.new <- c(fixed,vnames)
+            factors <- which("factor"==classes[vars.orig])
+            lev <- lapply(data[1,factors],levels)
+            count <- 0
+            for (i in factors) {
+                count <- count+1
+                long[,vars.new[i]] <- base::factor(long[,vars.new[i]],levels=lev[[count]])
+            }
+        }
         return(long)
     }
 
