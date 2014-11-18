@@ -7,9 +7,7 @@ twin.clustertrunc(survformula, data = sys.parent(), theta.des = NULL,
   clusters = NULL, Nit = 10, final.fitting = FALSE, ...)
 }
 \arguments{
-\item{formula}{Formula with survival model aalen or cox.aalen, some limitiation on model specification due to call of fast.reshape (so for example interactions and * and : do not work here, expand prior to call)}
-
-\item{survformula}{formula for survival model using cox.aalen (timereg) syntax}
+\item{survformula}{Formula with survival model aalen or cox.aalen, some limitiation on model specification due to call of fast.reshape (so for example interactions and * and : do not work here, expand prior to call)}
 
 \item{data}{Data frame}
 
