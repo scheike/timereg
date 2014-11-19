@@ -10,7 +10,6 @@
 ##' @return Object of class Event (a matrix) 
 ##' @author Klaus K. Holst
 ##' @aliases Event rbind.Event
-##' @export
 ##' @examples
 ##' t1 <- 1:10
 ##' t2 <- t1+runif(10)
@@ -29,10 +28,8 @@ Event <- function(time,time2=TRUE,cause=NULL,cens.code=0,...) {
     return(out)
 }
 
-##' @export
 as.matrix.Event <- function(x,...) structure(x,class="matrix")
 
-##' @export
 as.character.Event <- function(x,...) {
     if (ncol(x)==3) { 
         res <- paste("(",format(x[,1],...),";",
@@ -44,25 +41,19 @@ as.character.Event <- function(x,...) {
     return(res)
 }
 
-##' @export
 format.Event <- function(x, ...) as.character.Event(x,...)
 
-##' @export
 as.data.frame.Event <- as.data.frame.model.matrix
 
-##' @export
 print.Event <- function(x,...) {
     print(as.matrix(x),...,quote=FALSE)
 }
 
-##' @export
 summary.Event <- function(object,...) {    
     print(table(object[,"cause"]))
     print(summary(object[,"exit"]))
 }
 
-
-##' @export
 "[.Event" <- function (x, i, j, drop = FALSE) 
 {
     if (missing(j)) {
@@ -80,7 +71,6 @@ summary.Event <- function(object,...) {
     }
 }
 
-##' @export
 rbind.Event <- function(...) {
   dots <- list(...)
   cens.code <- attributes(dots[[1]])$cens.code
