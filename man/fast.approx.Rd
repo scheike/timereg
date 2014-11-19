@@ -3,7 +3,7 @@
 \alias{fast.approx}
 \title{Fast approximation}
 \usage{
-fast.approx(time, new.time, equal = FALSE, ...)
+fast.approx(time, new.time, equal = FALSE, right = FALSE, ...)
 }
 \arguments{
 \item{time}{Original ordered time points}
@@ -11,6 +11,9 @@ fast.approx(time, new.time, equal = FALSE, ...)
 \item{new.time}{New time points}
 
 \item{equal}{If TRUE a list is returned with additional element}
+
+\item{right}{If FALSE the closest element in time is chosen,
+otherwise the closest value above new.time is returned.}
 
 \item{...}{Optional additional arguments}
 }
