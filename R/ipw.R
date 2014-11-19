@@ -82,7 +82,6 @@ ipw <- function(formula,data,cluster,
         pr <- Gcx
     }
     if (trunc.prob & ncol(censtime)==3) { ## truncation
-        browser()
         data$truncsurv <- Surv(ltimes,otimes,noncens)
         trunc.formula <- update(formula,truncsurv~.)        
         ud.trunc <- aalen(trunc.formula,data=data,robust=0,n.sim=0,residuals=0,silent=1,max.clust=NULL,
