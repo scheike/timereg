@@ -14,7 +14,7 @@ using namespace arma;
 
 RcppExport SEXP FastLong2(SEXP idata, SEXP inclust, SEXP infixed, SEXP invarying);
 RcppExport SEXP FastLong(SEXP idata, SEXP inclust, SEXP infixed, SEXP invarying, SEXP missing);
-RcppExport SEXP FastApprox(const SEXP time, const SEXP newtime, const SEXP equal);
+RcppExport SEXP FastApprox(const SEXP time, const SEXP newtime, const SEXP equal, const SEXP right);
 RcppExport SEXP FastPattern(SEXP y1,SEXP y2, SEXP cat);
 
 void fastpattern(const umat &y, umat &pattern, uvec &group, unsigned categories=2);
