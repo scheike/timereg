@@ -42,6 +42,8 @@ Simple reshape/tranpose of data
 library(lava)
 m <- lvm(c(y1,y2,y3,y4)~x)
 d <- sim(m,5)
+d
+fast.reshape(d,"y")
 fast.reshape(fast.reshape(d,"y"),id="id")
 
 ##### From wide-format
@@ -60,6 +62,7 @@ fast.reshape(dd,"y",id="id",keep="x",sep=".")
 
 #####
 x <- data.frame(id=c(5,5,6,6,7),y=1:5,x=1:5,tv=c(1,2,2,1,2))
+x
 (xw <- fast.reshape(x,id="id"))
 (xl <- fast.reshape(xw,c("y","x"),idname="id2",keep=c()))
 (xl <- fast.reshape(xw,c("y","x","tv")))
@@ -81,6 +84,7 @@ dd2
 ##'
 
 d <- sim(lvm(~y1+y2+ya),10)
+d
 (dd <- fast.reshape(d,"y"))
 fast.reshape(d,"y",labelnum=TRUE)
 fast.reshape(dd,id="id",num="num")
@@ -99,7 +103,6 @@ fast.reshape(d,-c("x"))
 
 ##### Automatically define varying variables from trailing digits
 fast.reshape(d)
-
 
 ##### Prostate cancer example
 data(prt)
