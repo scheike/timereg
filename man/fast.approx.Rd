@@ -3,7 +3,8 @@
 \alias{fast.approx}
 \title{Fast approximation}
 \usage{
-fast.approx(time, new.time, equal = FALSE, right = FALSE, ...)
+fast.approx(time, new.time, equal = FALSE, type = c("nearest", "right",
+  "left"), sorted = FALSE, ...)
 }
 \arguments{
 \item{time}{Original ordered time points}
@@ -12,8 +13,10 @@ fast.approx(time, new.time, equal = FALSE, right = FALSE, ...)
 
 \item{equal}{If TRUE a list is returned with additional element}
 
-\item{right}{If FALSE the closest element in time is chosen,
+\item{type}{Type of matching, nearest index, nearest greater than or equal (right), number of elements smaller than y
 otherwise the closest value above new.time is returned.}
+
+\item{sorted}{Set to true if new.time is already sorted}
 
 \item{...}{Optional additional arguments}
 }
@@ -26,7 +29,7 @@ fast.approx(unique(id),id)
 
 t <- 0:6
 n <- c(-1,0,0.1,0.9,1,1.1,1.2,6,6.5)
-fast.approx(t,n,equal=TRUE)
+fast.approx(t,n,type="left")
 }
 \author{
 Klaus K. Holst

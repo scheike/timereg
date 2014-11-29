@@ -192,12 +192,11 @@ END_RCPP
 RcppExport SEXP FastApprox(const SEXP time,
 			   const SEXP newtime,
 			   const SEXP equal,
-			   const SEXP right
+			   const SEXP type // (0: nearest, 1: right, 2: left)
 			   ) {
 BEGIN_RCPP
-  bool Right = Rcpp::as<bool>(right);
+  unsigned Type = Rcpp::as<unsigned>(type);
   NumericVector NewTime(newtime);
-  // NumericVector Time(time);
   NumericVector Sorted(time);
   // IntegerVector Order;
   // NumericVector Sorted = Time;
@@ -214,19 +213,19 @@ BEGIN_RCPP
   for (int i=0; i<NewTime.size(); i++) {    
     eq[i] = 0;
     it = lower_bound(Sorted.begin(), Sorted.end(), NewTime[i]);
+    upper = *it;
     if (it == Sorted.begin()) { 
       pos = 0; 
-      upper = *it;
       if (Equal && (NewTime[i]==upper)) { eq[i] = 1; }
     }
     else if (int(it-Sorted.end())==0) {
       pos = Sorted.size()-1;
     } else {
       pos = int(it-Sorted.begin());
-      upper = *it;
-      if (!Right && fabs(NewTime[i]-Sorted[pos-1])<fabs(NewTime[i]-Sorted[pos])) pos -= 1;
+      if (Type==0 && fabs(NewTime[i]-Sorted[pos-1])<fabs(NewTime[i]-Sorted[pos])) pos -= 1;
       if (Equal && (NewTime[i]==upper)) { eq[i] = pos+1; }
     }
+    if (Type==2 && NewTime[i]!=upper) pos--;
     idx[i] = pos+1;
     //idx[i] = Order[pos];
   }
