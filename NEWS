@@ -1,4 +1,7 @@
-* Version 1.0 <2014-11-18 Tue>
+* Version 1.3.1 <2015-01-01 Thu>
+  - fast.approx updated with 'left'...
+
+* Version 1.0.0 <2014-11-18 Tue>
   - New functions biprobit.time, binomial.twostage.time.
     Automatically samples time points (approximately equidistant) up to
     last double jump time. Intial support for left truncation.
