@@ -227,7 +227,6 @@ BEGIN_RCPP
     }
     if (Type==2 && NewTime[i]!=upper) pos--;
     idx[i] = pos+1;
-    //idx[i] = Order[pos];
   }
   if (Equal) {
     List ans;
