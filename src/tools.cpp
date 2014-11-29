@@ -225,7 +225,7 @@ BEGIN_RCPP
       if (Type==0 && fabs(NewTime[i]-Sorted[pos-1])<fabs(NewTime[i]-Sorted[pos])) pos -= 1;
       if (Equal && (NewTime[i]==upper)) { eq[i] = pos+1; }
     }
-    if (Type==2 && NewTime[i]!=upper) pos--;
+    if (Type==2 && NewTime[i]<upper) pos--;
     idx[i] = pos+1;
   }
   if (Equal) {
