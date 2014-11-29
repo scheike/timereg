@@ -240,8 +240,8 @@ predict.phreg.par <- function(object,p=coef(object),X=object$X,time=object$time,
     cc <- coef(object)
     eta <- 0
     if (length(cc)>info$npar) {
-        eta <- X%*%cc[-seq(info$npar)]
-    } 
+        eta <- X%*%p[-seq(info$npar)]
+    }
     exp(-(info$cumhaz(time,info$partrans(p))*exp(eta)))
 }
 
@@ -391,7 +391,7 @@ predict.phreg.par <- function(object,p=coef(object),X=object$X,time=object$time,
     cc <- coef(object) 	 
     eta <- 0 	 
     if (length(cc)>info$npar) { 	 
-        eta <- X%*%cc[-seq(info$npar)] 	 
+        eta <- X%*%p[-seq(info$npar)] 	 
     } 	 
     exp(-(info$cumhaz(time,info$partrans(p))*exp(eta))) 	 
 } 	 
