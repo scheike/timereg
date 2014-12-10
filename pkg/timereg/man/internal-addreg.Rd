@@ -74,6 +74,8 @@
 \alias{prop.odds.gam}
 \alias{semicox}
 \alias{timecoxBase}
+\alias{timereg.formula}
+\alias{names2formula}
 \alias{twin.clustertrunc}
 \alias{wald.test}
 \title{For internal use}

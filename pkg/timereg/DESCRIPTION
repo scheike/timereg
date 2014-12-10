@@ -1,7 +1,7 @@
 Package: timereg
-Title: Flexible regression models for survival data.
-Version: 1.8.6
-Date: 2014-09-11
+Title: Flexible regression models for survival data
+Version: 1.8.7
+Date: 2014-20-11
 Author: Thomas Scheike with contributions from Torben Martinussen, Jeremy Silver 
         and Klaus Holst 
 Maintainer: Thomas Scheike <ts@biostat.ku.dk>
@@ -36,7 +36,6 @@ Collate:
     'event.r'
     'faster.reshape.r'
     'Gprop-odds.r'
-    'Gprop-odds-subdist.r'
     'krylow.pls.r'
     'kmplot.r'
     'mgresid.r'

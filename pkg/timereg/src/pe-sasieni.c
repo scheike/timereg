@@ -83,7 +83,7 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
 	      extract_row(Z,j,zi); 
 	      scl_vec_mult(weights[j]*dummy,zi,rowZ); replace_row(WZ,j,rowZ); 
 	      for (k=0;k<*pg;k++) for (i=0;i<*pg;i++) 
-		ME(S2,k,i)= ME(S2,k,i)+VE(zi,i)*VE(zi,k)*dummy;
+		ME(S2,k,i)= ME(S2,k,i)+VE(zi,i)*VE(zi,k)*dummy*weights[j];
 	      vec_add_mult(S1,zi,dummy,S1); 
 	    }
 	  scl_vec_mult(1/S0,S1,S1); 

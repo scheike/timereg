@@ -55,7 +55,7 @@ alphaiid <-t( IDU %*% t(glmiid))
 ###
 iidfull <- alphaiid
 ###
-iidfull[ggl$y==1,] <- coxiid - alphaiid[ggl$y==1,]
+iidfull[ggl$y==1,] <- coxiid + alphaiid[ggl$y==1,]
 ###
 var2 <- t(iidfull) %*% iidfull
 se <- cbind(diag(var2)^.5); colnames(se) <- "se"

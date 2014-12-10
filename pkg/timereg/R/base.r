@@ -219,4 +219,40 @@ return(list(type=type,time=time,time2=time2,status=status,
  covnamesX=covnamesX,covnamesZ=covnamesZ,clusters=clusters))
 } ## }}}
 
+names2formula <- function(formula,names)
+{ ## {{{ 
+covs <- paste("~",names[1],sep="")
+if (length(names)>=2) 
+for (i in 2:length(names))
+covs <- c(paste(covs,paste("+",names[i],sep="")))
+covs <- as.formula(covs)
+formula <- update(formula,covs)
+
+return(formula)
+} ## }}} 
+
+
+timereg.formula <- function(formula,propterms=NULL,special="prop")
+{ ## {{{ 
+vars <- all.vars(update(formula,0~.))
+nonpropvars <- NULL
+if (!is.null(propterms)) { nonpropvars <- vars[-propterms]; 
+                           vars <- vars[propterms] 
+}
+
+covs <- paste("~",special,"(",vars[1],")",sep="")
+if (length(vars)>=2) 
+for (i in 2:length(vars))
+covs <- c(paste(covs,paste("+",special,"(",vars[i],")",sep="")))
+
+if (!is.null(nonpropvars))
+{ 
+for (i in 1:length(nonpropvars))
+covs <- c(paste(covs,paste("+",nonpropvars[i],sep="")))
+}
+covs <- as.formula(covs)
+
+formula <- update(formula,covs)
+return(formula)
+} ## }}} 
 

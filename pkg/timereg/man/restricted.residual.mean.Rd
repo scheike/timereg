@@ -40,6 +40,7 @@ Returns an object. With the following arguments:
 \author{Thomas Scheike}
 \examples{
 \donttest{
+library(timereg)
 data(sTRACE)
 sTRACE$cage <- scale(sTRACE$age)
 # Fits Cox model  and aalen model 
@@ -50,6 +51,7 @@ data=sTRACE,resample.iid=1)
 
 coxrm <- restricted.residual.mean(out,tau=7,
    x=rbind(c(0,0,0,0,0),c(0,0,0,1,0),c(0,0,0,1,1),c(0,0,0,0,1)),iid=1)
+
 with(coxrm,matplot(timetau,S0tau,type="s",ylim=c(0,1)))
 
 aalenrm <- restricted.residual.mean(outa,tau=7,
