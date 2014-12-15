@@ -93,7 +93,10 @@ LifeTable <- function(time,status,entry=NULL,strata=list(),breaks=c(),confint=FA
         nam <- nn[rep(seq(NROW(nn)),each=NROW(a[[1]])),,drop=FALSE]
         xx <- list()
         for (i in seq(ncol(nam))) {
-            xx <- c(xx, list(do.call(paste("as.",as.character(cl[i]),sep=""),list(nam[,i]))))
+            if (cl[i]%in%c("numeric","integer"))
+                xx <- c(xx,list(as.numeric(as.character(nam[,i]))))
+            else                    
+                xx <- c(xx, list(do.call(paste("as.",as.character(cl[i]),sep=""),list(nam[,i]))))
         }
         xx <- as.data.frame(xx); colnames(xx) <- colnames(nam)
         res <- Reduce("rbind",a)
