@@ -12,7 +12,7 @@ The development version may be installed directly from [[https://r-forge.r-proje
 (requires [[http://cran.r-project.org/bin/windows/Rtools/][Rtools]] on windows
 and [[http://cran.r-project.org/bin/macosx/tools/][development tools]] (+Xcode) for Mac OS X):
 #+BEGIN_SRC R :exports both :eval never
-install.packages("mets", repos="http://R-Forge.R-project.org")
+devtools::install_github("kkholst/mets")
 #+END_SRC
 or github 
 #+BEGIN_EXAMPLE
