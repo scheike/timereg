@@ -15,10 +15,10 @@ double
 *designX,*designG,*times,*betaS,*start,*stop,*cu,*w,*loglike,*Vbeta,*RVbeta,*vcu,*offs,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*aalen,*score,*dhatMit,*gammaiid,*dmgiid,*Vcovs,*addproc,*gamiid,*biid,*vscore,*weights,*dNit;
 int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*antsim,*rani,*XligZ,*nb,*id,*status,*wscore,*ratesim,*retur,*robust,*addresamp,*resample,*clusters,*antclust,*betafixed,*entry,*exactderiv,*timegroup,*maxtimepoint,*stratum,*silent;
 { 
-  int basesim=0,mjump=0,timing=0; 
+  int basesim=0,timing=0; 
   clock_t c0,c1; 
   c0=clock();
-  mjump=sim[2];   // multiple jumps in clusters, relevant for ratesim=0 simulering via cholesky simulering 
+//  mjump=sim[2];   // multiple jumps in clusters, relevant for ratesim=0 simulering via cholesky simulering 
   basesim=sim[1]; // baseline is also simulated and variance estimated (can be omitted for some for models) 
   // basesim=0 no simulations but variance, basesim=1 (simul and variance), basesim=-1 (no simulations no variance) 
   
@@ -457,7 +457,8 @@ if (*betafixed==0)  {
 	Rprintf("Information -D^2 l\n"); print_mat(SI); 
       };
 
-      if (*betafixed==0 && (*Nit>0)) vec_add(beta,delta,beta); 
+      // updates beta for all but final and fixed situation
+      if (*betafixed==0 && (*Nit>0) && (it<*Nit-1)) vec_add(beta,delta,beta); 
 
       for (k=0;k<*pg;k++) sumscore=sumscore+fabs(VE(U,k)); 
       if ((sumscore<0.0000001) & (it<(*Nit)-2)) {  it=*Nit-2; }

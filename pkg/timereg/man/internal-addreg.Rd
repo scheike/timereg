@@ -77,7 +77,6 @@
 \alias{timereg.formula}
 \alias{names2formula}
 \alias{twin.clustertrunc}
-\alias{wald.test}
 \title{For internal use}
 \description{for internal use}
 \author{Thomas Scheike}

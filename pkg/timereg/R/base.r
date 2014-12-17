@@ -13,7 +13,7 @@ coefBase<- function(object, digits=3, d2logl=0) { ## {{{
   return(res)
 } ## }}}
 
-wald.test <- function(object=NULL,coef=NULL,contrast,coef.null=NULL,Sigma=NULL,null=NULL)
+wald.test <- function(object=NULL,coef=NULL,Sigma=NULL,contrast,coef.null=NULL,null=NULL)
 { ## {{{
   if (is.null(Sigma)) {
      if (class(object)=="cor" || class(object)=="twostage") Sigma <- object$var.theta else Sigma <- object$var.gamma;

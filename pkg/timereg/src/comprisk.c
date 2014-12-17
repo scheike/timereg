@@ -5,10 +5,10 @@
 void itfit(times,Ntimes,x,censcode,cause,KMc,z,n,px,Nit,betaS,
 score,hess,est,var,sim,antsim,rani,test,testOBS,Ut,simUt,weighted,
 gamma,vargamma,semi,zsem,pg,trans,gamma2,CA,line,detail,biid,gamiid,resample,
-timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,estimator,fixgamma,stratum,ordertime,conservative,ssf,KMtimes)
+timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,estimator,fixgamma,stratum,ordertime,conservative,ssf,KMtimes,gamscore,Dscore)
 double *times,*betaS,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
 *Ut,*simUt,*gamma,*zsem,*gamma2,*biid,*gamiid,*vargamma,*timepow,
-	*timepowtest,*convc,*weights,*entry,*trunkp,*ssf,*KMtimes;
+	*timepowtest,*convc,*weights,*entry,*trunkp,*ssf,*KMtimes,*gamscore,*Dscore;
 int *n,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 *semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum,*ordertime,*conservative;
 { // {{{
@@ -42,7 +42,6 @@ int *n,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
     }
 
     for (c=0;c<ps;c++) VE(beta,c)=betaS[c]; 
-    for (c=0;c<*px;c++) VE(bet1,c)=betaS[c]; 
 //    if (*trans==0) {for (c=0;c<*pg;c++) VE(gam,c)=betaS[*px+c];}
 
     for (c=0;c<*n;c++) {
@@ -58,6 +57,8 @@ for (s=0;s<*Ntimes;s++)
    time=times[s]; est[s]=time; score[s]=time; var[s]=time;
    convt=1; 
 
+// starting values, typical 0
+   for (c=0;c<*px;c++) VE(bet1,c)=est[(c+1)*(*Ntimes)+s]; 
 //    if (withtrunc==1) Cpred(est,Ntimes,px,entry,n,cumentry); 
 	
  for (j=0;j<*antclust;j++) { 
@@ -256,7 +257,9 @@ if (convt==1 ) { // {{{ iid decomp
 
    for (i=1;i<ps+1;i++) {
       var[i*(*Ntimes)+s]=ME(VAR,i-1,i-1); 
-      est[i*(*Ntimes)+s]=VE(beta,i-1); score[i*(*Ntimes)+s]=VE(SCORE,i-1); }
+      est[i*(*Ntimes)+s]=VE(beta,i-1); 
+      score[i*(*Ntimes)+s]=VE(difbeta,i-1); 
+   }
 
 } /* s=1 ... *Ntimes */ 
 
@@ -269,7 +272,7 @@ if (convt==1 ) { // {{{ iid decomp
 	      score,hess,est,var,sim,antsim,rani,test,testOBS,Ut,simUt,weighted,
 	      gamma,vargamma,semi,zsem,pg,trans,gamma2,CA,line,detail,biid,
 	      gamiid,resample,timepow,clusters,antclust,timepowtest,silent,convc,weights,
-	      entry,trunkp,estimator,fixgamma,stratum,ordertime,conservative,ssf,KMtimes);
+	      entry,trunkp,estimator,fixgamma,stratum,ordertime,conservative,ssf,KMtimes,gamscore,Dscore);
   }
  
   if (convproblems>0) convc[0]=1; 
@@ -295,9 +298,10 @@ void itfitsemi(times,Ntimes,x,censcode,cause,
 	       zsem,pg,trans,gamma2,CA,
 	       line,detail,biid,gamiid,resample,
 	       timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,
-	       estimator,fixgamma,stratum,ordertime,conservative,ssf,KMtimes)
+	       estimator,fixgamma,stratum,ordertime,conservative,ssf,KMtimes,
+	       gamscore,Dscore)
 double *times,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,*Ut,*simUt,*gamma,*zsem,
-       *vargamma,*gamma2,*biid,*gamiid,*timepow,*timepowtest,*entry,*trunkp,*convc,*weights,*ssf,*KMtimes;
+       *vargamma,*gamma2,*biid,*gamiid,*timepow,*timepowtest,*entry,*trunkp,*convc,*weights,*ssf,*KMtimes,*gamscore,*Dscore;
 int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 *semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum,*ordertime,*conservative;
 { // {{{
@@ -359,6 +363,7 @@ malloc_vec((*px)+(*pg),qs);
 
   for (s=0;s<*Ntimes;s++) weightt[s]=1;  
   if (*px>=*pg) pmax=*px; else pmax=*pg; 
+//  starting values 
   for (j=0;j<*pg;j++) VE(gam,j)=gamma[j]; 
   px1[0]=*px+1; 
   for (c=0;c<*antpers;c++) if (entry[c]>0) {withtrunc=1; break;}
@@ -604,6 +609,9 @@ malloc_vec((*px)+(*pg),qs);
 	  MxA(AI,XZ,XZAI); MtA(XZAI,XZ,tmpM2); 
 	  mat_subtr(ZZ,tmpM2,dCGam); 
 
+//	  score for beta part of model 
+	 if (itt==(*Nit-1))  
+         for (i=1;i<*px+1;i++) score[i*(*Ntimes)+s]=VE(AIXdN,i-1); 
 //	  weighttot=weighttot-weightt[s]; 
 //          double convs=0; 
 //	  for (k=0;k<*pg;k++) convs=convs+pow(ME(dCGam,k,k),2); 
@@ -689,9 +697,11 @@ malloc_vec((*px)+(*pg),qs);
 	 vec_zeros(dgam); 
 	 nagam=1; 
       } 
-      vec_add(gam,dgam,gam); 
+      if (itt<(*Nit-1)) vec_add(gam,dgam,gam); 
       }
 
+      // do not update estimates for last itteration 
+      if (itt<(*Nit-1)) 
       for (s=0;s<*Ntimes;s++) {
       if (*fixgamma==0) vM(Acorb[s],dgam,korG); 
 	est[s]=times[s]; var[s]=times[s]; 
@@ -710,6 +720,9 @@ malloc_vec((*px)+(*pg),qs);
 	Rprintf("Change in Gamma \n"); print_vec(dgam); 
 	Rprintf("===========================================================\n"); 
       }
+//	 score for gamma part of model 
+        if (itt==(*Nit-1))  
+	for (k=0;k<*pg;k++) gamscore[k]= VE(dgam,k); 
 
     } /*itt løkke */  // }}}
 		
@@ -744,7 +757,11 @@ malloc_vec((*px)+(*pg),qs);
 
   if (*fixgamma==0) { 
      for (j=0;j<*pg;j++) {gamma[j]=VE(gam,j);
-       for (k=0;k<*pg;k++) {vargamma[k*(*pg)+j]=ME(RobVargam,j,k);}}
+       for (k=0;k<*pg;k++) {
+	       vargamma[k*(*pg)+j]=ME(RobVargam,j,k);
+	       Dscore[k*(*pg)+j]=ME(ICGam,j,k);
+       }
+     }
   }
 
   if (convproblems>=1) convc[0]=convproblems; 

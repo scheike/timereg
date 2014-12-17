@@ -204,7 +204,8 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
     gamiid <- biid <- NULL;
   }
 
-  ps<-px; betaS<-rep(0,ps); 
+  ps<-px; 
+  betaS<-rep(0,ps); 
 
   ## possible starting value for nonparametric components
   if (is.null(est)) { est<-matrix(0,ntimes,px+1); est[,1] <- times; }  
@@ -239,6 +240,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
   if (ntimes>1) silent <- c(silent,rep(0,ntimes-1))
   ## }}}
 
+
   ###  dyn.load("comprisk.so")
   ssf <- 0; 
   out<-.C("itfit", ## {{{
@@ -255,21 +257,23 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
           as.integer(1),as.integer(line),as.integer(detail),
           as.double(biid),as.double(gamiid),as.integer(resample.iid),
           as.double(time.pow),as.integer(clusters),as.integer(antclust),
-          as.double(time.pow.test),as.integer(silent),
-	  as.double(conv),as.double(weights),as.double(entrytime),
-	  as.double(trunc.p),as.integer(estimator),as.integer(fix.gamma),
-	  as.integer(stratum),as.integer(ordertime-1),as.integer(conservative), 
-	  as.double(ssf), as.double(Gctimes),PACKAGE="timereg") ## }}}
+          as.double(time.pow.test),as.integer(silent), as.double(conv),
+	  as.double(weights),as.double(entrytime),as.double(trunc.p),
+	  as.integer(estimator),as.integer(fix.gamma), as.integer(stratum),
+	  as.integer(ordertime-1),as.integer(conservative), as.double(ssf), 
+	  as.double(Gctimes),as.double(rep(0,pg)),as.double(matrix(0,pg,pg)),PACKAGE="timereg") ## }}}
 
  ## {{{ handling output
   ssf <- out[[51]]; 
-  gamma<-matrix(out[[24]],pg,1); var.gamma<-matrix(out[[25]],pg,pg); 
+  gamma<-matrix(out[[24]],pg,1); 
+  var.gamma<-matrix(out[[25]],pg,pg); 
+  Dscore.gamma<-matrix(out[[54]],pg,pg); 
   gamma2<-matrix(out[[30]],ps,1); 
   rownames(gamma2)<-covnamesX; 
   
-    conv <- list(convp=out[[41]],convd=out[[42]]);
+  conv <- list(convp=out[[41]],convd=out[[42]]);
     
-    if (fixed==0) gamma<-NULL; 
+  if (fixed==0) gamma<-NULL; 
 
   if (resample.iid==1)  {
     biid<-matrix(out[[34]],ntimes,antclust*px);
@@ -309,6 +313,8 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
     ## in case of no convergence set estimates to NA 
     est[conv$convp>0,-1] <- NA
     score<-matrix(out[[12]],ntimes,ps+1); 
+    gamscore <- matrix(out[[53]],pg,1)
+    scores <- list(score=score,gamscore=gamscore)
     var<-matrix(out[[15]],ntimes,ps+1);
     ## in case of no convergence set var to NA 
     var[conv$convp>0,-1] <- NA
@@ -335,7 +341,8 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
            obs.testBeqC.is=obs.testBeqC.is,
            obs.testBeqC=obs.testBeqC,pval.testBeqC.is=pval.testBeqC.is,
            conf.band=unifCI,B.iid=B.iid,gamma.iid=gamiid,ss=ssf,
-           test.procBeqC=Ut,sim.test.procBeqC=UIt,conv=conv,cens.weight=cens.weight)
+           test.procBeqC=Ut,sim.test.procBeqC=UIt,conv=conv,
+	   cens.weight=cens.weight,scores=scores,Dscore.gamma=Dscore.gamma)
 
     ud$call<-call; 
     ud$model<-model; 
