@@ -54,6 +54,7 @@
 \alias{plot.predict}
 \alias{coef.aalen}
 \alias{cox.ipw}
+\alias{comprisk.ipw}
 \alias{coef.cox.aalen}
 \alias{coef.comprisk}
 \alias{coef.two.stage}

@@ -28,6 +28,7 @@ Collate:
     'base.r'
     'clusterindex-reshape.r'
     'comprisk.r'
+    'comprisk.ipw.r'
     'cox-aalen.r'
     'cox.ipw.r'
     'Cpred.r'
