@@ -24,7 +24,7 @@ List FastCoxPrep( arma::vec Entry,
   // bool Truncation = Entry.n_elem>0;
   // bool haveId = Id.n_elem>0;
 
-  unsigned p = X.n_cols;
+  //  unsigned p = X.n_cols;
   unsigned n = Exit.n_elem;
   if (Truncation) n *= 2;
 
