@@ -8,13 +8,13 @@
 install.packages("mets",dependencies=TRUE)
 #+END_SRC
 
-The development version may be installed directly from [[https://r-forge.r-project.org/projects/lava/][R-forge]]
+The development version may be installed directly from github
 (requires [[http://cran.r-project.org/bin/windows/Rtools/][Rtools]] on windows
 and [[http://cran.r-project.org/bin/macosx/tools/][development tools]] (+Xcode) for Mac OS X):
 #+BEGIN_SRC R :exports both :eval never
 devtools::install_github("kkholst/mets")
 #+END_SRC
-or github 
+or download the source 
 #+BEGIN_EXAMPLE
 git@github.com:kkholst/mets.git
 #+END_EXAMPLE
@@ -23,12 +23,14 @@ git@github.com:kkholst/mets.git
 
 To cite the =mets= package please use the following reference
 
-#+BEGIN_EXAMPLE
+#+BEGIN_QUOTE
   Thomas H. Scheike and Klaus K. Holst and Jacob B. Hjelmborg (2013). 
   Estimating heritability for cause specific mortality based on twin studies.
   Lifetime Data Analysis. http://dx.doi.org/10.1007/s10985-013-9244-x
+#+END_QUOTE
 
-  BibTeX
+BibTeX:
+#+BEGIN_EXAMPLE
   @Article{
     title={Estimating heritability for cause specific mortality based on twin studies},
     author={Scheike, Thomas H. and Holst, Klaus K. and Hjelmborg, Jacob B.},
@@ -83,7 +85,6 @@ To cite the =mets= package please use the following reference
   abline(h=summary(bpmz)$prob["Concordance",],lwd=c(2,1,1),col="lightgray")
 #+END_SRC
 
-#+RESULTS[<2013-04-30 23:38:24> b29852b2087096fe1b380ed24a55d3f434355218]:
 :RESULTS:
 [[file:examples/mets1.png]]
 :END:
