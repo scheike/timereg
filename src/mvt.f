@@ -1021,8 +1021,8 @@
          xnhk = 0
          xnkh = 0  
       end if
-      hs = sign( one, dh - r*dk )  
-      ks = sign( one, dk - r*dh ) 
+      hs = INT(sign( one, dh - r*dk ))
+      ks = INT(sign( one, dk - r*dh ))
       if ( mod( nu, 2 ) .eq. 0 ) then
          bvt = atan2( sqrt(ors), -r )/tpi 
          gmph = dh/sqrt( 16*( nu + dh**2 ) )  
@@ -1276,11 +1276,11 @@
       K = 1
       DO I = 2, NDIM
          IF ( I .LE. KLIM ) THEN
-            K = MOD( C(NP, MIN(NDIM-1,KLIM-1))*DBLE(K), DBLE(P(NP)) )
-            VK(I) = K*VK(1)
+          K = INT(MOD( C(NP, MIN(NDIM-1,KLIM-1))*DBLE(K), DBLE(P(NP)) ))
+          VK(I) = K*VK(1)
          ELSE
-            VK(I) = INT( P(NP)*2**( DBLE(I-KLIM)/(NDIM-KLIM+1) ) )
-            VK(I) = MOD( VK(I)/P(NP), ONE )
+          VK(I) = INT( P(NP)*2**( DBLE(I-KLIM)/(NDIM-KLIM+1) ) )
+          VK(I) = MOD( VK(I)/P(NP), ONE )
          END IF
       END DO
       DO K = 1, NF
@@ -1475,7 +1475,7 @@
       DO J = 1, NDIM
          R(J) = MVUNI()
          IF ( J .LT. KL ) THEN
-            JP = 1 + J*R(J)
+            JP = INT(1 + J*R(J))
             IF ( JP .LT. J ) PR(J) = PR(JP)
             PR(JP) = J
          ELSE 
