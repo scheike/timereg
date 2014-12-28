@@ -53,7 +53,7 @@ double mvtdst(int* n,
     return -1.0;
   };  
   return *value;
-};
+}
 
 
 
@@ -206,6 +206,27 @@ END_RCPP
 }
 
 
+mat scoremvn(mat &Y,
+	     mat &Mu, mat &dMu,
+	     mat &S, mat &dS) {
+	     // mat &Z,  mat &Su, mat &dSu,
+	     // mat &Threshold, mat &dThreshold) {
+
+  int n = Y.n_rows;
+  //int k = Yl.n_cols;
+  int p = dMu.n_cols;
+  mat iS = inv(S);
+  mat z = (Y-Mu)*iS;
+  mat U(n,p);
+  U.fill(0); 
+  colvec A = -0.5*trans(dS)*vectorise(iS);
+  //Rcpp::Rcout << "A" << std::endl;
+  for (int i=0; i<n; i++) {
+    colvec zi = trans(z.row(i));
+    U.row(i) = trans( A+0.5*trans(dS)*vectorise(zi*trans(zi)) + trans(dMu)*zi ) ;
+  }
+  return(U);
+}
 
 vec loglikmvn(mat &Yl, mat &Yu, uvec &Status,
 	      mat &Mu, mat &S, 
@@ -219,7 +240,7 @@ vec loglikmvn(mat &Yl, mat &Yu, uvec &Status,
   uvec Ord = find(Status>1);
   uvec NonObs = find(Status>0);
   int nObs = Obs.size();
-  int nNonObs = NonObs.size();
+  int nNonObs = NonObs.size(); 
   int nOrd = Ord.size();
   int nu = Su.n_cols;
   bool nonconstvar = (nu>0); 
@@ -414,15 +435,26 @@ RcppExport SEXP loglikMVN(SEXP yl, SEXP yu,
 			  SEXP mu, SEXP dmu,
 			  SEXP s, SEXP ds,
 			  SEXP z, SEXP su, SEXP dsu,
-			  SEXP threshold, SEXP dthreshold) {
+			  SEXP threshold, SEXP dthreshold, SEXP score) {
 BEGIN_RCPP
-
   mat Yl = Rcpp::as<mat>(yl);
+  mat Mu = Rcpp::as<mat>(mu);  
+  mat S = Rcpp::as<mat>(s);
+  bool Score = Rcpp::as<bool>(score);  
+  if (Score) {
+    mat dS = Rcpp::as<mat>(ds);
+    mat dMu = Rcpp::as<mat>(dmu);
+    mat U = scoremvn(Yl, 
+		     Mu, dMu,
+		     S, dS);
+		 // Z,  Su, dSu,
+		 // Threshold, dThreshold) {
+    return(wrap(U));
+  }
+ 
   uvec Status = Rcpp::as<uvec>(status);
   mat Yu = Rcpp::as<mat>(yu);
-  mat Mu = Rcpp::as<mat>(mu);  
-  mat S = Rcpp::as<mat>(s);  
-
+  
   if ((Mu.n_cols!=Yl.n_cols) || (Mu.n_rows!=Yl.n_rows))
     throw(Rcpp::exception("Dimension of 'mu' and 'yl' did not agree","mvn.cpp",1));
   if (Status.size()!=Yl.n_cols)
@@ -532,7 +564,7 @@ BEGIN_RCPP
   unsigned ncor = p*(p-1)/2;
   bool nSigma = false;
 
-  if ((asCor && Sigma.n_rows>1) || (!asCor && Sigma.n_cols==p*p && Sigma.n_rows>1)) {
+  if ((asCor && Sigma.n_rows>1) || (!asCor && Sigma.n_cols==unsigned(p*p) && Sigma.n_rows>1)) {
     nSigma = true;
     n = Sigma.n_rows;
   }

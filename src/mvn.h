@@ -34,7 +34,8 @@ RcppExport SEXP loglikMVN(SEXP yl, SEXP yu,
 			  SEXP mu, SEXP dmu,
 			  SEXP s, SEXP ds,
 			  SEXP z, SEXP su, SEXP dsu,
-			  SEXP threshold, SEXP dthreshold);
+			  SEXP threshold, SEXP dthreshold,
+			  SEXP score);
 
 extern "C" double bvnd_(const double *dh, const double *dk, const double *r);
 
@@ -45,7 +46,7 @@ double Sbvn(double &l1, double &l2,double &r);
 inline double Fbvn(double u1, double u2, double r) { 
   u1 *= -1; u2 *= -1; 
   return(Sbvn(u1,u2,r)); 
-};
+}
 
 vecmat Dbvn(double y1, double y2, double R);
 
