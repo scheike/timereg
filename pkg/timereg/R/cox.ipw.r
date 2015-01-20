@@ -31,7 +31,7 @@ cox.ipw <- function(survformula,glmformula,d=sys.parent(),max.clust=NULL,ipw.se=
   coxiid <- udca$gamma.iid
 
 if (ipw.se==TRUE)  { ## {{{ 
-if (!require(numDeriv)) stop("numDeriv needed")
+if (!requireNamespace(numDeriv)) stop("numDeriv needed")
 glmiid <-   lava::iid(ggl)
 mat <- mat[ggl$y==1,]
 par <- coef(ggl)
