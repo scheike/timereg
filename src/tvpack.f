@@ -109,7 +109,8 @@ c$$$      END
       EXTERNAL TVTMFN
       INTEGER NU, NUC
       DOUBLE PRECISION H(3), H1, H2, H3, R(3), R12, R13, R23, EPSI
-      DOUBLE PRECISION ONE, ZRO, EPS, ZROS(3), HS(3), TVT
+      DOUBLE PRECISION ONE, ZRO, EPS, TVT
+* ZROS(3), HS(3)
       DOUBLE PRECISION RUA, RUB, AR, RUC, PT, BVTL, PHID, ADONET
       PARAMETER ( ZRO = 0, ONE = 1 )
       COMMON /TVTMBK/ H1, H2, H3, R23, RUA, RUB, AR, RUC, NUC
@@ -249,6 +250,7 @@ c$$$      END
       COMMON /ABLK/ ERR, IM
       AI(1) = A
       BI(1) = B
+      FIN = 0
       ERR = 1
       IP = 1
       IM = 1
@@ -442,8 +444,8 @@ c$$$      END
             XNHK = 0  
             XNKH = 0  
          END IF
-         HS = SIGN( ONE, DH - R*DK )  
-         KS = SIGN( ONE, DK - R*DH ) 
+         HS = INT( SIGN( ONE, DH - R*DK ) )
+         KS = INT ( SIGN( ONE, DK - R*DH ) )
          IF ( MOD( NU, 2 ) .EQ. 0 ) THEN
             BVT = ATAN2( SQRT(ORS), -R )/TPI 
             GMPH = DH/SQRT( 16*( NU + DH**2 ) )  
