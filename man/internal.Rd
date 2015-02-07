@@ -18,6 +18,7 @@
 \alias{piecewise.twostage}
 \alias{plotcr}
 \alias{pmvn}
+\alias{scoreMVN}
 \alias{sim}
 \alias{simBinFam}
 \alias{simBinFam2}

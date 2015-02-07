@@ -21,7 +21,23 @@ or2prob <- function(OR,marg) {
 }
 
 
+##' Estimate parameters from odds-ratio
+##'
+##' Calculate tetrachoric correlation of probabilities from odds-ratio
+##' @param P Joint probabilities or marginals (if OR is given)
+##' @param OR Odds-ratio
+##' @param approx If TRUE an approximation of the tetrachoric correlation is used
+##' @param ... Additional arguments
 ##' @export
+##' @aliases or2prob tetrachoric
+##' @examples
+##' tetrachoric(0.3,1.25) # Marginal p1=p2=0.3, OR=2
+##' P <- matrix(c(0.1,0.2,0.2,0.5),2)
+##' prod(diag(P))/prod(revdiag(P))
+##' ##mets:::assoc(P)
+##' tetrachoric(P)
+##' or2prob(2,0.1)
+##' or2prob(2,c(0.1,0.2))
 tetrachoric <- function(P,OR,approx=0,...) {
     if (!missing(OR)) {
         ## Assuming P[1],P[2] is the marginals

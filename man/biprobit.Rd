@@ -3,8 +3,6 @@
 \alias{biprobit}
 \alias{biprobit.time}
 \alias{biprobit.vector}
-\alias{or2prob}
-\alias{tetrachoric}
 \title{Bivariate Probit model}
 \usage{
 biprobit(x, data, id, rho = ~1, num = NULL, strata = NULL,
@@ -67,13 +65,6 @@ a <- biprobit(cancer~1+zyg, ~1+zyg, data=prt0, id="id")
 b <- biprobit(cancer~1+zyg, ~1+zyg, data=prt0, id="id",pairs.only=TRUE)
 predict(b,newdata=Expand(prt,zyg=c("MZ")))
 predict(b,newdata=Expand(prt,zyg=c("MZ","DZ")))
-
-\donttest{
-prtw <- ipw(Surv(time,status==0)~1,data=prt0)
-b1 <- biprobit(cancer~1+zyg, ~1+zyg, data=prtw, id="id", weights="w", pairs.only=TRUE,table=FALSE)
-b2 <- biprobit(cancer~1+zyg, ~1+zyg, data=prtw, id="id", weights="w", pairs.only=TRUE)
-}
-
 
 \donttest{
 m <- lvm(c(y1,y2)~x)

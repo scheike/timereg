@@ -221,7 +221,7 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
 ##' Bivariate Probit model
 ##' 
 ##' @export
-##' @aliases biprobit biprobit.vector biprobit.time tetrachoric or2prob
+##' @aliases biprobit biprobit.vector biprobit.time
 ##' @param x formula (or vector)
 ##' @param data data.frame
 ##' @param id The name of the column in the dataset containing the cluster id-variable.
@@ -252,13 +252,6 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
 ##' predict(b,newdata=Expand(prt,zyg=c("MZ","DZ")))
 ##' 
 ##' \donttest{
-##' prtw <- ipw(Surv(time,status==0)~1,data=prt0)
-##' b1 <- biprobit(cancer~1+zyg, ~1+zyg, data=prtw, id="id", weights="w", pairs.only=TRUE,table=FALSE)
-##' b2 <- biprobit(cancer~1+zyg, ~1+zyg, data=prtw, id="id", weights="w", pairs.only=TRUE)
-##' }
-##' 
-##' 
-##' \donttest{
 ##' m <- lvm(c(y1,y2)~x)
 ##' covariance(m,y1~y2) <- "r"
 ##' constrain(m,r~x+a+b) <- function(x) tanh(x[2]+x[3]*x[1])
@@ -274,13 +267,20 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
 ##' pp <- predict(a,data.frame(x=seq(-1,1,by=.1)),which=c(1))
 ##' plot(pp[,1]~pp$x, type="l", xlab="x", ylab="Concordance", lwd=2, xaxs="i")
 ##' confband(pp$x,pp[,2],pp[,3],polygon=TRUE,lty=0,col=Col(1))
-##' ##'
+##' 
 ##' pp <- predict(a,data.frame(x=seq(-1,1,by=.1)),which=c(9)) ## rho
 ##' plot(pp[,1]~pp$x, type="l", xlab="x", ylab="Correlation", lwd=2, xaxs="i")
 ##' confband(pp$x,pp[,2],pp[,3],polygon=TRUE,lty=0,col=Col(1))
 ##' with(pp, lines(x,tanh(-x),lwd=2,lty=2))
+##' 
+##' xp <- seq(-1,1,length.out=6); delta <- mean(diff(xp))
+##' a2 <- biprobit(y~1+x,rho=~1+I(cut(x,breaks=xp)),data=dd,id="id")
+##' pp2 <- predict(a2,data.frame(x=xp[-1]-delta/2),which=c(9)) ## rho
+##' confband(pp2$x,pp2[,2],pp2[,3],center=pp2[,1])
+##' 
+##' 
 ##' }
-##' ##'
+##' 
 ##' ## Time
 ##' \dontrun{
 ##'     a <- biprobit.time(cancer~1, rho=~1+zyg, id="id", data=prt, eqmarg=TRUE,
