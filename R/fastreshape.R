@@ -197,7 +197,14 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
             if (!is.null(names(vnames))) vnames <- names(vnames)
         }
 
-        if (oldreshape) return(reshape(as.data.frame(data),varying=varying,direction="long",v.names=vnames,timevar=numname,idvar=idname,...)) ### Fall-back to stats::reshape
+        if (oldreshape) {
+            ## Fall-back to stats::reshape
+            return(
+                structure(reshape(as.data.frame(data),varying=varying,direction="long",v.names=vnames,timevar=numname,idvar=idname,...),
+                          class=c("fast.reshape","data.frame"),
+                          direction="wide",
+                          varying=varying))
+        }
 
         fixed <- setdiff(nn,unlist(c(varying,numname)))
         if (!missing(keep)) fixed <- intersect(fixed,c(keep,idname,numname))
@@ -248,7 +255,11 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
                 long[,vars.new[i]] <- base::factor(long[,vars.new[i]],levels=lev[[count]])
             }
         }
-        return(long)
+        return(
+            structure(long,
+                      class=c("fast.reshape","data.frame"),
+                      type="wide",
+                      varying=varying))
     }
 
 
@@ -342,7 +353,8 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
                         as.vector(t(outer(postn,varying,function(x,y) paste(y,x,sep=sep)))))      
         }
         colnames(dataw) <- mnames
-        return(as.data.frame(dataw))
+        return(structure(as.data.frame(dataw),class=c("fast.reshape","data.frame"),
+                         varying=varying,direction="long"))
     }
 
     ## Potentially slower with data.frame where we use cbind
@@ -363,10 +375,10 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
                 mnames <- c(mnames,paste(varying,sep,i,sep=""))
         }
     }
-    names(dataw) <- mnames    
-    return(dataw)
+    names(dataw) <- mnames
+    return(structure(dataw,class=c("fast.reshape","data.frame"),
+                     varying=varying,type="long"))
 } 
-
 
 simple.reshape <- function (data, id = "id", num = NULL) {
     cud <- cluster.index(data[, c(id)], num = num, Rindex = 1)
