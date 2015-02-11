@@ -21,7 +21,13 @@ git@github.com:kkholst/mets.git
 
 ** Citation
 
-To cite the =mets= package please use the following reference
+To cite the =mets= package please use one of the following references
+
+#+BEGIN_QUOTE
+  Klaus K. Holst and Thomas H. Scheike Jacob B. Hjelmborg (2015). 
+  The Liability Threshold Model for Censored Twin Data.
+  Computational Statistics and Data Analysis. [[http://dx.doi.org/10.1016/j.csda.2015.01.014]]
+#+END_QUOTE
 
 #+BEGIN_QUOTE
   Thomas H. Scheike and Klaus K. Holst and Jacob B. Hjelmborg (2013). 
@@ -31,7 +37,17 @@ To cite the =mets= package please use the following reference
 
 BibTeX:
 #+BEGIN_EXAMPLE
-  @Article{
+  @Article{,
+    title={The Liability Threshold Model for Censored Twin Data},
+    author={Holst, Klaus K. and Scheike, Thomas H. and Hjelmborg, Jacob B.},
+    year={2015},
+    doi={10.1016/j.csda.2015.01.014},
+    url={http://dx.doi.org/10.1016/j.csda.2015.01.014},
+    journal={Computational Statistics and Data Analysis}
+  }
+
+
+  @Article{,
     title={Estimating heritability for cause specific mortality based on twin studies},
     author={Scheike, Thomas H. and Holst, Klaus K. and Hjelmborg, Jacob B.},
     year={2013},
