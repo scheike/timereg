@@ -150,13 +150,11 @@ des.rv <- cbind(theta.des,(zygbin==1)*rep(c(1,0)),(zygbin==1)*rep(c(0,1)),1)
 ### design making parameters half the variance for dizygotic components
 pardes <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0), c(0,1))
 
-\donttest{
-outacem <-Grandom.cif(addm,data=multcif,causeS=1,Nit=30,detail=0,
-          theta=c(-1.21,2.1),theta.des=pardes,step=1.0,random.design=des.rv)
-summary(outacem)
-### genetic variance is
-exp(outacem$theta[1])/sum(exp(outacem$theta))^2
-}
+## outacem <-Grandom.cif(addm,data=multcif,causeS=1,Nit=30,detail=0,
+##          theta=c(-1.21,2.1),theta.des=pardes,step=1.0,random.design=des.rv)
+## summary(outacem)
+## ## genetic variance is
+## exp(outacem$theta[1])/sum(exp(outacem$theta))^2
 }
 \author{
 Thomas Scheike

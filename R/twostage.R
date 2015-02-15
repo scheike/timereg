@@ -625,7 +625,7 @@ idi <- unique(data[,id]);
 
 ## {{{ 
 ###   se.clusters=NULL,max.clust=1000,
-###  evt sætte cluster se max.clust på 
+###  evt saette cluster se max.clust paa 
 ###  if (is.null(se.clusters)) { se.clusters <- clusters; antiid <- nrow(clusterindex);} else  {
 ###      iids <-  unique(seclusters); 
 ###      antiid <- length(iids); 
