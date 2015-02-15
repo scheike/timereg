@@ -102,6 +102,6 @@ BibTeX:
 #+END_SRC
 
 :RESULTS:
-[[file:examples/mets1.png]]
+[[file:inst/mets1.png]]
 :END:
 
