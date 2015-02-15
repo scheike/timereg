@@ -21,6 +21,10 @@ survpois(object, ..., timevar = "int.end", time, int.len, confint = FALSE,
 \item{confint}{If TRUE confidence limits are supplied}
 
 \item{level}{Level of confidence limits}
+
+\item{individual}{Individual predictions}
+
+\item{length.out}{Length of time vector}
 }
 \description{
 Summary for survival analyses via the 'lifetable' function

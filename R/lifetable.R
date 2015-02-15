@@ -157,6 +157,8 @@ LifeTable <- function(time,status,entry=NULL,strata=list(),breaks=c(),confint=FA
 ##' @param int.len Time interval length (optional)
 ##' @param confint If TRUE confidence limits are supplied
 ##' @param level Level of confidence limits
+##' @param individual Individual predictions
+##' @param length.out Length of time vector
 ##' @export
 ##' @author Klaus K. Holst
 survpois <- function(object,...,timevar="int.end",time,int.len,confint=FALSE,level=0.95,individual=FALSE,length.out=25) {

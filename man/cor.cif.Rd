@@ -197,7 +197,7 @@ summary(or1)
                  par.func=parfunc,dpar.func=dparfunc,dimpar=4,
                  control=list(trace=TRUE),detail=1)
 summary(cor1)
-##'
+
 ### piecewise contant OR model
 gparfunc <- function(par,t,pardes)
 {

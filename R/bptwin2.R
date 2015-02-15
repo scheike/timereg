@@ -63,7 +63,7 @@ bptwin2 <- function(formula, data, id, zyg, DZ, group=NULL,
       if (!samecens & !is.null(weight)) {
         control$method <- "bhhh"
       } else {
-        if (suppressWarnings(suppressPackageStartupMessages(require(ucminf)))) {
+        if (requireNamespace("ucminf",quietly=TRUE)) {
           control$method <- "gradient"
         } else control$method <- "nlminb"
       }

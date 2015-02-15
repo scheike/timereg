@@ -218,7 +218,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
     padd <- predict(add,X=1,se=1,uniform=uniform,resample.iid=resample.iid)
     padd$cluster.names <- lse.clusters
   } else {
-      if (!require(prodlim)) stop("prodlim requested but not installed")
+      if (!requireNamespace("prodlim",quietly=TRUE)) stop("prodlim requested but not installed")
     ff <- as.formula(paste("Hist(",timevar,",",causes,")~",paste(c("1",covars,indiv2),collapse="+")))
     padd <- prodlim::prodlim(ff,data=mydata)
   }
