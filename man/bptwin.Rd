@@ -77,13 +77,11 @@ genetic factors, unique environmental factors).}
 Liability-threshold model for twin data
 }
 \examples{
-\donttest{
 data(twinstut)
 b0 <- bptwin(stutter~sex,
              data=droplevels(subset(twinstut,zyg\%in\%c("mz","dz"))),
              id="tvparnr",zyg="zyg",DZ="dz",type="ae")
 summary(b0)
-}
 }
 \author{
 Klaus K. Holst

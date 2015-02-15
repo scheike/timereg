@@ -31,10 +31,6 @@ Create simple life table
 \examples{
 library(timereg)
 data(TRACE)
-\donttest{
-    lifetable(Surv(time,status==9)~sex+I(cut(wmi,c(-Inf,1,1.5,Inf))),
-              data=TRACE,breaks=c(0.2),confint=TRUE)
-}
 
 d <- with(TRACE,lifetable(Surv(time,status==9)~sex+vf,breaks=c(0,0.2,0.5,8.5)))
 summary(glm(events ~ offset(log(atrisk))+factor(int.end)*vf + sex*vf,

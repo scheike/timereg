@@ -35,10 +35,6 @@
 ##' d2 <- transform(d,x2cat=cut(x2,3,labels=c("Low","Med","High")))
 ##' ace4 <- twinlm(y ~ x1+x2cat, data=d2, DZ="DZ", zyg="zyg", id="id", type="ace")
 ##' }
-##' ## plot the model structure
-##' \dontrun{
-##' plot(ace4)
-##' }
 ##' @keywords models
 ##' @keywords regression
 ##' @param formula Formula specifying effects of covariates on the response

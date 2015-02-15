@@ -521,7 +521,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##'                  par.func=parfunc,dpar.func=dparfunc,dimpar=4,
 ##'                  control=list(trace=TRUE),detail=1)
 ##' summary(cor1)
-##' ##'
+##' 
 ##' ### piecewise contant OR model
 ##' gparfunc <- function(par,t,pardes)
 ##' {

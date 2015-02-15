@@ -40,13 +40,11 @@
 ##' @author Klaus K. Holst
 ##' @export
 ##' @examples
-##' \donttest{
 ##' data(twinstut)
 ##' b0 <- bptwin(stutter~sex,
 ##'              data=droplevels(subset(twinstut,zyg%in%c("mz","dz"))),
 ##'              id="tvparnr",zyg="zyg",DZ="dz",type="ae")
 ##' summary(b0)
-##' }
 bptwin <- function(x, data, id, zyg, DZ, group=NULL,
                    num=NULL,
                    weights=NULL,

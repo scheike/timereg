@@ -4,8 +4,8 @@
 \alias{survpois}
 \title{Extract survival estimates from lifetable analysis}
 \usage{
-survpois(object, ..., timevar = "int.end", time, confint = FALSE,
-  level = 0.95)
+survpois(object, ..., timevar = "int.end", time, int.len, confint = FALSE,
+  level = 0.95, individual = FALSE, length.out = 25)
 }
 \arguments{
 \item{object}{glm object (poisson regression)}
@@ -16,11 +16,11 @@ survpois(object, ..., timevar = "int.end", time, confint = FALSE,
 
 \item{time}{Time points (optional)}
 
+\item{int.len}{Time interval length (optional)}
+
 \item{confint}{If TRUE confidence limits are supplied}
 
 \item{level}{Level of confidence limits}
-
-\item{int.len}{Time interval length (optional)}
 }
 \description{
 Summary for survival analyses via the 'lifetable' function
