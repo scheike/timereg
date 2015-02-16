@@ -66,8 +66,9 @@ lifetable.formula <- function(x,data=parent.frame(),breaks=c(),confint=FALSE,...
 }
 
 
-LifeTable <- function(time,status,entry=NULL,strata=list(),breaks=c(),confint=FALSE,interval=TRUE) {
+LifeTable <- function(time,status,entry=NULL,strata=list(),breaks=c(),confint=FALSE,interval=TRUE,mesg=FALSE) {    
     if (is.null(entry)) entry <- rep(0,NROW(time))
+    if (mesg) message(dim(time))
     if ((is.matrix(time) || is.data.frame(time)) && ncol(time)>1) {
         if (ncol(time)==3) {
             status <- time[,3]
@@ -84,9 +85,10 @@ LifeTable <- function(time,status,entry=NULL,strata=list(),breaks=c(),confint=FA
                 FUN=LifeTable, breaks=breaks, confint=confint)
         cl <- lapply(strata,class)
         nulls <- which(unlist(lapply(a,is.null)))
+        nonnulls <- setdiff(seq_along(a),nulls)
         nn <- do.call("expand.grid",attributes(a)$dimnames)
         if (length(nulls)>0) nn <- nn[-nulls,,drop=FALSE]
-        nam <- nn[rep(seq(NROW(nn)),each=NROW(a[[1]])),,drop=FALSE]
+        nam <- nn[rep(seq(NROW(nn)),each=NROW(a[[nonnulls[1]]])),,drop=FALSE]
         xx <- list()
         for (i in seq(ncol(nam))) {
             if (cl[i]%in%c("numeric","integer"))
@@ -166,24 +168,33 @@ survpois <- function(object,...,timevar="int.end",time,int.len,confint=FALSE,lev
     timevar_re0 <- gsub("\\$|\\^","",glob2rx(timevar))
     timevar_re <- paste0(timevar_re0,"[0-9]+\\.*[0-9]*")
     idx <- regexpr(timevar_re,nn)
+    dots <- list(...)
     if (all(idx<0)) {
         timevar_re0 <- gsub("\\$|\\^","",glob2rx(paste0("factor(",timevar,")")))
         timevar_re <- paste0(timevar_re0,"[0-9]+\\.*[0-9]*")
         idx <- regexpr(timevar_re,nn)
     }
     tvar <- unique(regmatches(nn,idx))
-    if (missing(time)) {
+    if (missing(time)) {        
+        i0 <- intersect(seq(nrow(object$data)),which(object$data[,"rate"]>0))
+        for (i in seq_along(dots)) {
+             i0 <- intersect(i0,which(object$data[,names(dots)[i]]==dots[[i]]))
+        }
         time <- sort(unique(as.numeric(gsub(timevar_re0,"",tvar))))        
-        rg <- range(object$data[,timevar],na.rm=TRUE)
-        if (length(time)==0) time <- seq(rg[1],rg[2],length.out=length.out)
+        rg <- range(object$data[i0,timevar],na.rm=TRUE)
+        if (length(time)==0) {
+            time <- seq(rg[1],rg[2],length.out=length.out)
+        } else {
+            time <- seq(1,rg[2])
+        }
     }
+    message(paste(time,collapse=","))
     if (missing(int.len)) {
         int.len <- diff(c(0,time))
     } else if (int.len==1) int.len <- rep(int.len,nrow(res))
     tt <- terms(object)
     ##if (attr(tt,"offset")) tt <- drop.terms(tt,dropx=attr(tt,"offset")-1)
     vv <- all.vars(formula(tt))
-    dots <- list(...)
     dots[[timevar]] <- time
     if (individual) {
         newdata <- as.data.frame(dots)
@@ -200,7 +211,6 @@ survpois <- function(object,...,timevar="int.end",time,int.len,confint=FALSE,lev
     Terms <- delete.response(tt)    
     m <- model.frame(Terms, newdata, xlev = object$xlevels)
     X <- model.matrix(Terms, m, contrasts.arg = object$contrasts)
-    ##browser()
     ## NA-robust matrix product
     beta0 <- coef(object); beta0[is.na(beta0)] <- -.Machine$double.xmax    
     V <- vcov(object)    
