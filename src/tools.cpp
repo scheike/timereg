@@ -207,23 +207,29 @@ BEGIN_RCPP
   bool Equal = Rcpp::as<bool>(equal);
   vector<int> idx(NewTime.size());
   vector<int> eq(NewTime.size());
-  
+
+  double vmax = Sorted[Sorted.size()-1];
   NumericVector::iterator it;  
-  double upper; int pos=0;
+  double upper=0.0; int pos=0;
   for (int i=0; i<NewTime.size(); i++) {    
     eq[i] = 0;
-    it = lower_bound(Sorted.begin(), Sorted.end(), NewTime[i]);
-    upper = *it;
-    if (it == Sorted.begin()) { 
-      pos = 0; 
-      if (Equal && (NewTime[i]==upper)) { eq[i] = 1; }
-    }
-    else if (int(it-Sorted.end())==0) {
+    if (NewTime[i]>vmax) {
       pos = Sorted.size()-1;
     } else {
-      pos = int(it-Sorted.begin());
-      if (Type==0 && fabs(NewTime[i]-Sorted[pos-1])<fabs(NewTime[i]-Sorted[pos])) pos -= 1;
-      if (Equal && (NewTime[i]==upper)) { eq[i] = pos+1; }
+      it = lower_bound(Sorted.begin(), Sorted.end(), NewTime[i]);
+      upper = *it;
+      if (it == Sorted.begin()) { 
+	pos = 0; 
+	if (Equal && (NewTime[i]==upper)) { eq[i] = 1; }
+      }
+      // else if (int(it-Sorted.end())==0) {
+      // 	pos = Sorted.size()-1;
+      // }
+      else {
+	pos = int(it-Sorted.begin());
+	if (Type==0 && fabs(NewTime[i]-Sorted[pos-1])<fabs(NewTime[i]-Sorted[pos])) pos -= 1;
+	if (Equal && (NewTime[i]==upper)) { eq[i] = pos+1; }
+      }
     }
     if (Type==2 && NewTime[i]<upper) pos--;
     idx[i] = pos+1;
