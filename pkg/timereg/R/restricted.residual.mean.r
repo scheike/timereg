@@ -33,7 +33,7 @@ if (iid==1) {
    }
    variid <- t(etiid) %*% etiid 
    se  <- diag(variid)^.5
-} else { var.mean <- se <- NULL }
+} else { variid <- se <- NULL }
 } ## }}}
 
 if (class(out)=="aalen")  ## {{{ 
@@ -64,7 +64,7 @@ if (iid==1) {
    }
    variid <- t(etiid) %*% etiid 
    se  <- diag(variid)^.5
-} else { var.mean <- se <- NULL }
+} else { variid <- se <- NULL }
 } ## }}}
 
 out <- list(mean=ee,var.mean=variid,se=se,S0tau=S0t,timetau=timetau)

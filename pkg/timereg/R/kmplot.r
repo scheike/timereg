@@ -3,7 +3,7 @@ kmplot<- function(x,loc=NULL,col=NULL,lty=NULL,...)
 { ## {{{ 
 	### default location if loc not given 
 	if (is.null(loc)) { 
-		if (min(x$surv)>0.7) loc <- "bl" else loc <- "tr"
+		if (min(x$surv)>0.7) loc <- "bl" else loc <- "bl"
 	}
 	if (loc=="bl") loc <- "bottomleft"
 	else if (loc=="br") loc <- "bottomright"
