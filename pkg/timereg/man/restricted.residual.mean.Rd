@@ -39,8 +39,7 @@ Returns an object. With the following arguments:
 }
 \author{Thomas Scheike}
 \examples{
-\donttest{
-library(timereg)
+	library(timereg)
 data(sTRACE)
 sTRACE$cage <- scale(sTRACE$age)
 # Fits Cox model  and aalen model 
@@ -64,6 +63,5 @@ mm <-cbind(coxrm$mean,coxrm$se,aalenrm$mean,aalenrm$se)
 colnames(mm)<-c("cox-res-mean","se","aalen-res-mean","se")
 rownames(mm)<-c("baseline","+chf","+chf+vf","+vf")
 mm
-}
 }
 \keyword{survival}

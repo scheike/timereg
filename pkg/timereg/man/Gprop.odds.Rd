@@ -111,6 +111,8 @@ Springer (2006).
 }
 \author{Thomas Scheike}
 \examples{
+data(sTRACE)
+### runs slowly and is therefore not tested 
 \donttest{
 library(timereg)
 data(sTRACE)

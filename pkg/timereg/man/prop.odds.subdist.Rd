@@ -115,7 +115,6 @@ Springer (2006).
 }
 \author{Thomas Scheike}
 \examples{
-\donttest{
 library(timereg)
 data(bmt)
 # Fits Proportional odds model 
@@ -136,7 +135,6 @@ plot(pout2,col=2)
 pout1 <- predictpropodds(out,X=c(1,0,1))
 lines(pout1$time,pout1$pred,type="l")
 
-
 # Fits Proportional odds model with stratified baseline, does not work yet!
 ###out <- Gprop.odds.subdist(Surv(time,cause==1)~-1+factor(platelet)+
 ###prop(age)+prop(tcell),data=bmt,cause=bmt$cause,
@@ -145,6 +143,5 @@ lines(pout1$time,pout1$pred,type="l")
 ###par(mfrow=c(2,3))
 ###plot(out,sim.ci=2); 
 ###plot(out,score=1) 
-}
 }
 \keyword{survival}

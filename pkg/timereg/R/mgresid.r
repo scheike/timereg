@@ -2,9 +2,6 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
 	weighted.test=0,max.point.func=50,weights=NULL)
 { ## {{{
 ## {{{ setting up
-###  if (weighted.test==1) { cat(" Can only use weighted.test=0, under development\n"); 
-###	                  weighted.test <- 0; 
-###  }
   start.design<-1; silent <- 1; offsets <- NULL; 
   if (!(class(object)!="aalen" | class(object)!="timecox" | class(object)!="cox.aalen" ))
     stop ("Must be output from aalen() timecox() or cox.aalen() functions\n") 
@@ -20,8 +17,6 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   stratum <- attr(object,"stratum"); 
   rate.sim <- 1; 
   weights1 <- NULL
-###  if (class(object)=="cox.aalen") 
-###	  if (attr(object,"rate.sim")==0)  stop("Only works with rate.sim=1, in cox.aalen call\n"); 
   if (class(object)=="cox.aalen") {
     dcum<-apply(as.matrix(object$cum[,-1]),2,diff); 
     beta<-object$gamma; 
@@ -32,7 +27,6 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   } else { dcum<-0; beta<-0; coxaalen<-0; pg<-0;Z<-0; }
 
   id<-attr(object,"id"); 
-###  cluster<-attr(object,"cluster");  gruperet cluster men skal være for sortering
   cluster<-attr(object,"cluster"); 
   formula<-attr(object,"Formula"); 
   start.time<-attr(object,"start.time"); 
@@ -50,7 +44,6 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   time2<-attr(object,"stop"); 
   if (sum(time)==0) type <- "right" else type <- "counting"
   status<-attr(object,"status");  
-###  print(status); print("mig"); print(time); print(time2); print(timel); print(time2l);
   if (is.null(weights)) weights <- rep(1,nrow(X));  
   if (is.null(weights1)) weights1 <- rep(1,nrow(X));  
   if (is.null(offsets)) offsets <- rep(0,nrow(X));  
@@ -84,8 +77,6 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
    X<-as.matrix(X[ot,])
    if (coxaalen==1) Z<-as.matrix(Z[ot,])
    if (model==1) modelmatrix<-as.matrix(modelmatrix[ot,])
-###  print(head(X))
-###   start <- rep(0,length(time2))
    start <- time[ot] ### fra call 
    stop<-time2;      ### fra call
    cluster<-cluster[ot]

@@ -1,6 +1,8 @@
 useDynLib(timereg) 
 
 import(survival)
+import(numDeriv,jacobian)
+importFrom(lava,iid)
 
 export("aalen",
        "aalen.des",
@@ -123,7 +125,12 @@ S3method(coef,dynreg)
 S3method(coef,timecox)
 S3method(coef,two.stage)
 
-importFrom(lava,iid)
+S3method(print,Event)
+S3method(summary,Event)
+S3method(rbind,Event)
+S3method(as.matrix,Event)
+S3method(as.character,Event)
+S3method(format,Event)
 
 export("plot.aalen",
        "plot.comprisk",

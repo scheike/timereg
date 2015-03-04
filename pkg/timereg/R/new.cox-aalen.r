@@ -110,8 +110,6 @@ max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL)
 
 if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
    # order in time, status=0 first for ties
-   # strata først order in time, status=0 first for ties
-### if (!is.null(strata)) ot<-order(strata,-time2,status==1) else 
    ot<-order(-time2,status==1); 
    time2<-time2[ot]; 
    status<-status[ot]; 
@@ -127,7 +125,7 @@ if ( (attr(m[, 1], "type") == "right" ) ) {  ## {{{
   } else {
         eventtms <- c(survs$start,time2)
         status <- c(rep(0, nobs), status)
-	### strata først order in time, status=0 first for ties
+### order: strata , time, status=0 first for ties
 ###        if (!is.null(strata)) ix<-order(strata,-eventtms,status==1) else 
 	ix <- order(-eventtms,status==1)
         etimes    <- eventtms[ix]  # Entry/exit times

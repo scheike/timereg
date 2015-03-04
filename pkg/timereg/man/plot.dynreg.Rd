@@ -51,6 +51,7 @@ Springer (2006).
 }
 \author{Thomas Scheike}
 \examples{
+### runs slowly and is therefore not tested 
 \donttest{
 library(survival)
 data(csl)
