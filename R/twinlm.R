@@ -216,10 +216,10 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
   }
 
   if (inherits(data[,yvar],"Surv")) {
-    if (!requireNamespace("lava.tobit",quietly=TRUE)) stop("lava.tobit required")
-    if (is.null(optim$method))
-       optim$method <- "nlminb1"
-    suppressWarnings(e <- estimate(mm,dd,control=optim,missing=missing,...))
+      if (!require("lava.tobit",quietly=TRUE)) stop("lava.tobit required")
+      if (is.null(optim$method))
+          optim$method <- "nlminb1"
+      suppressWarnings(e <- estimate(mm,dd,control=optim,...))
   } else {
       suppressWarnings(e <- estimate(mm,dd,weight=weight,estimator=estimator,fix=FALSE,control=optim,...))
   }
