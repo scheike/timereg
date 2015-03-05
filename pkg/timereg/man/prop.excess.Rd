@@ -74,7 +74,7 @@ Springer Verlag (2006).
 }
 \author{Torben Martinussen}
 \examples{
-###working on memory leak issue
+###working on memory leak issue, 3/3-2015
 ###data(melanoma)
 ###lt<-log(melanoma$thick)          # log-thickness 
 ###excess<-(melanoma$thick>=210)    # excess risk for thick tumors
