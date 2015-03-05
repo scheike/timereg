@@ -14,8 +14,8 @@ comprisk.ipw <- function(compriskformula,glmformula,data=sys.parent(),cause=1,
   compriskiid <- udca$gamma.iid
 
 if (ipw.se==TRUE)  { ## {{{ 
-requireNamespace("lava"); 
-requireNamespace("NumDeriv"); 
+###requireNamespace("lava"); 
+###requireNamespace("NumDeriv"); 
 	glmiid <-   lava::iid(ggl)
 	mat <- mat[ggl$y==1,]
 	par <- coef(ggl)
