@@ -1,8 +1,8 @@
 useDynLib(timereg) 
 
 import(survival)
-importFrom(numDeriv,jacobian)
-importFrom(lava,iid)
+import(numDeriv)
+import(lava)
 
 export("aalen",
        "aalen.des",
