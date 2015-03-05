@@ -132,6 +132,10 @@ S3method(as.matrix,Event)
 S3method(as.character,Event)
 S3method(format,Event)
 
+S3method(coef,comprisk)
+S3method(predict,timereg)
+S3method(plot,cums)
+
 export("plot.aalen",
        "plot.comprisk",
        "plot.cum.residuals",
@@ -171,6 +175,7 @@ export("plot.aalen",
        "predict.timereg",
        "predict.cox.aalen",
        "predict.two.stage",
+       "predict.timereg",
        "coef.aalen",
        "coef.cox.aalen",
        "coef.comprisk",
