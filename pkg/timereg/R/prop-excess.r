@@ -1,8 +1,8 @@
 #source('propbase.r')
 
-prop.excessBase<-function(time,status,X,Z,excess,tol=0.0001,alpha=1,frac=1,
-                          no.sim=500){
-               X<-as.matrix(X); Z<-as.matrix(Z); # ts 
+prop.excessBase<-function(time,status,X,Z,excess,tol=0.0001,alpha=1,frac=1,no.sim=500){
+           X<-as.matrix(X); 
+           Z<-as.matrix(Z); 
 	   n<-length(time);p<-dim(X)[2];q<-dim(Z)[2]
 
            status[status!=1]<-0 
@@ -73,10 +73,10 @@ prop.excessBase<-function(time,status,X,Z,excess,tol=0.0001,alpha=1,frac=1,
 	#print(c('n, k, k1',n,k,k1))
 	#print(c('p,q',p,q))
 	#print(c('alpha,no.sim,tol',alpha,no.sim,tol))
-	  U.out<-.C("addmult",time,status,X,X.til,Z,Uinp,dUinp,optinp,
+        U.out<-.C("addmult",time,status,X,X.til,Z,Uinp,dUinp,optinp,
                         excess,phi,s.time,beta,n,p,q,k,tol,alpha,
                         Psiinp,CoVarPsiinp,VarPsiinp,rani,testinp,testinpHW,testinpCM,
-                        testinpGOFCM,Scoreinp,no.sim,k1) ### ,PACKAGE="timereg")
+                        testinpGOFCM,Scoreinp,no.sim,k1,PACKAGE="timereg")
           U.bet<-U.out[[6]]
           D.bet<-U.out[[7]];#print(c('D.bet',D.bet))
           I.bet<-U.out[[8]];#print(c('I.bet',I.bet))
@@ -145,5 +145,5 @@ pval.HW=p.valHW,pval.CM=p.valCM,quant95=quant95,quant95HW=quant95HW,
 	#	       return(s.time,beta,Varbeta,Psi,VarPsi,p,q,D.bet,p.valHW,p.valCM,
         #       p.valGOFCM,quant95,quant95HW,simScoreProp)
 	return(ud)
-	 }
+}
 

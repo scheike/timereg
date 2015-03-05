@@ -17,6 +17,7 @@ int *sim,*antsim,*retur,*nxval,*nx,*px,*na,*pa,*antpers,*Ntimes,*mw,*rani,*statu
   vector *dAt[*Ntimes];
   matrix *cumBt[*antpers];
   vector *cumhatB[*antpers],*cumB[*antpers],*cum;
+  int silent=1; 
   int pers=0,i,j,k,s,c,count,pmax,nmax,risk;
   int *coef=calloc(1,sizeof(int)),*imin=calloc(1,sizeof(int)),
       *ps=calloc(1,sizeof(int)),*degree=calloc(1,sizeof(int));
@@ -69,7 +70,7 @@ int *sim,*antsim,*retur,*nxval,*nx,*px,*na,*pa,*antpers,*Ntimes,*mw,*rani,*statu
 	    count=count+1;} 
 	}
 
-      MtA(ldesignA,ldesignA,Aa); invert(Aa,AaI);
+      MtA(ldesignA,ldesignA,Aa); invertS(Aa,AaI,silent);
       if (ME(AaI,0,0)==0.0) 
 	Rprintf("Dynadd: Aalen design not invertible at time %lf",time); 
       extract_row(ldesignA,pers,xai); 
@@ -88,7 +89,8 @@ int *sim,*antsim,*retur,*nxval,*nx,*px,*na,*pa,*antpers,*Ntimes,*mw,*rani,*statu
 	{scl_vec_mult(VE(pahat,j),extract_row(ldesignX,j,dB),dB);
 	  replace_row(cdesignX,j,dB); VE(pbahat,j)=VE(pbhat,j)*VE(pdA,j); } 
 
-      MtA(cdesignX,ldesignX,A); invert(A,AI);
+      MtA(cdesignX,ldesignX,A); 
+      invertS(A,AI,silent);
       if (ME(AI,0,0)==0.0) 
 	Rprintf("Dynadd: Regression design not invertible at time %lf",time); 
       extract_row(ldesignX,pers,tmpv); Mv(AI,tmpv,tmpv1); 
@@ -203,7 +205,7 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
   vector *tmpv,*tmpv1,*tmpv2,*tmpv3,*tmpv4,*zi,*xi,*ZHdp,*IZHdp,*IZHdN,*ZHdN;
   vector *korgamly,*korgam,*gamstart;
   vector *rowX,*rowZ,*difX,*dgamef,*gammsd,*ai; 
-  int l,i,j,k,s,c,count,pmax,nmax,pers=0;
+  int l,i,j,k,s,c,count,pmax,nmax,pers=0,silent=1;
   int robust=1,*ipers=calloc(*Ntimes,sizeof(int)), 
       *imin=calloc(1,sizeof(int)); 
   double time,dtime,zpers,risk,YoneN,dif,dif2,ctime;
@@ -281,7 +283,7 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
       Mv(ldesignG,gam,pghat);
       vec_add(pbhat,pghat,pbghat); 
 
-      MtA(ldesignA,ldesignA,A); invert(A,AI);
+      MtA(ldesignA,ldesignA,A); invertS(A,AI,silent);
       if (ME(AI,0,0)==0.0) 
 	Rprintf("Dynadd: Aalen design not invertible at time %lf\n",time); 
       extract_row(ldesignA,pers,ai); 
@@ -297,7 +299,7 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
 	replace_row(Zhat,j,zi);
 	VE(pbahat,j)=VE(pbghat,j)*VE(pdA,j);}/*sampling cor. design*/
 
-      MtA(ldesignX,cdesignX,XX); invert(XX,XXI); 
+      MtA(ldesignX,cdesignX,XX); invertS(XX,XXI,silent); 
       if (ME(XXI,0,0)==0.0) 
 	Rprintf("Dynadd: Regression design not invertible at time %lf\n",time); 
       MtA(ldesignG,ldesignX,ZX); MtA(cdesignG,ldesignX,cZX); 
@@ -393,7 +395,7 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
 
   R_CheckUserInterrupt();
   
-  invert(Cg,CI); 
+  invertS(Cg,CI,silent); 
   Mv(CI,IZHdp,gam);
   Mv(CI,gamly,korgamly);
   Mv(CI,gam2,gammsd); 
@@ -512,6 +514,5 @@ int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
 	      &korgamly,&korgam,&gamstart,
 	      &rowX,&rowZ,&difX,NULL); 
 
-  free(C); free(vcudif); free(ipers); 
-  free(imin); 
+  free(C); free(vcudif); free(ipers); free(imin); 
 }

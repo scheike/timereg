@@ -44,7 +44,7 @@ tol=0.0001,max.time=NULL,n.sim=1000,alpha=1,frac=1)
     times<-times[times<maxtimes] 
     status[time2>maxtimes]<-0
 
-                                        #cat(" Proportional Excess Survival Model "); cat("\n")
+    #cat(" Proportional Excess Survival Model "); cat("\n")
     if (px==0) stop("No Aalen terms (need one!)");
 
     ud<-prop.excessBase(time2,status,X,Z,excess,alpha=1,frac=1,no.sim=n.sim)

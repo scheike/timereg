@@ -21,20 +21,22 @@ int *nx,*p,*antpers,*Ntimes,*sim,*retur,*rani,*antsim,*status,*id,*covariance,
   
 
   if (*robust==1) {
-    for (i=0;i<*antclust;i++) { malloc_vec(*p,cumhatA[i]); 
-    malloc_vec(*p,cumA[i]); 
-    if (*sim==1) malloc_mat(*Ntimes,*p,cumAt[i]); } }
+    for (i=0;i<*antclust;i++) { 
+	    malloc_vec(*p,cumhatA[i]); malloc_vec(*p,cumA[i]); 
+    if (*sim==1) malloc_mat(*Ntimes,*p,cumAt[i]); 
+    } 
+  }
 
 /*   print_clock(&debugTime, 0); */
 
-  malloc_vec(*p,cum); malloc_mat(*antpers,*p,ldesignX); malloc_mat(*p,*p,QR);
+  malloc_mat(*antpers,*p,ldesignX); malloc_mat(*p,*p,QR);
   malloc_mat(*p,*p,Vcov); malloc_mat(*p,*p,A); malloc_mat(*p,*p,AI);
-  malloc_vec(*antpers,dN); malloc_mat(*antpers,*p,R);
+  malloc_mat(*antpers,*p,R);
 
-  malloc_vec(*p,diag); malloc_vec(*p,dB); malloc_vec(*p,VdB); malloc_vec(*p,xi);
-  malloc_vec(*p,rowX); malloc_vec(*p,rowcum); malloc_vec(*p,difX); malloc_vec(*p,vtmp);
+  malloc_vec(*antpers,dN); 
+  malloc_vecs(*p,&cum,&diag,&dB,&VdB,&xi,&rowX,&rowcum,&difX,&vtmp,NULL);
 
-  for (j=0;j<*antpers;j++) cluster[j]=0;
+//  for (j=0;j<*antpers;j++) cluster[j]=0;
 
 /*   print_clock(&debugTime, 1); */
 
@@ -135,14 +137,15 @@ int *nx,*p,*antpers,*Ntimes,*sim,*retur,*rani,*antsim,*status,*id,*covariance,
   }
 
   cu[0]=times[0]; vcu[0]=times[0]; robvcu[0]=times[0]; 
-  free_vec(xi); free_vec(rowX); free_vec(diag); free_vec(dB); free_vec(VdB);
-  free_vec(rowcum); free_vec(cum); free_vec(vtmp); free_mat(Vcov);
-  free_mat(ldesignX); free_mat(QR);
+
+  free_vecs(&dN,&cum,&diag,&dB,&VdB,&xi,&rowX,&rowcum,&difX,&vtmp,NULL);
+
+  free_mats(&ldesignX,&QR,&Vcov,&A,&AI,&R,NULL); 
 
   if (*robust==1){
     for (i=0;i<*antclust;i++) {
-      free_vec(cumA[i]); free_vec(cumhatA[i]); if (*sim==1) free_mat(cumAt[i]); } }
-  free(cluster); 
-  free(vcudif); 
+      free_vec(cumA[i]); free_vec(cumhatA[i]); if (*sim==1) free_mat(cumAt[i]); } 
+  }
+  free(cluster); free(vcudif); 
 } // }}}
 

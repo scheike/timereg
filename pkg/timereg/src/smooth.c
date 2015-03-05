@@ -15,10 +15,11 @@ double dtukey(x,b) double x,b;
 void smoothB(designX,nx,p,bhat,nb,b,degree,coef)
 double *designX,*bhat,*b;
 int *coef,*nx,*p,*degree,*nb;
-{
+{ // {{{ 
   matrix *mat1,*mat2,*II,*I;
   vector *XWy,*Y,*RES,*sY;
   int count,j,k,s,d;
+  int silent=1;
   double tukey(),x,w,band;
   matrix *sm1,*sm2;
 
@@ -67,7 +68,7 @@ int *coef,*nx,*p,*degree,*nb;
 
       if (count>=4) {
 	MtA(mat1,mat2,II); 
-	invert(II,I); 
+	invertS(II,I,silent); 
 	vM(mat1,Y,XWy);
 	vM(I,XWy,RES); 
       };
@@ -77,7 +78,8 @@ int *coef,*nx,*p,*degree,*nb;
   free_mat(sm1); free_mat(sm2); free_mat(mat1); free_mat(mat2); 
   free_mat(I); free_mat(II); 
   free_vec(sY); free_vec(Y); free_vec(XWy); free_vec(RES); 
-}
+} // }}}
+
 
 void localTimeReg(designX,nx,p,times,response,bhat,nb,b,lin,dens)
 double *designX,*bhat,*b,*times,*response,*dens;
@@ -85,7 +87,7 @@ int *nx,*p,*nb,*lin;
 {
   matrix *X,*AI,*A;
   vector *res,*Y,*XY;
-  int c,j,k,s;
+  int c,j,k,s,silent=1;
   double band,tukey(),dtukey(),x,w,delta; 
   j=(*lin+1)*(*p);  
   malloc_mat(*nx,j,X);
@@ -115,7 +117,7 @@ int *nx,*p,*nb,*lin;
     dens[s]=dens[s]/(*nx); dens[(*nb)+s]=dens[(*nb)+s]/(*nx);
 
     MtA(X,X,A); 
-    invert(A,AI); 
+    invertS(A,AI,silent); 
     if (ME(AI,0,0)==0.0){
       Rprintf("Non-invertible design in local smoothing at time %lf \n",x); 
     }

@@ -1,7 +1,7 @@
 useDynLib(timereg) 
 
 import(survival)
-import(numDeriv,jacobian)
+importFrom(numDeriv,jacobian)
 importFrom(lava,iid)
 
 export("aalen",

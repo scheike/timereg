@@ -2,32 +2,43 @@
 #include <math.h>
 #include "matrix.h"
                  
-void OStimecox(times,Ntimes,designX,nx,p,antpers,start,stop,nb,bhat,cu,vcu,it,b,degree,id,status,sim,antsim,cumAit,test,rani,testOBS,Ut,simUt,robvcu,retur,weighted,cumAiid,robust,covariance,covs)
+void OStimecox(times,Ntimes,designX,nx,p,antpers,
+		start,stop,nb,bhat,cu,vcu,
+		it,b,degree,id,status,sim,
+		antsim,cumAit,test,rani,testOBS,Ut,
+		simUt,robvcu,retur,weighted,cumAiid,robust,
+		covariance,covs)
 double *designX,*times,*start,*stop,*cu,*vcu,*bhat,*b,
 *cumAit,*test,*testOBS,*Ut,*simUt,*robvcu,*cumAiid,*covs;
 int *nx,*p,*antpers,*Ntimes,*nb,*it,*degree,*id,*status,*sim,*antsim,*rani,*retur,*weighted,*robust,*covariance;
-{
+{ // {{{ 
   matrix *Vcov,*ldesignX,*A,*AI,*cdesignX;
   matrix *cumAt[*antpers];
   vector *difX,*rowX,*xi,*vtmp,*vtmp1,*diag,*dB,*dN,*dM,*VdB,*AIXdM,*AIXdN,*AIXlamt,*ta,*bhatt,*pbhat,*plamt,*lrisk,*score;
   vector *cumhatA[*antpers],*cumA[*antpers],*cum,*dN1;
-  int i,j,k,l,s,c,count,pers=0,itt,
+  int i,j,k,l,s,c,count,pers=0,itt,silent=1,
         *coef=calloc(1,sizeof(int)),
-        *ps=calloc(1,sizeof(int)),*imin=calloc(1,sizeof(int));;
+        *ps=calloc(1,sizeof(int)),
+	*imin=calloc(1,sizeof(int));;
   double ahati,time,dummy,dtime;
   double *vcudif=calloc((*Ntimes)*(*p+1),sizeof(double)),
 	 *sbhat=calloc((*Ntimes)*(*p+1),sizeof(double)),
          *sscore=calloc((*Ntimes)*(*p+1),sizeof(double)); 
 
+//  printf(" %d %d \n",*Ntimes,*p+1); 
   malloc_mats(*antpers,*p,&ldesignX,&cdesignX,NULL);
   malloc_mats(*p,*p,&Vcov,&A,&AI,NULL);
-  malloc_vecs(*p,&vtmp,&VdB,&rowX,&difX,&cum,&xi,&vtmp1,&diag,&dB,&VdB,&AIXdM,&AIXdN,&AIXlamt,&bhatt,&score,NULL);
+
+  malloc_vecs(*p,&vtmp,&VdB,&rowX,&difX,&cum,&xi,&vtmp1,&diag,&dB,&AIXdM,&AIXdN,&AIXlamt,&bhatt,&score,NULL);
   malloc_vecs(*antpers,&dN1,&dN,&pbhat,&plamt,&lrisk,&dM,NULL);
   malloc_vecs(*nb,&ta,NULL);
 
   if (*robust==1) 
     for (i=0;i<*antpers;i++) {malloc_vec(*p,cumhatA[i]); malloc_vec(*p,cumA[i]); 
-      malloc_mat(*Ntimes,*p,cumAt[i]);}
+      malloc_mat(*Ntimes,*p,cumAt[i]);
+    }
+
+//  printf(" %d %d \n",*nx,*antpers); 
 
   coef[0]=1; ps[0]=*p+1; 
   for (itt=0;itt<*it;itt++)
@@ -36,7 +47,7 @@ int *nx,*p,*antpers,*Ntimes,*nb,*it,*degree,*id,*status,*sim,*antsim,*rani,*retu
 
       for (s=1;s<*Ntimes;s++)
 	{
-	  time=times[s]; vec_zeros(dN);dtime=time-times[s-1]; 
+	  time=times[s]; dtime=time-times[s-1]; 
 	  mat_zeros(ldesignX); vec_zeros(lrisk); 
 
 	  for (c=0,count=0;((c<*nx) && (count!=*antpers));c++)
@@ -44,7 +55,7 @@ int *nx,*p,*antpers,*Ntimes,*nb,*it,*degree,*id,*status,*sim,*antsim,*rani,*retu
 	      if ((start[c]<time) && (stop[c]>=time)) {
 		VE(lrisk,id[c])=1; 
 		for(j=0;j<*p;j++) ME(ldesignX,id[c],j)=designX[j*(*nx)+c];
-		if (time==stop[c] && status[c]==1) {VE(dN,id[c])=1; pers=id[c];}
+		if (time==stop[c] && status[c]==1) { pers=id[c];}
 		count=count+1; } 
 	    }
 
@@ -55,10 +66,12 @@ int *nx,*p,*antpers,*Ntimes,*nb,*it,*degree,*id,*status,*sim,*antsim,*rani,*retu
 
 	  for (j=0;j<*antpers;j++) { 
 	    VE(plamt,j)=VE(lrisk,j)*exp(VE(pbhat,j)); 
-	    scl_vec_mult(VE(plamt,j),extract_row(ldesignX,j,dB),dB);
-	    replace_row(cdesignX,j,dB); /* sampling corrected design */ }
+	    extract_row(ldesignX,j,dB);
+	    scl_vec_mult(VE(plamt,j),dB,dB);
+	    replace_row(cdesignX,j,dB); /* sampling corrected design */ 
+	  }
 				
-	  MtA(cdesignX,ldesignX,A); invert(A,AI); 
+	  MtA(cdesignX,ldesignX,A); invertS(A,AI,silent); 
 	  if (ME(AI,0,0)==0)
 	    Rprintf(" X'X not invertible at time %lf \n",time);
 
@@ -70,7 +83,7 @@ int *nx,*p,*antpers,*Ntimes,*nb,*it,*degree,*id,*status,*sim,*antsim,*rani,*retu
 	  vec_subtr(xi,vtmp1,vtmp1); vec_add(vtmp1,score,score); 
 
 	  for (k=1;k<=*p;k++) sscore[k*(*Ntimes)+s]=VE(score,k-1); 
-	   sscore[s]=time; 
+	  sscore[s]=time; 
 
 	  cu[s]=time; vcu[s]=time; robvcu[s]=time; sbhat[s]=time;
 	  if (itt==0) 
@@ -88,7 +101,7 @@ int *nx,*p,*antpers,*Ntimes,*nb,*it,*degree,*id,*status,*sim,*antsim,*rani,*retu
 
 	  if (itt==(*it-1)) {
 	    if (*robust==1) 
-	      {
+	      { // {{{ 
 		vec_zeros(VdB);
 		for (i=0;i<*antpers;i++) { 
 		  extract_row(ldesignX,i,xi); Mv(AI,xi,rowX); 
@@ -117,9 +130,10 @@ int *nx,*p,*antpers,*Ntimes,*nb,*it,*degree,*id,*status,*sim,*antsim,*rani,*retu
 		  if (*covariance==1) {
 		    for (j=0;j<*p;j++)  {
 		      l=(k-1)*(*p)+j; covs[l*(*Ntimes)+s]=ME(Vcov,k-1,j);
-		    }}}
+		    }}
+		}
 
-	      } /*robust=1 */
+	      }  // }}}
 	  }
   
 	} /* s =1,...,*Ntimes */ 
@@ -128,7 +142,7 @@ int *nx,*p,*antpers,*Ntimes,*nb,*it,*degree,*id,*status,*sim,*antsim,*rani,*retu
       smoothB(cu,Ntimes,ps,bhat,nb,b,degree,coef); 
 
     } /* itterations løkke */ 
-  cu[0]=times[0]; vcu[0]=times[0];
+    cu[0]=times[0]; vcu[0]=times[0];
 
   if (*sim==1) {
     comptest(times,Ntimes,p,cu,robvcu,vcudif,antsim,test,testOBS,Ut,simUt,cumAt,weighted,antpers);
@@ -138,10 +152,13 @@ int *nx,*p,*antpers,*Ntimes,*nb,*it,*degree,*id,*status,*sim,*antsim,*rani,*retu
     for (i=0;i<*antpers;i++) {free_mat(cumAt[i]);free_vec(cumA[i]);free_vec(cumhatA[i]);}
 
   free_mats(&Vcov,&ldesignX,&A,&AI,&cdesignX,NULL);
-  free_vecs(&dM,&difX,&rowX,&xi,&vtmp,&vtmp1,&diag,&dB,&dN,&VdB,&AIXdN,&AIXlamt,&ta,&bhatt,&pbhat,&plamt,&lrisk,&cum,NULL);
-  free(vcudif); free(sbhat); free(sscore); 
+  free_vecs(&vtmp,&VdB,&rowX,&difX,&cum,&xi,&vtmp1,&diag,&dB,&AIXdM,&AIXdN,&AIXlamt,&bhatt,
+            &score,&dN1,&dN,&pbhat,&plamt,&lrisk,&dM,&ta,NULL);
+
   free(coef); free(ps); free(imin);
-}
+  free(vcudif); free(sbhat); free(sscore); 
+} // }}}
+
 
 void OSsemicox(times,Ntimes,designX,nx,px,designG,ng,pg,
 antpers,start,stop,nb,bhat,cu,vcu,gamma,Vgamma,b,degree,it,
@@ -150,7 +167,7 @@ double *designX,*times,*start,*stop,*cu,*vcu,*bhat,*b,*designG,
 *gamma,*Vgamma,*RobVgamma,*cumAit,*test,*testOBS,*Ut,*simUt,*robvcu,*covs; 
 int
 *nx,*px,*antpers,*Ntimes,*nb,*ng,*pg,*it,*degree,*id,*status,*sim,*antsim,*retur,*rani,*weighted,*robust,*covariance;
-{
+{ // {{{
   matrix *ldesignX,*A,*AI,*cdesignX,*ldesignG,*cdesignG;
   matrix *S,*dCGam,*CGam,*ICGam,*VarKorG,*dC,*XZ,*ZZ,*ZZI,*XZAI; 
   matrix *Ct,*C[*Ntimes],*Acorb[*Ntimes],*Vcov; 
@@ -162,7 +179,7 @@ int
   vector *diag,*dB,*dN,*VdB,*AIXdN,*AIXlamt,*ta,*bhatt,*pbhat,*plamt;
   vector *korG,*pghat,*rowG,*gam,*dgam,*ZGdN,*IZGdN,*ZGlamt,*IZGlamt;
   vector *xi,*rowX,*rowZ,*difX,*zi,*z1,*tmpv1,*tmpv2,*lrisk;
-  int itt,i,j,k,l,s,c,count,pers=0,pmax,
+  int itt,i,j,k,l,s,c,count,pers=0,pmax,silent=1,
       *coef=calloc(1,sizeof(int)),*ps=calloc(1,sizeof(int)),
       *imin=calloc(1,sizeof(int));;
   double time,dtime,hati;
@@ -174,17 +191,18 @@ int
       malloc_mat(*Ntimes,*px,W4t[j]); malloc_vec(*pg,W2[j]); malloc_vec(*px,W3[j]);
       malloc_mat(*Ntimes,*px,AIxit[j]); }
 
+  for (j=0;j<*Ntimes;j++) { malloc_mat(*pg,*px,Acorb[j]); 
+    malloc_mat(*px,*pg,C[j]); malloc_mat(*px,*pg,M1M2[j]);}
+
   malloc_mats(*antpers,*px,&ldesignX,&cdesignX,NULL);
   malloc_mats(*antpers,*pg,&ldesignG,&cdesignG,NULL); 
   malloc_mats(*px,*px,&VarKorG,&Vcov,&A,&AI,NULL);
   malloc_mats(*pg,*pg,&dVargam,&Vargam,&RobVargam,&tmpM2,&ZZ,&ICGam,&CGam,&dCGam,&S,&ZZI,NULL); 
   malloc_mats(*px,*pg,&XZAI,&tmpM3,&Ct,&dC,&XZ,&dM1M2,&M1M2t,NULL);
   malloc_mat(*px,*pg,tmpM4); 
-  for (j=0;j<*Ntimes;j++) { malloc_mat(*pg,*px,Acorb[j]); 
-    malloc_mat(*px,*pg,C[j]); malloc_mat(*px,*pg,M1M2[j]);}
 
   malloc_vecs(*px,&xi,&rowX,&difX,&tmpv1,&korG,&diag,&dB,&VdB,&AIXdN,&AIXlamt,&bhatt,NULL);
-  malloc_vecs(*pg,&zi,&rowZ,&tmpv2,&zi,&z1,&rowG,&gam,&dgam,&ZGdN,&IZGdN,&ZGlamt,&IZGlamt,NULL);
+  malloc_vecs(*pg,&zi,&rowZ,&tmpv2,&z1,&rowG,&gam,&dgam,&ZGdN,&IZGdN,&ZGlamt,&IZGlamt,NULL);
   malloc_vecs(*antpers,&lrisk,&dN,&pbhat,&pghat,&plamt,NULL);
   malloc_vecs(*nb,&ta,NULL);
 
@@ -229,7 +247,7 @@ int
 	    replace_row(cdesignG,j,rowG); /* sampling corrected design */ 
 	  }
 				
-	  MtA(cdesignX,ldesignX,A); invert(A,AI); 
+	  MtA(cdesignX,ldesignX,A); invertS(A,AI,silent); 
 	  if (ME(AI,0,0)==0)
 	    Rprintf(" X'X not invertible at time %lf \n",time);
 
@@ -271,7 +289,7 @@ int
 		Mv(AI,xi,rowX);replace_row(AIxit[i],s,rowX);} } 
 	} /* s=1,...Ntimes */
 
-      invert(CGam,ICGam); vec_subtr(IZGdN,IZGlamt,tmpv2); 
+      invertS(CGam,ICGam,silent); vec_subtr(IZGdN,IZGlamt,tmpv2); 
       Mv(ICGam,tmpv2,dgam); vec_add(gam,dgam,gam); 
 
       for (s=1;s<*Ntimes;s++) 
@@ -288,7 +306,7 @@ int
       smoothB(cu,Ntimes,ps,bhat,nb,b,degree,coef); 
     } /*itt løkke */ 
 
-  invert(Vargam,dVargam); 
+  invertS(Vargam,dVargam,silent); 
 
   for (s=1;s<*Ntimes;s++) {
     if (*robust==1)
@@ -365,7 +383,8 @@ int
       for (k=1;k<*px+1;k++) {robvcu[k*(*Ntimes)+s]=VE(VdB,k-1);
 	if (*covariance==1) {
 	  for (j=0;j<*px;j++)  {
-	    l=(k-1)*(*px)+j; covs[l*(*Ntimes)+s]=ME(Vcov,k-1,j); }}}
+	    l=(k-1)*(*px)+j; covs[l*(*Ntimes)+s]=ME(Vcov,k-1,j); }}
+      }
     }  /*  s=1 ..Ntimes */ 
 
     MxA(RobVargam,ICGam,tmpM2); MxA(ICGam,tmpM2,RobVargam); 
@@ -380,19 +399,22 @@ int
     comptest(times,Ntimes,px,cu,robvcu,vcudif,antsim,test,testOBS,Ut,simUt,W4t,weighted,antpers);
   }
 
-  free_mats(&ldesignX,&A,&AI,&cdesignX,&ldesignG,&cdesignG,
-	      &S,&dCGam,&CGam,&ICGam,&VarKorG,&dC,&XZ,&ZZ,&ZZI,&XZAI, 
-	      &Ct,&tmpM2,&tmpM3,&tmpM4,&Vargam,&dVargam,
-	      &dM1M2,&M1M2t,&RobVargam,NULL); 
+  free_mats(&ldesignX,&cdesignX,&ldesignG,&cdesignG,
+            &VarKorG,&Vcov,&A,&AI,&dVargam,&Vargam,&RobVargam,&tmpM2,&ZZ,&ICGam,&CGam,&dCGam,&S,&ZZI,
+            &XZAI,&tmpM3,&Ct,&dC,&XZ,&dM1M2,&M1M2t,&tmpM4,NULL); 
 
-  free_vecs(&diag,&dB,&dN,&VdB,&AIXdN,&AIXlamt,&ta,&bhatt,&pbhat,
-	      &plamt,&korG,&pghat,&rowG,&gam,&dgam,&ZGdN,&IZGdN,&ZGlamt,&IZGlamt,
-	      &xi,&rowX,&rowZ,&difX,&zi,&z1,&tmpv1,&tmpv2,&lrisk,NULL); 
+  free_vecs(&xi,&rowX,&difX,&tmpv1,&korG,&diag,&dB,&VdB,&AIXdN,&AIXlamt,&bhatt,
+            &zi,&rowZ,&tmpv2,&z1,&rowG,&gam,&dgam,&ZGdN,&IZGdN,&ZGlamt,&IZGlamt,
+            &lrisk,&dN,&pbhat,&pghat,&plamt,&ta,NULL);
+
 
   for (j=0;j<*Ntimes;j++) {free_mat(Acorb[j]);free_mat(C[j]);free_mat(M1M2[j]);}
   if (*robust==1) 
     for (j=0;j<*antpers;j++) {free_mat(W3t[j]); free_mat(W4t[j]);
-      free_mat(AIxit[j]); free_vec(W2[j]); free_vec(W3[j]); }
-      free(vcudif); free(ipers); 
+      free_mat(AIxit[j]); free_vec(W2[j]); free_vec(W3[j]); 
+    }
+
       free(coef); free(ps); free(imin);
-}
+      free(vcudif); free(ipers); 
+} // }}}
+

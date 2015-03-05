@@ -7,10 +7,10 @@ if(is.matrix(designX) == TRUE) p<-as.integer(dim(designX)[2]);
 if(is.matrix(designX) == TRUE) nx<-as.integer(dim(designX)[1]);
 bhat<-as.matrix(bhat); schoen<-FALSE; 
 nb<-as.integer(dim(bhat)[1]);
-band<-matrix(band,nb,as.integer(dim(bhat)[2])-1); 
 cum<-matrix(0,Ntimes,p+1); Vcum<-Vcum2<-rvcu<-cum; 
 nullresid<-(-1);
 if (method=="breslow") pdim<-p+1 else pdim<-p; 
+band<-matrix(band,nb,p+1); 
 
 if (retur==1) {cumAi<-matrix(0,Ntimes,fdata$antpers*1) 
                cumAiid<-matrix(0,Ntimes,fdata$antpers*1); } else { 
@@ -30,18 +30,12 @@ Ut<-matrix(0,Ntimes,pdim+1);
 
 if (method=="basic") {
 timeout<- .C("OStimecox",
-as.double(times), as.integer(Ntimes),as.double(designX),
-as.integer(nx),as.integer(p),as.integer(fdata$antpers), 
-as.double(fdata$start),as.double(fdata$stop),as.integer(nb),
-as.double(bhat), as.double(cum),as.double(Vcum),
-as.integer(it),as.double(band),as.integer(degree),
-as.integer(id), as.integer(status), as.integer(sim),
-as.integer(antsim), as.double(cumAi), as.double(test),
-as.integer(rani),as.double(testOBS),as.double(Ut),
-as.double(simUt), as.double(rvcu), as.integer(retur),
-as.integer(weighted.test),as.double(cumAiid),
-as.integer(robust),as.integer(covariance),as.double(covs),
-PACKAGE="timereg");
+as.double(times), as.integer(Ntimes),as.double(designX), as.integer(nx),as.integer(p),as.integer(fdata$antpers), 
+as.double(fdata$start),as.double(fdata$stop),as.integer(nb), as.double(bhat), as.double(cum),as.double(Vcum),
+as.integer(it),as.double(band),as.integer(degree), as.integer(id), as.integer(status), as.integer(sim),
+as.integer(antsim), as.double(cumAi), as.double(test), as.integer(rani),as.double(testOBS),as.double(Ut),
+as.double(simUt), as.double(rvcu), as.integer(retur), as.integer(weighted.test),as.double(cumAiid), as.integer(robust),
+as.integer(covariance),as.double(covs), PACKAGE="timereg");
 
 if (covariance==1)  {
 covit<-matrix(timeout[[32]],Ntimes,p*p);

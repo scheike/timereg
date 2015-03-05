@@ -23,14 +23,18 @@ if (sim==1) simUt<-matrix(0,Ntimes,50*px) else simUt<-NULL;
 Ut<-matrix(0,Ntimes,px+1);
 
 if (is.null(id) == TRUE) {
-   antpers <- length(time); id <- 0:(antpers - 1);} else 
-   { pers <- unique(id); antpers <- length(pers);
-    id<-as.integer(factor(id, labels = 1:(antpers))) - 1; }
+   antpers <- length(time); id <- 0:(antpers - 1);
+} else { pers <- unique(id); antpers <- length(pers);
+    id<-as.integer(factor(id, labels = 1:(antpers))) - 1; 
+}
 
    clusters<-id; antclust<-antpers;
    fdata$antpers <- antpers; fdata$antclust <- antclust
 
 out.aalen<-aalenBaseC(times,fdata,designA,status,id,clusters); 
+
+###aalenBase(times,fdata,designX,status,id,clusters,robust=0,sim=0,retur=0,antsim=1000,weighted.test=1,
+###	  covariance=0,resample.iid=0,namesX=NULL,silent=0,weights=NULL,entry=NULL,offsets=0)
 
 if (!is.null(bhat)) xval<-bhat[,1] else
 xval<-seq(times[2],times[Ntimes],length=30); 

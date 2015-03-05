@@ -79,9 +79,9 @@ method="basic",weighted.test=0,degree=1,covariance=0)
   else beta<-coxph(Surv(time,time2,status)~XZ)$coef;
   beta0<-c(0,0,beta)  
   if (method=="basic" && intercept==0)  beta0<-c(0,beta); 
-  bhat<-matrix(beta0,length(times)-1,length(beta0),byrow=TRUE); 
+  bhat<-matrix(beta0,length(times),length(beta0),byrow=TRUE); 
   timerange<-range(times); 
-  bhat[,1]<-times[-1]; 
+  bhat[,1]<-times; 
   if (method=="breslow" || intercept==1) {
     bhat[,2]<-sum(status)/sum(ldata$stop-ldata$start);
     if (method=="basic") bhat[,2]<-log(bhat[,2]); 
