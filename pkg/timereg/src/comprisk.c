@@ -366,7 +366,8 @@ malloc_vec((*px)+(*pg),qs);
       Mv(ldesignG,gam,pghat);
       for (s=0;s<*Ntimes;s++) if (silent[s]==0)   // removes points with lacking convergence
       {
-	  time=times[s]; if (s==0) dtime=1; else dtime=time-times[s-1]; 
+	  time=times[s]; 
+//	  if (s==0) dtime=1; else dtime=time-times[s-1]; 
 	  dtime=1; 
 
 	  for(j=1;j<=*px;j++) VE(bhatt,j-1)=est[j*(*Ntimes)+s];
@@ -589,13 +590,6 @@ malloc_vec((*px)+(*pg),qs);
 //	  score for beta part of model 
 	 if (itt==(*Nit-1))  
          for (i=1;i<*px+1;i++) score[i*(*Ntimes)+s]=VE(AIXdN,i-1); 
-//	  weighttot=weighttot-weightt[s]; 
-//          double convs=0; 
-//	  for (k=0;k<*pg;k++) convs=convs+pow(ME(dCGam,k,k),2); 
-//	  if (convs<1) convs=1; 
-//	  weightt[s]=1/convs; 
-//	  weighttot=weighttot+1/convs;
-//	  dtime=weightt[s]/weighttot; 
 	  dtime=1; 
 
 	  scl_mat_mult(dtime,dCGam,dCGam); mat_add(CGam,dCGam,CGam); 
@@ -624,37 +618,30 @@ malloc_vec((*px)+(*pg),qs);
               if (*fixgamma==0) {
 	         extract_row(cdesignG,i,zi); scl_vec_mult(VE(Y,i),zi,zi); 
 	         vM(C[s],rowX,tmpv2); vec_subtr(zi,tmpv2,rowZ); 
-	         scl_vec_mult(dtime,rowZ,rowZ); 
+//	         scl_vec_mult(dtime,rowZ,rowZ); 
 	         vec_add(rowZ,W2[j],W2[j]); 
 	      }
 
 	      if (*conservative==0) { // {{{ censoring terms  
-//    if (osilent==0)  Rprintf(" Censoring correction in standard errors \n"); 
               k=ordertime[i]; nrisk=(*antpers)-i; clusterj=clusters[k]; 
 	      if (cause[k]==(*censcode)) { 
               Mv(AI,censXv,rowX);
-//	   printf("ssss %lf %d %d %d %d \n",nrisk,i,j,k,cause[k]); 
-//	   print_mat(AI); 
-//	   print_vec(censXv); print_vec(rowX); 
-	         for (l=0;l<*px;l++) ME(W3t[clusterj],s,l)+=VE(censXv,l)/nrisk; 
+	         for (l=0;l<*px;l++) ME(W3t[clusterj],s,l)+=VE(rowX,l)/nrisk; 
 		 if (*fixgamma==0) {
 	         vM(C[s],rowX,tmpv2); vec_subtr(censZv,tmpv2,rowZ); 
-	         scl_vec_mult(dtime/nrisk,rowZ,rowZ); 
-	         for (l=0;l<*pg;l++) VE(W2[clusterj],l)+=dtime*VE(rowZ,l)/nrisk; 
+//	         scl_vec_mult(dtime,rowZ,rowZ); 
+	         for (l=0;l<*pg;l++) VE(W2[clusterj],l)+=VE(rowZ,l)/nrisk; 
 	         }
 	         for (j=i;j<*antpers;j++) {
 	            clusterj=clusters[ordertime[j]]; 	
 	            for (l=0;l<*px;l++) ME(W3t[clusterj],s,l)-=VE(rowX,l)/pow(nrisk,2); 
 		    if (*fixgamma==0) {
-	               for (l=0;l<*pg;l++) VE(W2[clusterj],l)+=VE(rowZ,l)/nrisk; 
-//	               scl_vec_mult(-1/(nrisk),rowZ,rowZ); 
-//	               vec_add(rowZ,W2[clusterj],W2[clusterj]); 
+	               for (l=0;l<*pg;l++) VE(W2[clusterj],l)-=VE(rowZ,l)/pow(nrisk,2); 
 	            }
 	         } 
 	      } 
              // fewer where I(s <= T_i) , because s is increasing
              extract_row(censX,k,xi); vec_subtr(censXv,xi,censXv);  
-//	     printf("ssss  %d \n",k); print_vec(xi); print_vec(censXv); 
              extract_row(censZ,k,zi); vec_subtr(censZv,zi,censZv);  
            }     // conservative==0 }}}
 	   } // if (itt==(*Nit-1)) for (i=0;i<*antpers;i++)  // }}}
