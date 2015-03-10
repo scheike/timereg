@@ -61,6 +61,7 @@ export("aalen",
        "prop.odds.subdist",
        "pval",
        "pava",
+       "res.mean",
        "read.design",
        "read.surv",
        "residualsTimereg",
@@ -76,7 +77,15 @@ export("aalen",
        "timereg.formula",
        "two.stage",
        "wald.test"
-       )
+)
+
+S3method(coef,resmean)
+S3method(plot,resmean)
+S3method(print,resmean)
+S3method(summary,resmean)
+
+export("coef.resmean","plot.resmean","print.resmean","summary.resmean")
+
 
 S3method(plot,aalen)
 S3method(plot,comprisk)

@@ -8,8 +8,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
 {
     if (!missing(cause)){
        if (length(cause)!=1) stop("Argument cause has new meaning since 
-   timereg version 1.8.4., it now specifies the cause of interest, 
-   see help(comp.risk) for details.")
+   timereg version 1.8.4., it now specifies the cause of interest, see help(comp.risk) for details.")
    } 
 
     ## {{{
@@ -59,7 +58,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
   }
 
 
-  model.type <- "competing.risks"
+   model.type <- "competing.risks"
 
    ## {{{ Event stuff
     cens.code <- attr(event.history,"cens.code")
@@ -245,7 +244,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,
   ssf <- 0; 
   out<-.C("itfit", ## {{{
           as.double(times),as.integer(ntimes),as.double(eventtime),
-          as.integer(cens.code), as.integer(event),as.double(Gcx),
+          as.integer(cens.code), as.integer(status),as.double(Gcx),
           as.double(X),as.integer(n),as.integer(px),
           as.integer(Nit), as.double(betaS), as.double(score),
           as.double(hess), as.double(est), as.double(var),

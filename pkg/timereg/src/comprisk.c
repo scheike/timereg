@@ -5,7 +5,8 @@
 void itfit(times,Ntimes,x,censcode,cause,KMc,z,n,px,Nit,betaS,
 score,hess,est,var,sim,antsim,rani,test,testOBS,Ut,simUt,weighted,
 gamma,vargamma,semi,zsem,pg,trans,gamma2,CA,line,detail,biid,gamiid,resample,
-timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,estimator,fixgamma,stratum,ordertime,conservative,ssf,KMtimes,gamscore,Dscore)
+timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,estimator,fixgamma,stratum,ordertime,
+conservative,ssf,KMtimes,gamscore,Dscore)
 double *times,*betaS,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
 *Ut,*simUt,*gamma,*zsem,*gamma2,*biid,*gamiid,*vargamma,*timepow,
 	*timepowtest,*convc,*weights,*entry,*trunkp,*ssf,*KMtimes,*gamscore,*Dscore;
@@ -64,7 +65,6 @@ for (s=0;s<*Ntimes;s++)
  for (j=0;j<*antclust;j++) { 
      vec_zeros(cumA[j]); vec_zeros(cumhatA[j]); 
  }
- vec_zeros(censXv); 
 
   for (it=0;it<*Nit;it++) // {{{ 
   { 
@@ -201,54 +201,31 @@ for (s=0;s<*Ntimes;s++)
 //    if (osilent<=1) for (i=0;i<*antclust;i++) vec_zeros(cumhatA[i]); 
 
 if (convt==1 ) { // {{{ iid decomp 
-   for (i=0;i<*n;i++) { 
-      R_CheckUserInterrupt();
+   for (i=0;i<*n;i++) { R_CheckUserInterrupt();
       j=clusters[i]; 
-      if (s<-1) Rprintf("%d  %d %d \n",s,i,j);
-      for(l=0;l<ps;l++) VE(cumA[j],l)+= VE(Y,i)*ME(cX,i,l); 
-      //  extract_row(cX,i,dp); 
-      // scl_vec_mult(VE(Y,i),dp,dp); 
-      //  vec_add(dp,cumA[j],cumA[j]); 
+      for(l=0;l<ps;l++) VE(cumA[j],l)+=VE(Y,i)*ME(cX,i,l); 
 
     if ((*conservative==0)) { // {{{ censoring terms for variance 
-//    if (osilent==0)  Rprintf(" Censoring correction in standard errors \n"); 
-	k=ordertime[i]; nrisk=(*n)-i; 
-	clusterj=clusters[k]; 
+	k=ordertime[i]; nrisk=(*n)-i; clusterj=clusters[k]; 
+//	printf(" %d %d %lf %lf %lf %d \n",i,k,nrisk,time,x[k],cause[k]); 
 	if (cause[k]==(*censcode)) { 
-//	   Mv(AI,censXv,rowX);
-//	   printf("%lf %d %d %d %d \n",nrisk,i,j,k,cause[k]); 
-//	   print_mat(AI); print_vec(censXv); print_vec(rowX); 
-           scl_vec_mult(1,censXv,rowX); 
-///           for(k=0;k<ps;k++) VE(cumhatA[clusterj],k)+= VE(rowX,k)/nrisk; 
-           for(l=0;l<ps;l++) VE(cumA[clusterj],l)+=VE(rowX,l)/nrisk; 
-//	   vec_add_mult(cumhatA[clusterj],censXv,1/nrisk,cumhatA[clusterj]);  
-//	   scl_vec_mult(-1/pow(nrisk,2),censXv,rowX); 
+           for(l=0;l<ps;l++) VE(cumA[clusterj],l)+=VE(censXv,l)/nrisk; 
            for (j=i;j<*n;j++) {
-              clusterj=clusters[ordertime[j]]; 	
-///              for(k=0;k<ps;k++) VE(cumhatA[clusterj],k)-= VE(rowX,k)/pow(nrisk,2); 
-             for(l=0;l<ps;l++) VE(cumA[clusterj],l)-=VE(rowX,l)/pow(nrisk,2); 
-//			vec_add(rowX,cumhatA[clusterj],cumhatA[clusterj]); 
+             clusterj=clusters[ordertime[j]]; 	
+             for(l=0;l<ps;l++) VE(cumA[clusterj],l)-=VE(censXv,l)/pow(nrisk,2); 
 	   }
 	}
         // fewer where I(s <= T_i) , because s is increasing
         extract_row(censX,k,xi); vec_subtr(censXv,xi,censXv);  
-//	printf(" %d \n",k); print_vec(xi); print_vec(censXv); 
     } // }}}
    }
 
    vec_zeros(dp1); 
    for (j=0;j<*antclust;j++) { 
-//    if (osilent<=2) else vec_subtr(cumhatA[j],cumA[j],dp1); 
-//      vec_add(cumhatA[j],cumA[j],dp1); 
-//      Mv(AI,dp1,dp2); 
       Mv(AI,cumA[j],dp2); 
-//      vec_add(cumhatA[j],dp1,dp2); 
-//      Mv(AI,dp1,dp2); 
       replace_row(cumAt[j],s,dp2);  
-
       for(k=0;k<ps;k++) 
       for(c=0;c<ps;c++) ME(VAR,k,c)=ME(VAR,k,c)+VE(dp2,k)*VE(dp2,c); 
-
       if (*resample==1) {
       for (c=0;c<*px;c++) {l=j*(*px)+c; biid[l*(*Ntimes)+s]=VE(dp2,c);}
       }
@@ -650,20 +627,20 @@ malloc_vec((*px)+(*pg),qs);
 	         scl_vec_mult(dtime,rowZ,rowZ); 
 	         vec_add(rowZ,W2[j],W2[j]); 
 	      }
+
 	      if (*conservative==0) { // {{{ censoring terms  
 //    if (osilent==0)  Rprintf(" Censoring correction in standard errors \n"); 
-              k=ordertime[i]; nrisk=(*antpers)-i; 
-	      clusterj=clusters[k]; 
+              k=ordertime[i]; nrisk=(*antpers)-i; clusterj=clusters[k]; 
 	      if (cause[k]==(*censcode)) { 
-	         Mv(AI,censXv,rowX);
+              Mv(AI,censXv,rowX);
 //	   printf("ssss %lf %d %d %d %d \n",nrisk,i,j,k,cause[k]); 
 //	   print_mat(AI); 
 //	   print_vec(censXv); print_vec(rowX); 
-	         for (l=0;l<*px;l++) ME(W3t[clusterj],s,l)+=VE(rowX,l)/nrisk; 
+	         for (l=0;l<*px;l++) ME(W3t[clusterj],s,l)+=VE(censXv,l)/nrisk; 
 		 if (*fixgamma==0) {
 	         vM(C[s],rowX,tmpv2); vec_subtr(censZv,tmpv2,rowZ); 
 	         scl_vec_mult(dtime/nrisk,rowZ,rowZ); 
-	         for (l=0;l<*pg;l++) VE(W2[clusterj],l)+=VE(rowZ,l)/nrisk; 
+	         for (l=0;l<*pg;l++) VE(W2[clusterj],l)+=dtime*VE(rowZ,l)/nrisk; 
 	         }
 	         for (j=i;j<*antpers;j++) {
 	            clusterj=clusters[ordertime[j]]; 	
