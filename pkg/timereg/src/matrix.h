@@ -202,7 +202,7 @@ void replace_col(matrix *M, int col_to_set, vector *v);
 
 vector *extract_col(matrix *M, int col_to_get, vector *v);
 
-void Cpred(double *cum,int *nx,int *px,double *xval,int *nxval,double *pred); 
+void Cpred(double *cum,int *nx,int *px,double *xval,int *nxval,double *pred,int *tminus); 
 
 void sindex(int *index, double *jump, double *eval, int *njump, int *neval,int *strict);
 
@@ -239,6 +239,7 @@ void itfitsemi(double *times,int *Ntimes,double *x,int *delta,int *cause,double 
                int *ordertime,int *robust,double *ssf,double *KMtimes,
 	       double *gamscore,double *Dscore);
 
+void bubble_sort(double *val,int *list,int n); 
 
 void LevenbergMarquardt(matrix *S,matrix *SI,vector *U,vector *delta,double *lm,double *step); 
  
