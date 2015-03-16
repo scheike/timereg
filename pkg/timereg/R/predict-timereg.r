@@ -142,6 +142,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
 
     ## Then extract the time-varying effects
     time.coef <- as.matrix(object$cum)
+
     if (!is.null(times)) {time.coef<-Cpred(time.coef,times); iidtimechange <- 1; iidtime <- object$cum[,1];} 
     ### SE based on iid decomposition so uses time-resolution for cox.aalen model 
     if (modelType=="cox.aalen" && (!is.null(object$time.sim.resolution)) && (se==TRUE)) 
@@ -247,7 +248,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     delta<-c();
     for (i in 1:n) {
        if (iidtimechange==1) 
-	       tmptiid<- t(Cpred(cbind(iidtime,object$B.iid[[i]]),times)[,-1])
+	       tmptiid<- t(Cpred(cbind(iidtime,object$B.iid[[i]]),times)[,-1,drop=FALSE])
        else tmptiid <- t(object$B.iid[[i]])
        tmp<- as.matrix(time.vars) %*% tmptiid
 
