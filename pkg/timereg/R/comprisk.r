@@ -156,21 +156,21 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
                 if (!is.null(cens.formula)) { 
 		      XZ <- model.matrix(cens.formula,data=data); 
                       if (sum(XZ[,1])==nrow(XZ)) XZ <- as.matrix(XZ[,-1])
-                                          } else {
+                } else {
                        if (npar==TRUE) XZ<-X[,-1] else XZ <-cbind(X,Z)[,-1];
-                     }
-	                if (left==1) ud.cens<-coxph(Surv(entrytime, eventtime,delta==cens.code)~XZ)                
-		        else ud.cens<-coxph(Surv(eventtime,delta==cens.code)~XZ)                
-			baseout <- basehaz(ud.cens,centered=FALSE); 
-			baseout <- cbind(baseout$time,baseout$hazard)
-			Gcx<-Cpred(baseout,eventtime,strict=TRUE)[,2];
-			Gcxe<-Cpred(baseout,entrytime,strict=TRUE)[,2];
-			RR<-exp(as.matrix(XZ) %*% coef(ud.cens))
-			Gcx<-exp(-Gcx*RR)
-			Gcxe<-exp(-Gcxe*RR)
-			Gfit<-rbind(c(0,1),cbind(eventtime,Gcx)); 
-			Gcx <- Gcx/Gcxe; 
-			Gctimes<-Cpred(Gfit,times,strict=TRUE)[,2]; 
+                }
+		if (left==1) ud.cens<-coxph(Surv(entrytime,eventtime,delta==cens.code)~XZ)                
+		else ud.cens<-coxph(Surv(eventtime,delta==cens.code)~XZ)                
+		baseout <- basehaz(ud.cens,centered=FALSE); 
+		baseout <- cbind(baseout$time,baseout$hazard)
+		Gcx<-Cpred(baseout,eventtime,strict=TRUE)[,2];
+		Gcxe<-Cpred(baseout,entrytime,strict=TRUE)[,2];
+		RR<-exp(as.matrix(XZ) %*% coef(ud.cens))
+		Gcx<-exp(-Gcx*RR)
+		Gcxe<-exp(-Gcxe*RR)
+		Gfit<-rbind(c(0,1),cbind(eventtime,Gcx)); 
+		Gcx <- Gcx/Gcxe; 
+		Gctimes<-Cpred(Gfit,times,strict=TRUE)[,2]; 
                 ## }}}
             } else if (cens.model=="aalen") {  ## {{{
                 if (!is.null(cens.formula)) { 
@@ -218,6 +218,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
          Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),time2)
          Lw <- Lfit[,2]
 	 weights <- weights*Lw
+###	 entrytime <- rep(0,n) ### changes these to 0 
    }
    if (is.null(trunc.p)) trunc.p <- rep(1,n);  
    if (length(trunc.p)!=n) stop("truncation weights must have same length as data\n"); 

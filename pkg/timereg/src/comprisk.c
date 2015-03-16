@@ -353,17 +353,17 @@ malloc_vec((*px)+(*pg),qs);
 //  starting values 
   for (j=0;j<*pg;j++) VE(gam,j)=gamma[j]; 
   px1[0]=*px+1; 
-//  for (c=0;c<*antpers;c++) if (trunkp[c]<1) {break;}
+  for (c=0;c<*antpers;c++) if (trunkp[c]<1) {left=1; break;}
   for(j=0;j<*antpers;j++)  for(i=0;i<=*px;i++) cumentry[i*(*antpers)+j]=0; 
   // }}}
   
-    if (fixedcov==1) 
-    for (c=0;c<*antpers;c++) 
-      for(j=0;j<pmax;j++)  
-      {
-	if (j<*px) ME(ldesignX,c,j)= z[j*(*antpers)+c];
-	if (j<*pg) ME(ldesignG,c,j)=zsem[j*(*antpers)+c]; 
-      }
+  if (fixedcov==1) 
+  for (c=0;c<*antpers;c++) 
+  for(j=0;j<pmax;j++)  
+  {
+     if (j<*px) ME(ldesignX,c,j)= z[j*(*antpers)+c];
+     if (j<*pg) ME(ldesignG,c,j)=zsem[j*(*antpers)+c]; 
+  }
 
   for (itt=0;itt<*Nit;itt++)  // {{{
     {
@@ -392,7 +392,7 @@ malloc_vec((*px)+(*pg),qs);
 
     lrr=0;  lrrt=0; 
     // {{{ compute P_1 and DP_1 
-    if (*trans==1) { // {{{ 
+    if (*trans==1) { // {{{  model="additive"
       for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
       VE(plamt,j)=1-exp(-VE(pbhat,j)-lrr); 
       varp=VE(plamt,j)*(1-VE(plamt,j)); 
@@ -415,34 +415,32 @@ malloc_vec((*px)+(*pg),qs);
       }
       VE(plamt,j)=(VE(plamt,j)-phattrunc)/trunkp[j];
     } // }}} 
-    if (*trans==2) {  // FG-prop-model // {{{ 
+    if (*trans==2) {  // FG-prop-model model="prop" // {{{ 
       for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
       VE(rr,j)=exp(lrr);  
       VE(plamt,j)=1-exp(-exp(VE(pbhat,j))*VE(rr,j)); 
       varp=VE(plamt,j)*(1-VE(plamt,j)); 
       if ((trunkp[j]<1)) { 
-              for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*antpers)+j];
-	      for (l=0;l<*pg;l++) lrrt=lrrt+VE(gam,l)*VE(zi,l)*pow(entry[j],timepow[l]); 
-	      bhattrunc=vec_prod(xi,truncbhatt); 
-	      phattrunc=1-exp(-exp(bhattrunc)*exp(lrrt)); 
-	      for (l=0;l<*pg;l++) {
-		  VE(zit,l)=pow(entry[j],timepow[l])*VE(zi,l); 
-	      }
+         for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*antpers)+j];
+	 for (l=0;l<*pg;l++) lrrt=lrrt+VE(gam,l)*VE(zi,l)*pow(entry[j],timepow[l]); 
+	 bhattrunc=vec_prod(xi,truncbhatt); 
+	 phattrunc=1-exp(-exp(bhattrunc)*exp(lrrt)); 
+	 for (l=0;l<*pg;l++) VE(zit,l)=pow(entry[j],timepow[l])*VE(zi,l); 
       } else phattrunc=0; 
       for (l=0;l<*pg;l++) VE(zi,l)=pow(time,timepow[l])*VE(zi,l); 
       if ((trunkp[j]<1)) { 
-         scl_vec_mult((1-phattrunc)*exp(bhattrunc)*lrrt/trunkp[j],xi,xit); 
-         scl_vec_mult((1-phattrunc)*exp(bhattrunc)*lrrt/trunkp[j],zit,zit); 
+         scl_vec_mult((1-phattrunc)*exp(bhattrunc)*exp(lrrt)/trunkp[j],xi,xit); 
+         scl_vec_mult((1-phattrunc)*exp(bhattrunc)*exp(lrrt)/trunkp[j],zit,zit); 
       }
       scl_vec_mult((1-VE(plamt,j))*exp(VE(pbhat,j))*VE(rr,j)/trunkp[j],xi,xi); 
       scl_vec_mult((1-VE(plamt,j))*exp(VE(pbhat,j))*VE(rr,j)/trunkp[j],zi,zi); 
       if (trunkp[j]<1) { 
-	 vec_subtr(xi,xit,xi); 
-	 vec_subtr(zi,zit,zi); 
+         vec_subtr(xi,xit,xi); 
+         vec_subtr(zi,zit,zi); 
       } 
    VE(plamt,j)=(VE(plamt,j)-phattrunc)/trunkp[j];
    } // }}} 
-   if (*trans==6) { // FG-parametrization  // {{{ 
+   if (*trans==6) { // FG-parametrization  model="fg" // {{{
       for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
       VE(rr,j)=exp(lrr);  
       VE(plamt,j)=1-exp(-VE(pbhat,j)*VE(rr,j)); 
@@ -450,14 +448,19 @@ malloc_vec((*px)+(*pg),qs);
       scl_vec_mult((1-VE(plamt,j))*VE(rr,j),xi,xi); 
       scl_vec_mult((1-VE(plamt,j))*VE(pbhat,j)*VE(rr,j),zi,zi); 
       for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
-      if ((entry[j]>0)) { 
+      if ((trunkp[j]<1)) { 
 	 extract_row(ldesignG,j,zit); extract_row(ldesignX,j,xit); 
 	 for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*antpers)+j];
 	 for (l=0;l<*pg;l++) lrrt=lrrt+VE(gam,l)*VE(zit,l)*pow(entry[j],timepow[l]); 
-	 phattrunc=1-exp(-vec_prod(xit,truncbhatt)*exp(lrrt)); 
+	 bhattrunc=vec_prod(xi,truncbhatt); 
+	 phattrunc=1-exp(-bhattrunc*exp(lrrt)); 
+         scl_vec_mult((1-phattrunc)*exp(lrrt),xit,xit); 
+         scl_vec_mult((1-phattrunc)*bhattrunc*exp(lrrt),zit,zit); 
+	 vec_subtr(xi,xit,xi); 
+	 vec_subtr(zi,zit,zi); 
 	 scl_vec_mult(1/trunkp[j],xi,xi);
 	 scl_vec_mult(1/trunkp[j],zi,zi);  
-	 VE(plamt,j)=VE(plamt,j)-phattrunc;
+	 VE(plamt,j)=(VE(plamt,j)-phattrunc)/trunkp[j];
       } 
     } // }}}
     if (*trans==3) { // logistic // {{{ 

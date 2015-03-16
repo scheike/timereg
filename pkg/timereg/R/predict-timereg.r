@@ -68,8 +68,9 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
 {
     ## {{{
 ###    if (object$conv$convd>=1) stop("Model did not converge.")
-    if (!(inherits(object,'comprisk') || inherits(object,'aalen')
-          || inherits(object,'cox.aalen')))
+ ### {{{ reading designs  and models 
+  if (!(inherits(object,'comprisk') || inherits(object,'aalen')
+        || inherits(object,'cox.aalen')))
         stop ("Must be output from comp.risk function")
 
   if(inherits(object,'aalen')) { modelType <- 'aalen';
@@ -89,13 +90,17 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     stop("resample processes necessary for these computations, set resample.iid=1");
   }
   if (is.null(object$gamma)==TRUE) { semi<-FALSE } else { semi<-TRUE }
+  ## }}} 
 
   ## {{{ extracts design based on the different specifications
   ## cox.aalen uses prop(...), while aalen and comp.risk use const(...)
   ## this accounts for the different number of characters
   if(inherits(object,'cox.aalen')){ indexOfFirstChar <- 6; } else { indexOfFirstChar <- 7; }
   
-  if (!is.null(newdata)) { 
+  ### whether or not iid time coarsening is used (only for cox-aalen)
+  ### or whether time is changed due to times argument, then also changing times for iid and cum
+  iidtimechange <- 0; iidtime <- 0
+  if (!is.null(newdata)) {  ## {{{ newdata given 
     ##  The time-constant effects first
     formulao <- attr(object,"Formula")
     des <- aalen.des2(formula(delete.response(terms(formulao))),data=newdata,model=modelType)
@@ -109,14 +114,14 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     ## Then extract the time-varying effects
     ###    time.coef <- data.frame(object$cum)
     time.coef <- as.matrix(object$cum)
-    if (!is.null(times)) time.coef <- Cpred(time.coef,times)
+    if (!is.null(times)) {time.coef<-Cpred(time.coef,times); iidtimechange <- 1; iidtime <- object$cum[,1];} 
     ### SE based on iid decomposition so uses time-resolution for cox.aalen model 
-    if (modelType=="cox.aalen" && (!is.null(object$time.sim.resolution)) && (se==TRUE)) time.coef <- Cpred(object$cum,object$time.sim.resolution)
-    ntime <- nrow(time.coef)
-    fittime <- time.coef[,1,drop=TRUE]
-    ntimevars <- ncol(time.coef)-2
-    nobs <- nrow(newdata)
-  } else if ((is.null(Z)==FALSE) || (is.null(X)==FALSE)){ 
+    if (modelType=="cox.aalen" && (!is.null(object$time.sim.resolution)) && (se==TRUE)) 
+    { iidtime <- object$time.sim.resolution; iidtimechange <- 1} 
+
+    nobs <- nrow(newdata) 
+    ## }}} 
+  } else if ((is.null(Z)==FALSE) || (is.null(X)==FALSE)){ ## {{{ X, Z specified  
 
     if (semi) zcol <- length(c(object$gamma)) else zcol <- NULL
     if (!is.null(Z)) { prow <- nrow(Z); } 
@@ -130,25 +135,29 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
 	    X[,1] <- 1
     }
     if (semi & is.null(Z)) Z <- matrix(0,nrow=nrow(X),ncol=zcol); 
-
     time.vars <- X
     if (semi) constant.covs <- Z else constant.covs <- NULL
 
-    nobs<-nrow(time.vars);
-    ## extract the time-varying effects
+    nobs<-nrow(X);
+
+    ## Then extract the time-varying effects
     time.coef <- as.matrix(object$cum)
-    if (modelType=="cox.aalen" && (!is.null(object$time.sim.resolution))) time.coef <- Cpred(object$cum,object$time.sim.resolution)
-    ntime <- nrow(time.coef)
-  } else {
+    if (!is.null(times)) {time.coef<-Cpred(time.coef,times); iidtimechange <- 1; iidtime <- object$cum[,1];} 
+    ### SE based on iid decomposition so uses time-resolution for cox.aalen model 
+    if (modelType=="cox.aalen" && (!is.null(object$time.sim.resolution)) && (se==TRUE)) 
+    { iidtime <- object$time.sim.resolution; iidtimechange <- 1} 
+
+    ## }}} 
+  } else { ## {{{ 
     stop("Must specify either newdata or X, Z\n");
-  }
+  } ## }}} 
 
   ## }}}
 
   ## {{{ predictions for competing risks and survival data
 
   cumhaz<-as.matrix(time.vars) %*% t(matrix(time.coef[,-1],ncol=(ncol(time.coef)-1)))
-  time<-time.coef[,1]; 
+  times <- time<-time.coef[,1]; 
   if (semi==TRUE) pg <- nrow(object$gamma); 
   nt<-length(time);
 
@@ -237,7 +246,10 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     pg<-length(object$gamma); 
     delta<-c();
     for (i in 1:n) {
-       tmp<- as.matrix(time.vars) %*% t(object$B.iid[[i]]) 
+       if (iidtimechange==1) 
+	       tmptiid<- t(Cpred(cbind(iidtime,object$B.iid[[i]]),times)[,-1])
+       else tmptiid <- t(object$B.iid[[i]])
+       tmp<- as.matrix(time.vars) %*% tmptiid
 
        if (semi==TRUE) {
              gammai <- matrix(object$gamma.iid[i,],pg,1); 
