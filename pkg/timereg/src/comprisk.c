@@ -13,12 +13,12 @@ double *times,*betaS,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
 int *n,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 *semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,
 	*fixgamma,*stratum,*ordertime,*conservative,*monotone;
-{ // {{{
+{ // {{
   // {{{ allocation and reading of data from R
   matrix *wX,*X,*cX,*A,*AI,*cumAt[*antclust],*VAR,*Z,*censX;
   vector *VdB,*risk,*SCORE,*W,*Y,*Gc,*CAUSE,*bhat,*pbhat,*beta,*xi,*censXv,
          *rr,*rowX,*difbeta,*qs,*bhatub,*betaub,*dcovs,*pcovs,*zi,*rowZ,*zgam,*vcumentry; 
-  vector *cumhatA[*antclust],*cumA[*antclust],*bet1,*gam,*dp,*dp1,*dp2,*dpl; 
+  vector *cumhatA[*antclust],*cumA[*antclust],*bet1,*gam,*dp,*dp1,*dp2; 
   int left=0,clusterj,osilent,convt=1,ps,sing,c,i,j,k,l,s,it,convproblems=0; 
   double step,prede,varp=0.5,nrisk,time,sumscore,totrisk, 
 	 *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
@@ -37,7 +37,7 @@ int *n,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 
     malloc_vecs(*n,&rr,&bhatub,&risk,&W,&Y,&Gc,&CAUSE,&bhat,&pbhat,NULL); 
     malloc_vecs(*px,&vcumentry,&bet1,&xi,&rowX,&censXv,NULL); 
-    malloc_vecs(ps,&dpl,&dp,&dp1,&dp2,&dcovs,&pcovs,&betaub,&VdB,&qs,&SCORE,&beta,&difbeta,NULL); 
+    malloc_vecs(ps,&dp,&dp1,&dp2,&dcovs,&pcovs,&betaub,&VdB,&qs,&SCORE,&beta,&difbeta,NULL); 
 
     for (i=0;i<*antclust;i++) {
       malloc_vec(ps,cumhatA[i]); malloc_vec(ps,cumA[i]); 
@@ -347,7 +347,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,*mon
 
  malloc_vecs(*px,&dpx1,&dpx,&censXv, &xit, &xi, &rowX, &difX, &tmpv1, &korG, &dB, &VdB, &AIXdN, &AIXlamt,
                   &truncbhatt,&bhatt,NULL);
-malloc_vecs(*pg,&dpz1,&dpz, &censZv, &zit, &zi, &rowZ, &tmpv2,&z1,&rowG,&gam,&dgam,
+malloc_vecs(*pg,&dpz1,&dpz,&censZv, &zit, &zi, &rowZ, &tmpv2,&z1,&rowG,&gam,&dgam,
             &ZGdN,&IZGdN,&ZGlamt,&IZGlamt,NULL);
 malloc_vecs(*antpers,&Y,&bhatub,&rr,&lrisk,&dN,&pbhat,&pghat,&plamt,&ciftrunk,NULL);
 malloc_vec((*px)+(*pg),qs); 
