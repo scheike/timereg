@@ -237,7 +237,7 @@ void itfitsemi(double *times,int *Ntimes,double *x,int *delta,int *cause,double 
 	       double *timepow,int *clusters,int *antclust,double *timepowtest,int *silent,double *convc,
 	       double *weight,double *entry,double *trunkp,int *estimator,int *fixgamma ,int *stratum,
                int *ordertime,int *robust,double *ssf,double *KMtimes,
-	       double *gamscore,double *Dscore);
+	       double *gamscore,double *Dscore,int *monotone);
 
 void bubble_sort(double *val,int *list,int n); 
 

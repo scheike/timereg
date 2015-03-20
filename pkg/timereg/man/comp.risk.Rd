@@ -67,7 +67,8 @@ detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",cens.formula=NULL,
 time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
 weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,
-estimator=1,trunc.p=NULL,cens.weight=NULL,admin.cens=NULL,conservative=1)
+estimator=1,trunc.p=NULL,cens.weight=NULL,admin.cens=NULL,
+conservative=1,monotone=0,step=NULL)
 }
 \arguments{
 \item{formula}{a formula object, with the response on the left of a '~'
@@ -118,6 +119,16 @@ Default is 1000 to save memory and time. }
 \item{admin.cens}{censoring times for the administrative censoring}
 \item{conservative}{set to 0 to compute correct variances based on censoring weights, default is conservative
   estimates that are much quicker.}
+\item{monotone}{ monotone=0, uses estimating equations 
+\deqn{
+(D_beta P_1) w(t) ( Y(t)/G_c(t) - P_1(t,X)) and 
+}
+montone 1 uses 
+\deqn{
+w(t) ( Y(t)/G_c(t) - P_1(t,X)) and 
+}
+}
+\item{step}{step size for Fisher-Scoring algorithm.}
 }
 \details{
 Since timereg version 1.8.4. the response must be specified with the

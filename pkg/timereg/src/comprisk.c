@@ -6,20 +6,21 @@ void itfit(times,Ntimes,x,censcode,cause,KMc,z,n,px,Nit,betaS,
 score,hess,est,var,sim,antsim,rani,test,testOBS,Ut,simUt,weighted,
 gamma,vargamma,semi,zsem,pg,trans,gamma2,CA,line,detail,biid,gamiid,resample,
 timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,estimator,fixgamma,stratum,ordertime,
-conservative,ssf,KMtimes,gamscore,Dscore)
+conservative,ssf,KMtimes,gamscore,Dscore,monotone)
 double *times,*betaS,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
 *Ut,*simUt,*gamma,*zsem,*gamma2,*biid,*gamiid,*vargamma,*timepow,
 	*timepowtest,*convc,*weights,*entry,*trunkp,*ssf,*KMtimes,*gamscore,*Dscore;
 int *n,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
-*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum,*ordertime,*conservative;
+*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,
+	*fixgamma,*stratum,*ordertime,*conservative,*monotone;
 { // {{{
   // {{{ allocation and reading of data from R
-  matrix *X,*cX,*A,*AI,*cumAt[*antclust],*VAR,*Z,*censX;
+  matrix *wX,*X,*cX,*A,*AI,*cumAt[*antclust],*VAR,*Z,*censX;
   vector *VdB,*risk,*SCORE,*W,*Y,*Gc,*CAUSE,*bhat,*pbhat,*beta,*xi,*censXv,
-    *rr,*rowX,*difbeta,*qs,*bhatub,*betaub,*dcovs,*pcovs,*zi,*rowZ,*zgam,*vcumentry; 
+         *rr,*rowX,*difbeta,*qs,*bhatub,*betaub,*dcovs,*pcovs,*zi,*rowZ,*zgam,*vcumentry; 
   vector *cumhatA[*antclust],*cumA[*antclust],*bet1,*gam,*dp,*dp1,*dp2,*dpl; 
   int left=0,clusterj,osilent,convt=1,ps,sing,c,i,j,k,l,s,it,convproblems=0; 
-  double prede,varp=0.5,nrisk,time,sumscore,totrisk, 
+  double step,prede,varp=0.5,nrisk,time,sumscore,totrisk, 
 	 *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
 	 *cifentry=calloc((*n),sizeof(double)),
 	 *cumentry=calloc((*n)*(*px+1),sizeof(double));
@@ -27,9 +28,10 @@ int *n,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
   ps=(*px); 
     // }}}
 
+  step=ssf[0]; 
   if (*semi==0) { 
     osilent=silent[0]; silent[0]=0; 
-    malloc_mats(*n,*px,&X,&cX,&censX,NULL);
+    malloc_mats(*n,*px,&wX,&X,&cX,&censX,NULL);
     if (*trans==2) {malloc_mat(*n,*pg,Z);malloc_vecs(*pg,&zgam,&gam,&zi,&rowZ,NULL);}
     malloc_mats(ps,ps,&A,&AI,&VAR,NULL); 
 
@@ -53,7 +55,6 @@ int *n,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
          for(j=0;j<*px;j++)  ME(X,c,j)=z[j*(*n)+c]; 
     }
 
-
 for (s=0;s<*Ntimes;s++)
 {
    time=times[s]; est[s]=time; score[s]=time; var[s]=time;
@@ -61,74 +62,70 @@ for (s=0;s<*Ntimes;s++)
 
 // starting values, typical 0
    for (c=0;c<*px;c++) VE(bet1,c)=est[(c+1)*(*Ntimes)+s]; 
-//   if (left==1) Cpred(est,Ntimes,px,entry,n,cumentry,strict); 
-	
- for (j=0;j<*antclust;j++) { vec_zeros(cumA[j]); vec_zeros(cumhatA[j]); }
+   for (j=0;j<*antclust;j++) { vec_zeros(cumA[j]); vec_zeros(cumhatA[j]); }
 
   for (it=0;it<*Nit;it++) // {{{ 
   { 
    ssf[0]=0; 
    R_CheckUserInterrupt();
-    totrisk=0; 
+   totrisk=0; 
 
     for (j=0;j<*n;j++) { // {{{ computation of P1 and DP1  and observed response 
       VE(risk,j)=(x[j]>=time); 
       totrisk=totrisk+VE(risk,j);
       extract_row(X,j,xi); 
-      VE(bhat,j)=vec_prod(xi,bet1); 
-//      if (left==1) for(i=0;i<*px;i++)  VE(vcumentry,i)=cumentry[(i+1)*(*n)+j]; 
-//      printf(" vcume\n"); 
-//      print_vec(vcumentry); 
+      if (it==0 && (*monotone==1) && (s==1)) {
+	  scl_vec_mult(pow(weights[j],0.5),xi,rowX);
+          replace_row(wX,j,rowX); 
+      }
 
-      if (*trans==1) {
+      VE(bhat,j)=vec_prod(xi,bet1); 
+
+      if (*trans==1) { // {{{
 	VE(pbhat,j)=1-exp(-VE(bhat,j));
 	varp=VE(pbhat,j)*(1-VE(pbhat,j)); 
-//	if (trunkp[j]<1) { 
-//	    cifentry[j]=1-exp(-vec_prod(xi,vcumentry)); 
-//	    VE(pbhat,j)= VE(pbhat,j)-cifentry[j]; 
-//	} 
 	scl_vec_mult(1-VE(pbhat,j),xi,dp);
       }
       if (*trans==2) {
 	VE(pbhat,j)=1-exp(-exp(VE(bhat,j))); 
 	varp=VE(pbhat,j)*(1-VE(pbhat,j)); 
 	scl_vec_mult((1-VE(pbhat,j))*exp(VE(bhat,j)),xi,dp); 
-//	if (trunkp[j]<1) { cifentry[j]=1-exp(-exp(vec_prod(xi,vcumentry))); }; 
       }
       if (*trans==6) {
 	VE(pbhat,j)=1-exp(-VE(bhat,j)); 
 	varp=VE(pbhat,j)*(1-VE(pbhat,j)); 
 	scl_vec_mult((1-VE(pbhat,j)),xi,dp); 
-//	if (trunkp[j]<1) { cifentry[j]=1-exp(-vec_prod(xi,vcumentry))); }; 
       }
       if (*trans==3) {
 	    VE(pbhat,j)=exp(VE(bhat,j))/(1+exp(VE(bhat,j))); 
 	varp=VE(pbhat,j)*(1-VE(pbhat,j)); 
 	scl_vec_mult(exp(VE(bhat,j))/pow((1+exp(VE(bhat,j))),2),xi,dp);
-      // VE(pbhat,j)=exp(-VE(bhat,j)); scl_vec_mult(-exp(-VE(pbhat,j)),xi,dp);
-//	if (trunkp[j]<1) { cifentry[j]=1-exp(-vec_prod(xi,vcumentry))); }; 
+      }
+      if (*trans==7) {
+	    VE(pbhat,j)=VE(bhat,j)/(1+VE(bhat,j)); 
+	scl_vec_mult(1/pow((1+VE(bhat,j)),2),xi,dp);
       }
       if (*trans==4) {
          VE(pbhat,j)=exp(VE(bhat,j)); 
 	varp=VE(pbhat,j)*(1-VE(pbhat,j)); 
 	 scl_vec_mult(exp(VE(bhat,j)),xi,dp);
-//	if (trunkp[j]<1) { cifentry[j]=1-exp(-vec_prod(xi,vcumentry))); }; 
       }
       if (*trans==5) {
          VE(pbhat,j)=VE(bhat,j); 
 	varp=VE(pbhat,j)*(1-VE(pbhat,j)); 
 	 scl_vec_mult(1,xi,dp);
-//	if (trunkp[j]<1) { cifentry[j]=1-exp(-vec_prod(xi,vcumentry))); }; 
-      }
+      } // }}} 
       scl_vec_mult(1,dp,dp1); 
 
       if (*estimator<=2) scl_vec_mult(pow(weights[j],0.5),dp,dp); 
       else scl_vec_mult(pow(weights[j],0.5)*(time<KMc[j])*(time>entry[j]),dp,dp); 
+
       replace_row(cX,j,dp); 
-//    replace_row(wcX,j,dp); 
+
       VE(Y,j)=((x[j]<=time) & (cause[j]==*CA))*1;
 
       if (it==(*Nit-1) && (*conservative==0)) { // {{{ for censoring distrubution
+           if (*monotone==1)  scl_vec_mult(1,xi,dp1); 
 	   if (KMc[j]>0.001) scl_vec_mult(weights[j]*VE(Y,j)/KMc[j],dp1,dp1); 
 	   else scl_vec_mult(weights[j]*VE(Y,j)/0.001,dp1,dp1); 
            vec_add(censXv,dp1,censXv); 
@@ -157,7 +154,7 @@ for (s=0;s<*Ntimes;s++)
 //    if (it==(*Nit-1)) { printf(" s %d ",s); print_vec(censXv); }
 
     totrisk=vec_sum(risk); 
-    MtM(cX,A); 
+    if (*monotone==0) MtM(cX,A); else MtA(cX,wX,A); 
     invertS(A,AI,osilent); sing=0; 
     // head_matrix(cX); print_mat(A); print_mat(AI); 
    if (ME(AI,0,0)==0 && *stratum==0 && (osilent==0)) {
@@ -165,7 +162,7 @@ for (s=0;s<*Ntimes;s++)
 	  print_mat(A); 
    }
    if (*stratum==1)  {
-	for (k=0;k<*px;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);
+      for (k=0;k<*px;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);
    }
 
 
@@ -180,9 +177,10 @@ for (s=0;s<*Ntimes;s++)
 
     if (sing==0) {
       /* print_vec(Y); print_vec(SCORE); print_vec(difbeta); */ 
-      vM(cX,Y,SCORE); 
-      Mv(AI,SCORE,difbeta); vec_add(beta,difbeta,beta); 
-      for (i=0;i<*px;i++) VE(bet1,i)=VE(beta,i); 
+      if (*monotone==0) vM(cX,Y,SCORE); else vM(wX,Y,SCORE); 
+      Mv(AI,SCORE,difbeta); 
+      scl_vec_mult(step,difbeta,difbeta); 
+      vec_add(beta,difbeta,beta); 
 
       sumscore=0; 
       for (k=0;k<*px;k++) sumscore=sumscore+fabs(VE(difbeta,k)); 
@@ -198,10 +196,12 @@ for (s=0;s<*Ntimes;s++)
     }
 
     if (*detail==1) { 
-      Rprintf("timepoint s %d, Estimate beta \n",s); print_vec(beta); 
+      Rprintf("it %d, timepoint s %d, Estimate beta \n",it,s); print_vec(bet1); 
       Rprintf("Score D l\n"); print_vec(difbeta); 
+      Rprintf("sum Y, phat  %lf %lf \n",vec_sum(Y),vec_sum(pbhat)); 
       Rprintf("Information -D^2 l\n"); print_mat(AI); 
     };
+    for (i=0;i<*px;i++) VE(bet1,i)=VE(beta,i); 
 
   } // }}} /* it */
 
@@ -212,7 +212,8 @@ for (s=0;s<*Ntimes;s++)
 if (convt==1 ) { // {{{ iid decomp 
    for (i=0;i<*n;i++) { R_CheckUserInterrupt();
       j=clusters[i]; 
-      for(l=0;l<ps;l++) VE(cumA[j],l)+=VE(Y,i)*ME(cX,i,l); 
+      if (*monotone==0) for(l=0;l<ps;l++) VE(cumA[j],l)+=VE(Y,i)*ME(cX,i,l); 
+      if (*monotone==1) for(l=0;l<ps;l++) VE(cumA[j],l)+=VE(Y,i)*ME(wX,i,l); 
 
     if ((*conservative==0)) { // {{{ censoring terms for variance 
 	k=ordertime[i]; nrisk=(*n)-i; clusterj=clusters[k]; 
@@ -258,12 +259,13 @@ if (convt==1 ) { // {{{ iid decomp
 	      score,hess,est,var,sim,antsim,rani,test,testOBS,Ut,simUt,weighted,
 	      gamma,vargamma,semi,zsem,pg,trans,gamma2,CA,line,detail,biid,
 	      gamiid,resample,timepow,clusters,antclust,timepowtest,silent,convc,weights,
-	      entry,trunkp,estimator,fixgamma,stratum,ordertime,conservative,ssf,KMtimes,gamscore,Dscore);
+	      entry,trunkp,estimator,fixgamma,stratum,ordertime,conservative,ssf,KMtimes,gamscore,Dscore,
+	      monotone);
   }
  
   if (convproblems>0) convc[0]=1; 
   if (*semi==0) { 
-    free_mats(&censX,&VAR,&X,&cX,&A,&AI,NULL); 
+    free_mats(&wX,&censX,&VAR,&X,&cX,&A,&AI,NULL); 
     if (*trans==2) {free_mats(&Z,NULL); free_vecs(&zgam,&gam,&zi,&rowZ,NULL);}
 
     free_vecs(&censXv,&rr,&bhatub,&risk,&W,&Y,&Gc,&CAUSE,&bhat,&pbhat,NULL); 
@@ -286,14 +288,15 @@ void itfitsemi(times,Ntimes,x,censcode,cause,
 	       line,detail,biid,gamiid,resample,
 	       timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,
 	       estimator,fixgamma,stratum,ordertime,conservative,ssf,KMtimes,
-	       gamscore,Dscore)
+	       gamscore,Dscore,monotone)
 double *times,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,*Ut,*simUt,*gamma,*zsem,
        *vargamma,*gamma2,*biid,*gamiid,*timepow,*timepowtest,*entry,*trunkp,*convc,*weights,*ssf,*KMtimes,*gamscore,*Dscore;
-int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
+int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,*monotone,
 *semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum,*ordertime,*conservative;
 { // {{{
   // {{{ allocation and reading of data from R
   matrix *ldesignX,*A,*AI,*cdesignX,*ldesignG,*cdesignG,*censX,*censZ;
+  matrix *wX,*wZ;
   matrix *S,*dCGam,*CGam,*ICGam,*VarKorG,*dC,*XZ,*ZZ,*ZZI,*XZAI; 
   matrix *Ct,*C[*Ntimes],*Acorb[*Ntimes],*tmpM2,*tmpM3,*tmpM4; 
   matrix *Vargam,*dVargam,*M1M2[*Ntimes],*Delta,*dM1M2,*M1M2t,*RobVargam;
@@ -303,8 +306,8 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 //  vector *W2cens[*antclust],*W3cens[*antclust];
   vector *dB,*dN,*VdB,*AIXdN,*AIXlamt,*bhatt,*truncbhatt,*pbhat,*plamt,*ciftrunk;
   vector *korG,*pghat,*rowG,*gam,*dgam,*ZGdN,*IZGdN,*ZGlamt,*IZGlamt,*censZv,*censXv;
-  vector *qs,*Y,*rr,*bhatub,*xi,*xit,*zit,*rowX,*rowZ,*difX,*zi,*z1,
-	 *tmpv1,*tmpv2,*lrisk;
+  vector *qs,*Y,*rr,*bhatub,*xi,*xit,*zit,*rowX,*rowZ,*difX,*zi,*z1,*tmpv1,*tmpv2,*lrisk;
+  vector *dpx,*dpz,*dpx1,*dpz1; 
   int sing,itt,i,j,k,l,s,c,pmax,totrisk,convproblems=0,nagam=0,
       *n= calloc(1,sizeof(int)), 
       *nx= calloc(1,sizeof(int)),
@@ -320,6 +323,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
   // float gasdev(),expdev(),ran1();
 //  robust[0]=1; 
   fixedcov=1; n[0]=antpers[0]; nx[0]=antpers[0];
+  double step=ssf[0]; 
 
 //if (*trans==1) for (j=0;j<*pg;j++) if (fabs(timepow[j]-1)>0.0001) {timem=1;break;}
 //if (*trans==2) for (j=0;j<*pg;j++) if (fabs(timepow[j])>0.0001) {timem=1;break;}
@@ -333,17 +337,17 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	  malloc_mat(*px,*pg,C[j]); malloc_mat(*px,*pg,M1M2[j]);
   }
 
-  malloc_mats(*antpers,*px,&censX,&ldesignX,&cdesignX,NULL);
-  malloc_mats(*antpers,*pg,&censZ,&ldesignG,&cdesignG,NULL); 
+  malloc_mats(*antpers,*px,&wX,&censX,&ldesignX,&cdesignX,NULL);
+  malloc_mats(*antpers,*pg,&wZ,&censZ,&ldesignG,&cdesignG,NULL); 
   malloc_mats(*px,*px,&A,&AI,NULL);
   malloc_mats(*pg,*pg,&dVargam,&Vargam,&RobVargam,&tmpM2,&ZZ,&VarKorG,&ICGam,&CGam,&dCGam,&S,&ZZI,NULL); 
   malloc_mats(*px,*pg,&XZAI,&tmpM3,&Ct,&dC,&XZ,&dM1M2,&M1M2t,NULL);
   malloc_mat(*px,*pg,tmpM4); 
   malloc_mat(*Ntimes,*px,Delta); 
 
- malloc_vecs(*px, &censXv, &xit, &xi, &rowX, &difX, &tmpv1, &korG, &dB, &VdB, &AIXdN, &AIXlamt,
+ malloc_vecs(*px,&dpx1,&dpx,&censXv, &xit, &xi, &rowX, &difX, &tmpv1, &korG, &dB, &VdB, &AIXdN, &AIXlamt,
                   &truncbhatt,&bhatt,NULL);
-malloc_vecs(*pg,&censZv, &zit, &zi, &rowZ, &tmpv2,&z1,&rowG,&gam,&dgam,
+malloc_vecs(*pg,&dpz1,&dpz, &censZv, &zit, &zi, &rowZ, &tmpv2,&z1,&rowG,&gam,&dgam,
             &ZGdN,&IZGdN,&ZGlamt,&IZGlamt,NULL);
 malloc_vecs(*antpers,&Y,&bhatub,&rr,&lrisk,&dN,&pbhat,&pghat,&plamt,&ciftrunk,NULL);
 malloc_vec((*px)+(*pg),qs); 
@@ -357,13 +361,19 @@ malloc_vec((*px)+(*pg),qs);
   for(j=0;j<*antpers;j++)  for(i=0;i<=*px;i++) cumentry[i*(*antpers)+j]=0; 
   // }}}
   
-  if (fixedcov==1) 
+  if (fixedcov==1)  // {{{ 
   for (c=0;c<*antpers;c++) 
   for(j=0;j<pmax;j++)  
   {
-     if (j<*px) ME(ldesignX,c,j)= z[j*(*antpers)+c];
-     if (j<*pg) ME(ldesignG,c,j)=zsem[j*(*antpers)+c]; 
-  }
+     if (j<*px) { 
+	     ME(ldesignX,c,j)= z[j*(*antpers)+c];
+	     ME(wX,c,j)= pow(weights[j],0.5)*z[j*(*antpers)+c];
+     }
+     if (j<*pg) { 
+	     ME(ldesignG,c,j)=zsem[j*(*antpers)+c]; 
+	     ME(wZ,c,j)= pow(weights[j],0.5)*zsem[j*(*antpers)+c];
+     }
+  } // }}} 
 
   for (itt=0;itt<*Nit;itt++)  // {{{
     {
@@ -407,165 +417,222 @@ malloc_vec((*px)+(*pg),qs);
          scl_vec_mult((1-phattrunc)/trunkp[j],xi,xit);
          scl_vec_mult((1-phattrunc)/trunkp[j],zit,zit);
       }
-      scl_vec_mult((1-VE(plamt,j))/trunkp[j],xi,xi);
-      scl_vec_mult((1-VE(plamt,j))/trunkp[j],zi,zi);
+      scl_vec_mult((1-VE(plamt,j))/trunkp[j],xi,dpx);
+      scl_vec_mult((1-VE(plamt,j))/trunkp[j],zi,dpz);
       if ((trunkp[j]<1)) { 
-         vec_subtr(xi,xit,xi); 
-         vec_subtr(zi,zit,zi); 
+         vec_subtr(dpx,xit,xi); 
+         vec_subtr(dpz,zit,zi); 
       }
       VE(plamt,j)=(VE(plamt,j)-phattrunc)/trunkp[j];
     } // }}} 
-    if (*trans==2) {  // FG-prop-model model="prop" // {{{ 
+   if (*trans==2) {  // FG-prop-model model="prop" // {{{ 
       for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
       VE(rr,j)=exp(lrr);  
       VE(plamt,j)=1-exp(-exp(VE(pbhat,j))*VE(rr,j)); 
-      varp=VE(plamt,j)*(1-VE(plamt,j)); 
       if ((trunkp[j]<1)) { 
-         for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*antpers)+j];
-	 for (l=0;l<*pg;l++) lrrt=lrrt+VE(gam,l)*VE(zi,l)*pow(entry[j],timepow[l]); 
+         for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*n)+j];
+	 for (l=0;l<*pg;l++) {
+	         VE(zit,l)=pow(entry[j],timepow[l])*VE(zi,l); 
+		 lrrt=lrrt+VE(gam,l)*VE(zit,l); 
+	 }
 	 bhattrunc=vec_prod(xi,truncbhatt); 
 	 phattrunc=1-exp(-exp(bhattrunc)*exp(lrrt)); 
-	 for (l=0;l<*pg;l++) VE(zit,l)=pow(entry[j],timepow[l])*VE(zi,l); 
       } else phattrunc=0; 
       for (l=0;l<*pg;l++) VE(zi,l)=pow(time,timepow[l])*VE(zi,l); 
       if ((trunkp[j]<1)) { 
-         scl_vec_mult((1-phattrunc)*exp(bhattrunc)*exp(lrrt)/trunkp[j],xi,xit); 
-         scl_vec_mult((1-phattrunc)*exp(bhattrunc)*exp(lrrt)/trunkp[j],zit,zit); 
+	 scl_vec_mult((1-phattrunc)*exp(bhattrunc)*exp(lrrt)/trunkp[j],xi,xit); 
+	 scl_vec_mult((1-phattrunc)*exp(bhattrunc)*exp(lrrt)/trunkp[j],zit,zit); 
       }
-      scl_vec_mult((1-VE(plamt,j))*exp(VE(pbhat,j))*VE(rr,j)/trunkp[j],xi,xi); 
-      scl_vec_mult((1-VE(plamt,j))*exp(VE(pbhat,j))*VE(rr,j)/trunkp[j],zi,zi); 
+      scl_vec_mult((1-VE(plamt,j))*exp(VE(pbhat,j))*VE(rr,j)/trunkp[j],xi,dpx); 
+      scl_vec_mult((1-VE(plamt,j))*exp(VE(pbhat,j))*VE(rr,j)/trunkp[j],zi,dpz); 
       if (trunkp[j]<1) { 
-         vec_subtr(xi,xit,xi); 
-         vec_subtr(zi,zit,zi); 
+	 vec_subtr(dpx,xit,dpx); 
+	 vec_subtr(dpz,zit,dpz); 
+         VE(plamt,j)=(VE(plamt,j)-phattrunc)/trunkp[j];
       } 
-   VE(plamt,j)=(VE(plamt,j)-phattrunc)/trunkp[j];
    } // }}} 
    if (*trans==6) { // FG-parametrization  model="fg" // {{{
-      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
+      for (l=0;l<*pg;l++) {
+	      lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
+              VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
+      }
       VE(rr,j)=exp(lrr);  
       VE(plamt,j)=1-exp(-VE(pbhat,j)*VE(rr,j)); 
       varp=VE(plamt,j)*(1-VE(plamt,j)); 
-      scl_vec_mult((1-VE(plamt,j))*VE(rr,j),xi,xi); 
-      scl_vec_mult((1-VE(plamt,j))*VE(pbhat,j)*VE(rr,j),zi,zi); 
-      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
-      if ((trunkp[j]<1)) { 
+      scl_vec_mult((1-VE(plamt,j))*VE(rr,j),xi,dpx); 
+      scl_vec_mult((1-VE(plamt,j))*VE(pbhat,j)*VE(rr,j),zi,dpz); 
+      if ((trunkp[j]<1)) {  // {{{ 
+	 for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*n)+j];
 	 extract_row(ldesignG,j,zit); extract_row(ldesignX,j,xit); 
-	 for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*antpers)+j];
-	 for (l=0;l<*pg;l++) lrrt=lrrt+VE(gam,l)*VE(zit,l)*pow(entry[j],timepow[l]); 
-	 bhattrunc=vec_prod(xi,truncbhatt); 
-	 phattrunc=1-exp(-bhattrunc*exp(lrrt)); 
+	 for (l=0;l<*pg;l++) { 
+	         VE(zit,l)=pow(entry[j],timepow[l])*VE(zit,l); 
+		 lrrt=lrrt+VE(gam,l)*VE(zit,l); 
+         }
+	      bhattrunc=vec_prod(xit,truncbhatt); 
+	      phattrunc=1-exp(-bhattrunc*exp(lrrt)); 
          scl_vec_mult((1-phattrunc)*exp(lrrt),xit,xit); 
          scl_vec_mult((1-phattrunc)*bhattrunc*exp(lrrt),zit,zit); 
-	 vec_subtr(xi,xit,xi); 
-	 vec_subtr(zi,zit,zi); 
-	 scl_vec_mult(1/trunkp[j],xi,xi);
-	 scl_vec_mult(1/trunkp[j],zi,zi);  
-	 VE(plamt,j)=(VE(plamt,j)-phattrunc)/trunkp[j];
-      } 
+	 vec_subtr(dpx,xit,dpx); 
+	 vec_subtr(dpz,zit,dpz); 
+	 scl_vec_mult(1/trunkp[j],dpx,dpx);
+	 scl_vec_mult(1/trunkp[j],dpz,dpz);  
+      VE(plamt,j)=(VE(plamt,j)-phattrunc)/trunkp[j];
+      } // }}} 
     } // }}}
     if (*trans==3) { // logistic // {{{ 
-      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
+      for (l=0;l<*pg;l++) {
+	      lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
+              VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
+      }
       VE(rr,j)=exp(lrr);  
       VE(plamt,j)=exp(VE(pbhat,j)+lrr)/(1+exp(VE(pbhat,j)+lrr)); 
       varp=VE(plamt,j)*(1-VE(plamt,j)); 
-      dummy=VE(plamt,j)/(1+exp(VE(pbhat,j)+lrr)); 
-      scl_vec_mult(dummy,xi,xi); 
-      scl_vec_mult(dummy,zi,zi); 
-      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
-      if ((entry[j]>0)) { 
+         dummy=VE(plamt,j)/(1+exp(VE(pbhat,j)+lrr)); 
+         scl_vec_mult(dummy,xi,dpx); 
+         scl_vec_mult(dummy,zi,dpz); 
+      if ((trunkp[j]<1)) { 
 	 extract_row(ldesignG,j,zit); extract_row(ldesignX,j,xit); 
 	 for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*antpers)+j];
-	 for (l=0;l<*pg;l++) lrrt=lrrt+VE(gam,l)*VE(zit,l)*pow(entry[j],timepow[l]); 
-	 phattrunc= exp(vec_prod(xit,truncbhatt)+lrrt)/(1+exp(vec_prod(xit,truncbhatt)+lrrt)); 
-	 scl_vec_mult(1/trunkp[j],xi,xi);
-	 scl_vec_mult(1/trunkp[j],zi,zi);  
-	 VE(plamt,j)=VE(plamt,j)-phattrunc;
+	 bhattrunc=vec_prod(xit,truncbhatt); 
+	 for (l=0;l<*pg;l++) { 
+	         VE(zit,l)=pow(entry[j],timepow[l])*VE(zit,l); 
+		 lrrt=lrrt+VE(gam,l)*VE(zit,l); 
+         }
+	 phattrunc= exp(bhattrunc+lrrt)/(1+exp(bhattrunc+lrrt)); 
+         dummy= phattrunc/(1+exp(bhattrunc+lrrt)); 
+		 scl_vec_mult(dummy,xit,xit); 
+		 scl_vec_mult(dummy,zit,zit); 
+		 vec_subtr(dpx,xit,dpx); 
+		 vec_subtr(dpz,zit,dpz); 
+		 scl_vec_mult(1/trunkp[j],dpx,dpx);
+		 scl_vec_mult(1/trunkp[j],dpz,dpz);  
+      VE(plamt,j)=(VE(plamt,j)-phattrunc)/trunkp[j];
       } 
    } // }}} 
    if (*trans==7) { // logistic, baseline direct parametrization // {{{ 
-      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
+      for (l=0;l<*pg;l++) {
+              VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
+	      lrr=lrr+VE(gam,l)*VE(zi,l); 
+      }
       VE(rr,j)=exp(lrr);  
       VE(plamt,j)=VE(pbhat,j)*exp(lrr)/(1+VE(pbhat,j)*exp(lrr)); 
       varp=VE(plamt,j)*(1-VE(plamt,j)); 
       dummy=exp(lrr)/pow(1+VE(pbhat,j)*exp(lrr),2); 
-      scl_vec_mult(dummy,xi,xi); 
-      scl_vec_mult(VE(pbhat,j)*dummy,zi,zi); 
-      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
-      if ((entry[j]>0)) { 
+      scl_vec_mult(dummy,xi,dpx); 
+      scl_vec_mult(VE(pbhat,j)*dummy,zi,dpz); 
+      if ((trunkp[j]<1)) { 
 	 extract_row(ldesignG,j,zit); extract_row(ldesignX,j,xit); 
 	 for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*antpers)+j];
-	 for (l=0;l<*pg;l++) lrrt=lrrt+VE(gam,l)*VE(zit,l)*pow(entry[j],timepow[l]); 
-	 phattrunc= vec_prod(xit,truncbhatt)*exp(lrrt)/(1+vec_prod(xit,truncbhatt)*exp(lrrt)); 
-	 scl_vec_mult(1/trunkp[j],xi,xi);
-	 scl_vec_mult(1/trunkp[j],zi,zi);  
-	 VE(plamt,j)=VE(plamt,j)-phattrunc;
+	 bhattrunc=vec_prod(xit,truncbhatt); 
+	 for (l=0;l<*pg;l++) { 
+	         VE(zit,l)=pow(entry[j],timepow[l])*VE(zit,l); 
+		 lrrt=lrrt+VE(gam,l)*VE(zit,l); 
+         }
+	 phattrunc= bhattrunc*exp(lrrt)/(1+bhattrunc*exp(lrrt)); 
+         dummy=exp(lrrt)/pow(1+bhattrunc*exp(lrrt),2); 
+
+         scl_vec_mult(dummy,xit,xit); 
+         scl_vec_mult(bhattrunc*dummy,zit,zit); 
+		 vec_subtr(dpx,xit,dpx); 
+		 vec_subtr(dpz,zit,dpz); 
+		 scl_vec_mult(1/trunkp[j],dpx,dpx);
+		 scl_vec_mult(1/trunkp[j],dpz,dpz);  
+	 VE(plamt,j)=(VE(plamt,j)-phattrunc)/trunkp[j];
       } 
    } // }}} 
    if (*trans==4) { // relative risk  // {{{ 
-      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
-      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l); 
+      for (l=0;l<*pg;l++) { VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
+                            lrr=lrr+VE(gam,l)*VE(zi,l); 
+      }
       VE(rr,j)=lrr;  
       VE(plamt,j)=exp(VE(pbhat,j)+lrr); 
       varp=VE(plamt,j)*(1-VE(plamt,j)); 
-      scl_vec_mult(VE(plamt,j),xi,xi); 
-      scl_vec_mult(VE(plamt,j),zi,zi); 
-      if ((entry[j]>0)) { 
+      scl_vec_mult(VE(plamt,j),xi,dpx); 
+      scl_vec_mult(VE(plamt,j),zi,dpz); 
+      if ((trunkp[j]<1)) { 
 	 extract_row(ldesignG,j,zit); extract_row(ldesignX,j,xit); 
 	 for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*antpers)+j];
-	 for (l=0;l<*pg;l++) lrrt=lrrt+VE(gam,l)*VE(zit,l)*pow(entry[j],timepow[l]); 
+	 for (l=0;l<*pg;l++) {
+	         VE(zit,l)=pow(entry[j],timepow[l])*VE(zi,l); 
+		 lrrt=lrrt+VE(gam,l)*VE(zit,l); 
+	 }
 	 phattrunc= exp(vec_prod(xit,truncbhatt)+exp(lrrt));
-	 scl_vec_mult(1/trunkp[j],xi,xi);
-	 scl_vec_mult(1/trunkp[j],zi,zi);  
-	 VE(plamt,j)=VE(plamt,j)-phattrunc;
+         scl_vec_mult(phattrunc,xit,xit); 
+         scl_vec_mult(phattrunc,zit,zit); 
+	 vec_subtr(dpx,xit,dpx); 
+	 vec_subtr(dpz,zit,dpz); 
+	 scl_vec_mult(1/trunkp[j],dpx,dpx);
+	 scl_vec_mult(1/trunkp[j],dpz,dpz);  
+	 VE(plamt,j)=(VE(plamt,j)-phattrunc)/trunkp[j];
       } 
    } // }}} 
    if (*trans==5) { // relative risk, param 2 // {{{ 
-      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
-      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l); // *pow(time,timepow[l]); 
+      for (l=0;l<*pg;l++) { VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
+                            lrr=lrr+VE(gam,l)*VE(zi,l); // *pow(time,timepow[l]); 
+      }
       VE(rr,j)=lrr;  
       VE(plamt,j)=VE(pbhat,j)*exp(lrr); 
       varp=VE(plamt,j)*(1-VE(plamt,j)); 
-      scl_vec_mult(exp(lrr),xi,xi); 
-      scl_vec_mult(VE(plamt,j),zi,zi); 
-      if ((entry[j]>0)) { 
+      scl_vec_mult(exp(lrr),xi,dpx); 
+      scl_vec_mult(VE(plamt,j),zi,dpz); 
+      if ((trunkp[j]<1)) { 
 	 extract_row(ldesignG,j,zit); extract_row(ldesignX,j,xit); 
 	 for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*antpers)+j];
-	 for (l=0;l<*pg;l++) lrrt=lrrt+VE(gam,l)*VE(zit,l)*pow(entry[j],timepow[l]); 
+	 for (l=0;l<*pg;l++) { 
+                 VE(zit,l)= pow(entry[j],timepow[l])*VE(zit,l); 
+		 lrrt=lrrt+VE(gam,l)*VE(zit,l); 
+	 }
 	 phattrunc= vec_prod(xit,truncbhatt)*exp(exp(lrrt));
-	 scl_vec_mult(1/trunkp[j],xi,xi);
-	 scl_vec_mult(1/trunkp[j],zi,zi);  
-	 VE(plamt,j)=VE(plamt,j)-phattrunc;
+         scl_vec_mult(exp(lrrt),xit,xit); 
+         scl_vec_mult(phattrunc,zit,zit); 
+		 vec_subtr(dpx,xit,dpx); 
+		 vec_subtr(dpz,zit,dpz); 
+		 scl_vec_mult(1/trunkp[j],dpx,dpx);
+		 scl_vec_mult(1/trunkp[j],dpz,dpz);  
+	 VE(plamt,j)=(VE(plamt,j)-phattrunc)/trunkp[j];
+      }
    }  // }}} 
    if (*trans==8) { // log-relative risk, // {{{ 
-      for (l=0;l<*pg;l++) VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
-      for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l); // *pow(time,timepow[l]); 
+      for (l=0;l<*pg;l++) { VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
+                             lrr=lrr+VE(gam,l)*VE(zi,l); // *pow(time,timepow[l]); 
+      }
       VE(rr,j)=lrr;  
       VE(plamt,j)=VE(pbhat,j)*exp(exp(lrr)); 
       varp=VE(plamt,j)*(1-VE(plamt,j)); 
       scl_vec_mult(exp(exp(lrr)),xi,xi); 
       scl_vec_mult(VE(plamt,j)*exp(lrr),zi,zi); 
-      if ((entry[j]>0)) { 
+      if ((trunkp[j]<1)) { 
 	 extract_row(ldesignG,j,zit); extract_row(ldesignX,j,xit); 
 	 for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*antpers)+j];
-	 for (l=0;l<*pg;l++) lrrt=lrrt+VE(gam,l)*VE(zit,l)*pow(entry[j],timepow[l]); 
+	 for (l=0;l<*pg;l++) { 
+                 VE(zit,l)= pow(entry[j],timepow[l])*VE(zit,l); 
+		 lrrt=lrrt+VE(gam,l)*VE(zit,l); 
+	 }
 	 phattrunc= vec_prod(xit,truncbhatt)*exp(exp(lrrt));
-	 scl_vec_mult(1/trunkp[j],xi,xi);
-	 scl_vec_mult(1/trunkp[j],zi,zi);  
-	 VE(plamt,j)=VE(plamt,j)-phattrunc;
+         scl_vec_mult(exp(exp(lrrt)),xit,xit); 
+         scl_vec_mult(phattrunc*exp(lrr),zit,zit); 
+		 vec_subtr(dpx,xit,dpx); 
+		 vec_subtr(dpz,zit,dpz); 
+		 scl_vec_mult(1/trunkp[j],dpx,dpx);
+		 scl_vec_mult(1/trunkp[j],dpz,dpz);  
+	 VE(plamt,j)=(VE(plamt,j)-phattrunc)/trunkp[j];
       } 
-   } // }}} 
-   }
+   // }}} 
+   } 
    // }}}
+   
+    scl_vec_mult(1,dpx,dpx1); scl_vec_mult(1,dpz,dpz1); 
    
      VE(Y,j)=((x[j]<=time) & (cause[j]==*CA))*1;
 
    if ((itt==(*Nit-1)) && (*conservative==0)) { // {{{ for censoring distribution correction 
-      if (KMc[j]>0.001) scl_vec_mult(weights[j]*VE(Y,j)/KMc[j],xi,rowX); 
-      else scl_vec_mult(weights[j]*VE(Y,j)/0.001,xi,rowX); 
+      if (*monotone==1) { scl_vec_mult(1,xi,dpx1); scl_vec_mult(1,zi,dpz1); }
+      if (KMc[j]>0.001) scl_vec_mult(weights[j]*VE(Y,j)/KMc[j],dpx1,rowX); 
+      else scl_vec_mult(weights[j]*VE(Y,j)/0.001,dpx1,rowX); 
       vec_add(censXv,rowX,censXv); 
       replace_row(censX,j,rowX);
-      if (KMc[j]>0.001) scl_vec_mult(weights[j]*VE(Y,j)/KMc[j],zi,rowZ); 
-      else scl_vec_mult(weights[j]*VE(Y,j)/0.001,zi,rowZ); 
+      if (KMc[j]>0.001) scl_vec_mult(weights[j]*VE(Y,j)/KMc[j],dpz1,rowZ); 
+      else scl_vec_mult(weights[j]*VE(Y,j)/0.001,dpz1,rowZ); 
       vec_add(censZv,rowZ,censZv); 
       replace_row(censZ,j,rowZ);
    } // }}}
@@ -574,12 +641,12 @@ malloc_vec((*px)+(*pg),qs);
       if (varp>0.01 && itt>2) svarp=1/pow(varp,0.5); else svarp=1/pow(0.01,0.5); 
    }
 
-   if (*estimator==1 || *estimator==4) scl_vec_mult(svarp*pow(weights[j],0.5)*(time>entry[j]),xi,xi); 
-   else  scl_vec_mult(pow(weights[j],0.5)*(time<KMc[j])*(time>entry[j]),xi,xi); 
-   if (*estimator==1 || *estimator==4) scl_vec_mult(svarp*pow(weights[j],0.5)*(time>entry[j]),zi,zi); 
-   else scl_vec_mult(pow(weights[j],0.5)*(time<KMc[j])*(time>entry[j]),zi,zi); 
+   if (*estimator==1 || *estimator==4) scl_vec_mult(pow(weights[j],0.5)*(time>entry[j]),dpx,dpx); 
+   else  scl_vec_mult(pow(weights[j],0.5)*(time<KMc[j])*(time>entry[j]),dpx,dpx); 
+   if (*estimator==1 || *estimator==4) scl_vec_mult(pow(weights[j],0.5)*(time>entry[j]),dpz,dpz); 
+   else scl_vec_mult(pow(weights[j],0.5)*(time<KMc[j])*(time>entry[j]),dpz,dpz); 
 
-   replace_row(cdesignX,j,xi); replace_row(cdesignG,j,zi); 
+   replace_row(cdesignX,j,dpx); replace_row(cdesignG,j,dpz); 
 
    if (*estimator==1 || *estimator==4) {
    if (KMc[j]<0.001) VE(Y,j)=((VE(Y,j)/0.001)-VE(plamt,j))*(time>entry[j]); 
@@ -587,12 +654,13 @@ malloc_vec((*px)+(*pg),qs);
    } else if (*estimator==3) VE(Y,j)=(VE(Y,j)-VE(plamt,j))*(time<KMc[j])*(time>entry[j]);
    else if (*estimator==5)  if (x[j]<time) VE(Y,j)=VE(Y,j)*KMtimes[s]/KMc[j]; 
    ssf[0]+=pow(VE(Y,j)-VE(plamt,j),2)*(time>entry[j]); 
-   VE(Y,j)=svarp*pow(weights[j],0.5)*VE(Y,j); 
+   VE(Y,j)=pow(weights[j],0.5)*VE(Y,j); 
 
 }  // }}}
 //    if (itt==(*Nit-1)) { printf(" s %d ",s); print_vec(censXv); }
        
-  MtM(cdesignX,A); 
+  if (*monotone==0) MtM(cdesignX,A); else  MtA(cdesignX,ldesignX,A); 
+//  MtM(cdesignX,A); 
   invertS(A,AI,osilent); sing=0; 
   if (ME(AI,0,0)==0 && (*stratum==0) && (osilent==0)) {
      Rprintf(" X'X not invertible at time %d %lf %d \n",s,time,osilent); 
@@ -609,71 +677,77 @@ malloc_vec((*px)+(*pg),qs);
      sing=1;
   }
 
-  if (sing==0) { 
-  vM(cdesignX,Y,xi); Mv(AI,xi,AIXdN); 
-  if (*fixgamma==0) {
-  MtM(cdesignG,ZZ); MtA(cdesignX,cdesignG,XZ);
-  MxA(AI,XZ,XZAI); MtA(XZAI,XZ,tmpM2); 
-  mat_subtr(ZZ,tmpM2,dCGam); 
+  if (sing==0) {  
 
-//	  score for beta part of model 
-  if (itt==(*Nit-1))  
-  for (i=1;i<*px+1;i++) score[i*(*Ntimes)+s]=VE(AIXdN,i-1); 
-  dtime=1; 
+	  if (*monotone==0) vM(cdesignX,Y,xi);  else  vM(wX,Y,xi);
+	  Mv(AI,xi,AIXdN); 
+	  if (*fixgamma==0) {
+		  if (*monotone==0) MtM(cdesignG,ZZ); else  MtA(cdesignG,wZ,ZZ); 
+		  if (*monotone==0) MtA(cdesignX,cdesignG,XZ); else  MtA(cdesignX,wZ,XZ); 
+		  MxA(AI,XZ,XZAI); MtA(XZAI,XZ,tmpM2); 
+		  mat_subtr(ZZ,tmpM2,dCGam); 
 
-  scl_mat_mult(dtime,dCGam,dCGam); mat_add(CGam,dCGam,CGam); 
-  vM(cdesignG,Y,zi); vM(XZ,AIXdN,tmpv2); 
-  vec_subtr(zi,tmpv2,ZGdN); scl_vec_mult(dtime,ZGdN,ZGdN); 
-  vec_add(ZGdN,IZGdN,IZGdN); 
-  Acorb[s]=mat_transp(XZAI,Acorb[s]); 
-  C[s]=mat_copy(XZ,C[s]); 
-  }
+		  //  score for beta part of model 
+		  if (itt==(*Nit-1))  for (i=1;i<*px+1;i++) score[i*(*Ntimes)+s]=VE(AIXdN,i-1); 
+		  dtime=1; 
 
-  /* scl_mat_mult(dtime,XZAI,tmpM4);mat_add(tmpM4,Ct,Ct); */
-  double convs=0; 
-  for (k=1;k<=*px;k++) { 
-	  inc[k*(*Ntimes)+s]=VE(AIXdN,k-1); 
-	  convs=convs+fabs(inc[k*(*Ntimes)+s]); 
-  }
-  if (convs>0.5 && (itt==(*Nit-2))) silent[s]=2;  // lacking convergence for this time
+		  scl_mat_mult(dtime,dCGam,dCGam); mat_add(CGam,dCGam,CGam); 
+		  if (*monotone==0) vM(cdesignG,Y,zi); else vM(wZ,Y,zi);
+		  vM(XZ,AIXdN,tmpv2); 
+		  vec_subtr(zi,tmpv2,ZGdN); scl_vec_mult(dtime,ZGdN,ZGdN); 
+		  vec_add(ZGdN,IZGdN,IZGdN); 
+		  Acorb[s]=mat_transp(XZAI,Acorb[s]); 
+		  C[s]=mat_copy(XZ,C[s]); 
+	  }
 
-  if (itt==(*Nit-1))  // {{{
-  for (i=0;i<*antpers;i++) 
-  { // vec_zeros(tmpv1); vec_zeros(z1); 
-      j=clusters[i]; 	
-      extract_row(cdesignX,i,xi); scl_vec_mult(VE(Y,i),xi,xi); 
-      Mv(AI,xi,rowX);
-      for (l=0;l<*px;l++) ME(W3t[j],s,l)+=VE(rowX,l); 
-      if (*fixgamma==0) {
-	 extract_row(cdesignG,i,zi); scl_vec_mult(VE(Y,i),zi,zi); 
-	 vM(C[s],rowX,tmpv2); vec_subtr(zi,tmpv2,rowZ); 
-//	         scl_vec_mult(dtime,rowZ,rowZ); 
-	 vec_add(rowZ,W2[j],W2[j]); 
-      }
+          /* scl_mat_mult(dtime,XZAI,tmpM4);mat_add(tmpM4,Ct,Ct); */
+	  double convs=0; 
+	  for (k=1;k<=*px;k++) { 
+		  inc[k*(*Ntimes)+s]=VE(AIXdN,k-1); 
+		  convs=convs+fabs(inc[k*(*Ntimes)+s]); 
+	  }
+	  if (convs>0.5 && (itt==(*Nit-2))) silent[s]=2;  // lacking convergence for this time
 
-      if (*conservative==0) { // {{{ censoring terms  
-      k=ordertime[i]; nrisk=(*antpers)-i; clusterj=clusters[k]; 
-      if (cause[k]==(*censcode)) { 
-      Mv(AI,censXv,rowX);
-	 for (l=0;l<*px;l++) ME(W3t[clusterj],s,l)+=VE(rowX,l)/nrisk; 
-	 if (*fixgamma==0) {
-	 vM(C[s],rowX,tmpv2); vec_subtr(censZv,tmpv2,rowZ); 
-//	         scl_vec_mult(dtime,rowZ,rowZ); 
-	 for (l=0;l<*pg;l++) VE(W2[clusterj],l)+=VE(rowZ,l)/nrisk; 
-	 }
-	 for (j=i;j<*antpers;j++) {
-	    clusterj=clusters[ordertime[j]]; 	
-	    for (l=0;l<*px;l++) ME(W3t[clusterj],s,l)-=VE(rowX,l)/pow(nrisk,2); 
-	    if (*fixgamma==0) {
-	       for (l=0;l<*pg;l++) VE(W2[clusterj],l)-=VE(rowZ,l)/pow(nrisk,2); 
-	    }
-	 } 
-      } 
-     // fewer where I(s <= T_i) , because s is increasing
-     extract_row(censX,k,xi); vec_subtr(censXv,xi,censXv);  
-     extract_row(censZ,k,zi); vec_subtr(censZv,zi,censZv);  
-   }     // conservative==0 }}}
-   } // if (itt==(*Nit-1)) for (i=0;i<*antpers;i++)  // }}}
+	  if (itt==(*Nit-1))  // {{{
+	  for (i=0;i<*antpers;i++) 
+	  { // vec_zeros(tmpv1); vec_zeros(z1); 
+	      j=clusters[i]; 	
+	      if (*monotone==0) extract_row(cdesignX,i,xi); 
+	      if (*monotone==1) extract_row(wX,i,xi); 
+	      scl_vec_mult(VE(Y,i),xi,xi); 
+	      Mv(AI,xi,rowX);
+	      for (l=0;l<*px;l++) ME(W3t[j],s,l)+=VE(rowX,l); 
+	      if (*fixgamma==0) {
+		 if (*monotone==0) extract_row(cdesignG,i,zi); 
+		 if (*monotone==1) extract_row(wZ,i,zi); 
+		 scl_vec_mult(VE(Y,i),zi,zi); 
+		 vM(C[s],rowX,tmpv2); vec_subtr(zi,tmpv2,rowZ); 
+	//	         scl_vec_mult(dtime,rowZ,rowZ); 
+		 vec_add(rowZ,W2[j],W2[j]); 
+	       }
+	      if (*conservative==0) { // {{{ censoring terms  
+	      k=ordertime[i]; nrisk=(*antpers)-i; clusterj=clusters[k]; 
+	      if (cause[k]==(*censcode)) { 
+	      Mv(AI,censXv,rowX);
+		 for (l=0;l<*px;l++) ME(W3t[clusterj],s,l)+=VE(rowX,l)/nrisk; 
+		 if (*fixgamma==0) {
+		 vM(C[s],rowX,tmpv2); vec_subtr(censZv,tmpv2,rowZ); 
+	//	         scl_vec_mult(dtime,rowZ,rowZ); 
+		 for (l=0;l<*pg;l++) VE(W2[clusterj],l)+=VE(rowZ,l)/nrisk; 
+		 }
+		 for (j=i;j<*antpers;j++) {
+		    clusterj=clusters[ordertime[j]]; 	
+		    for (l=0;l<*px;l++) ME(W3t[clusterj],s,l)-=VE(rowX,l)/pow(nrisk,2); 
+		    if (*fixgamma==0) {
+		       for (l=0;l<*pg;l++) VE(W2[clusterj],l)-=VE(rowZ,l)/pow(nrisk,2); 
+		    }
+		 } 
+	      } 
+	     // fewer where I(s <= T_i) , because s is increasing
+	     extract_row(censX,k,xi); vec_subtr(censXv,xi,censXv);  
+	     extract_row(censZ,k,zi); vec_subtr(censZv,zi,censZv);  
+	   }     // conservative==0 }}}
+	 } // if (itt==(*Nit-1)) for (i=0;i<*antpers;i++)  // }}}
 } // sing=0
 } /* s=1,...Ntimes */
 
@@ -690,7 +764,10 @@ if (isnan(vec_sum(dgam))) {
  vec_zeros(dgam); 
  nagam=1; 
 } 
-if (itt<(*Nit-1)) vec_add(gam,dgam,gam); 
+if (itt<(*Nit-1)) { 
+        scl_vec_mult(step,dgam,dgam); 
+	vec_add(gam,dgam,gam); 
+}
 }
 
 // do not update estimates for last itteration 
@@ -714,14 +791,12 @@ Rprintf("Change in Gamma \n"); print_vec(dgam);
 Rprintf("===========================================================\n"); 
 }
 //	 score for gamma part of model 
-if (itt==(*Nit-1))  
-for (k=0;k<*pg;k++) gamscore[k]= VE(dgam,k); 
+if (itt==(*Nit-1))  for (k=0;k<*pg;k++) gamscore[k]= VE(dgam,k); 
 
 } /*itt løkke */  // }}}
 	
 R_CheckUserInterrupt();
 /* ROBUST VARIANCES   */ 
-//  if (*conservative==1) { 
 for (s=0;s<*Ntimes;s++) { // {{{ robust variances 
 vec_zeros(VdB); 
  for (i=0;i<*antclust;i++) {
@@ -743,7 +818,6 @@ vec_zeros(VdB);
 for (k=1;k<*px+1;k++) var[k*(*Ntimes)+s]=VE(VdB,k-1); 
 
 } /* s=0..Ntimes*/ // }}}
-//  } // if *conservative=1
 
 /* MxA(RobVargam,ICGam,tmpM2); MxA(ICGam,tmpM2,RobVargam);*/
 /* print_mat(RobVargam);  */ 
@@ -753,9 +827,7 @@ for (j=0;j<*pg;j++) {gamma[j]=VE(gam,j);
 for (k=0;k<*pg;k++) {
        vargamma[k*(*pg)+j]=ME(RobVargam,j,k);
        Dscore[k*(*pg)+j]=ME(ICGam,j,k);
-}
-}
-}
+} } }
 
 if (convproblems>=1) convc[0]=convproblems; 
 R_CheckUserInterrupt();
@@ -764,12 +836,12 @@ comptestfunc(times,Ntimes,px,est,var,vcudif,antsim,test,testOBS,Ut,simUt,W4t,wei
 }
 
 // {{{ freeing
-free_mats(&censX,&censZ,&ldesignX,&A,&AI,&cdesignX,&ldesignG,&cdesignG,
+free_mats(&wX,&wZ,&censX,&censZ,&ldesignX,&A,&AI,&cdesignX,&ldesignG,&cdesignG,
       &S,&dCGam,&CGam,&ICGam,&VarKorG,&dC,&XZ,&ZZ,&ZZI,&XZAI, 
       &Ct,&tmpM2,&tmpM3,&tmpM4,&Vargam,&dVargam,
       &Delta,&dM1M2,&M1M2t,&RobVargam,NULL); 
 
-free_vecs(&censXv,&censZv,&qs,&Y,&rr,&bhatub,&dB,&dN,&VdB,&AIXdN,&AIXlamt,
+free_vecs(&dpx1,&dpz1,&dpx,&dpz,&censXv,&censZv,&qs,&Y,&rr,&bhatub,&dB,&dN,&VdB,&AIXdN,&AIXlamt,
       &bhatt,&pbhat,&plamt,&korG,&pghat,&rowG,&gam,&dgam,&ZGdN,&IZGdN,
       &ZGlamt,&IZGlamt,&xit,&xi,&rowX,&rowZ,&difX,&zit,&zi,&z1,&tmpv1,&tmpv2,&lrisk,&ciftrunk,&truncbhatt,
       NULL); 

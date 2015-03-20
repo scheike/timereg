@@ -178,7 +178,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
       } else {
         P1=1-exp(-cumhaz-constant.part )
       }
-      RR<-NULL; 
+      RR<-1; 
     } else if (modelType == 'rcif') { # P1=exp(x^T b(t) + z^t t^p gamma) 
         if (semi==FALSE){
            P1=exp(cumhaz);
@@ -188,11 +188,12 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
        RR<-1;
     } else if (modelType == 'rcif2') { # P1=x^T b(t) exp( z^t t^p gamma) 
         if (semi==FALSE){
-           P1=cumhaz;
+         P1=cumhaz;
+         RR<-1;
          } else {
          P1<-cumhaz*exp(constant.part);
+         RR<-exp(constant.part);
        }
-       RR<-1;
     } else if (modelType == 'prop') {# model proportional , Fine Gray extension
         if (semi==FALSE){
         RR<-exp(cumhaz);
@@ -211,8 +212,8 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
       if (semi==FALSE){ RR<-exp(cumhaz); }   else { RR<-exp(cumhaz+constant.part); }
       P1<-RR/(1+RR);
     } else if (modelType == 'logistic2') { #model logistic, baseline-par
-      if (semi==FALSE){ RR<-cumhaz; }   else { RR<-cumhaz*exp(constant.part); }
-      P1<-RR/(1+RR);
+      if (semi==FALSE){ RR<-1; }   else { RR<-exp(constant.part); }
+      P1<-RR*cumhaz/(1+RR*cumhaz);
     } ## }}}
     } 
     else if (modelType=="prop.odds")
@@ -248,7 +249,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     delta<-c();
     for (i in 1:n) {
        if (iidtimechange==1) 
-	       tmptiid<- t(Cpred(cbind(iidtime,object$B.iid[[i]]),times)[,-1,drop=FALSE])
+       tmptiid<- t(Cpred(cbind(iidtime,object$B.iid[[i]]),times)[,-1,drop=FALSE])
        else tmptiid <- t(object$B.iid[[i]])
        tmp<- as.matrix(time.vars) %*% tmptiid
 
@@ -273,23 +274,37 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
       if (semi==TRUE){
         if(modelType=="additive" || modelType == "aalen") { tmp<-tmp+ tmp.const } 
 	else if (modelType=="prop" || modelType=="rcif") { tmp<-RR*tmp+RR*tmp.const; } 
-	else if (modelType=="logistic" || modelType=="rcif2") { tmp<-RR*tmp+RR*tmp.const; } 
-	else if (modelType=="logistic2") { tmp<-RR*tmp+RR*tmp.const; } 
+	else if (modelType=="logistic" || modelType=="rcif2") { tmp<-RR*tmp+RR*cumhaz*tmp.const; } 
+	else if (modelType=="logistic2") { tmp<-RR*tmp+RR*cumhaz*tmp.const; } 
 	else if (modelType=="cox.aalen") { tmp <- RR * tmp + RR * cumhaz * tmp.const }
 	else if (modelType=="prop.odds") { tmp <- RR * tmp + RR * cumhaz * tmp.const; }
+      } else {
+	if (modelType=="prop") { tmp<-RR*tmp; } 
       }
+
       delta<-cbind(delta,c(tmp)); 
     }
     se<-apply(delta^2,1,sum)^.5
 
-    if(modelType == 'additive' || modelType == 'prop' || modelType=="fg"){ se.P1<-matrix(se,nobs,nt)*(1-P1); 
+    if(modelType == 'additive' || modelType == 'prop' || modelType=="fg"){ 
+       se.P1<-matrix(se,nobs,nt)*(1-P1); 
        if (resample.iid==1)  P1.iid <- array(delta*c(1-P1),c(nobs,nt,n));   
     } 
-    else if(modelType == 'rcif' || modelType== 'rcif2'){ se.P1<-matrix(se,nobs,nt)*(P1) 
-       if (resample.iid==1) P1.iid <- array(delta*c(P1),c(nobs,nt,n));   
+    else if(modelType == 'rcif' ){ 
+       se.P1<-matrix(se,nobs,nt)*P1 
+       if (resample.iid==1) P1.iid <- array(delta*P1,c(nobs,nt,n));   
     } 
-    else if (modelType == 'logistic' || modelType == 'logistic2'){ se.P1<-matrix(se,nobs,nt)*P1/(1+RR) 
+    else if(modelType == 'rcif2'){ 
+       se.P1<-matrix(se,nobs,nt) 
+       if (resample.iid==1) P1.iid <- array(delta,c(nobs,nt,n));   
+    }
+    else if (modelType == 'logistic'){ 
+       se.P1<-matrix(se,nobs,nt)*P1/(1+RR) 
        if (resample.iid==1) P1.iid <- array(delta*c(P1/(1+RR),c(nobs,nt,n)));   
+    } 
+    else if (modelType == 'logistic2'){ 
+       se.P1<-matrix(se,nobs,nt)*1/(1+cumhaz*RR)^2 
+       if (resample.iid==1) P1.iid <- array(delta*c(1/(1+cumhaz*RR),c(nobs,nt,n)));   
     } 
     else if (modelType == 'aalen' || modelType == 'cox.aalen'){ 
        se.S0<-matrix(se,nobs,nt)*S0 

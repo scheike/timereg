@@ -2,7 +2,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
 		    fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="fg",detail=0,interval=0.01,resample.iid=1,
                     cens.model="KM",cens.formula=NULL,time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
                     weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,estimator=1,
-		    trunc.p=NULL,cens.weight=NULL,admin.cens=NULL,conservative=1) 
+		    trunc.p=NULL,cens.weight=NULL,admin.cens=NULL,conservative=1,monotone=0,step=NULL) 
     # {{{
 {
     if (!missing(cause)){
@@ -26,11 +26,14 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
     cause.call <- causeS <- cause
     m<-match.call(expand.dots=FALSE);
     m$gamma<-m$times<-m$n.times<-m$cause<-m$Nit<-m$weighted<-m$n.sim<-
-             m$model<-m$detail<- m$cens.model<-m$time.pow<-m$silent<- 
-             m$cens.formula <- m$interval<- m$clusters<-m$resample.iid<-
+             m$model<-m$detail<- m$cens.model<-m$time.pow<-m$silent<- m$step <- 
+             m$cens.formula <- m$interval<- m$clusters<-m$resample.iid<- m$monotone <- 
              m$time.pow.test<-m$conv<- m$weights  <- m$max.clust <- m$first.time.p<- m$trunc.p <- 
              m$cens.weight <- m$admin.cens <- m$fix.gamma <- m$est  <- m$conservative <- m$estimator <- NULL
   
+    if ((trans==2 || trans==3 || trans==7) && is.null(step)) step <- 0.5
+    if (is.null(step)) step <- 1
+
     special <- c("const","cluster")
     if (missing(data)) {
         Terms <- terms(formula, special)
@@ -140,8 +143,8 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
                 Gcx<-Cpred(Gfit,eventtime,strict=TRUE)[,2];
                 Gcxe<-Cpred(Gfit,entrytime,strict=TRUE)[,2];
 		### strictly before, but starts in 1. 
-		Gcxe[Gcxe==0] <- 1
-                Gcx <- Gcx/Gcxe; 
+###		Gcxe[Gcxe==0] <- 1
+###                Gcx <- Gcx/Gcxe; 
                 Gctimes<-Cpred(Gfit,times,strict=TRUE)[,2]; ## }}}
             } else if (cens.model=="strat-KM") { ## {{{
 	        XZ <- model.matrix(cens.formula,data=data); 
@@ -150,6 +153,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
                 Gfit<-cbind(ud.cens$time,ud.cens$surv)
                 Gfit<-rbind(c(0,1),Gfit); 
                 Gcx<-Cpred(Gfit,eventtime,strict=TRUE)[,2];
+		Gcxe[Gcxe==0] <- 1
                 Gcx <- Gcx/Gcxe; 
                 Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
             } else if (cens.model=="cox") { ## {{{
@@ -165,6 +169,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
 		baseout <- cbind(baseout$time,baseout$hazard)
 		Gcx<-Cpred(baseout,eventtime,strict=TRUE)[,2];
 		Gcxe<-Cpred(baseout,entrytime,strict=TRUE)[,2];
+		Gcxe[Gcxe==0] <- 1
 		RR<-exp(as.matrix(XZ) %*% coef(ud.cens))
 		Gcx<-exp(-Gcx*RR)
 		Gcxe<-exp(-Gcxe*RR)
@@ -184,9 +189,11 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
 			       n.sim=0,residuals=0,robust=0,silent=1); 
                 Gcx <- Cpred(ud.cens$cum,eventtime,strict=TRUE)[,-1];
                 Gcx<-exp(-apply(Gcx*XZ,1,sum))
-                Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
-                Gfit<-rbind(c(0,1),cbind(eventtime,Gcx)); 
+                Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-1
+                Gcxe <- Cpred(ud.cens$cum,entrytime,strict=TRUE)[,2];
+		Gcxe[Gcxe==0] <- 1
                 Gcx <- Gcx/Gcxe; 
+                Gfit<-rbind(c(0,1),cbind(eventtime,Gcx)); 
                 Gctimes<-Cpred(Gfit,times,strict=TRUE)[,2]; ## }}}
             } else  stop('Unknown censoring model') 
             cens.weight <- Gcx
@@ -207,7 +214,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
     }
 
    if (left==1 & is.null(trunc.p))  { 
-	 ### geskus reverse time PL for truncation times, crprep 
+	 ### geskus reverse time PL for truncation times, from mstate crprep 
          n=length(time2)
          prec.factor <- 100
          prec <- .Machine$double.eps * prec.factor
@@ -217,8 +224,9 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
          trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
          Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),time2)
          Lw <- Lfit[,2]
-	 weights <- weights*Lw
-###	 entrytime <- rep(0,n) ### changes these to 0 
+###	 weights <- weights*Lw
+	 Gcx <- Lw*Gcx
+###          stop(" Left truncation do not work \n"); 
    }
    if (is.null(trunc.p)) trunc.p <- rep(1,n);  
    if (length(trunc.p)!=n) stop("truncation weights must have same length as data\n"); 
@@ -237,7 +245,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
   betaS<-rep(0,ps); 
 
   ## possible starting value for nonparametric components
-  if (is.null(est)) { est<-matrix(0,ntimes,px+1); est[,1] <- times; }  
+  if (is.null(est)) { est<-matrix(0.0+0.1*(monotone),ntimes,px+1); est[,1] <- times; }  
   if (nrow(est)!=length(times)) est <- Cpred(est,times); 
 
   hess<-matrix(0,ps,ps); var<-score<-matrix(0,ntimes,ps+1); 
@@ -249,12 +257,12 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
   pred.covs.sem<-0
 
   if (is.null(time.pow)==TRUE & model=="prop" )     time.pow<-rep(0,pg); 
-  if (is.null(time.pow)==TRUE & model=="fg" )     time.pow<-rep(0,pg); 
+  if (is.null(time.pow)==TRUE & model=="fg" )       time.pow<-rep(0,pg); 
   if (is.null(time.pow)==TRUE & model=="additive")  time.pow<-rep(1,pg); 
   if (is.null(time.pow)==TRUE & model=="rcif" )     time.pow<-rep(0,pg); 
-  if (is.null(time.pow)==TRUE & model=="rcif2" )     time.pow<-rep(0,pg); 
+  if (is.null(time.pow)==TRUE & model=="rcif2" )    time.pow<-rep(0,pg); 
   if (is.null(time.pow)==TRUE & model=="logistic" ) time.pow<-rep(0,pg); 
-  if (is.null(time.pow)==TRUE & model=="logistic2" ) time.pow<-rep(0,pg); 
+  if (is.null(time.pow)==TRUE & model=="logistic2" )time.pow<-rep(0,pg); 
   if (length(time.pow)!=pg) time.pow <- rep(time.pow[1],pg); 
 
   if (is.null(time.pow.test)==TRUE & model=="prop" )     time.pow.test<-rep(0,px); 
@@ -270,8 +278,8 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
   ## }}}
 
 
-  ###  dyn.load("comprisk.so")
-  ssf <- 0; 
+  ###  dyn.load("comprisk.so"0
+  ssf <- step;  ## takes step size over 
   out<-.C("itfit", ## {{{
           as.double(times),as.integer(ntimes),as.double(eventtime),
           as.integer(cens.code), as.integer(status),as.double(Gcx),
@@ -290,8 +298,9 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
 	  as.double(weights),as.double(entrytime),as.double(trunc.p),
 	  as.integer(estimator),as.integer(fix.gamma), as.integer(stratum),
 	  as.integer(ordertime-1),as.integer(conservative), as.double(ssf), 
-	  as.double(Gctimes),as.double(rep(0,pg)),as.double(matrix(0,pg,pg)),PACKAGE="timereg") ## }}}
-  
+	  as.double(Gctimes),as.double(rep(0,pg)),as.double(matrix(0,pg,pg)),
+	  as.integer(monotone),PACKAGE="timereg") ## }}}
+ 
 
  ## {{{ handling output
   ssf <- out[[51]]; 
@@ -372,7 +381,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
            obs.testBeqC=obs.testBeqC,pval.testBeqC.is=pval.testBeqC.is,
            conf.band=unifCI,B.iid=B.iid,gamma.iid=gamiid,ss=ssf,
            test.procBeqC=Ut,sim.test.procBeqC=UIt,conv=conv,
-	   cens.weight=cens.weight,scores=scores,Dscore.gamma=Dscore.gamma)
+	   cens.weight=cens.weight,scores=scores,Dscore.gamma=Dscore.gamma,step=step)
 
     ud$call<-call; 
     ud$model<-model; 
