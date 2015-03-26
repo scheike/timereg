@@ -55,18 +55,22 @@ int *n,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
          for(j=0;j<*px;j++)  ME(X,c,j)=z[j*(*n)+c]; 
     }
 
+ssf[0]=0; 
+
 for (s=0;s<*Ntimes;s++)
 {
    time=times[s]; est[s]=time; score[s]=time; var[s]=time;
    convt=1; 
 
 // starting values, typical 0
-   for (c=0;c<*px;c++) VE(bet1,c)=est[(c+1)*(*Ntimes)+s]; 
+   for (c=0;c<*px;c++) {
+	   VE(bet1,c)=est[(c+1)*(*Ntimes)+s]; 
+	   VE(beta,c)=est[(c+1)*(*Ntimes)+s]; 
+   }
    for (j=0;j<*antclust;j++) { vec_zeros(cumA[j]); vec_zeros(cumhatA[j]); }
 
   for (it=0;it<*Nit;it++) // {{{ 
   { 
-   ssf[0]=0; 
    R_CheckUserInterrupt();
    totrisk=0; 
 
@@ -74,7 +78,7 @@ for (s=0;s<*Ntimes;s++)
       VE(risk,j)=(x[j]>=time); 
       totrisk=totrisk+VE(risk,j);
       extract_row(X,j,xi); 
-      if (it==0 && (*monotone==1) && (s==1)) {
+      if (it==0 && (s==0)) {
 	  scl_vec_mult(pow(weights[j],0.5),xi,rowX);
           replace_row(wX,j,rowX); 
       }
@@ -146,17 +150,19 @@ for (s=0;s<*Ntimes;s++)
           else VE(Y,j)=( (VE(Y,j)/KMc[j])-VE(pbhat,j));
 	  if (varp>0.001) VE(Y,j)=VE(Y,j)/varp; else VE(Y,j)=VE(Y,j)/0.001; 
       }
-      prede=(VE(Y,j)-VE(pbhat,j)); 
-      ssf[0]=ssf[0]+pow(prede,2); 
       VE(Y,j)=pow(weights[j],0.5)*VE(Y,j); 
+      prede=(VE(Y,j)); 
+      if (it==(*Nit-1)) ssf[0]+=pow(prede,2); 
 
     } // j=0;j<n*;j++ }}}
 //    if (it==(*Nit-1)) { printf(" s %d ",s); print_vec(censXv); }
 
+//    head_matrix(cX); head_matrix(wX); 
+
     totrisk=vec_sum(risk); 
     if (*monotone==0) MtM(cX,A); else MtA(cX,wX,A); 
     invertS(A,AI,osilent); sing=0; 
-    // head_matrix(cX); print_mat(A); print_mat(AI); 
+    //  print_mat(A); print_mat(AI); 
    if (ME(AI,0,0)==0 && *stratum==0 && (osilent==0)) {
 	  Rprintf(" X'X not invertible at time %d %lf \n",s,time); 
 	  print_mat(A); 
@@ -205,6 +211,7 @@ for (s=0;s<*Ntimes;s++)
 
   } // }}} /* it */
 
+
    vec_zeros(VdB); mat_zeros(VAR); 
 
 //    if (osilent<=1) for (i=0;i<*antclust;i++) vec_zeros(cumhatA[i]); 
@@ -214,7 +221,6 @@ if (convt==1 ) { // {{{ iid decomp
       j=clusters[i]; 
       if (*monotone==0) for(l=0;l<ps;l++) VE(cumA[j],l)+=VE(Y,i)*ME(cX,i,l); 
       if (*monotone==1) for(l=0;l<ps;l++) VE(cumA[j],l)+=VE(Y,i)*ME(wX,i,l); 
-
     if ((*conservative==0)) { // {{{ censoring terms for variance 
 	k=ordertime[i]; nrisk=(*n)-i; clusterj=clusters[k]; 
 //	printf(" %d %d %lf %lf %lf %d \n",i,k,nrisk,time,x[k],cause[k]); 
@@ -468,14 +474,16 @@ malloc_vec((*px)+(*pg),qs);
 	         VE(zit,l)=pow(entry[j],timepow[l])*VE(zit,l); 
 		 lrrt=lrrt+VE(gam,l)*VE(zit,l); 
          }
-	      bhattrunc=vec_prod(xit,truncbhatt); 
-	      phattrunc=1-exp(-bhattrunc*exp(lrrt)); 
+	 bhattrunc=vec_prod(xit,truncbhatt); 
+	 phattrunc=1-exp(-bhattrunc*exp(lrrt)); 
+	 if (*monotone==0) {
          scl_vec_mult((1-phattrunc)*exp(lrrt),xit,xit); 
          scl_vec_mult((1-phattrunc)*bhattrunc*exp(lrrt),zit,zit); 
 	 vec_subtr(dpx,xit,dpx); 
 	 vec_subtr(dpz,zit,dpz); 
 	 scl_vec_mult(1/trunkp[j],dpx,dpx);
 	 scl_vec_mult(1/trunkp[j],dpz,dpz);  
+	 }
       VE(plamt,j)=(VE(plamt,j)-phattrunc)/trunkp[j];
       } // }}} 
     } // }}}
@@ -653,8 +661,8 @@ malloc_vec((*px)+(*pg),qs);
    else VE(Y,j)=((VE(Y,j)/KMc[j])-VE(plamt,j))*(time>entry[j]);
    } else if (*estimator==3) VE(Y,j)=(VE(Y,j)-VE(plamt,j))*(time<KMc[j])*(time>entry[j]);
    else if (*estimator==5)  if (x[j]<time) VE(Y,j)=VE(Y,j)*KMtimes[s]/KMc[j]; 
-   ssf[0]+=pow(VE(Y,j)-VE(plamt,j),2)*(time>entry[j]); 
    VE(Y,j)=pow(weights[j],0.5)*VE(Y,j); 
+   ssf[0]+=pow(VE(Y,j),2); 
 
 }  // }}}
 //    if (itt==(*Nit-1)) { printf(" s %d ",s); print_vec(censXv); }
@@ -678,10 +686,9 @@ malloc_vec((*px)+(*pg),qs);
   }
 
   if (sing==0) {  
-
 	  if (*monotone==0) vM(cdesignX,Y,xi);  else  vM(wX,Y,xi);
 	  Mv(AI,xi,AIXdN); 
-	  if (*fixgamma==0) {
+	  if (*fixgamma==0) { // {{{ 
 		  if (*monotone==0) MtM(cdesignG,ZZ); else  MtA(cdesignG,wZ,ZZ); 
 		  if (*monotone==0) MtA(cdesignX,cdesignG,XZ); else  MtA(cdesignX,wZ,XZ); 
 		  MxA(AI,XZ,XZAI); MtA(XZAI,XZ,tmpM2); 
@@ -698,7 +705,7 @@ malloc_vec((*px)+(*pg),qs);
 		  vec_add(ZGdN,IZGdN,IZGdN); 
 		  Acorb[s]=mat_transp(XZAI,Acorb[s]); 
 		  C[s]=mat_copy(XZ,C[s]); 
-	  }
+	  } // }}} 
 
           /* scl_mat_mult(dtime,XZAI,tmpM4);mat_add(tmpM4,Ct,Ct); */
 	  double convs=0; 
@@ -717,14 +724,14 @@ malloc_vec((*px)+(*pg),qs);
 	      scl_vec_mult(VE(Y,i),xi,xi); 
 	      Mv(AI,xi,rowX);
 	      for (l=0;l<*px;l++) ME(W3t[j],s,l)+=VE(rowX,l); 
-	      if (*fixgamma==0) {
+	      if (*fixgamma==0) {  // {{{ 
 		 if (*monotone==0) extract_row(cdesignG,i,zi); 
 		 if (*monotone==1) extract_row(wZ,i,zi); 
 		 scl_vec_mult(VE(Y,i),zi,zi); 
 		 vM(C[s],rowX,tmpv2); vec_subtr(zi,tmpv2,rowZ); 
-	//	         scl_vec_mult(dtime,rowZ,rowZ); 
 		 vec_add(rowZ,W2[j],W2[j]); 
-	       }
+	      }  // }}} 
+
 	      if (*conservative==0) { // {{{ censoring terms  
 	      k=ordertime[i]; nrisk=(*antpers)-i; clusterj=clusters[k]; 
 	      if (cause[k]==(*censcode)) { 
@@ -749,6 +756,12 @@ malloc_vec((*px)+(*pg),qs);
 	   }     // conservative==0 }}}
 	 } // if (itt==(*Nit-1)) for (i=0;i<*antpers;i++)  // }}}
 } // sing=0
+
+if (*detail==1) { 
+      Rprintf("it %d, timepoint s %d, Estimate beta \n",itt,s); 
+      print_vec(bhatt); 
+      Rprintf("Information -D^2 l\n"); print_mat(AI); 
+}
 } /* s=1,...Ntimes */
 
 dummy=0; 
@@ -779,6 +792,9 @@ for (k=1;k<=*px;k++)  {
     est[k*(*Ntimes)+s]=est[k*(*Ntimes)+s]+inc[k*(*Ntimes)+s]-VE(korG,k-1); 
     dummy=dummy+fabs(inc[k*(*Ntimes)+s]-VE(korG,k-1)); 
 }
+
+
+
 } /* s=1,...Ntimes */
 if (dummy<*convc && itt<*Nit-2) itt=*Nit-2; 
 
@@ -795,14 +811,17 @@ if (itt==(*Nit-1))  for (k=0;k<*pg;k++) gamscore[k]= VE(dgam,k);
 
 } /*itt løkke */  // }}}
 	
+//head_matrix(cdesignX); head_matrix(wX); 
+
 R_CheckUserInterrupt();
 /* ROBUST VARIANCES   */ 
+vec_zeros(rowX); 
 for (s=0;s<*Ntimes;s++) { // {{{ robust variances 
 vec_zeros(VdB); 
  for (i=0;i<*antclust;i++) {
   if (*fixgamma==0) { 
      Mv(ICGam,W2[i],tmpv2); vM(Acorb[s],tmpv2,rowX); 
-  } else vec_zeros(rowX); 
+  } 
   extract_row(W3t[i],s,tmpv1); vec_subtr(tmpv1,rowX,difX); 
   replace_row(W4t[i],s,difX); vec_star(difX,difX,tmpv1); 
   vec_add(tmpv1,VdB,VdB);

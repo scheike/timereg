@@ -143,8 +143,8 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
                 Gcx<-Cpred(Gfit,eventtime,strict=TRUE)[,2];
                 Gcxe<-Cpred(Gfit,entrytime,strict=TRUE)[,2];
 		### strictly before, but starts in 1. 
-###		Gcxe[Gcxe==0] <- 1
-###                Gcx <- Gcx/Gcxe; 
+		Gcxe[Gcxe==0] <- 1
+		if (left==1) Gcx <- Gcx/Gcxe; 
                 Gctimes<-Cpred(Gfit,times,strict=TRUE)[,2]; ## }}}
             } else if (cens.model=="strat-KM") { ## {{{
 	        XZ <- model.matrix(cens.formula,data=data); 
@@ -154,7 +154,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
                 Gfit<-rbind(c(0,1),Gfit); 
                 Gcx<-Cpred(Gfit,eventtime,strict=TRUE)[,2];
 		Gcxe[Gcxe==0] <- 1
-                Gcx <- Gcx/Gcxe; 
+		if (left==1) Gcx <- Gcx/Gcxe; 
                 Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
             } else if (cens.model=="cox") { ## {{{
                 if (!is.null(cens.formula)) { 
@@ -174,7 +174,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
 		Gcx<-exp(-Gcx*RR)
 		Gcxe<-exp(-Gcxe*RR)
 		Gfit<-rbind(c(0,1),cbind(eventtime,Gcx)); 
-		Gcx <- Gcx/Gcxe; 
+		if (left==1) Gcx <- Gcx/Gcxe; 
 		Gctimes<-Cpred(Gfit,times,strict=TRUE)[,2]; 
                 ## }}}
             } else if (cens.model=="aalen") {  ## {{{
@@ -192,7 +192,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
                 Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-1
                 Gcxe <- Cpred(ud.cens$cum,entrytime,strict=TRUE)[,2];
 		Gcxe[Gcxe==0] <- 1
-                Gcx <- Gcx/Gcxe; 
+		if (left==1) Gcx <- Gcx/Gcxe; 
                 Gfit<-rbind(c(0,1),cbind(eventtime,Gcx)); 
                 Gctimes<-Cpred(Gfit,times,strict=TRUE)[,2]; ## }}}
             } else  stop('Unknown censoring model') 
@@ -224,9 +224,12 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
          trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
          Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),time2)
          Lw <- Lfit[,2]
-###	 weights <- weights*Lw
-	 Gcx <- Lw*Gcx
-###          stop(" Left truncation do not work \n"); 
+###	 weights <- 1/Lw
+	 weights <- 1/(Lw*Gcx); 
+	 weights <- (Lw*Gcx); 
+	 weights[delta==cens.code] <- 0
+	 Gcx <- rep(1,n)
+	 entrytime <- rep(0,n)
    }
    if (is.null(trunc.p)) trunc.p <- rep(1,n);  
    if (length(trunc.p)!=n) stop("truncation weights must have same length as data\n"); 
@@ -245,7 +248,12 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
   betaS<-rep(0,ps); 
 
   ## possible starting value for nonparametric components
-  if (is.null(est)) { est<-matrix(0.0+0.1*(monotone),ntimes,px+1); est[,1] <- times; }  
+  if (is.null(est)) { 
+	  est<-matrix(0.0+0.1,ntimes,px+1); 
+          est[,1] <- times; 
+  }  else {
+      est <- as.matrix(est); 
+  }
   if (nrow(est)!=length(times)) est <- Cpred(est,times); 
 
   hess<-matrix(0,ps,ps); var<-score<-matrix(0,ntimes,ps+1); 
