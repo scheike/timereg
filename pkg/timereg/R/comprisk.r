@@ -144,7 +144,8 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
                 Gcxe<-Cpred(Gfit,entrytime,strict=TRUE)[,2];
 		### strictly before, but starts in 1. 
 		Gcxe[Gcxe==0] <- 1
-		if (left==1) Gcx <- Gcx/Gcxe; 
+		### only conditional on L if trunc given 
+		if (!is.null(trunc.p)) Gcx <- Gcx/Gcxe; 
                 Gctimes<-Cpred(Gfit,times,strict=TRUE)[,2]; ## }}}
             } else if (cens.model=="strat-KM") { ## {{{
 	        XZ <- model.matrix(cens.formula,data=data); 
@@ -154,7 +155,8 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
                 Gfit<-rbind(c(0,1),Gfit); 
                 Gcx<-Cpred(Gfit,eventtime,strict=TRUE)[,2];
 		Gcxe[Gcxe==0] <- 1
-		if (left==1) Gcx <- Gcx/Gcxe; 
+		### only conditional on L if trunc given 
+		if (!is.null(trunc.p)) Gcx <- Gcx/Gcxe; 
                 Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
             } else if (cens.model=="cox") { ## {{{
                 if (!is.null(cens.formula)) { 
@@ -174,7 +176,8 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
 		Gcx<-exp(-Gcx*RR)
 		Gcxe<-exp(-Gcxe*RR)
 		Gfit<-rbind(c(0,1),cbind(eventtime,Gcx)); 
-		if (left==1) Gcx <- Gcx/Gcxe; 
+		### only conditional on L if trunc given 
+		if (!is.null(trunc.p)) Gcx <- Gcx/Gcxe; 
 		Gctimes<-Cpred(Gfit,times,strict=TRUE)[,2]; 
                 ## }}}
             } else if (cens.model=="aalen") {  ## {{{
@@ -192,7 +195,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
                 Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-1
                 Gcxe <- Cpred(ud.cens$cum,entrytime,strict=TRUE)[,2];
 		Gcxe[Gcxe==0] <- 1
-		if (left==1) Gcx <- Gcx/Gcxe; 
+		if (!is.null(trunc.p)) Gcx <- Gcx/Gcxe; 
                 Gfit<-rbind(c(0,1),cbind(eventtime,Gcx)); 
                 Gctimes<-Cpred(Gfit,times,strict=TRUE)[,2]; ## }}}
             } else  stop('Unknown censoring model') 
@@ -213,8 +216,9 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
         Gctimes <- rep(1,length(times)); 
     }
 
-   if (left==1 & is.null(trunc.p))  { 
-	 ### geskus reverse time PL for truncation times, from mstate crprep 
+   if (left==1 & is.null(trunc.p) & is.null(cens.weight))  {  ## {{{ 
+	 ### geskus weights: from mstate crprep 
+	 stop("For left-truncated data call prep.comp.risk\n call with weights and cens.weights\n"); 
          n=length(time2)
          prec.factor <- 100
          prec <- .Machine$double.eps * prec.factor
@@ -225,12 +229,10 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
          Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),time2)
          Lw <- Lfit[,2]
 ###	 weights <- 1/Lw
-	 weights <- 1/(Lw*Gcx); 
-	 weights <- (Lw*Gcx); 
+	 weights <- 1/((Lw)*Gcx); 
 	 weights[delta==cens.code] <- 0
 	 Gcx <- rep(1,n)
-	 entrytime <- rep(0,n)
-   }
+   } ## }}} 
    if (is.null(trunc.p)) trunc.p <- rep(1,n);  
    if (length(trunc.p)!=n) stop("truncation weights must have same length as data\n"); 
 ## }}}
@@ -592,3 +594,37 @@ plot.comprisk <-  function (x, pointwise.ci=1, hw.ci=0,
     }
   }
 } ## }}}
+
+
+prep.comp.risk <- function(times,data,entrytime="entrytime",time="time",cause="cause")
+{ ## {{{ 
+## {{{  geskus weights, up to min(T_i,max(times))
+   mtt <- max(times)
+   prec.factor <- 100
+   prec <- .Machine$double.eps * prec.factor
+   surv.trunc <- 
+   survfit(Surv(-data[,time],-data[,entrytime]+prec,rep(1,nrow(data))) ~ 1) 
+   trunc.dist <- summary(surv.trunc)
+   trunc.dist$time <- rev(-trunc.dist$time)
+   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
+   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),pmin(mtt,data[,time]))
+   Lw <- Lfit[,2]
+   ud.cens<- survfit(Surv(data[,entrytime],data[,time],data[,cause]==0)~+1) 
+   Gfit<-cbind(ud.cens$time,ud.cens$surv)
+   Gfit<-rbind(c(0,1),Gfit); 
+   Gcx<-Cpred(Gfit,pmin(mtt,data[,time]),strict=TRUE)[,2];
+   ###
+   weights <- 1/(Lw*Gcx); 
+   data$weights <- weights
+   ###
+   med <- ((data[,time]>mtt & data[,cause]==0)) | (data[,cause]!=0)
+   dataw <- data[med,]
+   dataw$cw <- 1
+## }}} 
+   return(dataw)
+} ## }}} 
+
+
+
+
+
