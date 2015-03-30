@@ -405,7 +405,12 @@ malloc_vec((*px)+(*pg),qs);
   for (j=0;j<*antpers;j++) {  // {{{ computing design and P_1, DP_1
     VE(lrisk,j)=(x[j]>=time); totrisk=totrisk+VE(lrisk,j);
     extract_row(ldesignX,j,xi); extract_row(ldesignG,j,zi); 
-
+    if (*estimator==2 && *monotone==1) {
+         for(k=0;k<pmax;k++)   {
+		 if (k<*px)  ME(wX,j,k)= pow(weights[j]/KMtimes[s],0.5)*z[k*(*antpers)+j];
+		 if (k<*pg)  ME(wZ,j,k)= pow(weights[j]/KMtimes[s],0.5)*zsem[k*(*antpers)+j];
+	 }
+    }
     lrr=0;  lrrt=0; 
     // {{{ compute P_1 and DP_1 
     if (*trans==1) { // {{{  model="additive"
@@ -631,7 +636,7 @@ malloc_vec((*px)+(*pg),qs);
    
     scl_vec_mult(1,dpx,dpx1); scl_vec_mult(1,dpz,dpz1); 
    
-     VE(Y,j)=((x[j]<=time) & (cause[j]==*CA))*1;
+    VE(Y,j)=((x[j]<=time) & (cause[j]==*CA))*1;
 
    if ((itt==(*Nit-1)) && (*conservative==0)) { // {{{ for censoring distribution correction 
       if (*monotone==1) { scl_vec_mult(1,xi,dpx1); scl_vec_mult(1,zi,dpz1); }
@@ -649,19 +654,21 @@ malloc_vec((*px)+(*pg),qs);
       if (varp>0.01 && itt>2) svarp=1/pow(varp,0.5); else svarp=1/pow(0.01,0.5); 
    }
 
-   if (*estimator==1 || *estimator==4) scl_vec_mult(pow(weights[j],0.5)*(time>entry[j]),dpx,dpx); 
-   else  scl_vec_mult(pow(weights[j],0.5)*(time<KMc[j])*(time>entry[j]),dpx,dpx); 
-   if (*estimator==1 || *estimator==4) scl_vec_mult(pow(weights[j],0.5)*(time>entry[j]),dpz,dpz); 
-   else scl_vec_mult(pow(weights[j],0.5)*(time<KMc[j])*(time>entry[j]),dpz,dpz); 
+   if (*estimator==1) scl_vec_mult(pow(weights[j],0.5)*(time>entry[j]),dpx,dpx); 
+   else  scl_vec_mult(pow(weights[j]*KMtimes[s]/KMc[j],0.5)*(time>entry[j]),dpx,dpx); 
+   if (*estimator==1) scl_vec_mult(pow(weights[j],0.5)*(time>entry[j]),dpz,dpz); 
+   else  scl_vec_mult(pow(weights[j]*KMtimes[s]/KMc[j],0.5)*(time>entry[j]),dpz,dpz); 
 
    replace_row(cdesignX,j,dpx); replace_row(cdesignG,j,dpz); 
 
-   if (*estimator==1 || *estimator==4) {
-   if (KMc[j]<0.001) VE(Y,j)=((VE(Y,j)/0.001)-VE(plamt,j))*(time>entry[j]); 
-   else VE(Y,j)=((VE(Y,j)/KMc[j])-VE(plamt,j))*(time>entry[j]);
-   } else if (*estimator==3) VE(Y,j)=(VE(Y,j)-VE(plamt,j))*(time<KMc[j])*(time>entry[j]);
+   if (*estimator==1 ) {
+	   if (KMc[j]<0.001) VE(Y,j)=((VE(Y,j)/0.001)-VE(plamt,j))*(time>entry[j]); 
+	   else VE(Y,j)=((VE(Y,j)/KMc[j])-VE(plamt,j))*(time>entry[j]);
+   } else if (*estimator==2) VE(Y,j)=(VE(Y,j)-VE(plamt,j));
    else if (*estimator==5)  if (x[j]<time) VE(Y,j)=VE(Y,j)*KMtimes[s]/KMc[j]; 
-   VE(Y,j)=pow(weights[j],0.5)*VE(Y,j); 
+
+   if (*estimator==1) VE(Y,j)=pow(weights[j],0.5)*VE(Y,j); 
+   else  VE(Y,j)=pow(weights[j]*KMtimes[s]/KMc[j],0.5)*VE(Y,j); 
    ssf[0]+=pow(VE(Y,j),2); 
 
 }  // }}}

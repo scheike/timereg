@@ -133,7 +133,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
   ordertime <- order(eventtime); 
   ###dcumhazcens <- rep(0,n); 
 
-    if (estimator==1 || estimator==4) {
+    if (estimator==1 || estimator==2) {
         if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncation
             if (cens.model=="KM") { ## {{{
 	        if (left==1) ud.cens<-survfit(Surv(entrytime,eventtime,delta==cens.code)~+1) else 
@@ -208,7 +208,9 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
         } else { 
             if (length(cens.weight)!=n) stop("censoring weights must have length equal to nrow in data\n");  
             Gcx <- cens.weight
-            Gctimes <- rep(1,length(times)); 
+	    ### for left truncation specification
+            ord2 <- order(time2)
+            Gctimes <- Cpred(cbind(time2[ord2],weights[ord2]),times)
         }
     } else { ## estimator==3 admin.cens 
         if (length(admin.cens)!=n) stop("censoring weights must have length equal to nrow in data\n");  
@@ -236,6 +238,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
    if (is.null(trunc.p)) trunc.p <- rep(1,n);  
    if (length(trunc.p)!=n) stop("truncation weights must have same length as data\n"); 
 ## }}}
+
 
 ## {{{ setting up more variables
 
@@ -287,6 +290,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
   if (ntimes>1) silent <- c(silent,rep(0,ntimes-1))
   ## }}}
 
+###    print(Gctimes); 
 
   ###  dyn.load("comprisk.so"0
   ssf <- step;  ## takes step size over 

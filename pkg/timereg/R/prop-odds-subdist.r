@@ -199,8 +199,8 @@ if (cens.model=="KM") { ## {{{
     }
     else  { stop('Unknown censoring model') }
     }  else {
-       if (length(cens.weight)!=n) stop("censoring weights must have length equal to nrow in data\n");  
-       KMti <- cens.weight
+       if (length(cens.weights)!=nx) stop("censoring weights must have length equal to nrow in data\n");  
+       KMti <- cens.weights
        Gctimes <- rep(1,length(times)); 
        ord2 <- order(time2) 
        KMtimes<-Cpred(cbind(time2[ord2],cens.weights[ord2]),times)[,2]; 
