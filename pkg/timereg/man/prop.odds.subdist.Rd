@@ -25,7 +25,8 @@ The modelling formula uses the standard survival modelling given in the
 \usage{
 prop.odds.subdist(formula,data=sys.parent(),cause=1,beta=NULL,
 Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
-profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=1000,baselinevar=1,weights=NULL)
+profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=1000,baselinevar=1,weights=NULL,
+cens.weights=NULL)
 }
 \arguments{
 \item{formula}{
@@ -54,6 +55,7 @@ This may improve the numerical performance.  }
 \item{max.clust}{number of maximum clusters to be used, to save time in iid decomposition.}
 \item{baselinevar}{set to 0 to save time on computations.}
 \item{weights}{additional weights.}
+\item{cens.weights}{specify censoring weights related to the observations.}
 }
 \details{
 The data for a subject is presented as multiple rows or "observations",

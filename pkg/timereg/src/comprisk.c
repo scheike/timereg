@@ -435,7 +435,7 @@ malloc_vec((*px)+(*pg),qs);
       for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
       VE(rr,j)=exp(lrr);  
       VE(plamt,j)=1-exp(-exp(VE(pbhat,j))*VE(rr,j)); 
-      if ((trunkp[j]<1)) { 
+      if ((entry[j]>0)) { 
          for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*n)+j];
 	 for (l=0;l<*pg;l++) {
 	         VE(zit,l)=pow(entry[j],timepow[l])*VE(zi,l); 
@@ -445,13 +445,13 @@ malloc_vec((*px)+(*pg),qs);
 	 phattrunc=1-exp(-exp(bhattrunc)*exp(lrrt)); 
       } else phattrunc=0; 
       for (l=0;l<*pg;l++) VE(zi,l)=pow(time,timepow[l])*VE(zi,l); 
-      if ((trunkp[j]<1)) { 
+      if ((entry[j]>0)) { 
 	 scl_vec_mult((1-phattrunc)*exp(bhattrunc)*exp(lrrt)/trunkp[j],xi,xit); 
 	 scl_vec_mult((1-phattrunc)*exp(bhattrunc)*exp(lrrt)/trunkp[j],zit,zit); 
       }
       scl_vec_mult((1-VE(plamt,j))*exp(VE(pbhat,j))*VE(rr,j)/trunkp[j],xi,dpx); 
       scl_vec_mult((1-VE(plamt,j))*exp(VE(pbhat,j))*VE(rr,j)/trunkp[j],zi,dpz); 
-      if (trunkp[j]<1) { 
+      if (entry[j]<1) { 
 	 vec_subtr(dpx,xit,dpx); 
 	 vec_subtr(dpz,zit,dpz); 
          VE(plamt,j)=(VE(plamt,j)-phattrunc)/trunkp[j];
@@ -467,7 +467,7 @@ malloc_vec((*px)+(*pg),qs);
       varp=VE(plamt,j)*(1-VE(plamt,j)); 
       scl_vec_mult((1-VE(plamt,j))*VE(rr,j),xi,dpx); 
       scl_vec_mult((1-VE(plamt,j))*VE(pbhat,j)*VE(rr,j),zi,dpz); 
-      if ((trunkp[j]<1)) {  // {{{ 
+      if ((entry[j]>0)) {  // {{{ 
 	 for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*n)+j];
 	 extract_row(ldesignG,j,zit); extract_row(ldesignX,j,xit); 
 	 for (l=0;l<*pg;l++) { 

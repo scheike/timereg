@@ -1,9 +1,9 @@
 prop.odds.subdist<-function(formula,data=sys.parent(),cause=1,beta=NULL,
 Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
-profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=1000,baselinevar=1,weights=NULL)
+profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=1000,baselinevar=1,weights=NULL,
+cens.weights=NULL)
 {
 ## {{{ 
-
 ## {{{ 
  if (!missing(cause)){
     if (length(cause)!=1) stop("Argument cause specifies the cause of interest, see help(prop.odds.subdist) for details.")
@@ -18,6 +18,7 @@ profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=1000,baselinevar=1,weigh
     residuals<-0;  robust<-1; resample.iid <- 1 
     m$cens.model <- m$cause <- m$sym<-m$profile <- m$max.time<- m$start.time<- m$weighted.test<- m$n.sim<-
     m$id<-m$Nit<-m$detail<-m$beta <- m$baselinevar <- m$clusters <- m$max.clust <- m$weights <-  NULL
+    m$cens.weights <- NULL
 
     special <- c("cluster")
     if (missing(data)) {
@@ -165,6 +166,7 @@ loglike<-0;
 
 ## {{{ censoring and estimator
 
+if (is.null(cens.weights)) { ## {{{ censoring model stuff with possible truncation
 if (cens.model=="KM") { ## {{{
     ud.cens<-survfit(Surv(time2,delta==cens.code)~+1);
     Gfit<-cbind(ud.cens$time,ud.cens$surv)
@@ -196,6 +198,13 @@ if (cens.model=="KM") { ## {{{
     KMti <- rep(1,length(time2)); KMtimes <- rep(1,length(times));
     }
     else  { stop('Unknown censoring model') }
+    }  else {
+       if (length(cens.weight)!=n) stop("censoring weights must have length equal to nrow in data\n");  
+       KMti <- cens.weight
+       Gctimes <- rep(1,length(times)); 
+       ord2 <- order(time2) 
+       KMtimes<-Cpred(cbind(time2[ord2],cens.weights[ord2]),times)[,2]; 
+    }
 ## }}}
 
     if (is.null(weights)) weights <- rep(1,nx); 
@@ -225,7 +234,8 @@ nparout<- .C("posubdist2",
 	as.double(Rvcu),as.double(RVarbeta),as.double(test),
 	as.double(testOBS),as.double(Ut),as.double(simUt),
 	as.double(Uit),as.integer(id),as.integer(status),
-	as.integer(weighted.test),as.integer(rate.sim),as.double(score), as.double(cumAi),as.double(cumAiiid),as.integer(residuals), 
+	as.integer(weighted.test),as.integer(rate.sim),as.double(score), 
+	as.double(cumAi),as.double(cumAiiid),as.integer(residuals), 
 	as.double(loglike),as.integer(profile),as.integer(sym),
 	as.double(KMtimes),as.double(KMti),as.double(time2),
 	as.integer(causeS), as.integer(index-1), as.integer(baselinevar),
