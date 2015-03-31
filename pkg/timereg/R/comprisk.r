@@ -599,7 +599,6 @@ plot.comprisk <-  function (x, pointwise.ci=1, hw.ci=0,
   }
 } ## }}}
 
-
 prep.comp.risk <- function(times,data,entrytime="entrytime",time="time",cause="cause")
 { ## {{{ 
 ## {{{  geskus weights, up to min(T_i,max(times))
@@ -619,16 +618,21 @@ prep.comp.risk <- function(times,data,entrytime="entrytime",time="time",cause="c
    Gcx<-Cpred(Gfit,pmin(mtt,data[,time]),strict=TRUE)[,2];
    ###
    weights <- 1/(Lw*Gcx); 
-   data$weights <- weights
+   if ("weights" %in% names(data)) {
+	   warning("Weights in variable 'weights_' \n")
+           wname<- "weights_"
+   data[,wname] <- weights
+   } else data[,"weights"] <- weights
    ###
    med <- ((data[,time]>mtt & data[,cause]==0)) | (data[,cause]!=0)
    dataw <- data[med,]
-   dataw$cw <- 1
+   if ("cw" %in% names(data)) {
+	   warning("cw weights in variable 'cw_' \n")
+           cwname<- "cw_"
+   dataw[,cwname] <- 1
+   } else dataw[,"cw"] <- 1
 ## }}} 
    return(dataw)
 } ## }}} 
-
-
-
 
 
