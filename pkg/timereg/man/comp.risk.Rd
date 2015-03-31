@@ -248,5 +248,28 @@ plot(out,multiple=1,uniform=0,col=1:3,lty=1,se=0)
 fg2<-comp.risk(Event(time,cause)~const(platelet)+const(age)+const(tcell),data=bmt,
 cause=1,resample.iid=1,model="prop",n.sim=100)
 summary(fg2)
+
+#################################################################
+## Delayed entry models, must use semi-parametric model call 
+#################################################################
+nn <- nrow(bmt)
+entrytime <- rbinom(nn,1,0.5)*(bmt$time*runif(nn))
+bmt$entrytime <- entrytime
+times <- seq(5,70,by=1)
+
+bmtw <- prep.comp.risk(times,data=bmt,time="time",entrytime="entrytime",cause="cause")
+
+## non-parametric model 
+outnp <- comp.risk(Event(time,cause)~tcell+platelet+const(age),
+		   data=bmtw,cause=1,fix.gamma=1,gamma=0,
+ cens.weight=bmtw$cw,weights=bmtw$weights,times=times,n.sim=0)
+par(mfrow=c(2,2))
+plot(outnp)
+
+## semiparametric model 
+out <- comp.risk(Event(time,cause)~const(tcell)+const(platelet),data=bmtw,cause=1,
+ cens.weight=bmtw$cw,weights=bmtw$weights,times=times,n.sim=0)
+summary(out)
+
 }
 \keyword{survival}
