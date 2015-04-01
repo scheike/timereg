@@ -112,6 +112,7 @@ Scheike, Cortese and Holmboe (2015), Regression Modelling of Restricted Residual
 }
 \author{Thomas Scheike}
 \examples{
+library(timereg)
 data(bmt); 
 tau <- 100 
 
@@ -121,7 +122,8 @@ summary(out)
 
 out<-res.mean(Event(time,cause>=1)~factor(tcell)+factor(platelet),data=bmt,cause=1,
 	      times=seq(0,90,5),restricted=tau,n.sim=0,model="additive",estimator=1); 
-summary(out)
+par(mfrow=c(1,3))
+plot(out)
 
 out<-res.mean(Event(time,cause>=1)~factor(tcell)+factor(platelet),data=bmt,cause=1,
 	      times=0,restricted=tau,n.sim=0,model="additive",estimator=2); 

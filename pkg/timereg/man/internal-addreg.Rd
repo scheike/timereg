@@ -1,5 +1,4 @@
 \name{pval}
-\alias{res.mean}
 \alias{summary.resmean}
 \alias{plot.resmean}
 \alias{print.resmean}
