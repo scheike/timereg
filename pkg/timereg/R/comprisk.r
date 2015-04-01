@@ -484,9 +484,6 @@ summary.comprisk <- function (object,digits = 3,...) {  ## {{{
        cat(object$cum[object$conv$convp>0,1])
        cat("\nReadjust analyses by removing points\n\n") }
 
-###  cat("  Call: \n")
-###  dput(attr(object, "Call"))
-###  cat("\n")
 } ## }}}
 
 plot.comprisk <-  function (x, pointwise.ci=1, hw.ci=0,

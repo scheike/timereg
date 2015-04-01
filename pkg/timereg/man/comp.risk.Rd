@@ -266,6 +266,13 @@ outnp <- comp.risk(Event(time,cause)~tcell+platelet+const(age),
 par(mfrow=c(2,2))
 plot(outnp)
 
+outnp <- comp.risk(Event(time,cause)~tcell+platelet,
+		   data=bmtw,cause=1,
+ cens.weight=bmtw$cw,weights=bmtw$weights,times=times,n.sim=0)
+par(mfrow=c(2,2))
+plot(outnp)
+
+
 ## semiparametric model 
 out <- comp.risk(Event(time,cause)~const(tcell)+const(platelet),data=bmtw,cause=1,
  cens.weight=bmtw$cw,weights=bmtw$weights,times=times,n.sim=0)

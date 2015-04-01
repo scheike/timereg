@@ -257,3 +257,14 @@ void readXZt(int *antpers,int *nx,int *px,double *designX,int *pg,double *design
 void readXZtsimple(int *antpers,int *nx,int *px,double *designX,int *pg,double *designG,
 		double *start,double *stop,int *status,int pers,matrix *X,
 	       	matrix *Z,double time, int s, int *id); 
+
+void resmeansemi(double *times,int *Ntimes,double *x,int *delta,int *cause,
+	       double *KMc,double *z,int *antpers,int *px,int *Nit,
+	       double *score,double *hess,double *est,double *var,int *sim,
+	       int *antsim,int *rani,double *test,double *testOBS,double *Ut,
+	       double *simUt,int *weighted,double *gamma,double *vargamma,int *semi,
+	       double *zsem,int *pg,int *trans,double *gamma2,int *CA,
+	       int *line,int *detail,double *biid,double *gamiid,int *resample,
+	       double *timepow,int *clusters,int *antclust,double *timepowtest,int *silent,double *convc,double *tau,
+	       int *funcrestrict,int *causeS, double *weights,double *KMtimes); 
+
