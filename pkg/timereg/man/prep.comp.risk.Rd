@@ -5,7 +5,7 @@
 Computes the weights of Geskus (2011) modified to the setting of the comp.risk function
 }
 \usage{
-prep.comp.risk(times,data,entrytime="entrytime",time="time",cause="cause")
+prep.comp.risk(times,data,entrytime="entrytime",time="time",cause="cause",strata=NULL)
 }
 \arguments{
 \item{times}{ times for estimating equations.}
@@ -13,6 +13,7 @@ prep.comp.risk(times,data,entrytime="entrytime",time="time",cause="cause")
 \item{entrytime}{name of delayed entry variable.}
 \item{time}{name of survival time variable.}
 \item{cause}{name of cause indicator}
+\item{strata}{strata variable to obtain stratified weights.}
 }
 \value{
 Returns an object. With the following arguments:

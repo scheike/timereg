@@ -58,7 +58,8 @@ testing time-varying effects.}
 \item{interval}{specifies that we only consider timepoints where the Kaplan-Meier of the censoring distribution
 is larger than this value.}
 \item{resample.iid}{to return the iid decomposition, that can be used to construct confidence bands for predictions}
-\item{cens.model}{specified which model to use for the ICPW, KM is Kaplan-Meier alternatively it may be "cox"}
+\item{cens.model}{specified which model to use for the ICPW, KM is Kaplan-Meier alternatively it may be "cox" or
+"aalen" model for further flexibility.}
 \item{cens.formula}{specifies the regression terms used for the regression model for chosen regression model. 
 When cens.model is specified, the default
 is to use the same design as specified for the competing risks model. "KM","cox","aalen","weights". "weights" are user
