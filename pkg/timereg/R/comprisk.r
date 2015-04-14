@@ -664,4 +664,3 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,time="time",cause="cau
    return(dataw)
 } ## }}} 
 
-
