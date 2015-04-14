@@ -1,4 +1,6 @@
 \name{pval}
+\alias{summary.restricted.residual.mean}
+\alias{plot.restricted.residual.mean}
 \alias{summary.resmean}
 \alias{plot.resmean}
 \alias{print.resmean}

@@ -1,3 +1,4 @@
+
 restricted.residual.mean <- function(out,x=0,tau=10,iid=0)
 { ## {{{ 
   if ((class(out)!='cox.aalen') & (class(out)!='aalen'))
@@ -68,7 +69,30 @@ if (iid==1) {
 } ## }}}
 
 out <- list(mean=ee,var.mean=variid,se=se,S0tau=S0t,timetau=timetau)
+class(out) <- "restricted.residual.mean"
 return(out)
 } ## }}} 
 
+plot.restricted.residual.mean <- function(object,...)
+{ ## {{{ 
+matplot(object$timetau,object$S0tau,type="s")
+} ## }}} 
+
+###print.restricted.residual.mean <- function(object,digits=3)
+###{ ## {{{ 
+###out <- cbind(object$mean,object$se)
+###colnames(out) <- c("mean","se")
+###
+###prmatrix(signif(out,digits))
+###cat("\n"); 
+###} ## }}} 
+
+summary.restricted.residual.mean <- function(object, digits=3,...)
+{ ## {{{ 
+out <- cbind(object$mean,object$se)
+colnames(out) <- c("mean","se")
+
+prmatrix(signif(out,digits))
+cat("\n"); 
+} ## }}} 
 

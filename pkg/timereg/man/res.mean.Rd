@@ -29,7 +29,7 @@ where
 }
 \usage{
 res.mean(formula,data=sys.parent(),cause=1,restricted=NULL,times=NULL,Nit=50,
-clusters=NULL,gamma=0,n.sim=500,weighted=0,model="additive",detail=0,interval=0.01,resample.iid=1,
+clusters=NULL,gamma=0,n.sim=0,weighted=0,model="additive",detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,estimator=1,cens.weights=NULL,
 weights=NULL)
 }
@@ -51,13 +51,16 @@ weights=NULL)
 \item{clusters}{specifies cluster structure, for backwards compability.}
 \item{gamma}{starting value for constant effects.}
 \item{n.sim}{number of simulations in resampling.}
-\item{weighted}{Not implemented. To compute a variance weighted version of the test-processes used for testing time-varying effects.}
+\item{weighted}{Not implemented. To compute a variance weighted version of the test-processes used for 
+testing time-varying effects.}
 \item{model}{"additive", "prop"ortional.}
 \item{detail}{if 0 no details are printed during iterations, if 1 details are given.}
-\item{interval}{specifies that we only consider timepoints where the Kaplan-Meier of the censoring distribution  is larger than this value.}
+\item{interval}{specifies that we only consider timepoints where the Kaplan-Meier of the censoring distribution
+is larger than this value.}
 \item{resample.iid}{to return the iid decomposition, that can be used to construct confidence bands for predictions}
 \item{cens.model}{specified which model to use for the ICPW, KM is Kaplan-Meier alternatively it may be "cox"}
-\item{cens.formula}{specifies the regression terms used for the regression model for chosen regression model. When cens.model is specified, the default
+\item{cens.formula}{specifies the regression terms used for the regression model for chosen regression model. 
+When cens.model is specified, the default
 is to use the same design as specified for the competing risks model. "KM","cox","aalen","weights". "weights" are user
 specified weights given is cens.weight argument. 
 }
@@ -90,7 +93,8 @@ non-parametric estimate. Used for testing of constant effects.}
 \item{obs.testBeq0}{observed absolute value of supremum of 
 cumulative components scaled with the variance.}
 \item{pval.testBeq0}{p-value for covariate effects based on supremum test.}
-\item{obs.testBeqC}{observed absolute value of supremum of difference between observed cumulative process and estimate under null of constant effect.}
+\item{obs.testBeqC}{observed absolute value of supremum of difference between observed cumulative process 
+and estimate under null of constant effect.}
 \item{pval.testBeqC}{p-value based on resampling.}
 \item{obs.testBeqC.is}{observed integrated squared differences between 
 observed cumulative and estimate under null of constant effect.}
@@ -103,19 +107,18 @@ observed cumulative and estimate under null of constant effect.}
 \item{conv}{information on convergence for time points used for estimation.}
 }
 \references{
-Andersen, Cause specific years lost 
+Andersen (2013), Decomposition of number of years lost according to causes of death, Statistics in Medicine,  5278-5285.
 
 Scheike, and Cortese (2015), Regression Modelling of Cause Specific Years Lost,  
 
 Scheike, Cortese and Holmboe (2015), Regression Modelling of Restricted Residual Mean with Delayed Entry,  
-
 }
 \author{Thomas Scheike}
 \examples{
-library(timereg)
 data(bmt); 
 tau <- 100 
 
+### residual restricted mean life
 out<-res.mean(Event(time,cause>=1)~factor(tcell)+factor(platelet),data=bmt,cause=1,
 	      times=0,restricted=tau,n.sim=0,model="additive",estimator=1); 
 summary(out)
@@ -125,13 +128,23 @@ out<-res.mean(Event(time,cause>=1)~factor(tcell)+factor(platelet),data=bmt,cause
 par(mfrow=c(1,3))
 plot(out)
 
-out<-res.mean(Event(time,cause>=1)~factor(tcell)+factor(platelet),data=bmt,cause=1,
+### restricted years lost given death
+out21<-res.mean(Event(time,cause)~factor(tcell)+factor(platelet),data=bmt,cause=1,
 	      times=0,restricted=tau,n.sim=0,model="additive",estimator=2); 
-summary(out)
+summary(out21)
+out22<-res.mean(Event(time,cause)~factor(tcell)+factor(platelet),data=bmt,cause=2,
+	      times=0,restricted=tau,n.sim=0,model="additive",estimator=2); 
+summary(out22)
 
-out<-res.mean(Event(time,cause>=1)~factor(tcell)+factor(platelet),data=bmt,cause=1,
+
+### total restricted years lost 
+out31<-res.mean(Event(time,cause)~factor(tcell)+factor(platelet),data=bmt,cause=1,
 	      times=0,restricted=tau,n.sim=0,model="additive",estimator=3); 
-summary(out)
+summary(out31)
+out32<-res.mean(Event(time,cause)~factor(tcell)+factor(platelet),data=bmt,cause=2,
+	      times=0,restricted=tau,n.sim=0,model="additive",estimator=3); 
+summary(out32)
+
 
 ### delayed entry 
 nn <- nrow(bmt)

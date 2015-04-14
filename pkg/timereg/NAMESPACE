@@ -4,7 +4,7 @@ import(survival)
 import(numDeriv)
 import(lava)
 
-export("aalen",
+export("aalen", ## {{{ 
        "aalen.des",
        "aalen.des2",
        "aalenBase",
@@ -78,14 +78,19 @@ export("aalen",
        "timereg.formula",
        "two.stage",
        "wald.test"
-)
+) ## }}} 
 
 S3method(coef,resmean)
 S3method(plot,resmean)
 S3method(print,resmean)
 S3method(summary,resmean)
-
 export("coef.resmean","plot.resmean","print.resmean","summary.resmean")
+
+S3method(plot,restricted.residual.mean)
+S3method(summary,restricted.residual.mean)
+export("plot.restricted.residual.mean","summary.restricted.residual.mean")
+###S3method(print,restricted.residual.resmean)
+###export("plot.restricted.residual.mean","print.restricted.residual.mean","summary.restricted.residual.mean")
 
 
 S3method(plot,aalen)
