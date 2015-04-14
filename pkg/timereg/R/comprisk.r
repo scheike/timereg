@@ -596,22 +596,24 @@ plot.comprisk <-  function (x, pointwise.ci=1, hw.ci=0,
   }
 } ## }}}
 
-prep.comp.risk <- function(times,data,entrytime="entrytime",time="time",cause="cause",
-			   strata=NULL)
+prep.comp.risk <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
+			   strata=NULL,nocens.out=TRUE)
 { ## {{{ 
 ## {{{  geskus weights, up to min(T_i,max(times))
+   if (is.null(times)) times <- max(data[,time])
+   if (is.null(entrytime)) entrytime <- rep(0,nrow(data)) else entrytime <- data[,entrytime]
    mtt <- max(times)
    prec.factor <- 100
    prec <- .Machine$double.eps * prec.factor
    if (is.null(strata)) { ## {{{ 
 	   surv.trunc <- 
-	   survfit(Surv(-data[,time],-data[,entrytime]+prec,rep(1,nrow(data))) ~ 1) 
+	   survfit(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ 1) 
 	   trunc.dist <- summary(surv.trunc)
 	   trunc.dist$time <- rev(-trunc.dist$time)
 	   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
 	   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),pmin(mtt,data[,time]))
 	   Lw <- Lfit[,2]
-	   ud.cens<- survfit(Surv(data[,entrytime],data[,time],data[,cause]==0)~+1) 
+	   ud.cens<- survfit(Surv(entrytime,data[,time],data[,cause]==0)~+1) 
 	   Gfit<-cbind(ud.cens$time,ud.cens$surv)
 	   Gfit<-rbind(c(0,1),Gfit); 
 	   Gcx<-Cpred(Gfit,pmin(mtt,data[,time]),strict=TRUE)[,2];
@@ -623,17 +625,17 @@ prep.comp.risk <- function(times,data,entrytime="entrytime",time="time",cause="c
           weights <- rep(1,nrow(data))
 	  for (i in levels(strata)) { ## {{{ for each strata
 	       who <- (strata == i)
-	       print(sum(who))
 	       if (sum(who) <= 1) stop(paste("strata",i,"less than 1 observation\n")); 
 	   datas <- subset(data,who)
-           surv.trunc <- 
-	   survfit(Surv(-datas[,time],-datas[,entrytime]+prec,rep(1,nrow(datas))) ~ +1) 
+	   entrytimes <- entrytime[who]
+	   surv.trunc <- 
+	   survfit(Surv(-datas[,time],-entrytimes+prec,rep(1,nrow(datas))) ~ +1) 
 	   trunc.dist <- summary(surv.trunc)
 	   trunc.dist$time <- rev(-trunc.dist$time)
 	   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
 	   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),pmin(mtt,datas[,time]))
 	   Lw <- Lfit[,2]
-	   ud.cens<- survfit(Surv(datas[,entrytime],datas[,time],datas[,cause]==0)~+1) 
+	   ud.cens<- survfit(Surv(entrytimes,datas[,time],datas[,cause]==0)~+1) 
 	   Gfit<-cbind(ud.cens$time,ud.cens$surv)
 	   Gfit<-rbind(c(0,1),Gfit); 
 	   Gcx<-Cpred(Gfit,pmin(mtt,datas[,time]),strict=TRUE)[,2];
@@ -643,17 +645,19 @@ prep.comp.risk <- function(times,data,entrytime="entrytime",time="time",cause="c
    } ## }}} 
 
    if ("weights" %in% names(data)) {
-	   warning("Weights in variable 'weights_' \n")
-           wname<- "weights_"
-   data[,wname] <- weights
+       warning("Weights in variable 'weights_' \n")
+       wname<- "weights_"
+       data[,wname] <- weights
    } else data[,"weights"] <- weights
    ###
-   med <- ((data[,time]>mtt & data[,cause]==0)) | (data[,cause]!=0)
-   dataw <- data[med,]
+   if (nocens.out) {
+      med <- ((data[,time]>mtt & data[,cause]==0)) | (data[,cause]!=0)
+      dataw <- data[med,]
+   }
    if ("cw" %in% names(data)) {
-	   warning("cw weights in variable 'cw_' \n")
-           cwname<- "cw_"
-   dataw[,cwname] <- 1
+      warning("cw weights in variable 'cw_' \n")
+      cwname<- "cw_"
+      dataw[,cwname] <- 1
    } else dataw[,"cw"] <- 1
 
 ## }}} 

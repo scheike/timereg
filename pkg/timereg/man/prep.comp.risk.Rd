@@ -5,15 +5,17 @@
 Computes the weights of Geskus (2011) modified to the setting of the comp.risk function
 }
 \usage{
-prep.comp.risk(times,data,entrytime="entrytime",time="time",cause="cause",strata=NULL)
+prep.comp.risk(data,times=NULL,entrytime=NULL,time="time",cause="cause",
+	       strata=NULL,nocens.out=TRUE)
 }
 \arguments{
-\item{times}{ times for estimating equations.}
 \item{data}{ data frame for comp.risk.}
-\item{entrytime}{name of delayed entry variable.}
+\item{times}{ times for estimating equations.}
+\item{entrytime}{name of delayed entry variable, if not given computes right-censoring case.}
 \item{time}{name of survival time variable.}
 \item{cause}{name of cause indicator}
 \item{strata}{strata variable to obtain stratified weights.}
+\item{nocens.out}{returns only uncensored part of data-frame}
 }
 \value{
 Returns an object. With the following arguments:
