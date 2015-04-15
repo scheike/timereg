@@ -293,11 +293,12 @@ coef.resmean <- function(object, digits=3,...) { ## {{{
    coefBase(object,digits=digits)
 } ## }}}
 
-summary.resmean <- function (object,digits = 3,ci=0, alpha=0.05, ...) { ## {{{
+summary.resmean <- function (object,digits = 3,ci=0, alpha=0.05,silent=0, ...) { ## {{{
   if (!inherits(object, 'resmean')) stop ("Must be a resmean object")
   
   if (is.null(object$gamma)==TRUE) semi<-FALSE else semi<-TRUE
     
+  if (silent==0) {
   # We print information about object:  
   cat(paste("Residual mean model with",object$model,"\n"))
 ###  cat("Residual mean model \n\n")
@@ -313,13 +314,13 @@ summary.resmean <- function (object,digits = 3,ci=0, alpha=0.05, ...) { ## {{{
  
   if (sum(object$obs.testBeq0)==FALSE) cat("No test for non-parametric terms\n") else
   timetest(object,digits=digits); 
+  }
 
-  if (semi) { cat("Parametric terms : \n"); 
+  if (semi) { if (silent==0) cat("Parametric terms : \n"); 
               out=coef.resmean(object); 
               out=signif(out,digits=digits)
-	      print(out)
-              cat("   \n"); 
-  } else {cat("Non-Parametric terms : \n"); 
+	      if (silent==0) { print(out); cat("   \n"); }
+  } else { if (silent==0) cat("Non-Parametric terms : \n"); 
           if (nrow(object$cum)==1) {
 	     out=cbind(c(object$cum[,-1]),c(object$var.cum[,-1]^.5))
 	     colnames(out) <- c("resmean","se")
@@ -330,14 +331,14 @@ summary.resmean <- function (object,digits = 3,ci=0, alpha=0.05, ...) { ## {{{
 	     out=cbind(object$cum,se.cum)
              out=signif(head(out),digits=digits)
 	  }
-          cat("   \n"); 
+   if (silent==0)       cat("   \n"); 
   }
   if (ci==1) { out <- round(cbind(out,out[,1]+qnorm(alpha/2)*out[,2],out[,1]+qnorm(1-alpha/2)*out[,2]),digits=digits); 
                nn <- ncol(out); 
                colnames(out)[(nn-1):nn] <- c("lower","upper")
   }
 
-
+  if (silent==0) {
   if (object$conv$convd>=1) {
        cat("WARNING problem with convergence for time points:\n")
        cat(object$cum[object$conv$convp>0,1])
@@ -347,6 +348,7 @@ summary.resmean <- function (object,digits = 3,ci=0, alpha=0.05, ...) { ## {{{
   cat("  Call: \n")
   dput(attr(object, "Call"))
   cat("\n")
+  }
 
   out
 } ## }}}
