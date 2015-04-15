@@ -293,7 +293,7 @@ coef.resmean <- function(object, digits=3,...) { ## {{{
    coefBase(object,digits=digits)
 } ## }}}
 
-summary.resmean <- function (object,digits = 3,...) { ## {{{
+summary.resmean <- function (object,digits = 3,ci=0, alpha=0.05, ...) { ## {{{
   if (!inherits(object, 'resmean')) stop ("Must be a resmean object")
   
   if (is.null(object$gamma)==TRUE) semi<-FALSE else semi<-TRUE
@@ -330,9 +330,13 @@ summary.resmean <- function (object,digits = 3,...) { ## {{{
 	     out=cbind(object$cum,se.cum)
              out=signif(head(out),digits=digits)
 	  }
-	  print(out)
           cat("   \n"); 
   }
+  if (ci==1) { out <- round(cbind(out,out[,1]+qnorm(alpha/2)*out[,2],out[,1]+qnorm(1-alpha/2)*out[,2]),digits=digits); 
+               nn <- ncol(out); 
+               colnames(out)[(nn-1):nn] <- c("lower","upper")
+  }
+
 
   if (object$conv$convd>=1) {
        cat("WARNING problem with convergence for time points:\n")
@@ -343,6 +347,8 @@ summary.resmean <- function (object,digits = 3,...) { ## {{{
   cat("  Call: \n")
   dput(attr(object, "Call"))
   cat("\n")
+
+  out
 } ## }}}
 
 plot.resmean <-  function (x, pointwise.ci=1, hw.ci=0,

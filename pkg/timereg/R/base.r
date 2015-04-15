@@ -1,4 +1,4 @@
-coefBase<- function(object, digits=3, d2logl=0) { ## {{{
+coefBase<- function(object, digits=3, d2logl=0,ci=0,alpha=0.05) { ## {{{
   res <- cbind(object$gamma,
                diag(object$var.gamma)^0.5,
                diag(object$robvar.gamma)^0.5)
@@ -6,10 +6,12 @@ coefBase<- function(object, digits=3, d2logl=0) { ## {{{
   wald <- object$gamma/diag(object$robvar.gamma)^0.5
   waldp <- (1 - pnorm(abs(wald))) * 2
   res <- round(as.matrix(cbind(res, wald, waldp)),digits=digits)
+  res <- round(as.matrix(cbind(res, wald, waldp)),digits=digits)
   if (d2logl==1) colnames(res) <- c("Coef.", "SE", "Robust SE","D2log(L)^-1","z","P-val") else colnames(res) <- c("Coef.", "SE", "Robust SE", "z", "P-val")
+  if (ci==1) { res <- round(cbind(res,res[,1]+qnorm(alpha/2)*res[,2],res[,1]+qnorm(1-alpha/2)*res[,2]),digits=digits); 
+               nn <- ncol(res); colnames(res)[(nn-1):nn] <- c("lower","upper")
+  }
 ###  prmatrix(signif(res, digits))
-###  cat("\n")
-  
   return(res)
 } ## }}}
 

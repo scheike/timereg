@@ -639,7 +639,6 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,time="time",cause="cau
 	   Gfit<-cbind(ud.cens$time,ud.cens$surv)
 	   Gfit<-rbind(c(0,1),Gfit); 
 	   Gcx<-Cpred(Gfit,pmin(mtt,datas[,time]),strict=TRUE)[,2];
-	   print(summary(Lw*Gcx))
 	   weights[who]<-  1/(Lw*Gcx); 
           } ## }}} 
    } ## }}} 
