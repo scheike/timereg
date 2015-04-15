@@ -597,7 +597,7 @@ plot.comprisk <-  function (x, pointwise.ci=1, hw.ci=0,
 } ## }}}
 
 prep.comp.risk <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
-			   strata=NULL,nocens.out=TRUE)
+			   strata=NULL,nocens.out=TRUE,cens.formula=NULL)
 { ## {{{ 
 ## {{{  geskus weights, up to min(T_i,max(times))
    if (is.null(times)) times <- max(data[,time])
@@ -605,6 +605,8 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,time="time",cause="cau
    mtt <- max(times)
    prec.factor <- 100
    prec <- .Machine$double.eps * prec.factor
+
+   if (is.null(cens.formula)) { 
    if (is.null(strata)) { ## {{{ 
 	   surv.trunc <- 
 	   survfit(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ 1) 
@@ -641,6 +643,25 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,time="time",cause="cau
 	   Gcx<-Cpred(Gfit,pmin(mtt,datas[,time]),strict=TRUE)[,2];
 	   weights[who]<-  1/(Lw*Gcx); 
           } ## }}} 
+   } ## }}} 
+   } else { ### cens.formula Cox models  ## {{{
+        X <- model.matrix(cens.formula,data=data)[,-1,drop=FALSE]; 
+	st <- surv.trunc <- coxph(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ X) 
+        baseout <- basehaz(st,centered=FALSE); 
+        baseout <- cbind(rev(-baseout$time),rev(baseout$hazard))
+###
+	Lfit <-Cpred(baseout,pmin(mtt,data[,time]))[,-1]
+        RR<-exp(as.matrix(X) %*% coef(st))
+        Lfit<-exp(-Lfit*RR)
+	Lw <- Lfit
+###
+	ud.cens<- coxph(Surv(entrytime,data[,time],data[,cause]==0)~+X) 
+        baseout <- basehaz(ud.cens,centered=FALSE); 
+	baseout <- cbind(baseout$time,baseout$hazard)
+	Gfit<-Cpred(baseout,pmin(mtt,data[,time]),strict=TRUE)[,2];
+	RR<-exp(as.matrix(X) %*% coef(ud.cens))
+	Gfit<-exp(-Gfit*RR)
+        weights <- 1/(Lw*Gfit); 
    } ## }}} 
 
    if ("weights" %in% names(data)) {
