@@ -605,6 +605,7 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,time="time",cause="cau
    mtt <- max(times)
    prec.factor <- 100
    prec <- .Machine$double.eps * prec.factor
+   trunc.model <- cens.model <- NULL ## output of Cox models for entry cens
 
    if (is.null(cens.formula)) { 
    if (is.null(strata)) { ## {{{ 
@@ -646,20 +647,20 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,time="time",cause="cau
    } ## }}} 
    } else { ### cens.formula Cox models  ## {{{
         X <- model.matrix(cens.formula,data=data)[,-1,drop=FALSE]; 
-	st <- surv.trunc <- coxph(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ X) 
-        baseout <- basehaz(st,centered=FALSE); 
+	trunc.model <- coxph(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ X) 
+        baseout <- basehaz(trunc.model,centered=FALSE); 
         baseout <- cbind(rev(-baseout$time),rev(baseout$hazard))
 ###
 	Lfit <-Cpred(baseout,pmin(mtt,data[,time]))[,-1]
-        RR<-exp(as.matrix(X) %*% coef(st))
+        RR<-exp(as.matrix(X) %*% coef(trunc.model))
         Lfit<-exp(-Lfit*RR)
 	Lw <- Lfit
 ###
-	ud.cens<- coxph(Surv(entrytime,data[,time],data[,cause]==0)~+X) 
-        baseout <- basehaz(ud.cens,centered=FALSE); 
+	cens.model <- coxph(Surv(entrytime,data[,time],data[,cause]==0)~+X) 
+        baseout <- basehaz(cens.model,centered=FALSE); 
 	baseout <- cbind(baseout$time,baseout$hazard)
 	Gfit<-Cpred(baseout,pmin(mtt,data[,time]),strict=TRUE)[,2];
-	RR<-exp(as.matrix(X) %*% coef(ud.cens))
+	RR<-exp(as.matrix(X) %*% coef(cens.model))
 	Gfit<-exp(-Gfit*RR)
         weights <- 1/(Lw*Gfit); 
    } ## }}} 
@@ -679,6 +680,9 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,time="time",cause="cau
       cwname<- "cw_"
       dataw[,cwname] <- 1
    } else dataw[,"cw"] <- 1
+
+   attr(dataw,"trunc.model") <- trunc.model
+   attr(dataw,"cens.model") <- cens.model 
 
 ## }}} 
    return(dataw)
