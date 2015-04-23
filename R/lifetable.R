@@ -156,13 +156,14 @@ LifeTable <- function(time,status,entry=NULL,strata=list(),breaks=c(),confint=FA
     dur <- ex-en
     endur <- rbind(breaks[-1])%x%cbind(rep(1,nrow(en)))-en
     ##endur <- rbind(c(breaks,Inf))%x%cbind(rep(1,nrow(en)))-en
-    dur[dur<0] <- NA
+    dur[dur<=0] <- NA
     enter <- colSums(!is.na(dur))
     atrisk <- colSums(dur,na.rm=TRUE)
     ##eventcens <- dur<endur
     eventcens <- rbind(apply(dur<endur,2,function(x) x*(status+1)))
     lost <- colSums(eventcens==1,na.rm=TRUE)
     events <- colSums(eventcens==2,na.rm=TRUE)
+    rate <- events/atrisk; rate[is.nan(rate)] <- 0
     res <- subset(data.frame(enter=enter,
                              atrisk=atrisk,
                              lost=lost,
@@ -171,11 +172,10 @@ LifeTable <- function(time,status,entry=NULL,strata=list(),breaks=c(),confint=FA
                              ## int.end=c(breaks,Inf),
                              int.start=breaks[-length(breaks)],
                              int.end=breaks[-1],
-                             surv=0,
-                             rate=events/atrisk))
+                             rate=rate))
     if (interval) res$interval <- factor(paste0("[",res$int.start,";",res$int.end,")"))
     cumsum.na <- function(x,...) { x[is.na(x)] <- 0; cumsum(x) }
-    res$surv <- with(res, exp(-cumsum.na(rate*(int.end-int.start))))    
+    if (length(strata)==0) res$surv <- with(res, exp(-cumsum.na(rate*(int.end-int.start))))    
     if (confint) {
         ff <- events ~ offset(log(atrisk))
         if (length(breaks)>2) ff <- update(ff,.~.+factor(int.end)-1)
@@ -191,6 +191,7 @@ eh <- function(formula,intervals,family=poisson(log),...) {
     if (missing(intervals)) stop("Please supply list of time-intervals")
     g <- glm(formula,family=family,...)
     structure(g,class=c("glm","eh"),intervals=intervals)
+    
 }
 
 ##' Summary for survival analyses via the 'lifetable' function
