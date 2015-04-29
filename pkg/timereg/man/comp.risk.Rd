@@ -44,7 +44,9 @@ The "logistic2" is
 \deqn{
 P_1(t,x,z) = x^T A(t) exp((diag(t^p) z)^T \beta)/ (1+ x^T A(t) exp((diag(t^p) z)^T \beta))
 }
-
+The simple logistic model with just a baseline can also be fitted by
+an alternative procedure that has better small sample properties
+see prop.odds.subist().
 
 4) the relative cumulative incidence function "rcif" model where
 \eqn{h(x)=\exp(x)} and 
