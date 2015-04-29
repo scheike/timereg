@@ -152,7 +152,7 @@ nn <- nrow(bmt)
 entrytime <- rbinom(nn,1,0.5)*(bmt$time*runif(nn))
 bmt$entrytime <- entrytime
 
-bmtw <- prep.comp.risk(tau,data=bmt,time="time",entrytime="entrytime",cause="cause")
+bmtw <- prep.comp.risk(bmt,times=tau,time="time",entrytime="entrytime",cause="cause")
 
 out<-res.mean(Event(time,cause>=1)~factor(tcell)+factor(platelet),data=bmtw,cause=1,
 	      times=0,restricted=tau,n.sim=0,model="additive",estimator=1,

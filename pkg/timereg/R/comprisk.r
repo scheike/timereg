@@ -305,7 +305,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
           as.double(simUt),as.integer(weighted),as.double(gamma),
           as.double(var.gamma),as.integer(fixed),as.double(Z),
           as.integer(pg),as.integer(trans),as.double(gamma2),
-          as.integer(1),as.integer(line),as.integer(detail),
+          as.integer(cause),as.integer(line),as.integer(detail),
           as.double(biid),as.double(gamiid),as.integer(resample.iid),
           as.double(time.pow),as.integer(clusters),as.integer(antclust),
           as.double(time.pow.test),as.integer(silent), as.double(conv),
@@ -624,10 +624,10 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,time="time",cause="cau
    ### ## }}} 
    } else { ## {{{ 
 	   ### compute for each strata and combine 
-	  strata <- data[,strata]
+	  vstrata <- as.numeric(data[,strata])
           weights <- rep(1,nrow(data))
-	  for (i in levels(strata)) { ## {{{ for each strata
-	       who <- (strata == i)
+	  for (i in unique(vstrata)) { ## {{{ for each strata
+	       who <- (vstrata == i)
 	       if (sum(who) <= 1) stop(paste("strata",i,"less than 1 observation\n")); 
 	   datas <- subset(data,who)
 	   entrytimes <- entrytime[who]
@@ -673,18 +673,18 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,time="time",cause="cau
    ###
    if (nocens.out) {
       med <- ((data[,time]>mtt & data[,cause]==0)) | (data[,cause]!=0)
-      dataw <- data[med,]
-   }
+      data <- data[med,]
+   } 
    if ("cw" %in% names(data)) {
       warning("cw weights in variable 'cw_' \n")
       cwname<- "cw_"
-      dataw[,cwname] <- 1
-   } else dataw[,"cw"] <- 1
+      data[,cwname] <- 1
+   } else data[,"cw"] <- 1
 
-   attr(dataw,"trunc.model") <- trunc.model
-   attr(dataw,"cens.model") <- cens.model 
+   attr(data,"trunc.model") <- trunc.model
+   attr(data,"cens.model") <- cens.model 
 
 ## }}} 
-   return(dataw)
+   return(data)
 } ## }}} 
 

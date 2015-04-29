@@ -90,15 +90,15 @@ weights=NULL,cens.tau=1){
   if (is.null(weights)==TRUE) weights <- rep(1,n); 
 
 ###  cens model  ## {{{ 
-  if (cens.model=="KM") {
+  if (cens.model=="KM") { ## {{{ 
     ud.cens<-survfit(Surv(time2,status==cens.code)~+1); 
     Gfit<-cbind(ud.cens$time,ud.cens$surv)
     Gfit<-rbind(c(0,1),Gfit); 
     Gcx<-Cpred(Gfit,time2tau,strict=TRUE)[,2];
     Gtimes<-Cpred(Gfit,times)[,2];
     Gctimes<-Cpred(Gfit,times)[,2];
-    Gctimes[Gctimes<=0] <- 1
-  } else if (cens.model=="cox") { 
+    Gctimes[Gctimes<=0] <- 1 ## }}} 
+  } else if (cens.model=="cox") {  ## {{{ 
     if (npar==TRUE) XZ<-X[,-1] else XZ<-cbind(X,Z)[,-1];
     ud.cens<-cox.aalen(Surv(time2,status==cens.code)~prop(XZ),n.sim=0,robust=0);
     Gcx<-Cpred(ud.cens$cum,time2tau)[,2];
@@ -106,8 +106,8 @@ weights=NULL,cens.tau=1){
     Gcx<-exp(-Gcx*RR)
     Gfit<-rbind(c(0,1),cbind(time2,Gcx)); 
     Gctimes<-Cpred(Gfit,times)[,2];
-    Gctimes[Gctimes<=0] <- 1
-    } else if (cens.model=="aalen") { 
+    Gctimes[Gctimes<=0] <- 1  ## }}} 
+    } else if (cens.model=="aalen") {  ## {{{ 
     if (npar==TRUE) XZ <- X[,-1] else XZ <- cbind(X,Z)[,-1];
     ud.cens <- aalen(Surv(time2,status==cens.code)~XZ,n.sim=0,robust=0);
     Gcx <- Cpred(ud.cens$cum,time2tau)[,-1];
@@ -117,7 +117,7 @@ weights=NULL,cens.tau=1){
     Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
     Gfit<-rbind(c(0,1),cbind(time2,Gcx)); 
     Gctimes<-Cpred(Gfit,times)[,2];
-    Gctimes[Gctimes<=0] <- 1
+    Gctimes[Gctimes<=0] <- 1 ## }}} 
     } else if (cens.model=="weights") { 
       if (length(weights)!=n) stop(paste("Weights length=",length(weights),"do not have length \n",length(time2),"problems with missing values?\n")); 
       Gcx <- cens.weights

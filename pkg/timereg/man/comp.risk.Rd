@@ -257,7 +257,7 @@ entrytime <- rbinom(nn,1,0.5)*(bmt$time*runif(nn))
 bmt$entrytime <- entrytime
 times <- seq(5,70,by=1)
 
-bmtw <- prep.comp.risk(times,data=bmt,time="time",entrytime="entrytime",cause="cause")
+bmtw <- prep.comp.risk(bmt,times=times,time="time",entrytime="entrytime",cause="cause")
 
 ## non-parametric model 
 outnp <- comp.risk(Event(time,cause)~tcell+platelet+const(age),
