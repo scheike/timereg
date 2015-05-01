@@ -7,7 +7,8 @@ restricted.residual.mean <- function(out,x=0,tau=10,iid=0)
       stop ("Must be output from cox.aalen or aalen function\n") 
 
 if (class(out)=="survfit") { ## {{{ 
-   fit.table = summary(out, rmean=tau)$table 
+   fit.table  <-  as.matrix(summary(out, rmean=tau)$table)
+if (ncol(fit.table)==1) fit.table <- t(fit.table)
    ee  <-  fit.table[,"*rmean"]                     
    se  <- fit.table[,"*se(rmean)"]        
    variid <- diag(se^2)

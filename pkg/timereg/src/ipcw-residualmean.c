@@ -68,7 +68,8 @@ for (s=0;s<*Ntimes;s++)
 
 // {{{ setting up at risk in different situations
 
-    skm=sqrt(KMtimes[s]/KMc[j]); 
+//    skm=sqrt(weights[j]*KMtimes[s]/KMc[j]); 
+    skm=sqrt(weights[j]*KMtimes[s]/KMc[j]); 
 
     if (*estimator==1) { // standard conditional residual 
        VE(risk,j)=(x[j]>=time); 
@@ -85,8 +86,8 @@ for (s=0;s<*Ntimes;s++)
     } else  if (*estimator==4) { // inside weight
        rit= 1; 
        VE(risk,j)=rit; 
-       skm=sqrt(KMtimes[s]); 
-       rit=1; 
+       skm=sqrt(weights[j]*KMtimes[s]); 
+       rit=weights[j]; 
     }
        // }}}
 
@@ -163,21 +164,23 @@ for (s=0;s<*Ntimes;s++)
 vec_zeros(VdB); mat_zeros(VAR); 
 
 if (convt==1 ) {
-   for (j=0;j<*antclust;j++) {vec_zeros(cumA[j]);vec_zeros(cumhatA[j]);}
+//   for (j=0;j<*antclust;j++) {vec_zeros(cumA[j]);vec_zeros(cumhatA[j]);}
    for (i=0;i<*n;i++) { 
       j=clusters[i]; 
       if (s<-1) printf("%d  %d %d \n",s,i,j);
-      extract_row(cX,i,dp); scl_vec_mult(VE(Y,i),dp,dp); 
+      extract_row(cX,i,dp); 
+      scl_vec_mult(VE(Y,i),dp,dp); 
       vec_add(dp,cumA[j],cumA[j]); 
 
-      if ((time==x[i])&(delta[i]==0))vec_add(qs,cumhatA[j],cumhatA[j]);  
+//      if ((time==x[i])&(delta[i]==0))vec_add(qs,cumhatA[j],cumhatA[j]);  
 
       if (s<-1) print_vec(dp2); 
    }
 
    for (j=0;j<*antclust;j++) { 
-      vec_add(cumhatA[j],cumA[j],dp1); 
-      Mv(AI,dp1,dp2); replace_row(cumAt[j],s,dp2);  
+//      vec_add(cumhatA[j],cumA[j],dp1); 
+      Mv(AI,cumA[j],dp2); 
+      replace_row(cumAt[j],s,dp2);  
 
       for(k=0;k<ps;k++) 
       for(c=0;c<ps;c++) ME(VAR,k,c)=ME(VAR,k,c)+VE(dp2,k)*VE(dp2,c); 
@@ -312,7 +315,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 
 	  totrisk=0; 
 	  for (j=0;j<*antpers;j++) {  // {{{ 
-	  skm=sqrt(KMtimes[s]/KMc[j]); 
+	  skm=sqrt(weights[j]*KMtimes[s]/KMc[j]); 
 
 	    if (*estimator==2) { // cause specific YL to cause  given event
 	       VE(lrisk,j)=(x[j]<= (*tau))*(cause[j]==*causeS); 
@@ -325,7 +328,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 	    } else  if (*estimator==4) { // inside weight conditional residual
 	       rit= 1; 
 	       VE(lrisk,j)=rit; 
-	       skm=sqrt(KMtimes[s]); 
+	       skm=sqrt(weights[j]*KMtimes[s]); 
 	       rit=1; 
 	    } else  if (*estimator==1) { // standard conditional residual 
 	       VE(lrisk,j)=(x[j]>=time); 

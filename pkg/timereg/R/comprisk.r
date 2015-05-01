@@ -147,14 +147,10 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
 		### only conditional on L if trunc given 
 		if (!is.null(trunc.p)) Gcx <- Gcx/Gcxe; 
                 Gctimes<-Cpred(Gfit,times,strict=TRUE)[,2]; ## }}}
-            } else if (cens.model=="strat-KM") { ## {{{
+            } else if (cens.model=="stratKM") { ## {{{
 	        XZ <- model.matrix(cens.formula,data=data); 
-                stop("survfit based predictions strat-KM, under construction\n");
-                ud.cens<-survfit(Surv(eventtime,delta==cens.code)~XZ) 
-                Gfit<-cbind(ud.cens$time,ud.cens$surv)
-                Gfit<-rbind(c(0,1),Gfit); 
-                Gcx<-Cpred(Gfit,eventtime,strict=TRUE)[,2];
-		Gcxe[Gcxe==0] <- 1
+	        strata <- as.factor(XZ)
+		Gcx <- pred.stratKM(time=eventtime,time=eventtime,cause=delta,strata=strata)
 		### only conditional on L if trunc given 
 		if (!is.null(trunc.p)) Gcx <- Gcx/Gcxe; 
                 Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
@@ -596,7 +592,8 @@ plot.comprisk <-  function (x, pointwise.ci=1, hw.ci=0,
   }
 } ## }}}
 
-prep.comp.risk <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
+prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
+			   time="time",cause="cause",
 			   strata=NULL,nocens.out=TRUE,cens.formula=NULL)
 { ## {{{ 
 ## {{{  geskus weights, up to min(T_i,max(times))
@@ -686,5 +683,39 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,time="time",cause="cau
 
 ## }}} 
    return(data)
+} ## }}} 
+
+pred.stratKM <- function(data=NULL,entrytime=NULL,time="time",cause="cause",strata="strata",event.code=0)
+{ ## {{{ 
+
+     if (is.numeric(time)) time <- time else {
+	     if (!is.null(data)) time <- data[,time] else stop("time not given\n"); 
+     }
+     if (is.numeric(cause)) cause <- cause else {
+	     if (!is.null(data)) cause <- data[,cause] else stop("cause not given\n"); 
+     }
+     if (is.numeric(strata)) strata <- strata else {
+	     if (!is.null(data)) strata <- data[,strata] else stop("strata not given\n"); 
+     }
+  if (is.null(entrytime)) entrytime <- rep(0,nrow(data)) else {
+     if (is.numeric(entrytime)) entrytime <- entrytime else {
+	     if (!is.null(data)) entrytime <- data[,entrytime] else stop("entrytime not given\n"); 
+     }
+  }
+  vstrata <- as.numeric(strata)
+  weights <- rep(1,length((data)))
+  for (i in unique(vstrata)) { ## {{{ for each strata
+	   who <- (vstrata == i)
+	   if (sum(who) <= 1) stop(paste("strata",i,"less than 1 observation\n")); 
+	   times <- time[who]
+	   causes <- cause[who]
+	   entrytimes <- entrytime[who]
+	   ud.cens<- survfit(Surv(entrytimes,times,causes==event.code)~+1) 
+	   Gfit<-cbind(ud.cens$time,ud.cens$surv)
+	   Gfit<-rbind(c(0,1),Gfit); 
+	   Gcx<-Cpred(Gfit,times,strict=TRUE)[,2];
+	   weights[who]<-  Gcx; 
+   } ## }}} 
+   return(weights); 
 } ## }}} 
 

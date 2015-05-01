@@ -69,6 +69,7 @@
 \alias{des.aalen}
 \alias{timetest}
 \alias{print.pe.sasieni} 
+\alias{pred.stratKM} 
 \alias{print.predict.timereg}
 \alias{print.two.stage}
 \alias{residualsTimereg}

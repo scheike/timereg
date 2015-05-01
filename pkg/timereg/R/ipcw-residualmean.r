@@ -1,7 +1,7 @@
 res.mean<-function(formula,data=sys.parent(),cause=1,restricted=NULL,times=NULL,Nit=50,
 clusters=NULL,gamma=0,n.sim=0,weighted=0,model="additive",detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,estimator=1,cens.weights=NULL,
-weights=NULL,cens.tau=1){
+weights=NULL){
 ## {{{
 # restricted residual mean life models, using IPCW 
 # two models, additive and proportional 
@@ -19,10 +19,12 @@ weights=NULL,cens.tau=1){
 # estimator =3   PKA Years lost due to cause 1 up to time tau
 # estimator =3   E( tau - min(T_j,tau) | T>t ) = \int_t^tau (1-F_j(s)) ds / S(t)
 # estimator =3   E( tau - min(T,tau) | T <= tau, epsilon=j, T>t) * F_j(tau)
+  cens.tau <- 1
 
   line <- 0
   m<-match.call(expand.dots = FALSE);
-  m$gamma<-m$times<-m$cause<-m$Nit<-m$weighted<-m$n.sim<-m$cens.tau <- 
+  m$gamma<-m$times<-m$cause<-m$Nit<-m$weighted<-m$n.sim<-
+###	   m$cens.tau <- 
            m$model<- m$detail<- m$cens.model<-m$time.pow<-m$silent<- 
            m$interval<- m$clusters<-m$resample.iid<-m$restricted <- m$weights <- 
            m$time.pow.test<-m$conv<-m$estimator <- m$cens.weights <- NULL
@@ -94,7 +96,7 @@ weights=NULL,cens.tau=1){
     ud.cens<-survfit(Surv(time2,status==cens.code)~+1); 
     Gfit<-cbind(ud.cens$time,ud.cens$surv)
     Gfit<-rbind(c(0,1),Gfit); 
-    Gcx<-Cpred(Gfit,time2tau,strict=TRUE)[,2];
+    Gcx<-Cpred(Gfit,time2tau)[,2];
     Gtimes<-Cpred(Gfit,times)[,2];
     Gctimes<-Cpred(Gfit,times)[,2];
     Gctimes[Gctimes<=0] <- 1 ## }}} 
@@ -105,7 +107,7 @@ weights=NULL,cens.tau=1){
     RR<-exp(XZ %*% ud.cens$gamma)
     Gcx<-exp(-Gcx*RR)
     Gfit<-rbind(c(0,1),cbind(time2,Gcx)); 
-    Gctimes<-Cpred(Gfit,times)[,2];
+    Gctimes<-Cpred(Gfit,times,strict=TRUE)[,2];
     Gctimes[Gctimes<=0] <- 1  ## }}} 
     } else if (cens.model=="aalen") {  ## {{{ 
     if (npar==TRUE) XZ <- X[,-1] else XZ <- cbind(X,Z)[,-1];
@@ -161,22 +163,23 @@ weights=NULL,cens.tau=1){
   if (model=="prop") betaS[1] <- log(mean(time2))
 
   out<-.C("resmean",
-          as.double(times),as.integer(ntimes),as.double(time2),
-          as.integer(deltatau), as.integer(status),as.double(Gcx),
-          as.double(X),as.integer(n),as.integer(px),
-          as.integer(Nit), as.double(betaS), as.double(score),
-          as.double(hess), as.double(est), as.double(var),
-          as.integer(sim),as.integer(antsim),as.integer(rani),
-          as.double(test), as.double(testOBS), as.double(Ut),
-          as.double(simUt),as.integer(weighted),as.double(gamma),
-          as.double(var.gamma),as.integer(fixed),as.double(Z),
-          as.integer(pg),as.integer(trans),as.double(gamma2),
-          as.integer(cause),as.integer(line),as.integer(detail),
-          as.double(biid),as.double(gamiid),as.integer(resample.iid),
-          as.double(time.pow),as.integer(clusters),as.integer(antclust),
-          as.double(time.pow.test),as.integer(silent),
-	  as.double(conv),as.double(tau),as.integer(estimator),
-	  as.integer(cause),as.double(weights),as.double(Gctimes),PACKAGE="timereg")
+      as.double(times),as.integer(ntimes),as.double(time2),
+      as.integer(deltatau), as.integer(status),as.double(Gcx),
+      as.double(X),as.integer(n),as.integer(px),
+      as.integer(Nit), as.double(betaS), as.double(score),
+      as.double(hess), as.double(est), as.double(var),
+      as.integer(sim),as.integer(antsim),as.integer(rani),
+      as.double(test), as.double(testOBS), as.double(Ut),
+      as.double(simUt),as.integer(weighted),as.double(gamma),
+      as.double(var.gamma),as.integer(fixed),as.double(Z),
+      as.integer(pg),as.integer(trans),as.double(gamma2),
+      as.integer(cause),as.integer(line),as.integer(detail),
+      as.double(biid),as.double(gamiid),as.integer(resample.iid),
+      as.double(time.pow),as.integer(clusters),as.integer(antclust),
+      as.double(time.pow.test),as.integer(silent),
+      as.double(conv),as.double(tau),as.integer(estimator),
+      as.integer(cause),as.double(weights),as.double(Gctimes),
+      PACKAGE="timereg")
 
   gamma<-matrix(out[[24]],pg,1); 
   var.gamma<-matrix(out[[25]],pg,pg); 
