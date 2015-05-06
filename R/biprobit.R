@@ -299,6 +299,11 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
 ##'                         cens.formula=Surv(time,status==0)~1,
 ##'                         breaks=100,pairs.only=TRUE)
 ##' 
+##'     prt0$trunc <- prt0$time*runif(nrow(prt0))*rbinom(nrow(prt0),1,0.5)
+##'     a3 <- biprobit.time(cancer~1, rho=~1, id="id", data=subset(prt0,zyg=="DZ"), eqmarg=TRUE,
+##'                         cens.formula=Surv(trunc,time,status==0)~1,
+##'                         breaks=100,pairs.only=TRUE)
+#
 ##' 
 ##'     plot(a,which=3,ylim=c(0,0.1))
 ##' }
@@ -326,7 +331,9 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
   formulaSt <- paste("~.-cluster(",formulaId,")",
                      "-id(",formulaId,")",
                      "-strata(",paste(formulaStrata,collapse="+"),")",sep="")
-  formula <- update(x,formulaSt)
+  formula <- update(x,formulaSteks=100,pairs.only=TRUE)
+
+
   if (!is.null(formulaId)) {
     id <- formulaId
     mycall$id <- id
