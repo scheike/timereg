@@ -5,19 +5,21 @@
 void resmean(times,Ntimes,x,delta,cause,KMc,z,n,px,Nit,betaS,
 score,hess,est,var,sim,antsim,rani,test,testOBS,Ut,simUt,weighted,
 gamma,vargamma,semi,zsem,pg,trans,gamma2,CA,line,detail,biid,gamiid,resample,
-timepow,clusters,antclust,timepowtest,silent,convc,tau,estimator,causeS,weights,KMtimes)
+timepow,clusters,antclust,timepowtest,silent,convc,tau,estimator,causeS,weights,
+KMtimes,ordertime,conservative,censcode)
 double *times,*betaS,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
        *Ut,*simUt,*gamma,*zsem,*gamma2,*biid,*gamiid,*vargamma,*timepow,
        *weights,*KMtimes,*timepowtest,*convc,*tau;
 int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
-    *semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*causeS;
+    *semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,
+    *estimator,*causeS,*ordertime,*conservative,*censcode;
 { // {{{
   // {{{ allocation and reading of data from R
-  matrix *X,*cX,*A,*AI,*cumAt[*antclust],*VAR,*Z;
-  vector *VdB,*risk,*SCORE,*W,*Y,*Gc,*DELTA,*CAUSE,*bhat,*pbhat,*beta,*xi,
+  matrix *X,*cX,*A,*AI,*cumAt[*antclust],*VAR,*Z,*censX;
+  vector *VdB,*risk,*SCORE,*W,*Y,*Gc,*DELTA,*CAUSE,*bhat,*pbhat,*beta,*xi,*censXv,
     *rr,*rowX,*difbeta,*qs,*bhatub,*betaub,*dcovs,*pcovs,*zi,*rowZ,*zgam; 
   vector *cumhatA[*antclust],*cumA[*antclust],*bet1,*gam,*dp,*dp1,*dp2; 
-  int osilent,convt,ps,sing,c,i,j,k,l,s,it,convproblems=0; 
+  int osilent,convt,ps,sing,c,i,j,k,l,s,it,convproblems=0,clusterj,nrisk; 
   double skm,rit,time,sumscore,totrisk,*vcudif=calloc((*Ntimes)*(*px+1),sizeof(double));
   float gasdev(),expdev(),ran1();
   void resmeansemi();
@@ -33,8 +35,10 @@ int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
     malloc_mats(ps,ps,&A,&AI,&VAR,NULL); 
 
     malloc_vecs(*n,&rr,&bhatub,&risk,&W,&Y,&Gc,&DELTA,&CAUSE,&bhat,&pbhat,NULL); 
-    malloc_vecs(*px,&bet1,&xi,&rowX,NULL); 
+    malloc_vecs(*px,&bet1,&xi,&rowX,&censXv,NULL); 
     malloc_vecs(ps,&dp,&dp1,&dp2,&dcovs,&pcovs,&betaub,&VdB,&qs,&SCORE,&beta,&difbeta,NULL); 
+
+    malloc_mats(*n,*px,&censX,NULL);
 
     for (i=0;i<*antclust;i++) {
       malloc_vec(ps,cumhatA[i]); malloc_vec(ps,cumA[i]); 
@@ -105,11 +109,17 @@ for (s=0;s<*Ntimes;s++)
     else  if (*estimator==3) VE(Y,j)=((*tau-x[j])*(cause[j]==*causeS)-VE(pbhat,j))*rit; 
     else  if (*estimator==4) VE(Y,j)=((x[j]-time)*(cause[j]==*causeS)*delta[j]/KMc[j]-VE(pbhat,j))*rit; 
 
+   if (it==(*Nit-1) && (*conservative==0)) { // {{{ for censoring distrubution
+	   scl_vec_mult(VE(Y,j),dp,dp1); 
+           vec_add(censXv,dp1,censXv); 
+           replace_row(censX,j,dp1);
+      } // }}}
 
-    if (it==*Nit-1) {
-//	if (KMc[j]<0.00001) vec_zeros(dp); else scl_vec_mult(1/KMc[j],dp,dp); 
-	scl_vec_mult(VE(Y,j),dp,dp); vec_add(dp,qs,qs); 
-    }
+
+//    if (it==*Nit-1) {
+////	if (KMc[j]<0.00001) vec_zeros(dp); else scl_vec_mult(1/KMc[j],dp,dp); 
+//	scl_vec_mult(VE(Y,j),dp,dp); vec_add(dp,qs,qs); 
+//    }
 
     } // }}}
 
@@ -171,9 +181,20 @@ if (convt==1 ) {
       extract_row(cX,i,dp); 
       scl_vec_mult(VE(Y,i),dp,dp); 
       vec_add(dp,cumA[j],cumA[j]); 
-
+      if ((*conservative==0)) { // {{{ censoring terms for variance 
+ 	k=ordertime[i]; nrisk=(*n)-i; clusterj=clusters[k]; 
+//	printf(" %d %d %lf %lf %lf %d \n",i,k,nrisk,time,x[k],cause[k]); 
+	if (cause[k]==(*censcode)) { 
+           for(l=0;l<ps;l++) VE(cumA[clusterj],l)+=VE(censXv,l)/nrisk; 
+           for (j=i;j<*n;j++) {
+             clusterj=clusters[ordertime[j]]; 	
+             for(l=0;l<ps;l++) VE(cumA[clusterj],l)-=VE(censXv,l)/pow(nrisk,2); 
+	   }
+	}
+        // fewer where I(s <= T_i) , because s is increasing
+        extract_row(censX,k,xi); vec_subtr(censXv,xi,censXv);  
+    } // }}}
 //      if ((time==x[i])&(delta[i]==0))vec_add(qs,cumhatA[j],cumhatA[j]);  
-
       if (s<-1) print_vec(dp2); 
    }
 
@@ -213,10 +234,10 @@ if (convt==1 ) {
  
   if (convproblems>0) convc[0]=1; 
   if (*semi==0) { 
-    free_mats(&VAR,&X,&cX,&A,&AI,NULL); 
+    free_mats(&censX,&VAR,&X,&cX,&A,&AI,NULL); 
     if (*trans==2) {free_mats(&Z,NULL); free_vecs(&zgam,&gam,&zi,&rowZ,NULL);}
 
-    free_vecs(&rr,&bhatub,&risk,&W,&Y,&Gc,&DELTA,&CAUSE,&bhat,&pbhat,NULL); 
+    free_vecs(&censXv,&rr,&bhatub,&risk,&W,&Y,&Gc,&DELTA,&CAUSE,&bhat,&pbhat,NULL); 
     free_vecs(&bet1,&xi,&rowX,NULL); 
     free_vecs(&dp,&dp1,&dp2,&dcovs,&pcovs,&betaub,&VdB,&qs,&SCORE,&beta,&difbeta,NULL); 
 

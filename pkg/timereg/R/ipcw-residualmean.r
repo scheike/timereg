@@ -1,7 +1,7 @@
 res.mean<-function(formula,data=sys.parent(),cause=1,restricted=NULL,times=NULL,Nit=50,
 clusters=NULL,gamma=0,n.sim=0,weighted=0,model="additive",detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,estimator=1,cens.weights=NULL,
-weights=NULL){
+conservative=1,weights=NULL){
 ## {{{
 # restricted residual mean life models, using IPCW 
 # two models, additive and proportional 
@@ -27,7 +27,8 @@ weights=NULL){
 ###	   m$cens.tau <- 
            m$model<- m$detail<- m$cens.model<-m$time.pow<-m$silent<- 
            m$interval<- m$clusters<-m$resample.iid<-m$restricted <- m$weights <- 
-           m$time.pow.test<-m$conv<-m$estimator <- m$cens.weights <- NULL
+           m$time.pow.test<-m$conv<-m$estimator <- m$cens.weights <- 
+	   m$conservative <- NULL
   special <- c("const","cluster")
   if (missing(data)) {
     Terms <- terms(formula, special)
@@ -162,6 +163,8 @@ weights=NULL){
   betaS<-rep(0,ps);  
   if (model=="prop") betaS[1] <- log(mean(time2))
 
+  ordertime <- order(eventtime); 
+
   out<-.C("resmean",
       as.double(times),as.integer(ntimes),as.double(time2),
       as.integer(deltatau), as.integer(status),as.double(Gcx),
@@ -179,6 +182,7 @@ weights=NULL){
       as.double(time.pow.test),as.integer(silent),
       as.double(conv),as.double(tau),as.integer(estimator),
       as.integer(cause),as.double(weights),as.double(Gctimes),
+      as.integer(ordertime-1),as.integer(conservative),as.integer(cens.code),
       PACKAGE="timereg")
 
   gamma<-matrix(out[[24]],pg,1); 

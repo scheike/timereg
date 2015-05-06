@@ -236,7 +236,7 @@ if (convt==1 ) { // {{{ iid decomp
     } // }}}
    }
 
-   vec_zeros(dp1); 
+//   vec_zeros(dp1); 
    for (j=0;j<*antclust;j++) { 
       Mv(AI,cumA[j],dp2); 
       replace_row(cumAt[j],s,dp2);  
