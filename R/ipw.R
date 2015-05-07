@@ -31,6 +31,7 @@
 ##' }
 ##' legend("topright",legend=unique(prtw$country),col=1:4,pch=-1,lty=1)
 ##' }
+##' @export
 ipw <- function(formula,data,cluster,
                 same.cens=FALSE,obs.only=TRUE,
                 weight.name="w",
@@ -44,7 +45,7 @@ ipw <- function(formula,data,cluster,
 	ud.cens <- phreg.par(formula,data,...)
         pr <- predict(ud.cens)
         noncens <- which(!ud.cens$status)        
-    } else {
+    } else { ## {{{ 
         m <- match.call(expand.dots = FALSE)
         m <- m[match(c("", "formula", "data", "subset", "na.action"), 
                      names(m), nomatch = 0)]
@@ -80,23 +81,26 @@ ipw <- function(formula,data,cluster,
         ##ud.cens <- do.call(cens.model,cens.args)
         Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
         pr <- Gcx
-    }
+    } ## }}} 
+
+
     if (trunc.prob & ncol(censtime)==3) { ## truncation
-        data$truncsurv <- Surv(ltimes,otimes,noncens)
-        trunc.formula <- update(formula,truncsurv~.)        
-        ud.trunc <- aalen(trunc.formula,data=data,robust=0,n.sim=0,residuals=0,silent=1,max.clust=NULL,
-                          clusters=data[,cluster], ...)
+###        data$truncsurv <- Surv(ltimes,otimes,noncens)
+###        trunc.formula <- update(formula,truncsurv~.)        
+        ud.trunc <- aalen(formula,data=data,robust=0,n.sim=0,residuals=0,silent=1)
         dependX0 <- model.matrix(theta.formula,data)        
-        twostage.fit <-two.stage(ud.trunc,
-                                 data=data,robust=0,detail=0,
-                                 theta.des=dependX0)#,Nit=20,step=1.0,notaylor=1)
-        X <- model.matrix(trunc.formula,data)
+        twostage.fit <-two.stage(ud.trunc,data=data,robust=0,detail=0,
+			         clusters=data[,cluster],
+				 theta.des=dependX0)#,Nit=20,step=1.0,notaylor=1)
+	pre.theta <- dependX0 %*% twostage.fit$theta
+        X <- model.matrix(formula,data)
         Xnam <- colnames(X)
+	X <- cbind(X,pre.theta)
+	colnames(X)[ncol(X)] <- "pre.theta"
         ww <- fast.reshape(cbind(X,".num"=seq(nrow(X)),".lefttime"=ltimes),varying=c(".num",".lefttime"),id=data[,cluster])
-        dependX <- model.matrix(theta.formula,ww)                
         Prob <- predict.two.stage(twostage.fit,X=ww[,Xnam],
                                   times=ww[,".lefttime1"],times2=ww[,".lefttime2"],
-                                  theta.des=dependX)
+                                  theta=ww$pre.theta)
         P0 <- numeric(nrow(X))
         P0[ww[,".num1"]] <- Prob$St1t2
         P0[ww[,".num2"]] <- Prob$St1t2
@@ -104,7 +108,7 @@ ipw <- function(formula,data,cluster,
     }
     data[,weight.name] <- pr
         
-        
+
     if (same.cens & !missing(cluster)) {        
         message("Minimum weights...")
         myord <- order(data[,cluster])

@@ -1,4 +1,4 @@
-##' @export
+#####' @export
 biprobit.time.ts <- function(formula,data,id,...,
                           breaks=NULL,n.times=20,pairs.only=TRUE,fix.cens.weights=FALSE,
                           cens.formula,cens.model="aalen",weights="w",messages=FALSE,
@@ -22,6 +22,7 @@ biprobit.time.ts <- function(formula,data,id,...,
 
     ltimes <- 0
     if (ncol(censtime)==3) {  ## Calculate probability of not being truncated via Clayton-Oakes (ad hoc combining causes)
+	 ## {{{ 
         status <- censtime[,3]
         noncens <- !status
         time <- censtime[,2]
@@ -37,33 +38,21 @@ biprobit.time.ts <- function(formula,data,id,...,
         twostage.fit <- two.stage(ud.trunc,data=data,robust=0,detail=0,
                                   theta.des=dependX0)#,Nit=20,step=1.0,notaylor=1)        
 	pre.theta <- dependX0 %*% twostage.fit$theta
-	print("hej")
         Xnam <- colnames(X)
 	X <- cbind(X,pre.theta)
 	colnames(X)[ncol(X)] <- "pre.theta"
         ww <- fast.reshape(cbind(X,".num"=seq(nrow(X)),".lefttime"=ltimes),varying=c(".num",".lefttime"),id=data[,id])
-###        dependX <- as.matrix(ww[,Xnam,drop=FALSE])
-###	print(dim(ww))
-	print(head(ww))
-###        nottruncpair.prob <- predict.two.stage(twostage.fit,X=ww[,Xnam],
-###                                               times=ww[,".lefttime1"],times2=ww[,".lefttime2"],
-###                                               theta=ww$pre.theta)$St1t2
         nottruncpair.prob <- predict.two.stage(twostage.fit,X=ww[,Xnam],
                                                times=ww[,".lefttime1"],times2=ww[,".lefttime2"],
-                                               theta=ww$pre.theta)
-	print(summary(nottruncpair.prob$S1))
-	print(summary(nottruncpair.prob$S2))
-        nottruncpair.prob <- nottruncpair.prob$St1t2
-	
-	print(summary(nottruncpair.prob))
+                                               theta=ww$pre.theta)$St1t2
         data[,trunc.weights] <- 0
         data[ww[,".num1"],trunc.weights] <- nottruncpair.prob
         data[ww[,".num2"],trunc.weights] <- nottruncpair.prob
-        
     } else {
         status <- censtime[,2]
         time <- censtime[,1]
-    }
+    } ## }}} 
+     
 
     outcome <- as.character(terms(formula)[[2]])
     jj <- jumptimes(time,data[,outcome],data[,id],sample=n.times)
@@ -105,7 +94,7 @@ biprobit.time.ts <- function(formula,data,id,...,
             ## data0$status0 <- status0
             ## data0$time0 <- time0
             ## data0$y0 <- data0[,outcome]
-            dataw <- mets:::ipw(update(cens.formula,S~.), data=subset(data0,ltimes<time0), cens.model=cens.model,
+            dataw <- ipw(update(cens.formula,S~.), data=subset(data0,ltimes<time0), cens.model=cens.model,
                          weight.name=weights,obs.only=TRUE,cluster=id)            
         }
         if (fix.cens.weights) {
@@ -137,7 +126,6 @@ biprobit.time.ts <- function(formula,data,id,...,
     return(res)    
 } ## }}} 
 
-
 biprobit.time2.ts <- function(formula,data,id,...,
                           breaks=Inf,pairs.only=TRUE,
                           cens.formula,cens.model="aalen",weights="w") {
@@ -168,7 +156,7 @@ biprobit.time2.ts <- function(formula,data,id,...,
         data0[cond0,outcome] <- FALSE
         time0[cond0] <- tau
         data0$S <- survival::Surv(time0,status0==1)        
-        dataw <- mets:::ipw(update(cens.formula,S~.), data=data0, cens.model=cens.model,
+        dataw <- ipw(update(cens.formula,S~.), data=data0, cens.model=cens.model,
                      cluster=id,weight.name=weights,obs.only=TRUE)
         message("control")
         suppressWarnings(b <- biprobit(formula, data=dataw, id=id, weights=weights, pairs.only=pairs.only,...))
@@ -274,7 +262,7 @@ biprobit.time.trunc.test.ts <- function(formula,data,id,...,
             ## data0$status0 <- status0
             ## data0$time0 <- time0
             ## data0$y0 <- data0[,outcome]
-            dataw <- mets:::ipw(update(cens.formula,S~.), data=subset(data0,ltimes<time0), cens.model=cens.model,
+            dataw <- ipw(update(cens.formula,S~.), data=subset(data0,ltimes<time0), cens.model=cens.model,
                          weight.name=weights,obs.only=TRUE,cluster=id)            
         }
         if (fix.cens.weights) {
