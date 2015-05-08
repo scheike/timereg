@@ -7,7 +7,8 @@ return( 1 - exp(-baset*exp(xm %*% matrix(beta,3,1))))
 } ## }}}
 
 ##' @export 
-corsim.prostate <- function(n,theta=1,thetaslope=0,crate=2,test=0,pcens=0,mt=1,same.cens=TRUE,country=TRUE) 
+corsim.prostate <- function(n,theta=1,thetaslope=0,crate=2,test=0,pcens=0.5,mt=1,same.cens=TRUE,country=TRUE,
+			    delayed=FALSE,trate=2,ptrunc=0.5) 
 { ## {{{
 ###n <- 10; theta <- 1; thetaslope <- 0; mt <- 1
 if (country==TRUE) xl <- sample(1:4,n,replace=TRUE) else xl <- rep(1,n)
@@ -99,15 +100,14 @@ cause <- c(t(causes))
 
 ###same.cens=TRUE
 if (same.cens==TRUE) {
-	ctime <- rep(rbinom(n,1,pcens),each=2) 
-        ctime[ctime==1] <- rep(runif(sum(ctime==1)/2),each=2)*crate
+	ctime <- rep(rbinom(n,1,pcens)*runif(n)*crate,each=2)
+        ctime[ctime==0] <- mt;
 }
 else {
-	ctime<- rbinom(n,1,pcens)
-        ctime[ctime==1] <- runif(sum(ctime==1))*crate
+	ctime<- rbinom(2*n,1,pcens)*runif(2*n)*crate
+        ctime[ctime==0] <- mt;
 }
 
-ctime[ctime==0] <- mt;
 
 cens <- (ctime< stime)
 time <- ifelse(cens,ctime,stime)
@@ -120,35 +120,44 @@ country[xl==2] <- "DK"
 country[xl==3] <- "FIN"
 country[xl==4] <- "NOR"
 
+
+if (delayed) {
+if (same.cens==TRUE) {
+    etime <- rep(rbinom(n,1,ptrunc)*runif(n)*trate,each=2)
+} else  etime<- rbinom(2*n,1,ptrunc)*runif(2*n)*trate
+} else etime <- rep(0,2*n)
+
+
 data<-data.frame(time=time,cause=cause,xl=rep(xl,each=2),
 		 country=rep(country,each=2),id=id,cens=cens,stime=stime,type=rep(types,each=2),
 		 f1=rep(F11x,each=2),p11=rep(p11,each=2),p12=rep(p12,each=2),p21=rep(p21,each=2),
-		 p22=rep(p22,each=2))
+		 p22=rep(p22,each=2),entry=etime,truncated=(time<etime))
 return(data)
 } ## }}}
 
 ##' @export 
-simnordic <- function(n,cordz=2,cormz=3,cratemz=2,cratedz=2,pcensmz=0.8,pcensdz=0.8,country=TRUE,same.cens=TRUE) 
+simnordic <- function(n,cordz=2,cormz=3,cratemz=2,cratedz=2,pcensmz=0.8,pcensdz=0.8,ptrunc=0.5,country=TRUE,same.cens=TRUE,
+		      delayed=FALSE,only.delayed=FALSE) 
 { ## {{{
-outdz <- corsim.prostate(n,theta=cordz,crate=cratedz,pcens=pcensdz,mt=1,same.cens=same.cens,test=0,country=country) 
-outmz <- corsim.prostate(n,theta=cormz,crate=cratemz,pcens=pcensmz,mt=1,same.cens=same.cens,test=0,country=country) 
+outdz <- corsim.prostate(n,theta=cordz,crate=cratedz,pcens=pcensdz,mt=1,same.cens=same.cens,test=0,country=country,
+			 delayed=delayed,ptrunc=ptrunc) 
+outmz <- corsim.prostate(n,theta=cormz,crate=cratemz,pcens=pcensmz,mt=1,same.cens=same.cens,test=0,country=country,
+			 delayed=delayed,ptrunc=ptrunc) 
 outdz$zyg <- "DZ" 
 outmz$zyg <-  "MZ"
 outmz$id <- outmz$id+nrow(outdz)
 ###
 out <- rbind(outdz,outmz)
 out$time <- out$time*100
+out$entry <- out$entry*100
 ###table(out$type,out$country)
 ###table(out$type,out$cause)
 if (country==TRUE) out$country <- relevel(factor(out$country),ref="SWE")
 ###table(out$country)
-outk <- out[,c("country","cause","id","time","zyg","type")]
-###table(outk$cause)
-###table(outk$type,outk$country)
-###table(outk$cause,outk$country)
-###
+outk <- out[,c("country","cause","id","time","zyg","type","entry","truncated")]
+
+if (only.delayed) outk <- outk[!out$truncated,]
 
 return(outk)
 } ## }}}
-
 
