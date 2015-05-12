@@ -607,6 +607,7 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
 
    if (is.null(cens.formula)) { 
    if (is.null(strata)) { ## {{{ 
+	   if (!is.null(entrytime)) {
 	   surv.trunc <- 
 	   survfit(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ 1) 
 	   trunc.dist <- summary(surv.trunc)
@@ -614,6 +615,7 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
 	   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
 	   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),data[,time])
 	   Lw <- Lfit[,2]
+	   } else Lw <- 1
 	   ud.cens<- survfit(Surv(entrytime,data[,time],data[,cause]==0)~+1) 
 	   Gfit<-cbind(ud.cens$time,ud.cens$surv)
 	   Gfit<-rbind(c(0,1),Gfit); 
@@ -632,14 +634,16 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
 	       who <- (vstrata == i)
 	       if (sum(who) <= 1) stop(paste("strata",i,"less than 1 observation\n")); 
 	   datas <- subset(data,who)
-	   entrytimes <- entrytime[who]
-	   surv.trunc <- 
-	   survfit(Surv(-datas[,time],-entrytimes+prec,rep(1,nrow(datas))) ~ +1) 
-	   trunc.dist <- summary(surv.trunc)
-	   trunc.dist$time <- rev(-trunc.dist$time)
-	   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
-	   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),datas[,time])
-	   Lw <- Lfit[,2]
+	   if (!is.null(entrytime)) {
+		   entrytimes <- entrytime[who]
+		   surv.trunc <- 
+		   survfit(Surv(-datas[,time],-entrytimes+prec,rep(1,nrow(datas))) ~ +1) 
+		   trunc.dist <- summary(surv.trunc)
+		   trunc.dist$time <- rev(-trunc.dist$time)
+		   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
+		   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),datas[,time])
+		   Lw <- Lfit[,2]
+	   } else Lw <- 1
 	   ud.cens<- survfit(Surv(entrytimes,datas[,time],datas[,cause]==0)~+1) 
 	   Gfit<-cbind(ud.cens$time,ud.cens$surv)
 	   Gfit<-rbind(c(0,1),Gfit); 
@@ -651,14 +655,17 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
    } ## }}} 
    } else { ### cens.formula Cox models  ## {{{
         X <- model.matrix(cens.formula,data=data)[,-1,drop=FALSE]; 
-	trunc.model <- coxph(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ X) 
-        baseout <- basehaz(trunc.model,centered=FALSE); 
-        baseout <- cbind(rev(-baseout$time),rev(baseout$hazard))
-###
-	Lfit <-Cpred(baseout,data[,time])[,-1]
-        RR<-exp(as.matrix(X) %*% coef(trunc.model))
-        Lfit<-exp(-Lfit*RR)
-	Lw <- Lfit
+
+	if (!is.null(entrytime)) {
+		trunc.model <- coxph(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ X) 
+		baseout <- basehaz(trunc.model,centered=FALSE); 
+		baseout <- cbind(rev(-baseout$time),rev(baseout$hazard))
+	###
+		Lfit <-Cpred(baseout,data[,time])[,-1]
+		RR<-exp(as.matrix(X) %*% coef(trunc.model))
+		Lfit<-exp(-Lfit*RR)
+		Lw <- Lfit
+	   } else Lw <- 1
 ###
 	cens.model <- coxph(Surv(entrytime,data[,time],data[,cause]==0)~+X) 
         baseout <- basehaz(cens.model,centered=FALSE); 
@@ -673,9 +680,11 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
    data[,cname] <- cweights
    data[,tname] <- tweights
 
+   if (!is.null(entrytime)) {
    mint <- min(tweights); maxt <- min(tweights) 
    if (mint<0 | mint>1) warning("min(truncation weights) strange, maybe prec.factor should be different\n")
    if (maxt<0 | maxt>1) warning("max(truncation weights) strange, maybe prec.factor should be different\n")
+   }
 
    if ("weights" %in% names(data)) {
        warning("Weights in variable 'weights_' \n")
