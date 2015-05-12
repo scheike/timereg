@@ -5,7 +5,6 @@ biprobit.time <- function(formula,data,id,...,
                           return.data=FALSE,theta.formula=~1,trunc.weights="w2",
                           estimator="biprobit", summary.function) {
 ## {{{ 
-    
     m <- match.call(expand.dots = FALSE)
     m <- m[match(c("","data"),names(m),nomatch = 0)]
     Terms <- terms(cens.formula,data=data)
@@ -21,7 +20,7 @@ biprobit.time <- function(formula,data,id,...,
     }
 
     ltimes <- 0
-    if (ncol(censtime)==3) {  ## Calculate probability of not being truncated via Clayton-Oakes (ad hoc combining causes)
+    if (ncol(censtime)==3) {## {{{ ## Calculate probability of not being truncated via Clayton-Oakes (ad hoc combining causes)
         status <- censtime[,3]
         noncens <- !status
         time <- censtime[,2]
@@ -46,10 +45,10 @@ biprobit.time <- function(formula,data,id,...,
         data[ww[,".num1"],trunc.weights] <- nottruncpair.prob
         data[ww[,".num2"],trunc.weights] <- nottruncpair.prob
         
-    } else {
+    } else {  
         status <- censtime[,2]
         time <- censtime[,1]
-    }
+    } ## }}} 
 
     outcome <- as.character(terms(formula)[[2]])
     jj <- jumptimes(time,data[,outcome],data[,id],sample=n.times)

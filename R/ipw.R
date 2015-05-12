@@ -84,10 +84,11 @@ ipw <- function(formula,data,cluster,
         pr <- Gcx
     } ## }}} 
 
+     if (trunc.prob) stop("Under development\n"); 
     if (trunc.prob & ncol(censtime)==3) { ## truncation ## {{{ 
-###        data$truncsurv <- Surv(ltimes,otimes,noncens)
-###        trunc.formula <- update(formula,truncsurv~.)        
-        ud.trunc <- aalen(formula,data=data,robust=0,n.sim=0,residuals=0,silent=1)
+        data$truncsurv <- Surv(ltimes,otimes,noncens)
+        trunc.formula <- update(formula,truncsurv~.)        
+        ud.trunc <- aalen(trunc.formula,data=data,robust=0,n.sim=0,residuals=0,silent=1)
         dependX0 <- model.matrix(theta.formula,data)        
         twostage.fit <-two.stage(ud.trunc,data=data,robust=0,detail=0,
 			         clusters=data[,cluster],
@@ -98,6 +99,7 @@ ipw <- function(formula,data,cluster,
 	X <- cbind(X,pre.theta)
 	colnames(X)[ncol(X)] <- "pre.theta"
         ww <- fast.reshape(cbind(X,".num"=seq(nrow(X)),".lefttime"=ltimes),varying=c(".num",".lefttime"),id=data[,cluster])
+	if (anyNA(ww)) stop("not balanced for predict two stage\n");  
         Prob <- predict.two.stage(twostage.fit,X=ww[,Xnam],
                                   times=ww[,".lefttime1"],times2=ww[,".lefttime2"],
                                   theta=ww$pre.theta)
@@ -105,12 +107,15 @@ ipw <- function(formula,data,cluster,
         P0[ww[,".num1"]] <- Prob$St1t2
         P0[ww[,".num2"]] <- Prob$St1t2
         data[,weight.name2] <- P0
+	print(summary(P0))
     }
     data[,weight.name] <- pr
     ## }}} 
         
+    if (same.cens & missing(cluster)) message("no cluster for same-cens given \n"); 
+
     if (same.cens & !missing(cluster)) { ## {{{         
-        message("Minimum weights...")
+###        message("Minimum weights...")
         myord <- order(data[,cluster])
         data <- data[myord,,drop=FALSE]
         id <-  table(data[,cluster])
@@ -135,7 +140,6 @@ ipw <- function(formula,data,cluster,
         obs2only <- rep(with(Wide, observed..2 & (is.na(observed..1) | !observed..1)),id)
         obsOne <- which(na.omit(obs1only|obs2only))
         obsBoth <- rep(with(Wide, !is.na(observed..1) & !is.na(observed..2) & observed..2 & observed..1),id)
-        
 
         data[obsBoth,weight.name] <-
             ifelse(noncens[obsBoth],1/Wmin[obsBoth],0)    
@@ -149,7 +153,6 @@ ipw <- function(formula,data,cluster,
     return(data)    
 } ## }}} 
 
-##' @export
 force.same.cens <- function(data,id="id",
       time="time",cause="cause",entrytime=NULL,cens.code=0)
 { ## {{{ 
@@ -184,38 +187,35 @@ force.same.cens <- function(data,id="id",
 ### drop those that enter later
   enter.after <- ( Wide[,entry1] < Wide[,time1]) & (Wide[,entry2] < Wide[,time2])
   Wide <- Wide[enter.after,] 
-   } ## }}} 
+  } ## }}} 
+   print(head(Wide))
 
- data <- fast.reshape(Wide)
+###   dealing with one and two observations along the lines of 
+   ## {{{ 
+    obs1only <- rep(with(Wide, time1 & (is.na(time2) )),id)
+    obs2only <- rep(with(Wide, time2 & (is.na(time1) )),id)
+    obsOne <- which(na.omit(obs1only|obs2only))
+    obsBoth <- rep(with(Wide, !is.na(time1) & !is.na(time2)),id)
+
+    data[obsBoth,weight.name] <-
+         ifelse(noncens[obsBoth],1/Wmin[obsBoth],0)    
+    data[obsOne,weight.name] <-
+         ifelse(noncens[obsOne],1/Wmarg[obsOne],0)
+    ## }}} 
+
+###  data <- fast.reshape(Wide)
 
  return(data)
 } ## }}} 
 
-###library(mets)
-###example(prep.comp.risk)
-###bmt 
-######<- bmtw
-###bmt$id <- rep(1:204,each=2)
-###data <- bmt
-###cens.code <- 0
-###time="time";cause="cause";entrytime="entrytime"
-###id="id"
-###cens.code=0
-###
-###m <-    force.same.cens(bmt,entrytime="entrytime")
-###m <-  force.same.cens(bmt)
-###table(m$cause)
-###table(bmt$cause)
-
 ##' @export
-ipw2 <- function(data,times=NULL,entrytime=NULL,
-     time="time",cause="cause",
-     same.cens=FALSE,cluster=NULL,pairs=TRUE,
+ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
+     same.cens=FALSE,cluster=NULL,pairs=FALSE,
      strata=NULL,obs.only=TRUE,cens.formula=NULL,
      cens.code=0,
      pair.cweight="pcw",pair.tweight="ptw",pair.weight="weight",
-     cname="cweight",tname="tweight",weight.name="iweight"
-     )
+     cname="cweight",tname="tweight",weight.name="indi.weight",
+     prec.factor=100)
 { ## {{{ 
    ### first calculates weights based on marginal
    ### estimators  of censoring and truncation
@@ -223,19 +223,20 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,
    if (is.null(times)) times <- max(data[,time])
    if (is.null(entrytime)) entrytime <- rep(0,nrow(data)) else entrytime <- data[,entrytime]
    mtt <- max(times)
-   prec.factor <- 100
    prec <- .Machine$double.eps * prec.factor
    trunc.model <- cens.model <- NULL ## output of Cox models for entry cens
 
    if (is.null(cens.formula)) { 
    if (is.null(strata)) { ## {{{ 
-	   surv.trunc <- 
-	   survfit(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ 1) 
-	   trunc.dist <- summary(surv.trunc)
-	   trunc.dist$time <- rev(-trunc.dist$time)
-	   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
-	   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),data[,time])
-	   Lw <- Lfit[,2]
+	   if (!is.null(entrytime)) {
+		   surv.trunc <- 
+		   survfit(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ 1) 
+		   trunc.dist <- summary(surv.trunc)
+		   trunc.dist$time <- rev(-trunc.dist$time)
+		   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
+		   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),data[,time])
+		   Lw <- Lfit[,2]
+	   } else {Lw <- 1; }
 	   ud.cens<- survfit(Surv(entrytime,data[,time],data[,cause]==0)~+1) 
 	   Gfit<-cbind(ud.cens$time,ud.cens$surv)
 	   Gfit<-rbind(c(0,1),Gfit); 
@@ -254,14 +255,16 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,
 	       who <- (vstrata == i)
 	       if (sum(who) <= 1) stop(paste("strata",i,"less than 1 observation\n")); 
 	   datas <- subset(data,who)
-	   entrytimes <- entrytime[who]
-	   surv.trunc <- 
-	   survfit(Surv(-datas[,time],-entrytimes+prec,rep(1,nrow(datas))) ~ +1) 
-	   trunc.dist <- summary(surv.trunc)
-	   trunc.dist$time <- rev(-trunc.dist$time)
-	   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
-	   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),pmin(mtt,datas[,time]))
-	   Lw <- Lfit[,2]
+	   if (!is.null(entrytime)) {
+		   entrytimes <- entrytime[who]
+		   surv.trunc <- 
+		   survfit(Surv(-datas[,time],-entrytimes+prec,rep(1,nrow(datas))) ~ +1) 
+		   trunc.dist <- summary(surv.trunc)
+		   trunc.dist$time <- rev(-trunc.dist$time)
+		   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
+		   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),datas[,time])
+		   Lw <- Lfit[,2]
+	   } else {Lw <- 1; }
 	   ud.cens<- survfit(Surv(entrytimes,datas[,time],datas[,cause]==0)~+1) 
 	   Gfit<-cbind(ud.cens$time,ud.cens$surv)
 	   Gfit<-rbind(c(0,1),Gfit); 
@@ -273,14 +276,17 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,
    } ## }}} 
    } else { ### cens.formula Cox models  ## {{{
         X <- model.matrix(cens.formula,data=data)[,-1,drop=FALSE]; 
-	trunc.model <- coxph(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ X) 
-        baseout <- basehaz(trunc.model,centered=FALSE); 
-        baseout <- cbind(rev(-baseout$time),rev(baseout$hazard))
-###
-	Lfit <-Cpred(baseout,data[,time])[,-1]
-        RR<-exp(as.matrix(X) %*% coef(trunc.model))
-        Lfit<-exp(-Lfit*RR)
-	Lw <- Lfit
+
+	if (!is.null(entrytime)) {
+		trunc.model <- coxph(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ X) 
+		baseout <- basehaz(trunc.model,centered=FALSE); 
+		baseout <- cbind(rev(-baseout$time),rev(baseout$hazard))
+	###
+		Lfit <-Cpred(baseout,data[,time])[,-1]
+		RR<-exp(as.matrix(X) %*% coef(trunc.model))
+		Lfit<-exp(-Lfit*RR)
+		Lw <- Lfit
+        } else {Lw <- 1; }
 ###
 	cens.model <- coxph(Surv(entrytime,data[,time],data[,cause]==0)~+X) 
         baseout <- basehaz(cens.model,centered=FALSE); 
@@ -298,9 +304,14 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,
 ###       wname<- "weights_"
 ###       data[,wname] <- weights
 ###   } else data[,"weights"] <- weights
-   ###
    data[,weight.name] <- weights
    data[,"cw"] <- 1
+
+   if (!is.null(entrytime)) {
+   mint <- min(tweights); maxt <- min(tweights) 
+   if (mint<0 | mint>1) warning("min(truncation weights) strange, maybe prec.factor should be different\n")
+   if (maxt<0 | maxt>1) warning("max(truncation weights) strange, maybe prec.factor should be different\n")
+   }
 
 ###   if ("cw" %in% names(data)) {
 ###      warning("cw weights in variable 'cw_' \n")
@@ -314,8 +325,9 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,
    data[,tname] <- tweights
 ## }}} 
 
- observed <- ((data[,time]>mtt & data[,cause]==cens.code)) | (data[,cause]!=cens.code)
+  observed <- ((data[,time]>mtt & data[,cause]==cens.code)) | (data[,cause]!=cens.code)
 
+  if (same.cens & is.null(cluster)) message("no cluster for same-cens given \n"); 
     if (same.cens & !is.null(cluster)) { ## {{{         
 ###        message("Minimum weights.cens..")
 ###        message("Maximum weights.trunc..")
@@ -345,11 +357,13 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,
 ###	print(tname)
 
         ### truncation same truncation  
+   if (!is.null(entrytime)) {
         Wt <- apply(Wide[,paste(tname,1:2,sep="")],1,
                    function(x) max(x,na.rm=TRUE))
         Wtmarg <- d0[,tname]
         data[,pair.tweight] <- 1/Wtmarg
         Wtmax <- rep(Wt,id)
+   }
 
 
         obs1only <- rep(with(Wide, observed.1 & (is.na(observed.2) | !observed.2)),id)
@@ -362,71 +376,18 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,
         data[obsOne,pair.cweight] <-
             ifelse(noncens[obsOne],1/Wmarg[obsOne],0)
 
+   if (!is.null(entrytime)) {
         data[obsBoth,pair.tweight] <-
             ifelse(noncens[obsBoth],1/Wtmax[obsBoth],0)    
         data[obsOne,pair.tweight] <-
             ifelse(noncens[obsOne],1/Wtmarg[obsOne],0)
+   }
 
 	data[,pair.weight] <- data[,pair.cweight]*data[,pair.tweight]
     } ## }}} 
 
-if (obs.only) {
-      data <- data[observed,]
-} 
+if (obs.only) { data <- data[observed,] } 
 
    return(data)
 } ## }}} 
 
-
-###library(mets)
-###data(bmt)
-###nn <- nrow(bmt)
-###entrytime <- rbinom(nn,1,0.5)*(bmt$time*runif(nn))
-###bmt$entrytime <- entrytime
-###times <- seq(5,70,by=1)
-###bmt$id <- rep(1:204,each=2)
-###
-###source("~/R-libs/pakud/timereg/pkg/timereg/R/comprisk.r")
-###bmtw <- prep.comp.risk(bmt,times=times,nocens.out=FALSE,
-###      time="time",entrytime="entrytime",cause="cause")
-###dim(bmtw)
-###
-###cluster <- "id"
-###data <- bmtw
-###pairs <- TRUE
-###time="time";entrytime="entrytime";cause="cause";
-###mtt <- 100
-######weight.name <- "wwt"
-######cname <- "cweight"
-######	cens.code <- 0
-###
-###bmtw <- prep.comp.risk(bmt,times=times,nocens.out=FALSE,
-###      time="time",entrytime="entrytime",cause="cause")
-###dim(bmtw)
-###
-###bmtw <- ipw2(bmt,nocens.out=FALSE,
-###      time="time",entrytime="entrytime",cause="cause")
-###dim(bmtw)
-######
-###bmtw2 <- ipw2(bmt,nocens.out=FALSE,cluster="id",
-###      same.cens=TRUE,
-###      time="time",entrytime="entrytime",cause="cause")
-###
-###dim(bmtw2)
-######
-###tail(bmtw)
-###tail(bmtw2)
-######
-###head(bmtw)
-###head(bmtw2)
-######
-###dim(bmtw)
-###dim(bmtw2)
-###
-###
-###
-###bmtw22=fast.reshape(bmtw2,id="id")
-###head(bmtw22)
-###tail(bmtw22)
-###
-###
