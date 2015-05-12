@@ -593,8 +593,9 @@ plot.comprisk <-  function (x, pointwise.ci=1, hw.ci=0,
 } ## }}}
 
 prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
-			   time="time",cause="cause",
-			   strata=NULL,nocens.out=TRUE,cens.formula=NULL)
+			   time="time",cause="cause",cname="cweight",tname="tweight",
+			   strata=NULL,nocens.out=TRUE,cens.formula=NULL,cens.code=0,
+			   prec.factor=100)
 { ## {{{ 
 ## {{{  geskus weights, up to min(T_i,max(times))
    if (is.null(times)) times <- max(data[,time])
@@ -618,11 +619,15 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
 	   Gfit<-rbind(c(0,1),Gfit); 
 	   Gcx<-Cpred(Gfit,pmin(mtt,data[,time]),strict=TRUE)[,2];
            weights <- 1/(Lw*Gcx); 
+	   cweights <-  Lw; 
+	   tweights <-  Gcx; 
    ### ## }}} 
    } else { ## {{{ 
 	   ### compute for each strata and combine 
 	  vstrata <- as.numeric(data[,strata])
           weights <- rep(1,nrow(data))
+          cweights <- rep(1,nrow(data))
+          tweights <- rep(1,nrow(data))
 	  for (i in unique(vstrata)) { ## {{{ for each strata
 	       who <- (vstrata == i)
 	       if (sum(who) <= 1) stop(paste("strata",i,"less than 1 observation\n")); 
@@ -633,13 +638,15 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
 	   trunc.dist <- summary(surv.trunc)
 	   trunc.dist$time <- rev(-trunc.dist$time)
 	   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
-	   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),pmin(mtt,datas[,time]))
+	   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),datas[,time])
 	   Lw <- Lfit[,2]
 	   ud.cens<- survfit(Surv(entrytimes,datas[,time],datas[,cause]==0)~+1) 
 	   Gfit<-cbind(ud.cens$time,ud.cens$surv)
 	   Gfit<-rbind(c(0,1),Gfit); 
 	   Gcx<-Cpred(Gfit,pmin(mtt,datas[,time]),strict=TRUE)[,2];
 	   weights[who]<-  1/(Lw*Gcx); 
+	   cweights[who]<-  Lw; 
+	   tweights[who]<-  Gcx; 
           } ## }}} 
    } ## }}} 
    } else { ### cens.formula Cox models  ## {{{
@@ -660,27 +667,35 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
 	RR<-exp(as.matrix(X) %*% coef(cens.model))
 	Gfit<-exp(-Gfit*RR)
         weights <- 1/(Lw*Gfit); 
+        cweights <- Gfit
+        tweights <- Lw
    } ## }}} 
+   data[,cname] <- cweights
+   data[,tname] <- tweights
+
+   mint <- min(tweights); maxt <- min(tweights) 
+   if (mint<0 | mint>1) warning("min(truncation weights) strange, maybe prec.factor should be different\n")
+   if (maxt<0 | maxt>1) warning("max(truncation weights) strange, maybe prec.factor should be different\n")
 
    if ("weights" %in% names(data)) {
        warning("Weights in variable 'weights_' \n")
        wname<- "weights_"
        data[,wname] <- weights
    } else data[,"weights"] <- weights
-   ###
-   if (nocens.out) {
-      med <- ((data[,time]>mtt & data[,cause]==0)) | (data[,cause]!=0)
-      data <- data[med,]
-   } 
+###
    if ("cw" %in% names(data)) {
-      warning("cw weights in variable 'cw_' \n")
-      cwname<- "cw_"
-      data[,cwname] <- 1
+     warning("cw weights in variable 'cw_' \n")
+     cwname<- "cw_"
+     data[,cwname] <- 1
    } else data[,"cw"] <- 1
+###
+   if (nocens.out) {
+     med <- ((data[,time]>mtt & data[,cause]==cens.code)) | (data[,cause]!=cens.code)
+     data <- data[med,]
+   } 
 
    attr(data,"trunc.model") <- trunc.model
    attr(data,"cens.model") <- cens.model 
-
 ## }}} 
    return(data)
 } ## }}} 

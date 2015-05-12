@@ -69,6 +69,7 @@ if (class(margsurv)!="coxph") {
 
  if (length(clusters)!=length(secluster)) stop("length of se.clusters not consistent with cluster length\n"); 
 
+  if (anyNA(clusters)) stop("Missing values in cluster varaibles\n"); 
   out.clust <- cluster.index(clusters);  
   clusters <- out.clust$clusters
   maxclust <- out.clust$maxclust 
@@ -175,6 +176,7 @@ if (class(margsurv)!="coxph") {
   if (maxclust==1) stop("No clusters !, maxclust size=1\n"); 
   theta.iid <- matrix(0,antsecluster,ptheta)
   ## }}}
+
   
   nparout <- .C("twostagereg", 
         as.double(times), as.integer(Ntimes), as.double(X),
@@ -422,11 +424,9 @@ if (!is.null(object$gamma)) {
 } else {
 	cumhaz <- c(time.part);  cumhaz2 <- c(time.part2); 
 } 
-###print(time.part)
-###print(time.part2)
-###print(cumhaz)
-###print(cumhaz2)
-S1 <- exp(-cumhaz); S2 <- exp(-cumhaz2)
+S1 <- pmin(1,exp(-cumhaz)); S2 <- pmin(1,exp(-cumhaz2))
+###print(length(S1))
+###print(length(S2))
 
 if (is.null(theta))  theta <- object$theta
 if (!is.null(theta.des)) theta <- c(theta.des %*% theta)
