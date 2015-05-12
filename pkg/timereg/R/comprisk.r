@@ -611,7 +611,7 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
 	   trunc.dist <- summary(surv.trunc)
 	   trunc.dist$time <- rev(-trunc.dist$time)
 	   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
-	   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),pmin(mtt,data[,time]))
+	   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),data[,time])
 	   Lw <- Lfit[,2]
 	   ud.cens<- survfit(Surv(entrytime,data[,time],data[,cause]==0)~+1) 
 	   Gfit<-cbind(ud.cens$time,ud.cens$surv)
@@ -648,7 +648,7 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
         baseout <- basehaz(trunc.model,centered=FALSE); 
         baseout <- cbind(rev(-baseout$time),rev(baseout$hazard))
 ###
-	Lfit <-Cpred(baseout,pmin(mtt,data[,time]))[,-1]
+	Lfit <-Cpred(baseout,data[,time])[,-1]
         RR<-exp(as.matrix(X) %*% coef(trunc.model))
         Lfit<-exp(-Lfit*RR)
 	Lw <- Lfit
