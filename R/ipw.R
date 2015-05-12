@@ -153,63 +153,9 @@ ipw <- function(formula,data,cluster,
     return(data)    
 } ## }}} 
 
-force.same.cens <- function(data,id="id",
-      time="time",cause="cause",entrytime=NULL,cens.code=0)
-{ ## {{{ 
-  ### no missing values
-   if (is.null(entrytime)) entry <- rep(0,nrow(data)) else entry <- data[,entrytime]
-
-   censo <- (data[,cause]==cens.code)
-   Wide <- fast.reshape(data,id=id)
-   time1 <- paste(time,1,sep="")
-   time2 <- paste(time,2,sep="")
-   stat1 <- paste(cause,1,sep="")
-   stat2 <- paste(cause,2,sep="")
-
-   ### enforce same censoring ## {{{ 
-   mintime <- pmin(Wide[,time1],Wide[,time2])
-###   mintime <- apply(Wide[,paste(time,1:2,sep=".")],1,
-###                   function(x) min(x,na.rm=TRUE))
-   statmin <- ifelse(Wide[,time1]<Wide[,time2],Wide[,stat1],Wide[,stat2])
-###
-   cens.first <- (statmin==cens.code)
-   Wide[cens.first,time1] <- mintime[cens.first]
-   Wide[cens.first,time2] <- mintime[cens.first]
-   Wide[cens.first,stat1] <- cens.code
-   Wide[cens.first,stat2] <- cens.code
-   ## }}} 
-
-   if (!is.null(entrytime)) { ## {{{ enforce same truncation
-   entry1 <- paste(entrytime,1,sep="")
-   entry2 <- paste(entrytime,2,sep="")
-   trunc.max <- pmax(Wide[,entry1],Wide[,entry2])
-   Wide[,entry1] <- Wide[,entry2] <- trunc.max
-### drop those that enter later
-  enter.after <- ( Wide[,entry1] < Wide[,time1]) & (Wide[,entry2] < Wide[,time2])
-  Wide <- Wide[enter.after,] 
-  } ## }}} 
-   print(head(Wide))
-
-###   dealing with one and two observations along the lines of 
-   ## {{{ 
-    obs1only <- rep(with(Wide, time1 & (is.na(time2) )),id)
-    obs2only <- rep(with(Wide, time2 & (is.na(time1) )),id)
-    obsOne <- which(na.omit(obs1only|obs2only))
-    obsBoth <- rep(with(Wide, !is.na(time1) & !is.na(time2)),id)
-
-    data[obsBoth,weight.name] <-
-         ifelse(noncens[obsBoth],1/Wmin[obsBoth],0)    
-    data[obsOne,weight.name] <-
-         ifelse(noncens[obsOne],1/Wmarg[obsOne],0)
-    ## }}} 
-
-###  data <- fast.reshape(Wide)
-
- return(data)
-} ## }}} 
-
 ##' @export
-ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
+ipw2 <- function(data,times=NULL,entrytime=NULL,
+		 time="time",cause="cause",
      same.cens=FALSE,cluster=NULL,pairs=FALSE,
      strata=NULL,obs.only=TRUE,cens.formula=NULL,
      cens.code=0,
