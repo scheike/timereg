@@ -70,6 +70,7 @@
 \alias{timetest}
 \alias{print.pe.sasieni} 
 \alias{pred.stratKM} 
+\alias{prep.glm.comprisk} 
 \alias{print.predict.timereg}
 \alias{print.two.stage}
 \alias{residualsTimereg}

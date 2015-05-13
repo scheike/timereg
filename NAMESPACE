@@ -54,6 +54,7 @@ export("aalen", ## {{{
        "predictpropodds",
 ###    "summary.pls",
        "prep.comp.risk",	
+       "prep.glm.comprisk",	
        "pred.stratKM",	
        "prop",	"prop.excess",	"prop.excessBase",
        "prop.odds",

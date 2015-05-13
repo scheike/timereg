@@ -46,6 +46,7 @@ Collate:
     'new.timecox.r'
     'plots.r'
     'predict-timereg.r'
+    'glm-comprisk.r'
     'prop-excess.r'
     'prop-odds.r'
     'prop-odds-subdist.r'
