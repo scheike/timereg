@@ -1,0 +1,199 @@
+useDynLib(timereg) 
+
+import(survival)
+import(numDeriv)
+import(lava)
+
+export("aalen", ## {{{ 
+       "aalen.des",
+       "aalen.des2",
+       "aalenBase",
+       "aalenBaseC",
+###    "additive.pls",
+       "additive.compSs",
+###    "additive.plsR",
+       "check.missing",
+       "rm.missing",
+       "coefBase",
+       "cox.ipw",
+       "comp.risk",
+       "comprisk.ipw",
+       "const",       
+       "cox",
+       "cox.aalen",	
+       "cox.aalenBase",
+       "cum.residuals",
+       "Cpred",
+       "Csmooth2B",	
+       "CsmoothB",	
+       "cum.residuals",
+###    "cv.folds",
+       "dynreg",   	
+       "dynregBase",	
+       "Event",	
+       "as.matrix.Event",	
+       "as.character.Event",	
+       "format.Event",	
+       "print.Event",	
+       "summary.Event",	
+       "rbind.Event",	
+       "[.Event",	
+       "Gprop.odds",
+###    "Gprop.odds.subdist",
+       "is.diag",
+       "krylow.pls",
+       "kmplot",
+       "localTimeReg",
+       "nameestimate",	
+       "namematrix",
+       "names2formula",
+       "pe.sasieni",
+       "percen",
+       "pred.cum",
+       "pred.des",
+       "predictpropodds",
+###    "summary.pls",
+       "prep.comp.risk",	
+       "pred.stratKM",	
+       "prop",	"prop.excess",	"prop.excessBase",
+       "prop.odds",
+###    "prop.odds.gam",
+       "prop.odds.subdist",
+       "pval",
+       "pava",
+       "res.mean",
+       "read.design",
+       "read.surv",
+       "residualsTimereg",
+       "restricted.residual.mean",
+       "semiaalen",	
+       "semicox",	
+       "semiregBase",
+       "sindex.prodlim",
+###    "pls.surv.cv",
+       "timecox",
+       "timecoxBase",
+       "timetest",
+       "timereg.formula",
+       "two.stage",
+       "wald.test"
+) ## }}} 
+
+S3method(coef,resmean)
+S3method(plot,resmean)
+S3method(print,resmean)
+S3method(summary,resmean)
+export("coef.resmean","plot.resmean","print.resmean","summary.resmean")
+
+S3method(plot,restricted.residual.mean)
+S3method(summary,restricted.residual.mean)
+export("plot.restricted.residual.mean","summary.restricted.residual.mean")
+###S3method(print,restricted.residual.resmean)
+###export("plot.restricted.residual.mean","print.restricted.residual.mean","summary.restricted.residual.mean")
+
+
+S3method(plot,aalen)
+S3method(plot,comprisk)
+S3method(plot,cum.residuals)
+S3method(plot,cox.aalen)
+S3method(plot,dynreg)
+S3method(plot,predict.timereg)
+S3method(plot,prop.excess)
+S3method(plot,timecox)
+S3method(plot,two.stage)
+S3method(plot,predict.timereg)
+
+S3method(print,aalen)
+S3method(print,cox.aalen)
+S3method(print,comprisk)
+S3method(print,cum.residuals)
+S3method(print,dynreg)
+S3method(print,pe.sasieni)
+S3method(print,predict.timereg)
+S3method(print,prop.excess)
+S3method(print,timecox)
+S3method(print,two.stage)
+###S3method(print,pls)
+
+S3method(summary,aalen)
+S3method(summary,cox.aalen)
+S3method(summary,comprisk)
+S3method(summary,cum.residuals)
+S3method(summary,dynreg)
+S3method(summary,pe.sasieni)
+S3method(summary,predict.timereg)
+S3method(summary,prop.excess)
+S3method(summary,timecox)
+S3method(summary,two.stage)
+###S3method(summary,pls)
+
+S3method(predict,aalen)
+S3method(predict,comprisk)
+S3method(predict,cox.aalen)
+S3method(predict,two.stage)
+###S3method(predict,pls)
+
+S3method(coef,aalen)
+S3method(coef,cox.aalen)
+S3method(coef,dynreg)
+S3method(coef,timecox)
+S3method(coef,two.stage)
+
+S3method(print,Event)
+S3method(summary,Event)
+S3method(rbind,Event)
+S3method(as.matrix,Event)
+S3method(as.character,Event)
+S3method(format,Event)
+
+S3method(coef,comprisk)
+S3method(predict,timereg)
+S3method(plot,cums)
+
+export("plot.aalen",
+       "plot.comprisk",
+       "plot.cum.residuals",
+       "plot.cox.aalen",
+       "plot.cums",
+       "plotScore",
+       "plot.dynreg",
+       "plot.predict.timereg",
+       "plot.prop.excess",
+       "plot.timecox",
+       "plot.two.stage",
+       "print.aalen",
+       "print.cox.aalen",
+       "print.comprisk",
+       "print.cum.residuals",
+       "print.dynreg",
+       "print.pe.sasieni",
+       "print.predict.timereg",
+       "print.prop.excess",
+       "print.timecox",
+       "print.two.stage",
+###    "print.pls",
+       "summary.aalen",
+       "summary.cox.aalen",
+       "summary.comprisk",
+       "summary.cum.residuals",
+       "summary.dynreg",
+       "summary.pe.sasieni",
+###    "summary.pls",
+       "summary.predict.timereg",
+       "summary.prop.excess",
+       "summary.timecox",
+       "summary.two.stage",
+       "predict.aalen",
+###    "predict.pls",
+       "predict.comprisk",
+       "predict.timereg",
+       "predict.cox.aalen",
+       "predict.two.stage",
+       "predict.timereg",
+       "coef.aalen",
+       "coef.cox.aalen",
+       "coef.comprisk",
+       "coef.dynreg",
+       "coef.timecox",
+       "coef.two.stage"
+)
