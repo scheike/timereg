@@ -30,8 +30,8 @@ where
 \usage{
 res.mean(formula,data=sys.parent(),cause=1,restricted=NULL,times=NULL,Nit=50,
 clusters=NULL,gamma=0,n.sim=0,weighted=0,model="additive",detail=0,interval=0.01,resample.iid=1,
-cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,estimator=1,cens.weights=NULL,
-weights=NULL)
+cens.model="KM",cens.formula=NULL,time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,estimator=1,cens.weights=NULL,
+conservative=1,weights=NULL)
 }
 \arguments{
 \item{formula}{a formula object, with the response on the left of a '~'
@@ -75,6 +75,7 @@ additive model and 0 for the proportional model.}
 \item{conv}{gives convergence criterie in terms of sum of absolute change of parameters of model}
 \item{estimator}{specifies what that is estimated.}
 \item{cens.weights}{censoring weights for estimating equations.}
+\item{conservative}{for slightly conservative standard errors.}
 \item{weights}{weights for estimating equations.}
 }
 \details{

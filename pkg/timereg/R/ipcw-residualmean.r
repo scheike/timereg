@@ -1,6 +1,6 @@
 res.mean<-function(formula,data=sys.parent(),cause=1,restricted=NULL,times=NULL,Nit=50,
 clusters=NULL,gamma=0,n.sim=0,weighted=0,model="additive",detail=0,interval=0.01,resample.iid=1,
-cens.model="KM",time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,estimator=1,cens.weights=NULL,
+cens.model="KM",cens.formula=NULL,time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,estimator=1,cens.weights=NULL,
 conservative=1,weights=NULL){
 ## {{{
 # restricted residual mean life models, using IPCW 
@@ -28,7 +28,7 @@ conservative=1,weights=NULL){
            m$model<- m$detail<- m$cens.model<-m$time.pow<-m$silent<- 
            m$interval<- m$clusters<-m$resample.iid<-m$restricted <- m$weights <- 
            m$time.pow.test<-m$conv<-m$estimator <- m$cens.weights <- 
-	   m$conservative <- NULL
+	   m$conservative <- m$cens.formula <- NULL
   special <- c("const","cluster")
   if (missing(data)) {
     Terms <- terms(formula, special)

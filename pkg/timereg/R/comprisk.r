@@ -2,7 +2,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
 		    fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="fg",detail=0,interval=0.01,resample.iid=1,
                     cens.model="KM",cens.formula=NULL,time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
                     weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,estimator=1,
-		    trunc.p=NULL,cens.weight=NULL,admin.cens=NULL,conservative=1,monotone=0,step=NULL) 
+		    trunc.p=NULL,cens.weights=NULL,admin.cens=NULL,conservative=1,monotone=0,step=NULL) 
     # {{{
 {
     if (!missing(cause)){
@@ -29,7 +29,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
              m$model<-m$detail<- m$cens.model<-m$time.pow<-m$silent<- m$step <- 
              m$cens.formula <- m$interval<- m$clusters<-m$resample.iid<- m$monotone <- 
              m$time.pow.test<-m$conv<- m$weights  <- m$max.clust <- m$first.time.p<- m$trunc.p <- 
-             m$cens.weight <- m$admin.cens <- m$fix.gamma <- m$est  <- m$conservative <- m$estimator <- NULL
+             m$cens.weights <- m$admin.cens <- m$fix.gamma <- m$est  <- m$conservative <- m$estimator <- NULL
   
     if ((trans==2 || trans==3 || trans==7) && is.null(step)) step <- 0.5
     if (is.null(step)) step <- 1
@@ -134,7 +134,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
   ###dcumhazcens <- rep(0,n); 
 
     if (estimator==1 || estimator==2) {
-        if (is.null(cens.weight)) { ## {{{ censoring model stuff with possible truncation
+        if (is.null(cens.weights)) { ## {{{ censoring model stuff with possible truncation
             if (cens.model=="KM") { ## {{{
 	        if (left==1) ud.cens<-survfit(Surv(entrytime,eventtime,delta==cens.code)~+1) else 
 		ud.cens<-survfit(Surv(eventtime,delta==cens.code)~+1)
@@ -150,7 +150,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
             } else if (cens.model=="stratKM") { ## {{{
 	        XZ <- model.matrix(cens.formula,data=data); 
 	        strata <- as.factor(XZ)
-		Gcx <- pred.stratKM(time=eventtime,time=eventtime,cause=delta,strata=strata)
+		Gcx <- pred.stratKM(data,time=eventtime,cause=delta,strata=strata)
 		### only conditional on L if trunc given 
 		if (!is.null(trunc.p)) Gcx <- Gcx/Gcxe; 
                 Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
@@ -195,15 +195,15 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
                 Gfit<-rbind(c(0,1),cbind(eventtime,Gcx)); 
                 Gctimes<-Cpred(Gfit,times,strict=TRUE)[,2]; ## }}}
             } else  stop('Unknown censoring model') 
-            cens.weight <- Gcx
+            cens.weights <- Gcx
             if ((min(Gcx[event==1])< 0.00001) && (silent==0)) { 
                 cat("Censoring dist. approx zero for some points, summary cens:\n");
                 print(summary(Gcx)) 
             }
             ## }}}
         } else { 
-            if (length(cens.weight)!=n) stop("censoring weights must have length equal to nrow in data\n");  
-            Gcx <- cens.weight
+            if (length(cens.weights)!=n) stop("censoring weights must have length equal to nrow in data\n");  
+            Gcx <- cens.weights
 	    ### for left truncation specification
             ord2 <- order(time2)
             Gctimes <- Cpred(cbind(time2[ord2],weights[ord2]),times)
@@ -214,7 +214,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
         Gctimes <- rep(1,length(times)); 
     }
 
-   if (left==1 & is.null(trunc.p) & is.null(cens.weight))  {  ## {{{ 
+   if (left==1 & is.null(trunc.p) & is.null(cens.weights))  {  ## {{{ 
 	 ### geskus weights: from mstate crprep 
 	 stop("For left-truncated data call prep.comp.risk\n call with weights and cens.weights\n"); 
          n=length(time2)
@@ -391,7 +391,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
            obs.testBeqC=obs.testBeqC,pval.testBeqC.is=pval.testBeqC.is,
            conf.band=unifCI,B.iid=B.iid,gamma.iid=gamiid,ss=ssf,
            test.procBeqC=Ut,sim.test.procBeqC=UIt,conv=conv,
-	   cens.weight=cens.weight,scores=scores,Dscore.gamma=Dscore.gamma,step=step)
+	   cens.weights=cens.weights,scores=scores,Dscore.gamma=Dscore.gamma,step=step)
 
     ud$call<-call; 
     ud$model<-model; 
@@ -709,7 +709,7 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
    return(data)
 } ## }}} 
 
-pred.stratKM <- function(data=NULL,entrytime=NULL,time="time",cause="cause",strata="strata",event.code=0)
+pred.stratKM <- function(data,entrytime=NULL,time="time",cause="cause",strata="strata",event.code=0)
 { ## {{{ 
 
      if (is.numeric(time)) time <- time else {
