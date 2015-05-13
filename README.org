@@ -65,7 +65,7 @@ BibTeX:
   example(cox.aalen)
   example(comp.risk)
   example(two.stage)
-  example(restricted.resiudal.mean)
+  example(restricted.residual.mean)
 
 #+END_SRC
 
