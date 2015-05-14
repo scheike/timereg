@@ -1,5 +1,5 @@
 comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=NULL,est=NULL,
-		    fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="fg",detail=0,interval=0.01,resample.iid=1,
+		    fix.gamma=0,gamma=0,n.sim=0,weighted=0,model="fg",detail=0,interval=0.01,resample.iid=1,
                     cens.model="KM",cens.formula=NULL,time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
                     weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,estimator=1,
 		    trunc.p=NULL,cens.weights=NULL,admin.cens=NULL,conservative=1,monotone=0,step=NULL) 
