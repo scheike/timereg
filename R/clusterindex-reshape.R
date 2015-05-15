@@ -1,5 +1,5 @@
 ##' @export
-cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0,mat=NULL,return.all=FALSE)
+cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0,mat=NULL,return.all=FALSE,code.na=NA)
 { ## {{{
   n <- length(clusters)
 
@@ -24,7 +24,7 @@ cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0,mat=NULL,r
   if (Rindex==1) clustud$idclust <- clustud$idclustmat+1
   if (Rindex==1) clustud$firstclustid <- clustud$firstclustid +1 
   ### avoid NA's for C call
-  if (Rindex==0) clustud$idclust[is.na(clustud$idclust)] <- 0
+  if (Rindex==0 & !is.na(code.na)) clustud$idclust[is.na(clustud$idclust)] <- code.na
   
   clustud
 } ## }}}
