@@ -154,6 +154,62 @@ ipw <- function(formula,data,cluster,
 } ## }}} 
 
 ##' Internal function.
+##' Calculates Inverse Probability of Censoring and Truncation 
+##' Weights and adds them to a data.frame
+##'
+##' @title Inverse Probability of Censoring Weights
+##' @param data data frame
+##' @param times possible time argument for speciying a maximum value of time tau=max(times), to specify when things are considered censored or not.
+##' @param entrytime nam of entry-time for truncation. 
+##' @param time name of time variable on data frame.  
+##' @param cause name of cause indicator on data frame.
+##' @param same.cens For clustered data, should same censoring be assumed and same truncation (bivariate probability calculated as mininum of the marginal probabilities)
+##' @param cluster name of clustering variable
+##' @param pairs For paired data (e.g. twins) only the complete pairs are returned (With pairs=TRUE)
+##' @param strata  name of strata variable to get weights stratified.
+##' @param obs.only Return data with uncensored observations only
+##' @param cens.formula model for Cox models for truncation and right censoring times.
+##' @param cens.code censoring.code 
+##' @param pair.cweight Name of weight variable in the new data.frame for right censorig of pairs
+##' @param pair.tweight Name of weight variable in the new data.frame for left truncation of pairs
+##' @param pair.weight Name of weight variable in the new data.frame for right censoring and left truncation of pairs
+##' @param cname Name of weight variable in the new data.frame for right censoring of individuals
+##' @param tname Name of weight variable in the new data.frame for left truncation of individuals
+##' @param weight.name Name of weight variable in the new data.frame for individuals 
+##' @param weight.name Name of weight variable in the new data.frame for right censoring and left truncation of individuals
+##' @param prec.factor To let tied censoring and truncation times come after the death times. 
+##' @param ... Additional arguments to censoring model 
+##' @author Thomas Scheike 
+##' @examples
+##' data(prt)
+##' m <- nrow(prt)
+##' prt$entry <- rep(rbinom(m/2,1,0.5)*runif(m/2)*100,each=2) 
+##' prtleft <- prt[prt$time>prt$entry,]
+##' 
+##' prtw <- ipw2(prtleft,times=80,
+##'             cluster="id",time="time",cause="status",strata="zyg",
+##'             entrytime="entry")
+##' 
+##' times <- seq(50,90,by=10)
+##' c1 <- comp.risk(Event(time,cause)~-1+factor(country)+
+##' 		cluster(id),data=prt,cause=1,
+##' 		times=times,max.clust=NULL,n.sim=0)
+##' mm=model.matrix(~-1+zyg,data=d)
+##' out1<-random.cif(c1,data=d,cause1=1,cause2=1,same.cens=TRUE,
+##' 	  theta.des=mm)
+##' summary(out1)
+##'
+##' c2 <- comp.risk(Event(time,cause)~-1+factor(country)+
+##'             cluster(id),
+##'		data=prtw,cause=1,model="fg",
+##'      	weights=prtw$indi.weights,
+##'             cens.weights=rep(1,nrow(prtw)),
+##'             times=times,max.clust=NULL,n.sim=0)
+##' mm=model.matrix(~-1+factor(zyg),data=prtw)
+##' out2<-random.cif(cl,data=prtw,cause1=1,cause2=1,
+##'   theta.des=mm,weights=prtw$weights,censoring.weights=rep(1,nrow(prtw)))
+##' summary(out2)
+##'
 ##' @export
 ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
      same.cens=FALSE,cluster=NULL,pairs=FALSE,
