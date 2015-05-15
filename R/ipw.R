@@ -154,18 +154,16 @@ ipw <- function(formula,data,cluster,
 } ## }}} 
 
 ##' @export
-ipw2 <- function(data,times=NULL,entrytime=NULL,
-		 time="time",cause="cause",
+ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
      same.cens=FALSE,cluster=NULL,pairs=FALSE,
-     strata=NULL,obs.only=TRUE,cens.formula=NULL,
-     cens.code=0,
-     pair.cweight="pcw",pair.tweight="ptw",pair.weight="weight",
-     cname="cweight",tname="tweight",weight.name="indi.weight",
+     strata=NULL,obs.only=TRUE,cens.formula=NULL,cens.code=0,
+     pair.cweight="pcw",pair.tweight="ptw",pair.weight="weights",
+     cname="cweights",tname="tweights",weight.name="indi.weights",
      prec.factor=100)
 { ## {{{ 
    ### first calculates weights based on marginal
    ### estimators  of censoring and truncation
-## {{{  geskus weights, up to min(T_i,max(times))
+## {{{  weights, up at T_i or min(T_i,max(times))
    if (is.null(times)) times <- max(data[,time])
    if (is.null(entrytime)) entrytime <- rep(0,nrow(data)) else entrytime <- data[,entrytime]
    mtt <- max(times)
@@ -272,6 +270,7 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,
 ## }}} 
 
   observed <- ((data[,time]>mtt & data[,cause]==cens.code)) | (data[,cause]!=cens.code)
+  data[,"observed."] <- observed
 
   if (same.cens & is.null(cluster)) message("no cluster for same-cens given \n"); 
     if (same.cens & !is.null(cluster)) { ## {{{         
@@ -280,59 +279,67 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,
         myord <- order(data[,cluster])
         data <- data[myord,,drop=FALSE]
         id <-  table(data[,cluster])
-       if (pairs) {
-           gem <- data[,cluster]%in%(names(id)[id==2])
-           id <- id[id==2]
-           data <- data[gem,]
-       }
-       observed <- ((data[,time]>mtt & data[,cause]==cens.code)) | (data[,cause]!=cens.code)
+        observed <- ((data[,time]>mtt & data[,cause]==cens.code)) | (data[,cause]!=cens.code)
        d0 <- subset(data,select=c(cluster,cname,tname))
        noncens <- observed
        d0[,"observed."] <-observed
        timevar <- paste("_",cluster,cname,sep="")
        d0[,timevar] <- unlist(lapply(id,seq))
-###       print(head(d0))
+###    print(head(d0))
+###    Wide <- reshape(d0,direction="wide",timevar=timevar,idvar=cluster)
        Wide <- fast.reshape(d0,id=cluster)
        ### censoring same cens
        W <- apply(Wide[,paste(cname,1:2,sep="")],1,
-                   function(x) min(x,na.rm=TRUE))
-        Wmarg <- d0[,cname]
-        data[,pair.cweight] <- 1/Wmarg
+                   function(x) min(x)) ## NA when there is just one
+###                   function(x) min(x,na.rm=TRUE))
+###        Wmarg <- d0[,cname]
+###        data[,pair.cweight] <- 0; ##1/Wmarg
+###	print(dim(data))
         Wmin <- rep(W,id)
-###	print(names(Wide))
-###	print(tname)
+	data[,pair.cweight] <- 1/Wmin
 
-        ### truncation same truncation  
-   if (!is.null(entrytime)) {
+      ### truncation same truncation  
+   if (!is.null(entrytime)) { 
         Wt <- apply(Wide[,paste(tname,1:2,sep="")],1,
-                   function(x) max(x,na.rm=TRUE))
-        Wtmarg <- d0[,tname]
-        data[,pair.tweight] <- 1/Wtmarg
+                   function(x) min(x)) ## NA when there is just one
+###                   function(x) max(x,na.rm=TRUE))
+###        Wtmarg <- d0[,tname]
+###        data[,pair.tweight] <- 0; ##1/Wtmarg
         Wtmax <- rep(Wt,id)
+	data[,pair.tweight] <- 1/Wtmax
    }
 
+   ## {{{ 
+###        obs1only <- rep(with(Wide, observed.1 & (is.na(observed.2) | !observed.2)),id)
+###        obs2only <- rep(with(Wide, observed.2 & (is.na(observed.1) | !observed.1)),id)
+###        obsOne <- which(na.omit(obs1only|obs2only))
+###        obsBoth <- rep(with(Wide, !is.na(observed.1) & !is.na(observed.2) & observed.2 & observed.1),id)
+###        
+###        data[obsBoth,pair.cweight] <-
+###            ifelse(noncens[obsBoth],1/Wmin[obsBoth],0)    
+###        data[obsOne,pair.cweight] <-
+###            ifelse(noncens[obsOne],1/Wmarg[obsOne],0)
+###   if (!is.null(entrytime)) {
+###        data[obsBoth,pair.tweight] <-
+###            ifelse(noncens[obsBoth],1/Wtmax[obsBoth],0)    
+###        data[obsOne,pair.tweight] <-
+###            ifelse(noncens[obsOne],1/Wtmarg[obsOne],0)
+###   }
+   ## }}} 
 
-        obs1only <- rep(with(Wide, observed.1 & (is.na(observed.2) | !observed.2)),id)
-        obs2only <- rep(with(Wide, observed.2 & (is.na(observed.1) | !observed.1)),id)
-        obsOne <- which(na.omit(obs1only|obs2only))
-        obsBoth <- rep(with(Wide, !is.na(observed.1) & !is.na(observed.2) & observed.2 & observed.1),id)
-        
-        data[obsBoth,pair.cweight] <-
-            ifelse(noncens[obsBoth],1/Wmin[obsBoth],0)    
-        data[obsOne,pair.cweight] <-
-            ifelse(noncens[obsOne],1/Wmarg[obsOne],0)
-
-   if (!is.null(entrytime)) {
-        data[obsBoth,pair.tweight] <-
-            ifelse(noncens[obsBoth],1/Wtmax[obsBoth],0)    
-        data[obsOne,pair.tweight] <-
-            ifelse(noncens[obsOne],1/Wtmarg[obsOne],0)
-   }
-
-	data[,pair.weight] <- data[,pair.cweight]*data[,pair.tweight]
+    if (!is.null(entrytime)) { 
+    data[,pair.weight] <- data[,pair.cweight]*data[,pair.tweight]
+    } else data[,pair.weight] <- data[,pair.cweight]
     } ## }}} 
 
-if (obs.only) { data <- data[observed,] } 
+    if (obs.only) { data <- data[observed,] } 
+
+    if (pairs) {
+          id <-  table(data[,cluster])
+          gem <- data[,cluster]%in%(names(id)[id==2])
+          id <- id[id==2]
+          data <- data[gem,]
+    }
 
    return(data)
 } ## }}} 

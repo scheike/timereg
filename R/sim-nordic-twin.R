@@ -170,6 +170,7 @@ return(outk)
 } ## }}}
 
 ## {{{ simulation for gamma distributed cif model 
+
 lap<-function(theta,t) { return( (1+t/theta)^(-theta)) }
 ilap<-function(theta,t) {
 itheta<-1/theta; return((t^(-itheta)-1)/(itheta)) }
@@ -295,13 +296,14 @@ corsim.prostate.random <- function(n,theta=1,censS=c(0,1),
 ### n <- 10; theta <- 1; thetaslope <- 0; mt <- 1
 ### draws F_1(1,x) , F_2(1,x) = 1 - F_1(1,x)
 k<-n/2; 
+theta <- 1/theta
 tt<-seq(0,1,length=100)
 rtheta<-rgamma(k,theta,scale=1/theta)
 stime<-c();cause1<-c();id<-c();vtheta<-c(); X<-c()
 
 for (i in 1:k)
 {  ## {{{  
-x <- rbinom(1,1,0.25)
+if (country==TRUE) x <- rbinom(1,1,0.25) else x <- 0
 x <- rep(x,2)
 X <- c(X,x); 
 F11x <- F1clust(1,rtheta=rtheta[i],theta=theta,x=x,lam0=lam0) 
@@ -320,29 +322,30 @@ cause1 <- c(cause1,1);
 
 ###same.cens=TRUE
 if (same.cens==TRUE) {
-    ctime <- rep(rbinom(n,1,pcens)*runif(n,censS),each=2)
+    ctime <- rep(rbinom(n,1,pcens)*runif(n,min=censS[1],max=censS[2]),each=2)
     ctime[ctime==0] <- 1;
 }
 else {
-     ctime<- rbinom(2*n,1,pcens)*runif(2*n,censS)
+     ctime<- rbinom(2*n,1,pcens)*runif(2*n,min=censS[1],max=censS[2])
      ctime[ctime==0] <- 1;
 }
 
 cens <- (ctime < stime)
 time <- ifelse(cens,ctime,stime)
 cause <- ifelse(cens,0,cause1)
-id <- rep(1:n,rep(2,n))
+id <- rep(1:n,each=2)
 
+if (country==TRUE) {
 country <- c()
 country[X==1] <- "DK"
 no <- sum(X==0)
-country[X==0] <- sample(c("SWE","FIN","NOR"),no,replace=TRUE)
+country[X==0] <- rep(sample(c("SWE","FIN","NOR"),no/2,replace=TRUE),each=2)
 country <- relevel(factor(country),ref="DK")
+} else  country <- rep("same",2*n)
 
 if (delayed) {
-if (same.cens==TRUE) {
-    etime <- rep(rbinom(n,1,ptrunc)*(runif(n,truncS)),each=2)
-} else  etime<- rbinom(2*n,1,ptrunc)*(runif(2*n,truncS))
+if (same.cens==TRUE) etime <- rep(rbinom(n,1,ptrunc)*runif(n,min=truncS[1],max=truncS[2]),each=2)
+ else  etime<- rbinom(2*n,1,ptrunc)*(runif(2*n,min=truncS[1],max=truncS[2]))
 } else etime <- rep(0,2*n)
 
 data<-data.frame(time=time,cause=cause,x=X,
@@ -372,10 +375,9 @@ out <- rbind(outdz,outmz)
 out$time <- out$time*100
 out$entry <- out$entry*100
 out$zyg <- relevel(factor(out$zyg),ref="MZ")
-if (country==TRUE) out$country <-
-	relevel(factor(out$country),ref="DK")
+if (country==TRUE) out$country <- relevel(factor(out$country),ref="DK")
 ###
-if (only.delayed) out <- out[!ou$truncated,]
+if (only.delayed) out <- out[!out$truncated,]
 
 return(out)
 } ## }}}

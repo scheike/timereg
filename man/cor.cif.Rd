@@ -10,7 +10,7 @@ cor.cif(cif, data, cause, times = NULL, cause1 = 1, cause2 = 1,
   cens.code = NULL, cens.model = "KM", Nit = 40, detail = 0,
   clusters = NULL, theta = NULL, theta.des = NULL, step = 1, sym = 0,
   weights = NULL, par.func = NULL, dpar.func = NULL, dimpar = NULL,
-  score.method = "nlminb", same.cens = FALSE, censoring.probs = NULL,
+  score.method = "nlminb", same.cens = FALSE, censoring.weights = NULL,
   silent = 1, ...)
 }
 \arguments{
@@ -59,7 +59,7 @@ times, the value cens.code is the censoring value. When missing it comes from ma
 
 \item{same.cens}{if true then censoring within clusters are assumed to be the same variable, default is independent censoring.}
 
-\item{censoring.probs}{if cens.model is "user.weights" these probabilities are used for the bivariate censoring dist.}
+\item{censoring.weights}{these probabilities are used for the bivariate censoring dist.}
 
 \item{silent}{1 to suppress output about convergence related issues.}
 

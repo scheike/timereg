@@ -8,7 +8,7 @@ Grandom.cif(cif, data, cause, cif2 = NULL, times = NULL, cause1 = 1,
   cause2 = 1, cens.code = NULL, cens.model = "KM", Nit = 40,
   detail = 0, clusters = NULL, theta = NULL, theta.des = NULL,
   weights = NULL, step = 1, sym = 0, same.cens = FALSE,
-  censoring.probs = NULL, silent = 1, exp.link = 0,
+  censoring.weights = NULL, silent = 1, exp.link = 0,
   score.method = "fisher.scoring", entry = NULL, estimator = 1,
   trunkp = 1, admin.cens = NULL, random.design = NULL, ...)
 }
@@ -52,7 +52,7 @@ times, the value cens.code is the censoring value.}
 
 \item{same.cens}{if true then censoring within clusters are assumed to be the same variable, default is independent censoring.}
 
-\item{censoring.probs}{Censoring probabilities}
+\item{censoring.weights}{Censoring probabilities}
 
 \item{silent}{debug information}
 
