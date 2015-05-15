@@ -909,7 +909,7 @@ print.summary.cor <- function(x,digits=3,...)
 ##' out1<-cor.cif(add,data=multcif,cause1=1,cause2=1,theta=log(2+1))
 ##' summary(out1)
 ##' 
-##' pad <- predict(add,X=1,Z=0,se=0,uniform=0)$P1
+##' pad <- predict(add,X=1,Z=0,se=0,uniform=0)
 ##' summary(out1,marg.cif=pad)
 ##' @method summary cor
 ##' @export
@@ -967,10 +967,10 @@ summary.cor <- function(object,marg.cif=NULL,marg.cif2=NULL,digits=3,...) { ## {
 	    thetal <- 1/thetal
 	    thetau <- 1/thetau
       lam <- 1-marg.cif
-      p11<- 1-lam -lam +mets:::lap(theta,2*mets:::ilap(theta, lam))
+      p11<- 1-lam -lam +lap(theta,2*ilap(theta, lam))
       concordance <- p11 
-      conclower  <- 1-lam -lam +mets:::lap(thetal,2*mets:::ilap(thetal, lam))
-      concup     <- 1-lam -lam +mets:::lap(thetau,2*mets:::ilap(thetau, lam))
+      conclower  <- 1-lam -lam +lap(thetal,2*ilap(thetal, lam))
+      concup     <- 1-lam -lam +lap(thetau,2*ilap(thetau, lam))
       casewise <- concordance/marg.cif
       caselower  <- conclower/marg.cif
       caseup     <- concup/marg.cif
@@ -1004,8 +1004,6 @@ summary.cor <- function(object,marg.cif=NULL,marg.cif2=NULL,digits=3,...) { ## {
   class(res) <- "summary.cor"
   res
 } ## }}}
-
-
 
 ##' @export
 coef.cor <- function(object,...)

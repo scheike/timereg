@@ -62,10 +62,10 @@ Bivariate Probit model
 \examples{
 data(prt)
 prt0 <- subset(prt,country=="Denmark")
-a <- biprobit(cancer~1+zyg, ~1+zyg, data=prt0, id="id")
-b <- biprobit(cancer~1+zyg, ~1+zyg, data=prt0, id="id",pairs.only=TRUE)
-predict(b,newdata=Expand(prt,zyg=c("MZ")))
-predict(b,newdata=Expand(prt,zyg=c("MZ","DZ")))
+#a <- biprobit(cancer~1+zyg, ~1+zyg, data=prt0, id="id")
+#b <- biprobit(cancer~1+zyg, ~1+zyg, data=prt0, id="id",pairs.only=TRUE)
+#predict(b,newdata=Expand(prt,zyg=c("MZ")))
+#predict(b,newdata=Expand(prt,zyg=c("MZ","DZ")))
 
 \donttest{
 m <- lvm(c(y1,y2)~x)

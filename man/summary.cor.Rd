@@ -11,10 +11,10 @@
 \item{object}{object from cor.cif rr.cif or or.cif for dependence between competing risks data for two causes.}
 
 \item{marg.cif}{a number that gives the cumulative incidence in one time point for which concordance and
-probandwise concordance are computed.}
+casewise concordance are computed.}
 
 \item{marg.cif2}{the cumulative incidence for cause 2 for concordance and
-probandwise concordance are computed. Default is that it is the same as marg.cif.}
+casewise concordance are computed. Default is that it is the same as marg.cif.}
 
 \item{digits}{digits in output.}
 
@@ -22,14 +22,14 @@ probandwise concordance are computed. Default is that it is the same as marg.cif
 }
 \value{
 prints summary for dependence model.
-\item{probandwise}{gives probandwise concordance that is, probability of cause 2 (related to cif2) given that cause 1 (related to cif1)
+\item{casewise}{gives casewise concordance that is, probability of cause 2 (related to cif2) given that cause 1 (related to cif1)
 	has occured.}
 \item{concordance}{gives concordance that is, probability of cause 2 (related to cif2) and cause 1 (related to cif1).}
 \item{cif1}{cumulative incidence for cause1.}
 \item{cif2}{cumulative incidence for cause1.}
 }
 \description{
-Computes concordance and probandwise concordance for dependence models for competing risks
+Computes concordance and casewise concordance for dependence models for competing risks
 models of the type cor.cif, rr.cif or or.cif for the given cumulative incidences and the different dependence
 measures in the object.
 }
@@ -37,14 +37,14 @@ measures in the object.
 data(multcif) # simulated data
 multcif$cause[multcif$cause==0] <- 2
 
-times=seq(0.05,3,by=0.1) # to speed up computations use only these time-points
+times=seq(0.1,3,by=0.1) # to speed up computations use only these time-points
 add<-comp.risk(Event(time,cause)~const(X)+cluster(id),data=multcif,
                n.sim=0,times=times,cause=1)
 ###
 out1<-cor.cif(add,data=multcif,cause1=1,cause2=1,theta=log(2+1))
 summary(out1)
 
-pad <- predict(add,X=1,Z=0,se=0,uniform=0)$P1
+pad <- predict(add,X=1,Z=0,se=0,uniform=0)
 summary(out1,marg.cif=pad)
 }
 \author{

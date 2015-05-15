@@ -2,7 +2,7 @@
 % Please edit documentation in R/cor.R
 \name{concordance}
 \alias{concordance}
-\title{Concordance Computes concordance and probandwise concordance}
+\title{Concordance Computes concordance and casewise concordance}
 \usage{
 concordance(object, cif1, cif2 = NULL, messages = TRUE, model = NULL,
   coefs = NULL, ...)

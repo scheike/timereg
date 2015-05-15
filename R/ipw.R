@@ -153,6 +153,7 @@ ipw <- function(formula,data,cluster,
     return(data)    
 } ## }}} 
 
+##' Internal function.
 ##' @export
 ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
      same.cens=FALSE,cluster=NULL,pairs=FALSE,
@@ -173,8 +174,7 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
    if (is.null(cens.formula)) { 
    if (is.null(strata)) { ## {{{ 
 	   if (!is.null(entrytime)) {
-		   surv.trunc <- 
-		   survfit(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ 1) 
+		   surv.trunc <- survfit(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ 1) 
 		   trunc.dist <- summary(surv.trunc)
 		   trunc.dist$time <- rev(-trunc.dist$time)
 		   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
@@ -201,8 +201,7 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
 	   datas <- subset(data,who)
 	   if (!is.null(entrytime)) {
 		   entrytimes <- entrytime[who]
-		   surv.trunc <- 
-		   survfit(Surv(-datas[,time],-entrytimes+prec,rep(1,nrow(datas))) ~ +1) 
+		   surv.trunc <- survfit(Surv(-datas[,time],-entrytimes+prec,rep(1,nrow(datas))) ~ +1) 
 		   trunc.dist <- summary(surv.trunc)
 		   trunc.dist$time <- rev(-trunc.dist$time)
 		   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)

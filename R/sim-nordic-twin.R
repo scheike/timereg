@@ -173,10 +173,10 @@ return(outk)
 
 lap<-function(theta,t) { return( (1+t/theta)^(-theta)) }
 ilap<-function(theta,t) {
-itheta<-1/theta; return((t^(-itheta)-1)/(itheta)) }
+	itheta<-1/theta; return((t^(-itheta)-1)/(itheta)) }
 
 F1clust<-function(t,rtheta=1,theta=1,lam0=0.5,x=0) {
-return(1-exp(-rtheta*ilap(theta,1-F1addfg(t,lam0=lam0,x=x))))
+	return(1-exp(-rtheta*ilap(theta,1-F1addfg(t,lam0=lam0,x=x))))
 }
 
 F1<-function(t,lam0=0.5,beta=0.3,x=0) # additive version
@@ -187,104 +187,104 @@ F2<-function(t,lam0=0.5,beta=0.3,x=0) # additive version
 
 sim.F1F2<-function(n,theta=1,lam0=0.1,beta=0.3,lam02=0.1,beta2=0,crate=3,cstart=0) 
 { ## {{{
-x<-rbinom(n,1,0.5); 
-tt<-seq(0,3,length=100)
-F1x<-F1(3,x=x,beta=beta,lam0=lam0)
-F2x<-F2(3,x=x,beta=beta2,lam0=lam02)
+	x<-rbinom(n,1,0.5); 
+	tt<-seq(0,3,length=100)
+	F1x<-F1(3,x=x,beta=beta,lam0=lam0)
+	F2x<-F2(3,x=x,beta=beta2,lam0=lam02)
 
-okX <- (F1x+F2x<=1)*1
-n <- sum(okX)
-F1x <- F1x[okX]
-F2x <- F1x[okX]
+	okX <- (F1x+F2x<=1)*1
+	n <- sum(okX)
+	F1x <- F1x[okX]
+	F2x <- F1x[okX]
 
-### death or alive
-cause12<-rbinom(n,1,F1x+F2x)
-### if death 1 or 2
-cause1e2<-rbinom(n,1,F1x/(F1x+F2x))
-cause <- rep(0,n)
-stime<-rep(3,n); 
+	### death or alive
+	cause12<-rbinom(n,1,F1x+F2x)
+	### if death 1 or 2
+	cause1e2<-rbinom(n,1,F1x/(F1x+F2x))
+	cause <- rep(0,n)
+	stime<-rep(3,n); 
 
-for (i in 1:n)
-{
-if (cause12[i]==1) {
-if (cause1e2[i]==1) {
-cause[i] <- 1
-myhazx<-F1(tt,x=x[i],beta=beta,lam0=lam0)/F1x[i]
-stime[i]<-Cpred(cbind(myhazx,tt),runif(1))[1,2]+runif(1,0,0.001)
-} else  {
-cause[i] <- 2
-myhazx<-F2(tt,x=x[i],beta=beta2,lam0=lam02)/F2x[i]
-stime[i]<-Cpred(cbind(myhazx,tt),runif(1))[1,2]+runif(1,0,0.001)
-}
-}
-}
+	for (i in 1:n)
+	{
+		if (cause12[i]==1) {
+			if (cause1e2[i]==1) {
+				cause[i] <- 1
+				myhazx<-F1(tt,x=x[i],beta=beta,lam0=lam0)/F1x[i]
+				stime[i]<-Cpred(cbind(myhazx,tt),runif(1))[1,2]+runif(1,0,0.001)
+			} else  {
+				cause[i] <- 2
+				myhazx<-F2(tt,x=x[i],beta=beta2,lam0=lam02)/F2x[i]
+				stime[i]<-Cpred(cbind(myhazx,tt),runif(1))[1,2]+runif(1,0,0.001)
+			}
+		}
+	}
 
-### censoring on top
-ctime<-(cstart+runif(n)*crate)
-time<-apply(cbind(ctime,stime),1,min)
-status<-(stime<ctime); 
-if (sum(status==0)>0) cause[status==0]<-0; 
-data<-data.frame(time=time,ctime=ctime,status=status,X=x,cause=cause)
-return(data)
+	### censoring on top
+	ctime<-(cstart+runif(n)*crate)
+	time<-apply(cbind(ctime,stime),1,min)
+	status<-(stime<ctime); 
+	if (sum(status==0)>0) cause[status==0]<-0; 
+	data<-data.frame(time=time,ctime=ctime,status=status,X=x,cause=cause)
+	return(data)
 } ## }}}
 
 sim.F1<-function(n,lam0=0.5,beta=0.3,Cint=c(0,1)) 
 { ## {{{
-x<-runif(n);
-tt<-seq(0,1,length=100)
-F11x<-F1(1,x=x,beta=beta,lam0=lam0)
-cause1<-rbinom(n,1,F11x)
-###
-stime<-rep(2,n); 
-for (i in 1:n) {
-if (cause1[i]==1) {
-myhazx<-F1(tt,x=x[i],beta=beta,lam0=lam0)/F11x[i]
-stime[i]<-Cpred(cbind(myhazx,tt),runif(1))[1,2]+runif(1,0,0.001)
-} 
-}
-ctime<-runif(n,Cint)
-time<-pmin(ctime,stime)
-status<-(stime<ctime); 
-cause1[status==0]<-0; 
-data<-data.frame(time=time,status=status,X=x,cause=cause1)
-return(data)
+	x<-runif(n);
+	tt<-seq(0,1,length=100)
+	F11x<-F1(1,x=x,beta=beta,lam0=lam0)
+	cause1<-rbinom(n,1,F11x)
+	###
+	stime<-rep(2,n); 
+	for (i in 1:n) {
+		if (cause1[i]==1) {
+			myhazx<-F1(tt,x=x[i],beta=beta,lam0=lam0)/F11x[i]
+			stime[i]<-Cpred(cbind(myhazx,tt),runif(1))[1,2]+runif(1,0,0.001)
+		} 
+	}
+	ctime<-runif(n,Cint)
+	time<-pmin(ctime,stime)
+	status<-(stime<ctime); 
+	cause1[status==0]<-0; 
+	data<-data.frame(time=time,status=status,X=x,cause=cause1)
+	return(data)
 } ## }}}
 
 sim.F1clust<-function(n,theta=1,lam0=0.5,Clims=c(0,1),
-	      beta=-0.5,same.cens=FALSE,fix.cens=FALSE)
+		      beta=-0.5,same.cens=FALSE,fix.cens=FALSE)
 { ## {{{ 
-k<-n/2; tt<-seq(0,1,length=100)
-theta <- 1/theta
-rtheta<-rgamma(k,theta,scale=1/theta)
-stime<-c();cause1<-c();id<-c();vtheta<-c(); X<-c()
+	k<-n/2; tt<-seq(0,1,length=100)
+	theta <- 1/theta
+	rtheta<-rgamma(k,theta,scale=1/theta)
+	stime<-c();cause1<-c();id<-c();vtheta<-c(); X<-c()
 
-for (i in 1:k)
-{  ## {{{  
-x <- rbinom(1,1,0.25)
-x <- rep(x,2)
-X<-c(X,x); 
-F11x<-F1clust(1,rtheta=rtheta[i],theta=theta,x=x,lam0=lam0) 
-cause<-rbinom(2,1,F11x); 
-###cause1<-c(cause1,cause); 
-id<-c(id,rep(i,2)); vtheta<-c(vtheta,rep(rtheta[i],2))
+	for (i in 1:k)
+	{  ## {{{  
+		x <- rbinom(1,1,0.25)
+		x <- rep(x,2)
+		X<-c(X,x); 
+		F11x<-F1clust(1,rtheta=rtheta[i],theta=theta,x=x,lam0=lam0) 
+		cause<-rbinom(2,1,F11x); 
+		###cause1<-c(cause1,cause); 
+		id<-c(id,rep(i,2)); vtheta<-c(vtheta,rep(rtheta[i],2))
 
-for (j in 1:2) {
-if (cause[j]==1) {
-myhazx<-F1clust(tt,x=x[j],rtheta=rtheta[i],theta=theta,lam0=lam0)/F11x[j]
-stime<-c(stime,Cpred(cbind(myhazx,tt),runif(1))[1,2]+ runif(1,0,0.001))
-cause1 <- c(cause1,1);
-} else { stime<-c(stime,runif(1)); cause1 <- c(cause1,2);}
-}
-} ## }}} 
+		for (j in 1:2) {
+			if (cause[j]==1) {
+				myhazx<-F1clust(tt,x=x[j],rtheta=rtheta[i],theta=theta,lam0=lam0)/F11x[j]
+				stime<-c(stime,Cpred(cbind(myhazx,tt),runif(1))[1,2]+ runif(1,0,0.001))
+				cause1 <- c(cause1,1);
+			} else { stime<-c(stime,runif(1)); cause1 <- c(cause1,2);}
+		}
+	} ## }}} 
 
-if (same.cens) ctime <- rep(ctime<-runif(k,Clims),each=2) else ctime<-runif(n,Clims)*crate;
-if (fix.cens) ctime <- rep(ctime<-rep(crate,each=2))
+	if (same.cens) ctime <- rep(runif(k,min=Clims[1],max=Clims[2]),each=2) else ctime<-runif(n,min=Clims[1],max=Clims[2]);
+	if (fix.cens) ctime <- rep(Clims[2],n)
 
-time<-apply(cbind(ctime,stime),1,min)
-status<-(stime<ctime); 
-cause1[status==0]<-0; 
-data<-data.frame(time=time,X=X,cause=cause1,stime=stime,ctime=ctime,id=id,theta=vtheta)
-return(data)
+	time<-apply(cbind(ctime,stime),1,min)
+	status<-(stime<ctime); 
+	cause1[status==0]<-0; 
+	data<-data.frame(time=time,X=X,cause=cause1,stime=stime,ctime=ctime,id=id,theta=vtheta)
+	return(data)
 } ## }}}
 ## }}}
 
