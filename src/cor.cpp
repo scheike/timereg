@@ -759,7 +759,6 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
       Rprintf("z2 %lf \n",mean(mean(z2))); 
       mat mt=mean(thetades); 
       mt.print("meancol thetades"); 
-//      Rprintf("theatdes %lf \n",mean(mean(thetades))); 
       Rprintf("ci %lf \n",mean(mean(clusterindex))); 
       Rprintf("rvdes %lf \n",mean(mean(rvdes))); 
       Rprintf("theta %lf \n",mean(theta)); 
@@ -829,11 +828,10 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
           vec pbhat = z * trans(bhatt); 
 	  if ((semi==1) & (cifmodel==1)) pbhat = pbhat + Zgamma*time;
 	  if ((semi==1) & (cifmodel==2))  pbhat=pbhat%exp(Zgamma); 
-//	  bhatt.print("bhatt");  pbhat.print("pbhatt"); 
 
 	  if ((CA1!=CA2)) {
-		  rowvec bhatt2 = est2.row(s); 
-		  vec pbhat2 = z2 * trans(bhatt2); 
+		  bhatt2 = est2.row(s); 
+		   pbhat2 = z2 * trans(bhatt2); 
 	     if ((semi2==1) & (cifmodel==1)) pbhat2 = pbhat2 + Z2gamma2*time;
 	     if ((semi2==1) & (cifmodel==2)) pbhat2=pbhat2%exp(Z2gamma2); 
 	  }
@@ -861,7 +859,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	respst=((y(i)<=entryage(i)) && (ci==CA1))* ((y(k)<=time) && (ck==CA2)) + 
 	       ((y(i)<=time) && (ci==CA1))* ((y(k)<=entryage(k)) && (ck==CA2)) ;
 
-	 if (depmodel!=5)  {
+	 if (depmodel!=5)   { // {{{
               if (flexfunc==0) {
 		      thetak=Xtheta(i,0);  
 	              pthetavec= trans(thetades.row(i)); 
@@ -871,9 +869,17 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 		  pthetavec = DXtheta(span(s),span(i),span::all); 
 //		  if (j==1) { printf(" %lf %d \n",time,i); pthetavec.print("pt"); }
 	      }
-	 }
+	 } // }}} 
+
          Li=pbhat(i); Lk=pbhat(k); 
-         if (CA1!=CA2) Lk=pbhat2(k); 
+         if (CA1!=CA2) {
+//		 if (c>v) {
+//		 if (ci==CA1) Li=pbhat(i); else Li=pbhat2(i); 
+//		 if (ck==CA1) Lk=pbhat(k); else Lk=pbhat2(k); 
+//		 } else Lk=pbhat2(k);
+//	      if (j< 10) printf("s=%d i=%d k=%d %lf  %lf \n",s,i,k,Lk,pbhat2(k)); 
+		 Lk=pbhat2(k);
+	 }
 
 	 if (depmodel==1) ormarg=(1-exp(-Li))/exp(-Li); 
 	 else if (depmodel==2) ormarg=(1-exp(-Li))*(1-exp(-Lk)); 
@@ -985,16 +991,13 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 	}
 	} // }}}
 	else if (depmodel==4) { // random effects model // {{{
-
 	 if (samecens==1) resp2=resp2/min(KMc(i),KMc(k)); else resp2=resp2/(KMc(i)*KMc(k));
-
 	 double ithetak=0; 
 	 if (inverse==1) { ithetak=exp(thetak); Dinverse=ithetak; DDinverse=exp(2*thetak); }
        	 else ithetak=thetak; 
-//	 if (j< 10) printf("%d  %lf %lf \n",inverse,ithetak,thetak); 
+//	 if (j< 10) printf("%d  %lf %lf %lf %lf \n",inverse,ithetak,thetak,Li,Lk); 
 
             ckf(ithetak,Li,Lk,ckij,dckij); 
-//if (j<10) printf("aaa %d %d %d %d %lf %lf %lf %lf %lf %lf \n",s,j,i,k,thetak,ckij(0),dckij(0),Li,Lk,response); 
             if (trunkp(i)<1) { // {{{
                ckf(ithetak,cif1lin(i),cif1lin(k),ckijvv,dckijvv); 
                ckf(ithetak,Li,cif1lin(k),ckijtv,dckijtv); 
@@ -1010,6 +1013,7 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
             } else {
 	    ssf=ssf+weights(i)*pow(resp2-ckij(0),2); 
 	    p11tvec(j)=ckij(0); 
+//if (j==2) printf("aaa %d %d %d %d %lf %lf %lf %lf %lf %lf \n",s,j,i,k,thetak,ckij(0),dckij(0),Li,Lk,response); 
             response=2*dckij(0)*Dinverse*(resp2-ckij(0)); 
 	    //   else  response=Dinverse*(resp2-ckij(0)); 
             diff=diff+response; 
@@ -1079,8 +1083,13 @@ alphail.print("alphil");
 	  if (iid==1) for (c=0;c<pt;c++) thetiid(j,c)+=vthetascore(c); 
 	} // }}}
 	else if (depmodel==6) { // random effects model two causes // {{{
+             if (samecens==1) resp2=resp2/min(KMc(i),KMc(k)); else resp2=resp2/(KMc(i)*KMc(k));
+	     double ithetak=0; 
+	     if (inverse==1) { ithetak=exp(thetak); Dinverse=ithetak; DDinverse=exp(2*thetak); }
+       	     else ithetak=thetak; 
+
             ckf(thetak,Li,Lk,ckij,dckij); 
-            if (trunkp(i)<1) {
+            if (trunkp(i)<1) { // {{{ 
                ckf(thetak,cif1lin(i),cif1lin(k),ckijvv,dckijvv); 
                ckf(thetak,Li,cif1lin(k),ckijtv,dckijtv); 
                ckf(thetak,cif1lin(i),Lk,ckijvt,dckijvt); 
@@ -1091,8 +1100,8 @@ alphail.print("alphil");
                diff=diff+response; 
                if (inverse==1) sdj=sdj+DDinverse*ddd*ddd; 
                else  sdj=sdj+DDinverse*ddd; 
-	       ssf+=weights(i)*pow(response-ckij(0),2); 
-            } else {
+	       ssf+=weights(i)*pow(response-ckij(0),2); // }}} 
+            } else { 
             if (inverse==1) response=dckij(0)*Dinverse*(response-ckij(0)); 
             else  response=Dinverse*(response-ckij(0)); 
             diff=diff+response; 
@@ -1117,8 +1126,13 @@ if (j<0) Rprintf("uu2 %lf %lf %lf %lf %lf %lf %d %d \n",pbhat(i),pbhat(k),0*pbha
        Utheta=Utheta+vthetascore; 
        if (!Utheta.is_finite()) { 
 	       Rprintf(" NA's i U, %d %d %lf %lf \n",j,i,diff,weights(i)); 
+	       theta.print("theta"); 
 	       Utheta.print("DU"); 
-	       vthetascore.print("vt"); 
+	       vthetascore.print("theta"); 
+	       Rprintf(" Leaving C program, try other starting value or other optimizers \n"); 
+	       // get out of here
+	       j=antclust-1;
+	       s=Ntimes-1; 
        }
        if (iid==1)  { 
 	       for (c1=0;c1<pt;c1++) thetiid(j,c1)+=vthetascore(c1); 

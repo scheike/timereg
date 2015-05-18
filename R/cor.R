@@ -1,4 +1,4 @@
-dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
+dep.cif<-function(cif,data,cause=NULL,model="OR",cif2=NULL,times=NULL,
                   cause1=1,cause2=1,cens.code=NULL,cens.model="KM",Nit=40,detail=0,
                   clusters=NULL,theta=NULL,theta.des=NULL,step=1,sym=1,weights=NULL,
 		  same.cens=FALSE,censoring.weights=NULL,silent=1,entry=NULL,estimator=1,
@@ -11,7 +11,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 
   ## extract design and time and cause from cif object 
   time <- cif$response[,"exit"]
-  if (missing(cause)) cause <- cif$response[,"cause"]  ##  attr(cif,"cause"); 
+  if (is.null(cause)) cause <- cif$response[,"cause"]  ##  attr(cif,"cause"); 
   cause <- as.numeric(cause)
   if (is.null(cens.code)) cens.code <- attr(cif,"cens.code")
   delta<-(cause!=cens.code)
@@ -36,18 +36,19 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   if ((cause1[1]!=cause2[1])) {
     if (is.null(cif2)==TRUE) stop("Must provide marginal model for both causes"); 
     formula2<-attr(cif2,"Formula"); 
-
     ldata2 <- aalen.des2(formula(delete.response(terms(formula2))),data=data,model="aalen");
     X2<-ldata2$X; Z2<-ldata$Z;  
     if (is.null(Z2)==TRUE) {npar2<-TRUE; semi2<-0;}  else {Z2<-as.matrix(Z2); npar2<-FALSE; semi2<-1;}
     if (npar2==TRUE) {Z2<-matrix(0,antpers,1); pg2<-1; fixed2<-0;} else {fixed2<-1;pg2<-ncol(Z2);} 
     px2<-ncol(X2);  
-    est2<-cif2$cum; if (semi2==1) gamma2<-cif2$gamma  else gamma2<-0; 
-    est2<-Cpred(est2,times);
+    est2<-cif2$cum; 
+    if (semi2==1) gamma2<-cif2$gamma  else gamma2<-0; 
+    est2<-Cpred(est2,times,strict=FALSE);
   } else { 
     X2<-matrix(0,1,1); Z2<-matrix(0,1,1); pg2<-1; px2<-1;  semi2<-0; est2<-matrix(0,1,2); gamma2<-0; 
     npar2<-FALSE; 
   }
+
 
 ### For truncation 
   if (is.null(entry)) entry.call <- NULL else entry.call <- 0
@@ -61,6 +62,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
     else if (cif.model==2) cif2entry  <-  1-exp(-apply(X2*cum2,1,sum)*exp(Z2 %*% gamma2 ))
   } else {cum2 <- cum1; cif2entry <- cif1entry;}
   ## }}}
+
 
   ## {{{ censoring model stuff
   cens.weight <- cif$cens.weights ### censoring weights from cif function
@@ -194,11 +196,15 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ###  cat("Score.method set to nlminb for flexible modelling \n"); 
   } ## }}}
 
-  Zgamma <-  c(Z %*% gamma); Z2gamma2 <- c(Z2 %*% gamma2); 
+  Zgamma <-  c(Z %*% gamma); 
+  Z2gamma2 <- c(Z2 %*% gamma2); 
   dep.model <- 0;  
   dep.model <- switch(model,COR=1,RR=2,OR=3,RANCIF=4,ARANCIF=5)
   if (dep.model==0) stop("model must be COR, OR, RR, RANCIF, ARANCIF \n"); 
   if (dep.model<=4) rvdes <- matrix(0,1,1); 
+###  if (dep.model==4 & !is.null(cif2) ) dep.model <- 6 ## two cause random cif
+###  if (dep.model==6) stop("Different causes  under development \n"); 
+
 
   obj <- function(par) 
     { ## {{{
@@ -270,24 +276,26 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ###	hess1 <-  numDeriv::hessian(obj,p)
 ###	print(score1)
 ###	print(hess1)
-        p <- p-delta* step
+	## do not update last iteration 
+	if (i<Nit) p <- p-delta* step
 	if (is.nan(sum(out$score))) break; 
         if (sum(abs(out$score))<0.00001) break; 
-        if (max(theta)>20) break; 
+        if (max(delta)>20) { cat("NR increment > 20, lower step zize, increment= \n"); cat(delta); break; }
     }
-    if (!is.nan(sum(p))) { 
+    if (!is.nan(sum(p))) { ## {{{ iid decomposition
     oout <- 2
     theta <- p
     iid <- 1; 
     out <- obj(p) 
     score <- out$score
     hess <- out$Dscore
-    }
+    } ## }}} 
     if (detail==1 & Nit==0) {## {{{
           print(paste("Fisher-Scoring ===================: final")); 
           cat("theta:");print(c(p))
           cat("score:");print(c(out$score)); 
 	  cat("hess:"); print(hess); 
+###	  oout <- 0; hess1 <-  numDeriv::hessian(obj,p); print(hess1)
     }## }}}
     if (!is.na(sum(hess))) hessi <- lava::Inverse(out$Dscore) else hessi <- diag(nrow(hess))
 ###    score1 <- numDeriv::jacobian(obj,p)
@@ -333,6 +341,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 	     brierscore=out$ssf,p11=out$p11); 
   if (dep.model<=3) class(ud)<-"cor" 
   else if (dep.model==4) class(ud) <- "randomcif" 
+  else if (dep.model==6) class(ud) <- "randomcif" 
   else if (dep.model==5) class(ud) <- "randomcifrv" 
   attr(ud, "Formula") <- formula
   attr(ud, "Clusters") <- clusters
@@ -342,6 +351,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
   attr(ud,"antpers")<-antpers; 
   attr(ud,"antclust")<-antclust; 
   if (dep.model==4) attr(ud, "Type") <- "randomcif"
+  if (dep.model==6) attr(ud, "Type") <- "randomcif"
   if (model=="COR") attr(ud, "Type") <- "cor"
   if (model=="RR") attr(ud, "Type") <- "RR"
   if (model=="OR") attr(ud, "Type") <- "OR-cif"
@@ -558,7 +568,7 @@ dep.cif<-function(cif,data,cause,model="OR",cif2=NULL,times=NULL,
 ##' }
 ##' @export
 ##' @keywords survival
-cor.cif<-function(cif,data,cause,times=NULL,
+cor.cif<-function(cif,data,cause=NULL,times=NULL,
                   cause1=1,cause2=1,cens.code=NULL,cens.model="KM",Nit=40,detail=0,
                   clusters=NULL, theta=NULL,theta.des=NULL,step=1,sym=0,weights=NULL, 
 		  par.func=NULL,dpar.func=NULL,dimpar=NULL,
@@ -574,7 +584,7 @@ cor.cif<-function(cif,data,cause,times=NULL,
   fit
 } ## }}}
 ##' @export
-rr.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
+rr.cif<-function(cif,data,cause=NULL,cif2=NULL,times=NULL,
                  cause1=1,cause2=1,cens.code=NULL,cens.model="KM",Nit=40,detail=0,
                  clusters=NULL, theta=NULL,theta.des=NULL, step=1,sym=0,weights=NULL,
                  same.cens=FALSE,censoring.weights=NULL,silent=1,par.func=NULL,dpar.func=NULL,dimpar=NULL,
@@ -590,7 +600,7 @@ rr.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
   fit
 } ## }}}
 ##' @export
-or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
+or.cif<-function(cif,data,cause=NULL,cif2=NULL,times=NULL,
                  cause1=1,cause2=1,cens.code=NULL,cens.model="KM",Nit=40,detail=0,
                  clusters=NULL, theta=NULL,theta.des=NULL, step=1,sym=0, weights=NULL,
                  same.cens=FALSE,censoring.weights=NULL,silent=1,par.func=NULL,dpar.func=NULL,dimpar=NULL,
@@ -634,6 +644,7 @@ or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 ##' @param clusters specifies the cluster structure.
 ##' @param theta specifies starting values for the cross-odds-ratio parameters of the model.
 ##' @param theta.des specifies a regression design for the cross-odds-ratio parameters.
+##' @param sym 1 for symmetry 0 otherwise
 ##' @param step specifies the step size for the Newton-Raphson algorith.m
 ##' @param same.cens if true then censoring within clusters are assumed to be the same variable, default is independent censoring.
 ##' @param exp.link if exp.link=1 then var is on log-scale.
@@ -656,47 +667,44 @@ or.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
 ##' Cross odds ratio Modelling of dependence for
 ##' Multivariate Competing Risks Data, Scheike and Sun (2012), work in progress.
 ##' @examples
-##' data(multcif)
+##' \donttest{
+##'  d <- simnordic.random(4000,delayed=TRUE,
+##'        cordz=0.5,cormz=2,lam0=0.3,country=TRUE)
+##'  times <- seq(50,90,by=10)
+##'  add1<-comp.risk(Event(time,cause)~const(country)+cluster(id),data=d,
+##'  times=times,cause=1,max.clust=NULL)
 ##' 
-##' times <- seq(0.3,1,length=4)
-##' add<-comp.risk(Event(time,cause)~+1+cluster(id),data=multcif,cause=1,
-##'                n.sim=0,times=times,max.clust=NULL)
+##'  ### making group indidcator 
+##'  mm <- model.matrix(~-1+factor(zyg),d)
 ##' 
-##' out1<-random.cif(add,data=multcif,cause1=1,cause2=1)
-##' summary(out1)
+##'  out1<-random.cif(add1,data=d,cause1=1,cause2=1,theta=1,same.cens=TRUE)
+##'  summary(out1)
 ##' 
-##' zyg <- rep(rbinom(200,1,0.5),each=2)
-##' theta.des <- model.matrix(~-1+factor(zyg))
-##' ###theta.des<-model.matrix(~-1+factor(zyg),data=np)
-##' out2<-random.cif(add,data=multcif,cause1=1,cause2=1,theta.des=theta.des)
-##' summary(out2)
+##'  out2<-random.cif(add1,data=d,cause1=1,cause2=1,theta=1,
+##' 		   theta.des=mm,same.cens=TRUE)
+##'  summary(out2)
+##' 
 ##' #########################################
 ##' ##### 2 different causes
 ##' #########################################
 ##' 
-##' ## multcif$cause[multcif$cause==0] <- 2
+##'  add2<-comp.risk(Event(time,cause)~const(country)+cluster(id),data=d,
+##'                   times=times,cause=2,max.clust=NULL)
+##'  out3<-random.cif(add1,data=d,cause1=1,cause2=2,cif2=add2,sym=1,same.cens=TRUE)
+##'  summary(out3) ## negative dependence
 ##' 
-##' ## ###times<-sort(multcif$time[multcif$status \%in\% c(1,2)])
-##' ## add1<-comp.risk(Event(time,status)~const(X)+cluster(id),data=multcif,cause=1,
-##' ## 		  multcif$cause,n.sim=0,times=times)
-##' ## add2<-comp.risk(Event(time,status)~const(X)+cluster(id),data=multcif,cause=2,
-##' ## 		  multcif$cause,n.sim=0,times=times)
-##' 
-##' ## out1<-random.cif(add1,data=multcif,cause1=1,cause2=2,cif2=add2)
-##' ## summary(out1) ## negative dependence
-##' 
-##' ## out1g<-random.cif(add1,data=multcif,cause1=1,cause2=2,
-##' ##                   cif2=add2,theta.des=theta.des)
-##' ## summary(out1g)
+##'  out4<-random.cif(add1,data=d,cause1=1,cause2=2,cif2=add2,theta.des=mm,sym=1,same.cens=TRUE)
+##'  summary(out4) ## negative dependence
+##' }
 ##' @keywords survival
 ##' @author Thomas Scheike
-random.cif<-function(cif,data,cause,cif2=NULL,
+random.cif<-function(cif,data,cause=NULL,cif2=NULL,
                      cause1=1,cause2=1,cens.code=NULL,cens.model="KM",Nit=40,detail=0,
-                     clusters=NULL,theta=NULL,theta.des=NULL,
+                     clusters=NULL,theta=NULL,theta.des=NULL,sym=1,
                      step=1,same.cens=FALSE,exp.link=0,score.method="fisher.scoring",
                      entry=NULL,trunkp=1,...)
 { ## {{{
-  fit <- dep.cif(cif=cif,data=data,cause=cause,model="RANCIF",cif2=cif2,
+  fit <- dep.cif(cif,data=data,cause=cause,model="RANCIF",cif2=cif2,sym=sym,
      cause1=cause1,cause2=cause2,cens.code=cens.code,cens.model=cens.model,Nit=Nit,detail=detail,
      clusters=clusters,theta=theta,theta.des=theta.des,step=step,same.cens=same.cens,
      exp.link=exp.link,score.method=score.method,entry=entry,trunkp=trunkp,...)
@@ -783,60 +791,64 @@ random.cif<-function(cif,data,cause,cif2=NULL,
 ##' Scheike, Zhang, Sun, Jensen (2010), Biometrika.
 ##'
 ##' Cross odds ratio Modelling of dependence for
-##' Multivariate Competing Risks Data, Scheike and Sun (2012), Biostatitistics, to appear.
+##' Multivariate Competing Risks Data, Scheike and Sun (2013), Biostatitistics.
 ##'
-##' Scheike, Holst, Hjelmborg (2012),  LIDA, to appear.
+##' Scheike, Holst, Hjelmborg (2014),  LIDA,  
 ##' Estimating heritability for cause specific hazards based on twin data
 ##' @examples
-##' data(multcif)
-##' multcif$cause[multcif$cause==0] <- 2
-##' addm<-comp.risk(Event(time,cause)~const(X)+cluster(id),data=multcif,
-##'               cause=1,n.sim=0)
-##'
-##' ### making group indidcator 
-##' g.des<-data.frame(group2=rep(rbinom(200,1,0.5),rep(2,200)))
-##' theta.des <- model.matrix(~-1+factor(group2),g.des)
-##'
-##' out1m<-random.cif(addm,data=multcif,cause1=1,cause2=1,Nit=15,detail=0,
-##' theta=2,theta.des=theta.des,step=1.0)
-##' summary(out1m)
+##' \donttest{
+##'  d <- simnordic.random(5000,delayed=TRUE,
+##'        cordz=0.5,cormz=2,lam0=0.3,country=TRUE)
+##'  times <- seq(50,90,by=10)
+##'  addm<-comp.risk(Event(time,cause)~const(country)+cluster(id),data=d,
+##'  times=times,cause=1,max.clust=NULL)
 ##' 
-##' ## this model can also be formulated as a random effects model 
-##' ## but with different parameters
-##' out2m<-Grandom.cif(addm,data=multcif,cause1=1,cause2=1,Nit=10,detail=0,
-##' random.design=theta.des,step=1.0)
-##' summary(out2m)
-##' 1/out2m$theta
-##' out1m$theta
+##'  ### making group indidcator 
+##'  mm <- model.matrix(~-1+factor(zyg),d)
 ##' 
-##' ####################################################################
-##' ################### ACE modelling of twin data #####################
-##' ####################################################################
-##' ### assume that zygbin gives the zygosity of mono and dizygotic twins
-##' ### 0 for mono and 1 for dizygotic twins. We now formulate and AC model
-##' zygbin <- g.des$group2 ## indicator of dizygotic twins
-##'
-##' n <- nrow(multcif)
-##' ### random effects for each cluster
-##' des.rv <- cbind(theta.des,(zygbin==1)*rep(c(1,0)),(zygbin==1)*rep(c(0,1)),1)
-##' ### design making parameters half the variance for dizygotic components
-##' pardes <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0), c(0,1))
-##'
-##' ## outacem <-Grandom.cif(addm,data=multcif,causeS=1,Nit=30,detail=0,
-##' ##          theta=c(-1.21,2.1),theta.des=pardes,step=1.0,random.design=des.rv)
-##' ## summary(outacem)
-##' ## ## genetic variance is 
-##' ## exp(outacem$theta[1])/sum(exp(outacem$theta))^2
+##'  out1m<-random.cif(addm,data=d,cause1=1,cause2=1,theta=1,
+##' 		   theta.des=mm,same.cens=TRUE)
+##'  summary(out1m)
+##'  
+##'  ## this model can also be formulated as a random effects model 
+##'  ## but with different parameters
+##'  out2m<-Grandom.cif(addm,data=d,cause1=1,cause2=1,
+##' 		    theta=c(0.4,4),step=0.5,
+##' 		    random.design=mm,same.cens=TRUE)
+##'  summary(out2m)
+##'  1/out2m$theta
+##'  out1m$theta
+##'  
+##'  ####################################################################
+##'  ################### ACE modelling of twin data #####################
+##'  ####################################################################
+##'  ### assume that zygbin gives the zygosity of mono and dizygotic twins
+##'  ### 0 for mono and 1 for dizygotic twins. We now formulate and AC model
+##'  zygbin <- d$zyg=="DZ"
+##' 
+##'  n <- nrow(d)
+##'  ### random effects for each cluster
+##'  des.rv <- cbind(mm,(zygbin==1)*rep(c(1,0)),(zygbin==1)*rep(c(0,1)),1)
+##'  ### design making parameters half the variance for dizygotic components
+##'  pardes <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0), c(0,1))
+##' 
+##'  outacem <-Grandom.cif(addm,data=d,cause1=1,cause2=1,
+##' 		same.cens=TRUE,theta=c(0.7,-0.3),
+##'             step=1.0,theta.des=pardes,random.design=des.rv)
+##'  summary(outacem)
+##'  ## genetic variance is 
+##'  exp(outacem$theta[1])/sum(exp(outacem$theta))^2
+##' }
 ##' @keywords survival
 ##' @author Thomas Scheike
 ##' @export
-Grandom.cif<-function(cif,data,cause,cif2=NULL,times=NULL,
+Grandom.cif<-function(cif,data,cause=NULL,cif2=NULL,times=NULL,
 cause1=1,cause2=1,cens.code=NULL,cens.model="KM",Nit=40,detail=0,
 clusters=NULL, theta=NULL,theta.des=NULL, weights=NULL, step=1,sym=0,
 same.cens=FALSE,censoring.weights=NULL,silent=1,exp.link=0,score.method="fisher.scoring",
 entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,random.design=NULL,...)
 { ## {{{
-fit <- dep.cif(cif=cif,data=data,cause=cause,model="ARANCIF",cif2=cif2,times=times,
+fit <- dep.cif(cif,data=data,cause=cause,model="ARANCIF",cif2=cif2,times=times,
          cause1=cause1,cause2=cause2,cens.code=cens.code,cens.model=cens.model,Nit=Nit,detail=detail,
          clusters=clusters,theta=theta,theta.des=theta.des,step=step,sym=sym,weights=weights,
          same.cens=same.cens,censoring.weights=censoring.weights,silent=silent,exp.link=exp.link,

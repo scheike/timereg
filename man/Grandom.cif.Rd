@@ -4,11 +4,11 @@
 \alias{Grandom.cif}
 \title{Additive Random effects model for competing risks data for polygenetic modelling}
 \usage{
-Grandom.cif(cif, data, cause, cif2 = NULL, times = NULL, cause1 = 1,
-  cause2 = 1, cens.code = NULL, cens.model = "KM", Nit = 40,
-  detail = 0, clusters = NULL, theta = NULL, theta.des = NULL,
-  weights = NULL, step = 1, sym = 0, same.cens = FALSE,
-  censoring.weights = NULL, silent = 1, exp.link = 0,
+Grandom.cif(cif, data, cause = NULL, cif2 = NULL, times = NULL,
+  cause1 = 1, cause2 = 1, cens.code = NULL, cens.model = "KM",
+  Nit = 40, detail = 0, clusters = NULL, theta = NULL,
+  theta.des = NULL, weights = NULL, step = 1, sym = 0,
+  same.cens = FALSE, censoring.weights = NULL, silent = 1, exp.link = 0,
   score.method = "fisher.scoring", entry = NULL, estimator = 1,
   trunkp = 1, admin.cens = NULL, random.design = NULL, ...)
 }
@@ -116,45 +116,49 @@ with the (k) underlying \eqn{\theta} parameters
 }
 }
 \examples{
-data(multcif)
-multcif$cause[multcif$cause==0] <- 2
-addm<-comp.risk(Event(time,cause)~const(X)+cluster(id),data=multcif,
-              cause=1,n.sim=0)
+\donttest{
+ d <- simnordic.random(5000,delayed=TRUE,
+       cordz=0.5,cormz=2,lam0=0.3,country=TRUE)
+ times <- seq(50,90,by=10)
+ addm<-comp.risk(Event(time,cause)~const(country)+cluster(id),data=d,
+ times=times,cause=1,max.clust=NULL)
 
-### making group indidcator
-g.des<-data.frame(group2=rep(rbinom(200,1,0.5),rep(2,200)))
-theta.des <- model.matrix(~-1+factor(group2),g.des)
+ ### making group indidcator
+ mm <- model.matrix(~-1+factor(zyg),d)
 
-out1m<-random.cif(addm,data=multcif,cause1=1,cause2=1,Nit=15,detail=0,
-theta=2,theta.des=theta.des,step=1.0)
-summary(out1m)
+ out1m<-random.cif(addm,data=d,cause1=1,cause2=1,theta=1,
+		   theta.des=mm,same.cens=TRUE)
+ summary(out1m)
 
-## this model can also be formulated as a random effects model
-## but with different parameters
-out2m<-Grandom.cif(addm,data=multcif,cause1=1,cause2=1,Nit=10,detail=0,
-random.design=theta.des,step=1.0)
-summary(out2m)
-1/out2m$theta
-out1m$theta
+ ## this model can also be formulated as a random effects model
+ ## but with different parameters
+ out2m<-Grandom.cif(addm,data=d,cause1=1,cause2=1,
+		    theta=c(0.4,4),step=0.5,
+		    random.design=mm,same.cens=TRUE)
+ summary(out2m)
+ 1/out2m$theta
+ out1m$theta
 
-####################################################################
-################### ACE modelling of twin data #####################
-####################################################################
-### assume that zygbin gives the zygosity of mono and dizygotic twins
-### 0 for mono and 1 for dizygotic twins. We now formulate and AC model
-zygbin <- g.des$group2 ## indicator of dizygotic twins
+ ####################################################################
+ ################### ACE modelling of twin data #####################
+ ####################################################################
+ ### assume that zygbin gives the zygosity of mono and dizygotic twins
+ ### 0 for mono and 1 for dizygotic twins. We now formulate and AC model
+ zygbin <- d$zyg=="DZ"
 
-n <- nrow(multcif)
-### random effects for each cluster
-des.rv <- cbind(theta.des,(zygbin==1)*rep(c(1,0)),(zygbin==1)*rep(c(0,1)),1)
-### design making parameters half the variance for dizygotic components
-pardes <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0), c(0,1))
+ n <- nrow(d)
+ ### random effects for each cluster
+ des.rv <- cbind(mm,(zygbin==1)*rep(c(1,0)),(zygbin==1)*rep(c(0,1)),1)
+ ### design making parameters half the variance for dizygotic components
+ pardes <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0), c(0,1))
 
-## outacem <-Grandom.cif(addm,data=multcif,causeS=1,Nit=30,detail=0,
-##          theta=c(-1.21,2.1),theta.des=pardes,step=1.0,random.design=des.rv)
-## summary(outacem)
-## ## genetic variance is
-## exp(outacem$theta[1])/sum(exp(outacem$theta))^2
+ outacem <-Grandom.cif(addm,data=d,cause1=1,cause2=1,
+		same.cens=TRUE,theta=c(0.7,-0.3),
+            step=1.0,theta.des=pardes,random.design=des.rv)
+ summary(outacem)
+ ## genetic variance is
+ exp(outacem$theta[1])/sum(exp(outacem$theta))^2
+}
 }
 \author{
 Thomas Scheike
@@ -164,9 +168,9 @@ A Semiparametric Random Effects Model for Multivariate Competing Risks Data,
 Scheike, Zhang, Sun, Jensen (2010), Biometrika.
 
 Cross odds ratio Modelling of dependence for
-Multivariate Competing Risks Data, Scheike and Sun (2012), Biostatitistics, to appear.
+Multivariate Competing Risks Data, Scheike and Sun (2013), Biostatitistics.
 
-Scheike, Holst, Hjelmborg (2012),  LIDA, to appear.
+Scheike, Holst, Hjelmborg (2014),  LIDA,
 Estimating heritability for cause specific hazards based on twin data
 }
 \keyword{survival}
