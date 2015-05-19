@@ -472,7 +472,8 @@ summary.comprisk <- function (object,digits = 3,...) {  ## {{{
          cat("Did not converge, allow more iterations\n\n"); 
 
 	 cat("Parametric terms : \n"); 
-         out=coef(object); print(signif(out,digits=digits)); cat("   \n"); 
+	 prmatrix(coef(object,digits=digits))
+	 cat("   \n"); 
   }
 
   if (object$conv$convd>=1) {

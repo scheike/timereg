@@ -64,6 +64,24 @@ se <- cbind(diag(var2)^.5); colnames(se) <- "se"
 se.naive=coef(udca)[,3,drop=FALSE]; colnames(se.naive) <- "se.naive"
 
 res <- list(iid=iidfull,coef=udca$gamma,var=var2,se=se,se.naive=se.naive,ties=list(ties=ties,time2=time2))
+class(res) <- "cox.ipw"
 return(res)
 } ## }}} 
+
+summary.cox.ipw <- function(object,digits=3,...)
+{
+res <- cbind(object$coef,object$se,object$se.naive)
+
+return(res)
+}
+
+coef.cox.ipw<- function(object,digits=3,...)
+{
+summary.cox.ipw(x)
+}
+
+print.cox.ipw  <-  function(x,...)
+{ 
+summary.cox.ipw(x)
+}
 

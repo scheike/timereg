@@ -80,6 +80,11 @@ export("aalen", ## {{{
        "wald.test"
 ) ## }}} 
 
+S3method(coef,cox.ipw)
+S3method(print,cox.ipw)
+S3method(summary,cox.ipw)
+export("coef.cox.ipw","print.cox.ipw","summary.cox.ipw")
+
 S3method(coef,resmean)
 S3method(plot,resmean)
 S3method(print,resmean)

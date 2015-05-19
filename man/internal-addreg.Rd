@@ -60,6 +60,9 @@
 \alias{plot.predict}
 \alias{coef.aalen}
 \alias{cox.ipw}
+\alias{summary.cox.ipw}
+\alias{coef.cox.ipw}
+\alias{print.cox.ipw}
 \alias{comprisk.ipw}
 \alias{coef.cox.aalen}
 \alias{coef.comprisk}
