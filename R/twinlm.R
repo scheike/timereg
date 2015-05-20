@@ -216,7 +216,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
   }
 
   if (inherits(data[,yvar],"Surv")) {
-      if (!require("lava.tobit",quietly=TRUE)) stop("lava.tobit required")
+      if (!requireNamespace("lava.tobit",quietly=TRUE)) stop("lava.tobit required")
       if (is.null(optim$method))
           optim$method <- "nlminb1"
       suppressWarnings(e <- estimate(mm,dd,control=optim,...))

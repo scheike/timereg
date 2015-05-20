@@ -27,7 +27,7 @@
 ##'             data=d,poisson))
 ##' @export
 lifetable.matrix <- function(x,strata=list(),breaks=c(),confint=FALSE,...) {
-    if (ncol(xg)==3) {
+    if (ncol(x)==3) {
         status <- x[,3]
         entry <- x[,1]
         time <- x[,2]
@@ -65,46 +65,45 @@ lifetable.formula <- function(x,data=parent.frame(),breaks=c(),confint=FALSE,...
     LifeTable(exit,status,entry,strata,breaks,confint,...)       
 }
 
-lifetable.data.table <- function(x,entry,exit,status,strata,breaks,...) {
-    requireNamespace("data.table")
-    breaks <- sort(unique(breaks))
-    nbreaks <- length(breaks)
-    ## prs <- parse(text=paste0("pmin(x,",exit,")-pmax(x-1,",entry,")"))
-    ## dt[,eval(prs),by=strata]
-    system.time(dur1 <- x[,
-                           lapply(breaks[-1],function(x)
-                              eval(parse(text=paste0("pmin(x,",exit,")-pmax(x-1,",entry,")")))
-                                 ),by=strata])
-    dur1[dur1<0] <- NA
-    system.time(endur1 <- x[,
-                            lapply(breaks[-nbreaks],function(x)
-                                eval(parse(text=paste0("x+1-pmax(x,",entry,")")))
-                                   ),by=strata])
-    enter <- dur1[,lapply(.SD,function(x) sum(!is.na(x))),by=strata]
-    atrisk <- dur1[,lapply(.SD,function(x) sum(x,na.rm=TRUE)),by=strata]
-    vidx <- seq(length(strata)+1,ncol(atrisk))
-    suppressWarnings(names(atrisk)[vidx] <- paste0("_R",seq_along(vidx)))   
-    system.time(eventcens <- x[,
-                               lapply(breaks[-1],function(x)
-                                   eval(parse(text=paste0("((pmin(x,",exit,")-pmax(x-1,",entry,"))<(x-pmax(x-1,",entry,")))*(1+",status,")")))
-                                           ),by=strata])
-    lost <- eventcens[,lapply(.SD,function(x) sum(x==1,na.rm=TRUE)),by=strata]
-    events <- eventcens[,lapply(.SD,function(x) sum(x==2,na.rm=TRUE)),by=strata]
-    suppressWarnings(names(events)[vidx] <- paste0("_E",seq_along(vidx)))
-    res <- fast.reshape(cbind(events,atrisk[,vidx,with=FALSE]))
-    return(res)
-    res <- subset(data.frame(enter=enter,
-                             atrisk=atrisk,
-                             lost=lost,
-                             events=events,
-                             ## int.start=c(-Inf,breaks),
-                             ## int.end=c(breaks,Inf),
-                             int.start=breaks[-length(breaks)],
-                             int.end=breaks[-1],
-                             surv=0,
-                             rate=events/atrisk))
-}
-
+## lifetable.data.table <- function(x,entry,exit,status,strata,breaks,...) {
+##     requireNamespace("data.table")
+##     breaks <- sort(unique(breaks))
+##     nbreaks <- length(breaks)
+##     ## prs <- parse(text=paste0("pmin(x,",exit,")-pmax(x-1,",entry,")"))
+##     ## dt[,eval(prs),by=strata]
+##     system.time(dur1 <- x[,
+##                            lapply(breaks[-1],function(x)
+##                               eval(parse(text=paste0("pmin(x,",exit,")-pmax(x-1,",entry,")")))
+##                                  ),by=strata])
+##     dur1[dur1<0] <- NA
+##     system.time(endur1 <- x[,
+##                             lapply(breaks[-nbreaks],function(x)
+##                                 eval(parse(text=paste0("x+1-pmax(x,",entry,")")))
+##                                    ),by=strata])
+##     enter <- dur1[,lapply(.SD,function(x) sum(!is.na(x))),by=strata]
+##     atrisk <- dur1[,lapply(.SD,function(x) sum(x,na.rm=TRUE)),by=strata]
+##     vidx <- seq(length(strata)+1,ncol(atrisk))
+##     suppressWarnings(names(atrisk)[vidx] <- paste0("_R",seq_along(vidx)))   
+##     system.time(eventcens <- x[,
+##                                lapply(breaks[-1],function(x)
+##                                    eval(parse(text=paste0("((pmin(x,",exit,")-pmax(x-1,",entry,"))<(x-pmax(x-1,",entry,")))*(1+",status,")")))
+##                                            ),by=strata])
+##     lost <- eventcens[,lapply(.SD,function(x) sum(x==1,na.rm=TRUE)),by=strata]
+##     events <- eventcens[,lapply(.SD,function(x) sum(x==2,na.rm=TRUE)),by=strata]
+##     suppressWarnings(names(events)[vidx] <- paste0("_E",seq_along(vidx)))
+##     res <- fast.reshape(cbind(events,atrisk[,vidx,with=FALSE]))
+##     return(res)
+##     res <- subset(data.frame(enter=enter,
+##                              atrisk=atrisk,
+##                              lost=lost,
+##                              events=events,
+##                              ## int.start=c(-Inf,breaks),
+##                              ## int.end=c(breaks,Inf),
+##                              int.start=breaks[-length(breaks)],
+##                              int.end=breaks[-1],
+##                              surv=0,
+##                              rate=events/atrisk))
+## }
 
 
 LifeTable <- function(time,status,entry=NULL,strata=list(),breaks=c(),confint=FALSE,interval=TRUE,mesg=FALSE) {    
@@ -235,19 +234,19 @@ eventpois <- function(object,...,timevar,time,int.len,confint=FALSE,level=0.95,i
     }
     
     tvar <- unique(regmatches(nn,idx))
-    if (missing(time)) {
-        ## i0 <- seq(nrow(object$data))
-        ## browser()
-        ## if ("rate"%in%colnames(object$data)) {
-        ##     ii0 <- which(object$data[,"rate"]>0)
-        ##     i0 <- intersect(i0,ii0)
-        ## }
-        ## for (i in seq_along(dots)) {
-        ##      i0 <- intersect(i0,which(object$data[,names(dots)[i]]==dots[[i]]))
-        ##  }
+    if (missing(time)) {        
         time <- sort(unique(as.numeric(gsub(timevar_re0,"",tvar))))
-        ##rg <- range(object$data[i0,timevar],na.rm=TRUE)
         if (length(time)==0) {
+            i0 <- seq(nrow(object$data))
+            ## browser()
+            ## if ("rate"%in%colnames(object$data)) {
+            ##     ii0 <- which(object$data[,"rate"]>0)
+            ##     i0 <- intersect(i0,ii0)
+            ## }
+            ## for (i in seq_along(dots)) {
+            ##      i0 <- intersect(i0,which(object$data[,names(dots)[i]]==dots[[i]]))
+            ##  }
+            rg <- range(object$data[i0,timevar],na.rm=TRUE)        
             time <- seq(rg[1],rg[2],length.out=length.out)
         } else {
             ##time <- seq(1,rg[2])
