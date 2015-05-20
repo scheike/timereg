@@ -192,8 +192,7 @@ BEGIN_RCPP
   }
   
   //double val = cdfmvn(y,S);  
-  //return(Rcpp::wrap(val));
-  
+  //return(Rcpp::wrap(val));  
   if (!Std) {
     H = iLambda*H*iLambda;    
     D = iLambda*D;
@@ -205,6 +204,49 @@ BEGIN_RCPP
 END_RCPP
 }
 
+
+
+// RcppExport SEXP scoremvn2 (SEXP lower, SEXP upper, SEXP mu, SEXP sigma, SEXP std) { 
+// BEGIN_RCPP
+  // int k = Yl.n_cols;
+  // int n = Yl.n_rows;
+  // uvec Obs = find(Status==0);
+  // uvec Cens = find(Status==1);
+  // uvec Ord = find(Status>1);
+  // uvec NonObs = find(Status>0);
+  // int nObs = Obs.size();
+  // int nNonObs = NonObs.size(); 
+  // int nOrd = Ord.size();
+  // int nu = Su.n_cols;
+  // bool nonconstvar = (nu>0); 
+
+  // double sign, logdetS0;
+  // mat Se,S0,iS0;
+    
+  // vec loglik(n); loglik.fill(0);
+  // //  return(loglik);
+  // if (nObs>0) {
+  //   mat Y0 = Yl.cols(Obs)-Mu.cols(Obs);
+  //   Se = S0 = S.submat(Obs,Obs); 
+  //   iS0 = inv(S0);
+  //   log_det(logdetS0,sign,S0);
+  //   double normconst = -0.5*nObs*log2pi;  
+
+  //   for (int i=0; i<n; i++) { // Iterate over subjects
+      
+  //     if (nonconstvar) {
+  // 	mat Z0 = reshape(Z.row(i),k,nu);	
+  // 	S0 = Se+Z0.rows(Obs)*Su*trans(Z0.rows(Obs));
+  // 	iS0 = inv(S0);
+  // 	log_det(logdetS0,sign,S0);
+  //     }
+      
+  //     loglik(i) = -0.5*(logdetS0 + as_scalar(Y0.row(i)*iS0*trans(Y0.row(i))));
+  //     loglik(i) += normconst;
+  //   }
+//   }
+
+// END_RCPP
 
 mat scoremvn(mat &Y,
 	     mat &Mu, mat &dMu,
@@ -316,9 +358,6 @@ vec loglikmvn(mat &Yl, mat &Yu, uvec &Status,
     irowvec infin(nNonObs); // 0: right, 1: left, 2: interval
 
     uvec currow(1); 
-    //std::cerr << "Hallo conconstvar" << nonconstvar << endl;
-    // return(loglik);
-
     for (int i=0; i<n; i++) { // Iterate over subjects
 
       currow(0) = i;
