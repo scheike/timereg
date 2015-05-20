@@ -4,9 +4,9 @@
 \alias{random.cif}
 \title{Random effects model for competing risks data}
 \usage{
-random.cif(cif, data, cause, cif2 = NULL, cause1 = 1, cause2 = 1,
+random.cif(cif, data, cause = NULL, cif2 = NULL, cause1 = 1, cause2 = 1,
   cens.code = NULL, cens.model = "KM", Nit = 40, detail = 0,
-  clusters = NULL, theta = NULL, theta.des = NULL, step = 1,
+  clusters = NULL, theta = NULL, theta.des = NULL, sym = 1, step = 1,
   same.cens = FALSE, exp.link = 0, score.method = "fisher.scoring",
   entry = NULL, trunkp = 1, ...)
 }
@@ -39,6 +39,8 @@ times, the value cens.code is the censoring value.}
 \item{theta}{specifies starting values for the cross-odds-ratio parameters of the model.}
 
 \item{theta.des}{specifies a regression design for the cross-odds-ratio parameters.}
+
+\item{sym}{1 for symmetry 0 otherwise}
 
 \item{step}{specifies the step size for the Newton-Raphson algorith.m}
 
@@ -75,38 +77,35 @@ We allow a regression structure for the random effects variances that may depend
 cluster covariates.
 }
 \examples{
-data(multcif)
+\donttest{
+ d <- simnordic.random(4000,delayed=TRUE,
+       cordz=0.5,cormz=2,lam0=0.3,country=TRUE)
+ times <- seq(50,90,by=10)
+ add1<-comp.risk(Event(time,cause)~const(country)+cluster(id),data=d,
+ times=times,cause=1,max.clust=NULL)
 
-times <- seq(0.3,1,length=4)
-add<-comp.risk(Event(time,cause)~+1+cluster(id),data=multcif,cause=1,
-               n.sim=0,times=times,max.clust=NULL)
+ ### making group indidcator
+ mm <- model.matrix(~-1+factor(zyg),d)
 
-out1<-random.cif(add,data=multcif,cause1=1,cause2=1)
-summary(out1)
+ out1<-random.cif(add1,data=d,cause1=1,cause2=1,theta=1,same.cens=TRUE)
+ summary(out1)
 
-zyg <- rep(rbinom(200,1,0.5),each=2)
-theta.des <- model.matrix(~-1+factor(zyg))
-###theta.des<-model.matrix(~-1+factor(zyg),data=np)
-out2<-random.cif(add,data=multcif,cause1=1,cause2=1,theta.des=theta.des)
-summary(out2)
+ out2<-random.cif(add1,data=d,cause1=1,cause2=1,theta=1,
+		   theta.des=mm,same.cens=TRUE)
+ summary(out2)
+
 #########################################
 ##### 2 different causes
 #########################################
 
-## multcif$cause[multcif$cause==0] <- 2
+ add2<-comp.risk(Event(time,cause)~const(country)+cluster(id),data=d,
+                  times=times,cause=2,max.clust=NULL)
+ out3<-random.cif(add1,data=d,cause1=1,cause2=2,cif2=add2,sym=1,same.cens=TRUE)
+ summary(out3) ## negative dependence
 
-## ###times<-sort(multcif$time[multcif$status \\\%in\\\% c(1,2)])
-## add1<-comp.risk(Event(time,status)~const(X)+cluster(id),data=multcif,cause=1,
-## 		  multcif$cause,n.sim=0,times=times)
-## add2<-comp.risk(Event(time,status)~const(X)+cluster(id),data=multcif,cause=2,
-## 		  multcif$cause,n.sim=0,times=times)
-
-## out1<-random.cif(add1,data=multcif,cause1=1,cause2=2,cif2=add2)
-## summary(out1) ## negative dependence
-
-## out1g<-random.cif(add1,data=multcif,cause1=1,cause2=2,
-##                   cif2=add2,theta.des=theta.des)
-## summary(out1g)
+ out4<-random.cif(add1,data=d,cause1=1,cause2=2,cif2=add2,theta.des=mm,sym=1,same.cens=TRUE)
+ summary(out4) ## negative dependence
+}
 }
 \author{
 Thomas Scheike

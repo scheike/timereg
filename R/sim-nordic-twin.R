@@ -293,8 +293,7 @@ corsim.prostate.random <- function(n,theta=1,censS=c(0,1),
    pcens=0.5,test=0,mt=1,same.cens=TRUE,country=TRUE,
    delayed=FALSE,ptrunc=0.5,lam0=0.13,truncS=c(0.5,1)) 
 { ## {{{
-### n <- 10; theta <- 1; thetaslope <- 0; mt <- 1
-### draws F_1(1,x) , F_2(1,x) = 1 - F_1(1,x)
+### n <- 1000; theta <- 2; 
 k<-n/2; 
 theta <- 1/theta
 tt<-seq(0,1,length=100)

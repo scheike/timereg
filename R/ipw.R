@@ -175,17 +175,15 @@ ipw <- function(formula,data,cluster,
 ##' @param pair.weight Name of weight variable in the new data.frame for right censoring and left truncation of pairs
 ##' @param cname Name of weight variable in the new data.frame for right censoring of individuals
 ##' @param tname Name of weight variable in the new data.frame for left truncation of individuals
-##' @param weight.name Name of weight variable in the new data.frame for individuals 
 ##' @param weight.name Name of weight variable in the new data.frame for right censoring and left truncation of individuals
 ##' @param prec.factor To let tied censoring and truncation times come after the death times. 
 ##' @param ... Additional arguments to censoring model 
 ##' @author Thomas Scheike 
 ##' @examples
-##'
-##' d <- simnordic.random(5000,delayed=TRUE,ptrunc=0.7,
+##' d <- simnordic.random(3000,delayed=TRUE,ptrunc=0.7,
 ##'       cordz=0.5,cormz=2,lam0=0.3,country=FALSE)
 ##' d$strata <- as.numeric(d$country)+(d$zyg=="MZ")*4
-##' times <- 50:100
+##' times <- seq(60,100,by=10)
 ##' ###cc1 <- comp.risk(Event(time,cause)~-1+factor(country)+
 ##' c1 <- comp.risk(Event(time,cause)~1+
 ##' 		cluster(id),data=d,cause=1,
