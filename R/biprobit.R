@@ -331,7 +331,7 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
   formulaSt <- paste("~.-cluster(",formulaId,")",
                      "-id(",formulaId,")",
                      "-strata(",paste(formulaStrata,collapse="+"),")",sep="")
-  formula <- update(x,formulaSteks=100,pairs.only=TRUE)
+  formula <- update(x,formulaSt=100,pairs.only=TRUE)
 
 
   if (!is.null(formulaId)) {
