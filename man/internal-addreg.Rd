@@ -64,6 +64,10 @@
 \alias{coef.cox.ipw}
 \alias{print.cox.ipw}
 \alias{comprisk.ipw}
+\alias{coef.comprisk.ipw}
+\alias{print.comprisk.ipw}
+\alias{prop.odds.subdist.ipw}
+\alias{summary.comprisk.ipw}
 \alias{coef.cox.aalen}
 \alias{coef.comprisk}
 \alias{coef.two.stage}

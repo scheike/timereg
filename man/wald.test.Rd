@@ -6,7 +6,7 @@ testing components to 0. Can also specify the regression coefficients and
 the variance matrix. 
 }
 \usage{
-wald.test(object=NULL,coef=NULL,Sigma=NULL,contrast,coef.null=NULL,null=NULL)
+wald.test(object=NULL,coef=NULL,Sigma=NULL,contrast,coef.null=NULL,null=NULL,print.coef=TRUE,alpha=0.05)
 }
 \arguments{
   \item{object}{timereg object}
@@ -15,6 +15,8 @@ wald.test(object=NULL,coef=NULL,Sigma=NULL,contrast,coef.null=NULL,null=NULL)
   \item{contrast}{contrast matrix for testing}
   \item{coef.null}{which indeces to test to 0}
   \item{null}{mean of null, 0 by default}
+  \item{print.coef}{print the coefficients of the linear combinations.}
+  \item{alpha}{significance level for CI for linear combinations of coefficients.}
 }
 \author{Thomas Scheike}
 \examples{

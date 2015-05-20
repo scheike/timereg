@@ -77,7 +77,7 @@ return(res)
 
 coef.cox.ipw<- function(object,digits=3,...)
 {
-summary.cox.ipw(x)
+summary.cox.ipw(object)
 }
 
 print.cox.ipw  <-  function(x,...)

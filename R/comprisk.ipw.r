@@ -75,7 +75,7 @@ return(res)
 
 coef.comprisk.ipw<- function(object,digits=3,...)
 { ## {{{ 
-summary.comprisk.ipw(x)
+summary.comprisk.ipw(object)
 } ## }}} 
 
 print.comprisk.ipw  <-  function(x,...)
