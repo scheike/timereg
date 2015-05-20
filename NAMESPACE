@@ -60,6 +60,7 @@ export("aalen", ## {{{
        "prop.odds",
 ###    "prop.odds.gam",
        "prop.odds.subdist",
+       "prop.odds.subdist.ipw",
        "pval",
        "pava",
        "res.mean",
@@ -79,6 +80,11 @@ export("aalen", ## {{{
        "two.stage",
        "wald.test"
 ) ## }}} 
+
+S3method(coef,comprisk.ipw)
+S3method(print,comprisk.ipw)
+S3method(summary,comprisk.ipw)
+export("coef.comprisk.ipw","print.comprisk.ipw","summary.comprisk.ipw")
 
 S3method(coef,cox.ipw)
 S3method(print,cox.ipw)

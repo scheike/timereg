@@ -307,7 +307,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
       }; // }}} 
 
       // updating beta 
-      vec_add(beta,delta,beta); 
+if (it<(*Nit-1))  vec_add(beta,delta,beta); 
 
       for (k=0;k<*px;k++) sumscore= sumscore+
 	(*profile==1)*fabs(VE(Upl,k))+(*profile==0)*fabs(VE(U,k));  
@@ -329,6 +329,7 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
 
 //  if (*baselinevar==1) 
     vec_zeros(xi);dummy=0;  
+  if (robust==1) 
   for (s=*Ntimes-1;s>0;s--) { // {{{ /* computation of q(t) =============   */ 
       extract_row(gt,s,dA); 
       scl_vec_mult(exp(-VE(lht,s))*VE(incS0t,s),dA,dA); 

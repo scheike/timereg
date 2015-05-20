@@ -136,7 +136,7 @@ if ((!is.null(max.clust))) if (max.clust<antclust) {
 
 
 if ((is.null(beta)==FALSE)) {
-	if (length(beta)!=pg) beta <- rep(beta[1],pg); 
+	if (length(c(beta))!=pg) beta <- rep(beta[1],pg); 
 } else {
       beta<-coxph(Surv(eventtime,event)~desX)$coef
      if (max(abs(beta))>5) {
@@ -336,6 +336,7 @@ if (cens.model!="po") attr(ud,"type") <- "comprisk" else attr(ud,"type") <- "sur
 class(ud)<-"cox.aalen"
 return(ud); 
 } ## }}} 
+## }}} 
 
 predictpropodds <- function(out,X=NULL,times=NULL)
 {  ## {{{ 
@@ -352,4 +353,65 @@ pred <- HRR/(1+HRR)
 
 return(list(pred=pred,time=btimes))
 }  ## }}}
+
+prop.odds.subdist.ipw <- function(compriskformula,glmformula,data=sys.parent(),cause=1,
+			 max.clust=NULL,ipw.se=FALSE,...)
+{ ## {{{ 
+  ggl <- glm(glmformula,family='binomial',data=data)
+  mat <-  model.matrix(glmformula,data=data);
+  glmcovs <- attr(ggl$terms,"term.labels")
+  data$ppp <- predict(ggl,type='response')
+
+  dcc <- data[ggl$y==1,]
+  ppp <- dcc$ppp
+  udca <- prop.odds.subdist(compriskformula,data=dcc,cause=cause,weights=1/ppp,n.sim=0,
+		    max.clust=max.clust,...)  
+  ### iid of beta for comprisk model 
+  compriskiid <- udca$gamma.iid
+
+if (ipw.se==TRUE)  { ## {{{ 
+###requireNamespace("lava"); 
+###requireNamespace("NumDeriv"); 
+	glmiid <-   lava::iid(ggl)
+	mat <- mat[ggl$y==1,]
+	par <- coef(ggl)
+
+	compriskalpha <- function(par)
+	{ ## {{{ 
+	  rr <- mat %*% par
+	  pw <- c(exp(rr)/(1+exp(rr)))
+	  assign("pw",pw,envir=environment(compriskformula))
+	  ud <- prop.odds.subdist(compriskformula,data=dcc,
+			  cause=cause,
+			  weights=1/pw,baselinevar=0,beta=udca$gamma,
+			  Nit=1,n.sim=0,...)  
+	  ud$score
+	} ## }}} 
+
+	DU <-  numDeriv::jacobian(compriskalpha,par)
+	IDU <-  udca$D2linv %*% DU 
+	alphaiid <-t( IDU %*% t(glmiid))
+	###
+	iidfull <- alphaiid
+	###
+	iidfull[ggl$y==1,] <- compriskiid + alphaiid[ggl$y==1,]
+	###
+	var2 <- t(iidfull) %*% iidfull
+	se <- cbind(diag(var2)^.5); colnames(se) <- "se"
+} else { iidfull <- NULL; var2 <- NULL; se <- NULL} ## }}} 
+
+var.naive=udca$robvar.gamma
+se.naive=matrix(diag(var.naive)^.5,nrow(var.naive),1); 
+colnames(se.naive) <- "se.naive"
+
+res <- list(iid=iidfull,coef=udca$gamma,var.naive=var.naive,
+	    se.naive=se.naive,var=var2,se=se,
+	    comprisk.ipw=udca)
+class(res) <- "comprisk.ipw"
+return(res)
+} ## }}} 
+
+
+
+
 
