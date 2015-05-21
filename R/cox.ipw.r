@@ -70,7 +70,10 @@ return(res)
 
 summary.cox.ipw <- function(object,digits=3,...)
 {
-res <- cbind(object$coef,object$se,object$se.naive)
+	tval <- object$coef/object$se
+	pval <- 2*(1-pnorm(abs(tval)))
+       	res <- cbind(object$coef,object$se,object$se.naive,pval)
+	colnames(res) <- c("coef","se","se.naive","pval")
 
 return(res)
 }
