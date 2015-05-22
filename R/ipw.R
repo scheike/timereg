@@ -228,14 +228,14 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
    if (is.null(cens.formula)) { 
    if (is.null(strata)) { ## {{{ 
 	   if (!is.null(entrytime)) {
-		   surv.trunc <- survfit(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ 1) 
+		   surv.trunc <- survival::survfit(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ 1) 
 		   trunc.dist <- summary(surv.trunc)
 		   trunc.dist$time <- rev(-trunc.dist$time)
 		   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
 		   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),data[,time])
 		   Lw <- Lfit[,2]
 	   } else {Lw <- 1; }
-	   ud.cens<- survfit(Surv(entrytime,data[,time],data[,cause]==0)~+1) 
+	   ud.cens<- survival::survfit(Surv(entrytime,data[,time],data[,cause]==0)~+1) 
 	   Gfit<-cbind(ud.cens$time,ud.cens$surv)
 	   Gfit<-rbind(c(0,1),Gfit); 
 	   Gcx<-Cpred(Gfit,pmin(mtt,data[,time]),strict=TRUE)[,2];
@@ -255,14 +255,14 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
 	   datas <- subset(data,who)
 	   if (!is.null(entrytime)) {
 		   entrytimes <- entrytime[who]
-		   surv.trunc <- survfit(Surv(-datas[,time],-entrytimes+prec,rep(1,nrow(datas))) ~ +1) 
+		   surv.trunc <- survival::survfit(Surv(-datas[,time],-entrytimes+prec,rep(1,nrow(datas))) ~ +1) 
 		   trunc.dist <- summary(surv.trunc)
 		   trunc.dist$time <- rev(-trunc.dist$time)
 		   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
 		   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),datas[,time])
 		   Lw <- Lfit[,2]
 	   } else {Lw <- 1; }
-	   ud.cens<- survfit(Surv(entrytimes,datas[,time],datas[,cause]==0)~+1) 
+	   ud.cens<- survival::survfit(Surv(entrytimes,datas[,time],datas[,cause]==0)~+1) 
 	   Gfit<-cbind(ud.cens$time,ud.cens$surv)
 	   Gfit<-rbind(c(0,1),Gfit); 
 	   Gcx<-Cpred(Gfit,pmin(mtt,datas[,time]),strict=TRUE)[,2];
@@ -275,8 +275,8 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
         X <- model.matrix(cens.formula,data=data)[,-1,drop=FALSE]; 
 
 	if (!is.null(entrytime)) {
-		trunc.model <- coxph(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ X) 
-		baseout <- basehaz(trunc.model,centered=FALSE); 
+		trunc.model <- survival::coxph(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ X) 
+		baseout <- survival::basehaz(trunc.model,centered=FALSE); 
 		baseout <- cbind(rev(-baseout$time),rev(baseout$hazard))
 	###
 		Lfit <-Cpred(baseout,data[,time])[,-1]
@@ -285,8 +285,8 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
 		Lw <- Lfit
         } else {Lw <- 1; }
 ###
-	cens.model <- coxph(Surv(entrytime,data[,time],data[,cause]==0)~+X) 
-        baseout <- basehaz(cens.model,centered=FALSE); 
+	cens.model <- survival::coxph(Surv(entrytime,data[,time],data[,cause]==0)~+X) 
+        baseout <- survival::basehaz(cens.model,centered=FALSE); 
 	baseout <- cbind(baseout$time,baseout$hazard)
 	Gfit<-Cpred(baseout,pmin(mtt,data[,time]),strict=TRUE)[,2];
 	RR<-exp(as.matrix(X) %*% coef(cens.model))
