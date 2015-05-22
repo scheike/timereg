@@ -21,33 +21,12 @@ biprobit.time.ts <- function(formula,data,id,...,
     }
 
     ltimes <- 0
-    if (ncol(censtime)==3) {  ## Calculate probability of not being truncated via Clayton-Oakes (ad hoc combining causes)
+    if (ncol(censtime)==3) {  
 	 ## {{{ 
         status <- censtime[,3]
         noncens <- !status
         time <- censtime[,2]
         ltimes <- censtime[,1]        
-        data$truncsurv <- Surv(ltimes,time,noncens)
-        trunc.formula <- update(formula,truncsurv~.)       
-	### ts roder lidt i det 7/5-2015
-        ud.trunc <- aalen(cens.formula,data=data,robust=0,n.sim=0,residuals=0,silent=1,max.clust=NULL,
-                          clusters=data[,id])
-        X <- model.matrix(cens.formula,data)
-        ##dependX0 <- model.matrix(theta.formula,data)
-        dependX0 <-  model.matrix(theta.formula,data)
-        twostage.fit <- two.stage(ud.trunc,data=data,robust=0,detail=0,
-                                  theta.des=dependX0)#,Nit=20,step=1.0,notaylor=1)        
-	pre.theta <- dependX0 %*% twostage.fit$theta
-        Xnam <- colnames(X)
-	X <- cbind(X,pre.theta)
-	colnames(X)[ncol(X)] <- "pre.theta"
-        ww <- fast.reshape(cbind(X,".num"=seq(nrow(X)),".lefttime"=ltimes),varying=c(".num",".lefttime"),id=data[,id])
-        nottruncpair.prob <- predict.two.stage(twostage.fit,X=ww[,Xnam],
-                                               times=ww[,".lefttime1"],times2=ww[,".lefttime2"],
-                                               theta=ww$pre.theta)$St1t2
-        data[,trunc.weights] <- 0
-        data[ww[,".num1"],trunc.weights] <- nottruncpair.prob
-        data[ww[,".num2"],trunc.weights] <- nottruncpair.prob
     } else {
         status <- censtime[,2]
         time <- censtime[,1]
