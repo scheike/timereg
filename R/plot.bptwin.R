@@ -1,3 +1,22 @@
+trMean <- function(b,blen) {
+##  mytr <- function(x) x^2; dmytr <- function(x) 2*x
+  mytr <- dmytr <- exp
+  if (blen==0) return(b) 
+  k <- length(b)
+  Bidx <- seq_len(blen)+(k-blen)
+  b[Bidx[1]] <- mytr(b[Bidx[1]])
+  D <- diag(nrow=k)
+  D[Bidx[1]:k,Bidx[1]] <- b[Bidx[1]]
+  for (i in Bidx[-1]) {
+    D[i:k,i] <- dmytr(b[i])
+    b[i] <- b[i-1]+mytr(b[i])
+  }
+  attributes(b)$D <- D
+  attributes(b)$idx <- Bidx
+  return(b)
+}
+
+
 ##' @export
 plot.bptwin <- function(x,n=50,rg=range(x$B[,1]),xlab="Time",ylab="Concordance",...) {
   if (x$Blen>0) {

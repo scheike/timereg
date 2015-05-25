@@ -45,6 +45,7 @@ decomp.specials <- function (x, pattern = "[()]", sep = ",", ...)
   }
 
 
+
 ## myspecials <- c("id","strata","f")
 ## f <- Event(leftime,time,cause) ~ id(~1+z+z2,cluster) + strata(~s1+s2) + f(a) + z*x
 ## ff <- Specials(f,"id",split2=",")
