@@ -929,7 +929,7 @@ summary.cor <- function(object,marg.cif=NULL,marg.cif2=NULL,digits=3,...) { ## {
   if (!(attr(object,"class") %in% c("cor","randomcif"))) stop("Must be a cor.cif or randomcif object")
   if (sum(abs(object$score))>0.001) warning("WARNING: check score for convergence\n")
 
-  coefs <- coef(object,...);
+  coefs <- coef(object,...) 
 
   ocasewise <- oconcordance <- NULL
   if (is.null(marg.cif)==FALSE) { ## {{{ 

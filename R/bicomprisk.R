@@ -13,14 +13,15 @@
 ##' @param max.clust max number of clusters in comp.risk call for iid decompostion, max.clust=NULL uses all clusters otherwise rougher grouping.
 ##' @param marg marginal cumulative incidence to make stanard errors for same clusters for subsequent use in casewise.test()
 ##' @param se.clusters to specify clusters for standard errors. Either a vector of cluster indices or a column name in \code{data}. Defaults to the \code{id} variable.
-##' @param prodlim prodlim to use prodlim estimator (Aalen-Johansen) rather than IPCW weighted estimator based on comp.risk function.These are equivalent in the case of no covariates.
+##' @param wname name of additonal weight used for paired competing risks data. 
+##' @param prodlim prodlim to use prodlim estimator (Aalen-Johansen) rather than IPCW weighted estimator based on comp.risk function.These are equivalent in the case of no covariates. These esimators are the same in the case of stratified fitting. 
 ##' @param messages Control amount of output
 ##' @param model Type of competing risk model (default is Fine-Gray model "fg", see comp.risk). 
 ##' @param return.data Should data be returned (skipping modeling)
 ##' @param uniform to compute uniform standard errors for concordance estimates based on resampling.
 ##' @param conservative for conservative standard errors, recommended for larger data-sets.
 ##' @param resample.iid to return iid residual processes for further computations such as tests. 
-##' @param ... Additional arguments to lower level functions
+##' @param ... Additional arguments to comp.risk function 
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
 ##' @examples
@@ -33,9 +34,15 @@
 ##' p33mz <- p33$model$"MZ"$comp.risk
 ##' ## Concordance
 ##' plot(p33mz,ylim=c(0,0.1),axes=FALSE); axis(2); axis(1)
+##' 
+##' ## entry time
+##' 
+##' 
+##' 
 bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv, 
- strata=NULL, id,num, max.clust=1000, marg=NULL,se.clusters=NULL,
+ strata=NULL, id,num, max.clust=1000, marg=NULL,se.clusters=NULL,wname=NULL,
  prodlim=FALSE,messages=TRUE,model,return.data=0,uniform=0,conservative=1,resample.iid=1,...) {
+## {{{ 
 
   mycall <- match.call()
   formulaId <- unlist(Specials(formula,"id"))
@@ -51,6 +58,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
   ##     stop("Since version : The left hand side of the formula must be specified as 
   ##     Event(time, event) or with non default censoring codes Event(time, event, cens.code=0).")
   ## }
+
 
   if (!is.null(formulaId)) {
     id <- formulaId
@@ -117,6 +125,9 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
   }
 
   covars <- as.character(attributes(terms(formula))$variables)[-(1:2)]
+  ### adds weights, 
+  if (!is.null(wname)) covars <- c(covars,wname)
+
   indiv2 <- covars2 <- NULL 
   
   data <- data[order(data[,id]),]
@@ -198,10 +209,11 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
   if (return.data==2) return(list(data=mydata)) else {
   if (!prodlim) {
     ff <- paste("Event(",timevar,",",causes,",cens.code=",cens,") ~ 1",sep="")
+    if (!is.null(wname)) covars <- covars[-which(covars %in% c(wname))]
     if (length(c(covars,indiv))>0) {
-      xx <- c(covars,indiv2)
-     for (i in seq_len(length(xx)))
-        xx[i] <- paste("const(",xx[i],")",sep="")
+     xx <- c(covars,indiv2)
+     for (i in seq_len(length(xx))) 
+	     xx[i] <- paste("const(",xx[i],")",sep="")
       ff <- paste(c(ff,xx),collapse="+")
       if (missing(model)) model <- "fg"      
     }
@@ -212,9 +224,20 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
         lse.clusters <- ww0[,"lse.clusters1"]
     }
 
-    add<-comp.risk(as.formula(ff),data=mydata,
-    cause=1,n.sim=0,resample.iid=resample.iid,model=model,conservative=conservative,
-    clusters=lse.clusters, max.clust=max.clust)
+    if (!(is.null(wname))) 
+	    mydata <- ipw2(mydata,time=timevar,cause=causes) #,cens.code=cens)
+
+    if (is.null(wname)) {
+	    add<-comp.risk(as.formula(ff),data=mydata,
+	    cause=1,n.sim=0,resample.iid=resample.iid,model=model,conservative=conservative,
+	    clusters=lse.clusters, max.clust=max.clust,...)
+    } else { 
+	    add<-comp.risk(as.formula(ff),data=mydata,
+	    cause=1,n.sim=0,resample.iid=resample.iid,model=model,conservative=conservative,
+	    clusters=lse.clusters, max.clust=max.clust,
+	    weights=mydata[,wname]*mydata$indi.weights,cens.weights=rep(1,nrow(mydata)),...)
+    }
+
     padd <- predict(add,X=1,se=1,uniform=uniform,resample.iid=resample.iid)
     padd$cluster.names <- lse.clusters
   } else {
@@ -225,6 +248,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
 ###  class(padd) <- c("bicomprisk",class(padd))
  if (return.data==1) return(list(comp.risk=padd,data=mydata)) else return(padd)  
   }
+## }}} 
 }
 
 ## plot.bicomprisk <- function(x,add=FALSE,...) {

@@ -365,7 +365,7 @@ res["loglike"]=ssf;
 res["score"]=Utheta; 
 res["Dscore"]=DUtheta; 
 if (iid==1) { res["theta.iid"]=thetiid; 
-	       res["loglikeiid"]=loglikeiid; 
+	      res["loglikeiid"]=loglikeiid; 
             }
 
 return(res); 
