@@ -32,7 +32,7 @@ summarygroup.twinlm <- function(object,...) {
         nn0 <- cc[[i]]
         if (nn0[1]=="mu") nn0[1] <- "(Intercept)"
         for (k in c("a","c","d","e"))
-            nn0 <- gsub("lambda["%+%k%+%"]","SD("%+%toupper(k)%+%"):",nn0,fixed=TRUE)
+            nn0 <- gsub("lambda["%++%k%++%"]","SD("%++%toupper(k)%++%"):",nn0,fixed=TRUE)
         nam <- rownames(res)
         idx <- unlist(lapply(c("Intercept","SD(","z(A):","z(D):"),function(x) grep(x,nn0,fixed=TRUE)))
         nam.keep.idx <- setdiff(seq(length(nam)),idx)
