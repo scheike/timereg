@@ -3,10 +3,11 @@
 \title{Makes wald test}
 \description{Makes wald test on timereg object, either by contrast matrix or
 testing components to 0. Can also specify the regression coefficients and 
-the variance matrix. 
+the variance matrix.  Also makes confidence intervals of the defined contrasts. 
 }
 \usage{
-wald.test(object=NULL,coef=NULL,Sigma=NULL,contrast,coef.null=NULL,null=NULL,print.coef=TRUE,alpha=0.05)
+wald.test(object=NULL,coef=NULL,Sigma=NULL,contrast,coef.null=NULL,null=NULL,
+	  print.coef=TRUE,alpha=0.05)
 }
 \arguments{
   \item{object}{timereg object}
