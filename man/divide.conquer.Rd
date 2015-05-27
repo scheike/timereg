@@ -21,10 +21,8 @@ Split a data set and run function
 \examples{
 library(timereg)
 data(TRACE)
-\donttest{
 res <- divide.conquer(prop.odds,TRACE,
 	     formula=Event(time,status==9)~chf+vf+age,n.sim=0,size=200)
-}
 }
 \author{
 Thomas Scheike, Klaus K. Holst

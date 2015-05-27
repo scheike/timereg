@@ -17,7 +17,7 @@ casewise(conc, marg, cause.marg)
 .. content for description (no empty lines) ..
 }
 \examples{
-\donttest{
+\donttest{ ## Reduce Ex.Timings
 library(prodlim)
 data(prt);
 
