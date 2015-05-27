@@ -9,7 +9,7 @@
 ##' @author Thomas Scheike
 ##' @aliases casewise.test slope.process casewise.bin
 ##' @examples
-##' \donttest{
+##' \donttest{ ## Reduce Ex.Timings
 ##' data(prt);
 ##' 
 ##' prt <- prt[which(prt$id %in% sample(unique(prt$id),7500)),]
@@ -168,7 +168,7 @@ return(out)
 ##' @param cause.marg specififes which cause that should be used for marginal cif based on prodlim
 ##' @author Thomas Scheike
 ##' @examples
-##' \donttest{
+##' \donttest{ ## Reduce Ex.Timings
 ##' library(prodlim)
 ##' data(prt);
 ##' 

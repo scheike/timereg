@@ -77,7 +77,7 @@ We allow a regression structure for the random effects variances that may depend
 cluster covariates.
 }
 \examples{
-\donttest{
+\donttest{ ## Reduce Ex.Timings
  d <- simnordic.random(4000,delayed=TRUE,
        cordz=0.5,cormz=2,lam0=0.3,country=TRUE)
  times <- seq(50,90,by=10)

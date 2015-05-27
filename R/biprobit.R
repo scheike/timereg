@@ -251,7 +251,7 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
 ##' predict(b,newdata=Expand(prt,zyg=c("MZ")))
 ##' predict(b,newdata=Expand(prt,zyg=c("MZ","DZ")))
 ##' 
-##' \donttest{
+##' \donttest{ ## Reduce Ex.Timings
 ##' m <- lvm(c(y1,y2)~x)
 ##' covariance(m,y1~y2) <- "r"
 ##' constrain(m,r~x+a+b) <- function(x) tanh(x[2]+x[3]*x[1])

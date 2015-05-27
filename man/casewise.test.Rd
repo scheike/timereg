@@ -24,7 +24,7 @@ Estimates the casewise concordance based on Concordance and marginal estimate us
 Uses cluster based conservative standard errors for marginal
 }
 \examples{
-\donttest{
+\donttest{ ## Reduce Ex.Timings
 data(prt);
 
 prt <- prt[which(prt$id \%in\% sample(unique(prt$id),7500)),]
