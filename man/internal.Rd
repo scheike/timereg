@@ -6,6 +6,7 @@
 \alias{cluster.index}
 \alias{coefmat}
 \alias{corsim.prostate}
+\alias{corsim.prostate.random}
 \alias{familycluster.index}
 \alias{faster.reshape}
 \alias{folds}
@@ -27,6 +28,7 @@
 \alias{simCox}
 \alias{simSurvFam}
 \alias{simnordic}
+\alias{simnordic.random}
 \alias{surv.boxarea}
 \title{For internal use}
 \description{

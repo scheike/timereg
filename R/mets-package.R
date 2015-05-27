@@ -129,9 +129,9 @@ NULL
 ##' @aliases plotcr npc nonparcuminc simnordic corsim.prostate
 ##' alpha2kendall alpha2spear coefmat piecewise.twostage surv.boxarea
 ##' cluster.index familycluster.index faster.reshape piecewise.data
-##' simBinPlack simBinFam simBinFam2 simSurvFam simCox sim pmvn pbvn
+##' simBinPlack simBinFam simBinFam2 simSurvFam corsim.prostate.random
+##' simnordic.random simCox sim pmvn pbvn
 ##' loglikMVN scoreMVN grouptable jumptimes folds
 NULL
 
-## normal_logLik.lvm normal_method.lvm normal_objective.lvm normal_gradient.lvm
 
