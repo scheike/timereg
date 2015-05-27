@@ -311,7 +311,6 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
 	  as.double(Gctimes),as.double(rep(0,pg)),as.double(matrix(0,pg,pg)),
 	  as.integer(monotone),PACKAGE="timereg") ## }}}
  
-
  ## {{{ handling output
   ssf <- out[[51]]; 
   gamma<-matrix(out[[24]],pg,1); 
@@ -391,7 +390,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
            obs.testBeqC=obs.testBeqC,pval.testBeqC.is=pval.testBeqC.is,
            conf.band=unifCI,B.iid=B.iid,gamma.iid=gamiid,ss=ssf,
            test.procBeqC=Ut,sim.test.procBeqC=UIt,conv=conv,
-	   cens.weights=cens.weights,scores=scores,Dscore.gamma=Dscore.gamma,step=step)
+	   weights=weights,cens.weights=cens.weights,scores=scores,Dscore.gamma=Dscore.gamma,step=step)
 
     ud$call<-call; 
     ud$model<-model; 

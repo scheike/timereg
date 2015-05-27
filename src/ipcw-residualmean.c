@@ -177,7 +177,7 @@ if (convt==1 ) {
 //   for (j=0;j<*antclust;j++) {vec_zeros(cumA[j]);vec_zeros(cumhatA[j]);}
    for (i=0;i<*n;i++) { 
       j=clusters[i]; 
-      if (s<-1) printf("%d  %d %d \n",s,i,j);
+      if (s<-1) Rprintf("%d  %d %d \n",s,i,j);
       extract_row(cX,i,dp); 
       scl_vec_mult(VE(Y,i),dp,dp); 
       vec_add(dp,cumA[j],cumA[j]); 
@@ -402,7 +402,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
 
           if (fabs(ME(AI,0,0))<.0000001) {
              convproblems=1;  silent[s]=1; 
-             if (osilent==0) printf("Iteration %d: non-invertible design at time %lf\n",itt,time); 
+             if (osilent==0) Rprintf("Iteration %d: non-invertible design at time %lf\n",itt,time); 
 	     for (k=1;k<=*px;k++) inc[k*(*Ntimes)+s]=0; 
 	     sing=1;
           }
