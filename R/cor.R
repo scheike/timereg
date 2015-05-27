@@ -497,7 +497,7 @@ dep.cif<-function(cif,data,cause=NULL,model="OR",cif2=NULL,times=NULL,
 ##' ###########################################################
 ##' \donttest{ ## Reduce Ex.Timings
 ##' set.seed(100)
-##' prt<-simnordic(1000,cordz=2,cormz=5)
+##' prt<-simnordic.random(2000,cordz=2,cormz=5)
 ##' prt$status <-prt$cause
 ##' table(prt$status)
 ##' 

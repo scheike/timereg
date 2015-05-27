@@ -160,7 +160,7 @@ summary(out2)
 ###########################################################
 \donttest{ ## Reduce Ex.Timings
 set.seed(100)
-prt<-simnordic(1000,cordz=2,cormz=5)
+prt<-simnordic.random(1000,cordz=1,cormz=3)
 prt$status <-prt$cause
 table(prt$status)
 
