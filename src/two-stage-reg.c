@@ -239,7 +239,7 @@ for(j=0;j<pmax;j++) {
     vec_subtr(vtheta1,dtheta,vtheta1); 
 
     sumscore=0; 
-    for (k=0;k<*pg;k++) sumscore= sumscore+fabs(VE(vthetascore,k));
+    for (k=0;k<*ptheta;k++) sumscore= sumscore+fabs(VE(vthetascore,k));
 
     if ((sumscore<0.0000001) & (it<*Nit-2)) it=*Nit-2; 
   } /* it theta Newton-Raphson */  // }}}
