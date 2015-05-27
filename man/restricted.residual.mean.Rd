@@ -39,7 +39,7 @@ Returns an object. With the following arguments:
 }
 \author{Thomas Scheike}
 \examples{
-### these examples run a bit slowly and a therfore dont-test
+### this example runs slowly and is therefore donttest
 \donttest{
 data(sTRACE)
 sTRACE$cage <- scale(sTRACE$age)

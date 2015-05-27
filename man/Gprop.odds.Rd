@@ -112,7 +112,7 @@ Springer (2006).
 \author{Thomas Scheike}
 \examples{
 data(sTRACE)
-### runs slowly and is therefore not tested 
+### runs slowly and is therefore donttest 
 \donttest{
 library(timereg)
 data(sTRACE)
