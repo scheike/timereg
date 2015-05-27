@@ -51,9 +51,8 @@ Springer (2006).
 }
 \author{Thomas Scheike}
 \examples{
-### runs slowly and therefore donttest 
 \donttest{
-library(survival)
+### runs slowly and therefore donttest 
 data(csl)
 indi.m<-rep(1,length(csl$lt))
 

@@ -39,8 +39,8 @@ Returns an object. With the following arguments:
 }
 \author{Thomas Scheike}
 \examples{
-### this example runs slowly and is therefore donttest
 \donttest{
+### this example runs slowly and is therefore donttest
 data(sTRACE)
 sTRACE$cage <- scale(sTRACE$age)
 # Fits Cox model  and aalen model 
