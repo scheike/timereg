@@ -27,7 +27,7 @@
 ##' ace2 <- twinlm(y ~ x1+x2, data=d, DZ="DZ", zyg="zyg", id="id", type="ace")
 ##' ## Summary/GOF
 ##' summary(ace2)
-##' \donttest{
+##' \donttest{ ## Reduce Ex.Timings
 ##' ## An interaction could be analyzed as:
 ##' ace3 <- twinlm(y ~ x1+x2 + x1:I(x2<0), data=d, DZ="DZ", zyg="zyg", id="id", type="ace")
 ##' ace3

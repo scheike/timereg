@@ -16,10 +16,8 @@ folds<- function (n, folds = 10)
 ##' @examples
 ##' library(timereg)
 ##' data(TRACE)
-##' \donttest{
 ##' res <- divide.conquer(prop.odds,TRACE,
 ##' 	     formula=Event(time,status==9)~chf+vf+age,n.sim=0,size=200)
-##' }
 divide.conquer <- function(func=NULL,data,size,...)
 { ## {{{ 
 nn <- nrow(data)
@@ -42,19 +40,19 @@ res
 ##' @examples
 ##' library(timereg)
 ##' data(TRACE)
-##' \donttest{
 ##' a <- divide.conquer.timereg(prop.odds,TRACE,
-##' 	     formula=Event(time,status==9)~chf+vf+age,n.sim=0,size=200)
+##'                             formula=Event(time,status==9)~chf+vf+age,n.sim=0,size=200)
 ##' coef(a)
 ##' a2 <- divide.conquer.timereg(prop.odds,TRACE,
-##'	     formula=Event(time,status==9)~chf+vf+age,n.sim=0,size=500)
+##'                              formula=Event(time,status==9)~chf+vf+age,n.sim=0,size=500)
 ##' coef(a2)
+##' 
+##' if (interactive()) {
 ##' par(mfrow=c(1,1))
 ##' plot(a,xlim=c(0,8),ylim=c(0,0.01))
 ##' par(new=TRUE)
 ##' plot(a2,xlim=c(0,8),ylim=c(0,0.01))
 ##' }
-##' 
 divide.conquer.timereg <- function(func=NULL,data,size,...)
 { ## {{{ 
 
