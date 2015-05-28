@@ -104,7 +104,7 @@ udp <- piecewise.twostage(c(0,0.5,2),data=d,score.method="optimize",
                           status="status",model="clayton.oakes",silent=0)
 summary(udp)
 
-\donttest{
+\donttest{ ## Reduce Ex.Timings
 ### Same model using the strata option, a bit slower
 ########################################################
 ## makes the survival pieces for different areas in the plane

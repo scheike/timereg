@@ -495,9 +495,9 @@ dep.cif<-function(cif,data,cause=NULL,model="OR",cif2=NULL,times=NULL,
 ##' ###########################################################
 ##' # investigating further models using parfunc and dparfunc
 ##' ###########################################################
-##' \donttest{
+##' \donttest{ ## Reduce Ex.Timings
 ##' set.seed(100)
-##' prt<-simnordic(1000,cordz=2,cormz=5)
+##' prt<-simnordic.random(2000,cordz=2,cormz=5)
 ##' prt$status <-prt$cause
 ##' table(prt$status)
 ##' 
@@ -667,7 +667,7 @@ or.cif<-function(cif,data,cause=NULL,cif2=NULL,times=NULL,
 ##' Cross odds ratio Modelling of dependence for
 ##' Multivariate Competing Risks Data, Scheike and Sun (2012), work in progress.
 ##' @examples
-##' \donttest{
+##' \donttest{ ## Reduce Ex.Timings
 ##'  d <- simnordic.random(4000,delayed=TRUE,
 ##'        cordz=0.5,cormz=2,lam0=0.3,country=TRUE)
 ##'  times <- seq(50,90,by=10)
@@ -796,7 +796,7 @@ random.cif<-function(cif,data,cause=NULL,cif2=NULL,
 ##' Scheike, Holst, Hjelmborg (2014),  LIDA,  
 ##' Estimating heritability for cause specific hazards based on twin data
 ##' @examples
-##' \donttest{
+##' \donttest{ ## Reduce Ex.Timings
 ##'  d <- simnordic.random(5000,delayed=TRUE,
 ##'        cordz=0.5,cormz=2,lam0=0.3,country=TRUE)
 ##'  times <- seq(50,90,by=10)
@@ -929,7 +929,7 @@ summary.cor <- function(object,marg.cif=NULL,marg.cif2=NULL,digits=3,...) { ## {
   if (!(attr(object,"class") %in% c("cor","randomcif"))) stop("Must be a cor.cif or randomcif object")
   if (sum(abs(object$score))>0.001) warning("WARNING: check score for convergence\n")
 
-  coefs <- coef(object,...);
+  coefs <- coef(object,...) 
 
   ocasewise <- oconcordance <- NULL
   if (is.null(marg.cif)==FALSE) { ## {{{ 

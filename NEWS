@@ -1,8 +1,12 @@
-* Version 1.1.0 <2015-01-01 Thu>
-  - fast.approx updated with 'left'...
-  - scoreMVN
-  - lifetable updated and new survpois function
-    
+
+* Version 1.1.1 <2015-05-27 Wed>
+  - Support for left-truncation 
+
+* Version 1.1.0 <2015-02-16 Mon>
+  - fast.approx with 'type' argument
+  - scoreMV
+  - lifetable updated and new survpois function (piecewise constant
+    hazard)
 
 * Version 1.0.0 <2014-11-18 Tue>
   - New functions biprobit.time, binomial.twostage.time.

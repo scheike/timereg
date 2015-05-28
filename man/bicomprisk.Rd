@@ -6,8 +6,9 @@
 \usage{
 bicomprisk(formula, data, cause = c(1, 1), cens = 0, causes, indiv,
   strata = NULL, id, num, max.clust = 1000, marg = NULL,
-  se.clusters = NULL, prodlim = FALSE, messages = TRUE, model,
-  return.data = 0, uniform = 0, conservative = 1, resample.iid = 1, ...)
+  se.clusters = NULL, wname = NULL, prodlim = FALSE, messages = TRUE,
+  model, return.data = 0, uniform = 0, conservative = 1,
+  resample.iid = 1, ...)
 }
 \arguments{
 \item{formula}{Formula with left-hand-side being a \code{Event} object (see example below) and the left-hand-side specying the covariate structure}
@@ -34,7 +35,9 @@ bicomprisk(formula, data, cause = c(1, 1), cens = 0, causes, indiv,
 
 \item{se.clusters}{to specify clusters for standard errors. Either a vector of cluster indices or a column name in \code{data}. Defaults to the \code{id} variable.}
 
-\item{prodlim}{prodlim to use prodlim estimator (Aalen-Johansen) rather than IPCW weighted estimator based on comp.risk function.These are equivalent in the case of no covariates.}
+\item{wname}{name of additonal weight used for paired competing risks data.}
+
+\item{prodlim}{prodlim to use prodlim estimator (Aalen-Johansen) rather than IPCW weighted estimator based on comp.risk function.These are equivalent in the case of no covariates. These esimators are the same in the case of stratified fitting.}
 
 \item{messages}{Control amount of output}
 
@@ -48,20 +51,53 @@ bicomprisk(formula, data, cause = c(1, 1), cens = 0, causes, indiv,
 
 \item{resample.iid}{to return iid residual processes for further computations such as tests.}
 
-\item{...}{Additional arguments to lower level functions}
+\item{...}{Additional arguments to comp.risk function}
 }
 \description{
 Estimation of concordance in bivariate competing risks data
 }
 \examples{
-data(prt) ## Prostate data example (sim)
+## Simulated data example
+prt <- simnordic.random(2000,delayed=TRUE,ptrunc=0.7,
+		      cordz=0.5,cormz=2,lam0=0.3)
 ## Bivariate competing risk, concordance estimates
-p33 <- bicomprisk(Event(time,status)~strata(zyg)+id(id),
-                  data=prt,cause=c(2,2),return.data=1)
+p11 <- bicomprisk(Event(time,cause)~strata(zyg)+id(id),
+                  data=prt,cause=c(1,1))
 
-p33mz <- p33$model$"MZ"$comp.risk
+p11mz <- p11$model$"MZ"
 ## Concordance
-plot(p33mz,ylim=c(0,0.1),axes=FALSE); axis(2); axis(1)
+plot(p11mz,ylim=c(0,0.1));
+
+## entry time, truncation weighting
+prtl <- prt[!prt$truncated,]
+prt2 <- ipw2(prtl,cluster="id",same.cens=TRUE,
+     time="time",entrytime="entry",cause="cause",
+     strata="zyg",pairs=TRUE,obs.only=FALSE)
+prt2$ppt <- prt2$ptw
+
+p11t <- bicomprisk(Event(time,cause)~strata(zyg)+id(id),
+		  data=prt2,cause=c(1,1),wname="ppt",times=50:90)
+## Concordance
+p11tmz <- p11t$model$"MZ"
+p11tdz <- p11t$model$"DZ"
+lines(p11tmz$time,p11tmz$P1,col=2)
+
+### other weighting procedure
+prt2 <- ipw2(prt,cluster="id",same.cens=TRUE,
+     time="time",cause="cause",
+     pairs=TRUE,strata="zyg",obs.only=TRUE)
+
+prt22 <- fast.reshape(prt2,id="id")
+
+prt22$event <- (prt22$cause1==1)*(prt22$cause2==1)*1
+prt22$timel <- pmax(prt22$time1,prt22$time2)
+ipwc <- comp.risk(Event(timel,event)~-1+factor(zyg1),
+  data=prt22,cause=1,n.sim=0,model="rcif2",times=50:90,
+  weights=prt22$weights1,cens.weights=rep(1,nrow(prt22)))
+
+p11wmz <- ipwc$cum[,2]
+p11wdz <- ipwc$cum[,3]
+lines(ipwc$cum[,1],p11wmz,col=3)
 }
 \author{
 Thomas Scheike, Klaus K. Holst

@@ -113,7 +113,7 @@ out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
                                theta.formula=desfs,desnames=c("mz","dz","os"))
 summary(out3)
 
-\donttest{
+\donttest{ ## Reduce Ex.Timings
 n <- 10000
 set.seed(100)
 dd <- simBinFam(n,beta=0.3)

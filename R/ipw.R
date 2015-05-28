@@ -9,6 +9,7 @@
 ##' @param same.cens For clustered data, should same censoring be assumed (bivariate probability calculated as mininum of the marginal probabilities)
 ##' @param obs.only Return data with uncensored observations only
 ##' @param weight.name Name of weight variable in the new data.frame
+##' @param indi.weight Name of individual censoring weight  in the new data.frame
 ##' @param trunc.prob If TRUE truncation probabilities are also calculated and stored in 'weight.name2' (based on Clayton-Oakes gamma frailty model)
 ##' @param weight.name2 Name of truncation probabilities
 ##' @param cens.model Censoring model (default Aalens additive model)
@@ -35,7 +36,7 @@
 ipw <- function(formula,data,cluster,
                 same.cens=FALSE,obs.only=TRUE,
                 weight.name="w",
-                trunc.prob=FALSE,weight.name2="wt",
+                trunc.prob=FALSE,weight.name2="wt",indi.weight="pr",
                 cens.model="aalen", pairs=FALSE,
                 theta.formula=~1, ...) { 
 ## {{{
@@ -70,8 +71,8 @@ ipw <- function(formula,data,cluster,
         if (is.null(attr(terms(formula,"prop"),"specials")$prop)) {
             ud.cens <- aalen(formula,n.sim=0,robust=0,data=data,...)
             XZ <- model.matrix(formula,data)
-            Gcx <- ud.cens$cum[prodlim::sindex(ud.cens$cum[,1],otimes),-1]
-            ##Gcx<-Cpred(ud.cens$cum,otimes)[,-1];            
+###         Gcx <- ud.cens$cum[prodlim::sindex(ud.cens$cum[,1],otimes),-1]
+            Gcx<-Cpred(ud.cens$cum,otimes)[,-1];            
             Gcx<-exp(-apply(Gcx*XZ,1,sum))            
         } else {
             ud.cens <- cox.aalen(formula,n.sim=0,robust=0,data=data,...)
@@ -82,6 +83,7 @@ ipw <- function(formula,data,cluster,
         ##ud.cens <- do.call(cens.model,cens.args)
         Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
         pr <- Gcx
+	data[,indi.weight] <- Gcx
     } ## }}} 
 
      if (trunc.prob) stop("Under development\n"); 
@@ -184,10 +186,8 @@ ipw <- function(formula,data,cluster,
 ##'       cordz=0.5,cormz=2,lam0=0.3,country=FALSE)
 ##' d$strata <- as.numeric(d$country)+(d$zyg=="MZ")*4
 ##' times <- seq(60,100,by=10)
-##' ###cc1 <- comp.risk(Event(time,cause)~-1+factor(country)+
-##' c1 <- comp.risk(Event(time,cause)~1+
-##' 		cluster(id),data=d,cause=1,
-##' 		model="fg",times=times,max.clust=NULL,n.sim=0)
+##' c1 <- comp.risk(Event(time,cause)~1+cluster(id),data=d,cause=1,
+##' 	model="fg",times=times,max.clust=NULL,n.sim=0)
 ##' mm=model.matrix(~-1+zyg,data=d)
 ##' out1<-random.cif(c1,data=d,cause1=1,cause2=1,same.cens=TRUE,theta.des=mm)
 ##' summary(out1)
@@ -218,9 +218,10 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
 { ## {{{ 
    ### first calculates weights based on marginal
    ### estimators  of censoring and truncation
+
 ## {{{  weights, up at T_i or min(T_i,max(times))
    if (is.null(times)) times <- max(data[,time])
-   if (is.null(entrytime)) entrytime <- rep(0,nrow(data)) else entrytime <- data[,entrytime]
+   if (is.null(entrytime)) entry <- rep(0,nrow(data)) else entry <- data[,entrytime]
    mtt <- max(times)
    prec <- .Machine$double.eps * prec.factor
    trunc.model <- cens.model <- NULL ## output of Cox models for entry cens
@@ -228,14 +229,16 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
    if (is.null(cens.formula)) { 
    if (is.null(strata)) { ## {{{ 
 	   if (!is.null(entrytime)) {
-		   surv.trunc <- survival::survfit(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ 1) 
+		   surv.trunc <- survival::survfit(Surv(-data[,time],-entry+prec,rep(1,nrow(data))) ~ 1) 
 		   trunc.dist <- summary(surv.trunc)
 		   trunc.dist$time <- rev(-trunc.dist$time)
 		   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
-		   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),data[,time])
+		   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),data[,time],strict=TRUE)
 		   Lw <- Lfit[,2]
 	   } else {Lw <- 1; }
-	   ud.cens<- survival::survfit(Surv(entrytime,data[,time],data[,cause]==0)~+1) 
+	   if (!is.null(entrytime)) 
+	   ud.cens<- survival::survfit(Surv(entry,data[,time],data[,cause]==0)~+1) 
+           else ud.cens<- survival::survfit(Surv(data[,time],data[,cause]==0)~+1) 
 	   Gfit<-cbind(ud.cens$time,ud.cens$surv)
 	   Gfit<-rbind(c(0,1),Gfit); 
 	   Gcx<-Cpred(Gfit,pmin(mtt,data[,time]),strict=TRUE)[,2];
@@ -245,7 +248,7 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
    ### ## }}} 
    } else { ## {{{ 
 	   ### compute for each strata and combine 
-	  vstrata <- as.numeric(data[,strata])
+	  vstrata <- as.numeric(factor(data[,strata]))
           weights <- rep(1,nrow(data))
           cweights <- rep(1,nrow(data))
           tweights <- rep(1,nrow(data))
@@ -253,16 +256,18 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
 	       who <- (vstrata == i)
 	       if (sum(who) <= 1) stop(paste("strata",i,"less than 1 observation\n")); 
 	   datas <- subset(data,who)
+	   entrytimes <- entry[who]
 	   if (!is.null(entrytime)) {
-		   entrytimes <- entrytime[who]
 		   surv.trunc <- survival::survfit(Surv(-datas[,time],-entrytimes+prec,rep(1,nrow(datas))) ~ +1) 
 		   trunc.dist <- summary(surv.trunc)
 		   trunc.dist$time <- rev(-trunc.dist$time)
 		   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
-		   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),datas[,time])
+		   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),datas[,time],strict=TRUE)
 		   Lw <- Lfit[,2]
 	   } else {Lw <- 1; }
+	   if (!is.null(entrytime)) 
 	   ud.cens<- survival::survfit(Surv(entrytimes,datas[,time],datas[,cause]==0)~+1) 
+           else ud.cens<- survival::survfit(Surv(entrytimes,datas[,time],datas[,cause]==0)~+1) 
 	   Gfit<-cbind(ud.cens$time,ud.cens$surv)
 	   Gfit<-rbind(c(0,1),Gfit); 
 	   Gcx<-Cpred(Gfit,pmin(mtt,datas[,time]),strict=TRUE)[,2];
@@ -275,18 +280,23 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
         X <- model.matrix(cens.formula,data=data)[,-1,drop=FALSE]; 
 
 	if (!is.null(entrytime)) {
+###		trunc.model <- cox.aalen(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ prop(X)) 
 		trunc.model <- survival::coxph(Surv(-data[,time],-entrytime+prec,rep(1,nrow(data))) ~ X) 
+###                baseout <- cens.model$cum 
 		baseout <- survival::basehaz(trunc.model,centered=FALSE); 
 		baseout <- cbind(rev(-baseout$time),rev(baseout$hazard))
 	###
-		Lfit <-Cpred(baseout,data[,time])[,-1]
+		Lfit <-Cpred(baseout,data[,time],strict=TRUE)[,-1]
 		RR<-exp(as.matrix(X) %*% coef(trunc.model))
 		Lfit<-exp(-Lfit*RR)
 		Lw <- Lfit
         } else {Lw <- 1; }
 ###
+	if (!is.null(entrytime)) 
 	cens.model <- survival::coxph(Surv(entrytime,data[,time],data[,cause]==0)~+X) 
+        else cens.model <- survival::coxph(Surv(data[,time],data[,cause]==0)~+X) 
         baseout <- survival::basehaz(cens.model,centered=FALSE); 
+###        baseout <- cens.model$cum 
 	baseout <- cbind(baseout$time,baseout$hazard)
 	Gfit<-Cpred(baseout,pmin(mtt,data[,time]),strict=TRUE)[,2];
 	RR<-exp(as.matrix(X) %*% coef(cens.model))
@@ -296,11 +306,6 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
         tweights <- Lw
    } ## }}} 
 
-###   if ("weights" %in% names(data)) {
-###       warning("Weights in variable 'weights_' \n")
-###       wname<- "weights_"
-###       data[,wname] <- weights
-###   } else data[,"weights"] <- weights
    data[,weight.name] <- weights
    data[,"cw"] <- 1
 
@@ -309,12 +314,6 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
    if (mint<0 | mint>1) warning("min(truncation weights) strange, maybe prec.factor should be different\n")
    if (maxt<0 | maxt>1) warning("max(truncation weights) strange, maybe prec.factor should be different\n")
    }
-
-###   if ("cw" %in% names(data)) {
-###      warning("cw weights in variable 'cw_' \n")
-###      cwname<- "cw_"
-###      data[,cwname] <- 1
-###   } else data[,"cw"] <- 1
 
    attr(data,"trunc.model") <- trunc.model
    attr(data,"cens.model") <- cens.model 
@@ -355,7 +354,7 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
    if (!is.null(entrytime)) { 
         Wt <- apply(Wide[,paste(tname,1:2,sep="")],1,
                    function(x) min(x)) ## NA when there is just one
-###                   function(x) max(x,na.rm=TRUE))
+###                function(x) max(x,na.rm=TRUE))
 ###        Wtmarg <- d0[,tname]
 ###        data[,pair.tweight] <- 0; ##1/Wtmarg
         Wtmax <- rep(Wt,id)

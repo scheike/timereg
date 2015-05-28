@@ -6,7 +6,8 @@
 \usage{
 ipw(formula, data, cluster, same.cens = FALSE, obs.only = TRUE,
   weight.name = "w", trunc.prob = FALSE, weight.name2 = "wt",
-  cens.model = "aalen", pairs = FALSE, theta.formula = ~1, ...)
+  indi.weight = "pr", cens.model = "aalen", pairs = FALSE,
+  theta.formula = ~1, ...)
 }
 \arguments{
 \item{formula}{Formula specifying the censoring model}
@@ -24,6 +25,8 @@ ipw(formula, data, cluster, same.cens = FALSE, obs.only = TRUE,
 \item{trunc.prob}{If TRUE truncation probabilities are also calculated and stored in 'weight.name2' (based on Clayton-Oakes gamma frailty model)}
 
 \item{weight.name2}{Name of truncation probabilities}
+
+\item{indi.weight}{Name of individual censoring weight  in the new data.frame}
 
 \item{cens.model}{Censoring model (default Aalens additive model)}
 

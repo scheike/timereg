@@ -158,9 +158,9 @@ summary(out2)
 ###########################################################
 # investigating further models using parfunc and dparfunc
 ###########################################################
-\donttest{
+\donttest{ ## Reduce Ex.Timings
 set.seed(100)
-prt<-simnordic(1000,cordz=2,cormz=5)
+prt<-simnordic.random(2000,cordz=2,cormz=5)
 prt$status <-prt$cause
 table(prt$status)
 
