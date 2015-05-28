@@ -31,6 +31,7 @@ export("aalen", ## {{{
        "dynreg",   	
        "dynregBase",	
        "Event",	
+       "event.split",	
        "as.matrix.Event",	
        "as.character.Event",	
        "format.Event",	
