@@ -328,7 +328,7 @@ int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
       {
 	  time=times[s]; if (s==0) dtime=0; else dtime=time-times[s-1]; 
 //	  dtime=1; 
-		    if (tau>0) dtau=*tau-time; else dtau=time; 
+		    if (*tau>0) dtau=*tau-time; else dtau=time; 
 //		    printf(" %lf %lf %lf \n",time,dtau,*tau); 
 
 	  for(j=1;j<=*px;j++) VE(bhatt,j-1)=est[j*(*Ntimes)+s];
