@@ -32,7 +32,8 @@ event.split <- function(data,
     data[,name.start] <- new.start
     data[,name.id] <- id
     data[,num] <- new.num
-    data <- dsort(data,id)
+
+    data <- data[order(id),]
 
     return(data)
     ## }}} 
