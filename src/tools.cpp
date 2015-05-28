@@ -39,34 +39,58 @@ BEGIN_RCPP
   }
 
   for (unsigned k=0; k<nvarying; k++) {
-    if (Rf_isLogical(d[idx[k]])) {
+    unsigned type=0; // 1:logical,2:integer,3:numeric,4:complex,5:character
+    for (unsigned i=0; i<nclust; i++) {
+      bool assigned = false;
+      if (Rf_isLogical(d[idx[k]+i]) & (type<2)) {
+	type=1;
+	assigned=true;
+      }
+      if (Rf_isInteger(d[idx[k]+i]) & (type<3)) {
+	type=2;
+	assigned=true;
+      }
+      if (Rf_isNumeric(d[idx[k]+i]) & (type<4)) {
+	type=3;
+	assigned=true;
+      }
+      if (Rf_isComplex(d[idx[k]+i]) & (type<5)) {
+	type=4;
+	assigned=true;
+      }
+      if (!assigned) {
+	//Rf_isString(d[idx[k]]) || Rf_isFactor(d[idx[k]])
+	type=5;
+      }
+    }
+    if (type==1) {
       LogicalMatrix mm(nclust,n);
       for (unsigned i=0; i<nclust; i++)
 	mm(i,_) = Rcpp::as<LogicalVector>(d[idx[k]+i]);	    
       myList[nfixed+k] = Rcpp::LogicalVector(mm.begin(),mm.end());
-    } else if (Rf_isInteger(d[idx[k]])) {
+    } else if (type==2) {
       IntegerMatrix mm(nclust,n);
       for (unsigned i=0; i<nclust; i++)
 	mm(i,_) = Rcpp::as<IntegerVector>(d[idx[k]+i]);	    
       myList[nfixed+k] = Rcpp::IntegerVector(mm.begin(),mm.end());
-    } else if (Rf_isNumeric(d[idx[k]])) {
+    } else if (type==3) {
       NumericMatrix mm(nclust,n);
       for (unsigned i=0; i<nclust; i++)
 	mm(i,_) = Rcpp::as<NumericVector>(d[idx[k]+i]);	    
       //myList[nfixed+k] = Rcpp::NumericMatrix(M,1,mm.begin());      
       myList[nfixed+k] = Rcpp::NumericVector(mm.begin(),mm.end());
-    } else if (Rf_isComplex(d[idx[k]])) {
+    } else if (type==4) {
       ComplexMatrix mm(nclust,n);
       for (unsigned i=0; i<nclust; i++)
 	mm(i,_) = Rcpp::as<ComplexVector>(d[idx[k]+i]);	    
       myList[nfixed+k] = Rcpp::ComplexVector(mm.begin(),mm.end());
-    } else if (Rf_isString(d[idx[k]]) || Rf_isFactor(d[idx[k]])) {
+    } else if (type==5) {
       CharacterMatrix mm(nclust,n);
       for (unsigned i=0; i<nclust; i++)
 	mm(i,_) = Rcpp::as<CharacterVector>(d[idx[k]+i]);	    
       myList[nfixed+k] = Rcpp::CharacterVector(mm.begin(),mm.end());
     } 
-  }      
+  }
 
   //  IntegerVector Id = Rcpp::seq_len(n);
   IntegerVector Id = Rcpp::rep_each(Rcpp::seq_len(n),nclust);
