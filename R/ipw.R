@@ -350,6 +350,10 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
         Wmin <- rep(W,id)
 	data[,pair.cweight] <- 1/Wmin
 
+	### when pair-weight is NA takes individual weight
+	naW <- is.na(Wmin)
+	data[naW,pair.cweight] <- 1/data[naW,cname]
+
       ### truncation same truncation  
    if (!is.null(entrytime)) { 
         Wt <- apply(Wide[,paste(tname,1:2,sep="")],1,
@@ -359,6 +363,10 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
 ###        data[,pair.tweight] <- 0; ##1/Wtmarg
         Wtmax <- rep(Wt,id)
 	data[,pair.tweight] <- 1/Wtmax
+
+	### when pair-weight is NA takes individual weight
+	naW <- is.na(Wtmax)
+	data[naW,pair.tweight] <- 1/data[naW,tname]
    }
 
    ## {{{ 
@@ -386,12 +394,12 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
 
     if (obs.only) { data <- data[observed,] } 
 
+    id <-  table(data[,cluster])
     if (pairs) {
-          id <-  table(data[,cluster])
           gem <- data[,cluster]%in%(names(id)[id==2])
           id <- id[id==2]
           data <- data[gem,]
-    }
+    } else data[,"pairs."] <- data[,cluster]%in%(names(id)[id==2])
 
    return(data)
 } ## }}} 
