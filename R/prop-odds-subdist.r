@@ -174,13 +174,13 @@ if (cens.model=="KM") { ## {{{
     KMti<-Cpred(Gfit,time2)[,2];
     KMtimes<-Cpred(Gfit,times)[,2]; ## }}}
   } else if (cens.model=="cox") { ## {{{
-    ud.cens<-coxph(Surv(time2,delta==cens.code)~desX)
-    aseout <- basehaz(ud.cens,centered=FALSE); 
-    baseout <- cbind(baseout$time,baseout$hazard)
-    Gcx<-Cpred(baseout,time2)[,2];
-    RR<-exp(desX %*% coef(ud.cens))
+    ud.cens<-cox.aalen(Surv(time2,delta==cens.code)~prop(desX),n.sim=0,robust=0)
+###  baseout <- basehaz(ud.cens,centered=FALSE); 
+###  baseout <- cbind(baseout$time,baseout$hazard)
+    Gcx<-Cpred(ud.cens$cum,time2)[,2];
+    RR<-exp(desX %*% ud.cens$gamma)
     KMti<-exp(-Gcx*RR)
-    KMtimes<-Cpred(Gfit,times)[,2]; 
+    KMtimes<-Cpred(cbind(time2,KMti),times)[,2]; 
     ## }}}
   } else if (cens.model=="aalen") {  ## {{{
     ud.cens<-aalen(Surv(time2,delta==cens.code)~desX+cluster(clusters),n.sim=0,residuals=0,robust=0,silent=1)

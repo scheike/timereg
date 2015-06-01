@@ -26,7 +26,8 @@ wald.test <- function(object=NULL,coef=NULL,Sigma=NULL,contrast,coef.null=NULL,n
   if (missing(contrast)) {
       contrast <- rep(1,length(coefs))
       contrast <- diag(1,nl);
-  }
+###      namesc <- names(c(coefs))
+  } 
   if (!is.null(coef.null)) {
 	  contrast <- c()
 	  for (i in coef.null) 
@@ -43,8 +44,10 @@ wald.test <- function(object=NULL,coef=NULL,Sigma=NULL,contrast,coef.null=NULL,n
  seBp <- diag(varBp)^.5
  lin.comb <- B %*% p
  Q <- t(B%*%p-null)%*%solve(varBp)%*%(B%*%p-null)
- coef.out <- cbind(lin.comb,seBp,lin.comb+seBp*qnorm(alpha/2),lin.comb+seBp*qnorm(1-alpha/2))
- colnames(coef.out) <- c("lin.comb","se","lower","upper")
+ zvals <- lin.comb/seBp
+ pvals <- 2*(1-pnorm(abs(zvals)))
+ coef.out <- cbind(lin.comb,seBp,lin.comb+seBp*qnorm(alpha/2),lin.comb+seBp*qnorm(1-alpha/2),pvals)
+ colnames(coef.out) <- c("lin.comb","se","lower","upper","pval")
  if (print.coef) prmatrix(coef.out)
 
  df <- qr(B)$rank; names(df) <- "df"
