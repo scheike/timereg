@@ -21,6 +21,28 @@ test_that("fast reshape II", {
 })
 
 
+test_that("fast rehape: different data types", {
+    d <- data.frame(time1=c(1:5),
+                    time2=c(6.070311,
+                        2.026996,
+                        7.584480,
+                        8.630120,
+                        8.193392))
+    dd <- mets::fast.reshape(d)
+    expect_equivalent(dd[,1],as.vector(t(d)))
+
+    d <- data.frame(time1=c(TRUE,FALSE,TRUE,FALSE,TRUE),
+                    time2=c(6.070311,
+                        2.026996,
+                        7.584480,
+                        8.630120,
+                        8.193392))
+    dd <- mets::fast.reshape(d)
+    expect_equivalent(dd[,1],as.vector(t(d)))
+})
+
+
+
 ## fast.reshape(fast.reshape(d,var=c("y","z","w")),id="id",var=c("y","z","w"))
 ## library(mets)
 ## x <- matrix(1:10,5,2)
