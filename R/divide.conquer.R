@@ -26,7 +26,7 @@ divide.conquer <- function(func=NULL,data,size,splits,id=NULL,...)
     if (!is.null(id)) {
         if (is.character(id) && length(id)==1) id <- data[,id]
         if (length(id)!=nn) stop("Wrong length of id variable")
-        cc <- cluster.index(d$id)
+        cc <- cluster.index(id)
         if (!missing(size)) splits <- round(cc$uniqueclust/size)
         splits <- min(splits,cc$uniqueclust)
         all.folds <- folds(cc$uniqueclust,splits)
