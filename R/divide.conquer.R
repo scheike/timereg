@@ -10,6 +10,8 @@ folds<- function (n, folds = 10)
 ##' @param func called function
 ##' @param data data-frame
 ##' @param size size of splits
+##' @param splits number of splits (ignored if size is given)
+##' @param id optional cluster variable
 ##' @param ... Additional arguments to lower level functions
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
@@ -18,14 +20,27 @@ folds<- function (n, folds = 10)
 ##' data(TRACE)
 ##' res <- divide.conquer(prop.odds,TRACE,
 ##' 	     formula=Event(time,status==9)~chf+vf+age,n.sim=0,size=200)
-divide.conquer <- function(func=NULL,data,size,...)
-{ ## {{{ 
-nn <- nrow(data)
-K <- round(nn/size)
-all.folds <- folds(nn,K)
-res <- lapply(all.folds, function(i) 
+divide.conquer <- function(func=NULL,data,size,splits,id=NULL,...)
+{ ## {{{
+    nn <- nrow(data)
+    if (!is.null(id)) {
+        if (is.character(id) && length(id)==1) id <- data[,id]
+        if (length(id)!=nn) stop("Wrong length of id variable")
+        cc <- cluster.index(d$id)
+        if (!missing(size)) splits <- round(cc$uniqueclust/size)
+        splits <- min(splits,cc$uniqueclust)
+        all.folds <- folds(cc$uniqueclust,splits)
+        res <- lapply(all.folds, function(i) {
+            idx <- na.omit(as.vector(cc$idclustmat[i,]+1))
+            do.call(func, c(list(data=data[idx,]),...))
+        })        
+        return(res)
+    }    
+    splits <- round(nn/size)
+    all.folds <- folds(nn,splits)
+    res <- lapply(all.folds, function(i) 
 	do.call(func, c(list(data=data[i,]),...)))
-res
+    res
 } ## }}} 
 
 ##' Split a data set and run function of cox-aalen type and aggregate results 
