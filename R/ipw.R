@@ -235,7 +235,7 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
 		   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
 		   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),data[,time],strict=TRUE)
 		   Lw <- Lfit[,2]
-	   } else {Lw <- 1; }
+	   } else { Lw <- 1; }
 	   if (!is.null(entrytime)) 
 	   ud.cens<- survival::survfit(Surv(entry,data[,time],data[,cause]==0)~+1) 
            else ud.cens<- survival::survfit(Surv(data[,time],data[,cause]==0)~+1) 
@@ -315,8 +315,10 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
    if (maxt<0 | maxt>1) warning("max(truncation weights) strange, maybe prec.factor should be different\n")
    }
 
+   if (!is.null(entrytime)) {
    attr(data,"trunc.model") <- trunc.model
    attr(data,"cens.model") <- cens.model 
+   }
    data[,cname] <- cweights
    data[,tname] <- tweights
 ## }}} 
@@ -328,11 +330,11 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
     if (same.cens & !is.null(cluster)) { ## {{{         
 ###        message("Minimum weights.cens..")
 ###        message("Maximum weights.trunc..")
-        myord <- order(data[,cluster])
-        data <- data[myord,,drop=FALSE]
-        id <-  table(data[,cluster])
-        observed <- ((data[,time]>mtt & data[,cause]==cens.code)) | (data[,cause]!=cens.code)
-       d0 <- subset(data,select=c(cluster,cname,tname))
+       myord <- order(data[,cluster])
+       data <- data[myord,,drop=FALSE]
+       id <-  table(data[,cluster])
+       observed <- ((data[,time]>mtt & data[,cause]==cens.code)) | (data[,cause]!=cens.code)
+       d0 <- data[,c(cluster,cname,tname,time,cause,strata)]
        noncens <- observed
        d0[,"observed."] <-observed
        timevar <- paste("_",cluster,cname,sep="")
@@ -341,24 +343,50 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
 ###    Wide <- reshape(d0,direction="wide",timevar=timevar,idvar=cluster)
        Wide <- fast.reshape(d0,id=cluster)
        ### censoring same cens
+
+       cause1 <- paste(cause,"1",sep=""); cause2 <- paste(cause,"2",sep="")
+       obs1 <- "observed.1"; obs2 <- "observed.2"
+       time1 <- paste(time,"1",sep=""); time2 <- paste(time,"1",sep="")
+###       print(c(time1,time2,cause1,cause2))
+###       print(head(Wide))
+
+###       tmax <- apply(Wide[,paste(time,1:2,sep="")],1,
+###                   function(x) max(x)) ## NA when there is just one
+###       maxstat <- ifelse(Wide[,time1]> Wide[,time2],Wide[,cause1],Wide[,cause2])
+###       obsstat <- ifelse(Wide[,time1]> Wide[,time2],Wide[,obs1],Wide[,obs2])*1
+###       print(head(tmax,10)); print(head(maxstat,10))
+###       print(names(Wide))
+###       datp <- data.frame(time=tmax,cause=obsstat,strata=Wide[,paste(strata,"1",sep="")])
+###       print(head(datp))
+###       datp <- pred.stratKM(datp)
+###       print(head(tmax,datp))
+###
+###       ud.cens<- survival::survfit(Surv(tmax,obsstat==0)~+1) 
+###       Gfit<-cbind(ud.cens$time,ud.cens$surv)
+###       Gfit<-rbind(c(0,1),Gfit); 
+###       tmaxna <- tmax; tmaxna[is.na(tmax)] <- 0
+###       Gcx<-Cpred(Gfit,pmin(mtt,tmaxna),strict=TRUE)[,2];
+###       Wd <- Gcx
+###
+###      data[,"tmax"] <- rep(tmax,id)
+###	data[,"stattmax"] <- rep(maxstat,id)
+
        W <- apply(Wide[,paste(cname,1:2,sep="")],1,
                    function(x) min(x)) ## NA when there is just one
 ###                   function(x) min(x,na.rm=TRUE))
-###        Wmarg <- d0[,cname]
-###        data[,pair.cweight] <- 0; ##1/Wmarg
-###	print(dim(data))
         Wmin <- rep(W,id)
-	data[,pair.cweight] <- 1/Wmin
+	data[,pair.cweight] <- 1/rep(W,id)
+	data[,paste(pair.cweight,"max",sep="")] <- 1/rep(Wd,id)
 
 	### when pair-weight is NA takes individual weight
 	naW <- is.na(Wmin)
 	data[naW,pair.cweight] <- 1/data[naW,cname]
+	data[naW,paste(pair.cweight,"max",sep="")] <- 1/data[naW,cname] 
 
-      ### truncation same truncation  
+   ### truncation same truncation  
    if (!is.null(entrytime)) { 
         Wt <- apply(Wide[,paste(tname,1:2,sep="")],1,
                    function(x) min(x)) ## NA when there is just one
-###                function(x) max(x,na.rm=TRUE))
 ###        Wtmarg <- d0[,tname]
 ###        data[,pair.tweight] <- 0; ##1/Wtmarg
         Wtmax <- rep(Wt,id)
@@ -368,24 +396,6 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
 	naW <- is.na(Wtmax)
 	data[naW,pair.tweight] <- 1/data[naW,tname]
    }
-
-   ## {{{ 
-###        obs1only <- rep(with(Wide, observed.1 & (is.na(observed.2) | !observed.2)),id)
-###        obs2only <- rep(with(Wide, observed.2 & (is.na(observed.1) | !observed.1)),id)
-###        obsOne <- which(na.omit(obs1only|obs2only))
-###        obsBoth <- rep(with(Wide, !is.na(observed.1) & !is.na(observed.2) & observed.2 & observed.1),id)
-###        
-###        data[obsBoth,pair.cweight] <-
-###            ifelse(noncens[obsBoth],1/Wmin[obsBoth],0)    
-###        data[obsOne,pair.cweight] <-
-###            ifelse(noncens[obsOne],1/Wmarg[obsOne],0)
-###   if (!is.null(entrytime)) {
-###        data[obsBoth,pair.tweight] <-
-###            ifelse(noncens[obsBoth],1/Wtmax[obsBoth],0)    
-###        data[obsOne,pair.tweight] <-
-###            ifelse(noncens[obsOne],1/Wtmarg[obsOne],0)
-###   }
-   ## }}} 
 
     if (!is.null(entrytime)) { 
     data[,pair.weight] <- data[,pair.cweight]*data[,pair.tweight]
