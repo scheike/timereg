@@ -4,7 +4,7 @@
 \alias{divide.conquer}
 \title{Split a data set and run function}
 \usage{
-divide.conquer(func = NULL, data, size, ...)
+divide.conquer(func = NULL, data, size, splits, id = NULL, ...)
 }
 \arguments{
 \item{func}{called function}
@@ -12,6 +12,10 @@ divide.conquer(func = NULL, data, size, ...)
 \item{data}{data-frame}
 
 \item{size}{size of splits}
+
+\item{splits}{number of splits (ignored if size is given)}
+
+\item{id}{optional cluster variable}
 
 \item{...}{Additional arguments to lower level functions}
 }
