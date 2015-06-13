@@ -1,15 +1,68 @@
 ##' Fits Clayton-Oakes or bivariate Plackett models for bivariate survival data 
 ##' using marginals that are on Cox or addtive form. 
 ##' If clusters contain more than two times, the algoritm uses a compososite likelihood
-##' based on the pairwise bivariate models.
+##' based on the pairwise bivariate models. Can also fit a additive gamma random
+##' effects model described in detail below.
+##'
+##' We allow a regression structure for the indenpendent gamma distributed 
+##' random effects  and their variances that may depend on cluster covariates. So
+##' \deqn{
+##'  \theta = z_j^T \alpha
+##' }
+##' where \eqn{z} is specified by theta.des 
 ##'
 ##' The reported standard errors are based on the estimated information from the 
 ##' likelihood assuming that the marginals are known. 
 ##'
+##' Can also fit a structured additive gamma random effects model, such
+##' the ACE, ADE model for survival data. 
+##'
+##' Given the gamma distributed random effects it is assumed that the cumulative incidence curves 
+##' are indpendent, and that the marginal cumulative incidence curves 
+##' are on additive form (or Cox form)
+##' \deqn{
+##' P(T > t| x) = S(t|x)= exp( -x^T A(t) )
+##' }
+##'
+##' Now random.design specificies the random effects for each subject within a cluster. This is
+##' a matrix of 1's and 0's with dimension n x d.  With d random effects. 
+##' For a cluster with two subjects, we let the random.design rows be 
+##'  \eqn{v_1} and \eqn{v_2}. 
+##' Such that the random effects for subject 
+##' 1 is \deqn{v_1^T (Z_1,...,Z_d)}, for d random effects. Each random effect
+##' has an associated parameter \eqn{(\lambda_1,...,\lambda_d)}. By construction
+##' subjects 1's random effect are Gamma distributed with 
+##' mean \eqn{\lambda_1/v_1^T \lambda}
+##' and variance \eqn{\lambda_1/(v_1^T \lambda)^2}. Note that the random effect 
+##' \eqn{v_1^T (Z_1,...,Z_d)} has mean 1 and variance \eqn{1/(v_1^T \lambda)}.
+##' It is here asssumed that  \eqn{lamtot=v_1^T \lambda} is fixed over all clusters
+##' as it would be for the ACE model below.
+##'
+##' Given the random effects the survival distributions with a cluster are independent and
+##' on the form 
+##' \deqn{
+##' P(T > t| x,z) = exp( - Laplace^{-1}(lamtot,lamtot,S(t|x)) )  
+##' }
+##' with the inverse laplace of the gamma distribution with mean 1 and variance lamtot.
+##'
+##' The parameters \eqn{(\lambda_1,...,\lambda_d)}
+##' are related to the parameters of the model
+##' by a regression construction \eqn{pard} (d x k), that links the \eqn{d} 
+##' \eqn{\lambda} parameters
+##' with the (k) underlying \eqn{\theta} parameters 
+##' \deqn{
+##' \lambda = theta.des  \theta 
+##' }
+##' here using theta.des to specify these low-dimension association. Default is a diagonal matrix. 
 ##'
 ##' @export
 ##' @references
-##' Clayton-Oakes and Plackett bivariate survival distributions,
+##' Estimating heritability for cause specific mortality based on twins studies
+##' Scheike, Holst, Hjelmborg (2014), LIDA  
+##' 
+##' Measuring early or late dependence for bivariate twin data
+##' Scheike, Holst, Hjelmborg (2015), LIDA  
+##' 
 ##' @examples
 ##' data(diabetes)
 ##' 
@@ -90,6 +143,35 @@
 ##'                 theta.des=tdes2,step=0.5,strata=ud$strata)
 ##' summary(fitp4)
 ##' }
+##' 
+##' ## structured random effects model additive gamma ACE 
+##' \donttest{ ## Reduce Ex.Timings
+##' d <- simnordic.random(5000,delayed=TRUE,
+##'         cordz=1.0,cormz=2,lam0=0.3,country=TRUE)
+##'  ### making group indidcator
+##'  mm <- model.matrix(~-1+factor(zyg),d)
+##' 
+##'  ####################################################################
+##'  ################### ACE modelling of survival twin data ############
+##'  ####################################################################
+##'  ### assume that zygbin gives the zygosity of mono and dizygotic twins
+##'  ### 0 for mono and 1 for dizygotic twins. We now formulate and AC model
+##'  zygbin <- d$zyg=="DZ"
+##' 
+##'  n <- nrow(d)
+##'  ### random effects for each cluster
+##'  des.rv <- cbind(mm,(zygbin==1)*rep(c(1,0)),(zygbin==1)*rep(c(0,1)),1)
+##'  ### design making parameters half the variance for dizygotic components
+##'  ### one shared and one non-shared part 
+##'  pardes <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0), c(0,1))
+##'  pardes 
+##' 
+##' add <- aalen(Surv(time,cause==1)~-1+factor(zyg),data=d,robust=0)
+##' survace <-twostage(add,data=d,theta=c(-0.3,-1.3),clusters=d$id,
+##'      step=0.5,theta.des=pardes,random.design=des.rv,var.link=1)
+##' summary(survace)
+##' }
+##' 
 ##' @keywords survival
 ##' @author Thomas Scheike
 ##' @export
@@ -116,13 +198,12 @@
 ##' @param se.clusters for clusters for se calculation with iid
 ##' @param max.clust max se.clusters for se calculation with iid
 ##' @param numDeriv to get numDeriv version of second derivative, otherwise uses sum of squared score 
-twostage <- function(margsurv,data=sys.parent(),score.method="nlminb",Nit=60,detail=0,clusters=NULL,
+twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
 		     silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
-                     step=0.5,notaylor=0,model="plackett",
-		     marginal.trunc=NULL,
-		     marginal.survival=NULL,
-		     marginal.status=NULL,strata=NULL,
-		     se.clusters=NULL,max.clust=NULL,numDeriv=1)
+                     step=0.5,notaylor=0,model="clayton.oakes",
+		     marginal.trunc=NULL, marginal.survival=NULL,marginal.status=NULL,strata=NULL,
+		     se.clusters=NULL,max.clust=NULL,numDeriv=0,random.design=NULL
+		     )
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -231,8 +312,8 @@ if (!is.null(margsurv))
   if (is.null(strata)==TRUE) strata<- rep(1,antpers); 
   if (length(strata)!=antpers) stop("Strata must have length equal to number of data points \n"); 
 
+  ## {{{ cluster set up
   cluster.call <- clusters
-
   out.clust <- cluster.index(clusters);  
   clusters <- out.clust$clusters
   maxclust <- out.clust$maxclust 
@@ -257,14 +338,27 @@ if (!is.null(margsurv))
 	maxclust <- max.clust    
 	antiid <- max.clusters
   }                                                        
+  ## }}} 
 
   ratesim<-rate.sim; 
 ###  pxz <- px + pz;
-  if (is.null(theta.des)==TRUE) ptheta<-1; 
-  if (is.null(theta.des)==TRUE) theta.des<-matrix(1,antpers,ptheta) else
-  theta.des<-as.matrix(theta.des); 
+
+   if (!is.null(random.design)) { ### different parameters for Additive random effects 
+     dep.model <- 3
+###     if (is.null(random.design)) random.design <- matrix(1,antpers,1); 
+     dim.rv <- ncol(random.design); 
+     if (is.null(theta.des)==TRUE) theta.des<-diag(dim.rv);
+###     ptheta <- dimpar <- ncol(theta.des); 
+ 
+   if (nrow(theta.des)!=ncol(random.design)) 
+   stop("nrow(theta.des)!= ncol(random.design),\nspecifies restrictions on paramters, if theta.des not given =diag (free)\n"); 
+ } else random.design <- matrix(0,1,1); 
+
+
+ if (is.null(theta.des)==TRUE) ptheta<-1; 
+  if (is.null(theta.des)==TRUE) theta.des<-matrix(1,antpers,ptheta) else theta.des<-as.matrix(theta.des); 
   ptheta<-ncol(theta.des); 
-  if (nrow(theta.des)!=antpers) stop("Theta design does not have correct dim");
+  if (nrow(theta.des)!=antpers & dep.model!=3 ) stop("Theta design does not have correct dim");
 
   if (is.null(theta)==TRUE) {
          if (var.link==1) theta<- rep(-0.7,ptheta);  
@@ -272,6 +366,7 @@ if (!is.null(margsurv))
   }       
   if (length(theta)!=ptheta) theta<-rep(theta[1],ptheta); 
   theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
+
 
   if (maxclust==1) stop("No clusters, maxclust size=1\n"); 
   ## }}}
@@ -283,12 +378,13 @@ if (!is.null(margsurv))
 
 ###   dyn.load("twostage.so")
 
-      outl<-.Call("twostageloglike", ## {{{
+      outl<-.Call("twostageloglikeRV", ## {{{
       icause=status,ipmargsurv=psurvmarg, 
       itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
       icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
       ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
-      itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid) 
+      itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
+      irvdes=random.design) 
       ## }}}
 
     if (detail==3) print(c(par,outl$loglike))
@@ -316,11 +412,13 @@ if (!is.null(margsurv))
           cat("theta:");print(c(p))
           cat("loglike:");cat(c(out$loglike),"\n"); 
           cat("score:");cat(c(out$score),"\n"); 
-	  cat("hess:\n"); cat(out$Dscore,"\n"); 
+	  cat("hess:"); cat(out$Dscore,"\n"); 
         }## }}}
         delta <- hessi %*% out$score *step 
+	if (i<Nit) {
         p <- p+delta* step
         theta <- p; 
+	}
 	if (is.nan(sum(out$score))) break; 
         if (sum(abs(out$score))<0.00001) break; 
         if (max(theta)>20) break; 
@@ -335,8 +433,11 @@ if (!is.null(margsurv))
     }
     if (numDeriv==1) {
     if (detail==1 ) cat("numDeriv hessian start\n"); 
-      oout <- 3;  ## to get jacobian
+      oout <- 3;  ## to get jacobian of score 
       hess <- numDeriv::jacobian(loglike,p)
+      oout <- 0
+      hess2 <- numDeriv::hessian(loglike,p)
+      score1 <- numDeriv::jacobian(loglike,p)
     if (detail==1 ) cat("numDeriv hessian stop\n"); 
     }
     if (detail==1 & Nit==0) {## {{{
@@ -434,6 +535,9 @@ if (!is.null(margsurv))
   attr(ud,"antpers")<-antpers; 
   attr(ud,"antclust")<-antclust; 
   attr(ud, "Type") <- model
+  attr(ud, "additive-gamma") <- (dep.model==3)*1
+  if (dep.model==3) attr(ud, "pardes") <- theta.des
+  if (dep.model==3) attr(ud, "rv1") <- random.design[1,]
   attr(ud, "response") <- "survival"
   return(ud);
   ## }}}
@@ -449,6 +553,8 @@ summary.twostage <-function (object,digits = 3,silent=0,...) { ## {{{
   if (attr(object,"response")=="binomial") response <- "binomial" else response <- "survival"
   if ((object$model=="clayton.oakes") & (silent==0)) cat("Dependence parameter for Clayton-Oakes model \n"); 
 
+  if (attr(object,"additive-gamma")==1) cat("Additive gamma model \n");
+
   if ((sum(abs(object$score))>0.0001) & (silent==0))  {
 	  cat("    Variance parameters did not converge, allow more iterations.\n"); 
 	  cat(paste("    Score:",object$score,"  \n")); 
@@ -456,7 +562,32 @@ summary.twostage <-function (object,digits = 3,silent=0,...) { ## {{{
 
   coefs <- coef.twostage(object,response=response,...);
 
-  res <- list(estimates=coefs, type=attr(object,"Type"))
+  if (attr(object,"additive-gamma")==1) {
+      var.link <- attr(object,"var.link"); 
+      rv1 <- attr(object,"rv1"); 
+      theta.des <- attr(object,"pardes"); 
+      if (var.link==1) par <- theta.des %*% exp(object$theta) else  par <- theta.des %*% object$theta
+      if (var.link==1) {
+	      fp <- function(p){  res <- exp(p)/sum(rv1* (theta.des %*% exp(p))); return(res); }
+	      Df <- numDeriv::jacobian(fp,object$theta)
+	      vare <- Df %*% object$var.theta %*% Df
+	      e <- fp(object$theta)
+	      e <- list(h=e,var=vare)
+###         e <- lava::estimate(coef=object$theta,vcov=object$var.theta,function(p) exp(p)/sum(rv* (theta.des %*% exp(p))))
+###         pare <- lava::estimate(coef=object$theta,vcov=object$var.theta,function(p) exp(p))
+	     pare <- exp(object$theta)
+      } else {
+              fp <- function(p) {  p/sum(rv1* (theta.des %*% p)) }
+	      Df <- numDeriv::jacobian(fp,object$theta)
+	      vare <- Df %*% object$var.theta %*% Df
+	      e <- fp(object$theta)
+	      e <- list(h=e,var=vare)
+              pare <- NULL
+      }
+      res <- list(estimates=coefs, type=attr(object,"Type"),h=e,exppar=pare)
+  } else res <- list(estimates=coefs, type=attr(object,"Type"))
+
+
   class(res) <- "summary.twostage"
   res
 } ## }}}
@@ -523,8 +654,7 @@ print.twostage<-function(x,digits=3,...)
   print(x$call); 
   cat("\n")
   print(summary(x)); 
-} ## }}}
-
+} ## }}} 
 ##' @export
 plot.twostage<-function(x,pointwise.ci=1,robust=0,specific.comps=FALSE,
 		level=0.05, 

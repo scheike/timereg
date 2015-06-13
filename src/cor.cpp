@@ -435,6 +435,149 @@ Calphak= thetades * Ctheta2;
 
 } // }}}
 
+RcppExport SEXP ckrvdesthetaR(SEXP ithetades,SEXP itheta, 
+		SEXP iinverse, SEXP isx,SEXP isy,
+//		SEXP ickij,SEXP idckij,
+		SEXP irvi,SEXP irvk)
+{ // {{{
+
+ mat thetades = Rcpp::as<mat>(ithetades);
+ colvec theta = Rcpp::as<colvec>(itheta);
+// colvec cif2 = Rcpp::as<colvec>(icif2);
+// colvec istatus1 = Rcpp::as<colvec>(iistatus1);
+// colvec istatus2 = Rcpp::as<colvec>(iistatus2);
+ int inverse=Rcpp::as<int>(iinverse);
+ double sx =Rcpp::as<double>(isx);
+ double sy =Rcpp::as<double>(isy);
+ double x=-log(1-sx); 
+ double y=-log(1-sy); 
+// printf(" %lf %lf %lf %lf \n",x,y,exp(-x),exp(-y)); 
+
+ colvec rvi = Rcpp::as<colvec>(irvi);
+ colvec rvk = Rcpp::as<colvec>(irvk);
+ 
+// thetades.print("kj"); rvi.print("kj"); rvk.print("kj"); 
+// printf(" %lf %lf \n",x,y); 
+
+ double ckij = 0; 
+ colvec dckij =theta;  
+
+double val,val1,alphi=0,alphk=0,alph,betai,betak;
+double test=1; //lapgam(),ilapgam(),Dtlapgam(), Dalphalapgam(),Dilapgam(),Dbetalapgam(),Dbetailapgam();
+int ntheta,prv,k,nn,i; 
+//void funkdes2(); 
+
+if (test<1) {
+Rprintf("ckr \n"); 
+//print_vec(dckij); print_vec(rvk); print_vec(rvi); print_vec(alphai); print_vec(alphak); 
+}
+nn=rvi.n_rows; 
+prv=nn; 
+ntheta=theta.n_rows; 
+
+vec theta2(ntheta); 
+vec laps(nn);  
+vec ilaps(nn);  
+laps.fill(1); ilaps.fill(0); 
+
+if (inverse==1)  theta2=exp(theta); else theta2=theta;
+vec alphai(prv),alphak(prv);
+alphai= thetades * theta2;
+alphak= thetades * theta2;
+
+//alphai.print("pari rvi"); 
+//alphak.print("park rvi"); 
+
+// fix denne i CPP version
+//rvi.print("ckrv rvi"); 
+//alphai.print("alph ckrv rvi"); 
+nn=rvi.n_rows; 
+for (k=0;k< nn;k++) {
+   alphi=alphi+rvi(k)*alphai(k); 
+   alphk=alphk+rvk(k)*alphak(k); 
+}
+//alphi=sum(rvi % alphai); alphk=sum(rvk% alphak); 
+//alphi=trans(rvi) * alphai; alphk=trans(rvk) * alphak; 
+betai=alphi; betak=alphk;
+
+prv=rvi.n_rows;
+vec Dphi(prv),Dphk(prv);
+Dphi.fill(0); Dphk.fill(0); 
+
+//printf(" %lf %lf %lf %lf \n",alphi,alphk,betai,betak); 
+//printf(" %lf %lf \n",exp(-x),exp(-y));
+
+double ii1=ilapgam(alphi,betai,exp(-x)); 
+double ii2=ilapgam(alphk,betak,exp(-y)); 
+val=1; 
+for (k=0;k<prv;k++)  if (rvi(k)+rvk(k)>0) 
+{
+val1=rvi(k)*ii1+rvk(k)*ii2; 
+if (rvi(k)>0) alph=alphai(k); else alph=alphak(k); 
+//printf("%d %lf %lf %lf %lf \n",k,alph,val1,rvi(k),rvk(k)); 
+ilaps(k)=val1; 
+val1=lapgam(alph,betai,val1); 
+laps(k)=val1; 
+val=val*val1; 
+} 
+ckij=1-exp(-x)-exp(-y)+val; 
+
+// computation of derivatives using cx_double numbers and cx_double functions 
+// goes through the values and adds epislon*i 
+double epsilon=1E-20; 
+cx_double Calph,Calphi,Calphk,Cbetai,Cbetak;
+cx_vec Calphai(prv),Calphak(prv); 
+cx_vec Ctheta(ntheta),Ctheta2(ntheta); 
+
+nn=prv; 
+for (i=0;i< ntheta;i++) { // {{{ 
+     for (k=0;k< ntheta;k++) Ctheta(k)=cx_double(theta(k),0); 
+     Ctheta(i)=cx_double(theta(i),epsilon); 
+if (inverse==1)  Ctheta2=exp(Ctheta); else Ctheta2=Ctheta;
+Calphai= thetades * Ctheta2;
+Calphak= thetades * Ctheta2;
+
+       // sum af alpha'er
+	Calphi=0; Calphk=0; 
+	for (k=0;k< nn;k++) {
+	   Calphi=Calphi+rvi(k)*Calphai(k); 
+	   Calphk=Calphk+rvk(k)*Calphak(k); 
+	}
+	Cbetai=Calphi; 
+	Cbetak=Calphk;
+
+	cx_double Cval1,Cval=1,Cf; 
+	for (k=0;k<prv;k++) if (rvi(k)+rvk(k)>0) 
+	{
+	Cval1=rvi(k)*Cilapgam(Calphi,Cbetai,exp(-x))+rvk(k)*Cilapgam(Calphk,Cbetak,exp(-y)); 
+	if (rvi(k)>0) Calph=Calphai(k); else Calph=Calphak(k); 
+	Cval1=Clapgam(Calph,Cbetai,Cval1); 
+	Cval=Cval*Cval1; 
+	}
+	Cf=(cx_double) 1-exp(-x)-exp(-y);
+	Cf=Cf+Cval; 
+	dckij(i)= imag(Cf)/epsilon; 
+} // }}} 
+
+List res; 
+res["like"]=ckij; 
+res["ssdob"]=val; 
+res["sx"]=sx;
+res["sy"]=sy;
+res["par"]=alphai; 
+res["laps"]=laps; 
+res["ilaps"]=ilaps; 
+res["rv1"]=rvi; 
+res["rv2"]=rvk; 
+res["lamtot"]=betai; 
+res["ii1"]=ii1; 
+res["ii2"]=ii2; 
+res["dlike"]=dckij; 
+
+return(res);  
+} // }}}
+
+
 double ckrvdesp11t(vec &theta,mat &thetades,int inverse, // {{{
 		double x,double y, vec &rvi,vec &rvk)
 {
@@ -1061,8 +1204,8 @@ RcppExport SEXP cor(SEXP itimes,SEXP iy,SEXP icause, SEXP iCA1, SEXP iKMc,
 		  vthetascore.print("vthetascore 0"); 
 	  }
 	  if (j<0)   {  Rprintf("-----------------------------  %lf   %lf \n",p11t,ckij(0)); 
-vec alphail= thetades * vtheta2;
-alphail.print("alphil"); 
+                   vec alphail= thetades * vtheta2;
+                         alphail.print("alphil"); 
 	                vthetascore.print("vthetascore 1"); 
 	  }
 	  if (j<0)   {  
