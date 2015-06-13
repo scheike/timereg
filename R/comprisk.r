@@ -743,3 +743,4 @@ pred.stratKM <- function(data,entrytime=NULL,time="time",cause="cause",strata="s
    return(weights); 
 } ## }}} 
 
+
