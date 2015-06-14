@@ -167,8 +167,8 @@
 ##'  pardes 
 ##' 
 ##' add <- aalen(Surv(time,cause==1)~-1+factor(zyg),data=d,robust=0)
-##' survace <-twostage(add,data=d,theta=c(-0.3,-1.3),clusters=d$id,
-##'      step=0.5,theta.des=pardes,random.design=des.rv,var.link=1)
+##' survace <-twostage(add,data=d,theta=c(-0.7,-1.0),clusters=d$id,
+##'                    theta.des=pardes,random.design=des.rv,var.link=1)
 ##' summary(survace)
 ##' }
 ##' 
@@ -177,7 +177,7 @@
 ##' @export
 ##' @param margsurv Marginal model 
 ##' @param data data frame
-##' @param score.method Scoring method
+##' @param score.method Scoring method "fisher.scoring", "nlminb", "optimize", "nlm"
 ##' @param Nit Number of iterations
 ##' @param detail Detail
 ##' @param clusters Cluster variable
@@ -198,12 +198,12 @@
 ##' @param se.clusters for clusters for se calculation with iid
 ##' @param max.clust max se.clusters for se calculation with iid
 ##' @param numDeriv to get numDeriv version of second derivative, otherwise uses sum of squared score 
+##' @param random.design random effect design for additive gamma model
 twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
 		     silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
                      step=0.5,notaylor=0,model="clayton.oakes",
 		     marginal.trunc=NULL, marginal.survival=NULL,marginal.status=NULL,strata=NULL,
-		     se.clusters=NULL,max.clust=NULL,numDeriv=0,random.design=NULL
-		     )
+		     se.clusters=NULL,max.clust=NULL,numDeriv=0,random.design=NULL)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -569,19 +569,11 @@ summary.twostage <-function (object,digits = 3,silent=0,...) { ## {{{
       if (var.link==1) par <- theta.des %*% exp(object$theta) else  par <- theta.des %*% object$theta
       if (var.link==1) {
 	      fp <- function(p){  res <- exp(p)/sum(rv1* (theta.des %*% exp(p))); return(res); }
-	      Df <- numDeriv::jacobian(fp,object$theta)
-	      vare <- Df %*% object$var.theta %*% Df
-	      e <- fp(object$theta)
-	      e <- list(h=e,var=vare)
-###         e <- lava::estimate(coef=object$theta,vcov=object$var.theta,function(p) exp(p)/sum(rv* (theta.des %*% exp(p))))
-###         pare <- lava::estimate(coef=object$theta,vcov=object$var.theta,function(p) exp(p))
-	     pare <- exp(object$theta)
+              e <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p))
+            pare <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) exp(p))
       } else {
               fp <- function(p) {  p/sum(rv1* (theta.des %*% p)) }
-	      Df <- numDeriv::jacobian(fp,object$theta)
-	      vare <- Df %*% object$var.theta %*% Df
-	      e <- fp(object$theta)
-	      e <- list(h=e,var=vare)
+              e <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p))
               pare <- NULL
       }
       res <- list(estimates=coefs, type=attr(object,"Type"),h=e,exppar=pare)
@@ -647,6 +639,59 @@ alpha2kendall <- function(theta,link=0) {  ## {{{
    if (link==1) theta <- exp(theta)
    return(1/(1+2/theta)) 
 } ## }}} 
+
+##' @export
+polygen.design <-function (data,id="id",zyg="DZ",zygname="zyg",type="ace",tv=NULL,...) { ## {{{
+  ### twin case 
+  nid <- table(data[,id])
+  id <- data[,id]
+  tv <- diff(c(NA,id))
+  tv[tv==0] <- 2
+  tv[tv==1 | is.na(tv)] <- 1
+
+  zygbin <- (data[,zygname]==zyg)
+  zygdes=model.matrix(~-1+factor(zygbin),data)
+
+  if (type=="ace") { ### ace ## {{{ 
+  ### random effects for each cluster
+  des.rv <- cbind(zygdes[,c(2,1)],(zygbin==0)*(tv==1), (zygbin==0)*(tv==2),1)
+  pard <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0), c(0,1))
+  } ## }}} 
+
+  if (type=="dce") { ### ace ## {{{ 
+  ### DCE  
+  des.rv <- cbind(zygdes[,c(2,1)], (zygbin==0)*(tv==1), (zygbin==0)*(tv==2),1)
+  pard <- rbind(c(1,0), c(0.25,0),c(0.75,0), c(0.75,0), c(0,1))
+  } ## }}} 
+
+  if (type=="ade") { ### ace ## {{{ 
+#ADE
+  des.rv <- cbind( zygdes[,c(2,1)], (zygbin==0)*(tv==1), (zygbin==0)*(tv==2),
+                   zygdes[,c(2,1)], (zygbin==0)*(tv==1), (zygbin==0)*(tv==2))
+  pard <- rbind(c(1,0), c(0.25,0),c(0.75,0), c(0.75,0), 
+	      c(0,1), c(0,0.5),c(0,0.5), c(0,0.5) )
+  } ## }}} 
+
+  if (type=="acde") { ### ace ## {{{ 
+#ACDE 
+des.rv <- cbind( zygdes[,c(2,1)], (zygbin==0)*(tv==1), 
+	(zygbin==0)*(tv==2), zygdes[,c(2,1)], (zygbin==0)*(tv==1), (zygbin==0)*(tv==2),1)
+pard <- rbind(c(1,0,0), c(0.25,0,0),c(0.75,0,0), c(0.75,0,0), 
+	      c(0,1,0), c(0,0.5,0),c(0,0.5,0), c(0,0.5,0) ,c(0,0,1))
+  } ## }}} 
+
+  if (type=="ae") { ### ace ## {{{ 
+###AE model 
+  des.rv <- cbind(zygdes[,c(2,1)],
+	(zygbin==0)*(tv==1), 
+	(zygbin==0)*(tv==2))
+   pard <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0))[,1]
+  } ## }}} 
+
+res <- list(pardes=pard,des.rv=des.rv)
+
+} ## }}}
+
 
 ##' @export
 print.twostage<-function(x,digits=3,...)
@@ -972,6 +1017,7 @@ coefmat <- function(est,stderr,digits=3,...) { ## {{{
 ##'                       score.method="fisher.scoring",theta.formula=desfs,
 ##'                       desnames=c("parent-parent","parent-child","child-cild"))
 ##' summary(out3)
+##' 
 ##' @keywords survival twostage 
 ##' @export
 ##' @param margsurv model 

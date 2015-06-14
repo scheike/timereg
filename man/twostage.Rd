@@ -70,11 +70,13 @@ twostage(margsurv, data = sys.parent(), score.method = "fisher.scoring",
 
 \item{numDeriv}{to get numDeriv version of second derivative, otherwise uses sum of squared score}
 
+\item{random.design}{random effect design for additive gamma model}
+
 \item{margsurv}{Marginal model}
 
 \item{data}{data frame}
 
-\item{score.method}{Scoring method}
+\item{score.method}{Scoring method "fisher.scoring", "nlminb", "optimize", "nlm"}
 
 \item{Nit}{Number of iterations}
 
@@ -355,8 +357,8 @@ d <- simnordic.random(5000,delayed=TRUE,
  pardes
 
 add <- aalen(Surv(time,cause==1)~-1+factor(zyg),data=d,robust=0)
-survace <-twostage(add,data=d,theta=c(-0.3,-1.3),clusters=d$id,
-     step=0.5,theta.des=pardes,random.design=des.rv,var.link=1)
+survace <-twostage(add,data=d,theta=c(-0.7,-1.0),clusters=d$id,
+                   theta.des=pardes,random.design=des.rv,var.link=1)
 summary(survace)
 }
 }

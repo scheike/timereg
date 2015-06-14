@@ -319,6 +319,8 @@ binomial.twostage <- function(margbin,data=sys.parent(),score.method="nlminb",
     attr(ud,"antpers")<-antpers; 
     attr(ud,"antclust")<-antclust; 
     attr(ud, "Type") <- model
+    ### to be consistent with structure for survival twostage model 
+    attr(ud, "additive-gamma") <- 0;
     attr(ud, "response") <- "binomial"
     return(ud);
     ## }}}
