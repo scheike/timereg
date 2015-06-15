@@ -33,8 +33,11 @@
 ##' p11 <- bicomprisk(Event(time,cause)~strata(zyg)+id(id),data=prt,cause=c(1,1))
 ##'  
 ##' p11mz <- p11$model$"MZ"
+##' p11dz <- p11$model$"DZ"
+##' par(mfrow=c(1,2))
 ##' ## Concordance
 ##' plot(p11mz,ylim=c(0,0.1)); 
+##' plot(p11dz,ylim=c(0,0.1)); 
 ##' 
 ##' ## entry time, truncation weighting 
 ##' ### other weighting procedure 

@@ -436,8 +436,8 @@ if (!is.null(margsurv))
       oout <- 3;  ## to get jacobian of score 
       hess <- numDeriv::jacobian(loglike,p)
       oout <- 0
-      hess2 <- numDeriv::hessian(loglike,p)
-      score1 <- numDeriv::jacobian(loglike,p)
+###      hess2 <- numDeriv::hessian(loglike,p)
+###      score1 <- numDeriv::jacobian(loglike,p)
     if (detail==1 ) cat("numDeriv hessian stop\n"); 
     }
     if (detail==1 & Nit==0) {## {{{
