@@ -47,6 +47,22 @@ familycluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=1)
 
 
 ##' @export
+coarse.clust <- function(clusters,max.clust=100)
+{ ## {{{ 
+
+if (is.numeric(clusters)) 
+   clusters <-  sindex.prodlim(unique(clusters),clusters)
+antclust <- length(unique(clusters))
+
+qq <- unique(quantile(clusters, probs = seq(0, 1, by = 1/max.clust)))
+qqc <- cut(clusters, breaks = qq, include.lowest = TRUE)    
+cclusters <-  as.integer(qqc)-1
+
+return(cclusters)
+} ## }}} 
+
+
+##' @export
 faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=1)
 { ## {{{
   if (NCOL(data)==1) data <- cbind(data)
