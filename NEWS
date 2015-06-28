@@ -1,3 +1,10 @@
+* Version 1.1.x
+  - Truncation
+  - Two-stage gamma
+  - Updated divide.conquer
+  - Extra unit tests
+  - force.same.cens
+  -
 
 * Version 1.1.1 <2015-05-27 Wed>
   - Support for left-truncation 
