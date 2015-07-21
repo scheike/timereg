@@ -17,9 +17,8 @@
 ##' Can also fit a structured additive gamma random effects model, such
 ##' the ACE, ADE model for survival data. 
 ##'
-##' Given the gamma distributed random effects it is assumed that the cumulative incidence curves 
-##' are indpendent, and that the marginal cumulative incidence curves 
-##' are on additive form (or Cox form)
+##' Given the gamma distributed random effects it is assumed that the survival functions 
+##' are indpendent, and that the marginal survival functions are on additive form (or Cox form)
 ##' \deqn{
 ##' P(T > t| x) = S(t|x)= exp( -x^T A(t) )
 ##' }
@@ -55,7 +54,6 @@
 ##' }
 ##' here using theta.des to specify these low-dimension association. Default is a diagonal matrix. 
 ##'
-##' @export
 ##' @references
 ##' Estimating heritability for cause specific mortality based on twins studies
 ##' Scheike, Holst, Hjelmborg (2014), LIDA  
@@ -170,7 +168,6 @@
 ##'                    theta.des=pardes,random.design=des.rv,var.link=1)
 ##' summary(survace)
 ##' }
-##' 
 ##' @keywords survival
 ##' @author Thomas Scheike
 ##' @export

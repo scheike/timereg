@@ -1175,6 +1175,31 @@ plack.cif2 <- function(cif1,cif2,theta)
 } ## }}}
 
 ##' @export
+predict.pair.plack <- function(cif1,cif2,status1,status2,theta) 
+{ ## {{{
+  theta <- exp(c(theta))
+  cif1 <- c(cif1); cif2 <- c(cif2)
+  cifs=cif1+cif2; 
+
+  valn=2*(theta-1); 
+  val1=(1+(theta-1)*(cifs))-( ((1+(theta-1)*cifs))^2-4*cif1*cif2*theta*(theta-1))^0.5; 
+  vali=cif1*cif2;
+
+  valr <- vali;
+  valr[valn!=0] <- val1/valn; 
+
+  p11 <- valr; 
+  p10 <- cif1-p11
+  p01 <- cif2-p11
+  p00 <- 1- p10-p01-p11
+#
+  pred <- (status1==1)*(status2==1)*p11+ (status1==1)*(status2==0)*p10+ 
+          (status1==0)*(status2==1)*p01+ (status1==0)*(status2==0)*p00
+
+  return(pred); 
+} ## }}}
+
+##' @export
 summary.randomcif<-function (object, ...) 
 { ## {{{
   if (!inherits(object, "randomcif")) 
