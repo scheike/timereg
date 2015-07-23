@@ -7,7 +7,7 @@
 random.cif(cif, data, cause = NULL, cif2 = NULL, cause1 = 1, cause2 = 1,
   cens.code = NULL, cens.model = "KM", Nit = 40, detail = 0,
   clusters = NULL, theta = NULL, theta.des = NULL, sym = 1, step = 1,
-  same.cens = FALSE, exp.link = 0, score.method = "fisher.scoring",
+  same.cens = FALSE, var.link = 0, score.method = "fisher.scoring",
   entry = NULL, trunkp = 1, ...)
 }
 \arguments{
@@ -46,7 +46,7 @@ times, the value cens.code is the censoring value.}
 
 \item{same.cens}{if true then censoring within clusters are assumed to be the same variable, default is independent censoring.}
 
-\item{exp.link}{if exp.link=1 then var is on log-scale.}
+\item{var.link}{if var.link=1 then var is on log-scale.}
 
 \item{score.method}{default uses "nlminb" optimzer, alternatively, use the "fisher-scoring" algorithm.}
 

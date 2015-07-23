@@ -30,30 +30,20 @@
 ##' prt <- simnordic.random(2000,delayed=TRUE,ptrunc=0.7,
 ##'		      cordz=0.5,cormz=2,lam0=0.3)
 ##' ## Bivariate competing risk, concordance estimates
-##' p11 <- bicomprisk(Event(time,cause)~strata(zyg)+id(id),
-##'                   data=prt,cause=c(1,1))
+##' p11 <- bicomprisk(Event(time,cause)~strata(zyg)+id(id),data=prt,cause=c(1,1))
 ##'  
 ##' p11mz <- p11$model$"MZ"
+##' p11dz <- p11$model$"DZ"
+##' par(mfrow=c(1,2))
 ##' ## Concordance
 ##' plot(p11mz,ylim=c(0,0.1)); 
+##' plot(p11dz,ylim=c(0,0.1)); 
 ##' 
 ##' ## entry time, truncation weighting 
-##' prtl <- prt[!prt$truncated,]
-##' prt2 <- ipw2(prtl,cluster="id",same.cens=TRUE,
-##'      time="time",entrytime="entry",cause="cause",
-##'      strata="zyg",pairs=TRUE,obs.only=FALSE)
-##' prt2$ppt <- prt2$ptw
-##'
-##' p11t <- bicomprisk(Event(time,cause)~strata(zyg)+id(id),
-##' 		  data=prt2,cause=c(1,1),wname="ppt",times=50:90)
-##' ## Concordance
-##' p11tmz <- p11t$model$"MZ"
-##' p11tdz <- p11t$model$"DZ"
-##' lines(p11tmz$time,p11tmz$P1,col=2)
-##' 
 ##' ### other weighting procedure 
-##' prt2 <- ipw2(prt,cluster="id",same.cens=TRUE,
-##'      time="time",cause="cause",
+##' prtl <-  prt[!prt$truncated,] 
+##' prt2 <- ipw2(prtl,cluster="id",same.cens=TRUE,
+##'      time="time",cause="cause",entrytime="entry",
 ##'      pairs=TRUE,strata="zyg",obs.only=TRUE)
 ##'
 ##' prt22 <- fast.reshape(prt2,id="id")
@@ -67,6 +57,7 @@
 ##' p11wmz <- ipwc$cum[,2] 
 ##' p11wdz <- ipwc$cum[,3]
 ##' lines(ipwc$cum[,1],p11wmz,col=3)
+##' lines(ipwc$cum[,1],p11wdz,col=3)
 ##' 
 bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv, 
  strata=NULL, id,num, max.clust=1000, marg=NULL,se.clusters=NULL,wname=NULL,
@@ -253,7 +244,7 @@ bicomprisk <- function(formula, data, cause=c(1,1), cens=0, causes, indiv,
         lse.clusters <- ww0[,"lse.clusters1"]
     }
 
-    if (!(is.null(wname))) mydata <- ipw2(mydata,time=timevar,cause=causes) #,cens.code=cens)
+###    if (!(is.null(wname))) mydata <- ipw2(mydata,time=timevar,cause=causes) #,cens.code=cens)
 
     if (is.null(wname)) {
 	    add<-comp.risk(as.formula(ff),data=mydata,

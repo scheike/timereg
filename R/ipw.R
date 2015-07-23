@@ -375,8 +375,8 @@ ipw2 <- function(data,times=NULL,entrytime=NULL,time="time",cause="cause",
                    function(x) min(x)) ## NA when there is just one
 ###                   function(x) min(x,na.rm=TRUE))
         Wmin <- rep(W,id)
-	data[,pair.cweight] <- 1/rep(W,id)
-	data[,paste(pair.cweight,"max",sep="")] <- 1/rep(Wd,id)
+	data[,pair.cweight] <- 1/Wmin
+###	data[,paste(pair.cweight,"max",sep="")] <- 1/rep(Wd,id)
 
 	### when pair-weight is NA takes individual weight
 	naW <- is.na(Wmin)

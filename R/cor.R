@@ -3,10 +3,10 @@ dep.cif<-function(cif,data,cause=NULL,model="OR",cif2=NULL,times=NULL,
                   clusters=NULL,theta=NULL,theta.des=NULL,step=1,sym=1,weights=NULL,
 		  same.cens=FALSE,censoring.weights=NULL,silent=1,entry=NULL,estimator=1,
 		  trunkp=1,admin.cens=NULL,control=list(),par.func=NULL,dpar.func=NULL,dimpar=NULL,
-		  score.method="nlminb",random.design=NULL,exp.link=0,...)
+		  score.method="nlminb",random.design=NULL,var.link=0,...)
 { ## {{{
   ## {{{ set up data and design
-  multi<-0; dscore=1; stab.cens<-FALSE; entry.call<-entry; inverse<-exp.link
+  multi<-0; dscore=1; stab.cens<-FALSE; entry.call<-entry; inverse<-var.link
   notaylor<-1; flex.func<-0; 
 
   ## extract design and time and cause from cif object 
@@ -350,11 +350,15 @@ dep.cif<-function(cif,data,cause=NULL,model="OR",cif2=NULL,times=NULL,
   attr(ud,"inverse")<-inverse; 
   attr(ud,"antpers")<-antpers; 
   attr(ud,"antclust")<-antclust; 
+  attr(ud,"var.link")<-var.link; 
   if (dep.model==4) attr(ud, "Type") <- "randomcif"
   if (dep.model==6) attr(ud, "Type") <- "randomcif"
   if (model=="COR") attr(ud, "Type") <- "cor"
   if (model=="RR") attr(ud, "Type") <- "RR"
   if (model=="OR") attr(ud, "Type") <- "OR-cif"
+
+  if (dep.model==5) attr(ud, "pardes") <- theta.des
+  if (dep.model==5) attr(ud, "rv1") <- random.design[1,]
   return(ud);
 } ## }}}
 
@@ -647,7 +651,7 @@ or.cif<-function(cif,data,cause=NULL,cif2=NULL,times=NULL,
 ##' @param sym 1 for symmetry 0 otherwise
 ##' @param step specifies the step size for the Newton-Raphson algorith.m
 ##' @param same.cens if true then censoring within clusters are assumed to be the same variable, default is independent censoring.
-##' @param exp.link if exp.link=1 then var is on log-scale.
+##' @param var.link if var.link=1 then var is on log-scale.
 ##' @param score.method default uses "nlminb" optimzer, alternatively, use the "fisher-scoring" algorithm.
 ##' @param entry entry-age in case of delayed entry. Then two causes must be given.
 ##' @param trunkp gives probability of survival for delayed entry, and related to entry-ages given above.
@@ -701,13 +705,13 @@ or.cif<-function(cif,data,cause=NULL,cif2=NULL,times=NULL,
 random.cif<-function(cif,data,cause=NULL,cif2=NULL,
                      cause1=1,cause2=1,cens.code=NULL,cens.model="KM",Nit=40,detail=0,
                      clusters=NULL,theta=NULL,theta.des=NULL,sym=1,
-                     step=1,same.cens=FALSE,exp.link=0,score.method="fisher.scoring",
+                     step=1,same.cens=FALSE,var.link=0,score.method="fisher.scoring",
                      entry=NULL,trunkp=1,...)
 { ## {{{
   fit <- dep.cif(cif,data=data,cause=cause,model="RANCIF",cif2=cif2,sym=sym,
      cause1=cause1,cause2=cause2,cens.code=cens.code,cens.model=cens.model,Nit=Nit,detail=detail,
      clusters=clusters,theta=theta,theta.des=theta.des,step=step,same.cens=same.cens,
-     exp.link=exp.link,score.method=score.method,entry=entry,trunkp=trunkp,...)
+     var.link=var.link,score.method=score.method,entry=entry,trunkp=trunkp,...)
   fit$call <- match.call()
   fit
 } ## }}}
@@ -771,7 +775,7 @@ random.cif<-function(cif,data,cause=NULL,cif2=NULL,
 ##' @param same.cens if true then censoring within clusters are assumed to be the same variable, default is independent censoring.
 ##' @param censoring.weights Censoring probabilities
 ##' @param silent debug information 
-##' @param exp.link if exp.link=1 then var is on log-scale.
+##' @param var.link if var.link=1 then var is on log-scale.
 ##' @param score.method default uses "nlminb" optimzer, alternatively, use the "fisher-scoring" algorithm.
 ##' @param entry entry-age in case of delayed entry. Then two causes must be given.
 ##' @param estimator estimator
@@ -798,7 +802,7 @@ random.cif<-function(cif,data,cause=NULL,cif2=NULL,
 ##' @examples
 ##' \donttest{ ## Reduce Ex.Timings
 ##'  d <- simnordic.random(5000,delayed=TRUE,
-##'        cordz=0.5,cormz=2,lam0=0.3,country=TRUE)
+##'        cordz=1.0,cormz=2,lam0=0.3,country=TRUE)
 ##'  times <- seq(50,90,by=10)
 ##'  addm<-comp.risk(Event(time,cause)~const(country)+cluster(id),data=d,
 ##'  times=times,cause=1,max.clust=NULL)
@@ -813,7 +817,7 @@ random.cif<-function(cif,data,cause=NULL,cif2=NULL,
 ##'  ## this model can also be formulated as a random effects model 
 ##'  ## but with different parameters
 ##'  out2m<-Grandom.cif(addm,data=d,cause1=1,cause2=1,
-##' 		    theta=c(0.4,4),step=0.5,
+##' 		    theta=c(0.5,1),step=1.0,
 ##' 		    random.design=mm,same.cens=TRUE)
 ##'  summary(out2m)
 ##'  1/out2m$theta
@@ -833,11 +837,10 @@ random.cif<-function(cif,data,cause=NULL,cif2=NULL,
 ##'  pardes <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0), c(0,1))
 ##' 
 ##'  outacem <-Grandom.cif(addm,data=d,cause1=1,cause2=1,
-##' 		same.cens=TRUE,theta=c(0.7,-0.3),
+##' 		same.cens=TRUE,theta=c(0.35,0.15),
 ##'             step=1.0,theta.des=pardes,random.design=des.rv)
 ##'  summary(outacem)
-##'  ## genetic variance is 
-##'  exp(outacem$theta[1])/sum(exp(outacem$theta))^2
+##' 
 ##' }
 ##' @keywords survival
 ##' @author Thomas Scheike
@@ -845,13 +848,13 @@ random.cif<-function(cif,data,cause=NULL,cif2=NULL,
 Grandom.cif<-function(cif,data,cause=NULL,cif2=NULL,times=NULL,
 cause1=1,cause2=1,cens.code=NULL,cens.model="KM",Nit=40,detail=0,
 clusters=NULL, theta=NULL,theta.des=NULL, weights=NULL, step=1,sym=0,
-same.cens=FALSE,censoring.weights=NULL,silent=1,exp.link=0,score.method="fisher.scoring",
+same.cens=FALSE,censoring.weights=NULL,silent=1,var.link=0,score.method="fisher.scoring",
 entry=NULL,estimator=1,trunkp=1,admin.cens=NULL,random.design=NULL,...)
 { ## {{{
 fit <- dep.cif(cif,data=data,cause=cause,model="ARANCIF",cif2=cif2,times=times,
          cause1=cause1,cause2=cause2,cens.code=cens.code,cens.model=cens.model,Nit=Nit,detail=detail,
          clusters=clusters,theta=theta,theta.des=theta.des,step=step,sym=sym,weights=weights,
-         same.cens=same.cens,censoring.weights=censoring.weights,silent=silent,exp.link=exp.link,
+         same.cens=same.cens,censoring.weights=censoring.weights,silent=silent,var.link=var.link,
 	 score.method=score.method,entry=entry,estimator=estimator,
 	 random.design=random.design,trunkp=trunkp,admin.cens=admin.cens,...)
     fit$call <- match.call()
@@ -1009,6 +1012,7 @@ summary.cor <- function(object,marg.cif=NULL,marg.cif2=NULL,digits=3,...) { ## {
   }
 
   } ## }}} 
+
 
   res <- list(casewise=ocasewise,concordance=oconcordance,estimates=coefs,
 	      marg.cif=marg.cif, marg.cif2=marg.cif2,type=attr(object,"Type"),
@@ -1171,6 +1175,31 @@ plack.cif2 <- function(cif1,cif2,theta)
 } ## }}}
 
 ##' @export
+predict.pair.plack <- function(cif1,cif2,status1,status2,theta) 
+{ ## {{{
+  theta <- exp(c(theta))
+  cif1 <- c(cif1); cif2 <- c(cif2)
+  cifs=cif1+cif2; 
+
+  valn=2*(theta-1); 
+  val1=(1+(theta-1)*(cifs))-( ((1+(theta-1)*cifs))^2-4*cif1*cif2*theta*(theta-1))^0.5; 
+  vali=cif1*cif2;
+
+  valr <- vali;
+  valr[valn!=0] <- val1/valn; 
+
+  p11 <- valr; 
+  p10 <- cif1-p11
+  p01 <- cif2-p11
+  p00 <- 1- p10-p01-p11
+#
+  pred <- (status1==1)*(status2==1)*p11+ (status1==1)*(status2==0)*p10+ 
+          (status1==0)*(status2==1)*p01+ (status1==0)*(status2==0)*p00
+
+  return(pred); 
+} ## }}}
+
+##' @export
 summary.randomcif<-function (object, ...) 
 { ## {{{
   if (!inherits(object, "randomcif")) 
@@ -1217,7 +1246,25 @@ summary.randomcifrv<-function (object, ...)
     if (sum(abs(object$score)) > 1e-06) 
         cat("WARNING: check score for convergence")
     cat("\n")
-    coef.randomcifrv(object, ...)
+
+    res <-     coef.randomcifrv(object, ...)
+
+    var.link <- attr(object,"var.link"); 
+    rv1 <- attr(object,"rv1"); 
+    theta.des <- attr(object,"pardes"); 
+    if (var.link==1) par <- theta.des %*% exp(object$theta) else  par <- theta.des %*% object$theta
+    if (var.link==1) {
+	      fp <- function(p){  res <- exp(p)/sum(rv1* (theta.des %*% exp(p))); return(res); }
+              e <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p))
+              pare <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) exp(p))
+              res <- list(estimate=res,h=e,exppar=pare)
+     } else {
+              fp <- function(p) {  p/sum(rv1* (theta.des %*% p)) }
+              e <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p))
+              res <- list(estimate=res,h=e)
+    }
+
+  res
 } ## }}}
 
 ##' @export
@@ -1237,25 +1284,25 @@ coef.randomcifrv<- function (object, digits = 3, ...)
    if (!is.null(object$thetanames)) rownames(res)<-object$thetanames
    prmatrix(signif(res, digits))
 
-    cat("\n\n Random effect variances for gamma random effects \n\n")
-    varpar <- theta/sum(theta)^2 
-    res <- as.matrix(varpar); 
-    if (elog==0)  { var.theta <-   object$var.theta; 
-                    df <- 0*var.theta; 
-                    for (i in 1:nrow(var.theta))
-                    df[i,] <- -theta[i]*2*theta; 
-		    diag(df) <- diag(df)+sum(theta)^2
-		    df <- df/sum(theta)^4
-		    var.varpar <- df %*% var.theta %*% df
-                  }
-    if (elog==1)  { 
-	            var.theta <-   object$var.theta; 
-                    var.varpar <- var.theta
-                  }
-    res <- cbind(res,diag(var.varpar)^.5)  
-    colnames(res) <- c("variance","SE")
-    if (is.null((rownames(res))) == TRUE) rownames(res) <- rep(" ", nrow(res))
-    prmatrix(signif(res, digits))
+###    cat("\n\n Random effect variances for gamma random effects \n\n")
+###    varpar <- theta/sum(theta)^2 
+###    res <- as.matrix(varpar); 
+###    if (elog==0)  { var.theta <-   object$var.theta; 
+###                    df <- 0*var.theta; 
+###                    for (i in 1:nrow(var.theta))
+###                    df[i,] <- -theta[i]*2*theta; 
+###		    diag(df) <- diag(df)+sum(theta)^2
+###		    df <- df/sum(theta)^4
+###		    var.varpar <- df %*% var.theta %*% df
+###                  }
+###    if (elog==1)  { 
+###	            var.theta <-   object$var.theta; 
+###                    var.varpar <- var.theta
+###                  }
+###    res <- cbind(res,diag(var.varpar)^.5)  
+###    colnames(res) <- c("variance","SE")
+###    if (is.null((rownames(res))) == TRUE) rownames(res) <- rep(" ", nrow(res))
+###    prmatrix(signif(res, digits))
 
 } ## }}}
 

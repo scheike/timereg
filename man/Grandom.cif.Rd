@@ -8,7 +8,7 @@ Grandom.cif(cif, data, cause = NULL, cif2 = NULL, times = NULL,
   cause1 = 1, cause2 = 1, cens.code = NULL, cens.model = "KM",
   Nit = 40, detail = 0, clusters = NULL, theta = NULL,
   theta.des = NULL, weights = NULL, step = 1, sym = 0,
-  same.cens = FALSE, censoring.weights = NULL, silent = 1, exp.link = 0,
+  same.cens = FALSE, censoring.weights = NULL, silent = 1, var.link = 0,
   score.method = "fisher.scoring", entry = NULL, estimator = 1,
   trunkp = 1, admin.cens = NULL, random.design = NULL, ...)
 }
@@ -56,7 +56,7 @@ times, the value cens.code is the censoring value.}
 
 \item{silent}{debug information}
 
-\item{exp.link}{if exp.link=1 then var is on log-scale.}
+\item{var.link}{if var.link=1 then var is on log-scale.}
 
 \item{score.method}{default uses "nlminb" optimzer, alternatively, use the "fisher-scoring" algorithm.}
 
@@ -118,7 +118,7 @@ with the (k) underlying \eqn{\theta} parameters
 \examples{
 \donttest{ ## Reduce Ex.Timings
  d <- simnordic.random(5000,delayed=TRUE,
-       cordz=0.5,cormz=2,lam0=0.3,country=TRUE)
+       cordz=1.0,cormz=2,lam0=0.3,country=TRUE)
  times <- seq(50,90,by=10)
  addm<-comp.risk(Event(time,cause)~const(country)+cluster(id),data=d,
  times=times,cause=1,max.clust=NULL)
@@ -133,7 +133,7 @@ with the (k) underlying \eqn{\theta} parameters
  ## this model can also be formulated as a random effects model
  ## but with different parameters
  out2m<-Grandom.cif(addm,data=d,cause1=1,cause2=1,
-		    theta=c(0.4,4),step=0.5,
+		    theta=c(0.5,1),step=1.0,
 		    random.design=mm,same.cens=TRUE)
  summary(out2m)
  1/out2m$theta
@@ -153,11 +153,10 @@ with the (k) underlying \eqn{\theta} parameters
  pardes <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0), c(0,1))
 
  outacem <-Grandom.cif(addm,data=d,cause1=1,cause2=1,
-		same.cens=TRUE,theta=c(0.7,-0.3),
+		same.cens=TRUE,theta=c(0.35,0.15),
             step=1.0,theta.des=pardes,random.design=des.rv)
  summary(outacem)
- ## genetic variance is
- exp(outacem$theta[1])/sum(exp(outacem$theta))^2
+
 }
 }
 \author{
