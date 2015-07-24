@@ -6,3 +6,7 @@
     ##                       "\tOverview: help(package=", desc$Package, ")");
     packageStartupMessage(desc$Package, " version ",desc$Version);
   }
+
+.onUnload <- function (libpath) {
+  library.dynam.unload("mets", libpath)
+}
