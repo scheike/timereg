@@ -107,7 +107,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),score.method="nlminb",
 
     if (!is.null(marginal.p)) {
         if (length(margbin)!=antpers) 
-            stop("with marginal margbin is reseponse \n")
+            stop("with marginal margbin is response \n")
         else cause <- margbin
         if (length(marginal.p)!=antpers) 
             stop("length same as data dimension  \n")
@@ -426,6 +426,7 @@ breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weights=
 ##' 		         clusters=twinstut0$tvparnr,theta.des=theta.des,detail=0,
 ##' 	                 score.method="fisher.scoring")
 ##' summary(bin)
+##' estimate(coef=bin$theta,vcov=bin$var.theta,f=function(p) exp(p))
 ##' 
 ##' twinstut0$cage <- scale(twinstut0$age)
 ##' theta.des <- model.matrix( ~-1+factor(zyg)+cage,data=twinstut0)
@@ -659,338 +660,150 @@ simBinPlack <- function(n,beta=0.3,theta=1,...) { ## {{{
     y2 <- (y1==1)*rbinom(n,1,p11/p1)+(y1==0)*rbinom(n,1,p01/(1-p1))
     list(x1=x1,x2=x2,y1=y1,y2=y2,id=1:n)
 } ## }}} 
-
-##' @export 
-simBinFam <- function(n,beta=0.0,rhopp=0.1,rhomb=0.7,rhofb=0.1,rhobb=0.7) { ## {{{ 
-    xc <- runif(n)*0.5
-    xm <- rbinom(n,1,0.5+xc); 
-    xf <- rbinom(n,1,0.5+xc); 
-    xb1 <- rbinom(n,1,0.3+xc); 
-    xb2 <- rbinom(n,1,0.3+xc); 
+ 
+###predict.pair.plack <- function(cif1,cif2,status1,status2,theta) 
+###{ ## {{{
+###  theta <- exp(c(theta))
+###  cif1 <- c(cif1); cif2 <- c(cif2)
+###  cifs=cif1+cif2; 
 ###
-    rn <- matrix(rnorm(n*4),n,4)
-    corm <- matrix( c(1,rhopp,rhomb,rhomb, rhopp,1,rhofb,rhofb, rhomb,rhofb,1,rhobb, rhomb,rhofb,rhobb,1),4,4)
-    rnn <- t( corm %*% t(rn))
-    zm <- exp(rnn[,1]); zf <- exp(rnn[,2]); zb1 <- exp(rnn[,3]); zb2 <- exp(rnn[,4]); 
-    pm <- exp(0.5+xm*beta+zm)
-    pf <- exp(0.5+xf*beta+zf)
-    pf <- pf/(1+pf)
-    pm <- pm/(1+pm)
-    pb1 <- exp(0.5+xb1*beta+zb1)
-    pb1 <- pb1/(1+pb1)
-    pb2 <- exp(0.5+xb2*beta+zb2)
-    pb2 <- pb2/(1+pb2)
-    ym <- rbinom(n,1,pm)
-    yf <- rbinom(n,1,pf)
-    yb1 <- rbinom(n,1,pb1)
-    yb2 <- rbinom(n,1,pb2)
-                                        #
-    agem <- 20+runif(n)*10
-    ageb1 <- 5+runif(n)*10
-    data.frame(agem=agem,agef=agem+3+rnorm(n)*2,
-               ageb1=ageb1,ageb2=ageb1+1+runif(n)*3,xm=xm,xf=xf,xb1=xb1,xb2=xb2,ym=ym,yf=yf,yb1=yb1,yb2=yb2,id=1:n)
-} ## }}} 
+###  valn=2*(theta-1); 
+###  val1=(1+(theta-1)*(cifs))-( ((1+(theta-1)*cifs))^2-4*cif1*cif2*theta*(theta-1))^0.5; 
+###  vali=cif1*cif2;
+###
+###  valr <- vali;
+###  valr[valn!=0] <- val1/valn; 
+###
+###  p11 <- valr; 
+###  p10 <- cif1-p11
+###  p01 <- cif2-p11
+###  p00 <- 1- p10-p01-p11
+####
+###  pred <- (status1==1)*(status2==1)*p11+ (status1==1)*(status2==0)*p10+ 
+###          (status1==0)*(status2==1)*p01+ (status1==0)*(status2==0)*p00
+###
+###  return(pred); 
+###} ## }}}
 
+### pairwise POR model based on case-control data
 ##' @export
-simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{ 
-    x1 <- rbinom(n,1,0.5); x2 <- rbinom(n,1,0.5); 
-    x3 <- rbinom(n,1,0.5); x4 <- rbinom(n,1,0.5); 
-###
-    zf <- rgamma(n,shape=lam1); zb <- rgamma(n,shape=lam2); 
-    pm <- exp(0.5+x1*beta+zf)
-    pf <- exp(0.5+x2*beta+zf)
-    pf <- pf/(1+pf)
-    pm <- pm/(1+pm)
-    pb1 <- exp(0.5+x1*beta+zf+zb)
-    pb1 <- pb1/(1+pb1)
-    ym <- rbinom(n,1,pm)
-    yf <- rbinom(n,1,pf)
-    yb1 <- rbinom(n,1,pb1)
-    yb2 <- rbinom(n,1,pb1)
-                                        #
-    data.frame(x1=x1,x2=x2,ym=ym,yf=yf,yb1=yb1,yb2=yb2,id=1:n)
-} ## }}} 
+CCbinomial.twostage <- function(margbin=NULL,data=sys.parent(),score.method="nlminb",
+    response="response",id="id",num="num",case.num=0,
+    Nit=60,detail=0, silent=1,weights=NULL, control=list(),
+    theta=NULL,theta.formula=NULL,desnames=NULL,
+    deshelp=0,var.link=1,iid=1,
+    step=0.5,model="plackett",marginal.p=NULL,
+    strata=NULL,max.clust=NULL,se.clusters=NULL)
+{ ## {{{
+
+    if (class(margbin)[1]=="glm") ps <- predict(margbin,type="response") 
+    else if (class(margbin)=="formula") {
+        margbin <- glm(margbin,data=data,family=binomial())
+        ps <- predict(margbin,type="response")
+    }  else if (is.null(marginal.p)) stop("without marginal model, marginal p's must be given\n"); 
+
+    if (!is.null(marginal.p)) ps <- marginal.p
+
+    data <- cbind(data,ps)
+
+### make all pairs in the families,
+    fam <- familycluster.index(data[,id])
+    data.fam <- data[fam$familypairindex,]
+    data.fam$subfam <- fam$subfamilyindex
+
+### make dependency design using wide format for all pairs 
+    data.fam.clust <- fast.reshape(data.fam,id="subfam")
+    if (is.function(theta.formula)) {
+        desfunction <- compiler::cmpfun(theta.formula)
+	if (deshelp==1){
+            cat("These names appear in wide version of pairs for dependence \n")
+            cat("design function must be defined in terms of these: \n")
+            cat(names(data.fam.clust)); cat("\n")
+            cat("Here is head of wide version with pairs\n")
+            print(head(data.fam.clust)); cat("\n")
+	}
+###	des.theta <- Reduce("rbind",lapply(seq(nrow(data.fam.clust)),function(i) unlist(desfunction(data.fam.clust[i,] ))))
+        des.theta <- t(apply(data.fam.clust,1, function(x) desfunction(x)))
+	colnames(des.theta) <- desnames
+	desnames <- desnames
+    } else {
+        if (is.null(theta.formula)) theta.formula <- ~+1
+        des.theta <- model.matrix(theta.formula,data=data.fam.clust)
+        desnames <- colnames(des.theta); 
+    }
+    data.fam.clust <- cbind(data.fam.clust,des.theta)
+    if (deshelp==1) {
+        cat("These names appear in wide version of pairs for dependence \n")
+        print(head(data.fam.clust))
+    }
+
+### back to long format keeping only needed variables
+    data.fam <- fast.reshape(data.fam.clust,varying=c(response,id,"ps"))
+    if (deshelp==1) {
+	cat("Back to long format for binomial.twostage (head)\n"); 
+        print(head(data.fam)); 
+	cat("\n")
+	cat(paste("binomial.twostage, called with reponse",response,"\n")); 
+	cat(paste("cluster=",id,",  subcluster (pairs)=subfam \n")); 
+	cat(paste("design variables =")); 
+	cat(desnames)
+	cat("\n")
+    } 
+
+    out <- binomial.twostage(data.fam[,response],data=data.fam,
+                             clusters=data.fam$subfam,
+                             theta.des=data.fam[,desnames],
+                             detail=detail, score.method=score.method, Nit=Nit,step=step,
+                             iid=iid,theta=theta, var.link=var.link,model=model, 
+                             max.clust=max.clust,
+                             marginal.p=data.fam[,"ps"], se.clusters=data.fam[,id])
+    return(out)
+} ## }}}
 
 
-#####' @S3method summary twostage
-###summary.twostage <-function (object,digits = 3,...) { ## {{{
-###  if (!(inherits(object,"twostage"))) stop("Must be a Two-Stage object")
-###  
-###  var.link<-attr(object,"var.link");
-###  if (object$model=="plackett") cat("Dependence parameter for Plackett model \n"); 
-###  if (object$model=="clayton.oakes") cat("Dependence parameter for Clayton-Oakes model \n"); 
+
+mini <- data.frame(response=c(0,1,0,0,0,1,1,0,1,1,1,1),
+		   id=rep(1:6,each=2),num=rep(c(0,1),6),
+		   x=runif(12))
 ###
-###  if (sum(abs(object$score)>0.0001) ) {
-###	  cat("    Variance parameters did not converge, allow more iterations.\n"); 
-###	  cat(paste("    Score:",object$score,"  \n")); 
-###  }
+nn <- mini[mini$num==1,]
+pweight <- rep(1,nrow(nn))
+theta <- 0.0
 ###
-###  coefs <- coef.twostage(object,...);
-###
-###  res <- list(estimates=coefs, type=attr(object,"Type"))
-###  class(res) <- "summary.twostage"
-###  res
-###} ## }}}
-###
-#####' @S3method coef twostage
-###coef.twostage <- function(object,var.link=NULL,...)
-###{ ## {{{
-###  theta <- object$theta
-###  if (is.null(var.link))
-###     if (attr(object,"var.link")==1) vlink <- 1 else vlink <- 0
-###     else vlink <- var.link
-###  se<-diag(object$var.theta)^0.5
-###  res <- cbind(theta, se )
-###  wald <- theta/se
-###  waldp <- (1 - pnorm(abs(wald))) * 2
-###  library(numDeriv)
-###  if (object$model=="plackett") {
-###  spearman <- alpha2spear(theta,link=vlink)
-###  Dspear <- numDeriv::jacobian(alpha2spear,theta,link=vlink) 
-###  var.spearman <- Dspear %*% object$var.theta %*%  Dspear
-###  se.spearman <- diag(var.spearman)^.5
-###  res <- as.matrix(cbind(res, wald, waldp,spearman,se.spearman))
-###  if (vlink==1) colnames(res) <- c("log-Coef.", "SE","z", "P-val","Spearman Corr.","SE")
-###  else colnames(res) <- c("Coef.", "SE","z", "P-val","Spearman Corr.","SE")
-###  if (!is.null(object$thetanames)) rownames(res)<-object$thetanames
-###  }
-###  if (object$model=="clayton.oakes") {
-###  kendall <- alpha2kendall(theta,link=vlink)
-###  Dken <- numDeriv::jacobian(alpha2kendall,theta,link=vlink) 
-###  var.kendall<- Dken %*% object$var.theta %*%  Dken
-###  se.kendall <- diag(var.kendall)^.5
-###  res <- as.matrix(cbind(res, wald, waldp,kendall,se.kendall))
-###  if (vlink==1) colnames(res) <- c("log-Coef.", "SE","z", "P-val","Kendall tau","SE")
-###  else colnames(res) <- c("Coef.", "SE","z", "P-val","Kendall tau","SE")
-###  if (!is.null(object$thetanames)) rownames(res)<-object$thetanames
-###  }
-###
-###  return(res)
-###} ## }}}
-###
-#####' @export
-###alpha2spear <- function(theta,link=1) {
-###   if (link==1) theta <- exp(theta)
-###   if (theta!=1) return( (theta+1)/(theta-1) -2* theta* log(theta)/ (theta-1)^2)
-###   else return(0)
-###}
-###
-#####' @export
-###alpha2kendall <- function(theta,link=0) { 
-###   if (link==1) theta <- exp(theta)
-###   return(1/(1+2/theta)) 
-###}
-###
-#####' @S3method print twostage
-###print.twostage<-function(x,digits=3,...)
-###{ ## {{{
-###  print(x$call); 
-###  cat("\n")
-###  print(summary(x)); 
-###} ## }}}
-###
-#####' @S3method plot twostage
-###plot.twostage<-function(x,pointwise.ci=1,robust=0,specific.comps=FALSE,
-###		level=0.05, 
-###		start.time=0,stop.time=0,add.to.plot=FALSE,mains=TRUE,
-###                xlab="Time",ylab ="Cumulative regression function",...) 
-###{ ## {{{
-###  if (!(inherits(x, 'two.stage'))) stop("Must be a Two-Stage object")
-###  object <- x; rm(x);  
-### 
-###  B<-object$cum; V<-object$var.cum; p<-dim(B)[[2]]; 
-###  if (robust>=1) V<-object$robvar.cum; 
-###
-###  if (sum(specific.comps)==FALSE) comp<-2:p else comp<-specific.comps+1
-###  if (stop.time==0) stop.time<-max(B[,1]);
-###
-###  med<-B[,1]<=stop.time & B[,1]>=start.time
-###  B<-B[med,]; Bs<-B[1,];  B<-t(t(B)-Bs); B[,1]<-B[,1]+Bs[1];
-###  V<-V[med,]; Vs<-V[1,]; V<-t( t(V)-Vs); 
-###  Vrob<-object$robvar.cum; 
-###  Vrob<-Vrob[med,]; Vrobs<-Vrob[1,]; Vrob<-t( t(Vrob)-Vrobs); 
-###
-###  c.alpha<- qnorm(1-level/2)
-###  for (v in comp) { 
-###    c.alpha<- qnorm(1-level/2)
-###    est<-B[,v];ul<-B[,v]+c.alpha*V[,v]^.5;nl<-B[,v]-c.alpha*V[,v]^.5;
-###    if (add.to.plot==FALSE) 
-###      {
-###        plot(B[,1],est,ylim=1.05*range(ul,nl),type="s",xlab=xlab,ylab=ylab) 
-###        if (mains==TRUE) title(main=colnames(B)[v]); }
-###    else lines(B[,1],est,type="s"); 
-###    if (pointwise.ci>=1) {
-###      lines(B[,1],ul,lty=pointwise.ci,type="s");
-###      lines(B[,1],nl,lty=pointwise.ci,type="s"); }
-###    if (robust>=1) {
-###      lines(B[,1],ul,lty=robust,type="s"); 
-###      lines(B[,1],nl,lty=robust,type="s"); }
-###    abline(h=0); 
-###  }
-###}  ## }}}
-###
-#####' @S3method predict twostage
-###predict.twostage <- function(object,X=NULL,Z=NULL,times=NULL,times2=NULL,theta.des=NULL,diag=TRUE,...)
-###{ ## {{{
-###time.coef <- data.frame(object$cum)
-###if (!is.null(times)) {
-###cum <- Cpred(object$cum,times);
-###cum2 <- Cpred(object$cum,times);
-###} else { cum <- object$cum; cum2 <- object$cum }
-###if (!is.null(times2)) cum2 <- Cpred(object$cum,times2);
-###
-###if (is.null(X)) X <- 1;
-###if (is.null(X) & (!is.null(Z))) { Z <- as.matrix(Z);  X <- matrix(1,nrow(Z),1)}
-###if (is.null(Z) & (!is.null(X)))  {X <- as.matrix(X);  Z <- matrix(0,nrow(X),1); gamma <- 0}
-###
-###if (diag==FALSE) {
-###   time.part <-  X %*% t(cum[,-1]) 
-###   time.part2 <-  X %*% t(cum2[,-1]) 
-###   if (!is.null(object$gamma)) { RR <- exp( Z %*% gamma ); 
-###       cumhaz <- t( t(time.part) * RR ); cumhaz2 <- t( t(time.part2) * RR )}
-###	    else { cumhaz <- time.part;  cumhaz2 <- time.part2;   }
-###} else { 
-###	time.part <-  apply(as.matrix(X*cum[,-1]),1,sum) 
-###	time.part2 <-  apply(as.matrix(X*cum2[,-1]),1,sum) 
-###}
-###
-###if (!is.null(object$gamma)) {
-###	RR<- exp(Z%*%gamma); 
-###	cumhaz <- t( t(time.part) * RR );  
-###	cumhaz2 <- t( t(time.part2) * RR )} else {
-###		cumhaz <- time.part;  cumhaz2 <- time.part2; 
-###} 
-###S1 <- exp(-cumhaz); S2 <- exp(-cumhaz2)
-###
-###if (attr(object,"var.link")==1) theta  <- exp(object$theta) else theta <- object$theta
-###if (!is.null(theta.des)) theta <- c(theta.des %*% object$theta)
-###
-###if (diag==FALSE) St1t2<- (outer(c(S1)^{-(1/theta)},c(S2)^{-(1/theta)},FUN="+") - 1)^(-(theta)) else 
-###St1t2<- ((S1^{-(1/theta)}+S2^{-(1/theta)})-1)^(-(theta))
-###
-###out=list(St1t2=St1t2,S1=S1,S2=S2,times=times,times2=times2,theta=theta)
-###return(out)
-###} ## }}}
-###
-#####' @export
-###piecewise.twostage <- function(cut1,cut2,data=sys.parent(),timevar="time",status="status",id="id",covars=NULL,num=NULL,
-###            score.method="optimize",Nit=100,detail=0,clusters=NULL,silent=1,weights=NULL,
-###            control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=0,step=0.5,model="plackett",data.return=0)
-###{ ## {{{
-###
-###ud <- list()
-###if (missing(cut2)) cut2 <- cut1; 
-###nc1 <- length(cut1); nc2 <- length(cut2)
-###names1 <- names2 <- c()
-###theta.mat <- se.theta.mat <- cor.mat <- score.mat <- se.cor.mat <- matrix(0,nc1-1,nc2-1); 
-###idi <- unique(data[,id]); 
-###if (iid==1) theta.iid <- matrix(0,length(idi),(nc1-1)*(nc2-1)) else theta.iid <- NULL
-###
-###k <- 0; 
-###for (i1 in 2:nc1)
-###for (i2 in 2:nc2)
-###{
-###k <-(i1-2)*(nc2-1)+(i2-1)
-###if (silent<=0) cat(paste("Data-set ",k,"out of ",(nc1-1)*(nc2-1)),"\n"); 
-### datalr <- surv.boxarea(c(cut1[i1-1],cut2[i2-1]),c(cut1[i1],cut2[i2]),data,timevar=timevar,
-###			status=status,id=id,covars=covars,num=num,silent=silent) 
-###if (silent<=-1) print(summary(datalr)); 
-### boxlr <- list(left=c(cut1[i1-1],cut2[i2-1]),right=c(cut1[i1],cut2[i2]))
-###### marg1 <- aalen(Surv(datalr$left,datalr[,timevar],datalr[,status])~+1,data=datalr,n.sim=0,max.clust=NULL,robust=0)
-###datalr$tstime <- datalr[,timevar]
-###datalr$tsstatus <- datalr[,status]
-###datalr$tsid <- datalr[,id]
-######
-###f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(",num,")")))
-######f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(num)")))
-###marg1 <- aalen(f,data=datalr,n.sim=0,max.clust=NULL,robust=0)
-###fitlr<-  twostage(marg1,data=datalr,clusters=datalr$tsid,model=model,score.method=score.method,
-###              Nit=Nit,detail=detail,silent=silent,weights=weights,
-###              control=control,theta=theta,theta.des=theta.des,var.link=var.link,iid=iid,step=step)
-#######
-###coef <- coef(fitlr)
-###theta.mat[i1-1,i2-1] <- fitlr$theta
-###se.theta.mat[i1-1,i2-1] <- fitlr$var.theta^.5
-###cor.mat[i1-1,i2-1] <- coef[1,5]
-###se.cor.mat[i1-1,i2-1] <- coef[1,6]
-###score.mat[i1-1,i2-1] <- fitlr$score
-###if (data.return==0) 
-###ud[[k]] <- list(index=c(i1,i2),left=c(cut1[i1-1],cut2[i2-1]),right=c(cut1[i1],cut2[i2]),fitlr=fitlr)
-###if (data.return==1) 
-###ud[[k]] <- list(index=c(i1,i2),left=c(cut1[i1-1],cut2[i2-1]),right=c(cut1[i1],cut2[i2]),fitlr=fitlr,data=datalr)
-###if (i2==2) names1 <- c(names1, paste(cut1[i1-1],"-",cut1[i1]))
-###if (i1==2) names2 <- c(names2, paste(cut2[i2-1],"-",cut2[i2]))
-###theta <- c(theta,fitlr$theta)
-###
-###if (iid==1) theta.iid[idi %in% unique(datalr$tsid),k] <-  fitlr$theta.iid 
-###}
-###
-###var.thetal <- NULL
-###if (iid==1)  var.thetal <- t(theta.iid) %*% theta.iid
-###
-###colnames(score.mat) <- colnames(cor.mat) <-  colnames(se.cor.mat)  <- colnames(se.theta.mat) <- colnames(theta.mat) <- names1; 
-###rownames(score.mat) <- rownames(cor.mat) <-  rownames(se.cor.mat) <-  rownames(se.theta.mat) <- rownames(theta.mat) <- names2; 
-###
-###ud <- list(model.fits=ud,theta=theta.mat,var.theta=se.theta.mat^2,
-###	   se.theta=se.theta.mat,thetal=theta,thetal.iid=theta.iid,var.thetal=var.thetal,model=model,
-###	   cor=cor.mat,se.cor=se.cor.mat,score=score.mat); 
-###class(ud)<-"pc.twostage" 
-###attr(ud,"var.link")<-var.link; 
-###attr(ud, "Type") <- model
-###return(ud);
-###} ## }}}
-###
-#####' @S3method summary pc.twostage
-###summary.pc.twostage <- function(object,var.link=NULL,...)
-###{ ## {{{
-###  if (!(inherits(object,"pc.twostage"))) stop("Must be a Piecewise constant two-Stage object")
-###  
-###  res <- list(estimates=object$theta,se=object$se.theta,cor=object$cor,se.cor=object$se.cor,
-###	      model=object$model,score=object$score)
-###  class(res) <- "summary.pc.twostage"
-###  attr(res,"var.link")<-attr(object,"var.link"); 
-###  attr(res, "Type") <- object$model
-###  res
-###} ## }}}
-###
-#####' @S3method print pc.twostage
-###print.pc.twostage <- function(x,var.link=NULL,...)
-###{ ## {{{
-###   if (!(inherits(x,"pc.twostage"))) stop("Must be a Piecewise constant two-Stage object")
-###   print( summary(x,var.link=var.link,...))
-###} ## }}}
-###
-#####' @S3method print summary.pc.twostage
-###print.summary.pc.twostage <- function(x,var.link=NULL, digits=3,...)
-###{ ## {{{
-###  
-###  if (is.null(var.link)) { if (attr(x,"var.link")==1) vlink <- 1 else vlink <- 0; } else vlink <- var.link
-###  print(vlink)
-###
-###  if (x$model=="plackett") cat("Dependence parameter for Plackett model \n"); 
-###  if (x$model=="clayton.oakes") cat("Dependence parameter for Clayton-Oakes model \n"); 
-### 
-###  if (max(x$score)>0.001) { cat("Score of log-likelihood for parameter estimates (too large?)\n"); print(x$score);cat("\n\n");}
-###
-###  if (vlink==1) cat("log-coefficient for dependence parameter (SE) \n")  else cat("Dependence parameter (SE) \n");
-###  print(coefmat(x$estimate,x$se,digits=digits,...))
-###  cat("\n") 
-###
-###  if (x$model=="plackett") {cat("Spearman Correlation (SE) \n");cor.type <- "Spearman Correlation"; }
-###  if (x$model=="clayton.oakes") {cat("Kendall's tau (SE) \n"); cor.type <- "Kendall's tau";}
-###
-###  print(coefmat(x$cor,x$se.cor,digits,...))
-###  cat("\n") 
-###} ## }}}
-###
-#####' @export
-###coefmat <- function(est,stderr,digits=3,...) { ## {{{
-###  myest <- round(10^digits*(est))/10^digits;
-###  myest <- paste(ifelse(myest<0,""," "),myest,sep="")
-###  mysd <- round(10^digits*(stderr))/10^digits;  
-###  res <- matrix(paste(format(myest)," (",format(mysd),")",sep=""),ncol=ncol(est))
-###  dimnames(res) <- dimnames(est)
-###  colnames(res) <- paste("",colnames(res))
-###  noquote(res)
-###} ## }}}
-###
+for (i in 1:10)
+{
+ margbin <- glm(response~x, data=nn,family=quasibinomial(),
+		weights=1/pweight)
+ ps <- predict(margbin,newdata=mini,type="response")
+
+ud <-binomial.twostage(mini[,"response"],
+		       data=mini,score.method="nlminb",
+    Nit=1,detail=0,clusters=mini$id,silent=1,weights=NULL,
+   control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
+   step=0.5,notaylor=1,model="plackett",
+   marginal.p=ps,strata=NULL,max.clust=NULL,
+   se.clusters=NULL,numDeriv=0)
+print(ud$theta)
+
+mini$ps <- ps
+minidob <- fast.reshape(mini,id="id",num="num")
+
+pjoint <- with(minidob,
+predict.pair.plack(ps0,ps1,response0,response1,ud$theta)
+)
+pweight <- pjoint/minidob$ps1
+}
+
+source("cor.R")
+library(mets)
+mini <- data.frame(response=c(0,1,0,0,0,1,1,0,1,1,1,1),
+		   id=rep(1:6,each=2),num=rep(c(0,1),6),
+		   x=runif(12))
+data <- mini; id <- "id"
+### make all pairs in the families,
+    fam <- familycluster.index(data[,id])
+    data.fam <- data[fam$familypairindex,]
+    data.fam$subfam <- fam$subfamilyindex
+
+
+

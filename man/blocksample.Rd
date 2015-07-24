@@ -4,7 +4,7 @@
 \alias{blocksample}
 \title{Block sampling}
 \usage{
-blocksample(data, size, idvar = "id", replace = TRUE, ...)
+blocksample(data, size, idvar = NULL, replace = TRUE, ...)
 }
 \arguments{
 \item{data}{Data frame}
@@ -25,11 +25,11 @@ Sample blockwise from clustered data
 }
 \examples{
 d <- data.frame(x=rnorm(5), z=rnorm(5), id=c(4,10,10,5,5), v=rnorm(5))
-(dd <- blocksample(d,size=20))
+(dd <- blocksample(d,size=20,~id))
 attributes(dd)$id
 
 \dontrun{
-blocksample(data.table::data.table(d),1e6)
+blocksample(data.table::data.table(d),1e6,~id)
 }
 }
 \author{

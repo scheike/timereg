@@ -336,19 +336,18 @@ summary(fitp4)
 
 ## structured random effects model additive gamma ACE
 \donttest{ ## Reduce Ex.Timings
+set.seed(1000)
 d <- simnordic.random(5000,delayed=TRUE,
         cordz=1.0,cormz=2,lam0=0.3,country=TRUE)
  ### making group indidcator
  mm <- model.matrix(~-1+factor(zyg),d)
 
- ####################################################################
- ################### ACE modelling of survival twin data ############
- ####################################################################
+ ########### ACE modelling of survival twin data ########
+ ########################################################
  ### assume that zygbin gives the zygosity of mono and dizygotic twins
  ### 0 for mono and 1 for dizygotic twins. We now formulate and AC model
  zygbin <- d$zyg=="DZ"
 
- n <- nrow(d)
  ### random effects for each cluster
  des.rv <- cbind(mm,(zygbin==1)*rep(c(1,0)),(zygbin==1)*rep(c(0,1)),1)
  ### design making parameters half the variance for dizygotic components
