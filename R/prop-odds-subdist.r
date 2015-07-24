@@ -1,6 +1,7 @@
 prop.odds.subdist<-function(formula,data=sys.parent(),cause=1,beta=NULL,
 Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
-profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=1000,baselinevar=1,weights=NULL,
+profile=1,sym=0,cens.model="KM",cens.formula=NULL,
+clusters=NULL,max.clust=1000,baselinevar=1,weights=NULL,
 cens.weights=NULL)
 {
 ## {{{ 
@@ -18,7 +19,7 @@ cens.weights=NULL)
     residuals<-0;  robust<-1; resample.iid <- 1 
     m$cens.model <- m$cause <- m$sym<-m$profile <- m$max.time<- m$start.time<- m$weighted.test<- m$n.sim<-
     m$id<-m$Nit<-m$detail<-m$beta <- m$baselinevar <- m$clusters <- m$max.clust <- m$weights <-  NULL
-    m$cens.weights <- NULL
+    m$cens.weights <- m$cens.formula  <- NULL
 
     special <- c("cluster")
     if (missing(data)) {
@@ -174,18 +175,25 @@ if (cens.model=="KM") { ## {{{
     KMti<-Cpred(Gfit,time2)[,2];
     KMtimes<-Cpred(Gfit,times)[,2]; ## }}}
   } else if (cens.model=="cox") { ## {{{
-    ud.cens<-cox.aalen(Surv(time2,delta==cens.code)~prop(desX),n.sim=0,robust=0)
+
+     if (!is.null(cens.formula)) desXc <- model.matrix(cens.formula,data=data)[,-1] else desXc <- desX; 
+
+    ud.cens<-cox.aalen(Surv(time2,delta==cens.code)~prop(desXc),n.sim=0,robust=0)
 ###  baseout <- basehaz(ud.cens,centered=FALSE); 
 ###  baseout <- cbind(baseout$time,baseout$hazard)
     Gcx<-Cpred(ud.cens$cum,time2)[,2];
-    RR<-exp(desX %*% ud.cens$gamma)
+    RR<-exp(desXc %*% ud.cens$gamma)
     KMti<-exp(-Gcx*RR)
     KMtimes<-Cpred(cbind(time2,KMti),times)[,2]; 
     ## }}}
   } else if (cens.model=="aalen") {  ## {{{
-    ud.cens<-aalen(Surv(time2,delta==cens.code)~desX+cluster(clusters),n.sim=0,residuals=0,robust=0,silent=1)
+
+     if (!is.null(cens.formula)) desXc <- model.matrix(cens.formula,data=data) else desXc <- desX; 
+
+    ud.cens<-aalen(Surv(time2,delta==cens.code)~desXc+
+    cluster(clusters),n.sim=0,residuals=0,robust=0,silent=1)
     KMti <- Cpred(ud.cens$cum,time2)[,-1];
-    Gcx<-exp(-apply(Gcx*desX,1,sum))
+    Gcx<-exp(-apply(Gcx*desXc,1,sum))
     Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
     Gfit<-rbind(c(0,1),cbind(time2,Gcx)); 
     KMti <- Gcx

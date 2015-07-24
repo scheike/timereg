@@ -51,6 +51,7 @@ j\item{data}{a data.frame with the variables.}
 \item{sym}{to use symmetrized second derivative in the case of the estimating equation approach (profile=0). 
 This may improve the numerical performance.  }
 \item{cens.model}{specifies censoring model. So far only Kaplan-Meier "KM".}
+\item{cens.formula}{possible formula for censoring distribution covariates. Default all !}
 \item{clusters}{to compute cluster based standard errors.}
 \item{max.clust}{number of maximum clusters to be used, to save time in iid decomposition.}
 \item{baselinevar}{set to 0 to save time on computations.}
