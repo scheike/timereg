@@ -1107,10 +1107,15 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 //		   llt=claytonoakesRV(theta,thetades,0,0,Lit,Lkt,rv1,rv2,dplackt);
 //		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
 		   llt=claytonoakesRVC(etheta,thetades,0,0,Lit,Lkt,rv1,rv2,dplackt);
-		   ll=claytonoakesRVC(etheta,thetades,ci,ck,Li,Lk,rv1,rv2,dplackt);
+		   ll=claytonoakesRVC(etheta,thetades,ci,ck,Li,Lk,rv1,rv2,dplack);
 		   ssf+=weights(i)*(log(ll)-log(llt));
 		   loglikecont=(log(ll)-log(llt));
-	           vthetascore=dplack(0)/ll-dplackt(0)/llt; 
+
+	           if (varlink==1) { 
+			   dplackt=dplackt % etheta;  
+			   dplack=dplack % etheta;  
+		   }
+	           vthetascore=dplack/ll-dplackt/llt; 
 		   // }}}
 	   } else {
 		   ll=claytonoakesRVC(etheta,thetades,ci,ck,Li,Lk,rv1,rv2,dplackt);
@@ -1150,7 +1155,7 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 	     for (v1=0;v1<pt;v1++) DUtheta(c1,v1)+=weights(i)*sdj*vthetascore(c1)*vthetascore(v1);
 	     vthetascore=weights(i)*diff*vthetascore; 
 	     Utheta=Utheta+vthetascore; 
-	} else  { 
+	} else  { // additive gamma structure 
 //		printf(" mig 1\n"); 
 //		vthetascore.print("vvv"); 
 	     for (c1=0;c1<pt;c1++) 
