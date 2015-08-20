@@ -645,52 +645,49 @@ polygen.design <-function (data,id="id",zyg="DZ",zygname="zyg",type="ace",tv=NUL
   nid <- table(data[,id])
   id <- data[,id]
   tv <- diff(c(NA,id))
+  tv[tv!=0 | is.na(tv)] <- 1
   tv[tv==0] <- 2
-  tv[tv==1 | is.na(tv)] <- 1
 
-  zygbin <- (data[,zygname]==zyg)
+  zygbin <- (data[,zygname]==zyg)*1
   zygdes=model.matrix(~-1+factor(zygbin),data)
+  n <- length(zygbin)
 
   if (type=="ace") { ### ace ## {{{ 
   ### random effects for each cluster
-  des.rv <- cbind(zygdes[,c(2,1)],(zygbin==0)*(tv==1), (zygbin==0)*(tv==2),1)
+  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+
+		(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
+  des.rv <- cbind(zygdes,DZns,1)
+  colnames(des.rv) <- c("MZ","DZ","DZns1","DZns2","env")
   pard <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0), c(0,1))
   } ## }}} 
 
   if (type=="dce") { ### ace ## {{{ 
   ### DCE  
-  des.rv <- cbind(zygdes[,c(2,1)], (zygbin==0)*(tv==1), (zygbin==0)*(tv==2),1)
+  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+
+		(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
+  des.rv <- cbind(zygdes,DZns,1)
+  colnames(des.rv) <- c("MZ","DZ","DZns1","DZns2","env")
   pard <- rbind(c(1,0), c(0.25,0),c(0.75,0), c(0.75,0), c(0,1))
   } ## }}} 
 
   if (type=="ade") { ### ace ## {{{ 
-#ADE
-  des.rv <- cbind( zygdes[,c(2,1)], (zygbin==0)*(tv==1), (zygbin==0)*(tv==2),
-                   zygdes[,c(2,1)], (zygbin==0)*(tv==1), (zygbin==0)*(tv==2))
-  pard <- rbind(c(1,0), c(0.25,0),c(0.75,0), c(0.75,0), 
-	      c(0,1), c(0,0.5),c(0,0.5), c(0,0.5) )
-  } ## }}} 
-
-  if (type=="acde") { ### ace ## {{{ 
-#ACDE 
-des.rv <- cbind( zygdes[,c(2,1)], (zygbin==0)*(tv==1), 
-	(zygbin==0)*(tv==2), zygdes[,c(2,1)], (zygbin==0)*(tv==1), (zygbin==0)*(tv==2),1)
-pard <- rbind(c(1,0,0), c(0.25,0,0),c(0.75,0,0), c(0.75,0,0), 
-	      c(0,1,0), c(0,0.5,0),c(0,0.5,0), c(0,0.5,0) ,c(0,0,1))
+  #ADE
+  pard <- rbind(c(1,0), c(0.25,0),c(0.75,0), c(0.75,0),c(0,1), c(0,0.5),c(0,0.5), c(0,0.5) )
+  des.rv <- NULL
   } ## }}} 
 
   if (type=="ae") { ### ace ## {{{ 
-###AE model 
-  des.rv <- cbind(zygdes[,c(2,1)],
-	(zygbin==0)*(tv==1), 
-	(zygbin==0)*(tv==2))
-   pard <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0))[,1]
+  ###AE model 
+  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+
+		(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
+  des.rv <- cbind(zygdes,DZns)
+  colnames(des.rv) <- c("MZ","DZ","DZns1","DZns2")
+  pard <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0))[,1]
   } ## }}} 
 
 res <- list(pardes=pard,des.rv=des.rv)
-
+return(res)
 } ## }}}
-
 
 ##' @export
 print.twostage<-function(x,digits=3,...)
