@@ -682,7 +682,7 @@ polygen.design <-function (data,id="id",zyg="DZ",zygname="zyg",type="ace",tv=NUL
 		(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
   des.rv <- cbind(zygdes,DZns)
   colnames(des.rv) <- c("MZ","DZ","DZns1","DZns2")
-  pard <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0))[,1]
+  pard <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0))[,1,drop=FALSE]
   } ## }}} 
 
 res <- list(pardes=pard,des.rv=des.rv)
