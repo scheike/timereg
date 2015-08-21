@@ -1186,9 +1186,7 @@ twostage.fullse <- function(margsurv,data=sys.parent(),
    se.clusters=NULL,max.clust=NULL,numDeriv=0,
    random.design=NULL)
 { ## {{{ 
-
-  if (is.null(margsurv$gamma.iid)) 
-	  stop("Call marginal model with iid \n"); 
+  if (is.null(margsurv$gamma.iid)) stop("Call marginal model with resample.iid=1, only Cox model via cox.aalen \n"); 
   beta.iid <- margsurv$gamma.iid
   base.iid <- margsurv$B.iid
 
@@ -1233,8 +1231,13 @@ twobeta  <- function(par,beta=1)
   udl$score
 } ## }}} 
 
+###if (fdetail==1) 
+	cat("Ready for numDeriv wrt beta and baseline\n")
 DUbeta <-  numDeriv::jacobian(twobeta,par,beta=1)
 DUbase <-  numDeriv::jacobian(twobeta,parbase,beta=0)
+###if (fdetail==1) 
+	cat("Finished numDeriv wrt beta and baseline\n")
+
 biid <- c()
 for (i in 1:length(base.iid)) biid <- cbind(biid,base.iid[[i]])
 					 
@@ -1259,6 +1262,7 @@ class(res) <- "twostage.fullse"
 return(res)
 } ## }}} 
 
+##' @export
 summary.twostage.fullse <- function(object,digits=3,...)
 { ## {{{ 
 	tval <- object$coef/object$se
@@ -1268,11 +1272,13 @@ summary.twostage.fullse <- function(object,digits=3,...)
 return(res)
 } ## }}} 
 
+##' @export
 coef.twostage.fullse <- function(object,digits=3,...)
 { ## {{{ 
 summary.twostage.fullse(object)
 } ## }}} 
 
+##' @export
 print.twostage.fullse  <-  function(x,...)
 {  ## {{{ 
 summary.twostage.fullse(x)
