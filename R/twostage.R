@@ -1184,7 +1184,7 @@ twostage.fullse <- function(margsurv,data=sys.parent(),
    marginal.trunc=NULL, marginal.survival=NULL,
    marginal.status=NULL,strata=NULL,
    se.clusters=NULL,max.clust=NULL,numDeriv=0,
-   random.design=NULL)
+   random.design=NULL,fdetail=1)
 { ## {{{ 
   if (is.null(margsurv$gamma.iid)) stop("Call marginal model with resample.iid=1, only Cox model via cox.aalen \n"); 
   beta.iid <- margsurv$gamma.iid
@@ -1194,8 +1194,8 @@ twostage.fullse <- function(margsurv,data=sys.parent(),
   se.clusters <- attr(margsurv,"cluster")
 
   udtwo <- twostage(margsurv,data=data,
-   score.method=score.method,Nit=Nit,detail=detail,
-   clusters=clusters,
+  score.method=score.method,Nit=Nit,detail=detail,
+  clusters=clusters,
   silent=silent,weights=weights,control=control,
   theta=theta,theta.des=theta.des,
   var.link=var.link,iid=iid,step=step,notaylor=notaylor,
@@ -1206,6 +1206,7 @@ twostage.fullse <- function(margsurv,data=sys.parent(),
   max.clust=max.clust,numDeriv=numDeriv,
   random.design=random.design)
   par <- margsurv$gamma
+  theta <- udtwo$theta
 ###
  
  if (object.defined(margsurv$time.sim.resolution))
@@ -1215,28 +1216,26 @@ twostage.fullse <- function(margsurv,data=sys.parent(),
  parbase <- parbase[,2]
  }else parbase <- margsurv$cum[,2]
 
-
 twobeta  <- function(par,beta=1)
 { ## {{{ 
    if (beta==1) margsurv$gamma <- par else margsurv$cum[,2] <- par
 
    udl <- twostage(margsurv,data=data,
                     score.method=score.method,Nit=0,detail=detail,clusters=clusters,
-		     silent=silent,weights=weights, control=control,theta=theta,theta.des=theta.des,
-		     var.link=var.link,iid=0,
-                     step=step,notaylor=notaylor,model=model,
-		     marginal.trunc=marginal.truc,marginal.survival=marginal.survival,
-		     marginal.status=marginal.status,strata=strata,
-		     se.clusters=se.clusters,max.clust=max.clust,numDeriv=0, random.design=random.design)
+		    silent=silent,weights=weights, control=control,theta=theta,theta.des=theta.des,
+		    var.link=var.link,iid=0,
+                    step=step,notaylor=notaylor,model=model,
+		    marginal.trunc=marginal.truc,marginal.survival=marginal.survival,
+		    marginal.status=marginal.status,strata=strata,
+		    se.clusters=se.clusters,max.clust=max.clust,numDeriv=0,random.design=random.design)
+###  udl <- two.stage(margsurv,data=data,Nit=1,clusters=clusters,theta=theta) ###  udl$theta.score
   udl$score
 } ## }}} 
 
-###if (fdetail==1) 
-	cat("Ready for numDeriv wrt beta and baseline\n")
-DUbeta <-  numDeriv::jacobian(twobeta,par,beta=1)
-DUbase <-  numDeriv::jacobian(twobeta,parbase,beta=0)
-###if (fdetail==1) 
-	cat("Finished numDeriv wrt beta and baseline\n")
+if (fdetail==1) cat("Ready for numDeriv wrt beta and baseline\n")
+DUbeta <-  numDeriv::jacobian(twobeta,par,beta=1) #,method="complex")
+DUbase <-  numDeriv::jacobian(twobeta,parbase,beta=0) #,method="complex")
+if (fdetail==1) cat("Finished numDeriv wrt beta and baseline\n")
 
 biid <- c()
 for (i in 1:length(base.iid)) biid <- cbind(biid,base.iid[[i]])
@@ -1246,7 +1245,6 @@ IDUbase <-  udtwo$hessi %*% DUbase
 betaiid <-t( IDUbeta %*% t(beta.iid))
 baseiid <- t( IDUbase %*% biid)
 ###
-###
 iidfull <- udtwo$theta.iid
 iidfull <- iidfull+betaiid+baseiid
 var2 <- t(iidfull) %*% iidfull
@@ -1254,10 +1252,12 @@ se <- cbind(diag(var2)^.5); colnames(se) <- "se"
 
 se.naive=coef(udtwo)[,2,drop=FALSE]; 
 colnames(se.naive) <- "se.naive"
+###
+res <- list(theta.iid=udtwo$theta.iid, iid=iidfull,coef=udtwo$theta,var=var2,se=se, se.naive=se.naive)
+attr(res,"DUbeta") <- DUbeta; 
+attr(res,"DUbase") <- DUbase; 
+attr(res,"DUthetainv") <- udtwo$hessi
 
-res <- list(theta.iid=udtwo$theta.iid,
-	    iid=iidfull,coef=udtwo$theta,var=var2,se=se,
-	    se.naive=se.naive)
 class(res) <- "twostage.fullse"
 return(res)
 } ## }}} 

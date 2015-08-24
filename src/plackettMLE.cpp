@@ -414,7 +414,6 @@ if (status1==1 && status2==1) { // {{{
 return(valr); 
 } // }}}
 
-
 RcppExport SEXP claytonoakesRV(SEXP itheta,SEXP istatus1,SEXP istatus2,SEXP icif1,SEXP icif2,
                                SEXP irv1, SEXP irv2,SEXP ithetades)
 { // {{{
