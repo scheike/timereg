@@ -673,28 +673,58 @@ polygen.design <-function (data,id="id",zyg="DZ",zygname="zyg",type="ace",tv=NUL
   pard <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0), c(0,1))
   } ## }}} 
 
-  if (type=="dce") { ### ace ## {{{ 
-  ### DCE  
-  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+
-		(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
-  des.rv <- cbind(zygdes,DZns,1)
-  colnames(des.rv) <- c("MZ","DZ","DZns1","DZns2","env")
-  pard <- rbind(c(1,0), c(0.25,0),c(0.75,0), c(0.75,0), c(0,1))
-  } ## }}} 
-
-  if (type=="ade") { ### ace ## {{{ 
-  #ADE
-  pard <- rbind(c(1,0), c(0.25,0),c(0.75,0), c(0.75,0),c(0,1), c(0,0.5),c(0,0.5), c(0,0.5) )
-  des.rv <- NULL
-  } ## }}} 
-
-  if (type=="ae") { ### ace ## {{{ 
+  if (type=="ae") { ### ae ## {{{ 
   ###AE model 
   DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+
 		(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
   des.rv <- cbind(zygdes,DZns)
   colnames(des.rv) <- c("MZ","DZ","DZns1","DZns2")
   pard <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0))[,1,drop=FALSE]
+  } ## }}} 
+
+  if (type=="dce") { ### dce ## {{{ 
+  ### DCE  
+  ### random effects for each cluster
+  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
+  des.rv <- cbind(zygdes,DZns,1)
+  colnames(des.rv) <- c("MZ","DZ","DZns1","DZns2","env")
+  pard <- rbind(c(1,0), c(0.25,0),c(0.75,0), c(0.75,0), c(0,1))
+  } ## }}} 
+
+  if (type=="ade") { ### ade ## {{{ 
+  #ADE
+  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
+  des.rv <- cbind(zygdes,DZns,DZns,1)
+  pard <- rbind(c(1,0),c(0.25,0),c(0.75,0),c(0.75,0),c(0,1),c(0,0.5),c(0,0.5),c(0,0.5) )
+  pardes <- matrix(pard,n,16,byrow=TRUE)
+  des.rv <- NULL
+  } ## }}} 
+
+  if (type=="adce") { ### adce ## {{{ 
+###zygdes=model.matrix(~-1+factor(zygbin),prtwomen)
+###n <- nrow(prtwomen)
+###des.rv <- cbind( zygdes[,c(2,1)], (prtwomen$zygbin==0)*(prtwomen$tv==1), 
+###	(prtwomen$zygbin==0)*(prtwomen$tv==2),
+###	zygdes[,c(2,1)], (prtwomen$zygbin==0)*(prtwomen$tv==1), 
+###	(prtwomen$zygbin==0)*(prtwomen$tv==2),1
+###	)
+###pard <- rbind(c(1,0,0), c(0.25,0,0),c(0.75,0,0), c(0.75,0,0), 
+###	      c(0,1,0), c(0,0.5,0),c(0,0.5,0), c(0,0.5,0) ,c(0,0,1))
+###pardes <- matrix(pard,n,27,byrow=TRUE)
+  } ## }}} 
+
+  if (type=="de") { ### ae ## {{{ 
+  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+
+		(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
+  des.rv <- cbind(zygdes,DZns)
+  colnames(des.rv) <- c("MZ","DZ","DZns1","DZns2")
+  pard <- rbind(c(1,0), c(0.25,0),c(0.75,0), c(0.75,0))[,1,drop=FALSE]
+  } ## }}} 
+
+  if (type=="un") { ### ae ## {{{ 
+  des.rv <- cbind(zygdes)
+  colnames(des.rv) <- c("MZ","DZ")
+  pard <- rbind(c(1,0),c(0,1))
   } ## }}} 
 
 res <- list(pardes=pard,des.rv=des.rv)

@@ -39,12 +39,28 @@ familycluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=1)
   invisible(clustud)
 } ## }}}
 
-###library(mets)
-###index <- c(1,1,2,2,1)
-###clusters <- cluster.index(index,Rindex=1)
-###ud <- familycluster.index(index)
-###ud
+##' @export
+familyclusterWithProbands.index <- function(clusters,probands,index.type=FALSE,num=NULL,Rindex=1)
+{ ## {{{
+    famc <-familycluster.index(clusters,index.type=index.type,num=num,Rindex=Rindex)
+    if (length(probands)!=length(clusters)) stop("clusters and probands not same length\n"); 
+    index.probs <- (1:length(clusters))[probands==1]
+    subfamsWprobands <-famc$subfamilyindex[ famc$familypairindex %in% index.probs ]
+    indexWproband <- famc$subfamilyindex %in% subfamsWprobands 
+    famc$subfamilyindex <- famc$subfamilyindex[indexWproband]
+    famc$familypairindex <- famc$familypairindex[indexWproband]
 
+    invisible(famc)
+} ## }}}
+
+
+###library(mets)
+###index <-   c(1,1,2,2,1,3,3,3)
+###proband <- c(1,0,0,1,0,1,0,0)
+###ilusters <- cluster.index(index,Rindex=1)
+###clusters
+###ud <- familycluster.index(index)
+###ud1 <- familyclusterWithProbands.index(index,proband)
 
 ##' @export
 coarse.clust <- function(clusters,max.clust=100)

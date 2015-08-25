@@ -115,36 +115,23 @@ if (left>0) {
 } ## }}} 
 
 ##' @export
-simClaytonOakes.twin.ace <- function(K,varg,varc,beta,stoptime,pmz=0.5,
-				     left=0,pairleft=0,trunc.prob=0.5)  ## {{{ 
+simClaytonOakes.twin.ace <- function(K,varg,varc,beta,stoptime,Cvar=0,left=0,pairleft=0,trunc.prob=0.5)  ## {{{ 
 {
   ## K antal clustre, n=antal i clustre
   n=2 # twins with ace structure
   x<-array(c(runif(n*K),rep(0,n*K),rbinom(n*K,1,0.5)),dim=c(K,n,3))
-  C<-matrix(stoptime,K,n);
+  if (Cvar==0) C<-matrix(stoptime,K,n) else C<-matrix(cvar*runif(K*n)*stoptime,K,n) 
+  ### total variance of gene and env. 
   eta <- varc+varg
-###  Gam1 <-matrix(rgamma(K,eta)/eta,K,n)
   Gams1 <-cbind(
        rgamma(K,varg)/eta,
        rgamma(K,varg*0.5)/eta, rgamma(K,varg*0.5)/eta, rgamma(K,varg*0.5)/eta,
        rgamma(K,varc)/eta )
-###  mz <- rbinom(K,1,pmz); dz <- 1-mz;
   mz <- c(rep(1,K/2),rep(0,K/2)); dz <- 1-mz;
   mzrv <-  Gams1[,1]+Gams1[,5]           ### shared gene + env 
   dzrv1 <- Gams1[,2]+Gams1[,3]+Gams1[,5] ### 0.5 shared gene + 0.5 non-shared + env 
   dzrv2 <- Gams1[,2]+Gams1[,4]+Gams1[,5] ### 0.5 shared gene + 0.5 non-shared + env 
-###  mean(mzrv)
-###  var(mzrv)
-###  mean(dzrv1)
-###  var(dzrv1)
-###
   Gam1 <- cbind(mz*mzrv+dz*dzrv1,mz*mzrv+dz*dzrv2)
-###  apply(Gam1,2,mean)
-###  apply(Gam1,2,var)
-###mean(gams)
-###var(gams)
-###cor(Gam1[mz==1,])
-###cor(Gam1[dz==1,])
   temp<-eta*log(-log(1-x[,,1])/(eta*Gam1)+1)*exp(-beta*x[,,3])
   x[,,2]<-ifelse(temp<=C,1,0);
   x[,,1]<-pmin(temp,C)
@@ -174,30 +161,6 @@ if (left>0) { ## {{{
 names(ud)<-c("time","status","x1","cluster","zyg","mintime","lefttime","truncated")
 return(ud)
 } ## }}} 
-
-###library(mets)
-###res <- c()
-###for (i in 1:100)
-###{
-###print(i)
-###data <- simClaytonOakes.twin.ace(5000,1,1,0,3)
-###names(data)
-###table(data$zyg)
-######
-###out <- polygen.design(data,id="cluster")
-###pardes <- out$pardes
-###des.rv <- out$des.rv
-###tail(des.rv)
-######
-###aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
-###ts <- twostage(aa,data=data,clusters=data$cluster,detail=0,
-###	       theta=c(2,1),var.link=0,step=1,
-###	       random.design=des.rv,theta.des=pardes)
-###summary(ts)
-###res <- rbind(res,c(ts$theta,diag(ts$var.theta)^.5))
-###}
-###apply(res,2,mean)
-###apply(res,2,sd)
 
 ## sim.clayton <- function(n=100,K=2,eta=0.5,beta,...) {
 ##     m <- lvm(T~x)
