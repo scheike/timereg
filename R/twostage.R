@@ -167,7 +167,19 @@
 ##' survace <-twostage(add,data=d,theta=c(-0.7,-1.0),clusters=d$id,
 ##'                    theta.des=pardes,random.design=des.rv,var.link=1)
 ##' summary(survace)
+##' 
+##'  ########################################################
 ##' }
+##' ### simulate structured two-stage additive gamma ACE model
+##' data <- simClaytonOakes.twin.ace(2000,2,1,0,3)
+##' out <- polygen.design(data,id="cluster")
+##' pardes <- out$pardes
+##' des.rv <- out$des.rv
+##' aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
+##' ts <- twostage(aa,data=data,clusters=data$cluster,detail=0,
+##' 	       theta=c(varg,varc),var.link=0,step=0.5,
+##' 	       random.design=des.rv,theta.des=pardes)
+##' summary(ts)
 ##' @keywords survival
 ##' @author Thomas Scheike
 ##' @export
