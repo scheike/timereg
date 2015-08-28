@@ -31,11 +31,14 @@
 ##' 1 is \deqn{v_1^T (Z_1,...,Z_d)}, for d random effects. Each random effect
 ##' has an associated parameter \eqn{(\lambda_1,...,\lambda_d)}. By construction
 ##' subjects 1's random effect are Gamma distributed with 
-##' mean \eqn{\lambda_1/v_1^T \lambda}
-##' and variance \eqn{\lambda_1/(v_1^T \lambda)^2}. Note that the random effect 
+##' mean \eqn{\lambda_j/v_1^T \lambda}
+##' and variance \eqn{\lambda_j/(v_1^T \lambda)^2}. Note that the random effect 
 ##' \eqn{v_1^T (Z_1,...,Z_d)} has mean 1 and variance \eqn{1/(v_1^T \lambda)}.
 ##' It is here asssumed that  \eqn{lamtot=v_1^T \lambda} is fixed over all clusters
 ##' as it would be for the ACE model below.
+##'
+##' Based on these parameters the relative contribution (the heritability, h) is 
+##' equivalent to  the expected values of the random effects  \eqn{\lambda_j/v_1^T \lambda}
 ##'
 ##' Given the random effects the survival distributions with a cluster are independent and
 ##' on the form 
@@ -60,6 +63,9 @@
 ##' 
 ##' Measuring early or late dependence for bivariate twin data
 ##' Scheike, Holst, Hjelmborg (2015), LIDA  
+##' 
+##' Twostage modelling of additive gamma frailty models for survival data. 
+##' Scheike and Holst, working paper 
 ##' 
 ##' @examples
 ##' data(diabetes)
@@ -578,16 +584,24 @@ summary.twostage <-function (object,digits = 3,silent=0,...) { ## {{{
       rv1 <- attr(object,"rv1"); 
       theta.des <- attr(object,"pardes"); 
       if (var.link==1) par <- theta.des %*% exp(object$theta) else  par <- theta.des %*% object$theta
+      print(par)
+      print(rv1)
       if (var.link==1) {
-	      fp <- function(p){  res <- exp(p)/sum(rv1* (theta.des %*% exp(p))); return(res); }
-              e <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p))
-            pare <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) exp(p))
+	     fp <- function(p,d,t){  res <- exp(p*t)/(sum(rv1* (theta.des %*% exp(p))))^d; 
+                                     if (t==0) res <- res[1]; return(res); }
+             e <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p,1,1))
+             pare <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) exp(p))
+             vare <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p,2,1))
+             vartot <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p,1,0))
       } else {
-              fp <- function(p) {  p/sum(rv1* (theta.des %*% p)) }
-              e <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p))
-              pare <- NULL
+              fp <- function(p,d,t) {  res <- (p^t)/(sum(rv1* (theta.des %*% p)))^d;
+                                     if (t==0) res <- res[1]; return(res); }
+              e <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p,1,1))
+              vare <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p,2,1))
+	      pare <- NULL
+              vartot <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p,1,0))
       }
-      res <- list(estimates=coefs, type=attr(object,"Type"),h=e,exppar=pare)
+      res <- list(estimates=coefs, type=attr(object,"Type"),h=e,exppar=pare,vare=vare,vartot=vartot)
   } else res <- list(estimates=coefs, type=attr(object,"Type"))
 
 
