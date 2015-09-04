@@ -1204,13 +1204,14 @@ RcppExport SEXP twostageloglikeRVpairs(
                 SEXP iiid, SEXP  iweights, SEXP isilent, 
 		SEXP idepmodel, // SEXP ientryage,
 		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid, SEXP irvdes,
-		SEXP idimthetades, SEXP idimrvdes 
+		SEXP idimthetades, SEXP idimrvdes, SEXP inrvs 
 )  
 { 
 // {{{ 
 //  setting matrices and vectors, and exporting to armadillo matrices
 //  // {{{
 // mat thetades = Rcpp::as<mat>(ithetades); 
+ colvec nrvs = Rcpp::as<colvec>(inrvs);
  mat clusterindex = Rcpp::as<mat>(iclusterindex);
 // clusterindex.print("clusterindex"); 
  colvec theta = Rcpp::as<colvec>(itheta);
@@ -1367,12 +1368,13 @@ for (j=0;j<antclust;j++) {
 
 // index of subject's in pair "j"
    i=clusterindex(j,0); k=clusterindex(j,1); 
-//   printf(" %d %d %d \n",j,i,k); 
 //	  printf("cci 2 \n"); 
      if (strata(i)==strata(k)) { // 
 
+//   printf(" %d %d %d \n",j,i,k); 
      // basic survival status 
      ci=cause(i); ck=cause(k); Li=pmargsurv(i); Lk=pmargsurv(k); 
+//     printf(" %d %d %lf %lf \n",ci,ck,Li,Lk); 
          
      int flexfunc=0; 
       if (flexfunc==0) {
@@ -1417,15 +1419,19 @@ for (j=0;j<antclust;j++) {
 //	etheta.print("etheta"); 
 	   
 	// 3-dimensional array pairs*(2xrandom effects)
-        rv1= rvdes.subcube( span(j),span(0),span::all);
-        rv2= rvdes.subcube( span(j),span(1),span::all);
-//        rv1.print("rv1");    rv2.print("rv2"); 
+        int lnrv= nrvs(j)-1; // number of random effects for this cluster 	
+//	printf(" %d \n",lnrv); 
+        rv1= rvdes.subcube( span(j),span(0),span(0,lnrv));
+        rv2= rvdes.subcube( span(j),span(1),span(0,lnrv));
+	if (j<-10)  {
+           rv1.print("rv1");    rv2.print("rv2"); 
+        }
 
 	// takes parameter relations for each pair
 	// 3-dimensional array pairs*(random effects* pars )
-	thetades=thetadesi.subcube( span(j),span::all,span::all);
+	thetades=thetadesi.subcube( span(j),span(0,lnrv),span::all);
 
-//        thetades.print("thetades j "); 
+	if (j<-10) thetades.print("thetades j "); 
 
            if (trunkp(i)<1 || trunkp(k)<1) { //  
 		   Lit=trunkp(i); Lkt=trunkp(k); 
@@ -1446,6 +1452,7 @@ for (j=0;j<antclust;j++) {
 		   ll=claytonoakesRVC(etheta,thetades,ci,ck,Li,Lk,rv1,rv2,dplackt);
 		   ssf+=weights(i)*log(ll); 
 		   loglikecont=log(ll);
+//		   printf("%lf %lf \n",weights(i),ll); 
 
 	           if (varlink==1) dplackt=dplackt % etheta;  
 	           vthetascore=dplackt/ll; 

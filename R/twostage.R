@@ -218,7 +218,7 @@ twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Ni
 		     silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
                      step=0.5,notaylor=0,model="clayton.oakes",
 		     marginal.trunc=NULL, marginal.survival=NULL,marginal.status=NULL,strata=NULL,
-		     se.clusters=NULL,max.clust=NULL,numDeriv=0,random.design=NULL,pairs=NULL)
+		     se.clusters=NULL,max.clust=NULL,numDeriv=0,random.design=NULL,pairs=NULL,pairs.rvs=NULL)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -296,6 +296,7 @@ if (!is.null(margsurv))
 	 if (lefttrunk==1) ptrunc <- exp(-resi$cumhazleft); 
   } ## }}}
   else if (class(margsurv)=="coxph") {  ## {{{
+	### some problems here when data is different from data used in margsurv
        notaylor <- 1
        residuals <- residuals(margsurv)
        cumhaz <- status-residuals
@@ -365,24 +366,24 @@ if (!is.null(margsurv))
      dep.model <- 3
 ###     if (is.null(random.design)) random.design <- matrix(1,antpers,1); 
      dim.rv <- ncol(random.design); 
-     if (is.null(theta.des)==TRUE) theta.des<-diag(dim.rv);
+     if (is.null(theta.des)) theta.des<-diag(dim.rv);
 ###     ptheta <- dimpar <- ncol(theta.des); 
  
-   if (nrow(theta.des)!=ncol(random.design)) 
-   stop("nrow(theta.des)!= ncol(random.design),\nspecifies restrictions on paramters, if theta.des not given =diag (free)\n"); 
+###   if (dim(theta.des)[2]!=ncol(random.design)) 
+###   stop("nrow(theta.des)!= ncol(random.design),\nspecifies restrictions on paramters, if theta.des not given =diag (free)\n"); 
  } else random.design <- matrix(0,1,1); 
 
 
- if (is.null(theta.des)==TRUE) ptheta<-1; 
-  if (is.null(theta.des)==TRUE) theta.des<-matrix(1,antpers,ptheta) else theta.des<-as.matrix(theta.des); 
-  ptheta<-ncol(theta.des); 
+  if (is.null(theta.des)) ptheta<-1; 
+  if (is.null(theta.des)) theta.des<-matrix(1,antpers,ptheta); ###  else theta.des<-as.matrix(theta.des); 
+  if (length(dim(theta.des))==3) ptheta<-dim(theta.des)[3] else if (length(dim(theta.des))==2) ptheta<-ncol(theta.des)
   if (nrow(theta.des)!=antpers & dep.model!=3 ) stop("Theta design does not have correct dim");
 
   if (is.null(theta)==TRUE) {
          if (var.link==1) theta<- rep(-0.7,ptheta);  
          if (var.link==0) theta<- rep(exp(-0.7),ptheta);   
   }       
-  if (length(theta)!=ptheta) theta<-rep(theta[1],ptheta); 
+  if (length(theta)!=ptheta) { warning("dimensions of theta.des and theta do not match\n"); theta<-rep(theta[1],ptheta); }
   theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
 
 
@@ -393,11 +394,16 @@ if (!is.null(margsurv))
 ### something with dimensions of rv.des 
 ### theta.des
        antpairs <- nrow(pairs); 
+  print("her"); 
+  print(dim(theta.des))
+  print(dim(random.design))
        if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))==3) )
        {
           Ptheta.des <- array(0,c(antpairs,nrow(theta.des),ncol(theta.des)))
           for (i in 1:antpairs) Ptheta.des[i,,] <- theta.des
+       theta.des <- Ptheta.des
        }
+  print("her 2"); 
        if ( (length(dim(theta.des))==3)  & (length(dim(random.design))!=3) )
        {
            rv.des <- array(0,c(antpairs,2,ncol(random.design)))
@@ -405,7 +411,9 @@ if (!is.null(margsurv))
 		   rv.des[i,1,] <- random.design[pairs[i,1],]
 		   rv.des[i,2,] <- random.design[pairs[i,2],]
 	   }
+       random.design <- rv.des
        }
+  print("her 3"); 
        if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))!=3) )
        {
           Ptheta.des <- array(0,c(antpairs,nrow(theta.des),ncol(theta.des)))
@@ -415,9 +423,13 @@ if (!is.null(margsurv))
 		   rv.des[i,2,] <- random.design[pairs[i,2],]
                    Ptheta.des[i,,] <- theta.des
 	   }
-       }
        theta.des <- Ptheta.des
        random.design <- rv.des
+       }
+  print(dim(theta.des))
+  print(dim(random.design))
+       if (is.null(pairs.rvs)) pairs.rvs <- rep(dim(random.design)[3],antpairs)
+       print(head(pairs.rvs))
        clusterindex <- pairs-1; 
   } 
   ## }}}
@@ -445,8 +457,8 @@ if (!is.null(margsurv))
       icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
       ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
       itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
-      irvdes=random.design,idimthetades=dim(theta.des),idimrvdes=dim(rv.des)
-      ) 
+      irvdes=random.design,idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs
+      )  ## }}} 
 
     if (detail==3) print(c(par,outl$loglike))
 
