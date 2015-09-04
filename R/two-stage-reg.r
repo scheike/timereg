@@ -178,6 +178,7 @@ if (class(margsurv)!="coxph") {
   ## }}}
 
   
+  DUbeta <- matrix(0,pz,ptheta); 
   nparout <- .C("twostagereg", 
         as.double(times), as.integer(Ntimes), as.double(X),
    	as.integer(antpers), as.integer(px), as.double(Z), 
@@ -193,7 +194,7 @@ if (class(margsurv)!="coxph") {
 	as.double(gamma.iid),as.double(Biid),as.integer(semi), as.double(cumhaz) ,
 	as.double(cumhazleft),as.integer(lefttrunk),as.double(RR),
 	as.integer(maxtimesim),as.integer(time.group),as.integer(secluster),
-	as.integer(antsecluster),as.double(theta.iid), as.double(timereso),PACKAGE = "timereg")
+	as.integer(antsecluster),as.double(theta.iid), as.double(timereso),as.double(DUbeta),PACKAGE = "timereg")
 
 ## {{{ handling output
    gamma <- margsurv$gamma
@@ -208,6 +209,7 @@ if (class(margsurv)!="coxph") {
    theta.iid  <- matrix(nparout[[43]],antsecluster,ptheta); 
    theta.iid <- theta.iid %*% SthetaI
 
+  DUbeta <- matrix(nparout[[45]],ptheta,1);  
 ###  if (is.null(call.secluster) & is.null(max.clust)) rownames(theta.iid) <- unique(cluster.call) else rownames(theta.iid) <- unique(se.clusters)
 
    ud <- list(cum = cumint, var.cum = vcum, robvar.cum = Rvcu, 
@@ -234,6 +236,7 @@ if (class(margsurv)!="coxph") {
   attr(ud,"var.link")<-var.link
   attr(ud,"beta.fixed")<-beta.fixed
   attr(ud,"marg.model")<-class(margsurv)
+  attr(ud,"DUbeta")<-DUbeta
 
   return(ud) 
   ## }}} 

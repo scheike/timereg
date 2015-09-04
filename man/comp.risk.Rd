@@ -145,7 +145,6 @@ comp.risk(Event(time,cause)~x1+x2,data=mydata,cause=1)
 
 Also the argument cens.code is now obsolete since cens.code is an
 argument of \code{\link{Event}}.
-
 }
 \value{returns an object of type 'comprisk'. With the following arguments:
 \item{cum}{cumulative timevarying regression coefficient estimates are 
