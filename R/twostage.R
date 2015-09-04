@@ -183,7 +183,7 @@
 ##' des.rv <- out$des.rv
 ##' aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
 ##' ts <- twostage(aa,data=data,clusters=data$cluster,detail=0,
-##' 	       theta=c(varg,varc),var.link=0,step=0.5,
+##' 	       theta=c(2,1),var.link=0,step=0.5,
 ##' 	       random.design=des.rv,theta.des=pardes)
 ##' summary(ts)
 ##' @keywords survival
@@ -199,7 +199,7 @@
 ##' @param weights Weights
 ##' @param control Optimization arguments
 ##' @param theta Starting values for variance components
-##' @param theta.des Variance component design
+##' @param theta.des design for dependence parameters, when pairs are given this is should be a (pairs) x (numer of parameters)  x (number random effects) matrix
 ##' @param var.link Link function for variance 
 ##' @param iid Calculate i.i.d. decomposition
 ##' @param step Step size
@@ -212,12 +212,13 @@
 ##' @param se.clusters for clusters for se calculation with iid
 ##' @param max.clust max se.clusters for se calculation with iid
 ##' @param numDeriv to get numDeriv version of second derivative, otherwise uses sum of squared score 
-##' @param random.design random effect design for additive gamma model
+##' @param random.design random effect design for additive gamma modeli, when pairs are given this is a (pairs) x (2) x n(umber random effects) matrix
+##' @param pairs matrix with rows of indeces (two-columns) for the pairs considered in the pairwise composite score, useful for case-control sampling when marginal is known.
 twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
 		     silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
                      step=0.5,notaylor=0,model="clayton.oakes",
 		     marginal.trunc=NULL, marginal.survival=NULL,marginal.status=NULL,strata=NULL,
-		     se.clusters=NULL,max.clust=NULL,numDeriv=0,random.design=NULL)
+		     se.clusters=NULL,max.clust=NULL,numDeriv=0,random.design=NULL,pairs=NULL)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -386,15 +387,50 @@ if (!is.null(margsurv))
 
 
   if (maxclust==1) stop("No clusters, maxclust size=1\n"); 
+
+  if (!is.null(pairs)) pair.structure <- 1 else pair.structure <- 0
+  if (pair.structure==1) {
+### something with dimensions of rv.des 
+### theta.des
+       antpairs <- nrow(pairs); 
+       if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))==3) )
+       {
+          Ptheta.des <- array(0,c(antpairs,nrow(theta.des),ncol(theta.des)))
+          for (i in 1:antpairs) Ptheta.des[i,,] <- theta.des
+       }
+       if ( (length(dim(theta.des))==3)  & (length(dim(random.design))!=3) )
+       {
+           rv.des <- array(0,c(antpairs,2,ncol(random.design)))
+           for (i in 1:antpairs) {
+		   rv.des[i,1,] <- random.design[pairs[i,1],]
+		   rv.des[i,2,] <- random.design[pairs[i,2],]
+	   }
+       }
+       if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))!=3) )
+       {
+          Ptheta.des <- array(0,c(antpairs,nrow(theta.des),ncol(theta.des)))
+          rv.des <- array(0,c(antpairs,2,ncol(random.design)))
+          for (i in 1:antpairs) {
+		   rv.des[i,1,] <- random.design[pairs[i,1],]
+		   rv.des[i,2,] <- random.design[pairs[i,2],]
+                   Ptheta.des[i,,] <- theta.des
+	   }
+       }
+       theta.des <- Ptheta.des
+       random.design <- rv.des
+       clusterindex <- pairs-1; 
+  } 
   ## }}}
 
   loglike <- function(par) 
   { ## {{{
-       Xtheta <- theta.des %*% matrix(c(par),ptheta,1); 
+      if (pair.structure==0) Xtheta <- theta.des %*% matrix(c(par),ptheta,1);
+      if (pair.structure==1) Xtheta <- matrix(0,antpers,1); ## not needed 
        DXtheta <- array(0,c(1,1,1));
 
 ###   dyn.load("twostage.so")
 
+      if (pair.structure==0) 
       outl<-.Call("twostageloglikeRV", ## {{{
       icause=status,ipmargsurv=psurvmarg, 
       itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
@@ -403,6 +439,14 @@ if (!is.null(margsurv))
       itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
       irvdes=random.design) 
       ## }}}
+      else outl<-.Call("twostageloglikeRVpairs", ## {{{
+      icause=status,ipmargsurv=psurvmarg, 
+      itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
+      icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
+      ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
+      itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
+      irvdes=random.design,idimthetades=dim(theta.des),idimrvdes=dim(rv.des)
+      ) 
 
     if (detail==3) print(c(par,outl$loglike))
 
@@ -553,8 +597,10 @@ if (!is.null(margsurv))
   attr(ud,"antclust")<-antclust; 
   attr(ud, "Type") <- model
   attr(ud, "additive-gamma") <- (dep.model==3)*1
-  if (dep.model==3) attr(ud, "pardes") <- theta.des
-  if (dep.model==3) attr(ud, "rv1") <- random.design[1,]
+  if (dep.model==3 & pair.structure==0) attr(ud, "pardes") <- theta.des
+  if (dep.model==3 & pair.structure==1) attr(ud, "pardes") <- theta.des[1,,]
+  if (dep.model==3 & pair.structure==0) attr(ud, "rv1") <- random.design[1,]
+  if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <- random.design[1,1,]
   attr(ud, "response") <- "survival"
   return(ud);
   ## }}}
@@ -583,9 +629,8 @@ summary.twostage <-function (object,digits = 3,silent=0,...) { ## {{{
       var.link <- attr(object,"var.link"); 
       rv1 <- attr(object,"rv1"); 
       theta.des <- attr(object,"pardes"); 
+###      print(par); print(rv1)
       if (var.link==1) par <- theta.des %*% exp(object$theta) else  par <- theta.des %*% object$theta
-      print(par)
-      print(rv1)
       if (var.link==1) {
 	     fp <- function(p,d,t){  res <- exp(p*t)/(sum(rv1* (theta.des %*% exp(p))))^d; 
                                      if (t==0) res <- res[1]; return(res); }
@@ -744,6 +789,95 @@ polygen.design <-function (data,id="id",zyg="DZ",zygname="zyg",type="ace",tv=NUL
 res <- list(pardes=pard,des.rv=des.rv)
 return(res)
 } ## }}}
+
+##' @export
+ace.family.design <-function (data,id="id",member="type",mother="mother",father="father",child="child",child1="child",type="ace",...) { ## {{{
+  ### standard family case 
+  nid <- table(data[,id])
+  id <- data[,id]
+###  tv <- diff(c(NA,id))
+###  tv[tv!=0 | is.na(tv)] <- 1
+###  tv[tv==0] <- 2
+
+###  zygbin <- (data[,zygname]==zyg)*1
+###  zygdes=model.matrix(~-1+factor(zygbin),data)
+###  n <- length(zygbin)
+
+  if (type=="ace") { ### ace ## {{{ 
+  ### random effects for each cluster
+  mom <- 1*(data[,member]==mother)
+  mo <- cbind(mom*1,1,1,1)*(mom)
+  fa <- (data[,member]==father)
+  fad <- cbind(fa,1,1,1)*fa
+  ch1 <- (data[,member]==child)*(data[,child1]==1)
+  cc1 <- cbind(ch1,1,0,0,1,1,0,0)*ch1
+  ch2 <- (data[,member]==child)*(data[,child1]==0)
+  cc2 <- cbind(ch2,0,1,0,1,0,1,0)*ch2
+  des.rv <- cbind(cbind(mo,fad)+cc1+cc2,1)
+
+  colnames(des.rv) <- c("m1","m2","m3","m4","f1","f2","f3","f4","env")
+  pard <- rbind( c(0.25,0), c(0.25,0),c(0.25,0), c(0.25,0), 
+		 c(0.25,0), c(0.25,0),c(0.25,0), c(0.25,0), c(0,1))
+  } ## }}} 
+
+  if (type=="ae") { ### ae ## {{{ 
+  ###AE model 
+  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+
+		(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
+  des.rv <- cbind(zygdes,DZns)
+  colnames(des.rv) <- c("MZ","DZ","DZns1","DZns2")
+  pard <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0))[,1,drop=FALSE]
+  } ## }}} 
+
+  if (type=="dce") { ### dce ## {{{ 
+  ### DCE  
+  ### random effects for each cluster
+  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
+  des.rv <- cbind(zygdes,DZns,1)
+  colnames(des.rv) <- c("MZ","DZ","DZns1","DZns2","env")
+  pard <- rbind(c(1,0), c(0.25,0),c(0.75,0), c(0.75,0), c(0,1))
+  } ## }}} 
+
+  if (type=="ade") { ### ade ## {{{ 
+  #ADE
+  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
+  des.rv <- cbind(zygdes,DZns,DZns,1)
+  pard <- rbind(c(1,0),c(0.25,0),c(0.75,0),c(0.75,0),c(0,1),c(0,0.5),c(0,0.5),c(0,0.5) )
+  pardes <- matrix(pard,n,16,byrow=TRUE)
+  des.rv <- NULL
+  } ## }}} 
+
+  if (type=="adce") { ### adce ## {{{ 
+###zygdes=model.matrix(~-1+factor(zygbin),prtwomen)
+###n <- nrow(prtwomen)
+###des.rv <- cbind( zygdes[,c(2,1)], (prtwomen$zygbin==0)*(prtwomen$tv==1), 
+###	(prtwomen$zygbin==0)*(prtwomen$tv==2),
+###	zygdes[,c(2,1)], (prtwomen$zygbin==0)*(prtwomen$tv==1), 
+###	(prtwomen$zygbin==0)*(prtwomen$tv==2),1
+###	)
+###pard <- rbind(c(1,0,0), c(0.25,0,0),c(0.75,0,0), c(0.75,0,0), 
+###	      c(0,1,0), c(0,0.5,0),c(0,0.5,0), c(0,0.5,0) ,c(0,0,1))
+###pardes <- matrix(pard,n,27,byrow=TRUE)
+  } ## }}} 
+
+  if (type=="de") { ### ae ## {{{ 
+  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+
+		(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
+  des.rv <- cbind(zygdes,DZns)
+  colnames(des.rv) <- c("MZ","DZ","DZns1","DZns2")
+  pard <- rbind(c(1,0), c(0.25,0),c(0.75,0), c(0.75,0))[,1,drop=FALSE]
+  } ## }}} 
+
+  if (type=="un") { ### ae ## {{{ 
+  des.rv <- cbind(zygdes)
+  colnames(des.rv) <- c("MZ","DZ")
+  pard <- rbind(c(1,0),c(0,1))
+  } ## }}} 
+
+res <- list(pardes=pard,des.rv=des.rv)
+return(res)
+} ## }}}
+
 
 ##' @export
 print.twostage<-function(x,digits=3,...)
