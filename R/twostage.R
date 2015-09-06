@@ -31,11 +31,14 @@
 ##' 1 is \deqn{v_1^T (Z_1,...,Z_d)}, for d random effects. Each random effect
 ##' has an associated parameter \eqn{(\lambda_1,...,\lambda_d)}. By construction
 ##' subjects 1's random effect are Gamma distributed with 
-##' mean \eqn{\lambda_1/v_1^T \lambda}
-##' and variance \eqn{\lambda_1/(v_1^T \lambda)^2}. Note that the random effect 
+##' mean \eqn{\lambda_j/v_1^T \lambda}
+##' and variance \eqn{\lambda_j/(v_1^T \lambda)^2}. Note that the random effect 
 ##' \eqn{v_1^T (Z_1,...,Z_d)} has mean 1 and variance \eqn{1/(v_1^T \lambda)}.
 ##' It is here asssumed that  \eqn{lamtot=v_1^T \lambda} is fixed over all clusters
 ##' as it would be for the ACE model below.
+##'
+##' Based on these parameters the relative contribution (the heritability, h) is 
+##' equivalent to  the expected values of the random effects  \eqn{\lambda_j/v_1^T \lambda}
 ##'
 ##' Given the random effects the survival distributions with a cluster are independent and
 ##' on the form 
@@ -60,6 +63,9 @@
 ##' 
 ##' Measuring early or late dependence for bivariate twin data
 ##' Scheike, Holst, Hjelmborg (2015), LIDA  
+##' 
+##' Twostage modelling of additive gamma frailty models for survival data. 
+##' Scheike and Holst, working paper 
 ##' 
 ##' @examples
 ##' data(diabetes)
@@ -167,7 +173,19 @@
 ##' survace <-twostage(add,data=d,theta=c(-0.7,-1.0),clusters=d$id,
 ##'                    theta.des=pardes,random.design=des.rv,var.link=1)
 ##' summary(survace)
+##' 
+##'  ########################################################
 ##' }
+##' ### simulate structured two-stage additive gamma ACE model
+##' data <- simClaytonOakes.twin.ace(2000,2,1,0,3)
+##' out <- polygen.design(data,id="cluster")
+##' pardes <- out$pardes
+##' des.rv <- out$des.rv
+##' aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
+##' ts <- twostage(aa,data=data,clusters=data$cluster,detail=0,
+##' 	       theta=c(2,1),var.link=0,step=0.5,
+##' 	       random.design=des.rv,theta.des=pardes)
+##' summary(ts)
 ##' @keywords survival
 ##' @author Thomas Scheike
 ##' @export
@@ -181,7 +199,7 @@
 ##' @param weights Weights
 ##' @param control Optimization arguments
 ##' @param theta Starting values for variance components
-##' @param theta.des Variance component design
+##' @param theta.des design for dependence parameters, when pairs are given this is should be a (pairs) x (numer of parameters)  x (number random effects) matrix
 ##' @param var.link Link function for variance 
 ##' @param iid Calculate i.i.d. decomposition
 ##' @param step Step size
@@ -194,12 +212,13 @@
 ##' @param se.clusters for clusters for se calculation with iid
 ##' @param max.clust max se.clusters for se calculation with iid
 ##' @param numDeriv to get numDeriv version of second derivative, otherwise uses sum of squared score 
-##' @param random.design random effect design for additive gamma model
+##' @param random.design random effect design for additive gamma modeli, when pairs are given this is a (pairs) x (2) x n(umber random effects) matrix
+##' @param pairs matrix with rows of indeces (two-columns) for the pairs considered in the pairwise composite score, useful for case-control sampling when marginal is known.
 twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
 		     silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
                      step=0.5,notaylor=0,model="clayton.oakes",
 		     marginal.trunc=NULL, marginal.survival=NULL,marginal.status=NULL,strata=NULL,
-		     se.clusters=NULL,max.clust=NULL,numDeriv=0,random.design=NULL)
+		     se.clusters=NULL,max.clust=NULL,numDeriv=0,random.design=NULL,pairs=NULL,pairs.rvs=NULL)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -277,6 +296,7 @@ if (!is.null(margsurv))
 	 if (lefttrunk==1) ptrunc <- exp(-resi$cumhazleft); 
   } ## }}}
   else if (class(margsurv)=="coxph") {  ## {{{
+	### some problems here when data is different from data used in margsurv
        notaylor <- 1
        residuals <- residuals(margsurv)
        cumhaz <- status-residuals
@@ -346,37 +366,83 @@ if (!is.null(margsurv))
      dep.model <- 3
 ###     if (is.null(random.design)) random.design <- matrix(1,antpers,1); 
      dim.rv <- ncol(random.design); 
-     if (is.null(theta.des)==TRUE) theta.des<-diag(dim.rv);
+     if (is.null(theta.des)) theta.des<-diag(dim.rv);
 ###     ptheta <- dimpar <- ncol(theta.des); 
  
-   if (nrow(theta.des)!=ncol(random.design)) 
-   stop("nrow(theta.des)!= ncol(random.design),\nspecifies restrictions on paramters, if theta.des not given =diag (free)\n"); 
+###   if (dim(theta.des)[2]!=ncol(random.design)) 
+###   stop("nrow(theta.des)!= ncol(random.design),\nspecifies restrictions on paramters, if theta.des not given =diag (free)\n"); 
  } else random.design <- matrix(0,1,1); 
 
 
- if (is.null(theta.des)==TRUE) ptheta<-1; 
-  if (is.null(theta.des)==TRUE) theta.des<-matrix(1,antpers,ptheta) else theta.des<-as.matrix(theta.des); 
-  ptheta<-ncol(theta.des); 
+  if (is.null(theta.des)) ptheta<-1; 
+  if (is.null(theta.des)) theta.des<-matrix(1,antpers,ptheta); ###  else theta.des<-as.matrix(theta.des); 
+  if (length(dim(theta.des))==3) ptheta<-dim(theta.des)[3] else if (length(dim(theta.des))==2) ptheta<-ncol(theta.des)
   if (nrow(theta.des)!=antpers & dep.model!=3 ) stop("Theta design does not have correct dim");
 
   if (is.null(theta)==TRUE) {
          if (var.link==1) theta<- rep(-0.7,ptheta);  
          if (var.link==0) theta<- rep(exp(-0.7),ptheta);   
   }       
-  if (length(theta)!=ptheta) theta<-rep(theta[1],ptheta); 
+  if (length(theta)!=ptheta) { warning("dimensions of theta.des and theta do not match\n"); theta<-rep(theta[1],ptheta); }
   theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
 
 
   if (maxclust==1) stop("No clusters, maxclust size=1\n"); 
+
+  if (!is.null(pairs)) pair.structure <- 1 else pair.structure <- 0
+  if (pair.structure==1) {
+### something with dimensions of rv.des 
+### theta.des
+       antpairs <- nrow(pairs); 
+  print("her"); 
+  print(dim(theta.des))
+  print(dim(random.design))
+       if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))==3) )
+       {
+          Ptheta.des <- array(0,c(antpairs,nrow(theta.des),ncol(theta.des)))
+          for (i in 1:antpairs) Ptheta.des[i,,] <- theta.des
+       theta.des <- Ptheta.des
+       }
+  print("her 2"); 
+       if ( (length(dim(theta.des))==3)  & (length(dim(random.design))!=3) )
+       {
+           rv.des <- array(0,c(antpairs,2,ncol(random.design)))
+           for (i in 1:antpairs) {
+		   rv.des[i,1,] <- random.design[pairs[i,1],]
+		   rv.des[i,2,] <- random.design[pairs[i,2],]
+	   }
+       random.design <- rv.des
+       }
+  print("her 3"); 
+       if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))!=3) )
+       {
+          Ptheta.des <- array(0,c(antpairs,nrow(theta.des),ncol(theta.des)))
+          rv.des <- array(0,c(antpairs,2,ncol(random.design)))
+          for (i in 1:antpairs) {
+		   rv.des[i,1,] <- random.design[pairs[i,1],]
+		   rv.des[i,2,] <- random.design[pairs[i,2],]
+                   Ptheta.des[i,,] <- theta.des
+	   }
+       theta.des <- Ptheta.des
+       random.design <- rv.des
+       }
+  print(dim(theta.des))
+  print(dim(random.design))
+       if (is.null(pairs.rvs)) pairs.rvs <- rep(dim(random.design)[3],antpairs)
+       print(head(pairs.rvs))
+       clusterindex <- pairs-1; 
+  } 
   ## }}}
 
   loglike <- function(par) 
   { ## {{{
-       Xtheta <- theta.des %*% matrix(c(par),ptheta,1); 
+      if (pair.structure==0) Xtheta <- theta.des %*% matrix(c(par),ptheta,1);
+      if (pair.structure==1) Xtheta <- matrix(0,antpers,1); ## not needed 
        DXtheta <- array(0,c(1,1,1));
 
 ###   dyn.load("twostage.so")
 
+      if (pair.structure==0) 
       outl<-.Call("twostageloglikeRV", ## {{{
       icause=status,ipmargsurv=psurvmarg, 
       itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
@@ -385,6 +451,14 @@ if (!is.null(margsurv))
       itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
       irvdes=random.design) 
       ## }}}
+      else outl<-.Call("twostageloglikeRVpairs", ## {{{
+      icause=status,ipmargsurv=psurvmarg, 
+      itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
+      icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
+      ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
+      itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
+      irvdes=random.design,idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs
+      )  ## }}} 
 
     if (detail==3) print(c(par,outl$loglike))
 
@@ -535,8 +609,10 @@ if (!is.null(margsurv))
   attr(ud,"antclust")<-antclust; 
   attr(ud, "Type") <- model
   attr(ud, "additive-gamma") <- (dep.model==3)*1
-  if (dep.model==3) attr(ud, "pardes") <- theta.des
-  if (dep.model==3) attr(ud, "rv1") <- random.design[1,]
+  if (dep.model==3 & pair.structure==0) attr(ud, "pardes") <- theta.des
+  if (dep.model==3 & pair.structure==1) attr(ud, "pardes") <- theta.des[1,,]
+  if (dep.model==3 & pair.structure==0) attr(ud, "rv1") <- random.design[1,]
+  if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <- random.design[1,1,]
   attr(ud, "response") <- "survival"
   return(ud);
   ## }}}
@@ -565,17 +641,24 @@ summary.twostage <-function (object,digits = 3,silent=0,...) { ## {{{
       var.link <- attr(object,"var.link"); 
       rv1 <- attr(object,"rv1"); 
       theta.des <- attr(object,"pardes"); 
+###      print(par); print(rv1)
       if (var.link==1) par <- theta.des %*% exp(object$theta) else  par <- theta.des %*% object$theta
       if (var.link==1) {
-	      fp <- function(p){  res <- exp(p)/sum(rv1* (theta.des %*% exp(p))); return(res); }
-              e <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p))
-            pare <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) exp(p))
+	     fp <- function(p,d,t){  res <- exp(p*t)/(sum(rv1* (theta.des %*% exp(p))))^d; 
+                                     if (t==0) res <- res[1]; return(res); }
+             e <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p,1,1))
+             pare <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) exp(p))
+             vare <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p,2,1))
+             vartot <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p,1,0))
       } else {
-              fp <- function(p) {  p/sum(rv1* (theta.des %*% p)) }
-              e <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p))
-              pare <- NULL
+              fp <- function(p,d,t) {  res <- (p^t)/(sum(rv1* (theta.des %*% p)))^d;
+                                     if (t==0) res <- res[1]; return(res); }
+              e <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p,1,1))
+              vare <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p,2,1))
+	      pare <- NULL
+              vartot <- lava::estimate(coef=object$theta,vcov=object$var.theta,f=function(p) fp(p,1,0))
       }
-      res <- list(estimates=coefs, type=attr(object,"Type"),h=e,exppar=pare)
+      res <- list(estimates=coefs, type=attr(object,"Type"),h=e,exppar=pare,vare=vare,vartot=vartot)
   } else res <- list(estimates=coefs, type=attr(object,"Type"))
 
 
@@ -661,22 +744,7 @@ polygen.design <-function (data,id="id",zyg="DZ",zygname="zyg",type="ace",tv=NUL
   pard <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0), c(0,1))
   } ## }}} 
 
-  if (type=="dce") { ### ace ## {{{ 
-  ### DCE  
-  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+
-		(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
-  des.rv <- cbind(zygdes,DZns,1)
-  colnames(des.rv) <- c("MZ","DZ","DZns1","DZns2","env")
-  pard <- rbind(c(1,0), c(0.25,0),c(0.75,0), c(0.75,0), c(0,1))
-  } ## }}} 
-
-  if (type=="ade") { ### ace ## {{{ 
-  #ADE
-  pard <- rbind(c(1,0), c(0.25,0),c(0.75,0), c(0.75,0),c(0,1), c(0,0.5),c(0,0.5), c(0,0.5) )
-  des.rv <- NULL
-  } ## }}} 
-
-  if (type=="ae") { ### ace ## {{{ 
+  if (type=="ae") { ### ae ## {{{ 
   ###AE model 
   DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+
 		(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
@@ -685,9 +753,143 @@ polygen.design <-function (data,id="id",zyg="DZ",zygname="zyg",type="ace",tv=NUL
   pard <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0))[,1,drop=FALSE]
   } ## }}} 
 
+  if (type=="dce") { ### dce ## {{{ 
+  ### DCE  
+  ### random effects for each cluster
+  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
+  des.rv <- cbind(zygdes,DZns,1)
+  colnames(des.rv) <- c("MZ","DZ","DZns1","DZns2","env")
+  pard <- rbind(c(1,0), c(0.25,0),c(0.75,0), c(0.75,0), c(0,1))
+  } ## }}} 
+
+  if (type=="ade") { ### ade ## {{{ 
+  #ADE
+  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
+  des.rv <- cbind(zygdes,DZns,DZns,1)
+  pard <- rbind(c(1,0),c(0.25,0),c(0.75,0),c(0.75,0),c(0,1),c(0,0.5),c(0,0.5),c(0,0.5) )
+  pardes <- matrix(pard,n,16,byrow=TRUE)
+  des.rv <- NULL
+  } ## }}} 
+
+  if (type=="adce") { ### adce ## {{{ 
+###zygdes=model.matrix(~-1+factor(zygbin),prtwomen)
+###n <- nrow(prtwomen)
+###des.rv <- cbind( zygdes[,c(2,1)], (prtwomen$zygbin==0)*(prtwomen$tv==1), 
+###	(prtwomen$zygbin==0)*(prtwomen$tv==2),
+###	zygdes[,c(2,1)], (prtwomen$zygbin==0)*(prtwomen$tv==1), 
+###	(prtwomen$zygbin==0)*(prtwomen$tv==2),1
+###	)
+###pard <- rbind(c(1,0,0), c(0.25,0,0),c(0.75,0,0), c(0.75,0,0), 
+###	      c(0,1,0), c(0,0.5,0),c(0,0.5,0), c(0,0.5,0) ,c(0,0,1))
+###pardes <- matrix(pard,n,27,byrow=TRUE)
+  } ## }}} 
+
+  if (type=="de") { ### ae ## {{{ 
+  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+
+		(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
+  des.rv <- cbind(zygdes,DZns)
+  colnames(des.rv) <- c("MZ","DZ","DZns1","DZns2")
+  pard <- rbind(c(1,0), c(0.25,0),c(0.75,0), c(0.75,0))[,1,drop=FALSE]
+  } ## }}} 
+
+  if (type=="un") { ### ae ## {{{ 
+  des.rv <- cbind(zygdes)
+  colnames(des.rv) <- c("MZ","DZ")
+  pard <- rbind(c(1,0),c(0,1))
+  } ## }}} 
+
 res <- list(pardes=pard,des.rv=des.rv)
 return(res)
 } ## }}}
+
+##' @export
+ace.family.design <-function (data,id="id",member="type",mother="mother",father="father",child="child",child1="child",type="ace",...) { ## {{{
+  ### standard family case 
+  nid <- table(data[,id])
+  id <- data[,id]
+###  tv <- diff(c(NA,id))
+###  tv[tv!=0 | is.na(tv)] <- 1
+###  tv[tv==0] <- 2
+
+###  zygbin <- (data[,zygname]==zyg)*1
+###  zygdes=model.matrix(~-1+factor(zygbin),data)
+###  n <- length(zygbin)
+
+  if (type=="ace") { ### ace ## {{{ 
+  ### random effects for each cluster
+  mom <- 1*(data[,member]==mother)
+  mo <- cbind(mom*1,1,1,1)*(mom)
+  fa <- (data[,member]==father)
+  fad <- cbind(fa,1,1,1)*fa
+  ch1 <- (data[,member]==child)*(data[,child1]==1)
+  cc1 <- cbind(ch1,1,0,0,1,1,0,0)*ch1
+  ch2 <- (data[,member]==child)*(data[,child1]==0)
+  cc2 <- cbind(ch2,0,1,0,1,0,1,0)*ch2
+  des.rv <- cbind(cbind(mo,fad)+cc1+cc2,1)
+
+  colnames(des.rv) <- c("m1","m2","m3","m4","f1","f2","f3","f4","env")
+  pard <- rbind( c(0.25,0), c(0.25,0),c(0.25,0), c(0.25,0), 
+		 c(0.25,0), c(0.25,0),c(0.25,0), c(0.25,0), c(0,1))
+  } ## }}} 
+
+  if (type=="ae") { ### ae ## {{{ 
+  ###AE model 
+  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+
+		(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
+  des.rv <- cbind(zygdes,DZns)
+  colnames(des.rv) <- c("MZ","DZ","DZns1","DZns2")
+  pard <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0))[,1,drop=FALSE]
+  } ## }}} 
+
+  if (type=="dce") { ### dce ## {{{ 
+  ### DCE  
+  ### random effects for each cluster
+  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
+  des.rv <- cbind(zygdes,DZns,1)
+  colnames(des.rv) <- c("MZ","DZ","DZns1","DZns2","env")
+  pard <- rbind(c(1,0), c(0.25,0),c(0.75,0), c(0.75,0), c(0,1))
+  } ## }}} 
+
+  if (type=="ade") { ### ade ## {{{ 
+  #ADE
+  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
+  des.rv <- cbind(zygdes,DZns,DZns,1)
+  pard <- rbind(c(1,0),c(0.25,0),c(0.75,0),c(0.75,0),c(0,1),c(0,0.5),c(0,0.5),c(0,0.5) )
+  pardes <- matrix(pard,n,16,byrow=TRUE)
+  des.rv <- NULL
+  } ## }}} 
+
+  if (type=="adce") { ### adce ## {{{ 
+###zygdes=model.matrix(~-1+factor(zygbin),prtwomen)
+###n <- nrow(prtwomen)
+###des.rv <- cbind( zygdes[,c(2,1)], (prtwomen$zygbin==0)*(prtwomen$tv==1), 
+###	(prtwomen$zygbin==0)*(prtwomen$tv==2),
+###	zygdes[,c(2,1)], (prtwomen$zygbin==0)*(prtwomen$tv==1), 
+###	(prtwomen$zygbin==0)*(prtwomen$tv==2),1
+###	)
+###pard <- rbind(c(1,0,0), c(0.25,0,0),c(0.75,0,0), c(0.75,0,0), 
+###	      c(0,1,0), c(0,0.5,0),c(0,0.5,0), c(0,0.5,0) ,c(0,0,1))
+###pardes <- matrix(pard,n,27,byrow=TRUE)
+  } ## }}} 
+
+  if (type=="de") { ### ae ## {{{ 
+  DZns <- cbind((zygbin==1)*(tv==1)*cbind(rep(1,n),rep(0,n))+
+		(zygbin==1)*(tv==2)*cbind(rep(0,n),rep(1,n)))
+  des.rv <- cbind(zygdes,DZns)
+  colnames(des.rv) <- c("MZ","DZ","DZns1","DZns2")
+  pard <- rbind(c(1,0), c(0.25,0),c(0.75,0), c(0.75,0))[,1,drop=FALSE]
+  } ## }}} 
+
+  if (type=="un") { ### ae ## {{{ 
+  des.rv <- cbind(zygdes)
+  colnames(des.rv) <- c("MZ","DZ")
+  pard <- rbind(c(1,0),c(0,1))
+  } ## }}} 
+
+res <- list(pardes=pard,des.rv=des.rv)
+return(res)
+} ## }}}
+
 
 ##' @export
 print.twostage<-function(x,digits=3,...)
@@ -1184,7 +1386,7 @@ twostage.fullse <- function(margsurv,data=sys.parent(),
    marginal.trunc=NULL, marginal.survival=NULL,
    marginal.status=NULL,strata=NULL,
    se.clusters=NULL,max.clust=NULL,numDeriv=0,
-   random.design=NULL)
+   random.design=NULL,fdetail=1)
 { ## {{{ 
   if (is.null(margsurv$gamma.iid)) stop("Call marginal model with resample.iid=1, only Cox model via cox.aalen \n"); 
   beta.iid <- margsurv$gamma.iid
@@ -1194,8 +1396,8 @@ twostage.fullse <- function(margsurv,data=sys.parent(),
   se.clusters <- attr(margsurv,"cluster")
 
   udtwo <- twostage(margsurv,data=data,
-   score.method=score.method,Nit=Nit,detail=detail,
-   clusters=clusters,
+  score.method=score.method,Nit=Nit,detail=detail,
+  clusters=clusters,
   silent=silent,weights=weights,control=control,
   theta=theta,theta.des=theta.des,
   var.link=var.link,iid=iid,step=step,notaylor=notaylor,
@@ -1206,6 +1408,7 @@ twostage.fullse <- function(margsurv,data=sys.parent(),
   max.clust=max.clust,numDeriv=numDeriv,
   random.design=random.design)
   par <- margsurv$gamma
+  theta <- udtwo$theta
 ###
  
  if (object.defined(margsurv$time.sim.resolution))
@@ -1215,28 +1418,26 @@ twostage.fullse <- function(margsurv,data=sys.parent(),
  parbase <- parbase[,2]
  }else parbase <- margsurv$cum[,2]
 
-
 twobeta  <- function(par,beta=1)
 { ## {{{ 
    if (beta==1) margsurv$gamma <- par else margsurv$cum[,2] <- par
 
    udl <- twostage(margsurv,data=data,
                     score.method=score.method,Nit=0,detail=detail,clusters=clusters,
-		     silent=silent,weights=weights, control=control,theta=theta,theta.des=theta.des,
-		     var.link=var.link,iid=0,
-                     step=step,notaylor=notaylor,model=model,
-		     marginal.trunc=marginal.truc,marginal.survival=marginal.survival,
-		     marginal.status=marginal.status,strata=strata,
-		     se.clusters=se.clusters,max.clust=max.clust,numDeriv=0, random.design=random.design)
+		    silent=silent,weights=weights, control=control,theta=theta,theta.des=theta.des,
+		    var.link=var.link,iid=0,
+                    step=step,notaylor=notaylor,model=model,
+		    marginal.trunc=marginal.truc,marginal.survival=marginal.survival,
+		    marginal.status=marginal.status,strata=strata,
+		    se.clusters=se.clusters,max.clust=max.clust,numDeriv=0,random.design=random.design)
+###  udl <- two.stage(margsurv,data=data,Nit=1,clusters=clusters,theta=theta) ###  udl$theta.score
   udl$score
 } ## }}} 
 
-###if (fdetail==1) 
-	cat("Ready for numDeriv wrt beta and baseline\n")
-DUbeta <-  numDeriv::jacobian(twobeta,par,beta=1)
-DUbase <-  numDeriv::jacobian(twobeta,parbase,beta=0)
-###if (fdetail==1) 
-	cat("Finished numDeriv wrt beta and baseline\n")
+if (fdetail==1) cat("Ready for numDeriv wrt beta and baseline\n")
+DUbeta <-  numDeriv::jacobian(twobeta,par,beta=1) #,method="complex")
+DUbase <-  numDeriv::jacobian(twobeta,parbase,beta=0) #,method="complex")
+if (fdetail==1) cat("Finished numDeriv wrt beta and baseline\n")
 
 biid <- c()
 for (i in 1:length(base.iid)) biid <- cbind(biid,base.iid[[i]])
@@ -1246,7 +1447,6 @@ IDUbase <-  udtwo$hessi %*% DUbase
 betaiid <-t( IDUbeta %*% t(beta.iid))
 baseiid <- t( IDUbase %*% biid)
 ###
-###
 iidfull <- udtwo$theta.iid
 iidfull <- iidfull+betaiid+baseiid
 var2 <- t(iidfull) %*% iidfull
@@ -1254,10 +1454,12 @@ se <- cbind(diag(var2)^.5); colnames(se) <- "se"
 
 se.naive=coef(udtwo)[,2,drop=FALSE]; 
 colnames(se.naive) <- "se.naive"
+###
+res <- list(theta.iid=udtwo$theta.iid, iid=iidfull,coef=udtwo$theta,var=var2,se=se, se.naive=se.naive)
+attr(res,"DUbeta") <- DUbeta; 
+attr(res,"DUbase") <- DUbase; 
+attr(res,"DUthetainv") <- udtwo$hessi
 
-res <- list(theta.iid=udtwo$theta.iid,
-	    iid=iidfull,coef=udtwo$theta,var=var2,se=se,
-	    se.naive=se.naive)
 class(res) <- "twostage.fullse"
 return(res)
 } ## }}} 

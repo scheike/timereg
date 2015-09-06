@@ -143,6 +143,7 @@ RcppExport SEXP familypairindex(SEXP iclustmat,SEXP iclustsize,SEXP inumfamindex
 		       )); 
 } // }}}
 
+
 RcppExport SEXP clusterindexdata(SEXP iclusters, SEXP imednum,SEXP inum, SEXP idata) 
 { // {{{
 BEGIN_RCPP

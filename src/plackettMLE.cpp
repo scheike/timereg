@@ -414,7 +414,6 @@ if (status1==1 && status2==1) { // {{{
 return(valr); 
 } // }}}
 
-
 RcppExport SEXP claytonoakesRV(SEXP itheta,SEXP istatus1,SEXP istatus2,SEXP icif1,SEXP icif2,
                                SEXP irv1, SEXP irv2,SEXP ithetades)
 { // {{{
@@ -424,8 +423,8 @@ RcppExport SEXP claytonoakesRV(SEXP itheta,SEXP istatus1,SEXP istatus2,SEXP icif
  colvec x2= Rcpp::as<colvec>(irv2);
  double cif1 = Rcpp::as<double>(icif1);
  double cif2 = Rcpp::as<double>(icif2);
- int status1 = Rcpp::as<int>(istatus1);
- int status2 = Rcpp::as<int>(istatus2);
+// int status1 = Rcpp::as<int>(istatus1);
+// int status2 = Rcpp::as<int>(istatus2);
 
  colvec dL=theta; dL.fill(0); 
  double f1,f2;
@@ -911,8 +910,8 @@ RcppExport SEXP twostageloglikeRV(
                 SEXP iiid, SEXP  iweights, SEXP isilent, 
 		SEXP idepmodel, // SEXP ientryage,
 		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid, SEXP irvdes
-) // {{{
-{
+) 
+{ // {{{
 // {{{ setting matrices and vectors, and exporting to armadillo matrices
  mat thetades = Rcpp::as<mat>(ithetades); 
  mat clusterindex = Rcpp::as<mat>(iclusterindex);
@@ -1188,3 +1187,336 @@ if (iid==1) { res["theta.iid"]=thetiid;
 
 return(res); 
 } // }}}
+
+
+//This version of the program specifies which pairs that should be considered 
+//in contrast to the general programs that considers all pairs within a cluster
+//
+//in addition and more importantly the random effects specifiation is within each pair 
+//therefore all needed quantities comes for each pair : 
+//theta.des and the random effects vectors, cluster and pair id's
+//cluster og secluster now also follows the pairs 
+RcppExport SEXP twostageloglikeRVpairs( 
+		SEXP icause, SEXP ipmargsurv, 
+		SEXP itheta, SEXP iXtheta, SEXP iDXtheta, SEXP idimDX, 
+		SEXP ithetades,SEXP icluster,SEXP iclustsize,SEXP iclusterindex, 
+		SEXP ivarlink, 
+                SEXP iiid, SEXP  iweights, SEXP isilent, 
+		SEXP idepmodel, // SEXP ientryage,
+		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid, SEXP irvdes,
+		SEXP idimthetades, SEXP idimrvdes, SEXP inrvs 
+)  
+{ 
+// {{{ 
+//  setting matrices and vectors, and exporting to armadillo matrices
+//  // {{{
+// mat thetades = Rcpp::as<mat>(ithetades); 
+ colvec nrvs = Rcpp::as<colvec>(inrvs);
+ mat clusterindex = Rcpp::as<mat>(iclusterindex);
+// clusterindex.print("clusterindex"); 
+ colvec theta = Rcpp::as<colvec>(itheta);
+ colvec clustsize = Rcpp::as<colvec>(iclustsize);
+ // this is number of pairs (rather than clusters)
+ int antclust= clusterindex.n_rows; 
+ colvec cause = Rcpp::as<colvec>(icause);
+ colvec pmargsurv = Rcpp::as<colvec>(ipmargsurv);
+ colvec cluster = Rcpp::as<colvec>(icluster);
+ colvec weights = Rcpp::as<colvec>(iweights);
+// colvec entryage = Rcpp::as<colvec>(ientryage);
+ colvec trunkp = Rcpp::as<colvec>(itrunkp);
+ colvec secluster = Rcpp::as<colvec>(isecluster);
+// mat rvdes= Rcpp::as<mat>(irvdes); 
+
+// array for derivative of flexible design
+ NumericVector DXthetavec(iDXtheta);
+ IntegerVector arrayDims(idimDX);
+ arma::cube DXtheta(DXthetavec.begin(), arrayDims[0], arrayDims[1], arrayDims[2], false);
+
+// array for parameter restrictions (one for each pair) pairs * (ant random effects)* (ant par)
+ NumericVector thetadesvec(ithetades);
+ IntegerVector arrayDims1(idimthetades);
+ arma::cube thetadesi(thetadesvec.begin(), arrayDims1[0], arrayDims1[1], arrayDims1[2], false);
+
+// array for pairwise random effects (two vectors for each pair)  pairs * 2* (ant random effects)
+ NumericVector rvdesvec(irvdes);
+ IntegerVector arrayDims2(idimrvdes);
+ arma::cube rvdes(rvdesvec.begin(), arrayDims2[0], arrayDims2[1], arrayDims2[2], false);
+
+ mat thetades(arrayDims1[1],arrayDims2[2]); 
+//  thetades.fill(0); 
+
+ IntegerVector strata(istrata);
+
+ int varlink= Rcpp::as<int>(ivarlink);
+ int silent = Rcpp::as<int>(isilent);
+ int depmodel= Rcpp::as<int>(idepmodel); 
+ int iid= Rcpp::as<int>(iiid); 
+ int antiid = Rcpp::as<int>(iantiid);
+
+ mat Xtheta = Rcpp::as<mat>(iXtheta);
+
+  int udtest=0; 
+  if (udtest==1) { // {{{
+//  Rprintf(" %d %d %d %d %d %d %d \n",samecens,inverse,semi,semi2,flexfunc,stabcens,silent); 
+//  Rprintf(" %d %d %d %d %d %d %d \n",cifmodel,CA1,CA2,sym,depmodel,estimator,iid); 
+//        est.print("est"); 
+//	est2.print("est2"); 
+//        z.print("z"); 
+//	zsem.print("zsemi"); 
+//	z2.print("z2"); 
+//        thetades.print("theta.des"); 
+        clusterindex.print("clusterindex"); 
+//        rvdes.print("rvdes"); 
+	theta.print("theta"); 
+	Xtheta.print("Xtheta"); 
+//	  y.print("y-times"); 
+	  clustsize.print("clustsize"); 
+	  pmargsurv.print("margsurv"); 
+	  cause.print("cause"); 
+	  cluster.print("cluster"); 
+//	  Zgamma.print("zgam"); 
+//	  Z2gamma2.print("zgam2"); 
+//	  KMtimes.print("KMtimes"); 
+//	  KMc.print("KMc"); 
+	  weights.print("weights"); 
+//	  entryage.print("entryage"); 
+//	  cif1entry.print("cif1entry"); 
+//	  cif2entry.print("cif2entry"); 
+	  trunkp.print("trunkp"); 
+  } else if (udtest==2) 
+  {
+//  Rprintf(" %d %d %d %d %d %d %d \n",samecens,inverse,semi,semi2,flexfunc,stabcens,silent); 
+//     Rprintf(" %d %d %d %d %d %d %d \n",cifmodel,CA1,CA2,sym,depmodel,estimator,iid); 
+//      Rprintf("est %lf \n",mean(mean(est))); 
+//      Rprintf("est2 %lf \n",mean(mean(est2))); 
+//      Rprintf("z %lf \n",mean(mean(z))); 
+//      Rprintf("zsem %lf \n",mean(mean(zsem))); 
+//      Rprintf("z2 %lf \n",mean(mean(z2))); 
+//      mat mt=mean(thetades); 
+//      mt.print("meancol thetades"); 
+//      Rprintf("theatdes %lf \n",mean(mean(thetades))); 
+      Rprintf("ci %lf \n",mean(mean(clusterindex))); 
+//      Rprintf("rvdes %lf \n",mean(mean(rvdes))); 
+      Rprintf("theta %lf \n",mean(theta)); 
+      Rprintf("Xtheta %lf \n",mean(mean(Xtheta))); 
+//      Rprintf("y %lf \n",mean(y)); 
+      Rprintf("ci %lf \n",mean(clustsize)); 
+//      Rprintf("times %lf \n",mean(times)); 
+      Rprintf("cause %lf \n",mean(cause)); 
+      Rprintf("cluster %lf \n",mean(cluster)); 
+//      Rprintf("Zgamma %lf \n",mean(Zgamma)); 
+//      Rprintf("Z2gamma2 %lf \n",mean(Z2gamma2)); 
+//      Rprintf("KMtimes %lf \n",mean(KMtimes)); 
+//      Rprintf("KMc %lf \n",mean(KMc)); 
+      Rprintf("weights %lf \n",mean(weights)); 
+//      Rprintf("entry %lf \n",mean(entryage)); 
+//      Rprintf("cif1entry %lf \n",mean(cif1entry)); 
+//      Rprintf("cif2entry %lf \n",mean(cif2entry)); 
+      Rprintf("trunkp %lf \n",mean(trunkp)); 
+  }   // }}}
+
+
+  int ci,ck,i,j,s=0,k,c1,v1; 
+  double ll=1,Li,Lk,sdj=0,diff=0,loglikecont=0;
+  double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0; 
+//  double plack(); 
+ 
+  int pt=theta.n_rows; 
+  vec dplack(pt); dplack.fill(0);
+  vec dplackt(pt); dplackt.fill(0);
+//  vec ckij(pt),dckij(4),ckijvv(4),dckijvv(4),ckijtv(4),dckijtv(4),ckijvt(4),dckijvt(4);
+  i=silent+1; 
+
+  mat thetiid(antiid,pt); 
+  colvec loglikeiid(antiid); 
+  if (iid==1) { thetiid.fill(0); 
+	        loglikeiid.fill(0); 
+  }
+
+  colvec p11tvec(antclust); 
+//  p11tvec=0; 
+//  Rprintf(" %d \n",pt); 
+  colvec Utheta(pt); 
+  colvec vthetascore(pt); 
+  colvec pthetavec(pt); 
+  vec vtheta2(pt); 
+  mat DUtheta(pt,pt); 
+  DUtheta.fill(0); 
+  Utheta.fill(0); 
+//  if (!Utheta.is_finite()) {  Rprintf(" NA's i def U\n"); Utheta.print("U"); }
+//  if (!DUtheta.is_finite()) { Rprintf(" NA's i def DU\n"); DUtheta.print("DU"); }
+
+//  rowvec bhatt2 = est.row(est2.n_cols); 
+//  colvec pbhat2(z.n_rows); 
+// depmodel=5 
+//  rvdes.print("rvdes"); 
+//  thetades.print("ttt"); 
+//    int nr=rvdes.n_cols; 
+    int nr=arrayDims2[2];
+    vec rv2(nr),rv1(nr);
+//  vec  rvvec2(nr); 
+//  rv1.print("rv1"); 
+//  rv2.print("rv2"); 
+
+  vec etheta=theta; 
+  // 
+  // // }}}
+
+for (j=0;j<antclust;j++) { 
+
+   R_CheckUserInterrupt(); diff=0; sdj=0; 
+
+// index of subject's in pair "j"
+   i=clusterindex(j,0); k=clusterindex(j,1); 
+//	  printf("cci 2 \n"); 
+     if (strata(i)==strata(k)) { // 
+
+//   printf(" %d %d %d \n",j,i,k); 
+     // basic survival status 
+     ci=cause(i); ck=cause(k); Li=pmargsurv(i); Lk=pmargsurv(k); 
+//     printf(" %d %d %lf %lf \n",ci,ck,Li,Lk); 
+         
+     int flexfunc=0; 
+      if (flexfunc==0) {
+	  if (depmodel!=3) {
+             thetak= 0; //  thetadesi.subcube(span(j),span::all,span:all) 
+	     pthetavec= thetadesi.subcube(span(j),span(i),span::all); 
+	     vthetascore=1*pthetavec; 
+	  }
+      } else { 
+	  thetak=Xtheta(i,s); 
+	  pthetavec = DXtheta(span(s),span(i),span::all); 
+      }
+
+  if (depmodel==1){ if (varlink==1) deppar=1/exp(thetak); else deppar=1/thetak;}
+  if (depmodel==2){ if (varlink==1) deppar=exp(thetak); else deppar=thetak; }
+  if (depmodel==3){ if (varlink==1) etheta=exp(theta); else etheta=theta; }
+
+	if (depmodel==1) { // clayton-oakes  // {{{ 
+
+           if (trunkp(i)<1 || trunkp(j)<1) {	
+		   Lit=trunkp(i); Lkt=trunkp(k); 
+		   llt=claytonoakes(deppar,0,0,Lit,Lkt,dplackt);
+		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
+		   ssf+=weights(i)*(log(ll)-log(llt));
+		   loglikecont=(log(ll)-log(llt));
+	           diff=dplack(0)/ll-dplackt(0)/llt; 
+	   } else {
+		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
+		   ssf+=weights(i)*log(ll); 
+		   loglikecont=log(ll);
+	           diff=dplack(0)/ll; 
+//	printf(" %d %d %d %d %d  \n",j,c,v,i,k); 
+//	printf(" %d %d %d %d %d %d %d %lf %lf %lf %lf %lf %lf \n",j,c,v,i,k,ci,ck,thetak,Li,Lk,weights(i),ll,log(ll)); 
+	   } 
+	   if (varlink==1) diff=-pow(deppar,1)*diff;  
+	   if (varlink==0) diff=-1*pow(deppar,2)*diff; 
+	   sdj=pow(diff,2); 
+	   // // }}} 
+	} else if (depmodel==3) { //  additive random gamma clayton-oakes  // {{{ 
+
+	// takes random effects specification for each pair
+//	etheta.print("etheta"); 
+	   
+	// 3-dimensional array pairs*(2xrandom effects)
+        int lnrv= nrvs(j)-1; // number of random effects for this cluster 	
+//	printf(" %d \n",lnrv); 
+        rv1= rvdes.subcube( span(j),span(0),span(0,lnrv));
+        rv2= rvdes.subcube( span(j),span(1),span(0,lnrv));
+	if (j<-10)  {
+           rv1.print("rv1");    rv2.print("rv2"); 
+        }
+
+	// takes parameter relations for each pair
+	// 3-dimensional array pairs*(random effects* pars )
+	thetades=thetadesi.subcube( span(j),span(0,lnrv),span::all);
+
+	if (j<-10) thetades.print("thetades j "); 
+
+           if (trunkp(i)<1 || trunkp(k)<1) { //  
+		   Lit=trunkp(i); Lkt=trunkp(k); 
+//		   llt=claytonoakesRV(theta,thetades,0,0,Lit,Lkt,rv1,rv2,dplackt);
+//		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
+		   llt=claytonoakesRVC(etheta,thetades,0,0,Lit,Lkt,rv1,rv2,dplackt);
+		   ll=claytonoakesRVC(etheta,thetades,ci,ck,Li,Lk,rv1,rv2,dplack);
+		   ssf+=weights(i)*(log(ll)-log(llt));
+		   loglikecont=(log(ll)-log(llt));
+
+	           if (varlink==1) { 
+			   dplackt=dplackt % etheta;  
+			   dplack=dplack % etheta;  
+		   }
+	           vthetascore=dplack/ll-dplackt/llt; 
+		   // 
+	   } else {
+		   ll=claytonoakesRVC(etheta,thetades,ci,ck,Li,Lk,rv1,rv2,dplackt);
+		   ssf+=weights(i)*log(ll); 
+		   loglikecont=log(ll);
+//		   printf("%lf %lf \n",weights(i),ll); 
+
+	           if (varlink==1) dplackt=dplackt % etheta;  
+	           vthetascore=dplackt/ll; 
+	   } 
+//	   if (varlink==0) diff=-1*pow(deppar,2)*diff; 
+//	   sdj=pow(diff,2); 
+	   // }}} 
+	} else if (depmodel==2) { // plackett model  //  // {{{ 
+        if (trunkp(i)<1 || trunkp(k)<1) {	
+           Lit=trunkp(i); Lkt=trunkp(k); 
+           llt=placklike(deppar,0,0,Lit,Lkt,dplackt);
+           ll=placklike(deppar,ci,ck,Li,Lk,dplack);
+	   ssf+=weights(j)*(log(ll)-log(llt));
+	   loglikecont=(log(ll)-log(llt));
+	   diff=dplack(0)/ll-dplackt(0)/llt; 
+	   sdj=pow(diff,2); 
+	} else {
+           ll=placklike(deppar,ci,ck,Li,Lk,dplack);
+	   ssf+=weights(i)*log(ll); 
+	   loglikecont=log(ll);
+//	printf(" %d %d %d %lf %lf %lf %lf %lf %lf %lf %lf \n",j,ci,ck,thetak,deppar,Li,Lk,weights(i),ll,log(ll),diff); 
+//	printf(" %d %lf \n",j,ll); 
+	}
+	   if (varlink==1) diff=deppar*dplack(0)/ll; 
+	   if (varlink==0) diff=dplack(0)/ll; 
+	   sdj=pow(diff,2); 
+	} // // }}} 
+
+     if (depmodel!=3) {
+	     for (c1=0;c1<pt;c1++) 
+	     for (v1=0;v1<pt;v1++) DUtheta(c1,v1)+=weights(i)*sdj*vthetascore(c1)*vthetascore(v1);
+	     vthetascore=weights(i)*diff*vthetascore; 
+	     Utheta=Utheta+vthetascore; 
+	} else  { // additive gamma structure 
+//		printf(" mig 1\n"); 
+//		vthetascore.print("vvv"); 
+	     for (c1=0;c1<pt;c1++) 
+	     for (v1=0;v1<pt;v1++) DUtheta(c1,v1)+=weights(i)*vthetascore(c1)*vthetascore(v1);
+//		printf(" mig 1\n"); 
+	     vthetascore=weights(i)*vthetascore; 
+	     Utheta=Utheta+vthetascore; 
+//		vthetascore.print("vvv 2"); 
+	}
+
+     if (iid==1) { for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)+=vthetascore(c1); 
+	           loglikeiid(secluster(i))+=loglikecont; 
+     }
+
+
+     } //  strata(i)==strata(k) indenfor strata
+
+
+} /* j in antpairs */ 
+
+//printf("Sum of squares %lf \n",ssf); theta.print("theta"); Utheta.print("Utheta"); DUtheta.print("DUtheta"); 
+List res; 
+res["loglike"]=ssf; 
+res["score"]=Utheta; 
+res["Dscore"]=DUtheta; 
+if (iid==1) { res["theta.iid"]=thetiid; 
+	      res["loglikeiid"]=loglikeiid; 
+            }
+
+return(res); 
+} // }}}  
+
+
