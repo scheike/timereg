@@ -159,7 +159,7 @@
 ##' 	       theta=c(2,1),var.link=0,step=0.5,
 ##' 	       random.design=des.rv,theta.des=pardes)
 ##' summary(ts)
-##' 
+##' ### see also two-stage demo 
 ##' @keywords survival
 ##' @author Thomas Scheike
 ##' @export
@@ -173,7 +173,7 @@
 ##' @param weights Weights
 ##' @param control Optimization arguments
 ##' @param theta Starting values for variance components
-##' @param theta.des design for dependence parameters, when pairs are given this is should be a (pairs) x (numer of parameters)  x (number random effects) matrix
+##' @param theta.des design for dependence parameters, when pairs are given this is could be a (pairs) x (numer of parameters)  x (max number random effects) matrix
 ##' @param var.link Link function for variance 
 ##' @param iid Calculate i.i.d. decomposition
 ##' @param step Step size
@@ -186,8 +186,9 @@
 ##' @param se.clusters for clusters for se calculation with iid
 ##' @param max.clust max se.clusters for se calculation with iid
 ##' @param numDeriv to get numDeriv version of second derivative, otherwise uses sum of squared score 
-##' @param random.design random effect design for additive gamma modeli, when pairs are given this is a (pairs) x (2) x n(umber random effects) matrix
+##' @param random.design random effect design for additive gamma modeli, when pairs are given this is a (pairs) x (2) x (max number random effects) matrix, see pairs.rvs below
 ##' @param pairs matrix with rows of indeces (two-columns) for the pairs considered in the pairwise composite score, useful for case-control sampling when marginal is known.
+##' @param pairs.rvs for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair. 
 twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
 		     silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
                      step=0.5,notaylor=0,model="clayton.oakes",
@@ -357,9 +358,12 @@ if (!is.null(margsurv))
          if (var.link==1) theta<- rep(-0.7,ptheta);  
          if (var.link==0) theta<- rep(exp(-0.7),ptheta);   
   }       
-  if (length(theta)!=ptheta) { warning("dimensions of theta.des and theta do not match\n"); theta<-rep(theta[1],ptheta); }
-  theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
 
+  if (length(theta)!=ptheta) {
+	 warning("dimensions of theta.des and theta do not match\n"); print(theta); print(ptheta); 
+         theta<-rep(theta[1],ptheta); 
+  }
+  theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
 
   if (maxclust==1) stop("No clusters, maxclust size=1\n"); 
 
@@ -405,7 +409,8 @@ if (!is.null(margsurv))
 
   loglike <- function(par) 
   { ## {{{
-      if (pair.structure==0) Xtheta <- theta.des %*% matrix(c(par),ptheta,1);
+
+      if (pair.structure==0) Xtheta <- as.matrix(theta.des) %*% matrix(c(par),nrow=ptheta,ncol=1);
       if (pair.structure==1) Xtheta <- matrix(0,antpers,1); ## not needed 
        DXtheta <- array(0,c(1,1,1));
 
@@ -1020,6 +1025,7 @@ if (iid==1) { theta.iid <- matrix(0,length(idi),(nc1-1)*(nc2-1));
               rownames(theta.iid) <- idi
             } else theta.iid <- NULL
 
+thetal <- c()
 k <- 0; 
 for (i1 in 2:nc1)
 for (i2 in 2:nc2)
@@ -1060,7 +1066,7 @@ if (data.return==1)
 ud[[k]] <- list(index=c(i1,i2),left=c(cut1[i1-1],cut2[i2-1]),right=c(cut1[i1],cut2[i2]),fitlr=fitlr,data=datalr)
 if (i2==2) names1 <- c(names1, paste(cut1[i1-1],"-",cut1[i1]))
 if (i1==2) names2 <- c(names2, paste(cut2[i2-1],"-",cut2[i2]))
-theta <- c(theta,fitlr$theta)
+thetal <- c(thetal,fitlr$theta)
 
 if ((silent<=-1) & (iid==1)) print(head(fitlr$theta.iid)); 
 if ((silent<=-1) & (iid==1)) {
@@ -1081,7 +1087,7 @@ colnames(score.mat) <- colnames(cor.mat) <-  colnames(se.cor.mat)  <- colnames(s
 rownames(score.mat) <- rownames(cor.mat) <-  rownames(se.cor.mat) <-  rownames(se.theta.mat) <- rownames(theta.mat) <- names2; 
 
 ud <- list(model.fits=ud,theta=theta.mat,var.theta=se.theta.mat^2,
-	   se.theta=se.theta.mat,thetal=theta,thetal.iid=theta.iid,var.thetal=var.thetal,model=model,
+	   se.theta=se.theta.mat,thetal=thetal,thetal.iid=theta.iid,var.thetal=var.thetal,model=model,
 	   cor=cor.mat,se.cor=se.cor.mat,score=score.mat); 
 class(ud)<-"pc.twostage" 
 attr(ud,"var.link")<-var.link; 
@@ -1322,7 +1328,7 @@ if (class(margsurv)[1]=="coxph")
 
     out <- twostage(NULL,data=data.fam,
                     clusters=data.fam$subfam,
-		    theta.des=data.fam[,desnames],
+		    theta.des=as.matrix(data.fam[,desnames]),
                     detail=detail, score.method=score.method, Nit=Nit,step=step,
                     iid=iid,theta=theta, var.link=var.link,model=model, 
                     max.clust=max.clust,
@@ -1373,6 +1379,11 @@ data.frame(xm=xm,xf=xf,xb1=xb1,xb2=xb2,timem=tm,timef=tf,timeb1=tb1,timeb2=tb2,s
 	   statusb1=cb1,statusb2=cb2,id=1:n)
 } ## }}} 
 
+##' @export
+object.defined <- function(object)
+{
+   exists(as.character(substitute(object)))
+}
 
 ##' @export
 twostage.fullse <- function(margsurv,data=sys.parent(),
@@ -1398,7 +1409,7 @@ twostage.fullse <- function(margsurv,data=sys.parent(),
   silent=silent,weights=weights,control=control,
   theta=theta,theta.des=theta.des,
   var.link=var.link,iid=iid,step=step,notaylor=notaylor,
-  model=model,marginal.trunc=marginal.truc,
+  model=model,marginal.trunc=marginal.trunc,
   marginal.survival=marginal.survival,
   marginal.status=marginal.status,strata=strata,
   se.clusters=se.clusters,

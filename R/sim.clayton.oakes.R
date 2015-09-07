@@ -170,7 +170,7 @@ simClaytonOakes.family.ace <- function(K,varg,varc,beta,stoptime,lam0=0.5,Cvar=0
   ## K antal clustre (families), n=antal i clustre
   n=4 # twins with ace structure
   x<-array(c(runif(n*K),rep(0,n*K),rbinom(n*K,1,0.5)),dim=c(K,n,3))
-  if (Cvar==0) C<-matrix(stoptime,K,n) else C<-matrix(cvar*runif(K*n)*stoptime,K,n) 
+  if (Cvar==0) C<-matrix(stoptime,K,n) else C<-matrix(Cvar*runif(K*n)*stoptime,K,n) 
   ### total variance of gene and env. 
   ###  random effects with 
   ###  means varg/(varg+varc) and variances varg/(varg+varc)^2
