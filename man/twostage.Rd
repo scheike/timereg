@@ -14,7 +14,7 @@ twostage(margsurv, data = sys.parent(), score.method = "fisher.scoring",
   iid = 1, step = 0.5, notaylor = 0, model = "clayton.oakes",
   marginal.trunc = NULL, marginal.survival = NULL, marginal.status = NULL,
   strata = NULL, se.clusters = NULL, max.clust = NULL, numDeriv = 0,
-  random.design = NULL, pairs = NULL)
+  random.design = NULL, pairs = NULL, pairs.rvs = NULL)
 }
 \arguments{
 \item{margsurv}{Marginal model}
@@ -37,7 +37,7 @@ twostage(margsurv, data = sys.parent(), score.method = "fisher.scoring",
 
 \item{theta}{Starting values for variance components}
 
-\item{theta.des}{design for dependence parameters, when pairs are given this is should be a (pairs) x (numer of parameters)  x (number random effects) matrix}
+\item{theta.des}{design for dependence parameters, when pairs are given this is could be a (pairs) x (numer of parameters)  x (max number random effects) matrix}
 
 \item{var.link}{Link function for variance}
 
@@ -63,9 +63,11 @@ twostage(margsurv, data = sys.parent(), score.method = "fisher.scoring",
 
 \item{numDeriv}{to get numDeriv version of second derivative, otherwise uses sum of squared score}
 
-\item{random.design}{random effect design for additive gamma modeli, when pairs are given this is a (pairs) x (2) x n(umber random effects) matrix}
+\item{random.design}{random effect design for additive gamma modeli, when pairs are given this is a (pairs) x (2) x (max number random effects) matrix, see pairs.rvs below}
 
 \item{pairs}{matrix with rows of indeces (two-columns) for the pairs considered in the pairwise composite score, useful for case-control sampling when marginal is known.}
+
+\item{pairs.rvs}{for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair.}
 }
 \description{
 We allow a regression structure for the indenpendent gamma distributed
@@ -203,34 +205,7 @@ fitp4<-twostage(marg2,data=ud,clusters=ud$cluster,se.cluster=ud$cluster,
 summary(fitp4)
 }
 
-## structured random effects model additive gamma ACE
-\donttest{ ## Reduce Ex.Timings
-set.seed(1000)
-d <- simnordic.random(5000,delayed=TRUE,
-        cordz=1.0,cormz=2,lam0=0.3,country=TRUE)
- ### making group indidcator
- mm <- model.matrix(~-1+factor(zyg),d)
-
- ########### ACE modelling of survival twin data ########
- ########################################################
- ### assume that zygbin gives the zygosity of mono and dizygotic twins
- ### 0 for mono and 1 for dizygotic twins. We now formulate and AC model
- zygbin <- d$zyg=="DZ"
-
- ### random effects for each cluster
- des.rv <- cbind(mm,(zygbin==1)*rep(c(1,0)),(zygbin==1)*rep(c(0,1)),1)
- ### design making parameters half the variance for dizygotic components
- ### one shared and one non-shared part
- pardes <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0), c(0,1))
- pardes
-
-add <- aalen(Surv(time,cause==1)~-1+factor(zyg),data=d,robust=0)
-survace <-twostage(add,data=d,theta=c(-0.7,-1.0),clusters=d$id,
-                   theta.des=pardes,random.design=des.rv,var.link=1)
-summary(survace)
-
- ########################################################
-}
+### structured random effects model additive gamma ACE
 ### simulate structured two-stage additive gamma ACE model
 data <- simClaytonOakes.twin.ace(2000,2,1,0,3)
 out <- polygen.design(data,id="cluster")
@@ -241,6 +216,7 @@ ts <- twostage(aa,data=data,clusters=data$cluster,detail=0,
 	       theta=c(2,1),var.link=0,step=0.5,
 	       random.design=des.rv,theta.des=pardes)
 summary(ts)
+### see also two-stage demo
 }
 \author{
 Thomas Scheike
