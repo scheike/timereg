@@ -148,34 +148,7 @@
 ##' summary(fitp4)
 ##' }
 ##' 
-##' ## structured random effects model additive gamma ACE 
-##' \donttest{ ## Reduce Ex.Timings
-##' set.seed(1000)
-##' d <- simnordic.random(5000,delayed=TRUE,
-##'         cordz=1.0,cormz=2,lam0=0.3,country=TRUE)
-##'  ### making group indidcator
-##'  mm <- model.matrix(~-1+factor(zyg),d)
-##' 
-##'  ########### ACE modelling of survival twin data ########
-##'  ########################################################
-##'  ### assume that zygbin gives the zygosity of mono and dizygotic twins
-##'  ### 0 for mono and 1 for dizygotic twins. We now formulate and AC model
-##'  zygbin <- d$zyg=="DZ"
-##' 
-##'  ### random effects for each cluster
-##'  des.rv <- cbind(mm,(zygbin==1)*rep(c(1,0)),(zygbin==1)*rep(c(0,1)),1)
-##'  ### design making parameters half the variance for dizygotic components
-##'  ### one shared and one non-shared part 
-##'  pardes <- rbind(c(1,0), c(0.5,0),c(0.5,0), c(0.5,0), c(0,1))
-##'  pardes 
-##' 
-##' add <- aalen(Surv(time,cause==1)~-1+factor(zyg),data=d,robust=0)
-##' survace <-twostage(add,data=d,theta=c(-0.7,-1.0),clusters=d$id,
-##'                    theta.des=pardes,random.design=des.rv,var.link=1)
-##' summary(survace)
-##' 
-##'  ########################################################
-##' }
+##' ### structured random effects model additive gamma ACE 
 ##' ### simulate structured two-stage additive gamma ACE model
 ##' data <- simClaytonOakes.twin.ace(2000,2,1,0,3)
 ##' out <- polygen.design(data,id="cluster")
@@ -186,6 +159,7 @@
 ##' 	       theta=c(2,1),var.link=0,step=0.5,
 ##' 	       random.design=des.rv,theta.des=pardes)
 ##' summary(ts)
+##' 
 ##' @keywords survival
 ##' @author Thomas Scheike
 ##' @export
@@ -394,16 +368,12 @@ if (!is.null(margsurv))
 ### something with dimensions of rv.des 
 ### theta.des
        antpairs <- nrow(pairs); 
-  print("her"); 
-  print(dim(theta.des))
-  print(dim(random.design))
        if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))==3) )
        {
           Ptheta.des <- array(0,c(antpairs,nrow(theta.des),ncol(theta.des)))
           for (i in 1:antpairs) Ptheta.des[i,,] <- theta.des
        theta.des <- Ptheta.des
        }
-  print("her 2"); 
        if ( (length(dim(theta.des))==3)  & (length(dim(random.design))!=3) )
        {
            rv.des <- array(0,c(antpairs,2,ncol(random.design)))
@@ -413,7 +383,6 @@ if (!is.null(margsurv))
 	   }
        random.design <- rv.des
        }
-  print("her 3"); 
        if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))!=3) )
        {
           Ptheta.des <- array(0,c(antpairs,nrow(theta.des),ncol(theta.des)))
@@ -426,10 +395,10 @@ if (!is.null(margsurv))
        theta.des <- Ptheta.des
        random.design <- rv.des
        }
-  print(dim(theta.des))
-  print(dim(random.design))
+       if (max(pairs)>antpers) stop("Indices of pairs should refer to given data \n"); 
        if (is.null(pairs.rvs)) pairs.rvs <- rep(dim(random.design)[3],antpairs)
-       print(head(pairs.rvs))
+###       if (max(pairs.rvs)> dim(random.design)[3] | max(pairs.rvs)>ncol(theta.des[1,,])) 
+###	       stop("random variables for each cluster higher than  possible, pair.rvs not consistent with random.design or theta.des\n"); 
        clusterindex <- pairs-1; 
   } 
   ## }}}
@@ -803,6 +772,35 @@ return(res)
 } ## }}}
 
 ##' @export
+make.pairwise.design  <- function(pairs,kinship,type="ace")
+{ ## {{{ 
+### makes pairwise random effects design for shared and non-shared random effects
+### kinship gives shared genes for each pair
+
+if (type=="ace") {
+theta.des  <- array(0,c(nrow(pairs),4,2))
+random.des <- array(0,c(nrow(pairs),2,4))
+}
+rvs <- c()
+for (i in 1:nrow(pairs))
+{
+	if (type=="ace") {
+         ### only 3 random variables for ace 
+         ### (gene, shared, non-shared, environment
+         ### kinship gives amount of genes shared 
+	 theta.des[i,,] <- rbind(c(kinship[i],0),
+				 c(1-kinship[i],0),
+				 c(1-kinship[i],0),
+				 c(0,1))
+       	 random.des[i,,] <- rbind(c(1,1,0,1),c(1,0,1,1))
+	 rvs <- c(rvs,4)
+	} 
+} 
+
+return(list(random.design=random.des,theta.des=theta.des,ant.rvs=rvs))
+} ## }}} 
+
+##' @export
 ace.family.design <-function (data,id="id",member="type",mother="mother",father="father",child="child",child1="child",type="ace",...) { ## {{{
   ### standard family case 
   nid <- table(data[,id])
@@ -889,7 +887,6 @@ ace.family.design <-function (data,id="id",member="type",mother="mother",father=
 res <- list(pardes=pard,des.rv=des.rv)
 return(res)
 } ## }}}
-
 
 ##' @export
 print.twostage<-function(x,digits=3,...)

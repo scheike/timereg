@@ -14,7 +14,7 @@ twostage(margsurv, data = sys.parent(), score.method = "fisher.scoring",
   iid = 1, step = 0.5, notaylor = 0, model = "clayton.oakes",
   marginal.trunc = NULL, marginal.survival = NULL, marginal.status = NULL,
   strata = NULL, se.clusters = NULL, max.clust = NULL, numDeriv = 0,
-  random.design = NULL, pairs = NULL)
+  random.design = NULL, pairs = NULL, pairs.rvs = NULL)
 }
 \arguments{
 \item{margsurv}{Marginal model}
