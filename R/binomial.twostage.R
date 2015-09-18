@@ -11,6 +11,54 @@
 ##' in the case of the Plackett distribution (OR model for dependence), but incorrect standard
 ##' errors for the Clayton-Oakes types model.
 ##'
+##' The Clayton-Oakes copula model assumes that given a random effects Z that is gamma with variance 
+##'
+##' Given the gamma distributed random effects it is assumed that the survival functions 
+##' are indpendent, and that the marginal survival functions are on additive form (or Cox form)
+##' \deqn{
+##' logit(P(Y=1|X)) = \alpha + x^T \beta
+##' }
+##' therefore conditional on the random effect the probability of the event is 
+##' \deqn{
+##' logit(P(Y=1|X,Z)) = exp( - Laplace^{-1}(lamtot,lamtot,P(Y=1|x)) )  
+##' }
+##'
+##' Can also fit a structured additive gamma random effects model, such
+##' the ACE, ADE model for survival data: 
+##'
+##' Now random.design specificies the random effects for each subject within a cluster. This is
+##' a matrix of 1's and 0's with dimension n x d.  With d random effects. 
+##' For a cluster with two subjects, we let the random.design rows be 
+##'  \eqn{v_1} and \eqn{v_2}. 
+##' Such that the random effects for subject 
+##' 1 is \deqn{v_1^T (Z_1,...,Z_d)}, for d random effects. Each random effect
+##' has an associated parameter \eqn{(\lambda_1,...,\lambda_d)}. By construction
+##' subjects 1's random effect are Gamma distributed with 
+##' mean \eqn{\lambda_j/v_1^T \lambda}
+##' and variance \eqn{\lambda_j/(v_1^T \lambda)^2}. Note that the random effect 
+##' \eqn{v_1^T (Z_1,...,Z_d)} has mean 1 and variance \eqn{1/(v_1^T \lambda)}.
+##' It is here asssumed that  \eqn{lamtot=v_1^T \lambda} is fixed over all clusters
+##' as it would be for the ACE model below.
+##'
+##' Based on these parameters the relative contribution (the heritability, h) is 
+##' equivalent to  the expected values of the random effects  \eqn{\lambda_j/v_1^T \lambda}
+##'
+##' Given the random effects the probabilities  are independent and on the form 
+##' \deqn{
+##' logit(P(Y=1|X)) = exp( - Laplace^{-1}(lamtot,lamtot,P(Y=1|x)) )  
+##' }
+##' with the inverse laplace of the gamma distribution with mean 1 and variance lamtot.
+##'
+##' The parameters \eqn{(\lambda_1,...,\lambda_d)}
+##' are related to the parameters of the model
+##' by a regression construction \eqn{pard} (d x k), that links the \eqn{d} 
+##' \eqn{\lambda} parameters
+##' with the (k) underlying \eqn{\theta} parameters 
+##' \deqn{
+##' \lambda = theta.des  \theta 
+##' }
+##' here using theta.des to specify these low-dimension association. Default is a diagonal matrix. 
+##'
 ##' @export
 ##' @aliases binomial.twostage binomial.twostage.time
 ##' @references
@@ -73,10 +121,9 @@
 ##' out$pardes
 ##' head(out$des.rv)
 ##' 
-##' ts0 <- binomial.twostage(margbin,data=data,clusters=data$cluster,detail=0,
+##' bints <- binomial.twostage(margbin,data=data,clusters=data$cluster,detail=0,
 ##'      theta=c(2,1),var.link=0,step=1.0,random.design=out$des.rv,theta.des=out$pardes)
-##' summary(ts0)
-##' 
+##' summary(bints)
 ##' 
 ##' @keywords binomial regression 
 ##' @author Thomas Scheike
