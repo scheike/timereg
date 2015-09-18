@@ -153,13 +153,17 @@ LifeTable <- function(time,status,entry=NULL,strata=list(),breaks=c(),confint=FA
     ex <- matrix(unlist(lapply(breaks[-1],function(x) pmin(x,time))),
                   ncol=length(breaks)-1)
     dur <- ex-en
-    endur <- rbind(breaks[-1])%x%cbind(rep(1,nrow(en)))-en
-    ##endur <- rbind(c(breaks,Inf))%x%cbind(rep(1,nrow(en)))-en
     dur[dur<=0] <- NA
     enter <- colSums(!is.na(dur))
     atrisk <- colSums(dur,na.rm=TRUE)
     ##eventcens <- dur<endur
-    eventcens <- rbind(apply(dur<endur,2,function(x) x*(status+1)))
+    ##endur <- rbind(c(breaks,Inf))%x%cbind(rep(1,nrow(en)))-en
+    ##endur <- rbind(breaks[-1])%x%cbind(rep(1,nrow(en)))-en
+    ##eventcens <- rbind(apply(dur<endur,2,function(x) x*(status+1)))
+    eventcens <- dur; eventcens[!is.na(dur)] <- 0
+    lastobs <- apply(eventcens,1,function(x) tail(which(!is.na(x)),1))
+    eventcens[cbind(seq(nrow(eventcens)),lastobs)] <- status+1
+    
     lost <- colSums(eventcens==1,na.rm=TRUE)
     events <- colSums(eventcens==2,na.rm=TRUE)
     rate <- events/atrisk; rate[is.nan(rate)] <- 0
