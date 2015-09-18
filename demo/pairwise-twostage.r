@@ -16,11 +16,11 @@ head(out$des.rv)
 aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
 ts0 <- twostage(aa,data=data,clusters=data$cluster,
 	 detail=0,
-        theta=c(2,1),var.link=0,step=0.5,
+        theta=c(2,1),var.link=0,step=1.0,
         random.design=out$des.rv,theta.des=out$pardes)
 summary(ts0)
 
-### now sample some pairs for analyses 
+### now specify fitting via specific pairs 
 
 ### first all pairs 
 mm <- familycluster.index(data$cluster)
@@ -30,7 +30,7 @@ tail(pairs,n=12)
 ## make all pairs and pair specific design and pardes 
 ## same as ts0 but pairs specified 
 ts <- twostage(aa,data=data,clusters=data$cluster,
-               theta=c(2,1),var.link=0,step=0.5,
+               theta=c(2,1),var.link=0,step=1.0,
                random.design=out$des.rv,
                theta.des=out$pardes,pairs=pairs)
 summary(ts)
@@ -41,12 +41,12 @@ ssid <- sort(sample(1:48000,20000))
 ###
 ### take some of all 
 tsd <- twostage(aa,data=data,clusters=data$cluster,
-               theta=c(2,1),var.link=0,step=0.5,
+               theta=c(2,1),var.link=0,step=1.0,
                random.design=out$des.rv,iid=1,
 	      theta.des=out$pardes,pairs=pairs[ssid,])
 summary(tsd)
 
-### same analyses but now gives only data that  is used in the relevant pairs 
+### same analyses but now gives only data that is used in the relevant pairs 
 ids <- sort(unique(c(pairs[ssid,])))
 ###
 pairsids <- c(pairs[ssid,])
@@ -60,17 +60,17 @@ outid <- ace.family.design(dataid,member="type",id="cluster")
 outid$pardes
 head(outid$des.rv)
 ###
-system.time(
 tsdid <- twostage(aa,data=dataid,clusters=dataid$cluster,
-               theta=c(2,1),var.link=0,step=0.5,
+               theta=c(2,1),var.link=0,step=1.0,
                random.design=outid$des.rv,iid=1,
                theta.des=outid$pardes,pairs=pair.new)
-)
 summary(tsdid)
 ### same as tsd 
 
 
 ### now direct specification of random.design and theta.design 
+### rather than taking the rows of the des.rv for the relevant pairs
+### can make a pair specific specification of random effects 
 
 pair.types <-  matrix(dataid[c(t(pair.new)),"type"],byrow=T,ncol=2)
 head(pair.new)
@@ -92,6 +92,7 @@ head(pair.types)
 
 theta.des  <- array(0,c(nrow(pair.new),4,2))
 random.des <- array(0,c(nrow(pair.new),2,4))
+### random variables in each pair 
 rvs <- c()
 for (i in 1:nrow(pair.new))
 {
@@ -106,13 +107,16 @@ for (i in 1:nrow(pair.new))
 	rvs <- c(rvs,4)
 	}
 }
-random.des[5,,]
-theta.des[5,,]
+### 3 rvs here 
+random.des[7,,]
+theta.des[7,,]
+### 4 rvs here 
 random.des[1,,]
 theta.des[1,,]
+head(rvs)
 
 tsdid2 <- twostage(aa,data=dataid,clusters=dataid$cluster,
-               theta=c(2,1),var.link=0,step=0.5,
+               theta=c(2,1),var.link=0,step=1.0,
                random.design=random.des,
                theta.des=theta.des,pairs=pair.new,pairs.rvs=rvs)
 summary(tsdid2)
@@ -128,15 +132,20 @@ for (i in 1:nrow(pair.new))
 if (pair.types[i,1]=="mother" & pair.types[i,2]=="father") pk1 <- 0 else pk1 <- 0.5
 kinship <- c(kinship,pk1)
 }
+head(kinship,n=10)
 
 out <- make.pairwise.design(pair.new,kinship,type="ace") 
+names(out)
+### 4 rvs here , here independence since shared component has variance 0 !
+out$random.des[9,,]
+out$theta.des[9,,]
 
 tsdid3 <- twostage(aa,data=dataid,clusters=dataid$cluster,
-               theta=c(2,1),var.link=0,step=0.5,
+               theta=c(2,1),var.link=0,step=1.0,
                random.design=out$random.design,
                theta.des=out$theta.des,pairs=pair.new,pairs.rvs=out$ant.rvs)
 summary(tsdid3)
-### same as above  tsdid2
 
+### same as above  tsdid2
 
 

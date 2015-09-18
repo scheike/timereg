@@ -224,7 +224,6 @@ names(ud)<-c("time","status","x1","cluster","type","mintime","lefttime","truncat
 return(ud)
 } ## }}} 
 
-
 ##' @export
 kendall.ClaytonOakes.twin.ace <- function(parg,parc,K=10000)  ## {{{ 
 {

@@ -8,12 +8,13 @@ using marginals that are on logistic form.
 If clusters contain more than two times, the algoritm uses a compososite likelihood
 based on all pairwise bivariate models.}
 \usage{
-binomial.twostage(margbin, data = sys.parent(), score.method = "nlminb",
-  Nit = 60, detail = 0, clusters = NULL, silent = 1, weights = NULL,
-  control = list(), theta = NULL, theta.des = NULL, var.link = 1,
-  iid = 1, step = 0.5, notaylor = 1, model = "plackett",
-  marginal.p = NULL, strata = NULL, max.clust = NULL,
-  se.clusters = NULL, numDeriv = 0)
+binomial.twostage(margbin, data = sys.parent(),
+  score.method = "fisher.scoring", Nit = 60, detail = 0,
+  clusters = NULL, silent = 1, weights = NULL, control = list(),
+  theta = NULL, theta.des = NULL, var.link = 1, iid = 1, step = 0.5,
+  notaylor = 1, model = "plackett", marginal.p = NULL, strata = NULL,
+  max.clust = NULL, se.clusters = NULL, numDeriv = 0,
+  random.design = NULL, pairs = NULL, pairs.rvs = NULL)
 }
 \arguments{
 \item{margbin}{Marginal binomial model}
@@ -110,6 +111,26 @@ out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
       data=twinstut,response="binstut",id="tvparnr",
       score.method="fisher.scoring",theta.formula=desfs,desnames=c("mz","dz","os"))
 summary(out3)
+
+### use of clayton oakes binomial additive gamma model
+###########################################################
+data <- simbinClaytonOakes.family.ace(10000,2,1,beta=NULL,alpha=NULL)
+margbin <- glm(y~x,data=data,family=binomial())
+margbin
+
+head(data)
+data$number <- c(1,2,3,4)
+data$child <- 1*(data$number==3)
+
+### make ace random effects design
+out <- ace.family.design(data,member="type",id="cluster")
+out$pardes
+head(out$des.rv)
+
+ts0 <- binomial.twostage(margbin,data=data,clusters=data$cluster,detail=0,
+     theta=c(2,1),var.link=0,step=1.0,
+  random.design=out$des.rv,theta.des=out$pardes)
+summary(ts0)
 }
 \author{
 Thomas Scheike

@@ -57,7 +57,27 @@
 ##'       data=twinstut,response="binstut",id="tvparnr",
 ##'       score.method="fisher.scoring",theta.formula=desfs,desnames=c("mz","dz","os"))
 ##' summary(out3)
-##'
+##' 
+##' ### use of clayton oakes binomial additive gamma model 
+##' ###########################################################
+##' data <- simbinClaytonOakes.family.ace(10000,2,1,beta=NULL,alpha=NULL)  
+##' margbin <- glm(y~x,data=data,family=binomial())
+##' margbin
+##' 
+##' head(data)
+##' data$number <- c(1,2,3,4)
+##' data$child <- 1*(data$number==3)
+##' 
+##' ### make ace random effects design
+##' out <- ace.family.design(data,member="type",id="cluster")
+##' out$pardes
+##' head(out$des.rv)
+##' 
+##' ts0 <- binomial.twostage(margbin,data=data,clusters=data$cluster,detail=0,
+##'      theta=c(2,1),var.link=0,step=1.0,random.design=out$des.rv,theta.des=out$pardes)
+##' summary(ts0)
+##' 
+##' 
 ##' @keywords binomial regression 
 ##' @author Thomas Scheike
 ##' @export
@@ -82,11 +102,13 @@
 ##' @param max.clust max clusters
 ##' @param se.clusters clusters for iid decomposition for roubst standard errors
 ##' @param numDeriv uses Fisher scoring aprox of second derivative if 0, otherwise numerical derivatives 
-binomial.twostage <- function(margbin,data=sys.parent(),score.method="nlminb",
-                              Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
-                              control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
-                              step=0.5,notaylor=1,model="plackett",marginal.p=NULL,strata=NULL,
-                              max.clust=NULL,se.clusters=NULL,numDeriv=0)
+binomial.twostage <- function(margbin,data=sys.parent(),
+     score.method="fisher.scoring",
+     Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
+     control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
+     step=0.5,notaylor=1,model="plackett",marginal.p=NULL,strata=NULL,
+     max.clust=NULL,se.clusters=NULL,numDeriv=0,
+     random.design=NULL,pairs=NULL,pairs.rvs=NULL)
 { ## {{{
     ## {{{ seting up design and variables
     rate.sim <- 1; sym=1; 
@@ -148,11 +170,26 @@ binomial.twostage <- function(margbin,data=sys.parent(),score.method="nlminb",
     }                                                         
 
     ratesim<-rate.sim; 
+
+   if (!is.null(random.design)) { ### different parameters for Additive random effects 
+     dep.model <- 3
+###     if (is.null(random.design)) random.design <- matrix(1,antpers,1); 
+     dim.rv <- ncol(random.design); 
+     if (is.null(theta.des)) theta.des<-diag(dim.rv);
+###     ptheta <- dimpar <- ncol(theta.des); 
+ 
+###   if (dim(theta.des)[2]!=ncol(random.design)) 
+###   stop("nrow(theta.des)!= ncol(random.design),\nspecifies restrictions on paramters, if theta.des not given =diag (free)\n"); 
+ } else random.design <- matrix(0,1,1); 
+
+
     if (is.null(theta.des)==TRUE) ptheta<-1; 
-    if (is.null(theta.des)==TRUE) theta.des<-matrix(1,antpers,ptheta) else
-    theta.des<-as.matrix(theta.des); 
-    ptheta<-ncol(theta.des); 
-    if (nrow(theta.des)!=antpers) stop("Theta design does not have correct dim");
+    if (is.null(theta.des)==TRUE) theta.des<-matrix(1,antpers,ptheta) 
+###    else theta.des<-as.matrix(theta.des); 
+###    ptheta<-ncol(theta.des); 
+###    if (nrow(theta.des)!=antpers) stop("Theta design does not have correct dim");
+  if (length(dim(theta.des))==3) ptheta<-dim(theta.des)[3] else if (length(dim(theta.des))==2) ptheta<-ncol(theta.des)
+  if (nrow(theta.des)!=antpers & dep.model!=3 ) stop("Theta design does not have correct dim");
 
     if (is.null(theta)==TRUE) {
         if (var.link==1) theta<- rep(-0.7,ptheta);  
@@ -162,7 +199,51 @@ binomial.twostage <- function(margbin,data=sys.parent(),score.method="nlminb",
     theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
 
     if (maxclust==1) stop("No clusters, maxclust size=1\n"); 
+
+if (!is.null(pairs)) pair.structure <- 1 else pair.structure <- 0
+  if (pair.structure==1) { ## {{{ 
+	  print(date())
+### something with dimensions of rv.des 
+### theta.des
+       antpairs <- nrow(pairs); 
+       if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))==3) )
+       {
+          Ptheta.des <- array(0,c(antpairs,nrow(theta.des),ncol(theta.des)))
+          for (i in 1:antpairs) Ptheta.des[i,,] <- theta.des
+       theta.des <- Ptheta.des
+       }
+       if ( (length(dim(theta.des))==3)  & (length(dim(random.design))!=3) )
+       {
+           rv.des <- array(0,c(antpairs,2,ncol(random.design)))
+           for (i in 1:antpairs) {
+		   rv.des[i,1,] <- random.design[pairs[i,1],]
+		   rv.des[i,2,] <- random.design[pairs[i,2],]
+	   }
+       random.design <- rv.des
+       }
+       if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))!=3) )
+       {
+          Ptheta.des <- array(0,c(antpairs,nrow(theta.des),ncol(theta.des)))
+          rv.des <- array(0,c(antpairs,2,ncol(random.design)))
+          for (i in 1:antpairs) {
+		   rv.des[i,1,] <- random.design[pairs[i,1],]
+		   rv.des[i,2,] <- random.design[pairs[i,2],]
+                   Ptheta.des[i,,] <- theta.des
+	   }
+       theta.des <- Ptheta.des
+       random.design <- rv.des
+       }
+       print(date())
+
+       if (max(pairs)>antpers) stop("Indices of pairs should refer to given data \n"); 
+       if (is.null(pairs.rvs)) pairs.rvs <- rep(dim(random.design)[3],antpairs)
+###       if (max(pairs.rvs)> dim(random.design)[3] | max(pairs.rvs)>ncol(theta.des[1,,])) 
+###	       stop("random variables for each cluster higher than  possible, pair.rvs not consistent with random.design or theta.des\n"); 
+       clusterindex <- pairs-1; 
+  } ## }}} 
+
     ## }}}
+
 
     loglike <- function(par) 
         { ## {{{
@@ -172,13 +253,25 @@ binomial.twostage <- function(margbin,data=sys.parent(),score.method="nlminb",
 ###      dyn.load("twostage.so")
             ptrunc <- rep(1,antpers); 
 
+      if (pair.structure==0) 
             outl<-.Call("twostageloglikebin", ## {{{
-                        icause=cause,ipmargsurv=ps, 
-                        itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
-                        icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
-                        ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
-                        itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid) 
+            icause=cause,ipmargsurv=ps, 
+            itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
+            icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
+            ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
+            itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid, 
+            irvdes=random.design)
             ## }}}
+      else outl<-.Call("twostageloglikebinpairs", ## {{{
+            icause=cause,ipmargsurv=ps, 
+            itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
+            icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
+            ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
+            itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid, 
+            irvdes=random.design,
+            idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs
+            )  ## }}} 
+
 
             if (detail==3) print(c(par,outl$loglike))
 
@@ -208,7 +301,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),score.method="nlminb",
                         cat("hess:\n"); cat(out$Dscore,"\n"); 
                     }## }}}
                     delta <- hessi %*% out$score *step 
-                    p <- p+delta* step
+                    p <- p + delta* step
                     theta <- p; 
                     if (is.nan(sum(out$score))) break; 
                     if (sum(abs(out$score))<0.00001) break; 
@@ -220,12 +313,15 @@ binomial.twostage <- function(margbin,data=sys.parent(),score.method="nlminb",
             logl <- out$loglike
             score1 <- score <- out$score
             oout <- 0; 
-            hess1 <- hess <- - out$Dscore 
+            hess1 <- hess <- out$Dscore 
             if (iid==1) theta.iid <- out$theta.iid
+            if (detail==1 && iid==1) cat("finished iid decomposition\n"); 
         }
         if (numDeriv==1) {
+            if (detail==1 ) cat("starting numDeriv for second derivative \n"); 
             oout <- 3
             hess <- numDeriv::jacobian(loglike,p)
+            if (detail==1 ) cat("finished numDeriv for second derivative \n"); 
         }
         if (detail==1 & Nit==0) {## {{{
             cat(paste("Fisher-Scoring ===================: final","\n")); 
@@ -305,6 +401,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),score.method="nlminb",
         theta.iid <- out$theta.iid %*% hessi
         robvar.theta  <- (t(theta.iid) %*% theta.iid) 
     }
+
 ###  if (iid==1) var.theta <- robvar.theta else var.theta <- -hessi
     if (!is.null(colnames(theta.des))) thetanames <- colnames(theta.des) else thetanames <- paste("dependence",1:ptheta,sep="")
     theta <- matrix(theta,ptheta,1)
@@ -320,7 +417,13 @@ binomial.twostage <- function(margbin,data=sys.parent(),score.method="nlminb",
     attr(ud,"antclust")<-antclust; 
     attr(ud, "Type") <- model
     ### to be consistent with structure for survival twostage model 
-    attr(ud, "additive-gamma") <- 0;
+    attr(ud, "additive-gamma") <- (dep.model==3)*1
+    if (dep.model==3 & pair.structure==1) attr(ud, "likepairs") <- c(out$likepairs)
+    if (dep.model==3 & pair.structure==0) attr(ud, "pardes") <- theta.des
+    if (dep.model==3 & pair.structure==1) attr(ud, "pardes") <- theta.des[1,,]
+    if (dep.model==3 & pair.structure==0) attr(ud, "rv1") <- random.design[1,]
+    if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <- random.design[1,1,]
+ 
     attr(ud, "response") <- "binomial"
     return(ud);
     ## }}}
@@ -714,6 +817,91 @@ simBinFam2 <- function(n,beta=0.0,alpha=0.5,lam1=1,lam2=1,...) { ## {{{
     data.frame(x1=x1,x2=x2,ym=ym,yf=yf,yb1=yb1,yb2=yb2,id=1:n)
 } ## }}} 
 
+##' @export
+simbinClaytonOakes.family.ace <- function(K,varg,varc,beta=NULL,alpha=NULL)  ## {{{ 
+{
+  ## K antal clustre (families), n=antal i clustre
+###  K <- 10000
+  n <- 4 # twins with ace structure
+  ## total variance 1/(varg+varc)
+  ## {{{  random effects 
+  ###  means varg/(varg+varc) and variances varg/(varg+varc)^2
+  eta <- varc+varg
+  ### mother and father share environment
+  ### children share half the genes with mother and father and environment 
+  mother.g <-  cbind(rgamma(K,varg*0.25)/eta, rgamma(K,varg*0.25)/eta, rgamma(K,varg*0.25)/eta, rgamma(K,varg*0.25)/eta)
+  father.g <-  cbind(rgamma(K,varg*0.25)/eta, rgamma(K,varg*0.25)/eta, rgamma(K,varg*0.25)/eta, rgamma(K,varg*0.25)/eta)
+  env <- rgamma(K,varc)/eta 
+  mother <- apply(mother.g,1,sum)+env
+  father <- apply(father.g,1,sum)+env
+  child1 <- apply(cbind(mother.g[,c(1,2)],father.g[,c(1,2)]),1,sum) + env
+  child2 <- apply(cbind(mother.g[,c(1,3)],father.g[,c(1,3)]),1,sum) + env
+  Gam1 <- cbind(mother,father,child1,child2)
+  ## }}} 
+  apply(Gam1,2,mean); apply(Gam1,2,var); cor(Gam1)
+
+  ## {{{ marginals p's and conditional p's given random effects 
+  ### marginals p's for mother, father, children
+  xb1 <- rbinom(K,1,0.5)
+  xb2 <- rbinom(K,1,0.5)
+  xm <- rbinom(K,1,0.5)
+  xf <- rbinom(K,1,0.5)
+###
+###
+  if (is.null(beta)) beta <- rep(0.3,4)
+  if (is.null(alpha)) alpha <- rep(0.5,4)
+  pm <- exp(alpha[1]+xm*beta[1]); pf <- exp(alpha[2]+xf*beta[2])
+  pb1 <- exp(alpha[3]+xb1*beta[3]); pb2 <- exp(alpha[4]+xb2*beta[4])
+  p <- cbind(pm,pf,pb1,pb2)
+  p <- p/(1+p)
+
+  vartot <- eta
+  pgivenZ <- mets:::ilap(vartot,p)
+  pgivenZ <- exp(- Gam1*pgivenZ)
+  ## }}} 
+
+  Ybin <- matrix(rbinom(n*K,1,c(pgivenZ)),K,n)
+  Ybin <- t(Ybin)
+
+  xs <- cbind(xm,xf,xb1,xb2)
+  ud <- cbind(c(Ybin),c(t(xs)),rep(1:K,each=n))  
+  type <- rep(c("mother","father","child","child"),K)
+
+  ud <- cbind(ud,type)
+  ud <- data.frame(ud)
+
+names(ud)<-c("ybin","x","cluster","type")
+return(ud)
+} ## }}} 
+
+###ud <- simbinClaytonOakes.family.ace(10000,0.5,0.5,beta=NULL,alpha=NULL)  
+###(glm(ybin~x,data=ud,family=binomial()))
+
+###ud <- simbinClaytonOakes.family.ace(10000,2,1,beta=NULL,alpha=NULL)  
+###(glm(ybin~x,data=ud,family=binomial()))
+
+###library(mets)
+### data <- simbinClaytonOakes.family.ace(10000,2,1,beta=NULL,alpha=NULL)  
+### margbin <- glm(ybin~x,data=data,family=binomial())
+### margbin
+### 
+### head(data)
+### data$number <- c(1,2,3,4)
+### data$child <- 1*(data$number==3)
+### 
+### ### make ace random effects design
+### out <- ace.family.design(data,member="type",id="cluster")
+### out$pardes
+### head(out$des.rv)
+### 
+### fambin <- binomial.twostage(margbin,data=data,clusters=data$cluster,detail=1,
+###      theta=c(2,1),var.link=0,step=1.0,Nit=5,
+###      score.method="fisher.scoring",
+###      random.design=out$des.rv,theta.des=out$pardes)
+### summary(fambin)
+
+###
+###simbinClaytonOakes.family.ace(10,2,1,beta=NULL,alpha=NULL)  
 
 ### pairwise POR model based on case-control data
 ##' @export

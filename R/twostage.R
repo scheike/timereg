@@ -193,7 +193,8 @@ twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Ni
 		     silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
                      step=0.5,notaylor=0,model="clayton.oakes",
 		     marginal.trunc=NULL, marginal.survival=NULL,marginal.status=NULL,strata=NULL,
-		     se.clusters=NULL,max.clust=NULL,numDeriv=0,random.design=NULL,pairs=NULL,pairs.rvs=NULL)
+     se.clusters=NULL,max.clust=NULL,numDeriv=0,
+     random.design=NULL,pairs=NULL,pairs.rvs=NULL)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -368,7 +369,7 @@ if (!is.null(margsurv))
   if (maxclust==1) stop("No clusters, maxclust size=1\n"); 
 
   if (!is.null(pairs)) pair.structure <- 1 else pair.structure <- 0
-  if (pair.structure==1) {
+  if (pair.structure==1) { ## {{{ 
 ### something with dimensions of rv.des 
 ### theta.des
        antpairs <- nrow(pairs); 
@@ -404,7 +405,8 @@ if (!is.null(margsurv))
 ###       if (max(pairs.rvs)> dim(random.design)[3] | max(pairs.rvs)>ncol(theta.des[1,,])) 
 ###	       stop("random variables for each cluster higher than  possible, pair.rvs not consistent with random.design or theta.des\n"); 
        clusterindex <- pairs-1; 
-  } 
+  } ## }}} 
+
   ## }}}
 
   loglike <- function(par) 
@@ -422,8 +424,7 @@ if (!is.null(margsurv))
       itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
       icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
       ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
-      itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
-      irvdes=random.design) 
+      itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,irvdes=random.design) 
       ## }}}
       else outl<-.Call("twostageloglikeRVpairs", ## {{{
       icause=status,ipmargsurv=psurvmarg, 
@@ -431,7 +432,8 @@ if (!is.null(margsurv))
       icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
       ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
       itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
-      irvdes=random.design,idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs
+      irvdes=random.design,
+      idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs
       )  ## }}} 
 
     if (detail==3) print(c(par,outl$loglike))
@@ -648,7 +650,7 @@ coef.twostage <- function(object,var.link=NULL,response="survival",...)
   if (is.null(var.link))
      if (attr(object,"var.link")==1) vlink <- 1 else vlink <- 0
      else vlink <- var.link
-  se<-diag(object$var.theta)^0.5
+  se<-diag(object$robvar.theta)^0.5
   res <- cbind(theta, se )
   wald <- theta/se
   waldp <- (1 - pnorm(abs(wald))) * 2
