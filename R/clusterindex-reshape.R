@@ -49,6 +49,13 @@ familyclusterWithProbands.index <- function(clusters,probands,index.type=FALSE,n
     indexWproband <- famc$subfamilyindex %in% subfamsWprobands 
     famc$subfamilyindex <- famc$subfamilyindex[indexWproband]
     famc$familypairindex <- famc$familypairindex[indexWproband]
+    pairs <- matrix(famc$familypairindex,ncol=2,byrow=TRUE)
+    ipi2 <- pairs[,2] %in% index.probs
+    gem1 <- pairs[,1]
+    pairs[ipi2,1] <- pairs[ipi2,2]
+    pairs[ipi2,2] <- gem1[ipi2]
+    famc$familypairindex <- c(t(pairs))
+    famc$pairs <- pairs
 
     invisible(famc)
 } ## }}}

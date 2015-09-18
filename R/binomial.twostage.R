@@ -693,16 +693,18 @@ simBinFam <- function(n,beta=0.0,rhopp=0.1,rhomb=0.7,rhofb=0.1,rhobb=0.7) { ## {
 } ## }}} 
 
 ##' @export
-simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{ 
+simBinFam2 <- function(n,beta=0.0,alpha=0.5,lam1=1,lam2=1,...) { ## {{{ 
     x1 <- rbinom(n,1,0.5); x2 <- rbinom(n,1,0.5); 
     x3 <- rbinom(n,1,0.5); x4 <- rbinom(n,1,0.5); 
-###
+### random effects speicification of model via gamma distributions 
     zf <- rgamma(n,shape=lam1); zb <- rgamma(n,shape=lam2); 
-    pm <- exp(0.5+x1*beta+zf)
-    pf <- exp(0.5+x2*beta+zf)
+    if (length(alpha)!=4) alpha <- rep(alpha[1],4)
+    if (length(beta)!=4) beta <- rep(beta[1],4)
+    pm <- exp(alpha[1]+x1*beta[1]+zf)
+    pf <- exp(alpha[2]+x2*beta[2]+zf)
     pf <- pf/(1+pf)
     pm <- pm/(1+pm)
-    pb1 <- exp(0.5+x1*beta+zf+zb)
+    pb1 <- exp(alpha[3]+x1*beta[3]+zf+zb)
     pb1 <- pb1/(1+pb1)
     ym <- rbinom(n,1,pm)
     yf <- rbinom(n,1,pf)
@@ -712,29 +714,6 @@ simBinFam2 <- function(n,beta=0.0,lam1=1,lam2=1,...) { ## {{{
     data.frame(x1=x1,x2=x2,ym=ym,yf=yf,yb1=yb1,yb2=yb2,id=1:n)
 } ## }}} 
 
-###predict.pair.plack <- function(cif1,cif2,status1,status2,theta) 
-###{ ## {{{
-###  theta <- exp(c(theta))
-###  cif1 <- c(cif1); cif2 <- c(cif2)
-###  cifs=cif1+cif2; 
-###
-###  valn=2*(theta-1); 
-###  val1=(1+(theta-1)*(cifs))-( ((1+(theta-1)*cifs))^2-4*cif1*cif2*theta*(theta-1))^0.5; 
-###  vali=cif1*cif2;
-###
-###  valr <- vali;
-###  valr[valn!=0] <- val1/valn; 
-###
-###  p11 <- valr; 
-###  p10 <- cif1-p11
-###  p01 <- cif2-p11
-###  p00 <- 1- p10-p01-p11
-####
-###  pred <- (status1==1)*(status2==1)*p11+ (status1==1)*(status2==0)*p10+ 
-###          (status1==0)*(status2==1)*p01+ (status1==0)*(status2==0)*p00
-###
-###  return(pred); 
-###} ## }}}
 
 ### pairwise POR model based on case-control data
 ##' @export
@@ -746,6 +725,7 @@ CCbinomial.twostage <- function(margbin=NULL,data=sys.parent(),score.method="nlm
     step=0.5,model="plackett",marginal.p=NULL,
     strata=NULL,max.clust=NULL,se.clusters=NULL)
 { ## {{{
+  ### under construction 
 
     if (class(margbin)[1]=="glm") ps <- predict(margbin,type="response") 
     else if (class(margbin)=="formula") {

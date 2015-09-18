@@ -583,6 +583,7 @@ if (!is.null(margsurv))
   attr(ud,"antclust")<-antclust; 
   attr(ud, "Type") <- model
   attr(ud, "additive-gamma") <- (dep.model==3)*1
+  if (dep.model==3 & pair.structure==1) attr(ud, "likepairs") <- c(out$likepairs)
   if (dep.model==3 & pair.structure==0) attr(ud, "pardes") <- theta.des
   if (dep.model==3 & pair.structure==1) attr(ud, "pardes") <- theta.des[1,,]
   if (dep.model==3 & pair.structure==0) attr(ud, "rv1") <- random.design[1,]
