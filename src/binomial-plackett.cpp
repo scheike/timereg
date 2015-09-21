@@ -21,38 +21,41 @@ valr=  pow((1/pow(y,1/x) + 1/pow(z,1/x)) - 1,-x);
 dp(0)= (-((x*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x))) - log(-1 + pow(y,-1/x) + pow(z,-1/x)))/pow(-1 + pow(y,-1/x) + pow(z,-1/x),x);
 
 p11=valr; 
-p10=x-p11; 
-p01=y-p11; 
-p00=1-x-y+p11; 
+p10=cif1-p11; 
+p01=cif2-p11; 
+p00=1-cif1-cif2+p11; 
+
+//printf(" %lf %lf %lf %lf %lf %lf %lf \n",theta,y,z,p11,p10,p01,p00); 
 
 if (status1==1 && status2==1) { valr=p11; dp(0)= dp(0); }
 if (status1==1 && status2==0) { valr=p10; dp(0)=-dp(0); }
 if (status1==0 && status2==1) { valr=p01; dp(0)=-dp(0); }
 if (status1==0 && status2==0) { valr=p00; dp(0)= dp(0); } 
 
-if (status1==0 && status2==0) { // {{{
-valr=  pow((1/pow(y,1/x) + 1/pow(z,1/x)) - 1,-x);
-dp(0)= (-((x*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x))) - log(-1 + pow(y,-1/x) + pow(z,-1/x)))/pow(-1 + pow(y,-1/x) + pow(z,-1/x),x);
-} // }}}
+//printf(" %lf \n",valr); 
 
-if (status1==1 && status2==0) { // {{{
-valr=pow(y,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x);
-dp(0)=(pow(y,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*log(y))/pow(x,2) + pow(y,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*(((-1 - x)*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x)) - log(-1 + pow(y,-1/x) + pow(z,-1/x)));
-} // }}}
-
-if (status1==0 && status2==1) { // {{{
-valr=pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x);
-dp(0)=(pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*log(z))/pow(x,2) + pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*(((-1 - x)*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x)) - log(-1 + pow(y,-1/x) + pow(z,-1/x)));
-} // }}}
-
-if (status1==1 && status2==1) { // {{{
-valr= -(((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x))/x);
-dp(0)=((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x))/pow(x,2) + (pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x))/x - ((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x)*log(y))/pow(x,3) - ((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x)*log(z))/pow(x,3) - ((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x)*(((-2 - x)*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x)) - log(-1 + pow(y,-1/x) + pow(z,-1/x))))/x;
-} // }}}
+//if (status1==0 && status2==0) { // {{{
+//valr=  pow((1/pow(y,1/x) + 1/pow(z,1/x)) - 1,-x);
+//dp(0)= (-((x*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x))) - log(-1 + pow(y,-1/x) + pow(z,-1/x)))/pow(-1 + pow(y,-1/x) + pow(z,-1/x),x);
+//} // }}}
+//
+//if (status1==1 && status2==0) { // {{{
+//valr=pow(y,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x);
+//dp(0)=(pow(y,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*log(y))/pow(x,2) + pow(y,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*(((-1 - x)*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x)) - log(-1 + pow(y,-1/x) + pow(z,-1/x)));
+//} // }}}
+//
+//if (status1==0 && status2==1) { // {{{
+//valr=pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x);
+//dp(0)=(pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*log(z))/pow(x,2) + pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*(((-1 - x)*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x)) - log(-1 + pow(y,-1/x) + pow(z,-1/x)));
+//} // }}}
+//
+//if (status1==1 && status2==1) { // {{{
+//valr= -(((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x))/x);
+//dp(0)=((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x))/pow(x,2) + (pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x))/x - ((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x)*log(y))/pow(x,3) - ((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x)*log(z))/pow(x,3) - ((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x)*(((-2 - x)*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x)) - log(-1 + pow(y,-1/x) + pow(z,-1/x))))/x;
+//} // }}}
 
 return(valr); 
 } // }}}
-
 
 double placklikeP(double theta,int status1,int status2,double cif1,double cif2,vec &dp) 
 { // {{{
@@ -326,6 +329,7 @@ RcppExport SEXP twostageloglikebin(
 
  mat Xtheta = Rcpp::as<mat>(iXtheta);
 
+
   int udtest=0; 
   if (udtest==1) { // {{{
 //  Rprintf(" %d %d %d %d %d %d %d \n",samecens,inverse,semi,semi2,flexfunc,stabcens,silent); 
@@ -412,6 +416,7 @@ RcppExport SEXP twostageloglikebin(
   mat DUtheta(pt,pt); 
   DUtheta.fill(0); 
   Utheta.fill(0); 
+
   int nr=rvdes.n_cols; 
   vec rv2(nr),rv1(nr);
 
@@ -456,6 +461,11 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 	   diff=dplack(0)/ll; 
 //	printf(" %d %d %d %d %d  \n",j,c,v,i,k); 
 //	printf(" %d %d %d %d %d %d %d %lf %lf %lf %lf %lf %lf \n",j,c,v,i,k,ci,ck,thetak,Li,Lk,weights(i),ll,log(ll)); 
+	if (j<-10) {
+	printf(" %d %d %d %d %d %d %d %lf %lf %lf %lf %lf %lf \n",j,c,v,i,k,ci,ck,thetak,Li,Lk,weights(i),ll,log(ll)); 
+	dplack.print("dtheta"); 
+	}
+
 	   if (varlink==1) diff=pow(deppar,1)*diff;  
 	   if (varlink==0) diff=1*pow(deppar,2)*diff; 
 	   //sdj=-pow(diff,2); 
@@ -497,9 +507,9 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 	} // }}}
 
 
-     for (c1=0;c1<pt;c1++) 
      if (depmodel!=3) {
-	     for (v1=0;v1<pt;v1++) DUtheta(c1,v1)-=weights(i)*pow(diff,2)*vthetascore(c1)*vthetascore(v1);
+        for (c1=0;c1<pt;c1++) 
+        for (v1=0;v1<pt;v1++) DUtheta(c1,v1)-=weights(i)*pow(diff,2)*vthetascore(c1)*vthetascore(v1);
 	     vthetascore=weights(i)*diff*vthetascore; 
 	     Utheta=Utheta+vthetascore; 
      } else  { // additive gamma structure 

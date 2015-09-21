@@ -77,7 +77,7 @@
 ##' summary(fitco1)
 ##' ### Plackett model
 ##' fitp<-twostage(margph,data=diabetes,theta=3.0,Nit=40,
-##'                clusters=diabetes$id,var.link=1)
+##'                clusters=diabetes$id,var.link=1,model="plackett")
 ##' summary(fitp)
 ##' ### Clayton-Oakes
 ##' fitco2<-twostage(margph,data=diabetes,theta=0.0,detail=0,

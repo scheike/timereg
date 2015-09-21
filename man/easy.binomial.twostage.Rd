@@ -8,10 +8,10 @@ call is different and easier and the data manipulation is build into the functio
 Useful in particular for family design data.}
 \usage{
 easy.binomial.twostage(margbin = NULL, data = sys.parent(),
-  score.method = "nlminb", response = "response", id = "id", Nit = 60,
-  detail = 0, silent = 1, weights = NULL, control = list(),
+  score.method = "fisher.scoring", response = "response", id = "id",
+  Nit = 60, detail = 0, silent = 1, weights = NULL, control = list(),
   theta = NULL, theta.formula = NULL, desnames = NULL, deshelp = 0,
-  var.link = 1, iid = 1, step = 0.5, model = "plackett",
+  var.link = 1, iid = 1, step = 1, model = "plackett",
   marginal.p = NULL, strata = NULL, max.clust = NULL,
   se.clusters = NULL)
 }
