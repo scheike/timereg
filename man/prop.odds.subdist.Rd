@@ -25,8 +25,8 @@ The modelling formula uses the standard survival modelling given in the
 \usage{
 prop.odds.subdist(formula,data=sys.parent(),cause=1,beta=NULL,
 Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
-profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=1000,baselinevar=1,weights=NULL,
-cens.weights=NULL)
+profile=1,sym=0,cens.model="KM",cens.formula=NULL,
+clusters=NULL,max.clust=1000,baselinevar=1,weights=NULL,cens.weights=NULL)
 }
 \arguments{
 \item{formula}{

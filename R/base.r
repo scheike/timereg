@@ -16,12 +16,18 @@ coefBase<- function(object, digits=3, d2logl=0,ci=0,alpha=0.05) { ## {{{
 
 wald.test <- function(object=NULL,coef=NULL,Sigma=NULL,contrast,coef.null=NULL,null=NULL,print.coef=TRUE,alpha=0.05)
 { ## {{{
+
+  if (class(object)=="coxph")  {coef <-  matrix(coef(object),ncol=1); 
+                              Sigma=object$var;}
+  if (class(object)=="cox.aalen")  {coef <- object$gamma; Sigma=object$var.gamma;}
+
   if (is.null(Sigma)) {
      if (class(object)=="cor" || class(object)=="twostage") Sigma <- object$var.theta else Sigma <- object$var.gamma;
   }
   if (!is.null(object)) {
      if (class(object)=="cor" || class(object)=="twostage") coefs <- object$theta else coefs <- object$gamma;
-  } else if (!is.null(coef)) coefs <- coef else stop("No estimates given \n"); 
+  } 
+  if (!is.null(coef)) coefs <- coef ## else stop("No estimates given \n"); 
   nl <- length(coefs)
   if (missing(contrast)) {
       contrast <- rep(1,length(coefs))

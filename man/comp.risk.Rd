@@ -251,7 +251,7 @@ cause=1,resample.iid=1,model="prop",n.sim=100)
 summary(fg2)
 
 #################################################################
-## Delayed entry models, must use semi-parametric model call 
+## Delayed entry models, 
 #################################################################
 nn <- nrow(bmt)
 entrytime <- rbinom(nn,1,0.5)*(bmt$time*runif(nn))

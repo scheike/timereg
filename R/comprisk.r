@@ -595,7 +595,7 @@ plot.comprisk <-  function (x, pointwise.ci=1, hw.ci=0,
 prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
 			   time="time",cause="cause",cname="cweight",tname="tweight",
 			   strata=NULL,nocens.out=TRUE,cens.formula=NULL,cens.code=0,
-			   prec.factor=100)
+			   prec.factor=100,trunc.mintau=FALSE)
 { ## {{{ 
 ## {{{  geskus weights, up to min(T_i,max(times))
    if (is.null(times)) times <- max(data[,time])
@@ -613,6 +613,7 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
 	   trunc.dist <- summary(surv.trunc)
 	   trunc.dist$time <- rev(-trunc.dist$time)
 	   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
+	   if (trunc.mintau==TRUE) Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),pmin(mtt,data[,time])) else 
 	   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),data[,time])
 	   Lw <- Lfit[,2]
 	   } else Lw <- 1
@@ -621,8 +622,8 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
 	   Gfit<-rbind(c(0,1),Gfit); 
 	   Gcx<-Cpred(Gfit,pmin(mtt,data[,time]),strict=TRUE)[,2];
            weights <- 1/(Lw*Gcx); 
-	   cweights <-  Lw; 
-	   tweights <-  Gcx; 
+	   cweights <-  Gcx; 
+	   tweights <-  Lw; 
    ### ## }}} 
    } else { ## {{{ 
 	   ### compute for each strata and combine 
@@ -641,7 +642,8 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
 		   trunc.dist <- summary(surv.trunc)
 		   trunc.dist$time <- rev(-trunc.dist$time)
 		   trunc.dist$surv <- c(rev(trunc.dist$surv)[-1], 1)
-		   Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),datas[,time])
+          	   if (trunc.mintau==TRUE) Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),pmin(mtt,datas[,time])) else 
+	           Lfit <-Cpred(cbind(trunc.dist$time,trunc.dist$surv),datas[,time])
 		   Lw <- Lfit[,2]
 	   } else Lw <- 1
 	   ud.cens<- survfit(Surv(entrytimes,datas[,time],datas[,cause]==0)~+1) 
@@ -649,8 +651,8 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
 	   Gfit<-rbind(c(0,1),Gfit); 
 	   Gcx<-Cpred(Gfit,pmin(mtt,datas[,time]),strict=TRUE)[,2];
 	   weights[who]<-  1/(Lw*Gcx); 
-	   cweights[who]<-  Lw; 
-	   tweights[who]<-  Gcx; 
+	   cweights[who]<-  Gcx; 
+	   tweights[who]<-  Lw; 
           } ## }}} 
    } ## }}} 
    } else { ### cens.formula Cox models  ## {{{
@@ -661,7 +663,9 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
 		baseout <- basehaz(trunc.model,centered=FALSE); 
 		baseout <- cbind(rev(-baseout$time),rev(baseout$hazard))
 	###
-		Lfit <-Cpred(baseout,data[,time])[,-1]
+
+	   if (trunc.mintau==TRUE) Lfit <-Cpred(baseout,pmin(mtt,data[,time]))[,-1] else 
+		   Lfit <-Cpred(baseout,data[,time])[,-1]
 		RR<-exp(as.matrix(X) %*% coef(trunc.model))
 		Lfit<-exp(-Lfit*RR)
 		Lw <- Lfit

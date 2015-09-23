@@ -1,9 +1,10 @@
 \name{wald.test}
 \alias{wald.test}
 \title{Makes wald test}
-\description{Makes wald test on timereg object, either by contrast matrix or
+\description{Makes wald test, either by contrast matrix or
 testing components to 0. Can also specify the regression coefficients and 
 the variance matrix.  Also makes confidence intervals of the defined contrasts. 
+Reads coefficientes and variances from timereg and coxph objects. 
 }
 \usage{
 wald.test(object=NULL,coef=NULL,Sigma=NULL,contrast,coef.null=NULL,null=NULL,

@@ -1,6 +1,7 @@
 
 residualsTimereg <- function(object,data=data)
 { ## {{{
+### computes residuals for data based on model given in object 
 
 if (class(object)!="cox.aalen" & class(object)!="aalen") stop("Computes residuals for Aalen or Cox.aalen object") 
 else {
@@ -12,12 +13,14 @@ else {
  id <- attr(object,"id"); 
  mclusters <- attr(object,"cluster")
  X<-ldata$X; 
- time<-ldata$time2; 
+ time2<-ldata$time2; 
+ start<-ldata$time; 
  Z<-ldata$Z;  
  status<-ldata$status;
- time2 <- attr(object,"stop"); 
- start <- attr(object,"start");
- status <- attr(object,"status");
+ otime2 <- attr(object,"stop"); 
+ ostart <- attr(object,"start");
+ ostatus <- attr(object,"status");
+
  if (!is.null(attr(object,"max.time"))) status <- status*(time2< attr(object,"max.time")); 
  antpers<-nrow(X);
  if (is.null(Z)==TRUE) {npar<-TRUE; semi<-0;}  else { Z<-as.matrix(Z); npar<-FALSE; semi<-1;}

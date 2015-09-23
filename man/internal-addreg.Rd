@@ -60,7 +60,6 @@
 \alias{plot.predict}
 \alias{coef.aalen}
 \alias{cox.ipw}
-\alias{event.split}
 \alias{summary.cox.ipw}
 \alias{coef.cox.ipw}
 \alias{print.cox.ipw}
