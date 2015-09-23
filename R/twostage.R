@@ -421,11 +421,7 @@ if (!is.null(margsurv))
   }
   ## }}}
 
-  print(antpairs); 
-  print(head(pairs.rvs)); 
-  print(dim(theta.des))
-  print(dim(random.design)); 
-
+###  print(antpairs); print(head(pairs.rvs)); print(dim(theta.des)); print(dim(random.design)); 
 
   loglike <- function(par) 
   { ## {{{
