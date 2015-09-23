@@ -37,7 +37,7 @@ binomial.twostage(margbin, data = sys.parent(),
 
 \item{theta}{Starting values for variance components}
 
-\item{theta.des}{Variance component design}
+\item{theta.des}{design for dependence parameters, when pairs are given this is could be a (pairs) x (numer of parameters)  x (max number random effects) matrix}
 
 \item{var.link}{Link function for variance}
 
@@ -58,6 +58,12 @@ binomial.twostage(margbin, data = sys.parent(),
 \item{se.clusters}{clusters for iid decomposition for roubst standard errors}
 
 \item{numDeriv}{uses Fisher scoring aprox of second derivative if 0, otherwise numerical derivatives}
+
+\item{random.design}{random effect design for additive gamma modeli, when pairs are given this is a (pairs) x (2) x (max number random effects) matrix, see pairs.rvs below}
+
+\item{pairs}{matrix with rows of indeces (two-columns) for the pairs considered in the pairwise composite score, useful for case-control sampling when marginal is known.}
+
+\item{pairs.rvs}{for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair.}
 }
 \description{
 The pairwise pairwise odds ratio model provides an alternative to the alternating logistic
@@ -121,8 +127,9 @@ here using theta.des to specify these low-dimension association. Default is a di
 data(twinstut)
 twinstut0 <- subset(twinstut, tvparnr<2300000)
 twinstut <- twinstut0
+twinstut$binstut <- (twinstut$stutter=="yes")*1
 theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut)
-margbin <- glm(stutter~factor(sex)+age,data=twinstut,family=binomial())
+margbin <- glm(binstut~factor(sex)+age,data=twinstut,family=binomial())
 bin <- binomial.twostage(margbin,data=twinstut,
 		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0,
 	                 score.method="fisher.scoring")
@@ -141,7 +148,6 @@ bina <- binomial.twostage(margbin,data=twinstut,
 	                 score.method="fisher.scoring")
 summary(bina)
 
-twinstut$binstut <- (twinstut$stutter=="yes")*1
 ## refers to zygosity of first subject in eash pair : zyg1
 ## could also use zyg2 (since zyg2=zyg1 within twinpair's))
 out <- easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut,
@@ -162,8 +168,9 @@ summary(out3)
 
 ### use of clayton oakes binomial additive gamma model
 ###########################################################
+\donttest{ ## Reduce Ex.Timings
 data <- simbinClaytonOakes.family.ace(10000,2,1,beta=NULL,alpha=NULL)
-margbin <- glm(y~x,data=data,family=binomial())
+margbin <- glm(ybin~x,data=data,family=binomial())
 margbin
 
 head(data)
@@ -178,6 +185,7 @@ head(out$des.rv)
 bints <- binomial.twostage(margbin,data=data,clusters=data$cluster,detail=0,
      theta=c(2,1),var.link=0,step=1.0,random.design=out$des.rv,theta.des=out$pardes)
 summary(bints)
+}
 }
 \author{
 Thomas Scheike

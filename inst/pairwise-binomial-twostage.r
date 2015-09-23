@@ -1,54 +1,64 @@
 
 library(mets)
-###
 set.seed(100)
-data <- simClaytonOakes.family.ace(8000,2,1,0,3)
+### use of clayton oakes binomial additive gamma model
+###########################################################
+data <- simbinClaytonOakes.family.ace(10000,2,1,beta=NULL,alpha=NULL)
+str(data)
+head(data$cluster,n=200)
+aa <- margbin <- glm(ybin~x,data=data,family=binomial())
+ps <- predict(margbin,newdata=data,type="response")
+margbin
 head(data)
 data$number <- c(1,2,3,4)
 data$child <- 1*(data$number==3)
+head(data)
+
+### make ace random effects design
 out <- ace.family.design(data,member="type",id="cluster")
 out$pardes
 head(out$des.rv)
 
-### makes marginal model (same for all) 
-aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
-
-## {{{ additive gamma models with and without pair call 
-### make ace random effects design
-
-### simple random effects call 
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=0,
-        theta=c(2,1),var.link=0,step=1.0,
-        random.design=out$des.rv,theta.des=out$pardes)
-summary(ts0)
-
 ### now specify fitting via specific pairs 
+ts <- binomial.twostage(margbin,data=data,clusters=data$cluster,
+               theta=c(2,1),var.link=0,step=1.0,Nit=10,detail=1,
+               random.design=out$des.rv,
+               theta.des=out$pardes)
+summary(ts)
 
 ### first all pairs 
+###cluster.index(data$cluster)
 mm <- familycluster.index(data$cluster)
-head(mm$familypairindex,n=10)
+head(mm$familypairindex,n=20)
 pairs <- matrix(mm$familypairindex,ncol=2,byrow=TRUE)
 tail(pairs,n=12)
+head(pairs,n=12)
 ## make all pairs and pair specific design and pardes 
 ## same as ts0 but pairs specified 
-ts <- twostage(aa,data=data,clusters=data$cluster,
-               theta=c(2,1),var.link=0,step=1.0,
+
+ts <- binomial.twostage(margbin,data=data,clusters=data$cluster,
+               theta=c(2,1),var.link=0,step=1.0,Nit=10,detail=1,
                random.design=out$des.rv,
                theta.des=out$pardes,pairs=pairs)
 summary(ts)
 
+###source("../R/binomial.twostage.R"); 
 ### random sample of pairs 
-ssid <- sort(sample(1:48000,20000))
+set.seed(100)
+ssid <- sort(sample(1:60000,40000))
 ###
 ### take some of all 
-tsd <- twostage(aa,data=data,clusters=data$cluster,
+tsd <- binomial.twostage(aa,data=data,clusters=data$cluster,
                theta=c(2,1),var.link=0,step=1.0,
-               random.design=out$des.rv,iid=1,
+               random.design=out$des.rv,iid=1,Nit=10,
 	      theta.des=out$pardes,pairs=pairs[ssid,])
 summary(tsd)
+tsd$score
+tsd$Dscore
+
 
 ### same analyses but now gives only data that is used in the relevant pairs 
+head(pairs[ssid,])
 ids <- sort(unique(c(pairs[ssid,])))
 ###
 pairsids <- c(pairs[ssid,])
@@ -62,11 +72,15 @@ outid <- ace.family.design(dataid,member="type",id="cluster")
 outid$pardes
 head(outid$des.rv)
 ###
-tsdid <- twostage(aa,data=dataid,clusters=dataid$cluster,
+tsdid <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
                theta=c(2,1),var.link=0,step=1.0,
-               random.design=outid$des.rv,iid=1,
+               random.design=outid$des.rv,Nit=10,
                theta.des=outid$pardes,pairs=pair.new)
 summary(tsdid)
+
+###
+tsdid$score
+tsdid$Dscore
 ### same as tsd 
 
 
@@ -117,7 +131,7 @@ random.des[1,,]
 theta.des[1,,]
 head(rvs)
 
-tsdid2 <- twostage(aa,data=dataid,clusters=dataid$cluster,
+tsdid2 <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
                theta=c(2,1),var.link=0,step=1.0,
                random.design=random.des,
                theta.des=theta.des,pairs=pair.new,pairs.rvs=rvs)
@@ -142,7 +156,7 @@ names(out)
 out$random.des[9,,]
 out$theta.des[9,,]
 
-tsdid3 <- twostage(aa,data=dataid,clusters=dataid$cluster,
+tsdid3 <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
                theta=c(2,1),var.link=0,step=1.0,
                random.design=out$random.design,
                theta.des=out$theta.des,pairs=pair.new,pairs.rvs=out$ant.rvs)
@@ -150,108 +164,16 @@ summary(tsdid3)
 
 ### same as above  tsdid2
 
-## }}} 
 
+bin <- binomial.twostage(margbin,data=data,clusters=data$cluster,detail=0,
+ model="clayton.oakes",
+ theta=-1.3,var.link=1,step=1.0)
+summary(bin)
 
-##### simple models, test for pairs structure ## {{{ 
-
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=0,
-        theta=c(0.2),var.link=0,step=1.0)
-summary(ts0)
-
-mm <- familycluster.index(data$cluster)
-head(mm$familypairindex,n=10)
-pairs <- matrix(mm$familypairindex,ncol=2,byrow=TRUE)
-head(pairs,n=12)
-tail(pairs,n=12)
-dim(pairs)
-#
-cc <- cluster.index(data$cluster)
-###
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-        detail=0,
-        theta=c(0.2),var.link=0,step=1.0,pairs=pairs)
-summary(ts0)
-
-
-## {{{  simple models with pair call 
-
-library(mets)
-
-set.seed(100)
-data <- simClaytonOakes.family.ace(8000,2,1,0,3)
-head(data)
-data$number <- c(1,2,3,4)
-data$child <- 1*(data$number==3)
-
-### make ace random effects design
-out <- ace.family.design(data,member="type",id="cluster")
-out$pardes
-head(out$des.rv)
-
-### makes marginal model (same for all) 
-aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
-
-
-mm <- familycluster.index(data$cluster)
-head(mm$familypairindex,n=10)
-pairs <- matrix(mm$familypairindex,ncol=2,byrow=TRUE)
-head(pairs,n=12)
-tail(pairs,n=12)
-dim(pairs)
-#
-
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=1,Nit=10,
-        theta=c(0.2),var.link=0,step=1.0)
-summary(ts0)
-
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=1,Nit=10,
-        theta=c(0.2),var.link=0,step=1.0,pairs=pairs)
-summary(ts0)
-
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=1,Nit=10,
-        theta=c(0.2),var.link=0,step=1.0,model="plackett")
-summary(ts0)
-
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=1,Nit=10,
-        theta=c(0.2),var.link=0,step=1.0,model="plackett",pairs=pairs)
-summary(ts0)
-
-
-
-theta.des <- model.matrix(~x1,data=data)
-
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=1,Nit=10,theta.des=theta.des,
-        theta=c(0.2),var.link=0,step=1.0)
-summary(ts0)
-
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=1,Nit=10,theta.des=theta.des,
-        theta=c(0.2),var.link=0,step=1.0,pairs=pairs)
-summary(ts0)
-
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=1,Nit=10,theta.des=theta.des,
-        theta=c(0.2),var.link=0,step=1.0,model="plackett")
-summary(ts0)
-
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=1,Nit=10,theta.des=theta.des,
-        theta=c(0.2),var.link=0,step=1.0,model="plackett",pairs=pairs)
-summary(ts0)
-
-
-
-## }}} 
-
-
-## }}} 
+bin <- binomial.twostage(margbin,data=data,clusters=data$cluster,detail=0,
+ model="clayton.oakes",
+ theta=0.2,var.link=0,step=1.0)
+summary(bin)
 
 
 

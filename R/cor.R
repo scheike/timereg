@@ -1175,7 +1175,7 @@ plack.cif2 <- function(cif1,cif2,theta)
 } ## }}}
 
 ##' @export
-predict.pair.plack <- function(cif1,cif2,status1,status2,theta) 
+predictPairPlack <- function(cif1,cif2,status1,status2,theta) 
 { ## {{{
   theta <- exp(c(theta))
   cif1 <- c(cif1); cif2 <- c(cif2)

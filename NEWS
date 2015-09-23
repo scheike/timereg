@@ -1,6 +1,11 @@
 * Version 1.1.x
   - Truncation
-  - Two-stage gamma
+  - Two-stage additive gamma survival model. Additive random effects for two-stage survival
+    model via pairwise composite likelihood. Simulation of family ace survival model. Function
+    for computing Kendall's tau for pairs with additive gamma random effects model via simulations.
+  - Two-stage additive gamma binomial model. Additive random effects for binomial model
+    via pairwise composite likelihood. Simulation of family ace model. 
+    Function for computing pairwise concordance for for pairs with additive gamma random effects model.
   - Updated divide.conquer
   - Extra unit tests
   - force.same.cens
