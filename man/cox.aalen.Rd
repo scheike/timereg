@@ -101,7 +101,8 @@ computed within the estimation interval.
 \item{var.cum}{the martingale based pointwise variance estimates.  }
 \item{robvar.cum}{robust pointwise variances estimates.  }
 \item{gamma}{estimate of parametric components of model.  }
-\item{var.gamma}{variance for gamma.  }
+\item{var.gamma}{variance for gamma sandwhich estimator based on optional variation 
+estimator of score and 2nd derivative.}
 \item{robvar.gamma}{robust variance for gamma.  }
 \item{residuals}{list with residuals.}
 \item{obs.testBeq0}{observed absolute value of supremum of 

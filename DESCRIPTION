@@ -18,7 +18,11 @@ Depends:
     survival,
 Imports:
     lava,
-    numDeriv
+    numDeriv,
+    stats, 
+    graphics, 
+    grDevices, 
+    utils
 License: GPL (>= 2)
 Collate:
     'aalenC.r'
