@@ -210,3 +210,11 @@ export("plot.aalen",
        "coef.timecox",
        "coef.two.stage"
 )
+
+
+importFrom("grDevices", "col2rgb", "rgb")
+importFrom("graphics", "abline", "legend", "lines", "matplot", "plot", "points", "polygon", "title")
+importFrom("stats", "approx", "as.formula", "coef", "delete.response", "formula", "glm", "model.extract", "model.frame",
+   "model.matrix", "na.omit", "pchisq", "pnorm", "predict", "qnorm", "quantile", "runif", "terms", "time", "update")
+importFrom("utils", "head")
+
