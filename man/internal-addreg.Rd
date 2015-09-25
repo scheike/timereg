@@ -93,6 +93,10 @@
 \alias{timereg.formula}
 \alias{names2formula}
 \alias{twin.clustertrunc}
+\alias{vcov.aalen}
+\alias{vcov.cox.aalen}
+\alias{vcov.two.stage}
+\alias{vcov.comp.risk}
 \title{For internal use}
 \description{for internal use}
 \author{Thomas Scheike}

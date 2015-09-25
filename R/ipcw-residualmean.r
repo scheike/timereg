@@ -258,9 +258,9 @@ conservative=1,weights=NULL){
            test.procBeqC=Ut,sim.test.procBeqC=UIt,conv=conv,
 	   cens.weights=Gcx,time=time2,delta.tau=deltatau,time2tau=time2tau)
 
-  ud$call<-call; ud$model<-model; ud$n<-n; 
+  ud$call<-match.call(); ud$model<-model; ud$n<-n; 
   ud$formula<-formula; class(ud)<-"resmean"; 
-  attr(ud, "Call") <- sys.call()
+  attr(ud, "Call") <- match.call()
   attr(ud, "Formula") <- formula
   attr(ud, "time.pow") <- time.pow
   attr(ud, "cause") <- cause
@@ -359,6 +359,11 @@ summary.resmean <- function (object,digits = 3,ci=0, alpha=0.05,silent=0, ...) {
 
   out
 } ## }}}
+
+vcov.resmean <- function(object, ...) {
+  rv <- object$robvar.gamma
+  if (!identical(rv, matrix(0, nrow = 1L, ncol = 1L))) rv # else return NULL
+}
 
 plot.resmean <-  function (x, pointwise.ci=1, hw.ci=0,
                             sim.ci=0, specific.comps=FALSE,level=0.05, start.time = 0,

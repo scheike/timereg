@@ -1,4 +1,4 @@
-coefBase<- function(object, digits=3, d2logl=0,ci=0,alpha=0.05) { ## {{{
+coefBase<- function(object, digits=3, d2logl=0,ci=1,alpha=0.05) { ## {{{
   res <- cbind(object$gamma,
                diag(object$var.gamma)^0.5,
                diag(object$robvar.gamma)^0.5)

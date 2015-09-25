@@ -184,6 +184,13 @@ ylab ="Cumulative coefficients",score=FALSE,...)
                   xlab=xlab,ylab =ylab); 
 } ## }}}
 
+vcov.aalen <- function(object,robust=0, ...) {
+  if (robust==0) rv <- object$var.gamma else  rv <- object$robvar.gamma
+  if (!identical(rv, matrix(0, nrow = 1L, ncol = 1L))) rv # else return NULL
+}
+
+
+
 "print.aalen" <- function (x,...) 
 { ## {{{
 summary.aalen(x,...)

@@ -224,7 +224,7 @@ if (class(margsurv)!="coxph") {
 		names(ud$theta.score)<- rownames(ud$theta)<-"intercept" } 
 
 
-  attr(ud,"Call")<-call; 
+  attr(ud,"Call")<- match.call(); 
   class(ud)<-"two.stage"
   attr(ud,"Formula")<-formula;
   attr(ud,"id")<-id;
@@ -316,6 +316,11 @@ print.two.stage <- function (x,digits = 3,...) { ## {{{
 ###  cat(" Call: \n");
 ###  print(attr(object,'Call'))
 } ## }}}
+
+vcov.two.stage <- function(object, ...) {
+  rv <- object$robvar.gamma
+  if (!identical(rv, matrix(0, nrow = 1L, ncol = 1L))) rv # else return NULL
+}
 
 coef.two.stage<-function(object,digits=3,d2logl=1,...) { ## {{{ 
 

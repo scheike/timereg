@@ -163,6 +163,13 @@ S3method(coef,comprisk)
 S3method(predict,timereg)
 S3method(plot,cums)
 
+S3method(vcov,aalen)
+S3method(vcov,cox.aalen)
+###S3method(coef,dynreg)
+###S3method(coef,timecox)
+S3method(vcov,two.stage)
+S3method(vcov,comp.risk)
+
 export("plot.aalen",
        "plot.comprisk",
        "plot.cum.residuals",
@@ -208,7 +215,11 @@ export("plot.aalen",
        "coef.comprisk",
        "coef.dynreg",
        "coef.timecox",
-       "coef.two.stage"
+       "coef.two.stage",
+       "vcov.two.stage",
+       "vcov.comp.risk",
+       "vcov.cox.aalen",
+       "vcov.aalen"
 )
 
 

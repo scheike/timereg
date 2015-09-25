@@ -24,7 +24,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
     ###  if (model=="logistic2") trans<-7; 
     line <- 0
     cause.call <- causeS <- cause
-    m<-match.call(expand.dots=FALSE);
+    m <- match.call(expand.dots=FALSE);
     m$gamma<-m$times<-m$n.times<-m$cause<-m$Nit<-m$weighted<-m$n.sim<-
              m$model<-m$detail<- m$cens.model<-m$time.pow<-m$silent<- m$step <- 
              m$cens.formula <- m$interval<- m$clusters<-m$resample.iid<- m$monotone <- 
@@ -392,7 +392,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
            test.procBeqC=Ut,sim.test.procBeqC=UIt,conv=conv,
 	   weights=weights,cens.weights=cens.weights,scores=scores,Dscore.gamma=Dscore.gamma,step=step)
 
-    ud$call<-call; 
+    ud$call<- match.call()
     ud$model<-model; 
     ud$n<-n; 
     ud$clusters <- clusters
@@ -400,7 +400,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
     ud$response <- event.history
     ud$cause <- status
     class(ud)<-"comprisk"; 
-    attr(ud, "Call") <- call
+    attr(ud, "Call") <- match.call()
     attr(ud, "Formula") <- formula
     attr(ud, "time.pow") <- time.pow
     attr(ud, "causeS") <- causeS
@@ -481,6 +481,11 @@ summary.comprisk <- function (object,digits = 3,...) {  ## {{{
        cat("\nReadjust analyses by removing points\n\n") }
 
 } ## }}}
+
+vcov.comp.risk <- function(object, ...) {
+  rv <- object$robvar.gamma
+  if (!identical(rv, matrix(0, nrow = 1L, ncol = 1L))) rv # else return NULL
+}
 
 plot.comprisk <-  function (x, pointwise.ci=1, hw.ci=0,
                             sim.ci=0, specific.comps=FALSE,level=0.05, start.time = 0,
