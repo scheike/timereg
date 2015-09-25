@@ -256,30 +256,9 @@ summary.two.stage<-function (object,digits=3,...) { ## {{{
 
   resdep <- coef.two.stage(object,...)
 
-###  ptheta<-nrow(object$theta)
-###  sdtheta<-diag(object$var.theta)^.5
-###  if (var.link==0) {
-###      vari<-object$theta
-###      sdvar<-diag(object$var.theta)^.5
-###  }
-###  else {
-###      vari<-exp(object$theta)
-###      sdvar<-vari*diag(object$var.theta)^.5
-###  }
-###  dep<-cbind(object$theta[,1],sdtheta)
-###  walddep<-object$theta[,1]/sdtheta; 
-###  waldpdep<-(1-pnorm(abs(walddep)))*2
-###
-###  kendall<-1/(1+2/vari) 
-###  kendall.ll<-1/(1+2/(object$theta+1.96*sdvar)) 
-###  kendall.ul<-1/(1+2/(object$theta-1.96*sdvar)) 
-###  if (var.link==0) resdep<-signif(as.matrix(cbind(dep,walddep,waldpdep,kendall)),digits)
-###  else resdep<-signif(as.matrix(cbind(dep,walddep,waldpdep,vari,sdvar,kendall)),digits);
-###
-###  if (var.link==0) colnames(resdep) <- c("Variance","SE","z","P-val","Kendall's tau") 
-###  else colnames(resdep)<-c("log(Variance)","SE","z","P-val","Variance","SE Var.",
-###                           "Kendall's tau")
-  prmatrix(resdep); cat("   \n");  
+  prmatrix(resdep[,1:6,drop=FALSE]); cat("   \n");  
+
+  prmatrix(resdep[,7:9,drop=FALSE]); cat("   \n");  
 
   if (attr(object,"marg.model")!="coxph")
   if (attr(object,"beta.fixed")==0) { ## {{{ 
@@ -348,15 +327,15 @@ coef.two.stage<-function(object,digits=3,d2logl=1,alpha=0.05,...) { ## {{{
   waldpdep<-(1-pnorm(abs(walddep)))*2
 
   kendall<-1/(1+2/vari) 
-  kendall.ll<-1/(1+2/(object$theta+1.96*sdvar)) 
-  kendall.ul<-1/(1+2/(object$theta-1.96*sdvar)) 
-  if (var.link==0) resdep<-signif(as.matrix(cbind(dep,lower,upper,walddep,waldpdep,kendall)),digits)
-  else resdep<-signif(as.matrix(cbind(dep,lower,upper,walddep,waldpdep,vari,sdvar,kendall)),digits);
+  kendall.ll<-1/(1+2/(object$theta+qnorm(alpha/2)*sdvar)) 
+  kendall.ul<-1/(1+2/(object$theta-qnorm(alpha/2)*sdvar)) 
+  if (var.link==0) resdep<-signif(as.matrix(cbind(dep,lower,upper,walddep,waldpdep,kendall,kendall.ll,kendall.ul)),digits)
+  else resdep<-signif(as.matrix(cbind(dep,lower,upper,walddep,waldpdep,vari,sdvar,kendall,kendall.ll,kendall.ul)),digits);
 
   slower <- paste("lower",signif(100*alpha/2,2),"%",sep="")
   supper <- paste("upper",signif(100*(1-alpha/2),3),"%",sep="")
-  if (var.link==0) colnames(resdep) <- c("Variance","SE",slower,supper,"z","P-val","Kendall's tau") 
-  else colnames(resdep)<-c("log(Variance)","SE",slower,supper,"z","P-val","Variance","SE Var.","Kendall's tau")
+  if (var.link==0) colnames(resdep) <- c("Variance","SE",slower,supper,"z","P-val","Kendall's tau",slower,supper) 
+  else colnames(resdep)<-c("log(Variance)","SE",slower,supper,"z","P-val","Variance","SE Var.","Kendall's tau",slower,supper)
 
 ###  prmatrix(resdep); cat("   \n");  
   return(resdep)
