@@ -7,8 +7,11 @@ coefBase<- function(object, digits=3, d2logl=0,ci=1,alpha=0.05) { ## {{{
   waldp <- (1 - pnorm(abs(wald))) * 2
   res <- round(as.matrix(cbind(res, wald, waldp)),digits=digits)
   if (d2logl==1) colnames(res) <- c("Coef.", "SE", "Robust SE","D2log(L)^-1","z","P-val") else colnames(res) <- c("Coef.", "SE", "Robust SE", "z", "P-val")
-  if (ci==1) {res <- round(cbind(res,res[,1]+qnorm(alpha/2)*res[,2],res[,1]+qnorm(1-alpha/2)*res[,2]),digits=digits); 
-               nn <- ncol(res); colnames(res)[(nn-1):nn] <- c("lower","upper")
+  if (ci==1) {
+     slower <- paste("lower",signif(100*alpha/2,2),"%",sep="")
+     supper <- paste("upper",signif(100*(1-alpha/2),3),"%",sep="")
+     res <- round(cbind(res,res[,1]+qnorm(alpha/2)*res[,2],res[,1]+qnorm(1-alpha/2)*res[,2]),digits=digits); 
+     nn <- ncol(res); colnames(res)[(nn-1):nn] <- c(slower,supper)
   }
 ###  prmatrix(signif(res, digits))
   return(res)

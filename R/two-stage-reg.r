@@ -242,7 +242,7 @@ if (class(margsurv)!="coxph") {
   ## }}} 
 } ## }}} 
   
-  summary.two.stage<-function (object,digits = 3,...) { ## {{{ 
+summary.two.stage<-function (object,digits=3,...) { ## {{{ 
 
   if (!(inherits(object, 'two.stage') )) stop("Must be a Two-Stage object")
   prop<-TRUE; 
@@ -254,29 +254,31 @@ if (class(margsurv)!="coxph") {
   if (sum(abs(object$theta.score)>0.000001) ) 
     cat("Variance parameters did not converge, allow more iterations\n\n"); 
 
-  ptheta<-nrow(object$theta)
-  sdtheta<-diag(object$var.theta)^.5
-  if (var.link==0) {
-      vari<-object$theta
-      sdvar<-diag(object$var.theta)^.5
-  }
-  else {
-      vari<-exp(object$theta)
-      sdvar<-vari*diag(object$var.theta)^.5
-  }
-  dep<-cbind(object$theta[,1],sdtheta)
-  walddep<-object$theta[,1]/sdtheta; 
-  waldpdep<-(1-pnorm(abs(walddep)))*2
+  resdep <- coef.two.stage(object,...)
 
-  kendall<-1/(1+2/vari) 
-  kendall.ll<-1/(1+2/(object$theta+1.96*sdvar)) 
-  kendall.ul<-1/(1+2/(object$theta-1.96*sdvar)) 
-  if (var.link==0) resdep<-signif(as.matrix(cbind(dep,walddep,waldpdep,kendall)),digits)
-  else resdep<-signif(as.matrix(cbind(dep,walddep,waldpdep,vari,sdvar,kendall)),digits);
-
-  if (var.link==0) colnames(resdep) <- c("Variance","SE","z","P-val","Kendall's tau") 
-  else colnames(resdep)<-c("log(Variance)","SE","z","P-val","Variance","SE Var.",
-                           "Kendall's tau")
+###  ptheta<-nrow(object$theta)
+###  sdtheta<-diag(object$var.theta)^.5
+###  if (var.link==0) {
+###      vari<-object$theta
+###      sdvar<-diag(object$var.theta)^.5
+###  }
+###  else {
+###      vari<-exp(object$theta)
+###      sdvar<-vari*diag(object$var.theta)^.5
+###  }
+###  dep<-cbind(object$theta[,1],sdtheta)
+###  walddep<-object$theta[,1]/sdtheta; 
+###  waldpdep<-(1-pnorm(abs(walddep)))*2
+###
+###  kendall<-1/(1+2/vari) 
+###  kendall.ll<-1/(1+2/(object$theta+1.96*sdvar)) 
+###  kendall.ul<-1/(1+2/(object$theta-1.96*sdvar)) 
+###  if (var.link==0) resdep<-signif(as.matrix(cbind(dep,walddep,waldpdep,kendall)),digits)
+###  else resdep<-signif(as.matrix(cbind(dep,walddep,waldpdep,vari,sdvar,kendall)),digits);
+###
+###  if (var.link==0) colnames(resdep) <- c("Variance","SE","z","P-val","Kendall's tau") 
+###  else colnames(resdep)<-c("log(Variance)","SE","z","P-val","Variance","SE Var.",
+###                           "Kendall's tau")
   prmatrix(resdep); cat("   \n");  
 
   if (attr(object,"marg.model")!="coxph")
@@ -322,7 +324,7 @@ vcov.two.stage <- function(object, ...) {
   if (!identical(rv, matrix(0, nrow = 1L, ncol = 1L))) rv # else return NULL
 }
 
-coef.two.stage<-function(object,digits=3,d2logl=1,...) { ## {{{ 
+coef.two.stage<-function(object,digits=3,d2logl=1,alpha=0.05,...) { ## {{{ 
 
   if (!(inherits(object, 'two.stage') )) stop("Must be a Two-Stage object")
   var.link <- attr(object,"var.link")
@@ -332,10 +334,14 @@ coef.two.stage<-function(object,digits=3,d2logl=1,...) { ## {{{
   if (var.link==0) {
       vari<-object$theta
       sdvar<-diag(object$var.theta)^.5
+      upper <- object$theta-qnorm(alpha/2)*sdvar
+      lower <- object$theta+qnorm(alpha/2)*sdvar
   }
   else {
       vari<-exp(object$theta)
       sdvar<-vari*diag(object$var.theta)^.5
+      upper <- exp(object$theta-qnorm(alpha/2)*sdtheta)
+      lower <- exp(object$theta+qnorm(alpha/2)*sdtheta)
   }
   dep<-cbind(object$theta[,1],sdtheta)
   walddep<-object$theta[,1]/sdtheta; 
@@ -344,11 +350,14 @@ coef.two.stage<-function(object,digits=3,d2logl=1,...) { ## {{{
   kendall<-1/(1+2/vari) 
   kendall.ll<-1/(1+2/(object$theta+1.96*sdvar)) 
   kendall.ul<-1/(1+2/(object$theta-1.96*sdvar)) 
-  if (var.link==0) resdep<-signif(as.matrix(cbind(dep,walddep,waldpdep,kendall)),digits)
-  else resdep<-signif(as.matrix(cbind(dep,walddep,waldpdep,vari,sdvar,kendall)),digits);
+  if (var.link==0) resdep<-signif(as.matrix(cbind(dep,lower,upper,walddep,waldpdep,kendall)),digits)
+  else resdep<-signif(as.matrix(cbind(dep,lower,upper,walddep,waldpdep,vari,sdvar,kendall)),digits);
 
-  if (var.link==0) colnames(resdep) <- c("Variance","SE","z","P-val","Kendall's tau") 
-  else colnames(resdep)<-c("log(Variance)","SE","z","P-val","Variance","SE Var.","Kendall's tau")
+  slower <- paste("lower",signif(100*alpha/2,2),"%",sep="")
+  supper <- paste("upper",signif(100*(1-alpha/2),3),"%",sep="")
+  if (var.link==0) colnames(resdep) <- c("Variance","SE",slower,supper,"z","P-val","Kendall's tau") 
+  else colnames(resdep)<-c("log(Variance)","SE",slower,supper,"z","P-val","Variance","SE Var.","Kendall's tau")
+
 ###  prmatrix(resdep); cat("   \n");  
   return(resdep)
 } ## }}} 
