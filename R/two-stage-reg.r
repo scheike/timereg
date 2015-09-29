@@ -5,8 +5,9 @@ Nit=60,detail=0,start.time=0,max.time=NULL,id=NULL,clusters=NULL,
 robust=1,theta=NULL,theta.des=NULL,var.link=0,step=0.5,notaylor=0,se.clusters=NULL)
 { ## {{{
 ## {{{ seting up design and variables
-rate.sim <- 1; 
-if (class(margsurv)!="coxph") {
+rate.sim <- 1; secluster <- NULL
+
+if (class(margsurv)!="coxph") { ## {{{ 
  formula<-attr(margsurv,"Formula");
  beta.fixed <- attr(margsurv,"beta.fixed")
  if (is.null(beta.fixed)) beta.fixed <- 1; 
@@ -23,6 +24,7 @@ if (class(margsurv)!="coxph") {
  if (is.null(Z)==TRUE) {npar<-TRUE; semi<-0;}  else { Z<-as.matrix(Z); npar<-FALSE; semi<-1;}
  if (npar==TRUE) {Z<-matrix(0,antpers,1); pz<-1; fixed<-0;} else {fixed<-1;pz<-ncol(Z);}
  px<-ncol(X);
+
  if (is.null(clusters) && is.null(mclusters)) 
 	 stop("No cluster variabel specified in marginal or twostage call \n"); 
  if (is.null(clusters)) { clusters <- mclusters; cluster.call <- cluster.call} else {cluster.call <- clusters;}
@@ -37,6 +39,7 @@ if (class(margsurv)!="coxph") {
  if (is.null(cluster.call)) notaylor <- 1
  if (is.null(margsurv$gamma.iid)) notaylor <- 1
 
+ ## }}} 
 } else { ## coxph ## {{{ 
   notaylor <- 1
   antpers <- margsurv$n
@@ -60,14 +63,8 @@ if (class(margsurv)!="coxph") {
    beta.fixed <- 0
    semi <- 1
    start.time <- 0
-   if (is.null(se.clusters)) secluster <- clusters;
-   antsecluster <- length(unique(secluster))
-   if (is.numeric(secluster)) secluster <-  sindex.prodlim(unique(secluster),secluster)-1 else  {
-       clusters <- as.integer(factor(clusters, labels = 1:antsecluster))-1
-   }
 }  ## }}} 
 
- if (length(clusters)!=length(secluster)) stop("length of se.clusters not consistent with cluster length\n"); 
 
   if (anyNA(clusters)) stop("Missing values in cluster varaibles\n"); 
   out.clust <- cluster.index(clusters);  
@@ -77,6 +74,17 @@ if (class(margsurv)!="coxph") {
   idiclust <- out.clust$idclust
   cluster.size <- out.clust$cluster.size
 
+  ### setting secluster after cluster.index call to deal with characters 
+  if (class(margsurv)=="coxph") {
+  if (is.null(se.clusters) & is.null(secluster) ) secluster <- clusters;
+  antsecluster <- length(unique(secluster))
+  if (is.numeric(secluster)) secluster <-  sindex.prodlim(unique(secluster),secluster)-1 else  {
+       clusters <- as.integer(factor(clusters, labels = 1:antsecluster))-1
+  }
+  }
+
+ if (length(clusters)!=length(secluster)) stop("length of se.clusters not consistent with cluster length\n"); 
+   
   if (sum(abs(start))>0) lefttrunk <- 1  else lefttrunk <- 0;  
   cumhazleft <- 0; 
   RR <-  rep(1,antpers); 
@@ -177,6 +185,12 @@ if (class(margsurv)!="coxph") {
   theta.iid <- matrix(0,antsecluster,ptheta)
   ## }}}
 
+
+###  print(ant.clust)
+###  print(dim(idiclust))
+###  print(sum(is.na(idiclust)))
+###  print(table(clusters))
+###  print(table(secluster))
   
   DUbeta <- matrix(0,pz,ptheta); 
   nparout <- .C("twostagereg", 
