@@ -316,6 +316,7 @@ if (!is.null(margsurv))
   clusterindex <- out.clust$idclust
   clustsize <- out.clust$cluster.size
   call.secluster <- se.clusters
+
   if (is.null(se.clusters)) { se.clusters <- clusters; antiid <- nrow(clusterindex);} else  {
       iids <-  unique(se.clusters); 
       antiid <- length(iids); 
@@ -367,8 +368,8 @@ if (!is.null(margsurv))
   }
   theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
   if (length(dim(theta.des))!=3) theta.des <- as.matrix(theta.des)
-  print(dim(theta.des))
-  print(dim(random.design))
+###  print(dim(theta.des))
+###  print(dim(random.design))
 
   if (maxclust==1) stop("No clusters, maxclust size=1\n"); 
 
@@ -396,7 +397,7 @@ if (!is.null(margsurv))
        }
        if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))!=3) )
        {
-	       print("laver 3-dim design "); 
+###	       print("laver 3-dim design "); 
           Ptheta.des <- array(0,c(antpairs,nrow(theta.des),ncol(theta.des)))
           rv.des <- array(0,c(antpairs,2,ncol(random.design)))
           for (i in 1:antpairs) {
