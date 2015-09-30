@@ -774,7 +774,7 @@ for (j=0;j<antclust;j++) {
 	ll=claytonoakesbinRVC(etheta,thetades,ci,ck,Li,Lk,rv1,rv2,dplackt);
         ssf+=weights(i)*log(ll); 
 	loglikecont=log(ll);
-	if (j<-10)  printf("%lf %d \n",loglikecont,i); 
+	if (j<-10)  Rprintf("%lf %d \n",loglikecont,i); 
 
 	   if (varlink==1) dplackt=dplackt % etheta;  vthetascore=dplackt/ll; 
 
