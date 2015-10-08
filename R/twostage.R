@@ -422,7 +422,7 @@ if (!is.null(margsurv))
   }
   ## }}}
 
-###  print(antpairs); print(head(pairs.rvs)); print(dim(theta.des)); print(dim(random.design)); 
+  print(antpairs); print(head(pairs.rvs)); print(dim(theta.des)); print(dim(random.design)); 
 
   loglike <- function(par) 
   { ## {{{
@@ -631,7 +631,7 @@ summary.twostage <-function (object,digits = 3,silent=0,...) { ## {{{
 
   coefs <- coef.twostage(object,response=response,...);
 
-  if (attr(object,"additive-gamma")==1) {
+  if (attr(object,"additive-gamma")==1 & (!is.null(object$robvar.theta))  ) {
       var.link <- attr(object,"var.link"); 
       rv1 <- attr(object,"rv1"); 
       theta.des <- attr(object,"pardes"); 
@@ -667,7 +667,7 @@ coef.twostage <- function(object,var.link=NULL,response="survival",...)
   if (is.null(var.link))
      if (attr(object,"var.link")==1) vlink <- 1 else vlink <- 0
      else vlink <- var.link
-  se<-diag(object$robvar.theta)^0.5
+     if (is.null(object$robvar.theta)) se  <-  diag(object$var.theta)^.5 else se<-diag(object$robvar.theta)^0.5
   res <- cbind(theta, se )
   wald <- theta/se
   waldp <- (1 - pnorm(abs(wald))) * 2
@@ -806,9 +806,15 @@ if (type=="ace") {
 theta.des  <- array(0,c(nrow(pairs),4,2))
 random.des <- array(0,c(nrow(pairs),2,4))
 }
+
+if (type=="ae") {
+theta.des  <- array(0,c(nrow(pairs),3,1))
+random.des <- array(0,c(nrow(pairs),2,3))
+}
+
 rvs <- c()
 for (i in 1:nrow(pairs))
-{
+{ 
 	if (type=="ace") {
          ### only 3 random variables for ace 
          ### (gene, shared, non-shared, environment
@@ -820,6 +826,14 @@ for (i in 1:nrow(pairs))
        	 random.des[i,,] <- rbind(c(1,1,0,1),c(1,0,1,1))
 	 rvs <- c(rvs,4)
 	} 
+        if (type=="ae") {
+         ### only 2 random variables for ace 
+         ### (gene, shared, not-shared  
+         ### kinship gives amount of genes shared 
+	 theta.des[i,,] <- matrix(c(kinship[i],1-kinship[i],1-kinship[i]),nrow=3,ncol=1)
+       	 random.des[i,,] <- rbind(c(1,1,0),c(1,0,1))
+	 rvs <- c(rvs,3)
+	}
 } 
 
 return(list(random.design=random.des,theta.des=theta.des,ant.rvs=rvs))
