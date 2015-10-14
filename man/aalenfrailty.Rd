@@ -32,19 +32,25 @@ Additive hazards model with (gamma) frailty
 Aalen frailty model
 }
 \examples{
-dd <- simAalenFrailty(5000)
+	library(mets)
+dd <- simAalenFrailty(10000,beta=0)
+head(dd)
+dropid <- duplicated(dd$id)
+dd <- dd[!dropid,]
+table(dd$id)
 f <- ~1##+x
 X <- model.matrix(f,dd) ## design matrix for non-parametric terms
 system.time(out<-aalen(update(f,Surv(time,status)~.),dd,n.sim=0,robust=0))
 dix <- which(dd$status==1)
 t1 <- system.time(bb <- .Call("Bhat",as.integer(dd$status),
-                              X,0.2,as.integer(dd$id),NULL,NULL,-1,
-                              package="mets"))
+     X,0.3,as.integer(dd$id),NULL,NULL,-1,package="mets"))
 spec <- 1
-##plot(out,spec=spec)
-## plot(dd$time[dix],bb$B2[,spec],col="red",type="s",
-##      ylim=c(0,max(dd$time)*c(beta0,beta)[spec]))
-## abline(a=0,b=c(beta0,beta)[spec])
+beta0 <- 1.5
+beta0 <- 1
+plot(out,spec=spec)
+ plot(dd$time[dix],bb$B2[,spec],col="red",type="s")
+###      ylim=c(0,max(dd$time)*c(beta0,beta)[spec]))
+ abline(a=0,b=c(beta0,beta)[spec])
 ##'
 
 \dontrun{

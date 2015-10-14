@@ -1629,6 +1629,10 @@ RcppExport SEXP twostageloglikeRVpairs(
  IntegerVector arrayDims1(idimthetades); 
  IntegerVector arrayDD(3); 
 //printf(" mig thetades 222222\n"); 
+
+
+//printf(" %d %d %d \n",arrayDims1[0],arrayDims1[1],arrayDims1[2]); 
+
  if (depmodel==3)  {
 	 arrayDD[0]=arrayDims1[0]; arrayDD[1]=arrayDims1[1]; arrayDD[2]=arrayDims1[2];  }
  else { arrayDD[0]=1; arrayDD[1]=1; arrayDD[2]=1;  }
@@ -1839,16 +1843,23 @@ for (j=0;j<antclust;j++) {
 	   
 	// 3-dimensional array pairs*(2xrandom effects)
         int lnrv= nrvs(j)-1; // number of random effects for this cluster 	
-//	printf(" %d \n",lnrv); 
+
         rv1= rvdesC.subcube( span(j),span(0),span(0,lnrv));
         rv2= rvdesC.subcube( span(j),span(1),span(0,lnrv));
 
 	// takes parameter relations for each pair
 	// 3-dimensional array pairs*(random effects* pars )
-	mat thetades=thetadesi.subcube( span(j),span(0,lnrv),span::all);
-	if (j< -1)  {
+//	mat thetades=thetadesi.subcube( span(j),span(0,lnrv),span::all);
+	mat thetadesv=thetadesi.subcube( span(j),span(0,lnrv),span(0,pt-1));
+	mat thetades=mat(thetadesv.begin(),nrvs(j),pt); 
+
+	if (j< 0)  {
+	   Rprintf(" %d %d \n",lnrv,pt); 
            rv1.print("rv1");    rv2.print("rv2"); 
-	   thetades.print("thetades j "); 
+	   thetades.print("thetades "); 
+	   etheta.print("e-theta"); 
+	   mat test=mat(thetades.begin(),3,1); 
+	   test.print("test"); 
 	}
 
            if (trunkp(i)<1 || trunkp(k)<1) { //  
@@ -1868,7 +1879,6 @@ for (j=0;j<antclust;j++) {
 		   // 
 	   } else {
 		   ll=claytonoakesRVC(etheta,thetades,ci,ck,Li,Lk,rv1,rv2,dplackt);
-		   likepairs(j)=ll; 
 		   ssf+=weights(i)*log(ll); 
 		   loglikecont=log(ll);
 //		   printf("%lf %lf \n",weights(i),ll); 
@@ -1921,17 +1931,18 @@ for (j=0;j<antclust;j++) {
 
      } //  strata(i)==strata(k) indenfor strata
 
+if (iid==1)  likepairs(j)=ll; 
 
 } /* j in antpairs */ 
 
 //printf("Sum of squares %lf \n",ssf); theta.print("theta"); Utheta.print("Utheta"); DUtheta.print("DUtheta"); 
 List res; 
 res["loglike"]=ssf; 
-res["likepairs"]=likepairs; 
 res["score"]=Utheta; 
 res["Dscore"]=DUtheta; 
 if (iid==1) { res["theta.iid"]=thetiid; 
 	      res["loglikeiid"]=loglikeiid; 
+              res["likepairs"]=likepairs; 
             }
 
 return(res); 

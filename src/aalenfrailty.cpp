@@ -1,6 +1,7 @@
 #include <RcppArmadillo.h>
 #include <Rmath.h>
 #include <cmath>
+#include "twostage.h"
 
 using namespace arma;
 
@@ -9,7 +10,7 @@ RcppExport SEXP Bhat(SEXP ds,
 		     SEXP theta, 		     
 		     SEXP id, 
 		     SEXP ididx,
-		     SEXP idsize) {
+		     SEXP idsize) { // {{{ 
   try {
 
     uvec           event = Rcpp::as<uvec>(ds); 
@@ -87,12 +88,10 @@ RcppExport SEXP Bhat(SEXP ds,
     ::Rf_error( "c++ exception (unknown reason)" ); 
   }
   return R_NilValue; // -Wall
-}
-
-
+} // }}}
 
 RcppExport SEXP Uhat(SEXP ds, SEXP H, SEXP theta, SEXP id, SEXP idsize) {
-  try {
+  try { // {{{ 
     uvec                event = Rcpp::as<uvec>(ds);
     vec                   Hij = Rcpp::as<vec>(H);
     double           thetahat = Rcpp::as<double>(theta);
@@ -132,5 +131,96 @@ RcppExport SEXP Uhat(SEXP ds, SEXP H, SEXP theta, SEXP id, SEXP idsize) {
     ::Rf_error( "c++ exception (unknown reason)" ); 
   }
   return R_NilValue; // -Wall
-}
+} // }}} 
+
+
+RcppExport SEXP Bhatprobandpairs( SEXP ds, SEXP Xs, SEXP theta, 		     SEXP id, 
+		     SEXP ididx, SEXP idsize, 
+		     SEXP iweights
+//		     SEXP istatusproband, SEXP itimeproband, SEXP rvdes, SEXP thetades, SEXP antrvs
+		     ) 
+{ // {{{ 
+  try {
+
+    uvec           event = Rcpp::as<uvec>(ds); 
+    mat                X = Rcpp::as<mat>(Xs);
+    mat               Xc = zeros<mat>(X.n_cols,X.n_cols);
+    double      thetahat = Rcpp::as<double>(theta);
+    unsigned  stop,start = X.n_rows;
+    uvec        eventpos = find(event==1);
+    mat               dB = zeros(eventpos.n_elem,X.n_cols);
+    uvec         cluster = Rcpp::as<uvec>(id);
+    vec          weights = Rcpp::as<vec>(iweights);
+//    vec          timeproband   = Rcpp::as<vec>(itimeproband);
+//    uvec         statusproband = Rcpp::as<uvec>(istatusproband);
+
+    uvec clustersize, clustpos;
+    umat clusterindex;
+    bool doclust = (Rf_isNull)(idsize);
+    if (!doclust)  {
+      clustersize        = Rcpp::as<uvec>(idsize);
+      clusterindex       = Rcpp::as<umat>(ididx);
+    }
+
+    // Obtain usual estimates of increments, dB, of the
+    // cumulative time-varying effects in Aalens Additive Model
+    for (unsigned ij=0; ij<eventpos.n_elem; ij++) {
+      unsigned rij = eventpos.n_rows-ij-1;
+      stop  = start-1;
+      start = eventpos(rij);
+      mat Xij = X(span(start,stop), span::all);
+      Xc = Xc + Xij.st()*Xij;
+      mat U, V; vec s; 
+      svd(U,s,V,Xc);
+      mat Xci = U*diagmat(1/s)*V.st();
+      dB.row(rij) = trans(Xci*trans(X.row(start)));
+    }
+    if (thetahat==0) {
+      return(Rcpp::List::create(Rcpp::Named("dB")=dB)); //Increments of marg. aalenn
+    }
+
+
+    vec       Hij(X.n_rows); // Vector to hold cumulative hazard; updated as t increases
+    Hij.fill(0);
+    mat        B2 = zeros(eventpos.n_elem,X.n_cols); // Cond. cumulative coef 
+    for (unsigned k=0; k<eventpos.n_elem; k++) { // Iterate over events
+      unsigned ij = eventpos(k);
+      unsigned i = cluster(ij);  // cluster
+      if (doclust) {
+         clustpos = find(cluster==i); // position of within cluster observations
+      } else {
+        unsigned csize = clustersize(i);
+        clustpos  = conv_to<uvec>::from(clusterindex.submat(i,0,i,csize-1));
+      }
+      uvec posL = find(clustpos<ij); // earlier events/censoring within cluster
+      uvec posR = find(clustpos>=ij); // later/current events within cluster
+      unsigned Ni = 0; // Number of events in cluster before current event,time t-
+      double Hi = 0 ; // Sum of cum.haz. within cluster up to time t-
+
+//      if (posL.n_elem>0) {
+//	Ni = sum(event.elem(clustpos.elem(posL)));
+//	Hi = sum(Hij.elem(clustpos.elem(posL)));
+//      }
+//      uvec pos;
+//      if (posR.n_elem>0 && k>0) {
+//	pos = clustpos.elem(posR);
+//	mat Xi = X.rows(pos);
+//	Hij.elem(pos) = Xi*trans(B2.row(k-1));
+//	Hi += sum(Hij.elem(pos));
+//      }
+
+      B2.row(k) = dB.row(k)*weights(k);
+      if (k>0) { B2.row(k) += B2.row(k-1); }
+    }
+    return(Rcpp::List::create(Rcpp::Named("dB")=dB, //Increments of marg. aalen
+			      Rcpp::Named("B2")=B2  // Cum.coef of frailty aalen
+			      ));
+  } catch( std::exception &ex ) {
+    forward_exception_to_r( ex );
+  } catch(...) {  
+    ::Rf_error( "c++ exception (unknown reason)" ); 
+  }
+  return R_NilValue; // -Wall
+} // }}}
+
 

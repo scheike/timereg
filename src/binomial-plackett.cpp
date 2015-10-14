@@ -426,6 +426,7 @@ RcppExport SEXP twostageloglikebin(
   // }}}
   
 //  double claytonoakesbinRVC(); 
+  colvec likepairs(antclust); 
 
 for (j=0;j<antclust;j++) if (clustsize(j)>=2) { 
 
@@ -531,6 +532,7 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 
   } /* for (c=0....... */   // }}}
 
+if (iid==1)  likepairs(j)=loglikecont; 
 } /* j in antclust */ 
 
 //printf("Sum of squares %lf \n",ssf);theta.print("theta");Utheta.print("Utheta");DUtheta.print("DUtheta"); 
@@ -540,8 +542,8 @@ res["score"]=Utheta;
 res["Dscore"]=DUtheta; 
 if (iid==1) { res["theta.iid"]=thetiid; 
 	      res["loglikeiid"]=loglikeiid; 
+              res["likepairs"]=likepairs; 
             }
-
 
 return(res); 
 } // }}}
@@ -774,7 +776,7 @@ for (j=0;j<antclust;j++) {
 	ll=claytonoakesbinRVC(etheta,thetades,ci,ck,Li,Lk,rv1,rv2,dplackt);
         ssf+=weights(i)*log(ll); 
 	loglikecont=log(ll);
-	if (j<-10)  printf("%lf %d \n",loglikecont,i); 
+	if (j<-10)  Rprintf("%lf %d \n",loglikecont,i); 
 
 	   if (varlink==1) dplackt=dplackt % etheta;  vthetascore=dplackt/ll; 
 
@@ -795,6 +797,7 @@ for (j=0;j<antclust;j++) {
 	   if (varlink==1) diff=deppar*dplack(0)/ll; 
 	   if (varlink==0) diff=dplack(0)/ll;
 	} // }}}
+
 
 
 //   printf(" hej \n"); 
@@ -823,6 +826,7 @@ for (j=0;j<antclust;j++) {
 
 //   printf(" hej 2 \n"); 
 
+if (iid==1)  likepairs(j)=ll; 
 } /* j in antclust */ 
 
 //printf("Sum of squares %lf \n",ssf);theta.print("theta");Utheta.print("Utheta");DUtheta.print("DUtheta"); 
@@ -832,6 +836,7 @@ res["score"]=Utheta;
 res["Dscore"]=DUtheta; 
 if (iid==1) { res["theta.iid"]=thetiid; 
 	      res["loglikeiid"]=loglikeiid; 
+              res["likepairs"]=likepairs; 
             }
 
 

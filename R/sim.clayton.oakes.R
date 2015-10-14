@@ -164,6 +164,7 @@ names(ud)<-c("time","status","x1","cluster","zyg","mintime","lefttime","truncate
 return(ud)
 } ## }}} 
 
+
 ##' @export
 simClaytonOakes.family.ace <- function(K,varg,varc,beta,stoptime,lam0=0.5,Cvar=0,left=0,pairleft=0,trunc.prob=0.5)  ## {{{ 
 {
@@ -258,6 +259,43 @@ kendall.ClaytonOakes.twin.ace <- function(parg,parc,K=10000)  ## {{{
 
   return(list(mz.kendall=mz.kendall,dz.kendall=dz.kendall))
 } ## }}} 
+
+
+##' @export
+kendall.normal.twin.ace <- function(parg,parc,K=10000)  ## {{{ 
+{
+  ## K antal clustre, n=antal i clustre
+  ### total variance of gene and env. 
+  ###  K <- 10; varg <- 1; varc <- 1; 
+  ###  random effects with 
+  ###  means varg/(varg+varc) and variances varg/(varg+varc)^2
+  K <- K*2
+  Gams1 <-cbind( parg^.5*rnorm(K,parg), (parg*0.5)^.5*rnorm(K), 
+                 (parg*0.5)^.5*rnorm(K), (parg*0.5)^.5*rnorm(K), parc^.5*rnorm(K) )
+  mz <- c(rep(1,K/2),rep(0,K/2)); 
+  dz <- 1-mz;
+  id <- rep(1:(K/2),each=2)
+  mzrv <-  Gams1[,1]+Gams1[,5]           ### shared gene + env 
+  dzrv1 <- Gams1[,2]+Gams1[,3]+Gams1[,5] ### 0.5 shared gene + 0.5 non-shared + env 
+  dzrv2 <- Gams1[,2]+Gams1[,4]+Gams1[,5] ### 0.5 shared gene + 0.5 non-shared + env 
+  Gam1 <- cbind(mz*mzrv+dz*dzrv1,mz*mzrv+dz*dzrv2)
+  Gam1 <- data.frame(cbind(exp(Gam1),mz,id))
+
+  gams.pair <- fast.reshape(Gam1,id="id")
+  gams.pair <-  transform(gams.pair,
+              kendall = ((V11-V12)*(V21-V22))/((V11+V12)*(V21+V22))
+  )
+
+  kendall <- gams.pair$kendall
+  mz <- gams.pair$mz1
+  mz.kendall <- mean(kendall[mz==1])
+  dz.kendall <- mean(kendall[mz==0])
+
+  return(list(mz.kendall=mz.kendall,dz.kendall=dz.kendall))
+} ## }}} 
+
+
+
 ##
 ###kendall.ClaytonOakes.twin.ace(2,0)
 
