@@ -182,7 +182,7 @@ bptwin <- function(x, data, id, zyg, DZ, group=NULL,
   ACDU <- sapply(c("a","c","d","e","u"),function(x) length(grep(x,tolower(type)))>0)
   ACDU <- c(ACDU,os=OSon)
 
-  if (missing(varlink) || !is.null(varlink)) {
+  if (missing(varlink) || (!is.null(varlink) && varlink%in%"log")) {
       mytr <- exp; dmytr <- exp; myinvtr <- log
       trname <- "exp"; invtrname <- "log"
   } else {
