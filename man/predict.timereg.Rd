@@ -65,7 +65,6 @@ models for survival data, Springer.
 }
 \author{Thomas Scheike, Jeremy Silver}
 \examples{
-library(timereg)
 data(bmt); 
 
 add<-comp.risk(Event(time,cause)~platelet+age+tcell,data=bmt,cause=1)
@@ -106,6 +105,7 @@ plot(pout,multiple=0,se=1,uniform=1,col=1:2)
 pout<-predict(out,uniform=0,se=0,newdata=sTRACE[1:10,]) 
 plot(pout,multiple=1,se=0,uniform=0)
 
+#### cox.aalen
 out<-cox.aalen(Surv(time,status==9)~prop(age)+prop(sex)+
 prop(diabetes)+chf+vf,
 data=sTRACE,max.time=7,n.sim=0,resample.iid=1)

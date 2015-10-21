@@ -76,8 +76,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
   if(inherits(object,'aalen')) { modelType <- 'aalen';
   } else if(inherits(object,'comprisk')) { modelType <- object$model;
   } else if(inherits(object,'cox.aalen')) { 
-	  if (is.null(object$prop.odds)) modelType <- 'cox.aalen' else  modelType <- 'prop.odds'; 
-	  
+	  if (object$prop.odds==0) modelType <- 'cox.aalen' else  modelType <- 'prop.odds'; 
   }
   type <- "na"
   if (modelType=="prop.odds")  type <- attr(object,'type')
@@ -146,6 +145,9 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     if (!is.null(times)) {time.coef<-Cpred(time.coef,times); iidtimechange <- 1; iidtime <- object$cum[,1];} 
     ### SE based on iid decomposition so uses time-resolution for cox.aalen model 
     if (modelType=="cox.aalen" && (!is.null(object$time.sim.resolution)) && (se==TRUE)) 
+    { iidtime <- object$time.sim.resolution; iidtimechange <- 1} 
+    ## prop.odds via cox.aalen
+    if (modelType=="prop.odds" && (!is.null(object$time.sim.resolution)) && (se==TRUE)) 
     { iidtime <- object$time.sim.resolution; iidtimechange <- 1} 
 
     ## }}} 
@@ -276,8 +278,12 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
 	else if (modelType=="prop" || modelType=="rcif") { tmp<-RR*tmp+RR*tmp.const; } 
 	else if (modelType=="logistic" || modelType=="rcif2") { tmp<-RR*tmp+RR*cumhaz*tmp.const; } 
 	else if (modelType=="logistic2") { tmp<-RR*tmp+RR*cumhaz*tmp.const; } 
-	else if (modelType=="cox.aalen") { tmp <- RR * tmp + RR * cumhaz * tmp.const }
-	else if (modelType=="prop.odds") { tmp <- RR * tmp + RR * cumhaz * tmp.const; }
+	else if (modelType=="cox.aalen") {
+	       	tmp <- RR * tmp + RR * cumhaz * tmp.const }
+	else if (modelType=="prop.odds") {
+###		print(dim(RR)); print(dim(tmp)); 
+                tmp <- RR * tmp + RR * cumhaz * tmp.const; 
+	}
       } else {
 	if (modelType=="prop") { tmp<-RR*tmp; } 
       }

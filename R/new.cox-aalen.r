@@ -206,6 +206,7 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
   attr(ud,"weights")<-weights.call; 
   attr(ud,"offsets")<-offsets.call; 
   attr(ud,"propodds")<-propodds 
+  attr(ud,"type")<-"survival"
   attr(ud,"beta.fixed")<-beta.fixed
   attr(ud,"status")<-status.call; 
   attr(ud,"residuals")<-residuals; 
