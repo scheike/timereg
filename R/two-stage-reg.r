@@ -29,7 +29,7 @@ if (class(margsurv)!="coxph") { ## {{{
 	 stop("No cluster variabel specified in marginal or twostage call \n"); 
  if (is.null(clusters)) { clusters <- mclusters; cluster.call <- cluster.call} else {cluster.call <- clusters;}
 
- if (is.null(se.clusters)) secluster <- mclusters;
+ if (is.null(se.clusters)) secluster <- clusters;
  antsecluster <- length(unique(secluster))
  if (is.numeric(secluster)) secluster <-  sindex.prodlim(unique(secluster),secluster)-1 else  {
       seclusters <- as.integer(factor(clusters, labels = 1:antsecluster))-1
@@ -67,12 +67,13 @@ if (class(margsurv)!="coxph") { ## {{{
 
 
   if (anyNA(clusters)) stop("Missing values in cluster varaibles\n"); 
-  out.clust <- cluster.index(clusters);  
+  out.clust <- cluster.index.timereg(clusters);  
   clusters <- out.clust$clusters
   maxclust <- out.clust$maxclust 
   antclust <- out.clust$antclust
   idiclust <- out.clust$idclust
   cluster.size <- out.clust$cluster.size
+###  if (anyNA(idiclust)) idiclust[is.na(idiclust)] <- 0
 
   ### setting secluster after cluster.index call to deal with characters 
   if (class(margsurv)=="coxph") {

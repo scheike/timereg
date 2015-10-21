@@ -71,7 +71,7 @@
 \alias{coef.cox.aalen}
 \alias{coef.comprisk}
 \alias{coef.two.stage}
-\alias{cluster.index}
+\alias{cluster.index.timereg}
 \alias{coefBase}
 \alias{des.aalen}
 \alias{timetest}

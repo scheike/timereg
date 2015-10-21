@@ -14,6 +14,7 @@ export("aalen", ## {{{
 ###    "additive.plsR",
        "check.missing",
        "rm.missing",
+       "cluster.index.timereg",
        "coefBase",
        "cox.ipw",
        "comp.risk",

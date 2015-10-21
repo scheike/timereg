@@ -11,11 +11,11 @@ test,testOBS,Ut,simUt,Uit,XligZ,aalen,nb,id,status,wscore,dNit,ratesim,score,dha
 retur,robust,covariance,Vcovs,addresamp,addproc,
 resample,gamiid,biid,clusters,antclust,vscore,betafixed,weights,entry,exactderiv,
 timegroup,maxtimepoint,stratum,silent)
-double
-*designX,*designG,*times,*betaS,*start,*stop,*cu,*w,*loglike,*Vbeta,*RVbeta,*vcu,*offs,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*aalen,*score,*dhatMit,*gammaiid,*dmgiid,*Vcovs,*addproc,*gamiid,*biid,*vscore,*weights,*dNit;
+double *designX,*designG,*times,*betaS,*start,*stop,*cu,*w,*loglike,*Vbeta,*RVbeta,*vcu,*offs,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*aalen,*score,*dhatMit,*gammaiid,*dmgiid,*Vcovs,*addproc,*gamiid,*biid,*vscore,*weights,*dNit;
 int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*antsim,*rani,*XligZ,*nb,*id,*status,*wscore,*ratesim,*retur,*robust,*addresamp,*resample,*clusters,*antclust,*betafixed,*entry,*exactderiv,*timegroup,*maxtimepoint,*stratum,*silent;
 { 
   int basesim=0,timing=0; 
+  int propodds=silent[1]; 
   clock_t c0,c1; 
   c0=clock();
 //  mjump=sim[2];   // multiple jumps in clusters, relevant for ratesim=0 simulering via cholesky simulering 
@@ -33,7 +33,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 //  matrix *M1M2[*Ntimes],*C[*Ntimes],*ZXAIs[*Ntimes],*AIs[*Ntimes];
   matrix *Stg[*maxtimepoint],*Cg[*maxtimepoint]; 
   matrix *ZPX1,*ZPZ1,*ZPXo,*ZPZo; 
-  vector *dA,*VdA,*MdA,*delta,*zav,*lamt,*lamtt;
+  vector *cumm,*dA,*VdA,*MdA,*delta,*zav,*lamt,*lamtt;
   vector *xi,*zi,*U,*beta,*xtilde,*Gbeta,*zcol,*one,*difzzav;
   vector *offset,*weight,*varUthat[*maxtimepoint],*Uprofile;
 //  vector *ZXdA[*Ntimes];
@@ -51,7 +51,8 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   double S0,RR=1,time=0,ll,lle,llo;
   double tau,hati,random,scale,sumscore;
   double *cug=calloc((*maxtimepoint)*(*px+1),sizeof(double)),
-         *timesg=calloc((*maxtimepoint),sizeof(double));
+         *timesg=calloc((*maxtimepoint),sizeof(double)),
+         *powi=calloc(*Ntimes,sizeof(double)); 
   double norm_rand();
   void GetRNGstate(),PutRNGstate();
 
@@ -113,7 +114,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 
   malloc_vec(1,reszpbeta); malloc_vec(1,res1dim); 
   malloc_vecs(*antpers,&weight,&lamtt,&lamt,&zcol,&Gbeta,&one,&offset,NULL); 
-  malloc_vecs(*px,&ahatt,&tmpv1,&difX,&VdB,&rowX,&xi,&dA,&VdA,&MdA,NULL); 
+  malloc_vecs(*px,&ahatt,&tmpv1,&difX,&VdB,&rowX,&xi,&dA,&VdA,&MdA,&cumm,NULL); 
   malloc_vecs(*px,&xtilde,NULL); 
   malloc_vecs(*pg,&tmpv2,&rowZ,&zi,&U,&beta,&delta,&zav,&difzzav,&Uprofile,NULL); 
   malloc_vec(*nb,ta); 
@@ -167,9 +168,13 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 
   if (*detail==1) Rprintf("Iterations start \n"); 
   cu[0]=times[0]; 
+
+  double pweight=1,xdA=0; 
+
   for (it=0;it<*Nit || (*Nit==0 && it==0);it++) // {{{ iterations start for cox-aalen model
   {
      if (it>0) {
+       vec_zeros(cumm); 
        vec_zeros(U); mat_zeros(S1);   
        mat_zeros(A); mat_zeros(ZPZ); mat_zeros(ZPX); mat_zeros(ZX); 
        mat_zeros(X); mat_zeros(Z); mat_zeros(WX); mat_zeros(WZ); 
@@ -318,21 +323,29 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);
    }
 
+   // computation of dA 
     scale=VE(weight,pers); 
     extract_row(X,pers,xi); 
     scl_vec_mult(scale,xi,xi); 
     Mv(AI,xi,dA); 
-    MxA(ZX,AI,ZXAI); 
 
+    MxA(ZX,AI,ZXAI); 
 //  if (*detail==3) {print_vec(xi); print_mat(A); print_mat(AI); }
+
+  if (propodds==1) {
+          xdA=vec_prod(xi,cumm); 
+	  pweight=(1+exp(+VE(Gbeta,pers))*xdA);
+	  powi[s]=pweight; 
+	  scl_vec_mult(pweight,dA,dA); 
+  }
 
    if (it==(*Nit-1)) {
 	replace_row(dAt,s,dA); 
-        for (j=0;j<*pg;j++) for (i=0;i<*px;i++) 
-		ME(ZXAIn,j,(s-1)*(*px)+i)=ME(ZXAI,j,i); 
+        for (j=0;j<*pg;j++) for (i=0;i<*px;i++) ME(ZXAIn,j,(s-1)*(*px)+i)=ME(ZXAI,j,i); 
    }
 
   if (s<0) {print_mat(A); print_mat(AI); print_mat(ZX); }
+
 
   /* First derivative U and Second derivative S  */ 
   extract_row(Z,pers,zi);  
@@ -340,8 +353,10 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 
 // scale udenfor ? 
   scl_vec_mult(scale,zi,zi); 
+  if (propodds==1)  scl_vec_mult(pweight,zi,zi); 
   vec_subtr(zi,zav,difzzav); 
 //  scl_vec_mult(scale,difzzav,difzzav); 
+
 
   vec_add(difzzav,U,U); 
 
@@ -369,10 +384,10 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     scl_vec_mult(VE(lamt,i),zi,rowZ); 
     replace_row(ZP,i,rowZ);
     extract_row(X,i,xi); 
-     for(j=0;j<pmax;j++)  for(k=0;k<*pg;k++)   {
+    for(j=0;j<pmax;j++)  for(k=0;k<*pg;k++)   {
          if ((j<*px)) ME(ZPX1,j,k)+=VE(weight,i)*VE(lamt,i)*VE(xi,j)*VE(zi,k); 
          if ((j<*pg)) ME(ZPZ1,j,k)+=VE(weight,i)*VE(lamt,i)*VE(zi,k)*VE(zi,j); 
-     }
+    }
   } 
   scl_mat_mult(1,ZPZ1,ZPZo); scl_mat_mult(1,ZPX1,ZPXo);
   } // }}}
@@ -427,16 +442,24 @@ if (*betafixed==0)  {
     }
 
     for (k=1;k<=*px;k++) {
-      cu[k*(*Ntimes)+s]=cu[k*(*Ntimes)+s-1]+VE(dA,k-1); 
-      cug[k*(*maxtimepoint)+timegroup[s]]=cu[k*(*Ntimes)+s]; 
-      vcu[k*(*Ntimes)+s]=VE(VdA,k-1)+vcu[k*(*Ntimes)+s-1];
+         cu[k*(*Ntimes)+s]=cu[k*(*Ntimes)+s-1]+VE(dA,k-1); 
+         cug[k*(*maxtimepoint)+timegroup[s]]=cu[k*(*Ntimes)+s]; 
+         vcu[k*(*Ntimes)+s]=VE(VdA,k-1)+vcu[k*(*Ntimes)+s-1];
     }
     if (*robust==1 && basesim>=0) { 
          for (j=0;j<*px;j++) for (i=0;i<*px;i++) ME(AIn,(s-1)*(*px)+j,i)=ME(AI,j,i); 
     }
+
+
   } // }}}
 
-   } // }}} /* Ntimes */ 
+
+  if (propodds==1) {
+  // cumulative hazard (to use for prop odds model 
+    vec_add(dA,cumm,cumm); 
+  }
+
+  } // }}} /* Ntimes */ 
 
   if (timing==1) { // {{{
   c1=clock();
@@ -458,7 +481,11 @@ if (*betafixed==0)  {
       };
 
       // updates beta for all but final and fixed situation
-      if (*betafixed==0 && (*Nit>0) && (it<*Nit-1)) vec_add(beta,delta,beta); 
+//      double step=0.5;
+      if (*betafixed==0 && (*Nit>0) && (it<*Nit-1)) {
+//	      scl_vec_mult(step,delta,delta); 
+	      vec_add(beta,delta,beta); 
+      }
 
       for (k=0;k<*pg;k++) sumscore=sumscore+fabs(VE(U,k)); 
       if ((sumscore<0.0000001) & (it<(*Nit)-2)) {  it=*Nit-2; }
@@ -627,7 +654,9 @@ if (*betafixed==0)  {
       Mv(ZXAI,xi,tmpv2);  
       vec_subtr(zi,tmpv2,tmpv2); 
       if (*mw==1) scl_vec_mult(VE(weight,pers),tmpv2,tmpv2); 
-       vec_add(tmpv2,W2[cin],W2[cin]);
+      if (propodds==1) scl_vec_mult(powi[s],tmpv2,tmpv2); 
+
+      vec_add(tmpv2,W2[cin],W2[cin]);
 
 //      if (mjump==1) 
 //      for (j=0;j<*pg;j++) for (i=0;i<*pg;i++) 
@@ -635,7 +664,8 @@ if (*betafixed==0)  {
 
       if (basesim>=0) {
 	      Mv(AI,xi,rowX); 
-	      scl_vec_mult(VE(weight,pers),rowX,rowX); 
+	      if (*mw==1) scl_vec_mult(VE(weight,pers),rowX,rowX); 
+              if (propodds==1) scl_vec_mult(powi[s],rowX,rowX); 
 	      vec_add(rowX,W3[cin],W3[cin]);
       }
 
@@ -1026,7 +1056,7 @@ if (*betafixed==0)  {
      &ZXAI,&ZX,&dM1M2,&M1M2t, &tmp3,&ZPX,&dYI,&Ct, &ZPX1,&ZPZ1, &ZPXo,&ZPZo,NULL); 
 
   free_vecs(&vectmp,&ranvec,&reszpbeta,&res1dim,&weight,&lamtt,&lamt,&zcol,&Gbeta,&one,&offset,
-            &ahatt,&tmpv1,&difX,&VdB,&rowX,&xi,&dA,&VdA,&MdA,
+            &ahatt,&tmpv1,&difX,&VdB,&rowX,&xi,&dA,&VdA,&MdA,&cumm,
             &xtilde, &tmpv2,&rowZ,&zi,&U,&beta,&delta,&zav,&difzzav,&Uprofile,
             &ta,&vrisk,NULL); 
 
@@ -1047,7 +1077,7 @@ if (*betafixed==0)  {
 
   for(j=0;j<*maxtimepoint;j++) { free_mat(Cg[j]); free_mat(Stg[j]);}
   free(cluster); free(ipers); free(imin); free(cug); free(timesg); 
-  free(S0strata); free(strata); 
+  free(S0strata); free(strata); free(powi); 
   // }}}
  for (j=0;j<antstrat;j++) { free_mat(ZPZs[j]); free_mat(ZPXs[j]); 
 //                            free_mat(As[j]); free_mat(ZXs[j]); 

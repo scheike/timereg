@@ -5,7 +5,7 @@ beta=NULL,Nit=20,detail=0,start.time=0,max.time=NULL, id=NULL,
 clusters=NULL, n.sim=500, residuals=0,robust=1,
 weighted.test=0,covariance=0,resample.iid=1,weights=NULL,
 rate.sim=1,beta.fixed=0,max.clust=1000,exact.deriv=1,silent=1,
-max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL)
+max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL,propodds=0)
 { ## {{{
 # {{{ set up variables 
   if (n.sim == 0) sim <- 0 else sim <- 1
@@ -20,7 +20,7 @@ max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL)
 	  m$max.time<-m$residuals<-m$n.sim<-m$id<-m$covariance<-m$resample.iid<-
 	  m$clusters<-m$rate.sim<-m$beta.fixed<- m$max.clust <- m$exact.deriv <- 
 	  m$silent <- m$max.timepoint.sim <- m$silent <- m$basesim  <- 
-	  m$offsets <- m$strata <- NULL
+	  m$offsets <- m$strata <- m$propodds <- NULL
 
   special <- c("prop","cluster")
   Terms <- if(missing(data)) terms(formula, special)
@@ -159,7 +159,7 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
             covariance=covariance,resample.iid=resample.iid,namesX=covnamesX,
 	    namesZ=covnamesZ,beta.fixed=beta.fixed,entry=entry,basesim=basesim,
 	    offsets=offsets,exactderiv=exact.deriv,max.timepoint.sim=max.timepoint.sim,silent=silent,
-	    strata=strata)
+	    strata=strata,propodds=propodds)
 
   ## {{{ output handling
   colnames(ud$test.procProp)<-c("time",covnamesZ)
@@ -188,6 +188,7 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
                       ud$robvar.gamma<-matrix(0,pz,pz);
   }
   namematrix(ud$D2linv,covnamesZ); 
+  ud$prop.odds <- propodds
 
   class(ud)<-"cox.aalen"
   attr(ud,"Call")<-call; 
@@ -204,6 +205,7 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
   attr(ud,"stop")<-stop.call; 
   attr(ud,"weights")<-weights.call; 
   attr(ud,"offsets")<-offsets.call; 
+  attr(ud,"propodds")<-propodds 
   attr(ud,"beta.fixed")<-beta.fixed
   attr(ud,"status")<-status.call; 
   attr(ud,"residuals")<-residuals; 
@@ -291,8 +293,7 @@ summary.cox.aalen(x,...)
     out=signif(out,digits=digits)
     print(out)
 
-    if (p.o==FALSE) cat("Test for Proportionality \n") else  
-    cat("Test for Goodness-of-fit \n")
+    if (p.o==FALSE) cat("Test of Proportionality \n") else  cat("Test of Goodness-of-fit \n")
     if (is.null(obj$pval.Prop)==TRUE)  ptest<-FALSE else ptest<-TRUE; 
     if (ptest==FALSE) cat("Test not computed, sim=0 \n\n")
     if (ptest==TRUE) { 

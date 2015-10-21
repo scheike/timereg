@@ -1,4 +1,4 @@
-cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0)
+cluster.index.timereg <- function(clusters,index.type=FALSE,num=NULL,Rindex=0)
 { ## {{{
 antpers <- length(clusters)
 
