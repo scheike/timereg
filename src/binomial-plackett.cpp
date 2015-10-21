@@ -767,11 +767,19 @@ for (j=0;j<antclust;j++) {
         rv2= rvdesC.subcube( span(j),span(1),span(0,lnrv));
 	// takes parameter relations for each pair
 	// 3-dimensional array pairs*(random effects* pars )
-	mat thetades=thetadesi.subcube( span(j),span(0,lnrv),span::all);
-	if (j<-10)  {
-           rv1.print("rv1");    rv2.print("rv2"); thetades.print("thetades j "); 
-	   etheta.print("etheta"); 
-        }
+//	mat thetades=thetadesi.subcube( span(j),span(0,lnrv),span::all);
+
+	mat thetadesv=thetadesi.subcube( span(j),span(0,lnrv),span(0,pt-1));
+	mat thetades=mat(thetadesv.begin(),nrvs(j),pt); 
+
+	if (j< 0)  {
+	   Rprintf(" %d %d \n",lnrv,pt); 
+           rv1.print("rv1");    rv2.print("rv2"); 
+	   thetades.print("thetades "); 
+	   etheta.print("e-theta"); 
+	   mat test=mat(thetades.begin(),3,1); 
+	   test.print("test"); 
+	}
 
 	ll=claytonoakesbinRVC(etheta,thetades,ci,ck,Li,Lk,rv1,rv2,dplackt);
         ssf+=weights(i)*log(ll); 
