@@ -164,7 +164,6 @@ names(ud)<-c("time","status","x1","cluster","zyg","mintime","lefttime","truncate
 return(ud)
 } ## }}} 
 
-
 ##' @export
 simClaytonOakes.family.ace <- function(K,varg,varc,beta,stoptime,lam0=0.5,Cvar=0,left=0,pairleft=0,trunc.prob=0.5)  ## {{{ 
 {
@@ -225,9 +224,221 @@ names(ud)<-c("time","status","x1","cluster","type","mintime","lefttime","truncat
 return(ud)
 } ## }}} 
 
+K <- 50000; varg <- 0.5; varc <- 1; beta <- 0; stoptime <- 3; 
+lam0=0.2
+lam0=c(0.2,0.3); 
+varg <- c(1,0.5,0.3)
+varc <- c(1,0.5,0.3)
+Cvar=0;left=0;pairleft=0;trunc.prob=0.5; overall=0
+all.sum=1
+
+##' @export
+simCompete.twin.ace <- function(K,varg,varc,beta,stoptime,lam0=c(0.2,0.3),
+		Cvar=0,left=0,pairleft=0,trunc.prob=0.5,overall=1,all.sum=1)  ## {{{ 
+{
+  ## K antal clustre, n=antal i clustre
+  n=2 # twins with ace structure
+  ## length(lam0) competing risk with constant hazards lam0
+  x<-array(c(runif(n*K),rep(0,n*K),rbinom(n*K,1,0.5)),dim=c(K,n,3))
+  if (Cvar==0) C<-matrix(stoptime,K,n) else C<-matrix(Cvar*runif(K*n)*stoptime,K,n) 
+  ### total variance of gene and env. 
+  ### one for each cause and one shared (across causes)
+  ###  random effects with 
+  ###  means varg/(varg+varc) and variances varg/(varg+varc)^2
+  if (length(varc)==1) varc  <- rep(varc,length(lam0)+overall)
+  if (length(varg)==1) varg  <- rep(varg,length(lam0)+overall)
+  eta <- varc+varg
+  etat <- sum(eta)
+  ### total variance for each cause + overall
+  nc <- length(lam0); 
+###  etat <- sum(eta[1:nc])
+###  print(etat)
+###  print(varc)
+###  print(varg)
+###  print("MZ shared variance"); print(eta[1]/eta[1]^2); 
+###  print("DZ shared variance"); 
+###  print(c(mdz,vdz,vdz/mdz^2)); 
+
+  mz <- c(rep(1,K/2),rep(0,K/2)); dz <- 1-mz;
+  ### ace overall 
+  if (overall==1) {
+    varcl <- varc[nc+1]; vargl <- varg[nc+1]
+    if (all.sum==1) etal <-  etat else etal <- vargl+varcl
+    Gams1 <-cbind(
+       rgamma(K,vargl)/etal, rgamma(K,vargl*0.5)/etal, rgamma(K,vargl*0.5)/etal, rgamma(K,vargl*0.5)/etal,
+       rgamma(K,varcl)/etal )
+###  ex1 <- Gams1[,6]
+###  ex2 <- Gams1[,7]
+  mzrv <-  Gams1[,1]+          Gams1[,5] ### shared gene + env 
+  dzrv1 <- Gams1[,2]+Gams1[,3]+Gams1[,5] 
+  dzrv2 <- Gams1[,2]+Gams1[,4]+Gams1[,5]
+  Gamoa <- cbind(mz*mzrv+dz*dzrv1,mz*mzrv+dz*dzrv2)
+  } else Gamoa <- 0
+
+  temp1 <- matrix(0,K,length(lam0))
+  temp2 <- matrix(0,K,length(lam0))
+  Gamm <- c()
+  for (i in 1:nc)
+  {
+  varcl <- varc[i]; vargl <- varg[i]
+  if (all.sum==1) etal <-  etat else etal <- vargl+varcl
+  Gams1 <-cbind(
+      rgamma(K,vargl)/etal, 
+      rgamma(K,vargl*0.5)/etal, rgamma(K,vargl*0.5)/etal, rgamma(K,vargl*0.5)/etal,
+      rgamma(K,varcl)/etal )
+###  
+  mzrv <-  Gams1[,1]+Gams1[,5]     ### shared gene + env 
+  dzrv1 <- Gams1[,2]+Gams1[,3]+Gams1[,5] 
+  dzrv2 <- Gams1[,2]+Gams1[,4]+Gams1[,5]
+  Gam1 <- cbind(mz*mzrv+dz*dzrv1,mz*mzrv+dz*dzrv2)
+  Gam1 <- Gam1+Gamoa
+  Gamm <- cbind(Gamm,Gam1)
+### ## {{{ 
+###  mean(mzrv)
+###  var(mzrv)
+###  var(mzrv[mz==1])
+###  mean(dzrv1)
+###  mean(dzrv2)
+###  var(dzrv1)
+###  var(dzrv2)
+###  apply(Gam1,2,mean); apply(Gam1,2,var)
+###  apply(Gam1[mz==1,],2,mean); apply(Gam1[mz==0,],2,mean)
+###  var(Gam1[mz==1,]); var(Gam1[mz==0,])
+###  shdz <- Gams1[,2]+Gams1[,5]
+###  mean(shdz)
+###  ###1.25/etat
+###  var(shdz)
+###  mean(shdz/0.83)
+###  var(shdz/0.83)
+###  ## }}}
+  ttemp<-matrix(rexp(2*K),K,2)/(Gam1*exp(beta*x[,,3])*lam0[i])
+  temp1[,i] <- ttemp[,1]
+  temp2[,i] <- ttemp[,2]
+  }
+###  print(cov(Gamm))
+###  temp0 <- cbind( temp1, temp2)
+###  print(cov(temp0))
+  temp <- cbind( apply(temp1,1,min), apply(temp2,1,min))
+  cause1 <- apply(temp1,1,which.min)
+  cause2 <- apply(temp2,1,which.min)
+###  for (zyg in c(0,1)) 
+###  for (i in 1:2) for (j in 1:2) {
+###	  med <- (i==cause1) & (j==cause2) & mz==zyg
+###	  datl <- temp[med,]
+###	  dato <- temp0[med,]
+###	  print(c(zyg,i,j))
+###	  print(cor(datl))
+###	  print(c(zyg,i,j))
+###	  print(cor(dato))
+###  }
+###
+  x[,,2]<- ifelse(temp<=C,1,0)*cbind(cause1,cause2);
+  x[,,1]<-pmin(temp,C)
+  minstime <- apply(x[,,1],1,min)  
+  ud <- as.data.frame(cbind(apply(x,3,t),rep(1:K,each=n)))  
+  zyg <- c(rep("MZ",K),rep("DZ",K))
+
+if (left>0) { ## {{{ 
+     if (pairleft==1) {
+     lefttime <- runif(K)*(stoptime-left)
+     left <- rbinom(K,1,trunc.prob) ## not trunation times!
+     lefttime <- apply(cbind(lefttime*left,3),1,min)
+       trunk <- (lefttime > minstime)
+       medleft <- rep(trunk,each=n)
+     } else {
+###       lefttime <- rexp(n*K)*left
+       lefttime <- runif(K)*(stoptime-left)
+       left <- rbinom(n*K,1,trunc.prob) ## not trunation times!
+       lefttime <- apply(cbind(lefttime*left,3),1,min)
+       trunk <- (lefttime > ud[,1])
+       medleft <- trunk
+     }
+  } else { lefttime <- trunk <- rep(0,K);} ## }}} 
+  if (pairleft==1) ud <- cbind(ud,zyg,rep(minstime,each=n),rep(lefttime,each=n),rep(trunk,each=n))
+  else ud <- cbind(ud,zyg,rep(minstime,each=n),lefttime,trunk)
+
+names(ud)<-c("time","status","x1","cluster","zyg","mintime","lefttime","truncated")
+return(ud)
+} ## }}} 
+
+###out <- simCompete.twin.ace(20000,
+###   c(1,1,0.0),c(1,1,0.0),0,2,lam0=c(0.5,0.5))
+
+##' @export
+simCompete.simple <- function(K,varr,beta,stoptime,lam0=c(0.2,0.3),
+		Cvar=0,left=0,pairleft=0,trunc.prob=0.5,overall=1,all.sum=1)  ## {{{ 
+{
+  ## K antal clustre, n=antal i clustre
+  n=2 # twins with ace structure
+  ## length(lam0) competing risk with constant hazards lam0
+  x<-array(c(runif(n*K),rep(0,n*K),rbinom(n*K,1,0.5)),dim=c(K,n,3))
+  if (Cvar==0) C<-matrix(stoptime,K,n) else C<-matrix(Cvar*runif(K*n)*stoptime,K,n) 
+  ### total variance of gene and env. 
+  ### one for each cause and one shared (across causes)
+  ###  random effects with 
+  ###  means varg/(varg+varc) and variances varg/(varg+varc)^2
+  if (length(varr)==1) varr  <- rep(varr,length(lam0)+overall)
+  eta <- varr
+  etat <- sum(eta)
+  ### total variance for each cause + overall
+  nc <- length(lam0); 
+
+  mz <- c(rep(1,K/2),rep(0,K/2)); dz <- 1-mz;
+  ### ace overall 
+  if (overall==1) {
+    if (all.sum==1) etal <-  etat else etal <- vargl+varcl
+    Gams1 <-cbind(rgamma(K,varr[nc+1])/etal)
+  Gamoa <- Gams1
+  } else Gamoa <- 0
+
+  temp1 <- matrix(0,K,length(lam0))
+  temp2 <- matrix(0,K,length(lam0))
+  for (i in 1:nc)
+  {
+	  etal <- etat
+  Gams1 <-cbind( rgamma(K,varr[i])/etal )
+  Gam1 <- Gams1+Gamoa
+  Gam1 <- cbind(Gam1,Gam1)
+  ttemp<-matrix(rexp(2*K),K,2)/(Gam1*exp(beta*x[,,3])*lam0[i])
+  temp1[,i] <- ttemp[,1]
+  temp2[,i] <- ttemp[,2]
+  }
+  temp <- cbind( apply(temp1,1,min), apply(temp2,1,min))
+  cause1 <- apply(temp1,1,which.min)
+  cause2 <- apply(temp2,1,which.min)
+###
+  x[,,2]<- ifelse(temp<=C,1,0)*cbind(cause1,cause2);
+  x[,,1]<-pmin(temp,C)
+  minstime <- apply(x[,,1],1,min)  
+  ud <- as.data.frame(cbind(apply(x,3,t),rep(1:K,each=n)))  
+  zyg <- c(rep("MZ",K),rep("DZ",K))
+
+if (left>0) { ## {{{ 
+     if (pairleft==1) {
+     lefttime <- runif(K)*(stoptime-left)
+     left <- rbinom(K,1,trunc.prob) ## not trunation times!
+     lefttime <- apply(cbind(lefttime*left,3),1,min)
+       trunk <- (lefttime > minstime)
+       medleft <- rep(trunk,each=n)
+     } else {
+###       lefttime <- rexp(n*K)*left
+       lefttime <- runif(K)*(stoptime-left)
+       left <- rbinom(n*K,1,trunc.prob) ## not trunation times!
+       lefttime <- apply(cbind(lefttime*left,3),1,min)
+       trunk <- (lefttime > ud[,1])
+       medleft <- trunk
+     }
+  } else { lefttime <- trunk <- rep(0,K);} ## }}} 
+  if (pairleft==1) ud <- cbind(ud,zyg,rep(minstime,each=n),rep(lefttime,each=n),rep(trunk,each=n))
+  else ud <- cbind(ud,zyg,rep(minstime,each=n),lefttime,trunk)
+
+names(ud)<-c("time","status","x1","cluster","zyg","mintime","lefttime","truncated")
+return(ud)
+} ## }}} 
+
 ##' @export
 kendall.ClaytonOakes.twin.ace <- function(parg,parc,K=10000)  ## {{{ 
-{
+{ 
   ## K antal clustre, n=antal i clustre
   ### total variance of gene and env. 
   ###  K <- 10; varg <- 1; varc <- 1; 
@@ -259,7 +470,6 @@ kendall.ClaytonOakes.twin.ace <- function(parg,parc,K=10000)  ## {{{
 
   return(list(mz.kendall=mz.kendall,dz.kendall=dz.kendall))
 } ## }}} 
-
 
 ##' @export
 kendall.normal.twin.ace <- function(parg,parc,K=10000)  ## {{{ 
@@ -293,8 +503,6 @@ kendall.normal.twin.ace <- function(parg,parc,K=10000)  ## {{{
 
   return(list(mz.kendall=mz.kendall,dz.kendall=dz.kendall))
 } ## }}} 
-
-
 
 ##
 ###kendall.ClaytonOakes.twin.ace(2,0)

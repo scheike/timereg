@@ -154,13 +154,14 @@
 ##' @param random.design random effect design for additive gamma modeli, when pairs are given this is a (pairs) x (2) x (max number random effects) matrix, see pairs.rvs below
 ##' @param pairs matrix with rows of indeces (two-columns) for the pairs considered in the pairwise composite score, useful for case-control sampling when marginal is known.
 ##' @param pairs.rvs for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair. 
+##' @param additive.gamma.sum for two.stage=0, this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters.
 binomial.twostage <- function(margbin,data=sys.parent(),
      score.method="fisher.scoring",
      Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
      control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
      step=1.0,notaylor=1,model="plackett",marginal.p=NULL,strata=NULL,
      max.clust=NULL,se.clusters=NULL,numDeriv=0,
-     random.design=NULL,pairs=NULL,pairs.rvs=NULL)
+     random.design=NULL,pairs=NULL,pairs.rvs=NULL,additive.gamma.sum=NULL)
 { ## {{{
     ## {{{ seting up design and variables
     rate.sim <- 1; sym=1; 
@@ -237,7 +238,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
  
 ###   if (dim(theta.des)[2]!=ncol(random.design)) 
 ###   stop("nrow(theta.des)!= ncol(random.design),\nspecifies restrictions on paramters, if theta.des not given =diag (free)\n"); 
- } else random.design <- matrix(0,1,1); 
+ } else { random.design <- matrix(0,1,1);  dim.rv <- 1; }
 
 
     if (is.null(theta.des)==TRUE) ptheta<-1; 
@@ -245,7 +246,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 ###    else theta.des<-as.matrix(theta.des); 
 ###    ptheta<-ncol(theta.des); 
 ###    if (nrow(theta.des)!=antpers) stop("Theta design does not have correct dim");
-  if (length(dim(theta.des))==3) ptheta<-dim(theta.des)[3] else if (length(dim(theta.des))==2) ptheta<-ncol(theta.des)
+  if (length(dim(theta.des))==3) ptheta<-dim(theta.des)[2] else if (length(dim(theta.des))==2) ptheta<-ncol(theta.des)
   if (nrow(theta.des)!=antpers & dep.model!=3 ) stop("Theta design does not have correct dim");
 
    if (length(dim(theta.des))!=3) theta.des <- as.matrix(theta.des)
@@ -261,6 +262,9 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     if (maxclust==1) stop("No clusters, maxclust size=1\n"); 
 
   antpairs <- 1; ### to define 
+
+  if (is.null(additive.gamma.sum)) additive.gamma.sum <- matrix(1,dim.rv,ptheta)
+
   if (!is.null(pairs)) { pair.structure <- 1; } else  pair.structure <- 0;  
   if (pair.structure==1 & dep.model==3) { ## {{{ 
 ### something with dimensions of rv.des 
@@ -268,27 +272,27 @@ binomial.twostage <- function(margbin,data=sys.parent(),
        antpairs <- nrow(pairs); 
        if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))==3) )
        {
-          Ptheta.des <- array(0,c(antpairs,nrow(theta.des),ncol(theta.des)))
-          for (i in 1:antpairs) Ptheta.des[i,,] <- theta.des
+          Ptheta.des <- array(0,c(nrow(theta.des),ncol(theta.des),antpairs))
+          for (i in 1:antpairs) Ptheta.des[,,i] <- theta.des
        theta.des <- Ptheta.des
        }
        if ( (length(dim(theta.des))==3)  & (length(dim(random.design))!=3) )
        {
-           rv.des <- array(0,c(antpairs,2,ncol(random.design)))
+           rv.des <- array(0,c(2,ncol(random.design),antpairs))
            for (i in 1:antpairs) {
-		   rv.des[i,1,] <- random.design[pairs[i,1],]
-		   rv.des[i,2,] <- random.design[pairs[i,2],]
+		   rv.des[1,,i] <- random.design[pairs[i,1],]
+		   rv.des[2,,i] <- random.design[pairs[i,2],]
 	   }
        random.design <- rv.des
        }
        if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))!=3) )
        {
-          Ptheta.des <- array(0,c(antpairs,nrow(theta.des),ncol(theta.des)))
-          rv.des <- array(0,c(antpairs,2,ncol(random.design)))
+          Ptheta.des <- array(0,c(nrow(theta.des),ncol(theta.des),antpairs))
+          rv.des <- array(0,c(2,ncol(random.design),antpairs))
           for (i in 1:antpairs) {
-		   rv.des[i,1,] <- random.design[pairs[i,1],]
-		   rv.des[i,2,] <- random.design[pairs[i,2],]
-                   Ptheta.des[i,,] <- theta.des
+		   rv.des[1,,i] <- random.design[pairs[i,1],]
+		   rv.des[2,,i] <- random.design[pairs[i,2],]
+                   Ptheta.des[,,i] <- theta.des
 	   }
        theta.des <- Ptheta.des
        random.design <- rv.des
@@ -309,7 +313,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 
     ## }}}
 
-##print(head(theta.des)); print(random.design); 
+###  print(head(random.design)); print(theta.des); print(additive.gamma.sum)
 
     loglike <- function(par) 
         { ## {{{
@@ -328,7 +332,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
             icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
             ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
             itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid, 
-            irvdes=random.design)
+            irvdes=random.design,iags=additive.gamma.sum)
             ## }}}
       else outl<-.Call("twostageloglikebinpairs", ## {{{
             icause=cause,ipmargsurv=ps, 
@@ -337,8 +341,9 @@ binomial.twostage <- function(margbin,data=sys.parent(),
             ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
             itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid, 
             irvdes=random.design,
-            idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs
-            )  ## }}} 
+            idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs,
+            iags=additive.gamma.sum)
+             ## }}} 
 
             if (detail==3) print(c(par,outl$loglike))
 
@@ -390,7 +395,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
             if (detail==1 ) cat("starting numDeriv for second derivative \n"); 
             oout <- 0; 
             score2 <- numDeriv::jacobian(loglike,p)
-	    out$score1 <- score2
+	    score1 <- matrix(score2,ncol=1)
             oout <- 3
             hess <- numDeriv::jacobian(loglike,p)
             if (detail==1 ) cat("finished numDeriv for second derivative \n"); 
@@ -492,9 +497,9 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     attr(ud, "additive-gamma") <- (dep.model==3)*1
     if (dep.model==3 & pair.structure==1) attr(ud, "likepairs") <- c(out$likepairs)
     if (dep.model==3 & pair.structure==0) attr(ud, "pardes") <- theta.des
-    if (dep.model==3 & pair.structure==1) attr(ud, "pardes") <- theta.des[1,,]
+    if (dep.model==3 & pair.structure==1) attr(ud, "pardes") <- theta.des[,,1]
     if (dep.model==3 & pair.structure==0) attr(ud, "rv1") <- random.design[1,]
-    if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <- random.design[1,1,]
+    if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <- random.design[1,,1]
  
     attr(ud, "response") <- "binomial"
     return(ud);

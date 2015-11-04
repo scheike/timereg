@@ -1,5 +1,6 @@
 
 library(mets)
+source("../R/twostage.R")
 ###
 set.seed(100)
 data <- simClaytonOakes.family.ace(8000,2,1,0,3)
@@ -10,7 +11,6 @@ out <- ace.family.design(data,member="type",id="cluster")
 out$pardes
 head(out$des.rv)
 
-### makes marginal model (same for all) 
 aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
 
 ## {{{ additive gamma models with and without pair call 
@@ -67,6 +67,8 @@ tsdid <- twostage(aa,data=dataid,clusters=dataid$cluster,
                random.design=outid$des.rv,iid=1,
                theta.des=outid$pardes,pairs=pair.new)
 summary(tsdid)
+coef(tsdid)
+coef(tsd)
 ### same as tsd 
 
 
@@ -92,29 +94,29 @@ head(pair.types)
 ### mother, father, share 0 rvm=c(1,0) rvf=c(0,1), 
 ### thetadesmf=rbind(c(1,0),c(1,0),c(0,1))
 
-theta.des  <- array(0,c(nrow(pair.new),4,2))
-random.des <- array(0,c(nrow(pair.new),2,4))
+theta.des  <- array(0,c(4,2,nrow(pair.new)))
+random.des <- array(0,c(2,4,nrow(pair.new)))
 ### random variables in each pair 
 rvs <- c()
 for (i in 1:nrow(pair.new))
 {
 	if (pair.types[i,1]=="mother" & pair.types[i,2]=="father")
 	{
-	theta.des[i,,] <- rbind(c(1,0),c(1,0),c(0,1),c(0,0))
-       	random.des[i,,] <- rbind(c(1,0,1,0),c(0,1,1,0))
+	theta.des[,,i] <- rbind(c(1,0),c(1,0),c(0,1),c(0,0))
+       	random.des[,,i] <- rbind(c(1,0,1,0),c(0,1,1,0))
 	rvs <- c(rvs,3)
 	} else {
-  	theta.des[i,,] <- rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
-	random.des[i,,] <- rbind(c(1,1,0,1),c(1,0,1,1))
+  	theta.des[,,i] <- rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
+	random.des[,,i] <- rbind(c(1,1,0,1),c(1,0,1,1))
 	rvs <- c(rvs,4)
 	}
 }
 ### 3 rvs here 
-random.des[7,,]
-theta.des[7,,]
+random.des[,,7]
+theta.des[,,7]
 ### 4 rvs here 
-random.des[1,,]
-theta.des[1,,]
+random.des[,,1]
+theta.des[,,1]
 head(rvs)
 
 tsdid2 <- twostage(aa,data=dataid,clusters=dataid$cluster,
@@ -123,6 +125,7 @@ tsdid2 <- twostage(aa,data=dataid,clusters=dataid$cluster,
                theta.des=theta.des,pairs=pair.new,pairs.rvs=rvs)
 summary(tsdid2)
 tsd$theta
+tsdid2$theta
 tsdid$theta
 
 
@@ -139,14 +142,16 @@ head(kinship,n=10)
 out <- make.pairwise.design(pair.new,kinship,type="ace") 
 names(out)
 ### 4 rvs here , here independence since shared component has variance 0 !
-out$random.des[9,,]
-out$theta.des[9,,]
+out$random.des[,,9]
+out$theta.des[,,9]
+
 
 tsdid3 <- twostage(aa,data=dataid,clusters=dataid$cluster,
                theta=c(2,1),var.link=0,step=1.0,
                random.design=out$random.design,
                theta.des=out$theta.des,pairs=pair.new,pairs.rvs=out$ant.rvs)
 summary(tsdid3)
+coef(tsdid3)
 
 ### same as above  tsdid2
 
@@ -252,6 +257,4 @@ summary(ts0)
 
 
 ## }}} 
-
-
 

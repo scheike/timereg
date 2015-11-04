@@ -2,6 +2,7 @@
 % Please edit documentation in R/lifetable.R
 \name{eventpois}
 \alias{eventpois}
+\alias{pcif}
 \title{Extract survival estimates from lifetable analysis}
 \usage{
 eventpois(object, ..., timevar, time, int.len, confint = FALSE,

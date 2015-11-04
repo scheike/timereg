@@ -189,12 +189,15 @@
 ##' @param random.design random effect design for additive gamma modeli, when pairs are given this is a (pairs) x (2) x (max number random effects) matrix, see pairs.rvs below
 ##' @param pairs matrix with rows of indeces (two-columns) for the pairs considered in the pairwise composite score, useful for case-control sampling when marginal is known.
 ##' @param pairs.rvs for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair. 
+##' @param two.stage to fit two-stage model, if 0 then will fit hazard model with additive gamma structure (WIP)
+##' @param additive.gamma.sum for two.stage=0, this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters.
 twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
-		     silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
-                     step=0.5,notaylor=0,model="clayton.oakes",
-		     marginal.trunc=NULL, marginal.survival=NULL,marginal.status=NULL,strata=NULL,
-     se.clusters=NULL,max.clust=NULL,numDeriv=0,
-     random.design=NULL,pairs=NULL,pairs.rvs=NULL)
+silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,
+var.link=1,iid=1, step=0.5,notaylor=0,model="clayton.oakes",
+  marginal.trunc=NULL, marginal.survival=NULL,marginal.status=NULL,strata=NULL,
+  se.clusters=NULL,max.clust=NULL,numDeriv=0,
+  random.design=NULL,pairs=NULL,pairs.rvs=NULL,two.stage=1,
+  additive.gamma.sum=NULL)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -341,19 +344,21 @@ if (!is.null(margsurv))
 
    if (!is.null(random.design)) { ### different parameters for Additive random effects 
      dep.model <- 3
+
 ###     if (is.null(random.design)) random.design <- matrix(1,antpers,1); 
      dim.rv <- ncol(random.design); 
      if (is.null(theta.des)) theta.des<-diag(dim.rv);
+
+
 ###     ptheta <- dimpar <- ncol(theta.des); 
- 
 ###   if (dim(theta.des)[2]!=ncol(random.design)) 
 ###   stop("nrow(theta.des)!= ncol(random.design),\nspecifies restrictions on paramters, if theta.des not given =diag (free)\n"); 
- } else random.design <- matrix(0,1,1); 
+ } else { random.design <- matrix(0,1,1);  additive.gamma.sum <- matrix(1,1,1); }
 
 
   if (is.null(theta.des)) ptheta<-1; 
   if (is.null(theta.des)) theta.des<-matrix(1,antpers,ptheta); ###  else theta.des<-as.matrix(theta.des); 
-  if (length(dim(theta.des))==3) ptheta<-dim(theta.des)[3] else if (length(dim(theta.des))==2) ptheta<-ncol(theta.des)
+  if (length(dim(theta.des))==3) ptheta<-dim(theta.des)[2] else if (length(dim(theta.des))==2) ptheta<-ncol(theta.des)
   if (nrow(theta.des)!=antpers & dep.model!=3 ) stop("Theta design does not have correct dim");
 
   if (is.null(theta)==TRUE) {
@@ -374,6 +379,8 @@ if (!is.null(margsurv))
   if (maxclust==1) stop("No clusters, maxclust size=1\n"); 
 
   antpairs <- 1; ### to define 
+  if (is.null(additive.gamma.sum)) additive.gamma.sum <- matrix(1,dim.rv,ptheta)
+
   if (!is.null(pairs)) { pair.structure <- 1;} else  pair.structure <- 0;  
   if (pair.structure==1 & dep.model==3) { ## {{{ 
 
@@ -382,28 +389,28 @@ if (!is.null(margsurv))
        antpairs <- nrow(pairs); 
        if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))==3) )
        {
-          Ptheta.des <- array(0,c(antpairs,nrow(theta.des),ncol(theta.des)))
-          for (i in 1:antpairs) Ptheta.des[i,,] <- theta.des
+          Ptheta.des <- array(0,c(nrow(theta.des),ncol(theta.des),antpairs))
+          for (i in 1:antpairs) Ptheta.des[,,i] <- theta.des
        theta.des <- Ptheta.des
        }
        if ( (length(dim(theta.des))==3)  & (length(dim(random.design))!=3) )
        {
-           rv.des <- array(0,c(antpairs,2,ncol(random.design)))
+           rv.des <- array(0,c(2,ncol(random.design),antpairs))
            for (i in 1:antpairs) {
-		   rv.des[i,1,] <- random.design[pairs[i,1],]
-		   rv.des[i,2,] <- random.design[pairs[i,2],]
+		   rv.des[1,,i] <- random.design[pairs[i,1],]
+		   rv.des[2,,i] <- random.design[pairs[i,2],]
 	   }
        random.design <- rv.des
        }
        if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))!=3) )
        {
 ###	       print("laver 3-dim design "); 
-          Ptheta.des <- array(0,c(antpairs,nrow(theta.des),ncol(theta.des)))
-          rv.des <- array(0,c(antpairs,2,ncol(random.design)))
+          Ptheta.des <- array(0,c(nrow(theta.des),ncol(theta.des),antpairs))
+          rv.des <- array(0,c(2,ncol(random.design),antpairs))
           for (i in 1:antpairs) {
-		   rv.des[i,1,] <- random.design[pairs[i,1],]
-		   rv.des[i,2,] <- random.design[pairs[i,2],]
-                   Ptheta.des[i,,] <- theta.des
+		   rv.des[1,,i] <- random.design[pairs[i,1],]
+		   rv.des[2,,i] <- random.design[pairs[i,2],]
+                   Ptheta.des[,,i] <- theta.des
 	   }
        theta.des <- Ptheta.des
        random.design <- rv.des
@@ -422,7 +429,7 @@ if (!is.null(margsurv))
   }
   ## }}}
 
-###  print(antpairs); print(head(pairs.rvs)); print(dim(theta.des)); print(dim(random.design)); 
+###  print(antpairs); print(head(pairs.rvs)); print(dim(theta.des)); print(dim(random.design)); print(additive.gamma.sum)
 
   loglike <- function(par) 
   { ## {{{
@@ -440,17 +447,28 @@ if (!is.null(margsurv))
       itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
       icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
       ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
-      itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,irvdes=random.design) 
-      ## }}}
-      else outl<-.Call("twostageloglikeRVpairs", ## {{{
+      itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
+      irvdes=random.design,iags=additive.gamma.sum) ## }}}
+      else {
+      if (two.stage==1) outl<-.Call("twostageloglikeRVpairs", ## {{{
       icause=status,ipmargsurv=psurvmarg, 
       itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
       icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
       ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
       itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
       irvdes=random.design,
-      idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs
-      )  ## }}} 
+      idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs,
+      iags=additive.gamma.sum) else outl<-.Call("survivalloglikeRVpairs", 
+      icause=status,ipmargsurv=psurvmarg, 
+      itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
+      icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
+      ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
+      itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
+      irvdes=random.design,
+      idimthetades=dim(theta.des),idimrvdes=dim(random.design),
+      irvs=pairs.rvs,iags=additive.gamma.sum) 
+      } ## }}} 
+
 
     if (detail==3) print(c(par,outl$loglike))
 
@@ -459,61 +477,67 @@ if (!is.null(margsurv))
     return(ret)
   } ## }}}
 
-  if (score.method=="optimize" && ptheta!=1) {cat("optimize only works for d==1, score.mehod set to nlminb \n"); score.method <- "nlminb";}
+  if (score.method=="optimize" && ptheta!=1) {
+  cat("optimize only works for d==1, score.mehod set to nlminb \n"); 
+  score.method <- "nlminb";
+  }
 
   theta.iid <- NULL
   logl <- NULL
   p <- theta
-  if (score.method=="fisher.scoring") { ## {{{
-    oout <- 2;  ### output control for obj
-    if (Nit>0) 
-    for (i in 1:Nit)
-    {
-        out <- loglike(p)
-	hess <- -1* out$Dscore
-	if (!is.na(sum(hess))) hessi <- lava::Inverse(out$Dscore) else hessi <- hess 
-        if (detail==1) {## {{{
-          cat(paste("Fisher-Scoring ===================: it=",i,"\n")); 
-          cat("theta:");print(c(p))
-          cat("loglike:");cat(c(out$loglike),"\n"); 
-          cat("score:");cat(c(out$score),"\n"); 
-	  cat("hess:"); cat(out$Dscore,"\n"); 
+
+    if (score.method=="fisher.scoring") { ## {{{
+        oout <- 2;  ### output control for obj
+        if (Nit>0) 
+            for (i in 1:Nit)
+                {
+                    out <- loglike(p)
+                    hess <-  -1* out$Dscore
+                    if (!is.na(sum(hess))) hessi <- lava::Inverse(out$Dscore) else hessi <- hess 
+                    if (detail==1) {## {{{
+                        cat(paste("Fisher-Scoring ===================: it=",i,"\n")); 
+                        cat("theta:");print(c(p))
+                        cat("loglike:");cat(c(out$loglike),"\n"); 
+                        cat("score:");cat(c(out$score),"\n"); 
+                        cat("hess:\n"); cat(out$Dscore,"\n"); 
+                    }## }}}
+                    delta <- hessi %*% out$score *step 
+	            if (i<Nit) {
+                    p <- p + delta* step
+                    theta <- p; 
+		    }
+                    if (is.nan(sum(out$score))) break; 
+                    if (sum(abs(out$score))<0.00001) break; 
+                    if (max(abs(theta))>20 & var.link==0) { cat("theta too large lacking convergence \n"); break; }
+                }
+        if (!is.nan(sum(p))) { 
+            if (detail==1 && iid==1) cat("iid decomposition\n"); 
+            out <- loglike(p) 
+            logl <- out$loglike
+            score1 <- score <- out$score
+            oout <- 0; 
+            hess1 <- hess <- -1*out$Dscore 
+            if (iid==1) theta.iid <- out$theta.iid
+            if (detail==1 && iid==1) cat("finished iid decomposition\n"); 
+        }
+        if (numDeriv==1) {
+            if (detail==1 ) cat("starting numDeriv for second derivative \n"); 
+            oout <- 0; 
+            score2 <- numDeriv::jacobian(loglike,p)
+	    score1 <- matrix(score2,ncol=1)
+            oout <- 3
+            hess <- numDeriv::jacobian(loglike,p)
+            if (detail==1 ) cat("finished numDeriv for second derivative \n"); 
+        }
+        if (detail==1 & Nit==0) {## {{{
+            cat(paste("Fisher-Scoring ===================: final","\n")); 
+            cat("theta:");print(c(p))
+            cat("loglike:");cat(c(out$loglike),"\n"); 
+            cat("score:");cat(c(out$score),"\n"); 
+            cat("hess:\n"); cat(out$Dscore,"\n"); 
         }## }}}
-        delta <- hessi %*% out$score *step 
-	if (i<Nit) {
-        p <- p+delta* step
-        theta <- p; 
-	}
-	if (is.nan(sum(out$score))) break; 
-        if (sum(abs(out$score))<0.00001) break; 
-        if (max(theta)>20) break; 
-    }
-    if (!is.nan(sum(p))) { 
-    if (detail==1 && iid==1) cat("iid decomposition\n"); 
-    out <- loglike(p) 
-    logl <- out$loglike
-    score1 <- score <- out$score
-    hess1 <- hess <- -1* out$Dscore 
-    if (iid==1) theta.iid <- out$theta.iid
-    }
-    if (numDeriv==1) {
-    if (detail==1 ) cat("numDeriv hessian start\n"); 
-      oout <- 3;  ## to get jacobian of score 
-      hess <- numDeriv::jacobian(loglike,p)
-      oout <- 0
-###      hess2 <- numDeriv::hessian(loglike,p)
-###      score1 <- numDeriv::jacobian(loglike,p)
-    if (detail==1 ) cat("numDeriv hessian stop\n"); 
-    }
-    if (detail==1 & Nit==0) {## {{{
-          cat(paste("Fisher-Scoring ===================: final","\n")); 
-          cat("theta:");print(c(p))
-          cat("loglike:");cat(c(out$loglike),"\n"); 
-          cat("score:");cat(c(out$score),"\n"); 
-	  cat("hess:\n"); cat(out$Dscore,"\n"); 
-    }## }}}
-    if (!is.na(sum(hess))) hessi <- lava::Inverse(hess) else hessi <- diag(nrow(hess))
-    ## }}}
+        if (!is.na(sum(hess))) hessi <- lava::Inverse(hess) else hessi <- diag(nrow(hess))
+        ## }}}
   } else if (score.method=="nlminb") { ## {{{ nlminb optimizer
     oout <- 0; 
     tryCatch(opt <- nlminb(theta,loglike,control=control),error=function(x) NA)
@@ -579,18 +603,24 @@ if (!is.null(margsurv))
   loglikeiid <- NULL
   robvar.theta <- NULL
   var.theta <- -1*hessi
+  likepairs <- NULL
   if (iid==1) {
+  if (dep.model==3 & pair.structure==1) likepairs <- out$likepairs
+  if (dep.model==3 & two.stage==0) {
+	  all.likepairs <- out$all.likepairs
+	  colnames(all.likepairs) <- c("surv","dt","ds","dtds","cause1","cause2")
+  }
      theta.iid <- out$theta.iid %*% hessi
      if (is.null(call.secluster) & is.null(max.clust)) rownames(theta.iid) <- unique(cluster.call) else rownames(theta.iid) <- unique(se.clusters)
      robvar.theta  <- (t(theta.iid) %*% theta.iid) 
      loglikeiid <- out$loglikeiid
-    } else { var.theta <- -1* hessi }
+    } else { var.theta <- -1* hessi ; all.likepairs <- NULL}
 
   if (!is.null(colnames(theta.des))) thetanames <- colnames(theta.des) else thetanames <- rep("intercept",ptheta)
 ###  if (length(thetanames)==nrow(theta)) rownames(theta) <- thetanames
   ud <- list(theta=theta,score=score,hess=hess,hessi=hessi,var.theta=var.theta,model=model,robvar.theta=robvar.theta,
-             theta.iid=theta.iid,loglikeiid=loglikeiid,
-	     thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,margsurv=psurvmarg); 
+             theta.iid=theta.iid,loglikeiid=loglikeiid,likepairs=likepairs,
+	     thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,margsurv=psurvmarg)
   class(ud)<-"twostage" 
   attr(ud, "Formula") <- formula
   attr(ud, "clusters") <- clusters
@@ -600,13 +630,15 @@ if (!is.null(margsurv))
   attr(ud,"var.link")<-var.link; 
   attr(ud,"antpers")<-antpers; 
   attr(ud,"antclust")<-antclust; 
+  if (dep.model==3 & two.stage==0) attr(ud,"all.likepairs")<- all.likepairs
   attr(ud, "Type") <- model
   attr(ud, "additive-gamma") <- (dep.model==3)*1
-  if (dep.model==3 & pair.structure==1) attr(ud, "likepairs") <- c(out$likepairs)
+  if (dep.model==3 ) attr(ud,"additive.gamma.sum") <- additive.gamma.sum
+#likepairs=likepairs,##  if (dep.model==3 & pair.structure==1) attr(ud, "likepairs") <- c(out$likepairs)
   if (dep.model==3 & pair.structure==0) attr(ud, "pardes") <- theta.des
-  if (dep.model==3 & pair.structure==1) attr(ud, "pardes") <- theta.des[1,,]
+  if (dep.model==3 & pair.structure==1) attr(ud, "pardes") <- theta.des[,,1]
   if (dep.model==3 & pair.structure==0) attr(ud, "rv1") <- random.design[1,]
-  if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <- random.design[1,1,]
+  if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <- random.design[1,,1]
   attr(ud, "response") <- "survival"
   return(ud);
   ## }}}
@@ -635,6 +667,7 @@ summary.twostage <-function (object,digits = 3,silent=0,...) { ## {{{
       var.link <- attr(object,"var.link"); 
       rv1 <- attr(object,"rv1"); 
       theta.des <- attr(object,"pardes"); 
+      ags <- attr(object,"additive.gamma.sum"); 
 ###      print(par); print(rv1)
       if (var.link==1) par <- theta.des %*% exp(object$theta) else  par <- theta.des %*% object$theta
       if (var.link==1) {
@@ -803,13 +836,13 @@ make.pairwise.design  <- function(pairs,kinship,type="ace")
 ### kinship gives shared genes for each pair
 
 if (type=="ace") {
-theta.des  <- array(0,c(nrow(pairs),4,2))
-random.des <- array(0,c(nrow(pairs),2,4))
+theta.des  <- array(0,c(4,2,nrow(pairs)))
+random.des <- array(0,c(2,4,nrow(pairs)))
 }
 
 if (type=="ae") {
-theta.des  <- array(0,c(nrow(pairs),3,1))
-random.des <- array(0,c(nrow(pairs),2,3))
+theta.des  <- array(0,c(3,1,nrow(pairs)))
+random.des <- array(0,c(2,3,nrow(pairs)))
 }
 
 rvs <- c()
@@ -819,19 +852,19 @@ for (i in 1:nrow(pairs))
          ### only 3 random variables for ace 
          ### (gene, shared, non-shared, environment
          ### kinship gives amount of genes shared 
-	 theta.des[i,,] <- rbind(c(kinship[i],0),
+	 theta.des[,,i] <- rbind(c(kinship[i],0),
 				 c(1-kinship[i],0),
 				 c(1-kinship[i],0),
 				 c(0,1))
-       	 random.des[i,,] <- rbind(c(1,1,0,1),c(1,0,1,1))
+       	 random.des[,,i] <- rbind(c(1,1,0,1),c(1,0,1,1))
 	 rvs <- c(rvs,4)
 	} 
         if (type=="ae") {
          ### only 2 random variables for ace 
          ### (gene, shared, not-shared  
          ### kinship gives amount of genes shared 
-	 theta.des[i,,] <- matrix(c(kinship[i],1-kinship[i],1-kinship[i]),nrow=3,ncol=1)
-       	 random.des[i,,] <- rbind(c(1,1,0),c(1,0,1))
+	 theta.des[,,i] <- matrix(c(kinship[i],1-kinship[i],1-kinship[i]),nrow=3,ncol=1)
+       	 random.des[,,i] <- rbind(c(1,1,0),c(1,0,1))
 	 rvs <- c(rvs,3)
 	}
 } 
@@ -928,6 +961,108 @@ ace.family.design <-function (data,id="id",member="type",mother="mother",father=
 res <- list(pardes=pard,des.rv=des.rv)
 return(res)
 } ## }}}
+
+##' @export
+make.pairwise.design.competing  <- function(pairs,kinship,type="ace",compete=2,overall=1)
+{ ## {{{ 
+### makes pairwise random effects design for shared and non-shared random effects
+### kinship gives shared genes for each pair
+### overall ace + 1 ace , 2 ace (6 pars) 
+
+if (type=="ace") {
+theta.des  <- array(0,c((compete+overall*2)*4+overall*2,(compete+overall)*2,nrow(pairs)))
+random.des <- array(0,c(2*compete,(compete+overall*2)*4+overall*2,nrow(pairs)))
+}
+
+if (type=="simple") {
+theta.des  <- array(0,c((compete+overall),(compete+overall),nrow(pairs)))
+random.des <- array(0,c(2*compete,(compete+overall),nrow(pairs)))
+}
+
+
+if (type=="ae") {
+theta.des  <- array(0,c(6,1,nrow(pairs)))
+random.des <- array(0,c(2*compete,6,nrow(pairs)))
+}
+
+rvs <- c()
+for (i in 1:nrow(pairs))
+{ 
+	if (type=="ace") {  ## {{{ 
+         ### only 3 random variables for ace 
+         ### (gene, shared, non-shared, environment
+         ### kinship gives amount of genes shared 
+	if (compete==3) { ## {{{ 
+		stop("to do ")
+	} ## }}} 
+	if (compete==2) { ## {{{ 
+		k <- kinship
+		if (overall==1)  { ## {{{ 
+			theta.des[,,i] <- matrix(0,18,6)
+			mini <- rbind( c(k[i],  0), c(1-k[i],0), c(1-k[i],0), c(0,     1))
+			minis <- rbind( c(k[i],0), 
+				        c(0.5*(1-k[i]),0), c(0.5*(1-k[i]),0),
+				        c(0.5*(1-k[i]),0), c(0.5*(1-k[i]),0),
+				        c(0.5*(1-k[i]),0), c(0.5*(1-k[i]),0),
+				        c(0.5*(1-k[i]),0), c(0.5*(1-k[i]),0),
+				        c(0,1))
+			theta.des[1:4,1:2,i] <- mini
+			theta.des[5:8,3:4,i] <- mini
+			theta.des[9:18,5:6,i] <- minis
+		 random.des[,,i] <- rbind( c(1,1,0,1,rep(0,4),c(1,1,0,0,0,1,0,0,0,1)),
+					   c(rep(0,4),1,1,0,1,c(1,0,1,0,0,0,1,0,0,1)),
+					   c(1,0,1,1,rep(0,4),c(1,0,0,1,0,0,0,1,0,1)),
+					   c(rep(0,4),1,0,1,1,c(1,0,0,0,1,0,0,0,1,1)))
+		 rvs <- c(rvs,14)
+		} ## }}} 
+		if (overall==0)  { ## {{{ 
+		 theta.des[,,i] <- rbind( 
+				 c(kinship[i],0,0,0),
+				 c(1-kinship[i],0,0,0),
+				 c(1-kinship[i],0,0,0),
+				 c(0,1,0,0),
+				 c(0,0,kinship[i],0),
+				 c(0,0,1-kinship[i],0),
+				 c(0,0,1-kinship[i],0),
+				 c(0,0,0,1))
+		 random.des[,,i] <- rbind( c(1,1,0,1,rep(0,4)),
+					   c(rep(0,4),1,1,0,1),
+					   c(1,0,1,1,rep(0,4)),
+					   c(rep(0,4),1,0,1,1))
+		 rvs <- c(rvs,8)
+		} ## }}} 
+	} ## }}} 
+	} 
+
+       if (type=="simple") {  ## {{{ 
+         ### only 3 random variables 
+	if (compete==3) { ## {{{ 
+	} ## }}} 
+	if (compete==2) { ## {{{ 
+		if (overall==1)  { ## {{{ 
+		 theta.des[,,i] <- diag(3)
+		 random.des[,,i] <- rbind(c(1,0,1),c(0,1,1),
+					  c(1,0,1),c(0,1,1))
+		 rvs <- c(rvs,3)
+		} ## }}} 
+		if (overall==0)  { ## {{{ 
+			stop("not done"); 
+		 rvs <- c(rvs,2)
+		} ## }}} 
+	} ## }}} 
+	}
+        if (type=="ae") {
+         ### only 2 random variables for ace 
+         ### (gene, shared, not-shared  
+         ### kinship gives amount of genes shared 
+	 theta.des[,,i] <- matrix(c(kinship[i],1-kinship[i],1-kinship[i]),nrow=3,ncol=1)
+       	 random.des[,,i] <- rbind(c(1,1,0),c(1,0,1))
+	 rvs <- c(rvs,3)
+	}
+} 
+
+return(list(random.design=random.des,theta.des=theta.des,ant.rvs=rvs))
+} ## }}} 
 
 ##' @export
 print.twostage<-function(x,digits=3,...)

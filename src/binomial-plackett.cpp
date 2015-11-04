@@ -296,13 +296,14 @@ RcppExport SEXP twostageloglikebin(
 		SEXP icluster,SEXP iclustsize,SEXP iclusterindex, SEXP ivarlink, 
                 SEXP iiid, SEXP  iweights, SEXP isilent, 
 		SEXP idepmodel, // SEXP ientryage,
-		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid , SEXP irvdes
+		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid , SEXP irvdes, SEXP iags
 ) // {{{
 {
 // {{{ setting matrices and vectors, and exporting to armadillo matrices
  mat thetades = Rcpp::as<mat>(ithetades); 
  mat clusterindex = Rcpp::as<mat>(iclusterindex);
  colvec theta = Rcpp::as<colvec>(itheta);
+ mat ags= Rcpp::as<colvec>(iags);
  int pt=theta.n_rows; 
  colvec clustsize = Rcpp::as<colvec>(iclustsize);
  int antclust = clusterindex.n_rows; 
@@ -481,7 +482,7 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 //		   etheta.print("theta"); 
 //	   }
 
-	   ll=claytonoakesbinRVC(etheta,thetades,ci,ck,Li,Lk,rv1,rv2,dplackt);
+	   ll=claytonoakesbinRVC(etheta,thetades,ags,ci,ck,Li,Lk,rv1,rv2,dplackt);
 //	   printf("%d  %d %d %lf %lf %lf \n",j,ci,ck,Li,Lk,ll); 
            ssf+=weights(i)*log(ll); 
 	   loglikecont=log(ll);
@@ -556,7 +557,7 @@ RcppExport SEXP twostageloglikebinpairs(
 		SEXP idepmodel, // SEXP ientryage,
 		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid , 
 		SEXP irvdes,
-		SEXP idimthetades, SEXP idimrvdes, SEXP inrvs 
+		SEXP idimthetades, SEXP idimrvdes, SEXP inrvs, SEXP iags
 ) // {{{
 {
 // {{{ setting matrices and vectors, and exporting to armadillo matrices
@@ -564,6 +565,7 @@ RcppExport SEXP twostageloglikebinpairs(
  IntegerVector nrvs(inrvs);
  mat clusterindex = Rcpp::as<mat>(iclusterindex);
  colvec theta = Rcpp::as<colvec>(itheta);
+ mat ags= Rcpp::as<colvec>(iags);
  int pt=theta.n_rows; 
  colvec clustsize = Rcpp::as<colvec>(iclustsize);
  // this is number of pairs (rather than clusters)
@@ -763,25 +765,31 @@ for (j=0;j<antclust;j++) {
 	// 3-dimensional array pairs*(2xrandom effects)
         int lnrv= nrvs(j)-1; // number of random effects for this cluster 	
 //	printf(" %d \n",lnrv); 
-        rv1= rvdesC.subcube( span(j),span(0),span(0,lnrv));
-        rv2= rvdesC.subcube( span(j),span(1),span(0,lnrv));
+	mat rv=rvdesC.slice(j); 
+        vec rv1= trans(rv.row(0)); 
+        vec rv2= trans(rv.row(1)); 
+
+//        rv1= rvdesC.subcube( span(0),span(0,lnrv),span(j));
+//        rv2= rvdesC.subcube( span(1),span(0,lnrv),span(j));
+
 	// takes parameter relations for each pair
 	// 3-dimensional array pairs*(random effects* pars )
 //	mat thetades=thetadesi.subcube( span(j),span(0,lnrv),span::all);
+//	mat thetadesv=thetadesi.subcube( span(j),span(0,lnrv),span(0,pt-1));
+//	mat thetades=mat(thetadesv.begin(),nrvs(j),pt); 
 
-	mat thetadesv=thetadesi.subcube( span(j),span(0,lnrv),span(0,pt-1));
-	mat thetades=mat(thetadesv.begin(),nrvs(j),pt); 
+	mat thetadesv=thetadesi.slice(j); 
 
 	if (j< 0)  {
 	   Rprintf(" %d %d \n",lnrv,pt); 
            rv1.print("rv1");    rv2.print("rv2"); 
-	   thetades.print("thetades "); 
+	   thetadesv.print("thetades "); 
 	   etheta.print("e-theta"); 
 	   mat test=mat(thetades.begin(),3,1); 
 	   test.print("test"); 
 	}
 
-	ll=claytonoakesbinRVC(etheta,thetades,ci,ck,Li,Lk,rv1,rv2,dplackt);
+	ll=claytonoakesbinRVC(etheta,thetadesv,ags,ci,ck,Li,Lk,rv1,rv2,dplackt);
         ssf+=weights(i)*log(ll); 
 	loglikecont=log(ll);
 	if (j<-10)  Rprintf("%lf %d \n",loglikecont,i); 

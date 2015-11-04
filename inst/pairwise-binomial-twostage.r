@@ -20,10 +20,11 @@ out$pardes
 head(out$des.rv)
 
 ### now specify fitting via specific pairs 
+source("../R/binomial.twostage.R")
 ts <- binomial.twostage(margbin,data=data,clusters=data$cluster,
-             theta=c(2,1),var.link=0,step=1.0,Nit=10,detail=1,
-               random.design=out$des.rv,
-               theta.des=out$pardes)
+          theta=c(2,1),var.link=0,step=1.0,Nit=10,detail=1,
+          random.design=out$des.rv,
+          theta.des=out$pardes)
 summary(ts)
 
 ### first all pairs 
@@ -40,6 +41,7 @@ ts <- binomial.twostage(margbin,data=data,clusters=data$cluster,
                theta=c(2,1),var.link=0,step=1.0,Nit=10,detail=1,
                random.design=out$des.rv,
                theta.des=out$pardes,pairs=pairs)
+ts$theta
 summary(ts)
 
 ###source("../R/binomial.twostage.R"); 
@@ -106,29 +108,29 @@ head(pair.types)
 ### mother, father, share 0 rvm=c(1,0) rvf=c(0,1), 
 ### thetadesmf=rbind(c(1,0),c(1,0),c(0,1))
 
-theta.des  <- array(0,c(nrow(pair.new),4,2))
-random.des <- array(0,c(nrow(pair.new),2,4))
+theta.des  <- array(0,c(4,2,nrow(pair.new)))
+random.des <- array(0,c(2,4,nrow(pair.new)))
 ### random variables in each pair 
 rvs <- c()
 for (i in 1:nrow(pair.new))
 {
 	if (pair.types[i,1]=="mother" & pair.types[i,2]=="father")
 	{
-	theta.des[i,,] <- rbind(c(1,0),c(1,0),c(0,1),c(0,0))
-       	random.des[i,,] <- rbind(c(1,0,1,0),c(0,1,1,0))
+	theta.des[,,i] <- rbind(c(1,0),c(1,0),c(0,1),c(0,0))
+       	random.des[,,i] <- rbind(c(1,0,1,0),c(0,1,1,0))
 	rvs <- c(rvs,3)
 	} else {
-  	theta.des[i,,] <- rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
-	random.des[i,,] <- rbind(c(1,1,0,1),c(1,0,1,1))
+  	theta.des[,,i] <- rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
+	random.des[,,i] <- rbind(c(1,1,0,1),c(1,0,1,1))
 	rvs <- c(rvs,4)
 	}
 }
 ### 3 rvs here 
-random.des[7,,]
-theta.des[7,,]
+random.des[,,7]
+theta.des[,,7]
 ### 4 rvs here 
-random.des[1,,]
-theta.des[1,,]
+random.des[,,1]
+theta.des[,,1]
 head(rvs)
 
 tsdid2 <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
@@ -153,8 +155,8 @@ head(kinship,n=10)
 out <- make.pairwise.design(pair.new,kinship,type="ace") 
 names(out)
 ### 4 rvs here , here independence since shared component has variance 0 !
-out$random.des[9,,]
-out$theta.des[9,,]
+out$random.des[,,9]
+out$theta.des[,,9]
 
 tsdid3 <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
                theta=c(2,1),var.link=0,step=1.0,
