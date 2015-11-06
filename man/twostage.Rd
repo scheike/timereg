@@ -14,8 +14,9 @@ twostage(margsurv, data = sys.parent(), score.method = "fisher.scoring",
   iid = 1, step = 0.5, notaylor = 0, model = "clayton.oakes",
   marginal.trunc = NULL, marginal.survival = NULL, marginal.status = NULL,
   strata = NULL, se.clusters = NULL, max.clust = NULL, numDeriv = 0,
-  random.design = NULL, pairs = NULL, pairs.rvs = NULL, two.stage = 1,
-  additive.gamma.sum = NULL)
+  random.design = NULL, pairs = NULL, pairs.rvs = NULL,
+  additive.gamma.sum = NULL, two.stage = 1, baseline.fix = 0,
+  cr.models = NULL)
 }
 \arguments{
 \item{margsurv}{Marginal model}
@@ -70,9 +71,13 @@ twostage(margsurv, data = sys.parent(), score.method = "fisher.scoring",
 
 \item{pairs.rvs}{for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair.}
 
+\item{additive.gamma.sum}{for two.stage=0, this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters.}
+
 \item{two.stage}{to fit two-stage model, if 0 then will fit hazard model with additive gamma structure (WIP)}
 
-\item{additive.gamma.sum}{for two.stage=0, this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters.}
+\item{cr.models}{competing risks models for two.stage=0, can be given as a list, if not given then assume that no covariates are needed}
+
+\item{baseline.fix=0}{to fix baseline, given in marginal.survival, baseline.fix=1 uses addtive aalen model, baseline.fix=2 fits weibull weibull model}
 }
 \description{
 We allow a regression structure for the indenpendent gamma distributed

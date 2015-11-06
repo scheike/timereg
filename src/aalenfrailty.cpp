@@ -285,8 +285,8 @@ RcppExport SEXP BhatAddGam(SEXP idBaalen,SEXP icause,
 //	cumhaz1.print("ch1"); 
 //	ags.print("ags"); 
 
-// wall_clock timer; 
-// timer.tic(); 
+ wall_clock timer; 
+ timer.tic(); 
 // printf(" %d \n",cause.n_elem); 
 
     for (unsigned k=0; k<cause.n_elem; k++) { // Iterate over events
@@ -314,8 +314,8 @@ RcppExport SEXP BhatAddGam(SEXP idBaalen,SEXP icause,
 	cumhaz1=xjump.slice(k) * trans(Bhat.row(k)); 
     } // }}}
 
-// double nt2 = timer.toc();
-// printf("timer-loop %lf \n",nt2); 
+ double nt2 = timer.toc();
+ printf("timer-loop %lf \n",nt2); 
 
     return(Rcpp::List::create(Rcpp::Named("B")=Bhat, Rcpp::Named("caseweights")=casev));
   } catch( std::exception &ex ) {

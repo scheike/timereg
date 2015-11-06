@@ -14,7 +14,8 @@ binomial.twostage(margbin, data = sys.parent(),
   theta = NULL, theta.des = NULL, var.link = 1, iid = 1, step = 1,
   notaylor = 1, model = "plackett", marginal.p = NULL, strata = NULL,
   max.clust = NULL, se.clusters = NULL, numDeriv = 0,
-  random.design = NULL, pairs = NULL, pairs.rvs = NULL)
+  random.design = NULL, pairs = NULL, pairs.rvs = NULL,
+  additive.gamma.sum = NULL)
 }
 \arguments{
 \item{margbin}{Marginal binomial model}
@@ -64,6 +65,8 @@ binomial.twostage(margbin, data = sys.parent(),
 \item{pairs}{matrix with rows of indeces (two-columns) for the pairs considered in the pairwise composite score, useful for case-control sampling when marginal is known.}
 
 \item{pairs.rvs}{for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair.}
+
+\item{additive.gamma.sum}{for two.stage=0, this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters.}
 }
 \description{
 The pairwise pairwise odds ratio model provides an alternative to the alternating logistic

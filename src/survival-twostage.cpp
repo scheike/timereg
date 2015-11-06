@@ -150,6 +150,12 @@ double lapsf(double y,double x, double z)
 {
 return( pow(x,y)/pow((z + x),y));
 }
+
+//double lapsf(double y,double x, double z) 
+//{
+//return( exp(log(x)*y)/exp(log(z + x)*y));
+//}
+
 vec Dlapsf(double y, double x, double z)
 { 
 vec dL(3); 
@@ -172,6 +178,7 @@ dL(3)= y* pow(x,y)* pow(x+z,(-y-2))+(y+1)*pow(x,y)*
 dL(5)= y* (y+1)* (y+2)* (-pow(x,y))* pow(x+z,(-y-3));
 return(dL); 
 } 
+
 vec Dilapsf(double y, double x, double z) 
 { 
 vec dL(3); 
@@ -452,58 +459,65 @@ double survivalRVC(vec theta,mat thetades,mat ags,int cause1,int cause2,vec cif1
 int nn=thetades.n_rows; 
 int lpar=thetades.n_cols; 
 
+vec sumtheta=ags * theta; 
+
+// test=3; 
+// wall_clock timer; 
+// timer.tic(); 
+
  // {{{ first basic laplace derivatives
-vec x11=trans(x1.row(0)); 
+vec resv(nn); // resv.fill(0); 
 
-if (test==1) { x11.print("x11"); par.print("par "); }
-
-vec resv(nn); resv.fill(0); 
-
-if (test==1) { x1.print("x1"); cif1.print("cif1"); }
+//if (test==1) { x1.print("x1"); cif1.print("cif1"); }
 
 vec x1f1, x2f2; 
 x1f1= trans(x1) * cif1; 
 x2f2= trans(x2) * cif2; 
 
-if (test==1) { x1f1.print("x1f1"); } 
+//if (test==1) { x1f1.print("x1f1"); } 
 //ags.print("ags"); theta.print("par"); 
 
 double like=1,iisum; 
 int i; 
 for (i=0;i<nn;i++) 
 {
-lamtot1=sum(trans(ags.row(i)) % theta); 
+lamtot1= sumtheta(i); 
 iisum = x1f1(i)+x2f2(i);
 resv(i) = lapsf(par(i),lamtot1,iisum);
+//resv(i) = pow(lamtot1,par(i))/pow((iisum + lamtot1),par(i));
 like=like*resv(i); 
 }
 
-if (test==1) { resv.print("resv"); printf(" like %lf \n",like); }
+
+//if (test==1) { resv.print("resv"); printf(" like %lf \n",like); }
 
 vec D1(nn),D2(nn),D3(nn); 
 vec D13(nn),D23(nn),D33(nn),D133(nn),D233(nn),D333(nn);
 
 vec res(6),res0(6); 
+res.fill(0); res0.fill(0); 
+
 for (i=0;i<nn;i++) 
 { // {{{ 
 iisum = x1f1(i)+x2f2(i);
-lamtot1=sum(trans(ags.row(i)) % theta); 
+lamtot1=sumtheta(i); 
 res0    = Dlapsf( par(i),lamtot1,iisum);
-  D1(i)   = res0(0);
-  D2(i)   = res0(1);
-  D3(i)   = res0(2);
+  D1(i)   = res0(0); D2(i)   = res0(1); D3(i)   = res0(2);
 res     = D2lapsf(par(i),lamtot1,iisum);
- D13(i)  =  res(0);
- D23(i)  =  res(1);
- D33(i)  =  res(2);
-D133(i) =  res(3);
-D233(i) =  res(4);
-D333(i) =  res(5);
+ D13(i)  =  res(0); D23(i)  =  res(1); D33(i)  =  res(2);
+D133(i) =  res(3); D233(i) =  res(4); D333(i) =  res(5);
 } // }}} 
 
 // }}} 
 
-if (test==1) { x11.print("x11"); thetades.print("td"); }
+//if (test==3) {
+// double nt2 = timer.toc();
+// printf("timer-loop 2  %lf antal rv's %d \n",100000*nt2,nn); 
+//}
+
+
+// timer.tic(); 
+//if (test==1) { x11.print("x11"); thetades.print("td"); }
 
 vec msum(lpar); //msum.fill(1);
 vec mdesi(lpar);
@@ -558,7 +572,6 @@ dtdtds = dtdtds+(led3-led2)/pow(resv(i),4);
 // }}} 
 } // }}} 
 
-
 vec dttheta(lpar),dstheta(lpar),d3(lpar); 
 dttheta = dtheta*dt*like + like*dtt;
 dstheta = dtheta*ds*like + like*dts;
@@ -572,11 +585,14 @@ dtheta =  dtheta *like;
 dt = like*dt;
 ds = like*ds;
 
-
 //printf(" %lf %lf \n",dt,ds); 
-
 // }}} 
 
+
+//if (test==3) {
+// double nt3 = timer.toc();
+// printf("timer-loop 3 %lf \n",100000*nt3); 
+//}
 
 if (test==1) {
 printf("32 her \n"); printf(" like %lf  \n",like); 
