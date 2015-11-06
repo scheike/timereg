@@ -192,6 +192,7 @@
 ##' @param additive.gamma.sum for two.stage=0, this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters.
 ##' @param two.stage to fit two-stage model, if 0 then will fit hazard model with additive gamma structure (WIP)
 ##' @param baseline.fix=0 to fix baseline, given in marginal.survival, baseline.fix=1 uses addtive aalen model, baseline.fix=2 fits weibull weibull model 
+##' @param cr.models competing risks models for two.stage=0, can be given as a list, if not given then assume that no covariates are needed
 twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
 silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,
 var.link=1,iid=1, step=0.5,notaylor=0,model="clayton.oakes",
@@ -199,7 +200,7 @@ var.link=1,iid=1, step=0.5,notaylor=0,model="clayton.oakes",
   se.clusters=NULL,max.clust=NULL,numDeriv=0,
   random.design=NULL,pairs=NULL,pairs.rvs=NULL,
   additive.gamma.sum=NULL,
-  two.stage=1,baseline.fix=0)
+  two.stage=1,baseline.fix=0,cr.models=NULL)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -441,30 +442,47 @@ if (!is.null(margsurv))
 ###  setting up arguments for Aalen baseline profile estimates
  if (baseline.fix==0 & two.stage==0)  { ## {{{ 
 
-	## first compute marginal aalen models for all causes
-        ###	extend to number of causes  
-	a1 <- aalen(Surv(time,status==1)~+1,data=data,robust=0)
-	a2 <- aalen(Surv(time,status==2)~+1,data=data,robust=0)
-	dA1 <- apply(a1$cum[,-1,drop=FALSE],2,diff)
-	dA2 <- apply(a2$cum[,-1,drop=FALSE],2,diff)
+ if (is.null(cr.models)) stop("give hazard models for different causes, 
+      ex cr.models=list(Surv(time,status==1)~+1,Surv(time,status==2)~+1) \n")
 
-	times <- data$time
+## {{{ 
+        timestatus <- all.vars(cr.models[[1]])
+	times <- data[,timestatus[1]]
+	lstatus <- data[,timestatus[2]]
 	### organize increments according to overall jump-times 
-	jumps <- data$status!=0
-	dtimes <- data$time[jumps]
+	jumps <- lstatus!=0
+	dtimes <- times[jumps]
 	st <- order(dtimes)
 	dtimesst <- dtimes[st]
-	dcauses <- data$status[jumps][st]
+	dcauses <- lstatus[jumps][st]
 	ids <- (1:nrow(data))[jumps][st]
 	###
-	dBaalen <- matrix(0,length(dtimes),ncol(a1$cum)+ncol(a2$cum)-2)
-	jumps1 <- (1:length(dtimes))[dcauses==1]
-	jumps2 <- (1:length(dtimes))[dcauses==2]
-	dBaalen[jumps1,1] <- dA1
-	dBaalen[jumps2,2] <- dA2
 
-###	print("hej "); 
-	#### organize subject specific random variables and design
+###      cr.models=list(Surv(time,status==1)~+1,Surv(time,status==2)~+x ) 
+        fd <- function(x) length(all.vars(x))-1
+        ncovsx <- unlist(lapply(cr.models,fd))
+	nc <- sum(ncovsx)
+	poscovs <- cumsum(ncovsx)
+	dBaalen <- matrix(0,length(dtimes),nc)
+
+	xjump <- array(0,c(length(cr.models),nc,length(ids)))
+
+	## first compute marginal aalen models for all causes
+	a <- list(); da <- list(); 
+	for (i in 1:length(cr.models)) {
+	      a[[i]] <-  aalen(as.formula(cr.models[[i]]),data=data,robust=0)
+	      da[[i]] <- apply(a[[i]]$cum[,-1,drop=FALSE],2,diff)
+	      jumpsi <- (1:length(dtimes))[dcauses==i]
+	      if (i==1) fp <- 1 else fp <- poscovs[i-1]+1
+	      indexc <- fp:poscovs[i]
+	      dBaalen[jumpsi,indexc] <- da[[i]]
+	      covsx <- all.vars(cr.models[[1]])[-(1:2)]
+              X <- cbind(1,data[,covsx])
+              xjump[i,indexc,] <- X[ids,]
+	 }
+	## }}} 
+
+       	#### organize subject specific random variables and design
         ###  for additive gamma model
 	dimt <- dim(theta.des[,,1])
 	dimr <- dim(random.design[,,])
@@ -476,19 +494,11 @@ if (!is.null(margsurv))
 	###
 	mrv.des[,,pairs[,1]] <- random.design[1:2,,]
 	mrv.des[,,pairs[,2]] <- random.design[3:4,,]
-
 	### array thetades to jump times (subjects)
 	mtheta.des <- mtheta.des[,,ids]
 	### array randomdes to jump times (subjects)
 	mrv.des <- mrv.des[,,ids]
 
-	### covariates for jumps times 
-	### xjump <- out[jumps,c("x1","x2")][st,]
-	### here without covariates 
-        ### extend to general aalen
-	xjump <- array(diag(2),c(2,2,length(ids)))
-
-###	print("hej selv"); 
 
  }  else {
 	 mrv.des <- array(0,c(1,1,1))
@@ -538,15 +548,12 @@ if (!is.null(margsurv))
 ###	   print(head(psurvmarg))
 
            profile.baseline  <- .Call("BhatAddGam",
-            dBaalen,dcauses,dim(xjump),xjump,
+            dBaalen,dcauses,
+	    dim(xjump),xjump,
 	    pars,
 	    dim(mtheta.des),mtheta.des,
-	    additive.gamma.sum,var.link,dim(mrv.des),mrv.des)
-
-###           ap1 <- a1$cum
-###           ap1[-1,2] <- profile.baseline$B[,1][jumps1]
-###           ap2 <- a2$cum
-###           ap2[-1,2] <- profile.baseline$B[,1][jumps2]
+	    additive.gamma.sum,var.link,
+	    dim(mrv.des),mrv.des)
 
 	   psurvmarg <- Cpred(cbind(dtimesst,profile.baseline$B),times)[,-1]
 	 } 

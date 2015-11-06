@@ -231,12 +231,17 @@ RcppExport SEXP BhatAddGam(SEXP idBaalen,SEXP icause,
 		SEXP idimjumprv,SEXP ijumprv)  // cube 
 { // {{{ 
   try {
+
+//   wall_clock timer; 
+//   timer.tic(); 
+
   // {{{ reading in matrices and cubes 
     mat                dBaalen = Rcpp::as<mat>(idBaalen);
     uvec                 cause = Rcpp::as<uvec>(icause); 
     vec                  theta = Rcpp::as<vec>(itheta); 
     mat                    ags = Rcpp::as<mat>(iags);
     int                varlink = Rcpp::as<int>(ivarlink);
+
 
 // array for xjump covariates of jump subject, for all causes 
  NumericVector vxjump(ixjump);
@@ -254,10 +259,11 @@ RcppExport SEXP BhatAddGam(SEXP idBaalen,SEXP icause,
  arma::cube rv(vrv.begin(), arrayDims2[0], arrayDims2[1], arrayDims2[2], false);
 
  // }}}
+ 
+// double nt = timer.toc();
+// printf("timer-ind %lf \n",nt); 
 
- vec casev(cause.n_elem); 
-// theta.print("hej"); 
-
+  vec casev(cause.n_elem); 
   vec etheta=theta; 
   if (varlink==1) etheta=exp(theta); 
 
@@ -279,7 +285,12 @@ RcppExport SEXP BhatAddGam(SEXP idBaalen,SEXP icause,
 //	cumhaz1.print("ch1"); 
 //	ags.print("ags"); 
 
+// wall_clock timer; 
+// timer.tic(); 
+// printf(" %d \n",cause.n_elem); 
+
     for (unsigned k=0; k<cause.n_elem; k++) { // Iterate over events
+	    // {{{ 
 //	    printf(" %d \n",k); 
 
         // computes weights based on additive gamma model 
@@ -291,10 +302,6 @@ RcppExport SEXP BhatAddGam(SEXP idBaalen,SEXP icause,
         caseweight=ll/allvec(0); // D_1 S/S 
 	casev(k)=caseweight; 
 
-//	printf("------------------ %lf %lf \n",ll,caseweight);  
-//	printf("------------------ %d \n",(int) cause(k));  
-//	vec bb=trans(dBaalen.row(k)); bb.print("dB"); 
-
         //  increments 
         Bhat.row(k)=dBaalen.row(k)/caseweight;
         //  cumulative  for all causes
@@ -305,7 +312,11 @@ RcppExport SEXP BhatAddGam(SEXP idBaalen,SEXP icause,
 //	bb.print("bb"); 
 //	cumulative hazard at time t- for all causes 
 	cumhaz1=xjump.slice(k) * trans(Bhat.row(k)); 
-    }
+    } // }}}
+
+// double nt2 = timer.toc();
+// printf("timer-loop %lf \n",nt2); 
+
     return(Rcpp::List::create(Rcpp::Named("B")=Bhat, Rcpp::Named("caseweights")=casev));
   } catch( std::exception &ex ) {
     forward_exception_to_r( ex );
