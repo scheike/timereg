@@ -2045,6 +2045,9 @@ vec allvec(6);
 //printf(" hej 1 \n"); 
 //pmargsurv.print("pmarg"); 
 
+ wall_clock timer; 
+ timer.tic(); 
+
 for (j=0;j<antclust;j++) { // {{{  
 
    R_CheckUserInterrupt(); diff=0; sdj=0; 
@@ -2174,6 +2177,9 @@ for (j=0;j<antclust;j++) { // {{{
 if (iid==1)  { likepairs(j)=ll; matlikepairs.row(j)=trans(allvec); }
 
 } // }}} /* j in antpairs */ 
+
+ double nt2 = timer.toc();
+ printf("timer-twostage  %lf \n",nt2); 
 
 //printf("Sum of squares %lf \n",ssf); theta.print("theta"); Utheta.print("Utheta"); DUtheta.print("DUtheta"); 
 List res; 

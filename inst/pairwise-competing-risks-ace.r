@@ -44,7 +44,7 @@ cr.models=list(Surv(time,status==1)~+1,Surv(time,status==2)~+1)
 ts <- twostage(NULL,data=out,clusters=out$cluster,
                theta=pars,
 	       score.method="fisher.scoring",
-	       var.link=0,step=1.0,Nit=0,detail=1,
+	       var.link=0,step=1.0,Nit=5,detail=0,
                random.design=dout$random.design,
                theta.des=dout$theta.des,pairs=pairs,
 	       numDeriv=0,

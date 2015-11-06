@@ -1,6 +1,10 @@
+##' Twostage survival model for multivariate survival data 
+##'
+##' Twostage survival model for multivariate survival data 
 ##' Fits Clayton-Oakes or bivariate Plackett models for bivariate survival data 
 ##' using marginals that are on Cox or addtive form. 
-##' If clusters contain more than two times, the algoritm uses a compososite likelihood
+##'
+##' If clusters contain more than two times, the algoritm uses a composite likelihood
 ##' based on the pairwise bivariate models. Can also fit a additive gamma random
 ##' effects model described in detail below.
 ##'
@@ -57,6 +61,17 @@
 ##' }
 ##' here using theta.des to specify these low-dimension association. Default is a diagonal matrix. 
 ##'
+##' With the two.stage=0 option fits the standard 
+##' frailty model with additive hazard condtional on the random
+##' effects
+##' \deqn{
+##' \lambda_{ij} = (V_{ij^T Z) (X_{ij}^T \alpha(t))
+##' }
+##' The baseline \eqn{\alpha(t)} is profiled out using
+##' marginal modelling. But standard errors do reflect
+##' this uncertainty, and are therefore a bit to small.
+##' To remedy this one can do bootstrapping or use
+##' twostage.fullse function when possible.
 ##' @references
 ##' Estimating heritability for cause specific mortality based on twins studies
 ##' Scheike, Holst, Hjelmborg (2014), LIDA  
@@ -66,6 +81,8 @@
 ##' 
 ##' Twostage modelling of additive gamma frailty models for survival data. 
 ##' Scheike and Holst, working paper 
+##' 
+##' Eriksson and Scheike (2015), Additive Gamma frailty models for competing risks data, Biometrics (2015)
 ##' 
 ##' @examples
 ##' data(diabetes)
@@ -438,7 +455,6 @@ if (!is.null(margsurv))
   }
   ## }}}
 
- 
 ###  setting up arguments for Aalen baseline profile estimates
  if (baseline.fix==0 & two.stage==0)  { ## {{{ 
 
@@ -484,6 +500,7 @@ if (!is.null(margsurv))
 
        	#### organize subject specific random variables and design
         ###  for additive gamma model
+	## {{{ 
 	dimt <- dim(theta.des[,,1])
 	dimr <- dim(random.design[,,])
 	mtheta.des <- array(0,c(dimt,nrow(data)))
@@ -498,18 +515,14 @@ if (!is.null(margsurv))
 	mtheta.des <- mtheta.des[,,ids]
 	### array randomdes to jump times (subjects)
 	mrv.des <- mrv.des[,,ids]
-
-
+	## }}} 
  }  else {
-	 mrv.des <- array(0,c(1,1,1))
-	 mtheta.des <- array(0,c(1,1,1))
-	 margthetades <- array(0,c(1,1,1))
-	 xjump <- array(0,c(1,1,1))
-	 dBaalen <- matrix(0,1,1)
-	 a1 <- NULL
-	 a2 <- NULL
+	 mrv.des <- array(0,c(1,1,1)); 
+	 mtheta.des <- array(0,c(1,1,1)); 
+	 margthetades <- array(0,c(1,1,1)); 
+	 xjump <- array(0,c(1,1,1)); 
+	 dBaalen <- matrix(0,1,1); 
  } ## }}} 
-
 
 ###  print(antpairs); print(head(pairs.rvs)); print(dim(theta.des)); print(dim(random.design)); print(additive.gamma.sum)
 
@@ -544,22 +557,17 @@ if (!is.null(margsurv))
       else { 
          ### update aalen type baseline  
 	 if (baseline.fix==0)  {
-###	   print(dim(psurvmarg))
-###	   print(head(psurvmarg))
 
            profile.baseline  <- .Call("BhatAddGam",
-            dBaalen,dcauses,
-	    dim(xjump),xjump,
-	    pars,
-	    dim(mtheta.des),mtheta.des,
-	    additive.gamma.sum,var.link,
-	    dim(mrv.des),mrv.des)
+            dBaalen,dcauses, dim(xjump),xjump, c(par), dim(mtheta.des),mtheta.des, 
+	    additive.gamma.sum,var.link, dim(mrv.des),mrv.des)
 
 	   psurvmarg <- Cpred(cbind(dtimesst,profile.baseline$B),times)[,-1]
 	 } 
 	      
       outl<-.Call("survivalloglikeRVpairs", 
-      icause=status,ipmargsurv=psurvmarg, 
+      icause=status,
+      ipmargsurv=psurvmarg, 
       itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
       icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
       ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
@@ -567,10 +575,10 @@ if (!is.null(margsurv))
       irvdes=random.design,
       idimthetades=dim(theta.des),idimrvdes=dim(random.design),
       irvs=pairs.rvs,iags=additive.gamma.sum) 
-	 if (baseline.fix==0)  outl$baseline <- cbind(dtimesst,profile.baseline$B); 
+
+      if (baseline.fix==0)  outl$baseline <- cbind(dtimesst,profile.baseline$B); 
       }
       } ## }}} 
-
 
     if (detail==3) print(c(par,outl$loglike))
 
@@ -1151,6 +1159,8 @@ coefmat <- function(est,stderr,digits=3,...) { ## {{{
   noquote(res)
 } ## }}}
 
+##' Wrapper for easy fitting of Clayton-Oakes or bivariate Plackett models for bivariate survival data 
+##'
 ##' Fits two-stage model for describing depdendence in survival data
 ##' using marginals that are on cox or aalen form using the twostage funcion, but
 ##' call is different and easier and the data manipulation  build into the function.
@@ -1309,24 +1319,6 @@ if (class(margsurv)[1]=="coxph")
    return(out)
 } ## }}}
 
-### library(mets)
-### dfam <- simSurvFam(10000)
-### dfam <- fast.reshape(dfam,var=c("x","time","status"))
-###### 
-### desfs <- function(x,num1="num1",num2="num2")
-### { 
-### pp <- (x[num1]=="m")*(x[num2]=="f")*1   ## mother-father 
-### pc <- (x[num1]=="m" | x[num1]=="f")*(x[num2]=="b1" | x[num2]=="b2")*1 ## mother-child
-### cc <- (x[num1]=="b1")*(x[num2]=="b1" | x[num2]=="b2")*1               ## child-child
-### c(pp,pc,cc)
-### } 
-######
-### marg <- coxph(Surv(time,status)~factor(num),data=dfam)
-### system.time(
-###out3 <- easy.twostage(marg,data=dfam,time="time",status="status",id="id",deshelp=1,
-###  score.method="fisher.scoring",theta.formula=desfs,
-###  desnames=c("parent-parent","parent-child","child-cild"))
-###)
 
 ##' @export
 simSurvFam <- function(n,beta=0.0,theta=1,lam0=0.5,lam1=1,lam2=1,ctime=10,...) { ## {{{ 
@@ -1354,6 +1346,11 @@ object.defined <- function(object)
    exists(as.character(substitute(object)))
 }
 
+##' Twostage survival modelling 
+##'
+##' Twostage survival modelling  
+##' Twostage survival modelling  where standard errros also adjust for uncertainty in baseline
+##' estimates via iid decompositions.
 ##' @export
 twostage.fullse <- function(margsurv,data=sys.parent(),
    score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
@@ -1680,7 +1677,8 @@ return(res)
 
 ##' @export
 make.pairwise.design.competing <- function(pairs,kinship,type="ace",compete=2,overall=1)
- { ## {{{ 
+ ## {{{ 
+ {
  ### makes pairwise random effects design for shared and non-shared random effects
  ### kinship gives shared genes for each pair
  ### overall ace + 1 ace , 2 ace (6 pars) 
@@ -1782,24 +1780,60 @@ make.pairwise.design.competing <- function(pairs,kinship,type="ace",compete=2,ov
  } 
  
  return(list(random.design=random.des,theta.des=theta.des,ant.rvs=rvs))
- } ## }}} 
+ } 
 ## }}} 
- ## }}} 
+## }}}
+## }}}
 
 
+##' Relative risk for additive gamma model
 ##'
+##' Relative risk for additive gamma model at time 0
+##' 
+##' @references
+##' 
+##' Eriksson and Scheike (2015), Additive Gamma frailty models for competing risks data, Biometrics (2015)
+##' 
+##' @examples
+##' lam0 <- c(0.5,0.3)
+##' pars <- c(1,1,1,1,0,1)
+##' ## genetic random effects, cause1, cause2 and overall 
+##' parg <- pars[c(1,3,5)]
+##' ## environmental random effects, cause1, cause2 and overall 
+##' parc <- pars[c(2,4,6)]
+##' 
+##' ## simulate competing risks with two causes with hazards 0.5 and 0.3
+##' ## ace for each cause, and overall ace 
+##' out <- simCompete.twin.ace(10000,parg,parc,0,2,lam0=lam0,overall=1,all.sum=1)
+
+##' ## setting up design for running the model 
+##' ## {{{ setting pairs and random effects 
+##' # 
+##' mm <- familycluster.index(out$cluster)
+##' head(mm$familypairindex,n=10)
+##' pairs <- matrix(mm$familypairindex,ncol=2,byrow=TRUE)
+##' tail(pairs,n=12)
+##' #
+##' kinship <- (out[pairs[,1],"zyg"]=="MZ")+ (out[pairs[,1],"zyg"]=="DZ")*0.5
+##' 
+##' dout <- make.pairwise.design.competing(pairs,kinship,
+##' 	       type="ace",compete=length(lam0),overall=1)
+##' head(dout$ant.rvs)
+##' ## MZ
+##' dim(dout$theta.des)
+##' dout$theta.des[,,1]
+##' dout$random.design[,,1]
+##' ## DZ
+##' dout$theta.des[,,nrow(out)/2]
+##' dout$random.design[,,nrow(out)/2]
+##' #
 ##' thetades <- dout$theta.des[,,1]
 ##' x <- dout$random.design[,,1]
+##' x
+##' EVadGam(rep(1,6),x[1,],x[3,],thetades,matrix(1,18,6))
+##' 
 ##' thetades <- dout$theta.des[,,nrow(out)/2]
 ##' x <- dout$random.design[,,nrow(out)/2]
-##' #
-##' x
-##' ## random design for random effects 
-##' x[1,]
-##' x[1,]
-##' x[3,]
-##' x[4,]
-##' EVadGam(rep(1,6),x[1,],x[3,],thetades,matrix(1,18,6))
 ##' EVadGam(rep(1,6),x[1,],x[4,],thetades,matrix(1,18,6))
 ##' @export
 EVadGam <- function(theta,x1,x2,thetades,ags)

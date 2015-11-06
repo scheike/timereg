@@ -75,7 +75,7 @@ twostage(margsurv, data = sys.parent(), score.method = "fisher.scoring",
 
 \item{two.stage}{to fit two-stage model, if 0 then will fit hazard model with additive gamma structure (WIP)}
 
-\item{cr.models}{competing risks models for two.stage=0, can be given as a list, if not given then assume that no covariates are needed}
+\item{cr.models}{competing risks models for two.stage=0, should be given as a list with models for each cause}
 
 \item{baseline.fix=0}{to fix baseline, given in marginal.survival, baseline.fix=1 uses addtive aalen model, baseline.fix=2 fits weibull weibull model}
 }
