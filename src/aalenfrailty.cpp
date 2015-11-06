@@ -290,7 +290,10 @@ RcppExport SEXP BhatAddGam(SEXP idBaalen,SEXP icause,
         ll=survivalRVC(etheta,thetadesv,ags,(int) cause(k),0,cumhaz1,cumhaz2,rv1,rv2,plackt,allvec);
         caseweight=ll/allvec(0); // D_1 S/S 
 	casev(k)=caseweight; 
+
 //	printf("------------------ %lf %lf \n",ll,caseweight);  
+//	printf("------------------ %d \n",(int) cause(k));  
+//	vec bb=trans(dBaalen.row(k)); bb.print("dB"); 
 
         //  increments 
         Bhat.row(k)=dBaalen.row(k)/caseweight;

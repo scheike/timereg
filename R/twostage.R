@@ -189,15 +189,17 @@
 ##' @param random.design random effect design for additive gamma modeli, when pairs are given this is a (pairs) x (2) x (max number random effects) matrix, see pairs.rvs below
 ##' @param pairs matrix with rows of indeces (two-columns) for the pairs considered in the pairwise composite score, useful for case-control sampling when marginal is known.
 ##' @param pairs.rvs for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair. 
-##' @param two.stage to fit two-stage model, if 0 then will fit hazard model with additive gamma structure (WIP)
 ##' @param additive.gamma.sum for two.stage=0, this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters.
+##' @param two.stage to fit two-stage model, if 0 then will fit hazard model with additive gamma structure (WIP)
+##' @param baseline.fix=0 to fix baseline, given in marginal.survival, baseline.fix=1 uses addtive aalen model, baseline.fix=2 fits weibull weibull model 
 twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
 silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,
 var.link=1,iid=1, step=0.5,notaylor=0,model="clayton.oakes",
-  marginal.trunc=NULL, marginal.survival=NULL,marginal.status=NULL,strata=NULL,
+  marginal.trunc=NULL,marginal.survival=NULL,marginal.status=NULL,strata=NULL,
   se.clusters=NULL,max.clust=NULL,numDeriv=0,
-  random.design=NULL,pairs=NULL,pairs.rvs=NULL,two.stage=1,
-  additive.gamma.sum=NULL)
+  random.design=NULL,pairs=NULL,pairs.rvs=NULL,
+  additive.gamma.sum=NULL,
+  two.stage=1,baseline.fix=0)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -205,6 +207,7 @@ if (model=="clayton.oakes") dep.model <- 1
 else if (model=="plackett") dep.model <- 2
 else stop("Model must by either clayton.oakes or plackett \n"); 
 start.time <- NULL
+psurvmarg <- NULL; status <- NULL
 
 if (!is.null(margsurv)) 
 if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
@@ -291,20 +294,25 @@ if (!is.null(margsurv))
 	}
   } ## }}}
 
+   antpers <- nrow(data); ## mydim(marginal.survival)[1]
+   RR <-  rep(1,antpers); 
 
-  if (!is.null(marginal.survival) ) {
-      if (!is.null(margsurv)) {  
-	  cat("must give either margsurv model or marginal.survival=probabilities,\n"); 
-          cat(" uses marginal.survival\n"); 
-      }
-	if (lefttrunk==1)  cat("Warnings specify only your own survival weights for right-censored data\n"); 
-###        if (length(marginal.survival)!=length(start.time)) stop(paste("marginal.survival must have length=",antpers,"\n"));  
-        psurvmarg <- marginal.survival
-	antpers <- length(marginal.survival)
-        RR <-  rep(1,antpers); 
-	if (!is.null(marginal.trunc)) ptrunc <- marginal.trunc else ptrunc <- rep(1,antpers);
-	if (!is.null(marginal.status)) status <- marginal.status else stop("must give censoring status\n"); 
-  } 
+###  if (!is.null(marginal.survival)) {
+###      if (!is.null(margsurv)) {  
+###	  cat("must give either margsurv model or marginal.survival=probabilities,\n"); 
+###          cat(" uses marginal.survival\n"); 
+###      }
+###     if (lefttrunk==1)  cat("Warnings specify only your own survival weights for right-censored data\n"); 
+###     psurvmarg <- marginal.survival
+###  }
+
+  if (is.null(psurvmarg)) psurvmarg <- rep(1,antpers);
+  if (!is.null(marginal.survival)) psurvmarg <- marginal.survival 
+  if (!is.null(marginal.trunc)) ptrunc <- marginal.trunc else ptrunc <- rep(1,antpers);
+
+  if (!is.null(marginal.status)) status <- marginal.status 
+  if (is.null(status)) stop("must give status variable for survival via either margninal model (margsurv) or as marginal.status \n"); 
+
 
   if (is.null(weights)==TRUE) weights <- rep(1,antpers); 
   if (is.null(strata)==TRUE) strata<- rep(1,antpers); 
@@ -429,6 +437,70 @@ if (!is.null(margsurv))
   }
   ## }}}
 
+ 
+###  setting up arguments for Aalen baseline profile estimates
+ if (baseline.fix==0 & two.stage==0)  { ## {{{ 
+
+	## first compute marginal aalen models for all causes
+        ###	extend to number of causes  
+	a1 <- aalen(Surv(time,status==1)~+1,data=data,robust=0)
+	a2 <- aalen(Surv(time,status==2)~+1,data=data,robust=0)
+	dA1 <- apply(a1$cum[,-1,drop=FALSE],2,diff)
+	dA2 <- apply(a2$cum[,-1,drop=FALSE],2,diff)
+
+	times <- data$time
+	### organize increments according to overall jump-times 
+	jumps <- data$status!=0
+	dtimes <- data$time[jumps]
+	st <- order(dtimes)
+	dtimesst <- dtimes[st]
+	dcauses <- data$status[jumps][st]
+	ids <- (1:nrow(data))[jumps][st]
+	###
+	dBaalen <- matrix(0,length(dtimes),ncol(a1$cum)+ncol(a2$cum)-2)
+	jumps1 <- (1:length(dtimes))[dcauses==1]
+	jumps2 <- (1:length(dtimes))[dcauses==2]
+	dBaalen[jumps1,1] <- dA1
+	dBaalen[jumps2,2] <- dA2
+
+###	print("hej "); 
+	#### organize subject specific random variables and design
+        ###  for additive gamma model
+	dimt <- dim(theta.des[,,1])
+	dimr <- dim(random.design[,,])
+	mtheta.des <- array(0,c(dimt,nrow(data)))
+	mrv.des <- array(0,c(dimr[1]/2,dimr[2],nrow(data)))
+	###
+	mtheta.des[,,pairs[,1]] <- theta.des
+	mtheta.des[,,pairs[,2]] <- theta.des
+	###
+	mrv.des[,,pairs[,1]] <- random.design[1:2,,]
+	mrv.des[,,pairs[,2]] <- random.design[3:4,,]
+
+	### array thetades to jump times (subjects)
+	mtheta.des <- mtheta.des[,,ids]
+	### array randomdes to jump times (subjects)
+	mrv.des <- mrv.des[,,ids]
+
+	### covariates for jumps times 
+	### xjump <- out[jumps,c("x1","x2")][st,]
+	### here without covariates 
+        ### extend to general aalen
+	xjump <- array(diag(2),c(2,2,length(ids)))
+
+###	print("hej selv"); 
+
+ }  else {
+	 mrv.des <- array(0,c(1,1,1))
+	 mtheta.des <- array(0,c(1,1,1))
+	 margthetades <- array(0,c(1,1,1))
+	 xjump <- array(0,c(1,1,1))
+	 dBaalen <- matrix(0,1,1)
+	 a1 <- NULL
+	 a2 <- NULL
+ } ## }}} 
+
+
 ###  print(antpairs); print(head(pairs.rvs)); print(dim(theta.des)); print(dim(random.design)); print(additive.gamma.sum)
 
   loglike <- function(par) 
@@ -458,7 +530,28 @@ if (!is.null(margsurv))
       itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
       irvdes=random.design,
       idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs,
-      iags=additive.gamma.sum) else outl<-.Call("survivalloglikeRVpairs", 
+      iags=additive.gamma.sum) 
+      else { 
+         ### update aalen type baseline  
+	 if (baseline.fix==0)  {
+###	   print(dim(psurvmarg))
+###	   print(head(psurvmarg))
+
+           profile.baseline  <- .Call("BhatAddGam",
+            dBaalen,dcauses,dim(xjump),xjump,
+	    pars,
+	    dim(mtheta.des),mtheta.des,
+	    additive.gamma.sum,var.link,dim(mrv.des),mrv.des)
+
+###           ap1 <- a1$cum
+###           ap1[-1,2] <- profile.baseline$B[,1][jumps1]
+###           ap2 <- a2$cum
+###           ap2[-1,2] <- profile.baseline$B[,1][jumps2]
+
+	   psurvmarg <- Cpred(cbind(dtimesst,profile.baseline$B),times)[,-1]
+	 } 
+	      
+      outl<-.Call("survivalloglikeRVpairs", 
       icause=status,ipmargsurv=psurvmarg, 
       itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
       icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
@@ -467,6 +560,8 @@ if (!is.null(margsurv))
       irvdes=random.design,
       idimthetades=dim(theta.des),idimrvdes=dim(random.design),
       irvs=pairs.rvs,iags=additive.gamma.sum) 
+	 if (baseline.fix==0)  outl$baseline <- cbind(dtimesst,profile.baseline$B); 
+      }
       } ## }}} 
 
 
@@ -609,6 +704,7 @@ if (!is.null(margsurv))
   if (iid==1) {
   if (dep.model==3 & pair.structure==1) likepairs <- out$likepairs
   if (dep.model==3 & two.stage==0) {
+	  hessi <- -1*hessi
 	  all.likepairs <- out$all.likepairs
 	  colnames(all.likepairs) <- c("surv","dt","ds","dtds","cause1","cause2")
   }
@@ -622,7 +718,7 @@ if (!is.null(margsurv))
 ###  if (length(thetanames)==nrow(theta)) rownames(theta) <- thetanames
   ud <- list(theta=theta,score=score,hess=hess,hessi=hessi,var.theta=var.theta,model=model,robvar.theta=robvar.theta,
              theta.iid=theta.iid,loglikeiid=loglikeiid,likepairs=likepairs,
-	     thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,margsurv=psurvmarg)
+	     thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,margsurv=psurvmarg,baseline=out$baseline)
   class(ud)<-"twostage" 
   attr(ud, "Formula") <- formula
   attr(ud, "clusters") <- clusters
@@ -778,6 +874,13 @@ plot.twostage<-function(x,pointwise.ci=1,robust=0,specific.comps=FALSE,
     abline(h=0); 
   }
 }  ## }}}
+
+##' @export
+matplot.twostage <- function(object,...)
+{ ## {{{ 
+B <- object$baseline
+matplot(B[,1],B[,-1],type="s",...)
+} ## }}} 
 
 ##' @export
 predict.twostage <- function(object,X=NULL,Z=NULL,times=NULL,times2=NULL,theta.des=NULL,diag=TRUE,...)
@@ -2344,4 +2447,39 @@ make.pairwise.design.competing <- function(pairs,kinship,type="ace",compete=2,ov
  } ## }}} 
 ## }}} 
  ## }}} 
+
+
+##'
+##' thetades <- dout$theta.des[,,1]
+##' x <- dout$random.design[,,1]
+##' thetades <- dout$theta.des[,,nrow(out)/2]
+##' x <- dout$random.design[,,nrow(out)/2]
+##' #
+##' x
+##' ## random design for random effects 
+##' x[1,]
+##' x[1,]
+##' x[3,]
+##' x[4,]
+##' EVadGam(rep(1,6),x[1,],x[3,],thetades,matrix(1,18,6))
+##' EVadGam(rep(1,6),x[1,],x[4,],thetades,matrix(1,18,6))
+##' @export
+EVadGam <- function(theta,x1,x2,thetades,ags)
+{ ## {{{ 
+	pars <- thetades %*% theta
+	lamtot <- ags %*% theta
+
+	mvar <- pars/lamtot
+	vvar <- pars/lamtot^2
+###	print(pars)
+
+	x1mvar <- sum(x1 * mvar)
+	x2mvar <- sum(x2 * mvar)
+	x1x2vvar <- sum(x1*x2*vvar)
+###	print(x1x2vvar)
+
+	list(x1m=x1mvar,mx2=x2mvar,
+	     dN=x1x2vvar/x2mvar)
+###	     pars=pars,mvar=mvar,vvar=vvar)
+} ## }}} 
 
