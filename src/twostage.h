@@ -11,6 +11,8 @@ RcppExport SEXP claytonoakesbinRV(SEXP itheta,SEXP istatus1,SEXP istatus2,SEXP i
 
 double claytonoakesbinRVC(vec theta,mat thetades,mat ags,int status1,int status2,double cif1,double cif2,vec x1, vec x2, vec &dp) ; 
 
+double survivalRVC(vec theta,mat thetades,mat ags,int cause1,int cause2,vec cif1,vec cif2,mat x1, mat x2, vec &dp, vec &alllike); 
+
 double ilapsf(double y, double x, double z);
 
 double lapsf(double y,double x, double z) ;

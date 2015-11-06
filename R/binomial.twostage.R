@@ -322,7 +322,6 @@ binomial.twostage <- function(margbin,data=sys.parent(),
       if (pair.structure==1 & dep.model==3) Xtheta <- matrix(0,antpers,1); ## not needed 
       DXtheta <- array(0,c(1,1,1));
 
-###      dyn.load("twostage.so")
       ptrunc <- rep(1,antpers); 
 
       if (pair.structure==0) 
@@ -373,7 +372,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
                         cat("hess:\n"); cat(out$Dscore,"\n"); 
                     }## }}}
                     delta <- hessi %*% out$score *step 
-	            if (i<Nit) {
+	            if (Nit>0) {
                     p <- p + delta* step
                     theta <- p; 
 		    }
