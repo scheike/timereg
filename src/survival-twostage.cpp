@@ -505,7 +505,7 @@ res0    = Dlapsf( par(i),lamtot1,iisum);
   D1(i)   = res0(0); D2(i)   = res0(1); D3(i)   = res0(2);
 res     = D2lapsf(par(i),lamtot1,iisum);
  D13(i)  =  res(0); D23(i)  =  res(1); D33(i)  =  res(2);
-D133(i) =  res(3); D233(i) =  res(4); D333(i) =  res(5);
+D133(i)  =  res(3); D233(i) =  res(4); D333(i) =  res(5);
 } // }}} 
 
 // }}} 
@@ -514,7 +514,6 @@ D133(i) =  res(3); D233(i) =  res(4); D333(i) =  res(5);
 // double nt2 = timer.toc();
 // printf("timer-loop 2  %lf antal rv's %d \n",100000*nt2,nn); 
 //}
-
 
 // timer.tic(); 
 //if (test==1) { x11.print("x11"); thetades.print("td"); }

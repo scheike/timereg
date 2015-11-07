@@ -505,16 +505,24 @@ if (!is.null(margsurv))
 	dimr <- dim(random.design[,,])
 	mtheta.des <- array(0,c(dimt,nrow(data)))
 	mrv.des <- array(0,c(dimr[1]/2,dimr[2],nrow(data)))
+###	print(dim(mrv.des))
+###	print(dim(mtheta.des))
 	###
 	mtheta.des[,,pairs[,1]] <- theta.des
 	mtheta.des[,,pairs[,2]] <- theta.des
 	###
-	mrv.des[,,pairs[,1]] <- random.design[1:2,,]
-	mrv.des[,,pairs[,2]] <- random.design[3:4,,]
+###	print(1:(dimr[1]/2))
+###	print((dimr[1]/2+1):dimr[1])
+	mrv.des[,,pairs[,1]] <- random.design[1:(dimr[1]/2),,,drop=FALSE]
+	mrv.des[,,pairs[,2]] <- random.design[(dimr[1]/2+1):dimr[1],,,drop=FALSE]
 	### array thetades to jump times (subjects)
-	mtheta.des <- mtheta.des[,,ids]
+	mtheta.des <- mtheta.des[,,ids,drop=FALSE]
 	### array randomdes to jump times (subjects)
-	mrv.des <- mrv.des[,,ids]
+	mrv.des <- mrv.des[,,ids,drop=FALSE]
+	print(dim(mtheta.des))
+	print(dim(mrv.des))
+	print(dim(xjump))
+	print(dim(dBaalen))
 	## }}} 
  }  else {
 	 mrv.des <- array(0,c(1,1,1)); 
@@ -558,11 +566,14 @@ if (!is.null(margsurv))
          ### update aalen type baseline  
 	 if (baseline.fix==0)  {
 
+		 print("base")
            profile.baseline  <- .Call("BhatAddGam",
             dBaalen,dcauses, dim(xjump),xjump, c(par), dim(mtheta.des),mtheta.des, 
 	    additive.gamma.sum,var.link, dim(mrv.des),mrv.des)
+		 print("base 2")
 
-	   psurvmarg <- Cpred(cbind(dtimesst,profile.baseline$B),times)[,-1]
+	   psurvmarg <- Cpred(cbind(dtimesst,profile.baseline$B),times)[,-1,drop=FALSE]
+	   print(dim(psurvmarg))
 	 } 
 	      
       outl<-.Call("survivalloglikeRVpairs", 
