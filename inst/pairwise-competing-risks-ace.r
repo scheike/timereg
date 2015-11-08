@@ -2,7 +2,7 @@
 library(mets)
 
 set.seed(100)
-n <- 10000
+n <- 40000
 
 ## {{{ competing risks ace model with profile of baseline 
 lam0 <- c(0.5,0.3)

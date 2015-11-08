@@ -496,12 +496,17 @@ vec D13(nn),D23(nn),D33(nn),D133(nn),D233(nn),D333(nn);
 
 vec res(6),res0(6); 
 res.fill(0); res0.fill(0); 
+double x,y,z; 
 
 for (i=0;i<nn;i++) 
 { // {{{ 
 iisum = x1f1(i)+x2f2(i);
 lamtot1=sumtheta(i); 
 res0    = Dlapsf( par(i),lamtot1,iisum);
+//y=par(i); x=lamtot1; z=iisum; 
+//D1(i) =(pow(z+x,y)*log(x)*pow(x,y) - pow(x,y)*log(x+z)*pow(z+x,y))/pow((z + x),(2*y)); 
+//D2(i) =(pow(z+x,y)*(y/x)*pow(x,y) - pow(x,y)*(y/(x+z))*pow(z+x,y))/pow((z+x),(2*y)); 
+//D3(i) =(- pow(x,y)*(y/(x+z))*pow(z+x,y))/pow(z+x,(2*y)); 
   D1(i)   = res0(0); D2(i)   = res0(1); D3(i)   = res0(2);
 res     = D2lapsf(par(i),lamtot1,iisum);
  D13(i)  =  res(0); D23(i)  =  res(1); D33(i)  =  res(2);
@@ -641,7 +646,7 @@ double survivalRVCmarg(vec theta,mat thetades,mat ags,int cause1,vec cif1,mat x1
 
  if (test==1) { cif1.print("c1"); x1.print("x1"); }
 
- colvec par = thetades * theta; 
+colvec par = thetades * theta; 
 
 if (test==1) { theta.print("theta"); thetades.print("t-des "); par.print("pp"); }
 
@@ -674,8 +679,8 @@ resv(i) = lapsf(par(i),lamtot1,iisum);
 like=like*resv(i); 
 }
 
-vec D1(nn),D2(nn),D3(nn); 
-vec res(6),res0(6); 
+vec D3(nn); 
+//vec res(6),res0(6); 
 double y,x,z; 
 
 for (i=0;i<nn;i++) 
