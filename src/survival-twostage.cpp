@@ -434,7 +434,7 @@ double survivalRVC(vec theta,mat thetades,mat ags,int cause1,int cause2,vec cif1
   if (cause2==0) icause2=1; 
 
   int test=0,itest=0;
-  if (itest==1) {
+  if (itest==1) { // {{{
 	  theta.print("theta"); 
 	  thetades.print("theta-des"); 
 	  printf(" %d %d \n",cause1,cause2); 
@@ -443,8 +443,7 @@ double survivalRVC(vec theta,mat thetades,mat ags,int cause1,int cause2,vec cif1
 	  x1.print("x1"); 
 	  x2.print("x2"); 
 	  ags.print("ags"); 
-  }
-
+  } // }}} 
 
  colvec dL=theta; dL.fill(0); 
  vec f1=cif1; 
@@ -477,6 +476,13 @@ x2f2= trans(x2) * cif2;
 //if (test==1) { x1f1.print("x1f1"); } 
 //ags.print("ags"); theta.print("par"); 
 
+vec D1(nn),D2(nn),D3(nn); 
+vec D13(nn),D23(nn),D33(nn),D133(nn),D233(nn),D333(nn);
+
+vec res(6),res0(6); 
+res.fill(0); res0.fill(0); 
+double x,y,z; 
+
 double like=1,iisum; 
 int i; 
 for (i=0;i<nn;i++) 
@@ -486,32 +492,12 @@ iisum = x1f1(i)+x2f2(i);
 resv(i) = lapsf(par(i),lamtot1,iisum);
 //resv(i) = pow(lamtot1,par(i))/pow((iisum + lamtot1),par(i));
 like=like*resv(i); 
-}
-
-
-//if (test==1) { resv.print("resv"); printf(" like %lf \n",like); }
-
-vec D1(nn),D2(nn),D3(nn); 
-vec D13(nn),D23(nn),D33(nn),D133(nn),D233(nn),D333(nn);
-
-vec res(6),res0(6); 
-res.fill(0); res0.fill(0); 
-double x,y,z; 
-
-for (i=0;i<nn;i++) 
-{ // {{{ 
-iisum = x1f1(i)+x2f2(i);
-lamtot1=sumtheta(i); 
 res0    = Dlapsf( par(i),lamtot1,iisum);
-//y=par(i); x=lamtot1; z=iisum; 
-//D1(i) =(pow(z+x,y)*log(x)*pow(x,y) - pow(x,y)*log(x+z)*pow(z+x,y))/pow((z + x),(2*y)); 
-//D2(i) =(pow(z+x,y)*(y/x)*pow(x,y) - pow(x,y)*(y/(x+z))*pow(z+x,y))/pow((z+x),(2*y)); 
-//D3(i) =(- pow(x,y)*(y/(x+z))*pow(z+x,y))/pow(z+x,(2*y)); 
   D1(i)   = res0(0); D2(i)   = res0(1); D3(i)   = res0(2);
 res     = D2lapsf(par(i),lamtot1,iisum);
  D13(i)  =  res(0); D23(i)  =  res(1); D33(i)  =  res(2);
 D133(i)  =  res(3); D233(i) =  res(4); D333(i) =  res(5);
-} // }}} 
+}
 
 // }}} 
 
@@ -523,14 +509,13 @@ D133(i)  =  res(3); D233(i) =  res(4); D333(i) =  res(5);
 // timer.tic(); 
 //if (test==1) { x11.print("x11"); thetades.print("td"); }
 
-vec msum(lpar); //msum.fill(1);
-vec mdesi(lpar);
+vec msum(lpar),mdesi(lpar);
 
 if (test==1) { msum.print("msum"); mdesi.print("mdesi"); }
 
 // {{{ derivatives of like ,ds dt, dtheta
 
-double dtj,dsj;
+double dtj,dsj,dsdtj,numdsdtj ;
 double dt=0,ds=0,dsdt=0;
 
 vec dthetaj(lpar);
@@ -539,7 +524,6 @@ dtheta.fill(0); dtt.fill(0); dts.fill(0); dtdtds.fill(0);
 vec dthetad3(lpar), dthetadtj(lpar), dthetadsj(lpar), dthetad33(lpar), 
     dthetadtdsj(lpar), led3(lpar), led2(lpar), numdj(lpar); 
 
-double dsdtj, numdsdtj ;
 
 for (i=0;i<nn;i++) 
 { // {{{ 
@@ -621,6 +605,197 @@ if (cause1!=0 && cause2!=0) { // {{{
 
 return(valr); 
 } // }}}
+
+double survivalRVC2(vec theta,mat thetades,mat ags,int cause1,int cause2,vec cif1,vec cif2,mat x1, mat x2, vec &dp, vec &alllike) 
+{ // {{{
+  double lamtot1=1,valr=1;
+  // index variable som angiver cause, men hvis cause==0 er index -1 
+  int icause1,icause2;
+  icause1=cause1; icause2=cause2; 
+  if (cause1==0) icause1=1; 
+  if (cause2==0) icause2=1; 
+
+  int test=0,itest=0;
+  if (itest==1) { // {{{
+	  theta.print("theta"); 
+	  thetades.print("theta-des"); 
+	  printf(" %d %d \n",cause1,cause2); 
+	  cif1.print("ci1"); 
+	  cif2.print("ci1"); 
+	  x1.print("x1"); 
+	  x2.print("x2"); 
+	  ags.print("ags"); 
+  } // }}} 
+
+ colvec dL=theta; dL.fill(0); 
+ vec f1=cif1; vec f2=cif2; 
+ colvec par = thetades * theta; 
+
+ if (test==1) { cif1.print("c1"); x1.print("x1"); }
+ if (test==1) { theta.print("theta"); thetades.print("t-des "); par.print("pp"); }
+
+int nn=thetades.n_rows,lpar=thetades.n_cols; 
+
+vec sumtheta=ags * theta; 
+
+// test=3; 
+// wall_clock timer; 
+// timer.tic(); 
+
+ // {{{ first basic laplace derivatives
+vec resv(nn); // resv.fill(0); 
+
+//if (test==1) { x1.print("x1"); cif1.print("cif1"); }
+
+vec x1f1, x2f2; 
+x1f1= trans(x1) * cif1; 
+x2f2= trans(x2) * cif2; 
+
+//if (test==1) { x1f1.print("x1f1"); } 
+//ags.print("ags"); theta.print("par"); 
+
+vec D1(nn),D2(nn),D3(nn); 
+vec D13(nn),D23(nn),D33(nn),D133(nn),D233(nn),D333(nn);
+
+vec res(6),res0(6); 
+res.fill(0); res0.fill(0); 
+double x,y,z; 
+
+double like=1,iisum; 
+int i; 
+for (i=0;i<nn;i++) 
+{
+lamtot1= sumtheta(i); 
+iisum = x1f1(i)+x2f2(i);
+resv(i) = lapsf(par(i),lamtot1,iisum);
+//resv(i) = pow(lamtot1,par(i))/pow((iisum + lamtot1),par(i));
+like=like*resv(i); 
+res0    = Dlapsf( par(i),lamtot1,iisum);
+  D1(i)   = res0(0); D2(i)   = res0(1); D3(i)   = res0(2);
+  y=par(i); x=lamtot1; z=iisum; 
+//res     = D2lapsf(par(i),lamtot1,iisum);
+ D13(i)  =   
+pow(x,y)* pow(x+z,(-y-1))* (y* log(x+z)-y* log(x)-1) ;
+ D23(i)  =  y* pow(x,(y-1))* pow(x+z,(-y-2))*(x-y* z) ;
+
+if (cause1!=0 && cause2!=0)  {
+D33(i)  =  y* (y+1)* pow(x,y)*pow((x+z),(-y-2));
+D133(i)  =  y* pow(x,y)* pow(x+z,(-y-2))+(y+1)*pow(x,y)* 
+	pow(x+z,(-y-2))+y* (y+1)* pow(x,y) *log(x)* 
+	pow(x+z,(-y-2))-y *(y+1)* pow(x,y)* pow(x+z,(-y-2))* log(x+z);
+D233(i) =  pow(y,2)* (y+1)* pow(x,(y-1))* pow(x+z,(-y-2))+(-y-2)* y* (y+1)* pow(x,y)* pow(x+z,(-y-3));
+       	D333(i) = y* (y+1)* (y+2)* (-pow(x,y))* pow(x+z,(-y-3));
+}
+
+}
+
+// }}} 
+
+//if (test==3) {
+// double nt2 = timer.toc();
+// printf("timer-loop 2  %lf antal rv's %d \n",100000*nt2,nn); 
+//}
+
+// timer.tic(); 
+//if (test==1) { x11.print("x11"); thetades.print("td"); }
+
+vec msum(lpar),mdesi(lpar);
+
+if (test==1) { msum.print("msum"); mdesi.print("mdesi"); }
+
+// {{{ derivatives of like ,ds dt, dtheta
+
+double dtj,dsj,dsdtj,numdsdtj ;
+double dt=0,ds=0,dsdt=0;
+
+vec dthetaj(lpar);
+vec dtheta(lpar),dtt(lpar), dts(lpar),dtdtds(lpar); 
+dtheta.fill(0); dtt.fill(0); dts.fill(0); dtdtds.fill(0); 
+vec dthetad3(lpar), dthetadtj(lpar), dthetadsj(lpar), dthetad33(lpar), 
+    dthetadtdsj(lpar), led3(lpar), led2(lpar), numdj(lpar); 
+
+
+for (i=0;i<nn;i++) 
+{ // {{{ 
+mdesi=trans(thetades.row(i)); //mdesi.print("mdesi");
+msum=trans(ags.row(i)); 
+dthetaj = (mdesi*D1(i)+msum*D2(i));
+dtheta =dtheta+dthetaj/resv(i);
+//
+dtj = D3(i)*x1(icause1-1,i);
+dt  = dt+dtj/resv(i);
+dsj = D3(i)*x2(icause2-1,i);
+ds  = ds+dsj/resv(i);
+
+// {{{  2nd deriv 
+dsdtj    = D33(i)*x2(icause2-1,i)* x1(icause1-1,i);
+numdsdtj = (dsdtj*resv(i)-dsj*dtj);
+dsdt     = dsdt+numdsdtj/pow(resv(i),2);
+
+dthetadtj =  x1(icause1-1,i)*(mdesi*D13(i)+ msum*D23(i)); 
+dtt = dtt+(dthetadtj*resv(i)-dthetaj*dtj)/pow(resv(i),2);
+
+dthetadsj=x2(icause2-1,i)*(mdesi*D13(i)+ msum*D23(i));
+numdj=(dthetadsj*resv(i)-dthetaj*dsj); 
+dts = dts+numdj/pow(resv(i),2);
+// }}} 
+
+// {{{ 3rd deriv 
+dthetad33 = (mdesi*D133(i)+msum*D233(i))*x2(icause2-1,i)*x1(icause1-1,i);
+//dthetad33.print("d33"); numdj.print("numdj"); 
+led2 = numdj*2*dtj*resv(i);
+//led2.print("numdj"); dthetadsj.print("dthetadsj"); dthetadtj.print("dthetadsj"); 
+led3 = pow(resv(i),2)*(dthetad33*resv(i)+dthetadsj*dtj-dthetadtj*dsj-dthetaj*dsdtj); 
+dtdtds = dtdtds+(led3-led2)/pow(resv(i),4); 
+// }}} 
+} // }}} 
+
+vec dttheta(lpar),dstheta(lpar),d3(lpar); 
+dttheta = dtheta*dt*like + like*dtt;
+dstheta = dtheta*ds*like + like*dts;
+//
+d3 = dts*dt*like+ds*dtt*like+ds*dt*dtheta*like+like*dtdtds+dtheta*dsdt*like;
+//
+//dsdt1 = ds*dt*like;
+//dsdt2 =  like*dsdt;
+dsdt =  ds*dt*like+like*dsdt;
+dtheta =  dtheta *like;
+dt = like*dt;
+ds = like*ds;
+
+//printf(" %lf %lf \n",dt,ds); 
+// }}} 
+
+
+//if (test==3) {
+// double nt3 = timer.toc();
+// printf("timer-loop 3 %lf \n",100000*nt3); 
+//}
+
+if (test==1) {
+printf("32 her \n"); printf(" like %lf  \n",like); 
+dtheta.print("dtheta"); dstheta.print("dstheta"); 
+dttheta.print("dttheta"); d3.print("dsttheta"); 
+}
+
+
+alllike(0)=like; alllike(1)=-1*dt; alllike(2)=-1*ds; alllike(3)=dsdt; 
+alllike(4)=cause1; alllike(5)=cause2; 
+//printf("%d %d %lf %lf %lf %lf \n",cause1,cause2,like,dt,ds,dsdt); 
+//alllike.print("all-2"); 
+
+if (cause1==0 && cause2==0) { // {{{
+	valr=like; dp=-1*dtheta; } // }}}
+if (cause1==0 && cause2!=0) { // {{{ 
+	valr=-1*ds; dp=dstheta ; } // }}}
+if (cause1!=0 && cause2==0) { // {{{
+	valr=-1*dt; dp=dttheta ; } // }}}
+if (cause1!=0 && cause2!=0) { // {{{
+	valr=dsdt; dp=-1*d3; } // }}}
+
+return(valr); 
+} // }}}
+
 
 double survivalRVCmarg(vec theta,mat thetades,mat ags,int cause1,vec cif1,mat x1, vec &dp, vec &alllike) 
 { // {{{
@@ -2244,7 +2419,7 @@ for (j=0;j<antclust;j++) { // {{{
 	   } else {
 //		   printf(" %d %d %d %d \n",i,k,(int) ci,(int) ck); 
 //printf(" hej 1 %d \n",nnn); ags.print("ags"); ags.print("thetadesv"); 
-		   ll=survivalRVC(etheta,thetadesv,ags,(int) ci,(int) ck,Li,Lk,rv1,rv2,dplackt,allvec);
+		   ll=survivalRVC2(etheta,thetadesv,ags,(int) ci,(int) ck,Li,Lk,rv1,rv2,dplackt,allvec);
 //printf(" hej 1 %d \n",nnn); 
 		   ssf+=weights(i)*log(ll); 
 		   loglikecont=log(ll);
