@@ -235,7 +235,7 @@ RcppExport SEXP BhatAddGam(SEXP idBaalen,SEXP icause,
 //   wall_clock timer; 
 //   timer.tic(); 
 
-  // {{{ reading in matrices and cubes 
+// {{{ reading in matrices and cubes 
     mat                dBaalen = Rcpp::as<mat>(idBaalen);
     uvec                 cause = Rcpp::as<uvec>(icause); 
     vec                  theta = Rcpp::as<vec>(itheta); 
@@ -275,10 +275,10 @@ RcppExport SEXP BhatAddGam(SEXP idBaalen,SEXP icause,
     vec allvec(6); 
     int ncr=rv.n_rows; 
     vec cumhaz1(ncr); cumhaz1.fill(0); 
-    vec cumhaz2(ncr); cumhaz2.fill(0); 
+//    vec cumhaz2(ncr); cumhaz2.fill(0); 
 
     double  caseweight=1,ll; 
-    mat rv2=0*rv.slice(0); 
+//    mat rv2=0*rv.slice(0); 
     mat rv1=rv.slice(0); 
 
 //	rv1.print("rv1"); 
@@ -298,7 +298,7 @@ RcppExport SEXP BhatAddGam(SEXP idBaalen,SEXP icause,
 	rv1=rv.slice(k); 
 //	thetadesv.print("thetades"); 
 //	rv1.print("rv1"); 
-        ll=survivalRVC(etheta,thetadesv,ags,(int) cause(k),0,cumhaz1,cumhaz2,rv1,rv2,plackt,allvec);
+        ll=survivalRVCmarg(etheta,thetadesv,ags,(int) cause(k),cumhaz1,rv1,plackt,allvec);
         caseweight=ll/allvec(0); // D_1 S/S 
 	casev(k)=caseweight; 
 

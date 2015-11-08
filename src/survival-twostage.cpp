@@ -617,6 +617,111 @@ if (cause1!=0 && cause2!=0) { // {{{
 return(valr); 
 } // }}}
 
+double survivalRVCmarg(vec theta,mat thetades,mat ags,int cause1,vec cif1,mat x1, vec &dp, vec &alllike) 
+{ // {{{
+  double lamtot1=1,valr=1;
+  // index variable som angiver cause, men hvis cause==0 er index -1 
+  int icause1; // ,icause2;
+  icause1=cause1; // icause2=cause2; 
+  if (cause1==0) icause1=1; 
+//  if (cause2==0) icause2=1; 
+
+  int test=0,itest=0;
+  if (itest==1) {
+	  theta.print("theta"); 
+	  thetades.print("theta-des"); 
+	  cif1.print("ci1"); 
+	  x1.print("x1"); 
+	  ags.print("ags"); 
+  }
+
+
+ colvec dL=theta; dL.fill(0); 
+ vec f1=cif1; 
+
+ if (test==1) { cif1.print("c1"); x1.print("x1"); }
+
+ colvec par = thetades * theta; 
+
+if (test==1) { theta.print("theta"); thetades.print("t-des "); par.print("pp"); }
+
+int nn=thetades.n_rows; 
+int lpar=thetades.n_cols; 
+vec sumtheta=ags * theta; 
+
+// test=3; 
+// wall_clock timer; 
+// timer.tic(); 
+
+ // {{{ first basic laplace derivatives
+vec resv(nn); // resv.fill(0); 
+
+//if (test==1) { x1.print("x1"); cif1.print("cif1"); }
+
+vec x1f1; 
+x1f1= trans(x1) * cif1; 
+
+//if (test==1) { x1f1.print("x1f1"); } 
+//ags.print("ags"); theta.print("par"); 
+
+double like=1,iisum; 
+int i; 
+for (i=0;i<nn;i++) 
+{
+lamtot1= sumtheta(i); 
+iisum = x1f1(i);
+resv(i) = lapsf(par(i),lamtot1,iisum);
+like=like*resv(i); 
+}
+
+vec D1(nn),D2(nn),D3(nn); 
+vec res(6),res0(6); 
+double y,x,z; 
+
+for (i=0;i<nn;i++) 
+{ // {{{ 
+iisum = x1f1(i);
+lamtot1=sumtheta(i); 
+// much quicker to do this directly,  
+//res0    = Dlapsf( par(i),lamtot1,iisum);
+//  D1(i)   = res0(0); 
+//  D2(i)   = res0(1); 
+//  D3(i)   = res0(2);
+  y=par(i); x=lamtot1; z=iisum; 
+ D3(i) =(- pow(x,y)*(y/(x+z))*pow(z+x,y))/pow(z+x,(2*y)); 
+} // }}} 
+
+// }}} 
+
+vec msum(lpar); //msum.fill(1);
+vec mdesi(lpar);
+
+// {{{ derivatives of like dt 
+
+double dtj,dt=0;
+
+for (i=0;i<nn;i++) 
+{ // {{{ 
+mdesi=trans(thetades.row(i)); //mdesi.print("mdesi");
+msum=trans(ags.row(i)); 
+dtj = D3(i)*x1(icause1-1,i);
+dt  = dt+dtj/resv(i);
+} // }}} 
+
+dt = like*dt;
+// }}} 
+
+
+alllike(0)=like; alllike(1)=-1*dt; alllike(2)=0; alllike(3)=0; 
+alllike(4)=cause1; alllike(5)=0; 
+
+if (cause1==0 ) { valr=like; }
+if (cause1!=0 ) { valr=-1*dt;  }
+
+return(valr); 
+} // }}}
+
+
 RcppExport SEXP survivalRV(SEXP itheta,SEXP istatus1,SEXP istatus2,
 	   	     SEXP icif1,SEXP icif2,
                      SEXP irv1, SEXP irv2,SEXP ithetades,SEXP iags, SEXP ivarlink)

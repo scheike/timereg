@@ -13,6 +13,8 @@ double claytonoakesbinRVC(vec theta,mat thetades,mat ags,int status1,int status2
 
 double survivalRVC(vec theta,mat thetades,mat ags,int cause1,int cause2,vec cif1,vec cif2,mat x1, mat x2, vec &dp, vec &alllike); 
 
+double survivalRVCmarg(vec theta,mat thetades,mat ags,int cause1,vec cif1,mat x1, vec &dp, vec &alllike); 
+
 double ilapsf(double y, double x, double z);
 
 double lapsf(double y,double x, double z) ;
