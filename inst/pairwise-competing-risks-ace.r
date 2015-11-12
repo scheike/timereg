@@ -2,7 +2,7 @@
 library(mets)
 
 set.seed(100)
-n <- 40000
+n <- 10000
 
 ## {{{ competing risks ace model with profile of baseline 
 lam0 <- c(0.5,0.3)
@@ -30,30 +30,40 @@ dout <- make.pairwise.design.competing(pairs,kinship,
 	       type="ace",compete=length(lam0),overall=1)
 head(dout$ant.rvs)
 ## MZ
-###dim(dout$theta.des)
-###dout$theta.des[,,1]
-###dout$random.design[,,1]
-###dout$theta.des[,,nrow(out)/2]
-###dout$random.design[,,nrow(out)/2]
-###
-###
-out$status[out$status==3] <- 2
-# 
+dim(dout$theta.des)
+dout$theta.des[,,1]
+dout$random.design[,,1]
+dout$theta.des[,,nrow(out)/2]
+dout$random.design[,,nrow(out)/2]
 ###table(out$status)
 ## }}} 
 
 ## competing risks models, given as list 
-cr.models=list(Surv(time,status==1)~+1,Surv(time,status==2)~+1)
+cr.models=list(Surv(time,status==1)~+1,
+	       Surv(time,status==2)~+1)
 
+par(mfrow=c(2,4))
+source("../R/twostage.R")
 ts <- twostage(NULL,data=out,clusters=out$cluster,
                theta=pars,
 	       score.method="fisher.scoring",
-	       var.link=0,step=1.0,Nit=10,detail=0,
+	       var.link=0,step=1.0,Nit=0,detail=1,
                random.design=dout$random.design,
                theta.des=dout$theta.des,pairs=pairs,
-	       numDeriv=0,
+	       numDeriv=1,
                marginal.status=out$status,
 	       two.stage=0, cr.models=cr.models)
+ts$score
+ts$score1
+ts$Dscore
+ts$hess
+
+
+summary(ts)
+
+matplot.twostage(ts)
+abline(c(0,lam0[1])); abline(c(0,lam0[2])); 
+
 
 system.time(
 out1 <- aalen(cr.models[[1]],data=out,robust=0)
@@ -61,6 +71,26 @@ out1 <- aalen(cr.models[[1]],data=out,robust=0)
 system.time(
 out1 <- aalen(Surv(time,status!=0)~+1,data=out,robust=0)
 )
+
+lams <- cbind(out$time*lam0[1], out$time*lam0[2])
+###
+tsf <- twostage(NULL,data=out,clusters=out$cluster,
+               theta=pars,
+	       score.method="fisher.scoring",
+	       var.link=0,step=1.0,Nit=10,detail=1,
+               random.design=dout$random.design,
+               theta.des=dout$theta.des,pairs=pairs,
+	       numDeriv=1,
+               marginal.status=out$status,
+               marginal.survival=lams,
+	       two.stage=0, baseline.fix=1)
+tsf$score
+tsf$score1
+tsf$Dscore
+tsf$hess
+summary(tsf)
+
+
 
 ## }}} 
 
@@ -118,6 +148,7 @@ ts2 <- twostage(NULL,data=out,clusters=out$cluster,
 	       cr.model=list(Surv(time,status)~+1),
                two.stage=0)
 summary(ts2)
+ts2$score
 
 ## }}} 
 }
@@ -168,7 +199,7 @@ lams <- cbind(out$time*lam0[1],out$time*lam0[2])
 
 ts <- twostage(NULL,data=out,clusters=out$cluster,
                theta=pars,
-	       var.link=0,step=0.1,Nit=2,detail=0,
+	       var.link=0,step=0.2,Nit=5,detail=1,
                random.design=dout$random.design,
                theta.des=dout$theta.des,pairs=pairs,
 	       numDeriv=0,
@@ -179,7 +210,7 @@ summary(ts)
 
 ts2 <- twostage(NULL,data=out,clusters=out$cluster,
                theta=pars,
-	       var.link=0,step=0.1,Nit=2,detail=0,
+	       var.link=0,step=0.5,Nit=10,detail=1,
                random.design=dout$random.design,
                theta.des=dout$theta.des,pairs=pairs,
 	       numDeriv=0,

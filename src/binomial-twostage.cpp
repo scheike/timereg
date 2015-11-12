@@ -260,17 +260,17 @@ p11=(1+(y+z)*(x-1)-sqrt(pow(1+(y+z)*(x-1),2)-4*x*(x-1)*y*z))/(2*(x-1));
 dp(0)= (y + z - (-4*(-1 + x)*y*z - 4*x*y*z + 2*(y + z)*(1 + (-1 + x)*(y + z)))/(2.*sqrt(-4*(-1 + x)*x*y*z + pow(1 + (  -1 + x)*(y + z),2))))/(2.*(-1 + x)) - (1 + (-1 + x)*(y + z) - sqrt(-4*(-1 + x)*x*y*z + pow(1 + (-1 + x)*(y + z  ),2)))/(2.*pow(-1 + x,2));
 } else p11=cif1*cif2;
 
-//det komplekse trick, derivative wrt y og zi, dvs D_1 P(y,z,theta) og D_2 P
-cx_double CCp11,Ctheta,Cy,Cz; 
-Ctheta=cx_double(theta,0); 
-Cy=cx_double(y,1E-20); 
-Cz=(cx_double) z; 
-CCp11=Cpij(Ctheta,Cy,Cz,status1,status2); 
-dp(1)=imag(CCp11)/1E-20; 
-Cz=cx_double(z,1E-20); 
-Cy=(cx_double) y; 
-CCp11=Cpij(Ctheta,Cy,Cz,status1,status2); 
-dp(2)=imag(CCp11)/1E-20; 
+////det komplekse trick, derivative wrt y og zi, dvs D_1 P(y,z,theta) og D_2 P
+//cx_double CCp11,Ctheta,Cy,Cz; 
+//Ctheta=cx_double(theta,0); 
+//Cy=cx_double(y,1E-20); 
+//Cz=(cx_double) z; 
+//CCp11=Cpij(Ctheta,Cy,Cz,status1,status2); 
+//dp(1)=imag(CCp11)/1E-20; 
+//Cz=cx_double(z,1E-20); 
+//Cy=(cx_double) y; 
+//CCp11=Cpij(Ctheta,Cy,Cz,status1,status2); 
+//dp(2)=imag(CCp11)/1E-20; 
 //printf(" %lf  ",imag(CCp11)/1E-20); 
 
 p11=p11;

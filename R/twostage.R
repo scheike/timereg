@@ -203,6 +203,7 @@
 ##' @param se.clusters for clusters for se calculation with iid
 ##' @param max.clust max se.clusters for se calculation with iid
 ##' @param numDeriv to get numDeriv version of second derivative, otherwise uses sum of squared score 
+##' @param numDeriv.method uses simple to speed up things and second derivative not so important.
 ##' @param random.design random effect design for additive gamma modeli, when pairs are given this is a (pairs) x (2) x (max number random effects) matrix, see pairs.rvs below
 ##' @param pairs matrix with rows of indeces (two-columns) for the pairs considered in the pairwise composite score, useful for case-control sampling when marginal is known.
 ##' @param pairs.rvs for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair. 
@@ -214,7 +215,7 @@ twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Ni
 silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,
 var.link=1,iid=1, step=0.5,notaylor=0,model="clayton.oakes",
   marginal.trunc=NULL,marginal.survival=NULL,marginal.status=NULL,strata=NULL,
-  se.clusters=NULL,max.clust=NULL,numDeriv=0,
+  se.clusters=NULL,max.clust=NULL,numDeriv=0,numDeriv.method="simple",
   random.design=NULL,pairs=NULL,pairs.rvs=NULL,
   additive.gamma.sum=NULL,
   two.stage=1,baseline.fix=0,cr.models=NULL)
@@ -461,7 +462,7 @@ if (!is.null(margsurv))
  if (is.null(cr.models)) stop("give hazard models for different causes, 
       ex cr.models=list(Surv(time,status==1)~+1,Surv(time,status==2)~+1) \n")
 
-## {{{ 
+## {{{ settint up random effects and covaraites for marginal modelling
         timestatus <- all.vars(cr.models[[1]])
 	times <- data[,timestatus[1]]
 	lstatus <- data[,timestatus[2]]
@@ -472,7 +473,6 @@ if (!is.null(margsurv))
 	dtimesst <- dtimes[st]
 	dcauses <- lstatus[jumps][st]
 	ids <- (1:nrow(data))[jumps][st]
-	###
 
 ###      cr.models=list(Surv(time,status==1)~+1,Surv(time,status==2)~+x ) 
         fd <- function(x) length(all.vars(x))-1
@@ -480,7 +480,6 @@ if (!is.null(margsurv))
 	nc <- sum(ncovsx)
 	poscovs <- cumsum(ncovsx)
 	dBaalen <- matrix(0,length(dtimes),nc)
-
 	xjump <- array(0,c(length(cr.models),nc,length(ids)))
 
 	## first compute marginal aalen models for all causes
@@ -492,10 +491,10 @@ if (!is.null(margsurv))
 	      if (i==1) fp <- 1 else fp <- poscovs[i-1]+1
 	      indexc <- fp:poscovs[i]
 	      dBaalen[jumpsi,indexc] <- da[[i]]
-	      covsx <- all.vars(cr.models[[1]])[-(1:2)]
+	      covsx <- all.vars(cr.models[[i]])[-(1:2)]
               X <- cbind(1,data[,covsx])
-              xjump[i,indexc,] <- X[ids,]
-	 }
+              xjump[i,indexc,] <- t(X[ids,])
+        }
 	## }}} 
 
        	#### organize subject specific random variables and design
@@ -505,31 +504,21 @@ if (!is.null(margsurv))
 	dimr <- dim(random.design[,,])
 	mtheta.des <- array(0,c(dimt,nrow(data)))
 	mrv.des <- array(0,c(dimr[1]/2,dimr[2],nrow(data)))
-###	print(dim(mrv.des))
-###	print(dim(mtheta.des))
-	###
 	mtheta.des[,,pairs[,1]] <- theta.des
 	mtheta.des[,,pairs[,2]] <- theta.des
-	###
-###	print(1:(dimr[1]/2))
-###	print((dimr[1]/2+1):dimr[1])
+###	print(dim(mrv.des)); print(dim(mtheta.des))
+###	print(1:(dimr[1]/2)); print((dimr[1]/2+1):dimr[1])
 	mrv.des[,,pairs[,1]] <- random.design[1:(dimr[1]/2),,,drop=FALSE]
 	mrv.des[,,pairs[,2]] <- random.design[(dimr[1]/2+1):dimr[1],,,drop=FALSE]
 	### array thetades to jump times (subjects)
 	mtheta.des <- mtheta.des[,,ids,drop=FALSE]
 	### array randomdes to jump times (subjects)
 	mrv.des <- mrv.des[,,ids,drop=FALSE]
-	print(dim(mtheta.des))
-	print(dim(mrv.des))
-	print(dim(xjump))
-	print(dim(dBaalen))
+###	print(dim(mtheta.des)); print(dim(mrv.des)); print(dim(xjump)); print(dim(dBaalen)); 
 	## }}} 
  }  else {
-	 mrv.des <- array(0,c(1,1,1)); 
-	 mtheta.des <- array(0,c(1,1,1)); 
-	 margthetades <- array(0,c(1,1,1)); 
-	 xjump <- array(0,c(1,1,1)); 
-	 dBaalen <- matrix(0,1,1); 
+	 mrv.des <- array(0,c(1,1,1)); mtheta.des <- array(0,c(1,1,1)); margthetades <- array(0,c(1,1,1)); 
+	 xjump <- array(0,c(1,1,1)); dBaalen <- matrix(0,1,1); 
  } ## }}} 
 
 ###  print(antpairs); print(head(pairs.rvs)); print(dim(theta.des)); print(dim(random.design)); print(additive.gamma.sum)
@@ -562,20 +551,27 @@ if (!is.null(margsurv))
       irvdes=random.design,
       idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs,
       iags=additive.gamma.sum) 
-      else { 
+      else { ## {{{ 
          ### update aalen type baseline  
-	 if (baseline.fix==0)  {
+	 if (baseline.fix==0)  { ## {{{ 
 
-		 print("base")
            profile.baseline  <- .Call("BhatAddGam",
             dBaalen,dcauses, dim(xjump),xjump, c(par), dim(mtheta.des),mtheta.des, 
 	    additive.gamma.sum,var.link, dim(mrv.des),mrv.des)
-		 print("base 2")
 
-	   psurvmarg <- Cpred(cbind(dtimesst,profile.baseline$B),times)[,-1,drop=FALSE]
-	   print(dim(psurvmarg))
-	 } 
+	   pbases <- Cpred(rbind(c(0,rep(0,ncol(profile.baseline$B))),cbind(dtimesst,profile.baseline$B)),times)[,-1,drop=FALSE]
+	   psurvmarg <- c()
+            for (i in 1:length(cr.models)) {
+	          if (i==1) fp <- 1 else fp <- poscovs[i-1]+1
+	          indexc <- fp:poscovs[i]
+	          covsx <- all.vars(cr.models[[i]])[-(1:2)]
+                  X <- cbind(1,data[,covsx])
+	   psurvmarg <- cbind(psurvmarg,apply(X*pbases[,indexc],1,sum))
+	 }
+
+	 } ## }}}  
 	      
+
       outl<-.Call("survivalloglikeRVpairs", 
       icause=status,
       ipmargsurv=psurvmarg, 
@@ -587,8 +583,12 @@ if (!is.null(margsurv))
       idimthetades=dim(theta.des),idimrvdes=dim(random.design),
       irvs=pairs.rvs,iags=additive.gamma.sum) 
 
-      if (baseline.fix==0)  outl$baseline <- cbind(dtimesst,profile.baseline$B); 
+      if (baseline.fix==0)  { 
+	      outl$baseline <- cbind(dtimesst,profile.baseline$B); 
+
       }
+
+      } ## }}} 
       } ## }}} 
 
     if (detail==3) print(c(par,outl$loglike))
@@ -614,19 +614,26 @@ if (!is.null(margsurv))
                 {
                     out <- loglike(p)
                     hess <-  -1* out$Dscore
-                    if (!is.na(sum(hess))) hessi <- lava::Inverse(out$Dscore) else hessi <- hess 
+###                 uses simple second derivative for computing derivative of score
+		    if (numDeriv==2 || (baseline.fix==0 && two.stage==0)) {
+                    oout <- 3
+                    hess <- numDeriv::jacobian(loglike,p,method="simple")
+		    oout <- 2
+		    }
+            
+                    if (!is.na(sum(hess))) hessi <- -1*lava::Inverse(hess) else hessi <- hess 
                     if (detail==1) {## {{{
                         cat(paste("Fisher-Scoring ===================: it=",i,"\n")); 
                         cat("theta:");print(c(p))
                         cat("loglike:");cat(c(out$loglike),"\n"); 
                         cat("score:");cat(c(out$score),"\n"); 
-                        cat("hess:\n"); cat(out$Dscore,"\n"); 
+                        cat("hess:\n"); cat(hess,"\n"); 
                     }## }}}
-                    delta <- hessi %*% out$score *step 
+                    delta <- step*( hessi %*% out$score )
 		    ### update p, but note that score and derivative in fact related to previous p 
-		    ###  unless Nit=0
+		    ### unless Nit=0, 
 	            if (Nit>0) {
-                    p <- p + delta* step
+                    p <- p + delta
                     theta <- p; 
 		    }
                     if (is.nan(sum(out$score))) break; 
@@ -639,17 +646,22 @@ if (!is.null(margsurv))
             logl <- out$loglike
             score1 <- score <- out$score
             oout <- 0; 
-            hess1 <- hess <- -1*out$Dscore 
+            hess1 <- hess  <- -1*out$Dscore 
+            if (numDeriv==2 || (baseline.fix==0 && two.stage==0)) {
+                    oout <- 3
+                    hess <- numDeriv::jacobian(loglike,p,method="simple")
+		    oout <- 2
+	    }
             if (iid==1) theta.iid <- out$theta.iid
             if (detail==1 && iid==1) cat("finished iid decomposition\n"); 
         }
-        if (numDeriv==1) {
+        if (numDeriv>=1) {
             if (detail==1 ) cat("starting numDeriv for second derivative \n"); 
             oout <- 0; 
-            score2 <- numDeriv::jacobian(loglike,p)
-	    score1 <- matrix(score2,ncol=1)
+###         score2 <- numDeriv::jacobian(loglike,p)
+###	    score1 <- matrix(score2,ncol=1)
             oout <- 3
-            hess <- numDeriv::jacobian(loglike,p)
+            hess <- numDeriv::jacobian(loglike,p,method="simple")
             if (detail==1 ) cat("finished numDeriv for second derivative \n"); 
         }
         if (detail==1 & Nit==0) {## {{{
@@ -657,7 +669,7 @@ if (!is.null(margsurv))
             cat("theta:");print(c(p))
             cat("loglike:");cat(c(out$loglike),"\n"); 
             cat("score:");cat(c(out$score),"\n"); 
-            cat("hess:\n"); cat(out$Dscore,"\n"); 
+            cat("hess:\n"); cat(hess,"\n"); 
         }## }}}
         if (!is.na(sum(hess))) hessi <- lava::Inverse(hess) else hessi <- diag(nrow(hess))
         ## }}}
