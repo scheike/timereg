@@ -2,7 +2,7 @@
 library(mets)
 
 set.seed(100)
-n <- 10000
+n <- 20000
 
 ## {{{ competing risks ace model with profile of baseline 
 lam0 <- c(0.5,0.3)
@@ -43,22 +43,15 @@ cr.models=list(Surv(time,status==1)~+1,
 	       Surv(time,status==2)~+1)
 
 par(mfrow=c(2,4))
-source("../R/twostage.R")
 ts <- twostage(NULL,data=out,clusters=out$cluster,
                theta=pars,
 	       score.method="fisher.scoring",
-	       var.link=0,step=1.0,Nit=0,detail=1,
+	       var.link=0,step=1.0,Nit=10,detail=1,
                random.design=dout$random.design,
                theta.des=dout$theta.des,pairs=pairs,
-	       numDeriv=1,
+	       numDeriv=0,
                marginal.status=out$status,
 	       two.stage=0, cr.models=cr.models)
-ts$score
-ts$score1
-ts$Dscore
-ts$hess
-
-
 summary(ts)
 
 matplot.twostage(ts)
@@ -84,16 +77,11 @@ tsf <- twostage(NULL,data=out,clusters=out$cluster,
                marginal.status=out$status,
                marginal.survival=lams,
 	       two.stage=0, baseline.fix=1)
-tsf$score
-tsf$score1
-tsf$Dscore
-tsf$hess
 summary(tsf)
 
 
 
 ## }}} 
-
 
 onec <- 1
 if (onec==1) {
