@@ -46,13 +46,15 @@ par(mfrow=c(2,4))
 ts <- twostage(NULL,data=out,clusters=out$cluster,
                theta=pars,
 	       score.method="fisher.scoring",
-	       var.link=0,step=1.0,Nit=10,detail=1,
+	       var.link=0,step=1.0,Nit=1,detail=1,
                random.design=dout$random.design,
                theta.des=dout$theta.des,pairs=pairs,
 	       numDeriv=0,
                marginal.status=out$status,
 	       two.stage=0, cr.models=cr.models)
 summary(ts)
+
+apply(ts$theta.iid,2,sum)
 
 matplot.twostage(ts)
 abline(c(0,lam0[1])); abline(c(0,lam0[2])); 

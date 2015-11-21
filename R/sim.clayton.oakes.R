@@ -134,6 +134,8 @@ simClaytonOakes.twin.ace <- function(K,varg,varc,beta,stoptime,Cvar=0,left=0,pai
   dzrv1 <- Gams1[,2]+Gams1[,3]+Gams1[,5] ### 0.5 shared gene + 0.5 non-shared + env 
   dzrv2 <- Gams1[,2]+Gams1[,4]+Gams1[,5] ### 0.5 shared gene + 0.5 non-shared + env 
   Gam1 <- cbind(mz*mzrv+dz*dzrv1,mz*mzrv+dz*dzrv2)
+###  print(mean(mzrv)); print(mean(dzrv1)); print(mean(dzrv2)); 
+###  print(var(mzrv));  print(var(dzrv1));  print(var(dzrv2)); 
   temp<-eta*log(-log(1-x[,,1])/(eta*Gam1)+1)*exp(-beta*x[,,3])
   x[,,2]<-ifelse(temp<=C,1,0);
   x[,,1]<-pmin(temp,C)

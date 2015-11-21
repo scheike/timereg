@@ -82,7 +82,8 @@
 ##' Twostage modelling of additive gamma frailty models for survival data. 
 ##' Scheike and Holst, working paper 
 ##' 
-##' Eriksson and Scheike (2015), Additive Gamma frailty models for competing risks data, Biometrics (2015)
+##' Additive Gamma frailty models for competing risks data, Biometrics (2015)
+##' Eriksson and Scheike (2015), 
 ##' 
 ##' @examples
 ##' data(diabetes)
@@ -209,8 +210,9 @@
 ##' @param pairs.rvs for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair. 
 ##' @param additive.gamma.sum for two.stage=0, this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters.
 ##' @param two.stage to fit two-stage model, if 0 then will fit hazard model with additive gamma structure (WIP)
-##' @param baseline.fix=0 to fix baseline, given in marginal.survival, baseline.fix=1 uses addtive aalen model, baseline.fix=2 fits weibull weibull model 
+##' @param baseline.fix=1 to fix baseline given in marginal.survival, baseline.fix=0 uses addtive aalen model where these models are specified in cr.models, baseline.fix=2 fits weibull model. 
 ##' @param cr.models competing risks models for two.stage=0, should be given as a list with models for each cause
+##' @param case.control assumes case control structure for "pairs" with second column being the probands, when this options is used the twostage model is profiled out via the paired estimating equations for the survival model. 
 twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
 silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,
 var.link=1,iid=1, step=0.5,notaylor=0,model="clayton.oakes",
@@ -218,7 +220,7 @@ var.link=1,iid=1, step=0.5,notaylor=0,model="clayton.oakes",
   se.clusters=NULL,max.clust=NULL,numDeriv=0,numDeriv.method="simple",
   random.design=NULL,pairs=NULL,pairs.rvs=NULL,
   additive.gamma.sum=NULL,
-  two.stage=1,baseline.fix=0,cr.models=NULL)
+  two.stage=1,baseline.fix=0,cr.models=NULL,case.control=0)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -409,6 +411,7 @@ if (!is.null(margsurv))
   if (is.null(additive.gamma.sum)) additive.gamma.sum <- matrix(1,dim.rv,ptheta)
 
   if (!is.null(pairs)) { pair.structure <- 1;} else  pair.structure <- 0;  
+
   if (pair.structure==1 & dep.model==3) { ## {{{ 
 
 ### something with dimensions of rv.des 
@@ -457,12 +460,13 @@ if (!is.null(margsurv))
   ## }}}
 
 ###  setting up arguments for Aalen baseline profile estimates
- if (baseline.fix==0 & two.stage==0)  { ## {{{ 
+ if (baseline.fix==0 )  { ## {{{ 
 
  if (is.null(cr.models)) stop("give hazard models for different causes, 
       ex cr.models=list(Surv(time,status==1)~+1,Surv(time,status==2)~+1) \n")
 
-## {{{ settint up random effects and covaraites for marginal modelling
+      if (case.control==0) { ## {{{ 
+## {{{ setting up random effects and covaraites for marginal modelling
         timestatus <- all.vars(cr.models[[1]])
 	times <- data[,timestatus[1]]
 	lstatus <- data[,timestatus[2]]
@@ -514,11 +518,82 @@ if (!is.null(margsurv))
 	mtheta.des <- mtheta.des[,,ids,drop=FALSE]
 	### array randomdes to jump times (subjects)
 	mrv.des <- mrv.des[,,ids,drop=FALSE]
+	nrv.des <- pairs.rvs[ids]
 ###	print(dim(mtheta.des)); print(dim(mrv.des)); print(dim(xjump)); print(dim(dBaalen)); 
 	## }}} 
+      } ## }}} 
+
+      if (case.control==1) { ## {{{ 
+         if ((two.stage==0) stop("Only implemented for two-stage survival  model \n") 
+
+
+         data1 <- data[pair[,1]]
+         data.proband <- data[pair[,2]]
+
+## {{{ setting up designs for jump times 
+        timestatus <- all.vars(cr.models[[1]])
+	all.times <- data[,timestatus[1]]
+	times <- data1[,timestatus[1]]
+	lstatus <- data1[,timestatus[2]]
+	timescase <- data.proband[,timestatus[1]]
+	lstatuscase <- data.proband[,timestatus[2]]
+	### organize increments according to overall jump-times 
+	jumps <- lstatus!=0
+	dtimes <- times[jumps]
+	dtimescase <- timescase[jumps]
+	st <- order(dtimes)
+	dtimesst <- dtimes[st]
+	dtimesstcase <- dtimescase[st]
+	dcauses <- lstatus[jumps][st]
+	dcausescase <- lstatuscase[jumps][st]
+	ids <- (1:nrow(data1))[jumps][st]
+	###
+
+###      cr.models=list(Surv(time,status==1)~+1,Surv(time,status==2)~+x ) 
+        fd <- function(x) length(all.vars(x))-1
+        ncovsx <- unlist(lapply(cr.models,fd))
+	nc <- sum(ncovsx)
+	poscovs <- cumsum(ncovsx)
+	dBaalen <- matrix(0,length(dtimes),nc)
+
+	xjump <- array(0,c(length(cr.models),nc,length(ids)))
+	xjumpcase <- array(0,c(length(cr.models),nc,length(ids)))
+
+	## first compute marginal aalen models for all causes
+###	par(mfrow=c(2,2))
+###	plot(a[[i]])
+	a <- list(); da <- list(); 
+	for (i in 1:length(cr.models)) { ## {{{ 
+	      a[[i]] <-  aalen(as.formula(cr.models[[i]]),data=data1,robust=0)
+	      da[[i]] <- apply(a[[i]]$cum[,-1,drop=FALSE],2,diff)
+	      jumpsi <- (1:length(dtimes))[dcauses==i]
+	      if (i==1) fp <- 1 else fp <- poscovs[i-1]+1
+	      indexc <- fp:poscovs[i]
+	      dBaalen[jumpsi,indexc] <- da[[i]]
+	      covsx <- all.vars(cr.models[[1]])[-(1:2)]
+              X <- cbind(1,data1[,covsx])
+              Xcase <- cbind(1,data.proband[,covsx])
+              xjump[i,indexc,] <- X[ids,]
+              xjumpcase[i,indexc,] <- Xcase[ids,]
+	 } ## }}} 
+
+	Xall <- cbind(1,data[,covsx])
+
+	## }}} 
+
+####  organize subject specific random variables and design
+####  already done in basic pairwise setup 
+	mtheta.des <- theta.des[,,ids,drop=FALSE]
+	### array randomdes to jump times (subjects)
+	mrv.des <- random.design[,,ids,drop=FALSE]
+	nrv.des <- pairs.rvs[ids]
+
+      } ## }}} 
+
+
  }  else {
 	 mrv.des <- array(0,c(1,1,1)); mtheta.des <- array(0,c(1,1,1)); margthetades <- array(0,c(1,1,1)); 
-	 xjump <- array(0,c(1,1,1)); dBaalen <- matrix(0,1,1); 
+	 xjump <- array(0,c(1,1,1)); dBaalen <- matrix(0,1,1); nrv.des <- 3
  } ## }}} 
 
 ###  print(antpairs); print(head(pairs.rvs)); print(dim(theta.des)); print(dim(random.design)); print(additive.gamma.sum)
@@ -533,33 +608,69 @@ if (!is.null(margsurv))
 
 ###   dyn.load("twostage.so")
 
-      if (pair.structure==0) 
-      outl<-.Call("twostageloglikeRV", ## {{{
+      if (pair.structure==0) {
+      outl<-.Call("twostageloglikeRV", ## {{{ only two stage model for this option
       icause=status,ipmargsurv=psurvmarg, 
       itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
       icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
       ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
       itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
       irvdes=random.design,iags=additive.gamma.sum) ## }}}
-      else {
-      if (two.stage==1) outl<-.Call("twostageloglikeRVpairs", ## {{{
-      icause=status,ipmargsurv=psurvmarg, 
-      itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
-      icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
-      ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
-      itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
-      irvdes=random.design,
-      idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs,
-      iags=additive.gamma.sum) 
-      else { ## {{{ 
+      }
+      else { ## pair-structure 
+	     ## twostage model,  case.control option, profile out baseline 
+	     ## conditional model ,  profile out baseline 
+      if (two.stage==1) { ## {{{ two-stage model 
+
+          if (case.control==1) { ## {{{  profiles out baseline under case-control sampling
+	      ## initial values 
+              Bit <- cbind(Cpred(a[[1]]$cum,dtimesst)[,-1])
+              ###plot(dtimesst,Bit)
+              Bitcase  <- cbind(Cpred(a[[1]]$cum,dtimesstcase)[,-1])
+
+             for (i in 1:5) { ## {{{ profile via iteration 
+             cncc <- .Call("BhatAddGamCC",1,dBaalen,dcauses,dim(xjump),xjump,
+	                   c(par), dim(mtheta.des),mtheta.des, additive.gamma.sum,var.link, 
+	                   dim(mrv.des),mrv.des,nrvs,1,Bit,Bitcase,dcausescase)
+              summary(cncc$caseweights)
+              summary(cncc$B)
+
+###matlines(dtimesst,cncc$B,type="l",col=i)
+
+           Bit <- cncc$B
+           cum1 <- cbind(dtimesst,cncc$B)
+           Bitcase  <-cbind(Cpred(cum1,dtimesstcase)[,-1])
+           Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
+           } ## }}} 
+
+	   pbases <- Cpred(rbind(c(0,rep(0,ncol(Bit))),cbind(dtimesst,Bit)),alltimes)[,-1,drop=FALSE]
+	   psurvmarg <- exp(-rowSums(Xall*pbases,1,sum))
+	      
+          } ## }}} 
+
+          outl<-.Call("twostageloglikeRVpairs", ## {{{
+          icause=status,ipmargsurv=psurvmarg, 
+          itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
+          icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
+          ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
+          itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
+          irvdes=random.design,
+          idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs,iags=additive.gamma.sum) 
+
+      } ## }}} 
+      else { ## {{{  survival model 
+
          ### update aalen type baseline  
 	 if (baseline.fix==0)  { ## {{{ 
 
-           profile.baseline  <- .Call("BhatAddGam",
-            dBaalen,dcauses, dim(xjump),xjump, c(par), dim(mtheta.des),mtheta.des, 
-	    additive.gamma.sum,var.link, dim(mrv.des),mrv.des)
+         if (case.control==1) stop("Not implemented yet for additive gamma model: (Q Z) X^T \alpha(t) \n")
 
-	   pbases <- Cpred(rbind(c(0,rep(0,ncol(profile.baseline$B))),cbind(dtimesst,profile.baseline$B)),times)[,-1,drop=FALSE]
+           profile.baseline  <- .Call("BhatAddGam",recursive=1,
+            dBaalen,dcauses, dim(xjump),xjump, c(par), dim(mtheta.des),mtheta.des, 
+	    additive.gamma.sum,var.link,dim(mrv.des),mrv.des,1,matrix(0,1,1))
+
+	   nulrow <- rep(0,ncol(dBallen)+1)
+	   pbases <- Cpred(rbind(nulrow,cbind(dtimesst,profile.baseline$B)),times)[,-1,drop=FALSE]
 	   psurvmarg <- c()
             for (i in 1:length(cr.models)) {
 	          if (i==1) fp <- 1 else fp <- poscovs[i-1]+1
@@ -570,7 +681,6 @@ if (!is.null(margsurv))
 	 }
 
 	 } ## }}}  
-	      
 
       outl<-.Call("survivalloglikeRVpairs", 
       icause=status,
@@ -583,10 +693,7 @@ if (!is.null(margsurv))
       idimthetades=dim(theta.des),idimrvdes=dim(random.design),
       irvs=pairs.rvs,iags=additive.gamma.sum) 
 
-      if (baseline.fix==0)  { 
-	      outl$baseline <- cbind(dtimesst,profile.baseline$B); 
-
-      }
+      if (baseline.fix==0)  outl$baseline <- cbind(dtimesst,profile.baseline$B); 
 
       } ## }}} 
       } ## }}} 
@@ -615,7 +722,7 @@ if (!is.null(margsurv))
                     out <- loglike(p)
                     hess <-  -1* out$Dscore
 ###                 uses simple second derivative for computing derivative of score
-		    if (numDeriv==2 || (baseline.fix==0 && two.stage==0)) {
+		    if (numDeriv==2 || ((baseline.fix==0 && two.stage==0) && i==1)) {
                     oout <- 3
                     hess <- numDeriv::jacobian(loglike,p,method="simple")
 		    oout <- 2
@@ -647,11 +754,11 @@ if (!is.null(margsurv))
             score1 <- score <- out$score
             oout <- 0; 
             hess1 <- hess  <- -1*out$Dscore 
-            if (numDeriv==2 || (baseline.fix==0 && two.stage==0)) {
-                    oout <- 3
-                    hess <- numDeriv::jacobian(loglike,p,method="simple")
-		    oout <- 2
-	    }
+###            if (numDeriv==2 || (baseline.fix==0 && two.stage==0)) {
+###                    oout <- 3
+###                    hess <- numDeriv::jacobian(loglike,p,method="simple")
+###		    oout <- 2
+###	    }
             if (iid==1) theta.iid <- out$theta.iid
             if (detail==1 && iid==1) cat("finished iid decomposition\n"); 
         }
