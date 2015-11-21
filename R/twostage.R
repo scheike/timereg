@@ -210,7 +210,7 @@
 ##' @param pairs.rvs for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair. 
 ##' @param additive.gamma.sum for two.stage=0, this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters.
 ##' @param two.stage to fit two-stage model, if 0 then will fit hazard model with additive gamma structure (WIP)
-##' @param baseline.fix=1 to fix baseline given in marginal.survival, baseline.fix=0 uses addtive aalen model where these models are specified in cr.models, baseline.fix=2 fits weibull model. 
+##' @param fix.baseline=1 to fix baseline given in marginal.survival, fix.baseline=0 uses addtive aalen model where these models are specified in cr.models, fix.baseline=2 fits weibull model. 
 ##' @param cr.models competing risks models for two.stage=0, should be given as a list with models for each cause
 ##' @param case.control assumes case control structure for "pairs" with second column being the probands, when this options is used the twostage model is profiled out via the paired estimating equations for the survival model. 
 twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
@@ -220,7 +220,7 @@ var.link=1,iid=1, step=0.5,notaylor=0,model="clayton.oakes",
   se.clusters=NULL,max.clust=NULL,numDeriv=0,numDeriv.method="simple",
   random.design=NULL,pairs=NULL,pairs.rvs=NULL,
   additive.gamma.sum=NULL,
-  two.stage=1,baseline.fix=0,cr.models=NULL,case.control=0)
+  two.stage=1,fix.baseline=1,cr.models=NULL,case.control=0)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -460,7 +460,7 @@ if (!is.null(margsurv))
   ## }}}
 
 ###  setting up arguments for Aalen baseline profile estimates
- if (baseline.fix==0 )  { ## {{{ 
+ if (fix.baseline==0 )  { ## {{{ 
 
  if (is.null(cr.models)) stop("give hazard models for different causes, 
       ex cr.models=list(Surv(time,status==1)~+1,Surv(time,status==2)~+1) \n")
@@ -499,6 +499,7 @@ if (!is.null(margsurv))
               X <- cbind(1,data[,covsx])
               xjump[i,indexc,] <- t(X[ids,])
         }
+
 	## }}} 
 
        	#### organize subject specific random variables and design
@@ -521,18 +522,26 @@ if (!is.null(margsurv))
 	nrv.des <- pairs.rvs[ids]
 ###	print(dim(mtheta.des)); print(dim(mrv.des)); print(dim(xjump)); print(dim(dBaalen)); 
 	## }}} 
+
+###	if (two.stage==1 && is.null(margsurv) && is.null(marginal.surv)) {
+###	     psurvmarg <- exp(-rowSums(X*Cpred(a[[1]]$cum,times)[,-1]
+###	}
+
+
       } ## }}} 
 
       if (case.control==1) { ## {{{ 
-         if ((two.stage==0) stop("Only implemented for two-stage survival  model \n") 
+         if (two.stage==0) stop("Only implemented for two-stage survival  model \n") 
 
+      print(dim(data))
+      print(summary(pairs))
 
-         data1 <- data[pair[,1]]
-         data.proband <- data[pair[,2]]
+         data1 <- data[pairs[,1],]
+         data.proband <- data[pairs[,2],]
 
 ## {{{ setting up designs for jump times 
         timestatus <- all.vars(cr.models[[1]])
-	all.times <- data[,timestatus[1]]
+	alltimes <- data[,timestatus[1]]
 	times <- data1[,timestatus[1]]
 	lstatus <- data1[,timestatus[2]]
 	timescase <- data.proband[,timestatus[1]]
@@ -631,7 +640,7 @@ if (!is.null(margsurv))
              for (i in 1:5) { ## {{{ profile via iteration 
              cncc <- .Call("BhatAddGamCC",1,dBaalen,dcauses,dim(xjump),xjump,
 	                   c(par), dim(mtheta.des),mtheta.des, additive.gamma.sum,var.link, 
-	                   dim(mrv.des),mrv.des,nrvs,1,Bit,Bitcase,dcausescase)
+	                   dim(mrv.des),mrv.des,nrv.des,1,Bit,Bitcase,dcausescase)
               summary(cncc$caseweights)
               summary(cncc$B)
 
@@ -643,9 +652,16 @@ if (!is.null(margsurv))
            Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
            } ## }}} 
 
-	   pbases <- Cpred(rbind(c(0,rep(0,ncol(Bit))),cbind(dtimesst,Bit)),alltimes)[,-1,drop=FALSE]
-	   psurvmarg <- exp(-rowSums(Xall*pbases,1,sum))
+###	     plot(cum1)
+###	     abline(c(0,1))
+
+	   pbases <- Cpred(rbind(rep(0,1+ncol(Bit)),cbind(dtimesst,Bit)),alltimes)[,-1,drop=FALSE]
+###	   print(summary(pbases))
+###	   print(dim(Xall))
+###	   print(dim(pbases))
+	   psurvmarg <- exp(-apply(Xall*pbases,1,sum))
 	      
+###	   print(summary(psurvmarg))
           } ## }}} 
 
           outl<-.Call("twostageloglikeRVpairs", ## {{{
@@ -657,11 +673,13 @@ if (!is.null(margsurv))
           irvdes=random.design,
           idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs,iags=additive.gamma.sum) 
 
+          if (fix.baseline==0)  outl$baseline <- cum1
+
       } ## }}} 
       else { ## {{{  survival model 
 
          ### update aalen type baseline  
-	 if (baseline.fix==0)  { ## {{{ 
+	 if (fix.baseline==0)  { ## {{{ 
 
          if (case.control==1) stop("Not implemented yet for additive gamma model: (Q Z) X^T \alpha(t) \n")
 
@@ -693,7 +711,7 @@ if (!is.null(margsurv))
       idimthetades=dim(theta.des),idimrvdes=dim(random.design),
       irvs=pairs.rvs,iags=additive.gamma.sum) 
 
-      if (baseline.fix==0)  outl$baseline <- cbind(dtimesst,profile.baseline$B); 
+      if (fix.baseline==0)  outl$baseline <- cbind(dtimesst,profile.baseline$B); 
 
       } ## }}} 
       } ## }}} 
@@ -722,7 +740,7 @@ if (!is.null(margsurv))
                     out <- loglike(p)
                     hess <-  -1* out$Dscore
 ###                 uses simple second derivative for computing derivative of score
-		    if (numDeriv==2 || ((baseline.fix==0 && two.stage==0) && i==1)) {
+		    if (numDeriv==2 || ((fix.baseline==0 && two.stage==0) && i==1)) {
                     oout <- 3
                     hess <- numDeriv::jacobian(loglike,p,method="simple")
 		    oout <- 2
@@ -863,7 +881,8 @@ if (!is.null(margsurv))
 ###  if (length(thetanames)==nrow(theta)) rownames(theta) <- thetanames
   ud <- list(theta=theta,score=score,hess=hess,hessi=hessi,var.theta=var.theta,model=model,robvar.theta=robvar.theta,
              theta.iid=theta.iid,loglikeiid=loglikeiid,likepairs=likepairs,
-	     thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,margsurv=psurvmarg,baseline=out$baseline)
+	     thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,margsurv=psurvmarg,
+	     baseline=out$baseline)
   class(ud)<-"twostage" 
   attr(ud, "Formula") <- formula
   attr(ud, "clusters") <- clusters
