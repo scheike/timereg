@@ -150,7 +150,8 @@ RcppExport SEXP MatxCube(
  mat X(arrayDims[2],arrayDims[0]); 
 
  for (int k=0; k<arrayDims[2]; k++) { // Iterate over events
-	    X.row(k)=  DBhat.slice(k) * trans(xmat.row(k)); 
+//	    X.row(k)=  DBhat.slice(k) * trans(xmat.row(k)); 
+	    X.row(k)=  xmat.row(k) * trans(DBhat.slice(k)) ;
  } 
 
     return(Rcpp::List::create(Rcpp::Named("X")=X));
@@ -367,6 +368,7 @@ RcppExport SEXP BhatAddGamCC(SEXP itwostage,SEXP idBaalen,SEXP icause,
     vec DthetaS(theta.n_elem); // ,DthetaDtS(theta.n_elem),DthetaW(theta.n_elem); 
     vec allvec(6); 
     int ncr=rv.n_rows/2; 
+//    printf(" %d \n",ncr); 
     vec cumhaz(ncr); cumhaz.fill(0); 
 //    vec Dcumhaz1(ncr); 
 //    vec cumhaz2(ncr); cumhaz2.fill(0); 
@@ -400,7 +402,7 @@ RcppExport SEXP BhatAddGamCC(SEXP itwostage,SEXP idBaalen,SEXP icause,
         if (twostage<=0) {	
            rrv1= rvm.rows(0,nnn/2-1);
            rrv2= rvm.rows(nnn/2,nnn-1);
-	   if (k<10) rrv1.print("rr1"); 
+//	   if (k<10) rrv1.print("rr1"); 
 	} else {
            rv1= trans(rvm.row(0));
            rv2= trans(rvm.row(1));

@@ -535,7 +535,6 @@ if (!is.null(margsurv))
       } ## }}} 
 
       if (case.control==1) { ## {{{ 
-         if (two.stage==0) stop("Only implemented for two-stage survival  model \n") 
 
 ###      print(dim(data))
 ###      print(summary(pairs))
@@ -591,7 +590,6 @@ if (!is.null(margsurv))
 	 } ## }}} 
 
 	Xall <- cbind(1,data[,covsx])
-
 	## }}} 
 
 ####  organize subject specific random variables and design
@@ -636,7 +634,7 @@ if (!is.null(margsurv))
       if (two.stage==1) { ## {{{ two-stage model 
 
           if (case.control==1) { ## {{{  profiles out baseline under case-control sampling
-	      ## initial values 
+	      ## initial values , only one cr.model for survival 
               Bit <- cbind(Cpred(a[[1]]$cum,dtimesst)[,-1])
               ###plot(dtimesst,Bit)
               Bitcase  <- cbind(Cpred(a[[1]]$cum,dtimesstcase)[,-1])
@@ -685,7 +683,43 @@ if (!is.null(margsurv))
          ### update aalen type baseline  
 	 if (fix.baseline==0)  { ## {{{ 
 
-         if (case.control==1) stop("Not implemented yet for additive gamma model: (Q Z) X^T \alpha(t) \n")
+          if (case.control==1) { ## {{{  profiles out baseline under case-control sampling
+             
+	      Bit <- Bitcase <- c()
+	      for (j in 1:length(cr.models)) {
+		      ## initial values 
+		      Bit <- cbind(Bit,Cpred(a[[j]]$cum,dtimesst)[,-1,drop=FALSE])
+		      ###plot(dtimesst,Bit)
+		      Bitcase  <- cbind(Bitcase,Cpred(a[[j]]$cum,dtimesstcase)[,-1,drop=FALSE])
+              }		  
+              Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
+
+             for (i in 1:5) { ## {{{ profile via iteration 
+             cncc <- .Call("BhatAddGamCC",0,dBaalen,dcauses,dim(xjump),xjump,
+	                   c(par), dim(mtheta.des),mtheta.des, additive.gamma.sum,var.link, 
+	                   dim(mrv.des),mrv.des,nrv.des,1,Bit,Bitcase,dcausescase)
+###              summary(cncc$caseweights)
+###              summary(cncc$B)
+###matlines(dtimesst,cncc$B,type="l",col=i)
+
+           Bit <- cncc$B
+           cum1 <- cbind(dtimesst,cncc$B)
+           Bitcase  <-cbind(Cpred(cum1,dtimesstcase)[,-1])
+           Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
+           } ## }}} 
+
+###	     plot(cum1)
+###	     abline(c(0,1))
+
+	   pbases <- Cpred(rbind(rep(0,1+ncol(Bit)),cbind(dtimesst,Bit)),alltimes)[,-1,drop=FALSE]
+###	   print(summary(pbases))
+###	   print(dim(Xall))
+###	   print(dim(pbases))
+	   psurvmarg <- apply(Xall*pbases,1,sum)
+	      
+###	   print(summary(psurvmarg))
+          } ## }}} 
+	  else { ## {{{ profile out baseline
 
            profile.baseline  <- .Call("BhatAddGam",recursive=1,
             dBaalen,dcauses, dim(xjump),xjump, c(par), dim(mtheta.des),mtheta.des, 
@@ -701,6 +735,8 @@ if (!is.null(margsurv))
                   X <- cbind(1,data[,covsx])
 	   psurvmarg <- cbind(psurvmarg,apply(X*pbases[,indexc],1,sum))
 	 }
+
+	  } ## }}} 
 
 	 } ## }}}  
 
