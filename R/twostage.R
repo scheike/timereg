@@ -238,8 +238,12 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 	 ldata<-aalen.des(formula,data=data,model="cox.aalen");
 	 id <- attr(margsurv,"id"); 
 	 mclusters <- attr(margsurv,"cluster.call")
-	 X<-ldata$X; time<-ldata$time2; Z<-ldata$Z;  status<-ldata$status;
-	 time2 <- attr(margsurv,"stop"); start.time <- attr(margsurv,"start")
+	 X<-ldata$X; 
+	 time<-ldata$time2; 
+	 Z<-ldata$Z;  
+	 status<-ldata$status;
+	 time2 <- attr(margsurv,"stop"); 
+	 start.time <- attr(margsurv,"start")
 	 antpers<-nrow(X);
          if (is.null(Z)==TRUE) {npar<-TRUE; semi<-0;}  else { Z<-as.matrix(Z); npar<-FALSE; semi<-1;}
          if (npar==TRUE) {Z<-matrix(0,antpers,1); pz<-1; fixed<-0;} else {fixed<-1;pz<-ncol(Z);}
@@ -533,8 +537,8 @@ if (!is.null(margsurv))
       if (case.control==1) { ## {{{ 
          if (two.stage==0) stop("Only implemented for two-stage survival  model \n") 
 
-      print(dim(data))
-      print(summary(pairs))
+###      print(dim(data))
+###      print(summary(pairs))
 
          data1 <- data[pairs[,1],]
          data.proband <- data[pairs[,2],]
@@ -641,8 +645,8 @@ if (!is.null(margsurv))
              cncc <- .Call("BhatAddGamCC",1,dBaalen,dcauses,dim(xjump),xjump,
 	                   c(par), dim(mtheta.des),mtheta.des, additive.gamma.sum,var.link, 
 	                   dim(mrv.des),mrv.des,nrv.des,1,Bit,Bitcase,dcausescase)
-              summary(cncc$caseweights)
-              summary(cncc$B)
+###              summary(cncc$caseweights)
+###              summary(cncc$B)
 
 ###matlines(dtimesst,cncc$B,type="l",col=i)
 

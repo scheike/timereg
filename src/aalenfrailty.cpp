@@ -235,8 +235,8 @@ RcppExport SEXP BhatAddGam(SEXP irecursive, SEXP idBaalen,SEXP icause,
 //	cumhaz1.print("ch1"); 
 //	ags.print("ags"); 
 
- wall_clock timer; 
- timer.tic(); 
+// wall_clock timer; 
+// timer.tic(); 
 
     for (int i=0; i<it ; i++) { // Iterate over baseline 
     for (unsigned k=0; k<cause.n_elem; k++) { // Iterate over events
@@ -278,8 +278,8 @@ RcppExport SEXP BhatAddGam(SEXP irecursive, SEXP idBaalen,SEXP icause,
     } // }}}
     } 
 
- double nt2 = timer.toc();
- printf("Bhat-profile timer-loop %lf \n",nt2); 
+// double nt2 = timer.toc();
+// printf("Bhat-profile timer-loop %lf \n",nt2); 
 
     return(Rcpp::List::create(Rcpp::Named("B")=Bhat, 
 			      Rcpp::Named("caseweights")=casev)
@@ -377,8 +377,8 @@ RcppExport SEXP BhatAddGamCC(SEXP itwostage,SEXP idBaalen,SEXP icause,
 
 //	rv1.print("rv1"); cumhaz1.print("ch1"); ags.print("ags"); 
 
- wall_clock timer; 
- timer.tic(); 
+// wall_clock timer; 
+// timer.tic(); 
  mat rrv1,rrv2; 
  vec rv1,rv2; 
 
@@ -457,8 +457,8 @@ RcppExport SEXP BhatAddGamCC(SEXP itwostage,SEXP idBaalen,SEXP icause,
     } // }}}
     } 
 
- double nt2 = timer.toc();
- printf("Bhat-profile timer-loop %lf \n",nt2); 
+// double nt2 = timer.toc();
+// printf("Bhat-profile timer-loop %lf \n",nt2); 
 
     return(Rcpp::List::create(Rcpp::Named("B")=Bhat, 
 			      Rcpp::Named("caseweights")=casev)

@@ -2485,12 +2485,11 @@ for (j=0;j<antclust;j++) {
 	mat thetadesv=thetadesi.slice(j); 
 
 	if (j< -10)  {
-	   Rprintf(" %d %d \n",lnrv,pt); 
-           rv1.print("rv1");    rv2.print("rv2"); 
-	   thetadesv.print("thetades "); 
-	   etheta.print("e-theta"); 
-//	   mat test=mat(thetades.begin(),3,1); 
-//	   test.print("test"); 
+	   Rprintf("%d %d %d %d %d %lf %lf \n",j,i,k,ci,ck,Li,Lk); 
+//           rv1.print("rv1");    rv2.print("rv2"); 
+//	   thetadesv.print("thetades "); 
+//	   etheta.print("e-theta"); 
+//	   ags.print("ags"); 
 	}
 
            if (trunkp(i)<1 || trunkp(k)<1) { //  
