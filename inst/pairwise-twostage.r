@@ -1,6 +1,5 @@
 
 library(mets)
-source("../R/twostage.R")
 ###
 set.seed(100)
 data <- simClaytonOakes.family.ace(8000,2,1,0,3)
@@ -10,7 +9,7 @@ data$child <- 1*(data$number==3)
 out <- ace.family.design(data,member="type",id="cluster")
 out$pardes
 head(out$des.rv)
-
+###
 aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
 
 ## {{{ additive gamma models with and without pair call 
@@ -19,8 +18,9 @@ aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
 ### simple random effects call 
 ts0 <- twostage(aa,data=data,clusters=data$cluster,
 	 detail=0,
-        theta=c(2,1),var.link=0,step=1.0,
+        theta=c(0.2,.1),var.link=0,step=1.0,
         random.design=out$des.rv,theta.des=out$pardes)
+
 summary(ts0)
 
 ### now specify fitting via specific pairs 
@@ -33,7 +33,7 @@ tail(pairs,n=12)
 ## make all pairs and pair specific design and pardes 
 ## same as ts0 but pairs specified 
 ts <- twostage(aa,data=data,clusters=data$cluster,
-               theta=c(2,1),var.link=0,step=1.0,
+               theta=c(2,1)/10,var.link=0,step=1.0,
                random.design=out$des.rv,
                theta.des=out$pardes,pairs=pairs)
 summary(ts)
@@ -43,7 +43,7 @@ ssid <- sort(sample(1:48000,20000))
 ###
 ### take some of all 
 tsd <- twostage(aa,data=data,clusters=data$cluster,
-               theta=c(2,1),var.link=0,step=1.0,
+               theta=c(2,1)/10,var.link=0,step=1.0,
                random.design=out$des.rv,iid=1,
 	      theta.des=out$pardes,pairs=pairs[ssid,])
 summary(tsd)
@@ -63,7 +63,7 @@ outid$pardes
 head(outid$des.rv)
 ###
 tsdid <- twostage(aa,data=dataid,clusters=dataid$cluster,
-               theta=c(2,1),var.link=0,step=1.0,
+               theta=c(2,1)/10,var.link=0,step=1.0,
                random.design=outid$des.rv,iid=1,
                theta.des=outid$pardes,pairs=pair.new)
 summary(tsdid)
@@ -120,7 +120,7 @@ theta.des[,,1]
 head(rvs)
 
 tsdid2 <- twostage(aa,data=dataid,clusters=dataid$cluster,
-               theta=c(2,1),var.link=0,step=1.0,
+               theta=c(2,1)/10,var.link=0,step=1.0,
                random.design=random.des,
                theta.des=theta.des,pairs=pair.new,pairs.rvs=rvs)
 summary(tsdid2)
@@ -147,7 +147,7 @@ out$theta.des[,,9]
 
 
 tsdid3 <- twostage(aa,data=dataid,clusters=dataid$cluster,
-               theta=c(2,1),var.link=0,step=1.0,
+               theta=c(2,1)/10,var.link=0,step=1.0,
                random.design=out$random.design,
                theta.des=out$theta.des,pairs=pair.new,pairs.rvs=out$ant.rvs)
 summary(tsdid3)
@@ -157,13 +157,16 @@ coef(tsdid3)
 
 ## }}} 
 
-
 ##### simple models, test for pairs structure ## {{{ 
 
+library(mets)
+source("../R/twostage.R")
 ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=0,
-        theta=c(0.2),var.link=0,step=1.0)
+	detail=0,numDeriv=1,Nit=10,
+        theta=c(0.17),var.link=0,step=1.0)
 summary(ts0)
+ts0$score; ts0$score1
+ts0$Dscore; ts0$hess
 
 mm <- familycluster.index(data$cluster)
 head(mm$familypairindex,n=10)
@@ -175,8 +178,8 @@ dim(pairs)
 cc <- cluster.index(data$cluster)
 ###
 ts0 <- twostage(aa,data=data,clusters=data$cluster,
-        detail=0,
-        theta=c(0.2),var.link=0,step=1.0,pairs=pairs)
+        detail=1,Nit=0,
+        theta=ts0$theta,var.link=0,pairs=pairs)
 summary(ts0)
 
 
@@ -213,9 +216,11 @@ ts0 <- twostage(aa,data=data,clusters=data$cluster,
 summary(ts0)
 
 ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=1,Nit=10,
+	 detail=1,Nit=10,numDeriv=1,
         theta=c(0.2),var.link=0,step=1.0,pairs=pairs)
 summary(ts0)
+ts0$score
+ts0$score1
 
 ts0 <- twostage(aa,data=data,clusters=data$cluster,
 	 detail=1,Nit=10,

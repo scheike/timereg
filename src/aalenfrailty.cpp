@@ -163,8 +163,6 @@ RcppExport SEXP MatxCube(
   return R_NilValue; // -Wall
 } // }}}
 
-
-
 RcppExport SEXP BhatAddGam(SEXP irecursive, SEXP idBaalen,SEXP icause,
 		SEXP idimxjump,SEXP ixjump, // cube 
 		SEXP itheta,
@@ -187,7 +185,7 @@ RcppExport SEXP BhatAddGam(SEXP irecursive, SEXP idBaalen,SEXP icause,
     int              recursive = Rcpp::as<int>(irecursive);
     mat                    Bit = Rcpp::as<mat>(iBit);
 
-    if (recursive==1) it=1; 
+ if (recursive==1) it=1; 
 
 // array for xjump covariates of jump subject, for all causes 
  NumericVector vxjump(ixjump);
@@ -247,11 +245,12 @@ RcppExport SEXP BhatAddGam(SEXP irecursive, SEXP idBaalen,SEXP icause,
         // computes weights based on additive gamma model 
         mat thetadesv=thetades.slice(k); 
 	rv1=rv.slice(k); 
-//	thetadesv.print("thetades"); 
-//	rv1.print("rv1"); 
+//	thetadesv.print("thetades"); rv1.print("rv1"); etheta.print("theta"); 
+//	cumhaz.print("cumhaz"); 
         ll=survivalRVCmarg(etheta,thetadesv,ags,(int) cause(k),cumhaz,rv1,DthetaS,DthetaDtS,allvec);
         caseweight=allvec(0)/ll; //   S / D_1 S
 	casev(k)=caseweight; 
+//	printf(" %d %lf %lf %lf \n",cause(k),caseweight,ll,allvec(0));  
 //	DthetaW=(ll*DthetaDtS-allvec(0)*DthetaS)/(ll*ll);
 
         //  increments 
@@ -267,7 +266,8 @@ RcppExport SEXP BhatAddGam(SEXP irecursive, SEXP idBaalen,SEXP icause,
 //        if (k>0) { DthetaBhat.slice(k)+= DthetaBhat.slice(k-1)+ 
 //                      (dBB * dBaalen.row(k)); 
 //	}
-	mat xj=xjump.slice(k); 
+//	mat xj=xjump.slice(k); 
+//	xj.print("xj"); 
 //	vec bb=trans(Bhat.row(k)); 
 //	bb.print("bb"); 
 //	cumulative hazard at time t- for all causes 

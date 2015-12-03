@@ -115,16 +115,17 @@ if (left>0) {
 } ## }}} 
 
 ##' @export
-simClaytonOakes.twin.ace <- function(K,varg,varc,beta,stoptime,Cvar=0,left=0,pairleft=0,trunc.prob=0.5)  ## {{{ 
+simClaytonOakes.twin.ace <- function(K,varg,varc,beta,stoptime,Cvar=0,left=0,pairleft=0,trunc.prob=0.5,lam0=1)  ## {{{ 
 {
   ## K antal clustre, n=antal i clustre
-  n=2 # twins with ace structure
+  n <- 2 # twins with ace structure
   x<-array(c(runif(n*K),rep(0,n*K),rbinom(n*K,1,0.5)),dim=c(K,n,3))
   if (Cvar==0) C<-matrix(stoptime,K,n) else C<-matrix(Cvar*runif(K*n)*stoptime,K,n) 
   ### total variance of gene and env. 
   ###  random effects with 
   ###  means varg/(varg+varc) and variances varg/(varg+varc)^2
-  eta <- varc+varg
+  etao <- eta <- varc+varg
+  if (etao==0) eta <- 1
   Gams1 <-cbind(
        rgamma(K,varg)/eta,
        rgamma(K,varg*0.5)/eta, rgamma(K,varg*0.5)/eta, rgamma(K,varg*0.5)/eta,
@@ -134,9 +135,11 @@ simClaytonOakes.twin.ace <- function(K,varg,varc,beta,stoptime,Cvar=0,left=0,pai
   dzrv1 <- Gams1[,2]+Gams1[,3]+Gams1[,5] ### 0.5 shared gene + 0.5 non-shared + env 
   dzrv2 <- Gams1[,2]+Gams1[,4]+Gams1[,5] ### 0.5 shared gene + 0.5 non-shared + env 
   Gam1 <- cbind(mz*mzrv+dz*dzrv1,mz*mzrv+dz*dzrv2)
+  Gam1[Gam1==0] <- 1 ## to work also under independence 
 ###  print(mean(mzrv)); print(mean(dzrv1)); print(mean(dzrv2)); 
 ###  print(var(mzrv));  print(var(dzrv1));  print(var(dzrv2)); 
-  temp<-eta*log(-log(1-x[,,1])/(eta*Gam1)+1)*exp(-beta*x[,,3])
+  temp<-eta*log(-log(1-x[,,1])/(eta*Gam1)+1)*exp(-beta*x[,,3])/lam0
+  if (etao==0) temp <- matrix(rexp(n*K),K,n)*exp(-beta*x[,,3])/lam0
   x[,,2]<-ifelse(temp<=C,1,0);
   x[,,1]<-pmin(temp,C)
   minstime <- apply(x[,,1],1,min)  
@@ -225,14 +228,6 @@ if (left>0) { ## {{{
 names(ud)<-c("time","status","x1","cluster","type","mintime","lefttime","truncated")
 return(ud)
 } ## }}} 
-
-K <- 50000; varg <- 0.5; varc <- 1; beta <- 0; stoptime <- 3; 
-lam0=0.2
-lam0=c(0.2,0.3); 
-varg <- c(1,0.5,0.3)
-varc <- c(1,0.5,0.3)
-Cvar=0;left=0;pairleft=0;trunc.prob=0.5; overall=0
-all.sum=1
 
 ##' @export
 simCompete.twin.ace <- function(K,varg,varc,beta,stoptime,lam0=c(0.2,0.3),
@@ -362,9 +357,6 @@ if (left>0) { ## {{{
 names(ud)<-c("time","status","x1","cluster","zyg","mintime","lefttime","truncated")
 return(ud)
 } ## }}} 
-
-###out <- simCompete.twin.ace(20000,
-###   c(1,1,0.0),c(1,1,0.0),0,2,lam0=c(0.5,0.5))
 
 ##' @export
 simCompete.simple <- function(K,varr,beta,stoptime,lam0=c(0.2,0.3),
@@ -508,7 +500,6 @@ kendall.normal.twin.ace <- function(parg,parc,K=10000)  ## {{{
 
 ##
 ###kendall.ClaytonOakes.twin.ace(2,0)
-
 ## sim.clayton <- function(n=100,K=2,eta=0.5,beta,...) {
 ##     m <- lvm(T~x)
 ##     rates <- c(0.3,0.5); cuts <- c(0,5)

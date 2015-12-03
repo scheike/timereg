@@ -5,8 +5,8 @@ set.seed(100)
 n <- 20000
 
 ## {{{ competing risks ace model with profile of baseline 
-lam0 <- c(0.5,0.3)
-pars <- c(1,1,1,1,0,1)
+lam0 <- c(0.3,0.2)
+pars <- c(1,1,1,1,0.1,1)*0.25
 ## genetic random effects, cause1, cause2 and overall 
 parg <- pars[c(1,3,5)]
 ## environmental random effects, cause1, cause2 and overall 
@@ -14,7 +14,8 @@ parc <- pars[c(2,4,6)]
 
 ## simulate competing risks with two causes with hazards 0.5 and 0.3
 ## ace for each cause, and overall ace 
-out <- simCompete.twin.ace(n,parg,parc,0,2,lam0=lam0,overall=1,all.sum=1)
+out <- simCompete.twin.ace(n,parg,parc,0,2,
+			   lam0=lam0,overall=1,all.sum=1)
 
 ## setting up design for running the model 
 ## {{{ setting pairs and random effects 
@@ -41,24 +42,41 @@ dout$random.design[,,nrow(out)/2]
 ## competing risks models, given as list 
 cr.models=list(Surv(time,status==1)~+1,
 	       Surv(time,status==2)~+1)
+ms <- out$time %o% lam0
 
-par(mfrow=c(2,4))
-ts <- twostage(NULL,data=out,clusters=out$cluster,
-               theta=pars,
-	       score.method="fisher.scoring",
-	       var.link=0,step=1.0,Nit=1,detail=1,
+par(mfrow=c(1,1))
+tsf <- twostage(NULL,data=out,clusters=out$cluster,
+               theta=0.01+pars/sum(pars)^2,
+	       var.link=0,step=1.0,Nit=20,detail=1,
                random.design=dout$random.design,
                theta.des=dout$theta.des,pairs=pairs,
 	       numDeriv=0,
                marginal.status=out$status,
-	       two.stage=0, cr.models=cr.models)
-summary(ts)
+               marginal.survival=ms,
+	       fix.baseline=1,
+	       two.stage=0,cr.models=cr.models)
+coef(tsf)
+pars/sum(pars)^2
+tsf$score
+tsf$score1
 
-apply(ts$theta.iid,2,sum)
+source("../R/twostage.R")
+par(mfrow=c(1,1))
+ts <- twostage(NULL,data=out,clusters=out$cluster,
+               theta=ts$theta,
+	       var.link=0,step=1.0,Nit=20,detail=1,
+               random.design=dout$random.design,
+               theta.des=dout$theta.des,pairs=pairs,
+	       numDeriv=0,
+               marginal.status=out$status,
+               marginal.survival=ms,
+	       fix.baseline=0,
+	       two.stage=0,cr.models=cr.models)
+coef(ts)
+pars/sum(pars)^2
 
 matplot.twostage(ts)
 abline(c(0,lam0[1])); abline(c(0,lam0[2])); 
-
 
 system.time(
 out1 <- aalen(cr.models[[1]],data=out,robust=0)
@@ -66,21 +84,6 @@ out1 <- aalen(cr.models[[1]],data=out,robust=0)
 system.time(
 out1 <- aalen(Surv(time,status!=0)~+1,data=out,robust=0)
 )
-
-lams <- cbind(out$time*lam0[1], out$time*lam0[2])
-###
-tsf <- twostage(NULL,data=out,clusters=out$cluster,
-               theta=pars,
-	       score.method="fisher.scoring",
-	       var.link=0,step=1.0,Nit=10,detail=1,
-               random.design=dout$random.design,
-               theta.des=dout$theta.des,pairs=pairs,
-	       numDeriv=1,
-               marginal.status=out$status,
-               marginal.survival=lams,
-	       two.stage=0, baseline.fix=1)
-summary(tsf)
-
 
 
 ## }}} 
@@ -118,24 +121,25 @@ lams <- cbind(lam0[1]*out$time)
 table(out$status)
 
 ts <- twostage(NULL,data=out,clusters=out$cluster,
-               theta=pars,
+               theta=pars/sum(pars)^2,
 	       var.link=0,step=1.0,Nit=10,detail=0,
                random.design=dout$random.design,
                theta.des=dout$theta.des,pairs=pairs,
 	       numDeriv=0,
                marginal.surv=lams,
-	       marginal.status=out$status,baseline.fix=1,
+	       marginal.status=out$status,fix.baseline=1,
                two.stage=0)
 summary(ts)
 
 ts2 <- twostage(NULL,data=out,clusters=out$cluster,
-               theta=pars,
-	       var.link=0,step=1.0,Nit=10,detail=0,
+               theta=ts$theta,
+	       var.link=0,step=1.0,Nit=10,detail=1,
                random.design=dout$random.design,
                theta.des=dout$theta.des,pairs=pairs,
 	       numDeriv=0,
 	       marginal.status=out$status,
 	       cr.model=list(Surv(time,status)~+1),
+	       fix.baseline=0,
                two.stage=0)
 summary(ts2)
 ts2$score
@@ -149,8 +153,7 @@ if (twoc==1) {
 # 
 
 lam0 <- c(0.5,0.4)
-pars <- c(1,0.5); 
-pars <- c(0.5,1,0.5,1); 
+pars <- c(0.5,1,0.5,1)*0.5; 
 out <- simCompete.twin.ace(n, pars[c(1,3)],pars[c(2,4)],0,2,lam0=lam0,overall=0)
 table(out$status)
 out$status1 <- out$status==1
@@ -188,28 +191,33 @@ table(out$status)
 lams <- cbind(out$time*lam0[1],out$time*lam0[2])
 
 ts <- twostage(NULL,data=out,clusters=out$cluster,
-               theta=pars,
-	       var.link=0,step=0.2,Nit=5,detail=1,
+               theta=pars/sum(pars)^2,
+	       var.link=0,step=1.0,Nit=10,detail=1,
                random.design=dout$random.design,
                theta.des=dout$theta.des,pairs=pairs,
 	       numDeriv=0,
                marginal.surv=lams,
 	       marginal.status=out$status1,
-               two.stage=0,baseline.fix=1)
+               two.stage=0,fix.baseline=1)
 summary(ts)
+ts$score
 
 ts2 <- twostage(NULL,data=out,clusters=out$cluster,
-               theta=pars,
-	       var.link=0,step=0.5,Nit=10,detail=1,
+               theta=pars/sum(pars)^2,
+	       var.link=0,step=1.0,Nit=20,detail=1,
                random.design=dout$random.design,
                theta.des=dout$theta.des,pairs=pairs,
-	       numDeriv=0,
 	       marginal.status=out$status,
-               two.stage=0,
+               two.stage=0,fix.baseline=0,
      cr.models=list( Surv(time,status==1)~+1,
-		    Surv(time,status==2)~+1)
+		     Surv(time,status==2)~+1)
 	       )
-summary(ts2)
+ts2$theta
+pars/sum(pars)^2
+
+matplot.twostage(ts2)
+abline(c(0,lam0[1])); abline(c(0,lam0[2])); 
+
 
 } ## }}} 
 
