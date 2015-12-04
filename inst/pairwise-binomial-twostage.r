@@ -22,7 +22,7 @@ head(out$des.rv)
 ### now specify fitting via specific pairs 
 source("../R/binomial.twostage.R")
 ts <- binomial.twostage(margbin,data=data,clusters=data$cluster,
-          theta=c(2,1),var.link=0,step=1.0,Nit=10,detail=1,
+          theta=c(2,1),var.par=0,var.link=0,step=1.0,Nit=10,detail=1,
           random.design=out$des.rv,
           theta.des=out$pardes)
 summary(ts)

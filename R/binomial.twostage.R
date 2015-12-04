@@ -142,6 +142,8 @@
 ##' @param theta Starting values for variance components
 ##' @param theta.des design for dependence parameters, when pairs are given this is could be a (pairs) x (numer of parameters)  x (max number random effects) matrix
 ##' @param var.link Link function for variance 
+##' @param var.par parametrization 
+##' @param var.func when alternative parametrizations are used this function can specify how the paramters are related to the \eqn{\lambda_j}'s.
 ##' @param iid Calculate i.i.d. decomposition
 ##' @param step Step size
 ##' @param notaylor Taylor expansion
@@ -158,8 +160,9 @@
 binomial.twostage <- function(margbin,data=sys.parent(),
      score.method="fisher.scoring",
      Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
-     control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,
-     step=1.0,notaylor=1,model="plackett",marginal.p=NULL,strata=NULL,
+     control=list(),theta=NULL,theta.des=NULL,
+     var.link=1,var.par=0,var.func=NULL,
+     iid=1, step=1.0,notaylor=1,model="plackett",marginal.p=NULL,strata=NULL,
      max.clust=NULL,se.clusters=NULL,numDeriv=0,
      random.design=NULL,pairs=NULL,pairs.rvs=NULL,additive.gamma.sum=NULL)
 { ## {{{
@@ -321,13 +324,25 @@ binomial.twostage <- function(margbin,data=sys.parent(),
       if (pair.structure==0 | dep.model!=3) Xtheta <- as.matrix(theta.des) %*% matrix(c(par),nrow=ptheta,ncol=1);
       if (pair.structure==1 & dep.model==3) Xtheta <- matrix(0,antpers,1); ## not needed 
       DXtheta <- array(0,c(1,1,1));
-
       ptrunc <- rep(1,antpers); 
+
+      if (var.link==1 & dep.model==3) epar <- c(exp(par)) else epar <- c(par)
+      partheta <- epar
+
+      if (var.par==1 & dep.model==3) {
+       ## from variances to 
+       if (is.null(var.func)) {
+	    sp <- sum(epar)
+	    partheta <- epar/sp^2 
+         } else partheta <- par.func(epar)
+      } 
+
+
 
       if (pair.structure==0) 
             outl<-.Call("twostageloglikebin", ## {{{
             icause=cause,ipmargsurv=ps, 
-            itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
+            itheta=c(partheta),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
             icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
             ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
             itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid, 
@@ -335,7 +350,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
             ## }}}
       else outl<-.Call("twostageloglikebinpairs", ## {{{
             icause=cause,ipmargsurv=ps, 
-            itheta=c(par),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
+            itheta=c(partheta),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
             icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
             ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
             itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid, 
@@ -345,6 +360,36 @@ binomial.twostage <- function(margbin,data=sys.parent(),
              ## }}} 
 
             if (detail==3) print(c(par,outl$loglike))
+
+         ## variance parametrization, and inverse.link 
+	 if (dep.model==3) {# {{{
+	    if (var.par==1) {
+		 ## from variances to and with sum for all random effects 
+		 if (is.null(var.func)) {
+		 if (var.link==0)  {
+	###		 print(c(sp,epar))
+		     mm <- matrix(-epar*2*sp,length(epar),length(epar))
+		     diag(mm) <- sp^2-epar*2*sp
+		 } else {
+		    mm <- -c(epar) %o% c(epar)*2*sp
+		    diag(mm) <- epar*sp^2-epar^2*2*sp
+		 }
+		    mm <- mm/sp^4
+		 } else mm  <- numDeriv::hessian(var.func,par)
+	      } else {
+		   if (var.link==0) mm <- diag(length(par)) else mm <- diag(epar)
+	      }
+	      }# }}}
+
+
+	    if (dep.model==3) {# {{{
+	       outl$score <-  t(mm) %*% outl$score
+	       outl$Dscore <- t(mm) %*% outl$Dscore %*% mm
+	       if (iid==1) outl$theta.iid <- outl$theta.iid %*% t(mm)
+
+	###       print(c(outl$score))
+	###       print(apply(outl$theta.iid,2,sum))
+	    }# }}}
 
             attr(outl,"gradient") <-outl$score 
             if (oout==0) ret <- c(-1*outl$loglike) else if (oout==1) ret <- sum(outl$score^2) else if (oout==3) ret <- outl$score else ret <- outl
@@ -489,6 +534,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     attr(ud, "Clusters") <- clusters
     attr(ud,"sym")<-sym; 
     attr(ud,"var.link")<-var.link; 
+    attr(ud,"var.par")<-var.par; 
     attr(ud,"antpers")<-antpers; 
     attr(ud,"antclust")<-antclust; 
     attr(ud, "Type") <- model

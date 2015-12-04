@@ -890,7 +890,7 @@ if (!is.null(margsurv))  {
     if (detail==3) print(c(partheta,outl$loglike))
 
     ## variance parametrization, and inverse.link 
-    if (dep.model==3) {
+    if (dep.model==3) {# {{{
     if (var.par==1) {
          ## from variances to and with sum for all random effects 
          if (is.null(var.func)) {
@@ -907,19 +907,19 @@ if (!is.null(margsurv))  {
       } else {
 	   if (var.link==0) mm <- diag(length(par)) else mm <- diag(epar)
       }
-      }
+      }# }}}
 
 ###    print(c(var.link,dep.model,var.par))
 ###    print("hh"); print(mm); print(outl$score)
 
-    if (dep.model==3) {
+    if (dep.model==3) {# {{{
        outl$score <-  t(mm) %*% outl$score
        outl$Dscore <- t(mm) %*% outl$Dscore %*% mm
        if (iid==1) outl$theta.iid <- outl$theta.iid %*% t(mm)
 
 ###       print(c(outl$score))
 ###       print(apply(outl$theta.iid,2,sum))
-    }
+    }# }}}
 
     attr(outl,"gradient") <-outl$score 
     if (oout==0) ret <- c(-1*outl$loglike) else if (oout==1) ret <- sum(outl$score^2) else if (oout==2) ret <- outl else ret <- outl$score

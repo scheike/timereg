@@ -2738,13 +2738,12 @@ for (j=0;j<antclust;j++) { // {{{
 	// 3-dimensional array pairs*(2xrandom effects)
         int lnrv= nrvs(j)-1; // number of random effects for this cluster 	
 
-	mat rv=rvdesC.slice(j);
 	int nnn=rv.n_rows; 
 	// first half of rows for person1 and second half for subject 2
 	// nn number of competing risks
 //        mat rv1= rv.rows(0,nnn/2-1);
 //        mat rv2= rv.rows(nnn/2,nnn-1);
-
+      mat rv=rvdesC.slice(j);
       mat rv1= rv.submat(0,0,nnn/2-1,lnrv);
       mat rv2= rv.submat(nnn/2,0,nnn-1,lnrv);
 

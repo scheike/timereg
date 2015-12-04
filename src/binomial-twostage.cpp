@@ -766,19 +766,17 @@ for (j=0;j<antclust;j++) {
         int lnrv= nrvs(j)-1; // number of random effects for this cluster 	
 //	printf(" %d \n",lnrv); 
 	mat rv=rvdesC.slice(j); 
-        vec rv1= trans(rv.row(0)); 
-        vec rv2= trans(rv.row(1)); 
+        vec rv1= trans(rv.submat(span(0),span(0,lnrv)));
+        vec rv2= trans(rv.submat(span(1),span(0,lnrv)));
 
 //        rv1= rvdesC.subcube( span(0),span(0,lnrv),span(j));
 //        rv2= rvdesC.subcube( span(1),span(0,lnrv),span(j));
 
 	// takes parameter relations for each pair
 	// 3-dimensional array pairs*(random effects* pars )
-//	mat thetades=thetadesi.subcube( span(j),span(0,lnrv),span::all);
-//	mat thetadesv=thetadesi.subcube( span(j),span(0,lnrv),span(0,pt-1));
-//	mat thetades=mat(thetadesv.begin(),nrvs(j),pt); 
-
-	mat thetadesv=thetadesi.slice(j); 
+//	mat thetadesv=thetadesi.slice(j); 
+	mat thetadesvv=thetadesi.slice(j); 
+	mat thetadesv=thetadesvv.rows(0,lnrv); 
 
 	if (j< 0)  {
 	   Rprintf(" %d %d \n",lnrv,pt); 
