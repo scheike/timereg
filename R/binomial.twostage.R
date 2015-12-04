@@ -535,6 +535,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     attr(ud,"sym")<-sym; 
     attr(ud,"var.link")<-var.link; 
     attr(ud,"var.par")<-var.par; 
+    attr(ud,"var.func")<-var.func; 
     attr(ud,"antpers")<-antpers; 
     attr(ud,"antclust")<-antclust; 
     attr(ud, "Type") <- model
