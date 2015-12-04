@@ -264,7 +264,7 @@ double survivalRVC(vec theta,mat thetades,mat ags,int cause1,int cause2,vec cif1
   if (itest==1) { // {{{
 	  theta.print("theta"); 
 	  thetades.print("theta-des"); 
-	  printf(" %d %d \n",cause1,cause2); 
+	  Rprintf(" %d %d \n",cause1,cause2); 
 	  cif1.print("ci1"); 
 	  cif2.print("ci1"); 
 	  x1.print("x1"); 
@@ -499,7 +499,7 @@ ds = like*ds;
 //}
 
 if (test==1) {
-printf("32 her \n"); printf(" like %lf  \n",like); 
+Rprintf("32 her \n"); Rprintf(" like %lf  \n",like); 
 dtheta.print("dtheta"); dstheta.print("dstheta"); 
 dttheta.print("dttheta"); d3.print("dsttheta"); 
 }
@@ -1889,7 +1889,6 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 } /* j in antclust */ 
 
 //printf("Sum of squares %lf \n",ssf); theta.print("theta"); Utheta.print("Utheta"); DUtheta.print("DUtheta"); 
-printf(" her \n"); 
 List res; 
 res["loglike"]=ssf; 
 res["score"]=Utheta; 
@@ -2451,7 +2450,7 @@ for (j=0;j<antclust;j++) {
         vec rv2= trans(rv.submat(span(1),span(0,lnrv)));
 	if (j<-1 ) {
         rv.print("rv"); 
-	printf(" %d \n",lnrv); 
+	Rprintf(" %d \n",lnrv); 
 	rv1.print("rv1"); 
 	rv2.print("rv2"); 
 	}
@@ -2709,7 +2708,7 @@ for (j=0;j<antclust;j++) { // {{{
      vec Lk=trans(pmargsurv.row(k)); 
 
      if (j<-10) {
-     printf("%d %d %d %d  \n",i,k,ci,ck); 
+     Rprintf("%d %d %d %d  \n",i,k,ci,ck); 
 	     Li.print("Lk"); 
 	     Lk.print("Lk"); 
      }
@@ -2771,7 +2770,7 @@ for (j=0;j<antclust;j++) { // {{{
 
            if (any(trunkp.row(i)>0) || any(trunkp.row(k)>0)) { //  
 		   vec Lit=trans(trunkp.row(i)); vec Lkt=trans(trunkp.row(k)); 
-if (j<-10)  {  printf(" så betinges der ! %d %d %d %d \n",entrycause(i),entrycause(k),cause(i),cause(k)); 
+if (j<-10)  {  Rprintf(" så betinges der ! %d %d %d %d \n",entrycause(i),entrycause(k),cause(i),cause(k)); 
 	   Lit.print("Lit"); 
 	   Lkt.print("Lkt"); 
 	   Lk.print("Lk"); 
@@ -2800,7 +2799,7 @@ if (j<-10)  {  printf(" så betinges der ! %d %d %d %d \n",entrycause(i),entryca
 		   ssf+=weights(i)*log(ll); 
 		   loglikecont=log(ll);
 		   if (j<-10)    {
-			   printf("%lf %lf \n",weights(i),ll); 
+			   Rprintf("%lf %lf \n",weights(i),ll); 
 			   allvec.print("allvec"); 
 			   dplackt.print("dll"); 
 		   }

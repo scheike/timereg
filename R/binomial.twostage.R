@@ -334,7 +334,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
        if (is.null(var.func)) {
 	    sp <- sum(epar)
 	    partheta <- epar/sp^2 
-         } else partheta <- par.func(epar)
+         } else partheta <- epar; ## par.func(epar)
       } 
 
 

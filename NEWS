@@ -1,5 +1,6 @@
 * Version 1.1.x
   - Truncation
+  - Case-Control sampling for twostage model. 
   - Two-stage additive gamma survival model. Additive random effects for two-stage survival
     model via pairwise composite likelihood. Simulation of family ace survival model. Function
     for computing Kendall's tau for pairs with additive gamma random effects model via simulations.

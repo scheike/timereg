@@ -1,5 +1,6 @@
 ##' @title Twostage survival model for multivariate survival data 
 ##'
+##' @description 
 ##' Fits Clayton-Oakes or bivariate Plackett models for bivariate survival data 
 ##' using marginals that are on Cox or addtive form. The dependence can be 
 ##' modelled via 
@@ -195,7 +196,7 @@
 ##' des.rv <- out$des.rv
 ##' aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
 ##' ts <- twostage(aa,data=data,clusters=data$cluster,detail=0,
-##' 	       theta=c(2,1),var.link=0,step=0.5,
+##' 	       theta=c(2,1)/10,var.link=0,step=0.5,
 ##' 	       random.design=des.rv,theta.des=pardes)
 ##' summary(ts)
 ##' 
@@ -222,13 +223,14 @@
 ##' cr.models <- list(Surv(time,status)~+1)
 ##' 
 ##' tscce <- twostage(NULL,data=datacc,clusters=datacc$cluster,
-##'            detail=0,theta=c(2,1),var.link=0,step=1.0,
+##'            detail=0,theta=c(2,1)/10,var.link=0,step=1.0,
 ##'	       pairs=pairs,
 ##'	       random.design=dout$random.design,theta.des=dout$theta.des,
 ##'	       pairs.rvs=dout$ant.rvs,
 ##'	       fix.baseline=0,case.control=1, marginal.status=datacc$status,
 ##'	       cr.models=cr.models)
 ##' summary(tscce)
+##' 
 ##' ### see also pairwise*.r demos under inst for frailty, competing risks and
 ##' ### case control sampling 
 ##' @keywords survival
@@ -262,10 +264,10 @@
 ##' @param pairs matrix with rows of indeces (two-columns) for the pairs considered in the pairwise composite score, useful for case-control sampling when marginal is known.
 ##' @param pairs.rvs for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair. 
 ##' @param additive.gamma.sum for two.stage=0, this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters.
-##' @param var.par=1 for the default parametrization with the variances of the random effects, var.par=0 specifies that the \eqn{\lambda_j}'s are used as parameters. 
+##' @param var.par  is 1 for the default parametrization with the variances of the random effects, var.par=0 specifies that the \eqn{\lambda_j}'s are used as parameters. 
 ##' @param var.func when alternative parametrizations are used this function can specify how the paramters are related to the \eqn{\lambda_j}'s.
 ##' @param two.stage to fit two-stage model, if 0 then will fit hazard model with additive gamma structure (WIP)
-##' @param fix.baseline=1 to fix baseline given in marginal.survival, fix.baseline=0 uses addtive aalen model where these models are specified in cr.models, fix.baseline=2 fits weibull model. 
+##' @param fix.baseline has default 1 to fix baseline given in marginal.survival, fix.baseline=0 uses addtive aalen model where these models are specified in cr.models, fix.baseline=2 fits weibull model. 
 ##' @param cr.models competing risks models for two.stage=0, should be given as a list with models for each cause
 ##' @param case.control assumes case control structure for "pairs" with second column being the probands, when this options is used the twostage model is profiled out via the paired estimating equations for the survival model. 
 twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
@@ -701,7 +703,7 @@ if (!is.null(margsurv))  {
 	    sp <- sum(epar)
 	    partheta <- epar/sp^2 
 ###	    print(partheta); print(epar)
-         } else partheta <- par.func(epar)
+         } else partheta <- epar ## par.func(epar)
       } 
 
       if (pair.structure==0) {
@@ -1722,11 +1724,6 @@ object.defined <- function(object)
    exists(as.character(substitute(object)))
 }
 
-##' Twostage survival modelling 
-##'
-##' Twostage survival modelling  
-##' Twostage survival modelling  where standard errros also adjust for uncertainty in baseline
-##' estimates via iid decompositions.
 ##' @export
 twostage.fullse <- function(margsurv,data=sys.parent(),
    score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
@@ -2172,7 +2169,6 @@ make.pairwise.design.competing <- function(pairs,kinship,type="ace",compete=2,ov
 ## }}}
 ## }}}
 
-
 ##' Relative risk for additive gamma model
 ##'
 ##' Relative risk for additive gamma model at time 0
@@ -2215,13 +2211,19 @@ make.pairwise.design.competing <- function(pairs,kinship,type="ace",compete=2,ov
 ##' thetades <- dout$theta.des[,,1]
 ##' x <- dout$random.design[,,1]
 ##' x
-##' ##EVadGam(rep(1,6),x[1,],x[3,],thetades,matrix(1,18,6))
+##' ##EVaddGam(rep(1,6),x[1,],x[3,],thetades,matrix(1,18,6))
 ##' 
 ##' thetades <- dout$theta.des[,,nrow(out)/2]
 ##' x <- dout$random.design[,,nrow(out)/2]
-##' ##EVadGam(rep(1,6),x[1,],x[4,],thetades,matrix(1,18,6))
+##' ##EVaddGam(rep(1,6),x[1,],x[4,],thetades,matrix(1,18,6))
+##' @author Thomas Scheike 
 ##' @export
-EVadGam <- function(theta,x1,x2,thetades,ags)
+##' @param theta
+##' @param x1
+##' @param x2
+##' @param thetades
+##' @param ags
+EVaddGam <- function(theta,x1,x2,thetades,ags)
 { ## {{{ 
 	pars <- thetades %*% theta
 	lamtot <- ags %*% theta

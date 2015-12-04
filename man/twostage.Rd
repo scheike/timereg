@@ -2,100 +2,7 @@
 % Please edit documentation in R/twostage.R
 \name{twostage}
 \alias{twostage}
-\title{Twostage survival model for multivariate survival data
-
-Fits Clayton-Oakes or bivariate Plackett models for bivariate survival data
-using marginals that are on Cox or addtive form. The dependence can be
-modelled via
-\enumerate{
-\item  Regression design on dependence parameter.
-\item  Random effects, additive gamma model.
-}
-
-Can also fit standard frailty model with the two.stage=0  that considers
-the frailty model with additive hazard condtional on the random
-effects
-\deqn{
-\lambda_{ij} = (V_{ij}^T Z) (X_{ij}^T \alpha(t))
-}
-The baseline \eqn{\alpha(t)} is profiled out using
-marginal modelling adjusted for the random effects structure as in Eriksson and Scheike (2015).
-One advantage of the standard frailty model is that one can deal with competing risks
-for this model.
-
-For all models the
-standard errors do reflect this uncertainty of the baseline estimates, and might therefore be a bit to small.
-To remedy this one can do bootstrapping or use twostage.fullse function when possible.
-
-If clusters contain more than two times, the algoritm uses a composite likelihood
-based on the pairwise bivariate models. Can also fit a additive gamma random
-effects model described in detail below.
-
-We allow a regression structure for the indenpendent gamma distributed
-random effects  and their variances that may depend on cluster covariates. So
-\deqn{
- \theta = z_j^T \alpha
-}
-where \eqn{z} is specified by theta.des
-The reported standard errors are based on the estimated information from the
-likelihood assuming that the marginals are known.
-
-Can also fit a structured additive gamma random effects model, such
-as the ACE, ADE model for survival data.
-
-Given the gamma distributed random effects it is assumed that the survival functions
-are indpendent, and that the marginal survival functions are on additive form (or Cox form)
-\deqn{
-P(T > t| x) = S(t|x)= exp( -x^T A(t) )
-}
-
-Now random.design specificies the random effects for each subject within a cluster. This is
-a matrix of 1's and 0's with dimension n x d.  With d random effects.
-For a cluster with two subjects, we let the random.design rows be
- \eqn{v_1} and \eqn{v_2}.
-Such that the random effects for subject
-1 is \deqn{v_1^T (Z_1,...,Z_d)}, for d random effects. Each random effect
-has an associated parameter \eqn{(\lambda_1,...,\lambda_d)}. By construction
-subjects 1's random effect are Gamma distributed with
-mean \eqn{\lambda_j/v_1^T \lambda}
-and variance \eqn{\lambda_j/(v_1^T \lambda)^2}. Note that the random effect
-\eqn{v_1^T (Z_1,...,Z_d)} has mean 1 and variance \eqn{1/(v_1^T \lambda)}.
-It is here asssumed that  \eqn{lamtot=v_1^T \lambda} is fixed over all clusters
-as it would be for the ACE model below.
-The lamtot parameter may be specified separately for some sets of the parameter
-is the additive.gamma.sum (ags) matrix is specified and then lamtot for the
-j'th random effect is \eqn{ags_j^T \lambda}.
-
-Based on these parameters the relative contribution (the heritability, h) is
-equivalent to  the expected values of the random effects  \eqn{\lambda_j/v_1^T \lambda}
-
-The DEFAULT parametrization uses the variances of the random effecs
-\deqn{
-\theta_j  = \lambda_j/(v_1^T \lambda)^2
-}
-For alternative parametrizations one can specify how the parameters relate to \eqn{\lambda_j}
-with the function
-
-Given the random effects the survival distributions with a cluster are independent and
-on the form
-\deqn{
-P(T > t| x,z) = exp( - Laplace^{-1}(lamtot,lamtot,S(t|x)) )
-}
-with the inverse laplace of the gamma distribution with mean 1 and variance lamtot.
-
-The parameters \eqn{(\lambda_1,...,\lambda_d)}
-are related to the parameters of the model
-by a regression construction \eqn{pard} (d x k), that links the \eqn{d}
-\eqn{\lambda} parameters
-with the (k) underlying \eqn{\theta} parameters
-\deqn{
-\lambda = theta.des  \theta
-}
-here using theta.des to specify these low-dimension association. Default is a diagonal matrix.
-
-The case.control option that can be used with the pair specification of the pairwise parts
-of the estimating equations. Here it is assumed that the second subject of each pair is the
-proband.}
+\title{Twostage survival model for multivariate survival data}
 \usage{
 twostage(margsurv, data = sys.parent(), score.method = "fisher.scoring",
   Nit = 60, detail = 0, clusters = NULL, silent = 1, weights = NULL,
@@ -165,21 +72,19 @@ twostage(margsurv, data = sys.parent(), score.method = "fisher.scoring",
 
 \item{additive.gamma.sum}{for two.stage=0, this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters.}
 
+\item{var.par}{is 1 for the default parametrization with the variances of the random effects, var.par=0 specifies that the \eqn{\lambda_j}'s are used as parameters.}
+
 \item{var.func}{when alternative parametrizations are used this function can specify how the paramters are related to the \eqn{\lambda_j}'s.}
 
 \item{two.stage}{to fit two-stage model, if 0 then will fit hazard model with additive gamma structure (WIP)}
 
+\item{fix.baseline}{has default 1 to fix baseline given in marginal.survival, fix.baseline=0 uses addtive aalen model where these models are specified in cr.models, fix.baseline=2 fits weibull model.}
+
 \item{cr.models}{competing risks models for two.stage=0, should be given as a list with models for each cause}
 
 \item{case.control}{assumes case control structure for "pairs" with second column being the probands, when this options is used the twostage model is profiled out via the paired estimating equations for the survival model.}
-
-\item{var.par=1}{for the default parametrization with the variances of the random effects, var.par=0 specifies that the \eqn{\lambda_j}'s are used as parameters.}
-
-\item{fix.baseline=1}{to fix baseline given in marginal.survival, fix.baseline=0 uses addtive aalen model where these models are specified in cr.models, fix.baseline=2 fits weibull model.}
 }
 \description{
-Twostage survival model for multivariate survival data
-
 Fits Clayton-Oakes or bivariate Plackett models for bivariate survival data
 using marginals that are on Cox or addtive form. The dependence can be
 modelled via
@@ -362,7 +267,7 @@ pardes <- out$pardes
 des.rv <- out$des.rv
 aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
 ts <- twostage(aa,data=data,clusters=data$cluster,detail=0,
-	       theta=c(2,1),var.link=0,step=0.5,
+	       theta=c(2,1)/10,var.link=0,step=0.5,
 	       random.design=des.rv,theta.des=pardes)
 summary(ts)
 
@@ -389,13 +294,14 @@ dout <- make.pairwise.design(pairs,kinship,type="ace")
 cr.models <- list(Surv(time,status)~+1)
 
 tscce <- twostage(NULL,data=datacc,clusters=datacc$cluster,
-           detail=0,theta=c(2,1),var.link=0,step=1.0,
+           detail=0,theta=c(2,1)/10,var.link=0,step=1.0,
 	       pairs=pairs,
 	       random.design=dout$random.design,theta.des=dout$theta.des,
 	       pairs.rvs=dout$ant.rvs,
 	       fix.baseline=0,case.control=1, marginal.status=datacc$status,
 	       cr.models=cr.models)
 summary(tscce)
+
 ### see also pairwise*.r demos under inst for frailty, competing risks and
 ### case control sampling
 }
