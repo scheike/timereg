@@ -1,7 +1,5 @@
 ##' @title Twostage survival model for multivariate survival data 
 ##'
-##' @details Twostage survival model for multivariate survival data 
-##'
 ##' Fits Clayton-Oakes or bivariate Plackett models for bivariate survival data 
 ##' using marginals that are on Cox or addtive form. The dependence can be 
 ##' modelled via 
@@ -14,7 +12,7 @@
 ##' the frailty model with additive hazard condtional on the random
 ##' effects
 ##' \deqn{
-##' \lambda_{ij} = (V_{ij^T Z) (X_{ij}^T \alpha(t))
+##' \lambda_{ij} = (V_{ij}^T Z) (X_{ij}^T \alpha(t))
 ##' }
 ##' The baseline \eqn{\alpha(t)} is profiled out using
 ##' marginal modelling adjusted for the random effects structure as in Eriksson and Scheike (2015).
@@ -2194,10 +2192,8 @@ make.pairwise.design.competing <- function(pairs,kinship,type="ace",compete=2,ov
 ##' ## simulate competing risks with two causes with hazards 0.5 and 0.3
 ##' ## ace for each cause, and overall ace 
 ##' out <- simCompete.twin.ace(10000,parg,parc,0,2,lam0=lam0,overall=1,all.sum=1)
-
+##' 
 ##' ## setting up design for running the model 
-##' ## {{{ setting pairs and random effects 
-##' # 
 ##' mm <- familycluster.index(out$cluster)
 ##' head(mm$familypairindex,n=10)
 ##' pairs <- matrix(mm$familypairindex,ncol=2,byrow=TRUE)
@@ -2213,17 +2209,17 @@ make.pairwise.design.competing <- function(pairs,kinship,type="ace",compete=2,ov
 ##' dout$theta.des[,,1]
 ##' dout$random.design[,,1]
 ##' ## DZ
-##' dout$theta.des[,,nrow(out)/2]
-##' dout$random.design[,,nrow(out)/2]
+##' dout$theta.des[,,nrow(pairs)]
+##' dout$random.design[,,nrow(pairs)]
 ##' #
 ##' thetades <- dout$theta.des[,,1]
 ##' x <- dout$random.design[,,1]
 ##' x
-##' EVadGam(rep(1,6),x[1,],x[3,],thetades,matrix(1,18,6))
+##' ##EVadGam(rep(1,6),x[1,],x[3,],thetades,matrix(1,18,6))
 ##' 
 ##' thetades <- dout$theta.des[,,nrow(out)/2]
 ##' x <- dout$random.design[,,nrow(out)/2]
-##' EVadGam(rep(1,6),x[1,],x[4,],thetades,matrix(1,18,6))
+##' ##EVadGam(rep(1,6),x[1,],x[4,],thetades,matrix(1,18,6))
 ##' @export
 EVadGam <- function(theta,x1,x2,thetades,ags)
 { ## {{{ 

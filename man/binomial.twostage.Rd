@@ -11,8 +11,9 @@ based on all pairwise bivariate models.}
 binomial.twostage(margbin, data = sys.parent(),
   score.method = "fisher.scoring", Nit = 60, detail = 0,
   clusters = NULL, silent = 1, weights = NULL, control = list(),
-  theta = NULL, theta.des = NULL, var.link = 1, iid = 1, step = 1,
-  notaylor = 1, model = "plackett", marginal.p = NULL, strata = NULL,
+  theta = NULL, theta.des = NULL, var.link = 1, var.par = 0,
+  var.func = NULL, iid = 1, step = 1, notaylor = 1,
+  model = "plackett", marginal.p = NULL, strata = NULL,
   max.clust = NULL, se.clusters = NULL, numDeriv = 0,
   random.design = NULL, pairs = NULL, pairs.rvs = NULL,
   additive.gamma.sum = NULL)
@@ -41,6 +42,10 @@ binomial.twostage(margbin, data = sys.parent(),
 \item{theta.des}{design for dependence parameters, when pairs are given this is could be a (pairs) x (numer of parameters)  x (max number random effects) matrix}
 
 \item{var.link}{Link function for variance}
+
+\item{var.par}{parametrization}
+
+\item{var.func}{when alternative parametrizations are used this function can specify how the paramters are related to the \eqn{\lambda_j}'s.}
 
 \item{iid}{Calculate i.i.d. decomposition}
 

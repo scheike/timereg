@@ -2,10 +2,7 @@
 % Please edit documentation in R/twostage.R
 \name{easy.twostage}
 \alias{easy.twostage}
-\title{Fits two-stage model for describing depdendence in survival data
-using marginals that are on cox or aalen form using the twostage funcion, but
-call is different and easier and the data manipulation  build into the function.
-Useful in particular for family design data.}
+\title{Wrapper for easy fitting of Clayton-Oakes or bivariate Plackett models for bivariate survival data}
 \usage{
 easy.twostage(margsurv = NULL, data = sys.parent(),
   score.method = "nlminb", status = "status", time = "time",
@@ -65,10 +62,15 @@ easy.twostage(margsurv = NULL, data = sys.parent(),
 \item{se.clusters}{clusters for iid decomposition for roubst standard errors}
 }
 \description{
-If clusters contain more than two times, the algoritm uses a composite likelihood
-based on the pairwise bivariate models.
+Fits two-stage model for describing depdendence in survival data
+using marginals that are on cox or aalen form using the twostage funcion, but
+call is different and easier and the data manipulation  build into the function.
+Useful in particular for family design data.
 }
 \details{
+If clusters contain more than two times, the algoritm uses a composite likelihood
+based on the pairwise bivariate models.
+
 The reported standard errors are based on the estimated information from the
 likelihood assuming that the marginals are known.
 }
