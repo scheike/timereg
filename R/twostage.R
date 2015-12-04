@@ -506,11 +506,12 @@ if (!is.null(margsurv))  {
        random.design <- rv.des
        }
        if (max(pairs)>antpers) stop("Indices of pairs should refer to given data \n"); 
-       if (is.null(pairs.rvs)) pairs.rvs <- rep(dim(random.design)[3],antpairs)
+       if (is.null(pairs.rvs)) pairs.rvs <- rep(dim(random.design)[2],antpairs)
 ###       if (max(pairs.rvs)> dim(random.design)[3] | max(pairs.rvs)>ncol(theta.des[1,,])) 
 ###	       stop("random variables for each cluster higher than  possible, pair.rvs not consistent with random.design or theta.des\n"); 
        clusterindex <- pairs-1; 
   } ## }}} 
+
 
   if (pair.structure==1 & dep.model!=3) {
        clusterindex <- pairs-1; 
@@ -673,7 +674,6 @@ if (!is.null(margsurv))  {
 	### array randomdes to jump times (subjects)
 	mrv.des <- random.design[,,ids,drop=FALSE]
 	nrv.des <- pairs.rvs[ids]
-
       } ## }}} 
 
 
@@ -737,6 +737,7 @@ if (!is.null(margsurv))  {
 		   Bitcase  <-cbind(Cpred(cum1,dtimesstcase)[,-1])
 		   Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
 ###		   lines(dtimesst,Bit,col=j); 
+		   if (is.na(d)) stop("Baseline profiler gives missing values\n"); 
 		   if (d<0.000001) break; 
            } ## }}} 
 
@@ -1924,7 +1925,7 @@ make.pairwise.design  <- function(pairs,kinship,type="ace")
 ### makes pairwise random effects design for shared and non-shared random effects
 ### kinship gives shared genes for each pair
 
-if (type=="ace") {
+if (type=="ace" | type=="ade") {
 theta.des  <- array(0,c(4,2,nrow(pairs)))
 random.des <- array(0,c(2,4,nrow(pairs)))
 }
@@ -1937,22 +1938,33 @@ random.des <- array(0,c(2,3,nrow(pairs)))
 rvs <- c()
 for (i in 1:nrow(pairs))
 { 
-	if (type=="ace") {
+	if (type=="ace" | type=="ade") {
          ### only 3 random variables for ace 
          ### (gene, shared, non-shared, environment
          ### kinship gives amount of genes shared 
+	if (type=="ace") 
 	 theta.des[,,i] <- rbind(c(kinship[i],0),
 				 c(1-kinship[i],0),
 				 c(1-kinship[i],0),
 				 c(0,1))
+	if (type=="ade") 
+	theta.des[,,i] <- rbind(c((kinship[i]==1)+(kinship[i]!=1)*kinship[i]*0.5,0),
+				c(1-(kinship[i]==1)+(kinship[i]!=1)*kinship[i]*0.5,0),
+				c(1-(kinship[i]==1)+(kinship[i]!=1)*kinship[i]*0.5,0),
+				c(0,1))
        	 random.des[,,i] <- rbind(c(1,1,0,1),c(1,0,1,1))
 	 rvs <- c(rvs,4)
 	} 
-        if (type=="ae") {
+        if (type=="ae" | type=="ad") {
          ### only 2 random variables for ace 
          ### (gene, shared, not-shared  
          ### kinship gives amount of genes shared 
+	if (type=="ae") 
 	 theta.des[,,i] <- matrix(c(kinship[i],1-kinship[i],1-kinship[i]),nrow=3,ncol=1)
+        if (type=="ad") 
+	theta.des[,,i] <- matrix(c((kinship[i]==1)+(kinship[i]!=1)*kinship[i]*0.5),
+				 c(1-(kinship[i]==1)+(kinship[i]!=1)*kinship[i]*0.5),
+				 c(1-(kinship[i]==1)+(kinship[i]!=1)*kinship[i]*0.5),3,1)
        	 random.des[,,i] <- rbind(c(1,1,0),c(1,0,1))
 	 rvs <- c(rvs,3)
 	}

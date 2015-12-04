@@ -2445,17 +2445,21 @@ for (j=0;j<antclust;j++) {
 	// 3-dimensional array pairs*(2xrandom effects)
         int lnrv= nrvs(j)-1; // number of random effects for this cluster 	
 	mat rv=rvdesC.slice(j); 
-        vec rv1= trans(rv.row(0)); 
-        vec rv2= trans(rv.row(1)); 
-//        mat rv2= rv.rows(nnn/2,nnn-1);
-//        rv1= rvdesC.subcube( span(0),span(0,lnrv),span(j));
-//	rv1.print("rv1"); 
-//        rv2= rvdesC.subcube( span(1),span(0,lnrv),span(j));
-//	rv2.print("rv2"); 
+//        vec rv1= trans(rv.row(0)); 
+//        vec rv2= trans(rv.row(1)); 
+        vec rv1= trans(rv.submat(span(0),span(0,lnrv)));
+        vec rv2= trans(rv.submat(span(1),span(0,lnrv)));
+	if (j<-1 ) {
+        rv.print("rv"); 
+	printf(" %d \n",lnrv); 
+	rv1.print("rv1"); 
+	rv2.print("rv2"); 
+	}
 
 	// takes parameter relations for each pair
 	// 3-dimensional array pairs*(random effects* pars )
-	mat thetadesv=thetadesi.slice(j); 
+	mat thetadesvv=thetadesi.slice(j); 
+	mat thetadesv=thetadesvv.rows(0,lnrv); 
 
 	if (j< -10)  {
 	   Rprintf("%d %d %d %d %d %lf %lf \n",j,i,k,ci,ck,Li,Lk); 
@@ -2738,11 +2742,11 @@ for (j=0;j<antclust;j++) { // {{{
 	int nnn=rv.n_rows; 
 	// first half of rows for person1 and second half for subject 2
 	// nn number of competing risks
-        mat rv1= rv.rows(0,nnn/2-1);
-        mat rv2= rv.rows(nnn/2,nnn-1);
-//      mat rv1= rv.submat(0,0,nnn/2-1,lnrv);
-//      mat rv2= rv.rows(nnn/2,0,nnn-1,lnrv);
+//        mat rv1= rv.rows(0,nnn/2-1);
+//        mat rv2= rv.rows(nnn/2,nnn-1);
 
+      mat rv1= rv.submat(0,0,nnn/2-1,lnrv);
+      mat rv2= rv.submat(nnn/2,0,nnn-1,lnrv);
 
 	if (j<-1 ) {
 //	rv.print("rv"); 
@@ -2752,7 +2756,8 @@ for (j=0;j<antclust;j++) { // {{{
 
 	// takes parameter relations for each pair
 	// 3-dimensional array pairs*(random effects* pars )
-	mat thetadesv=thetadesi.slice(j);
+	mat thetadesvv=thetadesi.slice(j); 
+	mat thetadesv=thetadesvv.rows(0,lnrv); 
 
 	if (j<-1)  {
 	   Rprintf(" %d %d \n",lnrv,pt); 
