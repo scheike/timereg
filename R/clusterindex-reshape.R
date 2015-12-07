@@ -35,6 +35,7 @@ familycluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=1)
   clusters <- cluster.index(clusters,Rindex=Rindex)
   totpairs <- sum(clusters$antclust*(clusters$antclust-1)/2)
   clustud <- .Call("familypairindex",clusters$idclust,clusters$cluster.size,as.integer(2*totpairs))
+  clustud$pairs <- matrix(clustud$familypairindex,ncol=2,byrow=TRUE)
 
   invisible(clustud)
 } ## }}}
@@ -50,24 +51,24 @@ familyclusterWithProbands.index <- function(clusters,probands,index.type=FALSE,n
     famc$subfamilyindex <- famc$subfamilyindex[indexWproband]
     famc$familypairindex <- famc$familypairindex[indexWproband]
     pairs <- matrix(famc$familypairindex,ncol=2,byrow=TRUE)
-    ipi2 <- pairs[,2] %in% index.probs
-    gem1 <- pairs[,1]
-    pairs[ipi2,1] <- pairs[ipi2,2]
-    pairs[ipi2,2] <- gem1[ipi2]
-    famc$familypairindex <- c(t(pairs))
+    ipi1 <- pairs[,1] %in% index.probs
+    gem2 <- pairs[,2]
+    pairs[ipi1,2] <- pairs[ipi1,1]
+    pairs[ipi1,1] <- gem2[ipi1]
     famc$pairs <- pairs
 
+    famc$familypairindex <- c(t(pairs))
     invisible(famc)
 } ## }}}
 
 
 ###library(mets)
-###index <-   c(1,1,2,2,1,3,3,3)
-###proband <- c(1,0,0,1,0,1,0,0)
-###ilusters <- cluster.index(index,Rindex=1)
-###clusters
-###ud <- familycluster.index(index)
-###ud1 <- familyclusterWithProbands.index(index,proband)
+###clusters <-   c(1,1,2,2,1,3,3,3,4,4)
+###probands <-   c(0,1,0,1,0,1,0,0,0,0)
+###index.type=FALSE;num=NULL;Rindex=1
+###ilusters <- cluster.index(clusters,Rindex=1)
+###ud <- familycluster.index(clusters)
+###ud1 <- familyclusterWithProbands.index(clusters,probands)
 
 ##' @export
 coarse.clust <- function(clusters,max.clust=100)
@@ -83,7 +84,6 @@ cclusters <-  as.integer(qqc)-1
 
 return(cclusters)
 } ## }}} 
-
 
 ##' @export
 faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=1)

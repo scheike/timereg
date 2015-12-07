@@ -392,8 +392,7 @@ if (!is.null(margsurv))  {
 ###  print(summary(psurvmarg))
 
   if (!is.null(marginal.status)) status <- marginal.status 
-  if (is.null(status) & is.null(cr.models)) stop("must give status variable for survival via either margninal model (margsurv), marginal.status or
-						 as cr.models \n"); 
+  if (is.null(status) & is.null(cr.models)) stop("must give status variable for survival via either margninal model (margsurv), marginal.status or as cr.models \n"); 
 
   if (is.null(weights)==TRUE) weights <- rep(1,antpers); 
   if (is.null(strata)==TRUE) strata<- rep(1,antpers); 
@@ -598,11 +597,12 @@ if (!is.null(margsurv))  {
 ###      print(dim(data))
 ###      print(summary(pairs))
 
-         data1 <- data[pairs[,1],]
+         data1 <-        data[pairs[,1],]
          data.proband <- data[pairs[,2],]
 
 ## {{{ setting up designs for jump times 
         timestatus <- all.vars(cr.models[[1]])
+	 if (is.null(status)) status <- data[,timestatus[2]]
 	alltimes <- data[,timestatus[1]]
 	times <- data1[,timestatus[1]]
 	lstatus <- data1[,timestatus[2]]
@@ -724,7 +724,7 @@ if (!is.null(margsurv))  {
 
 ###	      ## initial values , only one cr.model for survival 
 ###           Bit <- cbind(Cpred(a[[1]]$cum,dtimesst)[,-1])
-###           plot(dtimesst,Bit,type="l")
+           plot(dtimesst,Bit,type="l")
 ###           Bitcase  <- cbind(Cpred(a[[1]]$cum,dtimesstcase)[,-1])
 
              for (j in 1:5) { ## {{{ profile via iteration 
@@ -736,7 +736,7 @@ if (!is.null(margsurv))  {
 		   cum1 <- cbind(dtimesst,cncc$B)
 		   Bitcase  <-cbind(Cpred(cum1,dtimesstcase)[,-1])
 		   Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
-###		   lines(dtimesst,Bit,col=j); 
+		   lines(dtimesst,Bit,col=j); 
 		   if (is.na(d)) stop("Baseline profiler gives missing values\n"); 
 		   if (d<0.000001) break; 
            } ## }}} 
@@ -941,9 +941,9 @@ if (!is.null(margsurv))  {
             for (i in 1:Nit)
             {
                     out <- loglike(p)
-		    if (!(((fix.baseline==0 && two.stage==0) && i>=1))) hess <-  out$Dscore
-###                 uses simple second derivative for computing derivative of score
-		    if (numDeriv==2 || ((fix.baseline==0 && two.stage==0) && i==1)) {
+		    if (!(numDeriv==2 || (((fix.baseline==0)) & (i==1)))) hess <-  out$Dscore
+                    ###  uses simple second derivative for computing derivative of score
+		    if (numDeriv==2 || (((fix.baseline==0)) & (i==1))) {
                     oout <- 3
                     hess <- numDeriv::jacobian(loglike,p,method="simple")
 		    oout <- 2
@@ -982,6 +982,12 @@ if (!is.null(margsurv))  {
 ###	    }
             if (iid==1) theta.iid <- out$theta.iid
             if (detail==1 && iid==1) cat("finished iid decomposition\n"); 
+	    ### for profile solutions update second derivative at final 
+	    if (numDeriv==2 || ((fix.baseline==0))) {
+                    oout <- 3
+                    hess <- numDeriv::jacobian(loglike,p,method="simple")
+		    oout <- 2
+		    }
         }
         if (numDeriv>=1) {
             if (detail==1 ) cat("starting numDeriv for second derivative \n"); 
@@ -1155,29 +1161,30 @@ summary.twostage <-function (object,digits = 3,silent=0,...)
               fp <- function(p,d,t) {  res <- (p^t)/(sum(rv1* (theta.des %*% p)))^d;
                                      if (t==0) res <- res[1]; return(res); }
               e <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,1,1))
-              vare <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,2,1))
 	      pare <- NULL
+              vare <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,2,1))
               vartot <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,1,0))
       } ## }}} 
 
 if (var.par==1) 
       if (var.link==1) { ## {{{ 
+###             theta <- c(varg,varc)/sum(varg+varc)^2
 	     fp <- function(p,d,t){  res <- exp(p*t)/(sum(rv1* (theta.des %*% exp(p))))^d; 
                                      if (t==0) res <- res[1]; return(res); }
              e <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,1,1))
-             pare <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) exp(p))
-             vare <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,2,1))
+             vare <-   lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) exp(p))
+             pare <-   lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,2,1))
              vartot <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,1,0))
       } else {
               fp <- function(p,d,t) {  res <- (p^t)/(sum(rv1* (theta.des %*% p)))^d;
                                      if (t==0) res <- res[1]; return(res); }
               e <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,1,1))
-              vare <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,2,1))
-	      pare <- NULL
+              pare <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,2,1))
+	      vare <- NULL
               vartot <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,1,0))
       } ## }}} 
 
-      res <- list(estimates=coefs, type=attr(object,"Type"),h=e,exppar=pare,vare=vare,vartot=vartot)
+      res <- list(estimates=coefs, type=attr(object,"Type"),h=e,par=pare,vare=vare,vartot=vartot)
   } else res <- list(estimates=coefs, type=attr(object,"Type"))
 
   class(res) <- "summary.twostage"
@@ -2241,4 +2248,5 @@ EVaddGam <- function(theta,x1,x2,thetades,ags)
 	     dN=x1x2vvar/x2mvar)
 ###	     pars=pars,mvar=mvar,vvar=vvar)
 } ## }}} 
+
 

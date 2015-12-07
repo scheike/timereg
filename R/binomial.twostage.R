@@ -40,6 +40,14 @@
 ##' It is here asssumed that  \eqn{lamtot=v_1^T \lambda} is fixed over all clusters
 ##' as it would be for the ACE model below.
 ##'
+##' The DEFAULT parametrization uses the variances of the random effecs 
+##' \deqn{
+##' \theta_j  = \lambda_j/(v_1^T \lambda)^2
+##' }
+##'
+##' For alternative parametrizations one can specify how the parameters relate to \eqn{\lambda_j}
+##' with the function 
+##'
 ##' Based on these parameters the relative contribution (the heritability, h) is 
 ##' equivalent to  the expected values of the random effects  \eqn{\lambda_j/v_1^T \lambda}
 ##'
@@ -109,7 +117,8 @@
 ##' ### use of clayton oakes binomial additive gamma model 
 ##' ###########################################################
 ##' \donttest{ ## Reduce Ex.Timings
-##' data <- simbinClaytonOakes.family.ace(10000,2,1,beta=NULL,alpha=NULL)  
+##' library(mets)
+##' data <- simbinClaytonOakes.family.ace(1000,2,1,beta=NULL,alpha=NULL)  
 ##' margbin <- glm(ybin~x,data=data,family=binomial())
 ##' margbin
 ##' 
@@ -122,8 +131,10 @@
 ##' out$pardes
 ##' head(out$des.rv)
 ##' 
-##' bints <- binomial.twostage(margbin,data=data,clusters=data$cluster,detail=0,
-##'      theta=c(2,1),var.link=0,step=1.0,random.design=out$des.rv,theta.des=out$pardes)
+##' bints <- binomial.twostage(margbin,data=data,
+##'      clusters=data$cluster,detail=0,var.par=0,
+##'      theta=c(2,1),var.link=0,
+##'      random.design=out$des.rv,theta.des=out$pardes)
 ##' summary(bints)
 ##' }
 ##' 
@@ -161,7 +172,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
      score.method="fisher.scoring",
      Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
      control=list(),theta=NULL,theta.des=NULL,
-     var.link=1,var.par=0,var.func=NULL,
+     var.link=1,var.par=1,var.func=NULL,
      iid=1, step=1.0,notaylor=1,model="plackett",marginal.p=NULL,strata=NULL,
      max.clust=NULL,se.clusters=NULL,numDeriv=0,
      random.design=NULL,pairs=NULL,pairs.rvs=NULL,additive.gamma.sum=NULL)
@@ -982,8 +993,8 @@ simbinClaytonOakes.family.ace <- function(K,varg,varc,beta=NULL,alpha=NULL)  ## 
   p <- p/(1+p)
 
   vartot <- eta
-###  pgivenZ <- mets:::ilap(vartot,p)
-  pgivenZ <- ilap(vartot,p)
+  pgivenZ <- mets:::ilap(vartot,p)
+###  pgivenZ <- ilap(vartot,p)
   pgivenZ <- exp(- Gam1*pgivenZ)
   ## }}} 
 
