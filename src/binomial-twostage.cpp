@@ -454,7 +454,7 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 
   if (depmodel==1){ if (varlink==1) deppar=1/exp(thetak); else deppar=1/thetak;}
   if (depmodel==2){ if (varlink==1) deppar=exp(thetak); else deppar=thetak; }
-  if (depmodel==3){ if (varlink==1) etheta=exp(theta); else etheta=theta; }
+//  if (depmodel==3){ if (varlink==1) etheta=exp(theta); else etheta=theta; }
 
 	if (depmodel==1) { // clayton-oakes  // {{{
 	   ll=claytonoakesP(deppar,ci,ck,Li,Lk,dplack);
@@ -487,7 +487,7 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
            ssf+=weights(i)*log(ll); 
 	   loglikecont=log(ll);
 
-	   if (varlink==1) dplackt=dplackt % etheta;  
+//	   if (varlink==1) dplackt=dplackt % etheta;  
 	   vthetascore=dplackt/ll; 
 
 //	   ll=claytonoakesP(deppar,ci,ck,Li,Lk,dplack);
@@ -747,7 +747,7 @@ for (j=0;j<antclust;j++) {
 
   if (depmodel==1){ if (varlink==1) deppar=1/exp(thetak); else deppar=1/thetak;}
   if (depmodel==2){ if (varlink==1) deppar=exp(thetak); else deppar=thetak; }
-  if (depmodel==3){ if (varlink==1) etheta=exp(theta); else etheta=theta; }
+//  if (depmodel==3){ if (varlink==1) etheta=exp(theta); else etheta=theta; }
 
 	if (depmodel==1) { // clayton-oakes  // {{{
 	   ll=claytonoakesP(deppar,ci,ck,Li,Lk,dplack);
@@ -792,7 +792,7 @@ for (j=0;j<antclust;j++) {
 	loglikecont=log(ll);
 	if (j<-10)  Rprintf("%lf %d \n",loglikecont,i); 
 
-	   if (varlink==1) dplackt=dplackt % etheta;  vthetascore=dplackt/ll; 
+//	   if (varlink==1) dplackt=dplackt % etheta;  vthetascore=dplackt/ll; 
 
 //	   ll=claytonoakesP(deppar,ci,ck,Li,Lk,dplack);
 //	   ssf+=weights(i)*log(ll); 

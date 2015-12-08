@@ -175,7 +175,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
      var.link=1,var.par=1,var.func=NULL,
      iid=1, step=1.0,notaylor=1,model="plackett",marginal.p=NULL,strata=NULL,
      max.clust=NULL,se.clusters=NULL,numDeriv=0,
-     random.design=NULL,pairs=NULL,pairs.rvs=NULL,additive.gamma.sum=NULL)
+     random.design=NULL,pairs=NULL,pairs.rvs=NULL,additive.gamma.sum=NULL) 
 { ## {{{
     ## {{{ seting up design and variables
     rate.sim <- 1; sym=1; 
@@ -207,7 +207,6 @@ binomial.twostage <- function(margbin,data=sys.parent(),
         else ps <- marginal.p
     }
     ## }}}
-
 
     notaylor <- 1
     if (is.null(weights)==TRUE) weights <- rep(1,antpers); 
