@@ -991,7 +991,7 @@ simbinClaytonOakes.family.ace <- function(K,varg,varc,beta=NULL,alpha=NULL)  ## 
   p <- p/(1+p)
 
   vartot <- eta
-  pgivenZ <- mets:::ilap(vartot,p)
+  pgivenZ <- ilap(vartot,p)
 ###  pgivenZ <- ilap(vartot,p)
   pgivenZ <- exp(- Gam1*pgivenZ)
   ## }}} 
