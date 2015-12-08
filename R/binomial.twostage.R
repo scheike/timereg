@@ -117,8 +117,7 @@
 ##' ### use of clayton oakes binomial additive gamma model 
 ##' ###########################################################
 ##' \donttest{ ## Reduce Ex.Timings
-##' library(mets)
-##' data <- simbinClaytonOakes.family.ace(1000,2,1,beta=NULL,alpha=NULL)  
+##' data <- simbinClaytonOakes.family.ace(10000,2,1,beta=NULL,alpha=NULL)  
 ##' margbin <- glm(ybin~x,data=data,family=binomial())
 ##' margbin
 ##' 
@@ -133,7 +132,7 @@
 ##' 
 ##' bints <- binomial.twostage(margbin,data=data,
 ##'      clusters=data$cluster,detail=0,var.par=0,
-##'      theta=c(2,1),var.link=0,
+##'      theta=c(2,1)/9,var.link=0,
 ##'      random.design=out$des.rv,theta.des=out$pardes)
 ##' summary(bints)
 ##' }
