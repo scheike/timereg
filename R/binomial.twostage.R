@@ -9,7 +9,8 @@
 ##' The reported standard errors are based on a cluster corrected score equations from the 
 ##' pairwise likelihoods assuming that the marginals are known. This gives correct standard errors
 ##' in the case of the Plackett distribution (OR model for dependence), but incorrect standard
-##' errors for the Clayton-Oakes types model.
+##' errors for the Clayton-Oakes types model. These can be fixed subsequently using the iid
+##' influence functions for the marginal model. 
 ##'
 ##' The Clayton-Oakes copula model assumes that given a random effects Z that is gamma with variance 
 ##'
@@ -40,13 +41,13 @@
 ##' It is here asssumed that  \eqn{lamtot=v_1^T \lambda} is fixed over all clusters
 ##' as it would be for the ACE model below.
 ##'
-##' The DEFAULT parametrization uses the variances of the random effecs 
+##' The DEFAULT parametrization uses the variances of the random effecs (var.par=1)
 ##' \deqn{
 ##' \theta_j  = \lambda_j/(v_1^T \lambda)^2
 ##' }
 ##'
-##' For alternative parametrizations one can specify how the parameters relate to \eqn{\lambda_j}
-##' with the function 
+##' For alternative parametrizations (var.par=0) one can specify how the parameters relate 
+##' to \eqn{\lambda_j} with the function 
 ##'
 ##' Based on these parameters the relative contribution (the heritability, h) is 
 ##' equivalent to  the expected values of the random effects  \eqn{\lambda_j/v_1^T \lambda}
@@ -574,6 +575,43 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     ## }}}
 
 } ## }}}
+
+##' @export
+p11.binomial.twostage.RV <- function(theta,rv1,rv2,p1,p2,pardes,ags=NULL,link=0,i=1,j=1) { ## {{{ 
+	## computes p11 pij for additive gamma binary random effects model 
+	ags <- matrix(1,dim(pardes))
+        out <- .Call("claytonoakesbinRV",theta,i,j,p1,p2,rv1,rv2,pardes,ags,link)$like
+ return(out)
+} ## }}} 
+
+##' @export
+concordance.twostage<- function(theta,p,rv1,rv2,theta.des,addititive.gamma.sum=NULL,link=0,var.par=0)
+{# {{{
+   if (var.par==1) theta <- theta/sum(theta)^2
+
+   if (is.matrix(p)==FALSE) p <- matrix(p,ncol=2)
+   nn <- nrow(p)
+   if (ncol(p)!=2) p <- matrix(p,ncol=2)
+   if (is.matrix(rv1)==FALSE) rv1 <- matrix(rv1,nn,length(rv1),byrow=TRUE)
+   if (is.matrix(rv2)==FALSE) rv2 <- matrix(rv2,nn,length(rv1),byrow=TRUE)
+
+   if (is.null(additive.gamma.sum)) ags <- matrix(1,ncol(rv1),length(theta)) else ags <- additive.gamma.sum
+
+   tabs <- list()
+   for (i in 1:nn)
+   {
+        p1 <- p[i,1]
+        p2 <- p[i,2]
+	p11 <- p11.binomial.twostage.RV(theta,rv1[i,],rv2[i,],p1,p2,theta.des,ags=ags,link=link)
+	p01 <- p[i,1]-p11
+	p10 <- p[i,2]-p11
+	p00 <- 1-p01-p10+p11
+	tabs <- list(pmat=matrix(c(p00,p10,p01,p11),2,2),casewise=c(p11/p1,p11/p2),marg=c(p1,p2))
+   }
+
+   return(tabs)
+}	# }}}
+
 
 ##' @export
 binomial.twostage.time <- function(formula,data,id,...,silent=1,fix.censweights=1,
@@ -1122,7 +1160,6 @@ simbinClaytonOakes.pairs <- function(K,varc,beta=NULL,alpha=NULL)  ## {{{
 names(ud)<-c("ybin","x","cluster")
 return(ud)
 } ## }}} 
-
 
 ### pairwise POR model based on case-control data
 ##' @export

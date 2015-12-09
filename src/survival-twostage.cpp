@@ -1671,6 +1671,7 @@ RcppExport SEXP claytonoakesbinRV(SEXP itheta,SEXP istatus1,SEXP istatus2,SEXP i
 	return(ressl);  
 } // }}}
 
+
 RcppExport SEXP twostageloglike( 
 		SEXP icause, SEXP ipmargsurv, 
 		SEXP itheta, SEXP iXtheta, SEXP iDXtheta, SEXP idimDX, SEXP ithetades,
