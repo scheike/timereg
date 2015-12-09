@@ -172,6 +172,8 @@ return(outk)
 ## {{{ simulation for gamma distributed cif model 
 
 lap<-function(theta,t) { return( (1+t/theta)^(-theta)) }
+
+##' @export 
 ilap<-function(theta,t) {
 	itheta<-1/theta; return((t^(-itheta)-1)/(itheta)) }
 

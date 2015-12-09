@@ -135,6 +135,19 @@
 ##'      theta=c(2,1)/9,var.link=0,
 ##'      random.design=out$des.rv,theta.des=out$pardes)
 ##' summary(bints)
+##' 
+##' 
+##' data <- simbinClaytonOakes.twin.ace(10000,2,1,beta=NULL,alpha=NULL)
+##' out <- polygen.design(data,id="cluster",zygname="zygosity")
+##' out$pardes
+##' head(out$des.rv)
+##' margbin <- glm(ybin~x,data=data,family=binomial())
+##' 
+##' bintwin <- binomial.twostage(margbin,data=data,
+##'      clusters=data$cluster,detail=1,var.par=0,
+##'      theta=c(2,1),
+##'      random.design=out$des.rv,theta.des=out$pardes)
+##' summary(bintwin)
 ##' }
 ##' 
 ##' @keywords binomial regression 
@@ -957,7 +970,7 @@ simbinClaytonOakes.family.ace <- function(K,varg,varc,beta=NULL,alpha=NULL)  ## 
 {
   ## K antal clustre (families), n=antal i clustre
 ###  K <- 10000
-  n <- 4 # twins with ace structure
+  n <- 4 # family members with ace structure
   ## total variance 1/(varg+varc)
   ## {{{  random effects 
   ###  means varg/(varg+varc) and variances varg/(varg+varc)^2
@@ -1002,6 +1015,60 @@ simbinClaytonOakes.family.ace <- function(K,varg,varc,beta=NULL,alpha=NULL)  ## 
   type <- rep(c("mother","father","child","child"),K)
 
   ud <- data.frame(ybin=c(Ybin),x=c(t(xs)),type=type,cluster=rep(1:K,each=n))
+
+###names(ud)<-c("ybin","x","cluster","type")
+return(ud)
+} ## }}} 
+
+##' @export
+simbinClaytonOakes.twin.ace <- function(K,varg,varc,beta=NULL,alpha=NULL)  ## {{{ 
+{
+  ## K antal clustre (families), n=antal i clustre
+###  K <- 10000
+  n <- 2 # twins with ace structure
+  ## total variance 1/(varg+varc)
+  ## {{{  random effects 
+  ###  means varg/(varg+varc) and variances varg/(varg+varc)^2
+  eta <- varc+varg
+  ### mother and father share environment
+  ### children share half the genes with mother and father and environment 
+  dz.g <-  cbind(rgamma(K/2,varg*0.5)/eta, rgamma(K/2,varg*0.5)/eta, rgamma(K/2,varg*0.5)/eta)
+  mz.g <-  rgamma(K/2,varg)/eta
+  env1 <- rgamma(K/2,varc)/eta 
+  env2 <- rgamma(K/2,varc)/eta 
+  mz   <- mz.g+env1
+  dz1 <- apply(dz.g[,c(1,2)],1,sum) + env2
+  dz2 <- apply(dz.g[,c(1,3)],1,sum) + env2
+  Gam1 <- rbind(cbind(mz,mz),cbind(dz1,dz2))
+  ## }}} 
+
+  ## {{{ marginals p's and conditional p's given random effects 
+  ### marginals p's for mother, father, children
+  xb1 <- rbinom(K,1,0.5)
+  xb2 <- rbinom(K,1,0.5)
+###
+###
+  if (is.null(beta)) beta <- rep(0.3,2)
+  if (is.null(alpha)) alpha <- rep(0.5,2)
+  pb1 <- exp(alpha[1]+xb1*beta[1]); 
+  pb2 <- exp(alpha[2]+xb2*beta[2])
+  p <- cbind(pb1,pb2)
+  p <- p/(1+p)
+
+  vartot <- eta
+  pgivenZ <- ilap(vartot,p)
+
+###  pgivenZ <- ilap(vartot,p)
+  pgivenZ <- exp(- Gam1*pgivenZ)
+  ## }}} 
+
+  Ybin <- matrix(rbinom(n*K,1,c(pgivenZ)),K,n)
+  Ybin <- t(Ybin)
+  xs <- cbind(xb1,xb2)
+  type <- rep(c("twin1","twin2"),K)
+  zygosity <- rep(c("MZ","DZ"),each=K/2)
+
+  ud <- data.frame(ybin=c(Ybin),x=c(t(xs)),type=type,cluster=rep(1:K,each=n),zygosity=zygosity)
 
 ###names(ud)<-c("ybin","x","cluster","type")
 return(ud)
@@ -1056,35 +1123,6 @@ names(ud)<-c("ybin","x","cluster")
 return(ud)
 } ## }}} 
 
-
-###ud <- simbinClaytonOakes.family.ace(10000,0.5,0.5,beta=NULL,alpha=NULL)  
-###(glm(ybin~x,data=ud,family=binomial()))
-
-###ud <- simbinClaytonOakes.family.ace(10000,2,1,beta=NULL,alpha=NULL)  
-###(glm(ybin~x,data=ud,family=binomial()))
-
-###library(mets)
-### data <- simbinClaytonOakes.family.ace(10000,2,1,beta=NULL,alpha=NULL)  
-### margbin <- glm(ybin~x,data=data,family=binomial())
-### margbin
-### 
-### head(data)
-### data$number <- c(1,2,3,4)
-### data$child <- 1*(data$number==3)
-### 
-### ### make ace random effects design
-### out <- ace.family.design(data,member="type",id="cluster")
-### out$pardes
-### head(out$des.rv)
-### 
-### fambin <- binomial.twostage(margbin,data=data,clusters=data$cluster,detail=1,
-###      theta=c(2,1),var.link=0,step=1.0,Nit=5,
-###      score.method="fisher.scoring",
-###      random.design=out$des.rv,theta.des=out$pardes)
-### summary(fambin)
-
-###
-###simbinClaytonOakes.family.ace(10,2,1,beta=NULL,alpha=NULL)  
 
 ### pairwise POR model based on case-control data
 ##' @export

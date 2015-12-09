@@ -203,6 +203,19 @@ bints <- binomial.twostage(margbin,data=data,
      theta=c(2,1)/9,var.link=0,
      random.design=out$des.rv,theta.des=out$pardes)
 summary(bints)
+
+
+data <- simbinClaytonOakes.twin.ace(10000,2,1,beta=NULL,alpha=NULL)
+out <- polygen.design(data,id="cluster",zygname="zygosity")
+out$pardes
+head(out$des.rv)
+margbin <- glm(ybin~x,data=data,family=binomial())
+
+bintwin <- binomial.twostage(margbin,data=data,
+     clusters=data$cluster,detail=1,var.par=0,
+     theta=c(2,1),
+     random.design=out$des.rv,theta.des=out$pardes)
+summary(bintwin)
 }
 }
 \author{
