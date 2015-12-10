@@ -296,7 +296,7 @@ RcppExport SEXP twostageloglikebin(
 		SEXP icluster,SEXP iclustsize,SEXP iclusterindex, SEXP ivarlink, 
                 SEXP iiid, SEXP  iweights, SEXP isilent, 
 		SEXP idepmodel, // SEXP ientryage,
-		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid , SEXP irvdes, SEXP iags
+		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid , SEXP irvdes, SEXP iags, SEXP ibetaiid
 ) // {{{
 {
 // {{{ setting matrices and vectors, and exporting to armadillo matrices
@@ -391,7 +391,7 @@ RcppExport SEXP twostageloglikebin(
       Rprintf("trunkp %lf \n",mean(trunkp)); 
   } // }}}
 
-  int ci,ck,i,j,c,s=0,k,v,c1,v1; 
+  int ci,ck,i,j,c,s=0,k,v,c1; 
   double ll=1,Li,Lk,diff=0;
   //double sdj=0;
   //  double Lit=1,Lkt=1,llt=1;
@@ -405,6 +405,14 @@ RcppExport SEXP twostageloglikebin(
   mat thetiid(antiid,pt); 
   colvec loglikeiid(antiid); 
   if (iid==1) { thetiid.fill(0); loglikeiid.fill(0); }
+
+  mat betaiid= Rcpp::as<mat>(ibetaiid);
+  int dimbeta=betaiid.n_cols; 
+//  printf("%d %d \n",pt,dimbeta); 
+  mat DbetaDtheta(pt,dimbeta); 
+  vec vDbetaDtheta(2*pt); 
+  DbetaDtheta.fill(0); 
+  vec Du1(pt),Du2(pt); 
 
   colvec p11tvec(antclust); 
 //  p11tvec=0; 
@@ -482,7 +490,7 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 //		   etheta.print("theta"); 
 //	   }
 
-	   ll=claytonoakesbinRVC(etheta,thetades,ags,ci,ck,Li,Lk,rv1,rv2,dplackt);
+	   ll=claytonoakesbinRVC(etheta,thetades,ags,ci,ck,Li,Lk,rv1,rv2,dplackt,vDbetaDtheta);
 //	   printf("%d  %d %d %lf %lf %lf \n",j,ci,ck,Li,Lk,ll); 
            ssf+=weights(i)*log(ll); 
 	   loglikecont=log(ll);
@@ -510,24 +518,30 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 
 
      if (depmodel!=3) {
-        for (c1=0;c1<pt;c1++) 
-        for (v1=0;v1<pt;v1++) DUtheta(c1,v1)+=weights(i)*pow(diff,2)*vthetascore(c1)*vthetascore(v1);
-	     vthetascore=weights(i)*diff*vthetascore; 
-	     Utheta=Utheta+vthetascore; 
+	DUtheta+=weights(i)*pow(diff,2)*vthetascore*trans(vthetascore);
+        vthetascore=weights(i)*diff*vthetascore; 
+        Utheta=Utheta+vthetascore; 
      } else  { // additive gamma structure 
 //		printf(" mig 1\n"); 
 //		vthetascore.print("vvv"); 
-	     for (c1=0;c1<pt;c1++) 
-	     for (v1=0;v1<pt;v1++) DUtheta(c1,v1)+=weights(i)*vthetascore(c1)*vthetascore(v1);
-//		printf(" mig 1\n"); 
+	     DUtheta+=weights(i)*vthetascore*trans(vthetascore);
 	     vthetascore=weights(i)*vthetascore; 
 	     Utheta=Utheta+vthetascore; 
+	     Du1=vDbetaDtheta.subvec(0,pt-1); 
+	     Du2=vDbetaDtheta.subvec(pt,2*pt-1); 
+//	     if (j<-10) {
+//	     vDbetaDtheta.print("dtds"); 
+//	     Du1.print("Du1"); 
+//	     Du2.print("Du1"); 
+//	     }
+	     DbetaDtheta+= Du1*betaiid.row(i)+ Du2*betaiid.row(k); 
 //		vthetascore.print("vvv 2"); 
 	}
 
+     if (iid==1) { 
+	 for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)+=vthetascore(c1); 
+	 loglikeiid(secluster(i))+=loglikecont; 
 
-     if (iid==1) { for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)+=vthetascore(c1); 
-	           loglikeiid(secluster(i))+=loglikecont; 
      }
      } // }}} strata(i)==strata(k) indenfor strata
 
@@ -541,9 +555,12 @@ List res;
 res["loglike"]=ssf; 
 res["score"]=Utheta; 
 res["Dscore"]=DUtheta; 
-if (iid==1) { res["theta.iid"]=thetiid; 
-	      res["loglikeiid"]=loglikeiid; 
-              res["likepairs"]=likepairs; 
+res["DbetaDtheta"]=DbetaDtheta; 
+if (iid==1) { 
+             res["theta.iid"]=thetiid; 
+             res["DbetaDtheta.iid"]=thetiid; 
+	     res["loglikeiid"]=loglikeiid; 
+             res["likepairs"]=likepairs; 
             }
 
 return(res); 
@@ -557,7 +574,8 @@ RcppExport SEXP twostageloglikebinpairs(
 		SEXP idepmodel, // SEXP ientryage,
 		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid , 
 		SEXP irvdes,
-		SEXP idimthetades, SEXP idimrvdes, SEXP inrvs, SEXP iags
+		SEXP idimthetades, SEXP idimrvdes, SEXP inrvs, SEXP iags, 
+		SEXP ibetaiid
 ) // {{{
 {
 // {{{ setting matrices and vectors, and exporting to armadillo matrices
@@ -619,6 +637,7 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
  double loglikecont=0; 
 
  mat Xtheta = Rcpp::as<mat>(iXtheta);
+
 
   int udtest=0; 
   if (udtest==1) { // {{{
@@ -711,6 +730,13 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
   if  (depmodel==3) nr=arrayDD[2]; 
   vec rv2(nr),rv1(nr);
 
+  mat betaiid= Rcpp::as<mat>(ibetaiid);
+  int dimbeta=betaiid.n_cols; 
+  mat DbetaDtheta(pt,dimbeta); 
+  vec vDbetaDtheta(2*pt); 
+  DbetaDtheta.fill(0); 
+  vec Du1(pt),Du2(pt); 
+
   vec etheta=theta; 
 //  if (!Utheta.is_finite()) {  Rprintf(" NA's i def U\n"); Utheta.print("U"); }
 //  if (!DUtheta.is_finite()) { Rprintf(" NA's i def DU\n"); DUtheta.print("DU"); }
@@ -787,7 +813,8 @@ for (j=0;j<antclust;j++) {
 	   test.print("test"); 
 	}
 
-	ll=claytonoakesbinRVC(etheta,thetadesv,ags,ci,ck,Li,Lk,rv1,rv2,dplackt);
+//	ll=claytonoakesbinRVC(etheta,thetadesv,ags,ci,ck,Li,Lk,rv1,rv2,dplackt);
+	ll=claytonoakesbinRVC(etheta,thetadesv,ags,ci,ck,Li,Lk,rv1,rv2,dplackt,vDbetaDtheta);
         ssf+=weights(i)*log(ll); 
 	loglikecont=log(ll);
 	if (j<-10)  Rprintf("%lf %d \n",loglikecont,i); 
@@ -824,17 +851,21 @@ for (j=0;j<antclust;j++) {
      } else  { // additive gamma structure 
 //		printf(" mig 1\n"); 
 //		vthetascore.print("vvv"); 
-	     for (c1=0;c1<pt;c1++) 
-	     for (v1=0;v1<pt;v1++) DUtheta(c1,v1)+=weights(i)*vthetascore(c1)*vthetascore(v1);
+	     DUtheta+=weights(i)*vthetascore*trans(vthetascore);
 //		printf(" mig 1\n"); 
 	     vthetascore=weights(i)*vthetascore; 
 	     Utheta=Utheta+vthetascore; 
+
+	     Du1=vDbetaDtheta.subvec(0,pt-1); 
+	     Du2=vDbetaDtheta.subvec(pt,2*pt-1); 
+	     DbetaDtheta+= Du1*betaiid.row(i)+ Du2*betaiid.row(k); 
 //		vthetascore.print("vvv 2"); 
 	}
 
 
-     if (iid==1) { for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)+=vthetascore(c1); 
-	           loglikeiid((int) secluster(i))+=loglikecont; 
+     if (iid==1) { 
+	 for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)+=vthetascore(c1); 
+	 loglikeiid((int) secluster(i))+=loglikecont; 
      }
      } // }}} strata(i)==strata(k) indenfor strata
 
@@ -848,6 +879,7 @@ List res;
 res["loglike"]=ssf; 
 res["score"]=Utheta; 
 res["Dscore"]=DUtheta; 
+res["DbetaDtheta"]=DbetaDtheta; 
 if (iid==1) { res["theta.iid"]=thetiid; 
 	      res["loglikeiid"]=loglikeiid; 
               res["likepairs"]=likepairs; 

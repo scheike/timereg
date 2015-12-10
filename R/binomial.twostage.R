@@ -9,13 +9,14 @@
 ##' The reported standard errors are based on a cluster corrected score equations from the 
 ##' pairwise likelihoods assuming that the marginals are known. This gives correct standard errors
 ##' in the case of the Plackett distribution (OR model for dependence), but incorrect standard
-##' errors for the Clayton-Oakes types model. These can be fixed subsequently using the iid
-##' influence functions for the marginal model. 
+##' errors for the Clayton-Oakes types model. For the additive gamma version of the stanard errors
+##' are adjusted for the uncertainty in the marginal models via an iid deomposition using the iid() function of
+##' lava. For the clayton oakes model that is not speicifed via the random effects these can be 
+##' fixed subsequently using the iid influence functions for the marginal model, but typically this does not
+##' change much. 
 ##'
-##' The Clayton-Oakes copula model assumes that given a random effects Z that is gamma with variance 
-##'
-##' Given the gamma distributed random effects it is assumed that the survival functions 
-##' are indpendent, and that the marginal survival functions are on additive form (or Cox form)
+##' For the Clayton-Oakes version of the model, given the gamma distributed random effects it is 
+##' assumed that the probabilities are indpendent, and that the marginal survival functions are on logistic form 
 ##' \deqn{
 ##' logit(P(Y=1|X)) = \alpha + x^T \beta
 ##' }
@@ -168,16 +169,18 @@
 ##' @param var.link Link function for variance 
 ##' @param var.par parametrization 
 ##' @param var.func when alternative parametrizations are used this function can specify how the paramters are related to the \eqn{\lambda_j}'s.
-##' @param iid Calculate i.i.d. decomposition
+##' @param iid Calculate i.i.d. decomposition when iid>=1, when iid=2 then avoids adding the uncertainty for marginal paramters for additive gamma model (default).
 ##' @param step Step size
 ##' @param notaylor Taylor expansion
 ##' @param model model
 ##' @param marginal.p vector of marginal probabilities 
+##' @param beta.iid iid decomposition of marginal probability  estimates for each subject, if based on GLM model this is computed. 
+##' @param Dbeta.iid derivatives of marginal model wrt marginal parameters, if based on GLM model this is computed. 
 ##' @param strata strata for fitting: considers only pairs where both are from same strata 
 ##' @param max.clust max clusters
 ##' @param se.clusters clusters for iid decomposition for roubst standard errors
 ##' @param numDeriv uses Fisher scoring aprox of second derivative if 0, otherwise numerical derivatives 
-##' @param random.design random effect design for additive gamma modeli, when pairs are given this is a (pairs) x (2) x (max number random effects) matrix, see pairs.rvs below
+##' @param random.design random effect design for additive gamma model, when pairs are given this is a (pairs) x (2) x (max number random effects) matrix, see pairs.rvs below
 ##' @param pairs matrix with rows of indeces (two-columns) for the pairs considered in the pairwise composite score, useful for case-control sampling when marginal is known.
 ##' @param pairs.rvs for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair. 
 ##' @param additive.gamma.sum for two.stage=0, this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters.
@@ -186,7 +189,9 @@ binomial.twostage <- function(margbin,data=sys.parent(),
      Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
      control=list(),theta=NULL,theta.des=NULL,
      var.link=1,var.par=1,var.func=NULL,
-     iid=1, step=1.0,notaylor=1,model="plackett",marginal.p=NULL,strata=NULL,
+     iid=1, step=1.0,notaylor=1,model="plackett",
+     marginal.p=NULL,beta.iid=NULL,Dbeta.iid=NULL,
+     strata=NULL,
      max.clust=NULL,se.clusters=NULL,numDeriv=0,
      random.design=NULL,pairs=NULL,pairs.rvs=NULL,additive.gamma.sum=NULL) 
 { ## {{{
@@ -203,11 +208,15 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 ###     print(all.vars(margbin$formula)[1])
         cause <- data[,all.vars(margbin$formula)[1]]
 	if (!is.numeric(cause)) stop(paste("response in data",margbin$formula)[1],"not numeric\n"); 
+	if (is.null(beta.iid))  beta.iid <- iid(margbin,id=clusters)
+	if (is.null(Dbeta.iid)) Dbeta.iid <- model.matrix(margbin$formula,data=data) * ps
     }
     else if (class(margbin)[1]=="formula") {
         margbin <- glm(margbin,data=data,family=binomial())
         ps <- predict(margbin,type="response")
         cause <- margbin$y
+	if (is.null(Dbeta.iid)) Dbeta.iid <- model.matrix(margbin$formula,data=data) * ps
+	if (is.null(beta.iid))  beta.iid <- iid(margbin,id=clusters)
     }  else if (is.null(marginal.p))
         stop("without marginal model, marginal p's must be given\n"); 
 
@@ -337,6 +346,9 @@ binomial.twostage <- function(margbin,data=sys.parent(),
         pairs.rvs <- 1
      }
 
+    if (is.null(Dbeta.iid)) Dbeta.iid <- matrix(0,length(cause),1); 
+    ptrunc <- rep(1,antpers); 
+
     ## }}}
 
 ###  print(head(random.design)); print(theta.des); print(additive.gamma.sum)
@@ -347,7 +359,6 @@ binomial.twostage <- function(margbin,data=sys.parent(),
       if (pair.structure==0 | dep.model!=3) Xtheta <- as.matrix(theta.des) %*% matrix(c(par),nrow=ptheta,ncol=1);
       if (pair.structure==1 & dep.model==3) Xtheta <- matrix(0,antpers,1); ## not needed 
       DXtheta <- array(0,c(1,1,1));
-      ptrunc <- rep(1,antpers); 
 
       if (var.link==1 & dep.model==3) epar <- c(exp(par)) else epar <- c(par)
       partheta <- epar
@@ -361,7 +372,6 @@ binomial.twostage <- function(margbin,data=sys.parent(),
       } 
 
 
-
       if (pair.structure==0) 
             outl<-.Call("twostageloglikebin", ## {{{
             icause=cause,ipmargsurv=ps, 
@@ -369,7 +379,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
             icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
             ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
             itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid, 
-            irvdes=random.design,iags=additive.gamma.sum)
+            irvdes=random.design,iags=additive.gamma.sum,ibetaiid=Dbeta.iid)
             ## }}}
       else outl<-.Call("twostageloglikebinpairs", ## {{{
             icause=cause,ipmargsurv=ps, 
@@ -379,7 +389,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
             itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid, 
             irvdes=random.design,
             idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs,
-            iags=additive.gamma.sum)
+            iags=additive.gamma.sum,ibetaiid=Dbeta.iid)
              ## }}} 
 
             if (detail==3) print(c(par,outl$loglike))
@@ -407,6 +417,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 
 	    if (dep.model==3) {# {{{
 	       outl$score <-  t(mm) %*% outl$score
+	       outl$DbeteDtheta <-  t(mm) %*% outl$DbetaDtheta
 	       outl$Dscore <- t(mm) %*% outl$Dscore %*% mm
 	       if (iid==1) outl$theta.iid <- outl$theta.iid %*% t(mm)
 
@@ -540,8 +551,13 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 
     ## {{{ handling output
     robvar.theta <- NULL
-    if (iid==1) {
+    if (iid>=1) {
         theta.iid <- out$theta.iid %*% hessi
+        if (dep.model==3 & iid!=2  & (!is.null(beta.iid)))
+	if (nrow(beta.iid)==nrow(out$theta.iid)) {
+	     theta.beta.iid <- (beta.iid %*% t(out$DbetaDtheta) ) %*% hessi
+	     theta.iid  <- theta.iid+theta.beta.iid
+	}
         robvar.theta  <- (t(theta.iid) %*% theta.iid) 
 	var.theta <- robvar.theta
     } else { var.theta <- -1* hessi }
@@ -562,6 +578,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     attr(ud,"antpers")<-antpers; 
     attr(ud,"antclust")<-antclust; 
     attr(ud, "Type") <- model
+    attr(ud,"DbetaDtheta")<-out$DbetaDtheta; 
     ### to be consistent with structure for survival twostage model 
     attr(ud, "additive-gamma") <- (dep.model==3)*1
     if (dep.model==3 & pair.structure==1) attr(ud, "likepairs") <- c(out$likepairs)
@@ -585,12 +602,12 @@ p11.binomial.twostage.RV <- function(theta,rv1,rv2,p1,p2,pardes,ags=NULL,link=0,
 } ## }}} 
 
 ##' @export
-concordance.twostage<- function(theta,p,rv1,rv2,theta.des,addititive.gamma.sum=NULL,link=0,var.par=0)
+concordance.twostage<- function(theta,p,rv1,rv2,theta.des,additive.gamma.sum=NULL,link=0,var.par=0)
 {# {{{
    if (var.par==1) theta <- theta/sum(theta)^2
 
-   if (is.matrix(p)==FALSE) p <- matrix(p,ncol=2)
    nn <- nrow(p)
+   if (is.matrix(p)==FALSE) { ll <- length(p); p <- matrix(p,ll,2); }
    if (ncol(p)!=2) p <- matrix(p,ncol=2)
    if (is.matrix(rv1)==FALSE) rv1 <- matrix(rv1,nn,length(rv1),byrow=TRUE)
    if (is.matrix(rv2)==FALSE) rv2 <- matrix(rv2,nn,length(rv1),byrow=TRUE)
@@ -606,7 +623,7 @@ concordance.twostage<- function(theta,p,rv1,rv2,theta.des,addititive.gamma.sum=N
 	p01 <- p[i,1]-p11
 	p10 <- p[i,2]-p11
 	p00 <- 1-p01-p10+p11
-	tabs <- list(pmat=matrix(c(p00,p10,p01,p11),2,2),casewise=c(p11/p1,p11/p2),marg=c(p1,p2))
+	tabs[[i]] <- list(pmat=matrix(c(p00,p10,p01,p11),2,2),casewise=c(p11/p1,p11/p2),marg=c(p1,p2))
    }
 
    return(tabs)
@@ -1104,7 +1121,7 @@ simbinClaytonOakes.twin.ace <- function(K,varg,varc,beta=NULL,alpha=NULL)  ## {{
   Ybin <- t(Ybin)
   xs <- cbind(xb1,xb2)
   type <- rep(c("twin1","twin2"),K)
-  zygosity <- rep(c("MZ","DZ"),each=K/2)
+  zygosity <- rep(c("MZ","DZ"),each=K)
 
   ud <- data.frame(ybin=c(Ybin),x=c(t(xs)),type=type,cluster=rep(1:K,each=n),zygosity=zygosity)
 

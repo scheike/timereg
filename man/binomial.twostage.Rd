@@ -13,9 +13,9 @@ binomial.twostage(margbin, data = sys.parent(),
   clusters = NULL, silent = 1, weights = NULL, control = list(),
   theta = NULL, theta.des = NULL, var.link = 1, var.par = 1,
   var.func = NULL, iid = 1, step = 1, notaylor = 1,
-  model = "plackett", marginal.p = NULL, strata = NULL,
-  max.clust = NULL, se.clusters = NULL, numDeriv = 0,
-  random.design = NULL, pairs = NULL, pairs.rvs = NULL,
+  model = "plackett", marginal.p = NULL, beta.iid = NULL,
+  Dbeta.iid = NULL, strata = NULL, max.clust = NULL, se.clusters = NULL,
+  numDeriv = 0, random.design = NULL, pairs = NULL, pairs.rvs = NULL,
   additive.gamma.sum = NULL)
 }
 \arguments{
@@ -47,7 +47,7 @@ binomial.twostage(margbin, data = sys.parent(),
 
 \item{var.func}{when alternative parametrizations are used this function can specify how the paramters are related to the \eqn{\lambda_j}'s.}
 
-\item{iid}{Calculate i.i.d. decomposition}
+\item{iid}{Calculate i.i.d. decomposition when iid>=1, when iid=2 then avoids adding the uncertainty for marginal paramters for additive gamma model (default).}
 
 \item{step}{Step size}
 
@@ -57,6 +57,10 @@ binomial.twostage(margbin, data = sys.parent(),
 
 \item{marginal.p}{vector of marginal probabilities}
 
+\item{beta.iid}{iid decomposition of marginal probability  estimates for each subject, if based on GLM model this is computed.}
+
+\item{Dbeta.iid}{derivatives of marginal model wrt marginal parameters, if based on GLM model this is computed.}
+
 \item{strata}{strata for fitting: considers only pairs where both are from same strata}
 
 \item{max.clust}{max clusters}
@@ -65,7 +69,7 @@ binomial.twostage(margbin, data = sys.parent(),
 
 \item{numDeriv}{uses Fisher scoring aprox of second derivative if 0, otherwise numerical derivatives}
 
-\item{random.design}{random effect design for additive gamma modeli, when pairs are given this is a (pairs) x (2) x (max number random effects) matrix, see pairs.rvs below}
+\item{random.design}{random effect design for additive gamma model, when pairs are given this is a (pairs) x (2) x (max number random effects) matrix, see pairs.rvs below}
 
 \item{pairs}{matrix with rows of indeces (two-columns) for the pairs considered in the pairwise composite score, useful for case-control sampling when marginal is known.}
 
@@ -81,12 +85,14 @@ regression (ALR).
 The reported standard errors are based on a cluster corrected score equations from the
 pairwise likelihoods assuming that the marginals are known. This gives correct standard errors
 in the case of the Plackett distribution (OR model for dependence), but incorrect standard
-errors for the Clayton-Oakes types model.
+errors for the Clayton-Oakes types model. For the additive gamma version of the stanard errors
+are adjusted for the uncertainty in the marginal models via an iid deomposition using the iid() function of
+lava. For the clayton oakes model that is not speicifed via the random effects these can be
+fixed subsequently using the iid influence functions for the marginal model, but typically this does not
+change much.
 
-The Clayton-Oakes copula model assumes that given a random effects Z that is gamma with variance
-
-Given the gamma distributed random effects it is assumed that the survival functions
-are indpendent, and that the marginal survival functions are on additive form (or Cox form)
+For the Clayton-Oakes version of the model, given the gamma distributed random effects it is
+assumed that the probabilities are indpendent, and that the marginal survival functions are on logistic form
 \deqn{
 logit(P(Y=1|X)) = \alpha + x^T \beta
 }
@@ -112,13 +118,13 @@ and variance \eqn{\lambda_j/(v_1^T \lambda)^2}. Note that the random effect
 It is here asssumed that  \eqn{lamtot=v_1^T \lambda} is fixed over all clusters
 as it would be for the ACE model below.
 
-The DEFAULT parametrization uses the variances of the random effecs
+The DEFAULT parametrization uses the variances of the random effecs (var.par=1)
 \deqn{
 \theta_j  = \lambda_j/(v_1^T \lambda)^2
 }
 
-For alternative parametrizations one can specify how the parameters relate to \eqn{\lambda_j}
-with the function
+For alternative parametrizations (var.par=0) one can specify how the parameters relate
+to \eqn{\lambda_j} with the function
 
 Based on these parameters the relative contribution (the heritability, h) is
 equivalent to  the expected values of the random effects  \eqn{\lambda_j/v_1^T \lambda}

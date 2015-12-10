@@ -1,24 +1,37 @@
 
-
 library(mets)
-
  data(twinstut)
- b0 <- bptwin(stutter~sex,
-              data=droplevels(subset(twinstut,zyg%in%c("mz","dz"))),
+twinstut <- subset(twinstut,zyg%in%c("mz","dz"))
+twinstut$binstut <- 1*(twinstut$stutter=="yes")
+ b0 <- bptwin(binstut~sex,
+              data=twinstut,
               id="tvparnr",zyg="zyg",DZ="dz",type="ae")
  summary(b0)
 
+out <- polygen.design(twinstut,id="tvparnr",zygname="zyg",
+		      zyg="dz",type="ae")
+margbin <- glm(binstut~sex,data=twinstut,family=binomial())
+###source("../R/binomial.twostage.R")
+bintwin <- binomial.twostage(margbin,data=twinstut,
+     clusters=twinstut$tvparnr,detail=0,var.par=1,
+     theta=c(0.5)/1,var.link=0,
+     random.design=out$des.rv,theta.des=out$pardes)
+summary(bintwin)
+
+
 library(mets)
-data <- simbinClaytonOakes.twin.ace(40000,2,1,beta=NULL,alpha=NULL)
+data <- simbinClaytonOakes.twin.ace(10000,0.5,0.5,beta=NULL,alpha=NULL)
 out <- polygen.design(data,id="cluster",zygname="zygosity")
 out$pardes
 head(out$des.rv)
+tail(out$des.rv)
 margbin <- glm(ybin~x,data=data,family=binomial())
+p=exp(0.5)/(1+exp(0.5))
 ###
 system.time(
 bintwin <- binomial.twostage(margbin,data=data,
      clusters=data$cluster,detail=0,var.par=1,
-     theta=c(2,1)/9,var.link=0,
+     theta=c(0.5,0.5)/1,var.link=0,
      random.design=out$des.rv,theta.des=out$pardes)
 )
 summary(bintwin)
@@ -30,5 +43,12 @@ b0 <- bptwin(ybin~x,
 )
 summary(b0)
 summary(bintwin)
+
+rv1 <- out$des.rv[c(1,nrow(data)-1),]
+rv2 <- out$des.rv[c(2,nrow(data)),]
+theta.des <- out$pardes
+
+### concordance from additive gamma model
+concordance.twostage(bintwin$theta,rep(p,2),rv1,rv2,theta.des,var.par=1)
 
 

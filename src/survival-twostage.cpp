@@ -1389,6 +1389,9 @@ int lpar=thetades.n_cols;
 
 vec dp(lpar); dp.fill(0); 
 
+vec DbetaDtheta(2*lpar); 
+
+
 if (status1==0 && status2==0) { // {{{
 double like=claytonoakesRVC(theta,thetades,ags,0,0,f1,f2,x1,x2,dp,ccw) ;
 	ressl["like"]=like; 
@@ -1425,7 +1428,7 @@ return(ressl);
 } // }}}
 
 // for binary case, additive gamma from twostage survival
-double claytonoakesbinRVC(vec theta,mat thetades,mat ags,int status1,int status2,double cif1,double cif2,vec x1, vec x2, vec &dp) 
+double claytonoakesbinRVC(vec theta,mat thetades,mat ags,int status1,int status2,double cif1,double cif2,vec x1, vec x2, vec &dp,vec &DbetaDtheta) 
 { // {{{
 	double f1,f2,valr=1;
 	colvec dL=theta; dL.fill(0); 
@@ -1441,8 +1444,6 @@ double claytonoakesbinRVC(vec theta,mat thetades,mat ags,int status1,int status2
 	double ii2 = ilapsf(lamtot1,lamtot1,f2);
 
 	vec resv(nn); resv.fill(0); 
-	//resv <- rep(0,length(par))
-	//iresv <- rep(0,length(par))
 	vec iresv(nn); iresv.fill(0); 
 
 	double like=1,iisum; 
@@ -1582,6 +1583,11 @@ double claytonoakesbinRVC(vec theta,mat thetades,mat ags,int status1,int status2
 	double p00=1-f1-f2+p11; 
 	//printf("%lf %lf  %lf %lf %lf %lf \n",f1,f2,p11,p10,p10,p00); 
 	//d3.print("d3"); 
+//	dttheta.print("dt"); 
+//	dstheta.print("ds"); 
+	
+	DbetaDtheta.subvec(0,lpar-1)=dttheta; 
+	DbetaDtheta.subvec(lpar,2*lpar-1)=dstheta; 
 
 	if (status1==0 && status2==0) { // {{{
 		valr=p00; dp=dtheta;
@@ -1589,10 +1595,12 @@ double claytonoakesbinRVC(vec theta,mat thetades,mat ags,int status1,int status2
 	if (status1==0 && status2==1) { // {{{
 		valr=p01; 
 		dp=-1*dtheta; 
+		DbetaDtheta=-1*DbetaDtheta; 
 	} // }}}
 	if (status1==1 && status2==0) { // {{{
 		valr=p10; 
 		dp=-1*dtheta; 
+		DbetaDtheta=-1*DbetaDtheta; 
 	} // }}}
 	if (status1==1 && status2==1) { // {{{
 		valr=p11; 
@@ -1633,29 +1641,29 @@ RcppExport SEXP claytonoakesbinRV(SEXP itheta,SEXP istatus1,SEXP istatus2,SEXP i
 
 	//int nn=thetades.n_rows; 
 	int lpar=thetades.n_cols; 
-
 	vec dp(lpar); dp.fill(0); 
+	vec DbetaDtheta(2*lpar); 
 
 	if (status1==0 && status2==0) { // {{{
-		double like=claytonoakesbinRVC(theta,thetades,ags,0,0,f1,f2,x1,x2,dp) ;
+		double like=claytonoakesbinRVC(theta,thetades,ags,0,0,f1,f2,x1,x2,dp,DbetaDtheta) ;
 		ressl["like"]=like; 
 		if (varlink==1) dp=dp % theta;  
 		ressl["dlike"]=dp;
 	} // }}}
 	if (status1==0 && status2==1) { // {{{
-		double like=claytonoakesbinRVC(theta,thetades,ags,0,1,f1,f2,x1,x2,dp) ;
+		double like=claytonoakesbinRVC(theta,thetades,ags,0,1,f1,f2,x1,x2,dp,DbetaDtheta) ;
 		ressl["like"]=like; 
 		if (varlink==1) dp=dp % theta;  
 		ressl["dlike"]=dp;
 	} // }}}
 	if (status1==1 && status2==0) { // {{{
-		double like=claytonoakesbinRVC(theta,thetades,ags,1,0,f1,f2,x1,x2,dp) ;
+		double like=claytonoakesbinRVC(theta,thetades,ags,1,0,f1,f2,x1,x2,dp,DbetaDtheta) ;
 		ressl["like"]=like; 
 		if (varlink==1) dp=dp % theta;  
 		ressl["dlike"]=dp;
 	} // }}}
 	if (status1==1 && status2==1) { // {{{
-		double like=claytonoakesbinRVC(theta,thetades,ags,1,1,f1,f2,x1,x2,dp) ;
+		double like=claytonoakesbinRVC(theta,thetades,ags,1,1,f1,f2,x1,x2,dp,DbetaDtheta) ;
 		ressl["like"]=like; 
 		if (varlink==1) dp=dp % theta;  
 		ressl["dlike"]=dp;
@@ -1769,7 +1777,7 @@ RcppExport SEXP twostageloglike(
       Rprintf("trunkp %lf \n",mean(trunkp)); 
   } // }}}
 
-  int ci,ck,i,j,c,s=0,k,v,c1,v1; 
+  int ci,ck,i,j,c,s=0,k,v,c1; 
   double ll=1,Li,Lk,sdj=0,diff=0,loglikecont=0;
   double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0; 
 //  double plack(); 
@@ -2677,10 +2685,8 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
 // printf("2 her er lidt knas\n"); 
 
   vec etheta=theta; 
-  double deppar=1; 
   mat Dcif(arrayDims2[0]/2,pt); 
 //  Dcif.print("Dcif"); 
-
   
   // // }}}
   
