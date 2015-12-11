@@ -185,14 +185,10 @@
 ##' @param pairs.rvs for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair. 
 ##' @param additive.gamma.sum for two.stage=0, this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters.
 binomial.twostage <- function(margbin,data=sys.parent(),
-     score.method="fisher.scoring",
-     Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
-     control=list(),theta=NULL,theta.des=NULL,
-     var.link=1,var.par=1,var.func=NULL,
-     iid=1, step=1.0,notaylor=1,model="plackett",
-     marginal.p=NULL,beta.iid=NULL,Dbeta.iid=NULL,
-     strata=NULL,
-     max.clust=NULL,se.clusters=NULL,numDeriv=0,
+     score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
+     control=list(),theta=NULL,theta.des=NULL,var.link=1,var.par=1,var.func=NULL,
+     iid=1,step=1.0,notaylor=1,model="plackett",marginal.p=NULL,beta.iid=NULL,Dbeta.iid=NULL,
+     strata=NULL,max.clust=NULL,se.clusters=NULL,numDeriv=0,
      random.design=NULL,pairs=NULL,pairs.rvs=NULL,additive.gamma.sum=NULL) 
 { ## {{{
     ## {{{ seting up design and variables
@@ -550,16 +546,21 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 
 
     ## {{{ handling output
-    robvar.theta <- NULL
+    iid.tot <- NULL
+    var.tot <- robvar.theta <- NULL
+    beta <- NULL
     if (iid>=1) {
         theta.iid <- out$theta.iid %*% hessi
         if (dep.model==3 & iid!=2  & (!is.null(beta.iid)))
 	if (nrow(beta.iid)==nrow(out$theta.iid)) {
 	     theta.beta.iid <- (beta.iid %*% t(out$DbetaDtheta) ) %*% hessi
 	     theta.iid  <- theta.iid+theta.beta.iid
+	     iid.tot <- cbind(theta.iid,beta.iid)
+	     var.tot <- crossprod(iid.tot)
 	}
         robvar.theta  <- (t(theta.iid) %*% theta.iid) 
 	var.theta <- robvar.theta
+	beta <- coef(margbin); 
     } else { var.theta <- -1* hessi }
 
 ###  if (iid==1) var.theta <- robvar.theta else var.theta <- -hessi
@@ -567,7 +568,8 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     theta <- matrix(theta,ptheta,1)
     if (length(thetanames)==nrow(theta)) { rownames(theta) <- thetanames; rownames(var.theta) <- colnames(var.theta) <- thetanames; }
     ud <- list(theta=theta,score=score,hess=hess,hessi=hessi,var.theta=var.theta,model=model,robvar.theta=robvar.theta,
-               theta.iid=theta.iid,thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,margsurv=ps); 
+               theta.iid=theta.iid,thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,
+	       margsurv=ps,iid.tot=iid.tot,var.tot=var.tot,beta=beta); 
     class(ud)<-"twostage" 
     attr(ud, "Formula") <- formula
     attr(ud, "Clusters") <- clusters
@@ -579,11 +581,14 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     attr(ud,"antclust")<-antclust; 
     attr(ud, "Type") <- model
     attr(ud,"DbetaDtheta")<-out$DbetaDtheta; 
+    attr(ud,"ags")<- additive.gamma.sum 
     ### to be consistent with structure for survival twostage model 
     attr(ud, "additive-gamma") <- (dep.model==3)*1
     if (dep.model==3 & pair.structure==1) attr(ud, "likepairs") <- c(out$likepairs)
     if (dep.model==3 & pair.structure==0) attr(ud, "pardes") <- theta.des
+    if (dep.model==3 & pair.structure==0) attr(ud, "theta.des") <- theta.des
     if (dep.model==3 & pair.structure==1) attr(ud, "pardes") <- theta.des[,,1]
+    if (dep.model==3 & pair.structure==1) attr(ud, "theta.des") <- theta.des[,,1]
     if (dep.model==3 & pair.structure==0) attr(ud, "rv1") <- random.design[1,]
     if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <- random.design[1,,1]
  
@@ -596,8 +601,8 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 ##' @export
 p11.binomial.twostage.RV <- function(theta,rv1,rv2,p1,p2,pardes,ags=NULL,link=0,i=1,j=1) { ## {{{ 
 	## computes p11 pij for additive gamma binary random effects model 
-	ags <- matrix(1,dim(pardes))
-        out <- .Call("claytonoakesbinRV",theta,i,j,p1,p2,rv1,rv2,pardes,ags,link)$like
+     if (is.null(ags)) ags <- matrix(1,dim(pardes))
+     out <- .Call("claytonoakesbinRV",theta,i,j,p1,p2,rv1,rv2,pardes,ags,link)$like
  return(out)
 } ## }}} 
 
@@ -629,6 +634,54 @@ concordance.twostage<- function(theta,p,rv1,rv2,theta.des,additive.gamma.sum=NUL
    return(tabs)
 }	# }}}
 
+##' @export
+concordance.twin.ace<- function(object,rv1=NULL,rv2=NULL,xmarg=NULL,type="ace")
+{# {{{
+
+if (type=="ace" | type=="ade") {
+if (is.null(rv1))  rv1 <- rbind(c(1,0,0,0,1),c(0,1,1,0,1))
+if (is.null(rv2))  rv2 <- rbind(c(1,0,0,0,1),c(0,1,0,1,1))
+}
+if (type=="ae" | type=="de") {
+if (is.null(rv1))  rv1 <- rbind(c(1,0,0,0),c(0,1,1,0))
+if (is.null(rv2))  rv2 <- rbind(c(1,0,0,0),c(0,1,0,1))
+}
+
+var.par <- attr(object,"var.par")
+var.link <- attr(object,"var.link")
+theta.des <- attr(object,"theta.des")
+theta <- object$theta
+beta <- object$beta
+ags <- attr(object,"ags"); 
+if (is.null(xmarg)) {xmarg <- rep(0,length(beta)); xmarg[1] <- 1;} 
+
+if (is.matrix(rv1)==FALSE) rv1 <- matrix(rv1,nn,length(rv1),byrow=TRUE)
+if (is.matrix(rv2)==FALSE) rv2 <- matrix(rv2,nn,length(rv1),byrow=TRUE)
+if (is.null(ags)) ags <- matrix(1,ncol(rv1),length(theta));
+nn <- nrow(rv1)
+
+   fp <- function(par) {# {{{
+       pp <- par[1:length(theta)];
+       beta <- par[(length(theta)+1):length(par)];
+       xp  <- sum(xmarg*beta); 
+       pm <- exp(xp)/(1+exp(xp)); 
+       print(pm)
+       if (var.par==1) pp <- pp/sum(pp)^2
+       p11 <- p11.binomial.twostage.RV(pp,rv1l,rv2l,pm,pm,theta.des,ags=ags,link=0)
+       casewise <- p11/pm
+       return(c(p11,casewise,pm))
+   }# }}}
+
+   tabs <- list()
+   for (i in 1:nn)
+   {
+      rv1l <- rv1[i,]
+      rv2l <- rv2[i,]
+      tabs[[i]] <- estimate(coef=c(theta,beta),vcov=object$var.tot,f=function(p) fp(p))
+   }
+
+   return(tabs)
+}	# }}}
 
 ##' @export
 binomial.twostage.time <- function(formula,data,id,...,silent=1,fix.censweights=1,

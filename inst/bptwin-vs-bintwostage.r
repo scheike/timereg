@@ -1,25 +1,25 @@
-
 library(mets)
- data(twinstut)
+
+### example 1, twin stut data 
+data(twinstut)
 twinstut <- subset(twinstut,zyg%in%c("mz","dz"))
 twinstut$binstut <- 1*(twinstut$stutter=="yes")
- b0 <- bptwin(binstut~sex,
-              data=twinstut,
-              id="tvparnr",zyg="zyg",DZ="dz",type="ae")
- summary(b0)
 
-out <- polygen.design(twinstut,id="tvparnr",zygname="zyg",
-		      zyg="dz",type="ae")
+b0 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="ae")
+summary(b0)
+
+out <- polygen.design(twinstut,id="tvparnr",zygname="zyg",zyg="dz",type="ae")
 margbin <- glm(binstut~sex,data=twinstut,family=binomial())
-###source("../R/binomial.twostage.R")
 bintwin <- binomial.twostage(margbin,data=twinstut,
-     clusters=twinstut$tvparnr,detail=0,var.par=1,
-     theta=c(0.5)/1,var.link=0,
+     clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
      random.design=out$des.rv,theta.des=out$pardes)
 summary(bintwin)
 
+concordance.twin.ace(bintwin,type="ae")
+summary(b0)
 
-library(mets)
+
+### example 2, simulated data  
 data <- simbinClaytonOakes.twin.ace(10000,0.5,0.5,beta=NULL,alpha=NULL)
 out <- polygen.design(data,id="cluster",zygname="zygosity")
 out$pardes
