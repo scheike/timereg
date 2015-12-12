@@ -614,7 +614,7 @@ concordance.twostage<- function(theta,p,rv1,rv2,theta.des,additive.gamma.sum=NUL
 {# {{{
    if (var.par==1) theta <- theta/sum(theta)^2
 
-   nn <- nrow(p)
+   nn <- nrow(as.matrix(rv1))
    if (is.matrix(p)==FALSE) { ll <- length(p); p <- matrix(p,ll,2); }
    if (ncol(p)!=2) p <- matrix(p,ncol=2)
    if (is.matrix(rv1)==FALSE) rv1 <- matrix(rv1,nn,length(rv1),byrow=TRUE)
@@ -659,10 +659,10 @@ beta <- object$beta
 ags <- attr(object,"ags"); 
 if (is.null(xmarg)) {xmarg <- rep(0,length(beta)); xmarg[1] <- 1;} 
 
+nn <- nrow(rv1)
 if (is.matrix(rv1)==FALSE) rv1 <- matrix(rv1,nn,length(rv1),byrow=TRUE)
 if (is.matrix(rv2)==FALSE) rv2 <- matrix(rv2,nn,length(rv1),byrow=TRUE)
 if (is.null(ags)) ags <- matrix(1,ncol(rv1),length(theta));
-nn <- nrow(rv1)
 
    fp <- function(par) {# {{{
        pp <- par[1:length(theta)];

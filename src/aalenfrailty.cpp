@@ -239,7 +239,7 @@ RcppExport SEXP BhatAddGam(SEXP irecursive, SEXP idBaalen,SEXP icause,
 
     for (int i=0; i<it ; i++) { // Iterate over baseline 
     for (unsigned k=0; k<cause.n_elem; k++) { // Iterate over events
-	    // {{{ 
+   // {{{ 
 
         if (recursive==0) cumhaz=xjump.slice(k) * trans(Bit.row(k)); 
         // computes weights based on additive gamma model 

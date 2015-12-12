@@ -53,7 +53,6 @@ tsf <- twostage(NULL,data=out,clusters=out$cluster,
 	       numDeriv=0,
                marginal.status=out$status,
                marginal.survival=ms,
-	       fix.baseline=1,
 	       two.stage=0,cr.models=cr.models)
 coef(tsf)
 pars/sum(pars)^2
@@ -69,8 +68,6 @@ ts <- twostage(NULL,data=out,clusters=out$cluster,
                theta.des=dout$theta.des,pairs=pairs,
 	       numDeriv=0,
                marginal.status=out$status,
-               marginal.survival=ms,
-	       fix.baseline=0,
 	       two.stage=0,cr.models=cr.models)
 coef(ts)
 pars/sum(pars)^2
@@ -127,7 +124,7 @@ ts <- twostage(NULL,data=out,clusters=out$cluster,
                theta.des=dout$theta.des,pairs=pairs,
 	       numDeriv=0,
                marginal.surv=lams,
-	       marginal.status=out$status,fix.baseline=1,
+	       marginal.status=out$status,
                two.stage=0)
 summary(ts)
 
@@ -139,7 +136,6 @@ ts2 <- twostage(NULL,data=out,clusters=out$cluster,
 	       numDeriv=0,
 	       marginal.status=out$status,
 	       cr.model=list(Surv(time,status)~+1),
-	       fix.baseline=0,
                two.stage=0)
 summary(ts2)
 ts2$score
@@ -197,7 +193,7 @@ ts <- twostage(NULL,data=out,clusters=out$cluster,
                theta.des=dout$theta.des,pairs=pairs,
                marginal.surv=lams,
 	       marginal.status=out$status,
-               two.stage=0,fix.baseline=1)
+               two.stage=0)
 summary(ts)
 ts$score
 
@@ -207,7 +203,7 @@ ts2 <- twostage(NULL,data=out,clusters=out$cluster,
                random.design=dout$random.design,
                theta.des=dout$theta.des,pairs=pairs,
 	       marginal.status=out$status,
-               two.stage=0,fix.baseline=0,
+               two.stage=0,
      cr.models=list( Surv(time,status==1)~+1,
 		     Surv(time,status==2)~+1)
 	       )
@@ -220,7 +216,7 @@ abline(c(0,lam0[1])); abline(c(0,lam0[2]));
 } ## }}} 
 
 
-itwoc <- 0
+itwoc <- 1
 if (itwoc==1) {
 ## {{{ cause specific analyses because independence 
 
@@ -278,7 +274,7 @@ ts <- twostage(NULL,data=out,clusters=out$cluster,
                theta.des=dout$theta.des,pairs=pairs,
 	       numDeriv=0,
                marginal.status=out$status,
-       two.stage=0,cr.models=cr.models,fix.baseline=0)
+       two.stage=0,cr.models=cr.models)
 coef(ts)
 
 
@@ -294,7 +290,7 @@ ts1 <- twostage(NULL,data=out,clusters=out$cluster,
                theta.des=dout1$theta.des,
 	       pairs=pairs,
 	       marginal.status=out$statusc1,
-               two.stage=0,fix.baseline=0,
+               two.stage=0,
 	       cr.models=cr.models2)
 summary(ts1)
 
@@ -308,7 +304,7 @@ ts2 <- twostage(NULL,data=out,clusters=out$cluster,
                random.design=dout1$random.design,
                theta.des=dout1$theta.des,pairs=pairs,
 	       marginal.status=out$statusc2,
-               two.stage=0,fix.baseline=0,
+               two.stage=0,
 	       cr.models=cr.models2)
 summary(ts2)
 

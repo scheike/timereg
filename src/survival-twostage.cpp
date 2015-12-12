@@ -1069,6 +1069,7 @@ RcppExport SEXP survivalRV(SEXP itheta,SEXP istatus1,SEXP istatus2,
 		     SEXP iags, SEXP ivarlink)
 { // {{{
 
+	try {
  colvec theta = Rcpp::as<colvec>(itheta);
  mat thetades = Rcpp::as<mat>(ithetades);
  mat x1= Rcpp::as<mat>(irv1);
@@ -1132,11 +1133,16 @@ ressl["varlink"]=varlink;
 ressl["alllike"]=all; 
 
 return(ressl);  
+} catch( std::exception &ex ) {
+    forward_exception_to_r( ex );
+  } catch(...) {  
+    ::Rf_error( "c++ exception (unknown reason)" ); 
+  }
+  return R_NilValue; // -Wall
+
+
+
 } // }}}
-
-
-
-
 
 
 double claytonoakesRVC(vec theta,mat thetades,mat ags,
@@ -1615,6 +1621,7 @@ double claytonoakesbinRVC(vec theta,mat thetades,mat ags,int status1,int status2
 RcppExport SEXP claytonoakesbinRV(SEXP itheta,SEXP istatus1,SEXP istatus2,SEXP icif1,SEXP icif2,
 		SEXP irv1, SEXP irv2,SEXP ithetades,SEXP iags, SEXP ivarlink)
 { // {{{
+	try {
 	colvec theta = Rcpp::as<colvec>(itheta);
 	mat thetades = Rcpp::as<mat>(ithetades);
 	mat ags = Rcpp::as<mat>(iags);
@@ -1677,6 +1684,15 @@ RcppExport SEXP claytonoakesbinRV(SEXP itheta,SEXP istatus1,SEXP istatus2,SEXP i
 	ressl["varlink"]=varlink; 
 
 	return(ressl);  
+} catch( std::exception &ex ) {
+    forward_exception_to_r( ex );
+  } catch(...) {  
+    ::Rf_error( "c++ exception (unknown reason)" ); 
+  }
+  return R_NilValue; // -Wall
+
+
+
 } // }}}
 
 
@@ -1689,6 +1705,7 @@ RcppExport SEXP twostageloglike(
 		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid 
 ) // {{{
 {
+  try {
 // {{{ setting matrices and vectors, and exporting to armadillo matrices
  mat thetades = Rcpp::as<mat>(ithetades); 
  mat clusterindex = Rcpp::as<mat>(iclusterindex);
@@ -1907,6 +1924,14 @@ if (iid==1) { res["theta.iid"]=thetiid;
             }
 
 return(res); 
+} catch( std::exception &ex ) {
+    forward_exception_to_r( ex );
+  } catch(...) {  
+    ::Rf_error( "c++ exception (unknown reason)" ); 
+  }
+  return R_NilValue; // -Wall
+
+
 } // }}}
 
 RcppExport SEXP twostageloglikeRV( 
@@ -1918,6 +1943,7 @@ RcppExport SEXP twostageloglikeRV(
 		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid, SEXP irvdes, SEXP iags
 ) 
 { // {{{
+  try {
 // {{{ setting matrices and vectors, and exporting to armadillo matrices
  mat thetades = Rcpp::as<mat>(ithetades); 
  mat clusterindex = Rcpp::as<mat>(iclusterindex);
@@ -2183,6 +2209,14 @@ if (iid==1) { res["theta.iid"]=thetiid;
             }
 
 return(res); 
+} catch( std::exception &ex ) {
+    forward_exception_to_r( ex );
+  } catch(...) {  
+    ::Rf_error( "c++ exception (unknown reason)" ); 
+  }
+  return R_NilValue; // -Wall
+
+
 } // }}}
 
 
@@ -2204,6 +2238,7 @@ RcppExport SEXP twostageloglikeRVpairs(
 		SEXP idimthetades, SEXP idimrvdes, SEXP inrvs, SEXP iags 
 )  
 { // {{{ 
+  try {
 // {{{ 
 //  setting matrices and vectors, and exporting to armadillo matrices
 //  // {{{
@@ -2555,6 +2590,15 @@ if (iid==1) { res["theta.iid"]=thetiid;
             }
 
 return(res); 
+} catch( std::exception &ex ) {
+    forward_exception_to_r( ex );
+  } catch(...) {  
+    ::Rf_error( "c++ exception (unknown reason)" ); 
+  }
+  return R_NilValue; // -Wall
+
+
+
 } // }}}  
 
 
@@ -2590,6 +2634,7 @@ RcppExport SEXP survivalloglikeRVpairs(
 		SEXP iags,SEXP ientrycause
 )  
 { // {{{ 
+  try {
 // {{{ 
 //  setting matrices and vectors, and exporting to armadillo matrices
 //  // {{{
@@ -2852,4 +2897,11 @@ if (iid==1) { res["theta.iid"]=thetiid;
             }
 
 return(res); 
+} catch( std::exception &ex ) {
+    forward_exception_to_r( ex );
+  } catch(...) {  
+    ::Rf_error( "c++ exception (unknown reason)" ); 
+  }
+  return R_NilValue; // -Wall
+
 } // }}}  

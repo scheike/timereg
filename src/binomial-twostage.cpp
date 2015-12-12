@@ -299,6 +299,7 @@ RcppExport SEXP twostageloglikebin(
 		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid , SEXP irvdes, SEXP iags, SEXP ibetaiid
 ) // {{{
 {
+	try {
 // {{{ setting matrices and vectors, and exporting to armadillo matrices
  mat thetades = Rcpp::as<mat>(ithetades); 
  mat clusterindex = Rcpp::as<mat>(iclusterindex);
@@ -564,6 +565,15 @@ if (iid==1) {
             }
 
 return(res); 
+} catch( std::exception &ex ) {
+    forward_exception_to_r( ex );
+  } catch(...) {  
+    ::Rf_error( "c++ exception (unknown reason)" ); 
+  }
+  return R_NilValue; // -Wall
+
+
+
 } // }}}
 
 RcppExport SEXP twostageloglikebinpairs( 
@@ -578,6 +588,7 @@ RcppExport SEXP twostageloglikebinpairs(
 		SEXP ibetaiid
 ) // {{{
 {
+  try {
 // {{{ setting matrices and vectors, and exporting to armadillo matrices
 // mat thetades = Rcpp::as<mat>(ithetades); 
  IntegerVector nrvs(inrvs);
@@ -882,7 +893,13 @@ if (iid==1) { res["theta.iid"]=thetiid;
               res["likepairs"]=likepairs; 
             }
 
-
 return(res); 
+} catch( std::exception &ex ) {
+    forward_exception_to_r( ex );
+  } catch(...) {  
+    ::Rf_error( "c++ exception (unknown reason)" ); 
+  }
+  return R_NilValue; // -Wall
+
 } // }}}
 
