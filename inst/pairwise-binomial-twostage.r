@@ -19,14 +19,15 @@ out <- ace.family.design(data,member="type",id="cluster")
 out$pardes
 head(out$des.rv)
 
-### now specify fitting via specific pairs 
-source("../R/binomial.twostage.R")
+### fitting ace model for family structure
 ts <- binomial.twostage(margbin,data=data,clusters=data$cluster,
-          theta=c(2,1),var.par=0,var.link=0,step=1.0,Nit=10,detail=1,
-          random.design=out$des.rv,
-          theta.des=out$pardes)
+theta=log(c(2,1)/9),
+random.design=out$des.rv,theta.des=out$pardes)
 summary(ts)
+## true variance
+c(2,1)/9
 
+### now specify fitting via specific pairs 
 ### first all pairs 
 ###cluster.index(data$cluster)
 mm <- familycluster.index(data$cluster)
@@ -37,12 +38,13 @@ head(pairs,n=12)
 ## make all pairs and pair specific design and pardes 
 ## same as ts0 but pairs specified 
 
-ts <- binomial.twostage(margbin,data=data,clusters=data$cluster,
-               theta=c(2,1),var.link=0,step=1.0,Nit=10,detail=1,
-               random.design=out$des.rv,
-               theta.des=out$pardes,pairs=pairs)
+tsp <- binomial.twostage(margbin,data=data,
+clusters=data$cluster,
+theta=log(c(2,1)/9),detail=1,
+random.design=out$des.rv,theta.des=out$pardes,pairs=pairs)
 ts$theta
-summary(ts)
+tsp$theta
+summary(tsp)
 
 ###source("../R/binomial.twostage.R"); 
 ### random sample of pairs 
@@ -51,7 +53,7 @@ ssid <- sort(sample(1:60000,40000))
 ###
 ### take some of all 
 tsd <- binomial.twostage(aa,data=data,clusters=data$cluster,
-               theta=c(2,1),var.link=0,step=1.0,
+               theta=log(c(2,1)/9),var.link=1,step=1.0,
                random.design=out$des.rv,iid=1,Nit=10,
 	      theta.des=out$pardes,pairs=pairs[ssid,])
 summary(tsd)
@@ -75,9 +77,9 @@ outid$pardes
 head(outid$des.rv)
 ###
 tsdid <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
-               theta=c(2,1),var.link=0,step=1.0,
-               random.design=outid$des.rv,Nit=10,
-               theta.des=outid$pardes,pairs=pair.new)
+         theta=log(c(2,1)/9),
+         random.design=outid$des.rv,
+         theta.des=outid$pardes,pairs=pair.new)
 summary(tsdid)
 
 ###
@@ -94,19 +96,6 @@ pair.types <-  matrix(dataid[c(t(pair.new)),"type"],byrow=T,ncol=2)
 head(pair.new)
 head(pair.types)
 
-### here makes pairwise design , simpler random.design og pardes, parameters
-### stil varg, varc 
-### mother, child, share half rvm=c(1,1,0) rvc=c(1,0,1),
-### thetadesmcf=rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
-###
-### father, child, share half rvf=c(1,1,0) rvc=c(1,0,1), 
-### thetadescf=rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
-###
-### child, child,  share half rvc=c(1,1,0) rvc=c(1,0,1),
-### thetadesmf=rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
-###
-### mother, father, share 0 rvm=c(1,0) rvf=c(0,1), 
-### thetadesmf=rbind(c(1,0),c(1,0),c(0,1))
 
 theta.des  <- array(0,c(4,2,nrow(pair.new)))
 random.des <- array(0,c(2,4,nrow(pair.new)))
@@ -134,12 +123,13 @@ theta.des[,,1]
 head(rvs)
 
 tsdid2 <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
-               theta=c(2,1),var.link=0,step=1.0,
-               random.design=random.des,
-               theta.des=theta.des,pairs=pair.new,pairs.rvs=rvs)
+           theta=log(c(2,1)/9),
+           random.design=random.des,
+           theta.des=theta.des,pairs=pair.new,pairs.rvs=rvs)
 summary(tsdid2)
 tsd$theta
 tsdid$theta
+tsdid2$theta
 
 
 ### simpler specification via kinship coefficient for each pair
@@ -159,17 +149,15 @@ out$random.des[,,9]
 out$theta.des[,,9]
 
 tsdid3 <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
-               theta=c(2,1),var.link=0,step=1.0,
-               random.design=out$random.design,
-               theta.des=out$theta.des,pairs=pair.new,pairs.rvs=out$ant.rvs)
+       theta=log(c(2,1)/9),
+       random.design=out$random.design,
+theta.des=out$theta.des,pairs=pair.new,pairs.rvs=out$ant.rvs)
 summary(tsdid3)
-
-### same as above  tsdid2
 
 
 bin <- binomial.twostage(margbin,data=data,clusters=data$cluster,detail=0,
  model="clayton.oakes",
- theta=-1.3,var.link=1,step=1.0)
+ theta=-1.3,step=1.0)
 summary(bin)
 
 bin <- binomial.twostage(margbin,data=data,clusters=data$cluster,detail=0,

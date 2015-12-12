@@ -63,7 +63,7 @@ tsf$score1
 source("../R/twostage.R")
 par(mfrow=c(1,1))
 ts <- twostage(NULL,data=out,clusters=out$cluster,
-               theta=ts$theta,
+               theta=tsf$theta,
 	       var.link=0,step=1.0,Nit=20,detail=1,
                random.design=dout$random.design,
                theta.des=dout$theta.des,pairs=pairs,
@@ -154,7 +154,7 @@ if (twoc==1) {
 
 lam0 <- c(0.5,0.4)
 pars <- c(0.5,1,0.5,1)*0.5; 
-out <- simCompete.twin.ace(n, pars[c(1,3)],pars[c(2,4)],0,2,lam0=lam0,overall=0)
+out <- simCompete.twin.ace(n,pars[c(1,3)],pars[c(2,4)],0,2,lam0=lam0,overall=0)
 table(out$status)
 out$status1 <- out$status==1
 table(out$status1)
@@ -195,9 +195,8 @@ ts <- twostage(NULL,data=out,clusters=out$cluster,
 	       var.link=0,step=1.0,Nit=10,detail=1,
                random.design=dout$random.design,
                theta.des=dout$theta.des,pairs=pairs,
-	       numDeriv=0,
                marginal.surv=lams,
-	       marginal.status=out$status1,
+	       marginal.status=out$status,
                two.stage=0,fix.baseline=1)
 summary(ts)
 ts$score
@@ -218,11 +217,10 @@ pars/sum(pars)^2
 matplot.twostage(ts2)
 abline(c(0,lam0[1])); abline(c(0,lam0[2])); 
 
-
 } ## }}} 
 
 
-itwoc <- 1
+itwoc <- 0
 if (itwoc==1) {
 ## {{{ cause specific analyses because independence 
 
@@ -280,7 +278,7 @@ ts <- twostage(NULL,data=out,clusters=out$cluster,
                theta.des=dout$theta.des,pairs=pairs,
 	       numDeriv=0,
                marginal.status=out$status,
-	       two.stage=0, cr.models=cr.models)
+       two.stage=0,cr.models=cr.models,fix.baseline=0)
 coef(ts)
 
 
@@ -296,7 +294,8 @@ ts1 <- twostage(NULL,data=out,clusters=out$cluster,
                theta.des=dout1$theta.des,
 	       pairs=pairs,
 	       marginal.status=out$statusc1,
-	       two.stage=0,cr.models=cr.models1)
+               two.stage=0,fix.baseline=0,
+	       cr.models=cr.models2)
 summary(ts1)
 
 ### considering cause 2 alone 
@@ -309,7 +308,7 @@ ts2 <- twostage(NULL,data=out,clusters=out$cluster,
                random.design=dout1$random.design,
                theta.des=dout1$theta.des,pairs=pairs,
 	       marginal.status=out$statusc2,
-               two.stage=0,
+               two.stage=0,fix.baseline=0,
 	       cr.models=cr.models2)
 summary(ts2)
 

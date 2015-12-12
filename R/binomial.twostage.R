@@ -88,22 +88,19 @@
 ##' twinstut$cage <- scale(twinstut$age)
 ##' theta.des <- model.matrix( ~-1+factor(zyg)+cage,data=twinstut)
 ##' bina <- binomial.twostage(margbin,data=twinstut,
-##' 		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0,
-##' 	                 score.method="fisher.scoring")
+##' 		         clusters=twinstut$tvparnr,theta.des=theta.des)
 ##' summary(bina)
 ##' 
 ##' theta.des <- model.matrix( ~-1+factor(zyg)+factor(zyg)*cage,data=twinstut)
 ##' bina <- binomial.twostage(margbin,data=twinstut,
-##' 		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0,
-##' 	                 score.method="fisher.scoring")
+##' 		         clusters=twinstut$tvparnr,theta.des=theta.des)
 ##' summary(bina)
 ##' 
 ##' ## refers to zygosity of first subject in eash pair : zyg1
 ##' ## could also use zyg2 (since zyg2=zyg1 within twinpair's))
 ##' out <- easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut,
 ##'                           response="binstut",id="tvparnr",
-##' 	             	      theta.formula=~-1+factor(zyg1),
-##'                           score.method="fisher.scoring")
+##' 	             	      theta.formula=~-1+factor(zyg1))
 ##' summary(out)
 ##' 
 ##' ## refers to zygosity of first subject in eash pair : zyg1
@@ -113,7 +110,7 @@
 ##'
 ##' out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
 ##'       data=twinstut,response="binstut",id="tvparnr",
-##'       score.method="fisher.scoring",theta.formula=desfs,desnames=c("mz","dz","os"))
+##'       theta.formula=desfs,desnames=c("mz","dz","os"))
 ##' summary(out3)
 ##' 
 ##' ### use of clayton oakes binomial additive gamma model 
@@ -138,7 +135,6 @@
 ##'      random.design=out$des.rv,theta.des=out$pardes)
 ##' summary(bints)
 ##' 
-##' 
 ##' data <- simbinClaytonOakes.twin.ace(10000,2,1,beta=NULL,alpha=NULL)
 ##' out <- polygen.design(data,id="cluster",zygname="zygosity")
 ##' out$pardes
@@ -150,6 +146,7 @@
 ##'      theta=c(2,1),
 ##'      random.design=out$des.rv,theta.des=out$pardes)
 ##' summary(bintwin)
+##' concordance.twin.ace(bintwin)
 ##' }
 ##' 
 ##' @keywords binomial regression 
@@ -186,7 +183,7 @@
 ##' @param additive.gamma.sum for two.stage=0, this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters.
 binomial.twostage <- function(margbin,data=sys.parent(),
      score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
-     control=list(),theta=NULL,theta.des=NULL,var.link=1,var.par=1,var.func=NULL,
+     control=list(),theta=NULL,theta.des=NULL,var.link=1,var.par=0,var.func=NULL,
      iid=1,step=1.0,notaylor=1,model="plackett",marginal.p=NULL,beta.iid=NULL,Dbeta.iid=NULL,
      strata=NULL,max.clust=NULL,se.clusters=NULL,numDeriv=0,
      random.design=NULL,pairs=NULL,pairs.rvs=NULL,additive.gamma.sum=NULL) 
@@ -225,6 +222,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
         else ps <- marginal.p
     }
     ## }}}
+
 
     notaylor <- 1
     if (is.null(weights)==TRUE) weights <- rep(1,antpers); 
@@ -330,7 +328,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
        }
 
        if (max(pairs)>antpers) stop("Indices of pairs should refer to given data \n"); 
-       if (is.null(pairs.rvs)) pairs.rvs <- rep(dim(random.design)[3],antpairs)
+       if (is.null(pairs.rvs)) pairs.rvs <- rep(dim(random.design)[2],antpairs)
 ###       if (max(pairs.rvs)> dim(random.design)[3] | max(pairs.rvs)>ncol(theta.des[1,,])) 
 ###	       stop("random variables for each cluster higher than  possible, pair.rvs not consistent with random.design or theta.des\n"); 
        clusterindex <- pairs-1; 
@@ -347,7 +345,10 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 
     ## }}}
 
-###  print(head(random.design)); print(theta.des); print(additive.gamma.sum)
+###  print(dim(random.design)); print(dim(theta.des)); 
+###  print(dim(additive.gamma.sum))
+###  print(head(pairs.rvs))
+###  print(antpairs)
 
     loglike <- function(par) 
         { ## {{{
@@ -388,7 +389,8 @@ binomial.twostage <- function(margbin,data=sys.parent(),
             iags=additive.gamma.sum,ibetaiid=Dbeta.iid)
              ## }}} 
 
-            if (detail==3) print(c(par,outl$loglike))
+
+      if (detail==3) print(c(par,outl$loglike))
 
          ## variance parametrization, and inverse.link 
 	 if (dep.model==3) {# {{{
@@ -560,8 +562,9 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 	}
         robvar.theta  <- (t(theta.iid) %*% theta.iid) 
 	var.theta <- robvar.theta
-	beta <- coef(margbin); 
+        if (class(margbin)[1]=="glm") beta <- coef(margbin); 
     } else { var.theta <- -1* hessi }
+
 
 ###  if (iid==1) var.theta <- robvar.theta else var.theta <- -hessi
     if (!is.null(colnames(theta.des))) thetanames <- colnames(theta.des) else thetanames <- paste("dependence",1:ptheta,sep="")
@@ -651,6 +654,7 @@ var.par <- attr(object,"var.par")
 var.link <- attr(object,"var.link")
 theta.des <- attr(object,"theta.des")
 theta <- object$theta
+if (var.link==1) theta <- exp(theta)
 beta <- object$beta
 ags <- attr(object,"ags"); 
 if (is.null(xmarg)) {xmarg <- rep(0,length(beta)); xmarg[1] <- 1;} 
@@ -665,7 +669,6 @@ nn <- nrow(rv1)
        beta <- par[(length(theta)+1):length(par)];
        xp  <- sum(xmarg*beta); 
        pm <- exp(xp)/(1+exp(xp)); 
-       print(pm)
        if (var.par==1) pp <- pp/sum(pp)^2
        p11 <- p11.binomial.twostage.RV(pp,rv1l,rv2l,pm,pm,theta.des,ags=ags,link=0)
        casewise <- p11/pm
@@ -789,20 +792,17 @@ breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weights=
 ##' twinstut$cage <- scale(twinstut$age)
 ##' theta.des <- model.matrix( ~-1+factor(zyg)+cage,data=twinstut)
 ##' bina <- binomial.twostage(margbin,data=twinstut,
-##' 		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0,
-##' 	                 score.method="fisher.scoring")
+##' 		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0)
 ##' summary(bina)
 ##' 
 ##' theta.des <- model.matrix( ~-1+factor(zyg)+factor(zyg)*cage,data=twinstut)
 ##' bina <- binomial.twostage(margbin,data=twinstut,
-##' 		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0,
-##' 	                 score.method="fisher.scoring")
+##' 		         clusters=twinstut$tvparnr,theta.des=theta.des)
 ##' summary(bina)
 ##' 
 ##' out <- easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut,
 ##'                               response="binstut",id="tvparnr",
-##' 			      theta.formula=~-1+factor(zyg1),
-##'                               score.method="fisher.scoring")
+##' 			      theta.formula=~-1+factor(zyg1))
 ##' summary(out)
 ##' 
 ##' ## refers to zygosity of first subject in eash pair : zyg1
@@ -812,7 +812,6 @@ breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weights=
 ##' 
 ##' out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
 ##'                                data=twinstut, response="binstut",id="tvparnr",
-##'                                score.method="fisher.scoring",
 ##'                                theta.formula=desfs,desnames=c("mz","dz","os"))
 ##' summary(out3)
 ##'
@@ -837,13 +836,11 @@ breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weights=
 ##'
 ##' ud <- easy.binomial.twostage(y~+1,data=binfam,
 ##'      response="y",id="id",
-##'      score.method="fisher.scoring",deshelp=0,
 ##'      theta.formula=desfs,desnames=c("pp","pc","cc"))
 ##' summary(ud)
 ##'
 ##' udx <- easy.binomial.twostage(y~+x,data=binfam,
 ##'      response="y",id="id",
-##'      score.method="fisher.scoring",
 ##'      theta.formula=desfs,desnames=c("pp","pc","cc"))
 ##' summary(udx)
 ##'
@@ -862,7 +859,6 @@ breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weights=
 ##'
 ##' udi <- easy.binomial.twostage(y~+1,data=binfam,
 ##'      response="y",id="id",
-##'      score.method="fisher.scoring",
 ##'      theta.formula=desfsi,desnames=c("pp","mother-child","father-child","cc"))
 ##' summary(udi)
 ##'
@@ -899,7 +895,6 @@ breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weights=
 ##'
 ##' udxai2 <- easy.binomial.twostage(y~+x+age,data=binfam,
 ##'      response="y",id="id",
-##'      score.method="fisher.scoring",deshelp=0,detail=0,
 ##'      theta.formula=desfsai,
 ##'      desnames=c("pp","pp-age","mother-child","father-child","cc","cc-age"))
 ##' summary(udxai2)
@@ -986,17 +981,21 @@ easy.binomial.twostage <- function(margbin=NULL,data=sys.parent(),score.method="
 	cat(paste("cluster=",id,",  subcluster (pairs)=subfam \n")); 
 	cat(paste("design variables =")); 
 	cat(desnames)
+	cat("\n  theta design (head) \n")
+        print(head(data.fam[,desnames]));
+	cat("\n  response (head) \n")
+        print(head(data.fam[,response]));
 	cat("\n")
     } 
-
 
     out <- binomial.twostage(data.fam[,response],data=data.fam,
                              clusters=data.fam$subfam,
                              theta.des=data.fam[,desnames],
                              detail=detail, score.method=score.method, Nit=Nit,step=step,
-                             iid=iid,theta=theta, var.link=var.link,model=model, 
+                             iid=iid,theta=theta,var.link=var.link,model=model, 
                              max.clust=max.clust,
-                             marginal.p=data.fam[,"ps"], se.clusters=data.fam[,id])
+                             marginal.p=data.fam[,"ps"],se.clusters=data.fam[,id])
+
     return(out)
 } ## }}}
 

@@ -160,22 +160,19 @@ summary(bin)
 twinstut$cage <- scale(twinstut$age)
 theta.des <- model.matrix( ~-1+factor(zyg)+cage,data=twinstut)
 bina <- binomial.twostage(margbin,data=twinstut,
-		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0,
-	                 score.method="fisher.scoring")
+		         clusters=twinstut$tvparnr,theta.des=theta.des)
 summary(bina)
 
 theta.des <- model.matrix( ~-1+factor(zyg)+factor(zyg)*cage,data=twinstut)
 bina <- binomial.twostage(margbin,data=twinstut,
-		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0,
-	                 score.method="fisher.scoring")
+		         clusters=twinstut$tvparnr,theta.des=theta.des)
 summary(bina)
 
 ## refers to zygosity of first subject in eash pair : zyg1
 ## could also use zyg2 (since zyg2=zyg1 within twinpair's))
 out <- easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut,
                           response="binstut",id="tvparnr",
-	             	      theta.formula=~-1+factor(zyg1),
-                          score.method="fisher.scoring")
+	             	      theta.formula=~-1+factor(zyg1))
 summary(out)
 
 ## refers to zygosity of first subject in eash pair : zyg1
@@ -185,7 +182,7 @@ desfs<-function(x,num1="zyg1",num2="zyg2")
 
 out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
       data=twinstut,response="binstut",id="tvparnr",
-      score.method="fisher.scoring",theta.formula=desfs,desnames=c("mz","dz","os"))
+      theta.formula=desfs,desnames=c("mz","dz","os"))
 summary(out3)
 
 ### use of clayton oakes binomial additive gamma model
@@ -194,7 +191,7 @@ summary(out3)
 data <- simbinClaytonOakes.family.ace(10000,2,1,beta=NULL,alpha=NULL)
 margbin <- glm(ybin~x,data=data,family=binomial())
 margbin
-
+###
 head(data)
 data$number <- c(1,2,3,4)
 data$child <- 1*(data$number==3)
@@ -205,11 +202,10 @@ out$pardes
 head(out$des.rv)
 
 bints <- binomial.twostage(margbin,data=data,
-     clusters=data$cluster,detail=0,var.par=0,
+     clusters=data$cluster,detail=0,var.par=1,
      theta=c(2,1)/9,var.link=0,
      random.design=out$des.rv,theta.des=out$pardes)
 summary(bints)
-
 
 data <- simbinClaytonOakes.twin.ace(10000,2,1,beta=NULL,alpha=NULL)
 out <- polygen.design(data,id="cluster",zygname="zygosity")
@@ -218,10 +214,14 @@ head(out$des.rv)
 margbin <- glm(ybin~x,data=data,family=binomial())
 
 bintwin <- binomial.twostage(margbin,data=data,
-     clusters=data$cluster,detail=1,var.par=0,
-     theta=c(2,1),
+     clusters=data$cluster,detail=1,var.par=1,
+     theta=c(2,1)/10,
      random.design=out$des.rv,theta.des=out$pardes)
 summary(bintwin)
+
+## MZ and DZ concordance
+concordance.twin.ace(bintwin)
+
 }
 }
 \author{

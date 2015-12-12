@@ -12,8 +12,7 @@ twostage(margsurv, data = sys.parent(), score.method = "fisher.scoring",
   strata = NULL, se.clusters = NULL, max.clust = NULL, numDeriv = 0,
   numDeriv.method = "simple", random.design = NULL, pairs = NULL,
   pairs.rvs = NULL, additive.gamma.sum = NULL, var.par = 1,
-  var.func = NULL, two.stage = 1, fix.baseline = 1, cr.models = NULL,
-  case.control = 0)
+  var.func = NULL, two.stage = 1, cr.models = NULL, case.control = 0)
 }
 \arguments{
 \item{margsurv}{Marginal model}
@@ -77,8 +76,6 @@ twostage(margsurv, data = sys.parent(), score.method = "fisher.scoring",
 \item{var.func}{when alternative parametrizations are used this function can specify how the paramters are related to the \eqn{\lambda_j}'s.}
 
 \item{two.stage}{to fit two-stage model, if 0 then will fit hazard model with additive gamma structure (WIP)}
-
-\item{fix.baseline}{has default 1 to fix baseline given in marginal.survival, fix.baseline=0 uses addtive aalen model where these models are specified in cr.models, fix.baseline=2 fits weibull model.}
 
 \item{cr.models}{competing risks models for two.stage=0, should be given as a list with models for each cause}
 
@@ -298,7 +295,7 @@ tscce <- twostage(NULL,data=datacc,clusters=datacc$cluster,
 	       pairs=pairs,
 	       random.design=dout$random.design,theta.des=dout$theta.des,
 	       pairs.rvs=dout$ant.rvs,
-	       fix.baseline=0,case.control=1, marginal.status=datacc$status,
+	       case.control=1, marginal.status=datacc$status,
 	       cr.models=cr.models)
 summary(tscce)
 

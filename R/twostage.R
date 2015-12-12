@@ -227,7 +227,7 @@
 ##'	       pairs=pairs,
 ##'	       random.design=dout$random.design,theta.des=dout$theta.des,
 ##'	       pairs.rvs=dout$ant.rvs,
-##'	       fix.baseline=0,case.control=1, marginal.status=datacc$status,
+##'	       case.control=1, marginal.status=datacc$status,
 ##'	       cr.models=cr.models)
 ##' summary(tscce)
 ##' 
@@ -267,7 +267,6 @@
 ##' @param var.par  is 1 for the default parametrization with the variances of the random effects, var.par=0 specifies that the \eqn{\lambda_j}'s are used as parameters. 
 ##' @param var.func when alternative parametrizations are used this function can specify how the paramters are related to the \eqn{\lambda_j}'s.
 ##' @param two.stage to fit two-stage model, if 0 then will fit hazard model with additive gamma structure (WIP)
-##' @param fix.baseline has default 1 to fix baseline given in marginal.survival, fix.baseline=0 uses addtive aalen model where these models are specified in cr.models, fix.baseline=2 fits weibull model. 
 ##' @param cr.models competing risks models for two.stage=0, should be given as a list with models for each cause
 ##' @param case.control assumes case control structure for "pairs" with second column being the probands, when this options is used the twostage model is profiled out via the paired estimating equations for the survival model. 
 twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
@@ -277,7 +276,7 @@ var.link=1,iid=1, step=0.5,notaylor=0,model="clayton.oakes",
   se.clusters=NULL,max.clust=NULL,numDeriv=0,numDeriv.method="simple",
   random.design=NULL,pairs=NULL,pairs.rvs=NULL,
   additive.gamma.sum=NULL,var.par=1,var.func=NULL,
-  two.stage=1,fix.baseline=1,cr.models=NULL,case.control=0)
+  two.stage=1,cr.models=NULL,case.control=0)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -286,6 +285,8 @@ else if (model=="plackett") dep.model <- 2
 else stop("Model must by either clayton.oakes or plackett \n"); 
 start.time <- NULL
 ptrunc <- NULL; psurvmarg <- NULL; status <- NULL
+fix.baseline <- 0
+if ((!is.null(margsurv)) | (!is.null(marginal.survival))) fix.baseline <- 1
 
 if (!is.null(margsurv)) {
 if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
@@ -716,8 +717,8 @@ if (!is.null(margsurv))  {
       irvdes=random.design,iags=additive.gamma.sum) ## }}}
       }
       else { ## pair-structure 
-	     ## twostage model,  case.control option, profile out baseline 
-	     ## conditional model ,  profile out baseline 
+	     ## twostage model,    case.control option,   profile out baseline 
+	     ## conditional model, case.control option,   profile out baseline 
       if (two.stage==1) { ## {{{ two-stage model 
 
           if (case.control==1) { ## {{{  profiles out baseline under case-control sampling
@@ -866,6 +867,8 @@ if (!is.null(margsurv))  {
 
 	 } ## }}}  
 
+	 if (fix.baseline==1) 
+	 if (is.null(psurvmarg)) stop("must provide baselines or set fix.baseline=0\n"); 
 ###	   print(summary(psurvmarg)); print(summary(ptrunc))
 ###	   print(summary(psurvmarg[pairs,])); print(summary(ptrunc[pairs,]))
 
@@ -941,7 +944,7 @@ if (!is.null(margsurv))  {
             for (i in 1:Nit)
             {
                     out <- loglike(p)
-		    if (!(numDeriv==2 || (((fix.baseline==0)) & (i==1)))) hess <-  out$Dscore
+		    if (fix.baseline==1) hess <-  out$Dscore
                     ###  uses simple second derivative for computing derivative of score
 		    if (numDeriv==2 || (((fix.baseline==0)) & (i==1))) {
                     oout <- 3

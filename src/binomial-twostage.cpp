@@ -804,7 +804,7 @@ for (j=0;j<antclust;j++) {
 	mat thetadesvv=thetadesi.slice(j); 
 	mat thetadesv=thetadesvv.rows(0,lnrv); 
 
-	if (j< 0)  {
+	if (j< -10)  {
 	   Rprintf(" %d %d \n",lnrv,pt); 
            rv1.print("rv1");    rv2.print("rv2"); 
 	   thetadesv.print("thetades "); 
@@ -819,7 +819,8 @@ for (j=0;j<antclust;j++) {
 	loglikecont=log(ll);
 	if (j<-10)  Rprintf("%lf %d \n",loglikecont,i); 
 
-//	   if (varlink==1) dplackt=dplackt % etheta;  vthetascore=dplackt/ll; 
+//	   if (varlink==1) dplackt=dplackt % etheta;  
+	   vthetascore=dplackt/ll; 
 
 //	   ll=claytonoakesP(deppar,ci,ck,Li,Lk,dplack);
 //	   ssf+=weights(i)*log(ll); 
@@ -840,12 +841,8 @@ for (j=0;j<antclust;j++) {
 	} // }}}
 
 
-
-//   printf(" hej \n"); 
-
-     for (c1=0;c1<pt;c1++) 
      if (depmodel!=3) {
-	     for (v1=0;v1<pt;v1++) DUtheta(c1,v1)+=weights(i)*pow(diff,2)*vthetascore(c1)*vthetascore(v1);
+	     DUtheta+=weights(i)*pow(diff,2)*vthetascore*trans(vthetascore);
 	     vthetascore=weights(i)*diff*vthetascore; 
 	     Utheta=Utheta+vthetascore; 
      } else  { // additive gamma structure 
