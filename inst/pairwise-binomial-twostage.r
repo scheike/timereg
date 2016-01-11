@@ -21,11 +21,11 @@ head(out$des.rv)
 
 ### fitting ace model for family structure
 ts <- binomial.twostage(margbin,data=data,clusters=data$cluster,
-theta=log(c(2,1)/9),
+theta=log(c(2,1)),
 random.design=out$des.rv,theta.des=out$pardes)
 summary(ts)
-## true variance
-c(2,1)/9
+## true variance parameters
+log(c(2,1))
 
 ### now specify fitting via specific pairs 
 ### first all pairs 

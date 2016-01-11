@@ -11,7 +11,7 @@ based on all pairwise bivariate models.}
 binomial.twostage(margbin, data = sys.parent(),
   score.method = "fisher.scoring", Nit = 60, detail = 0,
   clusters = NULL, silent = 1, weights = NULL, control = list(),
-  theta = NULL, theta.des = NULL, var.link = 1, var.par = 1,
+  theta = NULL, theta.des = NULL, var.link = 1, var.par = 0,
   var.func = NULL, iid = 1, step = 1, notaylor = 1,
   model = "plackett", marginal.p = NULL, beta.iid = NULL,
   Dbeta.iid = NULL, strata = NULL, max.clust = NULL, se.clusters = NULL,
@@ -191,7 +191,7 @@ summary(out3)
 data <- simbinClaytonOakes.family.ace(10000,2,1,beta=NULL,alpha=NULL)
 margbin <- glm(ybin~x,data=data,family=binomial())
 margbin
-###
+
 head(data)
 data$number <- c(1,2,3,4)
 data$child <- 1*(data$number==3)
@@ -202,7 +202,7 @@ out$pardes
 head(out$des.rv)
 
 bints <- binomial.twostage(margbin,data=data,
-     clusters=data$cluster,detail=0,var.par=1,
+     clusters=data$cluster,detail=0,var.par=0,
      theta=c(2,1)/9,var.link=0,
      random.design=out$des.rv,theta.des=out$pardes)
 summary(bints)
@@ -214,14 +214,11 @@ head(out$des.rv)
 margbin <- glm(ybin~x,data=data,family=binomial())
 
 bintwin <- binomial.twostage(margbin,data=data,
-     clusters=data$cluster,detail=1,var.par=1,
-     theta=c(2,1)/10,
+     clusters=data$cluster,detail=1,var.par=0,
+     theta=c(2,1),
      random.design=out$des.rv,theta.des=out$pardes)
 summary(bintwin)
-
-## MZ and DZ concordance
 concordance.twin.ace(bintwin)
-
 }
 }
 \author{

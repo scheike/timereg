@@ -180,13 +180,14 @@
 ##' @param random.design random effect design for additive gamma model, when pairs are given this is a (pairs) x (2) x (max number random effects) matrix, see pairs.rvs below
 ##' @param pairs matrix with rows of indeces (two-columns) for the pairs considered in the pairwise composite score, useful for case-control sampling when marginal is known.
 ##' @param pairs.rvs for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair. 
-##' @param additive.gamma.sum for two.stage=0, this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters.
+##' @param additive.gamma.sum this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters. Default is a matrix of 1's 
+##' @param pair.ascertained if pairs are sampled only when there are events in the pair i.e. Y1+Y2>=1. 
 binomial.twostage <- function(margbin,data=sys.parent(),
      score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
      control=list(),theta=NULL,theta.des=NULL,var.link=1,var.par=0,var.func=NULL,
      iid=1,step=1.0,notaylor=1,model="plackett",marginal.p=NULL,beta.iid=NULL,Dbeta.iid=NULL,
      strata=NULL,max.clust=NULL,se.clusters=NULL,numDeriv=0,
-     random.design=NULL,pairs=NULL,pairs.rvs=NULL,additive.gamma.sum=NULL) 
+     random.design=NULL,pairs=NULL,pairs.rvs=NULL,additive.gamma.sum=NULL,pair.ascertained=0) 
 { ## {{{
     ## {{{ seting up design and variables
     rate.sim <- 1; sym=1; 
@@ -376,7 +377,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
             icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
             ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
             itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid, 
-            irvdes=random.design,iags=additive.gamma.sum,ibetaiid=Dbeta.iid)
+            irvdes=random.design,iags=additive.gamma.sum,ibetaiid=Dbeta.iid,pa=pair.ascertained)
             ## }}}
       else outl<-.Call("twostageloglikebinpairs", ## {{{
             icause=cause,ipmargsurv=ps, 
@@ -386,7 +387,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
             itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid, 
             irvdes=random.design,
             idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs,
-            iags=additive.gamma.sum,ibetaiid=Dbeta.iid)
+            iags=additive.gamma.sum,ibetaiid=Dbeta.iid,pa=pair.ascertained)
              ## }}} 
 
 
@@ -408,7 +409,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 		    mm <- mm/sp^4
 		 } else mm  <- numDeriv::hessian(var.func,par)
 	      } else {
-		   if (var.link==0) mm <- diag(length(par)) else mm <- diag(epar)
+	          if (var.link==0) mm <- diag(length(epar)) else mm <- diag(c(epar))
 	      }
 	      }# }}}
 

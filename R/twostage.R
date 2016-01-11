@@ -283,10 +283,10 @@ rate.sim <- 1; sym=1;
 if (model=="clayton.oakes") dep.model <- 1
 else if (model=="plackett") dep.model <- 2
 else stop("Model must by either clayton.oakes or plackett \n"); 
-start.time <- NULL
-ptrunc <- NULL; psurvmarg <- NULL; status <- NULL
+start.time <- NULL; ptrunc <- NULL; psurvmarg <- NULL; status <- NULL
 fix.baseline <- 0
 if ((!is.null(margsurv)) | (!is.null(marginal.survival))) fix.baseline <- 1
+print(fix.baseline); 
 
 if (!is.null(margsurv)) {
 if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
@@ -512,7 +512,6 @@ if (!is.null(margsurv))  {
        clusterindex <- pairs-1; 
   } ## }}} 
 
-
   if (pair.structure==1 & dep.model!=3) {
        clusterindex <- pairs-1; 
        antpairs <- nrow(pairs); 
@@ -530,7 +529,8 @@ if (!is.null(margsurv))  {
 ## {{{ setting up random effects and covaraites for marginal modelling
         timestatus <- all.vars(cr.models[[1]])
 	times <- data[,timestatus[1]]
-	status <- lstatus <- data[,timestatus[2]]
+	if (is.null(status)) status <- data[,timestatus[2]]
+	lstatus <- data[,timestatus[2]]
 	### organize increments according to overall jump-times 
 	jumps <- lstatus!=0
 	dtimes <- times[jumps]
@@ -603,55 +603,53 @@ if (!is.null(margsurv))  {
 
 ## {{{ setting up designs for jump times 
         timestatus <- all.vars(cr.models[[1]])
-	 if (is.null(status)) status <- data[,timestatus[2]]
-	alltimes <- data[,timestatus[1]]
-	times <- data1[,timestatus[1]]
-	lstatus <- data1[,timestatus[2]]
-	timescase <- data.proband[,timestatus[1]]
-	lstatuscase <- data.proband[,timestatus[2]]
+        if (is.null(status)) status <- data[,timestatus[2]]
+	alltimes      <- data[,timestatus[1]]
+	times         <- data1[,timestatus[1]]
+	lstatus       <- data1[,timestatus[2]]
+	timescase     <- data.proband[,timestatus[1]]
+	lstatuscase   <- data.proband[,timestatus[2]]
 	### organize increments according to overall jump-times 
-	jumps <- lstatus!=0
-	dtimes <- times[jumps]
-	dtimescase <- timescase[jumps]
-	st <- order(dtimes)
-	dtimesst <- dtimes[st]
-	dtimesstcase <- dtimescase[st]
-	dcauses <- lstatus[jumps][st]
-	dcausescase <- lstatuscase[jumps][st]
-	ids <- (1:nrow(data1))[jumps][st]
+	jumps         <- lstatus!=0
+	dtimes        <- times[jumps]
+	dtimescase    <- timescase[jumps]
+	st            <- order(dtimes)
+	dtimesst      <- dtimes[st]
+	dtimesstcase  <- dtimescase[st]
+	dcauses       <- lstatus[jumps][st]
+	dcausescase   <- lstatuscase[jumps][st]
+	ids           <- (1:nrow(data1))[jumps][st]
 	###
-
 ###      cr.models=list(Surv(time,status==1)~+1,Surv(time,status==2)~+x ) 
         nc <- 0
 	for (i in 1:length(cr.models)) {
-              X <- aalen.des(as.formula(cr.models[[i]]),data=data)$X
+              X <- aalen.des(as.formula(cr.models[[i]]),data=data1)$X
 	      nc <- nc+ncol(X)
 	}
-	dBaalen <- matrix(0,length(dtimes),nc)
-	xjump <- array(0,c(length(cr.models),nc,length(ids)))
-	xjumpcase <- array(0,c(length(cr.models),nc,length(ids)))
+	dBaalen    <- matrix(0,length(dtimes),nc)
+	xjump      <- array(0,c(length(cr.models),nc,length(ids)))
+	xjumpcase  <- array(0,c(length(cr.models),nc,length(ids)))
 
 	## first compute marginal aalen models for all causes
 ###	par(mfrow=c(2,2))
 ###	plot(a[[i]])
 	a <- list(); da <- list(); 
 	for (i in 1:length(cr.models)) { ## {{{ 
-	      a[[i]] <-  aalen(as.formula(cr.models[[i]]),data=data1,robust=0)
+	      a[[i]]  <-  aalen(as.formula(cr.models[[i]]),data=data1,robust=0)
 	      da[[i]] <- apply(a[[i]]$cum[,-1,drop=FALSE],2,diff)
-	      jumpsi <- (1:length(dtimes))[dcauses==i]
-              X <- aalen.des(as.formula(cr.models[[i]]),data=data1)$X
-              Xcase <- aalen.des(as.formula(cr.models[[i]]),data=data.proband)$X
+	      jumpsi  <- (1:length(dtimes))[dcauses==i]
+              X       <- aalen.des(as.formula(cr.models[[i]]),data=data1)$X
+              Xcase   <- aalen.des(as.formula(cr.models[[i]]),data=data.proband)$X
 	      if (i==1) fp <- 1 
-	      indexc <- fp:(fp+ncol(X)-1)
+	      indexc  <- fp:(fp+ncol(X)-1)
 	      dBaalen[jumpsi,indexc] <- da[[i]]
-###	      print(dim(xjump[i,indexc,]))
-###	      print(dim(t(X[ids,])))
-              xjump[i,indexc,] <- t(X[ids,])
-              xjumpcase[i,indexc,] <- t(Xcase[ids,])
+              xjump[i,indexc,]       <- t(X[ids,])
+              xjumpcase[i,indexc,]   <- t(Xcase[ids,])
 ###	      dBaalen[jumpsi,indexc] <- da[[i]]
 ###	      covsx <- all.vars(cr.models[[i]])[-(1:2)]
-###              X <- cbind(1,data[,covsx])
-	      fp <- ncol(X)+1
+###	      print(dim(xjump[i,indexc,]))
+###	      print(dim(t(X[ids,])))
+	      fp <- fp+ncol(X)
 	 } ## }}} 
 
 ###	print(xjump)
@@ -661,11 +659,12 @@ if (!is.null(margsurv))  {
       Bit <- Bitcase <- c()
       for (j in 1:length(cr.models)) {
 	      ## initial values 
-	      Bit <- cbind(Bit,Cpred(a[[j]]$cum,dtimesst)[,-1,drop=FALSE])
-	      ###plot(dtimesst,Bit)
-	      Bitcase  <- cbind(Bitcase,Cpred(a[[j]]$cum,dtimesstcase)[,-1,drop=FALSE])
+###	      a <-  aalen(as.formula(cr.models[[i]]),data=subset(data1,lstatuscase==0),robust=0)
+	      a <-  aalen(as.formula(cr.models[[i]]),data=data1,robust=0)
+	      Bit <- cbind(Bit,Cpred(a$cum,dtimesst)[,-1,drop=FALSE])
+###	      Bitcase  <- cbind(Bitcase,Cpred(a$cum,dtimesstcase)[,-1,drop=FALSE])
        }		  
-       Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
+###       Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
 
 	## }}} 
 
@@ -725,19 +724,28 @@ if (!is.null(margsurv))  {
 
 ###	      ## initial values , only one cr.model for survival 
 ###           Bit <- cbind(Cpred(a[[1]]$cum,dtimesst)[,-1])
-           plot(dtimesst,Bit,type="l")
-###           Bitcase  <- cbind(Cpred(a[[1]]$cum,dtimesstcase)[,-1])
+             if (detail>1) plot(dtimesst,Bit,type="l",main="Bit")
+
+             Bitcase  <- Cpred(cbind(dtimesst,Bit),dtimesstcase)[,-1,drop=FALSE]
+	     print(summary(Bitcase))
+             Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
+###	     print(partheta); 
 
              for (j in 1:5) { ## {{{ profile via iteration 
-		     cncc <- .Call("BhatAddGamCC",1,dBaalen,dcauses,dim(xjump),xjump,
-				   c(partheta), dim(mtheta.des),mtheta.des, additive.gamma.sum,var.link, 
-				   dim(mrv.des),mrv.des,nrv.des,1,Bit,Bitcase,dcausescase)
+                   cncc <- .Call("BhatAddGamCC",1,dBaalen,dcauses,dim(xjump),xjump,
+		                 c(partheta),dim(mtheta.des),mtheta.des,additive.gamma.sum,var.link, 
+				 dim(mrv.des),mrv.des,nrv.des,1,Bit,Bitcase,dcausescase)
 		   d <- max(abs(Bit-cncc$B))
+		   if (detail>1) print(d)
 		   Bit <- cncc$B
+###		   if (detail>1) print(c(par,epar,partheta)); 
+###		   if (detail>1) print(summary(Bit)); 
+		   if (detail>1) print(summary(cncc$caseweights))
 		   cum1 <- cbind(dtimesst,cncc$B)
 		   Bitcase  <-cbind(Cpred(cum1,dtimesstcase)[,-1])
+###		   if (detail>1) print(summary(Bitcase))
 		   Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
-		   lines(dtimesst,Bit,col=j); 
+		   if (detail>1) lines(dtimesst,Bit,col=j+1); 
 		   if (is.na(d)) stop("Baseline profiler gives missing values\n"); 
 		   if (d<0.000001) break; 
            } ## }}} 
@@ -773,7 +781,7 @@ if (!is.null(margsurv))  {
 	 if (is.null(cr.models)) stop("need cr.models to read time and status")
 ###	 print(timestatus)
 ###	 print(names(data)); print(dim(pairs)); print(length(entry.cause)); print(dim(data)); 
-	 entry.cause[pairs[,2]] <- data[pairs[,2],timestatus[2]]
+	 entry.cause[pairs[,2]] <-  data[pairs[,2],timestatus[2]]
 	 proband.time[pairs[,2]] <- data[pairs[,2],timestatus[1]]
 	 }
 
@@ -781,13 +789,7 @@ if (!is.null(margsurv))  {
 	 if (fix.baseline==0)  { ## {{{ 
           if (case.control==1) { ## {{{  profiles out baseline under case-control sampling
 
-      	      Bit <- Bitcase <- c()
-	      for (j in 1:length(cr.models)) {
-		      ## initial values 
-		      Bit <- cbind(Bit,Cpred(a[[j]]$cum,dtimesst)[,-1,drop=FALSE])
-		      ###plot(dtimesst,Bit)
-		      Bitcase  <- cbind(Bitcase,Cpred(a[[j]]$cum,dtimesstcase)[,-1,drop=FALSE])
-              }		  
+              Bitcase  <- Cpred(cbind(dtimesst,Bit),dtimesstcase)[,-1,drop=FALSE]
               Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
 
 ###	      matplot(dtimesst,Bit,type="l",ylim=c(0,0.5),col=1)
@@ -908,7 +910,7 @@ if (!is.null(margsurv))  {
 	    mm <- mm/sp^4
 	 } else mm  <- numDeriv::hessian(var.func,par)
       } else {
-	   if (var.link==0) mm <- diag(length(par)) else mm <- diag(epar)
+	   if (var.link==0) mm <- diag(length(epar)) else mm <- diag(c(epar))
       }
       }# }}}
 
@@ -944,14 +946,15 @@ if (!is.null(margsurv))  {
             for (i in 1:Nit)
             {
                     out <- loglike(p)
+		    ## updating starting values for cumulative baselines
+		    if (fix.baseline==0) Bit <- out$baseline[,-1,drop=FALSE]
 		    if (fix.baseline==1) hess <-  out$Dscore
                     ###  uses simple second derivative for computing derivative of score
 		    if (numDeriv==2 || (((fix.baseline==0)) & (i==1))) {
-                    oout <- 3
-                    hess <- numDeriv::jacobian(loglike,p,method="simple")
-		    oout <- 2
+			    oout <- 3
+			    hess <- numDeriv::jacobian(loglike,p,method="simple")
+			    oout <- 2
 		    }
-            
                     if (!is.na(sum(hess))) hessi <- lava::Inverse(hess) else hessi <- hess 
                     if (detail==1) {## {{{
                         cat(paste("Fisher-Scoring ===================: it=",i,"\n")); 
@@ -969,8 +972,8 @@ if (!is.null(margsurv))  {
 		    }
                     if (is.nan(sum(out$score))) break; 
                     if (sum(abs(out$score))<0.00001) break; 
-                    if (max(abs(theta))>20 & var.link==0) { cat("theta too large lacking convergence \n"); break; }
-                }
+                    if (max(theta)>20 & var.link==1) { cat("theta too large lacking convergence \n"); break; }
+           }
         if (!is.nan(sum(p))) { 
             if (detail==1 && iid==1) cat("iid decomposition\n"); 
             out <- loglike(p) 
@@ -1115,7 +1118,9 @@ if (!is.null(margsurv))  {
   if (dep.model==3 ) attr(ud,"additive.gamma.sum") <- additive.gamma.sum
 #likepairs=likepairs,##  if (dep.model==3 & pair.structure==1) attr(ud, "likepairs") <- c(out$likepairs)
   if (dep.model==3 & pair.structure==0) attr(ud, "pardes") <- theta.des
+  if (dep.model==3 & pair.structure==0) attr(ud, "theta.des") <- theta.des
   if (dep.model==3 & pair.structure==1) attr(ud, "pardes") <- theta.des[,,1]
+  if (dep.model==3 & pair.structure==1) attr(ud, "theta.des") <- theta.des[,,1]
   if (dep.model==3 & pair.structure==0) attr(ud, "rv1") <- random.design[1,]
   if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <- random.design[1,,1]
   attr(ud, "response") <- "survival"

@@ -189,11 +189,15 @@ return(dL);
 vec Dlapsf(double y, double x, double z)
 { 
 vec dL(3); 
-double zxiy=pow(z+x,y),xiy=pow(x,y),zxi2y=pow((z + x),(2*y)),ydxz=y/(x+z);
+double zxiy=pow(z+x,y),xiy=pow(x,y),zxi2y=pow((z + x),(2*y));
+double ydxz=y/(x+z);
+//printf("%lf %lf %lf %lf %lf \n",y,x,z,ydxz,zxi2y); 
 double p2=xiy*zxiy; 
+//if (zxi2y>0.000000000001) {
 dL(0) =p2*(log(x) - log(x+z))/zxi2y; 
 dL(1) =p2*((y/x) - ydxz)/zxi2y; 
 dL(2) =p2*(-ydxz)/zxi2y; 
+//}
 return(dL);
 } 
 
@@ -1140,13 +1144,11 @@ return(ressl);
   }
   return R_NilValue; // -Wall
 
-
-
 } // }}}
 
 
 double claytonoakesRVC(vec theta,mat thetades,mat ags,
-		       int status1,int status2,double cif1,double cif2,vec x1, vec x2, vec &dp,vec  &ccw) 
+		       int status1,int status2,double cif1,double cif2,vec x1, vec x2, vec &dp,vec &ccw) 
 { // {{{
   double valr=1;
   //double cifs=cif1+cif2; 
@@ -1190,9 +1192,14 @@ for (i=0;i<nn;i++)
 {
 iisum = x1(i)*ii1+x2(i)*ii2;
 resv(i) = lapsf(par(i),lamtot1,iisum);
+//printf("%lf %lf %lf %lf \n",par(i),lamtot1,iisum,resv(i)); 
 iresv(i) = iisum;
 like=like*resv(i); 
+//printf("===%d  %lf %lf %lf %lf %lf \n",i,x1(i),ii1,x2(i),ii2,like); 
 }
+
+//resv.print("resv"); 
+//iresv.print("iresv"); 
 
 vec D1(nn),D2(nn),D3(nn); 
 vec D13(nn),D23(nn),D33(nn),D133(nn),D233(nn),D333(nn);
@@ -1201,9 +1208,13 @@ vec res(6),res0(6);
 for (i=0;i<nn;i++) 
 { // {{{ 
 iisum   = x1(i)*ii1+x2(i)*ii2;
-lamtot1=sum(trans(ags.row(i)) % theta); 
+lamtot1= sum( trans(ags.row(i)) % theta); 
 res     = D2lapsf(par(i),lamtot1,iisum);
 res0    = Dlapsf( par(i),lamtot1,iisum);
+//printf(" %lf %lf %lf %lf \n",x1(i),ii1,x2(i),ii2); 
+//printf(" %d %lf %lf %lf \n",i,par(i),lamtot1,iisum); 
+//res.print("res"); 
+//res0.print("res0"); 
   D1(i)   = res0(0);
   D2(i)   = res0(1);
   D3(i)   = res0(2);
@@ -1214,6 +1225,9 @@ D133(i) =  res(3);
 D233(i) =  res(4);
 D333(i) =  res(5);
 } // }}} 
+
+//D3.print("D3"); 
+
 
 // {{{  derivatives for ilap 
 vec restd = D2ilapsf(lamtot1,lamtot1,f1);
@@ -1237,6 +1251,14 @@ double Di23s  =  ressd(1);
 //double Di33s  =  ressd(2);
 //double Di133s =  ressd(3);
 //double Di233s =  ressd(4);
+//
+//printf(" %lf %lf \n",lamtot1,f1,f2); 
+//restd.print("td D2ilapsf"); 
+//rest.print("rest D2ilapsf"); 
+//
+//ressd.print("sd D2ilapsf"); 
+//ress.print("ress D2ilapsf"); 
+
 // }}}
 
 // }}} 
@@ -1260,10 +1282,8 @@ vec dthetaj(lpar);
 //,dtj(lpar),dsj(lpar);
 double dtj,dsj;
 
-vec dtheta(lpar),dtt(lpar),
-    dts(lpar),
+vec dtheta(lpar),dtt(lpar), dts(lpar), dtdtds(lpar); 
 //    dt(lpar), ds(lpar),dsdt(lpar),
-    dtdtds(lpar); 
 double dt=0,ds=0,dsdt=0;
 
 
@@ -1295,6 +1315,7 @@ dt  = dt+dtj/resv(i);
 dsj = D3(i)*x2(i)*Di3s;
 ds  = ds+dsj/resv(i);
 
+
 // {{{  2nd deriv 
 dsdtj    = D33(i)*x2(i)*x1(i)*Di3t*Di3s;
 numdsdtj = (dsdtj*resv(i)-dsj*dtj);
@@ -1311,7 +1332,7 @@ dthetadsj = Di3s*dthetad3+D3(i)*dilapthetad3s;
 dts = dts+(dthetadsj*resv(i)-dthetaj*dsj)/pow(resv(i),2);
 // }}} 
 
-// {{{ 3rd deriv 
+if (status1==1 && status2==1) { // {{{ 3rd deriv 
 dthetad33 = (mdesi*D133(i)+ msum*D233(i)+ D333(i)*indtheta0);
 dilapthetad3s = x2(i)*msum*(Di13s+Di23s);
 dilapthetad3t = x1(i)*msum*(Di13t+Di23t);
@@ -1320,9 +1341,10 @@ led3 = pow(resv(i),2)*( dthetaj*dsdtj+resv(i)*dthetadtdsj- dthetadtj*dsj-dtj*dth
 led2 = numdsdtj*2*dthetaj*resv(i);
 
 dtdtds = dtdtds+(led3-led2)/pow(resv[i],4); 
+} // }}} 
 
-// }}} 
 }
+
 
 vec dttheta(lpar),dstheta(lpar),d3(lpar); 
 dttheta = dtheta*dt*like + like*dtt;
@@ -1336,7 +1358,6 @@ dt = like*dt;
 ds = like*ds;
 
 // }}} 
-
 
 if (status1==0 && status2==0) { // {{{
 	valr=like; dp=dtheta;
@@ -1434,7 +1455,7 @@ return(ressl);
 } // }}}
 
 // for binary case, additive gamma from twostage survival
-double claytonoakesbinRVC(vec theta,mat thetades,mat ags,int status1,int status2,double cif1,double cif2,vec x1, vec x2, vec &dp,vec &DbetaDtheta) 
+double claytonoakesbinRVC(vec theta,mat thetades,mat ags,int status1,int status2,double cif1,double cif2,vec x1, vec x2, vec &dp,vec &DbetaDtheta,vec &ps,vec &dp00) 
 { // {{{
 	double f1,f2,valr=1;
 	colvec dL=theta; dL.fill(0); 
@@ -1595,6 +1616,9 @@ double claytonoakesbinRVC(vec theta,mat thetades,mat ags,int status1,int status2
 	DbetaDtheta.subvec(0,lpar-1)=dttheta; 
 	DbetaDtheta.subvec(lpar,2*lpar-1)=dstheta; 
 
+	ps(0)=p00; ps(1)=p10; ps(2)=p01; ps(3)=p11; 
+	dp00=dtheta; 
+
 	if (status1==0 && status2==0) { // {{{
 		valr=p00; dp=dtheta;
 	} // }}}
@@ -1649,28 +1673,30 @@ RcppExport SEXP claytonoakesbinRV(SEXP itheta,SEXP istatus1,SEXP istatus2,SEXP i
 	//int nn=thetades.n_rows; 
 	int lpar=thetades.n_cols; 
 	vec dp(lpar); dp.fill(0); 
+	vec dp00(lpar); dp00.fill(0); 
+	vec ps(4); dp.fill(0); 
 	vec DbetaDtheta(2*lpar); 
 
 	if (status1==0 && status2==0) { // {{{
-		double like=claytonoakesbinRVC(theta,thetades,ags,0,0,f1,f2,x1,x2,dp,DbetaDtheta) ;
+		double like=claytonoakesbinRVC(theta,thetades,ags,0,0,f1,f2,x1,x2,dp,DbetaDtheta,ps,dp00) ;
 		ressl["like"]=like; 
 		if (varlink==1) dp=dp % theta;  
 		ressl["dlike"]=dp;
 	} // }}}
 	if (status1==0 && status2==1) { // {{{
-		double like=claytonoakesbinRVC(theta,thetades,ags,0,1,f1,f2,x1,x2,dp,DbetaDtheta) ;
+		double like=claytonoakesbinRVC(theta,thetades,ags,0,1,f1,f2,x1,x2,dp,DbetaDtheta,ps,dp00) ;
 		ressl["like"]=like; 
 		if (varlink==1) dp=dp % theta;  
 		ressl["dlike"]=dp;
 	} // }}}
 	if (status1==1 && status2==0) { // {{{
-		double like=claytonoakesbinRVC(theta,thetades,ags,1,0,f1,f2,x1,x2,dp,DbetaDtheta) ;
+		double like=claytonoakesbinRVC(theta,thetades,ags,1,0,f1,f2,x1,x2,dp,DbetaDtheta,ps,dp00) ;
 		ressl["like"]=like; 
 		if (varlink==1) dp=dp % theta;  
 		ressl["dlike"]=dp;
 	} // }}}
 	if (status1==1 && status2==1) { // {{{
-		double like=claytonoakesbinRVC(theta,thetades,ags,1,1,f1,f2,x1,x2,dp,DbetaDtheta) ;
+		double like=claytonoakesbinRVC(theta,thetades,ags,1,1,f1,f2,x1,x2,dp,DbetaDtheta,ps,dp00) ;
 		ressl["like"]=like; 
 		if (varlink==1) dp=dp % theta;  
 		ressl["dlike"]=dp;
@@ -2092,7 +2118,7 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 
   if (depmodel==1){ if (varlink==1) deppar=1/exp(thetak); else deppar=1/thetak;}
   if (depmodel==2){ if (varlink==1) deppar=exp(thetak); else deppar=thetak; }
-  if (depmodel==3){ if (varlink==1) etheta=exp(theta); else etheta=theta; }
+//  if (depmodel==3){ if (varlink==1) etheta=exp(theta); else etheta=theta; }
 
 	if (depmodel==1) { // clayton-oakes  // {{{
 
@@ -2133,10 +2159,10 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 		   ssf+=weights(i)*(log(ll)-log(llt));
 		   loglikecont=(log(ll)-log(llt));
 
-	           if (varlink==1) { 
-			   dplackt=dplackt % etheta;  
-			   dplack=dplack % etheta;  
-		   }
+//	           if (varlink==1) { 
+//			   dplackt=dplackt % etheta;  
+//			   dplack=dplack % etheta;  
+//		   }
 	           vthetascore=dplack/ll-dplackt/llt; 
 		   // }}}
 	   } else {
@@ -2145,7 +2171,7 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 //	dplackt.print("dp"); 
           	   ssf+=weights(i)*log(ll); 
 		   loglikecont=log(ll);
-	           if (varlink==1) dplackt=dplackt % etheta;  
+//	           if (varlink==1) dplackt=dplackt % etheta;  
 	           vthetascore=dplackt/ll; 
 	   } 
 //	   if (varlink==0) diff=-1*pow(deppar,2)*diff; 

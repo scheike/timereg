@@ -1,7 +1,7 @@
 
 library(mets)
 ###
-set.seed(100)
+set.seed(1000)
 data <- simClaytonOakes.family.ace(8000,2,1,0,3)
 head(data)
 data$number <- c(1,2,3,4)
@@ -17,11 +17,44 @@ aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
 
 ### simple random effects call 
 ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=0,
-        theta=c(0.2,.1),var.link=0,step=1.0,
+	detail=0,var.par=0,var.link=0,
+        theta=c(2,1),
         random.design=out$des.rv,theta.des=out$pardes)
-
 summary(ts0)
+
+checkderiv=1
+if (checkderiv==1) {# {{{
+ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	detail=1,numDeriv=1,Nit=0,var.par=1,
+        theta=log(c(2,1)/9),var.link=1,step=1.0,
+        random.design=out$des.rv,theta.des=out$pardes)
+ts0$score
+ts0$score1
+
+ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	detail=1,numDeriv=1,Nit=0,var.par=1,
+        theta=c(2,1)/9,var.link=0,step=1.0,
+        random.design=out$des.rv,theta.des=out$pardes)
+ts0$score
+ts0$score1
+
+
+ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	detail=1,numDeriv=1,Nit=0,var.par=0,
+        theta=log(c(2,1)),var.link=1,step=1.0,
+        random.design=out$des.rv,theta.des=out$pardes)
+ts0$score
+ts0$score1
+
+ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	detail=1,numDeriv=1,Nit=0,var.par=0,
+        theta=c(2,1),var.link=0,step=1.0,
+        random.design=out$des.rv,theta.des=out$pardes)
+ts0$score
+ts0$score1
+
+}# }}}
+
 
 ### now specify fitting via specific pairs 
 
@@ -33,7 +66,7 @@ tail(pairs,n=12)
 ## make all pairs and pair specific design and pardes 
 ## same as ts0 but pairs specified 
 ts <- twostage(aa,data=data,clusters=data$cluster,
-               theta=c(2,1)/10,var.link=0,step=1.0,
+               theta=c(2,1)/9,var.link=0,step=1.0,
                random.design=out$des.rv,
                theta.des=out$pardes,pairs=pairs)
 summary(ts)
