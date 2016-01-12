@@ -300,8 +300,8 @@ RcppExport SEXP twostageloglikebin(
 		SEXP icluster,SEXP iclustsize,SEXP iclusterindex, SEXP ivarlink, 
                 SEXP iiid, SEXP  iweights, SEXP isilent, 
 		SEXP idepmodel, // SEXP ientryage,
-		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid , SEXP irvdes, SEXP iags, SEXP ibetaiid,
-		SEXP ipairascertained
+		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid , SEXP irvdes,
+	       	SEXP iags, SEXP ibetaiid, SEXP ipairascertained, SEXP itwostage
 ) // {{{
 {
 	try {
@@ -322,6 +322,7 @@ RcppExport SEXP twostageloglikebin(
  colvec secluster = Rcpp::as<colvec>(isecluster);
  mat rvdes= Rcpp::as<mat>(irvdes); 
  int depmodel= Rcpp::as<int>(idepmodel); 
+ int twostage= Rcpp::as<int>(itwostage); 
  int pairascertained = Rcpp::as<int>(ipairascertained); 
 
 // array for derivative of flexible design
@@ -398,23 +399,19 @@ RcppExport SEXP twostageloglikebin(
       Rprintf("trunkp %lf \n",mean(trunkp)); 
   } // }}}
 
-  int ci,ck,i,j,c,s=0,k,v,c1; 
-  double ll=1,Li,Lk,diff=0;
+  int sss,ci,ck,i,j,c,s=0,k,v,c1; 
+  double ll=1,llt=1,Li,Lk,diff=0;
   //double sdj=0;
   //  double Lit=1,Lkt=1,llt=1;
   double deppar=1,ssf=0,thetak=0; 
 //  double plack(); 
   vec dplack(pt); dplack.fill(pt);
   vec dp00(pt); 
-  vec ps(4); 
+  vec ps(6); 
   vec ckij(4),dckij(4),ckijvv(4),dckijvv(4),ckijtv(4),dckijtv(4),ckijvt(4),dckijvt(4);
   i=silent+1; 
 
-  mat thetiid(antiid,pt); 
-  colvec loglikeiid(antiid); 
-  if (iid==1) { thetiid.fill(0); loglikeiid.fill(0); }
-
-  mat betaiid= Rcpp::as<mat>(ibetaiid);
+    mat betaiid= Rcpp::as<mat>(ibetaiid);
   int dimbeta=betaiid.n_cols; 
 //  printf("%d %d \n",pt,dimbeta); 
   mat DbetaDtheta(pt,dimbeta); 
@@ -425,13 +422,18 @@ RcppExport SEXP twostageloglikebin(
   colvec p11tvec(antclust); 
 //  p11tvec=0; 
 //  Rprintf(" %d \n",pt); 
-  colvec Utheta(pt); 
-  colvec vthetascore(pt); 
-  colvec pthetavec(pt); 
-  vec vtheta2(pt); 
-  mat DUtheta(pt,pt); 
-  DUtheta.fill(0); 
-  Utheta.fill(0); 
+   int scoredim; 
+if (twostage==1) scoredim=pt; else scoredim=pt+dimbeta; 
+  colvec Utheta(scoredim); 
+  colvec vthetascore(scoredim); 
+  colvec pthetavec(scoredim); 
+  vec vtheta2(scoredim); 
+  mat DUtheta(scoredim,scoredim); 
+  DUtheta.fill(0); Utheta.fill(0); 
+
+  mat thetiid(antiid,scoredim); 
+  colvec loglikeiid(antiid); 
+  if (iid==1) { thetiid.fill(0); loglikeiid.fill(0); }
 
   int nr=rvdes.n_cols; 
 //  if  (depmodel==3) nr=arrayDD[2]; 
@@ -495,7 +497,6 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 	   if (varlink==0) diff+=-1*pow(deppar,2)*dp00(0)/(1-ps(0)); 
 	   }
 
-	   //sdj=-pow(diff,2); 
 	   } // }}}
 	   else if (depmodel==3) { // clayton-oakes addtive gamma  // {{{
 
@@ -513,12 +514,21 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 	   loglikecont=log(ll);
 
 //	   if (varlink==1) dplackt=dplackt % etheta;  
-	   vthetascore=dplack/ll; 
+//	   vthetascore=dplack/ll; 
 
+	   vthetascore.subvec(0,pt-1)=dplack/ll; 
+	   if (twostage==0) vthetascore.subvec(pt,pt+dimbeta-1)=(ps(4)*betaiid.row(i)+ps(5)*betaiid.row(k))/ll; 
 	if (pairascertained==1) {
-                ssf-=weights(i)*log(1-ps(0)); 
-	        loglikecont=log(ll)-log(1-ps(0));
-		vthetascore+=dp00/(1-ps(0)); 
+           ssf-=weights(i)*log(1-ps(0)); 
+	   loglikecont=log(ll)-log(1-ps(0));
+//	   vthetascore+=dp00/(1-ps(0)); 
+           vthetascore.subvec(0,pt-1)+=dp00/(1-ps(0)); 
+	   if (twostage==0) {
+//         + for (1,0) or (1,0);  - for (1,1), dP00=dP11, and dP01=-dP00
+              sss=1; 
+	      if (ci+ck==2) sss=-1; 
+	      vthetascore.subvec(pt,pt+dimbeta-1)+=sss*(ps(4)*betaiid.row(i)+ps(5)*betaiid.row(k))/(1-ps(0));
+	   }
 	}
 //	   ll=claytonoakesP(deppar,ci,ck,Li,Lk,dplack);
 //	   ssf+=weights(i)*log(ll); 
@@ -610,10 +620,9 @@ RcppExport SEXP twostageloglikebinpairs(
 		SEXP icluster,SEXP iclustsize,SEXP iclusterindex, SEXP ivarlink, 
                 SEXP iiid, SEXP  iweights, SEXP isilent, 
 		SEXP idepmodel, // SEXP ientryage,
-		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid , 
-		SEXP irvdes,
+		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid , SEXP irvdes,
 		SEXP idimthetades, SEXP idimrvdes, SEXP inrvs, SEXP iags, 
-		SEXP ibetaiid, SEXP ipairascertained
+		SEXP ibetaiid, SEXP ipairascertained, SEXP itwostage
 ) // {{{
 {
   try {
@@ -675,11 +684,9 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
  int iid= Rcpp::as<int>(iiid); 
  int antiid = Rcpp::as<int>(iantiid);
  double loglikecont=0; 
-
  mat Xtheta = Rcpp::as<mat>(iXtheta);
 
-
-  int udtest=0; 
+ int udtest=0; 
   if (udtest==1) { // {{{
 //  Rprintf(" %d %d %d %d %d %d %d \n",samecens,inverse,semi,semi2,flexfunc,stabcens,silent); 
 //  Rprintf(" %d %d %d %d %d %d %d \n",cifmodel,CA1,CA2,sym,depmodel,estimator,iid); 
@@ -741,13 +748,10 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
 
   int ci,ck,i,j,s=0,k,c1,v1; 
   double ll=1,Li,Lk,diff=0;
-  //double sdj=0;
-  //  double Lit=1,Lkt=1,llt=1;
   double deppar=1,ssf=0,thetak=0; 
-//  double plack(); 
   vec dplack(pt); dplack.fill(0);
   vec dp00(pt); dp00.fill(0);
-  vec ps(4); ps.fill(0);
+  vec ps(6); ps.fill(0);
   vec ckij(4),dckij(4),ckijvv(4),dckijvv(4),ckijtv(4),dckijtv(4),ckijvt(4),dckijvt(4);
   i=silent+1; 
 

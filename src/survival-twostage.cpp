@@ -1621,20 +1621,24 @@ double claytonoakesbinRVC(vec theta,mat thetades,mat ags,int status1,int status2
 
 	if (status1==0 && status2==0) { // {{{
 		valr=p00; dp=dtheta;
+	ps(4)=dt; ps(5)=ds; 
 	} // }}}
 	if (status1==0 && status2==1) { // {{{
 		valr=p01; 
 		dp=-1*dtheta; 
 		DbetaDtheta=-1*DbetaDtheta; 
+	ps(4)=-dt; ps(5)=-ds; 
 	} // }}}
 	if (status1==1 && status2==0) { // {{{
 		valr=p10; 
 		dp=-1*dtheta; 
 		DbetaDtheta=-1*DbetaDtheta; 
+	ps(4)=-dt; ps(5)=-ds; 
 	} // }}}
 	if (status1==1 && status2==1) { // {{{
 		valr=p11; 
 		dp=dtheta; 
+	ps(4)=dt; ps(5)=ds; 
 	} // }}}
 
 
@@ -1674,33 +1678,28 @@ RcppExport SEXP claytonoakesbinRV(SEXP itheta,SEXP istatus1,SEXP istatus2,SEXP i
 	int lpar=thetades.n_cols; 
 	vec dp(lpar); dp.fill(0); 
 	vec dp00(lpar); dp00.fill(0); 
-	vec ps(4); dp.fill(0); 
+	vec ps(6); dp.fill(0); 
 	vec DbetaDtheta(2*lpar); 
+	double like; 
 
 	if (status1==0 && status2==0) { // {{{
-		double like=claytonoakesbinRVC(theta,thetades,ags,0,0,f1,f2,x1,x2,dp,DbetaDtheta,ps,dp00) ;
-		ressl["like"]=like; 
-		if (varlink==1) dp=dp % theta;  
-		ressl["dlike"]=dp;
+		like=claytonoakesbinRVC(theta,thetades,ags,0,0,f1,f2,x1,x2,dp,DbetaDtheta,ps,dp00) ;
 	} // }}}
 	if (status1==0 && status2==1) { // {{{
-		double like=claytonoakesbinRVC(theta,thetades,ags,0,1,f1,f2,x1,x2,dp,DbetaDtheta,ps,dp00) ;
-		ressl["like"]=like; 
-		if (varlink==1) dp=dp % theta;  
-		ressl["dlike"]=dp;
+		like=claytonoakesbinRVC(theta,thetades,ags,0,1,f1,f2,x1,x2,dp,DbetaDtheta,ps,dp00) ;
 	} // }}}
 	if (status1==1 && status2==0) { // {{{
-		double like=claytonoakesbinRVC(theta,thetades,ags,1,0,f1,f2,x1,x2,dp,DbetaDtheta,ps,dp00) ;
-		ressl["like"]=like; 
-		if (varlink==1) dp=dp % theta;  
-		ressl["dlike"]=dp;
+		like=claytonoakesbinRVC(theta,thetades,ags,1,0,f1,f2,x1,x2,dp,DbetaDtheta,ps,dp00) ;
 	} // }}}
 	if (status1==1 && status2==1) { // {{{
-		double like=claytonoakesbinRVC(theta,thetades,ags,1,1,f1,f2,x1,x2,dp,DbetaDtheta,ps,dp00) ;
-		ressl["like"]=like; 
-		if (varlink==1) dp=dp % theta;  
-		ressl["dlike"]=dp;
+		like=claytonoakesbinRVC(theta,thetades,ags,1,1,f1,f2,x1,x2,dp,DbetaDtheta,ps,dp00) ;
 	} // }}}
+	ressl["like"]=like; 
+	if (varlink==1) dp=dp % theta;  
+	ressl["dlike"]=dp;
+	ressl["ps"]=ps;
+	ressl["dp00"]=dp00;
+
 	ressl["theta"]=theta; 
 	ressl["par.des"]=thetades; 
 

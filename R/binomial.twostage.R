@@ -182,12 +182,14 @@
 ##' @param pairs.rvs for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair. 
 ##' @param additive.gamma.sum this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters. Default is a matrix of 1's 
 ##' @param pair.ascertained if pairs are sampled only when there are events in the pair i.e. Y1+Y2>=1. 
+##' @param twostage default twostage=1, to fit MLE use twostage=0
 binomial.twostage <- function(margbin,data=sys.parent(),
      score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
      control=list(),theta=NULL,theta.des=NULL,var.link=1,var.par=0,var.func=NULL,
      iid=1,step=1.0,notaylor=1,model="plackett",marginal.p=NULL,beta.iid=NULL,Dbeta.iid=NULL,
      strata=NULL,max.clust=NULL,se.clusters=NULL,numDeriv=0,
-     random.design=NULL,pairs=NULL,pairs.rvs=NULL,additive.gamma.sum=NULL,pair.ascertained=0) 
+     random.design=NULL,pairs=NULL,pairs.rvs=NULL,additive.gamma.sum=NULL,pair.ascertained=0,
+     twostage=1,beta=NULL) 
 { ## {{{
     ## {{{ seting up design and variables
     rate.sim <- 1; sym=1; 
@@ -202,15 +204,17 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 ###     print(all.vars(margbin$formula)[1])
         cause <- data[,all.vars(margbin$formula)[1]]
 	if (!is.numeric(cause)) stop(paste("response in data",margbin$formula)[1],"not numeric\n"); 
-	if (is.null(beta.iid))  beta.iid <- iid(margbin,id=clusters)
+	if (is.null(beta.iid))   beta.iid <- iid(margbin,id=clusters)
 	if (is.null(Dbeta.iid)) Dbeta.iid <- model.matrix(margbin$formula,data=data) * ps
+	if (twostage==0)            Xbeta <- model.matrix(margbin$formula,data=data)
     }
     else if (class(margbin)[1]=="formula") {
         margbin <- glm(margbin,data=data,family=binomial())
         ps <- predict(margbin,type="response")
         cause <- margbin$y
+	if (twostage==0)            Xbeta <- model.matrix(margbin$formula,data=data)
 	if (is.null(Dbeta.iid)) Dbeta.iid <- model.matrix(margbin$formula,data=data) * ps
-	if (is.null(beta.iid))  beta.iid <- iid(margbin,id=clusters)
+	if (is.null(beta.iid))   beta.iid <- iid(margbin,id=clusters)
     }  else if (is.null(marginal.p))
         stop("without marginal model, marginal p's must be given\n"); 
 
@@ -282,6 +286,9 @@ binomial.twostage <- function(margbin,data=sys.parent(),
    if (length(dim(theta.des))!=3) theta.des <- as.matrix(theta.des)
 ###   theta.des <- as.matrix(theta.des)
 
+    if (is.null(beta)==TRUE & twostage==0) beta <- coef(margbin) else beta <- 0
+    dimbeta <- length(beta); 
+    print(beta)
     if (is.null(theta)==TRUE) {
         if (var.link==1) theta<- rep(-0.7,ptheta);  
         if (var.link==0) theta<- rep(exp(-0.7),ptheta);   
@@ -358,7 +365,18 @@ binomial.twostage <- function(margbin,data=sys.parent(),
       if (pair.structure==1 & dep.model==3) Xtheta <- matrix(0,antpers,1); ## not needed 
       DXtheta <- array(0,c(1,1,1));
 
-      if (var.link==1 & dep.model==3) epar <- c(exp(par)) else epar <- c(par)
+      if (twostage==0) epar <- par[1:ptheta] else epar <- par
+      if (twostage==0) { ### update, marginal.p og score for logistic model
+###	     print(c(ptheta+1,ptheta+dimbeta))
+	    beta <- par[seq(ptheta+1,ptheta+dimbeta)]
+	    lp <- Xbeta %*%  beta 
+            psu <- exp(lp)/(1+exp(lp)) 
+	    ### update predictions and DbetaP
+	    Dbeta.iid <- Xbeta * psu
+	    ps <- psu
+      } 
+
+      if (var.link==1 & dep.model==3) epar <- c(exp(epar)) else epar <- c(epar)
       partheta <- epar
 
       if (var.par==1 & dep.model==3) {
@@ -369,7 +387,6 @@ binomial.twostage <- function(margbin,data=sys.parent(),
          } else partheta <- epar; ## par.func(epar)
       } 
 
-
       if (pair.structure==0) 
             outl<-.Call("twostageloglikebin", ## {{{
             icause=cause,ipmargsurv=ps, 
@@ -377,7 +394,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
             icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
             ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
             itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid, 
-            irvdes=random.design,iags=additive.gamma.sum,ibetaiid=Dbeta.iid,pa=pair.ascertained)
+            irvdes=random.design,iags=additive.gamma.sum,ibetaiid=Dbeta.iid,pa=pair.ascertained,twostage=twostage)
             ## }}}
       else outl<-.Call("twostageloglikebinpairs", ## {{{
             icause=cause,ipmargsurv=ps, 
@@ -387,7 +404,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
             itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid, 
             irvdes=random.design,
             idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs,
-            iags=additive.gamma.sum,ibetaiid=Dbeta.iid,pa=pair.ascertained)
+            iags=additive.gamma.sum,ibetaiid=Dbeta.iid,pa=pair.ascertained,twostage=twostage)
              ## }}} 
 
 
@@ -411,12 +428,18 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 	      } else {
 	          if (var.link==0) mm <- diag(length(epar)) else mm <- diag(c(epar))
 	      }
+              if (twostage==0) { 
+		      mm0 <- diag(length(par))
+		      mm0[1:nrow(mm),1:nrow(mm)] <- mm
+		      mm <- mm0
+	      }
+
 	      }# }}}
 
 
 	    if (dep.model==3) {# {{{
 	       outl$score <-  t(mm) %*% outl$score
-	       outl$DbeteDtheta <-  t(mm) %*% outl$DbetaDtheta
+	       if (twostage==1) outl$DbeteDtheta <-  t(mm) %*% outl$DbetaDtheta
 	       outl$Dscore <- t(mm) %*% outl$Dscore %*% mm
 	       if (iid==1) outl$theta.iid <- outl$theta.iid %*% t(mm)
 
@@ -434,6 +457,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     theta.iid <- NULL
     logl <- NULL
     p <- theta
+    if (twostage==0) p <- c(p,beta); 
     if (score.method=="fisher.scoring") { ## {{{
         oout <- 2;  ### output control for obj
         if (Nit>0) 
@@ -472,6 +496,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
             if (detail==1 ) cat("starting numDeriv for second derivative \n"); 
             oout <- 0; 
             score2 <- numDeriv::jacobian(loglike,p)
+	    print(score2)
 	    score1 <- matrix(score2,ncol=1)
             oout <- 3
             hess <- numDeriv::jacobian(loglike,p)
@@ -555,7 +580,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     if (iid>=1) {
         theta.iid <- out$theta.iid %*% hessi
         if (dep.model==3 & iid!=2  & (!is.null(beta.iid)))
-	if (nrow(beta.iid)==nrow(out$theta.iid)) {
+	if (nrow(beta.iid)==nrow(out$theta.iid) & twostage==1) {
 	     theta.beta.iid <- (beta.iid %*% t(out$DbetaDtheta) ) %*% hessi
 	     theta.iid  <- theta.iid+theta.beta.iid
 	     iid.tot <- cbind(theta.iid,beta.iid)
@@ -564,15 +589,18 @@ binomial.twostage <- function(margbin,data=sys.parent(),
         robvar.theta  <- (t(theta.iid) %*% theta.iid) 
 	var.theta <- robvar.theta
         if (class(margbin)[1]=="glm") beta <- coef(margbin); 
-    } else { var.theta <- -1* hessi }
+    } else var.theta <- -1* hessi 
 
 
-###  if (iid==1) var.theta <- robvar.theta else var.theta <- -hessi
-    if (!is.null(colnames(theta.des))) thetanames <- colnames(theta.des) else thetanames <- paste("dependence",1:ptheta,sep="")
-    theta <- matrix(theta,ptheta,1)
-    if (length(thetanames)==nrow(theta)) { rownames(theta) <- thetanames; rownames(var.theta) <- colnames(var.theta) <- thetanames; }
+  if (iid==1) var.theta <- robvar.theta else var.theta <- -hessi
+  if (!is.null(colnames(theta.des))) thetanames <- colnames(theta.des) else thetanames <- paste("dependence",1:length(theta),sep="")
+### fix names !!!
+###    theta <- matrix(theta,length(theta),1)
+###    if (length(thetanames)==nrow(theta)) { rownames(theta) <- thetanames; rownames(var.theta) <- colnames(var.theta) <- thetanames; }
+
     ud <- list(theta=theta,score=score,hess=hess,hessi=hessi,var.theta=var.theta,model=model,robvar.theta=robvar.theta,
-               theta.iid=theta.iid,thetanames=thetanames,loglike=-logl,score1=score1,Dscore=out$Dscore,
+               theta.iid=theta.iid,thetanames=thetanames,
+	       loglike=-logl,score1=score1,Dscore=out$Dscore,
 	       margsurv=ps,iid.tot=iid.tot,var.tot=var.tot,beta=beta); 
     class(ud)<-"twostage" 
     attr(ud, "Formula") <- formula
