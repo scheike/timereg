@@ -1110,6 +1110,7 @@ if (!is.null(margsurv))  {
   attr(ud,"var.link")<-var.link; 
   attr(ud,"var.par")<-var.par; 
   attr(ud,"var.func")<-var.func; 
+  attr(ud,"ptheta")<-ptheta
   attr(ud,"antpers")<-antpers; 
   attr(ud,"antclust")<-antclust; 
   if (dep.model==3 & two.stage==0) attr(ud,"all.likepairs")<- all.likepairs
@@ -1155,23 +1156,26 @@ summary.twostage <-function (object,digits = 3,silent=0,...)
       theta.des <- attr(object,"pardes"); 
       ags <- attr(object,"additive.gamma.sum"); 
 ###      print(par); print(rv1)
-      if (var.link==1) par <- theta.des %*% exp(object$theta) else  par <- theta.des %*% object$theta
+      ptheta <- attr(object,"ptheta")
+      theta <- object$theta[seq(1,ptheta)]
+      robvar.theta <- object$robvar.theta[seq(1,ptheta),seq(1,ptheta)]
+      if (var.link==1) par <- theta.des %*% exp(theta) else  par <- theta.des %*% theta
 
       if (var.par==0) 
       if (var.link==1) { ## {{{ 
 	     fp <- function(p,d,t){  res <- exp(p*t)/(sum(rv1* (theta.des %*% exp(p))))^d; 
                                      if (t==0) res <- res[1]; return(res); }
-             e <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,1,1))
-             pare <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) exp(p))
-             vare <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,2,1))
-             vartot <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,1,0))
+             e <-      lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,1))
+             pare <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) exp(p))
+             vare <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,2,1))
+             vartot <- lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,0))
       } else {
               fp <- function(p,d,t) {  res <- (p^t)/(sum(rv1* (theta.des %*% p)))^d;
                                      if (t==0) res <- res[1]; return(res); }
-              e <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,1,1))
+              e <-      lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,1))
+              vare <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,2,1))
+              vartot <- lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,0))
 	      pare <- NULL
-              vare <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,2,1))
-              vartot <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,1,0))
       } ## }}} 
 
 if (var.par==1) 
@@ -1179,17 +1183,17 @@ if (var.par==1)
 ###             theta <- c(varg,varc)/sum(varg+varc)^2
 	     fp <- function(p,d,t){  res <- exp(p*t)/(sum(rv1* (theta.des %*% exp(p))))^d; 
                                      if (t==0) res <- res[1]; return(res); }
-             e <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,1,1))
-             vare <-   lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) exp(p))
-             pare <-   lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,2,1))
-             vartot <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,1,0))
+             e <-      lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,1))
+             vare <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) exp(p))
+             pare <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,2,1))
+             vartot <- lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,0))
       } else {
               fp <- function(p,d,t) {  res <- (p^t)/(sum(rv1* (theta.des %*% p)))^d;
                                      if (t==0) res <- res[1]; return(res); }
-              e <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,1,1))
-              pare <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,2,1))
+                e <-    lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,1))
+              pare <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,2,1))
+              vartot <- lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,0))
 	      vare <- NULL
-              vartot <- lava::estimate(coef=object$theta,vcov=object$robvar.theta,f=function(p) fp(p,1,0))
       } ## }}} 
 
       res <- list(estimates=coefs, type=attr(object,"Type"),h=e,par=pare,vare=vare,vartot=vartot)
@@ -1202,11 +1206,18 @@ if (var.par==1)
 ##' @export
 coef.twostage <- function(object,var.link=NULL,response="survival",...)
 { ## {{{
-  theta <- object$theta
+  pt <- attr(object,"ptheta")
+  theta <- object$theta[seq(1,pt)]
+
+  if (is.null(object$robvar.theta)) var.theta  <-  object$var.theta[seq(1,pt),seq(1,pt),drop=FALSE] else 
+	                            var.theta  <-   object$robvar.theta[seq(1,pt),seq(1,pt),drop=FALSE]
+  se <- diag(var.theta)
+
+###  print(theta); print(se)
+
   if (is.null(var.link))
      if (attr(object,"var.link")==1) vlink <- 1 else vlink <- 0
      else vlink <- var.link
-     if (is.null(object$robvar.theta)) se  <-  diag(object$var.theta)^.5 else se<-diag(object$robvar.theta)^0.5
   res <- cbind(theta, se )
   wald <- theta/se
   waldp <- (1 - pnorm(abs(wald))) * 2
@@ -1214,22 +1225,22 @@ coef.twostage <- function(object,var.link=NULL,response="survival",...)
        if (object$model=="plackett") {
        spearman <- alpha2spear(theta,link=vlink)
        Dspear <- numDeriv::jacobian(alpha2spear,theta,link=vlink) 
-       var.spearman <- Dspear %*% object$var.theta %*%  Dspear
+       var.spearman <- Dspear %*% var.theta %*%  Dspear
        se.spearman <- diag(var.spearman)^.5
        res <- as.matrix(cbind(res, wald, waldp,spearman,se.spearman))
        if (vlink==1) colnames(res) <- c("log-Coef.", "SE","z", "P-val","Spearman Corr.","SE")
 	  else colnames(res) <- c("Coef.", "SE","z", "P-val","Spearman Corr.","SE")
-	  if (!is.null(object$thetanames)) rownames(res)<-object$thetanames
+	  if ((!is.null(object$thetanames)) & (nrow(res)==length(object$thetanames))) rownames(res)<-object$thetanames
        }
        if (object$model=="clayton.oakes") {
        kendall <- alpha2kendall(theta,link=vlink)
        Dken <- numDeriv::jacobian(alpha2kendall,theta,link=vlink) 
-       var.kendall<- Dken %*% object$var.theta %*%  Dken
+       var.kendall<- Dken %*% var.theta %*%  Dken
        se.kendall <- diag(var.kendall)^.5
        res <- as.matrix(cbind(res, wald, waldp,kendall,se.kendall))
        if (vlink==1) colnames(res) <- c("log-Coef.", "SE","z", "P-val","Kendall tau","SE")
        else colnames(res) <- c("Coef.", "SE","z", "P-val","Kendall tau","SE")
-       if (!is.null(object$thetanames)) rownames(res)<-object$thetanames
+       if ((!is.null(object$thetanames)) & (nrow(res)==length(object$thetanames))) rownames(res)<-object$thetanames
        }
   }
   return(res)

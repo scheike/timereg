@@ -1604,41 +1604,32 @@ double claytonoakesbinRVC(vec theta,mat thetades,mat ags,int status1,int status2
 
 	// }}} 
 
-	double p11=like; 
-	double p10=f1-p11; 
-	double p01=f2-p11; 
-	double p00=1-f1-f2+p11; 
 	//printf("%lf %lf  %lf %lf %lf %lf \n",f1,f2,p11,p10,p10,p00); 
 	//d3.print("d3"); 
 //	dttheta.print("dt"); 
 //	dstheta.print("ds"); 
+	double p11=like; double p10=f1-p11; double p01=f2-p11; double p00=1-f1-f2+p11; 
 	
 	DbetaDtheta.subvec(0,lpar-1)=dttheta; 
 	DbetaDtheta.subvec(lpar,2*lpar-1)=dstheta; 
 
 	ps(0)=p00; ps(1)=p10; ps(2)=p01; ps(3)=p11; 
 	dp00=dtheta; 
+	ps(6)=dt-1; ps(7)=ds-1; 
 
 	if (status1==0 && status2==0) { // {{{
-		valr=p00; dp=dtheta;
-	ps(4)=dt; ps(5)=ds; 
+		valr=p00; dp=dtheta; ps(4)=dt-1; ps(5)=ds-1; 
 	} // }}}
 	if (status1==0 && status2==1) { // {{{
-		valr=p01; 
-		dp=-1*dtheta; 
-		DbetaDtheta=-1*DbetaDtheta; 
-	ps(4)=-dt; ps(5)=-ds; 
+		valr=p01; dp=-1*dtheta; DbetaDtheta=-1*DbetaDtheta; 
+	        ps(4)=-dt; ps(5)=1-ds; 
 	} // }}}
 	if (status1==1 && status2==0) { // {{{
-		valr=p10; 
-		dp=-1*dtheta; 
-		DbetaDtheta=-1*DbetaDtheta; 
-	ps(4)=-dt; ps(5)=-ds; 
+		valr=p10; dp=-1*dtheta; DbetaDtheta=-1*DbetaDtheta; 
+	        ps(4)=1-dt; ps(5)=-ds; 
 	} // }}}
 	if (status1==1 && status2==1) { // {{{
-		valr=p11; 
-		dp=dtheta; 
-	ps(4)=dt; ps(5)=ds; 
+		valr=p11; dp=dtheta; ps(4)=dt; ps(5)=ds; 
 	} // }}}
 
 
@@ -1678,7 +1669,7 @@ RcppExport SEXP claytonoakesbinRV(SEXP itheta,SEXP istatus1,SEXP istatus2,SEXP i
 	int lpar=thetades.n_cols; 
 	vec dp(lpar); dp.fill(0); 
 	vec dp00(lpar); dp00.fill(0); 
-	vec ps(6); dp.fill(0); 
+	vec ps(8); dp.fill(0); 
 	vec DbetaDtheta(2*lpar); 
 	double like; 
 
@@ -1699,10 +1690,8 @@ RcppExport SEXP claytonoakesbinRV(SEXP itheta,SEXP istatus1,SEXP istatus2,SEXP i
 	ressl["dlike"]=dp;
 	ressl["ps"]=ps;
 	ressl["dp00"]=dp00;
-
 	ressl["theta"]=theta; 
 	ressl["par.des"]=thetades; 
-
 	vec obs(4); 
 	obs(0)=status1; obs(1)=f1; obs(2)=status2; obs(3)=f2; 
 	ressl["obs"]=obs; 
