@@ -87,15 +87,18 @@ double cdfmvn(mat &upper, mat &cor) {
       j++;
     }
   }
-  irowvec infin(n); infin.fill(0); //
-  mvtdst(&n, &_mvt_df,
+  Row<int> infin(n); infin.fill(0); //
+  mvtdst(&n,
+	 &_mvt_df,
 	 &upper[0], // Lower, ignored
 	 &upper[0], 
 	 &infin[0], // Infinity argument (all 0 since CDF)
 	 &Cor[0],
-	 &_mvt_delta[0], &_mvt_maxpts,
+	 &_mvt_delta[0],
+	 &_mvt_maxpts,
 	 &_mvt_abseps, &_mvt_releps,
-	 &_mvt_error[0], &val, &_mvt_inform);  
+	 &_mvt_error[0],
+	 &val, &_mvt_inform);  
   return(val);
 }
 
@@ -355,7 +358,7 @@ vec loglikmvn(mat &Yl, mat &Yu, uvec &Status,
    
     rowvec lower(nNonObs); 
     rowvec upper(nNonObs);
-    irowvec infin(nNonObs); // 0: right, 1: left, 2: interval
+    Row<int> infin(nNonObs); // 0: right, 1: left, 2: interval
 
     uvec currow(1); 
     for (int i=0; i<n; i++) { // Iterate over subjects
@@ -621,7 +624,7 @@ BEGIN_RCPP
     }    
   }
    
-  irowvec infin(p); infin.fill(2); //
+  Row<int> infin(p); infin.fill(2); //
   for (unsigned j=0; j<(unsigned)p; j++) {
     if (Upper(0,j)==datum::inf) infin(j) = 1;
     if (Lower(0,j)==-datum::inf) infin(j) = 0;

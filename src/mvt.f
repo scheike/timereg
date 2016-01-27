@@ -98,6 +98,7 @@
       DOUBLE PRECISION COV(NL*(NL+1)/2), A(NL), B(NL), DL(NL), Y(NL)
       DOUBLE PRECISION MVCHNV, SNU, R, VL, ER, DI, EI
       SAVE NU, SNU, INFI, A, B, DL, COV
+      if (.FALSE.) NF=NF 
       IF ( NU .LE. 0 ) THEN
          R = 1
          CALL MVVLSB( N+1, W, R, DL,INFI,A,B,COV, Y, DI,EI, NY, F(1) )
