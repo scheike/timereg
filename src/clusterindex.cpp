@@ -57,7 +57,7 @@ BEGIN_RCPP
     maxclust = max(num)+1;
   }     
   
-  imat idclust = imat(uniqueclust,maxclust); idclust.fill(NA_INTEGER);
+  Mat<int> idclust = Mat<int>(uniqueclust,maxclust); idclust.fill(NA_INTEGER);
   ivec clustsize(uniqueclust); clustsize.fill(0);
   ivec firstclustid(uniqueclust); firstclustid.fill(0);
 
@@ -163,7 +163,7 @@ BEGIN_RCPP
   ivec num = Rcpp::as<ivec>(inum); 
   int  mednum = Rcpp::as<int>(imednum);
   
-  imat idclust = imat(uniqueclust,maxclust); idclust.fill(NA_INTEGER);
+  Mat<int> idclust = Mat<int>(uniqueclust,maxclust); idclust.fill(NA_INTEGER);
   ivec clustsize(uniqueclust); clustsize.fill(0);
 
   mat data = Rcpp::as<mat>(idata);
