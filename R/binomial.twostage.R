@@ -154,7 +154,7 @@
 ##' @export
 ##' @param margbin Marginal binomial model 
 ##' @param data data frame
-##' @param score.method Scoring method
+##' @param score.method Scoring method default is "fisher.scoring" among "fisher.scoring","nlminb","optimize","nlm"
 ##' @param Nit Number of iterations
 ##' @param detail Detail
 ##' @param clusters Cluster variable
@@ -189,7 +189,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
      iid=1,step=1.0,notaylor=1,model="plackett",marginal.p=NULL,beta.iid=NULL,Dbeta.iid=NULL,
      strata=NULL,max.clust=NULL,se.clusters=NULL,numDeriv=0,
      random.design=NULL,pairs=NULL,pairs.rvs=NULL,additive.gamma.sum=NULL,pair.ascertained=0,
-     twostage=1,beta=NULL) 
+     twostage=1,case.control=0,beta=NULL) 
 { ## {{{
     ## {{{ seting up design and variables
     rate.sim <- 1; sym=1; 
@@ -227,7 +227,6 @@ binomial.twostage <- function(margbin,data=sys.parent(),
         else ps <- marginal.p
     }
     ## }}}
-
 
     notaylor <- 1
     if (is.null(weights)==TRUE) weights <- rep(1,antpers); 
@@ -288,7 +287,6 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 
     if (is.null(beta)==TRUE & twostage==0) beta <- coef(margbin) else beta <- 0
     dimbeta <- length(beta); 
-    print(beta)
     if (is.null(theta)==TRUE) {
         if (var.link==1) theta<- rep(-0.7,ptheta);  
         if (var.link==0) theta<- rep(exp(-0.7),ptheta);   
@@ -348,31 +346,51 @@ binomial.twostage <- function(margbin,data=sys.parent(),
         pairs.rvs <- 1
      }
 
+    if (pair.structure==1) {
+	    if (length(case.control)!=antpairs)         case.control <- rep(case.control[1],antpairs)
+	    if (length(pair.ascertained)!=antpairs) pair.ascertained <- rep(pair.ascertained[1],antpairs)
+	    if (any(case.control+pair.ascertained==2))  stop("Each pair is either case.control pair or pair.ascertained \n"); 
+    }
+
+
     if (is.null(Dbeta.iid)) Dbeta.iid <- matrix(0,length(cause),1); 
     ptrunc <- rep(1,antpers); 
 
     ## }}}
 
-###  print(dim(random.design)); print(dim(theta.des)); 
-###  print(dim(additive.gamma.sum))
-###  print(head(pairs.rvs))
-###  print(antpairs)
+    if (dep.model==3) model <- "clayton.oakes"
+
+  print(dep.model)
+  print(summary(case.control))
+  print(length(case.control))
+  print(summary(pair.ascertained))
+  print(length(pair.ascertained))
+  print(dim(random.design)); print(dim(theta.des)); 
+  print(dim(additive.gamma.sum))
+  print(head(pairs.rvs))
+  print(antpairs)
 
     loglike <- function(par) 
-        { ## {{{
+    { ## {{{
 		
-      if (pair.structure==0 | dep.model!=3) Xtheta <- as.matrix(theta.des) %*% matrix(c(par),nrow=ptheta,ncol=1);
+      if (pair.structure==0 | dep.model!=3) Xtheta <- as.matrix(theta.des) %*% matrix(c(par[seq(1,ptheta)]),nrow=ptheta,ncol=1);
       if (pair.structure==1 & dep.model==3) Xtheta <- matrix(0,antpers,1); ## not needed 
       DXtheta <- array(0,c(1,1,1));
 
-      if (twostage==0) epar <- par[1:ptheta] else epar <- par
+      if (twostage==0) epar <- par[seq(1,ptheta)] else epar <- par
       if (twostage==0) { ### update, marginal.p og score for logistic model
 ###	     print(c(ptheta+1,ptheta+dimbeta))
 	    beta <- par[seq(ptheta+1,ptheta+dimbeta)]
-	    lp <- Xbeta %*%  beta 
+	    lp <- c(Xbeta %*%  beta)
+###	    print(summary(ps))
             psu <- exp(lp)/(1+exp(lp)) 
+###	    print(summary(psu))
+            dpsu <- psu/(1+exp(lp)) 
 	    ### update predictions and DbetaP
-	    Dbeta.iid <- Xbeta * psu
+###	    print(beta); print(dim(Xbeta)); print(length(dpsu)); 
+	    Dbeta.iid <- Xbeta * dpsu
+###	    print(Dbeta.iid)
+###	    print(apply(Dbeta.iid,2,sum))
 	    ps <- psu
       } 
 
@@ -404,9 +422,9 @@ binomial.twostage <- function(margbin,data=sys.parent(),
             itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid, 
             irvdes=random.design,
             idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs,
-            iags=additive.gamma.sum,ibetaiid=Dbeta.iid,pa=pair.ascertained,twostage=twostage)
+            iags=additive.gamma.sum,ibetaiid=Dbeta.iid,pa=pair.ascertained,twostage=twostage,
+	    icasecontrol=case.control)
              ## }}} 
-
 
       if (detail==3) print(c(par,outl$loglike))
 
@@ -428,7 +446,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 	      } else {
 	          if (var.link==0) mm <- diag(length(epar)) else mm <- diag(c(epar))
 	      }
-              if (twostage==0) { 
+              if (twostage==0) {  ### beta for logistic regression also part of model
 		      mm0 <- diag(length(par))
 		      mm0[1:nrow(mm),1:nrow(mm)] <- mm
 		      mm <- mm0
@@ -447,7 +465,8 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 	###       print(apply(outl$theta.iid,2,sum))
 	    }# }}}
 
-            attr(outl,"gradient") <-outl$score 
+            attr(outl,"grad") <- attr(outl,"gradient") <-outl$score 
+	    attr(outl,"hessian") <- outl$Dscore
             if (oout==0) ret <- c(-1*outl$loglike) else if (oout==1) ret <- sum(outl$score^2) else if (oout==3) ret <- outl$score else ret <- outl
             return(ret)
         } ## }}}
@@ -458,11 +477,13 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     logl <- NULL
     p <- theta
     if (twostage==0) p <- c(p,beta); 
+    theta <- p
     if (score.method=="fisher.scoring") { ## {{{
         oout <- 2;  ### output control for obj
+
         if (Nit>0) 
             for (i in 1:Nit)
-                {
+            {
                     out <- loglike(p)
                     hess <-  -1* out$Dscore
                     if (!is.na(sum(hess))) hessi <- lava::Inverse(out$Dscore) else hessi <- hess 
@@ -489,18 +510,30 @@ binomial.twostage <- function(margbin,data=sys.parent(),
             score1 <- score <- out$score
             oout <- 0; 
             hess1 <- hess <- -1*out$Dscore 
-            if (iid==1) theta.iid <- out$theta.iid
+###            if (iid==1) theta.iid <- out$theta.iid
             if (detail==1 && iid==1) cat("finished iid decomposition\n"); 
         }
         if (numDeriv==1) {
             if (detail==1 ) cat("starting numDeriv for second derivative \n"); 
             oout <- 0; 
             score2 <- numDeriv::jacobian(loglike,p)
-	    print(score2)
+	    if (detail==1) {
+		    cat("Derivative\n"); 
+	            cat(c(out$score))
+		    cat("\n Numerical Derivative\n"); 
+	            cat(c(score2))
+	            cat("\n")
+	    }
 	    score1 <- matrix(score2,ncol=1)
             oout <- 3
             hess <- numDeriv::jacobian(loglike,p)
-            if (detail==1 ) cat("finished numDeriv for second derivative \n"); 
+            if (detail==1 ){
+                  cat("finished numDeriv for second derivative \n"); 
+	          cat("Numerical derivative second derivative \n"); 
+	          print(hess)
+	          cat("average second moment, for fisher-scoring\n"); 
+	          print(out$Dscore)
+	    }
         }
         if (detail==1 & Nit==0) {## {{{
             cat(paste("Fisher-Scoring ===================: final","\n")); 
@@ -585,12 +618,15 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 	     theta.iid  <- theta.iid+theta.beta.iid
 	     iid.tot <- cbind(theta.iid,beta.iid)
 	     var.tot <- crossprod(iid.tot)
-	}
-        robvar.theta  <- (t(theta.iid) %*% theta.iid) 
-	var.theta <- robvar.theta
-        if (class(margbin)[1]=="glm") beta <- coef(margbin); 
+	} 
+        var.theta <- robvar.theta  <- (t(theta.iid) %*% theta.iid) 
+	if (is.null(var.tot)) var.tot <- var.theta
     } else var.theta <- -1* hessi 
 
+  if (class(margbin)[1]=="glm") beta <- coef(margbin); 
+  if (twostage==0) beta <- theta[seq(ptheta,ptheta+dimbeta)]
+
+  print(hess); print(out$Dscore) 
 
   if (iid==1) var.theta <- robvar.theta else var.theta <- -hessi
   if (!is.null(colnames(theta.des))) thetanames <- colnames(theta.des) else thetanames <- paste("dependence",1:length(theta),sep="")
@@ -603,6 +639,8 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 	       loglike=-logl,score1=score1,Dscore=out$Dscore,
 	       margsurv=ps,iid.tot=iid.tot,var.tot=var.tot,beta=beta); 
     class(ud)<-"twostage" 
+    attr(ud, "binomial") <- TRUE
+    attr(ud, "ptheta") <- ptheta
     attr(ud, "Formula") <- formula
     attr(ud, "Clusters") <- clusters
     attr(ud,"sym")<-sym; 
@@ -614,6 +652,8 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     attr(ud, "Type") <- model
     attr(ud,"DbetaDtheta")<-out$DbetaDtheta; 
     attr(ud,"ags")<- additive.gamma.sum 
+    attr(ud,"twostage")<- twostage
+    attr(ud,"pair.ascertained")<- pair.ascertained 
     ### to be consistent with structure for survival twostage model 
     attr(ud, "additive-gamma") <- (dep.model==3)*1
     if (dep.model==3 & pair.structure==1) attr(ud, "likepairs") <- c(out$likepairs)
@@ -641,6 +681,12 @@ p11.binomial.twostage.RV <- function(theta,rv1,rv2,p1,p2,pardes,ags=NULL,link=0,
 ##' @export
 concordance.twostage<- function(theta,p,rv1,rv2,theta.des,additive.gamma.sum=NULL,link=0,var.par=0)
 {# {{{
+
+   ### takes dependence paramter from output
+   ptheta <- attr(object,"ptheta")
+   theta <- object$theta[seq(1,ptheta)]
+   robvar.theta <- object$robvar.theta[seq(1,ptheta),seq(1,ptheta)]
+
    if (var.par==1) theta <- theta/sum(theta)^2
 
    nn <- nrow(as.matrix(rv1))
@@ -649,7 +695,8 @@ concordance.twostage<- function(theta,p,rv1,rv2,theta.des,additive.gamma.sum=NUL
    if (is.matrix(rv1)==FALSE) rv1 <- matrix(rv1,nn,length(rv1),byrow=TRUE)
    if (is.matrix(rv2)==FALSE) rv2 <- matrix(rv2,nn,length(rv1),byrow=TRUE)
 
-   if (is.null(additive.gamma.sum)) ags <- matrix(1,ncol(rv1),length(theta)) else ags <- additive.gamma.sum
+   if (is.null(additive.gamma.sum)) ags <- matrix(1,ncol(rv1),ptheta) else ags <- additive.gamma.sum
+
 
    tabs <- list()
    for (i in 1:nn)
@@ -682,9 +729,23 @@ if (is.null(rv2))  rv2 <- rbind(c(1,0,0,0),c(0,1,0,1))
 var.par <- attr(object,"var.par")
 var.link <- attr(object,"var.link")
 theta.des <- attr(object,"theta.des")
-theta <- object$theta
+twostage <- attr(object,"twostage")
+
+if (twostage==0) {
+	pt <- attr(object,"ptheta")
+	theta <- object$theta[seq(1,pt)]
+        beta <- object$theta[seq(pt+1,length(object$theta))] 
+	var.theta <- object$robvar.theta[seq(1,pt),seq(1,pt)]
+	var.tot <- object$var.theta
+} else { 
+	theta <- object$theta; 
+	beta <- object$beta
+	var.theta <- object$var.theta; 
+	var.tot <- object$var.tot
+}
+
 if (var.link==1) theta <- exp(theta)
-beta <- object$beta
+###print(beta)
 ags <- attr(object,"ags"); 
 if (is.null(xmarg)) {xmarg <- rep(0,length(beta)); xmarg[1] <- 1;} 
 
@@ -704,12 +765,14 @@ if (is.null(ags)) ags <- matrix(1,ncol(rv1),length(theta));
        return(c(p11,casewise,pm))
    }# }}}
 
+print(c(theta,beta)); print(var.tot)
+
    tabs <- list()
    for (i in 1:nn)
    {
       rv1l <- rv1[i,]
       rv2l <- rv2[i,]
-      tabs[[i]] <- estimate(coef=c(theta,beta),vcov=object$var.tot,f=function(p) fp(p))
+      tabs[[i]] <- estimate(coef=c(theta,beta),vcov=var.tot,f=function(p) fp(p))
    }
 
    return(tabs)

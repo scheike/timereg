@@ -399,7 +399,7 @@ RcppExport SEXP twostageloglikebin(
       Rprintf("trunkp %lf \n",mean(trunkp)); 
   } // }}}
 
-  int sss,ci,ck,i,j,c,s=0,k,v,c1; 
+  int ci,ck,i,j,c,s=0,k,v,c1; 
   double ll=1,llt=1,Li,Lk,diff=0;
   //double sdj=0;
   //  double Lit=1,Lkt=1,llt=1;
@@ -407,7 +407,7 @@ RcppExport SEXP twostageloglikebin(
 //  double plack(); 
   vec dplack(pt); dplack.fill(pt);
   vec dp00(pt); 
-  vec ps(6); 
+  vec ps(8); 
   vec ckij(4),dckij(4),ckijvv(4),dckijvv(4),ckijtv(4),dckijtv(4),ckijvt(4),dckijvt(4);
   i=silent+1; 
 
@@ -422,8 +422,10 @@ RcppExport SEXP twostageloglikebin(
   colvec p11tvec(antclust); 
 //  p11tvec=0; 
 //  Rprintf(" %d \n",pt); 
-   int scoredim; 
-if (twostage==1) scoredim=pt; else scoredim=pt+dimbeta; 
+  int scoredim; 
+  if (twostage==1) scoredim=pt; else scoredim=pt+dimbeta; 
+//  printf("========= %d %d \n",pt,scoredim); 
+
   colvec Utheta(scoredim); 
   colvec vthetascore(scoredim); 
   colvec pthetavec(scoredim); 
@@ -501,33 +503,32 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 	   else if (depmodel==3) { // clayton-oakes addtive gamma  // {{{
 
 	   rv1=trans(rvdes.row(i)); rv2=trans(rvdes.row(k)); 
-//	   if (j<10) {
-//		   rv1.print("rv1"); 
-//		   rv2.print("rv1"); 
-//		   thetades.print("theta.des"); 
-//		   etheta.print("theta"); 
-//	   }
-
 	   ll=claytonoakesbinRVC(etheta,thetades,ags,ci,ck,Li,Lk,rv1,rv2,dplack,vDbetaDtheta,ps,dp00);
-//	   printf("%d  %d %d %lf %lf %lf \n",j,ci,ck,Li,Lk,ll); 
+
+	   if (j<-10) {
+		   rv1.print("rv1"); rv2.print("rv1"); ps.print("ps"); 
+		   thetades.print("theta.des"); etheta.print("theta"); 
+	           printf("%d  %d %d %lf %lf %lf \n",j,ci,ck,Li,Lk,ll); 
+	   }
+
            ssf+=weights(i)*log(ll); 
 	   loglikecont=log(ll);
-
 //	   if (varlink==1) dplackt=dplackt % etheta;  
 //	   vthetascore=dplack/ll; 
-
+//	   ps.print("ps"); 
+//	   vec vvv=trans(betaiid.row(i)); vvv.print("vvv"); 
+//	   vec vvv1=trans(betaiid.row(k)); vvv1.print("vvv1"); 
 	   vthetascore.subvec(0,pt-1)=dplack/ll; 
-	   if (twostage==0) vthetascore.subvec(pt,pt+dimbeta-1)=(ps(4)*betaiid.row(i)+ps(5)*betaiid.row(k))/ll; 
+	   if (twostage==0) 
+	      vthetascore.subvec(pt,pt+dimbeta-1)=(ps(4)*trans(betaiid.row(i))+ps(5)*trans(betaiid.row(k)))/ll; 
+	   
 	if (pairascertained==1) {
            ssf-=weights(i)*log(1-ps(0)); 
 	   loglikecont=log(ll)-log(1-ps(0));
-//	   vthetascore+=dp00/(1-ps(0)); 
            vthetascore.subvec(0,pt-1)+=dp00/(1-ps(0)); 
 	   if (twostage==0) {
-//         + for (1,0) or (1,0);  - for (1,1), dP00=dP11, and dP01=-dP00
-              sss=1; 
-	      if (ci+ck==2) sss=-1; 
-	      vthetascore.subvec(pt,pt+dimbeta-1)+=sss*(ps(4)*betaiid.row(i)+ps(5)*betaiid.row(k))/(1-ps(0));
+	      llt=(1-ps(0)); 
+              vthetascore.subvec(pt,pt+dimbeta-1)+=(ps(6)*trans(betaiid.row(i))+ps(7)*trans(betaiid.row(k)))/llt; 
 	   }
 	}
 //	   ll=claytonoakesP(deppar,ci,ck,Li,Lk,dplack);
@@ -566,14 +567,16 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 	     DUtheta+=weights(i)*vthetascore*trans(vthetascore);
 	     vthetascore=weights(i)*vthetascore; 
 	     Utheta=Utheta+vthetascore; 
-	     Du1=vDbetaDtheta.subvec(0,pt-1); 
-	     Du2=vDbetaDtheta.subvec(pt,2*pt-1); 
+	     if (twostage==1) {
+		     Du1=vDbetaDtheta.subvec(0,pt-1); 
+		     Du2=vDbetaDtheta.subvec(pt,2*pt-1); 
 //	     if (j<-10) {
 //	     vDbetaDtheta.print("dtds"); 
 //	     Du1.print("Du1"); 
 //	     Du2.print("Du1"); 
 //	     }
-	     DbetaDtheta+= Du1*betaiid.row(i)+ Du2*betaiid.row(k); 
+	            DbetaDtheta+= Du1*betaiid.row(i)+ Du2*betaiid.row(k); 
+	     }
 //		vthetascore.print("vvv 2"); 
 	}
 
@@ -622,7 +625,7 @@ RcppExport SEXP twostageloglikebinpairs(
 		SEXP idepmodel, // SEXP ientryage,
 		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid , SEXP irvdes,
 		SEXP idimthetades, SEXP idimrvdes, SEXP inrvs, SEXP iags, 
-		SEXP ibetaiid, SEXP ipairascertained, SEXP itwostage
+		SEXP ibetaiid, SEXP ipairascertained, SEXP itwostage,SEXP icasecontrol 
 ) // {{{
 {
   try {
@@ -646,7 +649,10 @@ RcppExport SEXP twostageloglikebinpairs(
 // mat rvdes= Rcpp::as<mat>(irvdes); 
  int depmodel= Rcpp::as<int>(idepmodel); 
  IntegerVector strata(istrata);
- int pairascertained = Rcpp::as<int>(ipairascertained); 
+
+//    uvec                 cause = Rcpp::as<uvec>(icause); 
+ uvec pairascertained = Rcpp::as<uvec>(ipairascertained); 
+ uvec casecontrol     = Rcpp::as<uvec>(icasecontrol); 
 
 // array for derivative of flexible design
  NumericVector DXthetavec(iDXtheta);
@@ -685,6 +691,7 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
  int antiid = Rcpp::as<int>(iantiid);
  double loglikecont=0; 
  mat Xtheta = Rcpp::as<mat>(iXtheta);
+ int twostage= Rcpp::as<int>(itwostage); 
 
  int udtest=0; 
   if (udtest==1) { // {{{
@@ -746,37 +753,37 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
       Rprintf("trunkp %lf \n",mean(trunkp)); 
   } // }}}
 
-  int ci,ck,i,j,s=0,k,c1,v1; 
-  double ll=1,Li,Lk,diff=0;
+  int sss=1,ci,ck,i,j,s=0,k,c1; 
+  double llt=1,ll=1,Li,Lk,diff=0;
   double deppar=1,ssf=0,thetak=0; 
   vec dplack(pt); dplack.fill(0);
   vec dp00(pt); dp00.fill(0);
-  vec ps(6); ps.fill(0);
+  vec ps(8); ps.fill(0);
   vec ckij(4),dckij(4),ckijvv(4),dckijvv(4),ckijtv(4),dckijtv(4),ckijvt(4),dckijvt(4);
   i=silent+1; 
 
-  mat thetiid(antiid,pt); 
-  colvec loglikeiid(antiid); 
-  if (iid==1) { thetiid.fill(0); 
-	  loglikeiid.fill(0); 
-  }
   colvec p11tvec(antclust); 
 //  p11tvec=0; 
 //  Rprintf(" %d \n",pt); 
-  colvec Utheta(pt); 
-  colvec vthetascore(pt); 
-  colvec pthetavec(pt); 
-  vec vtheta2(pt); 
-  mat DUtheta(pt,pt); 
-  DUtheta.fill(0); 
-  Utheta.fill(0); 
+  int scoredim; 
+  mat betaiid= Rcpp::as<mat>(ibetaiid);
+  int dimbeta=betaiid.n_cols; 
+  if (twostage==1) scoredim=pt; else scoredim=pt+dimbeta; 
+  colvec Utheta(scoredim); 
+  colvec vthetascore(scoredim); 
+  colvec pthetavec(scoredim); 
+  vec vtheta2(scoredim); 
+  mat DUtheta(scoredim,scoredim); 
+  DUtheta.fill(0); Utheta.fill(0); 
+
+  mat thetiid(antiid,scoredim); 
+  colvec loglikeiid(antiid); 
+  if (iid==1) { thetiid.fill(0); loglikeiid.fill(0); }
 
   int nr=1; 
   if  (depmodel==3) nr=arrayDD[2]; 
   vec rv2(nr),rv1(nr);
 
-  mat betaiid= Rcpp::as<mat>(ibetaiid);
-  int dimbeta=betaiid.n_cols; 
   mat DbetaDtheta(pt,dimbeta); 
   vec vDbetaDtheta(2*pt); 
   DbetaDtheta.fill(0); 
@@ -830,7 +837,7 @@ for (j=0;j<antclust;j++) {
 	   if (varlink==1) diff=-pow(deppar,1)*diff;  
 	   if (varlink==0) diff=-1*pow(deppar,2)*diff; 
 	   
-	   if (pairascertained==1) {
+	   if (pairascertained[j]==1) {
                 ssf-=weights(i)*log(1-ps(0)); 
 	        loglikecont=log(ll)-log(1-ps(0));
 		diff+=dp00(0)/(1-ps(0));
@@ -857,27 +864,46 @@ for (j=0;j<antclust;j++) {
 	mat thetadesvv=thetadesi.slice(j); 
 	mat thetadesv=thetadesvv.rows(0,lnrv); 
 
-	if (j< -10)  {
+	if (j< -10)  {/*{{{*/
 	   Rprintf(" %d %d \n",lnrv,pt); 
            rv1.print("rv1");    rv2.print("rv2"); 
-	   thetadesv.print("thetades "); 
+	   thetadesvv.print("thetades "); 
 	   etheta.print("e-theta"); 
 	   mat test=mat(thetades.begin(),3,1); 
 	   test.print("test"); 
-	}
+	}/*}}}*/
 
-//	ll=claytonoakesbinRVC(etheta,thetadesv,ags,ci,ck,Li,Lk,rv1,rv2,dplackt);
 	ll=claytonoakesbinRVC(etheta,thetadesv,ags,ci,ck,Li,Lk,rv1,rv2,dplack,vDbetaDtheta,ps,dp00);
+//	printf("==============================\n"); 
+//        if (j<10) { rv1.print("rv1"); rv2.print("rv1"); thetades.print("theta.des"); etheta.print("theta"); 
+//	   printf("%d  %d %d %lf %lf %lf \n",j,ci,ck,Li,Lk,ll); ps.print("ps"); 
+//	   }
+
         ssf+=weights(i)*log(ll); 
 	loglikecont=log(ll);
-	if (j<-10)  Rprintf("%lf %d \n",loglikecont,i); 
+	vthetascore.subvec(0,pt-1)=dplack/ll; 
+	if (twostage==0) 
+	   vthetascore.subvec(pt,pt+dimbeta-1)=(ps(4)*trans(betaiid.row(i))+ps(5)*trans(betaiid.row(k)))/ll; 
 
-//	   if (varlink==1) dplackt=dplackt % etheta;  
-        vthetascore=dplack/ll; 
-	if (pairascertained==1) {
-                ssf-=weights(i)*log(1-ps(0)); 
-	        loglikecont=log(ll)-log(1-ps(0));
-		vthetascore+=dp00/(1-ps(0)); 
+	if (pairascertained[j]==1) {
+           ssf-=weights(i)*log(1-ps(0)); 
+	   loglikecont=log(ll)-log(1-ps(0));
+	   vthetascore.subvec(0,pt-1)+=dp00/(1-ps(0)); 
+	   if (twostage==0) {
+	      llt=(1-ps(0)); 
+              vthetascore.subvec(pt,pt+dimbeta-1)+=(ps(6)*trans(betaiid.row(i))+ps(7)*trans(betaiid.row(k)))/llt; 
+	   }
+	}
+
+	if (casecontrol[j]==1) { //         marginal of second person Lk
+	   llt=(ck==1)*(Lk)+(ck==0)*(1-Lk); 
+           ssf-=weights(i)*log(llt); 
+	   loglikecont=log(ll)-log(llt);
+	   if (twostage==0) {
+	      sss=-1; 
+	      if (ck==0) sss=1; 
+              vthetascore.subvec(pt,pt+dimbeta-1)=vthetascore.subvec(pt,pt+dimbeta-1)+sss*trans(betaiid.row(k))/llt; 
+	   }
 	}
 
 //	   ll=claytonoakesP(deppar,ci,ck,Li,Lk,dplack);
@@ -898,7 +924,7 @@ for (j=0;j<antclust;j++) {
 	   if (varlink==1) diff=deppar*dplack(0)/ll; 
 	   if (varlink==0) diff=dplack(0)/ll;
 
-	   if (pairascertained==1) {
+	   if (pairascertained[j]==1) {
                 ssf-=weights(i)*log(1-ps(0)); 
 	        loglikecont-=log(1-ps(0));
 	   if (varlink==1) diff+=deppar*dp00(0)/(1-ps(0)); 
@@ -920,12 +946,12 @@ for (j=0;j<antclust;j++) {
 	     vthetascore=weights(i)*vthetascore; 
 	     Utheta=Utheta+vthetascore; 
 
-	     Du1=vDbetaDtheta.subvec(0,pt-1); 
-	     Du2=vDbetaDtheta.subvec(pt,2*pt-1); 
-	     DbetaDtheta+= Du1*betaiid.row(i)+ Du2*betaiid.row(k); 
-//		vthetascore.print("vvv 2"); 
+	     if (twostage==1) {
+		     Du1=vDbetaDtheta.subvec(0,pt-1); 
+		     Du2=vDbetaDtheta.subvec(pt,2*pt-1); 
+		     DbetaDtheta+= Du1*betaiid.row(i)+ Du2*betaiid.row(k); 
+	     }
 	}
-
 
      if (iid==1) { 
 	 for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)+=vthetascore(c1); 
