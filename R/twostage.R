@@ -214,7 +214,8 @@
 ##' datacc <- data[ss,]
 ##' 
 ##' mm <- familycluster.index(datacc$cluster)
-##' pairs <- matrix(mm$familypairindex,ncol=2,byrow=TRUE)
+##' pairs <- mm$pairs
+##' head(pairs)
 ##' ## second column of pairs represent probands 
 ##' kinship <- rep(1,nrow(pairs))
 ##' kinship[datacc$zyg[pairs[,1]]=="DZ"] <- 0.5
@@ -269,6 +270,7 @@
 ##' @param two.stage to fit two-stage model, if 0 then will fit hazard model with additive gamma structure (WIP)
 ##' @param cr.models competing risks models for two.stage=0, should be given as a list with models for each cause
 ##' @param case.control assumes case control structure for "pairs" with second column being the probands, when this options is used the twostage model is profiled out via the paired estimating equations for the survival model. 
+##' @param ascertained if the pair are sampled only when there is an event. This is in contrast to case.control sampling where a proband is given. This can be combined with control probands. Pair-call of twostage is needed  and second column of pairs are the first jump time with an event for ascertained pairs, or time of control proband.
 twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
 silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,
 var.link=1,iid=1, step=0.5,notaylor=0,model="clayton.oakes",
@@ -276,7 +278,7 @@ var.link=1,iid=1, step=0.5,notaylor=0,model="clayton.oakes",
   se.clusters=NULL,max.clust=NULL,numDeriv=0,numDeriv.method="simple",
   random.design=NULL,pairs=NULL,pairs.rvs=NULL,
   additive.gamma.sum=NULL,var.par=1,var.func=NULL,
-  two.stage=1,cr.models=NULL,case.control=0)
+  two.stage=1,cr.models=NULL,case.control=0,ascertained=0)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; 
@@ -286,7 +288,6 @@ else stop("Model must by either clayton.oakes or plackett \n");
 start.time <- NULL; ptrunc <- NULL; psurvmarg <- NULL; status <- NULL
 fix.baseline <- 0
 if ((!is.null(margsurv)) | (!is.null(marginal.survival))) fix.baseline <- 1
-print(fix.baseline); 
 
 if (!is.null(margsurv)) {
 if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
@@ -519,8 +520,9 @@ if (!is.null(margsurv))  {
   }
   ## }}}
 
+
 ###  setting up arguments for Aalen baseline profile estimates
- if (fix.baseline==0 )  { ## {{{ 
+ if (fix.baseline==0 )  { ## {{{  two.stage=0
 
  if (is.null(cr.models)) stop("give hazard models for different causes, 
       ex cr.models=list(Surv(time,status==1)~+1,Surv(time,status==2)~+1) \n")
@@ -593,11 +595,10 @@ if (!is.null(margsurv))  {
 
       } ## }}} 
 
-      if (case.control==1) { ## {{{ 
+      if (case.control==1 || ascertained==1) { ## {{{ 
 
 ###      print(dim(data))
 ###      print(summary(pairs))
-
          data1 <-        data[pairs[,1],]
          data.proband <- data[pairs[,2],]
 
@@ -620,7 +621,16 @@ if (!is.null(margsurv))  {
 	dcausescase   <- lstatuscase[jumps][st]
 	ids           <- (1:nrow(data1))[jumps][st]
 	###
-###      cr.models=list(Surv(time,status==1)~+1,Surv(time,status==2)~+x ) 
+	### delayed entry for case because of ascertained sampling
+	### controls are however control probands, and have entry=0 
+	cr.models2 <- list()
+	if (ascertained==1) {
+		entry <- timescase*lstatuscase
+		data1$entry <- entry
+	      	cr.models2[[i]]=as.formula(paste("Surv(entry,",timestatus[1],",",timestatus[2],")~+1",sep=""))
+###		print(cr.models2[[i]])
+###	      	cr.models2[[i]]=Surv(entry,endage,cancer)~+1
+	} else cr.models2 <- cr.models
         nc <- 0
 	for (i in 1:length(cr.models)) {
               X <- aalen.des(as.formula(cr.models[[i]]),data=data1)$X
@@ -631,11 +641,9 @@ if (!is.null(margsurv))  {
 	xjumpcase  <- array(0,c(length(cr.models),nc,length(ids)))
 
 	## first compute marginal aalen models for all causes
-###	par(mfrow=c(2,2))
-###	plot(a[[i]])
 	a <- list(); da <- list(); 
 	for (i in 1:length(cr.models)) { ## {{{ 
-	      a[[i]]  <-  aalen(as.formula(cr.models[[i]]),data=data1,robust=0)
+	      a[[i]]  <-  aalen(as.formula(cr.models2[[i]]),data=data1,robust=0)
 	      da[[i]] <- apply(a[[i]]$cum[,-1,drop=FALSE],2,diff)
 	      jumpsi  <- (1:length(dtimes))[dcauses==i]
               X       <- aalen.des(as.formula(cr.models[[i]]),data=data1)$X
@@ -652,19 +660,14 @@ if (!is.null(margsurv))  {
 	      fp <- fp+ncol(X)
 	 } ## }}} 
 
-###	print(xjump)
-###	print(xjumpcase)
-
       ### starting values for iteration 
       Bit <- Bitcase <- c()
       for (j in 1:length(cr.models)) {
 	      ## initial values 
 ###	      a <-  aalen(as.formula(cr.models[[i]]),data=subset(data1,lstatuscase==0),robust=0)
-	      a <-  aalen(as.formula(cr.models[[i]]),data=data1,robust=0)
+	      a <-  aalen(as.formula(cr.models2[[i]]),data=data1,robust=0)
 	      Bit <- cbind(Bit,Cpred(a$cum,dtimesst)[,-1,drop=FALSE])
-###	      Bitcase  <- cbind(Bitcase,Cpred(a$cum,dtimesstcase)[,-1,drop=FALSE])
        }		  
-###       Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
 
 	## }}} 
 
@@ -713,21 +716,22 @@ if (!is.null(margsurv))  {
       icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
       ivarlink=var.link,iid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
       itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
-      irvdes=random.design,iags=additive.gamma.sum) ## }}}
+      irvdes=random.design,iags=additive.gamma.sum,iascertained=ascertained) ## }}}
       }
       else { ## pair-structure 
 	     ## twostage model,    case.control option,   profile out baseline 
 	     ## conditional model, case.control option,   profile out baseline 
       if (two.stage==1) { ## {{{ two-stage model 
 
-          if (case.control==1) { ## {{{  profiles out baseline under case-control sampling
+      if (fix.baseline==0) ## if baseline is not given 
+      if (case.control==1 || ascertained==1) { ## {{{  profiles out baseline under case-control/ascertainment sampling
 
 ###	      ## initial values , only one cr.model for survival 
 ###           Bit <- cbind(Cpred(a[[1]]$cum,dtimesst)[,-1])
              if (detail>1) plot(dtimesst,Bit,type="l",main="Bit")
 
              Bitcase  <- Cpred(cbind(dtimesst,Bit),dtimesstcase)[,-1,drop=FALSE]
-	     print(summary(Bitcase))
+###	     print(summary(Bitcase))
              Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
 ###	     print(partheta); 
 
@@ -750,11 +754,18 @@ if (!is.null(margsurv))  {
 		   if (d<0.000001) break; 
            } ## }}} 
 
-	   pbases <- Cpred(rbind(rep(0,1+ncol(Bit)),cbind(dtimesst,Bit)),alltimes)[,-1,drop=FALSE]
-           X <- aalen.des(as.formula(cr.models[[1]]),data=data)$X
+	   pbases    <- Cpred(rbind(rep(0,1+ncol(Bit)),cbind(dtimesst,Bit)),alltimes)[,-1,drop=FALSE]
+           X         <- aalen.des(as.formula(cr.models[[1]]),data=data)$X
 	   psurvmarg <- exp(-apply(X*pbases,1,sum))
-	      
+	   if (ascertained==1) {
+              Xcase     <- aalen.des(as.formula(cr.models[[1]]),data=data.proband)$X
+	      pba.case  <- Cpred(rbind(rep(0,1+ncol(Bit)),cbind(dtimesst,Bit)),entry)[,-1,drop=FALSE]
+	      ptrunc    <- rep(exp(-apply(Xcase*pba.case,1,sum)*lstatuscase),each=2)
+	   }
+###	   print(head(cbind(psurvmarg,ptrunc)))
 ###	   print(summary(psurvmarg))
+###	   print(summary(ptrunc))
+
           } ## }}} 
 
           outl<-.Call("twostageloglikeRVpairs", ## {{{
@@ -764,8 +775,10 @@ if (!is.null(margsurv))  {
           ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
           itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
           irvdes=random.design,
-          idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs,iags=additive.gamma.sum) 
+          idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs,iags=additive.gamma.sum, 
+	  iascertained=ascertained)
 	  ## }}} 
+
 
           if (fix.baseline==0)  outl$baseline <- cum1
 
@@ -1102,6 +1115,7 @@ if (!is.null(margsurv))  {
 	     marginal.surv=marginal.surv,marginal.trunc=marginal.trunc,baseline=out$baseline,
 	     se=diag(robvar.theta)^.5)
   class(ud)<-"twostage" 
+  attr(ud, "response") <- "survival"
   attr(ud, "Formula") <- formula
   attr(ud, "clusters") <- clusters
   attr(ud, "cluster.call") <- cluster.call
@@ -1113,9 +1127,10 @@ if (!is.null(margsurv))  {
   attr(ud,"ptheta")<-ptheta
   attr(ud,"antpers")<-antpers; 
   attr(ud,"antclust")<-antclust; 
-  if (dep.model==3 & two.stage==0) attr(ud,"all.likepairs")<- all.likepairs
   attr(ud, "Type") <- model
   attr(ud, "additive-gamma") <- (dep.model==3)*1
+  if (!is.null(marginal.trunc)) attr(ud,"trunclikeiid")<- out$trunclikeiid
+  if (dep.model==3 & two.stage==0) attr(ud,"all.likepairs")<- all.likepairs
   if (dep.model==3 ) attr(ud,"additive.gamma.sum") <- additive.gamma.sum
 #likepairs=likepairs,##  if (dep.model==3 & pair.structure==1) attr(ud, "likepairs") <- c(out$likepairs)
   if (dep.model==3 & pair.structure==0) attr(ud, "pardes") <- theta.des
@@ -1124,7 +1139,6 @@ if (!is.null(margsurv))  {
   if (dep.model==3 & pair.structure==1) attr(ud, "theta.des") <- theta.des[,,1]
   if (dep.model==3 & pair.structure==0) attr(ud, "rv1") <- random.design[1,]
   if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <- random.design[1,,1]
-  attr(ud, "response") <- "survival"
   return(ud);
   ## }}}
 

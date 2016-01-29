@@ -1954,7 +1954,8 @@ RcppExport SEXP twostageloglikeRV(
 		SEXP icluster,SEXP iclustsize,SEXP iclusterindex, SEXP ivarlink, 
                 SEXP iiid, SEXP  iweights, SEXP isilent, 
 		SEXP idepmodel, // SEXP ientryage,
-		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid, SEXP irvdes, SEXP iags
+		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid, SEXP irvdes, SEXP iags,
+		SEXP iascertained
 ) 
 { // {{{
   try {
@@ -1973,6 +1974,7 @@ RcppExport SEXP twostageloglikeRV(
  colvec secluster = Rcpp::as<colvec>(isecluster);
  mat rvdes= Rcpp::as<mat>(irvdes); 
  mat ags = Rcpp::as<mat>(iags);
+ int ascertained= Rcpp::as<int>(iascertained); 
 
 // array for derivative of flexible design
  NumericVector DXthetavec(iDXtheta);
@@ -2060,8 +2062,11 @@ RcppExport SEXP twostageloglikeRV(
   i=silent+1; 
 
   mat thetiid(antiid,pt); 
-  colvec loglikeiid(antiid); 
-  if (iid==1) { thetiid.fill(0); loglikeiid.fill(0); }
+  colvec loglikeiid(antclust); 
+  colvec trunclikeiid(antclust); 
+  if (iid==1) { thetiid.fill(0); 
+	  loglikeiid.fill(0); trunclikeiid.fill(0); 
+  }
 
   vec p11tvec(antclust); 
   vec Utheta(pt); 
@@ -2113,10 +2118,11 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
            if (trunkp(i)<1 || trunkp(k)<1) {	
 		   Lit=trunkp(i); Lkt=trunkp(k); 
 		   llt=claytonoakes(deppar,0,0,Lit,Lkt,dplackt);
+                   if (ascertained==1) llt=1-llt;
 		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
 		   ssf+=weights(i)*(log(ll)-log(llt));
 		   loglikecont=(log(ll)-log(llt));
-	           diff=dplack(0)/ll-dplackt(0)/llt; 
+	           if (ascertained==1) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; 
 	   } else {
 		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
 		   ssf+=weights(i)*log(ll); 
@@ -2142,16 +2148,13 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 		   Lit=trunkp(i); Lkt=trunkp(k); 
 //		   llt=claytonoakesRV(theta,thetades,0,0,Lit,Lkt,rv1,rv2,dplackt);
 //		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
-		   llt=claytonoakesRVC(etheta,thetades,ags,0,0,Lit,Lkt,rv1,rv2,dplackt,wwc);
+                   llt=claytonoakesRVC(etheta,thetades,ags,0,0,Lit,Lkt,rv1,rv2,dplackt,wwc);
+                   if (ascertained==1) llt=1-llt;
 		   ll=claytonoakesRVC(etheta,thetades,ags,ci,ck,Li,Lk,rv1,rv2,dplack,wwc);
 		   ssf+=weights(i)*(log(ll)-log(llt));
 		   loglikecont=(log(ll)-log(llt));
 
-//	           if (varlink==1) { 
-//			   dplackt=dplackt % etheta;  
-//			   dplack=dplack % etheta;  
-//		   }
-	           vthetascore=dplack/ll-dplackt/llt; 
+                   if (ascertained==1) vthetascore=dplack/ll+dplackt/llt; else  vthetascore=dplack/ll-dplackt/llt; 
 		   // }}}
 	   } else {
 		   ll=claytonoakesRVC(etheta,thetades,ags,ci,ck,Li,Lk,rv1,rv2,dplackt,wwc);
@@ -2168,11 +2171,12 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 	} else if (depmodel==2) { // plackett model  // {{{
         if (trunkp(i)<1 || trunkp(k)<1) {	
            Lit=trunkp(i); Lkt=trunkp(k); 
-           llt=placklike(deppar,0,0,Lit,Lkt,dplackt);
+	   llt=placklike(deppar,0,0,Lit,Lkt,dplackt);
+           if (ascertained==1) llt=1-llt;
            ll=placklike(deppar,ci,ck,Li,Lk,dplack);
 	   ssf+=weights(i)*(log(ll)-log(llt));
 	   loglikecont=(log(ll)-log(llt));
-	   diff=dplack(0)/ll-dplackt(0)/llt; 
+	   if (ascertained==1) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; 
 	   sdj=pow(diff,2); 
 	} else {
            ll=placklike(deppar,ci,ck,Li,Lk,dplack);
@@ -2202,7 +2206,8 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 	}
 
      if (iid==1) { for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)-=vthetascore(c1); 
-	           loglikeiid(secluster(i))+=loglikecont; 
+	           loglikeiid(j)+=loglikecont; 
+	           trunclikeiid(j)+=llt; 
      }
 
 
@@ -2220,6 +2225,7 @@ res["score"]=Utheta;
 res["Dscore"]=DUtheta; 
 if (iid==1) { res["theta.iid"]=thetiid; 
 	      res["loglikeiid"]=loglikeiid; 
+	      res["trunclikeiid"]=trunclikeiid; 
             }
 
 return(res); 
@@ -2249,7 +2255,8 @@ RcppExport SEXP twostageloglikeRVpairs(
                 SEXP iiid, SEXP  iweights, SEXP isilent, 
 		SEXP idepmodel, // SEXP ientryage,
 		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid, SEXP irvdes,
-		SEXP idimthetades, SEXP idimrvdes, SEXP inrvs, SEXP iags 
+		SEXP idimthetades, SEXP idimrvdes, SEXP inrvs, SEXP iags, 
+	        SEXP iascertained	
 )  
 { // {{{ 
   try {
@@ -2275,6 +2282,7 @@ int pt=theta.n_rows;
  colvec secluster = Rcpp::as<colvec>(isecluster);
 // mat rvdes= Rcpp::as<mat>(irvdes); 
  int depmodel= Rcpp::as<int>(idepmodel); 
+ int ascertained= Rcpp::as<int>(iascertained); 
  IntegerVector strata(istrata);
 
 // array for derivative of flexible design
@@ -2405,9 +2413,11 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
   i=silent+1; 
 
   mat thetiid(antiid,pt); 
-  colvec loglikeiid(antiid); 
+  colvec loglikeiid(antclust); 
+  colvec trunclikeiid(antclust); 
   if (iid==1) { thetiid.fill(0); 
 	        loglikeiid.fill(0); 
+	        trunclikeiid.fill(0); 
   }
   colvec p11tvec(antclust); 
 //  p11tvec=0; 
@@ -2480,10 +2490,11 @@ for (j=0;j<antclust;j++) {
            if (trunkp(i)<1 || trunkp(k)<1) {	
 		   Lit=trunkp(i); Lkt=trunkp(k); 
 		   llt=claytonoakes(deppar,0,0,Lit,Lkt,dplackt);
+                   if (ascertained==1) llt=1-llt;
 		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
 		   ssf+=weights(i)*(log(ll)-log(llt));
 		   loglikecont=(log(ll)-log(llt));
-	           diff=dplack(0)/ll-dplackt(0)/llt; 
+	           if (ascertained==1) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; 
 	   } else {
 		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
 		   ssf+=weights(i)*log(ll); 
@@ -2506,12 +2517,7 @@ for (j=0;j<antclust;j++) {
 //        vec rv2= trans(rv.row(1)); 
         vec rv1= trans(rv.submat(span(0),span(0,lnrv)));
         vec rv2= trans(rv.submat(span(1),span(0,lnrv)));
-	if (j<-1 ) {
-        rv.print("rv"); 
-	Rprintf(" %d \n",lnrv); 
-	rv1.print("rv1"); 
-	rv2.print("rv2"); 
-	}
+	if (j<-1 ) { rv.print("rv"); Rprintf(" %d \n",lnrv); rv1.print("rv1"); rv2.print("rv2"); }
 
 	// takes parameter relations for each pair
 	// 3-dimensional array pairs*(random effects* pars )
@@ -2520,44 +2526,43 @@ for (j=0;j<antclust;j++) {
 
 	if (j< -10)  {
 	   Rprintf("%d %d %d %d %d %lf %lf \n",j,i,k,ci,ck,Li,Lk); 
-//           rv1.print("rv1");    rv2.print("rv2"); 
-//	   thetadesv.print("thetades "); 
-//	   etheta.print("e-theta"); 
-//	   ags.print("ags"); 
+//         rv1.print("rv1");    rv2.print("rv2");    thetadesv.print("thetades "); 
+//	   etheta.print("e-theta");    ags.print("ags"); 
 	}
 
-           if (trunkp(i)<1 || trunkp(k)<1) { //  
+           if (trunkp(i)<1 || trunkp(k)<1) { 
+		   
 		   Lit=trunkp(i); Lkt=trunkp(k); 
 //		   llt=claytonoakesRV(theta,thetades,0,0,Lit,Lkt,rv1,rv2,dplackt);
 //		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
-		   llt=claytonoakesRVC(etheta,thetadesv,ags,0,0,Lit,Lkt,rv1,rv2,dplackt,wwc);
+		   if ((ascertained==0) || (ascertained==2)) llt=claytonoakesRVC(etheta,thetadesv,ags,0,0,Lit,Lkt,rv1,rv2,dplackt,wwc);
+                   if (ascertained==2) llt=1-llt;  // 1-p00, no censoring case
+		   if (ascertained==1) llt=claytonoakesRVC(etheta,thetadesv,ags,0,1,Lit,Lkt,rv1,rv2,dplackt,wwc);
 		   ll=claytonoakesRVC(etheta,thetadesv,ags,ci,ck,Li,Lk,rv1,rv2,dplack,wwc);
+//		   dplack.print("dp"); 
+//		   dplackt.print("dp---------------t"); 
+//	   Rprintf("%d %d %d %d %d %lf %lf %lf %lf %lf %lf  \n",j,i,k,ci,ck,Lit,Lkt,Li,Lk,log(ll),log(llt)); 
 		   ssf+=weights(i)*(log(ll)-log(llt));
 		   loglikecont=(log(ll)-log(llt));
-
-//	           if (varlink==1) { dplackt=dplackt % etheta;  dplack=dplack % etheta;  }
-	           vthetascore=dplack/ll-dplackt/llt; 
-		   // 
+                   if (ascertained==2) vthetascore=dplack/ll+dplackt/llt; else  vthetascore=dplack/ll-dplackt/llt; 
+//		   vthetascore.print("vtheta-score"); 
 	   } else {
 		   ll=claytonoakesRVC(etheta,thetadesv,ags,ci,ck,Li,Lk,rv1,rv2,dplackt,wwc);
 		   ssf+=weights(i)*log(ll); 
 		   loglikecont=log(ll);
-//		   printf("%lf %lf \n",weights(i),ll); 
-
-//	           if (varlink==1) dplackt=dplackt % etheta;  
 	           vthetascore=dplackt/ll; 
 	   } 
-//	   if (varlink==0) diff=-1*pow(deppar,2)*diff; 
-//	   sdj=pow(diff,2); 
 	   // }}} 
 	} else if (depmodel==2) { // plackett model  //  // {{{ 
         if (trunkp(i)<1 || trunkp(k)<1) {	
            Lit=trunkp(i); Lkt=trunkp(k); 
-           llt=placklike(deppar,0,0,Lit,Lkt,dplackt);
+           llt=placklike(deppar,0,0,Lit,Lkt,dplackt); 
+           if (ascertained==1) llt=1-llt; // 1-P00
            ll=placklike(deppar,ci,ck,Li,Lk,dplack);
 	   ssf+=weights(j)*(log(ll)-log(llt));
 	   loglikecont=(log(ll)-log(llt));
-	   diff=dplack(0)/ll-dplackt(0)/llt; 
+//	   diff=dplack(0)/ll-dplackt(0)/llt; 
+	   if (ascertained==1) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; 
 	   sdj=pow(diff,2); 
 	} else {
            ll=placklike(deppar,ci,ck,Li,Lk,dplack);
@@ -2584,7 +2589,8 @@ for (j=0;j<antclust;j++) {
 	}
 
      if (iid==1) { for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)+=vthetascore(c1); 
-	           loglikeiid((int) secluster(i))+=loglikecont; 
+	           loglikeiid(j)+=loglikecont; 
+		   trunclikeiid(j)+=llt; 
      }
      } //  strata(i)==strata(k) indenfor strata
 
@@ -2598,9 +2604,10 @@ List res;
 res["loglike"]=ssf; 
 res["score"]=Utheta; 
 res["Dscore"]=DUtheta; 
-if (iid==1) { res["theta.iid"]=thetiid; 
-	      res["loglikeiid"]=loglikeiid; 
-              res["likepairs"]=likepairs; 
+if (iid==1) { res["theta.iid"]   =thetiid; 
+	      res["loglikeiid"]  =loglikeiid; 
+              res["likepairs"]   =likepairs; 
+              res["trunclikeiid"]=trunclikeiid; 
             }
 
 return(res); 
@@ -2610,8 +2617,6 @@ return(res);
     ::Rf_error( "c++ exception (unknown reason)" ); 
   }
   return R_NilValue; // -Wall
-
-
 
 } // }}}  
 
@@ -2729,8 +2734,10 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
 
   mat thetiid(antiid,pt); 
   colvec loglikeiid(antiid); 
+  colvec trunclikeiid(antiid); 
   if (iid==1) { thetiid.fill(0); 
 	        loglikeiid.fill(0); 
+		trunclikeiid.fill(0); 
   }
   colvec p11tvec(antclust); 
 //
@@ -2887,7 +2894,8 @@ if (j<-10)  {  Rprintf(" så betinges der ! %d %d %d %d \n",entrycause(i),entryc
 	}
 
      if (iid==1) { for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)+=weights(i)*vthetascore(c1); 
-	           loglikeiid((int) secluster(i))+=loglikecont; 
+	           loglikeiid(j)+=loglikecont; 
+		   trunclikeiid(j)+=llt; 
      }
 
      } // // }}}  strata(i)==strata(k) indenfor strata
@@ -2907,6 +2915,7 @@ res["Dscore"]=DUtheta;
 if (iid==1) { res["theta.iid"]=thetiid; 
 	      res["loglikeiid"]=loglikeiid; 
               res["likepairs"]=likepairs; 
+	      res["trunclikeiid"]=trunclikeiid; 
               res["all.likepairs"]=matlikepairs; 
             }
 

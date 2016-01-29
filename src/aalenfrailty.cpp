@@ -327,13 +327,15 @@ RcppExport SEXP BhatAddGamCC(SEXP itwostage,SEXP idBaalen,SEXP icause,
 
     // if it>=1 then uses iterative estimator rather than recursive
     // for baseline, case/proband is handled via iterative
-    int recursive=1; 
-    if (twostage==-1)  recursive=0;  // not two stage model 
-    if (twostage==0)   recursive=1;  // not two stage model 
-    if (twostage==1)   recursive=1;  // two-stage 
-    if (twostage==2)   recursive=0;  // two-stage 
-    it=1; 
+    int recursive=1;int ascertainment=1; 
+    if (twostage==-2)  { recursive=1; ascertainment=1;it=1;} // not two stage model 
+    if (twostage==-1)  { recursive=0; ascertainment=0;     } // not two stage model 
+    if (twostage==0)   { recursive=1; ascertainment=0;it=1;} // not two stage model 
+    if (twostage==1)   { recursive=1; ascertainment=0;it=1;} // two-stage 
+    if (twostage==2)   { recursive=0; ascertainment=0;     } // two-stage 
+    if (twostage==3)   { recursive=1; ascertainment=1;it=1;} // two-stage it=1; 
 
+//  xjump for each jump contains matrix of covariates such that vec cumhaz1= xjump.slice(s) * Bhat 
 // array for xjump covariates of jump subject, for all causes 
  NumericVector vxjump(ixjump);
  IntegerVector arrayDims(idimxjump);
@@ -351,30 +353,28 @@ RcppExport SEXP BhatAddGamCC(SEXP itwostage,SEXP idBaalen,SEXP icause,
 
  // }}}
  
-// double nt = timer.toc();
-// printf("timer-ind %lf \n",nt); 
+// double nt = timer.toc(); printf("timer-ind %lf \n",nt); 
 
   vec casev(cause.n_elem); 
   vec etheta=theta; 
 //  if (varlink==1) etheta=exp(theta); 
 
-//  xjump for each jump contains matrix of covariates such that vec cumhaz1= xjump.slice(s) * Bhat 
-
-    mat  Bhat(dBaalen.n_rows, dBaalen.n_cols); 
+  mat  Bhat(dBaalen.n_rows, dBaalen.n_cols); 
 //    cube  DthetaBhat(theta.n_elem, dBaalen.n_cols,dBaalen.n_rows); 
 //    vec dBB(theta.n_elem); 
-
 //    Bhat.fill(0); // initialize 
-//
-    vec DthetaS(theta.n_elem); // ,DthetaDtS(theta.n_elem),DthetaW(theta.n_elem); 
-    vec allvec(6); 
-    int ncr=rv.n_rows/2; 
+
+  vec DthetaS(theta.n_elem); // ,DthetaDtS(theta.n_elem),DthetaW(theta.n_elem); 
+  vec allvec(6),  allvect(6); 
+  int ncr=rv.n_rows/2; 
 //    printf(" %d \n",ncr); 
-    vec cumhaz(ncr); cumhaz.fill(0); 
+  vec cumhaz(ncr); cumhaz.fill(0); 
+  vec cumhazt(ncr); cumhazt.fill(0); 
 //    vec Dcumhaz1(ncr); 
 //    vec cumhaz2(ncr); cumhaz2.fill(0); 
 
-    double  s1=1,s2=1,caseweight=1,ll; 
+  double s1=1,s2=1,caseweight=1,ll=1; 
+  double s1t=1,llt=1; 
 //    mat rv2=0*rv.slice(0); 
 //    mat rv1=rv.slice(0); 
 
@@ -393,6 +393,7 @@ RcppExport SEXP BhatAddGamCC(SEXP itwostage,SEXP idBaalen,SEXP icause,
 	// cumulative hazards for cases Xcase^T B(T_case)
         vec cumhazcase=trans(Bcaseit.row(k)); 
         if ((recursive==0) & (k>0)) cumhaz=xjump.slice(k)*trans(Bit.row(k)); 
+        cumhazt=xjump.slice(k)*trans(Bit.row(k)); 
 
         int lnrv= nrvs(k)-1; // number of random effects for this cluster 	
 	mat rvm=rv.slice(k);
@@ -403,30 +404,30 @@ RcppExport SEXP BhatAddGamCC(SEXP itwostage,SEXP idBaalen,SEXP icause,
         if (twostage<=0) {	
            rrv1= rvm.rows(0,nnn/2-1);
            rrv2= rvm.rows(nnn/2,nnn-1);
-//	   if (k<10) rrv1.print("rr1"); 
 	} else {
            rv1= trans(rvm.row(0));
            rv2= trans(rvm.row(1));
-//	   rv1.print("rv1"); 
-//	   rv2.print("rv2"); 
+//	   rv1.print("rv1");  rv2.print("rv2"); 
 	}
 
         mat thetadesv=thetades.slice(k); 
+//	rv1.print("rv1"); thetadesv.print("thetades"); 
 
-//	rv1.print("rv1"); 
-//	thetadesv.print("thetades"); 
-//
         if (twostage<=0) {
-           ll=survivalRVC2all(etheta,thetadesv,ags,(int) cause(k),(int) causecase(k),cumhaz,cumhazcase,rrv1,rrv2,DthetaS,allvec);
-           caseweight=allvec(4)/ll; 
+           ll=survivalRVC2all(etheta,thetadesv,ags,cause(k),causecase(k),cumhaz,cumhazcase,rrv1,rrv2,DthetaS,allvec);
+           caseweight=allvec(4)/(ll); 
 	} else { 
 	    s1=exp(-cumhaz(0));      // survival to clayton-oakes
 	    s2=exp(-cumhazcase(0));  // cases via iterative, one-dimensional only (survival)
 //         printf(" %d %d %lf %lf \n",cause(k),causecase(k),s1,s2); 
-//	    etheta.print("hlj"); 
-//	    ags.print("ags"); 
-	    ll=claytonoakesRVC(etheta,thetadesv,ags,(int) cause(k),(int) causecase(k),s1,s2,rv1,rv2,DthetaS,allvec);
-	    caseweight=allvec(0)/(s1*ll); 
+//	    etheta.print("hlj");  ags.print("ags"); 
+	    ll=claytonoakesRVC(etheta,thetadesv,ags,cause(k),causecase(k),s1,s2,rv1,rv2,DthetaS,allvec);
+	    if (ascertainment==0) caseweight=allvec(0)/(s1*ll); 
+	    if (ascertainment==1) {
+//	       s1t=exp(-cumhazt(0)); 
+	       llt=claytonoakesRVC(etheta,thetadesv,ags,0,causecase(k),s1,s2,rv1,rv2,DthetaS,allvect);
+	       caseweight=(s1*allvec(0)+s2*llt)/(s2*s1*ll); 
+	    }
 //	    printf("caseweight %lf %lf \n",caseweight,ll); 
 	}
 	//   either S / D1 S, when cause2=0, or D2 S / D1D2S, when cause2=1
@@ -476,5 +477,4 @@ RcppExport SEXP BhatAddGamCC(SEXP itwostage,SEXP idBaalen,SEXP icause,
   }
   return R_NilValue; // -Wall
 } // }}}
-
 

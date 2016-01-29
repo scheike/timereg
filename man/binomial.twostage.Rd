@@ -16,14 +16,15 @@ binomial.twostage(margbin, data = sys.parent(),
   model = "plackett", marginal.p = NULL, beta.iid = NULL,
   Dbeta.iid = NULL, strata = NULL, max.clust = NULL, se.clusters = NULL,
   numDeriv = 0, random.design = NULL, pairs = NULL, pairs.rvs = NULL,
-  additive.gamma.sum = NULL)
+  additive.gamma.sum = NULL, pair.ascertained = 0, twostage = 1,
+  case.control = 0, beta = NULL)
 }
 \arguments{
 \item{margbin}{Marginal binomial model}
 
 \item{data}{data frame}
 
-\item{score.method}{Scoring method}
+\item{score.method}{Scoring method default is "fisher.scoring" among "fisher.scoring","nlminb","optimize","nlm"}
 
 \item{Nit}{Number of iterations}
 
@@ -75,7 +76,11 @@ binomial.twostage(margbin, data = sys.parent(),
 
 \item{pairs.rvs}{for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair.}
 
-\item{additive.gamma.sum}{for two.stage=0, this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters.}
+\item{additive.gamma.sum}{this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters. Default is a matrix of 1's}
+
+\item{pair.ascertained}{if pairs are sampled only when there are events in the pair i.e. Y1+Y2>=1.}
+
+\item{twostage}{default twostage=1, to fit MLE use twostage=0}
 }
 \description{
 The pairwise pairwise odds ratio model provides an alternative to the alternating logistic

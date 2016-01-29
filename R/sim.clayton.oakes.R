@@ -52,7 +52,7 @@ if (left>0) {
 ###  } else { lefttime <- trunk <- rep(0,K);}
 ###
 ###  ud <- cbind(ud,rep(minstime,each=n),rep(lefttime,each=n),rep(trunk,each=n))
-  names(ud)<-c("time","status","x1","cluster","mintime","lefttime","truncated")
+  names(ud)<-c("time","status","x","cluster","mintime","lefttime","truncated")
   return(ud)
 } ## }}} 
 
@@ -109,7 +109,7 @@ if (left>0) {
   if (pairleft==1) ud <- cbind(ud,rep(minstime,each=n),rep(lefttime,each=n),rep(trunk,each=n))
   else ud <- cbind(ud,rep(minstime,each=n),lefttime,trunk)
 
-  colnames(ud)<-c("time","status","x1","cluster","mintime","lefttime","truncated")
+  colnames(ud)<-c("time","status","x","cluster","mintime","lefttime","truncated")
   ud <- data.frame(ud)
   return(ud)
 } ## }}} 
@@ -165,7 +165,7 @@ if (left>0) { ## {{{
   if (pairleft==1) ud <- cbind(ud,zyg,rep(minstime,each=n),rep(lefttime,each=n),rep(trunk,each=n))
   else ud <- cbind(ud,zyg,rep(minstime,each=n),lefttime,trunk)
 
-names(ud)<-c("time","status","x1","cluster","zyg","mintime","lefttime","truncated")
+names(ud)<-c("time","status","x","cluster","zyg","mintime","lefttime","truncated")
 return(ud)
 } ## }}} 
 
@@ -225,7 +225,7 @@ if (left>0) { ## {{{
   if (pairleft==1) ud <- cbind(ud,zyg,rep(minstime,each=n),rep(lefttime,each=n),rep(trunk,each=n))
   else ud <- cbind(ud,type,rep(minstime,each=n),lefttime,trunk)
 
-names(ud)<-c("time","status","x1","cluster","type","mintime","lefttime","truncated")
+names(ud)<-c("time","status","x","cluster","type","mintime","lefttime","truncated")
 return(ud)
 } ## }}} 
 
@@ -354,7 +354,7 @@ if (left>0) { ## {{{
   if (pairleft==1) ud <- cbind(ud,zyg,rep(minstime,each=n),rep(lefttime,each=n),rep(trunk,each=n))
   else ud <- cbind(ud,zyg,rep(minstime,each=n),lefttime,trunk)
 
-names(ud)<-c("time","status","x1","cluster","zyg","mintime","lefttime","truncated")
+names(ud)<-c("time","status","x","cluster","zyg","mintime","lefttime","truncated")
 return(ud)
 } ## }}} 
 
@@ -426,7 +426,7 @@ if (left>0) { ## {{{
   if (pairleft==1) ud <- cbind(ud,zyg,rep(minstime,each=n),rep(lefttime,each=n),rep(trunk,each=n))
   else ud <- cbind(ud,zyg,rep(minstime,each=n),lefttime,trunk)
 
-names(ud)<-c("time","status","x1","cluster","zyg","mintime","lefttime","truncated")
+names(ud)<-c("time","status","x","cluster","zyg","mintime","lefttime","truncated")
 return(ud)
 } ## }}} 
 

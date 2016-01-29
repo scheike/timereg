@@ -885,7 +885,7 @@ for (j=0;j<antclust;j++) {
 	if (twostage==0) 
 	   vthetascore.subvec(pt,pt+dimbeta-1)=(ps(4)*trans(betaiid.row(i))+ps(5)*trans(betaiid.row(k)))/ll; 
 
-	if (pairascertained[j]==1) {
+	if (pairascertained(j)==1) {
            ssf-=weights(i)*log(1-ps(0)); 
 	   loglikecont=log(ll)-log(1-ps(0));
 	   vthetascore.subvec(0,pt-1)+=dp00/(1-ps(0)); 
@@ -895,7 +895,7 @@ for (j=0;j<antclust;j++) {
 	   }
 	}
 
-	if (casecontrol[j]==1) { //         marginal of second person Lk
+	if (casecontrol(j)==1) { //         marginal of second person Lk
 	   llt=(ck==1)*(Lk)+(ck==0)*(1-Lk); 
            ssf-=weights(i)*log(llt); 
 	   loglikecont=log(ll)-log(llt);
@@ -924,7 +924,7 @@ for (j=0;j<antclust;j++) {
 	   if (varlink==1) diff=deppar*dplack(0)/ll; 
 	   if (varlink==0) diff=dplack(0)/ll;
 
-	   if (pairascertained[j]==1) {
+	   if (pairascertained(j)==1) {
                 ssf-=weights(i)*log(1-ps(0)); 
 	        loglikecont-=log(1-ps(0));
 	   if (varlink==1) diff+=deppar*dp00(0)/(1-ps(0)); 

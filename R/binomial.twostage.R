@@ -683,9 +683,10 @@ concordance.twostage<- function(theta,p,rv1,rv2,theta.des,additive.gamma.sum=NUL
 {# {{{
 
    ### takes dependence paramter from output
-   ptheta <- attr(object,"ptheta")
-   theta <- object$theta[seq(1,ptheta)]
-   robvar.theta <- object$robvar.theta[seq(1,ptheta),seq(1,ptheta)]
+      ptheta <- length(theta)
+###      ptheta <- attr(object,"ptheta")
+###   theta <- object$theta[seq(1,ptheta)]
+###   robvar.theta <- object$robvar.theta[seq(1,ptheta),seq(1,ptheta)]
 
    if (var.par==1) theta <- theta/sum(theta)^2
 
