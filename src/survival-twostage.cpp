@@ -2200,7 +2200,7 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 	    Utheta-=vthetascore; 
 	} else  { // additive gamma structure 
 	    DUtheta+=weights(i)*vthetascore*trans(vthetascore);
-	    vthetascore=+weights(i)*vthetascore; 
+	    vthetascore=weights(i)*vthetascore; 
 	    Utheta-=vthetascore; 
 //		vthetascore.print("vvv 2"); 
 	}

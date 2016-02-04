@@ -241,8 +241,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     clustsize <- out.clust$cluster.size
     call.secluster <- se.clusters
 
-    if (is.null(se.clusters)) { se.clusters <- clusters; 
-                                antiid <- nrow(clusterindex);} else  {
+    if (is.null(se.clusters)) { se.clusters <- clusters; antiid <- nrow(clusterindex);} else  {
                                     iids <-  unique(se.clusters); 
                                     antiid <- length(iids); 
                                     if (is.numeric(se.clusters)) se.clusters <-  fast.approx(iids,se.clusters)-1
@@ -360,15 +359,15 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 
     if (dep.model==3) model <- "clayton.oakes"
 
-  print(dep.model)
-  print(summary(case.control))
-  print(length(case.control))
-  print(summary(pair.ascertained))
-  print(length(pair.ascertained))
-  print(dim(random.design)); print(dim(theta.des)); 
-  print(dim(additive.gamma.sum))
-  print(head(pairs.rvs))
-  print(antpairs)
+###  print(dep.model)
+###  print(summary(case.control))
+###  print(length(case.control))
+###  print(summary(pair.ascertained))
+###  print(length(pair.ascertained))
+###  print(dim(random.design)); print(dim(theta.des)); 
+###  print(dim(additive.gamma.sum))
+###  print(head(pairs.rvs))
+###  print(antpairs)
 
     loglike <- function(par) 
     { ## {{{
@@ -625,8 +624,6 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 
   if (class(margbin)[1]=="glm") beta <- coef(margbin); 
   if (twostage==0) beta <- theta[seq(ptheta,ptheta+dimbeta)]
-
-  print(hess); print(out$Dscore) 
 
   if (iid==1) var.theta <- robvar.theta else var.theta <- -hessi
   if (!is.null(colnames(theta.des))) thetanames <- colnames(theta.des) else thetanames <- paste("dependence",1:length(theta),sep="")
