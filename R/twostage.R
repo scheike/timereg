@@ -1157,7 +1157,7 @@ if (!is.null(margsurv))  {
   if (dep.model==3 & pair.structure==1) attr(ud, "pardes") <- theta.des[,,1]
   if (dep.model==3 & pair.structure==1) attr(ud, "theta.des") <- theta.des[,,1]
   if (dep.model==3 & pair.structure==0) attr(ud, "rv1") <- random.design[1,]
-  if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <- random.design[1,,1]
+  if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <- random.design[,,1]
   return(ud);
   ## }}}
 
@@ -1188,22 +1188,22 @@ summary.twostage <-function (object,digits = 3,silent=0,...)
       rv1      <- attr(object,"rv1"); 
       theta.des <- attr(object,"pardes"); 
       ags <- attr(object,"additive.gamma.sum"); 
-###      print(par); print(rv1)
       ptheta <- attr(object,"ptheta")
-      theta <- object$theta[seq(1,ptheta)]
+      theta <- object$theta[seq(1,ptheta),1,drop=FALSE]
+###      print(theta.des); print(theta); print(theta.des %*% theta); print(rv1); 
       robvar.theta <- object$robvar.theta[seq(1,ptheta),seq(1,ptheta)]
       if (var.link==1) par <- theta.des %*% exp(theta) else  par <- theta.des %*% theta
 
       if (var.par==0) 
       if (var.link==1) { ## {{{ 
-	     fp <- function(p,d,t){  res <- exp(p*t)/(sum(rv1* (theta.des %*% exp(p))))^d; 
+	     fp <- function(p,d,t){  res <- exp(p*t)/(sum(rv1* c(theta.des %*% exp(p))))^d; 
                                      if (t==0) res <- res[1]; return(res); }
              e <-      lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,1))
              pare <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) exp(p))
              vare <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,2,1))
              vartot <- lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,0))
       } else {
-              fp <- function(p,d,t) {  res <- (p^t)/(sum(rv1* (theta.des %*% p)))^d;
+              fp <- function(p,d,t) {  res <- (p^t)/(sum(rv1* c(theta.des %*% p)))^d;
                                      if (t==0) res <- res[1]; return(res); }
               e <-      lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,1))
               vare <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,2,1))
@@ -1214,14 +1214,14 @@ summary.twostage <-function (object,digits = 3,silent=0,...)
 if (var.par==1) 
       if (var.link==1) { ## {{{ 
 ###             theta <- c(varg,varc)/sum(varg+varc)^2
-	     fp <- function(p,d,t){  res <- exp(p*t)/(sum(rv1* (theta.des %*% exp(p))))^d; 
+	     fp <- function(p,d,t){  res <- exp(p*t)/(sum(rv1* c(theta.des %*% exp(p))))^d; 
                                      if (t==0) res <- res[1]; return(res); }
              e <-      lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,1))
              vare <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) exp(p))
              pare <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,2,1))
              vartot <- lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,0))
       } else {
-              fp <- function(p,d,t) {  res <- (p^t)/(sum(rv1* (theta.des %*% p)))^d;
+              fp <- function(p,d,t) {  res <- (p^t)/(sum(rv1* c(theta.des %*% p)))^d;
                                      if (t==0) res <- res[1]; return(res); }
                 e <-    lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,1))
               pare <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,2,1))
@@ -1390,7 +1390,11 @@ ascertained.pairs <-function (pairs,data,cr.models,bin=FALSE)
       apairs[fj==1,1] <- pairs[fj==1,2]
       apairs[fj==1,2] <- pairs[fj==1,1]
       ### only take pairs where first is a jump
-      if (bin==FALSE) apairs <- apairs[data[apairs[,2],timestatus[2]]==1,]
+      if (bin==FALSE) { 
+	      jmpf <- (data[apairs[,2],timestatus[2]]==1)
+	      apairs <- apairs[data[apairs[,2],timestatus[2]]==1,]
+              attr(pairs,"jump-first") <- jmpf
+      }
       pairs <- apairs
       return(pairs)
 } # }}}
