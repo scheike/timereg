@@ -136,7 +136,7 @@
 ##' summary(bints)
 ##' 
 ##' data <- simbinClaytonOakes.twin.ace(10000,2,1,beta=NULL,alpha=NULL)
-##' out <- polygen.design(data,id="cluster",zygname="zygosity")
+##' out  <- twin.polygen.design(data,id="cluster",zygname="zygosity")
 ##' out$pardes
 ##' head(out$des.rv)
 ##' margbin <- glm(ybin~x,data=data,family=binomial())
@@ -182,14 +182,17 @@
 ##' @param pairs.rvs for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair. 
 ##' @param additive.gamma.sum this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters. Default is a matrix of 1's 
 ##' @param pair.ascertained if pairs are sampled only when there are events in the pair i.e. Y1+Y2>=1. 
+##' @param case.control if data is case control data for pair call, and here 2nd column of pairs are probands (cases or controls)
 ##' @param twostage default twostage=1, to fit MLE use twostage=0
+##' @param beta is starting value for beta for MLE version 
 binomial.twostage <- function(margbin,data=sys.parent(),
      score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
-     control=list(),theta=NULL,theta.des=NULL,var.link=1,var.par=0,var.func=NULL,
+     control=list(),theta=NULL,theta.des=NULL,var.link=0,var.par=1,var.func=NULL,
      iid=1,step=1.0,notaylor=1,model="plackett",marginal.p=NULL,beta.iid=NULL,Dbeta.iid=NULL,
      strata=NULL,max.clust=NULL,se.clusters=NULL,numDeriv=0,
-     random.design=NULL,pairs=NULL,pairs.rvs=NULL,additive.gamma.sum=NULL,pair.ascertained=0,
-     twostage=1,case.control=0,beta=NULL) 
+     random.design=NULL,pairs=NULL,pairs.rvs=NULL,additive.gamma.sum=NULL,
+     pair.ascertained=0,case.control=0,
+     twostage=1,beta=NULL) 
 { ## {{{
     ## {{{ seting up design and variables
     rate.sim <- 1; sym=1; 
@@ -351,7 +354,6 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 	    if (any(case.control+pair.ascertained==2))  stop("Each pair is either case.control pair or pair.ascertained \n"); 
     }
 
-
     if (is.null(Dbeta.iid)) Dbeta.iid <- matrix(0,length(cause),1); 
     ptrunc <- rep(1,antpers); 
 
@@ -456,10 +458,11 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 
 	    if (dep.model==3) {# {{{
 	       outl$score <-  t(mm) %*% outl$score
-	       if (twostage==1) outl$DbeteDtheta <-  t(mm) %*% outl$DbetaDtheta
+	       if (twostage==1) outl$DbetaDtheta <-  t(mm) %*% outl$DbetaDtheta
 	       outl$Dscore <- t(mm) %*% outl$Dscore %*% mm
-	       if (iid==1) outl$theta.iid <- outl$theta.iid %*% t(mm)
+               if (iid==1) outl$theta.iid <- t(t(mm) %*% t(outl$theta.iid))
 
+        ###       print(crossprod(outl$theta.iid)); print(outl$Dscore)
 	###       print(c(outl$score))
 	###       print(apply(outl$theta.iid,2,sum))
 	    }# }}}

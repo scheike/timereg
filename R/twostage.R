@@ -191,7 +191,7 @@
 ##' ### structured random effects model additive gamma ACE 
 ##' ### simulate structured two-stage additive gamma ACE model
 ##' data <- simClaytonOakes.twin.ace(2000,2,1,0,3)
-##' out <- polygen.design(data,id="cluster")
+##' out <- twin.polygen.design(data,id="cluster")
 ##' pardes <- out$pardes
 ##' des.rv <- out$des.rv
 ##' aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
@@ -266,7 +266,6 @@
 ##' @param pairs.rvs for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair. 
 ##' @param additive.gamma.sum for two.stage=0, this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters.
 ##' @param var.par  is 1 for the default parametrization with the variances of the random effects, var.par=0 specifies that the \eqn{\lambda_j}'s are used as parameters. 
-##' @param var.func when alternative parametrizations are used this function can specify how the paramters are related to the \eqn{\lambda_j}'s.
 ##' @param two.stage to fit two-stage model, if 0 then will fit hazard model with additive gamma structure (WIP)
 ##' @param cr.models competing risks models for two.stage=0, should be given as a list with models for each cause
 ##' @param case.control assumes case control structure for "pairs" with second column being the probands, when this options is used the twostage model is profiled out via the paired estimating equations for the survival model. 
@@ -275,13 +274,12 @@ twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Ni
 silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,
 var.link=1,iid=1, step=0.5,notaylor=0,model="clayton.oakes",
   marginal.trunc=NULL,marginal.survival=NULL,marginal.status=NULL,strata=NULL,
-  se.clusters=NULL,max.clust=NULL,numDeriv=0,numDeriv.method="simple",
-  random.design=NULL,pairs=NULL,pairs.rvs=NULL,
-  additive.gamma.sum=NULL,var.par=1,var.func=NULL,
-  two.stage=1,cr.models=NULL,case.control=0,ascertained=0)
+  se.clusters=NULL,max.clust=NULL,numDeriv=0,
+  random.design=NULL, pairs=NULL,pairs.rvs=NULL, numDeriv.method="simple",
+  additive.gamma.sum=NULL,var.par=1, two.stage=1,cr.models=NULL,case.control=0,ascertained=0)
 { ## {{{
 ## {{{ seting up design and variables
-rate.sim <- 1; sym=1; 
+rate.sim <- 1; sym=1; var.func <- NULL
 if (model=="clayton.oakes") dep.model <- 1
 else if (model=="plackett") dep.model <- 2
 else stop("Model must by either clayton.oakes or plackett \n"); 
@@ -522,7 +520,6 @@ if (!is.null(margsurv))  {
   }
   ## }}}
 
-
 ###  setting up arguments for Aalen baseline profile estimates
  if (fix.baseline==0 )  { ## {{{  two.stage=0
 
@@ -530,7 +527,7 @@ if (!is.null(margsurv))  {
       ex cr.models=list(Surv(time,status==1)~+1,Surv(time,status==2)~+1) \n")
 
       if (case.control==0 & ascertained==0) { ## {{{ 
-## {{{ setting up random effects and covaraites for marginal modelling
+## {{{ setting up random effects and covariates for marginal modelling
         timestatus <- all.vars(cr.models[[1]])
 	times <- data[,timestatus[1]]
 	if (is.null(status)) status <- data[,timestatus[2]]
@@ -646,6 +643,8 @@ if (!is.null(margsurv))  {
 
 	## first compute marginal aalen models for all causes
 	a <- list(); da <- list(); 
+        ### starting values for iteration 
+        Bit <- Bitcase <- c()
 	for (i in 1:length(cr.models)) { ## {{{ 
 	      a[[i]]  <-  aalen(as.formula(cr.models2[[i]]),data=data1,robust=0)
 	      da[[i]] <- apply(a[[i]]$cum[,-1,drop=FALSE],2,diff)
@@ -657,21 +656,10 @@ if (!is.null(margsurv))  {
 	      dBaalen[jumpsi,indexc] <- da[[i]]
               xjump[i,indexc,]       <- t(X[ids,])
               xjumpcase[i,indexc,]   <- t(Xcase[ids,])
-###	      dBaalen[jumpsi,indexc] <- da[[i]]
-###	      covsx <- all.vars(cr.models[[i]])[-(1:2)]
-###	      print(dim(xjump[i,indexc,]))
-###	      print(dim(t(X[ids,])))
 	      fp <- fp+ncol(X)
-	 } ## }}} 
-
-      ### starting values for iteration 
-      Bit <- Bitcase <- c()
-      for (j in 1:length(cr.models)) {
-	      ## initial values 
-###	      a <-  aalen(as.formula(cr.models[[i]]),data=subset(data1,lstatuscase==0),robust=0)
-	      a <-  aalen(as.formula(cr.models2[[i]]),data=data1,robust=0)
-	      Bit <- cbind(Bit,Cpred(a$cum,dtimesst)[,-1,drop=FALSE])
-       }		  
+	      ### starting values 
+	      Bit <- cbind(Bit,Cpred(a[[i]]$cum,dtimesst)[,-1,drop=FALSE])
+       } ## }}} 
        Bit.ini <- Bit
        ## }}} 
 
@@ -730,8 +718,8 @@ if (!is.null(margsurv))  {
 
          if (fix.baseline==0) ## if baseline is not given 
          {
-             cum1 <- cbind(dtimesst,Bit)
-      if ( (case.control==1 || ascertained==1) & (convergence.bp==1)) { ## {{{  profiles out baseline under case-control/ascertainment sampling
+          cum1 <- cbind(dtimesst,Bit)
+          if ( (case.control==1 || ascertained==1) & (convergence.bp==1)) { ## {{{  profiles out baseline under case-control/ascertainment sampling
 
 ###	      ## initial values , only one cr.model for survival 
 ###           Bit <- cbind(Cpred(a[[1]]$cum,dtimesst)[,-1])
@@ -757,7 +745,7 @@ if (!is.null(margsurv))  {
 		   if (detail>1) lines(dtimesst,Bit,col=j+1); 
 		   if (is.na(d)) { cat("Baseline profiler gives missing values\n");  Bit <- Bit.ini; cum1 <- cbind(dtimesst,Bit); convergence.bp <<- 0; break;}
 		   Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
-		   if (d<0.000001) break; 
+		   if (d<0.00001) break; 
            } ## }}} 
 
 	   nulrow <- rep(0,ncol(Bit)+1)
@@ -810,8 +798,9 @@ if (!is.null(margsurv))  {
 
          ### update aalen type baseline  
 	 if (fix.baseline==0)  { ## {{{ 
-          if (case.control==1) { ## {{{  profiles out baseline under case-control sampling
+         if (case.control==1 || ascertained==1) { ## {{{  profiles out baseline under case-control sampling/ascertainment 
 
+              if (ncol(Bit)==0) Bit <- Bit.ini
               Bitcase  <- Cpred(cbind(dtimesst,Bit),dtimesstcase)[,-1,drop=FALSE]
               Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
 
@@ -828,19 +817,22 @@ if (!is.null(margsurv))  {
 ###              summary(cncc$B)
                    d <- max(abs(Bit-profile.baseline$B))
 		   Bit <- profile.baseline$B
-###		   matlines(dtimesst,Bit,type="l",col=j+1)
-
 		   cum1 <- cbind(dtimesst,Bit)
 		   Bitcase  <-cbind(Cpred(cum1,dtimesstcase)[,-1])
+###		   matlines(dtimesst,Bit,type="l",col=j+1)
+
+		   if (detail>1) lines(dtimesst,Bit,col=j+1); 
+		   if (is.na(d)) { cat("Baseline profiler gives missing values\n");  Bit <- Bit.ini; cum1 <- cbind(dtimesst,Bit); convergence.bp <<- 0; break;}
 		   Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
-                   if (d<0.0001) break; 
+                   if (d<0.00001) break; 
            } ## }}} 
 
 ###	     plot(cum1)
 ###	     abline(c(0,1))
 
-	   pbases <- Cpred(rbind(rep(0,1+ncol(Bit)),cbind(dtimesst,Bit)),alltimes)[,-1,drop=FALSE]
-	   pbase.trunc <- Cpred(rbind(rep(0,1+ncol(Bit)),cbind(dtimesst,Bit)),proband.time)[,-1,drop=FALSE]
+	   nulrow <- rep(0,ncol(Bit)+1)
+	   pbases <- Cpred(rbind(nulrow,cbind(dtimesst,Bit)),alltimes)[,-1,drop=FALSE]
+	   pbase.trunc <- Cpred(rbind(nulrow,cbind(dtimesst,Bit)),proband.time)[,-1,drop=FALSE]
            ptrunc <- psurvmarg <- c()
            for (i in 1:length(cr.models)) {
                   if (i==1) fp <- 1 
@@ -848,7 +840,11 @@ if (!is.null(margsurv))  {
 	          X <- a2$X
 	          indexc <- fp:(fp+ncol(X)-1)
 	          psurvmarg <- cbind(psurvmarg,apply(X*pbases[,indexc],1,sum))
-		  ptrunc <- cbind(ptrunc,apply(X*pbase.trunc[,indexc],1,sum))
+	          if (ascertained==1) {
+                     Xcase     <- aalen.des(as.formula(cr.models[[1]]),data=data.proband)$X
+	             pba.case  <- Cpred(rbind(nulrow,cbind(dtimesst,Bit)),entry)[,-1,drop=FALSE]
+		     ptrunc <- cbind(ptrunc,apply(Xcase*pbase.trunc[,indexc],1,sum)*lstatuscase,each=2)
+		  }
 	   }
 	      
           } ## }}} 
@@ -1164,7 +1160,7 @@ if (!is.null(margsurv))  {
 } ## }}}
 
 ##' @export
-summary.twostage <-function (object,digits = 3,silent=0,...) 
+summary.twostage <-function (object,digits = 3,silent=1,...) 
 { ## {{{
   if (!(inherits(object,"twostage"))) stop("Must be a Two-Stage object")
   
@@ -1173,7 +1169,7 @@ summary.twostage <-function (object,digits = 3,silent=0,...)
   if (attr(object,"response")=="binomial") response <- "binomial" else response <- "survival"
   if ((object$model=="clayton.oakes") & (silent==0)) cat("Dependence parameter for Clayton-Oakes model \n"); 
 
-  if (attr(object,"additive-gamma")==1) cat("Additive gamma model \n");
+  if ((attr(object,"additive-gamma")==1) & (silent==0)) cat("Additive gamma model \n");
 
   if ((sum(abs(object$score))>0.0001) & (silent==0))  {
 	  cat("    Variance parameters did not converge, allow more iterations.\n"); 
@@ -1284,7 +1280,7 @@ print.twostage<-function(x,digits=3,...)
 { ## {{{
   print(x$call); 
   cat("\n")
-  print(summary(x)); 
+  print(summary(x,silent=0)); 
 } ## }}} 
 
 ##' @export
@@ -1813,7 +1809,7 @@ twostage.fullse <- function(margsurv,data=sys.parent(),
    marginal.trunc=NULL, marginal.survival=NULL,
    marginal.status=NULL,strata=NULL,
    se.clusters=NULL,max.clust=NULL,numDeriv=0,
-   random.design=NULL,fdetail=1)
+   random.design=NULL,fdetail=1,...)
 { ## {{{ 
   if (is.null(margsurv$gamma.iid)) stop("Call marginal model with resample.iid=1, only Cox model via cox.aalen \n"); 
   beta.iid <- margsurv$gamma.iid
@@ -1833,7 +1829,7 @@ twostage.fullse <- function(margsurv,data=sys.parent(),
   marginal.status=marginal.status,strata=strata,
   se.clusters=se.clusters,
   max.clust=max.clust,numDeriv=numDeriv,
-  random.design=random.design)
+  random.design=random.design,...)
   par <- margsurv$gamma
   theta <- udtwo$theta
 ###
@@ -1843,7 +1839,7 @@ twostage.fullse <- function(margsurv,data=sys.parent(),
  parbase <- Cpred(margsurv$cum,margsurv$time.sim.resolution) 
  margsurv$cum <- parbase
  parbase <- parbase[,2]
- }else parbase <- margsurv$cum[,2]
+ } else parbase <- margsurv$cum[,2]
 
 twobeta  <- function(par,beta=1)
 { ## {{{ 
@@ -1856,7 +1852,7 @@ twobeta  <- function(par,beta=1)
                     step=step,notaylor=notaylor,model=model,
 		    marginal.trunc=marginal.trunc,marginal.survival=marginal.survival,
 		    marginal.status=marginal.status,strata=strata,
-		    se.clusters=se.clusters,max.clust=max.clust,numDeriv=0,random.design=random.design)
+		    se.clusters=se.clusters,max.clust=max.clust,numDeriv=0,random.design=random.design,...)
 ###  udl <- two.stage(margsurv,data=data,Nit=1,clusters=clusters,theta=theta) ###  udl$theta.score
   udl$score
 } ## }}} 

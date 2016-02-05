@@ -298,6 +298,7 @@ RcppExport SEXP BhatAddGam(SEXP irecursive, SEXP idBaalen,SEXP icause,
 
 // marginal hazard estimation via iterative estimator
 // pairs where we condition on second subjects 
+// ascertainment correction is equivalent to case-control sampling (except for delayed entry)
 RcppExport SEXP BhatAddGamCC(SEXP itwostage,SEXP idBaalen,SEXP icause,
 		SEXP idimxjump,SEXP ixjump, // cube 
 		SEXP itheta,
@@ -408,14 +409,19 @@ RcppExport SEXP BhatAddGamCC(SEXP itwostage,SEXP idBaalen,SEXP icause,
            rv1= trans(rvm.row(0));
            rv2= trans(rvm.row(1));
 //	   rv1.print("rv1");  rv2.print("rv2"); 
+//	rv1.print("rv1"); thetadesv.print("thetades"); 
 	}
 
         mat thetadesv=thetades.slice(k); 
-//	rv1.print("rv1"); thetadesv.print("thetades"); 
 
         if (twostage<=0) {
            ll=survivalRVC2all(etheta,thetadesv,ags,cause(k),causecase(k),cumhaz,cumhazcase,rrv1,rrv2,DthetaS,allvec);
-           caseweight=allvec(4)/(ll); 
+	   if (ascertainment==0) caseweight=allvec(4)/(ll); 
+           if (ascertainment==1) {
+//	       s1t=exp(-cumhazt(0)); 
+	       llt=survivalRVC2all(etheta,thetadesv,ags,0,causecase(k),cumhaz,cumhazcase,rrv1,rrv2,DthetaS,allvect);
+	       caseweight=(allvec(4)+llt)/(ll); 
+	    }
 	} else { 
 	    s1=exp(-cumhaz(0));      // survival to clayton-oakes
 	    s2=exp(-cumhazcase(0));  // cases via iterative, one-dimensional only (survival)
