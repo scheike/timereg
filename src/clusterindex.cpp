@@ -9,12 +9,12 @@ using namespace arma;
 RcppExport SEXP nclust(SEXP iclusters) {
 // {{{
 BEGIN_RCPP
-  ivec clusters = Rcpp::as<ivec>(iclusters);
+  Row<int> clusters = Rcpp::as<Row<int> >(iclusters);
   int  n = clusters.n_elem;
  
   int  uniqueclust=0; 
   int  maxclust=0;
-  ivec nclust(n); nclust.fill(0);
+  Row<int> nclust(n); nclust.fill(0);
  
   for (int  i=0;i<n;i++){
     if (nclust[clusters[i]]==0) uniqueclust+=1; 
@@ -33,12 +33,12 @@ END_RCPP
 RcppExport SEXP clusterindexM(SEXP iclusters, SEXP imednum, SEXP inum, SEXP x, SEXP all) {
 // {{{
 BEGIN_RCPP
-  ivec clusters = Rcpp::as<ivec>(iclusters);
+  Row<int> clusters = Rcpp::as<Row<int> >(iclusters);
   int n = clusters.n_elem;
   bool All = Rcpp::as<bool>(all);
   int  uniqueclust=0; 
   int  maxclust=0;
-  ivec nclust(n); nclust.fill(0);
+  Row<int> nclust(n); nclust.fill(0);
   bool hasX = !((Rf_isNull)(x));
 
     
@@ -48,9 +48,9 @@ BEGIN_RCPP
     if (nclust[clusters[i]]>maxclust) maxclust=nclust[clusters[i]]; 
   } 
  
-  ivec num = Rcpp::as<ivec>(inum); 
+  Row<int> num = Rcpp::as<Row<int> >(inum); 
   int  mednum = Rcpp::as<int>(imednum);
-  ivec unum;
+  Row<int> unum;
   if (mednum==1) {
     // unum = unique(num);
     // maxclust = unum.n_elem;
@@ -58,8 +58,8 @@ BEGIN_RCPP
   }     
   
   Mat<int> idclust = Mat<int>(uniqueclust,maxclust); idclust.fill(NA_INTEGER);
-  ivec clustsize(uniqueclust); clustsize.fill(0);
-  ivec firstclustid(uniqueclust); firstclustid.fill(0);
+  Row<int> clustsize(uniqueclust); clustsize.fill(0);
+  Row<int> firstclustid(uniqueclust); firstclustid.fill(0);
 
   if (mednum==0) {
     for (int  i=0;i<n;i++){
@@ -110,14 +110,14 @@ END_RCPP
 
 RcppExport SEXP familypairindex(SEXP iclustmat,SEXP iclustsize,SEXP inumfamindex) {
 // {{{
-  ivec clustsize = Rcpp::as<ivec>(iclustsize);
+  Row<int> clustsize = Rcpp::as<Row<int> >(iclustsize);
   imat clustmat;
   clustmat  = Rcpp::as<imat>(iclustmat);
   int uniqueclust=clustmat.n_rows;
   int  numfamindex= Rcpp::as<int>(inumfamindex);
  
-  ivec famclustindex(numfamindex); famclustindex.fill(0);
-  ivec subfamilyindex(numfamindex); subfamilyindex.fill(0);
+  Row<int> famclustindex(numfamindex); famclustindex.fill(0);
+  Row<int> subfamilyindex(numfamindex); subfamilyindex.fill(0);
   
   int i,j,v=0,h=0;
 
@@ -147,12 +147,12 @@ RcppExport SEXP familypairindex(SEXP iclustmat,SEXP iclustsize,SEXP inumfamindex
 RcppExport SEXP clusterindexdata(SEXP iclusters, SEXP imednum,SEXP inum, SEXP idata) 
 { // {{{
 BEGIN_RCPP
-  ivec clusters = Rcpp::as<ivec>(iclusters);
+  Row<int> clusters = Rcpp::as<Row<int> >(iclusters);
   int  n = clusters.n_elem;
  
   int  uniqueclust=0; 
   int  maxclust=0;
-  ivec nclust(n); nclust.fill(0);
+  Row<int> nclust(n); nclust.fill(0);
  
   for (int  i=0;i<n;i++){
     if (nclust[clusters[i]]==0) uniqueclust+=1; 
@@ -160,11 +160,11 @@ BEGIN_RCPP
     if (nclust[clusters[i]]>maxclust) maxclust=nclust[clusters[i]]; 
   } 
 
-  ivec num = Rcpp::as<ivec>(inum); 
+  Row<int> num = Rcpp::as<Row<int> >(inum); 
   int  mednum = Rcpp::as<int>(imednum);
   
   Mat<int> idclust = Mat<int>(uniqueclust,maxclust); idclust.fill(NA_INTEGER);
-  ivec clustsize(uniqueclust); clustsize.fill(0);
+  Row<int> clustsize(uniqueclust); clustsize.fill(0);
 
   mat data = Rcpp::as<mat>(idata);
   int  p= data.n_cols; 
