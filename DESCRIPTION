@@ -31,3 +31,4 @@ Suggests:
     ucminf
 LinkingTo: Rcpp, RcppArmadillo
 Roxygen: list(wrap = FALSE)
+RoxygenNote: 5.0.1
