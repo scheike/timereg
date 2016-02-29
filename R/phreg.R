@@ -42,8 +42,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
       structure(-ploglik,gradient=-gradient,hessian=-hessian)
     }
   } else {
-      browser()      
-      system.time(dd <- .Call("mets_FastCoxPrep",
+      system.time(dd <- .Call("FastCoxPrep",
                               entry,exit,status,X,
                               as.integer(seq_along(entry)),
                               is.null(id),
@@ -66,7 +65,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
       }
   }
   opt <- NULL
-  if (p>0) {      
+  if (p>0) {
       if (tolower(method)=="nr") {
           opt <- lava::NR(beta,obj,...)
           opt$estimate <- opt$par
@@ -85,7 +84,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
            list(strata=strata,
                 entry=entry,
                 exit=exit,
-                status=status,
+                status=status,                
                 p=p,
                 X=X,
                 id=id, opt=opt))
@@ -141,7 +140,7 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##'   return(d)
 ##' }
 ##' \dontrun{
-##' n <- 1e3;
+##' n <- 10;
 ##' d <- mets:::simCox(n); d$id <- seq(nrow(d)); d$group <- factor(rbinom(nrow(d),1,0.5))
 ##' 
 ##' (m1 <- phreg(Surv(entry,time,status)~X1+X2,data=d))

@@ -117,7 +117,7 @@ BEGIN_RCPP
       unsigned M = nclust*d.n_rows;
       unsigned K = nvarying+nfixed+2;
       mat dd(M,K); // Long data      
-      Row<unsigned> idx(nvarying);
+      uvec idx(nvarying);
       uvec mis(M); mis.fill(0); // NA_INTEGER
       for (unsigned k=0; k<nvarying; k++)
          idx[k] = nfixed+k*nclust;
@@ -130,7 +130,7 @@ BEGIN_RCPP
 	   xx0[k] = d(i,k);
 	 }
          for (unsigned j=0; j<nclust; j++) {
-	   Row<unsigned> idx0 = idx+j;
+	   uvec idx0 = idx+j;
             xx0.subvec(nfixed,K-3) = trans(d0.elem(idx0));
             xx0[K-2] = i+1; xx0[K-1] = j+1;
 	    bool allmiss = Missing;
@@ -164,7 +164,7 @@ void fastpattern(const umat &y, umat &pattern, uvec &group, unsigned categories 
   unsigned K=0;
 
   for (unsigned i=0; i<n; i++) {
-    Row<unsigned> ri = y.row(i);
+    uvec ri = y.row(i);
     bool found = FALSE;
     for (unsigned j=0; j<K; j++) {      
       if (sum(ri!=mypattern.row(j))==0) {

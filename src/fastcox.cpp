@@ -8,14 +8,22 @@ using namespace Rcpp;
 using namespace arma;
 
 
-// [[Rcpp::export]]
-List FastCoxPrep( arma::vec Entry,
-		  arma::vec Exit,
-		  arma::ivec Status,
-		  arma::mat X,
-		  arma::uvec Id,
-		  bool haveId,
-		  bool Truncation) {
+RcppExport SEXP FastCoxPrep(SEXP EntrySEXP,
+			    SEXP ExitSEXP,
+			    SEXP StatusSEXP,
+			    SEXP XSEXP,
+			    SEXP IdSEXP,
+			    SEXP haveIdSEXP,
+			    SEXP TruncationSEXP) {
+BEGIN_RCPP
+  arma::vec Entry = Rcpp::as<arma::vec>(EntrySEXP);
+  arma::vec  Exit  = Rcpp::as<arma::vec>(ExitSEXP);
+  arma::Col<int> Status= Rcpp::as<arma::Col<int> >(StatusSEXP);
+  arma::mat  X     = Rcpp::as<arma::mat>(XSEXP);
+  arma::Col<unsigned> Id    = Rcpp::as<arma::Col<unsigned> >(IdSEXP);
+
+  bool haveId = Rcpp::as<bool>(haveIdSEXP);
+  bool Truncation = Rcpp::as<bool>(TruncationSEXP);
   // vec Exit = Rcpp::as<vec>(exit);  
   // ivec Status = Rcpp::as<ivec>(status);
   // mat X = Rcpp::as<mat>(x);
@@ -28,8 +36,7 @@ List FastCoxPrep( arma::vec Entry,
   unsigned n = Exit.n_elem;
   if (Truncation) n *= 2;
 
- Rcout << "Hallo" << std::endl;
- Rcout << "n=" << X.n_rows << ", p=" << X.n_cols << std::endl;
+  //Rcout << "n=" << X.n_rows << ", p=" << X.n_cols << std::endl;
 
  mat XX(n, X.n_cols*X.n_cols); // Calculate XX' at each time-point
   for (unsigned i=0; i<X.n_rows; i++) {
@@ -40,35 +47,32 @@ List FastCoxPrep( arma::vec Entry,
   }
   
 
- Rprintf("Hallo");
-  ivec Sign;
+  arma::Col<int> Sign;
   if (Truncation) {
     // vec Entry = Rcpp::as<vec>(entry);  
     Exit.insert_rows(0,Entry);
-    Rcout << "X\n";
     X.insert_rows(0,X);
-    Rcout << "Status\n";
     Status.insert_rows(0,Status);
     Sign.reshape(n,1); Sign.fill(1);
-    for (unsigned i=0; i<n; i++) Sign(i) = -1;
+    for (unsigned i=0; i<(n/2); i++) Sign(i) = -1;
     Status = Status%(1+Sign);
   }
- Rprintf("Hallo");
-  uvec idx0 = sort_index(Status,1); 
-  uvec idx = stable_sort_index(Exit.elem(idx0),0);
+  //Rcout << "Status=" << Status << std::endl;
+  arma::uvec idx0 = sort_index(Status,1); 
+  arma::uvec idx = stable_sort_index(Exit.elem(idx0),0);
   idx = idx0.elem(idx);
+  //Rcout << "idx=" << idx << std::endl;
   if (Truncation) {
     Sign = Sign.elem(idx);  
   }
- Rprintf("Hallo");
   if (X.n_rows>0) {
     XX = XX.rows(idx);
     X = X.rows(idx);  
   }
   Status = Status.elem(idx);
-  uvec jumps = find(Status>0);
-   Rprintf("Hallo");
-  uvec newId;
+  arma::uvec jumps = find(Status>0);
+  //Rprintf("jumps");
+  arma::Col<unsigned> newId;
   // if (haveId) {
   //   // uvec Id = Rcpp::as<uvec>(id);
   //   if (Truncation) {
@@ -77,15 +81,16 @@ List FastCoxPrep( arma::vec Entry,
   //   newId = Id.elem(idx);
   // }
 
-  return(Rcpp::List::create(Rcpp::Named("XX")=XX,
-			    Rcpp::Named("X")=X,
-			    Rcpp::Named("jumps")=jumps,
-			    Rcpp::Named("sign")=Sign,
-			    Rcpp::Named("ord")=idx,
-			    Rcpp::Named("time")=Exit,
-			    Rcpp::Named("id")=newId
-			    ));
-  }
+  return(Rcpp::wrap(Rcpp::List::create(Rcpp::Named("XX")=XX,
+				       Rcpp::Named("X")=X,
+				       Rcpp::Named("jumps")=jumps,
+				       Rcpp::Named("sign")=Sign,
+				       Rcpp::Named("ord")=idx,
+				       Rcpp::Named("time")=Exit,
+				       Rcpp::Named("id")=newId				       
+				       )));
+END_RCPP
+}
 
 
 // colvec revcumsum(const colvec &a) {
@@ -105,28 +110,32 @@ colvec revcumsum(const colvec &a, const colvec &v1, const colvec &v2) {
 }
 
 
-// [[Rcpp::export]]
-List FastCoxPL(const arma::colvec& beta, 
-	       const arma::colvec& X, 
-	       const arma::colvec& XX, 
-	       const arma::ivec& Sign, 
-	       const arma::uvec& Jumps) {
+
+RcppExport SEXP FastCoxPL(SEXP betaSEXP,
+			  SEXP XSEXP,
+			  SEXP XXSEXP,
+			  SEXP SignSEXP,
+			  SEXP JumpsSEXP) {
+
+
 BEGIN_RCPP
-  // colvec beta = Rcpp::as<colvec>(b);
-  // mat X = Rcpp::as<mat>(x);
-  // mat XX = Rcpp::as<mat>(xx);
-  // uvec Jumps = Rcpp::as<uvec>(jumps);
-  // ivec Sign = Rcpp::as<ivec>(sgn);
+  colvec beta = Rcpp::as<colvec>(betaSEXP);
+  mat X = Rcpp::as<mat>(XSEXP);
+  mat XX = Rcpp::as<mat>(XXSEXP);
+  arma::uvec Jumps = Rcpp::as<uvec >(JumpsSEXP);
+  arma::Col<int> Sign = Rcpp::as<arma::Col<int> >(SignSEXP);
   // unsigned n = X.n_rows;
   unsigned p = X.n_cols;
 
   colvec Xb = X*beta;
-  colvec eXb = exp(Xb);  
+  colvec eXb = exp(Xb);
   if (Sign.n_rows==eXb.n_rows) { // Truncation
     eXb = Sign%eXb;
   }
 
   colvec S0 = revcumsum(eXb);
+  //Rcout << "S0\n" << S0;
+
   // mat S1(X.n_rows,p);
   // for (unsigned j=0; j<X.n_cols; j++) {
   //   S1.col(j) = revcumsum(X.col(j),eXb);
@@ -139,12 +148,14 @@ BEGIN_RCPP
   for (unsigned j=0; j<p; j++) {
     E.col(j) = revcumsum(X.col(j),eXb,S0);
   }
+
   mat XX2 = XX;
   for (unsigned j=0; j<XX2.n_cols; j++) { // int S2/S0(s)
     XX2.col(j) = revcumsum(XX2.col(j),eXb,S0);
   }
 
   XX2 = XX2.rows(Jumps);
+
   //  X = X.rows(Jumps);
   E = E.rows(Jumps);
   S0 = S0.elem(Jumps);
