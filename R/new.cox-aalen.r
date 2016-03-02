@@ -5,7 +5,7 @@ beta=NULL,Nit=20,detail=0,start.time=0,max.time=NULL, id=NULL,
 clusters=NULL, n.sim=500, residuals=0,robust=1,
 weighted.test=0,covariance=0,resample.iid=1,weights=NULL,
 rate.sim=1,beta.fixed=0,max.clust=1000,exact.deriv=1,silent=1,
-max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL,propodds=0)
+max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL,propodds=0,caseweight=NULL)
 { ## {{{
 # {{{ set up variables 
   if (n.sim == 0) sim <- 0 else sim <- 1
@@ -20,7 +20,7 @@ max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL,propodds=0)
 	  m$max.time<-m$residuals<-m$n.sim<-m$id<-m$covariance<-m$resample.iid<-
 	  m$clusters<-m$rate.sim<-m$beta.fixed<- m$max.clust <- m$exact.deriv <- 
 	  m$silent <- m$max.timepoint.sim <- m$silent <- m$basesim  <- 
-	  m$offsets <- m$strata <- m$propodds <- NULL
+	  m$offsets <- m$strata <- m$propodds <- m$caseweight <- NULL
 
   special <- c("prop","cluster")
   Terms <- if(missing(data)) terms(formula, special)
@@ -159,7 +159,7 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
             covariance=covariance,resample.iid=resample.iid,namesX=covnamesX,
 	    namesZ=covnamesZ,beta.fixed=beta.fixed,entry=entry,basesim=basesim,
 	    offsets=offsets,exactderiv=exact.deriv,max.timepoint.sim=max.timepoint.sim,silent=silent,
-	    strata=strata,propodds=propodds)
+	    strata=strata,propodds=propodds,caseweight=caseweight)
 
   ## {{{ output handling
   colnames(ud$test.procProp)<-c("time",covnamesZ)
@@ -194,6 +194,7 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
   attr(ud,"Call")<-call; 
   attr(ud,"stratum")<-ud$stratum; 
   attr(ud,"Formula")<-formula;
+  attr(ud,"formula")<-formula;
   attr(ud,"rate.sim")<-rate.sim;
   attr(ud,"id.call")<-id.call;
   attr(ud,"id")<-id.call;
@@ -271,7 +272,7 @@ summary.cox.aalen(x,...)
   
   prop<-TRUE; 
   if (is.null(cox.aalen.object$gamma)==TRUE) stop(" No regression terms"); 
-  if (is.null(cox.aalen.object$prop.odds)==TRUE) p.o<-FALSE else p.o<-TRUE
+  if (cox.aalen.object$prop.odds==0) p.o<-FALSE else p.o<-TRUE
     
   if (p.o==FALSE) cat("Cox-Aalen Model \n\n") else cat("Proportional Odds model \n\n")
 

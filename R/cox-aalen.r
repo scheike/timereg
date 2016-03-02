@@ -3,7 +3,8 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
     sim = 1, antsim = 1000, weighted.test= 0, robust = 1, 
     ratesim = 0, residuals = 0, covariance = 1,
     resample.iid=0,namesZ=NULL,namesX=NULL,beta.fixed=0,strata=NULL,
-    entry=NULL,offsets=0,exactderiv=1,max.timepoint.sim=100,silent=1,basesim=0,propodds=0)  ## {{{
+    entry=NULL,offsets=0,exactderiv=1,max.timepoint.sim=100,silent=1,basesim=0,
+    propodds=0,caseweight=NULL)  ## {{{
 {
   additive.resamp <-0; ridge <- 0; XligZ <- 0; 
   Ntimes <- length(times)
@@ -63,7 +64,10 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   stratum <- ostratum
 
 ### print(stratum); ### print(weights); print(offsets)
-  silent <- c(silent,propodds)
+
+  icase <- 0
+  if (!is.null(caseweight)) {icase <- 1; cumint[,1] <- c(0,caseweight)}
+  silent <- c(silent,propodds,icase)
 
   nparout <- .C("score", as.double(times), as.integer(Ntimes), 
                 as.double(designX), as.integer(nx), as.integer(px), 

@@ -47,6 +47,7 @@ df
 dfe <- event.split(df,cuts="event",entry="start",id="id",num="nume")
 dfe <- dfe[,names(def)]
 dfe
+def
 dfe==def
 }
 \keyword{survival}

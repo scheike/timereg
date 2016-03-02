@@ -4,16 +4,16 @@
 \description{
 Fits a semiparametric model for the residual life (estimator=1):
 \deqn{
-	E( min(Y,tau) -t | Y>=t) = h_1(  g(t,x,z) )
+	E( \min(Y,\tau) -t | Y>=t) = h_1(  g(t,x,z) )
 }
 or cause specific years lost of Andersen (2012) (estimator=3)
 \deqn{
-E( tau- min(Y_j,tau) | Y>=0) = \int_0^t (1-F_j(s)) ds = h_2(  g(t,x,z) )
+E( \tau- \min(Y_j,\tau) | Y>=0) = \int_0^t (1-F_j(s)) ds = h_2(  g(t,x,z) )
 }
 where \eqn{Y_j = \sum_j Y I(\epsilon=j) + \infty * I(\epsilon=0)}
 or (estimator=2)
 \deqn{
-E( tau- min(Y_j,tau) | Y<\tau, \epsilon=j) = h_3(  g(t,x,z) ) = h_2(g(t,x,z)) F_j(\tau,x,z)
+E( \tau- \min(Y_j,\tau) | Y<\tau, \epsilon=j) = h_3(  g(t,x,z) ) = h_2(g(t,x,z)) F_j(\tau,x,z)
 }
 where 
 \eqn{F_j(s,x,z) = P(Y<\tau, \epsilon=j | x,z )}
@@ -22,10 +22,10 @@ and known prediction-function \eqn{g(t,x,z)}
 
 Uses the IPCW for the score equations based on 
 \deqn{
-w(t) Delta(tau)/P(Delta(tau)=1| T,\epsilon,X,Z) ( Y(t) - h_1(t,X,Z)) and 
+w(t) \Delta(\tau)/P(\Delta(\tau)=1| T,\epsilon,X,Z) ( Y(t) - h_1(t,X,Z))
 }
-where 
-\eqn{Delta(tau)} is the at-risk indicator given data and requires a model.
+and where 
+\eqn{\Delta(\tau)} is the at-risk indicator given data and requires a IPCW model.
 }
 \usage{
 res.mean(formula,data=sys.parent(),cause=1,restricted=NULL,times=NULL,Nit=50,

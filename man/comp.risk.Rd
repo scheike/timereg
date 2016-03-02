@@ -123,7 +123,7 @@ Default is 1000 to save memory and time. }
   estimates that are much quicker.}
 \item{monotone}{ monotone=0, uses estimating equations 
 \deqn{
-(D_beta P_1) w(t) ( Y(t)/G_c(t) - P_1(t,X)) and 
+(D_\beta P_1) w(t) ( Y(t)/G_c(t) - P_1(t,X)) and 
 }
 montone 1 uses 
 \deqn{
@@ -143,8 +143,7 @@ the new code is
 
 comp.risk(Event(time,cause)~x1+x2,data=mydata,cause=1)
 
-Also the argument cens.code is now obsolete since cens.code is an
-argument of \code{\link{Event}}.
+Also the argument cens.code is now obsolete since cens.code is an argument of \code{\link{Event}}.
 }
 \value{returns an object of type 'comprisk'. With the following arguments:
 \item{cum}{cumulative timevarying regression coefficient estimates are 

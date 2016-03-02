@@ -412,8 +412,8 @@ plot.resmean <-  function (x, pointwise.ci=1, hw.ci=0,
           cat("Hall-Wellner bands only 95 % \n");
         }
         tau<-length(B[,1])
-        nl<-B[,v]-1.13*V[tau,v]^.5*(1+V[,v]/V[tau,v])
-        ul<-B[,v]+1.13*V[tau,v]^.5*(1+V[,v]/V[tau,v])
+        nl<-B[,v]-1.27*V[tau,v]^.5*(1+V[,v]/V[tau,v])
+        ul<-B[,v]+1.27*V[tau,v]^.5*(1+V[,v]/V[tau,v])
         lines(B[,1],ul,lty=hw.ci,type="l"); 
         lines(B[,1],nl,lty=hw.ci,type="l");
       }

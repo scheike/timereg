@@ -127,7 +127,7 @@ plot(pout)
 form <- Surv(time,status==9)~age+diabetes+chf+vf+sex
 pform <- timereg.formula(form)
 out2<-cox.aalen(pform,data=sTRACE,max.time=7,
-		propodds=1,n.sim=0,robust=0)
+	propodds=1,n.sim=0,robust=0,detail=0,Nit=40)
 summary(out2)
 }
 \keyword{survival}

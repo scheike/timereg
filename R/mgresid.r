@@ -341,8 +341,8 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
       if (hw.ci>=1) {
         if (level!=0.05) cat("Hall-Wellner bands only 95 % \n");
         tau<-length(B[,1])
-        nl<-B[,v]-1.13*V[tau,v]^.5*(1+V[,v]/V[tau,v])
-        ul<-B[,v]+1.13*V[tau,v]^.5*(1+V[,v]/V[tau,v])
+        nl<-B[,v]-1.27*V[tau,v]^.5*(1+V[,v]/V[tau,v])
+        ul<-B[,v]+1.27*V[tau,v]^.5*(1+V[,v]/V[tau,v])
         lines(B[,1],ul,lty=hw.ci,type="s"); 
         lines(B[,1],nl,lty=hw.ci,type="s"); 
       }

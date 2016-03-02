@@ -16,6 +16,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 { 
   int basesim=0,timing=0; 
   int propodds=silent[1]; 
+  int icaseweight=silent[2]; 
   clock_t c0,c1; 
   c0=clock();
 //  mjump=sim[2];   // multiple jumps in clusters, relevant for ratesim=0 simulering via cholesky simulering 
@@ -26,7 +27,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 // {{{ setting up memory 
   matrix *X,*Z,*WX,*WZ,*cdesX,*cdesX2,*cdesX3,*CtVUCt,*A,*AI;
   matrix *Vcov,*dYI,*Ct,*dM1M2,*M1M2t,*COV,*ZX,*ZP,*ZPX; 
-  matrix *tmp2,*tmp3,*dS,*S1,*SI,*S2,*M1,*VU,*ZXAI,*VUI; 
+  matrix *tmp2,*tmp3,*dSprop,*dS,*S1,*SI,*S2,*M1,*VU,*ZXAI,*VUI; 
   matrix *ZPZ,*RobVbeta,*Delta,*tmpM1,*Utt,*Delta2,*tmpM2;
 //  matrix *St[*maxtimepoint],*M1M2[*Ntimes],*C[*maxtimepoint],*ZXAIs[*Ntimes],*dYIt[*Ntimes]; 
 //  matrix *St[*Ntimes],
@@ -52,7 +53,8 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   double tau,hati,random,scale,sumscore;
   double *cug=calloc((*maxtimepoint)*(*px+1),sizeof(double)),
          *timesg=calloc((*maxtimepoint),sizeof(double)),
-         *powi=calloc(*Ntimes,sizeof(double)); 
+         *powi=calloc(*Ntimes,sizeof(double)), 
+         *caseweight=calloc(*Ntimes,sizeof(double)); 
   double norm_rand();
   void GetRNGstate(),PutRNGstate();
 
@@ -73,6 +75,8 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 
   if (*detail==1) Rprintf("Memory allocation starting \n"); 
 
+//  printf(" Ntimes %d %d %d \n",*Ntimes,icaseweight,silent[2]); 
+  if (icaseweight==1)  for (j=1;j<*Ntimes;j++) caseweight[j]=cu[j];  //printf(" %lf \n",cu[j]); } 
   /* float gasdev(),expdev(),ran1(); */ 
 
   GetRNGstate();  /* to use R random normals */
@@ -105,7 +109,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   malloc_mats(*antpers,*px,&WX,&X,&cdesX,&cdesX2,&cdesX3,NULL); 
   malloc_mats(*antpers,*pg,&WZ,&ZP,&Z,NULL); 
   malloc_mats(*px,*px,&Vcov,&COV,&A,&AI,&M1,&CtVUCt,NULL); 
-  malloc_mats(*pg,*pg,&RobVbeta,&ZPZ,&tmp2,&dS,&S1,&S2,&SI,&VU,&VUI,NULL); 
+  malloc_mats(*pg,*pg,&RobVbeta,&ZPZ,&tmp2,&dSprop,&dS,&S1,&S2,&SI,&VU,&VUI,NULL); 
   malloc_mats(*pg,*px,&ZXAI,&ZX,&dM1M2,&M1M2t,NULL); 
   malloc_mats(*px,*pg,&tmp3,&ZPX,&dYI,&Ct,NULL); 
   malloc_mats(*px,*pg,&ZPX1,NULL); malloc_mats(*pg,*pg,&ZPZ1,NULL); 
@@ -190,7 +194,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
      for (s=1;s<*Ntimes;s++)  // {{{ going through time
      {
          time=times[s]; //  vec_zeros(lamt);
-         if (it==(*Nit-1)) { time=times[s]; cu[s]=times[s]; vcu[s]=times[s]; 
+         if (it==(*Nit-1) || (*Nit==0 && it==0)) { time=times[s]; cu[s]=times[s]; vcu[s]=times[s]; 
                              Rvcu[timegroup[s]]=times[s]; cug[timegroup[s]]=times[s]; }
     
 //   if (*detail==1) Rprintf("Starting Data reading, time %d \n",s); 
@@ -338,6 +342,11 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 	  powi[s]=pweight; 
 	  scl_vec_mult(pweight,dA,dA); 
   }
+  if (icaseweight==1) {
+	  pweight=caseweight[s];
+	  powi[s]=pweight; 
+	  scl_vec_mult(pweight,dA,dA); 
+  }
 
    if (it==(*Nit-1)) {
 	replace_row(dAt,s,dA); 
@@ -349,14 +358,13 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 
   /* First derivative U and Second derivative S  */ 
   extract_row(Z,pers,zi);  
-  Mv(ZX, dA, zav); 
+  Mv(ZX,dA,zav); 
 
-// scale udenfor ? 
-  scl_vec_mult(scale,zi,zi); 
-  if (propodds==1)  scl_vec_mult(pweight,zi,zi); 
+// pweight multiplied onto dA and therefore already on zav
+  if (propodds==1 || icaseweight==1) scl_vec_mult(pweight,zi,zi); 
   vec_subtr(zi,zav,difzzav); 
 //  scl_vec_mult(scale,difzzav,difzzav); 
-
+//  if (propodds==1 || icaseweight==1)   scl_vec_mult(pweight,difzzav,difzzav); 
 
   vec_add(difzzav,U,U); 
 
@@ -372,7 +380,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 
   if (*betafixed==0)  // {{{
   if (stratum[0]==0) 
-  if ( (((*exactderiv==1) && (it==(*Nit-1)) && (*px>1))) || ((*exactderiv==2) && (*px>1)) ) 
+  if ( (((*exactderiv==1) && (it==(*Nit-1) ||(*Nit==0 && it==0)) && (*px>1))) || ((*exactderiv==2) && (*px>1)) ) 
   {
   if (*detail==3) Rprintf("Computation of second derivative \n"); 
   mat_zeros(ZPZ1); mat_zeros(ZPX1); 
@@ -393,11 +401,24 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
   } // }}}
 //  printf(" gamle version \n"); print_mat(ZPZo); print_mat(ZPXo);
 
-if (*betafixed==0)  {
+
+//if (*betafixed==0)  {
 //	printf("=====================\n"); print_mat(ZXAI); print_mat(ZPXo); 
    MxA(ZXAI,ZPXo,tmp2); mat_subtr(ZPZo,tmp2, dS); 
+
+  // also case-weights here
+//  if (propodds==1)   scl_mat_mult(pweight,dS,dS); 
+  if (icaseweight==1) scl_mat_mult(pweight*pweight,dS,dS); 
+
+   // extra term for second derivative wrt beta  
+  if (propodds==1) {
+	  // (Z-E) Z exp(Z beta) x^T A(t-1)
+	  mat_add(dS,dSprop,dS); 
+  }
+
    if (*mw==1) {scale=VE(weight,pers); scl_mat_mult(scale,dS,dS); }
    mat_add(dS,S1,S1);  
+
    if (it==((*Nit)-1)) 
    if (*detail==4) {
 	   Rprintf(" time %d %d %lf D2l contribution \n",s,stratpers,times[s]); 
@@ -413,13 +434,12 @@ if (*betafixed==0)  {
 //   print_mat(dS); 
 //     }
    }
-
    scl_mat_mult(1,S1,Stg[timegroup[s]]);
- }
+// }
 
 
   /* varians beregninger */ 
-  if (it==((*Nit)-1)) { // {{{
+  if (it==((*Nit)-1) || (*Nit==0 && it==0)) { // {{{
     replace_row(Utt,timegroup[s],U);
     vscore[0*(*Ntimes)+s]=times[s]; 
 
@@ -468,8 +488,9 @@ if (*betafixed==0)  {
   } // }}}
 
 /* for (k=0;k<*pg;k++) ME(S1,k,k)=ME(S1,k,k)+*ridge;  */
+  invertS(S1,SI,*silent); 
   if (*betafixed==0 )  {
-      invertS(S1,SI,*silent); Mv(SI,U,delta); MxA(SI,VU,S2); MxA(S2,SI,VU); 
+      Mv(SI,U,delta); MxA(SI,VU,S2); MxA(S2,SI,VU); 
   }
 
       if (*detail==1) { 
@@ -654,7 +675,7 @@ if (*betafixed==0)  {
       Mv(ZXAI,xi,tmpv2);  
       vec_subtr(zi,tmpv2,tmpv2); 
       if (*mw==1) scl_vec_mult(VE(weight,pers),tmpv2,tmpv2); 
-      if (propodds==1) scl_vec_mult(powi[s],tmpv2,tmpv2); 
+      if (propodds==1 || icaseweight==1) scl_vec_mult(powi[s],tmpv2,tmpv2); 
 
       vec_add(tmpv2,W2[cin],W2[cin]);
 
@@ -665,7 +686,7 @@ if (*betafixed==0)  {
       if (basesim>=0) {
 	      Mv(AI,xi,rowX); 
 	      if (*mw==1) scl_vec_mult(VE(weight,pers),rowX,rowX); 
-              if (propodds==1) scl_vec_mult(powi[s],rowX,rowX); 
+              if (propodds==1 || icaseweight==1) scl_vec_mult(powi[s],rowX,rowX); 
 	      vec_add(rowX,W3[cin],W3[cin]);
       }
 
@@ -1052,7 +1073,7 @@ if (*betafixed==0)  {
   free_mats(&ZXAIn,NULL); 
 
   free_mats(&dAt,&Utt,&WX,&X,&cdesX,&cdesX2,&cdesX3, &WZ,&ZP,&Z,
-     &Vcov,&COV,&A,&AI,&M1,&CtVUCt, &RobVbeta,&ZPZ,&tmp2,&dS,&S1,&S2,&SI,&VU,&VUI,
+     &Vcov,&COV,&A,&AI,&M1,&CtVUCt, &RobVbeta,&ZPZ,&tmp2,&dSprop,&dS,&S1,&S2,&SI,&VU,&VUI,
      &ZXAI,&ZX,&dM1M2,&M1M2t, &tmp3,&ZPX,&dYI,&Ct, &ZPX1,&ZPZ1, &ZPXo,&ZPZo,NULL); 
 
   free_vecs(&vectmp,&ranvec,&reszpbeta,&res1dim,&weight,&lamtt,&lamt,&zcol,&Gbeta,&one,&offset,
@@ -1078,6 +1099,7 @@ if (*betafixed==0)  {
   for(j=0;j<*maxtimepoint;j++) { free_mat(Cg[j]); free_mat(Stg[j]);}
   free(cluster); free(ipers); free(imin); free(cug); free(timesg); 
   free(S0strata); free(strata); free(powi); 
+  free(caseweight); 
   // }}}
  for (j=0;j<antstrat;j++) { free_mat(ZPZs[j]); free_mat(ZPXs[j]); 
 //                            free_mat(As[j]); free_mat(ZXs[j]); 

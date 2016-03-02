@@ -97,6 +97,7 @@
 \alias{vcov.cox.aalen}
 \alias{vcov.two.stage}
 \alias{vcov.comp.risk}
+\alias{qcut}
 \title{For internal use}
 \description{for internal use}
 \author{Thomas Scheike}

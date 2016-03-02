@@ -4,6 +4,22 @@
 #include <time.h>
 #include <sys/types.h>
 
+
+void D2lapsf(double y, double x, double z, double *zz) 
+{ 
+zz[0]= pow(x,y)* pow(x+z,(-y-1))* (y* log(x+z)-y* log(x)-1) ;
+zz[1]= y* pow(x,(y-1))* pow(x+z,(-y-2))*(x-y* z) ;
+zz[2]= y* (y+1)* pow(x,y)*pow((x+z),(-y-2));
+zz[3]= 
+pow(y,2)* (y+1)* pow(x,(y-1))* pow(x+z,(-y-2))+(-y-2)* y* (y+1)* pow(x,y)* pow(x+z,(-y-3));
+zz[4]= y* pow(x,y)* pow(x+z,(-y-2))+(y+1)*pow(x,y)* 
+	pow(x+z,(-y-2))+y* (y+1)* pow(x,y) *log(x)* 
+	pow(x+z,(-y-2))-y *(y+1)* pow(x,y)* pow(x+z,(-y-2))* log(x+z);
+zz[5]= y* (y+1)* (y+2)* (-pow(x,y))* pow(x+z,(-y-3));
+} 
+
+
+
 void aalen(times,Ntimes,designX,nx,p,antpers,start,stop,cu,vcu,status)
 double *designX,*times,*start,*stop,*cu,*vcu;
 int *nx,*p,*antpers,*Ntimes,*status;
@@ -92,6 +108,12 @@ int *nx,*p,*antpers,*Ntimes,*sim,*retur,*antsim,*status,*id,*covariance,
 //     for (c=0;(c<*nx);c++) Rprintf(" %lf \n",weights[c]); 
 //     Rprintf(" entry \n"); 
 //     for (c=0;(c<*nx);c++) Rprintf(" %d \n",entry[c]); 
+
+
+//  double *zzz=calloc(6,sizeof(double));
+//  double x=0.11, y=1/3, z=1/3; 
+//for (s=1;s<40000;s++) D2lapsf(x,y,z,zzz); 
+
 
 for (s=1;s<*Ntimes;s++){
     time=times[s]; vec_zeros(dB); 

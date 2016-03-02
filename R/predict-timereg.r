@@ -66,12 +66,13 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
                            Z=NULL,n.sim=500, uniform=TRUE,
                            se=TRUE,alpha=0.05,resample.iid=0,...)
 {
-    ## {{{
+## {{{
 ###    if (object$conv$convd>=1) stop("Model did not converge.")
+
  ### {{{ reading designs  and models 
   if (!(inherits(object,'comprisk') || inherits(object,'aalen')
         || inherits(object,'cox.aalen')))
-        stop ("Must be output from comp.risk function")
+        stop ("Must be output from comp.risk, aalen, cox.aalen, prop.odds function")
 
   if(inherits(object,'aalen')) { modelType <- 'aalen';
   } else if(inherits(object,'comprisk')) { modelType <- object$model;

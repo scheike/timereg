@@ -14,6 +14,7 @@ event.split <- function(data,
       new.start <- data[,entry]
     } else new.start <- rep(0,n)
     idl <- 1:n
+    if (any(new.start>= new.time)) cat("any(new.start>= new.time) is TRUE\n"); 
 
    if (name.id %in% names(data)) 
 	   name.id <-paste(id,".split",sep="")

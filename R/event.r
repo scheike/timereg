@@ -67,7 +67,9 @@ summary.Event <- function(object,...) {
         class(x) <- "matrix"
         x <- x[i, , drop = FALSE]
         class(x) <- "Event"
-        attributes(x)$cens.code <- atr["cens.code"]
+        atr.keep <- c("cens.code","entry")
+###        atr.keep <- c("cens.code")
+        attributes(x)[atr.keep] <- atr[atr.keep]
         x
     }
     else {
