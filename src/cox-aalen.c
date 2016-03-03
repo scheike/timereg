@@ -1032,7 +1032,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 		  if (VE(difX,i)>test[l*(*antsim)+k-1]) test[l*(*antsim)+k-1]=VE(difX,i);
 		  VE(xi,i)=fabs(ME(Delta,s,i))/sqrt(Rvcu[(i+1)*(*maxtimepoint)+s]);
 		  if (VE(xi,i)>test[i*((*antsim))+k-1]) test[i*((*antsim))+k-1]=VE(xi,i); 
-		  }
+		}
 	}
     } // }}} 
 
