@@ -954,18 +954,22 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 
       if (basesim==1)  // {{{
       {
-      for (i=1;i<=*px;i++) {
-	VE(xi,i-1)=fabs(cug[i*(*maxtimepoint)+s])/sqrt(Rvcu[i*(*maxtimepoint)+s]);
-	if (VE(xi,i-1)>testOBS[i-1]) testOBS[i-1]=VE(xi,i-1); 
+	if ((s>*wscore) && (s<*maxtimepoint-*wscore)) {
+           for (i=1;i<=*px;i++) {
+	   VE(xi,i-1)=fabs(cug[i*(*maxtimepoint)+s])/sqrt(Rvcu[i*(*maxtimepoint)+s]);
+	   if (VE(xi,i-1)>testOBS[i-1]) testOBS[i-1]=VE(xi,i-1); 
+	}
       }
 
       scl_vec_mult(time/tau,rowX,difX);
       for (i=1;i<=*px;i++) VE(xi,i-1)=cug[i*(*maxtimepoint)+s];
       vec_subtr(xi,difX,difX);
-      for (i=0;i<*px;i++) {
-	VE(difX,i)=fabs(VE(difX,i)); l=(*px+i);
-	if (VE(difX,i)>testOBS[l]) testOBS[l]=VE(difX,i);
-      }
+	if ((s>*wscore) && (s<*maxtimepoint-*wscore)) {
+	      for (i=0;i<*px;i++) {
+		VE(difX,i)=fabs(VE(difX,i)); l=(*px+i);
+		if (VE(difX,i)>testOBS[l]) testOBS[l]=VE(difX,i);
+	      }
+	}
       } // }}} 
 
       if (*wscore>=1) {  /* sup beregnes i R */ 
@@ -1021,12 +1025,14 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 	      addproc[l*(*maxtimepoint)+s]=ME(Delta,s,i);}}
 	}
 
-	for (i=0;i<*px;i++) {
-	  VE(difX,i)=fabs(VE(difX,i));
-	  l=(*px+i);
-	  if (VE(difX,i)>test[l*(*antsim)+k-1]) test[l*(*antsim)+k-1]=VE(difX,i);
-	  VE(xi,i)=fabs(ME(Delta,s,i))/sqrt(Rvcu[(i+1)*(*maxtimepoint)+s]);
-	  if (VE(xi,i)>test[i*((*antsim))+k-1]) test[i*((*antsim))+k-1]=VE(xi,i); 
+	if ((s>*wscore) && (s<*maxtimepoint-*wscore)) {
+		for (i=0;i<*px;i++) {
+		  VE(difX,i)=fabs(VE(difX,i));
+		  l=(*px+i);
+		  if (VE(difX,i)>test[l*(*antsim)+k-1]) test[l*(*antsim)+k-1]=VE(difX,i);
+		  VE(xi,i)=fabs(ME(Delta,s,i))/sqrt(Rvcu[(i+1)*(*maxtimepoint)+s]);
+		  if (VE(xi,i)>test[i*((*antsim))+k-1]) test[i*((*antsim))+k-1]=VE(xi,i); 
+		  }
 	}
     } // }}} 
 
