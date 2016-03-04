@@ -171,7 +171,7 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
     if (robust==1) colnames(ud$robvar.cum)<- c("time",covnamesX)
     if (sim==1) {
       names(ud$pval.Prop)<- covnamesZ
-    if (basesim==1) {
+    if (basesim[1]>0) {
       names(ud$conf.band)<- names(ud$pval.testBeq0)<- names(ud$pval.testBeqC)<-
       names(ud$obs.testBeq0)<- names(ud$obs.testBeqC)<- 
       colnames(ud$sim.testBeq0)<- covnamesX; 

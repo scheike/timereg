@@ -11,17 +11,20 @@ test,testOBS,Ut,simUt,Uit,XligZ,aalen,nb,id,status,wscore,dNit,ratesim,score,dha
 retur,robust,covariance,Vcovs,addresamp,addproc,
 resample,gamiid,biid,clusters,antclust,vscore,betafixed,weights,entry,exactderiv,
 timegroup,maxtimepoint,stratum,silent)
-double *designX,*designG,*times,*betaS,*start,*stop,*cu,*w,*loglike,*Vbeta,*RVbeta,*vcu,*offs,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*aalen,*score,*dhatMit,*gammaiid,*dmgiid,*Vcovs,*addproc,*gamiid,*biid,*vscore,*weights,*dNit;
-int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*antsim,*rani,*XligZ,*nb,*id,*status,*wscore,*ratesim,*retur,*robust,*addresamp,*resample,*clusters,*antclust,*betafixed,*entry,*exactderiv,*timegroup,*maxtimepoint,*stratum,*silent;
+double *designX,*designG,*times,*betaS,*start,*stop,*cu,*w,*loglike,*Vbeta,*RVbeta,*vcu,*offs,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*aalen,*score,*dhatMit,*gammaiid,*dmgiid,*Vcovs,*addproc,*gamiid,*biid,*vscore,*weights,*dNit,*sim;
+int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*rani,*XligZ,*nb,*id,*status,*wscore,*ratesim,*retur,*robust,*addresamp,*resample,*clusters,*antclust,*betafixed,*entry,*exactderiv,*timegroup,*maxtimepoint,*stratum,*silent;
 { 
-  int basesim=0,timing=0; 
+  int timing=0; 
+  double basesim=0,basestart=0; 
   int propodds=silent[1]; 
   int icaseweight=silent[2]; 
   clock_t c0,c1; 
   c0=clock();
 //  mjump=sim[2];   // multiple jumps in clusters, relevant for ratesim=0 simulering via cholesky simulering 
-  basesim=sim[1]; // baseline is also simulated and variance estimated (can be omitted for some for models) 
-  // basesim=0 no simulations but variance, basesim=1 (simul and variance), basesim=-1 (no simulations no variance) 
+  basesim  =sim[0]; // 1,0,-1, baseline is also simulated from time basesim=sim[0] and variance estimated (can be omitted for some for models) 
+  basestart=sim[1]; // baseline is also simulated from time basesim=sim[0] and variance estimated (can be omitted for some for models) 
+//  printf(" basesim %lf %d \n",basesim,*antsim);
+// basesim=0 no simulations but variance, basesim=1 (simul and variance), basesim=-1 (no simulations no variance) 
   
   if (*detail==2) Rprintf("Memory allocation starting %d %d %d  \n",*antpers,*antclust,*maxtimepoint); 
 // {{{ setting up memory 
@@ -98,10 +101,10 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 
   for (c=0;c<*nx;c++) cluster[id[c]]=clusters[c]; 
 
-  if (sim[0]==1) {
+  if (*antsim>0) {
     malloc_mat(*maxtimepoint,*pg,Delta2); malloc_mat(*maxtimepoint,*pg,tmpM2);  
   }
-  if (basesim==1) {
+  if (basesim>0) {
     malloc_mat(*maxtimepoint,*px,Delta);  malloc_mat(*maxtimepoint,*px,tmpM1); 
   }
 
@@ -909,7 +912,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 
   if (timing==2) { // {{{
   c1=clock();
-  printf ("\telapsed CPU time: variance terms 4 %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+  Rprintf ("\telapsed CPU time: variance terms 4 %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
   c0=clock();
   } // }}}
 
@@ -939,9 +942,9 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 //}
 
 //  for(j=0;j<*antclust;j++)  print_mat(Uti[j]); 
-  if (*detail==2)  Rprintf("Ready for simulations sim=%d\n",sim[0]);
+  if (*detail==2)  Rprintf("Ready for simulations antsim =%d\n",*antsim);
 
-  if (sim[0]>=1) // {{{ score process simulations
+  if (*antsim>0) // {{{ score process simulations
   {
     // Rprintf("Simulations start N= %ld \n",(long int) *antsim);
 
@@ -952,14 +955,14 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     {
       time=timesg[s]-times[0];  //  FIX 
 
-      if (basesim==1)  // {{{
+      if (basesim>0)  // {{{
       {
-	if ((s>*wscore) && (s<*maxtimepoint-*wscore)) {
+	   if ((timesg[s]>basestart)) {
            for (i=1;i<=*px;i++) {
-	   VE(xi,i-1)=fabs(cug[i*(*maxtimepoint)+s])/sqrt(Rvcu[i*(*maxtimepoint)+s]);
-	   if (VE(xi,i-1)>testOBS[i-1]) testOBS[i-1]=VE(xi,i-1); 
-	}
-      }
+		   VE(xi,i-1)=fabs(cug[i*(*maxtimepoint)+s])/sqrt(Rvcu[i*(*maxtimepoint)+s]);
+		   if (VE(xi,i-1)>testOBS[i-1]) testOBS[i-1]=VE(xi,i-1); 
+	   }
+        }
 
       scl_vec_mult(time/tau,rowX,difX);
       for (i=1;i<=*px;i++) VE(xi,i-1)=cug[i*(*maxtimepoint)+s];
@@ -987,12 +990,12 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
     for (k=1;k<=*antsim;k++) // {{{  k=1,...,antsim
     {
 	 R_CheckUserInterrupt();
-	 if (basesim==1) mat_zeros(Delta); 
-	  mat_zeros(Delta2); vec_zeros(tmpv1);
+	 if (basesim>0) mat_zeros(Delta); 
+         mat_zeros(Delta2); vec_zeros(tmpv1);
      for (i=0;i<*antclust;i++)  // {{{ 
      {
 	random=norm_rand();
-	if (basesim==1) {
+	if (basesim>0) {
 	    scl_mat_mult(random,W4t[i],tmpM1); mat_add(tmpM1,Delta,Delta);
 	}
 //        if ((mjump==0 && *ratesim==0) || (*ratesim==1)) {
@@ -1008,35 +1011,32 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 //	}
      } // }}} 
 
-
-    if (basesim==1) extract_row(Delta,*maxtimepoint-1,tmpv1); 
+    if (basesim>0) extract_row(Delta,*maxtimepoint-1,tmpv1); 
 
     for (s=1;s<*maxtimepoint;s++) { 
-
-    time=timesg[s]-times[0];
-    if (basesim==1)   // {{{ 
+        time=timesg[s]-times[0];
+    if (basesim>0)   // {{{ 
     {
 	scl_vec_mult(time/tau,tmpv1,xi); extract_row(Delta,s,rowX);
 	vec_subtr(rowX,xi,difX);
 
 	if (*addresamp==1) {
-	  if (k<51) { 
-	    for (i=0;i<*px;i++) {l=(k-1)*(*px)+i;
-	      addproc[l*(*maxtimepoint)+s]=ME(Delta,s,i);}}
+	  if (k<51)  
+	  for (i=0;i<*px;i++) {l=(k-1)*(*px)+i; addproc[l*(*maxtimepoint)+s]=ME(Delta,s,i);}
 	}
 
-	if ((s>*wscore) && (s<*maxtimepoint-*wscore)) {
 		for (i=0;i<*px;i++) {
 		  VE(difX,i)=fabs(VE(difX,i));
 		  l=(*px+i);
 		  if (VE(difX,i)>test[l*(*antsim)+k-1]) test[l*(*antsim)+k-1]=VE(difX,i);
-		  VE(xi,i)=fabs(ME(Delta,s,i))/sqrt(Rvcu[(i+1)*(*maxtimepoint)+s]);
-		  if (VE(xi,i)>test[i*((*antsim))+k-1]) test[i*((*antsim))+k-1]=VE(xi,i); 
+	          if ((timesg[s]>basestart)) {
+		     VE(xi,i)=fabs(ME(Delta,s,i))/sqrt(Rvcu[(i+1)*(*maxtimepoint)+s]);
+		     if (VE(xi,i)>test[i*((*antsim))+k-1]) test[i*((*antsim))+k-1]=VE(xi,i); 
+	          }
 		}
-	}
     } // }}} 
 
-	if (*wscore>=1) {
+	if (*wscore>=1) {/*{{{*/
 	  extract_row(Delta2,s,zi); 
 	  if ((s>*wscore) && (s<*maxtimepoint-*wscore))  {
 	    for (i=0;i<*pg;i++) {VE(zi,i)=fabs(ME(Delta2,s,i))/sqrt(VE(varUthat[s],i));
@@ -1046,7 +1046,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 	      for (i=0;i<*pg;i++) { l=(k-1)*(*pg)+i;
 		Uit[l*(*maxtimepoint)+s]=ME(Delta2,s,i)/sqrt(VE(varUthat[s],i));}}
 	  } 
-	} /* weigted score */
+	} /* weighted score */
 	else {
 	  extract_row(Delta2,s,zi); 
 	  for (i=0;i<*pg;i++) {
@@ -1057,23 +1057,25 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*sim,*ants
 	    for (i=0;i<*pg;i++) { l=(k-1)*(*pg)+i;
 	      Uit[l*(*maxtimepoint)+s]=ME(Delta2,s,i);}
 	  }
-	} /* else wscore=0 */ 
-
+	} /* else wscore=0 */ /*}}}*/
       }  /* s=1..Ntims */
+
     }  // }}} /* k=1..antsim */
 
   } /* sim==1 */ // }}}
 
   if (timing==2) { // {{{
   c1=clock();
- printf ("\telapsed CPU time: before freeing %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+  Rprintf ("\telapsed CPU time: before freeing %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
   c0=clock();
   } // }}}
   PutRNGstate();  /* to use R random normals */
 
+  if (*detail==2)  Rprintf("Freeing "); 
+
   // {{{ freeing 
-  if (sim[0]>=1) free_mats(&Delta2,&tmpM2,NULL); 
-  if (basesim==1) free_mats(&Delta,&tmpM1,NULL); 
+  if (antsim[0]>0) free_mats(&Delta2,&tmpM2,NULL); 
+  if (basesim>0) free_mats(&Delta,&tmpM1,NULL); 
 
   if (basesim>=0) free_mats(&Cn,&M1M2n,&AIn,NULL); 
   free_mats(&ZXAIn,NULL); 
