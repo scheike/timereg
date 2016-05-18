@@ -46,6 +46,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   if (residuals == 2)  cumAi <- rep(0, fdata$antpers * 1) 
   cumint <- vcum <- matrix(0, Ntimes , px + 1); 
   Rvcu <- matrix(0, mts, px + 1); 
+  if (any(is.na(beta))) { cat(" Starting values include NA, possibly from call of coxph\n"); beta[is.na(beta)] <- 0;}
   if (sum(abs(beta)) == 0) betaS <- rep(0, pg) else betaS <- beta
   if (length(betaS)!=pg) betaS <- rep(betaS[1],pg); 
   score <- betaS; 
