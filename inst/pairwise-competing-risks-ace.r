@@ -2,7 +2,7 @@
 library(mets)
 
 set.seed(100)
-n <- 20000
+n <- 40000
 
 ## {{{ competing risks ace model with profile of baseline 
 lam0 <- c(0.3,0.2)
@@ -56,19 +56,22 @@ tsf <- twostage(NULL,data=out,clusters=out$cluster,
 	       two.stage=0,cr.models=cr.models)
 coef(tsf)
 pars/sum(pars)^2
-tsf$score
-tsf$score1
+summary(tsf$marginal.trunc)
+summary(tsf$marginal.surv)
+###tsf$score; tsf$score1
 
+###
 source("../R/twostage.R")
 par(mfrow=c(1,1))
 ts <- twostage(NULL,data=out,clusters=out$cluster,
                theta=tsf$theta,
-	       var.link=0,step=1.0,Nit=20,detail=1,
+	       step=1.0,Nit=20,detail=1,
                random.design=dout$random.design,
                theta.des=dout$theta.des,pairs=pairs,
 	       numDeriv=0,
                marginal.status=out$status,
 	       two.stage=0,cr.models=cr.models)
+
 coef(ts)
 pars/sum(pars)^2
 

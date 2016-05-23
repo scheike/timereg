@@ -2117,12 +2117,13 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 
            if (trunkp(i)<1 || trunkp(k)<1) {	
 		   Lit=trunkp(i); Lkt=trunkp(k); 
-		   llt=claytonoakes(deppar,0,0,Lit,Lkt,dplackt);
-                   if (ascertained==1) llt=1-llt;
+		   if ((ascertained==0) || (ascertained==2)) llt=claytonoakes(deppar,0,0,Lit,Lkt,dplackt);
+                   if (ascertained==2) llt=1-llt;  // 1-p00, no censoring case
+		   if (ascertained==1) llt=claytonoakes(deppar,0,1,Lit,Lkt,dplackt);
 		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
 		   ssf+=weights(i)*(log(ll)-log(llt));
 		   loglikecont=(log(ll)-log(llt));
-	           if (ascertained==1) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; 
+	           if (ascertained==2) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; 
 	   } else {
 		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
 		   ssf+=weights(i)*log(ll); 
@@ -2148,13 +2149,15 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 		   Lit=trunkp(i); Lkt=trunkp(k); 
 //		   llt=claytonoakesRV(theta,thetades,0,0,Lit,Lkt,rv1,rv2,dplackt);
 //		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
-                   llt=claytonoakesRVC(etheta,thetades,ags,0,0,Lit,Lkt,rv1,rv2,dplackt,wwc);
-                   if (ascertained==1) llt=1-llt;
+//
+		   if ((ascertained==0) || (ascertained==2)) llt=claytonoakesRVC(etheta,thetades,ags,0,0,Lit,Lkt,rv1,rv2,dplackt,wwc);
+                   if (ascertained==2) llt=1-llt;  // 1-p00, no censoring case
+		   if (ascertained==1) llt=claytonoakesRVC(etheta,thetades,ags,0,1,Lit,Lkt,rv1,rv2,dplackt,wwc);
 		   ll=claytonoakesRVC(etheta,thetades,ags,ci,ck,Li,Lk,rv1,rv2,dplack,wwc);
 		   ssf+=weights(i)*(log(ll)-log(llt));
 		   loglikecont=(log(ll)-log(llt));
 
-                   if (ascertained==1) vthetascore=dplack/ll+dplackt/llt; else  vthetascore=dplack/ll-dplackt/llt; 
+                   if (ascertained==2) vthetascore=dplack/ll+dplackt/llt; else  vthetascore=dplack/ll-dplackt/llt; 
 		   // }}}
 	   } else {
 		   ll=claytonoakesRVC(etheta,thetades,ags,ci,ck,Li,Lk,rv1,rv2,dplackt,wwc);
@@ -2171,12 +2174,14 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 	} else if (depmodel==2) { // plackett model  // {{{
         if (trunkp(i)<1 || trunkp(k)<1) {	
            Lit=trunkp(i); Lkt=trunkp(k); 
-	   llt=placklike(deppar,0,0,Lit,Lkt,dplackt);
+	   if ((ascertained==0) || (ascertained==2)) llt=placklike(deppar,0,0,Lit,Lkt,dplackt);
+           if (ascertained==2) llt=1-llt;  // 1-p00, no censoring case
+	   if (ascertained==1) llt=placklike(deppar,0,1,Lit,Lkt,dplackt);
            if (ascertained==1) llt=1-llt;
            ll=placklike(deppar,ci,ck,Li,Lk,dplack);
 	   ssf+=weights(i)*(log(ll)-log(llt));
 	   loglikecont=(log(ll)-log(llt));
-	   if (ascertained==1) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; 
+	   if (ascertained==2) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; 
 	   sdj=pow(diff,2); 
 	} else {
            ll=placklike(deppar,ci,ck,Li,Lk,dplack);
@@ -2247,6 +2252,14 @@ return(res);
 //therefore all needed quantities comes for each pair : 
 //theta.des and the random effects vectors, cluster and pair id's
 //cluster og secluster now also follows the pairs 
+//
+// left-truncation by giving ptrunc such that truncation probability can be computed
+// case control is also a matter of conditioning on marginal status of proband (second in pair)
+// L(T1,T2,d1,d2)/L(0,T2,0,d2) propto L(T1,T2,d1,d2)
+// ascertainment is equivalent except we here have delayed entry for first component so 
+// T2 is subject that leads to ascertainment, d2=1 
+// L(T1,T2,d1,d2)/L(T2,T2,0,1) 
+// we handle this by giving the survival functions of ascertainment pairs/controls appropriately
 RcppExport SEXP twostageloglikeRVpairs( 
 		SEXP icause, SEXP ipmargsurv, 
 		SEXP itheta, SEXP iXtheta, SEXP iDXtheta, SEXP idimDX, 
@@ -2489,12 +2502,13 @@ for (j=0;j<antclust;j++) {
 
            if (trunkp(i)<1 || trunkp(k)<1) {	
 		   Lit=trunkp(i); Lkt=trunkp(k); 
-		   llt=claytonoakes(deppar,0,0,Lit,Lkt,dplackt);
-                   if (ascertained==1) llt=1-llt;
+		   if ((ascertained==0) || (ascertained==2)) llt=claytonoakes(deppar,0,0,Lit,Lkt,dplackt);
+                   if (ascertained==2) llt=1-llt;  // 1-p00, no censoring case
+		   if (ascertained==1) llt=claytonoakes(deppar,0,1,Lit,Lkt,dplackt);
 		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
 		   ssf+=weights(i)*(log(ll)-log(llt));
 		   loglikecont=(log(ll)-log(llt));
-	           if (ascertained==1) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; 
+	           if (ascertained==2) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; 
 	   } else {
 		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
 		   ssf+=weights(i)*log(ll); 
@@ -2513,8 +2527,6 @@ for (j=0;j<antclust;j++) {
 	// 3-dimensional array pairs*(2xrandom effects)
         int lnrv= nrvs(j)-1; // number of random effects for this cluster 	
 	mat rv=rvdesC.slice(j); 
-//        vec rv1= trans(rv.row(0)); 
-//        vec rv2= trans(rv.row(1)); 
         vec rv1= trans(rv.submat(span(0),span(0,lnrv)));
         vec rv2= trans(rv.submat(span(1),span(0,lnrv)));
 	if (j<-1 ) { rv.print("rv"); Rprintf(" %d \n",lnrv); rv1.print("rv1"); rv2.print("rv2"); }
@@ -2556,13 +2568,14 @@ for (j=0;j<antclust;j++) {
 	} else if (depmodel==2) { // plackett model  //  // {{{ 
         if (trunkp(i)<1 || trunkp(k)<1) {	
            Lit=trunkp(i); Lkt=trunkp(k); 
-           llt=placklike(deppar,0,0,Lit,Lkt,dplackt); 
-           if (ascertained==1) llt=1-llt; // 1-P00
+	   if ((ascertained==0) || (ascertained==2)) llt=placklike(deppar,0,0,Lit,Lkt,dplackt);
+           if (ascertained==2) llt=1-llt;  // 1-p00, no censoring case
+	   if (ascertained==1) llt=placklike(deppar,0,1,Lit,Lkt,dplackt);
            ll=placklike(deppar,ci,ck,Li,Lk,dplack);
 	   ssf+=weights(j)*(log(ll)-log(llt));
 	   loglikecont=(log(ll)-log(llt));
 //	   diff=dplack(0)/ll-dplackt(0)/llt; 
-	   if (ascertained==1) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; 
+	   if (ascertained==2) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; 
 	   sdj=pow(diff,2); 
 	} else {
            ll=placklike(deppar,ci,ck,Li,Lk,dplack);
@@ -2574,7 +2587,6 @@ for (j=0;j<antclust;j++) {
 	   sdj=pow(diff,2); 
 	} // // }}} 
 	} // }}}
-
 
         if (depmodel!=3) {
 	     DUtheta+=weights(i)*sdj*vthetascore*trans(vthetascore);
@@ -2642,6 +2654,13 @@ return(res);
 // D_1 S_(Lam(T_1),Lam(T_2))/S_0, D_2 S_(T_1,T_2)/S_0, 
 // D_1 D_t S_(T_1,T_2), D_s D_2 S_(T_1,T_2), 
 // D_1 D_s D_t S_(T_1,T_2), D_t D_s D_2 S_(T_1,T_2), 
+//
+// left-truncation handled by giving ptrunc such that truncation probability can be computed
+// case control is also a matter of conditioning on marginal status of proband (second in pair), so similar to normal left truncation
+// L(T1,T2,d1,d2)/L(0,T2,0,d2)
+// ascertainment is equivalent except we here have delayed entry for first component also a matter of conditioning on marginal status of proband (second in pair)
+// L(T1,T2,d1,d2)/L(T2,T2,0,d2) (where by construction T1>T2, since T2 is the first jump)
+// we handle this by giving the cumulatives of ascertainment pairs/controls appropriately
 RcppExport SEXP survivalloglikeRVpairs( 
 		SEXP icause, SEXP ipmargsurv, 
 		SEXP itheta, SEXP iXtheta, SEXP iDXtheta, SEXP idimDX, 
@@ -2650,7 +2669,7 @@ RcppExport SEXP survivalloglikeRVpairs(
 		SEXP idepmodel, // SEXP ientryage,
 		SEXP itrunkp , SEXP istrata, SEXP isecluster, SEXP  iantiid, SEXP irvdes,
 		SEXP idimthetades, SEXP idimrvdes, SEXP inrvs ,
-		SEXP iags,SEXP ientrycause
+		SEXP iags,SEXP ientrycause, SEXP iascertained	
 )  
 { // {{{ 
   try {
@@ -2658,6 +2677,7 @@ RcppExport SEXP survivalloglikeRVpairs(
 //  setting matrices and vectors, and exporting to armadillo matrices
 //  // {{{
 // colvec nrvs = Rcpp::as<colvec>(inrvs);
+ int ascertained= Rcpp::as<int>(iascertained);  // 1= ascertained or casecontrol, controlled via trunkp 
  IntegerVector nrvs(inrvs);
  IntegerVector entrycause(ientrycause);
  IntegerVector cause(icause);
@@ -2679,17 +2699,16 @@ RcppExport SEXP survivalloglikeRVpairs(
  IntegerVector strata(istrata);
  vec all(4); 
 
+
 // array for derivative of flexible design
  NumericVector DXthetavec(iDXtheta);
  IntegerVector arrayDims(idimDX);
  arma::cube DXtheta(DXthetavec.begin(), arrayDims[0], arrayDims[1], arrayDims[2], false);
 
-//printf(" mig thetades 222222\n"); 
 // array for parameter restrictions (one for each pair) pairs * (ant random effects)* (ant par)
  NumericVector thetadesvec(ithetades);
  IntegerVector arrayDims1(idimthetades); 
  IntegerVector arrayDD(3); 
-//printf(" mig thetades 222222\n"); 
 
 //printf(" %d %d %d \n",arrayDims1[0],arrayDims1[1],arrayDims1[2]); 
 
@@ -2760,11 +2779,9 @@ colvec likepairs(antclust);
 mat matlikepairs(antclust,6); 
 vec allvec(6); 
 
-//printf(" hej 1 \n"); 
-//pmargsurv.print("pmarg"); 
+// wall_clock timer; timer.tic(); 
 
-// wall_clock timer; 
-// timer.tic(); 
+//printf(" thomas \n"); 
 
 for (j=0;j<antclust;j++) { // {{{  
 
@@ -2772,19 +2789,15 @@ for (j=0;j<antclust;j++) { // {{{
 
 // index of subject's in pair "j"
    i=clusterindex(j,0); k=clusterindex(j,1); 
-//	  printf("cci 2 \n"); 
-     if (strata(i)==strata(k)) { //  // {{{ 
+
+   if (strata(i)==strata(k)) { //  // {{{ 
 
      // basic survival status 
      ci=cause(i); ck=cause(k); 
-     vec Li=trans(pmargsurv.row(i)); 
+     vec Li=trans(pmargsurv.row(i));  // vector of cumulative hazards 
      vec Lk=trans(pmargsurv.row(k)); 
 
-     if (j<-10) {
-     Rprintf("%d %d %d %d  \n",i,k,ci,ck); 
-	     Li.print("Lk"); 
-	     Lk.print("Lk"); 
-     }
+     if (j<-10) { Rprintf("%d %d %d %d  \n",i,k,ci,ck); Li.print("Lk"); Lk.print("Lk"); }
          
      int flexfunc=0; 
       if (flexfunc==0) {
@@ -2792,19 +2805,16 @@ for (j=0;j<antclust;j++) { // {{{
              thetak=Xtheta(i,0);  
 	     pthetavec= trans(thetades.row(i)); 
 	     vthetascore=1*pthetavec; 
-//	     pthetavec= thetadesi.subcube(span(j),span(i),span::all); 
 	  }
       } else { 
 	  thetak=Xtheta(i,s); 
 	  pthetavec = DXtheta(span(s),span(i),span::all); 
       }
 
-//  if (depmodel==3){ if (varlink==1) etheta=exp(theta); else etheta=theta; }
-        etheta=theta; 
+      etheta=theta; 
 
-
-	if (depmodel==1) { 
-	} else if (depmodel==3) { //  additive random gamma clayton-oakes  // {{{ 
+      if (depmodel==1) {  // only additive gamma model 
+      } else if (depmodel==3) { //  additive random gamma clayton-oakes  // {{{ 
 
 	// takes random effects specification for each pair
 	// 3-dimensional array pairs*(2xrandom effects)
@@ -2812,18 +2822,13 @@ for (j=0;j<antclust;j++) { // {{{
 
 	// first half of rows for person1 and second half for subject 2
 	// nn number of competing risks
-//        mat rv1= rv.rows(0,nnn/2-1);
-//        mat rv2= rv.rows(nnn/2,nnn-1);
+//        mat rv1= rv.rows(0,nnn/2-1); mat rv2= rv.rows(nnn/2,nnn-1);
       mat rv=rvdesC.slice(j);
       int nnn=rv.n_rows; 
       mat rv1= rv.submat(0,0,nnn/2-1,lnrv);
       mat rv2= rv.submat(nnn/2,0,nnn-1,lnrv);
 
-	if (j<-1 ) {
-//	rv.print("rv"); 
-	rv1.print("rv1"); 
-	rv2.print("rv2"); 
-	}
+	if (j<-1 ) { rv1.print("rv1"); rv2.print("rv2"); }
 
 	// takes parameter relations for each pair
 	// 3-dimensional array pairs*(random effects* pars )
@@ -2832,57 +2837,46 @@ for (j=0;j<antclust;j++) { // {{{
 
 	if (j<-1)  {
 	   Rprintf(" %d %d \n",lnrv,pt); 
-           rv1.print("rv1");    
-	   rv2.print("rv2"); 
-	   thetadesv.print("thetades "); 
-	   etheta.print("e-theta"); 
+           rv1.print("rv1");    rv2.print("rv2"); 
+	   thetadesv.print("thetades "); etheta.print("e-theta"); 
 //	   mat test=mat(thetades.begin(),3,1); 
 //	   test.print("test"); 
 	}
 
-
            if (any(trunkp.row(i)>0) || any(trunkp.row(k)>0)) { //  
-		   vec Lit=trans(trunkp.row(i)); vec Lkt=trans(trunkp.row(k)); 
-if (j<-10)  {  Rprintf(" så betinges der ! %d %d %d %d \n",entrycause(i),entrycause(k),cause(i),cause(k)); 
-	   Lit.print("Lit"); 
-	   Lkt.print("Lkt"); 
-	   Lk.print("Lk"); 
-           }
-		   llt=survivalRVC2(etheta,thetadesv,ags,entrycause(i),entrycause(k),Lit,Lkt,rv1,rv2,dplackt,allvec);
-		   ll=survivalRVC2(etheta,thetadesv,ags,cause(i),cause(k),Li,Lk,rv1,rv2,dplack,allvec);
-//		   printf("%d %lf %lf \n",j,ll,llt); 
-//                   printf(" så betinges der ! %d %d %d %d \n",entrycause(i),entrycause(k),cause(i),cause(k)); 
-//	           Li.print("Li"); Lk.print("Lk"); 
-//	           Lit.print("Lit"); Lkt.print("Lkt"); 
+	      vec Lit=trans(trunkp.row(i)); 
+	      vec Lkt=trans(trunkp.row(k)); 
+              if (j<-10) {  
+		   Rprintf(" så betinges der ! %d %d %d %d \n",entrycause(i),entrycause(k),cause(i),cause(k)); 
+		   Lit.print("Lit"); Lkt.print("Lkt"); Lk.print("Lk"); 
+              }
 
-		   ssf+=weights(i)*(log(ll)-log(llt));
-		   loglikecont=(log(ll)-log(llt));
+              if (ascertained==0) // standard left truncation, both surviving Lit, Lkt
+	      llt=survivalRVC2(etheta,thetadesv,ags,0,0,Lit,Lkt,rv1,rv2,dplackt,allvec);
+	      if (ascertained==1) // ascertainment correction depending on cumulative hazards of proband Lkt
+		                  // case control adjustment  depending on cumulative hazards of proband Lkt
+	      llt=survivalRVC2(etheta,thetadesv,ags,0,cause(k),Lit,Lkt,rv1,rv2,dplackt,allvec);
+	      ll=survivalRVC2(etheta,thetadesv,ags,cause(i),cause(k),Li,Lk,rv1,rv2,dplack,allvec);
 
-//	           if (varlink==1) { 
-//			   dplackt=dplackt % etheta;  
-//			   dplack=dplack % etheta;  
-//		   }
-	           vthetascore=dplack/ll-dplackt/llt; 
-		   // 
+//	      printf("%d %lf %lf \n",j,ll,llt); 
+//            printf(" så betinges der ! %d %d %d %d \n",entrycause(i),entrycause(k),cause(i),cause(k)); 
+//	      Li.print("Li"); Lk.print("Lk");  Lit.print("Lit"); Lkt.print("Lkt"); 
+
+	      ssf+=weights(i)*(log(ll)-log(llt));
+	      loglikecont=(log(ll)-log(llt));
+	      vthetascore=dplack/ll-dplackt/llt; 
 	   } else {
-//		   printf(" %d %d %d %d \n",i,k,(int) ci,(int) ck); 
-//printf(" hej 1 %d \n",nnn); ags.print("ags"); ags.print("thetadesv"); 
-		   ll=survivalRVC2(etheta,thetadesv,ags,(int) ci,(int) ck,Li,Lk,rv1,rv2,dplackt,allvec);
-//printf(" hej 1 %d \n",nnn); 
-		   ssf+=weights(i)*log(ll); 
-		   loglikecont=log(ll);
-		   if (j<-10)    {
-			   Rprintf("%lf %lf \n",weights(i),ll); 
-			   allvec.print("allvec"); 
-			   dplackt.print("dll"); 
-		   }
-//	           if (varlink==1) dplackt=dplackt % etheta;  
-	           vthetascore=dplackt/ll; 
+//	      printf("hhhhh %d  %d %d %d %d \n",ascertained,i,k,(int) ci,(int) ck); 
+	      ll=survivalRVC2(etheta,thetadesv,ags,cause(i),cause(k),Li,Lk,rv1,rv2,dplack,allvec);
+	      ssf+=weights(i)*log(ll); 
+	      loglikecont=log(ll);
+	      if (j<-10)    { Rprintf("%lf %lf \n",weights(i),ll); allvec.print("allvec"); dplack.print("dll"); }
+	      vthetascore=dplack/ll; 
 	   } 
-//	   if (varlink==0) diff=-1*pow(deppar,2)*diff; 
-//	   sdj=pow(diff,2); 
 	   // }}} 
-	} else if (depmodel==2) { } 
+	} else if (depmodel==2) { 
+        // not possible only additive gamma model 
+	} 
 
 
         if (depmodel!=3) {
@@ -2890,7 +2884,6 @@ if (j<-10)  {  Rprintf(" så betinges der ! %d %d %d %d \n",entrycause(i),entryc
 	     DUtheta+=weights(i)*vthetascore*trans(vthetascore);
 	     vthetascore=weights(i)*vthetascore; 
 	     Utheta=Utheta+vthetascore; 
-//		vthetascore.print("vvv 2"); 
 	}
 
      if (iid==1) { for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)+=weights(i)*vthetascore(c1); 
@@ -2928,3 +2921,5 @@ return(res);
   return R_NilValue; // -Wall
 
 } // }}}  
+
+
