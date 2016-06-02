@@ -1,53 +1,44 @@
 \name{event.split}
 \alias{event.split}
 \title{EventSplit (SurvSplit).}
-\description{ contstructes start stop formulation of event time data after
-a variable in the data.set, otherwise similar to SurvSplit of the survival package.
-Can also split after random time given in data frame.
+\description{ contstructs start stop formulation of event time data after
+a variable in the data.set. Similar to SurvSplit of the survival package but
+can also split after random time given in data frame.
 }
 \usage{
 event.split(data, time="time",status="status",cuts="cuts",
-	     name.start="start",id=NULL,name.id="id",
-			entry=NULL,cens.code=0,num="num")
+                  name.id="id", name.start="start", cens.code=0, order.id=TRUE)
 }
 \arguments{
   \item{data}{data to be split }
   \item{time}{time variable.}
   \item{status}{status variable.}
-  \item{cuts}{contrast matrix for testing}
-  \item{name.start}{name of start variable in new data.}
-  \item{id}{name of id variable.}
-  \item{name.id}{name of id variable in new data.}
-  \item{entry}{entry time for delayed entry.}
+  \item{cuts}{cuts variable or numeric cut (only one value)}
+  \item{name.start}{name of start variable in data, start can also be numeric "0"}
+  \item{name.id}{name of id variable.}
   \item{cens.code}{code for the censoring.}
-  \item{num}{numbering of events to same subject.}
+  \item{order.id}{order data after id and start.}
 }
 \author{Thomas Scheike}
 \examples{
 set.seed(1)
-d <- data.frame(event=round(5*runif(5),2),
-		start=round(5*runif(5),2),
-		time=1:5,
-		status=rbinom(5,1,0.5),
-		x=1:5)
-d$fcut <- 2
+d <- data.frame(event=round(5*runif(5),2),start=1:5,time=2*1:5,
+		status=rbinom(5,1,0.5),x=1:5)
 d
-event.split(d,cuts="event",num="nume")
-### like survSplit
-event.split(d,cuts="fcut",num="numf")
 
-### successive splitting 
-de <- event.split(d,cuts="event",num="nume")
-de
-def <- event.split(de,cuts="fcut",entry="start",id="id",num="numf")
-###
-### successive splitting 
-df <- event.split(d,cuts="fcut",num="numf")
-df
-dfe <- event.split(df,cuts="event",entry="start",id="id",num="nume")
-dfe <- dfe[,names(def)]
-dfe
-def
-dfe==def
+d0 <- event.split(d,cuts="event",name.start=0)
+d0
+
+dd <- event.split(d,cuts="event")
+dd
+ddd <- event.split(dd,cuts=3.5)
+ddd
+event.split(ddd,cuts=5.5)
+
+### successive cutting for many values 
+dd <- d
+for  (cuts in seq(2,3,by=0.3)) dd <- event.split(dd,cuts=cuts)
+dd
+
 }
 \keyword{survival}
