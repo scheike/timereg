@@ -12,7 +12,8 @@ twostage(margsurv, data = sys.parent(), score.method = "fisher.scoring",
   strata = NULL, se.clusters = NULL, max.clust = NULL, numDeriv = 0,
   random.design = NULL, pairs = NULL, pairs.rvs = NULL,
   numDeriv.method = "simple", additive.gamma.sum = NULL, var.par = 1,
-  two.stage = 1, cr.models = NULL, case.control = 0, ascertained = 0)
+  two.stage = 1, cr.models = NULL, case.control = 0, ascertained = 0,
+  shut.up = 0)
 }
 \arguments{
 \item{margsurv}{Marginal model}
@@ -80,6 +81,8 @@ twostage(margsurv, data = sys.parent(), score.method = "fisher.scoring",
 \item{case.control}{assumes case control structure for "pairs" with second column being the probands, when this options is used the twostage model is profiled out via the paired estimating equations for the survival model.}
 
 \item{ascertained}{if the pair are sampled only when there is an event. This is in contrast to case.control sampling where a proband is given. This can be combined with control probands. Pair-call of twostage is needed  and second column of pairs are the first jump time with an event for ascertained pairs, or time of control proband.}
+
+\item{shut.up}{to make the program more silent in the context of iterative procedures for case-control and ascertained sampling}
 }
 \description{
 Fits Clayton-Oakes or bivariate Plackett models for bivariate survival data

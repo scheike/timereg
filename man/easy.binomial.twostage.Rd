@@ -79,7 +79,7 @@ twinstut <- twinstut0
 twinstut$binstut <- (twinstut$stutter=="yes")*1
 theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut)
 margbin <- glm(binstut~factor(sex)+age,data=twinstut,family=binomial())
-bin <- binomial.twostage(margbin,data=twinstut,
+bin <- binomial.twostage(margbin,data=twinstut,var.link=1,
 		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0,
 	                 score.method="fisher.scoring")
 summary(bin)
@@ -87,18 +87,18 @@ estimate(coef=bin$theta,vcov=bin$var.theta,f=function(p) exp(p))
 
 twinstut$cage <- scale(twinstut$age)
 theta.des <- model.matrix( ~-1+factor(zyg)+cage,data=twinstut)
-bina <- binomial.twostage(margbin,data=twinstut,
+bina <- binomial.twostage(margbin,data=twinstut,var.link=1,
 		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0)
 summary(bina)
 
 theta.des <- model.matrix( ~-1+factor(zyg)+factor(zyg)*cage,data=twinstut)
-bina <- binomial.twostage(margbin,data=twinstut,
+bina <- binomial.twostage(margbin,data=twinstut,var.link=1,
 		         clusters=twinstut$tvparnr,theta.des=theta.des)
 summary(bina)
 
 out <- easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut,
-                              response="binstut",id="tvparnr",
-			      theta.formula=~-1+factor(zyg1))
+                              response="binstut",id="tvparnr",var.link=1,
+			          theta.formula=~-1+factor(zyg1))
 summary(out)
 
 ## refers to zygosity of first subject in eash pair : zyg1
@@ -108,7 +108,8 @@ desfs <- function(x,num1="zyg1",namesdes=c("mz","dz","os"))
 
 out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
                                data=twinstut, response="binstut",id="tvparnr",
-                               theta.formula=desfs,desnames=c("mz","dz","os"))
+                               var.link=1,theta.formula=desfs,
+                               desnames=c("mz","dz","os"))
 summary(out3)
 
 \donttest{ ## Reduce Ex.Timings

@@ -11,7 +11,7 @@ based on all pairwise bivariate models.}
 binomial.twostage(margbin, data = sys.parent(),
   score.method = "fisher.scoring", Nit = 60, detail = 0,
   clusters = NULL, silent = 1, weights = NULL, control = list(),
-  theta = NULL, theta.des = NULL, var.link = 1, var.par = 0,
+  theta = NULL, theta.des = NULL, var.link = 0, var.par = 1,
   var.func = NULL, iid = 1, step = 1, notaylor = 1,
   model = "plackett", marginal.p = NULL, beta.iid = NULL,
   Dbeta.iid = NULL, strata = NULL, max.clust = NULL, se.clusters = NULL,
@@ -161,26 +161,26 @@ twinstut <- twinstut0
 twinstut$binstut <- (twinstut$stutter=="yes")*1
 theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut)
 margbin <- glm(binstut~factor(sex)+age,data=twinstut,family=binomial())
-bin <- binomial.twostage(margbin,data=twinstut,
+bin <- binomial.twostage(margbin,data=twinstut,var.link=1,
 		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0,
 	                 score.method="fisher.scoring")
 summary(bin)
 
 twinstut$cage <- scale(twinstut$age)
 theta.des <- model.matrix( ~-1+factor(zyg)+cage,data=twinstut)
-bina <- binomial.twostage(margbin,data=twinstut,
+bina <- binomial.twostage(margbin,data=twinstut,var.link=1,
 		         clusters=twinstut$tvparnr,theta.des=theta.des)
 summary(bina)
 
 theta.des <- model.matrix( ~-1+factor(zyg)+factor(zyg)*cage,data=twinstut)
-bina <- binomial.twostage(margbin,data=twinstut,
+bina <- binomial.twostage(margbin,data=twinstut,var.link=1,
 		         clusters=twinstut$tvparnr,theta.des=theta.des)
 summary(bina)
 
 ## refers to zygosity of first subject in eash pair : zyg1
 ## could also use zyg2 (since zyg2=zyg1 within twinpair's))
 out <- easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut,
-                          response="binstut",id="tvparnr",
+                          response="binstut",id="tvparnr",var.link=1,
 	             	      theta.formula=~-1+factor(zyg1))
 summary(out)
 
@@ -190,7 +190,7 @@ desfs<-function(x,num1="zyg1",num2="zyg2")
     c(x[num1]=="dz",x[num1]=="mz",x[num1]=="os")*1
 
 out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
-      data=twinstut,response="binstut",id="tvparnr",
+      data=twinstut,response="binstut",id="tvparnr",var.link=1,
       theta.formula=desfs,desnames=c("mz","dz","os"))
 summary(out3)
 
