@@ -13,7 +13,7 @@ BEGIN_RCPP
   unsigned M = nclust*n;
   unsigned K = nvarying+nfixed+2;
 
-  urowvec idx(nvarying);
+  Row<unsigned> idx(nvarying);
   uvec mis(M); mis.fill(0);
   for (unsigned k=0; k<nvarying; k++)
     idx[k] = nfixed+k*nclust;
@@ -117,7 +117,7 @@ BEGIN_RCPP
       unsigned M = nclust*d.n_rows;
       unsigned K = nvarying+nfixed+2;
       mat dd(M,K); // Long data      
-      urowvec idx(nvarying);
+      uvec idx(nvarying);
       uvec mis(M); mis.fill(0); // NA_INTEGER
       for (unsigned k=0; k<nvarying; k++)
          idx[k] = nfixed+k*nclust;
@@ -130,7 +130,7 @@ BEGIN_RCPP
 	   xx0[k] = d(i,k);
 	 }
          for (unsigned j=0; j<nclust; j++) {
-            urowvec idx0 = idx+j;
+	   uvec idx0 = idx+j;
             xx0.subvec(nfixed,K-3) = trans(d0.elem(idx0));
             xx0[K-2] = i+1; xx0[K-1] = j+1;
 	    bool allmiss = Missing;
@@ -164,7 +164,7 @@ void fastpattern(const umat &y, umat &pattern, uvec &group, unsigned categories 
   unsigned K=0;
 
   for (unsigned i=0; i<n; i++) {
-    urowvec ri = y.row(i);
+    uvec ri = y.row(i);
     bool found = FALSE;
     for (unsigned j=0; j<K; j++) {      
       if (sum(ri!=mypattern.row(j))==0) {
@@ -172,6 +172,7 @@ void fastpattern(const umat &y, umat &pattern, uvec &group, unsigned categories 
 	mygroup(i) = j;	
 	break;
       }
+
     }
     if (!found) {
       K++;
@@ -211,8 +212,36 @@ END_RCPP
 } 
 
 
-
-
+RcppExport SEXP FastCluster(const SEXP x) {
+BEGIN_RCPP
+  arma::Row<unsigned> xx = as<arma::Row<unsigned> >(x);
+  vector<unsigned> cpos, csize; 
+  unsigned val=0, prev=0, cursize=0;  
+  for (unsigned i=0; i<xx.n_elem; i++) {
+    if (xx[i]!=0) {
+      if (prev==0) {
+	cpos.push_back(i+1);
+	val++;
+      }
+      xx[i] = val;
+      cursize++;
+    } else if (prev!=0) {
+      csize.push_back(cursize);
+      cursize = 0;
+    }
+    prev = xx[i];
+  }
+  if (prev!=0) csize.push_back(cursize);
+  
+  return(Rcpp::List::create(
+			    Rcpp::Named("cluster")=conv_to< vector<unsigned> >::from(xx),
+			    Rcpp::Named("cluster.first")=cpos,
+			    Rcpp::Named("cluster.size")=csize
+			    ));  
+  // return( wrap(list(xx,) );
+END_RCPP
+}
+		     
 RcppExport SEXP FastApprox(const SEXP time,
 			   const SEXP newtime,
 			   const SEXP equal,
