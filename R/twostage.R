@@ -404,7 +404,7 @@ if (!is.null(margsurv))  {
   out.clust <- cluster.index(clusters);  
   clusters <- out.clust$clusters
   maxclust <- out.clust$maxclust 
-  antclust <- out.clust$antclust
+  antclust <- out.clust$cluster.size
   clusterindex <- out.clust$idclust
   clustsize <- out.clust$cluster.size
   call.secluster <- se.clusters

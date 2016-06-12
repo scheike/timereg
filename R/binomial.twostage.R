@@ -239,7 +239,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     out.clust <- cluster.index(clusters);  
     clusters <- out.clust$clusters
     maxclust <- out.clust$maxclust 
-    antclust <- out.clust$antclust
+    antclust <- out.clust$cluster.size
     clusterindex <- out.clust$idclust
     clustsize <- out.clust$cluster.size
     call.secluster <- se.clusters
@@ -1036,8 +1036,8 @@ easy.binomial.twostage <- function(margbin=NULL,data=sys.parent(),score.method="
 
 ### make all pairs in the families,
     fam <- familycluster.index(data[,id])
-    data.fam <- data[fam$familypairindex,]
-    data.fam$subfam <- fam$subfamilyindex
+    data.fam <- data[c(fam$familypairindex),]
+    data.fam$subfam <- c(fam$subfamilyindex)
 
 ### make dependency design using wide format for all pairs 
     data.fam.clust <- fast.reshape(data.fam,id="subfam")
@@ -1081,6 +1081,7 @@ easy.binomial.twostage <- function(margbin=NULL,data=sys.parent(),score.method="
         print(head(data.fam[,response]));
 	cat("\n")
     } 
+    print(head(data.fam))
 
     out <- binomial.twostage(data.fam[,response],data=data.fam,
                              clusters=data.fam$subfam,
