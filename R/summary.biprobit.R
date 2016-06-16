@@ -1,5 +1,5 @@
 ##' @export
-summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=NULL,mean.contrast2=NULL,cor.contrast=NULL,marg.idx=1,...) {
+summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=NULL,mean.contrast2=NULL,cor.contrast=NULL,marg.idx=1,iid=FALSE,...) {
   alpha <- level/2
   varcomp <- object$coef[length(coef(object)),1:2]
   varcomp <- rbind(object$model$tr(c(varcomp[1],varcomp[1]%x%cbind(1,1) + qnorm(1-alpha)*varcomp[2]%x%cbind(-1,1))))
@@ -88,6 +88,7 @@ summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=
               corref <- paste(convval(cor.contrast[idx1]),corref,sep="")
           }
       }
+      
       return(list(m=m,r=r,mref1=mref1,mref2=mref2,corref=corref))
   }
   probs <- function(p,...) {
@@ -122,14 +123,15 @@ summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=
   mean.contrast2 <- rbind(mean.contrast2)
   KK <- lapply(list(cor.contrast,mean.contrast,mean.contrast2),nrow)
   if (all(is.null(unlist(KK)))) K <- 1 else  K <- max(unlist(KK))
-  res <- pa <- c()
+  IID <- res <- pa <- c()
   for (i in seq(K)) {
-      prob <- probs(mycoef,cor.contrast=cor.contrast[i,],mean.contrast=mean.contrast[i,],mean.contrast2=mean.contrast2[i,])  
+      prob <- probs(mycoef,cor.contrast=cor.contrast[i,],mean.contrast=mean.contrast[i,],mean.contrast2=mean.contrast2[i,])
       Dprob <- numDeriv::jacobian(probs,mycoef,cor.contrast=cor.contrast[i,],mean.contrast=mean.contrast[i,],mean.contrast2=mean.contrast2[i,])
-      sprob <- diag((Dprob)%*%vcov(object)%*%t(Dprob))^0.5
+      sprob <- diag((Dprob)%*%vcov(object)%*%t(Dprob))^0.5      
       pp <- cbind(prob,prob-qnorm(1-alpha)*sprob,prob+qnorm(1-alpha)*sprob)
       pp[nrow(pp),] <- object$model$tr(pp[nrow(pp),])
-      pp[nrow(pp)-1,] <- exp(pp[nrow(pp)-1,])      
+      pp[nrow(pp)-1,] <- exp(pp[nrow(pp)-1,])
+
       if (!object$model$eqmarg) {
           pp[1:6,] <- ih(pp[1:6,])      
           nn <- c("P(Y1=1,Y2=1)","P(Y1=1,Y2=0)","P(Y1=0,Y2=1)","P(Y1=0,Y2=0)","P(Y1=1)","P(Y2=1)","OR","Tetrachoric correlation")
@@ -137,6 +139,7 @@ summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=
           pp[1:3,] <- ih(pp[1:3,])      
           nn <- c("Concordance","Casewise Concordance","Marginal","Rel.Recur.Risk","OR","Tetrachoric correlation")
       }
+      
       if (K>1) nn <- paste("c",i,":",nn,sep="")
       if (nrow(pp)-length(nn)>0) nn <- c(nn,rep("",nrow(pp)-length(nn)))
       rownames(pp) <- nn
@@ -145,11 +148,28 @@ summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=
       P <- nrow(pp)
       pa <- c(pa, list(parfun(object$coef[,1],ref=TRUE,cor.contrast=cor.contrast[i,],mean.contrast[i,],mean.contrast2[i,])))
       res <- rbind(res,pp)
+      
+      if (iid) {
+          ff <- function(p) {
+              res <- probs(p,cor.contrast=cor.contrast[i,],mean.contrast=mean.contrast[i,],mean.contrast2=mean.contrast2[i,])
+              nn <- names(res)
+              res[length(res)] <- object$model$tr(res[length(res)])
+              res[length(res)-1] <- exp(res[length(res)-1])
+              idx <- 1:6
+              if (object$model$eqmarg) idx <- 1:3
+              res[idx] <- ih(res[idx])
+              res
+          }
+          ee <- lava::estimate(object,ff,labels=nn,id=object$id)
+          IID <- c(IID,list(ee))
+      }     
+      
   }      
   
   contrast <- any(c(!is.null(cor.contrast),!is.null(mean.contrast),!is.null(mean.contrast2)))
   res <- list(all=res,varcomp=varcomp,prob=res,coef=object$coef,score=colSums(object$score),logLik=object$logLik,msg=object$msg,N=object$N,ncontrasts=K,nstat=P,
-              par=pa,model=object$model,contrast=contrast, time=attributes(object)$time)
+              par=pa,model=object$model,contrast=contrast, time=attributes(object)$time,
+              estimate=IID)
   class(res) <- "summary.biprobit"
   res
 }

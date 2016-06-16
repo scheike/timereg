@@ -240,6 +240,7 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
 ##' @param control Control argument parsed on to the optimization routine. Starting values may be parsed as '\code{start}'.
 ##' @param messages Control amount of messages shown 
 ##' @param constrain Vector of parameter constraints (NA where free). Use this to set an offset.
+##' @param pair.ascertained pair.ascertained if pairs are sampled only when there are events in the pair i.e. Y1+Y2>=1. 
 ##' @param table Type of estimation procedure
 ##' @param p Parameter vector p in which to evaluate log-Likelihood and score function
 ##' @param ... Optional arguments
@@ -306,17 +307,20 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
 #
 ##' 
 ##'     plot(a,which=3,ylim=c(0,0.1))
-##' }
+##'} 
 biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
-                             indep=FALSE, weights=NULL, 
-                             biweight,
-                             samecens=TRUE, randomeffect=FALSE, vcov="robust",
-                             pairs.only=FALSE,                             
-                             allmarg=samecens&!is.null(weights),
-                             control=list(trace=0),
-                             messages=1, constrain=NULL,                     
-                             table=pairs.only,
-                             p=NULL,...) {
+                     indep=FALSE, weights=NULL, 
+                     biweight,
+                     samecens=TRUE, randomeffect=FALSE, vcov="robust",
+                     pairs.only=FALSE,                             
+                     allmarg=samecens&!is.null(weights),
+                     control=list(trace=0),
+                     messages=1, constrain=NULL,
+                     proband,
+                     pair.ascertained=FALSE,
+                     table=pairs.only,
+                     p=NULL,
+                     ...) {
 
   mycall <- match.call()
   if (missing(biweight)) {
@@ -412,7 +416,7 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
   }
   model <- list(tr=vartr,name=trname,inv=itrname,invname=itrname,deriv=dvartr,varcompname=varcompname,dS=dS0,eqmarg=eqmarg,randomeffect=randomeffect,blen=blen,zlen=zlen)
 
-  MyData <- with(DD,ExMarg(Y0,XX0,W0,dS0,midx1,midx2,eqmarg=eqmarg,allmarg=allmarg,Z0))
+  MyData <- with(DD,ExMarg(Y0,XX0,W0,dS0,midx1,midx2,eqmarg=eqmarg,allmarg=allmarg,Z0,id=id))
   if (samecens & !is.null(weights)) {
       MyData$W0 <- cbind(apply(MyData$W0,1,biweight))
       if (!is.null(MyData$Y0_marg)) {
@@ -510,7 +514,7 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
       attributes(val)$logLik <- sum(U$loglik)
       return(val)
   }  
-  
+
   p0 <- rep(0,plen)  
   if (!is.null(control$start)) {
     p0 <- control$start
@@ -575,7 +579,10 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
       }
   } else op <- list(par=p)
 
-  UU <- U(op$par,indiv=TRUE)
+    UU <- U(op$par,indiv=TRUE)
+    idx <- with(MyData,cluster.index(c(id,idmarg)))$firstclustid+1
+    idvar <- with(MyData, c(id0,idmarg0))[idx] 
+       
   J <- crossprod(UU)
   ##  iJ <- Inverse(J)
   iI <- Inverse(-numDeriv::jacobian(U,op$par))
@@ -586,7 +593,7 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
               outer=Inverse(J),
               hessian=iI              
               )
-  
+
   cc <- cbind(op$par,sqrt(diag(V)))
   cc <- cbind(cc,cc[,1]/cc[,2],2*(pnorm(abs(cc[,1]/cc[,2]),lower.tail=FALSE)))
   if (!is.null(constrain)) {
@@ -615,10 +622,11 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
   npar <- list(intercept=attributes(terms(formula))$intercept,
               pred=nrow(attributes(terms(formula))$factor)-1)
   if (!eqmarg) npar <- lapply(npar,function(x) x*2)
-  npar$var <- 1##nrow(cc)-sum(unlist(npar))
+    npar$var <- 1##nrow(cc)-sum(unlist(npar))
   N <- with(MyData, c(n=nrow(XX0)*2+length(margidx), pairs=nrow(XX0)))
   val <- list(coef=cc,N=N,vcov=V,bread=iI,score=UU,logLik=attributes(UU)$logLik,opt=op, call=mycall, model=model,msg=msg,npar=npar,
-              SigmaFun=SigmaFun,rho.formula=rho,formula=formula,constrain=constrain)
+              SigmaFun=SigmaFun,rho.formula=rho,formula=formula,constrain=constrain,
+              id=idvar)
   class(val) <- "biprobit"
   return(val)
 }
@@ -673,8 +681,7 @@ procdatabiprobit <- function(formula,data,id,num=NULL,weights=NULL,pairs.only=FA
     Y0 <- as.matrix(Wide[,yidx])
     XX0 <- as.matrix(Wide[,setdiff(colnames(Wide),rmidx)])
     XX0[is.na(XX0)] <- 0
-
-    list(Y0=Y0,XX0=XX0,W0=W0,Z0=Z0,znames=znames,rnames1=rnames1)
+    list(Y0=Y0,XX0=XX0,W0=W0,Z0=Z0,znames=znames,rnames1=rnames1,id=Wide[,id])
 }
 
 

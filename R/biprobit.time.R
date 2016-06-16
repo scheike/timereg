@@ -64,6 +64,7 @@ biprobit.time <- function(formula,data,id,...,
     outcome0 <- paste(outcome,"_dummy")
     res <- list(); k <- 0
     breaks <- rev(breaks)
+    ids <- c()
     for (tau in breaks) {
         if (length(breaks)>1 && messages) message(tau)
         ## construct min(T_i,tau) or T_i and related censoring variable, 
@@ -106,6 +107,7 @@ biprobit.time <- function(formula,data,id,...,
             dataw[,weights] <- dataw[,weights]*dataw[,trunc.weights]
         }        
         args <- c(list(x=formula,data=dataw,id=id,weights=weights, pairs.only=pairs.only), list(...))
+        ids <- c(ids,list(rownames(dataw)))
         suppressWarnings(b <- do.call(estimator, args))
         ## suppressWarnings(b <- biprobit(formula, data=dataw, id=id, weights=weights, pairs.only=pairs.only,...))
         if (length(breaks)>1) res <- c(res,list(summary(b,...)))
@@ -117,7 +119,7 @@ biprobit.time <- function(formula,data,id,...,
         summary.function <- function(x,...) x$all
     } 
     mycoef <- lapply(rev(res),function(x) summary.function(x))
-    res <- list(varname="Time",var=rev(breaks),coef=mycoef,summary=rev(res),call=m,type="time")
+    res <- list(varname="Time",var=rev(breaks),coef=mycoef,summary=rev(res),call=m,type="time",id=ids)
     class(res) <- "timemets"
     return(res)    
 } ## }}} 

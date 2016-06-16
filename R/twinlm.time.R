@@ -91,6 +91,9 @@ summary.timemets <- function(object,which=seq(nrow(object$coef[[1]])),...) {
 ##' @export
 print.timemets <- function(x,tail,row.names=FALSE,digits=4,width=10,...) {
     res <- summary(x,...)
+    if (length(res)==0) {
+        return(invisible(print(x$coef)))
+    }
     if (!is.null(x$summary[[1]]$ncontrast) && x$summary[[1]]$ncontrast>1) {
         cat("Contrasts:\n")
         for (i in seq(x$summary[[1]]$ncontrasts)) {
