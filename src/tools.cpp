@@ -156,7 +156,8 @@ END_RCPP
 
 void fastpattern(const umat &y, umat &pattern, uvec &group, unsigned categories /*=2*/) {
   unsigned n = y.n_rows;
-  unsigned k = y.n_cols;  
+  unsigned k = y.n_cols;
+
   uvec mygroup(n);
   unsigned npattern = (unsigned) pow((double) categories,(double) k);
   umat mypattern(npattern,k);
@@ -164,7 +165,7 @@ void fastpattern(const umat &y, umat &pattern, uvec &group, unsigned categories 
   unsigned K=0;
 
   for (unsigned i=0; i<n; i++) {
-    uvec ri = y.row(i);
+    urowvec ri = y.row(i);
     bool found = FALSE;
     for (unsigned j=0; j<K; j++) {      
       if (sum(ri!=mypattern.row(j))==0) {
