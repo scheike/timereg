@@ -108,6 +108,7 @@ BEGIN_RCPP
 END_RCPP
 } // }}}
 
+/* construct all pairs within a family */ 
 RcppExport SEXP familypairindex(SEXP iclustmat,SEXP iclustsize,SEXP inumfamindex) {
 // {{{
   Row<int> clustsize = Rcpp::as<Row<int> >(iclustsize);

@@ -1,3 +1,14 @@
+##' Finds subjects related to same cluster
+##' 
+##' @aliases cluster.index 
+##' @references
+##' Cluster indeces 
+##' @examples
+##' i<-c(1,1,2,2,1,3)
+##' d<- cluster.index(i)
+##' print(d)
+##' @keywords cluster indeces 
+##' @author Klaus Holst, Thomas Scheike
 ##' @export
 cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0,mat=NULL,return.all=FALSE,code.na=NA)
 { ## {{{
@@ -29,17 +40,43 @@ cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0,mat=NULL,r
   clustud
 } ## }}}
 
+##' Finds all pairs within a cluster (family)
+##' 
+##' @aliases familycluster.index 
+##' @references
+##' Cluster indeces 
+##' @examples
+##' i<-c(1,1,2,2,1,3)
+##' d<- familycluster.index(i)
+##' print(d)
+##' @keywords cluster indeces 
+##' @author Klaus Holst, Thomas Scheike
 ##' @export
 familycluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=1)
 { ## {{{
   clusters <- cluster.index(clusters,Rindex=Rindex)
-  totpairs <- sum(clusters$antclust*(clusters$antclust-1)/2)
+  totpairs <- sum(clusters$cluster.size*(clusters$cluster.size-1)/2)
   clustud <- .Call("familypairindex",clusters$idclust,clusters$cluster.size,as.integer(2*totpairs))
   clustud$pairs <- matrix(clustud$familypairindex,ncol=2,byrow=TRUE)
 
   invisible(clustud)
 } ## }}}
 
+##' Finds all pairs within a cluster (famly)  with the proband (case/control) 
+##' 
+##' second column of pairs are the probands and the first column the related subjects
+##' 
+##' 
+##' @aliases familycluster.index 
+##' @references
+##' Cluster indeces 
+##' @examples
+##' i<-c(1,1,2,2,1,3)
+##' p<-c(1,0,0,1,0,1)
+##' d<- familyclusterWithProbands.index(i,p)
+##' print(d)
+##' @keywords cluster indeces 
+##' @author Klaus Holst, Thomas Scheike
 ##' @export
 familyclusterWithProbands.index <- function(clusters,probands,index.type=FALSE,num=NULL,Rindex=1)
 { ## {{{
@@ -76,7 +113,7 @@ coarse.clust <- function(clusters,max.clust=100)
 
 if (is.numeric(clusters)) 
    clusters <-  sindex.prodlim(unique(clusters),clusters)
-antclust <- length(unique(clusters))
+cluster.size <- length(unique(clusters))
 
 qq <- unique(quantile(clusters, probs = seq(0, 1, by = 1/max.clust)))
 qqc <- cut(clusters, breaks = qq, include.lowest = TRUE)    
