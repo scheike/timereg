@@ -1,8 +1,8 @@
 ##' @title Fast reshape
 ##' Simple reshape/tranpose of data
 ##' @param data data.frame or matrix
-##' @param id id-variable. If omitted then reshape Wide->Long. 
 ##' @param varying Vector of prefix-names of the time varying variables. Optional for Long->Wide reshaping.
+##' @param id id-variable. If omitted then reshape Wide->Long. 
 ##' @param num Optional number/time variable
 ##' @param sep String seperating prefix-name with number/time
 ##' @param keep Vector of column names to keep
@@ -12,6 +12,7 @@
 ##' @param idcombine If TRUE and \code{id} is vector of several variables, the unique id is combined from all the variables.
 ##' Otherwise the first variable is only used as identifier.
 ##' @param labelnum If TRUE varying variables in wide format (going from long->wide) are labeled 1,2,3,... otherwise use 'num' variable. In long-format (going from wide->long) varying variables matching 'varying' prefix are only selected if their postfix is a number.
+##' @param labels Optional labels for the number variable
 ##' @param ... Optional additional arguments
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
@@ -29,7 +30,7 @@
 ##' ## and seperator "" (default) and dropping x
 ##' fast.reshape(d,"y",idname="a",timevar="b",sep="",keep=c())
 ##' ## Same with 'reshape' list-syntax
-##' fast.reshape(d,list(c("y1","y2","y3","y4")))
+##' fast.reshape(d,list(c("y1","y2","y3","y4")),labelnum=TRUE)
 ##' 
 ##' ##### From long-format
 ##' fast.reshape(dd,id="id")
@@ -53,12 +54,8 @@
 ##' ##### Family cluster example
 ##' d <- mets:::simBinFam(3)
 ##' d
-##' dd <- fast.reshape(d,var="y")
-##' dd
-##' dd2 <- fast.reshape(d,varying=list(c("ym","yf","yb1","yb2")))
-##' dd2
-##' ##'
-##' ##'
+##' fast.reshape(d,var="y")
+##' fast.reshape(d,varying=list(c("ym","yf","yb1","yb2")))
 ##' 
 ##' d <- sim(lvm(~y1+y2+ya),10)
 ##' d
@@ -88,7 +85,7 @@
 ##' rm(prtw)
 fast.reshape <- function(data,varying,id,num,sep="",keep,
                          idname="id",numname="num",factor=FALSE,
-                         idcombine=TRUE,labelnum=FALSE,...) {
+                         idcombine=TRUE,labelnum=FALSE,labels,...) {
     if (!is.data.frame(data) & is.list(data)) {
         data <- as.data.frame(data)
     } else {
@@ -161,8 +158,13 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
             }
             varying <- newlist
         } else {
-            thelevels <- seq(length(varying[[1]]))
+            if (labelnum) {
+                thelevels <- seq(length(varying[[1]]))
+            } else {
+                thelevels <- varying[[1]]
+            }
         }
+        if (!missing(labels)) thelevels <- labels
         is_df <- is.data.frame(data)
         oldreshape <- FALSE
         if (is_df) {
@@ -235,7 +237,6 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
         }
         ##  while (idname%in%c(fixed,vnames,numname)) idname <- paste(idname,"_",sep="")
         ##  while (numname%in%c(fixed,vnames)) numname <- paste(numname,"_",sep="")
-        
         colnames(long) <- cnames
         if (!numlev) {
             long[,numname] <- base::factor(long[,numname],labels=thelevels)

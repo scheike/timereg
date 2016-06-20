@@ -7,7 +7,7 @@ Simple reshape/tranpose of data}
 \usage{
 fast.reshape(data, varying, id, num, sep = "", keep, idname = "id",
   numname = "num", factor = FALSE, idcombine = TRUE, labelnum = FALSE,
-  ...)
+  labels, ...)
 }
 \arguments{
 \item{data}{data.frame or matrix}
@@ -33,6 +33,8 @@ Otherwise the first variable is only used as identifier.}
 
 \item{labelnum}{If TRUE varying variables in wide format (going from long->wide) are labeled 1,2,3,... otherwise use 'num' variable. In long-format (going from wide->long) varying variables matching 'varying' prefix are only selected if their postfix is a number.}
 
+\item{labels}{Optional labels for the number variable}
+
 \item{...}{Optional additional arguments}
 }
 \examples{
@@ -49,7 +51,7 @@ fast.reshape(fast.reshape(d,"y"),id="id")
 ## and seperator "" (default) and dropping x
 fast.reshape(d,"y",idname="a",timevar="b",sep="",keep=c())
 ## Same with 'reshape' list-syntax
-fast.reshape(d,list(c("y1","y2","y3","y4")))
+fast.reshape(d,list(c("y1","y2","y3","y4")),labelnum=TRUE)
 
 ##### From long-format
 fast.reshape(dd,id="id")
@@ -73,12 +75,8 @@ fast.reshape(xw2,c("y","x"),idname="id")
 ##### Family cluster example
 d <- mets:::simBinFam(3)
 d
-dd <- fast.reshape(d,var="y")
-dd
-dd2 <- fast.reshape(d,varying=list(c("ym","yf","yb1","yb2")))
-dd2
-##'
-##'
+fast.reshape(d,var="y")
+fast.reshape(d,varying=list(c("ym","yf","yb1","yb2")))
 
 d <- sim(lvm(~y1+y2+ya),10)
 d
