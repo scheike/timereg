@@ -10,6 +10,10 @@
 ##' @useDynLib mets
 ##' @import stats lava splines timereg Rcpp
 ##' @importFrom survival Surv is.Surv
+##' @importFrom utils head tail getS3method glob2rx capture.output
+##' @importFrom graphics matplot lines plot polygon par points abline
+##'     title matlines
+##' @importFrom grDevices dev.list devAskNewPage dev.interactive
 ##' @keywords package
 ##' @examples
 ##' 

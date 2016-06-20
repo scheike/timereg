@@ -3,7 +3,10 @@
 \name{fast.reshape}
 \alias{fast.reshape}
 \title{Fast reshape
-Simple reshape/tranpose of data}
+
+Fast reshape/tranpose of data
+
+Fast reshape/tranpose of data}
 \usage{
 fast.reshape(data, varying, id, num, sep = "", keep, idname = "id",
   numname = "num", factor = FALSE, idcombine = TRUE, labelnum = FALSE,
