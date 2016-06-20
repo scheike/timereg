@@ -1,4 +1,4 @@
-aalenBase<-function(times,fdata,designX,status,id,clusters,robust=0,sim=0,retur=0,antsim=1000,weighted.test=1,covariance=0,resample.iid=0,namesX=NULL,silent=0,weights=NULL,entry=NULL,offsets=0) 
+aalenBase<-function(times,fdata,designX,status,id,clusters,robust=0,sim=0,retur=0,antsim=1000,weighted.test=1,covariance=0,resample.iid=0,namesX=NULL,silent=0,weights=NULL,entry=NULL,offsets=0,caseweight=NULL) 
 {
 ## {{{ setup variables
 Ntimes<-length(times); designX<-as.matrix(designX); 
@@ -24,6 +24,12 @@ B.iid<-matrix(0,Ntimes,fdata$antclust*p) } else B.iid<-NULL;
 if (sum(offsets)==0) mof <- 0 else mof <- 1; 
 ## }}}
 
+  icase <- 0
+  if (!is.null(caseweight)) {icase <- 1; }
+
+
+
+
 aalenout<- .C("robaalen", ## {{{
 as.double(times), as.integer(Ntimes),as.double(designX),
 as.integer(nx),as.integer(p),as.integer(fdata$antpers),
@@ -36,7 +42,8 @@ as.integer(weighted.test),as.integer(robust),as.integer(covariance),
 as.double(covs),as.integer(resample.iid),as.double(B.iid),      # 9
 as.integer(clusters),as.integer(fdata$antclust),
 as.integer(silent),as.double(weights),as.integer(entry),      # 11
-as.integer(mof),as.double(offsets),as.integer(stratum)
+as.integer(mof),as.double(offsets),as.integer(stratum),       #12
+as.double(caseweight),as.integer(icase)
 ,PACKAGE="timereg")
 ## }}}
 
@@ -116,7 +123,7 @@ percen<-function(x,per)
 
 semiaalen<-function(times,fdata,designX,designG,status,id,clusters,bhat=0,gamma=NULL,robust=0,sim=0,antsim=1000,weighted.test=1,retur=0,covariance=0,
 resample.iid=0,namesX=NULL,namesZ=NULL,deltaweight=1,
-silent=0,weights=NULL,entry=NULL,offsets=0)
+silent=0,weights=NULL,entry=NULL,offsets=0,caseweight=NULL)
 {
 ## {{{ setting up variables 
 Nalltimes <- length(times);  
@@ -162,6 +169,9 @@ if (sum(abs(gamma))==0) gamma<-rep(0,pg)  else gamma<-gamma;
 if (sum(offsets)==0) mof<-0 else mof<-1;
 ## }}}
 
+  icase <- 0
+  if (!is.null(caseweight)) {icase <- 1; }
+
 semiout<-.C("semiaalen", ## {{{
 as.double(times),as.integer(Nalltimes),as.integer(Ntimes), # 1
 as.double(designX),as.integer(nx),as.integer(px), # 2
@@ -179,7 +189,7 @@ as.double(B.iid), as.integer(clusters),as.integer(fdata$antclust),   # 13
 as.double(intZHZ),as.double(intZHdN),as.integer(deltaweight),        # 14
 as.integer(silent),as.double(weights),as.integer(entry),
 as.integer(fix.gamma),as.integer(mof),as.double(offsets),
-as.double(gamma2),as.double(Vargam2)
+as.double(gamma2),as.double(Vargam2), as.double(caseweight),as.integer(icase)
 ,PACKAGE="timereg"); 
 ## }}}
 

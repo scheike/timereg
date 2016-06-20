@@ -74,10 +74,11 @@ int *nx,*p,*antpers,*Ntimes,*status;
 void robaalen(times,Ntimes,designX,nx,p,antpers,start,stop,cu,vcu,
 	      robvcu,sim,antsim,retur,cumAit,test,testOBS,status,
 	      Ut,simUt,id,weighted,robust,covariance,covs,resample,
-	      Biid,clusters,antclust,silent,weights,entry,mof,offsets,strata) 
+	      Biid,clusters,antclust,silent,weights,entry,mof,offsets,strata,
+	      caseweight,icase) 
 double *designX,*times,*start,*stop,*cu,*vcu,*robvcu,*cumAit,*test,*testOBS,*Ut,*simUt,*covs,*Biid,*weights,*offsets; 
-int *nx,*p,*antpers,*Ntimes,*sim,*retur,*antsim,*status,*id,*covariance,
-    *weighted,*robust,*resample,*clusters,*antclust,*silent,*entry,*mof,*strata;
+int *nx,*p,*antpers,*Ntimes,*sim,*retur,*antsim,*status,*id,*covariance,*caseweight,
+    *weighted,*robust,*resample,*clusters,*antclust,*silent,*entry,*mof,*strata,*icase;
 { // {{{
  // {{{ setting up variables and allocating
   matrix *ldesignX,*wX,*A,*AI,*Vcov;
@@ -172,7 +173,9 @@ for (s=1;s<*Ntimes;s++){
 //    scl_vec_mult(weights[ci],xi,xi); 
 //    print_vec(xi); 
       
-    Mv(AI,xi,dB); vec_star(dB,dB,VdB); 
+    Mv(AI,xi,dB); 
+    if (*icase==1) scl_vec_mult(caseweight[s],dB,dB); 
+    vec_star(dB,dB,VdB); 
 
     for (k=1;k<*p+1;k++) {
       cu[k*(*Ntimes)+s]=cu[k*(*Ntimes)+s-1]+VE(dB,k-1);
@@ -250,9 +253,10 @@ for (s=1;s<*Ntimes;s++){
   free(cluster);  free(idd); free(vcudif); 
 } // }}}
 
-void semiaalen(alltimes,Nalltimes,Ntimes,designX,nx,px,designG,ng,pg,antpers,start,stop,nb,bhat,cu,vcu,Robvcu,gamma,Vgamma,RobVgamma,sim,antsim,test,testOBS,robust,status,Ut,simUt,id,weighted,cumAit,retur,covariance,covs,resample,gammaiid,Biid,clusters,antclust,intZHZ,intZHdN,deltaweight,silent,weights,entry,fixedgamma,mof,offsets,gamma2,Vgamma2)
-double *designX,*alltimes,*start,*stop,*cu,*vcu,*bhat,*designG,*gamma,*Vgamma,*RobVgamma,*Robvcu,*test,*testOBS,*Ut,*simUt,*cumAit,*covs,*Biid,*gammaiid,*intZHZ,*intZHdN,*weights,*offsets,*gamma2,*Vgamma2; 
-int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status,*id,*weighted,*retur,*covariance,*resample,*clusters,*antclust,*deltaweight,*silent,*entry,*fixedgamma,*mof;
+void semiaalen(alltimes,Nalltimes,Ntimes,designX,nx,px,designG,ng,pg,antpers,start,stop,nb,bhat,cu,vcu,Robvcu,gamma,Vgamma,RobVgamma,sim,antsim,test,testOBS,robust,status,Ut,simUt,id,weighted,cumAit,retur,covariance,covs,resample,gammaiid,Biid,clusters,antclust,intZHZ,intZHdN,deltaweight,silent,weights,entry,fixedgamma,mof,offsets,gamma2,Vgamma2,
+		caseweight,icase)
+double *designX,*alltimes,*start,*stop,*cu,*vcu,*bhat,*designG,*gamma,*Vgamma,*RobVgamma,*Robvcu,*test,*testOBS,*Ut,*simUt,*cumAit,*covs,*Biid,*gammaiid,*intZHZ,*intZHdN,*weights,*offsets,*gamma2,*Vgamma2,*caseweight; 
+int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status,*id,*weighted,*retur,*covariance,*resample,*clusters,*antclust,*deltaweight,*silent,*entry,*fixedgamma,*mof,*icase;
 { // {{{
 // {{{ setting up variables and allocating
   matrix *Vcov,*X,*WX,*A,*AI,*AIXW,*Z,*WZ;

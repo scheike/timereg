@@ -3,7 +3,7 @@ event.split <- function(data,
 			name.id="id",
 			name.start="start", 
 			cens.code=0, 
-			order.id=TRUE
+			order.id=TRUE,time.group=TRUE
 			)
 {
 ## {{{ 
@@ -22,6 +22,8 @@ event.split <- function(data,
 	    name.start <- paste("start",name.start,sep=".")
             data[,name.start] <- start0
     }  
+
+  
 
     if ((name.start %in% names(data))) {
       new.start <- data[,name.start]
@@ -54,6 +56,11 @@ event.split <- function(data,
 ###        data[,num] <- data[,num] + new.num else data[,num] <- new.num
 
     }
+
+    if (time.group) {
+      group.time <- paste("before",cutname,sep=".")
+      data[,group.time] <- c(rep(1,n),rep(0,length(splits)))
+    } 
 
     if (order.id) data <- data[order(idl,new.start),] 
 

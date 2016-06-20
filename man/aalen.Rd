@@ -18,7 +18,7 @@ The modelling formula uses the standard survival modelling given in the
 aalen(formula,data=sys.parent(),start.time=0,max.time=NULL,robust=1,
 id=NULL,clusters=NULL,residuals=0,n.sim=1000,weighted.test=0,
 covariance=0,resample.iid=0,deltaweight=1,silent=1,weights=NULL,
-max.clust=1000, gamma=NULL, offsets=0)
+max.clust=1000, gamma=NULL, offsets=0,caseweight=NULL)
 }
 \arguments{
   \item{formula}{ 
@@ -45,9 +45,7 @@ max.clust=1000, gamma=NULL, offsets=0)
   \item{weighted.test}{to compute a variance weighted version of the 
     test-processes used for testing
     time-varying effects.}
-  \item{residuals}{to returns residuals that can be used for
-    model validation in the function cum.residuals
-  }
+  \item{residuals}{to returns residuals that can be used for model validation in the function cum.residuals }
   \item{covariance}{to compute covariance estimates for
     nonparametric terms rather than just the variances.}
   \item{resample.iid}{to return i.i.d. representation for
@@ -57,11 +55,13 @@ max.clust=1000, gamma=NULL, offsets=0)
   \item{silent}{set to 0 to print warnings for non-inverible
  design-matrices for different timepoints, default is 1.}
   \item{weights}{weights for estimating equations.}
-  \item{max.clust}{sets the total number of i.i.d. terms in i.i.d. decompostition. This can limit the amount of memory used by coarsening 
+  \item{max.clust}{sets the total number of i.i.d. terms in i.i.d. decompostition. This can limit the amount
+    of memory used by coarsening 
 the clusters. When NULL then all clusters are used. 
 Default is 1000 to save memory and time. } 
 \item{gamma}{fixes gamme at this value for estimation.}
 \item{offsets}{offsets for the additive model, to make excess risk modelling.}
+\item{caseweight}{caseweight: mutiplied onto dN for score equations.}
 }
 \details{
 The data for a subject is presented as multiple rows or 'observations',

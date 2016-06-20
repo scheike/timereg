@@ -7,7 +7,8 @@ can also split after random time given in data frame.
 }
 \usage{
 event.split(data, time="time",status="status",cuts="cuts",
-                  name.id="id", name.start="start", cens.code=0, order.id=TRUE)
+                  name.id="id", name.start="start", cens.code=0, order.id=TRUE,
+		  time.group=TRUE)
 }
 \arguments{
   \item{data}{data to be split }
@@ -18,6 +19,7 @@ event.split(data, time="time",status="status",cuts="cuts",
   \item{name.id}{name of id variable.}
   \item{cens.code}{code for the censoring.}
   \item{order.id}{order data after id and start.}
+  \item{time.group}{make variable "before"."cut" that keeps track of wether start,stop is before (1) or after cut (0).}
 }
 \author{Thomas Scheike}
 \examples{
