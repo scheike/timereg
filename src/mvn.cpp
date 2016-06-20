@@ -3,12 +3,12 @@
 #include "tools.h"
 #include <math.h>
 
-int _mvt_maxpts=25000; 
-double _mvt_abseps=0.001; 
-double _mvt_releps=0;  
+int _mvt_maxpts=25000;
+double _mvt_abseps=0.001;
+double _mvt_releps=0;
 int _mvt_df = 0;
 int _mvt_inform;
-double _mvt_error[3]; 
+double _mvt_error[3];
 
 
 double mvtdst(int* n,         
@@ -18,7 +18,7 @@ double mvtdst(int* n,
 	      int* infin,     // Infinity argument, ith element 0: ]-inf,up[i]], 1: [lo[i],inf[, 2: [lo[i],up[i]], 3: ]-inf,inf[
 	      double* correl, // Correlation coefficients (upper-tri)
 	      double* delta,  // non-central parameter
-	      int* maxpts,    // Max-pts (quasi-mc)
+	      int* maxpts,    // Max function evalutions (quasi-mc)
 	      double* abseps, // Tolerance absolute error 
 	      double* releps, // Tolerance relative error
 	      double* error,  // estimated abs. error. with 99% confidence interval

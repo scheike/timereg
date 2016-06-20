@@ -14,7 +14,8 @@ ExMarg <- function(Y0,XX0,W0,dS0,midx1=seq(ncol(XX0)/2),midx2=seq(ncol(XX0)/2)+n
     ii2 <- c(ii2,both)
   }
   Y0_marg <- XX0_marg <- X0_marg1 <- X0_marg2 <- dS0_marg <- W0_marg <- NULL
-  id0 <- idmarg0 <- NULL
+  id0 <- id
+  idmarg0 <- NULL
   if (length(margidx)>0) {
       Y0_marg <- cbind(c(Y0[ii1,1],Y0[ii2,2]))
       idmarg0 <- c(id[ii1],id[ii2])     
@@ -35,7 +36,6 @@ ExMarg <- function(Y0,XX0,W0,dS0,midx1=seq(ncol(XX0)/2),midx2=seq(ncol(XX0)/2)+n
       if (!is.null(Z0))  Z0 <- Z0[-c(margidx,ii0),,drop=FALSE]
       XX0 <- XX0[-c(margidx,ii0),,drop=FALSE]    
   }
-  if (!is.null(id))
   
   res <- list(Y0=Y0,XX0=XX0,W0=W0,
               Y0_marg=Y0_marg, XX0_marg=XX0_marg,

@@ -311,7 +311,8 @@ phreg.par <- function(formula,data=parent.frame(),
       } else {
           S <- do.call(scor, list(theta=theta0,time=time,status=status,X=X))
       }
-      gamma <- lambda2*sqrt((t(S)%*%S)[1])*diag(NROW(H))
+      gamma <- 0
+      if (lambda2>0) gamma <- lambda2*sqrt((t(S)%*%S)[1])*diag(NROW(H))
       theta0 <- theta0 - lambda1*solve(H-gamma)%*%S
       thetas <- rbind(thetas,as.vector(theta0))
       if (!is.null(attributes(H)$logL))  {  
