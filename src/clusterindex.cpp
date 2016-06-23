@@ -9,12 +9,12 @@ using namespace arma;
 RcppExport SEXP nclust(SEXP iclusters) {
 // {{{
 BEGIN_RCPP
-  Row<int> clusters = Rcpp::as<Row<int> >(iclusters);
-  int  n = clusters.n_elem;
+  IntegerVector clusters(iclusters);
+  int  n = clusters.size();
  
   int  uniqueclust=0; 
   int  maxclust=0;
-  Row<int> nclust(n); nclust.fill(0);
+  IntegerVector nclust(n,0);
  
   for (int  i=0;i<n;i++){
     if (nclust[clusters[i]]==0) uniqueclust+=1; 
@@ -33,12 +33,12 @@ END_RCPP
 RcppExport SEXP clusterindexM(SEXP iclusters, SEXP imednum, SEXP inum, SEXP x, SEXP all) {
 // {{{
 BEGIN_RCPP
-  Row<int> clusters = Rcpp::as<Row<int> >(iclusters);
-  int n = clusters.n_elem;
+  IntegerVector clusters(iclusters);
+  int n = clusters.size();
   bool All = Rcpp::as<bool>(all);
   int  uniqueclust=0; 
   int  maxclust=0;
-  Row<int> nclust(n); nclust.fill(0);
+  IntegerVector nclust(n,0);
   bool hasX = !((Rf_isNull)(x));
 
     
@@ -48,7 +48,7 @@ BEGIN_RCPP
     if (nclust[clusters[i]]>maxclust) maxclust=nclust[clusters[i]]; 
   } 
  
-  Row<int> num = Rcpp::as<Row<int> >(inum); 
+  IntegerVector num(inum); 
   int  mednum = Rcpp::as<int>(imednum);
   Row<int> unum;
   if (mednum==1) {
@@ -58,8 +58,8 @@ BEGIN_RCPP
   }     
   
   Mat<int> idclust = Mat<int>(uniqueclust,maxclust); idclust.fill(NA_INTEGER);
-  Row<int> clustsize(uniqueclust); clustsize.fill(0);
-  Row<int> firstclustid(uniqueclust); firstclustid.fill(0);
+  IntegerVector clustsize(uniqueclust,0);
+  IntegerVector firstclustid(uniqueclust,0);
 
   if (mednum==0) {
     for (int  i=0;i<n;i++){
@@ -89,7 +89,6 @@ BEGIN_RCPP
 		       Named("maxclust")=maxclust,
 		       Named("idclustmat")=idclust,
 		       Named("cluster.size")=clustsize,
-		       Named("antclust")=clustsize,
 		       Named("uniqueclust")=uniqueclust,
 		       Named("firstclustid")=firstclustid,
 		       Named("X")=res
@@ -101,7 +100,6 @@ BEGIN_RCPP
 		      Named("maxclust")=maxclust,
 		      Named("idclustmat")=idclust,
 		      Named("cluster.size")=clustsize,
-		      Named("antclust")=clustsize,
 		      Named("uniqueclust")=uniqueclust,
 		      Named("firstclustid")=firstclustid
 		      )); 
@@ -111,14 +109,13 @@ END_RCPP
 /* construct all pairs within a family */ 
 RcppExport SEXP familypairindex(SEXP iclustmat,SEXP iclustsize,SEXP inumfamindex) {
 // {{{
-  Row<int> clustsize = Rcpp::as<Row<int> >(iclustsize);
-  imat clustmat;
-  clustmat  = Rcpp::as<imat>(iclustmat);
+  IntegerVector clustsize(iclustsize);
+  imat clustmat = Rcpp::as<imat>(iclustmat);
   int uniqueclust=clustmat.n_rows;
-  int  numfamindex= Rcpp::as<int>(inumfamindex);
+  int numfamindex= Rcpp::as<int>(inumfamindex);
  
-  Row<int> famclustindex(numfamindex); famclustindex.fill(0);
-  Row<int> subfamilyindex(numfamindex); subfamilyindex.fill(0);
+  IntegerVector famclustindex(numfamindex,0);
+  IntegerVector subfamilyindex(numfamindex,0);
   
   int i,j,v=0,h=0;
 
@@ -145,15 +142,17 @@ RcppExport SEXP familypairindex(SEXP iclustmat,SEXP iclustsize,SEXP inumfamindex
 } // }}}
 
 
+
+
 RcppExport SEXP clusterindexdata(SEXP iclusters, SEXP imednum,SEXP inum, SEXP idata) 
 { // {{{
 BEGIN_RCPP
-  Row<int> clusters = Rcpp::as<Row<int> >(iclusters);
-  int  n = clusters.n_elem;
+  IntegerVector clusters(iclusters);
+  int  n = clusters.size();
  
   int  uniqueclust=0; 
   int  maxclust=0;
-  Row<int> nclust(n); nclust.fill(0);
+  IntegerVector nclust(n,0);
  
   for (int  i=0;i<n;i++){
     if (nclust[clusters[i]]==0) uniqueclust+=1; 
@@ -161,11 +160,11 @@ BEGIN_RCPP
     if (nclust[clusters[i]]>maxclust) maxclust=nclust[clusters[i]]; 
   } 
 
-  Row<int> num = Rcpp::as<Row<int> >(inum); 
+  IntegerVector num(inum); 
   int  mednum = Rcpp::as<int>(imednum);
   
   Mat<int> idclust = Mat<int>(uniqueclust,maxclust); idclust.fill(NA_INTEGER);
-  Row<int> clustsize(uniqueclust); clustsize.fill(0);
+  IntegerVector clustsize(uniqueclust,0);
 
   mat data = Rcpp::as<mat>(idata);
   int  p= data.n_cols; 
