@@ -580,7 +580,9 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
   } else op <- list(par=p)
 
     UU <- U(op$par,indiv=TRUE)
-    idx <- with(MyData,cluster.index(c(id,idmarg)))$firstclustid+1
+    idx <- seq(nrow(UU))
+    if (!is.null(MyData$idmarg))
+        idx <- with(MyData,cluster.index(c(id,idmarg)))$firstclustid+1
     idvar <- with(MyData, c(id0,idmarg0))[idx] 
        
   J <- crossprod(UU)
