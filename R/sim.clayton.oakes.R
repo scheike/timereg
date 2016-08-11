@@ -452,15 +452,17 @@ kendall.ClaytonOakes.twin.ace <- function(parg,parc,K=10000)  ## {{{
   Gam1 <- cbind(mz*mzrv+dz*dzrv1,mz*mzrv+dz*dzrv2)
   Gam1 <- data.frame(cbind(Gam1,mz,id))
 
+  ## Silence false R CMD CHECK warnings:
+  V11 <- V12 <- V21 <- V22 <- NULL
+    
   gams.pair <- fast.reshape(Gam1,id="id")
   gams.pair <-  transform(gams.pair,
               kendall = ((V11-V12)*(V21-V22))/((V11+V12)*(V21+V22))
   )
 
   kendall <- gams.pair$kendall
-  mz <- gams.pair$mz1
-  mz.kendall <- mean(kendall[mz==1])
-  dz.kendall <- mean(kendall[mz==0])
+  mz.kendall <- mean(kendall[gams.pair$mz1==1])
+  dz.kendall <- mean(kendall[gams.pair$mz1==0])
 
   return(list(mz.kendall=mz.kendall,dz.kendall=dz.kendall))
 } ## }}} 
@@ -484,6 +486,9 @@ kendall.normal.twin.ace <- function(parg,parc,K=10000)  ## {{{
   dzrv2 <- Gams1[,2]+Gams1[,4]+Gams1[,5] ### 0.5 shared gene + 0.5 non-shared + env 
   Gam1 <- cbind(mz*mzrv+dz*dzrv1,mz*mzrv+dz*dzrv2)
   Gam1 <- data.frame(cbind(exp(Gam1),mz,id))
+
+  ## Silence false R CMD CHECK warnings:
+  V11 <- V12 <- V21 <- V22 <- NULL
 
   gams.pair <- fast.reshape(Gam1,id="id")
   gams.pair <-  transform(gams.pair,
