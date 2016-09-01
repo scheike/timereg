@@ -59,10 +59,10 @@
 \alias{plot.cox.aalen2}
 \alias{plot.predict}
 \alias{coef.aalen}
-\alias{cox.ipw}
-\alias{summary.cox.ipw}
-\alias{coef.cox.ipw}
-\alias{print.cox.ipw}
+\alias{cox.marg}
+\alias{summary.cox.marg}
+\alias{coef.cox.marg}
+\alias{print.cox.marg}
 \alias{comprisk.ipw}
 \alias{coef.comprisk.ipw}
 \alias{print.comprisk.ipw}

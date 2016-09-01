@@ -66,7 +66,7 @@ if (class(margsurv)!="coxph") { ## {{{
 }  ## }}} 
 
 
-  if (anyNA(clusters)) stop("Missing values in cluster varaibles\n"); 
+  if (any(is.na(clusters))) stop("Missing values in cluster varaibles\n"); 
   out.clust <- cluster.index.timereg(clusters);  
   clusters <- out.clust$clusters
   maxclust <- out.clust$maxclust 

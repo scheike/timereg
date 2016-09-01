@@ -17,6 +17,7 @@ export("aalen", ## {{{
        "cluster.index.timereg",
        "coefBase",
        "cox.ipw",
+       "cox.marg",
        "comp.risk",
        "comprisk.ipw",
        "const",       
@@ -93,6 +94,12 @@ S3method(coef,cox.ipw)
 S3method(print,cox.ipw)
 S3method(summary,cox.ipw)
 export("coef.cox.ipw","print.cox.ipw","summary.cox.ipw")
+
+S3method(coef,cox.marg)
+S3method(print,cox.marg)
+S3method(summary,cox.marg)
+export("coef.cox.marg","print.cox.marg","summary.cox.marg")
+
 
 S3method(coef,resmean)
 S3method(plot,resmean)
@@ -228,6 +235,6 @@ export("plot.aalen",
 importFrom("grDevices", "col2rgb", "rgb")
 importFrom("graphics", "abline", "legend", "lines", "matplot", "plot", "points", "polygon", "title")
 importFrom("stats", "approx", "as.formula", "coef", "delete.response", "formula", "glm", "model.extract", "model.frame",
-   "model.matrix", "na.omit", "pchisq", "pnorm", "predict", "qnorm", "quantile", "runif", "terms", "time", "update")
+   "model.matrix", "na.omit","pchisq", "pnorm", "predict", "qnorm", "quantile", "runif", "terms", "time", "update")
 importFrom("utils", "head")
 

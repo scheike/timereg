@@ -25,7 +25,8 @@ cox.ipw <- function(survformula,glmformula,d=sys.parent(),max.clust=NULL,ipw.se=
 
   dcc <- d[ggl$y==1,]
   ppp <- dcc$ppp
-  udca <- cox.aalen(survformula,data=dcc,weights=1/ppp,n.sim=0,max.clust=max.clust)  
+  timeregsurvformula <- timereg.formula(survformula)
+  udca <- cox.aalen(timeregsurvformula,data=dcc,weights=1/ppp,n.sim=0,max.clust=max.clust)  
 
   ### iid of beta for Cox model 
   coxiid <- udca$gamma.iid
@@ -42,7 +43,7 @@ coxalpha <- function(par)
   pw <- c(exp(rr)/(1+exp(rr)))
   assign("pw",pw,envir=environment(survformula))
 ###  if (coxph==FALSE) 
-  ud <- cox.aalen(survformula,data=dcc,weights=1/pw,beta=udca$gamma,Nit=1,n.sim=0,robust=0)  
+  ud <- cox.aalen(timeregsurvformula,data=dcc,weights=1/pw,beta=udca$gamma,Nit=1,n.sim=0,robust=0)  
 ###  else { ud <- coxph(survformula,data=dcc,weights=1/pw,iter.max=1,init=udca$gamma)  
 ###	 ud <- coxph.detail(ud,data=dcc)
 ###  }
