@@ -1,3 +1,10 @@
+#+BEGIN_HTML
+<a href="https://travis-ci.org/kkholst/mets"><img src="https://travis-ci.org/kkholst/mets.svg?branch=master"></a>
+<a href="https://codecov.io/github/kkholst/mets?branch=master"><img src="https://codecov.io/github/kkholst/mets/coverage.svg?branch=master"></a>
+<a href="http://cran.rstudio.com/web/packages/mets/index.html"><img src="http://www.r-pkg.org/badges/version/mets"></a>
+<a href="http://cranlogs.r-pkg.org/downloads/total/last-month/mets"><img src="http://cranlogs.r-pkg.org/badges/mets"></a>
+#+END_HTML
+
 * Multivariate Event Times (=mets=)
   Implementation of various statistical models for multivariate event
   history data. Including multivariate cumulative incidence models,
@@ -102,6 +109,6 @@ BibTeX:
 #+END_SRC
 
 :RESULTS:
-[[file:inst/mets1.png]]
+[[file:inst/misc/mets1.png]]
 :END:
 
