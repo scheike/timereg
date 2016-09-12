@@ -1,6 +1,6 @@
 context("Fast.approx")
 
-test_that("fast reshape I", {
+test_that("fast approx I", {
     set.seed(1)
     x <- sort(rnorm(1e5))
     y <- rnorm(1e3)

@@ -1,7 +1,5 @@
-##' @title Fast reshape
+##' Fast reshape
 ##'
-##' Fast reshape/tranpose of data
-##' 
 ##' Fast reshape/tranpose of data
 ##' @param data data.frame or matrix
 ##' @param varying Vector of prefix-names of the time varying variables. Optional for Long->Wide reshaping.

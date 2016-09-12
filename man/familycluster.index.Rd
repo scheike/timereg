@@ -29,6 +29,7 @@ Klaus Holst, Thomas Scheike
 \references{
 Cluster indeces
 }
-\keyword{cluster}
-\keyword{indeces}
+\seealso{
+cluster.index familyclusterWithProbands.index
+}
 

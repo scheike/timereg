@@ -6,14 +6,12 @@
 \alias{alpha2kendall}
 \alias{alpha2spear}
 \alias{ascertained.pairs}
-\alias{cluster.index}
 \alias{coarse.clust}
 \alias{coefmat}
 \alias{concordance.twin.ace}
 \alias{concordance.twostage}
 \alias{corsim.prostate}
 \alias{corsim.prostate.random}
-\alias{familycluster.index}
 \alias{fast.cluster}
 \alias{faster.reshape}
 \alias{folds}
