@@ -10,6 +10,13 @@
 ##' @keywords cluster indeces 
 ##' @author Klaus Holst, Thomas Scheike
 ##' @export
+##' @param clusters 
+##' @param index.type 
+##' @param num
+##' @param Rindex index starts with 1, in C is it is 0
+##' @param mat
+##' @param return.all
+##' @param code.na 
 cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0,mat=NULL,return.all=FALSE,code.na=NA)
 { ## {{{
   n <- length(clusters)
@@ -52,6 +59,10 @@ cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0,mat=NULL,r
 ##' @keywords cluster indeces 
 ##' @author Klaus Holst, Thomas Scheike
 ##' @export
+##' @param clusters 
+##' @param index.type 
+##' @param num
+##' @param Rindex index starts with 1, in C is it is 0
 familycluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=1)
 { ## {{{
   clusters <- cluster.index(clusters,Rindex=Rindex)
@@ -78,6 +89,11 @@ familycluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=1)
 ##' @keywords cluster indeces 
 ##' @author Klaus Holst, Thomas Scheike
 ##' @export
+##' @param clusters list of indeces giving the clusters (families)
+##' @param probands list of 0,1 where 1 specifices which of the subjects that are probands 
+##' @param index.type 
+##' @param num
+##' @param Rindex index starts with 1, in C is it is 0
 familyclusterWithProbands.index <- function(clusters,probands,index.type=FALSE,num=NULL,Rindex=1)
 { ## {{{
     famc <-familycluster.index(clusters,index.type=index.type,num=num,Rindex=Rindex)
@@ -106,7 +122,6 @@ familyclusterWithProbands.index <- function(clusters,probands,index.type=FALSE,n
 ###ilusters <- cluster.index(clusters,Rindex=1)
 ###ud <- familycluster.index(clusters)
 ###ud1 <- familyclusterWithProbands.index(clusters,probands)
-
 ##' @export
 coarse.clust <- function(clusters,max.clust=100)
 { ## {{{ 
