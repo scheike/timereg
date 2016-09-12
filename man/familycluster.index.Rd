@@ -6,6 +6,15 @@
 \usage{
 familycluster.index(clusters, index.type = FALSE, num = NULL, Rindex = 1)
 }
+\arguments{
+\item{clusters}{list of indeces}
+
+\item{index.type}{argument of cluster index}
+
+\item{num}{num}
+
+\item{Rindex}{index starts with 1 in R, and 0 in C}
+}
 \description{
 Finds all pairs within a cluster (family)
 }

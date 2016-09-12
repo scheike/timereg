@@ -7,7 +7,7 @@
 EVaddGam(theta, x1, x2, thetades, ags)
 }
 \description{
-Relative risk for additive gamma model at time 0
+Computes the relative risk for additive gamma model at time 0
 }
 \examples{
 lam0 <- c(0.5,0.3)

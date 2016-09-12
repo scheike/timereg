@@ -8,6 +8,17 @@
 familyclusterWithProbands.index(clusters, probands, index.type = FALSE,
   num = NULL, Rindex = 1)
 }
+\arguments{
+\item{clusters}{list of indeces giving the clusters (families)}
+
+\item{probands}{list of 0,1 where 1 specifices which of the subjects that are probands}
+
+\item{index.type}{argument passed to other functions}
+
+\item{num}{argument passed to other functions}
+
+\item{Rindex}{index starts with 1, in C is it is 0}
+}
 \description{
 second column of pairs are the probands and the first column the related subjects
 }
