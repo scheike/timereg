@@ -380,7 +380,8 @@ simCompete.simple <- function(K,varr,beta,stoptime,lam0=c(0.2,0.3),
   mz <- c(rep(1,K/2),rep(0,K/2)); dz <- 1-mz;
   ### ace overall 
   if (overall==1) {
-    if (all.sum==1) etal <-  etat else etal <- vargl+varcl
+  ###    if (all.sum==1) etal <-  etat else etal <- vargl+varcl
+    etal <- etat
     Gams1 <-cbind(rgamma(K,varr[nc+1])/etal)
   Gamoa <- Gams1
   } else Gamoa <- 0
