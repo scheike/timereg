@@ -2297,11 +2297,11 @@ make.pairwise.design.competing <- function(pairs,kinship,type="ace",compete=2,ov
 ##' ##EVaddGam(rep(1,6),x[1,],x[4,],thetades,matrix(1,18,6))
 ##' @author Thomas Scheike 
 ##' @export
-##' @param theta
-##' @param x1
-##' @param x2
-##' @param thetades
-##' @param ags
+##' @param theta theta 
+##' @param x1 x1 
+##' @param x2 x2
+##' @param thetades thetades
+##' @param ags ags
 EVaddGam <- function(theta,x1,x2,thetades,ags)
 { ## {{{ 
 	pars <- thetades %*% theta
