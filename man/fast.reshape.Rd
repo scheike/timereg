@@ -2,11 +2,7 @@
 % Please edit documentation in R/fastreshape.R
 \name{fast.reshape}
 \alias{fast.reshape}
-\title{Fast reshape
-
-Fast reshape/tranpose of data
-
-Fast reshape/tranpose of data}
+\title{Fast reshape}
 \usage{
 fast.reshape(data, varying, id, num, sep = "", keep, idname = "id",
   numname = "num", factor = FALSE, idcombine = TRUE, labelnum = FALSE,
@@ -39,6 +35,9 @@ Otherwise the first variable is only used as identifier.}
 \item{labels}{Optional labels for the number variable}
 
 \item{...}{Optional additional arguments}
+}
+\description{
+Fast reshape/tranpose of data
 }
 \examples{
 library(lava)

@@ -6,8 +6,19 @@
 \usage{
 EVaddGam(theta, x1, x2, thetades, ags)
 }
+\arguments{
+\item{theta}{theta}
+
+\item{x1}{x1}
+
+\item{x2}{x2}
+
+\item{thetades}{thetades}
+
+\item{ags}{ags}
+}
 \description{
-Relative risk for additive gamma model at time 0
+Computes the relative risk for additive gamma model at time 0
 }
 \examples{
 lam0 <- c(0.5,0.3)

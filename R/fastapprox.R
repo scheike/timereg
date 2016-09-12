@@ -1,11 +1,12 @@
 ##' Fast approximation
-##'
-##' @title Fast approximation
+##' 
+##' Fast approximation
 ##' @param time Original ordered time points
-##' @param new.time New time points 
+##' @param new.time New time points
 ##' @param equal If TRUE a list is returned with additional element
-##' @param type Type of matching, nearest index, nearest greater than or equal (right), number of elements smaller than y
-##' otherwise the closest value above new.time is returned.
+##' @param type Type of matching, nearest index, nearest greater than
+##'     or equal (right), number of elements smaller than y otherwise
+##'     the closest value above new.time is returned.
 ##' @param sorted Set to true if new.time is already sorted
 ##' @param ... Optional additional arguments
 ##' @author Klaus K. Holst

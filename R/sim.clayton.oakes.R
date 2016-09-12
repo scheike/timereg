@@ -222,7 +222,7 @@ if (left>0) { ## {{{
        medleft <- trunk
      }
   } else { lefttime <- trunk <- rep(0,K);} ## }}} 
-  if (pairleft==1) ud <- cbind(ud,zyg,rep(minstime,each=n),rep(lefttime,each=n),rep(trunk,each=n))
+  if (pairleft==1) ud <- cbind(ud,type,rep(minstime,each=n),rep(lefttime,each=n),rep(trunk,each=n))
   else ud <- cbind(ud,type,rep(minstime,each=n),lefttime,trunk)
 
 names(ud)<-c("time","status","x","cluster","type","mintime","lefttime","truncated")
