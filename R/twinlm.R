@@ -90,9 +90,10 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
   if (missing(id)) stop("Twin-pair variable not specified")
 
   if (binary | is.factor(data[,yvar]) | is.character(data[,yvar]) | is.logical(data[,yvar])) {
-    args <- as.list(cl)
-    args[[1]] <- NULL
-    return(do.call("bptwin",args,envir=parent.frame()))
+      args <- as.list(cl)
+      names(args)[which(names(args)=="formula")] <- "x"
+      args[[1]] <- NULL
+      return(do.call("bptwin",args,envir=parent.frame()))
   }
   
   formulaId <- unlist(Specials(formula,"cluster"))
@@ -233,7 +234,6 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
         suppressWarnings(e <- estimate(mm,dd,weight=weight,estimator=estimator,fix=FALSE,control=optim,...))
     }
   }
-
   e$vcov <- Inverse(information(e,type="hessian"))
   
   counts <- function(dd) {
