@@ -6,13 +6,13 @@
                  
 void score(times,Ntimes,designX,nx,px,designG,ng,pg,antpers,start,stop,
 betaS,Nit,cu,vcu,w,mw,loglike,Iinv,Vbeta,detail,offs,mof,sim,antsim,
-rani,Rvcu,RVbeta,
+Rvcu,RVbeta,
 test,testOBS,Ut,simUt,Uit,XligZ,aalen,nb,id,status,wscore,dNit,ratesim,score,dhatMit,gammaiid,dmgiid,
 retur,robust,covariance,Vcovs,addresamp,addproc,
 resample,gamiid,biid,clusters,antclust,vscore,betafixed,weights,entry,exactderiv,
-timegroup,maxtimepoint,stratum,silent)
-double *designX,*designG,*times,*betaS,*start,*stop,*cu,*w,*loglike,*Vbeta,*RVbeta,*vcu,*offs,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*aalen,*score,*dhatMit,*gammaiid,*dmgiid,*Vcovs,*addproc,*gamiid,*biid,*vscore,*weights,*dNit,*sim;
-int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*rani,*XligZ,*nb,*id,*status,*wscore,*ratesim,*retur,*robust,*addresamp,*resample,*clusters,*antclust,*betafixed,*entry,*exactderiv,*timegroup,*maxtimepoint,*stratum,*silent;
+timegroup,maxtimepoint,stratum,silent,caseweight)
+double *designX,*designG,*times,*betaS,*start,*stop,*cu,*w,*loglike,*Vbeta,*RVbeta,*vcu,*offs,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*aalen,*score,*dhatMit,*gammaiid,*dmgiid,*Vcovs,*addproc,*gamiid,*biid,*vscore,*weights,*dNit,*sim,*caseweight;
+int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*XligZ,*nb,*id,*status,*wscore,*ratesim,*retur,*robust,*addresamp,*resample,*clusters,*antclust,*betafixed,*entry,*exactderiv,*timegroup,*maxtimepoint,*stratum,*silent;
 { 
   int timing=0; 
   double basesim=0,basestart=0; 
@@ -56,8 +56,8 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*r
   double tau,hati,random,scale,sumscore;
   double *cug=calloc((*maxtimepoint)*(*px+1),sizeof(double)),
          *timesg=calloc((*maxtimepoint),sizeof(double)),
-         *powi=calloc(*Ntimes,sizeof(double)), 
-         *caseweight=calloc(*Ntimes,sizeof(double)); 
+         *powi=calloc(*Ntimes,sizeof(double)) ; 
+//         *caseweight=calloc(*Ntimes,sizeof(double)); 
   double norm_rand();
   void GetRNGstate(),PutRNGstate();
 
@@ -79,7 +79,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*r
   if (*detail==1) Rprintf("Memory allocation starting \n"); 
 
 //  printf(" Ntimes %d %d %d \n",*Ntimes,icaseweight,silent[2]); 
-  if (icaseweight==1)  for (j=1;j<*Ntimes;j++) caseweight[j]=cu[j];  //printf(" %lf \n",cu[j]); } 
+//  if (icaseweight==1)  for (j=1;j<*Ntimes;j++) caseweight[j]=cu[j];  //printf(" %lf \n",cu[j]); } 
   /* float gasdev(),expdev(),ran1(); */ 
 
   GetRNGstate();  /* to use R random normals */
@@ -347,6 +347,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*r
   }
   if (icaseweight==1) {
 	  pweight=caseweight[s];
+//	  printf(" %lf \n",caseweight[s]); 
 	  powi[s]=pweight; 
 	  scl_vec_mult(pweight,dA,dA); 
   }
@@ -411,7 +412,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*r
 
   // also case-weights here
 //  if (propodds==1)   scl_mat_mult(pweight,dS,dS); 
-  if (icaseweight==1) scl_mat_mult(pweight*pweight,dS,dS); 
+  if (icaseweight==1) scl_mat_mult(pweight,dS,dS); 
 
    // extra term for second derivative wrt beta  
   if (propodds==1) {
@@ -1107,7 +1108,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*r
   for(j=0;j<*maxtimepoint;j++) { free_mat(Cg[j]); free_mat(Stg[j]);}
   free(cluster); free(ipers); free(imin); free(cug); free(timesg); 
   free(S0strata); free(strata); free(powi); 
-  free(caseweight); 
+//  free(caseweight); 
   // }}}
  for (j=0;j<antstrat;j++) { free_mat(ZPZs[j]); free_mat(ZPXs[j]); 
 //                            free_mat(As[j]); free_mat(ZXs[j]); 

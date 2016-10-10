@@ -28,8 +28,6 @@ if (sum(offsets)==0) mof <- 0 else mof <- 1;
   if (!is.null(caseweight)) {icase <- 1; }
 
 
-
-
 aalenout<- .C("robaalen", ## {{{
 as.double(times), as.integer(Ntimes),as.double(designX),
 as.integer(nx),as.integer(p),as.integer(fdata$antpers),

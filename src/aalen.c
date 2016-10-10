@@ -76,8 +76,8 @@ void robaalen(times,Ntimes,designX,nx,p,antpers,start,stop,cu,vcu,
 	      Ut,simUt,id,weighted,robust,covariance,covs,resample,
 	      Biid,clusters,antclust,silent,weights,entry,mof,offsets,strata,
 	      caseweight,icase) 
-double *designX,*times,*start,*stop,*cu,*vcu,*robvcu,*cumAit,*test,*testOBS,*Ut,*simUt,*covs,*Biid,*weights,*offsets; 
-int *nx,*p,*antpers,*Ntimes,*sim,*retur,*antsim,*status,*id,*covariance,*caseweight,
+double *designX,*times,*start,*stop,*cu,*vcu,*robvcu,*cumAit,*test,*testOBS,*Ut,*simUt,*covs,*Biid,*weights,*offsets,*caseweight; 
+int *nx,*p,*antpers,*Ntimes,*sim,*retur,*antsim,*status,*id,*covariance,
     *weighted,*robust,*resample,*clusters,*antclust,*silent,*entry,*mof,*strata,*icase;
 { // {{{
  // {{{ setting up variables and allocating
@@ -174,7 +174,10 @@ for (s=1;s<*Ntimes;s++){
 //    print_vec(xi); 
       
     Mv(AI,xi,dB); 
-    if (*icase==1) scl_vec_mult(caseweight[s],dB,dB); 
+    if (*icase==1) {
+//	    printf(" %lf \n",caseweight[s-1]); 
+	    scl_vec_mult(caseweight[s-1],dB,dB); 
+    }
     vec_star(dB,dB,VdB); 
 
     for (k=1;k<*p+1;k++) {
