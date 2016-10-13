@@ -167,7 +167,8 @@ ldata<-list(start=survs$start,stop=survs$stop,antpers=survs$antpers,antclust=sur
 } ## }}}
 
 plot.aalen <-  function (x, pointwise.ci=1, hw.ci=0,
-sim.ci=0, robust=0, specific.comps=FALSE,level=0.05, start.time = 0, 
+sim.ci=0, robust.ci=0, col=NULL,
+specific.comps=FALSE,level=0.05, start.time = 0, 
 stop.time = 0, add.to.plot=FALSE, mains=TRUE, xlab="Time",
 ylab ="Cumulative coefficients",score=FALSE,...) 
 { ## {{{
@@ -176,8 +177,8 @@ ylab ="Cumulative coefficients",score=FALSE,...)
     stop ("Must be output from Aalen function") 
  
   if (score==FALSE) plot.cums(object, pointwise.ci=pointwise.ci, 
-        hw.ci=hw.ci,
-        sim.ci=sim.ci, robust=robust, specific.comps=specific.comps,level=level, 
+        hw.ci=hw.ci, sim.ci=sim.ci, robust.ci=robust.ci, col=col, 
+	specific.comps=specific.comps,level=level, 
         start.time = start.time, stop.time = stop.time, add.to.plot=add.to.plot, 
         mains=mains, xlab=xlab, ylab =ylab) 
   else plotScore(object, specific.comps=specific.comps, mains=mains,

@@ -223,7 +223,7 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
 } ## }}}
 
 "plot.cox.aalen" <-  function (x,pointwise.ci=1, hw.ci=0,
-sim.ci=0, robust=0, specific.comps=FALSE,level=0.05, start.time = 0,
+sim.ci=0, robust.ci=0, col=NULL, specific.comps=FALSE,level=0.05, start.time = 0,
 stop.time = 0, add.to.plot=FALSE,main=NULL,mains=TRUE,xlab="Time",score=FALSE,
 ylab="Cumulative coefficients",...)
 { ## {{{
@@ -232,7 +232,7 @@ ylab="Cumulative coefficients",...)
   if (ylab=="Cumulative coefficients" && (1*score)>=1) ylab <- "Cumulative MG-residuals"
 
   if (score==FALSE) plot.cums(object, pointwise.ci=pointwise.ci,
-        hw.ci=hw.ci, sim.ci=sim.ci, robust=robust, specific.comps=specific.comps,level=level,
+        hw.ci=hw.ci, sim.ci=sim.ci, robust.ci=robust.ci, col=col, specific.comps=specific.comps,level=level,
         start.time = start.time, stop.time = stop.time, add.to.plot=add.to.plot,
 	main=main, mains=mains, xlab=xlab,ylab=ylab,...)
   else plotScore(object, specific.comps=specific.comps, mains=mains,

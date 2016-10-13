@@ -300,6 +300,7 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
       stop("To plot cumulative residuals vs. covariates, cum.resid=1"); 
   }
 
+
   if (score==0)  ## {{{ 
   {
     B<-object$cum; 

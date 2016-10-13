@@ -5,10 +5,10 @@
 automatically for highest value of the break points. 
 }
 \usage{
-pc.hazard(cumh,rr,cum.hazard=TRUE)
+pc.hazard(cumhazard,rr,cum.hazard=TRUE)
 }
 \arguments{
-  \item{cumh}{cumulative hazard, or piece-constant rates for periods defined by first column of input.}
+  \item{cumhazard}{cumulative hazard, or piece-constant rates for periods defined by first column of input.}
   \item{rr}{number of simulations or vector of relative risk for simuations. }
   \item{cum.hazard}{specifies wheter input is cumulative hazard or rates. }
 }

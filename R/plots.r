@@ -1,11 +1,17 @@
-plot.cums <-  function (x , pointwise.ci=1, hw.ci=0,
-sim.ci=0, robust=0, specific.comps=FALSE,level=0.05, start.time = 0, 
+plot.cums <-  function (x , pointwise.ci=1, hw.ci=0, sim.ci=0, robust.ci=0, col=NULL,
+			specific.comps=FALSE,level=0.05, start.time = 0, 
 stop.time = 0, add.to.plot=FALSE,main=NULL,mains=TRUE, xlab="Time",
 ylab ="Cumulative coefficients",ylim=NULL,...) 
 { ## {{{ 
  object<-x; rm(x); 
  B<-object$cum; V<-object$var.cum; p<-dim(B)[[2]]; 
- if (robust>=1) {V<-object$robvar.cum;}
+ if (robust.ci>=1) {V<-object$robvar.cum;}
+ ### color for estimate, pointwise, robust-pointwise, sim.ci , hw.ci  
+ cis <- c(1,pointwise.ci>=1,robust.ci>=1,sim.ci>=1,hw.ci>=1)
+ if (is.null(col)) cols<-rep(1,5)  else { 
+      cols <-  rep(1,5)
+      cols[which(cis==TRUE)] <- col
+  }
 
  if (sum(specific.comps)==FALSE) comp<-2:p else comp<-specific.comps+1
  if (stop.time==0) stop.time<-max(B[,1]);
@@ -25,36 +31,36 @@ ylab ="Cumulative coefficients",ylim=NULL,...)
  if (add.to.plot==FALSE) 
  {
  if (is.null(ylim))
- plot(B[,1],est,ylim=1.05*range(ul,nl),type="s",xlab=xlab,ylab=ylab,...) 
+ plot(B[,1],est,ylim=1.05*range(ul,nl),type="s",xlab=xlab,ylab=ylab,col=cols[1],...) 
  else
- plot(B[,1],est,ylim=ylim,type="s",xlab=xlab,ylab=ylab,...) 
+ plot(B[,1],est,ylim=ylim,type="s",xlab=xlab,ylab=ylab,col=cols[1],...) 
  if (!is.null(main)) { if (length(main)==1) main <- rep(main,length(comp)); mains <- FALSE; } 
  if (!is.null(main)) title(main=main[i]); 
  if (mains==TRUE) title(main=colnames(B)[v]); 
  }
- else lines(B[,1],est,type="s"); 
+ else lines(B[,1],est,type="s",col=cols[1]); 
 
  if (pointwise.ci>=1) {
- lines(B[,1],ul,lty=pointwise.ci,type="s");
- lines(B[,1],nl,lty=pointwise.ci,type="s"); }
- if (robust>=1) {
- lines(B[,1],ul,lty=robust,type="s"); 
- lines(B[,1],nl,lty=robust,type="s"); }
+ lines(B[,1],ul,lty=pointwise.ci,type="s",col=cols[2]);
+ lines(B[,1],nl,lty=pointwise.ci,type="s",col=cols[2]); }
+ if (robust.ci>=1) {
+ lines(B[,1],ul,lty=robust.ci,type="s",col=cols[3]); 
+ lines(B[,1],nl,lty=robust.ci,type="s",col=cols[3]); }
  if (hw.ci>=1) {
  if (level!=0.05) cat("Hall-Wellner bands only 95 % \n");
  tau<-length(B[,1])
  nl<-B[,v]-1.27*V[tau,v]^.5*(1+V[,v]/V[tau,v])
  ul<-B[,v]+1.27*V[tau,v]^.5*(1+V[,v]/V[tau,v])
- lines(B[,1],ul,lty=hw.ci,type="s"); 
- lines(B[,1],nl,lty=hw.ci,type="s"); }
+ lines(B[,1],ul,lty=hw.ci,type="s",col=cols[5]); 
+ lines(B[,1],nl,lty=hw.ci,type="s",col=cols[5]); }
  if (sim.ci>=1) {
  if (is.null(object$conf.band)==TRUE) 
  cat("Uniform simulation based bands only computed for n.sim> 0\n")
  if (level!=0.05) c.alpha<-percen(object$sim.testBeq0[,v-1],1-level)
  else c.alpha<-object$conf.band[v-1];
  nl<-B[,v]-c.alpha*Vrob[,v]^.5; ul<-B[,v]+c.alpha*Vrob[,v]^.5;
- lines(B[,1],ul,lty=sim.ci,type="s"); 
- lines(B[,1],nl,lty=sim.ci,type="s"); }
+ lines(B[,1],ul,lty=sim.ci,type="s",col=cols[4]); 
+ lines(B[,1],nl,lty=sim.ci,type="s",col=cols[4]); }
  abline(h=0)
  }
 } ## }}} 
