@@ -114,7 +114,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     ## Then extract the time-varying effects
     ###    time.coef <- data.frame(object$cum)
     time.coef <- as.matrix(object$cum)
-    if (!is.null(times)) {time.coef<-Cpred(time.coef,times); iidtimechange <- 1; iidtime <- object$cum[,1];} 
+    if (!is.null(times)) {time.coef<-Cpred(time.coef,times,strict=FALSE); iidtimechange <- 1; iidtime <- object$cum[,1];} 
     ### SE based on iid decomposition so uses time-resolution for cox.aalen model 
     if (modelType=="cox.aalen" && (!is.null(object$time.sim.resolution)) && (se==TRUE)) 
     { iidtime <- object$time.sim.resolution; iidtimechange <- 1} 
@@ -143,7 +143,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     ## Then extract the time-varying effects
     time.coef <- as.matrix(object$cum)
 
-    if (!is.null(times)) {time.coef<-Cpred(time.coef,times); iidtimechange <- 1; iidtime <- object$cum[,1];} 
+    if (!is.null(times)) {time.coef<-Cpred(time.coef,times,strict=FALSE); iidtimechange <- 1; iidtime <- object$cum[,1];} 
     ### SE based on iid decomposition so uses time-resolution for cox.aalen model 
     if (modelType=="cox.aalen" && (!is.null(object$time.sim.resolution)) && (se==TRUE)) 
     { iidtime <- object$time.sim.resolution; iidtimechange <- 1} 
@@ -252,7 +252,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     delta<-c();
     for (i in 1:n) {
        if (iidtimechange==1) 
-       tmptiid<- t(Cpred(cbind(iidtime,object$B.iid[[i]]),times)[,-1,drop=FALSE])
+       tmptiid<- t(Cpred(cbind(iidtime,object$B.iid[[i]]),times,strict=FALSE)[,-1,drop=FALSE])
        else tmptiid <- t(object$B.iid[[i]])
        tmp<- as.matrix(time.vars) %*% tmptiid
 
@@ -521,7 +521,7 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
       #print(t); print(ci)
       n<-length(time)
       tt<-seq(time[1],time[n],length=n*10); 
-      ud<-Cpred(cbind(time,upper,lower),tt)[,2:3]
+      ud<-Cpred(cbind(time,upper,lower),tt,strict=FALSE)[,2:3]
       tt <- c(tt, rev(tt))
       yy <- c(upper, rev(lower))
 #      tt <- c(time, rev(time))
