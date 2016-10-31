@@ -114,7 +114,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     ## Then extract the time-varying effects
     ###    time.coef <- data.frame(object$cum)
     time.coef <- as.matrix(object$cum)
-    if (!is.null(times)) {time.coef<-Cpred(time.coef,times,strict=FALSE); iidtimechange <- 1; iidtime <- object$cum[,1];} 
+    if (!is.null(times)) {time.coef<-Cpred(time.coef,times); iidtimechange <- 1; iidtime <- object$cum[,1];} 
     ### SE based on iid decomposition so uses time-resolution for cox.aalen model 
     if (modelType=="cox.aalen" && (!is.null(object$time.sim.resolution)) && (se==TRUE)) 
     { iidtime <- object$time.sim.resolution; iidtimechange <- 1} 
@@ -143,7 +143,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     ## Then extract the time-varying effects
     time.coef <- as.matrix(object$cum)
 
-    if (!is.null(times)) {time.coef<-Cpred(time.coef,times,strict=FALSE); iidtimechange <- 1; iidtime <- object$cum[,1];} 
+    if (!is.null(times)) {time.coef<-Cpred(time.coef,times); iidtimechange <- 1; iidtime <- object$cum[,1];} 
     ### SE based on iid decomposition so uses time-resolution for cox.aalen model 
     if (modelType=="cox.aalen" && (!is.null(object$time.sim.resolution)) && (se==TRUE)) 
     { iidtime <- object$time.sim.resolution; iidtimechange <- 1} 
@@ -158,18 +158,12 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
 
   ## }}}
 
-###  print(head(time.vars)); print(head(constant.covs)); print(head(time.coef));
-###  print(head(object$cum)); print(object$gamma);
-
   ## {{{ predictions for competing risks and survival data
 
   cumhaz<-as.matrix(time.vars) %*% t(matrix(time.coef[,-1],ncol=(ncol(time.coef)-1)))
-  cumhaz<-as.matrix(time.vars) %*% t(time.coef[,-1,drop=FALSE])
-  times <- time <-time.coef[,1]; 
+  times <- time<-time.coef[,1]; 
   if (semi==TRUE) pg <- nrow(object$gamma); 
   nt<-length(time);
-
-###  print(head(cumhaz))
 
   ### set up articial time.pow for aalen  and cox.aalen to make unified code for 
   ###  comp.risk and survival
@@ -179,8 +173,6 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
 
   if (semi==TRUE)
   constant.part <- constant.covs %*% ((matrix(rep(c(time),pg),pg,nt,byrow=TRUE)^timepow)*c(object$gamma))
-
-###  print(head(constant.part))
 
   if (inherits(object,'comprisk')) { ## {{{ competing models
     if (modelType == "additive") {
@@ -260,7 +252,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     delta<-c();
     for (i in 1:n) {
        if (iidtimechange==1) 
-       tmptiid<- t(Cpred(cbind(iidtime,object$B.iid[[i]]),times,strict=FALSE)[,-1,drop=FALSE])
+       tmptiid<- t(Cpred(cbind(iidtime,object$B.iid[[i]]),times)[,-1,drop=FALSE])
        else tmptiid <- t(object$B.iid[[i]])
        tmp<- as.matrix(time.vars) %*% tmptiid
 
@@ -350,7 +342,6 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     } else uband<-NULL; 
    ## }}}
 
-
   if(modelType == 'additive' || modelType == 'prop' || modelType=="logistic"
      || modelType=='rcif2' || modelType=='rcif' || modelType=='fg' || modelType=='logistic2'){
     P1<-matrix(P1,nrow=nobs);
@@ -402,6 +393,19 @@ pava <- function(x, w=rep(1,length(x)))  # R interface to the compiled code
         as.integer(n) )
   result[["y"]]
 } ## }}}
+
+
+pava.pred <- function(pred,increasing=TRUE)  
+{ ## {{{
+### row-wise predictions
+   isvec<- is.vector(pred)
+   if (is.vector(pred)) pred<- matrix(pred,1,length(pred))
+   if (increasing==TRUE) mpred <- t(apply(pred,1,pava))
+   if (increasing==FALSE) mpred <- t(-1*apply(-pred,1,pava))
+   if (isvec) mpred <- c(mpred)
+   return(mpred)
+} ## }}}
+
 
 plot.predict.timereg<-function(x,uniform=1,new=1,se=1,col=1,lty=1,lwd=2,multiple=0,specific.comps=0,ylim=c(0,1),
 xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
@@ -517,7 +521,7 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
       #print(t); print(ci)
       n<-length(time)
       tt<-seq(time[1],time[n],length=n*10); 
-      ud<-Cpred(cbind(time,upper,lower),tt,strict=FALSE)[,2:3]
+      ud<-Cpred(cbind(time,upper,lower),tt)[,2:3]
       tt <- c(tt, rev(tt))
       yy <- c(upper, rev(lower))
 #      tt <- c(time, rev(time))
