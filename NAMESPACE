@@ -50,6 +50,7 @@ export("aalen", ## {{{
        "nameestimate",	
        "namematrix",
        "names2formula",
+       "pava.pred",
        "pe.sasieni",
        "percen",
        "pred.cum",
