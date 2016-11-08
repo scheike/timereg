@@ -31,7 +31,7 @@
 ##' ## An interaction could be analyzed as:
 ##' ace3 <- twinlm(y ~ x1+x2 + x1:I(x2<0), data=d, DZ="DZ", zyg="zyg", id="id", type="ace")
 ##' ace3
-##' ## Categorical variables are also supported##' 
+##' ## Categorical variables are also supported 
 ##' d2 <- transform(d,x2cat=cut(x2,3,labels=c("Low","Med","High")))
 ##' ace4 <- twinlm(y ~ x1+x2cat, data=d2, DZ="DZ", zyg="zyg", id="id", type="ace")
 ##' }
@@ -82,14 +82,14 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
   mf <- model.frame(formula,data)
   mt <- attr(mf, "terms")
   y <- model.response(mf, "any")
-  ## formula <- update(formula, ~ . + 1)
+    ## formula <- update(formula, ~ . + 1)
   yvar <- getoutcome(formula)
   if (missing(zyg)) stop("Zygosity variable not specified")
   if (!(zyg%in%colnames(data))) stop("'zyg' not found in data")
   if (!(id%in%colnames(data))) stop("'id' not found in data")
   if (missing(id)) stop("Twin-pair variable not specified")
 
-  if (binary | is.factor(data[,yvar]) | is.character(data[,yvar]) | is.logical(data[,yvar])) {
+  if (binary | is.factor(mf[,yvar]) | is.character(mf[,yvar]) | is.logical(mf[,yvar])) {
       args <- as.list(cl)
       names(args)[which(names(args)=="formula")] <- "x"
       args[[1]] <- NULL
@@ -158,8 +158,9 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
   if (!is.null(group) && type%in%c("u","flex","sat")) stop("Only polygenic models are allowed with 'group' ('type' subset of 'acde'). See also the 'strata' argument.")      
   ## To wide format:
   num <- NULL; if (twinnum%in%colnames(data)) num <- twinnum
-  if (!is.null(group)) data[,group] <- as.factor(data[,group])
-  data <- cbind(data[,c(yvar,keep,num,zyg,id,group)],M)
+    if (!is.null(group)) data[,group] <- as.factor(data[,group])
+    y <- cbind(as.vector(y)); colnames(y) <- yvar
+  data <- cbind(y,data[,c(keep,num,zyg,id,group)],M)
   ddd <- fast.reshape(data,id=c(id),varying=c(yvar,keep,covars,group),keep=zyg,num=num,sep=".",labelnum=TRUE)
   groups <- paste(group,".",1:2,sep="")
   outcomes <- paste(yvar,".",1:2,sep="")  
@@ -228,7 +229,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
   if (!is.null(optim$refit) && optim$refit) {
     optim$method <- "NR"
     optim$start <- pars(e)
-    if (inherits(data[,yvar],"Surv")) {
+    if (inherits(mf[,yvar],"Surv")) {
         suppressWarnings(e <- estimate(mm,dd,estimator=estimator,fix=FALSE,control=optim,...))
     } else {
         suppressWarnings(e <- estimate(mm,dd,weight=weight,estimator=estimator,fix=FALSE,control=optim,...))
@@ -463,13 +464,13 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
 
 twinlmStart <- function(formula,mf,type,hasIntercept,surv=FALSE,model,group=NULL,group.equal,...)  {
     if (surv) {
-        l <- survival::survreg(formula,mf,dist="gaussian")
+        l <- survival::survreg(formula,data=mf,dist="gaussian")
         beta <- coef(l)
         sigma <- l$scale
     } else {
-        l <- lm(formula,mf)
-        beta <- coef(l)
-        sigma <- summary(l)$sigma
+        l <- lm.fit(model.matrix(formula,mf),mf[,1])
+        beta <- l$coefficients
+        sigma <- sd(l$residuals)
     }    
     start <- rep(sigma/sqrt(nchar(type)),nchar(type))
     if (hasIntercept) {
