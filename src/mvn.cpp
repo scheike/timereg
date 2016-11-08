@@ -1,3 +1,4 @@
+// [[Rcpp::interfaces(cpp)]]
 
 #include "mvn.h"
 #include "tools.h"
@@ -472,17 +473,28 @@ vec loglikmvn(mat &Yl, mat &Yu, uvec &Status,
   return(loglik);
 }
 
-RcppExport SEXP loglikMVN(SEXP yl, SEXP yu, 
-			  SEXP status,
-			  SEXP mu, SEXP dmu,
-			  SEXP s, SEXP ds,
-			  SEXP z, SEXP su, SEXP dsu,
-			  SEXP threshold, SEXP dthreshold, SEXP score) {
-BEGIN_RCPP
-  mat Yl = Rcpp::as<mat>(yl);
-  mat Mu = Rcpp::as<mat>(mu);  
-  mat S = Rcpp::as<mat>(s);
-  bool Score = Rcpp::as<bool>(score);  
+
+
+
+// RcppExport SEXP loglikMVN(SEXP yl, SEXP yu, 
+// 			  SEXP status,
+// 			  SEXP mu, SEXP dmu,
+// 			  SEXP s, SEXP ds,
+// 			  SEXP z, SEXP su, SEXP dsu,
+// 			  SEXP threshold, SEXP dthreshold, SEXP score) {
+
+// [[Rcpp::export(name = ".loglikMVN")]]
+arma::mat loglikMVN(arma::mat Yl, SEXP yu, 
+		    SEXP status,
+		    arma::mat Mu, SEXP dmu,
+		    arma::mat S,  SEXP ds,
+		    SEXP z, SEXP su, SEXP dsu,
+		    SEXP threshold, SEXP dthreshold,
+		    bool Score) {  
+  // mat Yl = Rcpp::as<mat>(yl);
+  // mat Mu = Rcpp::as<mat>(mu);  
+  // mat S = Rcpp::as<mat>(s);
+  // bool Score = Rcpp::as<bool>(score);  
   if (Score) {
     mat dS = Rcpp::as<mat>(ds);
     mat dMu = Rcpp::as<mat>(dmu);
@@ -491,7 +503,7 @@ BEGIN_RCPP
 		     S, dS);
 		 // Z,  Su, dSu,
 		 // Threshold, dThreshold) {
-    return(wrap(U));
+    return(U);
   }
  
   uvec Status = Rcpp::as<uvec>(status);
@@ -567,8 +579,7 @@ BEGIN_RCPP
     		       Threshold);
   }
 
-  return (wrap(loglik));
-END_RCPP
+  return (loglik);
 }
 //   return(Rcpp::List::create(
 // 			    Rcpp::Named("loglik")=loglik,
