@@ -157,7 +157,7 @@ bmtw <- prep.comp.risk(bmt,times=tau,time="time",entrytime="entrytime",cause="ca
 
 out<-res.mean(Event(time,cause>=1)~factor(tcell)+factor(platelet),data=bmtw,cause=1,
 	      times=0,restricted=tau,n.sim=0,model="additive",estimator=1,
-              cens.model="weights",weights=bmt$cw,cens.weights=1/bmtw$weights); 
+              cens.model="weights",weights=bmtw$cw,cens.weights=1/bmtw$weights); 
 summary(out)
 }
 \keyword{survival}
