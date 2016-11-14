@@ -27,12 +27,6 @@
 ##' gx <- qcut(sTRACE$age)
 ##' head(gx)
 ##'
-##' dren(data, ~x+y) <- c("x","y")
-##' dren(data, ~x+y) <- c("x","y")
-##' drm(data) <- "*.2"
-##'
-##' "dren<-" <- function(x, var, value) { browser(); names(x)[var] <- value; return(x) }
-##' dren <- function(x,var,value) {  } 
 ##'
 ##' ## Removes all cuts variables with these names wildcards
 ##' mm <- drm(mm,c("*.2","*.4"))
@@ -44,18 +38,26 @@
 ##'
 ##' ## with direct asignment 
 ##' drm(mm) <- c("*.2","*.4")
+##' head(mm)
 ##'
+##' dcut(mm) <- c("age","*m*")
+##' head(mm)
 ##'
+##' ## renaming 
+##' dren(data, ~x+y) <- c("x","y")
+##' dren(data, ~x+y) <- c("x","y")
+##' mm <-  dren(data, ~x+y,~y+x)
+##' head(mm)
+##' mm <-  dren(data,"age*","alder*")
+##' head(mm)
 ##' @export
 dcut <- function(data,x,cuts=4,breaks=NULL,...)
 {# {{{
-  if (inherits(x,"formula")) {
+ if (inherits(x,"formula")) {
      x <- all.vars(x)
      xnames <- x
-  } 
-  if (is.character(x) & is.null(data)) stop("when x character then data frame must be given\n"); 
-
-  if (is.character(x)) {
+     formular <- 1
+  } else if  (is.character(x)) {
      xnames <- x
      xxx<-c()
      for (xx in xnames)
@@ -65,6 +67,7 @@ dcut <- function(data,x,cuts=4,breaks=NULL,...)
      }
      xnames <- xxx[!duplicated(xxx)]
   }
+
 
   if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
   dots <- list()
@@ -86,14 +89,16 @@ for (k in 1:ll)
      probs <- seq(0,1,length.out=cuts[k]+1)
      bb <- quantile(xx,probs,...)
      } else bb <- breaks
-
-
-if (is.null(data)) gx <- cut(xx,breaks=bb,include.lowest=TRUE)
-else { ### returns data frame with new argument 
    name<-paste(xnames[k],cuts[k],sep=".")
    data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE)
 }
-}
+
+###if (is.null(data)) gx <- cut(xx,breaks=bb,include.lowest=TRUE)
+###else { ### returns data frame with new argument 
+###   name<-paste(xnames[k],cuts[k],sep=".")
+###   data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE)
+###}
+
 
 if (is.null(data)) return(gx) else return(data)
 }# }}}
@@ -104,10 +109,8 @@ if (is.null(data)) return(gx) else return(data)
   if (inherits(x,"formula")) {
      x <- all.vars(x)
      xnames <- x
-  } 
-  if (is.character(x) & is.null(data)) stop("when x character then data frame must be given\n"); 
-
-  if (is.character(x)) {
+     formular <- 1
+  } else if  (is.character(x)) {
      xnames <- x
      xxx<-c()
      for (xx in xnames)
@@ -138,21 +141,33 @@ for (k in 1:ll)
      probs <- seq(0,1,length.out=cuts[k]+1)
      bb <- quantile(xx,probs,...)
      } else bb <- breaks
-
-
-if (is.null(data)) gx <- cut(xx,breaks=bb,include.lowest=TRUE)
-else { ### returns data frame with new argument 
    name<-paste(xnames[k],cuts[k],sep=".")
    data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE)
 }
-}
 
-if (is.null(data)) return(gx) else return(data)
+return(data)
 }# }}}
 
 ##' @export
 drm <- function(data,x)
 {# {{{
+ if (inherits(x,"formula")) {
+     x <- all.vars(x)
+     xnames <- x
+     formular <- 1
+  } else if  (is.character(x)) {
+     xnames <- x
+     xxx<-c()
+     for (xx in xnames)
+     {
+        n <- grep(glob2rx(xx),names(data))
+        xxx <- c(xxx,names(data)[n])
+     }
+     xnames <- xxx[!duplicated(xxx)]
+  }
+
+
+
   if (inherits(x,"formula")) {
      x <- all.vars(x)
      xnames <- x
@@ -177,12 +192,11 @@ return(data)
 ##' @export
 "drm<-"  <- function(data,x)
 {# {{{
-  if (inherits(x,"formula")) {
+ if (inherits(x,"formula")) {
      x <- all.vars(x)
      xnames <- x
-  } 
-
-  if (is.character(x)) {
+     formular <- 1
+  } else if  (is.character(x)) {
      xnames <- x
      xxx<-c()
      for (xx in xnames)
@@ -198,6 +212,44 @@ return(data)
 return(data)
 }# }}}
 
+##' @export
+"drename<-" <- function(x, var, value) 
+{ # {{{
+	if (missing(value)) value <- tolower(names(x)[var])
+	names(x)[var] <- value; 
+	return(x) 
+}# }}}
+
+##' @export
+drename <- function(x,var,value) 
+{  # {{{
+    if (inherits(var,"formula")) {
+       var <- all.vars(var)
+       xnames <- var
+       nnames <- match()
+     }  else if (is.character(var)) {
+        xnames <- var 
+        nnames <- c()
+        xxx<-c()
+     for (xx in xnames)
+     {
+        n <- grep(glob2rx(xx),names(data))
+        nnames <- c(nnames,n)
+        xxx <- c(xxx,names(data)[n])
+     }
+         xnames <- xxx[!duplicated(xxx)]
+         nnames <- nnames[!duplicated(nnames)]
+     }
+
+  if (missing(value)) value <- tolower(xnames)
+
+  if (length(value)!= length(var)) stop("length of old and new variables must mach")
+
+  print(nnames)
+  print(value)
+  names(x)[nnames] <- value; 
+  return(x) 
+} # }}}
 
  library(mets)
 
@@ -243,4 +295,13 @@ return(data)
  dcut(mm) <- c("a*","?m*")
  drm(mm) <- c("*.2","*.4")
 
+ dren(mm, ~age+wmi) <- c("wmi","age")
+
+##' dren(data, ~x+y) <- c("x","y")
+###dren(mm, ~age+wmi,~wmi+age) <- c("x","y")
+head( dren(mm, ~age+wmi,c("wmi","age")))
+head( dren(mm, c("age","wmi"),c("wmi","age")))
+head( dren(mm, ~age+wmi,c("wminy","ageny")))
+
+dren(mm, ~age+wmi) <- c("wmi","age")
 
