@@ -139,33 +139,50 @@ return(data)
 }# }}}
 
 ##' @export
-drename <- function(x,var,value) 
+drename <- function(data,var,value) 
 {  # {{{
     if (inherits(var,"formula")) {
-###       var <- all.vars(var)
-       xnames <- all.vars(var)
-       nnames <- match()
-     }  else if (is.character(var)) {
-        xnames <- var 
-        nnames <- c()
+       var <- all.vars(var)
+    }
+
+
+    if (inherits(value,"formula")) {
+       value <- all.vars(value)
+    }
+
+ if (is.character(var)) {
+        varxnames <- var 
+        varnnames <- c()
         xxx<-c()
-     for (xx in xnames)
+     for (xx in varxnames)
      {
         n <- grep(glob2rx(xx),names(data))
         xxx <- c(xxx,names(data)[n])
+        varnnames <- c(varnnames,n) 
      }
-         xnames <- xxx[!duplicated(xxx)]
-         nnames <- nnames[!duplicated(nnames)]
-     }
+     varxnames <- xxx[!duplicated(xxx)]
+     varnnames <- varnnames[!duplicated(varnnames)]
+  }
 
-  if (missing(value)) value <- tolower(xnames)
+ if (missing(value)) xnames <- tolower(varxnames) else if (is.character(value)) {
+        xnames <- value  
+###        xxx<-c()
+###     for (xx in xnames)
+###     {
+###        n <- grep(glob2rx(xx),names(data))
+###        xxx <- c(xxx,names(data)[n])
+###     }
+###         xnames <- xxx[!duplicated(xxx)]
+###         nnames <- nnames[!duplicated(nnames)]
+  }
 
-  if (length(value)!= length(var)) stop("length of old and new variables must mach")
+ print(xnames)
+ print(varxnames)
 
-  print(nnames)
-  print(value)
-  names(x)[nnames] <- value; 
-  return(x) 
+  if (length(xnames)!= length(varxnames)) stop("length of old and new variables must mach")
+
+  names(data)[varnnames] <- xnames; 
+  return(data) 
 } # }}}
 
 ##' @export
@@ -201,13 +218,27 @@ drename <- function(x,var,value)
 ### drm(mm) <- c("*.2","*.4")
 ### head(mm)
 
-### drename(mm, ~age+wmi) <- c("wmi","age")
+
+###library(mets)
+### data(sTRACE)
+### sTRACE$age2 <- sTRACE$age^2
+### sTRACE$age3 <- sTRACE$age^3
+### names(sTRACE)
 ###
-#####' dren(data, ~x+y) <- c("x","y")
-######dren(mm, ~age+wmi,~wmi+age) <- c("x","y")
-###head( dren(mm, ~age+wmi,c("wmi","age")))
-###head( dren(mm, c("age","wmi"),c("wmi","age")))
+### mm <- sTRACE
+
+
+##' dren(data, ~x+y) <- c("x","y")
+###head(drename(mm, ~age+wmi,~ageny+wminy))
+###mm$Age <- mm$age
+###mm$Wmi <- mm$wmi
+###head(drename(mm,~Age+Wmi))
+###
+###head(drename(mm, ~age+wmi,~ageny+wminy))
+###head( drename(mm, ~age+wmi,c("wmi","age")))
+###head( drename(mm, c("age","wmi"),c("wmi","age")))
 ###head( dren(mm, ~age+wmi,c("wminy","ageny")))
 ###
-###dren(mm, ~age+wmi) <- c("wmi","age")
+###drename(mm, ~age+wmi) <- c("wmi","age")
+###drename(mm, ~age+wmi) <- c("wmi","age")
 
