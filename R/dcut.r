@@ -44,12 +44,12 @@
 ##' head(mm)
 ##'
 ##' ## renaming 
-##' #drename(mm, ~age+wmi) <- c("wmi","age")
-##' #head(mm)
-##' #drename(mm, ~wmi+age) <- c("age","wmi")
-##' #head(mm)
-##' #mm <-  drename(data, ~age+wmi,~wmi+age)
-##' #head(mm)
+##' drename(mm, ~age+wmi) <- c("wmi","age")
+##' head(mm)
+##' drename(mm, ~wmi+age) <- c("age","wmi")
+##' head(mm)
+##' mm1 <-  drename(mm, ~age+wmi,~wmi+age)
+##' head(mm1)
 ##' #mm <-  drenname(mm,"age*","alder*")
 ##' #head(mm)
 ##' @export
