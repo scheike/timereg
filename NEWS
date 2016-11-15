@@ -10,7 +10,7 @@
   - Updated divide.conquer
   - Extra unit tests
   - force.same.cens
-  -
+  - dcut, drm, drename for cutting, removing and renaming variables on data-frame. 
 
 * Version 1.1.1 <2015-05-27 Wed>
   - Support for left-truncation 
