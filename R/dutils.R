@@ -1,4 +1,4 @@
-##' Cutting, rm (removing), rename for data frames 
+##' Cutting, sorting, rm (removing), rename for data frames 
 ##' 
 ##' Cut variables, rm or rename 
 ##' @param data if x is formula or names for data frame then data frame is needed.
@@ -226,4 +226,11 @@ dsort <- function(data,x,...,decreasing=FALSE) {
     if (!is.list(x)) x <- list(x)
     data[do.call("order",c(c(x,args),list(decreasing=decreasing,method="radix"))),]
 }
+
+##' @export
+"dsort<-" <- function(data,...,value) 
+{ # {{{
+  dsort(data,value,...)
+}# }}}
+
 
