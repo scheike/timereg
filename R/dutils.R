@@ -44,12 +44,17 @@
 ##' head(mm)
 ##'
 ##' ## renaming 
+##' ############################
+##' ## to lower 
+##' head(drename(mm))
+##' mm1 <-  drename(mm)
+##' mm1 <-  drename(mm, ~age+wmi,~wmi+age)
+##' head(mm1)
+##'
 ##' drename(mm, ~age+wmi) <- c("wmi","age")
 ##' head(mm)
 ##' drename(mm, ~wmi+age) <- c("age","wmi")
 ##' head(mm)
-##' mm1 <-  drename(mm, ~age+wmi,~wmi+age)
-##' head(mm1)
 ##' #mm <-  drenname(mm,"age*","alder*")
 ##' #head(mm)
 ##' @export
@@ -102,7 +107,8 @@ for (k in 1:ll)
 ###}
 
 
-if (is.null(data)) return(gx) else return(data)
+###if (is.null(data)) return(gx) else 
+return(data)
 }# }}}
 
 ##' @export
@@ -141,16 +147,14 @@ return(data)
 ##' @export
 drename <- function(data,var,value) 
 {  # {{{
-    if (inherits(var,"formula")) {
-       var <- all.vars(var)
-    }
 
+ if (missing(var)) var <- names(data)
 
-    if (inherits(value,"formula")) {
-       value <- all.vars(value)
-    }
+ if (inherits(var,"formula")) {
+      var <- all.vars(var)
+   }
 
- if (is.character(var)) {
+if (is.character(var)) {
         varxnames <- var 
         varnnames <- c()
         xxx<-c()
@@ -164,7 +168,13 @@ drename <- function(data,var,value)
      varnnames <- varnnames[!duplicated(varnnames)]
   }
 
- if (missing(value)) xnames <- tolower(varxnames) else if (is.character(value)) {
+ if (missing(value)) value <- tolower(varxnames)
+
+ if (inherits(value,"formula")) {
+     value <- all.vars(value)
+ }
+
+   if (is.character(value)) {
         xnames <- value  
 ###        xxx<-c()
 ###     for (xx in xnames)
@@ -190,7 +200,6 @@ drename <- function(data,var,value)
 { # {{{
   drename(x,var,value)
 }# }}}
-
 
 
 
