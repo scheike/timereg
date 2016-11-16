@@ -210,7 +210,11 @@ drename <- function(data,var,value)
 ##' dsort(hubble, hubble$sigma,"v")
 ##' dsort(hubble,~sigma+v)
 ##' dsort(hubble,~sigma-v)
-dsort <- function(data,x,...,decreasing=FALSE) {
+##' 
+##' ## with direct asignment 
+##' dsort(hubble) <- ~sigma-v
+dsort <- function(data,x,...,decreasing=FALSE) 
+{# {{{
     if (missing(x)) return(data)
     if (inherits(x,"formula")) {
         xx <- procformula(value=x)$res
@@ -225,7 +229,7 @@ dsort <- function(data,x,...,decreasing=FALSE) {
     })
     if (!is.list(x)) x <- list(x)
     data[do.call("order",c(c(x,args),list(decreasing=decreasing,method="radix"))),]
-}
+}# }}}
 
 ##' @export
 "dsort<-" <- function(data,...,value) 
