@@ -99,9 +99,9 @@ for (k in 1:ll)
   if (is.null(breaks)) {
      probs <- seq(0,1,length.out=cuts[k]+1)
      name<-paste(xnames[k],cuts[k],sep=sep)
-     bb <- quantile(xx,probs,...)
+     bb <- quantile(xx,probs)
      } else { bb <- breaks ; name<-paste(xnames[k],breaks[2],sep=sep) }
-   data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE)
+   data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE,...)
 }
 
 ###if (is.null(data)) gx <- cut(xx,breaks=bb,include.lowest=TRUE)
