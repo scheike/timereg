@@ -59,8 +59,11 @@
 ##' drename(mm) <- ~.
 ##' head(mm)
 ##' @export
-dcut <- function(data,x,cuts=4,breaks=NULL,sep=".",...)
+dcut <- function(data,x,cuts=4,breaks=NULL,sep=NULL,...)
 {# {{{
+ if (is.null(sep) & is.null(breaks))    sep <- "."
+ if (is.null(sep) & (!is.null(breaks))) sep <- "b"
+
  if (inherits(x,"formula")) {
      x <- all.vars(x)
      xnames <- x
@@ -95,9 +98,9 @@ for (k in 1:ll)
   xx <- x[[k]]
   if (is.null(breaks)) {
      probs <- seq(0,1,length.out=cuts[k]+1)
+     name<-paste(xnames[k],cuts[k],sep=sep)
      bb <- quantile(xx,probs,...)
-     } else bb <- breaks
-   name<-paste(xnames[k],cuts[k],sep=sep)
+     } else { bb <- breaks ; name<-paste(xnames[k],breaks[2],sep=sep) }
    data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE)
 }
 
