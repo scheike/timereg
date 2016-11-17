@@ -172,6 +172,7 @@ if (is.character(var)) {
 
  if (inherits(value,"formula")) {
      value <- all.vars(value)
+     if (value[1]==".") value <- tolower(varxnames)
  }
 
    if (is.character(value)) {
@@ -186,8 +187,8 @@ if (is.character(var)) {
 ###         nnames <- nnames[!duplicated(nnames)]
   }
 
- print(xnames)
- print(varxnames)
+### print(xnames)
+### print(varxnames)
 
   if (length(xnames)!= length(varxnames)) stop("length of old and new variables must mach")
 
@@ -200,8 +201,6 @@ if (is.character(var)) {
 { # {{{
   drename(x,var,value)
 }# }}}
-
-
 
 
 ##' Sort data according to columns in data frame
