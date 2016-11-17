@@ -33,8 +33,7 @@
 ##' head(mm)
 ##'
 ##' ## wildcards, for age, age2, age4 and wmi 
-##' mm <- dcut(mm,c("a*","?m*"))
-##' head(mm)
+##' head(dcut(mm,c("a*","?m*")))
 ##'
 ##' ## with direct asignment 
 ##' drm(mm) <- c("*.2","*.4")
@@ -45,20 +44,22 @@
 ##'
 ##' ## renaming 
 ##' ############################
-##' ## to lower 
-##' head(drename(mm))
-##' mm1 <-  drename(mm)
-##' mm1 <-  drename(mm, ~age+wmi,~wmi+age)
-##' head(mm1)
 ##'
-##' drename(mm, ~age+wmi) <- c("wmi","age")
 ##' head(mm)
-##' drename(mm, ~wmi+age) <- c("age","wmi")
+##' drename(mm, ~age+wmi) <- c("Wmi","Age")
 ##' head(mm)
-##' #mm <-  drenname(mm,"age*","alder*")
-##' #head(mm)
+##' ## all to lower 
+##' head(drename(mm))
+##'
+##' ## A* to lower 
+##' mm2 <-  drename(mm,c("A*","W*"))
+##' head(mm2)
+##' drename(mm,"A*") <- ~.
+##' head(mm)
+##' drename(mm) <- ~.
+##' head(mm)
 ##' @export
-dcut <- function(data,x,cuts=4,breaks=NULL,...)
+dcut <- function(data,x,cuts=4,breaks=NULL,sep=".",...)
 {# {{{
  if (inherits(x,"formula")) {
      x <- all.vars(x)
@@ -96,7 +97,7 @@ for (k in 1:ll)
      probs <- seq(0,1,length.out=cuts[k]+1)
      bb <- quantile(xx,probs,...)
      } else bb <- breaks
-   name<-paste(xnames[k],cuts[k],sep=".")
+   name<-paste(xnames[k],cuts[k],sep=sep)
    data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE)
 }
 
