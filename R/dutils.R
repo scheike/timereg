@@ -66,6 +66,7 @@ dcut <- function(data,x,cuts=4,breaks=NULL,sep=NULL,...)
 
  if (inherits(x,"formula")) {
      x <- all.vars(x)
+     if (x[1]==".") x <- names(data) 
      xnames <- x
      formular <- 1
   } else if  (is.character(x)) {
@@ -204,6 +205,53 @@ if (is.character(var)) {
 "drename<-" <- function(x, var, value) 
 { # {{{
   drename(x,var,value)
+}# }}}
+
+
+##' @export
+dkeep <- function(data,var,keep=TRUE) 
+{  # {{{
+
+ if (inherits(var,"formula")) {
+      var <- all.vars(var)
+   }
+
+if (is.character(var)) {
+        varxnames <- var 
+        varnnames <- c()
+        xxx<-c()
+     for (xx in varxnames)
+     {
+        n <- grep(glob2rx(xx),names(data))
+        xxx <- c(xxx,names(data)[n])
+        varnnames <- c(varnnames,n) 
+     }
+     varxnames <- xxx[!duplicated(xxx)]
+     varnnames <- varnnames[!duplicated(varnnames)]
+  }
+
+
+if (keep) data <- data[,varnnames] else data <- data[,-1*varnnames]
+###  names(data)[varnnames] <- xnames; 
+  return(data) 
+} # }}}
+
+##' @export
+"dkeep<-" <- function(x,...,value) 
+{ # {{{
+  dkeep(x,value,...)
+}# }}}
+
+##' @export
+ddrop <- function(data,var,keep=FALSE) 
+{  # {{{
+	dkeep(data,var,keep=FALSE)
+} # }}}
+
+##' @export
+"ddrop<-" <- function(x,...,value) 
+{ # {{{
+  dkeep(x,value,keep=FALSE,...)
 }# }}}
 
 
