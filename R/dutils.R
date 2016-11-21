@@ -1,4 +1,4 @@
-##' Cutting, rm (removing), rename for data frames 
+##' Cutting, sorting, rm (removing), rename for data frames 
 ##' 
 ##' Cut variables, rm or rename 
 ##' @param data if x is formula or names for data frame then data frame is needed.
@@ -33,8 +33,7 @@
 ##' head(mm)
 ##'
 ##' ## wildcards, for age, age2, age4 and wmi 
-##' mm <- dcut(mm,c("a*","?m*"))
-##' head(mm)
+##' head(dcut(mm,c("a*","?m*")))
 ##'
 ##' ## with direct asignment 
 ##' drm(mm) <- c("*.2","*.4")
@@ -44,19 +43,30 @@
 ##' head(mm)
 ##'
 ##' ## renaming 
-##' drename(mm, ~age+wmi) <- c("wmi","age")
+##' ############################
+##'
 ##' head(mm)
-##' drename(mm, ~wmi+age) <- c("age","wmi")
+##' drename(mm, ~age+wmi) <- c("Wmi","Age")
 ##' head(mm)
-##' mm1 <-  drename(mm, ~age+wmi,~wmi+age)
-##' head(mm1)
-##' #mm <-  drenname(mm,"age*","alder*")
-##' #head(mm)
+##' ## all to lower 
+##' head(drename(mm))
+##'
+##' ## A* to lower 
+##' mm2 <-  drename(mm,c("A*","W*"))
+##' head(mm2)
+##' drename(mm,"A*") <- ~.
+##' head(mm)
+##' drename(mm) <- ~.
+##' head(mm)
 ##' @export
-dcut <- function(data,x,cuts=4,breaks=NULL,...)
+dcut <- function(data,x,cuts=4,breaks=NULL,sep=NULL,...)
 {# {{{
+ if (is.null(sep) & is.null(breaks))    sep <- "."
+ if (is.null(sep) & (!is.null(breaks))) sep <- "b"
+
  if (inherits(x,"formula")) {
      x <- all.vars(x)
+     if (x[1]==".") x <- names(data) 
      xnames <- x
      formular <- 1
   } else if  (is.character(x)) {
@@ -89,10 +99,10 @@ for (k in 1:ll)
   xx <- x[[k]]
   if (is.null(breaks)) {
      probs <- seq(0,1,length.out=cuts[k]+1)
-     bb <- quantile(xx,probs,...)
-     } else bb <- breaks
-   name<-paste(xnames[k],cuts[k],sep=".")
-   data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE)
+     name<-paste(xnames[k],cuts[k],sep=sep)
+     bb <- quantile(xx,probs)
+     } else { bb <- breaks ; name<-paste(xnames[k],breaks[2],sep=sep) }
+   data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE,...)
 }
 
 ###if (is.null(data)) gx <- cut(xx,breaks=bb,include.lowest=TRUE)
@@ -102,7 +112,8 @@ for (k in 1:ll)
 ###}
 
 
-if (is.null(data)) return(gx) else return(data)
+###if (is.null(data)) return(gx) else 
+return(data)
 }# }}}
 
 ##' @export
@@ -141,16 +152,14 @@ return(data)
 ##' @export
 drename <- function(data,var,value) 
 {  # {{{
-    if (inherits(var,"formula")) {
-       var <- all.vars(var)
-    }
 
+ if (missing(var)) var <- names(data)
 
-    if (inherits(value,"formula")) {
-       value <- all.vars(value)
-    }
+ if (inherits(var,"formula")) {
+      var <- all.vars(var)
+   }
 
- if (is.character(var)) {
+if (is.character(var)) {
         varxnames <- var 
         varnnames <- c()
         xxx<-c()
@@ -164,7 +173,14 @@ drename <- function(data,var,value)
      varnnames <- varnnames[!duplicated(varnnames)]
   }
 
- if (missing(value)) xnames <- tolower(varxnames) else if (is.character(value)) {
+ if (missing(value)) value <- tolower(varxnames)
+
+ if (inherits(value,"formula")) {
+     value <- all.vars(value)
+     if (value[1]==".") value <- tolower(varxnames)
+ }
+
+   if (is.character(value)) {
         xnames <- value  
 ###        xxx<-c()
 ###     for (xx in xnames)
@@ -176,8 +192,8 @@ drename <- function(data,var,value)
 ###         nnames <- nnames[!duplicated(nnames)]
   }
 
- print(xnames)
- print(varxnames)
+### print(xnames)
+### print(varxnames)
 
   if (length(xnames)!= length(varxnames)) stop("length of old and new variables must mach")
 
@@ -192,7 +208,51 @@ drename <- function(data,var,value)
 }# }}}
 
 
+##' @export
+dkeep <- function(data,var,keep=TRUE) 
+{  # {{{
 
+ if (inherits(var,"formula")) {
+      var <- all.vars(var)
+   }
+
+if (is.character(var)) {
+        varxnames <- var 
+        varnnames <- c()
+        xxx<-c()
+     for (xx in varxnames)
+     {
+        n <- grep(glob2rx(xx),names(data))
+        xxx <- c(xxx,names(data)[n])
+        varnnames <- c(varnnames,n) 
+     }
+     varxnames <- xxx[!duplicated(xxx)]
+     varnnames <- varnnames[!duplicated(varnnames)]
+  }
+
+
+if (keep) data <- data[,varnnames] else data <- data[,-1*varnnames]
+###  names(data)[varnnames] <- xnames; 
+  return(data) 
+} # }}}
+
+##' @export
+"dkeep<-" <- function(x,...,value) 
+{ # {{{
+  dkeep(x,value,...)
+}# }}}
+
+##' @export
+ddrop <- function(data,var,keep=FALSE) 
+{  # {{{
+	dkeep(data,var,keep=FALSE)
+} # }}}
+
+##' @export
+"ddrop<-" <- function(x,...,value) 
+{ # {{{
+  dkeep(x,value,keep=FALSE,...)
+}# }}}
 
 
 ##' Sort data according to columns in data frame
@@ -210,7 +270,11 @@ drename <- function(data,var,value)
 ##' dsort(hubble, hubble$sigma,"v")
 ##' dsort(hubble,~sigma+v)
 ##' dsort(hubble,~sigma-v)
-dsort <- function(data,x,...,decreasing=FALSE) {
+##' 
+##' ## with direct asignment 
+##' dsort(hubble) <- ~sigma-v
+dsort <- function(data,x,...,decreasing=FALSE) 
+{# {{{
     if (missing(x)) return(data)
     if (inherits(x,"formula")) {
         xx <- lava::procformula(value=x)$res
@@ -225,5 +289,12 @@ dsort <- function(data,x,...,decreasing=FALSE) {
     })
     if (!is.list(x)) x <- list(x)
     data[do.call("order",c(c(x,args),list(decreasing=decreasing,method="radix"))),]
-}
+}# }}}
+
+##' @export
+"dsort<-" <- function(data,...,value) 
+{ # {{{
+  dsort(data,value,...)
+}# }}}
+
 
