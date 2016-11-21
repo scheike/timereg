@@ -213,7 +213,7 @@ drename <- function(data,var,value)
 dsort <- function(data,x,...,decreasing=FALSE) {
     if (missing(x)) return(data)
     if (inherits(x,"formula")) {
-        xx <- procformula(value=x)$res
+        xx <- lava::procformula(value=x)$res
         decreasing <- unlist(lapply(xx,function(x) substr(trim(x),1,1)=="-"))
         x <- all.vars(x)
     } 
