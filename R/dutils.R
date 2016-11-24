@@ -429,8 +429,9 @@ dtable<- function(data,x,g,...)
  for (j in seq((i+1),nn)) {
 	 x1<-xnames[i]
 	 x2<-xnames[j]
-         ll[[k]]<-table(data[,x1],data[,x2],...)
-	 k<-k+1
+        llk<-table(data[,x1],data[,x2],...)
+        ll[[k]]<- list(name=paste(x1,"x",x2,sep=""),table=llk)
+	k<-k+1
  }
 
  return(ll)
