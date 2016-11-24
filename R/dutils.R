@@ -301,7 +301,7 @@ dsort <- function(data,x,...,decreasing=FALSE)
 ### måske og x+y ~ group1+group2 to get correlations against groups defined by group1*group2
 
 ##' @export
-dcor <- function(data,x,...)
+dcor <- function(data,x,g,...)
 {# {{{
 
  if (inherits(x,"formula")) {
@@ -320,8 +320,24 @@ dcor <- function(data,x,...)
      xnames <- xxx[!duplicated(xxx)]
   }
 
+ if (inherits(g,"formula")) {
+     g <- all.vars(g)
+     if (g[1]==".") g <- names(data) 
+     gnames <- g
+     formular <- 1
+  } else if  (is.character(g)) {
+     gnames <- g
+     xxx<-c()
+     for (xx in xnames)
+     {
+        n <- grep(glob2rx(xx),names(data))
+        xxx <- c(xxx,names(data)[n])
+     }
+     gnames <- xxx[!duplicated(xxx)]
+  }
 
-return(cor(data[,xnames],...))
+
+return(by(data[,xnames],data[,gnames],cor,...))
 
 }# }}}
 
