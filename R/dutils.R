@@ -350,6 +350,33 @@ return(summary(data[,xnames],...))
 }# }}}
 
 ##' @export
+dtable<- function(data,x,...)
+{# {{{
+
+ if (inherits(x,"formula")) {
+     x <- all.vars(x)
+     if (x[1]==".") x <- names(data) 
+     xnames <- x
+     formular <- 1
+  } else if  (is.character(x)) {
+     xnames <- x
+     xxx<-c()
+     for (xx in xnames)
+     {
+        n <- grep(glob2rx(xx),names(data))
+        xxx <- c(xxx,names(data)[n])
+     }
+     xnames <- xxx[!duplicated(xxx)]
+  }
+
+
+return(table(data[,x1],data[,x2],...))
+
+}# }}}
+
+
+
+##' @export
 dprint <- function(data,x,...)
 {# {{{
 
