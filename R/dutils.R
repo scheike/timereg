@@ -336,13 +336,12 @@ dcor <- function(data,x,g,...)
      gnames <- xxx[!duplicated(xxx)]
   }
 
-
 return(by(data[,xnames],data[,gnames],cor,...))
 
 }# }}}
 
 ##' @export
-dsummary <- function(data,x,...)
+dsummary <- function(data,x,g,...)
 {# {{{
 
  if (inherits(x,"formula")) {
@@ -361,12 +360,29 @@ dsummary <- function(data,x,...)
      xnames <- xxx[!duplicated(xxx)]
   }
 
-return(summary(data[,xnames],...))
+ if (inherits(g,"formula")) {
+     g <- all.vars(g)
+     if (g[1]==".") g <- names(data) 
+     gnames <- g
+     formular <- 1
+  } else if  (is.character(g)) {
+     gnames <- g
+     xxx<-c()
+     for (xx in xnames)
+     {
+        n <- grep(glob2rx(xx),names(data))
+        xxx <- c(xxx,names(data)[n])
+     }
+     gnames <- xxx[!duplicated(xxx)]
+  }
+
+return(by(data[,xnames],data[,gnames],summary,...))
+
 
 }# }}}
 
 ##' @export
-dtable<- function(data,x,...)
+dtable<- function(data,x,g,...)
 {# {{{
 
  if (inherits(x,"formula")) {
@@ -385,8 +401,24 @@ dtable<- function(data,x,...)
      xnames <- xxx[!duplicated(xxx)]
   }
 
+ if (inherits(g,"formula")) {
+     g <- all.vars(g)
+     if (g[1]==".") g <- names(data) 
+     gnames <- g
+     formular <- 1
+  } else if  (is.character(g)) {
+     gnames <- g
+     xxx<-c()
+     for (xx in xnames)
+     {
+        n <- grep(glob2rx(xx),names(data))
+        xxx <- c(xxx,names(data)[n])
+     }
+     gnames <- xxx[!duplicated(xxx)]
+  }
 
-return(table(data[,x1],data[,x2],...))
+return(by(data[,xnames],data[,gnames],table,...))
+
 
 }# }}}
 
