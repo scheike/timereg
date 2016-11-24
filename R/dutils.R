@@ -298,3 +298,81 @@ dsort <- function(data,x,...,decreasing=FALSE)
 }# }}}
 
 
+### måske og x+y ~ group1+group2 to get correlations against groups defined by group1*group2
+
+##' @export
+dcor <- function(data,x,...)
+{# {{{
+
+ if (inherits(x,"formula")) {
+     x <- all.vars(x)
+     if (x[1]==".") x <- names(data) 
+     xnames <- x
+     formular <- 1
+  } else if  (is.character(x)) {
+     xnames <- x
+     xxx<-c()
+     for (xx in xnames)
+     {
+        n <- grep(glob2rx(xx),names(data))
+        xxx <- c(xxx,names(data)[n])
+     }
+     xnames <- xxx[!duplicated(xxx)]
+  }
+
+
+return(cor(data[,xnames],...))
+
+}# }}}
+
+##' @export
+dsummary <- function(data,x,...)
+{# {{{
+
+ if (inherits(x,"formula")) {
+     x <- all.vars(x)
+     if (x[1]==".") x <- names(data) 
+     xnames <- x
+     formular <- 1
+  } else if  (is.character(x)) {
+     xnames <- x
+     xxx<-c()
+     for (xx in xnames)
+     {
+        n <- grep(glob2rx(xx),names(data))
+        xxx <- c(xxx,names(data)[n])
+     }
+     xnames <- xxx[!duplicated(xxx)]
+  }
+
+return(summary(data[,xnames],...))
+
+}# }}}
+
+##' @export
+dprint <- function(data,x,...)
+{# {{{
+
+ if (inherits(x,"formula")) {
+     x <- all.vars(x)
+     if (x[1]==".") x <- names(data) 
+     xnames <- x
+     formular <- 1
+  } else if  (is.character(x)) {
+     xnames <- x
+     xxx<-c()
+     for (xx in xnames)
+     {
+        n <- grep(glob2rx(xx),names(data))
+        xxx <- c(xxx,names(data)[n])
+     }
+     xnames <- xxx[!duplicated(xxx)]
+  }
+
+
+return(data[,xnames])
+
+}# }}}
+
+
+
