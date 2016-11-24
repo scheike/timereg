@@ -422,7 +422,20 @@ dtable<- function(data,x,g,...)
   }
 
  ### all 2 by 2 tables from xnames over g 
- if (!missing(g)) return(by(data[,xnames],data[,gnames],table,...)) else return(by(data[,xnames],data[,gnames],table,...))
+ ll<-list()
+ k<-1
+ nn <- length(xnames)
+ for (i in seq(1,(nn-1)))
+ for (j in seq((i+1),nn)) {
+	 x1<-xnames[i]
+	 x2<-xnames[j]
+         ll[[k]]<-table(data[,x1],data[,x2],...)
+	 k<-k+1
+ }
+
+ return(ll)
+
+### if (!missing(g)) return(by(data[,xnames],data[,gnames],table,...)) else return(by(data[,xnames],data[,gnames],table,...))
 
 }# }}}
 
