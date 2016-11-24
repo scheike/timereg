@@ -320,6 +320,7 @@ dcor <- function(data,x,g,...)
      xnames <- xxx[!duplicated(xxx)]
   }
 
+ if (!missing(g))
  if (inherits(g,"formula")) {
      g <- all.vars(g)
      if (g[1]==".") g <- names(data) 
@@ -336,7 +337,8 @@ dcor <- function(data,x,g,...)
      gnames <- xxx[!duplicated(xxx)]
   }
 
-return(by(data[,xnames],data[,gnames],cor,...))
+ if (!missing(g)) return(by(data[,xnames],data[,gnames],cor,...))
+ if (missing(g)) return(cor(data[,xnames],...))
 
 }# }}}
 
@@ -360,6 +362,7 @@ dsummary <- function(data,x,g,...)
      xnames <- xxx[!duplicated(xxx)]
   }
 
+ if (!missing(g))
  if (inherits(g,"formula")) {
      g <- all.vars(g)
      if (g[1]==".") g <- names(data) 
@@ -376,8 +379,8 @@ dsummary <- function(data,x,g,...)
      gnames <- xxx[!duplicated(xxx)]
   }
 
-return(by(data[,xnames],data[,gnames],summary,...))
-
+ if (!missing(g)) return(by(data[,xnames],data[,gnames],summary,...))
+ if (missing(g)) return(summary(data[,xnames],...))
 
 }# }}}
 
@@ -401,6 +404,7 @@ dtable<- function(data,x,g,...)
      xnames <- xxx[!duplicated(xxx)]
   }
 
+ if (!missing(g))
  if (inherits(g,"formula")) {
      g <- all.vars(g)
      if (g[1]==".") g <- names(data) 
@@ -417,8 +421,8 @@ dtable<- function(data,x,g,...)
      gnames <- xxx[!duplicated(xxx)]
   }
 
-return(by(data[,xnames],data[,gnames],table,...))
-
+ ### all 2 by 2 tables from xnames over g 
+ if (!missing(g)) return(by(data[,xnames],data[,gnames],table,...)) else return(by(data[,xnames],data[,gnames],table,...))
 
 }# }}}
 
