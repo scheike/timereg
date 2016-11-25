@@ -541,4 +541,11 @@ return(head(data[,xnames],...))
 }# }}}
 
 
+##' @export
+dreshape <- function(data,...)
+{# {{{
+    fast.reshape(data,...)
+}# }}}
+
+
 
