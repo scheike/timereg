@@ -426,8 +426,28 @@ dsummary <- function(data,x,g,...)
 
 }# }}}
 
+
+##' tables for data frames 
+##' 
+##' tables for data frames 
+##' @param data if x is formula or names for data frame then data frame is needed.
+##' @param x name of variable, or fomula, or names of variables on data frame.
+##' @param g possible group variable
+##' @param ... Optional additional arguments
+##' @author Klaus K. Holst and Thomas Scheike 
+##' @examples
+##' data("sTRACE",package="timereg")
+##' dt<- sTRACE
+##'
+##' dtable(dt,~status+vf,~chf+diabetes)
+##'
+##' dtable(dt,status+vf~chf+diabetes)
+##' 
+##' dcor(dt,c("*f*","status"),~diabetes)
+##' dcor(dt,c("*f*","status"),~diabetes,all2by2=FALSE)
+##' 
 ##' @export
-dtable<- function(data,x,g,...)
+dtable<- function(data,x,g,all2by2=TRUE,...)
 {# {{{
 
  rhs <- NULL
@@ -436,7 +456,6 @@ dtable<- function(data,x,g,...)
 	 lhs <-  all.vars(update(x, .~0))
 	 if (lhs[1]!=".") { g <- rhs; x <- lhs;}
  } 
-
 
  if (inherits(x,"formula")) {
      x <- all.vars(x)
@@ -471,6 +490,7 @@ dtable<- function(data,x,g,...)
      gnames <- xxx[!duplicated(xxx)]
   }
 
+ if (all2by2==TRUE) {
  ### all 2 by 2 tables from xnames over g 
  ll<-list()
  k<-1
@@ -483,6 +503,9 @@ dtable<- function(data,x,g,...)
         ll[[k]]<- list(name=paste(x1,"x",x2,sep=""),table=llk)
 	k<-k+1
  }
+ } else { ## one big table 
+     ll<-table(data[,xnames],...)
+ }
 
  return(ll)
 
@@ -493,7 +516,7 @@ dtable<- function(data,x,g,...)
 
 
 ##' @export
-dprint <- function(data,x,...)
+dhead <- function(data,x,...)
 {# {{{
 
  if (inherits(x,"formula")) {
@@ -513,7 +536,7 @@ dprint <- function(data,x,...)
   }
 
 
-return(data[,xnames])
+return(head(data[,xnames],...))
 
 }# }}}
 
