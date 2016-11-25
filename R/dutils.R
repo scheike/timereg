@@ -443,8 +443,8 @@ dsummary <- function(data,x,g,...)
 ##'
 ##' dtable(dt,status+vf~chf+diabetes)
 ##' 
-##' dcor(dt,c("*f*","status"),~diabetes)
-##' dcor(dt,c("*f*","status"),~diabetes,all2by2=FALSE)
+##' dtable(dt,c("*f*","status"),~diabetes)
+##' dtable(dt,c("*f*","status"),~diabetes,all2by2=FALSE)
 ##' 
 ##' @export
 dtable<- function(data,x,g,all2by2=TRUE,...)
