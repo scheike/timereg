@@ -273,6 +273,7 @@ ddrop <- function(data,var,keep=FALSE)
 ##' 
 ##' ## with direct asignment 
 ##' dsort(hubble) <- ~sigma-v
+##' @export
 dsort <- function(data,x,...,decreasing=FALSE) 
 {# {{{
     if (missing(x)) return(data)
@@ -300,9 +301,40 @@ dsort <- function(data,x,...,decreasing=FALSE)
 
 ### måske og x+y ~ group1+group2 to get correlations against groups defined by group1*group2
 
+
+##' summary, tables, and correlations for data frames 
+##' 
+##' summary, tables, and correlations for data frames 
+##' @param data if x is formula or names for data frame then data frame is needed.
+##' @param x name of variable, or fomula, or names of variables on data frame.
+##' @param g possible group variable
+##' @param ... Optional additional arguments
+##' @author Klaus K. Holst and Thomas Scheike 
+##' @examples
+##' data("sTRACE",package="timereg")
+##' dt<- sTRACE
+##' dt$time2 <- dt$time^2
+##' dt$wmi2 <- dt$wmi^2
+##' head(dt)
+##'
+##' 
+##' dcor(dt,~time+wmi)
+##' dcor(dt,~time+wmi,~vf+chf)
+##' dcor(dt,time+wmi~vf+chf)
+##' 
+##' dcor(dt,c("time*","wmi*"),~vf+chf)
+##' 
 ##' @export
 dcor <- function(data,x,g,...)
 {# {{{
+
+### x+y ~ group1+group2 to get correlations against groups defined by group1*group2
+ rhs <- NULL
+ if (inherits(x,"formula")) {
+         rhs  <-  all.vars(update(x, 0~.))
+	 lhs <-  all.vars(update(x, .~0))
+	 if (lhs[1]!=".") { g <- rhs; x <- lhs;}
+ } 
 
  if (inherits(x,"formula")) {
      x <- all.vars(x)
@@ -329,13 +361,14 @@ dcor <- function(data,x,g,...)
   } else if  (is.character(g)) {
      gnames <- g
      xxx<-c()
-     for (xx in xnames)
+     for (xx in gnames)
      {
         n <- grep(glob2rx(xx),names(data))
         xxx <- c(xxx,names(data)[n])
      }
      gnames <- xxx[!duplicated(xxx)]
   }
+
 
  if (!missing(g)) return(by(data[,xnames],data[,gnames],cor,...))
  if (missing(g)) return(cor(data[,xnames],...))
@@ -346,6 +379,15 @@ dcor <- function(data,x,g,...)
 dsummary <- function(data,x,g,...)
 {# {{{
 
+### x+y ~ group1+group2 to get correlations against groups defined by group1*group2
+ rhs <- NULL
+ if (inherits(x,"formula")) {
+         rhs  <-  all.vars(update(x, 0~.))
+	 lhs <-  all.vars(update(x, .~0))
+	 if (lhs[1]!=".") { g <- rhs; x <- lhs;}
+ } 
+
+
  if (inherits(x,"formula")) {
      x <- all.vars(x)
      if (x[1]==".") x <- names(data) 
@@ -371,7 +413,7 @@ dsummary <- function(data,x,g,...)
   } else if  (is.character(g)) {
      gnames <- g
      xxx<-c()
-     for (xx in xnames)
+     for (xx in gnames)
      {
         n <- grep(glob2rx(xx),names(data))
         xxx <- c(xxx,names(data)[n])
@@ -388,6 +430,14 @@ dsummary <- function(data,x,g,...)
 dtable<- function(data,x,g,...)
 {# {{{
 
+ rhs <- NULL
+ if (inherits(x,"formula")) {
+         rhs  <-  all.vars(update(x, 0~.))
+	 lhs <-  all.vars(update(x, .~0))
+	 if (lhs[1]!=".") { g <- rhs; x <- lhs;}
+ } 
+
+
  if (inherits(x,"formula")) {
      x <- all.vars(x)
      if (x[1]==".") x <- names(data) 
@@ -413,7 +463,7 @@ dtable<- function(data,x,g,...)
   } else if  (is.character(g)) {
      gnames <- g
      xxx<-c()
-     for (xx in xnames)
+     for (xx in gnames)
      {
         n <- grep(glob2rx(xx),names(data))
         xxx <- c(xxx,names(data)[n])
