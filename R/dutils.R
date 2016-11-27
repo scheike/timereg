@@ -21,6 +21,9 @@
 ##' mm <- dcut(sTRACE,c("age","wmi"))
 ##' head(mm)
 ##'
+##' mm <- dcut(sTRACE,~.)
+##' head(mm)
+#
 ##' mm <- dcut(sTRACE,c("age","wmi"),cuts=c(2,4))
 ##' head(mm)
 ##'
