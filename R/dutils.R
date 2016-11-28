@@ -549,3 +549,56 @@ dreshape <- function(data,...)
 
 
 
+## data("sTRACE",package="timereg")
+## daggregate(iris, "^.e.al", group="Species", fun=cor, regex=TRUE)
+## daggregate(iris, ~Sepal.Length+Petal.Length|Species, fun=summary)
+## daggregate(iris, ~log(Sepal.Length)+I(Petal.Length>1.5)|Species, fun=summary)
+## daggregate(iris, "*Length*", group="Species", fun=head)
+## daggregate(iris, "^.e.al", group="Species", fun=tail, regex=TRUE)
+## daggregate(sTRACE, status~ diabetes, fun=table)
+## daggregate(sTRACE, status~ diabetes+sex, fun=table)
+## daggregate(sTRACE, status~ diabetes+sex|vf+I(wmi>1.4), fun=table)
+## daggregate(iris, "^.e.al", group="Species")
+## daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5))
+## daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=table)
+## daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=lava:::Print)
+daggregate <- function(data,x,...,group=NULL,fun="summary",regex=FALSE) {
+    if (inherits(x,"formula")) {
+        xf <- getoutcome(x,sep="|")
+        xx <- attr(xf,"x")
+        if (length(xx)>1) {
+            if (length(xx)>0) {
+                x <- update(as.formula(paste0(xf,"~.")),xx[[1]])
+            }
+            group <- model.frame(xx[[2]],data=data)
+        } else {            
+        }
+        x <- model.frame(x,data=data)
+    } else {
+        xx <- c()
+        for (x0 in x) {
+            if (!regex) x0 <- glob2rx(x0)
+            n <- grep(x0,names(data),)
+            xx <- union(xx,names(data)[n])
+        }
+        x <- data[,xx,drop=FALSE]
+    }
+    if (inherits(group,"character") && length(group)<NROW(data)) {
+        group <- data[,group]
+    }
+    if (inherits(group,"formula")) {
+        group <- model.frame(group,data=data)
+    }
+    if (is.character(fun)) fun <- get(fun)
+    if (!is.null(group)) {        
+        return(by(x,group,fun,...))
+    }
+    
+    do.call(fun, c(list(x),list(...)))
+}
+
+
+
+
+
+
