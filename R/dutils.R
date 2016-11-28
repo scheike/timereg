@@ -21,6 +21,9 @@
 ##' mm <- dcut(sTRACE,c("age","wmi"))
 ##' head(mm)
 ##'
+##' mm <- dcut(sTRACE,~.)
+##' head(mm)
+#
 ##' mm <- dcut(sTRACE,c("age","wmi"),cuts=c(2,4))
 ##' head(mm)
 ##'
@@ -102,6 +105,8 @@ for (k in 1:ll)
      name<-paste(xnames[k],cuts[k],sep=sep)
      bb <- quantile(xx,probs)
      } else { bb <- breaks ; name<-paste(xnames[k],breaks[2],sep=sep) }
+
+  if (sum(duplicated(bb))==0)
    data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE,...)
 }
 
