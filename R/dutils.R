@@ -69,7 +69,6 @@ dcut <- function(data,x,cuts=4,breaks=NULL,sep=NULL,...)
      x <- all.vars(x)
      if (x[1]==".") x <- names(data) 
      xnames <- x
-     formular <- 1
   } else if  (is.character(x)) {
      xnames <- x
      xxx<-c()
@@ -93,11 +92,11 @@ dcut <- function(data,x,cuts=4,breaks=NULL,sep=NULL,...)
   if (ll>1 & length(cuts)==1) cuts <- rep(cuts,ll)
   if (length(x)!=length(cuts)) stop("length of variables not consistent with cuts")
 
-###  data[do.call("order",c(c(x,args),list(decreasing=decreasing,method="radix"))),]
 
 for (k in 1:ll) 
 {
   xx <- x[[k]]
+  if (!is.factor(xx))
   if (is.null(breaks)) {
      probs <- seq(0,1,length.out=cuts[k]+1)
      name<-paste(xnames[k],cuts[k],sep=sep)
@@ -108,14 +107,6 @@ for (k in 1:ll)
    data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE,...)
 }
 
-###if (is.null(data)) gx <- cut(xx,breaks=bb,include.lowest=TRUE)
-###else { ### returns data frame with new argument 
-###   name<-paste(xnames[k],cuts[k],sep=".")
-###   data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE)
-###}
-
-
-###if (is.null(data)) return(gx) else 
 return(data)
 }# }}}
 
@@ -185,18 +176,9 @@ if (is.character(var)) {
 
    if (is.character(value)) {
         xnames <- value  
-###        xxx<-c()
-###     for (xx in xnames)
-###     {
-###        n <- grep(glob2rx(xx),names(data))
-###        xxx <- c(xxx,names(data)[n])
-###     }
-###         xnames <- xxx[!duplicated(xxx)]
-###         nnames <- nnames[!duplicated(nnames)]
   }
 
-### print(xnames)
-### print(varxnames)
+### print(xnames); print(varxnames)
 
   if (length(xnames)!= length(varxnames)) stop("length of old and new variables must mach")
 
@@ -215,9 +197,7 @@ if (is.character(var)) {
 dkeep <- function(data,var,keep=TRUE) 
 {  # {{{
 
- if (inherits(var,"formula")) {
-      var <- all.vars(var)
-   }
+ if (inherits(var,"formula")) { var <- all.vars(var) }
 
 if (is.character(var)) {
         varxnames <- var 
@@ -235,7 +215,6 @@ if (is.character(var)) {
 
 
 if (keep) data <- data[,varnnames] else data <- data[,-1*varnnames]
-###  names(data)[varnnames] <- xnames; 
   return(data) 
 } # }}}
 
@@ -302,6 +281,65 @@ dsort <- function(data,x,...,decreasing=FALSE)
 }# }}}
 
 
+ddnames <- function(data,x,g)
+{# {{{
+if (missing(x)) x<- ~.
+
+ if (inherits(x,"formula")) {
+         avx <- all.vars(x)
+         if (length(avx)==1 & avx[1]==".") x <- names(data)
+	 else {
+            rhs  <-  all.vars(update(x, 0~.))
+	    lhs <-  all.vars(update(x, .~0))
+	    if (lhs[1]!=".")              { x <- lhs;}
+	    if (lhs[1]=="." & rhs[1]!=".") { x <- rhs;}
+	    if (lhs[1]!="." & rhs[1]!=".") { x <- lhs;  g <- rhs;}
+	 }
+ } 
+
+
+
+ if (inherits(x,"formula")) {
+     x <- all.vars(x)
+     if (x[1]==".") x <- names(data) 
+     xnames <- x
+  } else if  (is.character(x)) {
+     xnames <- x
+     xxx<-c()
+     for (xx in xnames)
+     {
+        n <- grep(glob2rx(xx),names(data))
+        xxx <- c(xxx,names(data)[n])
+     }
+     xnames <- xxx[!duplicated(xxx)]
+  }
+
+
+ group<-NULL
+ if (!missing(g))
+ if (inherits(g,"formula")) {
+     g <- all.vars(g)
+     if (g[1]==".") g <- names(data) 
+     gnames <- g
+     group <- data[,gnames]
+  } else if  (is.character(g)) {
+     gnames <- g
+     xxx<-c()
+     for (xx in gnames)
+     {
+        n <- grep(glob2rx(xx),names(data))
+        xxx <- c(xxx,names(data)[n])
+     }
+     gnames <- xxx[!duplicated(xxx)]
+     group <- data[,gnames]
+  }
+
+
+ return(list(xnames=xnames,gnames=gnames,group=group))
+
+}# }}}
+
+
 ##' summary, tables, and correlations for data frames 
 ##' 
 ##' summary, tables, and correlations for data frames 
@@ -328,49 +366,12 @@ dsort <- function(data,x,...,decreasing=FALSE)
 dcor <- function(data,x,g,...)
 {# {{{
 
-### x+y ~ group1+group2 to get correlations against groups defined by group1*group2
- rhs <- NULL
- if (inherits(x,"formula")) {
-         rhs  <-  all.vars(update(x, 0~.))
-	 lhs <-  all.vars(update(x, .~0))
-	 if (lhs[1]!=".") { g <- rhs; x <- lhs;}
- } 
+ ddname <- ddnames(data,x,g)
+ xnames <- ddname$xnames 
+ gnames <- ddname$gnames 
+ group  <- ddname$group
 
- if (inherits(x,"formula")) {
-     x <- all.vars(x)
-     if (x[1]==".") x <- names(data) 
-     xnames <- x
-     formular <- 1
-  } else if  (is.character(x)) {
-     xnames <- x
-     xxx<-c()
-     for (xx in xnames)
-     {
-        n <- grep(glob2rx(xx),names(data))
-        xxx <- c(xxx,names(data)[n])
-     }
-     xnames <- xxx[!duplicated(xxx)]
-  }
-
- if (!missing(g))
- if (inherits(g,"formula")) {
-     g <- all.vars(g)
-     if (g[1]==".") g <- names(data) 
-     gnames <- g
-     formular <- 1
-  } else if  (is.character(g)) {
-     gnames <- g
-     xxx<-c()
-     for (xx in gnames)
-     {
-        n <- grep(glob2rx(xx),names(data))
-        xxx <- c(xxx,names(data)[n])
-     }
-     gnames <- xxx[!duplicated(xxx)]
-  }
-
-
- if (!missing(g)) return(by(data[,xnames],data[,gnames],cor,...))
+ if (!missing(g)) return(by(data[,xnames],group,cor,...))
  if (missing(g)) return(cor(data[,xnames],...))
 
 }# }}}
@@ -378,50 +379,14 @@ dcor <- function(data,x,g,...)
 ##' @export
 dsummary <- function(data,x,g,...)
 {# {{{
-
 ### x+y ~ group1+group2 to get correlations against groups defined by group1*group2
- rhs <- NULL
- if (inherits(x,"formula")) {
-         rhs  <-  all.vars(update(x, 0~.))
-	 lhs <-  all.vars(update(x, .~0))
-	 if (lhs[1]!=".") { g <- rhs; x <- lhs;}
- } 
 
+ddname <- ddnames(data,x,g)
+xnames <- ddname$xnames 
+gnames <- ddname$gnames 
+group  <- ddname$group
 
- if (inherits(x,"formula")) {
-     x <- all.vars(x)
-     if (x[1]==".") x <- names(data) 
-     xnames <- x
-     formular <- 1
-  } else if  (is.character(x)) {
-     xnames <- x
-     xxx<-c()
-     for (xx in xnames)
-     {
-        n <- grep(glob2rx(xx),names(data))
-        xxx <- c(xxx,names(data)[n])
-     }
-     xnames <- xxx[!duplicated(xxx)]
-  }
-
- if (!missing(g))
- if (inherits(g,"formula")) {
-     g <- all.vars(g)
-     if (g[1]==".") g <- names(data) 
-     gnames <- g
-     formular <- 1
-  } else if  (is.character(g)) {
-     gnames <- g
-     xxx<-c()
-     for (xx in gnames)
-     {
-        n <- grep(glob2rx(xx),names(data))
-        xxx <- c(xxx,names(data)[n])
-     }
-     gnames <- xxx[!duplicated(xxx)]
-  }
-
- if (!missing(g)) return(by(data[,xnames],data[,gnames],summary,...))
+ if (!missing(g)) return(by(data[,xnames],group,summary,...))
  if (missing(g)) return(summary(data[,xnames],...))
 
 }# }}}
@@ -450,48 +415,10 @@ dsummary <- function(data,x,g,...)
 dtable<- function(data,x,g,all2by2=TRUE,...)
 {# {{{
 
- rhs <- NULL
- if (inherits(x,"formula")) {
-         rhs  <-  all.vars(update(x, 0~.))
-	 lhs <-  all.vars(update(x, .~0))
-	 if (lhs[1]!=".") { g <- rhs; x <- lhs;}
- } 
-
- if (inherits(x,"formula")) {
-     x <- all.vars(x)
-     if (x[1]==".") x <- names(data) 
-     xnames <- x
-     formular <- 1
-  } else if  (is.character(x)) {
-     xnames <- x
-     xxx<-c()
-     for (xx in xnames)
-     {
-        n <- grep(glob2rx(xx),names(data))
-        xxx <- c(xxx,names(data)[n])
-     }
-     xnames <- xxx[!duplicated(xxx)]
-  }
-
- group <- NULL
- if (!missing(g))
- if (inherits(g,"formula")) {
-     g <- all.vars(g)
-     if (g[1]==".") g <- names(data) 
-     gnames <- g
-     formular <- 1
-     group <- data[,gnames]
-  } else if  (is.character(g)) {
-     gnames <- g
-     xxx<-c()
-     for (xx in gnames)
-     {
-        n <- grep(glob2rx(xx),names(data))
-        xxx <- c(xxx,names(data)[n])
-     }
-     gnames <- xxx[!duplicated(xxx)]
-     group <- data[,gnames]
-  }
+ddname <- ddnames(data,x,g)
+xnames <- ddname$xnames 
+gnames <- ddname$gnames 
+group  <- ddname$group
 
  if (all2by2==TRUE) {
  ### all 2 by 2 tables from xnames over g 
