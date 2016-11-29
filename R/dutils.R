@@ -551,19 +551,23 @@ dreshape <- function(data,...)
 
 
 
-## data("sTRACE",package="timereg")
-## daggregate(iris, "^.e.al", group="Species", fun=cor, regex=TRUE)
-## daggregate(iris, ~Sepal.Length+Petal.Length|Species, fun=summary)
-## daggregate(iris, ~log(Sepal.Length)+I(Petal.Length>1.5)|Species, fun=summary)
-## daggregate(iris, "*Length*", group="Species", fun=head)
-## daggregate(iris, "^.e.al", group="Species", fun=tail, regex=TRUE)
-## daggregate(sTRACE, status~ diabetes, fun=table)
-## daggregate(sTRACE, status~ diabetes+sex, fun=table)
-## daggregate(sTRACE, status~ diabetes+sex|vf+I(wmi>1.4), fun=table)
-## daggregate(iris, "^.e.al", group="Species")
-## daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5))
-## daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=table)
-## daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=lava:::Print)
+##' aggregating for for data frames 
+##' 
+##' aggregating for for data frames 
+##' @examples
+##' data("sTRACE",package="timereg")
+##' daggregate(iris, "^.e.al", group="Species", fun=cor, regex=TRUE)
+##' daggregate(iris, ~Sepal.Length+Petal.Length|Species, fun=summary)
+##' daggregate(iris, ~log(Sepal.Length)+I(Petal.Length>1.5)|Species, fun=summary)
+##' daggregate(iris, "*Length*", group="Species", fun=head)
+##' daggregate(iris, "^.e.al", group="Species", fun=tail, regex=TRUE)
+##' daggregate(sTRACE, status~ diabetes, fun=table)
+##' daggregate(sTRACE, status~ diabetes+sex, fun=table)
+##' daggregate(sTRACE, status~ diabetes+sex|vf+I(wmi>1.4), fun=table)
+##' daggregate(iris, "^.e.al", group="Species")
+##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5))
+##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=table)
+##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=lava:::Print)
 ##' @export
 daggregate <- function(data,x,...,group=NULL,fun="summary",regex=FALSE) 
 {# {{{
