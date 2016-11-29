@@ -52,6 +52,7 @@
 ##' drename(mm, ~age+wmi) <- c("Wmi","Age")
 ##' head(mm)
 ##' ## all to lower 
+:q
 ##' head(drename(mm))
 ##'
 ##' ## A* to lower 
@@ -304,9 +305,6 @@ dsort <- function(data,x,...,decreasing=FALSE)
 }# }}}
 
 
-### måske og x+y ~ group1+group2 to get correlations against groups defined by group1*group2
-
-
 ##' summary, tables, and correlations for data frames 
 ##' 
 ##' summary, tables, and correlations for data frames 
@@ -478,12 +476,14 @@ dtable<- function(data,x,g,all2by2=TRUE,...)
      xnames <- xxx[!duplicated(xxx)]
   }
 
+ group <- NULL
  if (!missing(g))
  if (inherits(g,"formula")) {
      g <- all.vars(g)
      if (g[1]==".") g <- names(data) 
      gnames <- g
      formular <- 1
+     group <- data[,gnames]
   } else if  (is.character(g)) {
      gnames <- g
      xxx<-c()
@@ -493,6 +493,7 @@ dtable<- function(data,x,g,all2by2=TRUE,...)
         xxx <- c(xxx,names(data)[n])
      }
      gnames <- xxx[!duplicated(xxx)]
+     group <- data[,gnames]
   }
 
  if (all2by2==TRUE) {
@@ -504,20 +505,21 @@ dtable<- function(data,x,g,all2by2=TRUE,...)
  for (j in seq((i+1),nn)) {
 	 x1<-xnames[i]
 	 x2<-xnames[j]
-        llk<-table(data[,x1],data[,x2],...)
+        if (!is.null(group)) llk<-by(data[,c(x1,x2)],group,table,...) 
+	else llk<-table(data[,x1],data[,x2],...)
         ll[[k]]<- list(name=paste(x1,"x",x2,sep=""),table=llk)
 	k<-k+1
  }
  } else { ## one big table 
-     ll<-table(data[,xnames],...)
+     if (!is.null(group)) ll<-by(data[,xnames],group,table,...) 
+     else ll<- table(data[,xnames],...)  
  }
+
+ print(head(group))
 
  return(ll)
 
-### if (!missing(g)) return(by(data[,xnames],data[,gnames],table,...)) else return(by(data[,xnames],data[,gnames],table,...))
-
 }# }}}
-
 
 
 ##' @export
@@ -567,7 +569,9 @@ dreshape <- function(data,...)
 ## daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5))
 ## daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=table)
 ## daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=lava:::Print)
-daggregate <- function(data,x,...,group=NULL,fun="summary",regex=FALSE) {
+##' @export
+daggregate <- function(data,x,...,group=NULL,fun="summary",regex=FALSE) 
+{# {{{
     if (inherits(x,"formula")) {
         xf <- getoutcome(x,sep="|")
         xx <- attr(xf,"x")
@@ -600,10 +604,6 @@ daggregate <- function(data,x,...,group=NULL,fun="summary",regex=FALSE) {
     }
     
     do.call(fun, c(list(x),list(...)))
-}
-
-
-
-
+}# }}}
 
 
