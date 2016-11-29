@@ -298,7 +298,6 @@ if (missing(x)) x<- ~.
  } 
 
 
-
  if (inherits(x,"formula")) {
      x <- all.vars(x)
      if (x[1]==".") x <- names(data) 
@@ -333,6 +332,8 @@ if (missing(x)) x<- ~.
      gnames <- xxx[!duplicated(xxx)]
      group <- data[,gnames]
   }
+
+ if (missing(g)) group <- gnames <- NULL 
 
 
  return(list(xnames=xnames,gnames=gnames,group=group))
