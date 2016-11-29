@@ -51,9 +51,6 @@
 ##' head(mm)
 ##' drename(mm, ~age+wmi) <- c("Wmi","Age")
 ##' head(mm)
-##' ## all to lower 
-:q
-##' head(drename(mm))
 ##'
 ##' ## A* to lower 
 ##' mm2 <-  drename(mm,c("A*","W*"))
@@ -514,8 +511,6 @@ dtable<- function(data,x,g,all2by2=TRUE,...)
      if (!is.null(group)) ll<-by(data[,xnames],group,table,...) 
      else ll<- table(data[,xnames],...)  
  }
-
- print(head(group))
 
  return(ll)
 
