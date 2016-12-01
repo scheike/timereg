@@ -307,8 +307,8 @@ if (missing(x)) x<- ~.
      xxx<-c()
      for (xx in xnames)
      {
-        if (!regex) x0 <- glob2rx(x0)
-        n <- grep(x0,names(data))
+        if (!regex) xx <- glob2rx(xx)
+        n <- grep(xx,names(data))
         xxx <- c(xxx,names(data)[n])
      }
      xnames <- xxx[!duplicated(xxx)]
@@ -327,8 +327,8 @@ if (missing(x)) x<- ~.
      xxx<-c()
      for (xx in gnames)
      {
-        if (!regex) x0 <- glob2rx(x0)
-        n <- grep(x0,names(data))
+        if (!regex) xx <- glob2rx(xx)
+        n <- grep(xx,names(data))
         xxx <- c(xxx,names(data)[n])
      }
      gnames <- xxx[!duplicated(xxx)]
@@ -461,8 +461,8 @@ dhead <- function(data,x,regex=FALSE,...)
      xxx<-c()
      for (xx in xnames)
      {
-        if (!regex) x0 <- glob2rx(x0)
-        n <- grep(x0,names(data))
+        if (!regex) xx <- glob2rx(xx)
+        n <- grep(xx,names(data))
         xxx <- c(xxx,names(data)[n])
      }
      xnames <- xxx[!duplicated(xxx)]
