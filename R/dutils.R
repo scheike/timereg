@@ -372,8 +372,8 @@ dcor <- function(data,x,g,...)
  gnames <- ddname$gnames 
  group  <- ddname$group
 
- if (!missing(g)) return(by(data[,xnames],group,cor,...))
- if (missing(g)) return(cor(data[,xnames],...))
+ if (!is.null(group)) return(by(data[,xnames],group,cor,...))
+ if (is.null(group))  return(cor(data[,xnames],...))
 
 }# }}}
 
@@ -387,8 +387,8 @@ xnames <- ddname$xnames
 gnames <- ddname$gnames 
 group  <- ddname$group
 
- if (!missing(g)) return(by(data[,xnames],group,summary,...))
- if (missing(g)) return(summary(data[,xnames],...))
+ if (!is.null(group)) return(by(data[,xnames],group,summary,...))
+ if (is.null(group))  return(summary(data[,xnames],...))
 
 }# }}}
 
