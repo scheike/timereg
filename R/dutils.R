@@ -281,7 +281,7 @@ dsort <- function(data,x,...,decreasing=FALSE)
 }# }}}
 
 
-ddnames <- function(data,x,g)
+ddnames <- function(data,x,g,regex=FALSE)
 {# {{{
 if (missing(x)) x<- ~.
 
@@ -307,7 +307,8 @@ if (missing(x)) x<- ~.
      xxx<-c()
      for (xx in xnames)
      {
-        n <- grep(glob2rx(xx),names(data))
+        if (!regex) x0 <- glob2rx(x0)
+        n <- grep(x0,names(data))
         xxx <- c(xxx,names(data)[n])
      }
      xnames <- xxx[!duplicated(xxx)]
@@ -326,7 +327,8 @@ if (missing(x)) x<- ~.
      xxx<-c()
      for (xx in gnames)
      {
-        n <- grep(glob2rx(xx),names(data))
+        if (!regex) x0 <- glob2rx(x0)
+        n <- grep(x0,names(data))
         xxx <- c(xxx,names(data)[n])
      }
      gnames <- xxx[!duplicated(xxx)]
@@ -364,10 +366,10 @@ if (missing(x)) x<- ~.
 ##' dcor(dt,c("time*","wmi*"),~vf+chf)
 ##' 
 ##' @export
-dcor <- function(data,x,g,...)
+dcor <- function(data,x,g,regex=FALSE,...)
 {# {{{
 
- ddname <- ddnames(data,x,g)
+ ddname <- ddnames(data,x,g,regex=regex)
  xnames <- ddname$xnames 
  gnames <- ddname$gnames 
  group  <- ddname$group
@@ -378,11 +380,11 @@ dcor <- function(data,x,g,...)
 }# }}}
 
 ##' @export
-dsummary <- function(data,x,g,...)
+dsummary <- function(data,x,g,regex=FALSE,...)
 {# {{{
 ### x+y ~ group1+group2 to get correlations against groups defined by group1*group2
 
-ddname <- ddnames(data,x,g)
+ddname <- ddnames(data,x,g,regex=regex)
 xnames <- ddname$xnames 
 gnames <- ddname$gnames 
 group  <- ddname$group
@@ -413,10 +415,10 @@ group  <- ddname$group
 ##' dtable(dt,c("*f*","status"),~diabetes,all2by2=FALSE)
 ##' 
 ##' @export
-dtable<- function(data,x,g,all2by2=TRUE,...)
+dtable<- function(data,x,g,all2by2=TRUE,regex=FALSE,...)
 {# {{{
 
-ddname <- ddnames(data,x,g)
+ddname <- ddnames(data,x,g,regex=regex)
 xnames <- ddname$xnames 
 gnames <- ddname$gnames 
 group  <- ddname$group
@@ -446,7 +448,7 @@ group  <- ddname$group
 
 
 ##' @export
-dhead <- function(data,x,...)
+dhead <- function(data,x,regex=FALSE,...)
 {# {{{
 
  if (inherits(x,"formula")) {
@@ -459,12 +461,12 @@ dhead <- function(data,x,...)
      xxx<-c()
      for (xx in xnames)
      {
-        n <- grep(glob2rx(xx),names(data))
+        if (!regex) x0 <- glob2rx(x0)
+        n <- grep(x0,names(data))
         xxx <- c(xxx,names(data)[n])
      }
      xnames <- xxx[!duplicated(xxx)]
   }
-
 
 return(head(data[,xnames],...))
 
