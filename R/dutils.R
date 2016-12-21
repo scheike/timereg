@@ -63,8 +63,11 @@
 ##' @export
 dcut <- function(data,x,cuts=4,breaks=NULL,sep=NULL,...)
 {# {{{
+
  if (is.null(sep) & is.null(breaks))    sep <- "."
  if (is.null(sep) & (!is.null(breaks))) sep <- "b"
+
+if (missing(x)) x<- ~.
 
  if (inherits(x,"formula")) {
      x <- all.vars(x)
@@ -97,7 +100,7 @@ dcut <- function(data,x,cuts=4,breaks=NULL,sep=NULL,...)
 for (k in 1:ll) 
 {
   xx <- x[[k]]
-  if (!is.factor(xx))
+  if (is.numeric(xx)) {
   if (is.null(breaks)) {
      probs <- seq(0,1,length.out=cuts[k]+1)
      name<-paste(xnames[k],cuts[k],sep=sep)
@@ -106,6 +109,7 @@ for (k in 1:ll)
 
   if (sum(duplicated(bb))==0)
    data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE,...)
+  }
 }
 
 return(data)
@@ -358,7 +362,8 @@ if (missing(x)) x<- ~.
 ##' dt$time2 <- dt$time^2
 ##' dt$wmi2 <- dt$wmi^2
 ##' head(dt)
-##'
+##' 
+##' dcor(dt)
 ##' 
 ##' dcor(dt,~time+wmi)
 ##' dcor(dt,~time+wmi,~vf+chf)
@@ -408,6 +413,10 @@ group  <- ddname$group
 ##' data("sTRACE",package="timereg")
 ##' dt<- sTRACE
 ##'
+##' dtable(dt,~status)
+##'
+##' dtable(dt,~status+vf)
+##'
 ##' dtable(dt,~status+vf,~chf+diabetes)
 ##'
 ##' dtable(dt,status+vf~chf+diabetes)
@@ -429,7 +438,8 @@ group  <- ddname$group
  ll<-list()
  k<-1
  nn <- length(xnames)
- for (i in seq(1,(nn-1)))
+ if (length(nn)>1) {
+ for (i in seq(1,(nn-1))) 
  for (j in seq((i+1),nn)) {
 	 x1<-xnames[i]
 	 x2<-xnames[j]
@@ -437,6 +447,13 @@ group  <- ddname$group
 	else llk<-table(data[,x1],data[,x2],...)
         ll[[k]]<- list(name=paste(x1,"x",x2,sep=""),table=llk)
 	k<-k+1
+ }
+ } else {
+  if (!is.null(group)) llk<-by(data[,xnames],group,table,...) 
+	else llk<-table(data[,xnames],...)
+        ll[[k]]<- list(name=xnames,table=llk)
+	k<-k+1
+
  }
  } else { ## one big table 
      if (!is.null(group)) ll<-by(data[,xnames],group,table,...) 
