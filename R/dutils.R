@@ -407,6 +407,10 @@ group  <- ddname$group
 ##' data("sTRACE",package="timereg")
 ##' dt<- sTRACE
 ##'
+##' dtable(dt,~status)
+##'
+##' dtable(dt,~status+vf)
+##'
 ##' dtable(dt,~status+vf,~chf+diabetes)
 ##'
 ##' dtable(dt,status+vf~chf+diabetes)
@@ -428,7 +432,8 @@ group  <- ddname$group
  ll<-list()
  k<-1
  nn <- length(xnames)
- for (i in seq(1,(nn-1)))
+ if (length(nn)>1) {
+ for (i in seq(1,(nn-1))) 
  for (j in seq((i+1),nn)) {
 	 x1<-xnames[i]
 	 x2<-xnames[j]
@@ -436,6 +441,13 @@ group  <- ddname$group
 	else llk<-table(data[,x1],data[,x2],...)
         ll[[k]]<- list(name=paste(x1,"x",x2,sep=""),table=llk)
 	k<-k+1
+ }
+ } else {
+  if (!is.null(group)) llk<-by(data[,xnames],group,table,...) 
+	else llk<-table(data[,xnames],...)
+        ll[[k]]<- list(name=xnames,table=llk)
+	k<-k+1
+
  }
  } else { ## one big table 
      if (!is.null(group)) ll<-by(data[,xnames],group,table,...) 
