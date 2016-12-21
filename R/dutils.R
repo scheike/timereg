@@ -59,6 +59,7 @@
 ##' head(mm)
 ##' drename(mm) <- ~.
 ##' head(mm)
+##' @aliases dcut dcut<-
 ##' @export
 dcut <- function(data,x,cuts=4,breaks=NULL,sep=NULL,...)
 {# {{{
@@ -481,6 +482,23 @@ dreshape <- function(data,...)
 
 
 
+procform <- function(formula, sep, ...) {
+    aa <- attributes(terms(formula,...))
+    if (aa$response == 0) {
+        res <- NULL
+    } else {
+        res <- paste(deparse(formula[[2]]), collapse = "")
+    }
+    if (!missing(sep) && length(aa$term.labels) > 0) {
+        attributes(res)$x <- lapply(strsplit(aa$term.labels, 
+           "\\|")[[1]], function(x) as.formula(paste0("~", x)))
+        
+    } else {
+        attributes(res)$x <- aa$term.labels
+    }
+    return(res)
+}
+
 ##' aggregating for for data frames 
 ##' 
 ##' aggregating for for data frames 
@@ -501,17 +519,22 @@ dreshape <- function(data,...)
 ##' @export
 daggregate <- function(data,x,...,group=NULL,fun="summary",regex=FALSE) 
 {# {{{
+    if (missing(x)) x <- colnames(data)
     if (inherits(x,"formula")) {
-        xf <- getoutcome(x,sep="|")
+        xf <- procform(x,sep="|",data=data)
         xx <- attr(xf,"x")
         if (length(xx)>1) {
             if (length(xx)>0) {
-                x <- update(as.formula(paste0(xf,"~.")),xx[[1]])
+                if (all.vars(xx[[1]])[1]==".") {
+                    x <- as.formula(paste0("~.","-",paste0(all.vars(xx[[2]]),collapse="-")))
+                } else {
+                    x <- update(as.formula(paste0(xf,"~.")),xx[[1]])
+                }
             }
             group <- model.frame(xx[[2]],data=data)
         } else {            
         }
-        x <- model.frame(x,data=data)
+        x <- subset(model.frame(x,data=data),select=-xx[[2]])
     } else {
         xx <- c()
         for (x0 in x) {
