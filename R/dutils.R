@@ -62,8 +62,11 @@
 ##' @export
 dcut <- function(data,x,cuts=4,breaks=NULL,sep=NULL,...)
 {# {{{
+
  if (is.null(sep) & is.null(breaks))    sep <- "."
  if (is.null(sep) & (!is.null(breaks))) sep <- "b"
+
+if (missing(x)) x<- ~.
 
  if (inherits(x,"formula")) {
      x <- all.vars(x)
@@ -96,7 +99,7 @@ dcut <- function(data,x,cuts=4,breaks=NULL,sep=NULL,...)
 for (k in 1:ll) 
 {
   xx <- x[[k]]
-  if (!is.factor(xx))
+  if (is.numeric(xx)) {
   if (is.null(breaks)) {
      probs <- seq(0,1,length.out=cuts[k]+1)
      name<-paste(xnames[k],cuts[k],sep=sep)
@@ -105,6 +108,7 @@ for (k in 1:ll)
 
   if (sum(duplicated(bb))==0)
    data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE,...)
+  }
 }
 
 return(data)
@@ -357,7 +361,8 @@ if (missing(x)) x<- ~.
 ##' dt$time2 <- dt$time^2
 ##' dt$wmi2 <- dt$wmi^2
 ##' head(dt)
-##'
+##' 
+##' dcor(dt)
 ##' 
 ##' dcor(dt,~time+wmi)
 ##' dcor(dt,~time+wmi,~vf+chf)
