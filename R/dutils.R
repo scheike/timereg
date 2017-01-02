@@ -463,8 +463,6 @@ group  <- ddname$group
 	 for (j in seq((i+1),nn)) {
 		 x1<-xnames[i]
 		 x2<-xnames[j]
-		 print(x1)
-		 print(x2)
 		if (!is.null(group)) llk<-by(data[,c(x1,x2)],group,table,...) 
 		else llk<-table(data[,x1],data[,x2],...)
 		ll[[k]]<- list(name=paste(x1,"x",x2,sep=""),table=llk)
