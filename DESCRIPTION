@@ -3,8 +3,8 @@ Type: Package
 Title: Analysis of Multivariate Event Times
 Version: 1.1.1.4
 Date: 2016-06-16
-Author: Klaus K. Holst and homas Scheike
-Maintainer: Klaus K. Holst <ts@biostat.ku.dk>
+Author: Klaus K. Holst and Thomas Scheike
+Maintainer: Klaus K. Holst <kkho@biostat.ku.dk>
 Description: Implementation of various statistical models for multivariate
     event history data. Including multivariate cumulative incidence models, and
     bivariate random effects probit models (Liability models). Also contains

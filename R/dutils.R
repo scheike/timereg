@@ -529,12 +529,12 @@ procform <- function(formula, sep, ...) {
 ##' daggregate(sTRACE, status~ diabetes, fun=table)
 ##' daggregate(sTRACE, status~ diabetes+sex, fun=table)
 ##' daggregate(sTRACE, status~ diabetes+sex|vf+I(wmi>1.4), fun=table)
-##' daggregate(iris, "^.e.al", group="Species")
+##' daggregate(iris, "^.e.al", group="Species",regex=TRUE)
 ##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5))
 ##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=table)
 ##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=lava:::Print)
 ##' @export
-daggregate <- function(data,x,...,group=NULL,fun="summary",regex=FALSE) 
+daggregate <- function(data,x,y,...,group=NULL,fun="summary",regex=FALSE) 
 {# {{{
     if (missing(x)) x <- colnames(data)
     if (inherits(x,"formula")) {
@@ -551,7 +551,9 @@ daggregate <- function(data,x,...,group=NULL,fun="summary",regex=FALSE)
             group <- model.frame(xx[[2]],data=data)
         } else {            
         }
-        x <- subset(model.frame(x,data=data),select=-xx[[2]])
+        browser()        
+        x0 <- model.frame(update(x,1~.),data=data)
+        ##x <- subset(model.frame(x,data=data),select=-xx[[2]])
     } else {
         xx <- c()
         for (x0 in x) {

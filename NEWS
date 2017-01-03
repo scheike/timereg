@@ -1,4 +1,5 @@
 * Version 1.1.x
+  - Dependency on R>=3.3 radix algorithm
   - Truncation
   - Case-Control sampling for twostage model. 
   - Two-stage additive gamma survival model. Additive random effects for two-stage survival
