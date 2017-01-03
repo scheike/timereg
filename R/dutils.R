@@ -5,6 +5,8 @@
 ##' @param x name of variable, or fomula, or names of variables on data frame.
 ##' @param cuts vector of number of groups, 4 is default and gives quartiles.
 ##' @param breaks  possible breaks for cutting.
+##' @param regex for regular expressions.
+##' @param sep seperator for naming of cut names.
 ##' @param ... Optional additional arguments
 ##' @author Klaus K. Holst and Thomas Scheike 
 ##' @examples
@@ -61,7 +63,7 @@
 ##' head(mm)
 ##' @aliases dcut dcut<-
 ##' @export
-dcut <- function(data,x,cuts=4,breaks=NULL,sep=NULL,...)
+dcut <- function(data,x,cuts=4,breaks=NULL,regex=FALSE,sep=NULL,...)
 {# {{{
 
  if (is.null(sep) & is.null(breaks))    sep <- "."
@@ -78,7 +80,8 @@ if (missing(x)) x<- ~.
      xxx<-c()
      for (xx in xnames)
      {
-        n <- grep(glob2rx(xx),names(data))
+        if (!regex) xx <- glob2rx(xx)
+        n <- grep(xx,names(data))
         xxx <- c(xxx,names(data)[n])
      }
      xnames <- xxx[!duplicated(xxx)]
@@ -122,7 +125,7 @@ return(data)
 }# }}}
 
 ##' @export
-drm <- function(data,x)
+drm <- function(data,x,regex=FALSE)
 {# {{{
  if (inherits(x,"formula")) {
      xnames <- all.vars(x)
@@ -131,7 +134,8 @@ drm <- function(data,x)
      xxx<-c()
      for (xx in xnames)
      {
-        n <- grep(glob2rx(xx),names(data))
+        if (!regex) xx <- glob2rx(xx)
+        n <- grep(xx,names(data))
         xxx <- c(xxx,names(data)[n])
      }
      xnames <- xxx[!duplicated(xxx)]
@@ -149,7 +153,7 @@ return(data)
 }# }}}
 
 ##' @export
-drename <- function(data,var,value) 
+drename <- function(data,var,value,regex=FALSE) 
 {  # {{{
 
  if (missing(var)) var <- names(data)
@@ -164,7 +168,8 @@ if (is.character(var)) {
         xxx<-c()
      for (xx in varxnames)
      {
-        n <- grep(glob2rx(xx),names(data))
+        if (!regex) xx <- glob2rx(xx)
+        n <- grep(xx,names(data))
         xxx <- c(xxx,names(data)[n])
         varnnames <- c(varnnames,n) 
      }
@@ -197,9 +202,8 @@ if (is.character(var)) {
   drename(x,var,value)
 }# }}}
 
-
 ##' @export
-dkeep <- function(data,var,keep=TRUE) 
+dkeep <- function(data,var,keep=TRUE,regex=FALSE) 
 {  # {{{
 
  if (inherits(var,"formula")) { var <- all.vars(var) }
@@ -210,7 +214,8 @@ if (is.character(var)) {
         xxx<-c()
      for (xx in varxnames)
      {
-        n <- grep(glob2rx(xx),names(data))
+        if (!regex) xx <- glob2rx(xx)
+        n <- grep(xx,names(data))
         xxx <- c(xxx,names(data)[n])
         varnnames <- c(varnnames,n) 
      }
@@ -407,6 +412,8 @@ group  <- ddname$group
 ##' @param data if x is formula or names for data frame then data frame is needed.
 ##' @param x name of variable, or fomula, or names of variables on data frame.
 ##' @param g possible group variable
+##' @param level  1 for all marginal tables, 2 for all 2 by 2 tables, and null for the full table, possible versus group variable
+##' @param regex for regex wildcards otherwise unix style wildcards 
 ##' @param ... Optional additional arguments
 ##' @author Klaus K. Holst and Thomas Scheike 
 ##' @examples
@@ -416,16 +423,18 @@ group  <- ddname$group
 ##' dtable(dt,~status)
 ##'
 ##' dtable(dt,~status+vf)
+##' dtable(dt,~status+vf,level=1)
 ##'
 ##' dtable(dt,~status+vf,~chf+diabetes)
 ##'
 ##' dtable(dt,status+vf~chf+diabetes)
 ##' 
 ##' dtable(dt,c("*f*","status"),~diabetes)
-##' dtable(dt,c("*f*","status"),~diabetes,all2by2=FALSE)
+##' dtable(dt,c("*f*","status"),~diabetes,level=NULL)
 ##' 
+##' dtable(dt,c("*f*","status"),level=1)
 ##' @export
-dtable<- function(data,x,g,all2by2=TRUE,regex=FALSE,...)
+dtable<- function(data,x,g,level=2,regex=FALSE,...)
 {# {{{
 
 ddname <- ddnames(data,x,g,regex=regex)
@@ -433,26 +442,40 @@ xnames <- ddname$xnames
 gnames <- ddname$gnames 
 group  <- ddname$group
 
- if (all2by2==TRUE) {
- ### all 2 by 2 tables from xnames over g 
+
+ if (!is.null(level)) {
+ ### all tables from xnames over g 
  ll<-list()
  k<-1
  nn <- length(xnames)
- if (length(nn)>1) {
- for (i in seq(1,(nn-1))) 
- for (j in seq((i+1),nn)) {
-	 x1<-xnames[i]
-	 x2<-xnames[j]
-        if (!is.null(group)) llk<-by(data[,c(x1,x2)],group,table,...) 
-	else llk<-table(data[,x1],data[,x2],...)
-        ll[[k]]<- list(name=paste(x1,"x",x2,sep=""),table=llk)
-	k<-k+1
- }
+
+ if (level==1) {
+	 for (i in seq(1,(nn)))  {
+		x1<-xnames[i]
+		if (!is.null(group)) llk<-by(data[,c(x1)],group,table,...) 
+		else llk<-table(data[,x1],...)
+		ll[[k]]<- list(name=x1,table=llk)
+		k<-k+1
+	 }
  } else {
-  if (!is.null(group)) llk<-by(data[,xnames],group,table,...) 
-	else llk<-table(data[,xnames],...)
-        ll[[k]]<- list(name=xnames,table=llk)
-	k<-k+1
+ ### all 2 by 2 tables from xnames over g 
+	if (nn>1) {
+	 for (i in seq(1,(nn-1)))  {
+	 for (j in seq((i+1),nn)) {
+		 x1<-xnames[i]
+		 x2<-xnames[j]
+		if (!is.null(group)) llk<-by(data[,c(x1,x2)],group,table,...) 
+		else llk<-table(data[,x1],data[,x2],...)
+		ll[[k]]<- list(name=paste(x1,"x",x2,sep=""),table=llk)
+		k<-k+1
+	 }
+	 }
+	} else {
+		if (!is.null(group)) llk<-by(data[,xnames],group,table,...) 
+		else llk<-table(data[,xnames],...)
+		ll[[k]]<- list(name=xnames,table=llk)
+		k<-k+1
+	}
 
  }
  } else { ## one big table 
@@ -464,6 +487,63 @@ group  <- ddname$group
 
 }# }}}
 
+###dtable<- function(data,x,g,level=2,regex=FALSE,...)
+###{# {{{
+###
+###ddname <- ddnames(data,x,g,regex=regex)
+###xnames <- ddname$xnames 
+###gnames <- ddname$gnames 
+###group  <- ddname$group
+###
+###
+### if (!is.null(level)) {
+### ### all tables from xnames over g 
+### ll<-list()
+### k<-1
+### nn <- length(xnames)
+###
+### if (level==1) {
+###	 for (i in seq(1,(nn)))  {
+###		x1<-xnames[i]
+###		if (!is.null(group)) llk<-by(data[,c(x1,x2)],group,table,...) 
+###		else llk<-table(data[,x1],data[,x2],...)
+###		ll[[k]]<- list(name=x1,table=llk)
+###		k<-k+1
+###	 }
+### } else {
+### ### all 2 by 2 tables from xnames over g 
+###	if (length(nn)>1) {
+###	 for (i in seq(1,(nn-1)))  {
+###	 for (j in seq((i+1),nn)) {
+###		 x1<-xnames[i]
+###		 x2<-xnames[j]
+###		if (!is.null(group)) llk<-by(data[,c(x1,x2)],group,table,...) 
+###		else llk<-table(data[,x1],data[,x2],...)
+###		ll[[k]]<- list(name=paste(x1,"x",x2,sep=""),table=llk)
+###		k<-k+1
+###	 }
+###	 }
+###	} else {
+###		if (!is.null(group)) llk<-by(data[,xnames],group,table,...) 
+###		else llk<-table(data[,xnames],...)
+###		ll[[k]]<- list(name=paste(x1),table=llk)
+###		k<-k+1
+###	}
+###
+######  if (!is.null(group)) llk<-by(data[,xnames],group,table,...) 
+######	else llk<-table(data[,xnames],...)
+######        ll[[k]]<- list(name=xnames,table=llk)
+######	k<-k+1
+###
+### }
+### } else { ## one big table 
+###     if (!is.null(group)) ll<-by(data[,xnames],group,table,...) 
+###     else ll<- table(data[,xnames],...)  
+### }
+###
+### return(ll)
+###
+###}# }}}
 
 ##' @export
 dhead <- function(data,x,regex=FALSE,...)
@@ -489,7 +569,6 @@ dhead <- function(data,x,regex=FALSE,...)
 return(head(data[,xnames],...))
 
 }# }}}
-
 
 ##' @export
 dreshape <- function(data,...)
