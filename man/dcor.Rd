@@ -25,6 +25,7 @@ dt$time2 <- dt$time^2
 dt$wmi2 <- dt$wmi^2
 head(dt)
 
+dcor(dt)
 
 dcor(dt,~time+wmi)
 dcor(dt,~time+wmi,~vf+chf)
