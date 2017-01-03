@@ -2,9 +2,10 @@
 % Please edit documentation in R/dutils.R
 \name{dcut}
 \alias{dcut}
+\alias{dcut<-}
 \title{Cutting, sorting, rm (removing), rename for data frames}
 \usage{
-dcut(data, x, cuts = 4, breaks = NULL, sep = NULL, ...)
+dcut(data, x, cuts = 4, breaks = NULL, regex = FALSE, sep = NULL, ...)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}
@@ -14,6 +15,10 @@ dcut(data, x, cuts = 4, breaks = NULL, sep = NULL, ...)
 \item{cuts}{vector of number of groups, 4 is default and gives quartiles.}
 
 \item{breaks}{possible breaks for cutting.}
+
+\item{regex}{for regular expressions.}
+
+\item{sep}{seperator for naming of cut names.}
 
 \item{...}{Optional additional arguments}
 }

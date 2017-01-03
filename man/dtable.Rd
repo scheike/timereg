@@ -4,7 +4,7 @@
 \alias{dtable}
 \title{tables for data frames}
 \usage{
-dtable(data, x, g, all2by2 = TRUE, regex = FALSE, ...)
+dtable(data, x, g, level = 2, regex = FALSE, ...)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}
@@ -12,6 +12,10 @@ dtable(data, x, g, all2by2 = TRUE, regex = FALSE, ...)
 \item{x}{name of variable, or fomula, or names of variables on data frame.}
 
 \item{g}{possible group variable}
+
+\item{level}{1 for all marginal tables, 2 for all 2 by 2 tables, and null for the full table, possible versus group variable}
+
+\item{regex}{for regex wildcards otherwise unix style wildcards}
 
 \item{...}{Optional additional arguments}
 }
@@ -22,13 +26,19 @@ tables for data frames
 data("sTRACE",package="timereg")
 dt<- sTRACE
 
+dtable(dt,~status)
+
+dtable(dt,~status+vf)
+dtable(dt,~status+vf,level=1)
+
 dtable(dt,~status+vf,~chf+diabetes)
 
 dtable(dt,status+vf~chf+diabetes)
 
 dtable(dt,c("*f*","status"),~diabetes)
-dtable(dt,c("*f*","status"),~diabetes,all2by2=FALSE)
+dtable(dt,c("*f*","status"),~diabetes,level=NULL)
 
+dtable(dt,c("*f*","status"),level=1)
 }
 \author{
 Klaus K. Holst and Thomas Scheike

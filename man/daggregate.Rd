@@ -4,7 +4,7 @@
 \alias{daggregate}
 \title{aggregating for for data frames}
 \usage{
-daggregate(data, x, ..., group = NULL, fun = "summary", regex = FALSE)
+daggregate(data, x, y, ..., group = NULL, fun = "summary", regex = FALSE)
 }
 \description{
 aggregating for for data frames
@@ -19,7 +19,7 @@ daggregate(iris, "^.e.al", group="Species", fun=tail, regex=TRUE)
 daggregate(sTRACE, status~ diabetes, fun=table)
 daggregate(sTRACE, status~ diabetes+sex, fun=table)
 daggregate(sTRACE, status~ diabetes+sex|vf+I(wmi>1.4), fun=table)
-daggregate(iris, "^.e.al", group="Species")
+daggregate(iris, "^.e.al", group="Species",regex=TRUE)
 daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5))
 daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=table)
 daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=lava:::Print)

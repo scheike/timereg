@@ -630,9 +630,12 @@ daggregate <- function(data,x,y,...,group=NULL,fun="summary",regex=FALSE)
             group <- model.frame(xx[[2]],data=data)
         } else {            
         }
-        browser()        
-        x0 <- model.frame(update(x,1~.),data=data)
-        ##x <- subset(model.frame(x,data=data),select=-xx[[2]])
+                                        #
+        if (length(xx)>1) {
+            x <- subset(model.frame(x,data=data),select=-xx[[2]])
+        } else {
+            x <- model.frame(x,data=data)
+        }
     } else {
         xx <- c()
         for (x0 in x) {
@@ -648,6 +651,7 @@ daggregate <- function(data,x,y,...,group=NULL,fun="summary",regex=FALSE)
     if (inherits(group,"formula")) {
         group <- model.frame(group,data=data)
     }
+    ##browser()
     if (is.character(fun)) fun <- get(fun)
     if (!is.null(group)) {        
         return(by(x,group,fun,...))
@@ -657,3 +661,46 @@ daggregate <- function(data,x,y,...,group=NULL,fun="summary",regex=FALSE)
 }# }}}
 
 
+##' Lag operator
+##'
+##' Lag operator
+##' @examples
+##' d <- data.frame(y=1:10,x=c(10:1))
+##' dlag(d,k=1:2)
+##' dlag(d,~x,k=0:1)
+##' dlag(d$x,k=1)
+##' dlag(d$x,k=-1:2)
+##' @export
+##' @param data data.frame or vector
+##' @param x optional column names or formula
+##' @param k lag (vector of integers)
+##' @param combine combine results with original data.frame
+##' @param simplify Return vector if possible
+##' @param names optional new column names
+##' @param ... additional arguments to lower level functions
+dlag <- function(data,x,k=1,combine=TRUE,simplify=TRUE,names,...) {
+    isvec <- FALSE
+    if (!is.data.frame(data)) {
+        isvec <- is.vector(data)
+        data <- as.data.frame(data)
+        combine <- FALSE
+    }
+    if (missing(x)) x <- base::names(data)
+    if (is.character(x)) x <- data[,x,drop=FALSE]
+    if (inherits(x,"formula")) {
+        x <- as.data.frame(model.matrix(update(x,~.-1),data=data,...))
+    }
+    kmin0 <- abs(min(k,0))
+    kmax0 <- max(k,0)
+    kmax <- kmin0+kmax0
+    pad <- function(x) c(rep(NA,kmax0),x,rep(NA,kmin0))
+    kidx <- match(k,seq(min(k),max(k)))
+    val <- lapply(x,function(y) embed(pad(y),dimension=kmax+1)[,kidx,drop=FALSE])
+    dval <- as.data.frame(val)
+    if (!missing(names)) base::names(dval) <- names
+    if (combine) {
+        return(cbind(dval,data))
+    }
+    if (length(k)==1 && simplify && isvec) return(as.vector(val[[1]]))
+    return(dval)
+}
