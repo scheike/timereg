@@ -1,4 +1,3 @@
-
 ###{{{ phreg0 
 
 phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,method="NR",...) {
@@ -10,14 +9,18 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
     strataidx <- lapply(stratalev,function(x) which(strata==x))
     if (!all(unlist(lapply(strataidx,function(x) length(x)>0))))
       stop("Strata without any observation")
-    dd <- lapply(strataidx, function(ii)                      
+    dd <- lapply(strataidx, function(ii) {
+        entryi <- entry[ii]
+        trunc <- !is.null(entryi)
+        if (!trunc) entryi <- rep(0,length(exit[ii]))
                  .Call("FastCoxPrep",
-                       entry[ii],exit[ii],status[ii],
+                       entryi,exit[ii],status[ii],
                        as.matrix(X)[ii,,drop=FALSE],
                        id[ii],
                        !is.null(id),
-                       !is.null(entry),
-                       package="mets"))
+                       trunc,
+                       package="mets")
+                 })
     if (!is.null(id))
       id <- unlist(lapply(dd,function(x) x$id[x$jumps+1]))
     obj <- function(pp,U=FALSE,all=FALSE) {
@@ -42,6 +45,8 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
       structure(-ploglik,gradient=-gradient,hessian=-hessian)
     }
   } else {
+      trunc <- !is.null(entry)
+      if (!trunc) entry <- rep(0,length(exit))
       system.time(dd <- .Call("FastCoxPrep",
                               entry,exit,status,X,
                               as.integer(seq_along(entry)),
@@ -395,5 +400,4 @@ print.phreg  <- function(x,...) {
   print(summary(x),...)
 }
 ###}}} print
-
 
