@@ -17,7 +17,6 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
                        entryi,exit[ii],status[ii],
                        as.matrix(X)[ii,,drop=FALSE],
                        id[ii],
-                       !is.null(id),
                        trunc,
                        package="mets")
                  })
@@ -50,7 +49,6 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
       system.time(dd <- .Call("FastCoxPrep",
                               entry,exit,status,X,
                               as.integer(seq_along(entry)),
-                              is.null(id),
                               !is.null(entry),
                               package="mets"))
       if (!is.null(id))
@@ -251,7 +249,7 @@ iid.phreg  <- function(x,...) {
 ##' @export
 summary.phreg <- function(object,se="robust",...) {
   cc <- ncluster <- NULL
-  if (length(object$p)>0) {
+  if (length(object$p)>0 && object$p>0) {
     I <- -solve(object$hessian)
     V <- vcov(object)
     cc <- cbind(coef(object),diag(V)^0.5,diag(I)^0.5)
@@ -332,6 +330,7 @@ predictPhreg <- function(jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
 
 ##' @export
 predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,strata=object$strata,...) {
+    if (object$p==0) X <- NULL
     if (!is.null(object$strata)) {
         lev <- levels(object$strata)
         if (!is.null(object$strata) &&
@@ -389,6 +388,9 @@ plot.phreg  <- function(x,surv=TRUE,X=NULL,time=NULL,add=FALSE,...) {
     }
     return(invisible(P))
 }
+
+##' @export
+lines.phreg <- function(x,...,add=TRUE) plot(x,...,add=add)
 
 ###}}} plot
 
