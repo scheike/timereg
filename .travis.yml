@@ -15,4 +15,4 @@ r_github_packages:
  - mangothecat/visualTest
 
 after_success:
-  - Rscript -e 'library("covr");codecov(type="test")'
+  - Rscript -e 'library("covr");codecov(type="all")'

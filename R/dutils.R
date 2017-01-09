@@ -61,7 +61,7 @@
 ##' head(mm)
 ##' drename(mm) <- ~.
 ##' head(mm)
-##' @aliases dcut dcut<-
+##' @aliases dcut dcut<- drm drm<- drename drename<- dkeep dkeep<- ddrop ddrop<- dreshape
 ##' @export
 dcut <- function(data,x,cuts=4,breaks=NULL,regex=FALSE,sep=NULL,...)
 {# {{{
@@ -240,6 +240,7 @@ ddrop <- function(data,var,keep=FALSE) dkeep(data,var,keep=FALSE)
 ##' 
 ##' ## with direct asignment 
 ##' dsort(hubble) <- ~sigma-v
+##' @aliases dsort dsort<-
 ##' @export
 dsort <- function(data,x,...,decreasing=FALSE) 
 {# {{{
@@ -324,31 +325,8 @@ if (missing(x)) x<- ~.
 }# }}}
 
 
-##' summary, tables, and correlations for data frames 
-##' 
-##' summary, tables, and correlations for data frames 
-##' @param data if x is formula or names for data frame then data frame is needed.
-##' @param x name of variable, or fomula, or names of variables on data frame.
-##' @param g possible group variable
-##' @param ... Optional additional arguments
-##' @author Klaus K. Holst and Thomas Scheike 
-##' @examples
-##' data("sTRACE",package="timereg")
-##' dt<- sTRACE
-##' dt$time2 <- dt$time^2
-##' dt$wmi2 <- dt$wmi^2
-##' head(dt)
-##' 
-##' dcor(dt)
-##' 
-##' dcor(dt,~time+wmi)
-##' dcor(dt,~time+wmi,~vf+chf)
-##' dcor(dt,time+wmi~vf+chf)
-##' 
-##' dcor(dt,c("time*","wmi*"),~vf+chf)
-##' 
-##' @export
-dcor <- function(data,x,g,regex=FALSE,...)
+
+dcor2 <- function(data,x,g,regex=FALSE,...)
 {# {{{
 
  ddname <- ddnames(data,x,g,regex=regex)
@@ -361,8 +339,7 @@ dcor <- function(data,x,g,regex=FALSE,...)
 
 }# }}}
 
-##' @export
-dsummary <- function(data,x,g,regex=FALSE,...)
+dsummary2 <- function(data,x,g,regex=FALSE,...)
 {# {{{
 ### x+y ~ group1+group2 to get correlations against groups defined by group1*group2
 
@@ -404,6 +381,7 @@ group  <- ddname$group
 ##' dtable(dt,c("*f*","status"),~diabetes,level=NULL)
 ##' 
 ##' dtable(dt,c("*f*","status"),level=1)
+##' @aliases dtables
 ##' @export
 dtable<- function(data,x,g,level=2,regex=FALSE,...)
 {# {{{
@@ -534,6 +512,14 @@ procformdata <- function(formula,data,sep, ...) {
 ##' daggregate(d,y~x+z|g, fun=cor)
 ##' 
 ##' @export
+##' @param data data.frame
+##' @param y name of variable, or formula, or names of variables on data frame.
+##' @param x name of variable, or formula, or names of variables on data frame.
+##' @param ... additional arguments to lower level functions
+##' @param group optional group variable (formula or character vector)
+##' @param fun function defining aggregation
+##' @param regex interpret x,y as regular expressions
+##' @param silent suppress messages
 daggregate <- function(data,y,x=NULL,...,group=NULL,fun="summary",regex=FALSE, silent=FALSE) 
 {# {{{
     if (missing(y)) y <- colnames(data)    
@@ -601,23 +587,54 @@ daggregate <- function(data,y,x=NULL,...,group=NULL,fun="summary",regex=FALSE, s
 
 
 ##' @export
-dhead <- function(data,y,x,...) daggregate(data,y,x,fun=function(z) utils::head(z,...))
+dhead <- function(data,y,x=NULL,...) daggregate(data,y,x,fun=function(z) utils::head(z,...))
 
 ##' @export
-dtail <- function(data,y,x,...) daggregate(data,y,x,fun=function(z) utils::tail(z,...))
+dtail <- function(data,y,x=NULL,...) daggregate(data,y,x,fun=function(z) utils::tail(z,...))
 
 ##' @export
-dsummary2 <- function(data,y,x,...) daggregate(data,y,x,fun=function(z) base::summary(z,...))
+dsummary <- function(data,y,x=NULL,...) daggregate(data,y,x,fun=function(z) base::summary(z,...))
 
 ##' @export
-dstr <- function(data,y,x,...) invisible(daggregate(data,y,x,fun=function(z) utils::str(z,...)))
+dstr <- function(data,y,x=NULL,...) invisible(daggregate(data,y,x,fun=function(z) utils::str(z,...)))
+
+##' summary, tables, and correlations for data frames 
+##' 
+##' summary, tables, and correlations for data frames 
+##' @param data if x is formula or names for data frame then data frame is needed.
+##' @param y name of variable, or fomula, or names of variables on data frame.
+##' @param x possible group variable
+##' @param ... Optional additional arguments
+##' @author Klaus K. Holst and Thomas Scheike 
+##' @examples
+##' data("sTRACE",package="timereg")
+##' dt<- sTRACE
+##' dt$time2 <- dt$time^2
+##' dt$wmi2 <- dt$wmi^2
+##' head(dt)
+##' 
+##' dcor(dt)
+##' 
+##' dcor(dt,~time+wmi)
+##' dcor(dt,~time+wmi,~vf+chf)
+##' dcor(dt,time+wmi~vf+chf)
+##' 
+##' dcor(dt,c("time*","wmi*"),~vf+chf)
+##' @aliases dsummary dcor dprint dstr dhead dtail dquantile dmean dsd
+##' @export
+dcor <- function(data,y,x=NULL,...) daggregate(data,y,x,fun=function(z) stats::cor(z,...))
 
 ##' @export
-dcor2 <- function(data,y,x,...) daggregate(data,y,x,fun=function(z) stats::cor(z,...))
+dmean <- function(data,y,x=NULL,...) daggregate(data,y,x,fun=function(z) apply(z,2,function(x) mean(x,na.rm=TRUE)))
 
 ##' @export
-dprint <- function(data,y,x,...) daggregate(data,y,x,fun=function(z) Print(z,...),silent=TRUE)
+dsd <- function(data,y,x=NULL,...) daggregate(data,y,x,fun=function(z) apply(z,2,function(x) sd(x,na.rm=TRUE)))
 
+##' @export
+dquantile <- function(data,y,x=NULL,...) daggregate(data,y,x,fun=function(z) apply(z,2,function(x) quantile(x,...,na.rm=TRUE)))
+
+##' @export
+dprint <- function(data,y,x=NULL,...) daggregate(data,y,x,fun=function(z) Print(z,...),silent=TRUE)
 
 
 ##' @export
