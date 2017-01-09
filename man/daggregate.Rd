@@ -4,7 +4,8 @@
 \alias{daggregate}
 \title{aggregating for for data frames}
 \usage{
-daggregate(data, x, y, ..., group = NULL, fun = "summary", regex = FALSE)
+daggregate(data, y, x = NULL, ..., group = NULL, fun = "summary",
+  regex = FALSE, silent = FALSE)
 }
 \description{
 aggregating for for data frames
@@ -23,5 +24,11 @@ daggregate(iris, "^.e.al", group="Species",regex=TRUE)
 daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5))
 daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=table)
 daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=lava:::Print)
+
+m <- lvm(y~v+x+z+g)
+categorical(m,K=3) <- ~g
+d <- sim(m,10,seed=1)
+daggregate(d,y~x+z|g, fun=cor)
+
 }
 

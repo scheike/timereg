@@ -119,10 +119,7 @@ return(data)
 }# }}}
 
 ##' @export
-"dcut<-" <- function(data,...,value)
-{# {{{
- dcut(data,value,...)
-}# }}}
+"dcut<-" <- function(data,...,value) dcut(data,value,...)
 
 ##' @export
 drm <- function(data,x,regex=FALSE)
@@ -147,60 +144,48 @@ return(data)
 }# }}}
 
 ##' @export
-"drm<-" <- function(data,...,value)
-{# {{{
- drm(data,value,...)
-}# }}}
+"drm<-" <- function(data,...,value) drm(data,value,...)
 
 ##' @export
 drename <- function(data,var,value,regex=FALSE) 
 {  # {{{
 
- if (missing(var)) var <- names(data)
+    if (missing(var)) var <- seq(ncol(data))
 
- if (inherits(var,"formula")) {
-      var <- all.vars(var)
-   }
-
-if (is.character(var)) {
+    if (inherits(var,"formula")) {
+        var <- all.vars(var)
+    }
+    
+    if (is.character(var)) {
         varxnames <- var 
         varnnames <- c()
         xxx<-c()
-     for (xx in varxnames)
-     {
-        if (!regex) xx <- glob2rx(xx)
-        n <- grep(xx,names(data))
-        xxx <- c(xxx,names(data)[n])
-        varnnames <- c(varnnames,n) 
-     }
-     varxnames <- xxx[!duplicated(xxx)]
-     varnnames <- varnnames[!duplicated(varnnames)]
-  }
+        for (xx in varxnames) {
+            if (!regex) xx <- glob2rx(xx)
+            n <- grep(xx,colnames(data))
+            xxx <- c(xxx,colnames(data)[n])
+            varnnames <- c(varnnames,n) 
+        }
+        varxnames <- xxx[!duplicated(xxx)]
+        var <- varnnames[!duplicated(varnnames)]
+    }
+    
+   
+    if (missing(value)) value <- tolower(varxnames)
 
- if (missing(value)) value <- tolower(varxnames)
+    if (inherits(value,"formula")) {
+        value <- all.vars(value)
+        if (value[1]==".") value <- tolower(varxnames)
+    }
 
- if (inherits(value,"formula")) {
-     value <- all.vars(value)
-     if (value[1]==".") value <- tolower(varxnames)
- }
-
-   if (is.character(value)) {
-        xnames <- value  
-  }
-
-### print(xnames); print(varxnames)
-
-  if (length(xnames)!= length(varxnames)) stop("length of old and new variables must mach")
-
-  names(data)[varnnames] <- xnames; 
+    if (length(var)!= length(value)) stop("length of old and new variables must mach")
+    colnames(data)[var] <- value
+    
   return(data) 
 } # }}}
 
 ##' @export
-"drename<-" <- function(x, var, value) 
-{ # {{{
-  drename(x,var,value)
-}# }}}
+"drename<-" <- function(x, ..., value) drename(x,...,value)
 
 ##' @export
 dkeep <- function(data,var,keep=TRUE,regex=FALSE) 
@@ -229,23 +214,13 @@ if (keep) data <- data[,varnnames] else data <- data[,-1*varnnames]
 } # }}}
 
 ##' @export
-"dkeep<-" <- function(x,...,value) 
-{ # {{{
-  dkeep(x,value,...)
-}# }}}
+"dkeep<-" <- function(x,...,value) dkeep(x,value,...)
 
 ##' @export
-ddrop <- function(data,var,keep=FALSE) 
-{  # {{{
-	dkeep(data,var,keep=FALSE)
-} # }}}
+ddrop <- function(data,var,keep=FALSE) dkeep(data,var,keep=FALSE)
 
 ##' @export
-"ddrop<-" <- function(x,...,value) 
-{ # {{{
-  dkeep(x,value,keep=FALSE,...)
-}# }}}
-
+"ddrop<-" <- function(x,...,value) dkeep(x,value,keep=FALSE,...)
 
 ##' Sort data according to columns in data frame
 ##'
@@ -285,11 +260,7 @@ dsort <- function(data,x,...,decreasing=FALSE)
 }# }}}
 
 ##' @export
-"dsort<-" <- function(data,...,value) 
-{ # {{{
-  dsort(data,value,...)
-}# }}}
-
+"dsort<-" <- function(data,...,value)  dsort(data,value,...)
 
 ddnames <- function(data,x,g,regex=FALSE)
 {# {{{
@@ -487,112 +458,56 @@ group  <- ddname$group
 
 }# }}}
 
-###dtable<- function(data,x,g,level=2,regex=FALSE,...)
-###{# {{{
-###
-###ddname <- ddnames(data,x,g,regex=regex)
-###xnames <- ddname$xnames 
-###gnames <- ddname$gnames 
-###group  <- ddname$group
-###
-###
-### if (!is.null(level)) {
-### ### all tables from xnames over g 
-### ll<-list()
-### k<-1
-### nn <- length(xnames)
-###
-### if (level==1) {
-###	 for (i in seq(1,(nn)))  {
-###		x1<-xnames[i]
-###		if (!is.null(group)) llk<-by(data[,c(x1,x2)],group,table,...) 
-###		else llk<-table(data[,x1],data[,x2],...)
-###		ll[[k]]<- list(name=x1,table=llk)
-###		k<-k+1
-###	 }
-### } else {
-### ### all 2 by 2 tables from xnames over g 
-###	if (length(nn)>1) {
-###	 for (i in seq(1,(nn-1)))  {
-###	 for (j in seq((i+1),nn)) {
-###		 x1<-xnames[i]
-###		 x2<-xnames[j]
-###		if (!is.null(group)) llk<-by(data[,c(x1,x2)],group,table,...) 
-###		else llk<-table(data[,x1],data[,x2],...)
-###		ll[[k]]<- list(name=paste(x1,"x",x2,sep=""),table=llk)
-###		k<-k+1
-###	 }
-###	 }
-###	} else {
-###		if (!is.null(group)) llk<-by(data[,xnames],group,table,...) 
-###		else llk<-table(data[,xnames],...)
-###		ll[[k]]<- list(name=paste(x1),table=llk)
-###		k<-k+1
-###	}
-###
-######  if (!is.null(group)) llk<-by(data[,xnames],group,table,...) 
-######	else llk<-table(data[,xnames],...)
-######        ll[[k]]<- list(name=xnames,table=llk)
-######	k<-k+1
-###
-### }
-### } else { ## one big table 
-###     if (!is.null(group)) ll<-by(data[,xnames],group,table,...) 
-###     else ll<- table(data[,xnames],...)  
-### }
-###
-### return(ll)
-###
-###}# }}}
-
-##' @export
-dhead <- function(data,x,regex=FALSE,...)
-{# {{{
-
- if (inherits(x,"formula")) {
-     x <- all.vars(x)
-     if (x[1]==".") x <- names(data) 
-     xnames <- x
-     formular <- 1
-  } else if  (is.character(x)) {
-     xnames <- x
-     xxx<-c()
-     for (xx in xnames)
-     {
-        if (!regex) xx <- glob2rx(xx)
-        n <- grep(xx,names(data))
-        xxx <- c(xxx,names(data)[n])
-     }
-     xnames <- xxx[!duplicated(xxx)]
-  }
-
-return(head(data[,xnames],...))
-
-}# }}}
-
-##' @export
-dreshape <- function(data,...)
-{# {{{
-    fast.reshape(data,...)
-}# }}}
 
 
-
-procform <- function(formula, sep, ...) {
+procform <- function(formula, sep, return.formula=FALSE, ...) {
     aa <- attributes(terms(formula,...))
     if (aa$response == 0) {
         res <- NULL
     } else {
         res <- paste(deparse(formula[[2]]), collapse = "")
     }
+    foundsep <- FALSE
+    pred <- group <- c()
     if (!missing(sep) && length(aa$term.labels) > 0) {
-        attributes(res)$x <- lapply(strsplit(aa$term.labels, 
-           "\\|")[[1]], function(x) as.formula(paste0("~", x)))
-        
-    } else {
-        attributes(res)$x <- aa$term.labels
+        foundsep <- any(grepl(sep,aa$term.labels))
+        if (foundsep) {
+            xc <- gsub(" ","",unlist(lapply(aa$term.labels, function(z) strsplit(z,sep)[[1]])))
+            ## xc <- lapply(xc, function(x) as.formula(paste0(c("~", paste0(x,collapse="+")))))
+            ##attributes(res)$x <- lapply(xc, function(z) strsplit(z,sep)[[1]])
+            pred <- xc[1]
+            group <- xc[-1]
+            if (any(pred==".")) {
+                f <- as.formula(paste0(paste0(c(res,group),collapse="+"),"~."))
+                x <- attributes(terms(f,...))$term.labels
+                pred <- x
+            }
+            group <- as.list(group)
+        }
     }
+    if (!foundsep) pred <- aa$term.labels
+    if (return.formula) {
+        if (foundsep && !is.null(group)) {
+            group <- lapply(group, function(z) as.formula(paste0(c("~", paste0(z,collapse="+")))))
+        }
+        if (length(pred)>0)
+            pred <- as.formula(paste0(c("~", paste0(pred,collapse="+"))))
+        if (length(res)>0)
+            res <- as.formula(paste0(c("~", paste0(res,collapse="+"))))
+    }
+    res <- list(response=res, predictor=pred, group=group)
     return(res)
+}
+
+procformdata <- function(formula,data,sep, ...) {
+    res <- procform(formula,sep=sep,data=data,return.formula=TRUE)
+    y <- x <- group <- NULL
+    if (length(res$response)>0)
+        y <- model.frame(res$response,data=data,...)
+    if (length(res$predictor)>0)
+        x <- model.frame(res$predictor,data=data,...)
+    if (!is.null(res$group)) group <- lapply(res$group,function(x) model.frame(x,data=data,...))
+    return(list(response=y,predictor=x,group=group))
 }
 
 ##' aggregating for for data frames 
@@ -612,53 +527,95 @@ procform <- function(formula, sep, ...) {
 ##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5))
 ##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=table)
 ##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=lava:::Print)
+##'
+##' m <- lvm(y~v+x+z+g)
+##' categorical(m,K=3) <- ~g
+##' d <- sim(m,10,seed=1)
+##' daggregate(d,y~x+z|g, fun=cor)
+##' 
 ##' @export
-daggregate <- function(data,x,y,...,group=NULL,fun="summary",regex=FALSE) 
+daggregate <- function(data,y,x=NULL,...,group=NULL,fun="summary",regex=FALSE, silent=FALSE) 
 {# {{{
-    if (missing(x)) x <- colnames(data)
-    if (inherits(x,"formula")) {
-        xf <- procform(x,sep="|",data=data)
-        xx <- attr(xf,"x")
-        if (length(xx)>1) {
-            if (length(xx)>0) {
-                if (all.vars(xx[[1]])[1]==".") {
-                    x <- as.formula(paste0("~.","-",paste0(all.vars(xx[[2]]),collapse="-")))
-                } else {
-                    x <- update(as.formula(paste0(xf,"~.")),xx[[1]])
-                }
-            }
-            group <- model.frame(xx[[2]],data=data)
-        } else {            
+    if (missing(y)) y <- colnames(data)    
+    if (inherits(y,"formula")) {
+        yx <- procformdata(y,sep="\\|",data=data)
+        y <- yx$response
+        x0 <- yx$predictor
+        if (is.null(x) && length(y)>0) x <- x0
+        if (length(y)==0) {
+            y <- x0
         }
-                                        #
-        if (length(xx)>1) {
-            x <- subset(model.frame(x,data=data),select=-xx[[2]])
-        } else {
-            x <- model.frame(x,data=data)
-        }
+        group <- yx$group[[1]]
     } else {
-        xx <- c()
-        for (x0 in x) {
-            if (!regex) x0 <- glob2rx(x0)
-            n <- grep(x0,names(data),)
-            xx <- union(xx,names(data)[n])
+        yy <- c()
+        for (y0 in y) {
+            if (!regex) y0 <- glob2rx(y0)
+            n <- grep(y0,names(data))
+            yy <- union(yy,names(data)[n])
         }
-        x <- data[,xx,drop=FALSE]
+        y <- data[,yy,drop=FALSE]
     }
     if (inherits(group,"character") && length(group)<NROW(data)) {
-        group <- data[,group]
+        group <- data[,group,drop=FALSE]
     }
     if (inherits(group,"formula")) {
         group <- model.frame(group,data=data)
     }
-    ##browser()
-    if (is.character(fun)) fun <- get(fun)
-    if (!is.null(group)) {        
-        return(by(x,group,fun,...))
+    if (inherits(x,"character") && length(x)<NROW(data)) {
+        x <- data[,x,drop=FALSE]
     }
-    
-    do.call(fun, c(list(x),list(...)))
+    if (inherits(x,"formula")) {
+        x <- model.frame(x,data=data)
+    }
+    if (is.null(group) && !is.null(x)) {
+        group <- x
+        x <- NULL
+    }    
+    if (!is.null(group)) {
+        gidx <- na.omit(match(colnames(group),colnames(y)))
+        if (length(gidx)>0) y <- y[,-gidx,drop=FALSE]
+    }
+
+    if (is.character(fun)) fun <- get(fun)
+
+    if (!is.null(group)) {
+        if (silent) 
+            capture.output(res <- by(y,group,fun,...))
+        else
+            res <- by(y,group,fun,...)
+        return(res)
+    }
+    if (silent) 
+        capture.output(res <- do.call(fun, c(list(y),list(...))))
+    else
+        res <- do.call(fun, c(list(y),list(...)))
+
+    res
 }# }}}
+
+
+##' @export
+dhead <- function(data,x,group=NULL,...) daggregate(data,x,fun=function(y) utils::head(y,...))
+
+##' @export
+dtail <- function(data,x,group=NULL,...) daggregate(data,x,fun=function(y) utils::tail(y,...))
+
+##' @export
+dsummary2 <- function(data,x,group=NULL,...) daggregate(data,x,fun=function(y) base::summary(y,...))
+
+##' @export
+dstr <- function(data,x,group=NULL,...) invisible(daggregate(data,x,fun=function(y) utils::str(y,...)))
+
+##' @export
+dcor2 <- function(data,x,group=NULL,...) daggregate(data,x,fun=function(y) stats::cor(y,...))
+
+##' @export
+dprint <- function(data,x,group=NULL,...) daggregate(data,x,fun=function(y) Print(y,...),silent=TRUE)
+
+
+
+##' @export
+dreshape <- function(data,...) fast.reshape(data,...)
 
 
 ##' Lag operator
@@ -669,7 +626,7 @@ daggregate <- function(data,x,y,...,group=NULL,fun="summary",regex=FALSE)
 ##' dlag(d,k=1:2)
 ##' dlag(d,~x,k=0:1)
 ##' dlag(d$x,k=1)
-##' dlag(d$x,k=-1:2)
+##' dlag(d$x,k=-1:2, names=letters[1:4])
 ##' @export
 ##' @param data data.frame or vector
 ##' @param x optional column names or formula
@@ -694,13 +651,53 @@ dlag <- function(data,x,k=1,combine=TRUE,simplify=TRUE,names,...) {
     kmax0 <- max(k,0)
     kmax <- kmin0+kmax0
     pad <- function(x) c(rep(NA,kmax0),x,rep(NA,kmin0))
-    kidx <- match(k,seq(min(k),max(k)))
+    kidx <- match(k,seq(min(k,0),max(k,0)))
     val <- lapply(x,function(y) embed(pad(y),dimension=kmax+1)[,kidx,drop=FALSE])
     dval <- as.data.frame(val)
     if (!missing(names)) base::names(dval) <- names
     if (combine) {
-        return(cbind(dval,data))
+        res <- cbind(data,dval)
+        names(res) <- make.unique(base::names(res))
+        return(res)
     }
     if (length(k)==1 && simplify && isvec) return(as.vector(val[[1]]))
+    names(dval) <- base::make.unique(base::names(dval))
     return(dval)
 }
+
+"dlag<-" <- function(data,k=1,combine=TRUE,...,value) {
+    dlag(data,value,k=k,combine=combine,...)
+}
+
+
+Print <- function(x,n=5,digits=max(3,getOption("digits")-3),...) {
+    mat <- !is.null(dim(x))
+    if (!mat) {
+        x <- cbind(x)
+        colnames(x) <- ""
+    }
+    if (is.null(rownames(x))) {
+        rownames(x) <- seq(nrow(x))
+    }
+    sep <- rbind("---"=rep('',ncol(x)))
+    if (n<1) {
+        print(x,quote=FALSE,digits=digits,...)
+    } else {
+        ## hd <- base::as.matrix(base::format(utils::head(x,n),digits=digits,...))
+        ## tl <- base::as.matrix(base::format(utils::tail(x,n),digits=digits,...))
+        ## print(rbind(hd,sep,tl),quote=FALSE,...)
+        if (NROW(x)<=(2*n)) {
+            hd <- base::format(utils::head(x,2*n),digits=digits,...)
+            print(hd, quote=FALSE,...)
+        } else {
+            hd <- base::format(utils::head(x,n),digits=digits,...)
+            tl <- base::format(utils::tail(x,n),digits=digits,...)
+            print(rbind(base::as.matrix(hd),sep,base::as.matrix(tl)),
+                  quote=FALSE,...)
+        }
+    }
+    invisible(structure(x,class=c("Print",class(x))))
+}
+
+##' @export
+print.Print <- function(x,...) Print(x,...)
