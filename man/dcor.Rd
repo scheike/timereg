@@ -2,16 +2,24 @@
 % Please edit documentation in R/dutils.R
 \name{dcor}
 \alias{dcor}
+\alias{dhead}
+\alias{dmean}
+\alias{dprint}
+\alias{dquantile}
+\alias{dsd}
+\alias{dstr}
+\alias{dsummary}
+\alias{dtail}
 \title{summary, tables, and correlations for data frames}
 \usage{
-dcor(data, x, g, regex = FALSE, ...)
+dcor(data, y, x = NULL, ...)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}
 
-\item{x}{name of variable, or fomula, or names of variables on data frame.}
+\item{y}{name of variable, or fomula, or names of variables on data frame.}
 
-\item{g}{possible group variable}
+\item{x}{possible group variable}
 
 \item{...}{Optional additional arguments}
 }
@@ -32,7 +40,6 @@ dcor(dt,~time+wmi,~vf+chf)
 dcor(dt,time+wmi~vf+chf)
 
 dcor(dt,c("time*","wmi*"),~vf+chf)
-
 }
 \author{
 Klaus K. Holst and Thomas Scheike

@@ -3,6 +3,15 @@
 \name{dcut}
 \alias{dcut}
 \alias{dcut<-}
+\alias{ddrop}
+\alias{ddrop<-}
+\alias{dkeep}
+\alias{dkeep<-}
+\alias{drename}
+\alias{drename<-}
+\alias{dreshape}
+\alias{drm}
+\alias{drm<-}
 \title{Cutting, sorting, rm (removing), rename for data frames}
 \usage{
 dcut(data, x, cuts = 4, breaks = NULL, regex = FALSE, sep = NULL, ...)

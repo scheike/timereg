@@ -7,6 +7,23 @@
 daggregate(data, y, x = NULL, ..., group = NULL, fun = "summary",
   regex = FALSE, silent = FALSE)
 }
+\arguments{
+\item{data}{data.frame}
+
+\item{y}{name of variable, or formula, or names of variables on data frame.}
+
+\item{x}{name of variable, or formula, or names of variables on data frame.}
+
+\item{...}{additional arguments to lower level functions}
+
+\item{group}{optional group variable (formula or character vector)}
+
+\item{fun}{function defining aggregation}
+
+\item{regex}{interpret x,y as regular expressions}
+
+\item{silent}{suppress messages}
+}
 \description{
 aggregating for for data frames
 }

@@ -2,6 +2,7 @@
 % Please edit documentation in R/dutils.R
 \name{dsort}
 \alias{dsort}
+\alias{dsort<-}
 \title{Sort data frame}
 \usage{
 dsort(data, x, ..., decreasing = FALSE)

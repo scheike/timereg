@@ -2,6 +2,7 @@
 % Please edit documentation in R/dutils.R
 \name{dtable}
 \alias{dtable}
+\alias{dtables}
 \title{tables for data frames}
 \usage{
 dtable(data, x, g, level = 2, regex = FALSE, ...)
