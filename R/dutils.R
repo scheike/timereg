@@ -156,42 +156,31 @@ return(data)
 "drm<-" <- function(data,...,value) drm(data,value,...)
 
 ##' @export
-drename <- function(data,var,value,regex=FALSE) 
+drename <- function(data,var=NULL,value=NULL,fun=base::tolower,...) 
 {  # {{{
 
-    if (missing(var)) var <- seq(ncol(data))
-
-    if (inherits(var,"formula")) {
-        var <- all.vars(var)
-    }
+    if (is.null(var)) {
+        var <- colnames(data)
+        varpos <- seq(ncol(data))
+    } else {
+        var <- procform(var,data=data,return.list=FALSE,...)
+        varpos <- match(var,colnames(data))
+    }  
+    if (is.null(value)) value <- do.call(fun,list(var))
     
-    if (is.character(var)) {
-        varxnames <- var 
-        varnnames <- c()
-        xxx<-c()
-        for (xx in varxnames) {
-            if (!regex) xx <- glob2rx(xx)
-            n <- grep(xx,colnames(data))
-            xxx <- c(xxx,colnames(data)[n])
-            varnnames <- c(varnnames,n) 
-        }
-        varxnames <- xxx[!duplicated(xxx)]
-        var <- varnnames[!duplicated(varnnames)]
-    }
-    
-   
-    if (missing(value)) value <- tolower(varxnames)
-
+    valueset <- FALSE
     if (inherits(value,"formula")) {
         value <- all.vars(value)
-        if (value[1]==".") value <- tolower(varxnames)
+        if (value[1]==".") value <- do.call(fun,list(var))
+    } else {
+        if (length(value)==1 && (value=="." || value=="*")) value <- do.call(fun,list(var))
     }
 
-    if (length(var)!= length(value)) stop("length of old and new variables must mach")
-    colnames(data)[var] <- value
-    
+    if (length(varpos)!= length(value)) stop("length of old and new variables must match")   
+    colnames(data)[varpos] <- value    
   return(data) 
 } # }}}
+
 
 ##' @export
 "drename<-" <- function(x, ..., value) drename(x,...,value)
@@ -447,8 +436,30 @@ group  <- ddname$group
 
 
 
-procform <- function(formula, sep, return.formula=FALSE, ...) {
-    aa <- attributes(terms(formula,...))
+procform <- function(formula, sep, return.formula=FALSE, data=NULL, regex=FALSE, return.list=TRUE) {
+    res <- NULL
+    if (is.null(formula)) {
+        res <- colnames(data)
+    } else if (is.character(formula)) {
+        if (is.null(data)) {
+            res <- unique(formula)
+        } else {        
+            yy <- c()
+            for (y0 in formula) {
+                if (!regex) y0 <- glob2rx(y0)
+                n <- grep(y0,names(data))
+                yy <- union(yy,names(data)[n])
+            }
+            res <- unique(yy)
+        }        
+    }
+    if (is.numeric(formula)) res <- colnames(data)[formula]
+    if (is.character(res)) {
+        if (!return.list) return(res)
+        if (return.formula) return(toformula("",x=res))
+        return(list(response=res,predictor=NULL,group=NULL))
+    }
+    aa <- attributes(terms(formula,data=data))
     if (aa$response == 0) {
         res <- NULL
     } else {
@@ -466,7 +477,7 @@ procform <- function(formula, sep, return.formula=FALSE, ...) {
             group <- xc[-1]
             if (any(pred==".")) {
                 f <- as.formula(paste0(paste0(c(res,group),collapse="+"),"~."))
-                x <- attributes(terms(f,...))$term.labels
+                x <- attributes(terms(f,data=data))$term.labels
                 pred <- x
             }
             group <- as.list(group)
@@ -483,11 +494,12 @@ procform <- function(formula, sep, return.formula=FALSE, ...) {
             res <- as.formula(paste0(c("~", paste0(res,collapse="+"))))
     }
     res <- list(response=res, predictor=pred, group=group)
+    if (!return.list) return(unlist(unique(res)))
     return(res)
 }
 
-procformdata <- function(formula,data,sep, ...) {
-    res <- procform(formula,sep=sep,data=data,return.formula=TRUE)
+procformdata <- function(formula,data,sep, ...) {    
+    res <- procform(formula,sep=sep,data=data,return.formula=TRUE,...)
     y <- x <- group <- NULL
     if (length(res$response)>0)
         y <- model.frame(res$response,data=data,...)
@@ -495,6 +507,59 @@ procformdata <- function(formula,data,sep, ...) {
         x <- model.frame(res$predictor,data=data,...)
     if (!is.null(res$group)) group <- lapply(res$group,function(x) model.frame(x,data=data,...))
     return(list(response=y,predictor=x,group=group))
+}
+
+procxdata <- function(data=NULL,y=NULL,x=NULL,group=NULL,names.only=FALSE,...) {
+    if (is.null(y)) y <- colnames(data)    
+    if (inherits(y,"formula")) {
+        yx <- procformdata(y,sep="\\|",data=data,...)
+        y <- yx$response
+        x0 <- yx$predictor
+        if (is.null(x) && length(y)>0) x <- x0
+        if (length(y)==0) {
+            y <- x0
+        }
+        group <- yx$group[[1]]
+    } else {
+        yy <- c()
+        for (y0 in y) {
+            if (!regex) y0 <- glob2rx(y0)
+            n <- grep(y0,names(data))
+            yy <- union(yy,names(data)[n])
+        }
+        if (names.only) {
+            y <- yy 
+        } else {
+            y <- data[,yy,drop=FALSE]
+        }
+    }
+    if (inherits(group,"character") && length(group)<NROW(data)) {
+        group <- data[,group,drop=FALSE]
+    }
+    if (inherits(group,"formula")) {
+        group <- model.frame(group,data=data)
+    }
+    if (inherits(x,"character") && length(x)<NROW(data)) {
+        xx <- c()
+        for (x0 in x) {
+            if (!regex) x0 <- glob2rx(x0)
+            n <- grep(x0,names(data))
+            xx <- union(xx,names(data)[n])
+        }
+        x <- data[,xx,drop=FALSE]
+    }
+    if (inherits(x,"formula")) {
+        x <- model.frame(x,data=data)
+    }
+    if (is.null(group) && !is.null(x)) {
+        group <- x
+        x <- NULL
+    }    
+    if (!is.null(group)) {
+        gidx <- na.omit(match(colnames(group),colnames(y)))
+        if (length(gidx)>0) y <- y[,-gidx,drop=FALSE]
+    }
+    return(list(y=y,x=x,group=group))
 }
 
 ##' aggregating for for data frames 
@@ -529,54 +594,12 @@ procformdata <- function(formula,data,sep, ...) {
 ##' @param fun function defining aggregation
 ##' @param regex interpret x,y as regular expressions
 ##' @param silent suppress messages
-daggregate <- function(data,y,x=NULL,...,group=NULL,fun="summary",regex=FALSE, silent=FALSE) 
+daggregate <- function(data,y=NULL,x=NULL,...,group=NULL,fun="summary",regex=FALSE, silent=FALSE) 
 {# {{{
-    if (missing(y)) y <- colnames(data)    
-    if (inherits(y,"formula")) {
-        yx <- procformdata(y,sep="\\|",data=data)
-        y <- yx$response
-        x0 <- yx$predictor
-        if (is.null(x) && length(y)>0) x <- x0
-        if (length(y)==0) {
-            y <- x0
-        }
-        group <- yx$group[[1]]
-    } else {
-        yy <- c()
-        for (y0 in y) {
-            if (!regex) y0 <- glob2rx(y0)
-            n <- grep(y0,names(data))
-            yy <- union(yy,names(data)[n])
-        }
-        y <- data[,yy,drop=FALSE]
-    }
-    if (inherits(group,"character") && length(group)<NROW(data)) {
-        group <- data[,group,drop=FALSE]
-    }
-    if (inherits(group,"formula")) {
-        group <- model.frame(group,data=data)
-    }
-    if (inherits(x,"character") && length(x)<NROW(data)) {
-        xx <- c()
-        for (x0 in x) {
-            if (!regex) x0 <- glob2rx(x0)
-            n <- grep(x0,names(data))
-            xx <- union(xx,names(data)[n])
-        }
-        x <- data[,xx,drop=FALSE]
-    }
-    if (inherits(x,"formula")) {
-        x <- model.frame(x,data=data)
-    }
-    if (is.null(group) && !is.null(x)) {
-        group <- x
-        x <- NULL
-    }    
-    if (!is.null(group)) {
-        gidx <- na.omit(match(colnames(group),colnames(y)))
-        if (length(gidx)>0) y <- y[,-gidx,drop=FALSE]
-    }
-
+    xy <- procxdata(y=y,x=x,group=group,data=data,regex=regex)
+    x <- xy$x
+    y <- xy$y
+    group <- xy$group
     if (is.character(fun)) fun <- get(fun)
 
     if (!is.null(x)) {
