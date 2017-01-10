@@ -178,12 +178,12 @@ drename <- function(data,var=NULL,value=NULL,fun=base::tolower,...)
 
     if (length(varpos)!= length(value)) stop("length of old and new variables must match")   
     colnames(data)[varpos] <- value    
-  return(data) 
+    return(data) 
 } # }}}
 
 
 ##' @export
-"drename<-" <- function(x, ..., value) drename(x,...,value)
+"drename<-" <- function(x,...,value) drename(x,...,value)
 
 ##' @export
 dkeep <- function(data,var,keep=TRUE,regex=FALSE) 
@@ -456,7 +456,7 @@ procform <- function(formula, sep, return.formula=FALSE, data=NULL, regex=FALSE,
     if (is.numeric(formula)) res <- colnames(data)[formula]
     if (is.character(res)) {
         if (!return.list) return(res)
-        if (return.formula) return(toformula("",x=res))
+        if (return.formula) return(as.formula(paste("~",paste(res,collapse="+"))))
         return(list(response=res,predictor=NULL,group=NULL))
     }
     aa <- attributes(terms(formula,data=data))
@@ -509,58 +509,6 @@ procformdata <- function(formula,data,sep, ...) {
     return(list(response=y,predictor=x,group=group))
 }
 
-procxdata <- function(data=NULL,y=NULL,x=NULL,group=NULL,names.only=FALSE,...) {
-    if (is.null(y)) y <- colnames(data)    
-    if (inherits(y,"formula")) {
-        yx <- procformdata(y,sep="\\|",data=data,...)
-        y <- yx$response
-        x0 <- yx$predictor
-        if (is.null(x) && length(y)>0) x <- x0
-        if (length(y)==0) {
-            y <- x0
-        }
-        group <- yx$group[[1]]
-    } else {
-        yy <- c()
-        for (y0 in y) {
-            if (!regex) y0 <- glob2rx(y0)
-            n <- grep(y0,names(data))
-            yy <- union(yy,names(data)[n])
-        }
-        if (names.only) {
-            y <- yy 
-        } else {
-            y <- data[,yy,drop=FALSE]
-        }
-    }
-    if (inherits(group,"character") && length(group)<NROW(data)) {
-        group <- data[,group,drop=FALSE]
-    }
-    if (inherits(group,"formula")) {
-        group <- model.frame(group,data=data)
-    }
-    if (inherits(x,"character") && length(x)<NROW(data)) {
-        xx <- c()
-        for (x0 in x) {
-            if (!regex) x0 <- glob2rx(x0)
-            n <- grep(x0,names(data))
-            xx <- union(xx,names(data)[n])
-        }
-        x <- data[,xx,drop=FALSE]
-    }
-    if (inherits(x,"formula")) {
-        x <- model.frame(x,data=data)
-    }
-    if (is.null(group) && !is.null(x)) {
-        group <- x
-        x <- NULL
-    }    
-    if (!is.null(group)) {
-        gidx <- na.omit(match(colnames(group),colnames(y)))
-        if (length(gidx)>0) y <- y[,-gidx,drop=FALSE]
-    }
-    return(list(y=y,x=x,group=group))
-}
 
 ##' aggregating for for data frames 
 ##' 
@@ -596,10 +544,52 @@ procxdata <- function(data=NULL,y=NULL,x=NULL,group=NULL,names.only=FALSE,...) {
 ##' @param silent suppress messages
 daggregate <- function(data,y=NULL,x=NULL,...,group=NULL,fun="summary",regex=FALSE, silent=FALSE) 
 {# {{{
-    xy <- procxdata(y=y,x=x,group=group,data=data,regex=regex)
-    x <- xy$x
-    y <- xy$y
-    group <- xy$group
+    if (is.null(y)) y <- colnames(data)    
+    if (inherits(y,"formula")) {
+        yx <- procformdata(y,sep="\\|",data=data,...)
+        y <- yx$response
+        x0 <- yx$predictor
+        if (is.null(x) && length(y)>0) x <- x0
+        if (length(y)==0) {
+            y <- x0
+        }
+        group <- yx$group[[1]]
+    } else {
+        yy <- c()
+        for (y0 in y) {
+            if (!regex) y0 <- glob2rx(y0)
+            n <- grep(y0,names(data))
+            yy <- union(yy,names(data)[n])
+        }
+        y <- data[,yy,drop=FALSE]
+    }
+    if (inherits(group,"character") && length(group)<NROW(data)) {
+        group <- data[,group,drop=FALSE]
+    }
+    if (inherits(group,"formula")) {
+        group <- model.frame(group,data=data)
+    }
+    if (inherits(x,"character") && length(x)<NROW(data)) {
+        xx <- c()
+        for (x0 in x) {
+            if (!regex) x0 <- glob2rx(x0)
+            n <- grep(x0,names(data))
+            xx <- union(xx,names(data)[n])
+        }
+        x <- data[,xx,drop=FALSE]
+    }
+    if (inherits(x,"formula")) {
+        x <- model.frame(x,data=data)
+    }
+    if (is.null(group) && !is.null(x)) {
+        group <- x
+        x <- NULL
+    }    
+    if (!is.null(group)) {
+        gidx <- na.omit(match(colnames(group),colnames(y)))
+        if (length(gidx)>0) y <- y[,-gidx,drop=FALSE]
+    }
+
     if (is.character(fun)) fun <- get(fun)
 
     if (!is.null(x)) {
@@ -632,16 +622,16 @@ daggregate <- function(data,y=NULL,x=NULL,...,group=NULL,fun="summary",regex=FAL
 
 
 ##' @export
-dhead <- function(data,y,x=NULL,...) daggregate(data,y,x,fun=function(z) utils::head(z,...))
+dhead <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) utils::head(z,...))
 
 ##' @export
-dtail <- function(data,y,x=NULL,...) daggregate(data,y,x,fun=function(z) utils::tail(z,...))
+dtail <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) utils::tail(z,...))
 
 ##' @export
-dsummary <- function(data,y,x=NULL,...) daggregate(data,y,x,fun=function(z) base::summary(z,...))
+dsummary <- function(data=NULL,y,x=NULL,...) daggregate(data,y,x,fun=function(z) base::summary(z,...))
 
 ##' @export
-dstr <- function(data,y,x=NULL,...) invisible(daggregate(data,y,x,fun=function(z) utils::str(z,...)))
+dstr <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=function(z) utils::str(z,...)))
 
 ##' summary, tables, and correlations for data frames 
 ##' 
@@ -667,19 +657,19 @@ dstr <- function(data,y,x=NULL,...) invisible(daggregate(data,y,x,fun=function(z
 ##' dcor(dt,c("time*","wmi*"),~vf+chf)
 ##' @aliases dsummary dcor dprint dstr dhead dtail dquantile dmean dsd
 ##' @export
-dcor <- function(data,y,x=NULL,...) daggregate(data,y,x,fun=function(z) stats::cor(z,...))
+dcor <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) stats::cor(z,...))
 
 ##' @export
-dmean <- function(data,y,x=NULL,...) daggregate(data,y,x,fun=function(z) apply(z,2,function(x) mean(x,na.rm=TRUE)))
+dmean <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) apply(z,2,function(x) mean(x,na.rm=TRUE)))
 
 ##' @export
-dsd <- function(data,y,x=NULL,...) daggregate(data,y,x,fun=function(z) apply(z,2,function(x) sd(x,na.rm=TRUE)))
+dsd <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) apply(z,2,function(x) sd(x,na.rm=TRUE)))
 
 ##' @export
-dquantile <- function(data,y,x=NULL,...) daggregate(data,y,x,fun=function(z) apply(z,2,function(x) quantile(x,...,na.rm=TRUE)))
+dquantile <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) apply(z,2,function(x) quantile(x,...,na.rm=TRUE)))
 
 ##' @export
-dprint <- function(data,y,x=NULL,...) daggregate(data,y,x,fun=function(z) Print(z,...),silent=TRUE)
+dprint <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) Print(z,...),silent=TRUE)
 
 
 ##' @export

@@ -12,7 +12,7 @@
 \alias{dtail}
 \title{summary, tables, and correlations for data frames}
 \usage{
-dcor(data, y, x = NULL, ...)
+dcor(data, y = NULL, x = NULL, ...)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}

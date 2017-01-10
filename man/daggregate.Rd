@@ -4,7 +4,7 @@
 \alias{daggregate}
 \title{aggregating for for data frames}
 \usage{
-daggregate(data, y, x = NULL, ..., group = NULL, fun = "summary",
+daggregate(data, y = NULL, x = NULL, ..., group = NULL, fun = "summary",
   regex = FALSE, silent = FALSE)
 }
 \arguments{

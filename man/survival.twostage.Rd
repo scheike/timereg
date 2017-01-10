@@ -3,6 +3,10 @@
 \name{survival.twostage}
 \alias{survival.twostage}
 \alias{survival.twostage.fullse}
+\alias{twostage.aalen}
+\alias{twostage.cox.aalen}
+\alias{twostage.coxph}
+\alias{twostage.phreg}
 \title{Twostage survival model for multivariate survival data}
 \usage{
 survival.twostage(margsurv,data=sys.parent(),score.method="fisher.scoring",
