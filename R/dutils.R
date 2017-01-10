@@ -158,11 +158,16 @@ return(data)
 ##' @export
 drename <- function(data,var,value,regex=FALSE) 
 {  # {{{
+###if (!missing(var)) print(var)
+###if (!missing(value)) print(value)
+###if (missing(var)) print("var")
+###if (missing(value)) print("value")
 
-    if (missing(var)) var <- seq(ncol(data))
+    if (missing(var)) var <- names(data)
 
     if (inherits(var,"formula")) {
         var <- all.vars(var)
+        if (var[1]==".") var <- names(data)
     }
     
     if (is.character(var)) {
@@ -178,8 +183,14 @@ drename <- function(data,var,value,regex=FALSE)
         varxnames <- xxx[!duplicated(xxx)]
         var <- varnnames[!duplicated(varnnames)]
     }
-    
-   
+
+###if (!missing(var)) {
+###    print(var)
+###    print(varnnames)
+###    print(varxnames)
+###} else print("varvar"); 
+
+
     if (missing(value)) value <- tolower(varxnames)
 
     if (inherits(value,"formula")) {
@@ -187,14 +198,19 @@ drename <- function(data,var,value,regex=FALSE)
         if (value[1]==".") value <- tolower(varxnames)
     }
 
-    if (length(var)!= length(value)) stop("length of old and new variables must mach")
-    colnames(data)[var] <- value
-    
-  return(data) 
+    if (is.character(value)) {
+        xnames <- value
+    }
+    if (length(xnames) != length(varxnames)) 
+        stop("length of old and new variables must mach")
+
+    names(data)[varnnames] <- xnames
+###    colnames(data)[var] <- value
+    return(data)
 } # }}}
 
 ##' @export
-"drename<-" <- function(x, ..., value) drename(x,...,value)
+"drename<-" <- function(x,...,value) drename(x,...,value)
 
 ##' @export
 dkeep <- function(data,var,keep=TRUE,regex=FALSE) 
