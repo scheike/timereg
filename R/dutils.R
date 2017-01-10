@@ -158,24 +158,25 @@ return(data)
 ##' @export
 drename <- function(data,var=NULL,value=NULL,fun=base::tolower,...) 
 {  # {{{
-
     if (is.null(var)) {
         var <- colnames(data)
         varpos <- seq(ncol(data))
     } else {
         var <- procform(var,data=data,return.list=FALSE,...)
         varpos <- match(var,colnames(data))
-    }  
+    }
+
     if (is.null(value)) value <- do.call(fun,list(var))
-    
-    valueset <- FALSE
-    if (inherits(value,"formula")) {
+
+    if (inherits(value,"function")) {
+        value <- do.call(value,list(var))
+    } else  if (inherits(value,"formula")) {
         value <- all.vars(value)
         if (value[1]==".") value <- do.call(fun,list(var))
     } else {
         if (length(value)==1 && (value=="." || value=="*")) value <- do.call(fun,list(var))
     }
-
+    
     if (length(varpos)!= length(value)) stop("length of old and new variables must match")   
     colnames(data)[varpos] <- value    
     return(data) 
@@ -183,7 +184,7 @@ drename <- function(data,var=NULL,value=NULL,fun=base::tolower,...)
 
 
 ##' @export
-"drename<-" <- function(x,...,value) drename(x,...,value)
+"drename<-" <- function(x,...,value) drename(x,value=value,...)
 
 ##' @export
 dkeep <- function(data,var,keep=TRUE,regex=FALSE) 
