@@ -34,7 +34,8 @@ models of the type cor.cif, rr.cif or or.cif for the given cumulative incidences
 measures in the object.
 }
 \examples{
-data(multcif) # simulated data 
+library("timereg")
+data("multcif",package="mets") # simulated data 
 multcif$cause[multcif$cause==0] <- 2
 
 times=seq(0.1,3,by=0.1) # to speed up computations use only these time-points

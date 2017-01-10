@@ -26,6 +26,7 @@ twin.clustertrunc(survformula, data = sys.parent(), theta.des = NULL,
 Estimation of twostage model with cluster truncation in bivariate situation
 }
 \examples{
+library("timereg")
 data(diabetes)
 v <- diabetes$time*runif(nrow(diabetes))*rbinom(nrow(diabetes),1,0.5)
 diabetes$v <- v

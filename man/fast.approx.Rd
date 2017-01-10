@@ -14,8 +14,9 @@ fast.approx(time, new.time, equal = FALSE, type = c("nearest", "right",
 
 \item{equal}{If TRUE a list is returned with additional element}
 
-\item{type}{Type of matching, nearest index, nearest greater than or equal (right), number of elements smaller than y
-otherwise the closest value above new.time is returned.}
+\item{type}{Type of matching, nearest index, nearest greater than
+or equal (right), number of elements smaller than y otherwise
+the closest value above new.time is returned.}
 
 \item{sorted}{Set to true if new.time is already sorted}
 

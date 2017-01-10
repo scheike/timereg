@@ -66,10 +66,11 @@ data(prt)
 prt0 <- subset(prt,country=="Denmark")
 a <- biprobit(cancer~1+zyg, ~1+zyg, data=prt0, id="id")
 b <- biprobit(cancer~1+zyg, ~1+zyg, data=prt0, id="id",pairs.only=TRUE)
-predict(b,newdata=Expand(prt,zyg=c("MZ")))
-predict(b,newdata=Expand(prt,zyg=c("MZ","DZ")))
+predict(b,newdata=lava::Expand(prt,zyg=c("MZ")))
+predict(b,newdata=lava::Expand(prt,zyg=c("MZ","DZ")))
 
 \donttest{ ## Reduce Ex.Timings
+library(lava)
 m <- lvm(c(y1,y2)~x)
 covariance(m,y1~y2) <- "r"
 constrain(m,r~x+a+b) <- function(x) tanh(x[2]+x[3]*x[1])

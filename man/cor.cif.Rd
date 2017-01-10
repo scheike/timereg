@@ -136,6 +136,7 @@ or without symmetry as might be the case with mothers and daughters (sym=0).
 see example below, but the default is that it is simply \eqn{\theta^T z}.
 }
 \examples{
+library("timereg")
 data(multcif);
 multcif$cause[multcif$cause==0] <- 2
 zyg <- rep(rbinom(200,1,0.5),each=2)

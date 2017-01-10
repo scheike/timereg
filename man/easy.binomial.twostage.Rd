@@ -83,7 +83,7 @@ bin <- binomial.twostage(margbin,data=twinstut,var.link=1,
 		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0,
 	                 score.method="fisher.scoring")
 summary(bin)
-estimate(coef=bin$theta,vcov=bin$var.theta,f=function(p) exp(p))
+lava::estimate(coef=bin$theta,vcov=bin$var.theta,f=function(p) exp(p))
 
 twinstut$cage <- scale(twinstut$age)
 theta.des <- model.matrix( ~-1+factor(zyg)+cage,data=twinstut)

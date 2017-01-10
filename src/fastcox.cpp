@@ -13,16 +13,18 @@ RcppExport SEXP FastCoxPrep(SEXP EntrySEXP,
 			    SEXP StatusSEXP,
 			    SEXP XSEXP,
 			    SEXP IdSEXP,
-			    SEXP haveIdSEXP,
 			    SEXP TruncationSEXP) {
 BEGIN_RCPP
   arma::vec Entry = Rcpp::as<arma::vec>(EntrySEXP);
   arma::vec  Exit  = Rcpp::as<arma::vec>(ExitSEXP);
   arma::Col<int> Status= Rcpp::as<arma::Col<int> >(StatusSEXP);
   arma::mat  X     = Rcpp::as<arma::mat>(XSEXP);
-  arma::Col<unsigned> Id    = Rcpp::as<arma::Col<unsigned> >(IdSEXP);
+  try {
+    arma::Col<unsigned> Id    = Rcpp::as<arma::Col<unsigned> >(IdSEXP);
+  }
+  catch(...) {}
 
-  bool haveId = Rcpp::as<bool>(haveIdSEXP);
+  //bool haveId = Rcpp::as<bool>(haveIdSEXP);
   bool Truncation = Rcpp::as<bool>(TruncationSEXP);
   // vec Exit = Rcpp::as<vec>(exit);  
   // ivec Status = Rcpp::as<ivec>(status);

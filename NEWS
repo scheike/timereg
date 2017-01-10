@@ -1,4 +1,7 @@
 * Version 1.1.x
+  - Namespace cleaning (twostage)...
+  - All other packages are now only imported
+  - Dependency on R>=3.3 radix algorithm
   - Truncation
   - Case-Control sampling for twostage model. 
   - Two-stage additive gamma survival model. Additive random effects for two-stage survival
@@ -10,7 +13,7 @@
   - Updated divide.conquer
   - Extra unit tests
   - force.same.cens
-  -
+  - dcut, drm, drename for cutting, removing and renaming variables on data-frame. 
 
 * Version 1.1.1 <2015-05-27 Wed>
   - Support for left-truncation 

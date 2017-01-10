@@ -1,4 +1,3 @@
-
 ###{{{ phreg0 
 
 phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,method="NR",...) {
@@ -10,14 +9,17 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
     strataidx <- lapply(stratalev,function(x) which(strata==x))
     if (!all(unlist(lapply(strataidx,function(x) length(x)>0))))
       stop("Strata without any observation")
-    dd <- lapply(strataidx, function(ii)                      
+    dd <- lapply(strataidx, function(ii) {
+        entryi <- entry[ii]
+        trunc <- !is.null(entryi)
+        if (!trunc) entryi <- rep(0,length(exit[ii]))
                  .Call("FastCoxPrep",
-                       entry[ii],exit[ii],status[ii],
+                       entryi,exit[ii],status[ii],
                        as.matrix(X)[ii,,drop=FALSE],
                        id[ii],
-                       !is.null(id),
-                       !is.null(entry),
-                       package="mets"))
+                       trunc,
+                       package="mets")
+                 })
     if (!is.null(id))
       id <- unlist(lapply(dd,function(x) x$id[x$jumps+1]))
     obj <- function(pp,U=FALSE,all=FALSE) {
@@ -42,10 +44,11 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
       structure(-ploglik,gradient=-gradient,hessian=-hessian)
     }
   } else {
+      trunc <- !is.null(entry)
+      if (!trunc) entry <- rep(0,length(exit))
       system.time(dd <- .Call("FastCoxPrep",
                               entry,exit,status,X,
                               as.integer(seq_along(entry)),
-                              is.null(id),
                               !is.null(entry),
                               package="mets"))
       if (!is.null(id))
@@ -246,7 +249,7 @@ iid.phreg  <- function(x,...) {
 ##' @export
 summary.phreg <- function(object,se="robust",...) {
   cc <- ncluster <- NULL
-  if (length(object$p)>0) {
+  if (length(object$p)>0 && object$p>0) {
     I <- -solve(object$hessian)
     V <- vcov(object)
     cc <- cbind(coef(object),diag(V)^0.5,diag(I)^0.5)
@@ -327,6 +330,7 @@ predictPhreg <- function(jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
 
 ##' @export
 predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,strata=object$strata,...) {
+    if (object$p==0) X <- NULL
     if (!is.null(object$strata)) {
         lev <- levels(object$strata)
         if (!is.null(object$strata) &&
@@ -385,6 +389,9 @@ plot.phreg  <- function(x,surv=TRUE,X=NULL,time=NULL,add=FALSE,...) {
     return(invisible(P))
 }
 
+##' @export
+lines.phreg <- function(x,...,add=TRUE) plot(x,...,add=add)
+
 ###}}} plot
 
 ###{{{ print
@@ -395,5 +402,4 @@ print.phreg  <- function(x,...) {
   print(summary(x),...)
 }
 ###}}} print
-
 
