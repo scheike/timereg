@@ -43,7 +43,7 @@ Weights (IPCW) and adds them to a data.frame
 }
 \examples{
 \dontrun{
-data(prt)
+data("prt",package="mets")
 prtw <- ipw(Surv(time,status==0)~country, data=prt[sample(nrow(prt),5000),],
             cluster="id",weight.name="w")
 plot(0,type="n",xlim=range(prtw$time),ylim=c(0,1),xlab="Age",ylab="Probability")

@@ -8,7 +8,11 @@
 ##' @docType package
 ##' @author Klaus K. Holst and Thomas Scheike
 ##' @useDynLib mets
-##' @import stats lava splines timereg Rcpp
+##' @import stats splines timereg Rcpp
+##' @importFrom lava iid estimate bootstrap compare score information twostage %++% %ni% addvar<- blockdiag cancel Col
+##'                  confband constrain<- constraints covariance covariance<- coxWeibull.lvm devcoords distribution<-
+##'                  endogenous eventTime Expand getoutcome intercept<- Inverse kill<- latent latent<- lava.options lvm
+##'                  Model multigroup parameter<- pars regression regression<- revdiag sim trim
 ##' @importFrom survival Surv is.Surv
 ##' @importFrom utils head tail getS3method glob2rx capture.output
 ##' @importFrom graphics matplot lines plot polygon par points abline
@@ -141,7 +145,7 @@ NULL
 ##'  fast.cluster      force.same.cens ilap
 ##'  kendall.ClaytonOakes.twin.ace kendall.normal.twin.ace
 ##'  make.pairwise.design make.pairwise.design.competing
-##'  matplot.twostage object.defined p11.binomial.twostage.RV
+##'  matplot.mets.twostage object.defined p11.binomial.twostage.RV
 ##'  predictPairPlack simbinClaytonOakes.family.ace
 ##'  simbinClaytonOakes.pairs simbinClaytonOakes.twin.ace
 ##'  simClaytonOakes.family.ace simClaytonOakes.twin.ace

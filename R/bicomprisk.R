@@ -25,6 +25,7 @@
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
 ##' @examples
+##' library("timereg")
 ##' 
 ##' ## Simulated data example 
 ##' prt <- simnordic.random(2000,delayed=TRUE,ptrunc=0.7,

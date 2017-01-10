@@ -1,4 +1,6 @@
 * Version 1.1.x
+  - Namespace cleaning (twostage)...
+  - All other packages are now only imported
   - Dependency on R>=3.3 radix algorithm
   - Truncation
   - Case-Control sampling for twostage model. 

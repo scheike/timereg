@@ -477,6 +477,7 @@ dep.cif<-function(cif,data,cause=NULL,model="OR",cif2=NULL,times=NULL,
 ##' A Semiparametric Random Effects Model for Multivariate Competing Risks Data,
 ##' Scheike, Zhang, Sun, Jensen (2010), Biometrika. 
 ##' @examples
+##' library("timereg")
 ##' data(multcif);
 ##' multcif$cause[multcif$cause==0] <- 2
 ##' zyg <- rep(rbinom(200,1,0.5),each=2)
@@ -672,6 +673,7 @@ or.cif<-function(cif,data,cause=NULL,cif2=NULL,times=NULL,
 ##' Multivariate Competing Risks Data, Scheike and Sun (2012), work in progress.
 ##' @examples
 ##' \donttest{ ## Reduce Ex.Timings
+##'  library("timereg")
 ##'  d <- simnordic.random(4000,delayed=TRUE,
 ##'        cordz=0.5,cormz=2,lam0=0.3,country=TRUE)
 ##'  times <- seq(50,90,by=10)
@@ -801,6 +803,8 @@ random.cif<-function(cif,data,cause=NULL,cif2=NULL,
 ##' Estimating heritability for cause specific hazards based on twin data
 ##' @examples
 ##' \donttest{ ## Reduce Ex.Timings
+##'  library("timereg")
+##'  library("survival")
 ##'  d <- simnordic.random(5000,delayed=TRUE,
 ##'        cordz=1.0,cormz=2,lam0=0.3,country=TRUE)
 ##'  times <- seq(50,90,by=10)
@@ -914,7 +918,8 @@ print.summary.cor <- function(x,digits=3,...)
 ##' @author Thomas Scheike
 ##' @keywords survival
 ##' @examples
-##' data(multcif) # simulated data 
+##' library("timereg")
+##' data("multcif",package="mets") # simulated data 
 ##' multcif$cause[multcif$cause==0] <- 2
 ##' 
 ##' times=seq(0.1,3,by=0.1) # to speed up computations use only these time-points

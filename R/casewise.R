@@ -10,7 +10,8 @@
 ##' @aliases casewise.test slope.process casewise.bin
 ##' @examples
 ##' \donttest{ ## Reduce Ex.Timings
-##' data(prt);
+##' library("timereg")
+##' data("prt",package="mets");
 ##' 
 ##' prt <- prt[which(prt$id %in% sample(unique(prt$id),7500)),]
 ##' ### marginal cumulative incidence of prostate cancer

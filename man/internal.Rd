@@ -24,7 +24,7 @@
 \alias{loglikMVN}
 \alias{make.pairwise.design}
 \alias{make.pairwise.design.competing}
-\alias{matplot.twostage}
+\alias{matplot.mets.twostage}
 \alias{nonparcuminc}
 \alias{npc}
 \alias{object.defined}

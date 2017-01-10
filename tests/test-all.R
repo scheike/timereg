@@ -1,4 +1,6 @@
 if (require(testthat)) {
-  library(mets)
-  test_check("mets")
+    library("mets")
+    library("lava")
+    library("timereg")
+    test_check("mets")
 }
