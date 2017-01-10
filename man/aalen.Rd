@@ -29,9 +29,7 @@ max.clust=1000, gamma=NULL, offsets=0,caseweight=NULL)
     cluster variables (for computing robust variances) by the wrapper
     cluster().
   }
-  \item{data}{
-    a data.frame with the variables.
-  }
+  \item{data}{ a data.frame with the variables.  }
   \item{start.time}{start of observation period where estimates are computed.}
   \item{max.time}{end of observation period where estimates are computed. 
     Estimates thus computed from [start.time, max.time]. Default is max of data.}

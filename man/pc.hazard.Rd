@@ -14,7 +14,6 @@ pc.hazard(cumhazard,rr,cum.hazard=TRUE)
 }
 \author{Thomas Scheike}
 \examples{
-set.seed(1)
 
 rates <-  c(0,0.01,0.052,0.01,0.04)
 breaks <- c(0,10,   20,  30,   40)
@@ -39,6 +38,7 @@ ssx <- cox.aalen(Surv(time,status)~+prop(X),data=pctimecox,robust=0)
 plot(ssx)
 lines(cumhaz,col=2,lwd=2)
 
+### simulating data with hazard as real data 
 data(TRACE)
 
 par(mfrow=c(1,2))

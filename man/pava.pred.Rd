@@ -8,7 +8,8 @@ pool-adjacent-violators-algorithm}
 	pava.pred(pred,increasing=TRUE)
 }
 \arguments{
-  \item{pred}{predictions, either vector or rows of predictions}
+  \item{pred}{predictions, either vector or rows of predictions.}
+  \item{increasing}{increasing or decreasing.}
 }
 \value{
 mononotone predictions. 
