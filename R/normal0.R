@@ -1,7 +1,7 @@
 
 ##' @export
 loglikMVN <- function(yl,yu,status,mu,S,thres) {
-    .Call("loglikMVN",
+    .Call("mets_loglikMVN",
           yl=as.matrix(yl),
           yu=as.matrix(yu),
           status=as.integer(status),
@@ -15,7 +15,7 @@ loglikMVN <- function(yl,yu,status,mu,S,thres) {
 
 ##' @export
 scoreMVN <- function(y,mu,S,dmu,dS) {
-    .Call("loglikMVN",
+    .Call("mets_loglikMVN",
           yl=as.matrix(y),
           yu=NULL,
           status=NULL,

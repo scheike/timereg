@@ -74,11 +74,11 @@ summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=
       }
       if (!object$model$eqmarg & is.null(mean.contrast) & is.null(mean.contrast2)) {
           idx <- 2
-          if (length(object$npar$pred)>0) idx <- object$npar$pred/2+1
+          if (length(object$npar$pred)>0 && object$npar$pred!=0) idx <- object$npar$pred/2+1
           m[2] <- p[idx]
           mref2 <- nn[idx]
       }
-      if (!is.null(cor.contrast)) {
+      if (!is.null(cor.contrast)) {          
           p.idx <- seq_len(object$model$zlen)+object$model$blen
           if (length(cor.contrast)==length(p)) p.idx <- seq(length(p))          
           r <- sum(p[p.idx]*cor.contrast)
@@ -88,7 +88,6 @@ summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=
               corref <- paste(convval(cor.contrast[idx1]),corref,sep="")
           }
       }
-      
       return(list(m=m,r=r,mref1=mref1,mref2=mref2,corref=corref))
   }
   probs <- function(p,...) {
@@ -165,7 +164,6 @@ summary.biprobit <- function(object,level=0.05,transform,contrast,mean.contrast=
       }     
       
   }      
-  
   contrast <- any(c(!is.null(cor.contrast),!is.null(mean.contrast),!is.null(mean.contrast2)))
   res <- list(all=res,varcomp=varcomp,prob=res,coef=object$coef,score=colSums(object$score),logLik=object$logLik,msg=object$msg,N=object$N,ncontrasts=K,nstat=P,
               par=pa,model=object$model,contrast=contrast, time=attributes(object)$time,
