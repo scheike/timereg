@@ -155,7 +155,8 @@ with the (k) underlying \eqn{\theta} parameters
 here using theta.des to specify these low-dimension association. Default is a diagonal matrix.
 }
 \examples{
-data(twinstut)
+library("timereg")
+data("twinstut",package="mets")
 twinstut0 <- subset(twinstut, tvparnr<2300000)
 twinstut <- twinstut0
 twinstut$binstut <- (twinstut$stutter=="yes")*1

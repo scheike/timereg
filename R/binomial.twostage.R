@@ -74,7 +74,8 @@
 ##' @references
 ##' Two-stage binomial modelling 
 ##' @examples
-##' data(twinstut)
+##' library("timereg")
+##' data("twinstut",package="mets")
 ##' twinstut0 <- subset(twinstut, tvparnr<2300000)
 ##' twinstut <- twinstut0
 ##' twinstut$binstut <- (twinstut$stutter=="yes")*1
@@ -638,7 +639,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
                theta.iid=theta.iid,thetanames=thetanames,
 	       loglike=-logl,score1=score1,Dscore=out$Dscore,
 	       margsurv=ps,iid.tot=iid.tot,var.tot=var.tot,beta=beta); 
-    class(ud)<-"twostage" 
+    class(ud)<-"mets.twostage" 
     attr(ud, "binomial") <- TRUE
     attr(ud, "ptheta") <- ptheta
     attr(ud, "Formula") <- formula
@@ -773,7 +774,7 @@ print(c(theta,beta)); print(var.tot)
    {
       rv1l <- rv1[i,]
       rv2l <- rv2[i,]
-      tabs[[i]] <- estimate(coef=c(theta,beta),vcov=var.tot,f=function(p) fp(p))
+      tabs[[i]] <- lava::estimate(coef=c(theta,beta),vcov=var.tot,f=function(p) fp(p))
    }
 
    return(tabs)
@@ -880,7 +881,7 @@ breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weights=
 ##' 		         clusters=twinstut$tvparnr,theta.des=theta.des,detail=0,
 ##' 	                 score.method="fisher.scoring")
 ##' summary(bin)
-##' estimate(coef=bin$theta,vcov=bin$var.theta,f=function(p) exp(p))
+##' lava::estimate(coef=bin$theta,vcov=bin$var.theta,f=function(p) exp(p))
 ##' 
 ##' twinstut$cage <- scale(twinstut$age)
 ##' theta.des <- model.matrix( ~-1+factor(zyg)+cage,data=twinstut)

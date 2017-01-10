@@ -117,6 +117,8 @@ with the (k) underlying \eqn{\theta} parameters
 }
 \examples{
 \donttest{ ## Reduce Ex.Timings
+ library("timereg")
+ library("survival")
  d <- simnordic.random(5000,delayed=TRUE,
        cordz=1.0,cormz=2,lam0=0.3,country=TRUE)
  times <- seq(50,90,by=10)

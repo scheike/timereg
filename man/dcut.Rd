@@ -14,7 +14,8 @@
 \alias{drm<-}
 \title{Cutting, sorting, rm (removing), rename for data frames}
 \usage{
-dcut(data, x, cuts = 4, breaks = NULL, regex = FALSE, sep = NULL, ...)
+dcut(data, x, cuts = 4, probs = NULL, breaks = NULL, regex = FALSE,
+  sep = NULL, ...)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}
@@ -22,6 +23,8 @@ dcut(data, x, cuts = 4, breaks = NULL, regex = FALSE, sep = NULL, ...)
 \item{x}{name of variable, or fomula, or names of variables on data frame.}
 
 \item{cuts}{vector of number of groups, 4 is default and gives quartiles.}
+
+\item{probs}{groups defined from quantiles}
 
 \item{breaks}{possible breaks for cutting.}
 
@@ -53,7 +56,7 @@ head(mm)
 mm <- dcut(sTRACE,c("age","wmi"),cuts=c(2,4))
 head(mm)
 
-gx <- qcut(sTRACE$age)
+gx <- dcut(sTRACE$age)
 head(gx)
 
 

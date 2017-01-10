@@ -22,7 +22,7 @@
 ##'
 ##' For all models the 
 ##' standard errors do reflect this uncertainty of the baseline estimates, and might therefore be a bit to small.
-##' To remedy this one can do bootstrapping or use twostage.fullse function when possible.
+##' To remedy this one can do bootstrapping or use survival.twostage.fullse function when possible.
 ##'
 ##' If clusters contain more than two times, the algoritm uses a composite likelihood
 ##' based on the pairwise bivariate models. Can also fit a additive gamma random
@@ -108,6 +108,8 @@
 ##' Eriksson and Scheike (2015), 
 ##' 
 ##' @examples
+##' library("timereg")
+##' library("survival")
 ##' data(diabetes)
 ##' 
 ##' # Marginal Cox model  with treat as covariate
@@ -116,24 +118,24 @@
 ##' fitco1<-two.stage(margph,data=diabetes,theta=1.0,detail=0,Nit=40,clusters=diabetes$id)
 ##' summary(fitco1)
 ##' ### Plackett model
-##' fitp<-twostage(margph,data=diabetes,theta=3.0,Nit=40,
+##' fitp <- survival.twostage(margph,data=diabetes,theta=3.0,Nit=40,
 ##'                clusters=diabetes$id,var.link=1,model="plackett")
 ##' summary(fitp)
 ##' ### Clayton-Oakes
-##' fitco2<-twostage(margph,data=diabetes,theta=0.0,detail=0,
+##' fitco2 <- survival.twostage(margph,data=diabetes,theta=0.0,detail=0,
 ##'                  clusters=diabetes$id,var.link=1,model="clayton.oakes")
 ##' summary(fitco2)
-##' fitco3<-twostage(margph,data=diabetes,theta=1.0,detail=0,
+##' fitco3 <- survival.twostage(margph,data=diabetes,theta=1.0,detail=0,
 ##'                  clusters=diabetes$id,var.link=0,model="clayton.oakes")
 ##' summary(fitco3)
 ##'
 ##' ### without covariates using Aalen for marginals
 ##' marg <- aalen(Surv(time,status)~+1,data=diabetes,n.sim=0,max.clust=NULL,robust=0)
-##' fitpa<-twostage(marg,data=diabetes,theta=1.0,detail=0,Nit=40,
+##' fitpa <- survival.twostage(marg,data=diabetes,theta=1.0,detail=0,Nit=40,
 ##'                 clusters=diabetes$id,score.method="optimize")
 ##' summary(fitpa)
 ##' 
-##' fitcoa<-twostage(marg,data=diabetes,theta=1.0,detail=0,Nit=40,clusters=diabetes$id,
+##' fitcoa <- survival.twostage(marg,data=diabetes,theta=1.0,detail=0,Nit=40,clusters=diabetes$id,
 ##'                  var.link=1,model="clayton.oakes")
 ##' summary(fitcoa)
 ##' 
@@ -167,7 +169,7 @@
 ##' marg2 <- aalen(Surv(boxtime,status)~-1+factor(num):factor(intstrata),
 ##'                data=ud,n.sim=0,robust=0)
 ##' tdes <- model.matrix(~-1+factor(strata),data=ud)
-##' fitp2<-twostage(marg2,data=ud,se.clusters=ud$cluster,clusters=ud$idstrata,
+##' fitp2 <- survival.twostage(marg2,data=ud,se.clusters=ud$cluster,clusters=ud$idstrata,
 ##'                 score.method="fisher.scoring",model="clayton.oakes",
 ##'                 theta.des=tdes,step=0.5)
 ##' summary(fitp2)
@@ -176,13 +178,13 @@
 ##' ud$stratas <- ud$strata; 
 ##' ud$stratas[ud$strata=="0.5-2,0-0.5"] <- "0-0.5,0.5-2"
 ##' tdes2 <- model.matrix(~-1+factor(stratas),data=ud)
-##' fitp3<-twostage(marg2,data=ud,clusters=ud$idstrata,se.cluster=ud$cluster,
+##' fitp3 <- survival.twostage(marg2,data=ud,clusters=ud$idstrata,se.cluster=ud$cluster,
 ##'                 score.method="fisher.scoring",model="clayton.oakes",
 ##'                 theta.des=tdes2,step=0.5)
 ##' summary(fitp3)
 ##' 
 ##' ### same model using strata option, a bit slower 
-##' fitp4<-twostage(marg2,data=ud,clusters=ud$cluster,se.cluster=ud$cluster,
+##' fitp4 <- survival.twostage(marg2,data=ud,clusters=ud$cluster,se.cluster=ud$cluster,
 ##'                 score.method="fisher.scoring",model="clayton.oakes",
 ##'                 theta.des=tdes2,step=0.5,strata=ud$strata)
 ##' summary(fitp4)
@@ -195,7 +197,7 @@
 ##' pardes <- out$pardes
 ##' des.rv <- out$des.rv
 ##' aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
-##' ts <- twostage(aa,data=data,clusters=data$cluster,detail=0,
+##' ts <- survival.twostage(aa,data=data,clusters=data$cluster,detail=0,
 ##' 	       theta=c(2,1)/10,var.link=0,step=0.5,
 ##' 	       random.design=des.rv,theta.des=pardes)
 ##' summary(ts)
@@ -223,7 +225,7 @@
 ##' ## additive model specified via formula-list
 ##' cr.models <- list(Surv(time,status)~+1)
 ##' 
-##' tscce <- twostage(NULL,data=datacc,clusters=datacc$cluster,
+##' tscce <- survival.twostage(NULL,data=datacc,clusters=datacc$cluster,
 ##'            detail=0,theta=c(2,1)/10,var.link=0,step=1.0,
 ##'	       pairs=pairs,
 ##'	       random.design=dout$random.design,theta.des=dout$theta.des,
@@ -236,7 +238,6 @@
 ##' ### case control sampling 
 ##' @keywords survival
 ##' @author Thomas Scheike
-##' @export
 ##' @param margsurv Marginal model 
 ##' @param data data frame
 ##' @param score.method Scoring method "fisher.scoring", "nlminb", "optimize", "nlm"
@@ -247,7 +248,8 @@
 ##' @param weights Weights
 ##' @param control Optimization arguments
 ##' @param theta Starting values for variance components
-##' @param theta.des design for dependence parameters, when pairs are given this is could be a (pairs) x (numer of parameters)  x (max number random effects) matrix
+##' @param theta.des design for dependence parameters, when pairs are given this is could be a
+##' (pairs) x (numer of parameters)  x (max number random effects) matrix
 ##' @param var.link Link function for variance 
 ##' @param iid Calculate i.i.d. decomposition
 ##' @param step Step size
@@ -260,23 +262,49 @@
 ##' @param se.clusters for clusters for se calculation with iid
 ##' @param max.clust max se.clusters for se calculation with iid
 ##' @param numDeriv to get numDeriv version of second derivative, otherwise uses sum of squared score 
+##' @param random.design random effect design for additive gamma modeli, when pairs are given this is
+##' a (pairs) x (2) x (max number random effects) matrix, see pairs.rvs below
+##' @param pairs matrix with rows of indeces (two-columns) for the pairs considered in the pairwise
+##' composite score, useful for case-control sampling when marginal is known.
+##' @param pairs.rvs for additive gamma model and random.design and theta.des are given as arrays,
+##' this specifice number of random effects for each pair. 
 ##' @param numDeriv.method uses simple to speed up things and second derivative not so important.
-##' @param random.design random effect design for additive gamma modeli, when pairs are given this is a (pairs) x (2) x (max number random effects) matrix, see pairs.rvs below
-##' @param pairs matrix with rows of indeces (two-columns) for the pairs considered in the pairwise composite score, useful for case-control sampling when marginal is known.
-##' @param pairs.rvs for additive gamma model and random.design and theta.des are given as arrays, this specifice number of random effects for each pair. 
-##' @param additive.gamma.sum for two.stage=0, this is specification of the lamtot in the models via a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number of theta parameters), when null then sums all parameters.
-##' @param var.par  is 1 for the default parametrization with the variances of the random effects, var.par=0 specifies that the \eqn{\lambda_j}'s are used as parameters. 
+##' @param additive.gamma.sum for two.stage=0, this is specification of the lamtot in the models via
+##' a matrix that is multiplied onto the parameters theta (dimensions=(number random effects x number
+##' of theta parameters), when null then sums all parameters.
+##' @param var.par is 1 for the default parametrization with the variances of the random effects,
+##' var.par=0 specifies that the \eqn{\lambda_j}'s are used as parameters. 
 ##' @param two.stage to fit two-stage model, if 0 then will fit hazard model with additive gamma structure (WIP)
 ##' @param cr.models competing risks models for two.stage=0, should be given as a list with models for each cause
-##' @param case.control assumes case control structure for "pairs" with second column being the probands, when this options is used the twostage model is profiled out via the paired estimating equations for the survival model. 
-##' @param ascertained if the pair are sampled only when there is an event. This is in contrast to case.control sampling where a proband is given. This can be combined with control probands. Pair-call of twostage is needed  and second column of pairs are the first jump time with an event for ascertained pairs, or time of control proband.
-##' @param shut.up to make the program more silent in the context of iterative procedures for case-control and ascertained sampling
-twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
-                     silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,
-                     var.link=1,iid=1,step=0.5,notaylor=0,model="clayton.oakes",
-		     marginal.trunc=NULL,marginal.survival=NULL,marginal.status=NULL,strata=NULL,
-		     se.clusters=NULL,max.clust=NULL,numDeriv=0,random.design=NULL,pairs=NULL,pairs.rvs=NULL,numDeriv.method="simple",
-                     additive.gamma.sum=NULL,var.par=1,two.stage=1,cr.models=NULL,case.control=0,ascertained=0,shut.up=0)
+##' @param case.control assumes case control structure for "pairs" with second column being the probands,
+##' when this options is used the twostage model is profiled out via the paired estimating equations for the
+##' survival model. 
+##' @param ascertained if the pair are sampled only when there is an event. This is in contrast to
+##' case.control sampling where a proband is given. This can be combined with control probands. Pair-call
+##' of twostage is needed  and second column of pairs are the first jump time with an event for ascertained pairs,
+##' or time of control proband.
+##' @param shut.up to make the program more silent in the context of iterative procedures for case-control
+##' and ascertained sampling
+##' @aliases survival.twostage survival.twostage.fullse
+##' @usage
+##' survival.twostage(margsurv,data=sys.parent(),score.method="fisher.scoring",
+##'                   Nit=60,detail=0,clusters=NULL,
+##'                   silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,
+##'                   var.link=1,iid=1,step=0.5,notaylor=0,model="clayton.oakes",
+##'                   marginal.trunc=NULL,marginal.survival=NULL,marginal.status=NULL,
+##'                   strata=NULL,
+##'                   se.clusters=NULL,max.clust=NULL,numDeriv=0,random.design=NULL,
+##'                   pairs=NULL,pairs.rvs=NULL,
+##'                   numDeriv.method="simple",
+##'                   additive.gamma.sum=NULL,var.par=1,two.stage=1,cr.models=NULL,
+##'                   case.control=0, ascertained=0, shut.up=0)
+##' @export survival.twostage
+survival.twostage <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
+             silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,
+             var.link=1,iid=1,step=0.5,notaylor=0,model="clayton.oakes",
+             marginal.trunc=NULL,marginal.survival=NULL,marginal.status=NULL,strata=NULL,
+             se.clusters=NULL,max.clust=NULL,numDeriv=0,random.design=NULL,pairs=NULL,pairs.rvs=NULL,numDeriv.method="simple",
+             additive.gamma.sum=NULL,var.par=1,two.stage=1,cr.models=NULL,case.control=0,ascertained=0,shut.up=0)
 { ## {{{
 ## {{{ seting up design and variables
 rate.sim <- 1; sym=1; var.func <- NULL
@@ -462,8 +490,6 @@ if (!is.null(margsurv))  {
   }
   theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
   if (length(dim(theta.des))!=3) theta.des <- as.matrix(theta.des)
-###  print(dim(theta.des))
-###  print(dim(random.design))
 
   if (maxclust==1) stop("No clusters, maxclust size=1\n"); 
 
@@ -574,8 +600,6 @@ if (!is.null(margsurv))  {
 	mrv.des <- array(0,c(dimr[1]/2,dimr[2],nrow(data)))
 	mtheta.des[,,pairs[,1]] <- theta.des
 	mtheta.des[,,pairs[,2]] <- theta.des
-###	print(dim(mrv.des)); print(dim(mtheta.des))
-###	print(1:(dimr[1]/2)); print((dimr[1]/2+1):dimr[1])
 	mrv.des[,,pairs[,1]] <- random.design[1:(dimr[1]/2),,,drop=FALSE]
 	mrv.des[,,pairs[,2]] <- random.design[(dimr[1]/2+1):dimr[1],,,drop=FALSE]
 	### array thetades to jump times (subjects)
@@ -583,7 +607,6 @@ if (!is.null(margsurv))  {
 	### array randomdes to jump times (subjects)
 	mrv.des <- mrv.des[,,ids,drop=FALSE]
 	nrv.des <- pairs.rvs[ids]
-###	print(dim(mtheta.des)); print(dim(mrv.des)); print(dim(xjump)); print(dim(dBaalen)); 
 	## }}} 
 
       } ## }}} 
@@ -670,9 +693,6 @@ if (!is.null(margsurv))  {
 	 xjump <- array(0,c(1,1,1)); dBaalen <- matrix(0,1,1); nrv.des <- 3
  } ## }}} 
 
-###  print(antpairs); print(head(pairs.rvs)); print(dim(theta.des)); print(dim(random.design)); print(additive.gamma.sum)
-### print(c(pair.structure,dep.model)); 
-### print(summary(clusters-se.clusters))
 
   loglike <- function(par) 
   { ## {{{
@@ -681,7 +701,6 @@ if (!is.null(margsurv))  {
      if (pair.structure==1 & dep.model==3) Xtheta <- matrix(0,antpers,1); ## not needed 
      DXtheta <- array(0,c(1,1,1));
 
-###   dyn.load("twostage.so")
       if (var.link==1 & dep.model==3) epar <- c(exp(par)) else epar <- c(par)
       partheta <- epar
 
@@ -690,7 +709,6 @@ if (!is.null(margsurv))  {
 	 if (is.null(var.func)) {
 	    sp <- sum(epar)
 	    partheta <- epar/sp^2 
-###	    print(partheta); print(epar)
          } else partheta <- epar ## par.func(epar)
       } 
 
@@ -1132,7 +1150,7 @@ if (!is.null(margsurv))  {
 	     thetanames=thetanames,loglike=logl,score1=score1,Dscore=out$Dscore,
 	     marginal.surv=marginal.surv,marginal.trunc=marginal.trunc,baseline=out$baseline,
 	     se=diag(robvar.theta)^.5)
-  class(ud)<-"twostage" 
+  class(ud) <- "mets.twostage" 
   attr(ud, "response") <- "survival"
   attr(ud, "Formula") <- formula
   attr(ud, "clusters") <- clusters
@@ -1163,9 +1181,9 @@ if (!is.null(margsurv))  {
 } ## }}}
 
 ##' @export
-summary.twostage <-function (object,digits = 3,silent=1,...) 
+summary.mets.twostage <- function(object,digits = 3,silent=1,...) 
 { ## {{{
-  if (!(inherits(object,"twostage"))) stop("Must be a Two-Stage object")
+  if (!(inherits(object,"mets.twostage"))) stop("Must be a Two-Stage object")
   
   var.link<-attr(object,"var.link");
   if ((object$model=="plackett") & (silent==0)) cat("Dependence parameter for Plackett model \n"); 
@@ -1179,7 +1197,7 @@ summary.twostage <-function (object,digits = 3,silent=1,...)
 	  cat(paste("    Score:",object$score,"  \n")); 
   }
 
-  coefs <- coef.twostage(object,response=response,...);
+  coefs <- coef.mets.twostage(object,response=response,...);
 
   if (attr(object,"additive-gamma")==1 & (!is.null(object$robvar.theta))  ) {
       var.link <- attr(object,"var.link"); 
@@ -1231,12 +1249,12 @@ if (var.par==1)
       res <- list(estimates=coefs, type=attr(object,"Type"),h=e,par=pare,vare=vare,vartot=vartot)
   } else res <- list(estimates=coefs, type=attr(object,"Type"))
 
-  class(res) <- "summary.twostage"
+  class(res) <- "summary.mets.twostage"
   res
 } ## }}}
 
 ##' @export
-coef.twostage <- function(object,var.link=NULL,response="survival",...)
+coef.mets.twostage <- function(object,var.link=NULL,response="survival",...)
 { ## {{{
   pt <- attr(object,"ptheta")
   theta <- object$theta[seq(1,pt)]
@@ -1279,7 +1297,7 @@ coef.twostage <- function(object,var.link=NULL,response="survival",...)
 } ## }}}
 
 ##' @export
-print.twostage<-function(x,digits=3,...)
+print.mets.twostage<-function(x,digits=3,...)
 { ## {{{
   print(x$call); 
   cat("\n")
@@ -1287,7 +1305,7 @@ print.twostage<-function(x,digits=3,...)
 } ## }}} 
 
 ##' @export
-plot.twostage<-function(x,pointwise.ci=1,robust=0,specific.comps=FALSE,
+plot.mets.twostage<-function(x,pointwise.ci=1,robust=0,specific.comps=FALSE,
 		level=0.05, 
 		start.time=0,stop.time=0,add.to.plot=FALSE,mains=TRUE,
                 xlab="Time",ylab ="Cumulative regression function",...) 
@@ -1327,14 +1345,14 @@ plot.twostage<-function(x,pointwise.ci=1,robust=0,specific.comps=FALSE,
 }  ## }}}
 
 ##' @export
-matplot.twostage <- function(object,...)
+matplot.mets.twostage <- function(object,...)
 { ## {{{ 
 B <- object$baseline
 matplot(B[,1],B[,-1],type="s",...)
 } ## }}} 
 
 ##' @export
-predict.twostage <- function(object,X=NULL,Z=NULL,times=NULL,times2=NULL,theta.des=NULL,diag=TRUE,...)
+predict.mets.twostage <- function(object,X=NULL,Z=NULL,times=NULL,times2=NULL,theta.des=NULL,diag=TRUE,...)
 { ## {{{
 time.coef <- data.frame(object$cum)
 if (!is.null(times)) {
@@ -1376,7 +1394,7 @@ out=list(St1t2=St1t2,S1=S1,S2=S2,times=times,times2=times2,theta=theta)
 return(out)
 } ## }}}
 
-##' @export
+##' @export ascertained.pairs
 ascertained.pairs <-function (pairs,data,cr.models,bin=FALSE) 
 {# {{{
       timestatus <- all.vars(cr.models)
@@ -1419,7 +1437,7 @@ alpha2kendall <- function(theta,link=0) {  ## {{{
    return(1/(1+2/theta)) 
 } ## }}} 
 
-##' @export
+##' @export piecewise.twostage
 piecewise.twostage <- function(cut1,cut2,data=sys.parent(),timevar="time",status="status",id="id",covars=NULL,covars.pairs=NULL,num=NULL,
             score.method="optimize",Nit=100,detail=0,silent=1,weights=NULL,
             control=list(),theta=NULL,theta.des=NULL,var.link=1,iid=1,step=0.5,model="plackett",data.return=0)
@@ -1485,7 +1503,7 @@ f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+fact
 else f <- as.formula(with(attributes(datalr),paste("Surv(",time,",",status,")~-1+factor(",num,"):",covars)))
 marg1 <- aalen(f,data=datalr,n.sim=0,robust=0)
 
-fitlr<-  twostage(marg1,data=datalr,clusters=datalr$tsid,model=model,score.method=score.method,
+fitlr<-  survival.twostage(marg1,data=datalr,clusters=datalr$tsid,model=model,score.method=score.method,
              Nit=Nit,detail=detail,silent=silent,weights=weights,
              control=control,theta=theta,theta.des=theta.des,var.link=var.link,iid=iid,step=step)
 ####
@@ -1530,7 +1548,7 @@ attr(ud, "Type") <- model
 return(ud);
 } ## }}}
 
-##' @export
+##' @export piecewise.data
 piecewise.data <- function(cut1,cut2,data=sys.parent(),timevar="time",status="status",id="id",covars=NULL,covars.pairs=NULL,num=NULL,silent=1)
 { ## {{{
 ud <- list()
@@ -1631,13 +1649,15 @@ coefmat <- function(est,stderr,digits=3,...) { ## {{{
 ##' likelihood assuming that the marginals are known. 
 ##'
 ##' @examples
-##' data(prt)
-##' margp<- coxph(Surv(time,status==1)~factor(country),data=prt)
-##' fitco<-twostage(margp,data=prt,clusters=prt$id)
+##' library("timereg")
+##' library("survival")
+##' data("prt",package="mets")
+##' margp <- coxph(Surv(time,status==1)~factor(country),data=prt)
+##' fitco <- survival.twostage(margp,data=prt,clusters=prt$id)
 ##' summary(fitco)
 ##' 
 ##' des <- model.matrix(~-1+factor(zyg),data=prt); 
-##' fitco<-twostage(margp,data=prt,theta.des=des,clusters=prt$id)
+##' fitco <- survival.twostage(margp,data=prt,theta.des=des,clusters=prt$id)
 ##' summary(fitco)
 ##' 
 ##' dfam <- simSurvFam(1000)
@@ -1652,13 +1672,13 @@ coefmat <- function(est,stderr,digits=3,...) { ## {{{
 ##' } 
 ##' 
 ##' marg <- coxph(Surv(time,status)~factor(num),data=dfam)
-##' out3 <- easy.twostage(marg,data=dfam,time="time",status="status",id="id",deshelp=0,
+##' out3 <- easy.survival.twostage(marg,data=dfam,time="time",status="status",id="id",deshelp=0,
 ##'                       score.method="fisher.scoring",theta.formula=desfs,
 ##'                       desnames=c("parent-parent","parent-child","child-cild"))
 ##' summary(out3)
 ##' 
 ##' @keywords survival twostage 
-##' @export
+##' @export easy.survival.twostage
 ##' @param margsurv model 
 ##' @param data data frame
 ##' @param score.method Scoring method
@@ -1683,7 +1703,7 @@ coefmat <- function(est,stderr,digits=3,...) { ## {{{
 ##' @param strata strata for fitting 
 ##' @param max.clust max clusters
 ##' @param se.clusters clusters for iid decomposition for roubst standard errors
-easy.twostage <- function(margsurv=NULL,data=sys.parent(),score.method="nlminb",
+easy.survival.twostage <- function(margsurv=NULL,data=sys.parent(),score.method="nlminb",
 status="status",time="time",entry=NULL,id="id", Nit=60,detail=0, silent=1,weights=NULL, control=list(),
 theta=NULL,theta.formula=NULL,desnames=NULL,deshelp=0,var.link=1,iid=1,
 step=0.5,model="plackett",marginal.surv=NULL,strata=NULL,max.clust=NULL,se.clusters=NULL)
@@ -1763,7 +1783,7 @@ if (class(margsurv)[1]=="coxph")
 ###    print(data.fam[,status])
     if (is.null(pentry)) ptrunc <- NULL else ptrunc <- data.fam[,pentry]
 
-    out <- twostage(NULL,data=data.fam,
+    out <- survival.twostage(NULL,data=data.fam,
                     clusters=data.fam$subfam,
 		    theta.des=as.matrix(data.fam[,desnames]),
                     detail=detail, score.method=score.method, Nit=Nit,step=step,
@@ -1803,8 +1823,8 @@ object.defined <- function(object)
    exists(as.character(substitute(object)))
 }
 
-##' @export
-twostage.fullse <- function(margsurv,data=sys.parent(),
+##' @export survival.twostage.fullse
+survival.twostage.fullse <- function(margsurv,data=sys.parent(),
    score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
    silent=1,weights=NULL, control=list(),theta=NULL,
    theta.des=NULL,var.link=1,iid=1,
@@ -1821,7 +1841,7 @@ twostage.fullse <- function(margsurv,data=sys.parent(),
   ### takes cluster grouping of marginal models for se
   se.clusters <- attr(margsurv,"cluster")
 
-  udtwo <- twostage(margsurv,data=data,
+  udtwo <- survival.twostage(margsurv,data=data,
   score.method=score.method,Nit=Nit,detail=detail,
   clusters=clusters,
   silent=silent,weights=weights,control=control,
@@ -1848,7 +1868,7 @@ twobeta  <- function(par,beta=1)
 { ## {{{ 
    if (beta==1) margsurv$gamma <- par else margsurv$cum[,2] <- par
 
-   udl <- twostage(margsurv,data=data,
+   udl <- survival.twostage(margsurv,data=data,
                     score.method=score.method,Nit=0,detail=detail,clusters=clusters,
 		    silent=silent,weights=weights, control=control,theta=theta,theta.des=theta.des,
 		    var.link=var.link,iid=0,
@@ -1886,12 +1906,12 @@ attr(res,"DUbeta") <- DUbeta;
 attr(res,"DUbase") <- DUbase; 
 attr(res,"DUthetainv") <- udtwo$hessi
 
-class(res) <- "twostage.fullse"
+class(res) <- "survival.twostage.fullse"
 return(res)
 } ## }}} 
 
 ##' @export
-summary.twostage.fullse <- function(object,digits=3,...)
+summary.survival.twostage.fullse <- function(object,digits=3,...)
 { ## {{{ 
 	tval <- object$coef/object$se
 	pval <- 2*(1-pnorm(abs(tval)))
@@ -1901,15 +1921,15 @@ return(res)
 } ## }}} 
 
 ##' @export
-coef.twostage.fullse <- function(object,digits=3,...)
+coef.survival.twostage.fullse <- function(object,digits=3,...)
 { ## {{{ 
-summary.twostage.fullse(object)
+summary.survival.twostage.fullse(object)
 } ## }}} 
 
 ##' @export
-print.twostage.fullse  <-  function(x,...)
+print.survival.twostage.fullse  <-  function(x,...)
 {  ## {{{ 
-summary.twostage.fullse(x)
+summary.survival.twostage.fullse(x)
 } ## }}} 
 
 
@@ -2322,3 +2342,17 @@ EVaddGam <- function(theta,x1,x2,thetades,ags)
 } ## }}} 
 
 
+
+
+
+##' @export
+twostage.aalen <- function(object,...) survival.twostage(object,...)
+
+##' @export
+twostage.cox.aalen <- function(object,...) survival.twostage(object,...)
+
+##' @export
+twostage.coxph <- function(object,...) survival.twostage(object,...)
+
+##' @export
+twostage.phreg <- function(object,...) survival.twostage(object,...)

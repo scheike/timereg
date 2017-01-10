@@ -32,6 +32,7 @@ Additive hazards model with (gamma) frailty
 Aalen frailty model
 }
 \examples{
+library("timereg")
 dd <- simAalenFrailty(5000)
 f <- ~1##+x
 X <- model.matrix(f,dd) ## design matrix for non-parametric terms

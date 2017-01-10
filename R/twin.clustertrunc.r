@@ -11,6 +11,7 @@
 ##' @author Thomas Scheike
 ##' @export
 ##' @examples
+##' library("timereg")
 ##' data(diabetes)
 ##' v <- diabetes$time*runif(nrow(diabetes))*rbinom(nrow(diabetes),1,0.5)
 ##' diabetes$v <- v

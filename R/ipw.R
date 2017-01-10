@@ -19,7 +19,7 @@
 ##' @author Klaus K. Holst
 ##' @examples
 ##' \dontrun{
-##' data(prt)
+##' data("prt",package="mets")
 ##' prtw <- ipw(Surv(time,status==0)~country, data=prt[sample(nrow(prt),5000),],
 ##'             cluster="id",weight.name="w")
 ##' plot(0,type="n",xlim=range(prtw$time),ylim=c(0,1),xlab="Age",ylab="Probability")
@@ -182,6 +182,7 @@ ipw <- function(formula,data,cluster,
 ##' @param ... Additional arguments to censoring model 
 ##' @author Thomas Scheike 
 ##' @examples
+##' library("timereg")
 ##' d <- simnordic.random(3000,delayed=TRUE,ptrunc=0.7,
 ##'       cordz=0.5,cormz=2,lam0=0.3,country=FALSE)
 ##' d$strata <- as.numeric(d$country)+(d$zyg=="MZ")*4

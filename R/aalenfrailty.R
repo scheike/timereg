@@ -14,6 +14,7 @@
 ##' @author Klaus K. Holst
 ##' @export
 ##' @examples
+##' library("timereg")
 ##' dd <- simAalenFrailty(5000)
 ##' f <- ~1##+x
 ##' X <- model.matrix(f,dd) ## design matrix for non-parametric terms

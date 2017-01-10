@@ -58,6 +58,7 @@ Calculates Inverse Probability of Censoring and Truncation
 Weights and adds them to a data.frame
 }
 \examples{
+library("timereg")
 d <- simnordic.random(3000,delayed=TRUE,ptrunc=0.7,
       cordz=0.5,cormz=2,lam0=0.3,country=FALSE)
 d$strata <- as.numeric(d$country)+(d$zyg=="MZ")*4

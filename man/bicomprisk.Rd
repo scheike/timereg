@@ -57,6 +57,7 @@ bicomprisk(formula, data, cause = c(1, 1), cens = 0, causes, indiv,
 Estimation of concordance in bivariate competing risks data
 }
 \examples{
+library("timereg")
 
 ## Simulated data example 
 prt <- simnordic.random(2000,delayed=TRUE,ptrunc=0.7,

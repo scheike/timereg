@@ -4,6 +4,7 @@
 ##' @param data if x is formula or names for data frame then data frame is needed.
 ##' @param x name of variable, or fomula, or names of variables on data frame.
 ##' @param cuts vector of number of groups, 4 is default and gives quartiles.
+##' @param probs groups defined from quantiles
 ##' @param breaks  possible breaks for cutting.
 ##' @param regex for regular expressions.
 ##' @param sep seperator for naming of cut names.
@@ -29,7 +30,7 @@
 ##' mm <- dcut(sTRACE,c("age","wmi"),cuts=c(2,4))
 ##' head(mm)
 ##'
-##' gx <- qcut(sTRACE$age)
+##' gx <- dcut(sTRACE$age)
 ##' head(gx)
 ##'
 ##'
@@ -63,8 +64,15 @@
 ##' head(mm)
 ##' @aliases dcut dcut<- drm drm<- drename drename<- dkeep dkeep<- ddrop ddrop<- dreshape
 ##' @export
-dcut <- function(data,x,cuts=4,breaks=NULL,regex=FALSE,sep=NULL,...)
+dcut <- function(data,x,cuts=4,probs=NULL,breaks=NULL,regex=FALSE,sep=NULL,...)
 {# {{{
+    if (inherits(data,"vector")) {
+        if (is.null(probs))
+            probs <- seq(0, 1, length.out = cuts + 1)
+        bb <- quantile(data, probs, ...)
+        gx <- cut(data, breaks = bb, include.lowest = TRUE)
+        return(gx)
+    }
 
  if (is.null(sep) & is.null(breaks))    sep <- "."
  if (is.null(sep) & (!is.null(breaks))) sep <- "b"
@@ -104,12 +112,13 @@ for (k in 1:ll)
 {
   xx <- x[[k]]
   if (is.numeric(xx)) {
-  if (is.null(breaks)) {
-     probs <- seq(0,1,length.out=cuts[k]+1)
-     name<-paste(xnames[k],cuts[k],sep=sep)
-     bb <- quantile(xx,probs)
-     } else { bb <- breaks ; name<-paste(xnames[k],breaks[2],sep=sep) }
-
+      if (is.null(breaks)) {
+          if (is.null(probs))
+              probs <- seq(0,1,length.out=cuts[k]+1)
+          name<-paste(xnames[k],cuts[k],sep=sep)
+          bb <- quantile(xx,probs)
+      } else { bb <- breaks ; name<-paste(xnames[k],breaks[2],sep=sep) }
+      
   if (sum(duplicated(bb))==0)
    data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE,...)
   }
@@ -500,12 +509,12 @@ procformdata <- function(formula,data,sep, ...) {
 ##' daggregate(iris, "^.e.al", group="Species", fun=tail, regex=TRUE)
 ##' daggregate(sTRACE, status~ diabetes, fun=table)
 ##' daggregate(sTRACE, status~ diabetes+sex, fun=table)
-##' daggregate(sTRACE, status~ diabetes+sex|vf+I(wmi>1.4), fun=table)
+##' daggregate(sTRACE, status + diabetes+sex ~ vf+I(wmi>1.4), fun=table)
 ##' daggregate(iris, "^.e.al", group="Species",regex=TRUE)
 ##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5))
 ##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=table)
-##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=lava:::Print)
 ##'
+##' library("lava")
 ##' m <- lvm(y~v+x+z+g)
 ##' categorical(m,K=3) <- ~g
 ##' d <- sim(m,10,seed=1)
@@ -570,6 +579,19 @@ daggregate <- function(data,y,x=NULL,...,group=NULL,fun="summary",regex=FALSE, s
 
     if (is.character(fun)) fun <- get(fun)
 
+    if (!is.null(x)) {
+        if (is.null(group)) {
+            res <- do.call(fun, c(list(y,x),list(...)))
+            return(res)
+        }
+        idxy <- seq(NCOL(y))
+        idxx <- NCOL(y) + seq(NCOL(x))
+        dd <- cbind(y,x)
+        ff <- function(z,...) fun(z[,idxy,drop=TRUE],z[,idxx,drop=TRUE],...)
+        res <- by(dd,group,ff,...)
+        return(res)
+    }
+    
     if (!is.null(group)) {
         if (silent) 
             capture.output(res <- by(y,group,fun,...))
