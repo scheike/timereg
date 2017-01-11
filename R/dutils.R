@@ -629,7 +629,7 @@ dhead <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) ut
 dtail <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) utils::tail(z,...))
 
 ##' @export
-dsummary <- function(data=NULL,y,x=NULL,...) daggregate(data,y,x,fun=function(z) base::summary(z,...))
+dsummary <- function(data=NULL,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) base::summary(z,...))
 
 ##' @export
 dstr <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=function(z) utils::str(z,...)))
