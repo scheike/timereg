@@ -35,8 +35,8 @@
 ##'
 ##'
 ##' ## Removes all cuts variables with these names wildcards
-##' mm <- drm(mm,c("*.2","*.4"))
-##' head(mm)
+##' mm1 <- drm(mm,c("*.2","*.4"))
+##' head(mm1)
 ##'
 ##' ## wildcards, for age, age2, age4 and wmi 
 ##' head(dcut(mm,c("a*","?m*")))
@@ -54,14 +54,23 @@
 ##' head(mm)
 ##' drename(mm, ~age+wmi) <- c("Wmi","Age")
 ##' head(mm)
+##' mm1 <- mm
+##'
+##' ## all names to lower 
+##' drename(mm1) <- ~.
+##' head(mm1)
 ##'
 ##' ## A* to lower 
 ##' mm2 <-  drename(mm,c("A*","W*"))
 ##' head(mm2)
 ##' drename(mm,"A*") <- ~.
 ##' head(mm)
-##' drename(mm) <- ~.
-##' head(mm)
+##'
+##' dd <- data.frame(A_1=1:2,B_1=1:2)
+##' funn <- function(x) gsub("_",".",x)
+##' drename(dd) <- ~.
+##' drename(dd,fun=funn) <- ~.
+##' names(dd)
 ##' @aliases dcut dcut<- drm drm<- drename drename<- dkeep dkeep<- ddrop ddrop<- dreshape
 ##' @export
 dcut <- function(data,x,cuts=4,probs=NULL,breaks=NULL,regex=FALSE,sep=NULL,...)
