@@ -679,7 +679,7 @@ dsd <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) appl
 dquantile <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) apply(z,2,function(x) quantile(x,...,na.rm=TRUE)))
 
 ##' @export
-dprint <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) Print(z,...),silent=TRUE)
+dprint <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) Print(z,...),silent=FALSE)
 
 
 ##' @export
@@ -744,28 +744,30 @@ Print <- function(x,n=5,digits=max(3,getOption("digits")-3),...) {
         x <- cbind(x)
         colnames(x) <- ""
     }
-    if (is.null(rownames(x))) {
-        rownames(x) <- seq(nrow(x))
-    }
+    ## if (is.null(rownames(x))) {
+    ##     rownames(x) <- seq(nrow(x))
+    ## }
     sep <- rbind("---"=rep('',ncol(x)))
     if (n<1) {
-        print(x,quote=FALSE,digits=digits,...)
+        val <- x
     } else {
-        ## hd <- base::as.matrix(base::format(utils::head(x,n),digits=digits,...))
-        ## tl <- base::as.matrix(base::format(utils::tail(x,n),digits=digits,...))
-        ## print(rbind(hd,sep,tl),quote=FALSE,...)
         if (NROW(x)<=(2*n)) {
             hd <- base::format(utils::head(x,2*n),digits=digits,...)
-            print(hd, quote=FALSE,...)
+            val <- hd
         } else {
             hd <- base::format(utils::head(x,n),digits=digits,...)
             tl <- base::format(utils::tail(x,n),digits=digits,...)
-            print(rbind(base::as.matrix(hd),sep,base::as.matrix(tl)),
-                  quote=FALSE,...)
+            val <- rbind(base::as.matrix(hd),sep,base::as.matrix(tl))
         }
     }
-    invisible(structure(x,class=c("Print",class(x))))
+    return(structure(val,class=c("Print","matrix")))
 }
 
 ##' @export
-print.Print <- function(x,...) Print(x,...)
+print.Print <- function(x,...) {
+    class(x) <- class(x)[-1]
+    print(x,quote=FALSE,...)
+}
+
+
+    
