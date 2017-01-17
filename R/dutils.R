@@ -200,7 +200,7 @@ return(data)
 "drelevel<-" <- function(data,...,value) drelevel(data,value,...)
 
 ##' @export
-dlevels <- function(data,x,...)
+dlevels <- function(data,x,regex=FALSE,...)
 {# {{{
 
  if (inherits(data,"factor")) {
