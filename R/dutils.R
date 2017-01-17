@@ -740,6 +740,8 @@ daggregate <- function(data,y=NULL,x=NULL,...,group=NULL,fun="summary",regex=FAL
     res
 }# }}}
 
+##' @export
+dlist <- function(data,y=NULL,x=NULL,lines=1:5,...) daggregate(data,y,x,fun=function(z) Print(z[lines,],...))
 
 ##' @export
 dhead <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) utils::head(z,...))
@@ -794,7 +796,6 @@ dquantile <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z
 
 ##' @export
 dprint <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) Print(z,...),silent=FALSE)
-
 
 ##' @export
 dreshape <- function(data,...) fast.reshape(data,...)
