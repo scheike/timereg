@@ -140,6 +140,116 @@ return(data)
 "dcut<-" <- function(data,...,value) dcut(data,value,...)
 
 ##' @export
+drelevel <- function(data,x,ref=NULL,regex=FALSE,sep=NULL,...)
+{# {{{
+
+ if (missing(x) & is.data.frame(data))  stop("specify factor to relevel for data frame\n")
+ if (is.null(ref)) stop("specify baseline-reference level \n")
+
+ if (is.null(sep))  sep <- "."
+
+ if (inherits(data,"vector") | inherits(data,"factor")) {
+      if (is.vector(data)) data <- factor(data)
+      gx <- relevel(data,ref=ref)
+      return(gx)
+ } else {
+
+ if (inherits(x,"formula")) {
+     x <- all.vars(x)
+     if (x[1]==".") x <- names(data) 
+     xnames <- x
+  } else if  (is.character(x)) {
+     xnames <- x
+     xxx<-c()
+     for (xx in xnames)
+     {
+        if (!regex) xx <- glob2rx(xx)
+        n <- grep(xx,names(data))
+        xxx <- c(xxx,names(data)[n])
+     }
+     xnames <- xxx[!duplicated(xxx)]
+  }
+
+
+  if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
+  dots <- list()
+  args <- lapply(dots, function(x) {
+			           if (length(x)==1 && is.character(x)) x <- data[,x]
+			           x
+	       })
+  if (!is.list(x)) x <- list(x)
+  ll <- length(x)
+  if (ll>1 & length(ref)==1) ref <- rep(ref,ll)
+  if (length(x)!=length(ref)) stop("length of baseline reference 'ref' not consistent with variables")
+
+for (k in 1:ll) 
+{
+  xx <- x[[k]]
+  if (!is.factor(xx)) xx <- factor(xx)
+  name<- paste(xnames[k],ref[k],sep=sep)
+      
+  data[,name] <- relevel(xx,ref=ref[k])
+}
+
+return(data)
+}
+
+}# }}}
+
+##' @export
+"drelevel<-" <- function(data,...,value) drelevel(data,value,...)
+
+##' @export
+dlevels <- function(data,x,...)
+{# {{{
+
+ if (inherits(data,"factor")) {
+	 print(base:::levels(data))
+ } else {
+
+ if (missing(x)) x <-  ~.
+
+ if (inherits(x,"formula")) {
+     x <- all.vars(x)
+     if (x[1]==".") x <- names(data) 
+     xnames <- x
+  } else if  (is.character(x)) {
+     xnames <- x
+     xxx<-c()
+     for (xx in xnames)
+     {
+        if (!regex) xx <- glob2rx(xx)
+        n <- grep(xx,names(data))
+        xxx <- c(xxx,names(data)[n])
+     }
+     xnames <- xxx[!duplicated(xxx)]
+  }
+
+
+  if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
+  dots <- list()
+  args <- lapply(dots, function(x) {
+			           if (length(x)==1 && is.character(x)) x <- data[,x]
+			           x
+	       })
+  if (!is.list(x)) x <- list(x)
+  ll <- length(x)
+
+for (k in 1:ll) 
+{
+  xx <- x[[k]]
+  if (is.factor(xx))  {
+	  cat(paste(xnames[k],":",sep=""))
+	  print(base:::levels(xx))
+}
+}
+
+ }
+
+}# }}}
+
+
+##' @export
 drm <- function(data,x,regex=FALSE)
 {# {{{
  if (inherits(x,"formula")) {
@@ -642,6 +752,10 @@ dsummary <- function(data=NULL,y=NULL,x=NULL,...) daggregate(data,y,x,fun=functi
 
 ##' @export
 dstr <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=function(z) utils::str(z,...)))
+
+##' @export
+dunique <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=function(z) base::unique(z,...)))
+
 
 ##' summary, tables, and correlations for data frames 
 ##' 

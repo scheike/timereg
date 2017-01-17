@@ -38,7 +38,6 @@ dcut(data, x, cuts = 4, probs = NULL, breaks = NULL, regex = FALSE,
 Cut variables, rm or rename
 }
 \examples{
-	library(mets)
 data("sTRACE",package="timereg")
 sTRACE$age2 <- sTRACE$age^2
 sTRACE$age3 <- sTRACE$age^3
@@ -56,6 +55,9 @@ mm <- dcut(sTRACE,~.)
 head(mm)
 mm <- dcut(sTRACE,c("age","wmi"),cuts=c(2,4))
 head(mm)
+
+gx <- dcut(sTRACE$age)
+head(gx)
 
 
 ## Removes all cuts variables with these names wildcards
@@ -75,6 +77,7 @@ head(mm)
 ## renaming 
 ############################
 
+head(mm)
 drename(mm, ~age+wmi) <- c("Wmi","Age")
 head(mm)
 mm1 <- mm
