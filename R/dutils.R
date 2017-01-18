@@ -495,6 +495,7 @@ dtable <- function(data,y=NULL,x=NULL,...,level=0,flat=TRUE,total=FALSE,prop=FAL
                })
 }
 
+##' @export
 print.dtable <- function(x,sep="\n",...) {
     cat(sep)
     if (inherits(x$table, c("table","ftable"))) {
@@ -628,9 +629,10 @@ daggregate <- function(data,y=NULL,x=NULL,...,fun="summary",regex=FALSE, silent=
         y <- yx$response
         x0 <- yx$predictor
         if (is.null(x) && length(y)>0) x <- x0
+        if (NCOL(x)==0) x <- NULL
         if (length(y)==0) {
             y <- x0
-        }
+        }        
     } else {
         yy <- c()
         for (y0 in y) {
@@ -672,7 +674,6 @@ daggregate <- function(data,y=NULL,x=NULL,...,fun="summary",regex=FALSE, silent=
     ##     res <- by(dd,group,ff,...)
     ##     return(res)
     ## }
-
     if (!is.null(x)) {
         if (silent) 
             capture.output(res <- by(y,x,fun,...))
