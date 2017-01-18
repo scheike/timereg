@@ -21,15 +21,13 @@ daggregate(data, y = NULL, x = NULL, ..., fun = "summary",
 \item{regex}{interpret x,y as regular expressions}
 
 \item{silent}{suppress messages}
-
-\item{group}{optional group variable (formula or character vector)}
 }
 \description{
 aggregating for for data frames
 }
 \examples{
 data("sTRACE",package="timereg")
-daggregate(iris, "^.e.al", group="Species", fun=cor, regex=TRUE)
+daggregate(iris, "^.e.al", x="Species", fun=cor, regex=TRUE)
 daggregate(iris, Sepal.Length+Petal.Length ~Species, fun=summary)
 daggregate(iris, log(Sepal.Length)+I(Petal.Length>1.5) ~ Species, fun=summary)
 daggregate(iris, "*Length*", x="Species", fun=head)
@@ -37,16 +35,10 @@ daggregate(iris, "^.e.al", x="Species", fun=tail, regex=TRUE)
 daggregate(sTRACE, status~ diabetes, fun=table)
 daggregate(sTRACE, status~ diabetes+sex, fun=table)
 daggregate(sTRACE, status + diabetes+sex ~ vf+I(wmi>1.4), fun=table)
-daggregate(iris, "^.e.al", group="Species",regex=TRUE)
-dprint(d,~a+b+c|a<0 & b>0, n=list(1:3,-(3:1),50:55))
+daggregate(iris, "^.e.al", x="Species",regex=TRUE)
+dprint(iris,Petal.Length+Sepal.Length ~ Species |Petal.Length>1.3 & Sepal.Length>5, n=list(1:3,-(3:1)))
 daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5))
 daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=table)
-
-library("lava")
-m <- lvm(y~v+x+z+g)
-categorical(m,K=3) <- ~g
-d <- sim(m,10,seed=1)
-daggregate(d,y~x+z|g, fun=cor)
 
 }
 

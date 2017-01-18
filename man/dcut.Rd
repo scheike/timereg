@@ -7,13 +7,17 @@
 \alias{ddrop<-}
 \alias{dkeep}
 \alias{dkeep<-}
+\alias{dlevels}
 \alias{dnames}
 \alias{dnames<-}
+\alias{drelevel}
+\alias{drelevel<-}
 \alias{drename}
 \alias{drename<-}
 \alias{dreshape}
 \alias{drm}
 \alias{drm<-}
+\alias{dunique}
 \title{Cutting, sorting, rm (removing), rename for data frames}
 \usage{
 dcut(data, x, cuts = 4, probs = NULL, breaks = NULL, regex = FALSE,

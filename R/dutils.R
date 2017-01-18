@@ -71,7 +71,7 @@
 ##' drename(dd) <- ~.
 ##' drename(dd,fun=funn) <- ~.
 ##' names(dd)
-##' @aliases dcut dcut<- drm drm<- dnames dnames<- drename drename<- dkeep dkeep<- ddrop ddrop<- dreshape
+##' @aliases dcut dcut<- dunique dlevels drelevel drelevel<- drm drm<- dnames dnames<- drename drename<- dkeep dkeep<- ddrop ddrop<- dreshape
 ##' @export
 dcut <- function(data,x,cuts=4,probs=NULL,breaks=NULL,regex=FALSE,sep=NULL,...)
 {# {{{
@@ -140,6 +140,116 @@ return(data)
 "dcut<-" <- function(data,...,value) dcut(data,value,...)
 
 ##' @export
+drelevel <- function(data,x,ref=NULL,regex=FALSE,sep=NULL,...)
+{# {{{
+
+ if (missing(x) & is.data.frame(data))  stop("specify factor to relevel for data frame\n")
+ if (is.null(ref)) stop("specify baseline-reference level \n")
+
+ if (is.null(sep))  sep <- "."
+
+ if (inherits(data,"vector") | inherits(data,"factor")) {
+      if (is.vector(data)) data <- factor(data)
+      gx <- relevel(data,ref=ref)
+      return(gx)
+ } else {
+
+ if (inherits(x,"formula")) {
+     x <- all.vars(x)
+     if (x[1]==".") x <- names(data) 
+     xnames <- x
+  } else if  (is.character(x)) {
+     xnames <- x
+     xxx<-c()
+     for (xx in xnames)
+     {
+        if (!regex) xx <- glob2rx(xx)
+        n <- grep(xx,names(data))
+        xxx <- c(xxx,names(data)[n])
+     }
+     xnames <- xxx[!duplicated(xxx)]
+  }
+
+
+  if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
+  dots <- list()
+  args <- lapply(dots, function(x) {
+			           if (length(x)==1 && is.character(x)) x <- data[,x]
+			           x
+	       })
+  if (!is.list(x)) x <- list(x)
+  ll <- length(x)
+  if (ll>1 & length(ref)==1) ref <- rep(ref,ll)
+  if (length(x)!=length(ref)) stop("length of baseline reference 'ref' not consistent with variables")
+
+for (k in 1:ll) 
+{
+  xx <- x[[k]]
+  if (!is.factor(xx)) xx <- factor(xx)
+  name<- paste(xnames[k],ref[k],sep=sep)
+      
+  data[,name] <- relevel(xx,ref=ref[k])
+}
+
+return(data)
+}
+
+}# }}}
+
+##' @export
+"drelevel<-" <- function(data,...,value) drelevel(data,value,...)
+
+##' @export
+dlevels <- function(data,x,regex=FALSE,...)
+{# {{{
+
+ if (inherits(data,"factor")) {
+	 print(base::levels(data))
+ } else {
+
+ if (missing(x)) x <-  ~.
+
+ if (inherits(x,"formula")) {
+     x <- all.vars(x)
+     if (x[1]==".") x <- names(data) 
+     xnames <- x
+  } else if  (is.character(x)) {
+     xnames <- x
+     xxx<-c()
+     for (xx in xnames)
+     {
+        if (!regex) xx <- glob2rx(xx)
+        n <- grep(xx,names(data))
+        xxx <- c(xxx,names(data)[n])
+     }
+     xnames <- xxx[!duplicated(xxx)]
+  }
+
+
+  if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
+  dots <- list()
+  args <- lapply(dots, function(x) {
+			           if (length(x)==1 && is.character(x)) x <- data[,x]
+			           x
+	       })
+  if (!is.list(x)) x <- list(x)
+  ll <- length(x)
+
+for (k in 1:ll) 
+{
+  xx <- x[[k]]
+  if (is.factor(xx))  {
+	  cat(paste(xnames[k],":",sep=""))
+	  print(base::levels(xx))
+}
+}
+
+ }
+
+}# }}}
+
+
+##' @export
 drm <- function(data,x,regex=FALSE)
 {# {{{
  if (inherits(x,"formula")) {
@@ -199,7 +309,7 @@ drename <- function(data,var=NULL,value=NULL,fun=base::tolower,...)
 dnames <- function(data,...) drename(data,...)
 
 ##' @export
-"dnames<-" <- function(x,...,value) drename(data,value=value,...)
+"dnames<-" <- function(data,...,value) drename(data,value=value,...)
 
 
 ##' @export
@@ -341,35 +451,6 @@ if (missing(x)) x<- ~.
 }# }}}
 
 
-
-dcor2 <- function(data,x,g,regex=FALSE,...)
-{# {{{
-
- ddname <- ddnames(data,x,g,regex=regex)
- xnames <- ddname$xnames 
- gnames <- ddname$gnames 
- group  <- ddname$group
-
- if (!is.null(group)) return(by(data[,xnames],group,cor,...))
- if (is.null(group))  return(cor(data[,xnames],...))
-
-}# }}}
-
-dsummary2 <- function(data,x,g,regex=FALSE,...)
-{# {{{
-### x+y ~ group1+group2 to get correlations against groups defined by group1*group2
-
-ddname <- ddnames(data,x,g,regex=regex)
-xnames <- ddname$xnames 
-gnames <- ddname$gnames 
-group  <- ddname$group
-
- if (!is.null(group)) return(by(data[,xnames],group,summary,...))
- if (is.null(group))  return(summary(data[,xnames],...))
-
-}# }}}
-
-
 ##' tables for data frames 
 ##' 
 ##' tables for data frames 
@@ -484,6 +565,7 @@ procform <- function(formula, sep, return.formula=FALSE, data=NULL, regex=FALSE,
         res <- paste(deparse(formula[[2]]), collapse = "")
     }
     filter.expression <- NULL
+    foundsep <- FALSE
     pred <- filter <- c()
     if (!missing(sep) && length(aa$term.labels) > 0) {
         foundsep <- any(grepl(sep,aa$term.labels))
@@ -539,7 +621,7 @@ procformdata <- function(formula,data,sep="\\|", ...) {
 ##' aggregating for for data frames 
 ##' @examples
 ##' data("sTRACE",package="timereg")
-##' daggregate(iris, "^.e.al", group="Species", fun=cor, regex=TRUE)
+##' daggregate(iris, "^.e.al", x="Species", fun=cor, regex=TRUE)
 ##' daggregate(iris, Sepal.Length+Petal.Length ~Species, fun=summary)
 ##' daggregate(iris, log(Sepal.Length)+I(Petal.Length>1.5) ~ Species, fun=summary)
 ##' daggregate(iris, "*Length*", x="Species", fun=head)
@@ -547,23 +629,16 @@ procformdata <- function(formula,data,sep="\\|", ...) {
 ##' daggregate(sTRACE, status~ diabetes, fun=table)
 ##' daggregate(sTRACE, status~ diabetes+sex, fun=table)
 ##' daggregate(sTRACE, status + diabetes+sex ~ vf+I(wmi>1.4), fun=table)
-##' daggregate(iris, "^.e.al", group="Species",regex=TRUE)
-##' dprint(d,~a+b+c|a<0 & b>0, n=list(1:3,-(3:1),50:55))
+##' daggregate(iris, "^.e.al", x="Species",regex=TRUE)
+##' dprint(iris,Petal.Length+Sepal.Length ~ Species |Petal.Length>1.3 & Sepal.Length>5, n=list(1:3,-(3:1)))
 ##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5))
 ##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=table)
-##'
-##' library("lava")
-##' m <- lvm(y~v+x+z+g)
-##' categorical(m,K=3) <- ~g
-##' d <- sim(m,10,seed=1)
-##' daggregate(d,y~x+z|g, fun=cor)
 ##' 
 ##' @export
 ##' @param data data.frame
 ##' @param y name of variable, or formula, or names of variables on data frame.
 ##' @param x name of variable, or formula, or names of variables on data frame.
 ##' @param ... additional arguments to lower level functions
-##' @param group optional group variable (formula or character vector)
 ##' @param fun function defining aggregation
 ##' @param regex interpret x,y as regular expressions
 ##' @param silent suppress messages
@@ -635,6 +710,8 @@ daggregate <- function(data,y=NULL,x=NULL,...,fun="summary",regex=FALSE, silent=
     res
 }# }}}
 
+##' @export
+dlist <- function(data,y=NULL,x=NULL,lines=1:5,...) daggregate(data,y,x,fun=function(z) Print(z[lines,],...))
 
 ##' @export
 dhead <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) utils::head(z,...))
@@ -647,6 +724,10 @@ dsummary <- function(data=NULL,y=NULL,x=NULL,...) daggregate(data,y,x,fun=functi
 
 ##' @export
 dstr <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=function(z) utils::str(z,...)))
+
+##' @export
+dunique <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=function(z) base::unique(z,...)))
+
 
 ##' summary, tables, and correlations for data frames 
 ##' 
@@ -688,7 +769,6 @@ dprint <- function(data,y=NULL,...,x=NULL) daggregate(data,y,fun=function(z) Pri
 
 ##' @export
 dlist <- function(data,y=NULL,...) dprint(data,y,...)
-
 
 ##' @export
 dreshape <- function(data,...) fast.reshape(data,...)
@@ -766,7 +846,7 @@ Print <- function(x,n,nfirst=5,nlast=5,digits=max(3,getOption("digits")-3),...) 
     if (!is.list(n)) n <- list(n)
     d <- lapply(n,function(idx) {
         N <- NROW(x)
-        idx <- idx[idx!=0] 
+        idx <- idx[idx!=0 & abs(idx)<=N]
         idx[idx<0] <- N+idx[idx<0]+1
         base::format(x[idx,,drop=FALSE],digits=digits,...)
     })
