@@ -7,6 +7,8 @@
 \alias{ddrop<-}
 \alias{dkeep}
 \alias{dkeep<-}
+\alias{dnames}
+\alias{dnames<-}
 \alias{drename}
 \alias{drename<-}
 \alias{dreshape}

@@ -3,6 +3,7 @@
 \name{dcor}
 \alias{dcor}
 \alias{dhead}
+\alias{dlist}
 \alias{dmean}
 \alias{dprint}
 \alias{dquantile}

@@ -4,7 +4,7 @@
 \alias{daggregate}
 \title{aggregating for for data frames}
 \usage{
-daggregate(data, y = NULL, x = NULL, ..., group = NULL, fun = "summary",
+daggregate(data, y = NULL, x = NULL, ..., fun = "summary",
   regex = FALSE, silent = FALSE)
 }
 \arguments{
@@ -16,13 +16,13 @@ daggregate(data, y = NULL, x = NULL, ..., group = NULL, fun = "summary",
 
 \item{...}{additional arguments to lower level functions}
 
-\item{group}{optional group variable (formula or character vector)}
-
 \item{fun}{function defining aggregation}
 
 \item{regex}{interpret x,y as regular expressions}
 
 \item{silent}{suppress messages}
+
+\item{group}{optional group variable (formula or character vector)}
 }
 \description{
 aggregating for for data frames
@@ -30,14 +30,15 @@ aggregating for for data frames
 \examples{
 data("sTRACE",package="timereg")
 daggregate(iris, "^.e.al", group="Species", fun=cor, regex=TRUE)
-daggregate(iris, ~Sepal.Length+Petal.Length|Species, fun=summary)
-daggregate(iris, ~log(Sepal.Length)+I(Petal.Length>1.5)|Species, fun=summary)
-daggregate(iris, "*Length*", group="Species", fun=head)
-daggregate(iris, "^.e.al", group="Species", fun=tail, regex=TRUE)
+daggregate(iris, Sepal.Length+Petal.Length ~Species, fun=summary)
+daggregate(iris, log(Sepal.Length)+I(Petal.Length>1.5) ~ Species, fun=summary)
+daggregate(iris, "*Length*", x="Species", fun=head)
+daggregate(iris, "^.e.al", x="Species", fun=tail, regex=TRUE)
 daggregate(sTRACE, status~ diabetes, fun=table)
 daggregate(sTRACE, status~ diabetes+sex, fun=table)
 daggregate(sTRACE, status + diabetes+sex ~ vf+I(wmi>1.4), fun=table)
 daggregate(iris, "^.e.al", group="Species",regex=TRUE)
+dprint(d,~a+b+c|a<0 & b>0, n=list(1:3,-(3:1),50:55))
 daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5))
 daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=table)
 
