@@ -23,6 +23,11 @@ fast.approx <- function(time,new.time,equal=FALSE,type=c("nearest","right","left
         ord <- order(new.time,decreasing=FALSE)
         new.time <- new.time[ord]
     }
+    A <- NULL
+    if (NCOL(time)>1) {
+        A <- time
+        time <- A[,1,drop=TRUE]
+    }
     if (is.unsorted(time)) warnings("'time' will be sorted")
     type <- agrep(type[1],c("nearest","right","left"))-1
     arglist <- list("FastApprox",
@@ -35,7 +40,10 @@ fast.approx <- function(time,new.time,equal=FALSE,type=c("nearest","right","left
     if (!sorted) {
         oord <- order(ord)
         if (!equal) return(res[oord])
-        return(lapply(res,function(x) x[oord]))
+        res <- lapply(res,function(x) x[oord])
+    }
+    if (!is.null(A)) {
+        A[res,,drop=FALSE]
     }
     return(res)
 }
