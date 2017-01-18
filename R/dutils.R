@@ -389,150 +389,128 @@ dsort <- function(data,x,...,decreasing=FALSE)
 ##' @export
 "dsort<-" <- function(data,...,value)  dsort(data,value,...)
 
-ddnames <- function(data,x,g,regex=FALSE)
-{# {{{
-if (missing(x)) x<- ~.
-
- if (inherits(x,"formula")) {
-         avx <- all.vars(x)
-         if (length(avx)==1 & avx[1]==".") x <- names(data)
-	 else {
-            rhs  <-  all.vars(update(x, 0~.))
-	    lhs <-  all.vars(update(x, .~0))
-	    if (lhs[1]!=".")              { x <- lhs;}
-	    if (lhs[1]=="." & rhs[1]!=".") { x <- rhs;}
-	    if (lhs[1]!="." & rhs[1]!=".") { x <- lhs;  g <- rhs;}
-	 }
- } 
-
-
- if (inherits(x,"formula")) {
-     x <- all.vars(x)
-     if (x[1]==".") x <- names(data) 
-     xnames <- x
-  } else if  (is.character(x)) {
-     xnames <- x
-     xxx<-c()
-     for (xx in xnames)
-     {
-        if (!regex) xx <- glob2rx(xx)
-        n <- grep(xx,names(data))
-        xxx <- c(xxx,names(data)[n])
-     }
-     xnames <- xxx[!duplicated(xxx)]
-  }
-
-
- group<-NULL
- if (!missing(g))
- if (inherits(g,"formula")) {
-     g <- all.vars(g)
-     if (g[1]==".") g <- names(data) 
-     gnames <- g
-     group <- data[,gnames]
-  } else if  (is.character(g)) {
-     gnames <- g
-     xxx<-c()
-     for (xx in gnames)
-     {
-        if (!regex) xx <- glob2rx(xx)
-        n <- grep(xx,names(data))
-        xxx <- c(xxx,names(data)[n])
-     }
-     gnames <- xxx[!duplicated(xxx)]
-     group <- data[,gnames]
-  }
-
- if (missing(g)) group <- gnames <- NULL 
-
-
- return(list(xnames=xnames,gnames=gnames,group=group))
-
-}# }}}
-
 
 ##' tables for data frames 
 ##' 
 ##' tables for data frames 
 ##' @param data if x is formula or names for data frame then data frame is needed.
+##' @param y name of variable, or fomula, or names of variables on data frame.
 ##' @param x name of variable, or fomula, or names of variables on data frame.
-##' @param g possible group variable
-##' @param level  1 for all marginal tables, 2 for all 2 by 2 tables, and null for the full table, possible versus group variable
-##' @param regex for regex wildcards otherwise unix style wildcards 
 ##' @param ... Optional additional arguments
+##' @param level  1 for all marginal tables, 2 for all 2 by 2 tables, and null for the full table, possible versus group variable
+##' @param flat  produce flat tables 
+##' @param total add total counts/proportions
+##' @param prop Proportions instead of counts (vector of margins)
+##' @param summary summary function
 ##' @author Klaus K. Holst and Thomas Scheike 
 ##' @examples
 ##' data("sTRACE",package="timereg")
-##' dt<- sTRACE
 ##'
-##' dtable(dt,~status)
+##' dtable(sTRACE,~status)
+##' dtable(sTRACE,~status+vf)
+##' dtable(sTRACE,~status+vf,level=1)
+##' dtable(sTRACE,~status+vf,~chf+diabetes)
+#' 
+##' dtable(sTRACE,c("*f*","status"),~diabetes)
+##' dtable(sTRACE,c("*f*","status"),~diabetes, level=2)
+##' dtable(sTRACE,c("*f*","status"),level=1)
 ##'
-##' dtable(dt,~status+vf)
-##' dtable(dt,~status+vf,level=1)
-##'
-##' dtable(dt,~status+vf,~chf+diabetes)
-##'
-##' dtable(dt,status+vf~chf+diabetes)
+##' dtable(sTRACE,status+vf+sex~diabetes|age>60)
+##' dtable(sTRACE,status+vf+sex~diabetes|age>60, flat=FALSE)
 ##' 
-##' dtable(dt,c("*f*","status"),~diabetes)
-##' dtable(dt,c("*f*","status"),~diabetes,level=NULL)
+##' dtable(sTRACE,status+vf+sex~diabetes|age>60, level=1)
+##' dtable(sTRACE,status+vf+sex~diabetes|age>60, level=2)
 ##' 
-##' dtable(dt,c("*f*","status"),level=1)
+##' dtable(sTRACE,status+vf+sex~diabetes|age>60, level=2, prop=1, total=TRUE)
+##' dtable(sTRACE,status+vf+sex~diabetes|age>60, level=2, prop=2, total=TRUE)
+##' dtable(sTRACE,status+vf+sex~diabetes|age>60, level=2, prop=1:2, summary=summary)
+##' 
 ##' @aliases dtables
 ##' @export
-dtable<- function(data,x,g,level=2,regex=FALSE,...)
-{# {{{
+dtable <- function(data,y=NULL,x=NULL,...,level=0,flat=TRUE,total=FALSE,prop=FALSE,summary=NULL) {
+    daggregate(data,y,x,...,
+               fun=function(z) {
+                   res <- sum <- c()
+                   if (level==1 || ncol(z)==1) {
+                       for (i in seq_len(ncol(z))) {
+                           nn <- colnames(z)[i]
+                           val <- table(z[,i])
+                           names(attr(val,"dimnames")) <- nn
+                           val <- list(val)
+                           names(val) <- nn
+                           res <- c(res, val)
+                           if (!is.null(summary)) {
+                               sval <- list(do.call(summary,list(val[[1]])))
+                               names(sval) <- nn
+                               c(sum, sval)
+                           }
+                       }
+                       res <- list(table=res,summary=sum)
+                       class(res) <- "dtable"
+                       return(res)
+                   }
+                   if (level==2) {                       
+                       for (i in seq(1,ncol(z)-1))  {
+                           for (j in seq(i+1,ncol(z))) {
+                               n1 <- colnames(z)[i]
+                               n2 <- colnames(z)[j]
+                               val <- table(z[,c(i,j)])
+                               if (prop[1]>0) {
+                                   if (all(1:2 %in% prop)) {
+                                       val <- prop.table(val)
+                                   } else {
+                                       val <- prop.table(val,prop)
+                                   }
+                               }
+                               if (total) {
+                                   tot <- prop
+                                   if (length(prop)==1) tot <- setdiff(1:2,prop)
+                                       val <- addmargins(val,tot)
+                               }
+                               val <- list(val)
+                               names(val) <- paste0(n1,", ",n2)
+                               res <- c(res, val)
+                               if (!is.null(summary)) {
+                                   sval <- list(do.call(summary,list(val[[1]])))
+                                   #names(sval) <- names(val)
+                                   sum <- c(sum, sval)
+                               }
+                           }
+                       }                       
+                       res <- list(table=res,summary=sum)
+                       class(res) <- "dtable"
+                       return(res)
+                   }
 
-ddname <- ddnames(data,x,g,regex=regex)
-xnames <- ddname$xnames 
-gnames <- ddname$gnames 
-group  <- ddname$group
+                   res <- table(z,...)
+                   if (!is.null(summary)) {
+                       sum <- do.call(summary,c(list(res),list(...)))
+                   }
+                   if (prop[1]>0) res <- prop.table(res,prop)
+                   if (total>0) res <- addmargins(res,prop)
+                   if (flat) res <- ftable(res,...)
+                   res <- list(table=res,summary=sum)                   
+                   class(res) <- "dtable"
+                   return(res)
+               })
+}
 
-
- if (!is.null(level)) {
- ### all tables from xnames over g 
- ll<-list()
- k<-1
- nn <- length(xnames)
-
- if (level==1) {
-	 for (i in seq(1,(nn)))  {
-		x1<-xnames[i]
-		if (!is.null(group)) llk<-by(data[,c(x1)],group,table,...) 
-		else llk<-table(data[,x1],...)
-		ll[[k]]<- list(name=x1,table=llk)
-		k<-k+1
-	 }
- } else {
- ### all 2 by 2 tables from xnames over g 
-	if (nn>1) {
-	 for (i in seq(1,(nn-1)))  {
-	 for (j in seq((i+1),nn)) {
-		 x1<-xnames[i]
-		 x2<-xnames[j]
-		if (!is.null(group)) llk<-by(data[,c(x1,x2)],group,table,...) 
-		else llk<-table(data[,x1],data[,x2],...)
-		ll[[k]]<- list(name=paste(x1,"x",x2,sep=""),table=llk)
-		k<-k+1
-	 }
-	 }
-	} else {
-		if (!is.null(group)) llk<-by(data[,xnames],group,table,...) 
-		else llk<-table(data[,xnames],...)
-		ll[[k]]<- list(name=xnames,table=llk)
-		k<-k+1
-	}
-
- }
- } else { ## one big table 
-     if (!is.null(group)) ll<-by(data[,xnames],group,table,...) 
-     else ll<- table(data[,xnames],...)  
- }
-
- return(ll)
-
-}# }}}
-
+print.dtable <- function(x,sep="\n",...) {
+    cat(sep)
+    if (inherits(x$table, c("table","ftable"))) {
+        print(x$table)
+        if (!is.null(x$summary)) print(x$summary)
+        return(invisible(x))
+    }
+    
+    for (i in seq_along(x$table)) {        
+        print(x$table[[i]],...)
+        if (!is.null(x$summary))
+            print(x$summary[[i]],...)
+        cat(sep)
+    }
+    
+}
 
 
 procform <- function(formula, sep, return.formula=FALSE, data=NULL, regex=FALSE, return.list=TRUE) {
@@ -867,4 +845,125 @@ print.Print <- function(x,...) {
 }
 
 
-    
+   
+
+
+
+##################################################
+### Legacy code
+##################################################
+
+ddnames <- function(data,x,g,regex=FALSE)
+{# {{{
+if (missing(x)) x<- ~.
+
+ if (inherits(x,"formula")) {
+         avx <- all.vars(x)
+         if (length(avx)==1 & avx[1]==".") x <- names(data)
+	 else {
+            rhs  <-  all.vars(update(x, 0~.))
+	    lhs <-  all.vars(update(x, .~0))
+	    if (lhs[1]!=".")              { x <- lhs;}
+	    if (lhs[1]=="." & rhs[1]!=".") { x <- rhs;}
+	    if (lhs[1]!="." & rhs[1]!=".") { x <- lhs;  g <- rhs;}
+	 }
+ } 
+
+
+ if (inherits(x,"formula")) {
+     x <- all.vars(x)
+     if (x[1]==".") x <- names(data) 
+     xnames <- x
+  } else if  (is.character(x)) {
+     xnames <- x
+     xxx<-c()
+     for (xx in xnames)
+     {
+        if (!regex) xx <- glob2rx(xx)
+        n <- grep(xx,names(data))
+        xxx <- c(xxx,names(data)[n])
+     }
+     xnames <- xxx[!duplicated(xxx)]
+  }
+
+
+ group<-NULL
+ if (!missing(g))
+ if (inherits(g,"formula")) {
+     g <- all.vars(g)
+     if (g[1]==".") g <- names(data) 
+     gnames <- g
+     group <- data[,gnames]
+  } else if  (is.character(g)) {
+     gnames <- g
+     xxx<-c()
+     for (xx in gnames)
+     {
+        if (!regex) xx <- glob2rx(xx)
+        n <- grep(xx,names(data))
+        xxx <- c(xxx,names(data)[n])
+     }
+     gnames <- xxx[!duplicated(xxx)]
+     group <- data[,gnames]
+  }
+
+ if (missing(g)) group <- gnames <- NULL 
+
+
+ return(list(xnames=xnames,gnames=gnames,group=group))
+
+}# }}}
+
+
+dtable2 <- function(data,x,g,level=2,regex=FALSE,...)
+{# {{{
+
+ddname <- ddnames(data,x,g,regex=regex)
+xnames <- ddname$xnames 
+gnames <- ddname$gnames 
+group  <- ddname$group
+
+
+ if (!is.null(level)) {
+ ### all tables from xnames over g 
+ ll<-list()
+ k<-1
+ nn <- length(xnames)
+
+ if (level==1) {
+	 for (i in seq(1,(nn)))  {
+		x1<-xnames[i]
+		if (!is.null(group)) llk<-by(data[,c(x1)],group,table,...) 
+		else llk<-table(data[,x1],...)
+		ll[[k]]<- list(name=x1,table=llk)
+		k<-k+1
+	 }
+ } else {
+ ### all 2 by 2 tables from xnames over g 
+ 	if (nn>1) {
+	 for (i in seq(1,(nn-1)))  {
+	 for (j in seq((i+1),nn)) {
+		 x1<-xnames[i]
+		 x2<-xnames[j]
+		if (!is.null(group)) llk<-by(data[,c(x1,x2)],group,table,...) 
+		else llk<-table(data[,x1],data[,x2],...)
+		ll[[k]]<- list(name=paste(x1,"x",x2,sep=""),table=llk)
+		k<-k+1
+	 }
+	 }
+	} else {
+		if (!is.null(group)) llk<-by(data[,xnames],group,table,...) 
+		else llk<-table(data[,xnames],...)
+		ll[[k]]<- list(name=xnames,table=llk)
+		k<-k+1
+	}
+
+ }
+ } else { ## one big table 
+     if (!is.null(group)) ll<-by(data[,xnames],group,table,...) 
+     else ll<- table(data[,xnames],...)  
+ }
+
+ return(ll)
+
+}# }}}

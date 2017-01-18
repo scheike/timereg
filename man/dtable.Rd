@@ -5,41 +5,53 @@
 \alias{dtables}
 \title{tables for data frames}
 \usage{
-dtable(data, x, g, level = 2, regex = FALSE, ...)
+dtable(data, y = NULL, x = NULL, ..., level = 0, flat = TRUE,
+  total = FALSE, prop = FALSE, summary = NULL)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}
 
+\item{y}{name of variable, or fomula, or names of variables on data frame.}
+
 \item{x}{name of variable, or fomula, or names of variables on data frame.}
 
-\item{g}{possible group variable}
+\item{...}{Optional additional arguments}
 
 \item{level}{1 for all marginal tables, 2 for all 2 by 2 tables, and null for the full table, possible versus group variable}
 
-\item{regex}{for regex wildcards otherwise unix style wildcards}
+\item{flat}{produce flat tables}
 
-\item{...}{Optional additional arguments}
+\item{total}{add total counts/proportions}
+
+\item{prop}{Proportions instead of counts (vector of margins)}
+
+\item{summary}{summary function}
 }
 \description{
 tables for data frames
 }
 \examples{
 data("sTRACE",package="timereg")
-dt<- sTRACE
 
-dtable(dt,~status)
+dtable(sTRACE,~status)
+dtable(sTRACE,~status+vf)
+dtable(sTRACE,~status+vf,level=1)
+dtable(sTRACE,~status+vf,~chf+diabetes)
 
-dtable(dt,~status+vf)
-dtable(dt,~status+vf,level=1)
+dtable(sTRACE,c("*f*","status"),~diabetes)
+dtable(sTRACE,c("*f*","status"),~diabetes, level=2)
+dtable(sTRACE,c("*f*","status"),level=1)
 
-dtable(dt,~status+vf,~chf+diabetes)
+dtable(sTRACE,status+vf+sex~diabetes|age>60)
+dtable(sTRACE,status+vf+sex~diabetes|age>60, flat=FALSE)
 
-dtable(dt,status+vf~chf+diabetes)
+dtable(sTRACE,status+vf+sex~diabetes|age>60, level=1)
+dtable(sTRACE,status+vf+sex~diabetes|age>60, level=2)
 
-dtable(dt,c("*f*","status"),~diabetes)
-dtable(dt,c("*f*","status"),~diabetes,level=NULL)
+dtable(sTRACE,status+vf+sex~diabetes|age>60, level=2, prop=1, total=TRUE)
+dtable(sTRACE,status+vf+sex~diabetes|age>60, level=2, prop=2, total=TRUE)
+dtable(sTRACE,status+vf+sex~diabetes|age>60, level=2, prop=1:2, summary=summary)
 
-dtable(dt,c("*f*","status"),level=1)
 }
 \author{
 Klaus K. Holst and Thomas Scheike
