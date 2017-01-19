@@ -124,7 +124,7 @@ One advantage of the standard frailty model is that one can deal with competing 
 for this model. 
 
 For all models the 
-standard errors do reflect this uncertainty of the baseline estimates, and might therefore be a bit to small.
+standard errors do not reflect this uncertainty of the baseline estimates, and might therefore be a bit to small.
 To remedy this one can do bootstrapping or use survival.twostage.fullse function when possible.
 
 If clusters contain more than two times, the algoritm uses a composite likelihood
