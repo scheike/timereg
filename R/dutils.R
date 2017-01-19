@@ -576,18 +576,18 @@ procform <- function(formula, sep, return.formula=FALSE, data=NULL, regex=FALSE,
     return(res)
 }
 
-procformdata <- function(formula,data,sep="\\|", ...) {    
+procformdata <- function(formula,data,sep="\\|", na.action=na.pass, ...) {    
     res <- procform(formula,sep=sep,data=data,return.formula=TRUE,...)
     y <- x <- NULL
     filter <- res$filter.expression
 
     if (length(res$response)>0) {
-        if (is.null(filter)) y <- model.frame(res$response,data=data,...)
-        else y <- model.frame(res$response,data=subset(data,eval(filter)),...)
+        if (is.null(filter)) y <- model.frame(res$response,data=data,na.action=na.action,...)
+        else y <- model.frame(res$response,data=subset(data,eval(filter)),na.action=na.action,...)
     }    
     if (length(res$predictor)>0) {
-        if (is.null(filter)) x <- model.frame(res$predictor,data=data,...)
-        else x <- model.frame(res$predictor,data=subset(data,eval(filter)),...)
+        if (is.null(filter)) x <- model.frame(res$predictor,data=data,na.action=na.action,...)
+        else x <- model.frame(res$predictor,data=subset(data,eval(filter)),na.action=na.action,...)
 
     }
     ## if (!is.null(res$group)) group <- lapply(res$,function(x) model.frame(x,data=data,...))
@@ -617,12 +617,21 @@ procformdata <- function(formula,data,sep="\\|", ...) {
 ##' @param data data.frame
 ##' @param y name of variable, or formula, or names of variables on data frame.
 ##' @param x name of variable, or formula, or names of variables on data frame.
+##' @param subset subset expression
 ##' @param ... additional arguments to lower level functions
 ##' @param fun function defining aggregation
 ##' @param regex interpret x,y as regular expressions
+##' @param missing Missing used in groups (x)
+##' @param remove.empty remove empty groups from output
 ##' @param silent suppress messages
-daggregate <- function(data,y=NULL,x=NULL,...,fun="summary",regex=FALSE, silent=FALSE) 
-{# {{{
+daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, missing=FALSE, remove.empty=FALSE, silent=FALSE) 
+{# {{{    
+    subs <- substitute(subset)
+    if (!base::missing(subs)) {
+        expr <- suppressWarnings(inherits(try(subset,silent=TRUE),"try-error"))
+        if (expr) data <- data[which(eval(subs,envir=data)),,drop=FALSE]
+        else data[subset,,drop=FALSE]
+    }  
     if (is.null(y)) y <- colnames(data)
     if (inherits(y,"formula")) {
         yx <- procformdata(y,sep="\\|",data=data,...)
@@ -654,12 +663,10 @@ daggregate <- function(data,y=NULL,x=NULL,...,fun="summary",regex=FALSE, silent=
     if (inherits(x,"formula")) {
         x <- model.frame(x,data=data)
     }
-
     if (!is.null(x)) {
         xidx <- na.omit(match(colnames(x),colnames(y)))
-        if (length(xidx)>0) y <- y[,-x,drop=FALSE]
+        if (length(xidx)>0) y <- y[,-xidx,drop=FALSE]
     }
-
     if (is.character(fun)) fun <- get(fun)
 
     ## if (!is.null(x)) {
@@ -674,11 +681,20 @@ daggregate <- function(data,y=NULL,x=NULL,...,fun="summary",regex=FALSE, silent=
     ##     res <- by(dd,group,ff,...)
     ##     return(res)
     ## }
+    
     if (!is.null(x)) {
+        print(missing)
+        if (missing) {
+            x[is.na(x)] <- 'NA'
+        }
         if (silent) 
             capture.output(res <- by(y,x,fun,...))
         else
             res <- by(y,x,fun,...)
+        if (remove.empty) {
+            # ... need to abandon 'by'?
+        }
+        
         return(res)
     }
     if (silent) 
@@ -714,6 +730,8 @@ dunique <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=fu
 ##' @param data if x is formula or names for data frame then data frame is needed.
 ##' @param y name of variable, or fomula, or names of variables on data frame.
 ##' @param x possible group variable
+##' @param regex use regular expressions
+##' @param missing group by missing value
 ##' @param ... Optional additional arguments
 ##' @author Klaus K. Holst and Thomas Scheike 
 ##' @examples
@@ -732,22 +750,27 @@ dunique <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=fu
 ##' dcor(dt,c("time*","wmi*"),~vf+chf)
 ##' @aliases dsummary dcor dprint dlist dstr dhead dtail dquantile dmean dsd
 ##' @export
-dcor <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) stats::cor(z,...))
+dcor <- function(data,y=NULL,x=NULL,..., regex=FALSE, missing=FALSE) daggregate(data,y,x,regex=regex,missing=missing,fun=function(z) stats::cor(z,...))
 
 ##' @export
-dmean <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) apply(z,2,function(x) mean(x,na.rm=TRUE)))
+dmean <- function(data,y=NULL,x=NULL,...,na.rm=TRUE) daggregate(data,y,x,...,fun=function(z) apply(z,2,function(x) mean(x,na.rm=na.rm)))
 
 ##' @export
-dsd <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) apply(z,2,function(x) sd(x,na.rm=TRUE)))
+dsd <- function(data,y=NULL,x=NULL,...,na.rm=TRUE) daggregate(data,y,x,...,fun=function(z) apply(z,2,function(x) sd(x,na.rm=na.rm)))
 
 ##' @export
-dquantile <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) apply(z,2,function(x) quantile(x,...,na.rm=TRUE)))
+dquantile <- function(data,y=NULL,x=NULL,...,regex=FALSE, missing=FALSE, na.rm=TRUE) daggregate(data,y,x,regex=regex,missing=missing,fun=function(z) apply(z,2,function(x) quantile(x,...,na.rm=na.rm)))
 
 ##' @export
-dprint <- function(data,y=NULL,...,x=NULL) daggregate(data,y,fun=function(z) Print(z,...),silent=FALSE)
+dprint <- function(data,y=NULL,...,regex=FALSE, missing=FALSE,x=NULL) {
+    ## args1 <- names(formals(daggregate))
+    ## dots <- list(...)
+    ## match(names)
+    daggregate(data,y,regex=regex,missing=missing,fun=function(z) Print(z,...),silent=FALSE)
+}
 
 ##' @export
-dlist <- function(data,y=NULL,...) dprint(data,y,...)
+dlist <- function(data,...) dprint(data,...)
 
 ##' @export
 dreshape <- function(data,...) fast.reshape(data,...)
