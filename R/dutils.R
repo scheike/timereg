@@ -427,7 +427,7 @@ dsort <- function(data,x,...,decreasing=FALSE)
 ##' 
 ##' @aliases dtables
 ##' @export
-dtable <- function(data,y=NULL,x=NULL,...,level=0,flat=TRUE,total=FALSE,prop=FALSE,summary=NULL) {
+dtable <- function(data,y=NULL,x=NULL,...,level=-1,response=NULL,flat=TRUE,total=FALSE,prop=FALSE,summary=NULL) {
     daggregate(data,y,x,...,
                fun=function(z) {
                    res <- sum <- c()
@@ -449,12 +449,21 @@ dtable <- function(data,y=NULL,x=NULL,...,level=0,flat=TRUE,total=FALSE,prop=FAL
                        class(res) <- "dtable"
                        return(res)
                    }
-                   if (level==2) {                       
-                       for (i in seq(1,ncol(z)-1))  {
-                           for (j in seq(i+1,ncol(z))) {
-                               n1 <- colnames(z)[i]
-                               n2 <- colnames(z)[j]
-                               val <- table(z[,c(i,j)])
+                   if (level>1) {
+                       if (level>2) response <- ncol(z)
+                       idx1 <- seq(1,ncol(z)-1)
+                       if (level>2 || !is.null(response)) {                           
+                           idx1 <- response
+                           idx2 <- setdiff(seq(ncol(z)),idx1)
+                       }
+                       for (i in idx1)  {
+                           if (!(level>2 || !is.null(response))) {
+                               idx2 <- seq(i+1,ncol(z))
+                           }
+                           for (j in idx2) {
+                               n1 <- colnames(z)[j]
+                               n2 <- colnames(z)[i]
+                               val <- table(z[,c(j,i)])
                                if (prop[1]>0) {
                                    if (all(1:2 %in% prop)) {
                                        val <- prop.table(val)
