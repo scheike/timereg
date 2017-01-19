@@ -4,8 +4,8 @@
 \alias{daggregate}
 \title{aggregating for for data frames}
 \usage{
-daggregate(data, y = NULL, x = NULL, ..., fun = "summary",
-  regex = FALSE, silent = FALSE)
+daggregate(data, y = NULL, x = NULL, subset, ..., fun = "summary",
+  regex = FALSE, missing = FALSE, remove.empty = FALSE, silent = FALSE)
 }
 \arguments{
 \item{data}{data.frame}
@@ -14,11 +14,17 @@ daggregate(data, y = NULL, x = NULL, ..., fun = "summary",
 
 \item{x}{name of variable, or formula, or names of variables on data frame.}
 
+\item{subset}{subset expression}
+
 \item{...}{additional arguments to lower level functions}
 
 \item{fun}{function defining aggregation}
 
 \item{regex}{interpret x,y as regular expressions}
+
+\item{missing}{Missing used in groups (x)}
+
+\item{remove.empty}{remove empty groups from output}
 
 \item{silent}{suppress messages}
 }
