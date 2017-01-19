@@ -421,6 +421,7 @@ dsort <- function(data,x,...,decreasing=FALSE)
 ##' 
 ##' dtable(sTRACE,status+vf+sex~diabetes|age>60, level=1)
 ##' dtable(sTRACE,status+vf+sex~diabetes|age>60, level=2)
+##' dtable(sTRACE,status+vf+sex~+1|age>60, level=2)
 ##' 
 ##' dtable(sTRACE,status+vf+sex~diabetes|age>60, level=2, prop=1, total=TRUE)
 ##' dtable(sTRACE,status+vf+sex~diabetes|age>60, level=2, prop=2, total=TRUE)
