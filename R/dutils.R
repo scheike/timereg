@@ -634,6 +634,8 @@ procformdata <- function(formula,data,sep="\\|", na.action=na.pass, ...) {
 ##' dprint(iris,Petal.Length+Sepal.Length ~ Species |Petal.Length>1.3 & Sepal.Length>5, n=list(1:3,-(3:1)))
 ##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5))
 ##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=table)
+##'
+##' dsum(iris, .~Species, matrix=TRUE, missing=TRUE)
 ##' 
 ##' @export
 ##' @param data data.frame
@@ -645,8 +647,9 @@ procformdata <- function(formula,data,sep="\\|", na.action=na.pass, ...) {
 ##' @param regex interpret x,y as regular expressions
 ##' @param missing Missing used in groups (x)
 ##' @param remove.empty remove empty groups from output
+##' @param matrix if TRUE a matrix is returned instead of an array
 ##' @param silent suppress messages
-daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, missing=FALSE, remove.empty=FALSE, silent=FALSE) 
+daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, missing=FALSE, remove.empty=FALSE, matrix=FALSE, silent=FALSE) 
 {# {{{    
     subs <- substitute(subset)
     if (!base::missing(subs)) {
@@ -698,9 +701,20 @@ daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, 
         if (silent) 
             capture.output(res <- by(y,x,fun,...))
         else
-            res <- by(y,x,fun,...)
+            res <- by(y,x,fun,...)        
         if (remove.empty) {
             # ... need to abandon 'by'?
+        }
+        if (matrix) {
+            ##browser()
+            a <- res
+            nulls <- which(unlist(lapply(a,is.null)))
+            nonnulls <- setdiff(seq_along(a),nulls)
+            nn <- do.call("expand.grid",attributes(a)$dimnames)
+            if (length(nulls)>0) nn <- nn[-nulls,,drop=FALSE]
+            res <- Reduce("rbind",a)
+            suppressWarnings(res <- cbind(nn,res)) ## no warnings on row-names
+            rownames(res) <- seq(nrow(res))
         }
         
         return(res)
@@ -752,12 +766,15 @@ dunique <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=fu
 ##' dcor(dt,time+wmi~vf+chf)
 ##' 
 ##' dcor(dt,c("time*","wmi*"),~vf+chf)
-##' @aliases dsummary dcor dprint dlist dstr dhead dtail dquantile dmean dsd
+##' @aliases dsummary dcor dprint dlist dstr dhead dtail dquantile dmean dsum dsd
 ##' @export
 dcor <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,...,fun=function(z,...) stats::cor(z,...))
 
 ##' @export
 dmean <- function(data,y=NULL,x=NULL,...,na.rm=TRUE) daggregate(data,y,x,...,fun=function(z,...) apply(z,2,function(x) mean(x,na.rm=na.rm,...)))
+
+##' @export
+dsum <- function(data,y=NULL,x=NULL,...,na.rm=TRUE) daggregate(data,y,x,...,fun=function(z,...) apply(z,2,function(x) sum(x,na.rm=na.rm,...)))
 
 ##' @export
 dsd <- function(data,y=NULL,x=NULL,...,na.rm=TRUE) daggregate(data,y,x,...,fun=function(z,...) apply(z,2,function(x) sd(x,na.rm=na.rm,...)))

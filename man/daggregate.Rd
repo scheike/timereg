@@ -5,7 +5,8 @@
 \title{aggregating for for data frames}
 \usage{
 daggregate(data, y = NULL, x = NULL, subset, ..., fun = "summary",
-  regex = FALSE, missing = FALSE, remove.empty = FALSE, silent = FALSE)
+  regex = FALSE, missing = FALSE, remove.empty = FALSE, matrix = FALSE,
+  silent = FALSE)
 }
 \arguments{
 \item{data}{data.frame}
@@ -26,6 +27,8 @@ daggregate(data, y = NULL, x = NULL, subset, ..., fun = "summary",
 
 \item{remove.empty}{remove empty groups from output}
 
+\item{matrix}{if TRUE a matrix is returned instead of an array}
+
 \item{silent}{suppress messages}
 }
 \description{
@@ -45,6 +48,8 @@ daggregate(iris, "^.e.al", x="Species",regex=TRUE)
 dprint(iris,Petal.Length+Sepal.Length ~ Species |Petal.Length>1.3 & Sepal.Length>5, n=list(1:3,-(3:1)))
 daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5))
 daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=table)
+
+dsum(iris, .~Species, matrix=TRUE, missing=TRUE)
 
 }
 

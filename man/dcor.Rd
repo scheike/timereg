@@ -9,6 +9,7 @@
 \alias{dquantile}
 \alias{dsd}
 \alias{dstr}
+\alias{dsum}
 \alias{dsummary}
 \alias{dtail}
 \title{summary, tables, and correlations for data frames}

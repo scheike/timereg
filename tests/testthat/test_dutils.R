@@ -15,7 +15,10 @@ test_that("dsort", {
 
 
 test_that("daggregate", {    
-    dd <- data.frame(a=1:20,b=20:1,g1=rep(0:1,10), g2=rep(0:1,each=10))
+    dd <- data.frame(a=1:20,b=20:1,
+                    g1=rep(0:1,10),
+                    g2=rep(0:1,each=10),
+                    g3=rbinom(20,1,0.5))
     dd$g1[1:2] <- NA
     dd$g2[2:3] <- NA
     dd$a[3:7] <- NA
