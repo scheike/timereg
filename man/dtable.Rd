@@ -5,8 +5,8 @@
 \alias{dtables}
 \title{tables for data frames}
 \usage{
-dtable(data, y = NULL, x = NULL, ..., level = 0, flat = TRUE,
-  total = FALSE, prop = FALSE, summary = NULL)
+dtable(data, y = NULL, x = NULL, ..., level = -1, response = NULL,
+  flat = TRUE, total = FALSE, prop = FALSE, summary = NULL)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}
@@ -18,6 +18,8 @@ dtable(data, y = NULL, x = NULL, ..., level = 0, flat = TRUE,
 \item{...}{Optional additional arguments}
 
 \item{level}{1 for all marginal tables, 2 for all 2 by 2 tables, and null for the full table, possible versus group variable}
+
+\item{response}{For level=2, only produce tables with columns given by 'response' (index)}
 
 \item{flat}{produce flat tables}
 

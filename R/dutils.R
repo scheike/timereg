@@ -398,6 +398,7 @@ dsort <- function(data,x,...,decreasing=FALSE)
 ##' @param x name of variable, or fomula, or names of variables on data frame.
 ##' @param ... Optional additional arguments
 ##' @param level  1 for all marginal tables, 2 for all 2 by 2 tables, and null for the full table, possible versus group variable
+##' @param response For level=2, only produce tables with columns given by 'response' (index)
 ##' @param flat  produce flat tables 
 ##' @param total add total counts/proportions
 ##' @param prop Proportions instead of counts (vector of margins)
