@@ -2,6 +2,7 @@
 % Please edit documentation in R/dutils.R
 \name{dcor}
 \alias{dcor}
+\alias{dcount}
 \alias{dhead}
 \alias{dlist}
 \alias{dmean}

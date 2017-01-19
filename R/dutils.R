@@ -706,13 +706,15 @@ daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, 
             # ... need to abandon 'by'?
         }
         if (matrix) {
-            ##browser()
             a <- res
             nulls <- which(unlist(lapply(a,is.null)))
             nonnulls <- setdiff(seq_along(a),nulls)
             nn <- do.call("expand.grid",attributes(a)$dimnames)
             if (length(nulls)>0) nn <- nn[-nulls,,drop=FALSE]
             res <- Reduce("rbind",a)
+            if (is.null(colnames(res))) {                
+                colnames(res) <- colnames(y)[seq(length(ncol(res)))]
+            }
             suppressWarnings(res <- cbind(nn,res)) ## no warnings on row-names
             rownames(res) <- seq(nrow(res))
         }
@@ -766,18 +768,27 @@ dunique <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=fu
 ##' dcor(dt,time+wmi~vf+chf)
 ##' 
 ##' dcor(dt,c("time*","wmi*"),~vf+chf)
-##' @aliases dsummary dcor dprint dlist dstr dhead dtail dquantile dmean dsum dsd
+##' @aliases dsummary dcor dprint dlist dstr dhead dtail dquantile dcount dmean dsum dsd
 ##' @export
 dcor <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,...,fun=function(z,...) stats::cor(z,...))
 
 ##' @export
-dmean <- function(data,y=NULL,x=NULL,...,na.rm=TRUE) daggregate(data,y,x,...,fun=function(z,...) apply(z,2,function(x) mean(x,na.rm=na.rm,...)))
+dmean <- function(data,y=NULL,x=NULL,...,na.rm=TRUE,matrix=TRUE) daggregate(data,y,x,matrix=matrix,...,fun=function(z,...) apply(z,2,function(x) mean(x,na.rm=na.rm,...)))
 
 ##' @export
-dsum <- function(data,y=NULL,x=NULL,...,na.rm=TRUE) daggregate(data,y,x,...,fun=function(z,...) apply(z,2,function(x) sum(x,na.rm=na.rm,...)))
+dsum <- function(data,y=NULL,x=NULL,...,na.rm=TRUE,matrix=TRUE) daggregate(data,y,x,...,fun=function(z,matrix=matrix,...) apply(z,2,function(x) sum(x,na.rm=na.rm,...)))
 
 ##' @export
-dsd <- function(data,y=NULL,x=NULL,...,na.rm=TRUE) daggregate(data,y,x,...,fun=function(z,...) apply(z,2,function(x) sd(x,na.rm=na.rm,...)))
+dcount <- function(data,x=NULL,...,na.rm=TRUE) {
+    res <- rbind(daggregate(data,x,matrix=TRUE,...,fun=function(z,...) nrow(z)))
+    rownames(res) <- seq(nrow(res))
+    colnames(res)[ncol(res)] <- "count"
+    res
+}
+
+##' @export
+dsd <- function(data,y=NULL,x=NULL,...,na.rm=TRUE,matrix=TRUE) daggregate(data,y,x,matrix=matrix,...,fun=function(z,...) apply(z,2,function(x) sd(x,na.rm=na.rm,...)))
+
 
 ##' @export
 dquantile <- function(data,y=NULL,x=NULL,...,na.rm=TRUE) daggregate(data,y,x,...,fun=function(z,...) apply(z,2,function(x,...) quantile(x,na.rm=na.rm,...)))
