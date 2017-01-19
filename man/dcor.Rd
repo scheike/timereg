@@ -13,7 +13,7 @@
 \alias{dtail}
 \title{summary, tables, and correlations for data frames}
 \usage{
-dcor(data, y = NULL, x = NULL, ..., regex = FALSE, missing = FALSE)
+dcor(data, y = NULL, x = NULL, ...)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}
@@ -23,10 +23,6 @@ dcor(data, y = NULL, x = NULL, ..., regex = FALSE, missing = FALSE)
 \item{x}{possible group variable}
 
 \item{...}{Optional additional arguments}
-
-\item{regex}{use regular expressions}
-
-\item{missing}{group by missing value}
 }
 \description{
 summary, tables, and correlations for data frames

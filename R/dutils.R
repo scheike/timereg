@@ -524,7 +524,7 @@ print.dtable <- function(x,sep="\n",...) {
 }
 
 
-procform <- function(formula, sep, return.formula=FALSE, data=NULL, regex=FALSE, return.list=TRUE) {
+procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, regex=FALSE, return.list=TRUE, ...) {
     res <- NULL
     if (is.null(formula)) {
         res <- colnames(data)
@@ -559,9 +559,20 @@ procform <- function(formula, sep, return.formula=FALSE, data=NULL, regex=FALSE,
     if (!missing(sep) && length(aa$term.labels) > 0) {
         foundsep <- any(grepl(sep,aa$term.labels))
         if (foundsep) {
-            xc <- gsub(" ","",unlist(lapply(aa$term.labels, function(z) strsplit(z,sep)[[1]])))
-            pred <- xc[1]
-            filter <- xc[-1]
+            if (nsep>1) {
+                xc <- gsub(" ","",unlist(lapply(aa$term.labels, function(z) strsplit(z,sep)[[1]])))
+                pred <- xc[1]
+                filter <- xc[-1]
+            } else {
+                xc <- gsub(" ","",unlist(lapply(aa$term.labels, function(z) {
+                    spl <- regexpr(sep,z) ## first appearance
+                    pred <- substr(z,1,spl-1)
+                    filter <- substr(z,spl+1,nchar(z))
+                    return(c(pred,filter))
+                })))
+                pred <- xc[1]
+                filter <- xc[2]
+            }
             if (any(pred==".")) {
                 f <- as.formula(paste0(paste0(c(res,filter),collapse="+"),"~."))
                 x <- attributes(terms(f,data=data))$term.labels
@@ -592,12 +603,12 @@ procformdata <- function(formula,data,sep="\\|", na.action=na.pass, ...) {
     filter <- res$filter.expression
 
     if (length(res$response)>0) {
-        if (is.null(filter)) y <- model.frame(res$response,data=data,na.action=na.action,...)
-        else y <- model.frame(res$response,data=subset(data,eval(filter)),na.action=na.action,...)
+        if (is.null(filter)) y <- model.frame(res$response,data=data,na.action=na.action)
+        else y <- model.frame(res$response,data=subset(data,eval(filter)),na.action=na.action)
     }    
     if (length(res$predictor)>0) {
-        if (is.null(filter)) x <- model.frame(res$predictor,data=data,na.action=na.action,...)
-        else x <- model.frame(res$predictor,data=subset(data,eval(filter)),na.action=na.action,...)
+        if (is.null(filter)) x <- model.frame(res$predictor,data=data,na.action=na.action)
+        else x <- model.frame(res$predictor,data=subset(data,eval(filter)),na.action=na.action)
 
     }
     ## if (!is.null(res$group)) group <- lapply(res$,function(x) model.frame(x,data=data,...))
@@ -678,25 +689,11 @@ daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, 
         if (length(xidx)>0) y <- y[,-xidx,drop=FALSE]
     }
     if (is.character(fun)) fun <- get(fun)
-
-    ## if (!is.null(x)) {
-    ##     if (is.null(group)) {
-    ##         res <- do.call(fun, c(list(y,x),list(...)))
-    ##         return(res)
-    ##     }
-    ##     idxy <- seq(NCOL(y))
-    ##     idxx <- NCOL(y) + seq(NCOL(x))
-    ##     dd <- cbind(y,x)        
-    ##     ff <- function(z,...) fun(z[,idxy,drop=TRUE],z[,idxx,drop=TRUE],...)
-    ##     res <- by(dd,group,ff,...)
-    ##     return(res)
-    ## }
     
     if (!is.null(x)) {
-        print(missing)
         if (missing) {
             x[is.na(x)] <- 'NA'
-        }
+        } 
         if (silent) 
             capture.output(res <- by(y,x,fun,...))
         else
@@ -715,8 +712,6 @@ daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, 
     res
 }# }}}
 
-##' @export
-dlist <- function(data,y=NULL,x=NULL,lines=1:5,...) daggregate(data,y,x,fun=function(z) Print(z[lines,],...))
 
 ##' @export
 dhead <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,fun=function(z) utils::head(z,...))
@@ -740,8 +735,6 @@ dunique <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=fu
 ##' @param data if x is formula or names for data frame then data frame is needed.
 ##' @param y name of variable, or fomula, or names of variables on data frame.
 ##' @param x possible group variable
-##' @param regex use regular expressions
-##' @param missing group by missing value
 ##' @param ... Optional additional arguments
 ##' @author Klaus K. Holst and Thomas Scheike 
 ##' @examples
@@ -760,24 +753,20 @@ dunique <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=fu
 ##' dcor(dt,c("time*","wmi*"),~vf+chf)
 ##' @aliases dsummary dcor dprint dlist dstr dhead dtail dquantile dmean dsd
 ##' @export
-dcor <- function(data,y=NULL,x=NULL,..., regex=FALSE, missing=FALSE) daggregate(data,y,x,regex=regex,missing=missing,fun=function(z) stats::cor(z,...))
+dcor <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,...,fun=function(z,...) stats::cor(z,...))
 
 ##' @export
-dmean <- function(data,y=NULL,x=NULL,...,na.rm=TRUE) daggregate(data,y,x,...,fun=function(z) apply(z,2,function(x) mean(x,na.rm=na.rm)))
+dmean <- function(data,y=NULL,x=NULL,...,na.rm=TRUE) daggregate(data,y,x,...,fun=function(z,...) apply(z,2,function(x) mean(x,na.rm=na.rm,...)))
 
 ##' @export
-dsd <- function(data,y=NULL,x=NULL,...,na.rm=TRUE) daggregate(data,y,x,...,fun=function(z) apply(z,2,function(x) sd(x,na.rm=na.rm)))
+dsd <- function(data,y=NULL,x=NULL,...,na.rm=TRUE) daggregate(data,y,x,...,fun=function(z,...) apply(z,2,function(x) sd(x,na.rm=na.rm,...)))
 
 ##' @export
-dquantile <- function(data,y=NULL,x=NULL,...,regex=FALSE, missing=FALSE, na.rm=TRUE) daggregate(data,y,x,regex=regex,missing=missing,fun=function(z) apply(z,2,function(x) quantile(x,...,na.rm=na.rm)))
+dquantile <- function(data,y=NULL,x=NULL,...,na.rm=TRUE) daggregate(data,y,x,...,fun=function(z,...) apply(z,2,function(x,...) quantile(x,na.rm=na.rm,...)))
 
 ##' @export
-dprint <- function(data,y=NULL,...,regex=FALSE, missing=FALSE,x=NULL) {
-    ## args1 <- names(formals(daggregate))
-    ## dots <- list(...)
-    ## match(names)
-    daggregate(data,y,regex=regex,missing=missing,fun=function(z) Print(z,...),silent=FALSE)
-}
+dprint <- function(data,y=NULL,n=NULL,...,x=NULL) daggregate(data,y,x,...,fun=function(z) Print(z,n,...),silent=FALSE)
+
 
 ##' @export
 dlist <- function(data,...) dprint(data,...)
@@ -838,13 +827,13 @@ dlag <- function(data,x,k=1,combine=TRUE,simplify=TRUE,names,...) {
 }
 
 
-Print <- function(x,n,nfirst=5,nlast=5,digits=max(3,getOption("digits")-3),...) {
+Print <- function(x,n=NULL,nfirst=5,nlast=5,digits=max(3,getOption("digits")-3),...) {
     mat <- !is.null(dim(x))
     if (!mat) {
         x <- cbind(x)
         colnames(x) <- ""
     }
-    if (missing(n)) {
+    if (is.null(n)) {
         if (NROW(x)<=(nfirst+nlast)) n <- list(seq(NROW(x)))
         else {
             n <- c()
