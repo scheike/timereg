@@ -3,6 +3,7 @@
 \name{dcor}
 \alias{dcor}
 \alias{dcount}
+\alias{deval}
 \alias{dhead}
 \alias{dlist}
 \alias{dmean}

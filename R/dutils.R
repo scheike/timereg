@@ -782,7 +782,7 @@ dunique <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=fu
 ##' dcor(dt,time+wmi~vf+chf)
 ##'
 ##' dcor(dt,c("time*","wmi*"),~vf+chf)
-##' @aliases dsummary dcor dprint dlist dstr dhead dtail dquantile dcount dmean dscalar dsum dsd
+##' @aliases dsummary dcor dprint dlist dstr dhead dtail dquantile dcount dmean dscalar deval dsum dsd
 ##' @export
 dcor <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,...,fun=function(z,...) stats::cor(z,...))
 
@@ -801,6 +801,13 @@ dscalar <- function(data,y=NULL,x=NULL,...,na.rm=TRUE,matrix=TRUE,fun=base::mean
                })
 }
 
+##' @export
+deval <- function(data,y=NULL,x=NULL,...,matrix=FALSE,fun=base::summary) {
+    daggregate(data,y,x,matrix=matrix,...,
+               fun=function(z) lapply(z,function(x) {
+                   suppressWarnings(tryCatch(fun(x,...),error=function(e) return(NA)))
+               }))
+}
 
 
 ##' @export
