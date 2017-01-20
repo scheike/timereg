@@ -817,7 +817,7 @@ dquantile <- function(data,y=NULL,x=NULL,probs=seq(0,1,by=1/breaks),breaks=4,mat
 }
 
 ##' @export
-dprint <- function(data,y=NULL,n=NULL,...,x=NULL) daggregate(data,y,x,...,fun=function(z) Print(z,n,...),silent=FALSE)
+dprint <- function(data,y=NULL,n=NULL,...,x=NULL) daggregate(data,y,x,...,fun=function(z,...) Print(z,n=n,...),silent=FALSE)
 
 ##' @export
 dlist <- function(data,...) dprint(data,...)
@@ -879,7 +879,7 @@ dlag <- function(data,x,k=1,combine=TRUE,simplify=TRUE,names,...) {
 
 
 
-Print <- function(x,n=NULL,nfirst=5,nlast=5,digits=max(3,getOption("digits")-3),...) {
+Print <- function(x,n=NULL,nfirst=5,nlast=nfirst,digits=max(3,getOption("digits")-3),...) {
     mat <- !is.null(dim(x))
     if (!mat) {
         x <- cbind(x)
@@ -910,7 +910,6 @@ Print <- function(x,n=NULL,nfirst=5,nlast=5,digits=max(3,getOption("digits")-3),
         val <- rbind(val,base::as.matrix(d[[i]]))
 
     }
-    return(val)
     return(structure(val,class=c("Print",class(val))))
 }
 
