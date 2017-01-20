@@ -70,17 +70,17 @@ head(gx)
 mm1 <- drm(mm,c("*.2","*.4"))
 head(mm1)
 
-## wildcards, for age, age2, age4 and wmi 
+## wildcards, for age, age2, age4 and wmi
 head(dcut(mm,c("a*","?m*")))
 
-## with direct asignment 
+## with direct asignment
 drm(mm) <- c("*.2","*.4")
 head(mm)
 
 dcut(mm) <- c("age","*m*")
 head(mm)
 
-## renaming 
+## renaming
 ############################
 
 head(mm)
@@ -88,11 +88,11 @@ drename(mm, ~age+wmi) <- c("Wmi","Age")
 head(mm)
 mm1 <- mm
 
-## all names to lower 
+## all names to lower
 drename(mm1) <- ~.
 head(mm1)
 
-## A* to lower 
+## A* to lower
 mm2 <-  drename(mm,c("A*","W*"))
 head(mm2)
 drename(mm,"A*") <- ~.
