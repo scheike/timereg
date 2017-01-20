@@ -79,7 +79,7 @@ dcut <- function(data,x,cuts=4,probs=NULL,breaks=NULL,regex=FALSE,sep=NULL,...)
         if (is.null(probs))
             probs <- seq(0, 1, length.out = cuts + 1)
         bb <- quantile(data, probs, ...)
-        gx <- cut(data, breaks = bb, include.lowest = TRUE)
+        gx <- cut(data, breaks = bb, include.lowest = TRUE,...)
         return(gx)
     }
 
@@ -125,7 +125,7 @@ for (k in 1:ll)
           if (is.null(probs))
               probs <- seq(0,1,length.out=cuts[k]+1)
           name<-paste(xnames[k],cuts[k],sep=sep)
-          bb <- quantile(xx,probs)
+          bb <- quantile(xx,probs,...)
       } else { bb <- breaks ; name<-paste(xnames[k],breaks[2],sep=sep) }
 
   if (sum(duplicated(bb))==0)
