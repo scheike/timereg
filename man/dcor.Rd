@@ -8,6 +8,7 @@
 \alias{dmean}
 \alias{dprint}
 \alias{dquantile}
+\alias{dscalar}
 \alias{dsd}
 \alias{dstr}
 \alias{dsum}
