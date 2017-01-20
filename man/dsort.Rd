@@ -29,7 +29,7 @@ dsort(hubble, hubble$sigma,"v")
 dsort(hubble,~sigma+v)
 dsort(hubble,~sigma-v)
 
-## with direct asignment 
+## with direct asignment
 dsort(hubble) <- ~sigma-v
 }
 

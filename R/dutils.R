@@ -436,7 +436,7 @@ dtable <- function(data,y=NULL,x=NULL,...,level=-1,response=NULL,flat=TRUE,total
                    if (level==1 || ncol(z)==1) {
                        for (i in seq_len(ncol(z))) {
                            nn <- colnames(z)[i]
-                           val <- table(z[,i])
+                           val <- table(z[,i],...)
                            names(attr(val,"dimnames")) <- nn
                            val <- list(val)
                            names(val) <- nn
@@ -447,7 +447,7 @@ dtable <- function(data,y=NULL,x=NULL,...,level=-1,response=NULL,flat=TRUE,total
                                c(sum, sval)
                            }
                        }
-                       res <- list(table=res,summary=sum)
+                       res <- list(table=res,summary=sum,...)
                        class(res) <- "dtable"
                        return(res)
                    }
@@ -465,7 +465,7 @@ dtable <- function(data,y=NULL,x=NULL,...,level=-1,response=NULL,flat=TRUE,total
                            for (j in idx2) {
                                n1 <- colnames(z)[j]
                                n2 <- colnames(z)[i]
-                               val <- table(z[,c(j,i)])
+                               val <- table(z[,c(j,i)],...)
                                if (prop[1]>0) {
                                    if (all(1:2 %in% prop)) {
                                        val <- prop.table(val)
@@ -736,6 +736,7 @@ daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, 
     structure(res, ngroupvar=0, class=c("daggregate",class(res)))
 }# }}}
 
+##' @export
 print.daggregate <- function(x,quote=FALSE,...) {
     attr(x,c("ngroupvar")) <- NULL
     class(x) <- class(x)[-1]
