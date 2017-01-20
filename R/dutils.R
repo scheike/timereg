@@ -726,15 +726,21 @@ daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, 
         if (matrix) {
             res <- by2mat(res,colnames(y))
         }
-        return(structure(res,ngroupvar=NCOL(x)))
+        return(structure(res,ngroupvar=NCOL(x),class=c("daggregate",class(res))))
     }
     if (silent)
         capture.output(res <- do.call(fun, c(list(y),list(...))))
     else
         res <- do.call(fun, c(list(y),list(...)))
-
+    res
     structure(res, ngroupvar=0, class=c("daggregate",class(res)))
 }# }}}
+
+print.daggregate <- function(x,quote=FALSE,...) {
+    attr(x,c("ngroupvar")) <- NULL
+    class(x) <- class(x)[-1]
+    print(x,quote=quote,...)
+}
 
 
 ##' @export
@@ -871,6 +877,7 @@ dlag <- function(data,x,k=1,combine=TRUE,simplify=TRUE,names,...) {
 }
 
 
+
 Print <- function(x,n=NULL,nfirst=5,nlast=5,digits=max(3,getOption("digits")-3),...) {
     mat <- !is.null(dim(x))
     if (!mat) {
@@ -902,13 +909,14 @@ Print <- function(x,n=NULL,nfirst=5,nlast=5,digits=max(3,getOption("digits")-3),
         val <- rbind(val,base::as.matrix(d[[i]]))
 
     }
-    return(structure(val,class=c("Print","matrix")))
+    return(val)
+    return(structure(val,class=c("Print",class(val))))
 }
 
 ##' @export
-print.Print <- function(x,...) {
+print.Print <- function(x,quote=FALSE,...) {
     class(x) <- class(x)[-1]
-    print(x,quote=FALSE,...)
+    print(x,quote=quote,...)
 }
 
 
