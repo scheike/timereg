@@ -19,7 +19,7 @@
 ##' @author Thomas Scheike Klaus K. Holst
 ##' @examples
 ##' data = data.frame(id=c(10,10,10,2,2),start=c(0,1,2,3,4),slut=c(1,2,4,4,7),
-##'                   type=c(1,2,3,2,3),status=c(0,1,2,1,2),group=c(1,1,1,2,2))
+##'                   type=c(1,2,3,2,3),status=c(0,1,4,1,4),group=c(1,1,1,2,2))
 ##' ll = lifecourse(Event(start,slut,status)~id,data,id="id")
 ##' ll = lifecourse(Event(start,slut,status)~id,data,id="id",recurrent.col="type")
 ##'
@@ -176,12 +176,13 @@ lifecourse <- function(formula,data,id="id",group=NULL,
 	X <- cbind(c(t1),c(t2))
 	Y <- matrix(rep(x,each=2),ncol=2,byrow=TRUE)
 	status <- tstat
+	if (min(status)==0) status<-status+1
 
 ###	print(dim(X)); print(dim(Y)); print(dim(status)); print(summary(X)); print(summary(Y)); 
 
 	if (is.null(recurrent.col))  {
             matplot(t(X),t(Y),type=type,lty=lty,lwd=lwd,
-	          col=col[1],xlab=xlab,ylab=ylab,add=add,..)
+	          col=col[1],xlab=xlab,ylab=ylab,add=add,...)
 	} else {
 	   cn <- data[ccm,recurrent.col]
 	   matplot(t(X),t(Y),type=type,lty=lty,lwd=lwd,
@@ -211,6 +212,7 @@ lifecourse <- function(formula,data,id="id",group=NULL,
 	X <- cbind(c(t1),c(t2))
 	Y <- matrix(rep(x,each=2),ncol=2,byrow=TRUE)
 	status <- tstat
+	if (min(status)==0) status<-status+1
 
 ###	print(dim(X)); print(dim(Y)); print(dim(status)); print(summary(X)); print(summary(Y)); 
 
