@@ -1,6 +1,6 @@
 ##' Life-course plot for event life data  with recurrent events 
 ##'
-##' @title Spaghetti plot
+##' @title Life course plot
 ##' @param formula Formula (Event(start,slut,status) ~ ) 
 ##' @param data data.frame
 ##' @param id Id variable 
@@ -17,7 +17,6 @@
 ##' @param add Add to existing device
 ##' @param ... Additional arguments to lower level arguments
 ##' @author Thomas Scheike Klaus K. Holst
-##' @export
 ##' @examples
 ##' data = data.frame(id=c(1,1,1,2,2),start=c(0,1,2,3,4),slut=c(1,2,4,4,7),
 ##'                   type=c(1,2,3,2,3),status=c(0,1,2,1,2),group=c(1,1,1,2,2))
@@ -28,6 +27,7 @@
 ##' par(mfrow=c(1,2))
 ##' ll = lifecourse(Event(start,slut,status)~id,data,id="id",by=~group)
 ##' 
+##' @export
 lifecourse <- function(formula,data,id="id",group=NULL,
                       type="l",lty=1,col=1:10,alpha=0.3,lwd=1,
 		      recurrent.col=NULL,
