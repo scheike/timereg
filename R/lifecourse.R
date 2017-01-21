@@ -27,6 +27,10 @@
 ##' par(mfrow=c(1,2))
 ##' ll = lifecourse(Event(start,slut,status)~id,data,id="id",by=~group)
 ##' 
+##' ### specific pch's for different status
+##' data$pch = data$status+1 ### pch = 1,2,5
+##' ll = lifecourse(Event(start,slut,pch)~id,data,id="id")
+##' 
 ##' data$gid = data$g*10+ data$id/5
 ##' ll = lifecourse(Event(start,slut,status)~+gid,data,id="id")
 ##' ll = lifecourse(Event(start,slut,status)~+1,data,id="id")
