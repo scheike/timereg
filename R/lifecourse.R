@@ -18,7 +18,7 @@
 ##' @param ... Additional arguments to lower level arguments
 ##' @author Thomas Scheike Klaus K. Holst
 ##' @examples
-##' data = data.frame(id=c(1,1,1,2,2),start=c(0,1,2,3,4),slut=c(1,2,4,4,7),
+##' data = data.frame(id=c(10,10,10,2,2),start=c(0,1,2,3,4),slut=c(1,2,4,4,7),
 ##'                   type=c(1,2,3,2,3),status=c(0,1,2,1,2),group=c(1,1,1,2,2))
 ##' ll = lifecourse(Event(start,slut,status)~id,data,id="id")
 ##' ll = lifecourse(Event(start,slut,status)~id,data,id="id",recurrent.col="type")
@@ -27,12 +27,17 @@
 ##' par(mfrow=c(1,2))
 ##' ll = lifecourse(Event(start,slut,status)~id,data,id="id",by=~group)
 ##' 
+##' data$gid = data$g*10+ data$id/5
+##' ll = lifecourse(Event(start,slut,status)~+gid,data,id="id")
+##' ll = lifecourse(Event(start,slut,status)~+1,data,id="id")
+##' ll = lifecourse(Event(start,slut,status)~+1,data,id="id",group=~group,col=1:2)
+##' 
 ##' @export
 lifecourse <- function(formula,data,id="id",group=NULL,
                       type="l",lty=1,col=1:10,alpha=0.3,lwd=1,
 		      recurrent.col=NULL,
                       legend=NULL, by=NULL,
-                      xlab="Time",ylab="",add=FALSE,...) 
+                      xlab="Time",ylab="Id",add=FALSE,...) 
 {# {{{
     if (!lava.options()$cluster.index) stop("mets not available? Check 'lava.options()cluster.index'.")
     if (!is.null(by)) {
@@ -182,7 +187,6 @@ lifecourse <- function(formula,data,id="id",group=NULL,
 	   matplot(t(X),t(Y),type=type,lty=lty,lwd=lwd,
 	       col=cn,xlab=xlab,ylab=ylab,add=add,...)
 		}
-
          points(t2,x,pch=status)
 # }}}
     } else {# {{{
@@ -218,7 +222,7 @@ lifecourse <- function(formula,data,id="id",group=NULL,
        cn <- data[ccm,recurrent.col]
        matplot(t(X),t(Y),type=type,lty=lty,lwd=lwd,
 	       col=cn,xlab=xlab,ylab=ylab,add=add,...)
-		}
+	}
          points(t2,x,pch=status)
     }# }}}
 
