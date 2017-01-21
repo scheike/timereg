@@ -6,7 +6,7 @@
 \usage{
 daggregate(data, y = NULL, x = NULL, subset, ..., fun = "summary",
   regex = FALSE, missing = FALSE, remove.empty = FALSE, matrix = FALSE,
-  silent = FALSE)
+  silent = FALSE, na.action = na.pass)
 }
 \arguments{
 \item{data}{data.frame}
@@ -30,6 +30,8 @@ daggregate(data, y = NULL, x = NULL, subset, ..., fun = "summary",
 \item{matrix}{if TRUE a matrix is returned instead of an array}
 
 \item{silent}{suppress messages}
+
+\item{na.action}{How model.frame deals with 'NA's}
 }
 \description{
 aggregating for for data frames

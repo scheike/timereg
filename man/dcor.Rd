@@ -4,6 +4,7 @@
 \alias{dcor}
 \alias{dcount}
 \alias{deval}
+\alias{deval2}
 \alias{dhead}
 \alias{dlist}
 \alias{dmean}

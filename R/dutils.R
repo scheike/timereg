@@ -627,6 +627,12 @@ by2mat <- function(x,nam,...) {
         colnames(res) <- nam[seq(length(ncol(res)))]
     }
     suppressWarnings(res <- cbind(nn,res)) ## no warnings on row-names
+    for (i in seq(ncol(res)-1)+1) {
+        if (is.list(res[,i])) {
+            if (!is.null(nn <- names(res[,i][[1]])))
+                colnames(res)[i] <- paste0(colnames(res)[i],"(",paste0(nn,collapse=","),")")
+        }
+    }
     a <- rownames(x[[1]])
     res$"_var" <- a
     rownames(res) <- seq(nrow(res))
@@ -666,7 +672,8 @@ by2mat <- function(x,nam,...) {
 ##' @param remove.empty remove empty groups from output
 ##' @param matrix if TRUE a matrix is returned instead of an array
 ##' @param silent suppress messages
-daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, missing=FALSE, remove.empty=FALSE, matrix=FALSE, silent=FALSE)
+##' @param na.action How model.frame deals with 'NA's
+daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, missing=FALSE, remove.empty=FALSE, matrix=FALSE, silent=FALSE, na.action=na.pass)
 {# {{{
     if (is.vector(data)) data <- data.frame(data)
     subs <- substitute(subset)
@@ -677,7 +684,7 @@ daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, 
     }
     if (is.null(y)) y <- colnames(data)
     if (inherits(y,"formula")) {
-        yx <- procformdata(y,sep="\\|",data=data,...)
+        yx <- procformdata(y,sep="\\|",data=data,na.action=na.action,...)
         y <- yx$response
         x0 <- yx$predictor
         if (is.null(x) && length(y)>0) x <- x0
@@ -704,7 +711,7 @@ daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, 
         x <- data[,xx,drop=FALSE]
     }
     if (inherits(x,"formula")) {
-        x <- model.frame(x,data=data)
+        x <- model.frame(x,data=data,na.action=na.action)
     }
     if (!is.null(x)) {
         xidx <- na.omit(match(colnames(x),colnames(y)))
@@ -782,7 +789,7 @@ dunique <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=fu
 ##' dcor(dt,time+wmi~vf+chf)
 ##'
 ##' dcor(dt,c("time*","wmi*"),~vf+chf)
-##' @aliases dsummary dcor dprint dlist dstr dhead dtail dquantile dcount dmean dscalar deval dsum dsd
+##' @aliases dsummary dcor dprint dlist dstr dhead dtail dquantile dcount dmean dscalar deval deval2 dsum dsd
 ##' @export
 dcor <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,...,fun=function(z,...) stats::cor(z,...))
 
@@ -801,12 +808,67 @@ dscalar <- function(data,y=NULL,x=NULL,...,na.rm=TRUE,matrix=TRUE,fun=base::mean
                })
 }
 
+d <- data.frame(date=as.Date(1:30,origin="1960-01-01"),
+               g=factor(rep(letters[1:3],each=10)),
+               y=rbinom(30,1,0.5),z=rnorm(30),x=rep(c(0,1),15))
+
+
+Summary <- function(object,na.rm=TRUE,...) {
+    if (is.numeric(object)) {
+        x <- c(summary(object,...),sd=sd(object,na.rm=TRUE))
+    } else {
+        x <- summary(object,...)
+    }
+    ## Formatting
+    xx <- x
+    if (is.numeric(x) || is.complex(x)) {
+        finite <- is.finite(x)
+        xx[finite] <- zapsmall(x[finite])
+      }
+    m <- match("NA's", names(xx), 0)
+    if (inherits(x, "Date") || inherits(x, "POSIXct")) {
+        xx <- if (length(a <- attr(x, "NAs"))) 
+                 c(format(xx), `NA's` = as.character(a))
+             else format(xx)
+    }
+    else if (m && !is.character(x)) 
+        xx <- c(format(xx[-m]), `NA's` = as.character(xx[m]))
+    ##x
+    xx
+}
+
 ##' @export
-deval <- function(data,y=NULL,x=NULL,...,matrix=FALSE,fun=base::summary) {
-    daggregate(data,y,x,matrix=matrix,...,
-               fun=function(z) lapply(z,function(x) {
-                   suppressWarnings(tryCatch(fun(x,...),error=function(e) return(NA)))
-               }))
+deval2 <- function(data,...,matrix=simplify,simplify=TRUE)  deval(data,matrix=TRUE,simplify=TRUE,...)
+
+##' @export
+deval <- function(data,y=NULL,x=NULL,...,matrix=FALSE,fun=Summary,simplify=FALSE) {
+    res <- daggregate(data,y,x,matrix=matrix,...,
+                     fun=function(z) lapply(z,function(x) {
+                         suppressWarnings(tryCatch(fun(x,...),error=function(e) return(NA)))
+                     }))
+    if (simplify) {
+        for (i in seq_len(ncol(res))) {
+            if (is.list(res[,i])) res[,i] <- unlist(res[,i])
+        }
+    ##     Dim <- function(x) {
+    ##         val <- dim(x)
+    ##         if (is.null(val)) val <- c(1,length(x))
+    ##         val
+    ##     }
+    ##     dm <- Dim(res[[1]])
+    ##     dims <- unlist(lapply(res,function(x) identical(Dim(x),dm)))
+    ##     if (all(dims)) {
+    ##         Res <- res
+    ##         n <- length(res)
+    ##         res <- array(NA,dim=c(n,dm))
+    ##         for (i in seq(n)) {
+    ##             browser()
+    ##         }
+                
+    ##     }
+        ## }
+    }
+    res
 }
 
 
@@ -817,12 +879,13 @@ dmean <- function(data,...) dscalar(data,fun=base::mean,...)
 dsum <- function(data,...) dscalar(data,fun=base::sum,...)
 
 ##' @export
-dsd <- function(data,...) dscalar(data,fun=base::sd,...)
+dsd <- function(data,...) dscalar(data,fun=stats::sd,...)
 
 
 ##' @export
 dcount <- function(data,x=NULL,...,na.rm=TRUE) {
-    res <- rbind(daggregate(data,x=x,matrix=TRUE,...,fun=function(z,...) nrow(z)))
+    res <- rbind(daggregate(data,x=x,matrix=TRUE,...,fun=function(z,...) NROW(z)))
+    res[is.na(res)] <- 0
     rownames(res) <- seq(nrow(res))
     colnames(res)[ncol(res)] <- "count"
     res

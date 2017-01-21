@@ -10,7 +10,8 @@
 ##' @param col Colour
 ##' @param alpha transparency (0-1)
 ##' @param lwd Line width
-##' @param recurrent.col col of recurrence type 
+##' @param recurrent.col col of recurrence type
+##' @param legend legend
 ##' @param by make separate plot for each level in 'by' (formula, name of column, or vector)
 ##' @param xlab Label of X-axis
 ##' @param ylab Label of Y-axis
