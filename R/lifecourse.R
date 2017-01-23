@@ -1,48 +1,10 @@
-##' Life-course plot for event life data  with recurrent events 
-##'
-##' @title Life course plot
-##' @param formula Formula (Event(start,slut,status) ~ ) 
-##' @param data data.frame
-##' @param id Id variable 
-##' @param group group variable
-##' @param type Type (line 'l', stair 's', ...)
-##' @param lty Line type
-##' @param col Colour
-##' @param alpha transparency (0-1)
-##' @param lwd Line width
-##' @param recurrent.col col of recurrence type
-##' @param legend legend
-##' @param by make separate plot for each level in 'by' (formula, name of column, or vector)
-##' @param xlab Label of X-axis
-##' @param ylab Label of Y-axis
-##' @param add Add to existing device
-##' @param ... Additional arguments to lower level arguments
-##' @author Thomas Scheike Klaus K. Holst
-##' @examples
-##' data = data.frame(id=c(10,10,10,2,2),start=c(0,1,2,3,4),slut=c(1,2,4,4,7),
-##'                   type=c(1,2,3,2,3),status=c(0,1,4,1,4),group=c(1,1,1,2,2))
-##' ll = lifecourse(Event(start,slut,status)~id,data,id="id")
-##' ll = lifecourse(Event(start,slut,status)~id,data,id="id",recurrent.col="type")
-##'
-##' ll = lifecourse(Event(start,slut,status)~id,data,id="id",group=~group,col=1:2)
-##' par(mfrow=c(1,2))
-##' ll = lifecourse(Event(start,slut,status)~id,data,id="id",by=~group)
-##' 
-##' ### specific pch's for different status
-##' data$pch = data$status+1 ### pch = 1,2,5
-##' ll = lifecourse(Event(start,slut,pch)~id,data,id="id")
-##' 
-##' data$gid = data$g*10+ data$id/5
-##' ll = lifecourse(Event(start,slut,status)~+gid,data,id="id")
-##' ll = lifecourse(Event(start,slut,status)~+1,data,id="id")
-##' ll = lifecourse(Event(start,slut,status)~+1,data,id="id",group=~group,col=1:2)
-##' 
-##' @export
 lifecourse <- function(formula,data,id="id",group=NULL,
                       type="l",lty=1,col=1:10,alpha=0.3,lwd=1,
+                      level=0.95,
 		      recurrent.col=NULL,
-                      legend=NULL, by=NULL,
-                      xlab="Time",ylab="Id",add=FALSE,...) 
+                      legend=NULL,by=NULL,
+		      status.legend=NULL,place.sl="bottomright",
+                      xlab="Time",ylab="",add=FALSE,...) 
 {# {{{
     if (!lava.options()$cluster.index) stop("mets not available? Check 'lava.options()cluster.index'.")
     if (!is.null(by)) {
@@ -119,13 +81,16 @@ lifecourse <- function(formula,data,id="id",group=NULL,
 	}
 
         x <- data[ccm,x] 
-
+	status <- tstat
 
 	X <- c(c(t1),c(t2))
 	Y <- rep(x,each=2)
 
     }# }}}
 	 plot(X,Y,xlab=xlab,ylab=ylab,...,type="n")        
+         if (!is.null(status.legend)) {
+            graphics::legend(place.sl,legend=status.legend,pch=unique(status))
+         }
 	}
 
         dd <- split(data,M)
@@ -181,19 +146,23 @@ lifecourse <- function(formula,data,id="id",group=NULL,
 	X <- cbind(c(t1),c(t2))
 	Y <- matrix(rep(x,each=2),ncol=2,byrow=TRUE)
 	status <- tstat
-	if (min(status)==0) status<-status+1
 
 ###	print(dim(X)); print(dim(Y)); print(dim(status)); print(summary(X)); print(summary(Y)); 
 
 	if (is.null(recurrent.col))  {
             matplot(t(X),t(Y),type=type,lty=lty,lwd=lwd,
-	          col=col[1],xlab=xlab,ylab=ylab,add=add,...)
+	          col=col[1],xlab=xlab,ylab=ylab,add=add,..)
 	} else {
 	   cn <- data[ccm,recurrent.col]
 	   matplot(t(X),t(Y),type=type,lty=lty,lwd=lwd,
 	       col=cn,xlab=xlab,ylab=ylab,add=add,...)
 		}
+
          points(t2,x,pch=status)
+
+         if (!is.null(status.legend)) {
+            graphics::legend(place.sl,legend=status.legend,pch=unique(status))
+         }
 # }}}
     } else {# {{{
         y <- response <- all.vars( update(formula,.~+1))
@@ -217,7 +186,6 @@ lifecourse <- function(formula,data,id="id",group=NULL,
 	X <- cbind(c(t1),c(t2))
 	Y <- matrix(rep(x,each=2),ncol=2,byrow=TRUE)
 	status <- tstat
-	if (min(status)==0) status<-status+1
 
 ###	print(dim(X)); print(dim(Y)); print(dim(status)); print(summary(X)); print(summary(Y)); 
 
@@ -229,8 +197,13 @@ lifecourse <- function(formula,data,id="id",group=NULL,
        cn <- data[ccm,recurrent.col]
        matplot(t(X),t(Y),type=type,lty=lty,lwd=lwd,
 	       col=cn,xlab=xlab,ylab=ylab,add=add,...)
-	}
-         points(t2,x,pch=status)
+		}
+      points(t2,x,pch=status)
+
+       if (!is.null(status.legend)) {
+            graphics::legend(place.sl,legend=status.legend,pch=unique(status))
+       }
+
     }# }}}
 
 ###    return(invisible(data.frame(Y=Y,X=X,status=status)))

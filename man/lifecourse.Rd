@@ -46,6 +46,8 @@ lifecourse(formula, data, id = "id", group = NULL, type = "l", lty = 1,
 Life-course plot for event life data  with recurrent events
 }
 \examples{
+
+	library(mets)
 data = data.frame(id=c(10,10,10,2,2),start=c(0,1,2,3,4),slut=c(1,2,4,4,7),
                   type=c(1,2,3,2,3),status=c(0,1,4,1,4),group=c(1,1,1,2,2))
 ll = lifecourse(Event(start,slut,status)~id,data,id="id")
@@ -56,7 +58,7 @@ par(mfrow=c(1,2))
 ll = lifecourse(Event(start,slut,status)~id,data,id="id",by=~group)
 
 ### specific pch's for different status
-data$pch = data$status+1 ### pch = 1,2,5
+data$pch = data$status+2 ### pch = 1,2,5
 ll = lifecourse(Event(start,slut,pch)~id,data,id="id")
 
 data$gid = data$g*10+ data$id/5
