@@ -184,7 +184,7 @@ lifecourse <- function(formula,data,id="id",group=NULL,
 
 	if (is.null(recurrent.col))  {
             matplot(t(X),t(Y),type=type,lty=lty,lwd=lwd,
-	          col=col[1],xlab=xlab,ylab=ylab,add=add,..)
+	          col=col[1],xlab=xlab,ylab=ylab,add=add,...)
 	} else {
 	   cn <- data[ccm,recurrent.col]
 	   matplot(t(X),t(Y),type=type,lty=lty,lwd=lwd,
