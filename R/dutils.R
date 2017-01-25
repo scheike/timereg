@@ -1011,6 +1011,7 @@ dlag <- function(data,x,k=1,combine=TRUE,simplify=TRUE,names,...) {
     return(dval)
 }
 
+##' @export
 "dlag<-" <- function(data,k=1,combine=TRUE,...,value) {
     dlag(data,value,k=k,combine=combine,...)
 }
