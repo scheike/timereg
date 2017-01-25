@@ -789,7 +789,7 @@ dunique <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=fu
 ##' dcor(dt,time+wmi~vf+chf)
 ##'
 ##' dcor(dt,c("time*","wmi*"),~vf+chf)
-##' @aliases dsummary dcor dprint dlist dstr dhead dtail dquantile dcount dmean dscalar deval deval2 dsum dsd
+##' @aliases dsummary dcor dprint dlist dstr dhead dtail dsubset dquantile dcount dmean dscalar deval deval2 dsum dsd
 ##' @export
 dcor <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,...,fun=function(z,...) stats::cor(z,...))
 
@@ -893,6 +893,13 @@ dcount <- function(data,x=NULL,...,na.rm=TRUE) {
 
 
 ##' @export
+dsubset <- function(data,...) {
+    daggregate(data,...,fun=function(z) z)
+}
+
+
+
+##' @export
 dquantile <- function(data,y=NULL,x=NULL,probs=seq(0,1,by=1/breaks),breaks=4,matrix=TRUE,reshape=FALSE,...,na.rm=TRUE) {
     a <- daggregate(data,y,x,matrix=FALSE,...,fun=function(z,...) apply(z,2,function(x,...) quantile(x,probs=probs,na.rm=na.rm,...)))
     if (matrix) {
@@ -942,7 +949,8 @@ dlag <- function(data,x,k=1,combine=TRUE,simplify=TRUE,names,...) {
     if (missing(x)) x <- base::names(data)
     if (is.character(x)) x <- data[,x,drop=FALSE]
     if (inherits(x,"formula")) {
-        x <- as.data.frame(model.matrix(update(x,~.-1),data=data,...))
+        ##x <- as.data.frame(model.matrix(update(x,~.-1), model.frame(~.,data=data, na.action=na.pass)))
+        x <- model.frame(x,data=data, na.action=na.pass)
     }
     kmin0 <- abs(min(k,0))
     kmax0 <- max(k,0)
@@ -950,9 +958,17 @@ dlag <- function(data,x,k=1,combine=TRUE,simplify=TRUE,names,...) {
     pad <- function(x) c(rep(NA,kmax0),x,rep(NA,kmin0))
     kidx <- match(k,seq(min(k,0),max(k,0)))
     val <- lapply(x,function(y) embed(pad(y),dimension=kmax+1)[,kidx,drop=FALSE])
-    dval <- as.data.frame(val)
-    if (!missing(names)) base::names(dval) <- names
-    if (combine) {
+    dval <- as.data.frame(val)    
+    if (!missing(names)) {
+        base::names(dval) <- names
+    } else {
+        nn <- as.vector(sapply(colnames(x),function(x) paste0(x,paste0(".",k))))        
+        if (length(nn)==ncol(dval)) {
+            nn <- gsub("-","_",nn)
+            base::names(dval) <- nn
+        }
+    }
+    if (combine) {        
         res <- cbind(data,dval)
         names(res) <- make.unique(base::names(res))
         return(res)

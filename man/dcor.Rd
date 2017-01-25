@@ -13,6 +13,7 @@
 \alias{dscalar}
 \alias{dsd}
 \alias{dstr}
+\alias{dsubset}
 \alias{dsum}
 \alias{dsummary}
 \alias{dtail}
