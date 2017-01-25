@@ -794,7 +794,7 @@ dunique <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=fu
 ##' dcor(dt,time+wmi~vf+chf)
 ##'
 ##' dcor(dt,c("time*","wmi*"),~vf+chf)
-##' @aliases dsummary dcor dprint dlist dstr dhead dtail dsubset dquantile dcount dmean dscalar deval deval2 dsum dsd
+##' @aliases dsummary dstr dcor dsubset dquantile dcount dmean dscalar deval deval2 dsum dsd
 ##' @export
 dcor <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,...,fun=function(z,...) stats::cor(z,...))
 
@@ -923,8 +923,9 @@ dquantile <- function(data,y=NULL,x=NULL,probs=seq(0,1,by=1/breaks),breaks=4,mat
 ##' listing for data frames
 ##' @param data if x is formula or names for data frame then data frame is needed.
 ##' @param y name of variable, or fomula, or names of variables on data frame.
+##' @param n Index of observations to print (default c(1:nfirst, n-nlast:nlast)
+##' @param ... Optional additional arguments (nfirst,nlast, and print options)
 ##' @param x possible group variable
-##' @param ... Optional additional arguments
 ##' @author Klaus K. Holst and Thomas Scheike
 ##' @examples
 ##' n <- 20
