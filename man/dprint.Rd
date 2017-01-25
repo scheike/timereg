@@ -14,7 +14,9 @@ dprint(data, y = NULL, n = NULL, ..., x = NULL)
 
 \item{y}{name of variable, or fomula, or names of variables on data frame.}
 
-\item{...}{Optional additional arguments}
+\item{n}{Index of observations to print (default c(1:nfirst, n-nlast:nlast)}
+
+\item{...}{Optional additional arguments (nfirst,nlast, and print options)}
 
 \item{x}{possible group variable}
 }

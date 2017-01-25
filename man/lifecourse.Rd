@@ -5,8 +5,8 @@
 \title{Spaghetti plot}
 \usage{
 lifecourse(formula, data, id = "id", group = NULL, type = "l", lty = 1,
-  col = 1:10, alpha = 0.3, lwd = 1, level = 0.95,
-  recurrent.col = NULL, legend = NULL, by = NULL, status.legend = NULL,
+  col = 1:10, alpha = 0.3, lwd = 1, recurrent.col = NULL,
+  legend = NULL, by = NULL, status.legend = NULL,
   place.sl = "bottomright", xlab = "Time", ylab = "", add = FALSE, ...)
 }
 \arguments{
@@ -30,7 +30,13 @@ lifecourse(formula, data, id = "id", group = NULL, type = "l", lty = 1,
 
 \item{recurrent.col}{col of recurrence type}
 
+\item{legend}{position of optional id legend}
+
 \item{by}{make separate plot for each level in 'by' (formula, name of column, or vector)}
+
+\item{status.legend}{Status legend}
+
+\item{place.sl}{Placement of status legend}
 
 \item{xlab}{Label of X-axis}
 
@@ -50,9 +56,9 @@ ll = lifecourse(Event(start,slut,status)~id,data,id="id")
 ll = lifecourse(Event(start,slut,status)~id,data,id="id",recurrent.col="type")
 
 ll = lifecourse(Event(start,slut,status)~id,data,id="id",group=~group,col=1:2)
-par(mfrow=c(1,2))
+op <- par(mfrow=c(1,2))
 ll = lifecourse(Event(start,slut,status)~id,data,id="id",by=~group)
-
+par(op)
 legends=c("censored","pregnant","married")
 ll = lifecourse(Event(start,slut,status)~id,data,id="id",group=~group,col=1:2,status.legend=legends)
 
