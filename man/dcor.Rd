@@ -5,17 +5,13 @@
 \alias{dcount}
 \alias{deval}
 \alias{deval2}
-\alias{dhead}
-\alias{dlist}
 \alias{dmean}
-\alias{dprint}
 \alias{dquantile}
 \alias{dscalar}
 \alias{dsd}
 \alias{dstr}
 \alias{dsum}
 \alias{dsummary}
-\alias{dtail}
 \title{summary, tables, and correlations for data frames}
 \usage{
 dcor(data, y = NULL, x = NULL, ...)

@@ -200,7 +200,7 @@ return(data)
 "drelevel<-" <- function(data,...,value) drelevel(data,value,...)
 
 ##' @export
-dlevels <- function(data,x,regex=FALSE,...)
+dlevels <- function(data,x,regex=FALSE,max.levels=20,...)
 {# {{{
 
  if (inherits(data,"factor")) {
@@ -239,12 +239,15 @@ for (k in 1:ll)
 {
   xx <- x[[k]]
   if (is.factor(xx))  {
-	  cat(paste(xnames[k],":",sep=""))
-	  print(base::levels(xx))
-}
+	  cat(paste(xnames[k],":",sep=" #levels="));
+	  nxx <- nlevels(xx) 
+	  cat(paste(nxx,"\n")); 
+ if (is.null(max.levels) || ((!is.null(max.levels)) & (nxx<max.levels)))
+	  print(base::levels(xx)) 
+   }
 }
 
- }
+}
 
 }# }}}
 
