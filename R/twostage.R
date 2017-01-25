@@ -2342,9 +2342,6 @@ EVaddGam <- function(theta,x1,x2,thetades,ags)
 } ## }}} 
 
 
-
-
-
 ##' @export
 twostage.aalen <- function(object,...) survival.twostage(object,...)
 

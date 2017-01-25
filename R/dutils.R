@@ -200,7 +200,7 @@ return(data)
 "drelevel<-" <- function(data,...,value) drelevel(data,value,...)
 
 ##' @export
-dlevels <- function(data,x,regex=FALSE,...)
+dlevels <- function(data,x,regex=FALSE,max.levels=20,...)
 {# {{{
 
  if (inherits(data,"factor")) {
@@ -239,12 +239,15 @@ for (k in 1:ll)
 {
   xx <- x[[k]]
   if (is.factor(xx))  {
-	  cat(paste(xnames[k],":",sep=""))
-	  print(base::levels(xx))
-}
+	  cat(paste(xnames[k],":",sep=" #levels="));
+	  nxx <- nlevels(xx) 
+	  cat(paste(nxx,"\n")); 
+ if (is.null(max.levels) || ((!is.null(max.levels)) & (nxx<max.levels)))
+	  print(base::levels(xx)) 
+   }
 }
 
- }
+}
 
 }# }}}
 
@@ -416,12 +419,14 @@ dsort <- function(data,x,...,decreasing=FALSE)
 ##' dtable(sTRACE,c("*f*","status"),~diabetes, level=2)
 ##' dtable(sTRACE,c("*f*","status"),level=1)
 ##'
+##' dtable(sTRACE,~status+vf+sex|age>60)
+##' dtable(sTRACE,status+vf+sex~+1|age>60, level=2)
+##' dtable(sTRACE,.~status+vf+sex|age>60,level=1)
 ##' dtable(sTRACE,status+vf+sex~diabetes|age>60)
 ##' dtable(sTRACE,status+vf+sex~diabetes|age>60, flat=FALSE)
 ##'
 ##' dtable(sTRACE,status+vf+sex~diabetes|age>60, level=1)
 ##' dtable(sTRACE,status+vf+sex~diabetes|age>60, level=2)
-##' dtable(sTRACE,status+vf+sex~+1|age>60, level=2)
 ##'
 ##' dtable(sTRACE,status+vf+sex~diabetes|age>60, level=2, prop=1, total=TRUE)
 ##' dtable(sTRACE,status+vf+sex~diabetes|age>60, level=2, prop=2, total=TRUE)
@@ -808,9 +813,9 @@ dscalar <- function(data,y=NULL,x=NULL,...,na.rm=TRUE,matrix=TRUE,fun=base::mean
                })
 }
 
-d <- data.frame(date=as.Date(1:30,origin="1960-01-01"),
-               g=factor(rep(letters[1:3],each=10)),
-               y=rbinom(30,1,0.5),z=rnorm(30),x=rep(c(0,1),15))
+###d <- data.frame(date=as.Date(1:30,origin="1960-01-01"),
+###               g=factor(rep(letters[1:3],each=10)),
+###               y=rbinom(30,1,0.5),z=rnorm(30),x=rep(c(0,1),15))
 
 
 Summary <- function(object,na.rm=TRUE,...) {
@@ -912,6 +917,33 @@ dquantile <- function(data,y=NULL,x=NULL,probs=seq(0,1,by=1/breaks),breaks=4,mat
     return(a)
 }
 
+
+##' list, head, print, tail 
+##'
+##' listing for data frames
+##' @param data if x is formula or names for data frame then data frame is needed.
+##' @param y name of variable, or fomula, or names of variables on data frame.
+##' @param x possible group variable
+##' @param ... Optional additional arguments
+##' @author Klaus K. Holst and Thomas Scheike
+##' @examples
+##' n <- 20
+##' m <- lava::lvm(letters)
+##' d <- lava::sim(m,n)
+##'
+##' dprint(d,~a+b+c)
+##' dprint(d,~a+b+c|a<0 & b>0)
+##' ## listing all : 
+##' dprint(d,~a+b+c|a<0 & b>0,n=0)
+##' dprint(d,a+b+c~I(d>0)|a<0 & b>0)
+##' dprint(d,.~I(d>0)|a<0 & b>0)
+##' dprint(d,~a+b+c|a<0 & b>0, nlast=0)
+##' dprint(d,~a+b+c|a<0 & b>0, nfirst=3, nlast=3)
+##' dprint(d,~a+b+c|a<0 & b>0, 1:5)
+##' dprint(d,~a+b+c|a<0 & b>0, -(5:1))
+##' dprint(d,~a+b+c|a<0 & b>0, list(1:5,50:55,-(5:1)))
+##' dlist(d,a+b+c ~ I(d>0) |a<0 & b>0, list(1:5,50:55,-(5:1)))
+##' @aliases dprint dlist dhead dtail 
 ##' @export
 dprint <- function(data,y=NULL,n=NULL,...,x=NULL) daggregate(data,y,x,...,fun=function(z,...) Print(z,n=n,...),silent=FALSE)
 
