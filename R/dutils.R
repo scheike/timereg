@@ -128,9 +128,16 @@ for (k in 1:ll)
           bb <- quantile(xx,probs,...)
       } else { bb <- breaks ; name<-paste(xnames[k],breaks[2],sep=sep) }
 
-  if (sum(duplicated(bb))==0)
-   data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE,...)
-  }
+      if (sum(duplicated(bb))==0)
+	     data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE,...)
+      else {
+	      wd <- which(duplicated(bb))
+              mb <- min(diff(bb[-wd]))
+	      bb[wd] <- bb[wd] +  (mb/2)*seq(length(wd))/length(wd)
+          data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE,...)
+          warning(paste("breaks duplicated for=",xnames[k]))
+       }
+   }
 }
 
 return(data)
