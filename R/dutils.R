@@ -972,6 +972,7 @@ dreshape <- function(data,...) fast.reshape(data,...)
 ##' @param simplify Return vector if possible
 ##' @param names optional new column names
 ##' @param ... additional arguments to lower level functions
+##' @aliases dlag dlag<-
 dlag <- function(data,x,k=1,combine=TRUE,simplify=TRUE,names,...) {
     isvec <- FALSE
     if (!is.data.frame(data)) {

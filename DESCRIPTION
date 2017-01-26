@@ -15,10 +15,10 @@ License: GPL (>=2)
 LazyLoad: yes
 URL: https://github.com/kkholst/mets
 Depends:
-    R (>= 3.3)
-Imports:
+    R (>= 3.3),
     timereg (>= 1.8.9),
-    lava (>= 1.4.6),
+    lava (>= 1.4.6)
+Imports:
     numDeriv,
     compiler,
     Rcpp,
