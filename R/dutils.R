@@ -1,11 +1,14 @@
 ##' Cutting, sorting, rm (removing), rename for data frames
 ##'
-##' Cut variables, rm or rename
+##' Cut variables, if breaks are given these are used, otherwise cuts into 
+##' using group size given by probs, or equispace groups on range. Default 
+##' is equally sized groups if possible
 ##' @param data if x is formula or names for data frame then data frame is needed.
 ##' @param x name of variable, or fomula, or names of variables on data frame.
 ##' @param cuts vector of number of groups, 4 is default and gives quartiles.
 ##' @param probs groups defined from quantiles
 ##' @param breaks  possible breaks for cutting.
+##' @param equi.space for equi-spaced breaks  
 ##' @param regex for regular expressions.
 ##' @param sep seperator for naming of cut names.
 ##' @param ... Optional additional arguments
@@ -73,15 +76,38 @@
 ##' names(dd)
 ##' @aliases dcut dcut<- dunique dlevels drelevel drelevel<- drm drm<- dnames dnames<- drename drename<- dkeep dkeep<- ddrop ddrop<- dreshape
 ##' @export
-dcut <- function(data,x,cuts=4,probs=NULL,breaks=NULL,regex=FALSE,sep=NULL,...)
+dcut <- function(data,x,cuts=4,probs=NULL,equi=FALSE,breaks=NULL,regex=FALSE,sep=NULL,...)
 {# {{{
     if (is.vector(data)) {
-        if (is.null(probs))
-            probs <- seq(0, 1, length.out = cuts + 1)
-        bb <- quantile(data, probs, ...)
-        gx <- cut(data, breaks = bb, include.lowest = TRUE,...)
+        if (is.null(breaks)) { 
+             if (!is.null(probs))
+	     {
+                breaks <- quantile(data, probs, ...)
+	     } else {
+	   	if (!equi) { 
+			probs <- seq(0, 1, length.out = cuts + 1)
+			breaks <- quantile(data, probs, ...)
+		} 
+		if (equi) { 
+			rr <- range(data)
+			breaks <-  seq(rr[1],rr[2],length.out=cuts+1)
+		}
+	     }
+	}
+
+        if (sum(duplicated(breaks))==0)
+             gx <- cut(data, breaks = breaks, include.lowest = TRUE,...)
+        else {
+	      wd <- which(duplicated(breaks))
+              mb <- min(diff(breaks[-wd]))
+	      breaks[wd] <- breaks[wd] +  (mb/2)*seq(length(wd))/length(wd)
+              gx  <- cut(data,breaks=breaks,include.lowest=TRUE,...)
+              warning(paste("breaks duplicated"))
+        }
         return(gx)
     }
+
+if (is.data.frame(data)) {
 
  if (is.null(sep) & is.null(breaks))    sep <- "."
  if (is.null(sep) & (!is.null(breaks))) sep <- "b"
@@ -120,13 +146,26 @@ if (missing(x)) x<- ~.
 for (k in 1:ll)
 {
   xx <- x[[k]]
+  print(xnames[k])
   if (is.numeric(xx)) {
-      if (is.null(breaks)) {
-          if (is.null(probs))
-              probs <- seq(0,1,length.out=cuts[k]+1)
+
+      if (is.null(breaks)) { 
+             if (!is.null(probs))
+	     {
+                bb <- quantile(xx, probs, ...)
+	     } else {
+	   	if (!equi) { 
+			probs <- seq(0, 1, length.out = cuts[k] + 1)
+			bb <- quantile(xx, probs, ...)
+		} 
+		if (equi) { 
+			rr <- range(xx,na.rm=TRUE)
+			bb <-  seq(rr[1],rr[2],length.out=cuts[k]+1)
+		}
+	     }
           name<-paste(xnames[k],cuts[k],sep=sep)
-          bb <- quantile(xx,probs,...)
-      } else { bb <- breaks ; name<-paste(xnames[k],breaks[2],sep=sep) }
+      } else { bb <- breaks; name<-paste(xnames[k],breaks[2],sep=sep) }
+
 
       if (sum(duplicated(bb))==0)
 	     data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE,...)
@@ -141,6 +180,8 @@ for (k in 1:ll)
 }
 
 return(data)
+}
+
 }# }}}
 
 ##' @export
