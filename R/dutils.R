@@ -75,7 +75,7 @@
 ##' @export
 dcut <- function(data,x,cuts=4,probs=NULL,breaks=NULL,regex=FALSE,sep=NULL,...)
 {# {{{
-    if (inherits(data,"vector")) {
+    if (is.vector(data)) {
         if (is.null(probs))
             probs <- seq(0, 1, length.out = cuts + 1)
         bb <- quantile(data, probs, ...)
@@ -155,7 +155,7 @@ drelevel <- function(data,x,ref=NULL,regex=FALSE,sep=NULL,...)
 
  if (is.null(sep))  sep <- "."
 
- if (inherits(data,"vector") | inherits(data,"factor")) {
+ if (is.vector(data) | inherits(data,"factor")) {
       if (is.vector(data)) data <- factor(data)
       gx <- relevel(data,ref=ref)
       return(gx)
@@ -210,7 +210,7 @@ return(data)
 dlevels <- function(data,x,regex=FALSE,max.levels=20,...)
 {# {{{
 
- if (inherits(data,"factor")) {
+ if (is.factor(data)) {
 	 print(base::levels(data))
  } else {
 
@@ -297,7 +297,7 @@ drename <- function(data,var=NULL,value=NULL,fun=base::tolower,...)
 
     if (is.null(value)) value <- do.call(fun,list(var))
 
-    if (inherits(value,"function")) {
+    if (is.function(value)) {
         value <- do.call(value,list(var))
     } else  if (inherits(value,"formula")) {
         value <- all.vars(value)
@@ -713,7 +713,7 @@ daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, 
         }
         y <- data[,yy,drop=FALSE]
     }
-    if (inherits(x,"character") && length(x)<NROW(data)) {
+    if (is.character(x) && length(x)<NROW(data)) {
         xx <- c()
         for (x0 in x) {
             if (!regex) x0 <- glob2rx(x0)
