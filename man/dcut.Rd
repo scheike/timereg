@@ -20,8 +20,8 @@
 \alias{dunique}
 \title{Cutting, sorting, rm (removing), rename for data frames}
 \usage{
-dcut(data, x, cuts = 4, probs = NULL, breaks = NULL, regex = FALSE,
-  sep = NULL, ...)
+dcut(data, x, cuts = 4, probs = NULL, equi = FALSE, breaks = NULL,
+  regex = FALSE, sep = NULL, ...)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}
@@ -39,9 +39,13 @@ dcut(data, x, cuts = 4, probs = NULL, breaks = NULL, regex = FALSE,
 \item{sep}{seperator for naming of cut names.}
 
 \item{...}{Optional additional arguments}
+
+\item{equi.space}{for equi-spaced breaks}
 }
 \description{
-Cut variables, rm or rename
+Cut variables, if breaks are given these are used, otherwise cuts into 
+using group size given by probs, or equispace groups on range. Default 
+is equally sized groups if possible
 }
 \examples{
 data("sTRACE",package="timereg")

@@ -187,6 +187,35 @@ return(data)
 ##' @export
 "dcut<-" <- function(data,...,value) dcut(data,value,...)
 
+##' relev levels for data frames
+##'
+##' levels shows levels for variables in data frame, relevel relevels a factor in data.frame 
+##' @param data if x is formula or names for data frame then data frame is needed.
+##' @param x name of variable, or fomula, or names of variables on data frame.
+##' @param ref new reference variable 
+##' @param regex for regular expressions.
+##' @param sep seperator for naming of cut names.
+##' @param ... Optional additional arguments
+##' @author Klaus K. Holst and Thomas Scheike
+##' @examples
+##'
+##' data(mena)
+##' dstr(mena)
+##' dfactor(mena) <- ~twinnum
+##' 
+##' dtable(mena,~cohort+twinnum)
+##' dstr(mena)
+##' 
+##' mena2 <- drelevel(mena,"cohort","(1980,1982]")
+##' mena2 <- drelevel(mena,~cohort,"(1980,1982]")
+##' dlevels(mena)
+##' dlevels(mena2)
+##' drelevel(mena,ref="(1975,1977]")  <-  ~cohort
+##' drelevel(mena,ref="(1980,1982]")  <-  ~cohort
+##' dlevels(mena,"coh*")
+##' dtable(mena,"coh*",level=1)
+##' 
+##' @aliases dlevels drelevel drelevel<- dfactor
 ##' @export
 drelevel <- function(data,x,ref=NULL,regex=FALSE,sep=NULL,...)
 {# {{{
@@ -801,6 +830,15 @@ print.daggregate <- function(x,quote=FALSE,...) {
     attr(x,c("ngroupvar")) <- NULL
     class(x) <- class(x)[-1]
     print(x,quote=quote,...)
+}
+
+
+##' @export
+dfactor <- function(data,y=NULL,x=NULL,...) daggregate(data,y=NULL,x=x,fun=function(z) base::as.factor(z,...))
+
+##' @export
+"dfactor<-" <- function(data,k=1,combine=TRUE,...,value) {
+    dfactor(data,value,...)
 }
 
 
