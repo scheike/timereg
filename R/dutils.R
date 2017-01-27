@@ -74,7 +74,7 @@
 ##' drename(dd) <- ~.
 ##' drename(dd,fun=funn) <- ~.
 ##' names(dd)
-##' @aliases dcut dcut<- dunique dlevels drelevel drelevel<- drm drm<- dnames dnames<- drename drename<- dkeep dkeep<- ddrop ddrop<- dreshape
+##' @aliases dcut dcut<- dunique drm drm<- dnames dnames<- drename drename<- dkeep dkeep<- ddrop ddrop<- dreshape
 ##' @export
 dcut <- function(data,x,cuts=4,probs=NULL,equi=FALSE,breaks=NULL,regex=FALSE,sep=NULL,...)
 {# {{{
@@ -203,7 +203,6 @@ return(data)
 ##' dstr(mena)
 ##' dfactor(mena) <- ~twinnum
 ##' 
-##' dtable(mena,~cohort+twinnum)
 ##' dstr(mena)
 ##' 
 ##' mena2 <- drelevel(mena,"cohort","(1980,1982]")
@@ -832,9 +831,59 @@ print.daggregate <- function(x,quote=FALSE,...) {
     print(x,quote=quote,...)
 }
 
-
 ##' @export
-dfactor <- function(data,y=NULL,x=NULL,...) daggregate(data,y=NULL,x=x,fun=function(z) base::as.factor(z,...))
+dfactor <- function(data,x,regex=FALSE,sep=NULL,...)
+{# {{{
+
+ if (is.null(sep))  sep <- "f"
+
+ if (is.vector(data) | !inherits(data,"factor")) {
+      if (is.vector(data)) data <- factor(data)
+      gx <- as.factor(data,ref=ref)
+      return(gx)
+ } else {
+
+ if (inherits(x,"formula")) {
+     x <- all.vars(x)
+     if (x[1]==".") x <- names(data)
+     xnames <- x
+  } else if  (is.character(x)) {
+     xnames <- x
+     xxx<-c()
+     for (xx in xnames)
+     {
+        if (!regex) xx <- glob2rx(xx)
+        n <- grep(xx,names(data))
+        xxx <- c(xxx,names(data)[n])
+     }
+     xnames <- xxx[!duplicated(xxx)]
+  }
+
+
+  if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
+  dots <- list()
+  args <- lapply(dots, function(x) {
+			           if (length(x)==1 && is.character(x)) x <- data[,x]
+			           x
+	       })
+  if (!is.list(x)) x <- list(x)
+  ll <- length(x)
+  if (ll>1 & length(ref)==1) ref <- rep(ref,ll)
+  if (length(x)!=length(ref)) stop("length of baseline reference 'ref' not consistent with variables")
+
+for (k in 1:ll)
+{
+  xx <- x[[k]]
+  if (!is.factor(xx)) xx <- factor(xx)
+  name<- paste(xnames[k],ref[k],sep=sep)
+
+  data[,name] <- as.factor(xx) 
+}
+
+return(data)
+}
+
+}# }}}
 
 ##' @export
 "dfactor<-" <- function(data,k=1,combine=TRUE,...,value) {
