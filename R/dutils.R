@@ -858,7 +858,6 @@ dfactor <- function(data,x,regex=FALSE,sep=NULL,all=FALSE,...)
      }
      xnames <- xxx[!duplicated(xxx)]
   }
- print(xnames)
 
 
   if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
@@ -878,7 +877,7 @@ for (k in 1:ll)
   name<- paste(xnames[k],sep,sep="")
   if (!is.factor(xx) || all==TRUE) { 
 	  gx <- as.factor(xx); 
-          data[,name] <- gx } else data[,name] <- as.factor(xx) 
+          data[,name] <- gx } 
 }
 
 return(data)
@@ -917,7 +916,6 @@ dnumeric <- function(data,x,regex=FALSE,sep=NULL,all=FALSE,...)
      }
      xnames <- xxx[!duplicated(xxx)]
   }
- print(xnames)
 
 
   if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
@@ -937,7 +935,8 @@ for (k in 1:ll)
   name<- paste(xnames[k],sep,sep="")
   if (!is.numeric(xx) || all==TRUE) { 
 	  gx <- as.numeric(xx); 
-          data[,name] <- gx } else data[,name] <- as.numeric(xx) 
+          data[,name] <- gx 
+  } 
 }
 
 return(data)
