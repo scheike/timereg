@@ -836,7 +836,7 @@ print.daggregate <- function(x,quote=FALSE,...) {
 dfactor <- function(data,x,regex=FALSE,sep=NULL,all=FALSE,...)
 {# {{{
 
- if (is.null(sep))  sep <- "f"
+ if (is.null(sep))  sep <- ".f"
 
  if (is.vector(data)) {
 	 if (!is.factor(data)) gx <- as.factor(data) else gx <- data
@@ -895,7 +895,7 @@ return(data)
 dnumeric <- function(data,x,regex=FALSE,sep=NULL,all=FALSE,...)
 {# {{{
 
- if (is.null(sep))  sep <- "n"
+ if (is.null(sep))  sep <- ".n"
 
  if (is.factor(data)) {
       gx <- as.numeric(data) 
