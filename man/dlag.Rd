@@ -2,6 +2,7 @@
 % Please edit documentation in R/dutils.R
 \name{dlag}
 \alias{dlag}
+\alias{dlag<-}
 \title{Lag operator}
 \usage{
 dlag(data, x, k = 1, combine = TRUE, simplify = TRUE, names, ...)

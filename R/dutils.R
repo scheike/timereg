@@ -831,15 +831,15 @@ print.daggregate <- function(x,quote=FALSE,...) {
     print(x,quote=quote,...)
 }
 
+
 ##' @export
-dfactor <- function(data,x,regex=FALSE,sep=NULL,...)
+dfactor <- function(data,x,regex=FALSE,sep=NULL,all=FALSE,...)
 {# {{{
 
  if (is.null(sep))  sep <- "f"
 
- if (is.vector(data) | !inherits(data,"factor")) {
-      if (is.vector(data)) data <- factor(data)
-      gx <- as.factor(data,ref=ref)
+ if (is.vector(data)) {
+	 if (!is.factor(data)) gx <- as.factor(data) else gx <- data
       return(gx)
  } else {
 
@@ -858,6 +858,7 @@ dfactor <- function(data,x,regex=FALSE,sep=NULL,...)
      }
      xnames <- xxx[!duplicated(xxx)]
   }
+ print(xnames)
 
 
   if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
@@ -868,16 +869,16 @@ dfactor <- function(data,x,regex=FALSE,sep=NULL,...)
 	       })
   if (!is.list(x)) x <- list(x)
   ll <- length(x)
-  if (ll>1 & length(ref)==1) ref <- rep(ref,ll)
-  if (length(x)!=length(ref)) stop("length of baseline reference 'ref' not consistent with variables")
+###  if (ll>1 & length(ref)==1) ref <- rep(ref,ll)
+###  if (length(x)!=length(ref)) stop("length of baseline reference 'ref' not consistent with variables")
 
 for (k in 1:ll)
 {
   xx <- x[[k]]
-  if (!is.factor(xx)) xx <- factor(xx)
-  name<- paste(xnames[k],ref[k],sep=sep)
-
-  data[,name] <- as.factor(xx) 
+  name<- paste(xnames[k],sep,sep="")
+  if (!is.factor(xx) || all==TRUE) { 
+	  gx <- as.factor(xx); 
+          data[,name] <- gx } else data[,name] <- as.factor(xx) 
 }
 
 return(data)
@@ -888,6 +889,65 @@ return(data)
 ##' @export
 "dfactor<-" <- function(data,k=1,combine=TRUE,...,value) {
     dfactor(data,value,...)
+}
+
+##' @export
+dnumeric <- function(data,x,regex=FALSE,sep=NULL,all=FALSE,...)
+{# {{{
+
+ if (is.null(sep))  sep <- "n"
+
+ if (is.factor(data)) {
+      gx <- as.numeric(data) 
+      return(gx)
+ } else {
+
+ if (inherits(x,"formula")) {
+     x <- all.vars(x)
+     if (x[1]==".") x <- names(data)
+     xnames <- x
+  } else if  (is.character(x)) {
+     xnames <- x
+     xxx<-c()
+     for (xx in xnames)
+     {
+        if (!regex) xx <- glob2rx(xx)
+        n <- grep(xx,names(data))
+        xxx <- c(xxx,names(data)[n])
+     }
+     xnames <- xxx[!duplicated(xxx)]
+  }
+ print(xnames)
+
+
+  if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
+  dots <- list()
+  args <- lapply(dots, function(x) {
+			           if (length(x)==1 && is.character(x)) x <- data[,x]
+			           x
+	       })
+  if (!is.list(x)) x <- list(x)
+  ll <- length(x)
+###  if (ll>1 & length(ref)==1) ref <- rep(ref,ll)
+###  if (length(x)!=length(ref)) stop("length of baseline reference 'ref' not consistent with variables")
+
+for (k in 1:ll)
+{
+  xx <- x[[k]]
+  name<- paste(xnames[k],sep,sep="")
+  if (!is.numeric(xx) || all==TRUE) { 
+	  gx <- as.numeric(xx); 
+          data[,name] <- gx } else data[,name] <- as.numeric(xx) 
+}
+
+return(data)
+}
+
+}# }}}
+
+##' @export
+"dnumeric<-" <- function(data,...,value) {
+    dnumeric(data,value,...)
 }
 
 
