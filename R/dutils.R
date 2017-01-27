@@ -146,7 +146,6 @@ if (missing(x)) x<- ~.
 for (k in 1:ll)
 {
   xx <- x[[k]]
-  print(xnames[k])
   if (is.numeric(xx)) {
 
       if (is.null(breaks)) { 
