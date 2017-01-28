@@ -9,6 +9,19 @@
 
 using namespace Rcpp;
 
+// ApplyBy
+NumericMatrix ApplyBy(NumericMatrix idata, IntegerVector icluster, Function f);
+RcppExport SEXP mets_ApplyBy(SEXP idataSEXP, SEXP iclusterSEXP, SEXP fSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type idata(idataSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type icluster(iclusterSEXP);
+    Rcpp::traits::input_parameter< Function >::type f(fSEXP);
+    rcpp_result_gen = Rcpp::wrap(ApplyBy(idata, icluster, f));
+    return rcpp_result_gen;
+END_RCPP
+}
 // loglikMVN
 arma::mat loglikMVN(arma::mat Yl, SEXP yu, SEXP status, arma::mat Mu, SEXP dmu, arma::mat S, SEXP ds, SEXP z, SEXP su, SEXP dsu, SEXP threshold, SEXP dthreshold, bool Score);
 static SEXP mets_loglikMVN_try(SEXP YlSEXP, SEXP yuSEXP, SEXP statusSEXP, SEXP MuSEXP, SEXP dmuSEXP, SEXP SSEXP, SEXP dsSEXP, SEXP zSEXP, SEXP suSEXP, SEXP dsuSEXP, SEXP thresholdSEXP, SEXP dthresholdSEXP, SEXP ScoreSEXP) {
