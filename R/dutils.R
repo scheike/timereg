@@ -433,6 +433,7 @@ ddrop <- function(data,var,keep=FALSE) dkeep(data,var,keep=FALSE)
 ##' @param x variable to order by
 ##' @param ... additional variables to order by
 ##' @param decreasing sort order (vector of length x)
+##' @param return.order return order 
 ##' @return data.frame
 ##' @export
 ##' @examples
@@ -446,7 +447,7 @@ ddrop <- function(data,var,keep=FALSE) dkeep(data,var,keep=FALSE)
 ##' dsort(hubble) <- ~sigma-v
 ##' @aliases dsort dsort<-
 ##' @export
-dsort <- function(data,x,...,decreasing=FALSE)
+dsort <- function(data,x,...,decreasing=FALSE,return.order=FALSE)
 {# {{{
     if (missing(x)) return(data)
     if (inherits(x,"formula")) {
@@ -461,7 +462,8 @@ dsort <- function(data,x,...,decreasing=FALSE)
         x
     })
     if (!is.list(x)) x <- list(x)
-    data[do.call("order",c(c(x,args),list(decreasing=decreasing,method="radix"))),]
+    ord <- do.call("order",c(c(x,args),list(decreasing=decreasing,method="radix")))
+    data[ord,]
 }# }}}
 
 ##' @export
@@ -678,11 +680,13 @@ procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, rege
     return(res)
 }
 
-procformdata <- function(formula,data,sep="\\|", na.action=na.pass, ...) {
+procformdata <- function(formula,data,sep="\\|", na.action=na.pass, do.filter=TRUE, ...) {
     res <- procform(formula,sep=sep,data=data,return.formula=TRUE,...)
     y <- x <- NULL
     filter <- res$filter.expression
-
+    if (!do.filter) {
+        filter <- NULL
+    }
     if (length(res$response)>0) {
         if (is.null(filter)) y <- model.frame(res$response,data=data,na.action=na.action)
         else y <- model.frame(res$response,data=subset(data,eval(filter)),na.action=na.action)
@@ -692,7 +696,10 @@ procformdata <- function(formula,data,sep="\\|", na.action=na.pass, ...) {
         else x <- model.frame(res$predictor,data=subset(data,eval(filter)),na.action=na.action)
 
     }
-    ## if (!is.null(res$group)) group <- lapply(res$,function(x) model.frame(x,data=data,...))
+    if (!do.filter) {
+        group <- lapply(res$filter, function(x) model.frame(x,data=data,na.action=na.action))
+        return(list(response=y,predictor=x,group=group))
+    }
     return(list(response=y,predictor=x))
 }
 
@@ -1202,7 +1209,7 @@ dlag <- function(data,x,k=1,combine=TRUE,simplify=TRUE,names,...) {
     }
     if (length(k)==1 && simplify && isvec) return(as.vector(val[[1]]))
     names(dval) <- base::make.unique(base::names(dval))
-    return(dval)
+    return(as.matrix(dval))
 }
 
 ##' @export
