@@ -5,7 +5,7 @@
 \alias{dsort<-}
 \title{Sort data frame}
 \usage{
-dsort(data, x, ..., decreasing = FALSE)
+dsort(data, x, ..., decreasing = FALSE, return.order = FALSE)
 }
 \arguments{
 \item{data}{Data frame}
@@ -15,6 +15,8 @@ dsort(data, x, ..., decreasing = FALSE)
 \item{...}{additional variables to order by}
 
 \item{decreasing}{sort order (vector of length x)}
+
+\item{return.order}{return order}
 }
 \value{
 data.frame

@@ -8,7 +8,7 @@
 ##' @param cuts vector of number of groups, 4 is default and gives quartiles.
 ##' @param probs groups defined from quantiles
 ##' @param breaks  possible breaks for cutting.
-##' @param equi.space for equi-spaced breaks  
+##' @param equi for equi-spaced breaks  
 ##' @param regex for regular expressions.
 ##' @param sep seperator for naming of cut names.
 ##' @param ... Optional additional arguments
@@ -213,7 +213,7 @@ return(data)
 ##' dlevels(mena,"coh*")
 ##' dtable(mena,"coh*",level=1)
 ##' 
-##' @aliases dlevels drelevel drelevel<- dfactor
+##' @aliases dlevels drelevel drelevel<- dfactor dfactor<- dnumeric dnumeric<-
 ##' @export
 drelevel <- function(data,x,ref=NULL,regex=FALSE,sep=NULL,...)
 {# {{{
@@ -433,6 +433,7 @@ ddrop <- function(data,var,keep=FALSE) dkeep(data,var,keep=FALSE)
 ##' @param x variable to order by
 ##' @param ... additional variables to order by
 ##' @param decreasing sort order (vector of length x)
+##' @param return.order return order 
 ##' @return data.frame
 ##' @export
 ##' @examples
@@ -446,7 +447,7 @@ ddrop <- function(data,var,keep=FALSE) dkeep(data,var,keep=FALSE)
 ##' dsort(hubble) <- ~sigma-v
 ##' @aliases dsort dsort<-
 ##' @export
-dsort <- function(data,x,...,decreasing=FALSE)
+dsort <- function(data,x,...,decreasing=FALSE,return.order=FALSE)
 {# {{{
     if (missing(x)) return(data)
     if (inherits(x,"formula")) {
@@ -461,7 +462,8 @@ dsort <- function(data,x,...,decreasing=FALSE)
         x
     })
     if (!is.list(x)) x <- list(x)
-    data[do.call("order",c(c(x,args),list(decreasing=decreasing,method="radix"))),]
+    ord <- do.call("order",c(c(x,args),list(decreasing=decreasing,method="radix")))
+    data[ord,]
 }# }}}
 
 ##' @export
@@ -678,11 +680,13 @@ procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, rege
     return(res)
 }
 
-procformdata <- function(formula,data,sep="\\|", na.action=na.pass, ...) {
+procformdata <- function(formula,data,sep="\\|", na.action=na.pass, do.filter=TRUE, ...) {
     res <- procform(formula,sep=sep,data=data,return.formula=TRUE,...)
     y <- x <- NULL
     filter <- res$filter.expression
-
+    if (!do.filter) {
+        filter <- NULL
+    }
     if (length(res$response)>0) {
         if (is.null(filter)) y <- model.frame(res$response,data=data,na.action=na.action)
         else y <- model.frame(res$response,data=subset(data,eval(filter)),na.action=na.action)
@@ -692,7 +696,10 @@ procformdata <- function(formula,data,sep="\\|", na.action=na.pass, ...) {
         else x <- model.frame(res$predictor,data=subset(data,eval(filter)),na.action=na.action)
 
     }
-    ## if (!is.null(res$group)) group <- lapply(res$,function(x) model.frame(x,data=data,...))
+    if (!do.filter) {
+        group <- lapply(res$filter, function(x) model.frame(x,data=data,na.action=na.action))
+        return(list(response=y,predictor=x,group=group))
+    }
     return(list(response=y,predictor=x))
 }
 
@@ -727,16 +734,19 @@ by2mat <- function(x,nam,...) {
 ##' data("sTRACE",package="timereg")
 ##' daggregate(iris, "^.e.al", x="Species", fun=cor, regex=TRUE)
 ##' daggregate(iris, Sepal.Length+Petal.Length ~Species, fun=summary)
-##' daggregate(iris, log(Sepal.Length)+I(Petal.Length>1.5) ~ Species, fun=summary)
+##' daggregate(iris, log(Sepal.Length)+I(Petal.Length>1.5) ~ Species,
+##'                  fun=summary)
 ##' daggregate(iris, "*Length*", x="Species", fun=head)
 ##' daggregate(iris, "^.e.al", x="Species", fun=tail, regex=TRUE)
 ##' daggregate(sTRACE, status~ diabetes, fun=table)
 ##' daggregate(sTRACE, status~ diabetes+sex, fun=table)
 ##' daggregate(sTRACE, status + diabetes+sex ~ vf+I(wmi>1.4), fun=table)
 ##' daggregate(iris, "^.e.al", x="Species",regex=TRUE)
-##' dprint(iris,Petal.Length+Sepal.Length ~ Species |Petal.Length>1.3 & Sepal.Length>5, n=list(1:3,-(3:1)))
+##' dprint(iris,Petal.Length+Sepal.Length ~ Species |Petal.Length>1.3 & Sepal.Length>5,
+##'             n=list(1:3,-(3:1)))
 ##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5))
-##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=table)
+##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5),
+##'                  fun=table)
 ##'
 ##' dsum(iris, .~Species, matrix=TRUE, missing=TRUE)
 ##'
@@ -1202,7 +1212,7 @@ dlag <- function(data,x,k=1,combine=TRUE,simplify=TRUE,names,...) {
     }
     if (length(k)==1 && simplify && isvec) return(as.vector(val[[1]]))
     names(dval) <- base::make.unique(base::names(dval))
-    return(dval)
+    return(as.matrix(dval))
 }
 
 ##' @export

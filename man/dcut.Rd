@@ -29,6 +29,8 @@ dcut(data, x, cuts = 4, probs = NULL, equi = FALSE, breaks = NULL,
 
 \item{probs}{groups defined from quantiles}
 
+\item{equi}{for equi-spaced breaks}
+
 \item{breaks}{possible breaks for cutting.}
 
 \item{regex}{for regular expressions.}
@@ -36,8 +38,6 @@ dcut(data, x, cuts = 4, probs = NULL, equi = FALSE, breaks = NULL,
 \item{sep}{seperator for naming of cut names.}
 
 \item{...}{Optional additional arguments}
-
-\item{equi.space}{for equi-spaced breaks}
 }
 \description{
 Cut variables, if breaks are given these are used, otherwise cuts into 
