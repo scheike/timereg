@@ -2,7 +2,10 @@
 % Please edit documentation in R/dutils.R
 \name{drelevel}
 \alias{dfactor}
+\alias{dfactor<-}
 \alias{dlevels}
+\alias{dnumeric}
+\alias{dnumeric<-}
 \alias{drelevel}
 \alias{drelevel<-}
 \title{relev levels for data frames}

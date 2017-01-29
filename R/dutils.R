@@ -8,7 +8,7 @@
 ##' @param cuts vector of number of groups, 4 is default and gives quartiles.
 ##' @param probs groups defined from quantiles
 ##' @param breaks  possible breaks for cutting.
-##' @param equi.space for equi-spaced breaks  
+##' @param equi for equi-spaced breaks  
 ##' @param regex for regular expressions.
 ##' @param sep seperator for naming of cut names.
 ##' @param ... Optional additional arguments
@@ -213,7 +213,7 @@ return(data)
 ##' dlevels(mena,"coh*")
 ##' dtable(mena,"coh*",level=1)
 ##' 
-##' @aliases dlevels drelevel drelevel<- dfactor
+##' @aliases dlevels drelevel drelevel<- dfactor dfactor<- dnumeric dnumeric<-
 ##' @export
 drelevel <- function(data,x,ref=NULL,regex=FALSE,sep=NULL,...)
 {# {{{
@@ -734,16 +734,19 @@ by2mat <- function(x,nam,...) {
 ##' data("sTRACE",package="timereg")
 ##' daggregate(iris, "^.e.al", x="Species", fun=cor, regex=TRUE)
 ##' daggregate(iris, Sepal.Length+Petal.Length ~Species, fun=summary)
-##' daggregate(iris, log(Sepal.Length)+I(Petal.Length>1.5) ~ Species, fun=summary)
+##' daggregate(iris, log(Sepal.Length)+I(Petal.Length>1.5) ~ Species,
+##'                  fun=summary)
 ##' daggregate(iris, "*Length*", x="Species", fun=head)
 ##' daggregate(iris, "^.e.al", x="Species", fun=tail, regex=TRUE)
 ##' daggregate(sTRACE, status~ diabetes, fun=table)
 ##' daggregate(sTRACE, status~ diabetes+sex, fun=table)
 ##' daggregate(sTRACE, status + diabetes+sex ~ vf+I(wmi>1.4), fun=table)
 ##' daggregate(iris, "^.e.al", x="Species",regex=TRUE)
-##' dprint(iris,Petal.Length+Sepal.Length ~ Species |Petal.Length>1.3 & Sepal.Length>5, n=list(1:3,-(3:1)))
+##' dprint(iris,Petal.Length+Sepal.Length ~ Species |Petal.Length>1.3 & Sepal.Length>5,
+##'             n=list(1:3,-(3:1)))
 ##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5))
-##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5), fun=table)
+##' daggregate(iris, I(Sepal.Length>7)~Species | I(Petal.Length>1.5),
+##'                  fun=table)
 ##'
 ##' dsum(iris, .~Species, matrix=TRUE, missing=TRUE)
 ##'

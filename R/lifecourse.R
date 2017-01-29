@@ -42,7 +42,6 @@ lifecourse <- function(formula,data,id="id",group=NULL,
                status.legend=NULL,place.sl="bottomright",
                xlab="Time",ylab="",add=FALSE,...) 
 {# {{{
-    if (!lava.options()$cluster.index) stop("mets not available? Check 'lava.options()cluster.index'.")
     if (!is.null(by)) {
         if (is.character(by) && length(by==1)) {
             by <- data[,by]
@@ -157,10 +156,7 @@ lifecourse <- function(formula,data,id="id",group=NULL,
     y <- getoutcome(formula)
     x <- attributes(y)$x
 
-    if (!requireNamespace("mets",quietly=TRUE)) stop("'mets' package required")
-
     if (length(x)==0) {# {{{
-
         y <- response <- all.vars( update(formula,.~+1))
         ###
 	ccid <- cluster.index(data[,id])
