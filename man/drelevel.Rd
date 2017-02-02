@@ -46,6 +46,13 @@ drelevel(mena,ref="(1980,1982]")  <-  ~cohort
 dlevels(mena,"coh*")
 dtable(mena,"coh*",level=1)
 
+### level 1 of zyg as baseline for new variable
+drelevel(mm,ref=1) <- ~zyg
+drelevel(mena,ref=c("DZ","[1973,1975]")) <- ~ zyg+cohort
+### level 2 of zyg and cohort as baseline for new variables
+drelevel(mena,ref=2) <- ~ zyg+cohort
+dlevels(mena)
+
 }
 \author{
 Klaus K. Holst and Thomas Scheike

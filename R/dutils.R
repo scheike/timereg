@@ -112,7 +112,7 @@ dcut <- function(data,x,breaks=4,probs=NULL,equi=FALSE,regex=FALSE,sep=NULL,...)
 if (is.data.frame(data)) {
 
  if (inherits(x,"formula")) {
-     vars <- mets:::procform(x,data=data,...)
+     vars <- procform(x,data=data,...)
 
       usernames <- FALSE
 	 if (!is.null(vars$response)) usernames<-TRUE
@@ -130,7 +130,7 @@ if (is.data.frame(data)) {
 if (missing(x)) x<- ~.
 
  if (inherits(x,"formula")) {
-     x <- mets:::procform(x,data=data)$predictor
+     x <- procform(x,data=data)$predictor
 ###     x <- all.vars(x)
      xnames <- x
   } else if  (is.character(x)) {
