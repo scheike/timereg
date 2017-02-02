@@ -32,7 +32,8 @@ levels shows levels for variables in data frame, relevel relevels a factor in da
 
 data(mena)
 dstr(mena)
-dfactor(mena) <- ~twinnum
+dfactor(mena)  <- ~twinnum
+dnumeric(mena) <- ~twinnum.f
 
 dstr(mena)
 

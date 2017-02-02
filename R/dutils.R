@@ -5,9 +5,8 @@
 ##' is equally sized groups if possible
 ##' @param data if x is formula or names for data frame then data frame is needed.
 ##' @param x name of variable, or fomula, or names of variables on data frame.
-##' @param cuts vector of number of groups, 4 is default and gives quartiles.
 ##' @param probs groups defined from quantiles
-##' @param breaks  possible breaks for cutting.
+##' @param breaks  number of breaks, for variables or vector of break points,
 ##' @param equi for equi-spaced breaks  
 ##' @param regex for regular expressions.
 ##' @param sep seperator for naming of cut names.
@@ -21,7 +20,7 @@
 ##' mm <- dcut(sTRACE,~age+wmi)
 ##' head(mm)
 ##'
-##' mm <- dcut(sTRACE,~age+wmi,cuts=c(2,4))
+##' mm <- dcut(sTRACE,~age+wmi,breaks=c(2,4))
 ##' head(mm)
 ##'
 ##' mm <- dcut(sTRACE,c("age","wmi"))
@@ -30,7 +29,7 @@
 ##' mm <- dcut(sTRACE,~.)
 ##' head(mm)
 #
-##' mm <- dcut(sTRACE,c("age","wmi"),cuts=c(2,4))
+##' mm <- dcut(sTRACE,c("age","wmi"),breaks=c(2,4))
 ##' head(mm)
 ##'
 ##' gx <- dcut(sTRACE$age)
@@ -51,6 +50,7 @@
 ##' dcut(mm) <- c("age","*m*")
 ##' head(mm)
 ##'
+##' ############################
 ##' ## renaming
 ##' ############################
 ##'
@@ -76,21 +76,23 @@
 ##' names(dd)
 ##' @aliases dcut dcut<- dunique drm drm<- dnames dnames<- drename drename<- dkeep dkeep<- ddrop ddrop<- dreshape
 ##' @export
-dcut <- function(data,x,cuts=4,probs=NULL,equi=FALSE,breaks=NULL,regex=FALSE,sep=NULL,...)
+dcut <- function(data,x,breaks=4,probs=NULL,equi=FALSE,regex=FALSE,sep=NULL,...)
 {# {{{
-    if (is.vector(data)) {
-        if (is.null(breaks)) { 
+    if (is.vector(data)) {# {{{
+	if (is.list(breaks)) breaks <- unlist(breaks)
+
+        if (length(breaks)==1) { 
              if (!is.null(probs))
 	     {
                 breaks <- quantile(data, probs, ...)
 	     } else {
 	   	if (!equi) { 
-			probs <- seq(0, 1, length.out = cuts + 1)
+			probs <- seq(0, 1, length.out = breaks + 1)
 			breaks <- quantile(data, probs, ...)
 		} 
 		if (equi) { 
 			rr <- range(data)
-			breaks <-  seq(rr[1],rr[2],length.out=cuts+1)
+			breaks <-  seq(rr[1],rr[2],length.out=breaks+1)
 		}
 	     }
 	}
@@ -105,18 +107,31 @@ dcut <- function(data,x,cuts=4,probs=NULL,equi=FALSE,breaks=NULL,regex=FALSE,sep
               warning(paste("breaks duplicated"))
         }
         return(gx)
-    }
+    }# }}}
 
 if (is.data.frame(data)) {
 
- if (is.null(sep) & is.null(breaks))    sep <- "."
- if (is.null(sep) & (!is.null(breaks))) sep <- "b"
+ if (inherits(x,"formula")) {
+     vars <- mets:::procform(x,data=data,...)
+
+      usernames <- FALSE
+	 if (!is.null(vars$response)) usernames<-TRUE
+	 if (usernames) {
+            newnames <- vars$response
+	    if (length(vars$response)!=length(vars$predictor)) { 
+	    warning("length of new names not consistent with length of cut variables, uses default naming\n"); 
+	   usernames <- FALSE
+	   }
+	 }
+ }
+ 
+ if (is.null(sep)) sep <- "."
 
 if (missing(x)) x<- ~.
 
  if (inherits(x,"formula")) {
-     x <- all.vars(x)
-     if (x[1]==".") x <- names(data)
+     x <- mets:::procform(x,data=data)$predictor
+###     x <- all.vars(x)
      xnames <- x
   } else if  (is.character(x)) {
      xnames <- x
@@ -134,13 +149,33 @@ if (missing(x)) x<- ~.
   if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
   dots <- list()
   args <- lapply(dots, function(x) {
-			           if (length(x)==1 && is.character(x)) x <- data[,x]
-			           x
-	       })
+           if (length(x)==1 && is.character(x)) x <- data[,x]
+           x
+       })
   if (!is.list(x)) x <- list(x)
   ll <- length(x)
-  if (ll>1 & length(cuts)==1) cuts <- rep(cuts,ll)
-  if (length(x)!=length(cuts)) stop("length of variables not consistent with cuts")
+
+  print(breaks)
+
+  if (ll==1 & is.vector(breaks)) breaks <- list(breaks)
+
+  break.points <- FALSE
+  if (is.list(breaks)) {
+     break.points <- TRUE
+     breaks <- rep(breaks,ll)
+  }
+
+  print(breaks)
+  print(ll)
+  print(length(breaks))
+
+  if (!break.points) {
+     if (length(x)!=length(breaks) & length(breaks)!=1) 
+	     warning("length of variables not consistent with breaks"); 
+     if (length(breaks)!=ll) breaks<- rep(breaks[1],ll)
+  }
+  print(breaks)
+  
 
 
 for (k in 1:ll)
@@ -148,23 +183,25 @@ for (k in 1:ll)
   xx <- x[[k]]
   if (is.numeric(xx)) {
 
-      if (is.null(breaks)) { 
-             if (!is.null(probs))
-	     {
+      if (!is.list(breaks))
+      {
+          if (!is.null(probs))
+	  {
                 bb <- quantile(xx, probs, ...)
-	     } else {
+	  } else {
 	   	if (!equi) { 
-			probs <- seq(0, 1, length.out = cuts[k] + 1)
+			probs <- seq(0, 1, length.out = breaks[k] + 1)
 			bb <- quantile(xx, probs, ...)
 		} 
 		if (equi) { 
 			rr <- range(xx,na.rm=TRUE)
-			bb <-  seq(rr[1],rr[2],length.out=cuts[k]+1)
+			bb <-  seq(rr[1],rr[2],length.out=breaks[k]+1)
 		}
 	     }
-          name<-paste(xnames[k],cuts[k],sep=sep)
-      } else { bb <- breaks; name<-paste(xnames[k],breaks[2],sep=sep) }
+          name<-paste(xnames[k],breaks[k],sep=sep)
+      } else { bb <- breaks[[1]]; name<-paste(xnames[k],breaks[[k]][1],sep=sep) }
 
+      if (usernames) name <- newnames[k]
 
       if (sum(duplicated(bb))==0)
 	     data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE,...)
@@ -200,7 +237,8 @@ return(data)
 ##'
 ##' data(mena)
 ##' dstr(mena)
-##' dfactor(mena) <- ~twinnum
+##' dfactor(mena)  <- ~twinnum
+##' dnumeric(mena) <- ~twinnum.f
 ##' 
 ##' dstr(mena)
 ##' 
@@ -213,6 +251,13 @@ return(data)
 ##' dlevels(mena,"coh*")
 ##' dtable(mena,"coh*",level=1)
 ##' 
+##' ### level 1 of zyg as baseline for new variable
+##' drelevel(mm,ref=1) <- ~zyg
+##' drelevel(mena,ref=c("DZ","[1973,1975]")) <- ~ zyg+cohort
+##' ### level 2 of zyg and cohort as baseline for new variables
+##' drelevel(mena,ref=2) <- ~ zyg+cohort
+##' dlevels(mena)
+##' 
 ##' @aliases dlevels drelevel drelevel<- dfactor dfactor<- dnumeric dnumeric<-
 ##' @export
 drelevel <- function(data,x,ref=NULL,regex=FALSE,sep=NULL,...)
@@ -224,7 +269,9 @@ drelevel <- function(data,x,ref=NULL,regex=FALSE,sep=NULL,...)
  if (is.null(sep))  sep <- "."
 
  if (is.vector(data) | inherits(data,"factor")) {
+
       if (is.vector(data)) data <- factor(data)
+      if (is.numeric(ref)) ref <-  levels(data)[ref]
       gx <- relevel(data,ref=ref)
       return(gx)
  } else {
@@ -263,7 +310,8 @@ for (k in 1:ll)
   if (!is.factor(xx)) xx <- factor(xx)
   name<- paste(xnames[k],ref[k],sep=sep)
 
-  data[,name] <- relevel(xx,ref=ref[k])
+  if (is.numeric(ref[k])) refk <- levels(xx)[ref[k]] else refk <- ref[k]
+  data[,name] <- relevel(xx,ref=refk)
 }
 
 return(data)
@@ -275,7 +323,7 @@ return(data)
 "drelevel<-" <- function(data,...,value) drelevel(data,value,...)
 
 ##' @export
-dlevels <- function(data,x,regex=FALSE,max.levels=20,...)
+dlevels <- function(data,x,regex=FALSE,max.levels=20,cols=FALSE,...)
 {# {{{
 
  if (is.factor(data)) {
@@ -310,6 +358,15 @@ dlevels <- function(data,x,regex=FALSE,max.levels=20,...)
   if (!is.list(x)) x <- list(x)
   ll <- length(x)
 
+  if (cols==TRUE) {
+        antfactor <- 0
+        namesfac <- c()
+        nlev     <- c()
+        lll <- list()
+	maxl <- 0
+	m <- 0
+  }
+                    
 for (k in 1:ll)
 {
   xx <- x[[k]]
@@ -317,9 +374,28 @@ for (k in 1:ll)
 	  cat(paste(xnames[k],":",sep=" #levels="));
 	  nxx <- nlevels(xx) 
 	  cat(paste(nxx,"\n")); 
- if (is.null(max.levels) || ((!is.null(max.levels)) & (nxx<max.levels)))
-	  print(base::levels(xx)) 
+     if (is.null(max.levels) || ((!is.null(max.levels)) & (nxx<max.levels))) {
+        if (cols==FALSE)   print(base::levels(xx)) 
+        if (cols==TRUE)  { maxl <- ifelse(base::nlevels(xx) > maxl, base::nlevels(xx), maxl); 
+	                   antfactor <- antfactor+1; 
+	                   namesfac <- c(namesfac,xnames[k])
+	                   nlev <- c(nlev,base::nlevels(xx))
+			   m <- m+1
+                    	   lll[[m]] <- base::levels(xx)
+                         }
+
+     }
+     if (cols==FALSE)   cat("-----------------------------------------\n")
    }
+}
+
+if (cols==TRUE) { 
+	mout <- matrix("",maxl,antfactor)
+	for (k in 1:antfactor) {
+		mout[1:nlev[k],k] <- lll[[k]]
+	}
+	colnames(mout) <- namesfac
+	prmatrix(mout)
 }
 
 }
@@ -1115,7 +1191,6 @@ dcount <- function(data,x=NULL,...,na.rm=TRUE) {
 dsubset <- function(data,...) {
     daggregate(data,...,fun=function(z) z)
 }
-
 
 
 ##' @export
