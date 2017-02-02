@@ -683,6 +683,11 @@ print.dtable <- function(x,sep="\n",...) {
 
 }
 
+g <- function(x) {
+    a <- substitute(x)
+    browser()
+}
+
 
 procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, regex=FALSE, return.list=TRUE, ...) {
     res <- NULL
@@ -692,7 +697,7 @@ procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, rege
         if (is.null(data)) {
             res <- unique(formula)
         } else {
-            yy <- c()
+            yy <-c()
             for (y0 in formula) {
                 if (!regex) y0 <- glob2rx(y0)
                 n <- grep(y0,names(data))
@@ -701,12 +706,14 @@ procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, rege
             res <- unique(yy)
         }
     }
+
     if (is.numeric(formula)) res <- colnames(data)[formula]
     if (is.character(res)) {
         if (!return.list) return(res)
         if (return.formula) return(as.formula(paste("~",paste(res,collapse="+"))))
         return(list(response=res,predictor=NULL,filter=NULL))
     }
+    browser()
     aa <- attributes(terms(formula,data=data))
     if (aa$response == 0) {
         res <- NULL
@@ -751,6 +758,10 @@ procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, rege
             pred <- as.formula(paste0(c("~", paste0(pred,collapse="+"))))
         if (length(res)>0)
             res <- as.formula(paste0(c("~", paste0(res,collapse="+"))))
+    } else {
+        res <- unlist(strsplit(gsub(" ","",res),"\\+"))
+        pred <- unlist(strsplit(gsub(" ","",pred),"\\+"))
+        filter <- lapply(filter, function(x) unlist(strsplit(gsub(" ","",x),"\\+")))
     }
     res <- list(response=res, predictor=pred, filter=filter, filter.expression=filter.expression)
     if (!return.list) return(unlist(unique(res)))

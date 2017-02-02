@@ -6,7 +6,7 @@
 \usage{
 dby(data, input.variable, ..., id.variable = NULL, order.variable = NULL,
   sort.order = 0, combine.data = TRUE, no.check = FALSE, args = NULL,
-  names)
+  names, fast = TRUE)
 }
 \arguments{
 \item{data}{Data.frame}
@@ -28,6 +28,8 @@ dby(data, input.variable, ..., id.variable = NULL, order.variable = NULL,
 \item{args}{Optional list of arguments to functions (...)}
 
 \item{names}{Optional vector of column names}
+
+\item{fast}{if FALSE fallback to slower (safer) function evaluation}
 }
 \description{
 Calculate summary statistics grouped by variable
