@@ -323,7 +323,7 @@ return(data)
 "drelevel<-" <- function(data,...,value) drelevel(data,value,...)
 
 ##' @export
-dlevels <- function(data,x,regex=FALSE,max.levels=20,...)
+dlevels <- function(data,x,regex=FALSE,max.levels=20,cols=FALSE,...)
 {# {{{
 
  if (is.factor(data)) {
@@ -358,6 +358,15 @@ dlevels <- function(data,x,regex=FALSE,max.levels=20,...)
   if (!is.list(x)) x <- list(x)
   ll <- length(x)
 
+  if (cols==TRUE) {
+        antfactor <- 0
+        namesfac <- c()
+        nlev     <- c()
+        lll <- list()
+	maxl <- 0
+	m <- 0
+  }
+                    
 for (k in 1:ll)
 {
   xx <- x[[k]]
@@ -365,9 +374,27 @@ for (k in 1:ll)
 	  cat(paste(xnames[k],":",sep=" #levels="));
 	  nxx <- nlevels(xx) 
 	  cat(paste(nxx,"\n")); 
- if (is.null(max.levels) || ((!is.null(max.levels)) & (nxx<max.levels)))
-	  print(base::levels(xx)) 
+     if (is.null(max.levels) || ((!is.null(max.levels)) & (nxx<max.levels))) {
+        if (cols==FALSE)  print(base::levels(xx)) 
+        if (cols==TRUE)  { maxl <- ifelse(base::nlevels(xx) > maxl, base::nlevels(xx), maxl); 
+	                   antfactor <- antfactor+1; 
+	                   namesfac <- c(namesfac,xnames[k])
+	                   nlev <- c(nlev,base::nlevels(xx))
+			   m <- m+1
+                    	   lll[[m]] <- base::levels(xx)
+                         }
+     }
+ 
    }
+}
+
+if (cols==TRUE) { 
+	mout <- matrix("",maxl,antfactor)
+	for (k in 1:antfactor) {
+		mout[1:nlev[k],k] <- lll[[k]]
+	}
+	colnames(mout) <- namesfac
+	cat(mout)
 }
 
 }
