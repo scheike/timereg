@@ -436,8 +436,9 @@ drename <- function(data,var=NULL,value=NULL,fun=base::tolower,...)
         var <- colnames(data)
         varpos <- seq(ncol(data))
     } else {
-        var <- procform(var,data=data,return.list=FALSE,...)
-        varpos <- match(var,colnames(data))
+        var <- procform(var,data=data,return.list=TRUE,...)
+        varpos <- match(var$predictor,colnames(data))
+	if (!is.null(var$response)) { value <- var$response; var<- var$predictor}
     }
 
     if (is.null(value)) value <- do.call(fun,list(var))
