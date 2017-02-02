@@ -6,7 +6,7 @@
 \usage{
 dby(data, input.variable, ..., id.variable = NULL, order.variable = NULL,
   sort.order = 0, combine.data = TRUE, no.check = FALSE, args = NULL,
-  names)
+  names, fast = TRUE)
 }
 \arguments{
 \item{data}{Data.frame}
@@ -28,6 +28,8 @@ dby(data, input.variable, ..., id.variable = NULL, order.variable = NULL,
 \item{args}{Optional list of arguments to functions (...)}
 
 \item{names}{Optional vector of column names}
+
+\item{fast}{if FALSE fallback to slower (safer) function evaluation}
 }
 \description{
 Calculate summary statistics grouped by variable
@@ -52,10 +54,15 @@ dby(d, y~id|num, y1=dlag, args=list(k=1:2), names=c("y1","y2"))
 dby(d, y~id|num, mean=mean, csum=cumsum, n=length)
 dby(d2,y~id|num, a=cumsum, b=mean, N=length, l1=function(x) c(NA,x)[-length(x)])
 
+dby(d, y~id|num, nn=seq, n=length)
+
 f <- function(x) apply(x,1,min)
 dby(d, y+x~id, min=f)
 
 dby(d,y+x~id|num, function(x) x)
+
+f <- function(x) { cbind(cumsum(x[,1]),cumsum(x[,2]))/sum(x)}
+dby(d, y+x~id, f)
 }
 \author{
 Klaus K. Holst and Thomas Scheike

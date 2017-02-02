@@ -12,6 +12,7 @@
 ##' @param no.check No sorting or check for missing data
 ##' @param args Optional list of arguments to functions (...)
 ##' @param names Optional vector of column names
+##' @param fast if FALSE fallback to slower (safer) function evaluation
 ##' @export 
 ##' @author Klaus K. Holst and Thomas Scheike
 ##' @examples
@@ -40,7 +41,7 @@
 ##' 
 ##' f <- function(x) { cbind(cumsum(x[,1]),cumsum(x[,2]))/sum(x)}
 ##' dby(d, y+x~id, f)
-dby <- function(data,input.variable,...,id.variable=NULL,order.variable=NULL,sort.order=0,combine.data=TRUE,no.check=FALSE,args=NULL,names) {
+dby <- function(data,input.variable,...,id.variable=NULL,order.variable=NULL,sort.order=0,combine.data=TRUE,no.check=FALSE,args=NULL,names,fast=TRUE) {
     if (inherits(input.variable,"formula")) {
         input.variable <- procformdata(input.variable,sep="\\|",data=data,na.action=na.pass,do.filter=FALSE)
         if (is.null(id.variable)) id.variable <- input.variable$predictor
@@ -77,11 +78,24 @@ dby <- function(data,input.variable,...,id.variable=NULL,order.variable=NULL,sor
     } else {
         input.variable <- as.matrix(input.variable)
     }
-    resl <- lapply(funs, function(f) {
-        f2 <- function(...) do.call(f,c(list(...),args))
-        ApplyBy(input.variable,id.variable,f2)
-    })
-        
+    if (fast) {
+        resl <- lapply(funs, function(fun_) {
+            env <- environment()
+            env$fun_ <- fun_
+            if (length(args)>0) {                
+                ff <- function(...) do.call(fun_,c(list(...),args))
+                expr <- quote(ff(x_))
+            } else {
+                expr <- quote(fun_(x_))
+            }            
+            ApplyBy2(input.variable,id.variable,expr,env)
+        })
+    } else {
+        resl <- lapply(funs, function(f) {
+            f2 <- function(...) do.call(f,c(list(...),args))
+            ApplyBy(input.variable,id.variable,f2)
+        })
+    }
     res <- Reduce(cbind,resl)
     if (missing(names)) names <- base::names(resl)
     try(colnames(res) <- names,silent=TRUE)
