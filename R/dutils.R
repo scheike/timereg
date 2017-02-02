@@ -756,6 +756,29 @@ procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, rege
         }
     }
     if (!foundsep) pred <- aa$term.labels
+
+    expandst <- function(st) {
+        st <- unlist(strsplit(gsub(" ","",st),"\\+"))
+        if (any(unlist(lapply(st, function(x) grepl("(",x,fixed=TRUE))))) {
+            res <- c() 
+            for (x in st) {
+                if (grepl("^\\(",x)) {
+                    x <- gsub('\\"',"",x)
+                    x <- gsub('^\\(',"",x)
+                    x <- gsub('\\)$',"",x)
+                    res <- c(res,procform(x,data=data,regex=regex))
+                } else {
+                    res <- c(res,st)
+                }
+                res <- unique(res)
+            }
+        }
+        return(st)
+    }
+    res <- expandst(res)
+    pred <- expandst(pred)
+    filter <- lapply(filter, expandst)
+
     if (return.formula) {
         if (foundsep && !is.null(filter)) {
             filter <- lapply(filter, function(z) as.formula(paste0(c("~", paste0(z,collapse="+")))))
@@ -764,11 +787,7 @@ procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, rege
             pred <- as.formula(paste0(c("~", paste0(pred,collapse="+"))))
         if (length(res)>0)
             res <- as.formula(paste0(c("~", paste0(res,collapse="+"))))
-    } else {
-        res <- unlist(strsplit(gsub(" ","",res),"\\+"))
-        pred <- unlist(strsplit(gsub(" ","",pred),"\\+"))
-        filter <- lapply(filter, function(x) unlist(strsplit(gsub(" ","",x),"\\+")))
-    }
+    } 
     res <- list(response=res, predictor=pred, filter=filter, filter.expression=filter.expression)
     if (!return.list) return(unlist(unique(res)))
     return(res)
@@ -902,7 +921,6 @@ daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, 
         if (length(xidx)>0) y <- y[,-xidx,drop=FALSE]
     }
     if (is.character(fun)) fun <- get(fun)
-
     if (!is.null(x)) {
         if (missing) {
             x[is.na(x)] <- 'NA'
