@@ -684,6 +684,17 @@ print.dtable <- function(x,sep="\n",...) {
 }
 
 
+gsub2 <- function(pattern, replacement, x, ...) {
+  if (length(pattern)!=length(replacement)) {
+      pattern <- rep(pattern, length.out=length(replacement))
+  }
+  result <- x
+  for (i in 1:length(pattern)) {
+    result <- sub(pattern[i], replacement[i], result, ...)
+  }
+  result
+}
+
 procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, regex=FALSE, return.list=TRUE, ...) {
     res <- NULL
     if (is.null(formula)) {
@@ -708,7 +719,25 @@ procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, rege
         if (return.formula) return(as.formula(paste("~",paste(res,collapse="+"))))
         return(list(response=res,predictor=NULL,filter=NULL))
     }
-    aa <- attributes(terms(formula,data=data))
+
+    ## Add parantheses around quotes if it is not a function call
+    if (inherits(formula,"formula")) {
+        st <- deparse(formula)    
+        strsplit(st,"\"")
+        quotepos <- gregexpr("[\"']",st)[[1]]
+        if (quotepos[1]>0) {
+            sts <- strsplit(st,"[\"']")[[1]]
+            p <- length(quotepos)
+            ##repl <- rep(c("(\"","\")"),p)
+            for (i in seq(p/2)*2-1) {
+                sts[i] <- paste0(sts[i],"(\"")
+                sts[i+1] <- paste0(sts[i+1],"\")")
+            }
+            formula <- as.formula(paste(sts,collapse=""))
+        }
+    }
+
+    aa <- attributes(terms(formula,data=data,specials="regex"))
     if (aa$response == 0) {
         res <- NULL
     } else {
@@ -746,22 +775,23 @@ procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, rege
     if (!foundsep) pred <- aa$term.labels
 
     expandst <- function(st) {
-        st <- unlist(strsplit(gsub(" ","",st),"\\+"))
-        if (any(unlist(lapply(st, function(x) grepl("(",x,fixed=TRUE))))) {
-            res <- c() 
+        st <- res <- unlist(strsplit(gsub(" ","",st),"\\+"))
+        if (any(unlist(lapply(st, function(x) grepl("^\\(",x))))) {
+            res <- c()
             for (x in st) {
                 if (grepl("^\\(",x)) {
                     x <- gsub('\\"',"",x)
                     x <- gsub('^\\(',"",x)
                     x <- gsub('\\)$',"",x)
-                    res <- c(res,procform(x,data=data,regex=regex))
+                    
+                    res <- c(res,unlist(procform(x,data=data,regex=regex)$response))
                 } else {
                     res <- c(res,st)
                 }
                 res <- unique(res)
             }
-        }
-        return(st)
+        }        
+        return(res)
     }
     res <- expandst(res)
     pred <- expandst(pred)
