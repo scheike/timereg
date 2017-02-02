@@ -395,7 +395,8 @@ if (cols==TRUE) {
 		mout[1:nlev[k],k] <- lll[[k]]
 	}
 	colnames(mout) <- namesfac
-	prmatrix(mout)
+	rownames(mout) <- rep("  ",nrow(mout))
+	prmatrix(mout,quote=FALSE)
 }
 
 }
