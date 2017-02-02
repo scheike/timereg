@@ -17,21 +17,19 @@
 \alias{dunique}
 \title{Cutting, sorting, rm (removing), rename for data frames}
 \usage{
-dcut(data, x, cuts = 4, probs = NULL, equi = FALSE, breaks = NULL,
-  regex = FALSE, sep = NULL, ...)
+dcut(data, x, breaks = 4, probs = NULL, equi = FALSE, regex = FALSE,
+  sep = NULL, ...)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}
 
 \item{x}{name of variable, or fomula, or names of variables on data frame.}
 
-\item{cuts}{vector of number of groups, 4 is default and gives quartiles.}
+\item{breaks}{number of breaks, for variables or vector of break points,}
 
 \item{probs}{groups defined from quantiles}
 
 \item{equi}{for equi-spaced breaks}
-
-\item{breaks}{possible breaks for cutting.}
 
 \item{regex}{for regular expressions.}
 
@@ -45,21 +43,14 @@ using group size given by probs, or equispace groups on range. Default
 is equally sized groups if possible
 }
 \examples{
-	library(mets)
 data("sTRACE",package="timereg")
 sTRACE$age2 <- sTRACE$age^2
 sTRACE$age3 <- sTRACE$age^3
 
 mm <- dcut(sTRACE,~age+wmi)
 head(mm)
-dtable(mm,"*.4",level=1)
 
-mm <- dcut(sTRACE,~age+wmi,cuts=3,equi=TRUE)
-head(mm)
-dtable(mm,"*.3",level=1)
-
-
-mm <- dcut(sTRACE,~age+wmi,cuts=c(2,4))
+mm <- dcut(sTRACE,~age+wmi,breaks=c(2,4))
 head(mm)
 
 mm <- dcut(sTRACE,c("age","wmi"))
@@ -67,7 +58,7 @@ head(mm)
 
 mm <- dcut(sTRACE,~.)
 head(mm)
-mm <- dcut(sTRACE,c("age","wmi"),cuts=c(2,4))
+mm <- dcut(sTRACE,c("age","wmi"),breaks=c(2,4))
 head(mm)
 
 gx <- dcut(sTRACE$age)
@@ -88,6 +79,7 @@ head(mm)
 dcut(mm) <- c("age","*m*")
 head(mm)
 
+############################
 ## renaming
 ############################
 

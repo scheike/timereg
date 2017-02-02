@@ -9,6 +9,20 @@
 
 using namespace Rcpp;
 
+// ApplyBy2
+NumericMatrix ApplyBy2(NumericMatrix idata, IntegerVector icluster, SEXP F, Environment Env);
+RcppExport SEXP mets_ApplyBy2(SEXP idataSEXP, SEXP iclusterSEXP, SEXP FSEXP, SEXP EnvSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type idata(idataSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type icluster(iclusterSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type F(FSEXP);
+    Rcpp::traits::input_parameter< Environment >::type Env(EnvSEXP);
+    rcpp_result_gen = Rcpp::wrap(ApplyBy2(idata, icluster, F, Env));
+    return rcpp_result_gen;
+END_RCPP
+}
 // ApplyBy
 NumericMatrix ApplyBy(NumericMatrix idata, IntegerVector icluster, Function f);
 RcppExport SEXP mets_ApplyBy(SEXP idataSEXP, SEXP iclusterSEXP, SEXP fSEXP) {

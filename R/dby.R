@@ -87,8 +87,12 @@ dby <- function(data,input.variable,...,id.variable=NULL,order.variable=NULL,sor
                 expr <- quote(ff(x_))
             } else {
                 expr <- quote(fun_(x_))
-            }            
-            ApplyBy2(input.variable,id.variable,expr,env)
+            }
+            .Call("mets_ApplyBy2",
+                  idata=input.variable,
+                  icluster=id.variable,
+                  F=expr,
+                  Env=env)
         })
     } else {
         resl <- lapply(funs, function(f) {

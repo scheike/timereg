@@ -8,8 +8,7 @@
 using namespace std;
 using namespace Rcpp;
 
-//* [[Rcpp::export(name = ".ApplyBy")]]
-// [[Rcpp::export]]
+// [[Rcpp::export(name = ".ApplyBy2")]]
 NumericMatrix ApplyBy2(NumericMatrix idata,
 		       IntegerVector icluster,
 		       SEXP F,
