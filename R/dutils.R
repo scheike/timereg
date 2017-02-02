@@ -375,9 +375,7 @@ for (k in 1:ll)
 	  nxx <- nlevels(xx) 
 	  cat(paste(nxx,"\n")); 
      if (is.null(max.levels) || ((!is.null(max.levels)) & (nxx<max.levels))) {
-        if (cols==FALSE)  { print(base::levels(xx)) 
-	                    cat("-----------------------------------------\n")
-	}
+        if (cols==FALSE)   print(base::levels(xx)) 
         if (cols==TRUE)  { maxl <- ifelse(base::nlevels(xx) > maxl, base::nlevels(xx), maxl); 
 	                   antfactor <- antfactor+1; 
 	                   namesfac <- c(namesfac,xnames[k])
@@ -385,6 +383,8 @@ for (k in 1:ll)
 			   m <- m+1
                     	   lll[[m]] <- base::levels(xx)
                          }
+
+      if (cols==FALSE)   cat("-----------------------------------------\n")
      }
  
    }
