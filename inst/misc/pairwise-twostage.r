@@ -193,7 +193,7 @@ coef(tsdid3)
 ##### simple models, test for pairs structure ## {{{ 
 
 library(mets)
-source("../R/twostage.R")
+###source("../R/twostage.R")
 ts0 <- twostage(aa,data=data,clusters=data$cluster,
 	detail=0,numDeriv=1,Nit=10,
         theta=c(0.17),var.link=0,step=1.0)

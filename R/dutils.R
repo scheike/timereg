@@ -155,8 +155,6 @@ if (missing(x)) x<- ~.
   if (!is.list(x)) x <- list(x)
   ll <- length(x)
 
-  print(breaks)
-
   if (ll==1 & is.vector(breaks)) breaks <- list(breaks)
 
   break.points <- FALSE
@@ -165,17 +163,12 @@ if (missing(x)) x<- ~.
      breaks <- rep(breaks,ll)
   }
 
-  print(breaks)
-  print(ll)
-  print(length(breaks))
 
   if (!break.points) {
      if (length(x)!=length(breaks) & length(breaks)!=1) 
 	     warning("length of variables not consistent with breaks"); 
      if (length(breaks)!=ll) breaks<- rep(breaks[1],ll)
   }
-  print(breaks)
-  
 
 
 for (k in 1:ll)
@@ -432,25 +425,43 @@ return(data)
 ##' @export
 drename <- function(data,var=NULL,value=NULL,fun=base::tolower,...)
 {  # {{{
-    if (is.null(var)) {
-        var <- colnames(data)
-        varpos <- seq(ncol(data))
-    } else {
-        var <- procform(var,data=data,return.list=TRUE,...)
-        varpos <- match(var$predictor,colnames(data))
-	if (!is.null(var$response)) { value <- var$response; var<- var$predictor}
-    }
 
-    if (is.null(value)) value <- do.call(fun,list(var))
+	if (!is.null(var))    {
+		var <- procform(var,data=data,return.list=TRUE,...)
+	        varargs <-   c(!is.null(var$predictor),!is.null(var$response))
+	} else varargs <- c(0,0)
+	if (!is.null(value)) {
+		value <- procform(value,data=data,return.list=TRUE,...)
+	        valueargs <- c(!is.null(value$predictor),!is.null(value$response))
+	} else valueargs <- c(0,0)
 
-    if (is.function(value)) {
-        value <- do.call(value,list(var))
-    } else  if (inherits(value,"formula")) {
-        value <- all.vars(value)
-        if (value[1]==".") value <- do.call(fun,list(var))
-    } else {
-        if (length(value)==1 && (value=="." || value=="*")) value <- do.call(fun,list(var))
-    }
+	vargs <- 1*varargs+1*valueargs
+
+	if (sum(varargs)+sum(valueargs)>=3) stop("lhs and rhs specified multiple times \n")
+
+	if (sum(varargs)==2)   {
+		value <- var$response;
+		var <- var$predictor;   
+	} else if (sum(valueargs)==2) {
+		var <-   value$predictor; 
+		value <- value$response;
+	} else if (sum(vargs)==2) {
+		value   <- c(value$predictor,value$response)
+		var     <- c(var$predictor,var$response)
+	} else if (sum(vargs)==1) {## only one set of variables , so  use fun on these vars 
+		var <- c(value$predictor,value$response,var$response,var$predictor)
+	        value <- do.call(fun,list(var))
+        } else { ## nothing given so 
+		var <- colnames(data); varpos <- seq(ncol(data))
+	        value <- do.call(fun,list(var))
+        }
+
+        varpos <- match(var,colnames(data))
+
+###    print("-----slut--------------") 
+###    print(var)
+###    print(value)
+###    print(varpos)
 
     if (length(varpos)!= length(value)) stop("length of old and new variables must match")
     colnames(data)[varpos] <- value
