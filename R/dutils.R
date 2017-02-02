@@ -251,6 +251,13 @@ return(data)
 ##' dlevels(mena,"coh*")
 ##' dtable(mena,"coh*",level=1)
 ##' 
+##' ### level 1 of zyg as baseline for new variable
+##' drelevel(mm,ref=1) <- ~zyg
+##' drelevel(mena,ref=c("DZ","[1973,1975]")) <- ~ zyg+cohort
+##' ### level 2 of zyg and cohort as baseline for new variables
+##' drelevel(mena,ref=2) <- ~ zyg+cohort
+##' dlevels(mena)
+##' 
 ##' @aliases dlevels drelevel drelevel<- dfactor dfactor<- dnumeric dnumeric<-
 ##' @export
 drelevel <- function(data,x,ref=NULL,regex=FALSE,sep=NULL,...)
@@ -262,7 +269,9 @@ drelevel <- function(data,x,ref=NULL,regex=FALSE,sep=NULL,...)
  if (is.null(sep))  sep <- "."
 
  if (is.vector(data) | inherits(data,"factor")) {
+
       if (is.vector(data)) data <- factor(data)
+      if (is.numeric(ref)) ref <-  levels(data)[ref]
       gx <- relevel(data,ref=ref)
       return(gx)
  } else {
@@ -301,7 +310,8 @@ for (k in 1:ll)
   if (!is.factor(xx)) xx <- factor(xx)
   name<- paste(xnames[k],ref[k],sep=sep)
 
-  data[,name] <- relevel(xx,ref=ref[k])
+  if (is.numeric(ref[k])) refk <- levels(xx)[ref[k]] else refk <- ref[k]
+  data[,name] <- relevel(xx,ref=refk)
 }
 
 return(data)
