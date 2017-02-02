@@ -45,12 +45,19 @@ using group size given by probs, or equispace groups on range. Default
 is equally sized groups if possible
 }
 \examples{
+	library(mets)
 data("sTRACE",package="timereg")
 sTRACE$age2 <- sTRACE$age^2
 sTRACE$age3 <- sTRACE$age^3
 
 mm <- dcut(sTRACE,~age+wmi)
 head(mm)
+dtable(mm,"*.4",level=1)
+
+mm <- dcut(sTRACE,~age+wmi,cuts=3,equi=TRUE)
+head(mm)
+dtable(mm,"*.3",level=1)
+
 
 mm <- dcut(sTRACE,~age+wmi,cuts=c(2,4))
 head(mm)
