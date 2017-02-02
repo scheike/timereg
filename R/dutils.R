@@ -748,8 +748,18 @@ procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, rege
     expandst <- function(st) {
         st <- unlist(strsplit(gsub(" ","",st),"\\+"))
         if (any(unlist(lapply(st, function(x) grepl("(",x,fixed=TRUE))))) {
-            st <- gsub('[\\(\\)\\"]',"",st)
-            st <- procform(st,data=data,regex=regex)
+            res <- c() 
+            for (x in st) {
+                if (grepl("^\\(",x)) {
+                    x <- gsub('\\"',"",x)
+                    x <- gsub('^\\(',"",x)
+                    x <- gsub('\\)$',"",x)
+                    res <- c(res,procform(x,data=data,regex=regex))
+                } else {
+                    res <- c(res,st)
+                }
+                res <- unique(res)
+            }
         }
         return(st)
     }
@@ -899,7 +909,6 @@ daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, 
         if (length(xidx)>0) y <- y[,-xidx,drop=FALSE]
     }
     if (is.character(fun)) fun <- get(fun)
-
     if (!is.null(x)) {
         if (missing) {
             x[is.na(x)] <- 'NA'
