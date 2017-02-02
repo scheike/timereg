@@ -683,11 +683,6 @@ print.dtable <- function(x,sep="\n",...) {
 
 }
 
-g <- function(x) {
-    a <- substitute(x)
-    browser()
-}
-
 
 procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, regex=FALSE, return.list=TRUE, ...) {
     res <- NULL
@@ -713,7 +708,6 @@ procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, rege
         if (return.formula) return(as.formula(paste("~",paste(res,collapse="+"))))
         return(list(response=res,predictor=NULL,filter=NULL))
     }
-    browser()
     aa <- attributes(terms(formula,data=data))
     if (aa$response == 0) {
         res <- NULL
