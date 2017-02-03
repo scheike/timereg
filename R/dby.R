@@ -3,16 +3,19 @@
 ##' Calculate summary statistics grouped by 
 ##' @title Calculate summary statistics grouped by 
 ##' @param data Data.frame
-##' @param input.variable Input variables (character or formula)
+##' @param INPUT Input variables (character or formula)
 ##' @param ... functions
-##' @param id.variable id
-##' @param order.variable order
-##' @param sort.order sort order (id+order variable)
-##' @param combine.data If TRUE result is appended to data
-##' @param no.check No sorting or check for missing data
-##' @param args Optional list of arguments to functions (...)
-##' @param names Optional vector of column names
-##' @param fast if FALSE fallback to slower (safer) function evaluation
+##' @param ID id variable
+##' @param ORDER (optional) order variable
+##' @param SORT sort order (id+order variable)
+##' @param COMBINE If TRUE result is appended to data
+##' @param NOCHECK No sorting or check for missing data
+##' @param ARGS Optional list of arguments to functions (...)
+##' @param NAMES Optional vector of column names
+##' @param FAST if FALSE fallback to slower (safer) function evaluation
+##' @param COLUMN If TRUE do the calculations for each column
+##' @param REDUCE Reduce number of redundant rows
+##' @param REGEX Allow regular expressions
 ##' @export 
 ##' @author Klaus K. Holst and Thomas Scheike
 ##' @examples
@@ -25,10 +28,10 @@
 ##' dby(d, y~id, mean)
 ##' dby(d, y~id|num, cumsum)
 ##'
-##' dby(d,y~id|num, dlag, args=list(k=1:2))
+##' dby(d,y~id|num, dlag, ARGS=list(k=1:2))
 ##'
 ##' dby(d, y~id|num, dlag)
-##' dby(d, y~id|num, y1=dlag, args=list(k=1:2), names=c("y1","y2"))
+##' dby(d, y~id|num, y1=dlag, ARGS=list(k=1:2), NAMES=c("y1","y2"))
 ##' dby(d, y~id|num, mean=mean, csum=cumsum, n=length)
 ##' dby(d2,y~id|num, a=cumsum, b=mean, N=length, l1=function(x) c(NA,x)[-length(x)])
 ##' 
@@ -41,73 +44,82 @@
 ##' 
 ##' f <- function(x) { cbind(cumsum(x[,1]),cumsum(x[,2]))/sum(x)}
 ##' dby(d, y+x~id, f)
-dby <- function(data,input.variable,...,id.variable=NULL,order.variable=NULL,sort.order=0,combine.data=TRUE,no.check=FALSE,args=NULL,names,fast=TRUE) {
-    if (inherits(input.variable,"formula")) {
-        input.variable <- procformdata(input.variable,sep="\\|",data=data,na.action=na.pass,do.filter=FALSE)
-        if (is.null(id.variable)) id.variable <- input.variable$predictor
+dby <- function(data,INPUT,...,ID=NULL,order.variable=NULL,SORT=0,COMBINE=!REDUCE,NOCHECK=FALSE,ARGS=NULL,NAMES,FAST=TRUE,COLUMN=FALSE,REDUCE=FALSE,REGEX=FALSE) {
+    if (inherits(INPUT,"formula")) {
+        INPUT <- procformdata(INPUT,sep="\\|",data=data,na.action=na.pass,do.filter=FALSE,regex=REGEX)
+        if (is.null(ID)) ID <- INPUT$predictor
         if (is.null(order.variable)) {
-            if (length(input.variable$group)==0) order.variable <- NULL
-            else order.variable <- input.variable$group[[1]]
+            if (length(INPUT$group)==0) order.variable <- NULL
+            else order.variable <- INPUT$group[[1]]
         }
-        input.variable <- input.variable$response
+        INPUT <- INPUT$response
     }
     funs <- list(...)
     if (length(funs)==0) stop("Please specify function")
-    if (inherits(id.variable,"formula")) id.variable <- model.frame(id.variable,data=data,na.action=na.pass)
+    if (inherits(ID,"formula")) ID <- model.frame(ID,data=data,na.action=na.pass)
     if (inherits(order.variable,"formula")) order.variable <- model.frame(order.variable,data=data,na.action=na.pass)
-    if (length(id.variable)==0) stop("id variable needed")
-    if (NCOL(id.variable)>1) id.variable <- interaction(id.variable)
-    if (is.data.frame(id.variable)) {
-        id.variable <- as.integer(id.variable[,1,drop=TRUE])
+    if (length(ID)==0) stop("id variable needed")
+    id.orig <- NULL
+    if (!COMBINE) id.orig <- ID
+    if (NCOL(ID)>1) ID <- interaction(ID)
+    if (is.data.frame(ID)) {
+        ID <- as.integer(ID[,1,drop=TRUE])
     } else {
-        id.variable <- as.integer(id.variable)
+        ID <- as.integer(ID)
     }
     if (is.data.frame(order.variable)) {
         order.variable <- order.variable[,1,drop=TRUE]
     }
-    if (!no.check) {
+    if (!NOCHECK) {
         if (length(order.variable)>0) {
-            ord <- order(id.variable,order.variable,decreasing=sort.order,method="radix")
+            ord <- order(ID,order.variable,decreasing=SORT,method="radix")
         } else {
-            ord <- order(id.variable,decreasing=sort.order,method="radix")
+            ord <- order(ID,decreasing=SORT,method="radix")
         }
-        input.variable <- as.matrix(input.variable[ord,,drop=FALSE])
-        id.variable <- id.variable[ord]
-        if (combine.data) data <- data[ord,,drop=FALSE]
-        na.idx <- which(is.na(id.variable))
+        INPUT <- as.matrix(INPUT[ord,,drop=FALSE])
+        ID <- ID[ord]
+        if (COMBINE) data <- data[ord,,drop=FALSE]
+        na.idx <- which(is.na(ID))
     } else {
-        input.variable <- as.matrix(input.variable)
+        INPUT <- as.matrix(INPUT)
     }
-    if (fast) {
+    if (FAST) {
         resl <- lapply(funs, function(fun_) {
             env <- environment()
             env$fun_ <- fun_
-            if (length(args)>0) {                
-                ff <- function(...) do.call(fun_,c(list(...),args))
+            if (length(ARGS)>0) {                
+                ff <- function(...) do.call(fun_,c(list(...),ARGS))
                 expr <- quote(ff(x_))
             } else {
                 expr <- quote(fun_(x_))
             }
-            .Call("mets_ApplyBy2",
-                  idata=input.variable,
-                  icluster=id.variable,
-                  F=expr,
-                  Env=env)
+            .ApplyBy2(INPUT,ID,F=expr,Env=env,Argument="x_",Columnwise=COLUMN)
         })
     } else {
         resl <- lapply(funs, function(f) {
-            f2 <- function(...) do.call(f,c(list(...),args))
-            ApplyBy(input.variable,id.variable,f2)
+            f2 <- function(...) do.call(f,c(list(...),ARGS))
+            ApplyBy(INPUT,ID,f2)
         })
     }
     res <- Reduce(cbind,resl)
-    if (missing(names)) names <- base::names(resl)
-    try(colnames(res) <- names,silent=TRUE)
-    if (!no.check && length(na.idx)>0) {
+    if (missing(NAMES)) NAMES <- base::names(resl)
+    try(colnames(res) <- NAMES,silent=TRUE)
+    if (!NOCHECK && length(na.idx)>0) {
         res[na.idx,] <- NA
     }
-    if (combine.data) {
-        return(cbind(data,res))
+    if (COMBINE) {
+        res <- cbind(data,res)
+    } else {
+        res <- cbind(id.orig,res)
+    }
+    if (REDUCE!=0) {
+        cl <- attr(resl[[1]],"clustersize")
+        if (REDUCE<0) { # Grab the last observation
+            idx <- cumsum(cl)
+        } else { # Grab the first
+            idx <- cumsum(c(1,cl[-length(cl)]))
+        }       
+        res <- res[unique(idx),,drop=FALSE]
     }
     return(res)
 }

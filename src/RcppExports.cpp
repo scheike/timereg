@@ -10,8 +10,8 @@
 using namespace Rcpp;
 
 // ApplyBy2
-NumericMatrix ApplyBy2(NumericMatrix idata, IntegerVector icluster, SEXP F, Environment Env);
-RcppExport SEXP mets_ApplyBy2(SEXP idataSEXP, SEXP iclusterSEXP, SEXP FSEXP, SEXP EnvSEXP) {
+NumericMatrix ApplyBy2(NumericMatrix idata, IntegerVector icluster, SEXP F, Environment Env, std::string Argument, int Columnwise, int Reduce);
+RcppExport SEXP mets_ApplyBy2(SEXP idataSEXP, SEXP iclusterSEXP, SEXP FSEXP, SEXP EnvSEXP, SEXP ArgumentSEXP, SEXP ColumnwiseSEXP, SEXP ReduceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -19,7 +19,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type icluster(iclusterSEXP);
     Rcpp::traits::input_parameter< SEXP >::type F(FSEXP);
     Rcpp::traits::input_parameter< Environment >::type Env(EnvSEXP);
-    rcpp_result_gen = Rcpp::wrap(ApplyBy2(idata, icluster, F, Env));
+    Rcpp::traits::input_parameter< std::string >::type Argument(ArgumentSEXP);
+    Rcpp::traits::input_parameter< int >::type Columnwise(ColumnwiseSEXP);
+    Rcpp::traits::input_parameter< int >::type Reduce(ReduceSEXP);
+    rcpp_result_gen = Rcpp::wrap(ApplyBy2(idata, icluster, F, Env, Argument, Columnwise, Reduce));
     return rcpp_result_gen;
 END_RCPP
 }

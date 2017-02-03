@@ -4,6 +4,7 @@
 #include <RcppArmadillo.h>
 #include <Rmath.h>
 #include <cmath>
+#include <vector>
 
 using namespace std;
 using namespace Rcpp;
@@ -12,55 +13,114 @@ using namespace Rcpp;
 NumericMatrix ApplyBy2(NumericMatrix idata,
 		       IntegerVector icluster,
 		       SEXP F,
-		       Environment Env
+		       Environment Env,
+		       std::string Argument="x",
+		       int Columnwise=0,
+		       int Reduce=0
 		       ) {
 BEGIN_RCPP
    unsigned n = idata.nrow();
-   NumericMatrix row1 = idata( Range(0,0), Range(0, idata.ncol()-1) );
    unsigned posstart=0;
+   unsigned p = idata.ncol();
+   if (Columnwise==0) {
+     Env[Argument] = idata( Range(0,0), Range(0, idata.ncol()-1) );
+   } else {
+     Env[Argument] = 1;
+   }
+   NumericVector res1(Rf_eval(F,Env));
+   unsigned nf = res1.size();
+   unsigned P=nf;
+   if (Columnwise!=0) {
+     P *= idata.ncol();
+   }   
+
+   // First we get the number of clusters
    unsigned curcluster=icluster[0];
    unsigned prevcluster=icluster[0];
+   unsigned nclusters=1;
+   for (unsigned i=0; i<n; i++) {
+     curcluster=icluster[i];
+     if (curcluster!=prevcluster) {
+       nclusters++;
+     }
+     prevcluster=curcluster;
+   }
 
-   Env["x_"] = row1;
-   NumericVector res1(Rf_eval(F,Env));
-   unsigned p = res1.size();;
-   NumericMatrix res(n,p);
+   unsigned clpos=0;
+   NumericVector clustersize(nclusters);
+   curcluster=icluster[0];
+   prevcluster=icluster[0];
+   NumericMatrix res(n,P);
    for (unsigned i=0; i<=n; i++) {
-     if (i<n) curcluster=icluster[i];
-     if (curcluster!=prevcluster || i==n) {       
+     if (i<n) curcluster=icluster[i];    
+     if (curcluster!=prevcluster || i==n) {
+       if (i<n) clpos++;
        unsigned pos=i-1;
        unsigned nr=pos-posstart+1;
        NumericMatrix tmp = idata(Range(posstart,pos),_);
-       Env["x_"] = tmp;
-       SEXP fres = Rf_eval(F,Env);
-       NumericVector val(fres);
-       unsigned valsize = val.size();
-       bool valmany = (valsize==(nr*p));
+       NumericVector val;
+       unsigned valsize=1;
+       bool valmany=1;
+       if (Columnwise==0 || p==1) {
+	 // Apply function on matrix
+	 Env[Argument] = tmp;
+	 SEXP fres = Rf_eval(F,Env);
+	 val = NumericVector(fres);
+	 valsize = val.size();
+	 valmany = (valsize>=(nr*nf));
+       } else {
+	 // Apply function on each column 
+	 val = NumericVector(nr*P);
+	 valsize = 1;
+	 for (unsigned k=0; k<p; k++) { // column-wise
+	   Env[Argument] = tmp(_,k);
+	   SEXP fres = Rf_eval(F,Env);
+	   NumericVector val0(fres);
+	   valsize = val0.size();
+	   if (valsize<nr) { // Results is just one row
+	     valmany = 0;
+	     for (unsigned j=0; j<valsize; j++) {
+	       val[(j+k*nf)*nr] = val0[j];
+	     }  
+	   } else for (unsigned j=0; j<valsize; j++) {
+	     val[j + k*(nf*nr)] = val0[j];
+	   }
+	 }
+	 valsize = valsize*nf;
+       }
        double myval=0;
        for (unsigned j=0; j<nr; j++) {
-	 for (unsigned c=0; c<p; c++) {	   
+	 for (unsigned c=0; c<P; c++) {	   
 	   if (valmany) {
 	     myval = val[j + nr*c];
 	   } else {
-	     myval = val[c];
+	     unsigned pos=c;
+	     if (Columnwise!=0) pos *=nr;
+	     myval = val[pos];
 	   }
 	   res(j+posstart,c) = myval;	   
 	 }
        }       
        posstart=i;
      }
+     if (i<n) clustersize[clpos]++;
      prevcluster=curcluster;
    }
 
+   res.attr("clustersize") = clustersize;
    return(res);
 END_RCPP
 }  
 
-//* [[Rcpp::export(name = ".ApplyBy")]]
-// [[Rcpp::export]]
+
+
+// [[Rcpp::export(name = ".ApplyBy")]]
 NumericMatrix ApplyBy(NumericMatrix idata,
 		      IntegerVector icluster,
 		      Function f) {
+  /*
+    This version uses Rcpp::Function but is much slow due to repeatedly calling tryCatch
+  */
 BEGIN_RCPP
    unsigned n = idata.nrow();
    NumericMatrix row1 = idata( Range(0,0), Range(0, idata.ncol()-1) );
