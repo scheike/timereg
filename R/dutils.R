@@ -766,7 +766,7 @@ daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, 
     }
     if (is.null(y)) y <- colnames(data)
     if (inherits(y,"formula")) {
-        yx <- procformdata(y,sep="\\|",data=data,na.action=na.action,...)
+        yx <- procformdata(y,sep="\\|",data=data,na.action=na.action,regex=regex,...)
         y <- yx$response
         x0 <- yx$predictor
         if (is.null(x) && length(y)>0) x <- x0
