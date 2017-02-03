@@ -203,6 +203,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 ### marginal prediction and binomial response, two types of calls ## {{{
     if (class(margbin)[1]=="glm") {
         ps <- predict(margbin,newdata=data,type="response")
+        if (margbin$family$family!="binomial") warning("not binomial family\n"); 
         ### takes data to extract response and predictions, these could be different for pairs call
 ###     cause <- margbin$y
 ###     print(all.vars(margbin$formula)[1])
@@ -1401,5 +1402,4 @@ CCbinomial.twostage <- function(margbin=NULL,data=sys.parent(),score.method="nlm
                              marginal.p=data.fam[,"ps"], se.clusters=data.fam[,id])
     return(out)
 } ## }}}
-
 
