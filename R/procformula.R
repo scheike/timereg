@@ -9,7 +9,8 @@ gsub2 <- function(pattern, replacement, x, ...) {
   result
 }
 
-procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, no.match=TRUE, regex=FALSE, return.list=TRUE, ...) {
+procform <- function(formula, sep="\\|", nsep=1, return.formula=FALSE, data=NULL,
+             no.match=TRUE, regex=FALSE, return.list=TRUE, ...) {
     res <- NULL
     if (is.null(formula)) {
         res <- colnames(data)
@@ -21,17 +22,16 @@ procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, no.m
             for (y0 in formula) {
                 y0orig <- y0
                 if (!regex) y0 <- glob2rx(y0)
-                n <- grep(y0,names(data))
-                if (no.match && length(n)==0) {
+                npos <- grep(y0,names(data))
+                if (no.match && length(npos)==0) {
                     yy <- union(yy, y0orig)
                 } else {
-                    yy <- union(yy,names(data)[n])
+                    yy <- union(yy,names(data)[npos])
                 }
             }
             res <- unique(yy)
         }
     }
-
     if (is.numeric(formula)) res <- colnames(data)[formula]
     if (is.character(res)) {
         if (!return.list) return(res)
@@ -39,19 +39,24 @@ procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, no.m
         return(list(response=res,predictor=NULL,filter=NULL))
     }
 
+    
     ## Add parantheses around quotes if it is not a function call
     if (inherits(formula,"formula")) {
-        st <- deparse(formula)    
+
+        st <- Reduce(paste,deparse(formula))
         strsplit(st,"\"")
         quotepos <- gregexpr("[\"']",st)[[1]]
         if (quotepos[1]>0) {
             sts <- strsplit(st,"[\"']")[[1]]
+            foundsep <- any(grepl("|", sts, fixed=TRUE))
             p <- length(quotepos)
             ##repl <- rep(c("(\"","\")"),p)
             for (i in seq(p/2)*2-1) {
                 sts[i] <- paste0(sts[i],"(\"")
                 sts[i+1] <- paste0(sts[i+1],"\")")
             }
+            ## To handle regular expression entered as strings in the formula, we add a 'filter' expression at the end of the formula
+            if (!foundsep) sts <- c(sts,"|1")
             formula <- as.formula(paste(sts,collapse=""))
         }
     }
@@ -65,7 +70,7 @@ procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, no.m
     filter.expression <- NULL
     foundsep <- FALSE
     pred <- filter <- c()
-    if (!missing(sep) && length(aa$term.labels) > 0) {
+    if (!is.null(sep) && length(aa$term.labels) > 0) {
         foundsep <- any(grepl(sep,aa$term.labels))
         if (foundsep) {
             if (nsep>1) {
@@ -87,8 +92,13 @@ procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, no.m
                 x <- attributes(terms(f,data=data))$term.labels
                 pred <- x
             }
-            filter.expression <- parse(text=filter)
-            filter <- as.list(filter)
+            if (filter%in%c("1","0","-1")) { 
+                filter <- list()
+                filter.expression <- NULL
+            } else {
+                filter.expression <- parse(text=filter)
+                filter <- as.list(filter)
+            }
         }
     }
     if (!foundsep) pred <- aa$term.labels
@@ -102,10 +112,9 @@ procform <- function(formula, sep, nsep=1, return.formula=FALSE, data=NULL, no.m
                     x <- gsub('\\"',"",x)
                     x <- gsub('^\\(',"",x)
                     x <- gsub('\\)$',"",x)
-                    
-                    res <- c(res,unlist(procform(x,data=data,regex=regex)$response))
+                    res <- c(res,unlist(procform(x,data=data,regex=regex, no.match=FALSE)$response))
                 } else {
-                    res <- c(res,st)
+                    res <- c(res,x)
                 }
                 res <- unique(res)
             }
