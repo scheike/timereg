@@ -44,20 +44,20 @@
 ##' 
 ##' f <- function(x) { cbind(cumsum(x[,1]),cumsum(x[,2]))/sum(x)}
 ##' dby(d, y+x~id, f)
-dby <- function(data,INPUT,...,ID=NULL,order.variable=NULL,SORT=0,COMBINE=!REDUCE,NOCHECK=FALSE,ARGS=NULL,NAMES,FAST=TRUE,COLUMN=FALSE,REDUCE=FALSE,REGEX=FALSE) {
+dby <- function(data,INPUT,...,ID=NULL,ORDER=NULL,SORT=0,COMBINE=!REDUCE,NOCHECK=FALSE,ARGS=NULL,NAMES,FAST=TRUE,COLUMN=FALSE,REDUCE=FALSE,REGEX=FALSE) {
     if (inherits(INPUT,"formula")) {
         INPUT <- procformdata(INPUT,sep="\\|",data=data,na.action=na.pass,do.filter=FALSE,regex=REGEX)
         if (is.null(ID)) ID <- INPUT$predictor
-        if (is.null(order.variable)) {
-            if (length(INPUT$group)==0) order.variable <- NULL
-            else order.variable <- INPUT$group[[1]]
+        if (is.null(ORDER)) {
+            if (length(INPUT$group)==0) ORDER <- NULL
+            else ORDER <- INPUT$group[[1]]
         }
         INPUT <- INPUT$response
     }
     funs <- list(...)
     if (length(funs)==0) stop("Please specify function")
     if (inherits(ID,"formula")) ID <- model.frame(ID,data=data,na.action=na.pass)
-    if (inherits(order.variable,"formula")) order.variable <- model.frame(order.variable,data=data,na.action=na.pass)
+    if (inherits(ORDER,"formula")) ORDER <- model.frame(ORDER,data=data,na.action=na.pass)
     if (length(ID)==0) stop("id variable needed")
     id.orig <- NULL
     if (!COMBINE) id.orig <- ID
@@ -67,12 +67,12 @@ dby <- function(data,INPUT,...,ID=NULL,order.variable=NULL,SORT=0,COMBINE=!REDUC
     } else {
         ID <- as.integer(ID)
     }
-    if (is.data.frame(order.variable)) {
-        order.variable <- order.variable[,1,drop=TRUE]
+    if (is.data.frame(ORDER)) {
+        ORDER <- ORDER[,1,drop=TRUE]
     }
     if (!NOCHECK) {
-        if (length(order.variable)>0) {
-            ord <- order(ID,order.variable,decreasing=SORT,method="radix")
+        if (length(ORDER)>0) {
+            ord <- order(ID,ORDER,decreasing=SORT,method="radix")
         } else {
             ord <- order(ID,decreasing=SORT,method="radix")
         }
@@ -85,7 +85,7 @@ dby <- function(data,INPUT,...,ID=NULL,order.variable=NULL,SORT=0,COMBINE=!REDUC
     }
     if (FAST) {
         resl <- lapply(funs, function(fun_) {
-            env <- environment()
+            env <- new.env()
             env$fun_ <- fun_
             if (length(ARGS)>0) {                
                 ff <- function(...) do.call(fun_,c(list(...),ARGS))
@@ -98,7 +98,7 @@ dby <- function(data,INPUT,...,ID=NULL,order.variable=NULL,SORT=0,COMBINE=!REDUC
     } else {
         resl <- lapply(funs, function(f) {
             f2 <- function(...) do.call(f,c(list(...),ARGS))
-            ApplyBy(INPUT,ID,f2)
+            .ApplyBy(INPUT,ID,f2)
         })
     }
     res <- Reduce(cbind,resl)

@@ -246,7 +246,7 @@ return(data)
 ##' dtable(mena,"coh*",level=1)
 ##' 
 ##' ### level 1 of zyg as baseline for new variable
-##' drelevel(mm,ref=1) <- ~zyg
+##' drelevel(mena,ref=1) <- ~zyg
 ##' drelevel(mena,ref=c("DZ","[1973,1975]")) <- ~ zyg+cohort
 ##' ### level 2 of zyg and cohort as baseline for new variables
 ##' drelevel(mena,ref=2) <- ~ zyg+cohort
@@ -1139,7 +1139,7 @@ dquantile <- function(data,y=NULL,x=NULL,probs=seq(0,1,by=1/breaks),breaks=4,mat
 dprint <- function(data,y=NULL,n=0,...,x=NULL) daggregate(data,y,x,...,fun=function(z,...) Print(z,n=n,...),silent=FALSE)
 
 ##' @export
-dlist <- function(data,n=NULL,...) dprint(data,n=n,...)
+dlist <- function(data,y=NULL,n=NULL,...) dprint(data,y=y,n=n,...)
 
 ##' @export
 dreshape <- function(data,...) fast.reshape(data,...)

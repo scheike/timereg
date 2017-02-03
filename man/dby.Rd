@@ -4,32 +4,38 @@
 \alias{dby}
 \title{Calculate summary statistics grouped by}
 \usage{
-dby(data, input.variable, ..., id.variable = NULL, order.variable = NULL,
-  sort.order = 0, combine.data = TRUE, no.check = FALSE, args = NULL,
-  names, fast = TRUE)
+dby(data, INPUT, ..., ID = NULL, ORDER = NULL, SORT = 0,
+  COMBINE = !REDUCE, NOCHECK = FALSE, ARGS = NULL, NAMES, FAST = TRUE,
+  COLUMN = FALSE, REDUCE = FALSE, REGEX = FALSE)
 }
 \arguments{
 \item{data}{Data.frame}
 
-\item{input.variable}{Input variables (character or formula)}
+\item{INPUT}{Input variables (character or formula)}
 
 \item{...}{functions}
 
-\item{id.variable}{id}
+\item{ID}{id variable}
 
-\item{order.variable}{order}
+\item{ORDER}{(optional) order variable}
 
-\item{sort.order}{sort order (id+order variable)}
+\item{SORT}{sort order (id+order variable)}
 
-\item{combine.data}{If TRUE result is appended to data}
+\item{COMBINE}{If TRUE result is appended to data}
 
-\item{no.check}{No sorting or check for missing data}
+\item{NOCHECK}{No sorting or check for missing data}
 
-\item{args}{Optional list of arguments to functions (...)}
+\item{ARGS}{Optional list of arguments to functions (...)}
 
-\item{names}{Optional vector of column names}
+\item{NAMES}{Optional vector of column names}
 
-\item{fast}{if FALSE fallback to slower (safer) function evaluation}
+\item{FAST}{if FALSE fallback to slower (safer) function evaluation}
+
+\item{COLUMN}{If TRUE do the calculations for each column}
+
+\item{REDUCE}{Reduce number of redundant rows}
+
+\item{REGEX}{Allow regular expressions}
 }
 \description{
 Calculate summary statistics grouped by variable
@@ -47,10 +53,10 @@ d2 <- d[sample(nrow(d)),]
 dby(d, y~id, mean)
 dby(d, y~id|num, cumsum)
 
-dby(d,y~id|num, dlag, args=list(k=1:2))
+dby(d,y~id|num, dlag, ARGS=list(k=1:2))
 
 dby(d, y~id|num, dlag)
-dby(d, y~id|num, y1=dlag, args=list(k=1:2), names=c("y1","y2"))
+dby(d, y~id|num, y1=dlag, ARGS=list(k=1:2), NAMES=c("y1","y2"))
 dby(d, y~id|num, mean=mean, csum=cumsum, n=length)
 dby(d2,y~id|num, a=cumsum, b=mean, N=length, l1=function(x) c(NA,x)[-length(x)])
 
