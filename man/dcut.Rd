@@ -11,7 +11,6 @@
 \alias{dnames<-}
 \alias{drename}
 \alias{drename<-}
-\alias{dreshape}
 \alias{drm}
 \alias{drm<-}
 \alias{dunique}
