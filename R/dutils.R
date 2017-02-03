@@ -110,8 +110,9 @@ dcut <- function(data,x,breaks=4,probs=NULL,equi=FALSE,regex=FALSE,sep=NULL,...)
     }# }}}
 
 if (is.data.frame(data)) {
+  usernames <- FALSE
 
- if (inherits(x,"formula")) {
+  if (inherits(x,"formula")) {
      vars <- procform(x,data=data,...)
 
       usernames <- FALSE
@@ -437,7 +438,8 @@ drename <- function(data,var=NULL,value=NULL,fun=base::tolower,...)
 
 	vargs <- 1*varargs+1*valueargs
 
-	if (sum(varargs)+sum(valueargs)>=3) stop("lhs and rhs specified multiple times \n")
+	if (sum(varargs)+sum(valueargs)>=3) 
+		stop("arguments specified multiple times \n")
 
 	if (sum(varargs)==2)   {
 		value <- var$response;
@@ -457,11 +459,6 @@ drename <- function(data,var=NULL,value=NULL,fun=base::tolower,...)
         }
 
         varpos <- match(var,colnames(data))
-
-###    print("-----slut--------------") 
-###    print(var)
-###    print(value)
-###    print(varpos)
 
     if (length(varpos)!= length(value)) stop("length of old and new variables must match")
     colnames(data)[varpos] <- value
@@ -1252,5 +1249,54 @@ print.Print <- function(x,quote=FALSE,...) {
     print(x,quote=quote,...)
 }
 
+formread <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, missing=FALSE, remove.empty=FALSE, matrix=FALSE, silent=FALSE, na.action=na.pass)
+{# {{{
+    if (is.vector(data)) data <- data.frame(data)
+    subs <- substitute(subset)
+    if (!base::missing(subs)) {
+        expr <- suppressWarnings(inherits(try(subset,silent=TRUE),"try-error"))
+        if (expr) data <- data[which(eval(subs,envir=data)),,drop=FALSE]
+        else data[subset,,drop=FALSE]
+    }
+    if (is.null(y)) y <- colnames(data)
+    if (inherits(y,"formula")) {
+        yx <- procformdata(y,sep="\\|",data=data,na.action=na.action,...)
+        y <- yx$response
+        x0 <- yx$predictor
+        if (is.null(x) && length(y)>0) x <- x0
+        if (NCOL(x)==0) x <- NULL
+        if (length(y)==0) {
+            y <- x0
+        }
+    } else {
+        yy <- c()
+        for (y0 in y) {
+            if (!regex) y0 <- glob2rx(y0)
+            n <- grep(y0,names(data))
+            yy <- union(yy,names(data)[n])
+        }
+        y <- data[,yy,drop=FALSE]
+    }
+    if (is.character(x) && length(x)<NROW(data)) {
+        xx <- c()
+        for (x0 in x) {
+            if (!regex) x0 <- glob2rx(x0)
+            n <- grep(x0,names(data))
+            xx <- union(xx,names(data)[n])
+        }
+        x <- data[,xx,drop=FALSE]
+    }
+    if (inherits(x,"formula")) {
+        x <- model.frame(x,data=data,na.action=na.action)
+    }
+    if (!is.null(x)) {
+        xidx <- na.omit(match(colnames(x),colnames(y)))
+        if (length(xidx)>0) y <- y[,-xidx,drop=FALSE]
+    }
+ 
+    print(head(x))
+    print(head(y))
+
+}# {{{
 
 
