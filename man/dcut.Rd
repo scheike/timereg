@@ -43,6 +43,7 @@ using group size given by probs, or equispace groups on range. Default
 is equally sized groups if possible
 }
 \examples{
+	library(mets)
 data("sTRACE",package="timereg")
 sTRACE$age2 <- sTRACE$age^2
 sTRACE$age3 <- sTRACE$age^3
@@ -84,7 +85,7 @@ head(mm)
 ############################
 
 head(mm)
-drename(mm, ~age+wmi) <- c("Wmi","Age")
+drename(mm,~age+wmi) <- c("Wmi","Age")
 head(mm)
 mm1 <- mm
 
@@ -95,7 +96,7 @@ head(mm1)
 ## A* to lower
 mm2 <-  drename(mm,c("A*","W*"))
 head(mm2)
-drename(mm,"A*") <- ~.
+drename(mm) <- "A*"
 head(mm)
 
 dd <- data.frame(A_1=1:2,B_1=1:2)

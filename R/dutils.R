@@ -110,8 +110,9 @@ dcut <- function(data,x,breaks=4,probs=NULL,equi=FALSE,regex=FALSE,sep=NULL,...)
     }# }}}
 
 if (is.data.frame(data)) {
+  usernames <- FALSE
 
- if (inherits(x,"formula")) {
+  if (inherits(x,"formula")) {
      vars <- procform(x,data=data,...)
 
       usernames <- FALSE
@@ -426,6 +427,9 @@ return(data)
 drename <- function(data,var=NULL,value=NULL,fun=base::tolower,...)
 {  # {{{
 
+	print(var)
+	print(value)
+	
 	if (!is.null(var))    {
 		var <- procform(var,data=data,return.list=TRUE,...)
 	        varargs <-   c(!is.null(var$predictor),!is.null(var$response))
@@ -436,6 +440,11 @@ drename <- function(data,var=NULL,value=NULL,fun=base::tolower,...)
 	} else valueargs <- c(0,0)
 
 	vargs <- 1*varargs+1*valueargs
+
+	print(var)
+	print(value)
+	print(vargs)
+	print("----------------------")
 
 	if (sum(varargs)+sum(valueargs)>=3) stop("lhs and rhs specified multiple times \n")
 
@@ -458,10 +467,10 @@ drename <- function(data,var=NULL,value=NULL,fun=base::tolower,...)
 
         varpos <- match(var,colnames(data))
 
-###    print("-----slut--------------") 
-###    print(var)
-###    print(value)
-###    print(varpos)
+    print("-----slut--------------") 
+    print(var)
+    print(value)
+    print(varpos)
 
     if (length(varpos)!= length(value)) stop("length of old and new variables must match")
     colnames(data)[varpos] <- value
