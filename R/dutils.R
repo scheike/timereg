@@ -66,7 +66,7 @@
 ##' ## A* to lower
 ##' mm2 <-  drename(mm,c("A*","W*"))
 ##' head(mm2)
-##' drename(mm,"A*") <- ~.
+##' drename(mm) <- "A*"
 ##' head(mm)
 ##'
 ##' dd <- data.frame(A_1=1:2,B_1=1:2)
