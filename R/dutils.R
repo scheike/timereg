@@ -427,9 +427,6 @@ return(data)
 drename <- function(data,var=NULL,value=NULL,fun=base::tolower,...)
 {  # {{{
 
-	print(var)
-	print(value)
-	
 	if (!is.null(var))    {
 		var <- procform(var,data=data,return.list=TRUE,...)
 	        varargs <-   c(!is.null(var$predictor),!is.null(var$response))
@@ -441,12 +438,8 @@ drename <- function(data,var=NULL,value=NULL,fun=base::tolower,...)
 
 	vargs <- 1*varargs+1*valueargs
 
-	print(var)
-	print(value)
-	print(vargs)
-	print("----------------------")
-
-	if (sum(varargs)+sum(valueargs)>=3) stop("lhs and rhs specified multiple times \n")
+	if (sum(varargs)+sum(valueargs)>=3) 
+		stop("arguments specified multiple times \n")
 
 	if (sum(varargs)==2)   {
 		value <- var$response;
@@ -466,11 +459,6 @@ drename <- function(data,var=NULL,value=NULL,fun=base::tolower,...)
         }
 
         varpos <- match(var,colnames(data))
-
-    print("-----slut--------------") 
-    print(var)
-    print(value)
-    print(varpos)
 
     if (length(varpos)!= length(value)) stop("length of old and new variables must match")
     colnames(data)[varpos] <- value
