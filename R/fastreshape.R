@@ -16,6 +16,7 @@
 ##' @param labels Optional labels for the number variable
 ##' @param ... Optional additional arguments
 ##' @author Thomas Scheike, Klaus K. Holst
+##' @aliases fast.reshape dreshape
 ##' @export
 ##' @examples
 ##' library("lava")

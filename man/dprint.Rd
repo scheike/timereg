@@ -7,7 +7,7 @@
 \alias{dtail}
 \title{list, head, print, tail}
 \usage{
-dprint(data, y = NULL, n = NULL, ..., x = NULL)
+dprint(data, y = NULL, n = 0, ..., x = NULL)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}
@@ -28,18 +28,18 @@ n <- 20
 m <- lava::lvm(letters)
 d <- lava::sim(m,n)
 
-dprint(d,~a+b+c)
-dprint(d,~a+b+c|a<0 & b>0)
+dlist(d,~a+b+c)
+dlist(d,~a+b+c|a<0 & b>0)
 ## listing all : 
-dprint(d,~a+b+c|a<0 & b>0,n=0)
-dprint(d,a+b+c~I(d>0)|a<0 & b>0)
-dprint(d,.~I(d>0)|a<0 & b>0)
-dprint(d,~a+b+c|a<0 & b>0, nlast=0)
-dprint(d,~a+b+c|a<0 & b>0, nfirst=3, nlast=3)
-dprint(d,~a+b+c|a<0 & b>0, 1:5)
-dprint(d,~a+b+c|a<0 & b>0, -(5:1))
-dprint(d,~a+b+c|a<0 & b>0, list(1:5,50:55,-(5:1)))
-dlist(d,a+b+c ~ I(d>0) |a<0 & b>0, list(1:5,50:55,-(5:1)))
+dlist(d,~a+b+c|a<0 & b>0,n=0)
+dlist(d,a+b+c~I(d>0)|a<0 & b>0)
+dlist(d,.~I(d>0)|a<0 & b>0)
+dlist(d,~a+b+c|a<0 & b>0, nlast=0)
+dlist(d,~a+b+c|a<0 & b>0, nfirst=3, nlast=3)
+dlist(d,~a+b+c|a<0 & b>0, 1:5)
+dlist(d,~a+b+c|a<0 & b>0, -(5:1))
+dlist(d,~a+b+c|a<0 & b>0, list(1:5,50:55,-(5:1)))
+dprint(d,a+b+c ~ I(d>0) |a<0 & b>0, list(1:5,50:55,-(5:1)))
 }
 \author{
 Klaus K. Holst and Thomas Scheike

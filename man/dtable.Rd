@@ -2,7 +2,6 @@
 % Please edit documentation in R/dutils.R
 \name{dtable}
 \alias{dtable}
-\alias{dtables}
 \title{tables for data frames}
 \usage{
 dtable(data, y = NULL, x = NULL, ..., level = -1, response = NULL,
