@@ -21,7 +21,7 @@
     - dlag
     - dfactor, dnumeric
     Data aggregation
-    - dby
+    - dby, dby2
     - dscalar, deval, daggregate
     - dmean, dsd, dsum, dquantile, dcor
     - dtable, dcount
