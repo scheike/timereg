@@ -1,4 +1,5 @@
-* Version 1.1.2 <2017-02-03 Fri>
+* Version 1.2 <2017-02-03 Fri>
+
   - Namespace cleaning (twostage)...
   - Dependency on R>=3.3 radix algorithm
   - Case-Control sampling for twostage model. 

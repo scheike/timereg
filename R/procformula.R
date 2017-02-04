@@ -183,6 +183,11 @@ procformdata <- function(formula,data,sep="\\|", na.action=na.pass, do.filter=TR
 ## split1=","
 ## split2="+"
 
+
+## myspecials <- c("id","strata","f")
+## f <- Event(leftime,time,cause) ~ id(~1+z+z2,cluster) + strata(~s1+s2) + f(a) + z*x
+## ff <- Specials(f,"id",split2=",")
+
 Specials <- function(f,spec,split1=",",split2=NULL,...) {
   tt <- terms(f,spec)
   pos <- attributes(tt)$specials[[spec]]
@@ -213,8 +218,4 @@ decomp.specials <- function (x, pattern = "[()]", sep = ",", ...)
   }
 
 
-
-## myspecials <- c("id","strata","f")
-## f <- Event(leftime,time,cause) ~ id(~1+z+z2,cluster) + strata(~s1+s2) + f(a) + z*x
-## ff <- Specials(f,"id",split2=",")
 
