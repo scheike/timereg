@@ -102,7 +102,8 @@ procform <- function(formula, sep="\\|", nsep=1, return.formula=FALSE, data=NULL
         }
     }
     if (!foundsep) pred <- aa$term.labels
-
+    if (any(res==".")) res <- setdiff(union(res,colnames(data)),c(".",pred))
+    
     expandst <- function(st) {
         st <- res <- unlist(strsplit(gsub(" ","",st),"\\+"))
         if (any(unlist(lapply(st, function(x) grepl("^\\(",x))))) {
