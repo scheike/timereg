@@ -22,7 +22,7 @@ procform <- function(formula, sep="\\|", nsep=1, return.formula=FALSE, data=NULL
             for (y0 in formula) {
                 y0orig <- y0
                 if (!regex) y0 <- glob2rx(y0)
-                npos <- grep(y0,names(data))
+                npos <- grep(y0,names(data),perl=mets.options()$regex.perl)
                 if (no.match && length(npos)==0) {
                     yy <- union(yy, y0orig)
                 } else {

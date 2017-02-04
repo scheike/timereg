@@ -31,5 +31,6 @@ mets.options <- function(...) {
 mets.env <- new.env()
 assign("options",
        list(debug=FALSE,
-            regex=FALSE
+            regex=FALSE,
+            regex.perl=FALSE            
             ), envir=mets.env)

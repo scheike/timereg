@@ -1,3 +1,6 @@
+##' @export
+dreshape <- function(data,...) fast.reshape(data,...)
+
 ##' Fast reshape
 ##'
 ##' Fast reshape/tranpose of data
