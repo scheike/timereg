@@ -18,6 +18,9 @@
 ##' @param REGEX Allow regular expressions
 ##' @export 
 ##' @author Klaus K. Holst and Thomas Scheike
+##' @details##' 
+##' dby2 for column-wise calculations
+##' @aliases dby dby<- dby2 dby2<-
 ##' @examples
 ##' n <- 4
 ##' k <- c(3,rbinom(n-1,3,0.5)+1)
@@ -44,8 +47,14 @@
 ##' 
 ##' f <- function(x) { cbind(cumsum(x[,1]),cumsum(x[,2]))/sum(x)}
 ##' dby(d, y+x~id, f)
-dby <- function(data,INPUT,...,ID=NULL,ORDER=NULL,SORT=0,COMBINE=!REDUCE,NOCHECK=FALSE,ARGS=NULL,NAMES,FAST=TRUE,COLUMN=FALSE,REDUCE=FALSE,REGEX=FALSE) {
-    if (inherits(INPUT,"formula")) {
+##'
+##' # column-wise
+##' a <- d
+##' dby2(a, mean, median, REGEX=T) <- '^[y|x]'~id
+##' a
+##' 
+dby <- function(data,INPUT,...,ID=NULL,ORDER=NULL,SORT=0,COMBINE=!REDUCE,NOCHECK=FALSE,ARGS=NULL,NAMES,FAST=TRUE,COLUMN=FALSE,REDUCE=FALSE,REGEX=mets.options()$regex) {
+    if (inherits(INPUT,c("formula","character"))) {        
         INPUT <- procformdata(INPUT,sep="\\|",data=data,na.action=na.pass,do.filter=FALSE,regex=REGEX)
         if (is.null(ID)) ID <- INPUT$predictor
         if (is.null(ORDER)) {
@@ -58,9 +67,15 @@ dby <- function(data,INPUT,...,ID=NULL,ORDER=NULL,SORT=0,COMBINE=!REDUCE,NOCHECK
     if (length(funs)==0) stop("Please specify function")
     if (inherits(ID,"formula")) ID <- model.frame(ID,data=data,na.action=na.pass)
     if (inherits(ORDER,"formula")) ORDER <- model.frame(ORDER,data=data,na.action=na.pass)
-    if (length(ID)==0) stop("id variable needed")
-    id.orig <- NULL
-    if (!COMBINE) id.orig <- ID
+    if (is.null(INPUT)) {
+        INPUT <- ID
+        ID <- NULL
+    }
+    if (length(ID)==0) {
+        ID = rep(1,NROW(INPUT))
+    }
+    group <- NULL
+    if (!COMBINE) group <- ID
     if (NCOL(ID)>1) ID <- interaction(ID)
     if (is.data.frame(ID)) {
         ID <- as.integer(ID[,1,drop=TRUE])
@@ -102,18 +117,59 @@ dby <- function(data,INPUT,...,ID=NULL,ORDER=NULL,SORT=0,COMBINE=!REDUCE,NOCHECK
         })
     }
     res <- Reduce(cbind,resl)
-    if (missing(NAMES)) NAMES <- base::names(resl)
-    try(colnames(res) <- NAMES,silent=TRUE)
+
+    ## Setting column names
+    if (missing(NAMES)) {
+        a <- match.call(expand.dots=FALSE)
+        ff <- lapply(a[["..."]],deparse)
+        fn <- lapply(ff,deparse)
+        dn <- names(ff)
+        if (is.null(dn)) dn <- rep("",length(ff))
+        idx <- which(dn=="")
+        if (length(idx)>0) {
+            newn <- unlist(ff[idx])
+            dn[idx] <- newn[seq_along(idx)]
+            fcall <- grepl("^function",dn)
+            if (any(fcall))
+                dn[which(fcall)] <- which(fcall)
+        }
+        numcolf <- unlist(lapply(resl, NCOL))
+        nn <- c()
+        if (COLUMN) {
+            colnames(INPUT)
+            dn <- unlist(lapply(dn, function(x) paste(x,colnames(INPUT),sep=".")))
+        }
+        for (i in seq_along(resl)) {
+            nc <- numcolf[i]
+            curnam <- dn[i]
+            if (COLUMN) {
+                nc <- nc/NCOL(INPUT)
+                pos <- NCOL(INPUT)*(i-1)+1
+                pos <- seq(pos,pos+NCOL(INPUT)-1)
+                curnam <- dn[pos]
+            }
+            if (nc>1) {
+                nn <- c(nn, unlist(lapply(curnam, function(x) paste0(x,seq(nc)))))
+            }
+            else nn <- c(nn,curnam)
+        }
+        ## }        
+        NAMES <- nn
+    }
+        try(colnames(res) <- NAMES,silent=TRUE)
+
+        
     if (!NOCHECK && length(na.idx)>0) {
         res[na.idx,] <- NA
     }
+    cl <- attr(resl[[1]],"clustersize")
     if (COMBINE) {
         res <- cbind(data,res)
     } else {
-        res <- cbind(id.orig,res)
+        #if (!REDUCE
+        res <- cbind(group,res)
     }
     if (REDUCE!=0) {
-        cl <- attr(resl[[1]],"clustersize")
         if (REDUCE<0) { # Grab the last observation
             idx <- cumsum(cl)
         } else { # Grab the first
@@ -121,7 +177,39 @@ dby <- function(data,INPUT,...,ID=NULL,ORDER=NULL,SORT=0,COMBINE=!REDUCE,NOCHECK
         }       
         res <- res[unique(idx),,drop=FALSE]
         rownames(res) <- NULL
-    }
+    }    
     return(res)
 }
 
+
+##' @export
+"dby<-" <- function(data,INPUT,...,value) {
+    if (inherits(value,"formula")) {
+        cl <- match.call()
+        cl["value"] <- NULL
+        names(cl)[names(cl)=="INPUT"] <- ""
+        cl[["INPUT"]] <- value
+        cl[[1]] <- substitute(dby)
+        return(eval(cl))
+    }
+    cl <- match.call()
+    names(cl)[which(names(cl)=="value")] <- ""
+    cl[[1]] <- substitute(dby)
+    eval(cl)
+}
+
+##' @export
+dby2 <- function(data,INPUT,...) {
+    cl <- match.call()
+    cl[[1]] <- substitute(dby)
+    cl[["COLUMN"]] <- TRUE
+    eval(cl)
+}
+
+##' @export
+"dby2<-" <- function(data,INPUT,...,value) {
+    cl <- match.call()
+    cl[[1]] <- substitute(`dby<-`)
+    cl[["COLUMN"]] <- TRUE
+    eval(cl)
+}

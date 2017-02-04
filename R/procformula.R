@@ -133,7 +133,7 @@ procform <- function(formula, sep="\\|", nsep=1, return.formula=FALSE, data=NULL
             pred <- as.formula(paste0(c("~", paste0(pred,collapse="+"))))
         if (length(res)>0)
             res <- as.formula(paste0(c("~", paste0(res,collapse="+"))))
-    } 
+    }
     res <- list(response=res, predictor=pred, filter=filter, filter.expression=filter.expression)
     if (!return.list) return(unlist(unique(res)))
     return(res)
@@ -141,6 +141,9 @@ procform <- function(formula, sep="\\|", nsep=1, return.formula=FALSE, data=NULL
 
 procformdata <- function(formula,data,sep="\\|", na.action=na.pass, do.filter=TRUE, ...) {
     res <- procform(formula,sep=sep,data=data,return.formula=TRUE,...)
+    if (inherits(res,"formula")) {
+        res <- list(response=res)
+    }
     y <- x <- NULL
     filter <- res$filter.expression
     if (!do.filter) {

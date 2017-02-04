@@ -2,11 +2,14 @@
 % Please edit documentation in R/dby.R
 \name{dby}
 \alias{dby}
+\alias{dby2}
+\alias{dby2<-}
+\alias{dby<-}
 \title{Calculate summary statistics grouped by}
 \usage{
 dby(data, INPUT, ..., ID = NULL, ORDER = NULL, SORT = 0,
   COMBINE = !REDUCE, NOCHECK = FALSE, ARGS = NULL, NAMES, FAST = TRUE,
-  COLUMN = FALSE, REDUCE = FALSE, REGEX = FALSE)
+  COLUMN = FALSE, REDUCE = FALSE, REGEX = mets.options()$regex)
 }
 \arguments{
 \item{data}{Data.frame}
@@ -42,6 +45,9 @@ Calculate summary statistics grouped by variable
 }
 \details{
 Calculate summary statistics grouped by
+
+##' 
+dby2 for column-wise calculations
 }
 \examples{
 n <- 4
@@ -69,6 +75,12 @@ dby(d,y+x~id|num, function(x) x)
 
 f <- function(x) { cbind(cumsum(x[,1]),cumsum(x[,2]))/sum(x)}
 dby(d, y+x~id, f)
+
+# column-wise
+a <- d
+dby2(a, mean, median, REGEX=T) <- '^[y|x]'~id
+a
+
 }
 \author{
 Klaus K. Holst and Thomas Scheike
