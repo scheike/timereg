@@ -7,7 +7,7 @@
 \usage{
 fast.reshape(data, varying, id, num, sep = "", keep, idname = "id",
   numname = "num", factor = FALSE, idcombine = TRUE, labelnum = FALSE,
-  labels, ...)
+  labels, regex = mets.options()$regex, dropid = FALSE, ...)
 }
 \arguments{
 \item{data}{data.frame or matrix}
@@ -34,6 +34,10 @@ Otherwise the first variable is only used as identifier.}
 \item{labelnum}{If TRUE varying variables in wide format (going from long->wide) are labeled 1,2,3,... otherwise use 'num' variable. In long-format (going from wide->long) varying variables matching 'varying' prefix are only selected if their postfix is a number.}
 
 \item{labels}{Optional labels for the number variable}
+
+\item{regex}{Use regular expressions}
+
+\item{dropid}{Drop id in long format (default FALSE)}
 
 \item{...}{Optional additional arguments}
 }

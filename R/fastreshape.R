@@ -17,6 +17,8 @@ dreshape <- function(data,...) fast.reshape(data,...)
 ##' Otherwise the first variable is only used as identifier.
 ##' @param labelnum If TRUE varying variables in wide format (going from long->wide) are labeled 1,2,3,... otherwise use 'num' variable. In long-format (going from wide->long) varying variables matching 'varying' prefix are only selected if their postfix is a number.
 ##' @param labels Optional labels for the number variable
+##' @param regex Use regular expressions
+##' @param dropid Drop id in long format (default FALSE)
 ##' @param ... Optional additional arguments
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @aliases fast.reshape dreshape
@@ -89,8 +91,10 @@ dreshape <- function(data,...) fast.reshape(data,...)
 ##' ftable(cancer1~cancer2,data=prtw)
 ##' rm(prtw)
 fast.reshape <- function(data,varying,id,num,sep="",keep,
-                         idname="id",numname="num",factor=FALSE,
-                         idcombine=TRUE,labelnum=FALSE,labels,...) {
+                 idname="id",numname="num",factor=FALSE,
+                 idcombine=TRUE,labelnum=FALSE,labels,
+                 regex=mets.options()$regex,
+                 dropid=FALSE, ...) {
     if (!is.data.frame(data) & is.list(data)) {
         data <- as.data.frame(data)
     } else {
@@ -117,6 +121,30 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
             ## Find all variable names with trailing digits (and leading zeros)
             vars0 <- grep("([1-9]|[1-9]\\d+)$",nn);
             varying <- unique(gsub("([1-9]|[1-9]\\d+)$","",nn[vars0]))
+        }
+        if (is.list(varying)) {
+            orig <- varying
+            for (i in seq_along(varying)) {
+                elem <- varying[[i]]
+                if (is.numeric(elem[i])) {
+                    varying[[i]] <- colnames(data)[elem]
+                }
+                if (is.character(elem[i])) {
+                    ii <- elem%in%colnames(data)
+                    if (!all(ii)) {
+                        newelem <- c()
+                        for (j in seq_along(elem)) {
+                            if (ii[j]) newelem <- c(newelem,elem[j])
+                            else {
+                                if (!regex) elem[j] <- glob2rx(elem[j])
+                                newelem <- c(newelem,
+                                            grep(elem[j],colnames(data),value=TRUE))
+                            }
+                        }
+                        varying[[i]] <- newelem
+                    }
+                }
+            }
         }
         ## nl <- as.list(seq_along(data)); names(nl) <- nn
         ## varying <- eval(substitute(varying),nl,parent.frame())
@@ -260,6 +288,10 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
                 count <- count+1
                 long[,vars.new[i]] <- base::factor(long[,vars.new[i]],levels=lev[[count]])
             }
+        }
+        if (dropid) {
+            ii <- which(colnames(long)%in%c(idname)) ##,numname
+            long <- long[,-ii,drop=FALSE]
         }
         return(
             structure(long,
