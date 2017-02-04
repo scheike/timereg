@@ -484,7 +484,7 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 //	printf(" %d %d %d %d %d  \n",j,c,v,i,k); 
 //	printf(" %d %d %d %d %d %d %d %lf %lf %lf %lf %lf %lf \n",j,c,v,i,k,ci,ck,thetak,Li,Lk,weights(i),ll,log(ll)); 
 	if (j<-10) {
-	printf(" %d %d %d %d %d %d %d %lf %lf %lf %lf %lf %lf \n",j,c,v,i,k,ci,ck,thetak,Li,Lk,weights(i),ll,log(ll)); 
+	Rprintf(" %d %d %d %d %d %d %d %lf %lf %lf %lf %lf %lf \n",j,c,v,i,k,ci,ck,thetak,Li,Lk,weights(i),ll,log(ll)); 
 	dplack.print("dtheta"); 
 	}
 
@@ -508,7 +508,7 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 	   if (j<-10) {
 		   rv1.print("rv1"); rv2.print("rv1"); ps.print("ps"); 
 		   thetades.print("theta.des"); etheta.print("theta"); 
-	           printf("%d  %d %d %lf %lf %lf \n",j,ci,ck,Li,Lk,ll); 
+	           Rprintf("%d  %d %d %lf %lf %lf \n",j,ci,ck,Li,Lk,ll); 
 	   }
 
            ssf+=weights(i)*log(ll); 

@@ -120,6 +120,7 @@ dby <- function(data,INPUT,...,ID=NULL,ORDER=NULL,SORT=0,COMBINE=!REDUCE,NOCHECK
             idx <- cumsum(c(1,cl[-length(cl)]))
         }       
         res <- res[unique(idx),,drop=FALSE]
+        rownames(res) <- NULL
     }
     return(res)
 }
