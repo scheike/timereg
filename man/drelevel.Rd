@@ -10,7 +10,8 @@
 \alias{drelevel<-}
 \title{relev levels for data frames}
 \usage{
-drelevel(data, x, ref = NULL, regex = FALSE, sep = NULL, ...)
+drelevel(data, x, ref = NULL, regex = mets.options()$regex, sep = NULL,
+  ...)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}

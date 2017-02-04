@@ -5,8 +5,8 @@
 \title{aggregating for for data frames}
 \usage{
 daggregate(data, y = NULL, x = NULL, subset, ..., fun = "summary",
-  regex = FALSE, missing = FALSE, remove.empty = FALSE, matrix = FALSE,
-  silent = FALSE, na.action = na.pass)
+  regex = mets.options()$regex, missing = FALSE, remove.empty = FALSE,
+  matrix = FALSE, silent = FALSE, na.action = na.pass)
 }
 \arguments{
 \item{data}{data.frame}

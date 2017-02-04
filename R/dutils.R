@@ -76,7 +76,7 @@
 ##' names(dd)
 ##' @aliases dcut dcut<- dunique drm drm<- dnames dnames<- drename drename<- dkeep dkeep<- ddrop ddrop<- 
 ##' @export
-dcut <- function(data,x,breaks=4,probs=NULL,equi=FALSE,regex=FALSE,sep=NULL,...)
+dcut <- function(data,x,breaks=4,probs=NULL,equi=FALSE,regex=mets.options()$regex,sep=NULL,...)
 {# {{{
     if (is.vector(data)) {# {{{
 	if (is.list(breaks)) breaks <- unlist(breaks)
@@ -254,7 +254,7 @@ return(data)
 ##' 
 ##' @aliases dlevels drelevel drelevel<- dfactor dfactor<- dnumeric dnumeric<-
 ##' @export
-drelevel <- function(data,x,ref=NULL,regex=FALSE,sep=NULL,...)
+drelevel <- function(data,x,ref=NULL,regex=mets.options()$regex,sep=NULL,...)
 {# {{{
 
  if (missing(x) & is.data.frame(data))  stop("specify factor to relevel for data frame\n")
@@ -317,7 +317,7 @@ return(data)
 "drelevel<-" <- function(data,...,value) drelevel(data,value,...)
 
 ##' @export
-dlevels <- function(data,x,regex=FALSE,max.levels=20,cols=FALSE,...)
+dlevels <- function(data,x,regex=mets.options()$regex,max.levels=20,cols=FALSE,...)
 {# {{{
 
  if (is.factor(data)) {
@@ -399,7 +399,7 @@ if (cols==TRUE) {
 
 
 ##' @export
-drm <- function(data,x,regex=FALSE)
+drm <- function(data,x,regex=mets.options()$regex)
 {# {{{
  if (inherits(x,"formula")) {
      xnames <- all.vars(x)
@@ -477,7 +477,7 @@ dnames <- function(data,...) drename(data,...)
 
 
 ##' @export
-dkeep <- function(data,var,keep=TRUE,regex=FALSE)
+dkeep <- function(data,var,keep=TRUE,regex=mets.options()$regex)
 {  # {{{
 
  if (inherits(var,"formula")) { var <- all.vars(var) }
@@ -752,7 +752,7 @@ by2mat <- function(x,nam,...) {
 ##' @param matrix if TRUE a matrix is returned instead of an array
 ##' @param silent suppress messages
 ##' @param na.action How model.frame deals with 'NA's
-daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, missing=FALSE, remove.empty=FALSE, matrix=FALSE, silent=FALSE, na.action=na.pass)
+daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=mets.options()$regex, missing=FALSE, remove.empty=FALSE, matrix=FALSE, silent=FALSE, na.action=na.pass)
 {# {{{
     if (is.vector(data)) data <- data.frame(data)
     subs <- substitute(subset)
@@ -830,7 +830,7 @@ print.daggregate <- function(x,quote=FALSE,...) {
 
 
 ##' @export
-dfactor <- function(data,x,regex=FALSE,sep=NULL,all=FALSE,...)
+dfactor <- function(data,x,regex=mets.options()$regex,sep=NULL,all=FALSE,...)
 {# {{{
 
  if (is.null(sep))  sep <- ".f"
@@ -888,7 +888,7 @@ return(data)
 }
 
 ##' @export
-dnumeric <- function(data,x,regex=FALSE,sep=NULL,all=FALSE,...)
+dnumeric <- function(data,x,regex=mets.options()$regex,sep=NULL,all=FALSE,...)
 {# {{{
 
  if (is.null(sep))  sep <- ".n"
@@ -1029,7 +1029,6 @@ Summary <- function(object,na.rm=TRUE,...) {
     }
     else if (m && !is.character(x)) 
         xx <- c(format(xx[-m]), `NA's` = as.character(xx[m]))
-    ##x
     xx
 }
 
@@ -1249,54 +1248,5 @@ print.Print <- function(x,quote=FALSE,...) {
     print(x,quote=quote,...)
 }
 
-formread <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=FALSE, missing=FALSE, remove.empty=FALSE, matrix=FALSE, silent=FALSE, na.action=na.pass)
-{# {{{
-    if (is.vector(data)) data <- data.frame(data)
-    subs <- substitute(subset)
-    if (!base::missing(subs)) {
-        expr <- suppressWarnings(inherits(try(subset,silent=TRUE),"try-error"))
-        if (expr) data <- data[which(eval(subs,envir=data)),,drop=FALSE]
-        else data[subset,,drop=FALSE]
-    }
-    if (is.null(y)) y <- colnames(data)
-    if (inherits(y,"formula")) {
-        yx <- procformdata(y,sep="\\|",data=data,na.action=na.action,...)
-        y <- yx$response
-        x0 <- yx$predictor
-        if (is.null(x) && length(y)>0) x <- x0
-        if (NCOL(x)==0) x <- NULL
-        if (length(y)==0) {
-            y <- x0
-        }
-    } else {
-        yy <- c()
-        for (y0 in y) {
-            if (!regex) y0 <- glob2rx(y0)
-            n <- grep(y0,names(data))
-            yy <- union(yy,names(data)[n])
-        }
-        y <- data[,yy,drop=FALSE]
-    }
-    if (is.character(x) && length(x)<NROW(data)) {
-        xx <- c()
-        for (x0 in x) {
-            if (!regex) x0 <- glob2rx(x0)
-            n <- grep(x0,names(data))
-            xx <- union(xx,names(data)[n])
-        }
-        x <- data[,xx,drop=FALSE]
-    }
-    if (inherits(x,"formula")) {
-        x <- model.frame(x,data=data,na.action=na.action)
-    }
-    if (!is.null(x)) {
-        xidx <- na.omit(match(colnames(x),colnames(y)))
-        if (length(xidx)>0) y <- y[,-xidx,drop=FALSE]
-    }
- 
-    print(head(x))
-    print(head(y))
-
-}# {{{
 
 

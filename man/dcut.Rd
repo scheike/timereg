@@ -16,8 +16,8 @@
 \alias{dunique}
 \title{Cutting, sorting, rm (removing), rename for data frames}
 \usage{
-dcut(data, x, breaks = 4, probs = NULL, equi = FALSE, regex = FALSE,
-  sep = NULL, ...)
+dcut(data, x, breaks = 4, probs = NULL, equi = FALSE,
+  regex = mets.options()$regex, sep = NULL, ...)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}
