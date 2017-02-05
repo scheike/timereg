@@ -13,10 +13,10 @@
 ##' @param NOCHECK No sorting or check for missing data
 ##' @param ARGS Optional list of arguments to functions (...)
 ##' @param NAMES Optional vector of column names
-##' @param FAST if FALSE fallback to slower (safer) function evaluation
 ##' @param COLUMN If TRUE do the calculations for each column
 ##' @param REDUCE Reduce number of redundant rows
 ##' @param REGEX Allow regular expressions
+##' @param ALL if FALSE only the subset will be returned
 ##' @export
 ##' @author Klaus K. Holst and Thomas Scheike
 ##' @details
@@ -57,17 +57,19 @@
 ##'
 ##' ## column-wise
 ##' a <- d
-##' dby2(a, mean, median, REGEX=T) <- '^[y|x]'~id
+##' dby2(a, mean, median, REGEX=TRUE) <- '^[y|x]'~id
 ##' a
 ##'
 ##' ## subset
 ##' dby(d, x<0) <- list(z=NA)
 ##' d
 ##' dby(d, y~id|x>-1, v=mean,z=1)
-##' dby(d, y+x~id|x>-1, mean, median, COLUMN=T)
+##' dby(d, y+x~id|x>-1, mean, median, COLUMN=TRUE)
 ##'
-##' dby2(d, y+x~id|x>0, mean, REDUCE=T)
-dby <- function(data,INPUT,...,ID=NULL,ORDER=NULL,SUBSET=NULL,SORT=0,COMBINE=!REDUCE,NOCHECK=FALSE,ARGS=NULL,NAMES,FAST=TRUE,COLUMN=FALSE,REDUCE=FALSE,REGEX=mets.options()$regex) {
+##' dby2(d, y+x~id|x>0, mean, REDUCE=TRUE)
+##'
+##' dby(d,y~id|x<0,mean,ALL=FALSE)
+dby <- function(data,INPUT,...,ID=NULL,ORDER=NULL,SUBSET=NULL,SORT=0,COMBINE=!REDUCE,NOCHECK=FALSE,ARGS=NULL,NAMES,COLUMN=FALSE,REDUCE=FALSE,REGEX=mets.options()$regex,ALL=TRUE) {
     if (missing(INPUT)) INPUT <- .~1
     val <- substitute(INPUT)
     INPUT <- try(eval(val),silent=TRUE)
@@ -140,32 +142,31 @@ dby <- function(data,INPUT,...,ID=NULL,ORDER=NULL,SUBSET=NULL,SORT=0,COMBINE=!RE
         return(cbind(INPUT,group))
     }
 
-    if (FAST) {
-        resl <- lapply(funs, function(fun_) {
-            env <- new.env()
-            isfun <- tryCatch(is.function(eval(fun_)),error=function(...) FALSE)
-            if (isfun) {
-                env$fun_ <- eval(fun_)
-                if (length(ARGS)>0) {
-                    fun_ <- eval(fun_)
-                    ff <- function(...) do.call(fun_,c(list(...),ARGS))
-                    expr <- quote(ff(x))
-                } else {
-                    expr <- quote(fun_(x))
-                }
+    if (NROW(INPUT)>0) {
+    resl <- lapply(funs, function(fun_) {
+        env <- new.env()
+        isfun <- tryCatch(is.function(eval(fun_)),error=function(...) FALSE)
+        if (isfun) {
+            env$fun_ <- eval(fun_)
+            if (length(ARGS)>0) {
+                fun_ <- eval(fun_)
+                ff <- function(...) do.call(fun_,c(list(...),ARGS))
+                expr <- quote(ff(x))
             } else {
-                expr <- fun_
+                expr <- quote(fun_(x))
             }
-            .ApplyBy2(INPUT,ID,F=expr,Env=env,Argument="x",Columnwise=COLUMN)
-        })
-    } else {
-        resl <- lapply(funs, function(f) {
-            f2 <- function(...) do.call(f,c(list(...),ARGS))
-            .ApplyBy(INPUT,ID,f2)
-        })
-    }
+        } else {
+            expr <- fun_
+        }
+        .ApplyBy2(INPUT,ID,F=expr,Env=env,Argument="x",Columnwise=COLUMN)
+    })
     res <- Reduce(cbind,resl)
+    } else {
+        resl <- NULL
+        res <- NULL
+    }
 
+    dn <- NULL
     ## Setting column names
     if (missing(NAMES)) {
         a <- match.call(expand.dots=FALSE)
@@ -203,6 +204,7 @@ dby <- function(data,INPUT,...,ID=NULL,ORDER=NULL,SUBSET=NULL,SORT=0,COMBINE=!RE
         }
         NAMES <- nn
     }
+
     try(colnames(res) <- NAMES,silent=TRUE)
     numidx <- grep("^[0-9]",colnames(res)) ## column names starting with digit
     if (length(numidx)>0)
@@ -213,8 +215,13 @@ dby <- function(data,INPUT,...,ID=NULL,ORDER=NULL,SUBSET=NULL,SORT=0,COMBINE=!RE
     }
     cl <- attr(resl[[1L]],"clustersize")
     if (COMBINE) {
+        if (is.null(NAMES) & is.null(res) & length(dn)>0) {
+            res <- matrix(NA,nrow(data),length(dn))
+            colnames(res) <- dn
+        }        
         nn <- colnames(res)
-        res0 <- matrix(NA,nrow(data),ncol(res))
+        nc <- ifelse(is.null(res), 0, ncol(res))
+        res0 <- matrix(NA,nrow(data),nc)
         colnames(res0) <- nn
         didx <- which(colnames(data)%in%nn)
         if (length(didx)>0) {
@@ -226,7 +233,10 @@ dby <- function(data,INPUT,...,ID=NULL,ORDER=NULL,SUBSET=NULL,SORT=0,COMBINE=!RE
             res0[SUBSET,] <- res
             res <- cbind(data,res0)
         } else {
-            res <- cbind(data,res)
+            if (!is.null(res))
+                res <- cbind(data,res)
+            else
+                res <- data
         }
 
     } else {
@@ -247,6 +257,9 @@ dby <- function(data,INPUT,...,ID=NULL,ORDER=NULL,SUBSET=NULL,SORT=0,COMBINE=!RE
         } else {
             rownames(res) <- NULL
         }
+    }
+    if (!ALL) {
+        return(res[SUBSET,,drop=FALSE])
     }
     return(res)
 }
