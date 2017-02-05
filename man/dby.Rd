@@ -54,7 +54,6 @@ Calculate summary statistics grouped by
 dby2 for column-wise calculations
 }
 \examples{
-
 n <- 4
 k <- c(3,rbinom(n-1,3,0.5)+1)
 N <- sum(k)
@@ -100,6 +99,10 @@ dby(d, y+x~id|x>-1, mean, median, COLUMN=TRUE)
 dby2(d, y+x~id|x>0, mean, REDUCE=TRUE)
 
 dby(d,y~id|x<0,mean,ALL=FALSE)
+
+a <- iris
+a <- dby(a,y=1)
+dby(a,Species=="versicolor") <- list(y=2)
 }
 \author{
 Klaus K. Holst and Thomas Scheike

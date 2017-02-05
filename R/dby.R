@@ -23,7 +23,6 @@
 ##' dby2 for column-wise calculations
 ##' @aliases dby dby<- dby2 dby2<- dbyr
 ##' @examples
-##'
 ##' n <- 4
 ##' k <- c(3,rbinom(n-1,3,0.5)+1)
 ##' N <- sum(k)
@@ -69,12 +68,17 @@
 ##' dby2(d, y+x~id|x>0, mean, REDUCE=TRUE)
 ##'
 ##' dby(d,y~id|x<0,mean,ALL=FALSE)
+##'
+##' a <- iris
+##' a <- dby(a,y=1)
+##' dby(a,Species=="versicolor") <- list(y=2)
 dby <- function(data,INPUT,...,ID=NULL,ORDER=NULL,SUBSET=NULL,SORT=0,COMBINE=!REDUCE,NOCHECK=FALSE,ARGS=NULL,NAMES,COLUMN=FALSE,REDUCE=FALSE,REGEX=mets.options()$regex,ALL=TRUE) {
     if (missing(INPUT)) INPUT <- .~1
     val <- substitute(INPUT)
     INPUT <- try(eval(val),silent=TRUE)
+    funs <- substitute(list(...))[-1]
     if (inherits(INPUT,"try-error")) {
-        INPUT <- as.formula(paste0(".~1|",deparse(val)))
+        INPUT <- as.formula(paste0(".~1|",deparse(val)))        
     }
     if (inherits(INPUT,c("formula","character"))) {
         INPUT <- procformdata(INPUT,sep="\\|",data=data,na.action=na.pass,do.filter=FALSE,regex=REGEX,specials="order")
@@ -90,7 +94,6 @@ dby <- function(data,INPUT,...,ID=NULL,ORDER=NULL,SUBSET=NULL,SORT=0,COMBINE=!RE
         INPUT <- INPUT$response
     }
 
-    funs <- substitute(list(...))[-1]
     if (inherits(ID,"formula")) ID <- model.frame(ID,data=data,na.action=na.pass)
     if (inherits(ORDER,"formula")) ORDER <- model.frame(ORDER,data=data,na.action=na.pass)
     if (inherits(SUBSET,"formula")) SUBSET <- model.frame(SUBSET,data=data,na.action=na.pass)
@@ -120,7 +123,8 @@ dby <- function(data,INPUT,...,ID=NULL,ORDER=NULL,SUBSET=NULL,SORT=0,COMBINE=!RE
         } else {
             ord <- order(ID,decreasing=SORT,method="radix")
         }
-        INPUT <- as.matrix(INPUT[ord,,drop=FALSE])
+        numerics <- unlist(lapply(INPUT[1,],is.numeric))
+        INPUT <- as.matrix(INPUT[ord,which(numerics),drop=FALSE])
         ID <- ID[ord]
         if (is.null(group)) data <- data[ord,,drop=FALSE]
         else {
