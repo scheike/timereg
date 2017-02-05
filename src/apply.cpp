@@ -6,17 +6,20 @@
 #include <cmath>
 #include <vector>
 
+// const double epsilon=1.0e-16;
+
 using namespace std;
 using namespace Rcpp;
 
 // [[Rcpp::export(name = ".ApplyBy2")]]
 NumericMatrix ApplyBy2(NumericMatrix idata,
-		       IntegerVector icluster,
+		       NumericVector icluster,
 		       SEXP F,
 		       Environment Env,
 		       std::string Argument="x",
 		       int Columnwise=0,
-		       int Reduce=0
+		       int Reduce=0,
+		       double epsilon=1.0e-16
 		       ) {
 BEGIN_RCPP
    unsigned n = idata.nrow();
@@ -35,12 +38,12 @@ BEGIN_RCPP
    }   
 
    // First we get the number of clusters
-   unsigned curcluster=icluster[0];
-   unsigned prevcluster=icluster[0];
+   double curcluster=icluster[0];
+   double prevcluster=icluster[0];
    unsigned nclusters=1;
    for (unsigned i=0; i<n; i++) {
      curcluster=icluster[i];
-     if (curcluster!=prevcluster) {
+     if (fabs(curcluster-prevcluster)>epsilon) {
        nclusters++;
      }
      prevcluster=curcluster;
@@ -53,7 +56,7 @@ BEGIN_RCPP
    NumericMatrix res(n,P);
    for (unsigned i=0; i<=n; i++) {
      if (i<n) curcluster=icluster[i];    
-     if (curcluster!=prevcluster || i==n) {
+     if (fabs(curcluster-prevcluster)>epsilon || i==n) {
        if (i<n) clpos++;
        unsigned pos=i-1;
        unsigned nr=pos-posstart+1;

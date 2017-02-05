@@ -5,9 +5,10 @@
 \alias{dby2}
 \alias{dby2<-}
 \alias{dby<-}
+\alias{dbyr}
 \title{Calculate summary statistics grouped by}
 \usage{
-dby(data, INPUT, ..., ID = NULL, ORDER = NULL, SORT = 0,
+dby(data, INPUT, ..., ID = NULL, ORDER = NULL, SUBSET = NULL, SORT = 0,
   COMBINE = !REDUCE, NOCHECK = FALSE, ARGS = NULL, NAMES, FAST = TRUE,
   COLUMN = FALSE, REDUCE = FALSE, REGEX = mets.options()$regex)
 }
@@ -21,6 +22,8 @@ dby(data, INPUT, ..., ID = NULL, ORDER = NULL, SORT = 0,
 \item{ID}{id variable}
 
 \item{ORDER}{(optional) order variable}
+
+\item{SUBSET}{(optional) subset expression}
 
 \item{SORT}{sort order (id+order variable)}
 
@@ -46,41 +49,54 @@ Calculate summary statistics grouped by variable
 \details{
 Calculate summary statistics grouped by
 
-##' 
+
 dby2 for column-wise calculations
 }
 \examples{
+
 n <- 4
 k <- c(3,rbinom(n-1,3,0.5)+1)
 N <- sum(k)
 d <- data.frame(y=rnorm(N),x=rnorm(N),id=rep(seq(n),k),num=unlist(sapply(k,seq)))
 d2 <- d[sample(nrow(d)),]
 
-dby(d, y~id, mean)
-dby(d, y~id|num, cumsum)
+dby(d2, y~id, mean)
+dby(d2, y~id + order(num), cumsum)
 
-dby(d,y~id|num, dlag, ARGS=list(k=1:2))
+dby(d,y ~ id + order(num), dlag)
+dby(d,y ~ id + order(num), dlag, ARGS=list(k=1:2))
+dby(d,y ~ id + order(num), dlag, ARGS=list(k=1:2), NAMES=c("l1","l2"))
 
-dby(d, y~id|num, dlag)
-dby(d, y~id|num, y1=dlag, ARGS=list(k=1:2), NAMES=c("y1","y2"))
-dby(d, y~id|num, mean=mean, csum=cumsum, n=length)
-dby(d2,y~id|num, a=cumsum, b=mean, N=length, l1=function(x) c(NA,x)[-length(x)])
+dby(d, y~id + order(num), mean=mean, csum=cumsum, n=length)
+dby(d2, y~id + order(num), a=cumsum, b=mean, N=length, l1=function(x) c(NA,x)[-length(x)])
+ 
+dby(d, y~id + order(num), nn=seq_along, n=length)
+dby(d, y~id + order(num), nn=seq_along, n=length)
 
-dby(d, y~id|num, nn=seq, n=length)
-
+d <- d[,1:4]
+dby(d, x<0) <- list(z=mean)
+d <- dby(d, is.na(z), z=1) 
+ 
 f <- function(x) apply(x,1,min)
 dby(d, y+x~id, min=f)
 
-dby(d,y+x~id|num, function(x) x)
+dby(d,y+x~id+order(num), function(x) x)
 
 f <- function(x) { cbind(cumsum(x[,1]),cumsum(x[,2]))/sum(x)}
 dby(d, y+x~id, f)
 
-# column-wise
+## column-wise
 a <- d
 dby2(a, mean, median, REGEX=T) <- '^[y|x]'~id
 a
 
+## subset
+dby(d, x<0) <- list(z=NA)
+d
+dby(d, y~id|x>-1, v=mean,z=1)
+dby(d, y+x~id|x>-1, mean, median, COLUMN=T)
+
+dby2(d, y+x~id|x>0, mean, REDUCE=T)
 }
 \author{
 Klaus K. Holst and Thomas Scheike
