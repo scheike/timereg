@@ -220,9 +220,15 @@ deval2 <- function(data,...,matrix=simplify,simplify=TRUE)  deval(data,matrix=TR
 
 ##' @export
 deval <- function(data,y=NULL,x=NULL,...,matrix=FALSE,fun=Summary,simplify=FALSE) {
+    if (is.list(fun)) {
+        newf <- function(x,...) {
+            unlist(lapply(fun,function(f) f(x,...), ...))
+        }
+    }
+    else newf <- fun
     res <- daggregate(data,y,x,matrix=matrix,...,
                      fun=function(z) lapply(z,function(x) {
-                         suppressWarnings(tryCatch(fun(x,...),error=function(e) return(NA)))
+                         suppressWarnings(tryCatch(newf(x,...),error=function(e) return(NA)))
                      }))
     if (simplify) {
         for (i in seq_len(ncol(res))) {
