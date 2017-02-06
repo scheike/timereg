@@ -59,6 +59,7 @@ head(mm)
 
 mm <- dcut(sTRACE,~.)
 head(mm)
+
 mm <- dcut(sTRACE,c("age","wmi"),breaks=c(2,4))
 head(mm)
 

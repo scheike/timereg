@@ -200,8 +200,6 @@ for (k in 1:ll)
 
       if (usernames) name <- newnames[k]
 
-      print(breaks)
-
 
       if (sum(duplicated(bb))==0)
 	     data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE,...)
