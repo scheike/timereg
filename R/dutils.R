@@ -29,7 +29,7 @@
 ##'
 ##' mm <- dcut(sTRACE,~.)
 ##' head(mm)
-#
+##'
 ##' mm <- dcut(sTRACE,c("age","wmi"),breaks=c(2,4))
 ##' head(mm)
 ##'
@@ -520,13 +520,18 @@ ddrop <- function(data,var,keep=FALSE) dkeep(data,var,keep=FALSE)
 
 
 ##' @export
-dfactor <- function(data,x,regex=mets.options()$regex,sep=NULL,...)
+dfactor <- function(data,x,regex=mets.options()$regex,sep=NULL,levels,labels,...)
 {# {{{
 
  if (is.null(sep))  sep <- ".f"
 
  if (is.vector(data)) {
-	 if (!is.factor(data)) gx <- as.factor(data,...) else gx <- data
+	 if (!is.factor(data)) {
+		 args <- list(data)
+		 if (!missing(levels)) args <- c(args,list(levels=levels))
+		 if (!missing(labels)) args <- c(args,list(labels=labels))
+	         gx <- do.call(factor,args)
+	 } else gx <- data
       return(gx)
  } else {
 
@@ -555,16 +560,48 @@ dfactor <- function(data,x,regex=mets.options()$regex,sep=NULL,...)
 	       })
   if (!is.list(x)) x <- list(x)
   ll <- length(x)
-###  if (ll>1 & length(ref)==1) ref <- rep(ref,ll)
-###  if (length(x)!=length(ref)) stop("length of baseline reference 'ref' not consistent with variables")
+
+ if (!missing(levels) & !is.list(levels) )   levels <- list(levels)
+ if (!missing(labels) & !is.list(labels) )   labels <- list(labels)
+
+### if (!missing(levels) ) print(levels)
+### if (!missing(labels) ) print(labels)
+
+  misslabel <- TRUE
+  if (!missing(labels))  {
+	  misslabel <- FALSE
+  if ((length(x)!=length(labels))) {
+	  warning("length of label list not consistent with variables")
+	  labels <- rep(list(labels[[1]]),ll)
+###	  print(labels)
+  }
+  }
+
+
+  misslevel <- TRUE
+  if (!missing(levels))  { 
+	  misslevel <- FALSE
+  if ((length(x)!=length(levels))) {
+	  warning("length of levels list not consistent with variables")
+	  levels <- rep(list(levels[[1]]),ll)
+  }
+  }
+ 
+
+
+
 
 for (k in 1:ll)
 {
   xx <- x[[k]]
   name<- paste(xnames[k],sep,sep="")
   if (!is.factor(xx) || all==TRUE) { 
-	  gx <- as.factor(xx,...); 
-          data[,name] <- gx } 
+           args <- list(xx)
+           if (!misslevel) args <- c(args,list(levels=levels[[k]]))
+	   if (!misslabel) args <- c(args,list(labels=labels[[k]]))
+	   gx <- do.call(factor,args)
+           data[,name] <- gx  
+   }
 }
 
 return(data)
