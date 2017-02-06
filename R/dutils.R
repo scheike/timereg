@@ -588,9 +588,6 @@ dfactor <- function(data,x,regex=mets.options()$regex,sep=NULL,levels,labels,...
   }
  
 
-
-
-
 for (k in 1:ll)
 {
   xx <- x[[k]]
