@@ -114,7 +114,7 @@ if (is.data.frame(data)) {
   usernames <- FALSE
 
   if (inherits(x,"formula")) {
-     vars <- procform(x,data=data,...)
+     vars <-mets:::procform(x,data=data,...)
 
       usernames <- FALSE
 	 if (!is.null(vars$response)) usernames<-TRUE
@@ -132,7 +132,7 @@ if (is.data.frame(data)) {
 if (missing(x)) x<- ~.
 
  if (inherits(x,"formula")) {
-     x <- procform(x,data=data)$predictor
+     x <- mets:::procform(x,data=data)$predictor
 ###     x <- all.vars(x)
      xnames <- x
   } else if  (is.character(x)) {
@@ -157,12 +157,12 @@ if (missing(x)) x<- ~.
   if (!is.list(x)) x <- list(x)
   ll <- length(x)
 
-  if (ll==1 & is.vector(breaks)) breaks <- list(breaks)
+  if (ll==1 & !is.list(breaks) & length(breaks)>1) breaks <- list(breaks)
 
   break.points <- FALSE
   if (is.list(breaks)) {
      break.points <- TRUE
-     breaks <- rep(breaks,ll)
+     if (length(breaks)!=ll) breaks <- rep(breaks[[1]],ll)
   }
 
 
@@ -197,6 +197,9 @@ for (k in 1:ll)
       } else { bb <- breaks[[1]]; name<-paste(xnames[k],breaks[[k]][1],sep=sep) }
 
       if (usernames) name <- newnames[k]
+
+      print(breaks)
+
 
       if (sum(duplicated(bb))==0)
 	     data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE,...)
@@ -515,13 +518,13 @@ ddrop <- function(data,var,keep=FALSE) dkeep(data,var,keep=FALSE)
 
 
 ##' @export
-dfactor <- function(data,x,regex=mets.options()$regex,sep=NULL,all=FALSE,...)
+dfactor <- function(data,x,regex=mets.options()$regex,sep=NULL,...)
 {# {{{
 
  if (is.null(sep))  sep <- ".f"
 
  if (is.vector(data)) {
-	 if (!is.factor(data)) gx <- as.factor(data) else gx <- data
+	 if (!is.factor(data)) gx <- as.factor(data,...) else gx <- data
       return(gx)
  } else {
 
@@ -558,7 +561,7 @@ for (k in 1:ll)
   xx <- x[[k]]
   name<- paste(xnames[k],sep,sep="")
   if (!is.factor(xx) || all==TRUE) { 
-	  gx <- as.factor(xx); 
+	  gx <- as.factor(xx,...); 
           data[,name] <- gx } 
 }
 

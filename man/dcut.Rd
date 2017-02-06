@@ -17,7 +17,7 @@
 \title{Cutting, sorting, rm (removing), rename for data frames}
 \usage{
 dcut(data, x, breaks = 4, probs = NULL, equi = FALSE,
-  regex = mets.options()$regex, sep = NULL, ...)
+  regex = mets.options()$regex, sep = NULL, na.rm = TRUE, ...)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}
@@ -33,6 +33,8 @@ dcut(data, x, breaks = 4, probs = NULL, equi = FALSE,
 \item{regex}{for regular expressions.}
 
 \item{sep}{seperator for naming of cut names.}
+
+\item{na.rm}{to remove NA for grouping variables.}
 
 \item{...}{Optional additional arguments}
 }
