@@ -325,7 +325,7 @@ dlevels <- function(data,x,regex=mets.options()$regex,max.levels=20,cols=FALSE,.
 {# {{{
 
  if (is.factor(data)) {
-	 print(base::levels(data))
+	 return(base::levels(data))
  } else {
 
  if (missing(x)) x <-  ~.
@@ -468,7 +468,6 @@ drename <- function(data,var=NULL,value=NULL,fun=base::tolower,...)
     colnames(data)[varpos] <- value
     return(data)
 } # }}}
-
 
 ##' @export
 "drename<-" <- function(data,...,value) drename(data,value=value,...)
