@@ -10,6 +10,7 @@
 ##' @param equi for equi-spaced breaks  
 ##' @param regex for regular expressions.
 ##' @param sep seperator for naming of cut names.
+##' @param na.rm to remove NA for grouping variables.
 ##' @param ... Optional additional arguments
 ##' @author Klaus K. Holst and Thomas Scheike
 ##' @examples
@@ -76,7 +77,7 @@
 ##' names(dd)
 ##' @aliases dcut dcut<- dunique drm drm<- dnames dnames<- drename drename<- dkeep dkeep<- ddrop ddrop<- 
 ##' @export
-dcut <- function(data,x,breaks=4,probs=NULL,equi=FALSE,regex=mets.options()$regex,sep=NULL,...)
+dcut <- function(data,x,breaks=4,probs=NULL,equi=FALSE,regex=mets.options()$regex,sep=NULL,na.rm=TRUE,...)
 {# {{{
     if (is.vector(data)) {# {{{
 	if (is.list(breaks)) breaks <- unlist(breaks)
@@ -84,14 +85,14 @@ dcut <- function(data,x,breaks=4,probs=NULL,equi=FALSE,regex=mets.options()$rege
         if (length(breaks)==1) { 
              if (!is.null(probs))
 	     {
-                breaks <- quantile(data, probs, ...)
+                breaks <- quantile(data, probs, na.rm=na.rm, ...)
 	     } else {
 	   	if (!equi) { 
 			probs <- seq(0, 1, length.out = breaks + 1)
-			breaks <- quantile(data, probs, ...)
+			breaks <- quantile(data, probs,na.rm=na.rm, ...)
 		} 
 		if (equi) { 
-			rr <- range(data)
+			rr <- range(data,na.rm=na.rm)
 			breaks <-  seq(rr[1],rr[2],length.out=breaks+1)
 		}
 	     }
@@ -181,14 +182,14 @@ for (k in 1:ll)
       {
           if (!is.null(probs))
 	  {
-                bb <- quantile(xx, probs, ...)
+                bb <- quantile(xx, probs,na.rm=na.rm, ...)
 	  } else {
 	   	if (!equi) { 
 			probs <- seq(0, 1, length.out = breaks[k] + 1)
-			bb <- quantile(xx, probs, ...)
+			bb <- quantile(xx, probs, na.rm=na.rm,...)
 		} 
 		if (equi) { 
-			rr <- range(xx,na.rm=TRUE)
+			rr <- range(xx,na.rm=na.rm)
 			bb <-  seq(rr[1],rr[2],length.out=breaks[k]+1)
 		}
 	     }
