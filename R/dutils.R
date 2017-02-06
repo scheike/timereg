@@ -559,8 +559,8 @@ dfactor <- function(data,x,regex=mets.options()$regex,sep=NULL,levels,labels,...
   if (!is.list(x)) x <- list(x)
   ll <- length(x)
 
- if (!missing(levels) & !is.list(levels) )   levels <- list(levels)
- if (!missing(labels) & !is.list(labels) )   labels <- list(labels)
+ if (!missing(levels)) if (!is.list(levels))   levels <- list(levels)
+ if (!missing(labels)) if (!is.list(labels) )   labels <- list(labels)
 
 ### if (!missing(levels) ) print(levels)
 ### if (!missing(labels) ) print(labels)
