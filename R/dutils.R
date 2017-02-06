@@ -162,6 +162,8 @@ if (missing(x)) x<- ~.
   break.points <- FALSE
   if (is.list(breaks)) {
      break.points <- TRUE
+     if (length(x)!=length(breaks) & length(breaks)!=1) 
+	     warning("length of variables not consistent with list of breaks"); 
      if (length(breaks)!=ll) breaks <- rep(breaks[[1]],ll)
   }
 
