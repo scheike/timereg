@@ -77,7 +77,7 @@
 ##' names(dd)
 ##' @aliases dcut dcut<- dunique drm drm<- dnames dnames<- drename drename<- dkeep dkeep<- ddrop ddrop<- 
 ##' @export
-dcut <- function(data,x,breaks=4,probs=NULL,equi=FALSE,regex=mets.options()$regex,sep=NULL,na.rm=TRUE,...)
+dcut <- function(data,x,breaks=4,probs=NULL,equi=FALSE,regex=mets.options()$regex,sep=NULL,na.rm=TRUE,labels=NULL,all=FALSE,...)
 {# {{{
     if (is.vector(data)) {# {{{
 	if (is.list(breaks)) breaks <- unlist(breaks)
@@ -99,12 +99,12 @@ dcut <- function(data,x,breaks=4,probs=NULL,equi=FALSE,regex=mets.options()$rege
 	}
 
         if (sum(duplicated(breaks))==0)
-             gx <- cut(data, breaks = breaks, include.lowest = TRUE,...)
+             gx <- cut(data, breaks = breaks, include.lowest = TRUE,labels=labels,...)
         else {
 	      wd <- which(duplicated(breaks))
               mb <- min(diff(breaks[-wd]))
 	      breaks[wd] <- breaks[wd] +  (mb/2)*seq(length(wd))/length(wd)
-              gx  <- cut(data,breaks=breaks,include.lowest=TRUE,...)
+              gx  <- cut(data,breaks=breaks,include.lowest=TRUE,labels=labels,...)
               warning(paste("breaks duplicated"))
         }
         return(gx)
@@ -174,6 +174,11 @@ if (missing(x)) x<- ~.
      if (length(breaks)!=ll) breaks<- rep(breaks[1],ll)
   }
 
+  if (ll==1 & !is.list(labels)) labels <- list(labels)
+  if (!is.list(labels)) labels <- list(labels); 
+  if (length(labels)!=ll ) labels <- rep(list(labels[[1]]),ll)
+  if (!is.list(labels)) stop("labels should be given as list"); 
+
 
 for (k in 1:ll)
 {
@@ -202,14 +207,16 @@ for (k in 1:ll)
 
 
       if (sum(duplicated(bb))==0)
-	     data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE,...)
-      else {
+	     data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE,labels=labels[[k]],...)
+      else { 
+	   if (all==TRUE) {
 	      wd <- which(duplicated(bb))
               mb <- min(diff(bb[-wd]))
 	      bb[wd] <- bb[wd] +  (mb/2)*seq(length(wd))/length(wd)
-          data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE,...)
+          data[,name] <- cut(xx,breaks=bb,include.lowest=TRUE,labels=labels[[k]],...)
           warning(paste("breaks duplicated for=",xnames[k]))
-       }
+	   }
+      }
    }
 }
 
@@ -325,7 +332,7 @@ dlevels <- function(data,x,regex=mets.options()$regex,max.levels=20,cols=FALSE,.
 {# {{{
 
  if (is.factor(data)) {
-	 return(base::levels(data))
+	 return(base::levels(data,...))
  } else {
 
  if (missing(x)) x <-  ~.
@@ -589,7 +596,7 @@ for (k in 1:ll)
 {
   xx <- x[[k]]
   name<- paste(xnames[k],sep,sep="")
-  if (!is.factor(xx) || all==TRUE) { 
+  if (!is.factor(xx) ) { 
            args <- list(xx)
            if (!misslevel) args <- c(args,list(levels=levels[[k]]))
 	   if (!misslabel) args <- c(args,list(labels=labels[[k]]))
