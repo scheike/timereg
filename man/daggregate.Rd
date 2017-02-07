@@ -6,7 +6,7 @@
 \usage{
 daggregate(data, y = NULL, x = NULL, subset, ..., fun = "summary",
   regex = mets.options()$regex, missing = FALSE, remove.empty = FALSE,
-  matrix = FALSE, silent = FALSE, na.action = na.pass)
+  matrix = FALSE, silent = FALSE, na.action = na.pass, convert = NULL)
 }
 \arguments{
 \item{data}{data.frame}

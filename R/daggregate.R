@@ -57,7 +57,7 @@ by2mat <- function(x,nam,...) {
 ##' @param matrix if TRUE a matrix is returned instead of an array
 ##' @param silent suppress messages
 ##' @param na.action How model.frame deals with 'NA's
-daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=mets.options()$regex, missing=FALSE, remove.empty=FALSE, matrix=FALSE, silent=FALSE, na.action=na.pass)
+daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=mets.options()$regex, missing=FALSE, remove.empty=FALSE, matrix=FALSE, silent=FALSE, na.action=na.pass, convert=NULL)
 {# {{{
     if (is.vector(data)) data <- data.frame(data)
     subs <- substitute(subset)
@@ -102,14 +102,23 @@ daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=mets.op
         if (length(xidx)>0) y <- y[,-xidx,drop=FALSE]
     }
     if (is.character(fun)) fun <- get(fun)
+    if (!is.null(convert) && is.logical(convert)) {
+        if (convert) convert <- as.matrix
+        else convert <- NULL
+    }
+    if (!is.null(convert)) {
+        fun_ <- fun
+        fun <- function(x,...) fun_(convert(x,...))
+    }
     if (!is.null(x)) {
         if (missing) {
             x[is.na(x)] <- 'NA'
         }
-        if (silent)
-            capture.output(res <- by(y,x,fun,...))
-        else
+        if (silent) {
+                capture.output(res <- by(y,x,fun,...))
+        } else {
             res <- by(y,x,fun,...)
+        }
         if (remove.empty) {
             # ... need to abandon 'by'?
         }
@@ -125,6 +134,9 @@ daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=mets.op
     res
     structure(res, ngroupvar=0, class=c("daggregate",class(res)))
 }# }}}
+
+##' @export
+daggr <- function(data,...,convert=as.matrix) daggregate(data,...,convert=convert)
 
 ##' @export
 print.daggregate <- function(x,quote=FALSE,...) {
