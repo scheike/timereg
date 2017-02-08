@@ -332,8 +332,8 @@ dlevels <- function(data,x,regex=mets.options()$regex,max.levels=20,cols=FALSE,.
 {# {{{
 
  if (is.factor(data)) {
-	 return(base::levels(data,...))
- } else {
+	 return(base::levels(data,...)) 
+ } else if (is.data.frame(data)) {
 
  if (missing(x)) x <-  ~.
 
@@ -408,6 +408,8 @@ if (cols==TRUE) {
 
 }# }}}
 
+#####' @export
+###"dlevels<-" <- function(data,x,...,value) dlevels(data,x,y=value,...)
 
 ##' @export
 drm <- function(data,x,regex=mets.options()$regex)
@@ -512,7 +514,6 @@ if (keep) data <- data[,varnnames] else data <- data[,-1*varnnames]
   return(data)
 } # }}}
 
-
 ##' @export
 "dkeep<-" <- function(x,...,value) dkeep(x,value,...)
 
@@ -521,7 +522,6 @@ ddrop <- function(data,var,keep=FALSE) dkeep(data,var,keep=FALSE)
 
 ##' @export
 "ddrop<-" <- function(x,...,value) dkeep(x,value,keep=FALSE,...)
-
 
 ##' @export
 dfactor <- function(data,x,regex=mets.options()$regex,sep=NULL,levels,labels,...)
@@ -611,9 +611,7 @@ return(data)
 }# }}}
 
 ##' @export
-"dfactor<-" <- function(data,k=1,combine=TRUE,...,value) {
-    dfactor(data,value,...)
-}
+"dfactor<-" <- function(data,...,value) dfactor(data,value,...)
 
 ##' @export
 dnumeric <- function(data,x,regex=mets.options()$regex,sep=NULL,all=FALSE,...)
@@ -670,10 +668,7 @@ return(data)
 }# }}}
 
 ##' @export
-"dnumeric<-" <- function(data,...,value) {
-    dnumeric(data,value,...)
-}
-
+"dnumeric<-" <- function(data,...,value) dnumeric(data,value,...)
 
 
 ##' Lag operator
