@@ -311,12 +311,12 @@ drelevel <- function(data,x,ref=NULL,newlevels=NULL,regex=mets.options()$regex,s
       if (is.vector(data)) data <- factor(data)
       if (!is.null(ref)) {
 	      if (is.numeric(ref)) ref <-  levels(data)[ref]
-              gx <- relevel(data,ref=ref)
+              gx <- relevel(data,ref=ref,...)
       return(gx)
       }
       if (!is.null(newlevels)) {
 	      pnewlevels <- levlev(data,newlevels)
-	      levels(data) <- pnewlevels
+	      levels(data,...) <- pnewlevels
 	      return(data)
       }
  } # }}}
@@ -407,7 +407,7 @@ for (k in 1:ll)
   if (usernames) name <- newnames[k]
   if (overwrite) name<-xnames[k]
       if (is.numeric(ref[k])) refk <-  levels(xx)[ref[k]] else refk <- ref[k]
-      gx <- relevel(xx,ref=refk)
+      gx <- relevel(xx,ref=refk,...)
       data[,name] <- gx
   }
   if (!is.null(newlevels)) {
@@ -415,7 +415,7 @@ for (k in 1:ll)
   if (usernames) name <- newnames[k]
   if (overwrite) name<-xnames[k]
       pnewlevels <- levlev(xx,newlevels[[k]])
-      levels(xx) <- pnewlevels
+      levels(xx,...) <- pnewlevels
       data[,name] <- xx
   }
 }
