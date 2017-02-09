@@ -387,10 +387,11 @@ if (is.data.frame(data)) {# {{{
   }
 
   if (!is.null(newlevels)) {
-     if (ll==1 & !is.list(newlevels)) newlevels <- list(newlevels)
-     if (length(x)!=length(newlevels)) 
-	     warning("length of variables not consistent with list of breaks"); 
-     if (length(newlevels)!=ll) newlevels <- rep(list(newlevels[[1]]),ll)
+      if (ll==1 & !is.list(newlevels)) newlevels <- list(newlevels)
+      if (is.list(newlevels) && !is.list(newlevels[[1]])) newlevels <- list(newlevels)
+      if (length(x)!=length(newlevels)) 
+          warning("length of variables not consistent with list of breaks"); 
+      if (length(newlevels)!=ll) newlevels <- rep(list(newlevels[[1]]),ll)
   }
 
 
