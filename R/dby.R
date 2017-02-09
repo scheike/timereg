@@ -58,6 +58,9 @@
 ##' a <- d
 ##' dby2(a, mean, median, REGEX=TRUE) <- '^[y|x]'~id
 ##' a
+##' ## wildcards 
+##' dby2(a,'y*'+'x*'~id,mean) 
+##'
 ##'
 ##' ## subset
 ##' dby(d, x<0) <- list(z=NA)
