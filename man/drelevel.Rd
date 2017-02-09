@@ -10,8 +10,8 @@
 \alias{drelevel<-}
 \title{relev levels for data frames}
 \usage{
-drelevel(data, x, ref = NULL, regex = mets.options()$regex, sep = NULL,
-  ...)
+drelevel(data, x, ref = NULL, newlevels = NULL,
+  regex = mets.options()$regex, sep = NULL, ...)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}
@@ -19,6 +19,8 @@ drelevel(data, x, ref = NULL, regex = mets.options()$regex, sep = NULL,
 \item{x}{name of variable, or fomula, or names of variables on data frame.}
 
 \item{ref}{new reference variable}
+
+\item{newlevels}{to combine levels of factor in data frame}
 
 \item{regex}{for regular expressions.}
 
@@ -40,6 +42,7 @@ dstr(mena)
 
 mena2 <- drelevel(mena,"cohort","(1980,1982]")
 mena2 <- drelevel(mena,~cohort,"(1980,1982]")
+mena2 <- drelevel(mena,cohortII~cohort,"(1980,1982]")
 dlevels(mena)
 dlevels(mena2)
 drelevel(mena,ref="(1975,1977]")  <-  ~cohort
@@ -50,8 +53,34 @@ dtable(mena,"coh*",level=1)
 ### level 1 of zyg as baseline for new variable
 drelevel(mena,ref=1) <- ~zyg
 drelevel(mena,ref=c("DZ","[1973,1975]")) <- ~ zyg+cohort
+drelevel(mena,ref=c("DZ","[1973,1975]")) <- zygdz+cohort.early~ zyg+cohort
 ### level 2 of zyg and cohort as baseline for new variables
 drelevel(mena,ref=2) <- ~ zyg+cohort
+dlevels(mena)
+
+##################### combining factor levels with newlevels argument
+
+dcut(mena,labels=c("I","II","III","IV")) <- cat4~agemena
+dlevels(drelevel(mena,~cat4,newlevels=1:3))
+dlevels(drelevel(mena,ncat4~cat4,newlevels=3:2))
+drelevel(mena,newlevels=3:2) <- ncat4~cat4
+dlevels(mena)
+
+dlevels(drelevel(mena,nca4~cat4,newlevels=list(list(c(1,4),2:3))))
+
+drelevel(mena,newlevels=list(list(c(1,4),2:3))) <- nca4..2 ~ cat4
+dlevels(mena)
+
+drelevel(mena,newlevels=list(list("I-III"=c("I","II","III"),"IV"="IV"))) <- nca4..3 ~ cat4
+dlevels(mena)
+drelevel(mena,newlevels=list(list("I-III"=c("I","II","III")))) <- nca4..4 ~ cat4
+dlevels(mena)
+
+
+drelevel(mena,newlevels=list(list(group1=c("I","II","III")))) <- nca4..5 ~ cat4
+dlevels(mena)
+
+drelevel(mena,newlevels=list(list(g1=c("I","II","III"),g2="IV"))) <- nca4..6 ~ cat4
 dlevels(mena)
 
 }
