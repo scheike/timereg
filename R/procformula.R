@@ -9,7 +9,7 @@ gsub2 <- function(pattern, replacement, x, ...) {
   result
 }
 
-procform <- function(formula, sep="\\|", nsep=1, return.formula=FALSE, data=NULL,
+procform <- function(formula=NULL, sep="\\|", nsep=1, return.formula=FALSE, data=NULL,
              no.match=TRUE, regex=FALSE, return.list=TRUE, specials=NULL,...) {
     res <- NULL
     if (is.null(formula)) {
