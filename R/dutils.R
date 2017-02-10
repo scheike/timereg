@@ -235,6 +235,7 @@ return(data)
 ##' @param newlevels to combine levels of factor in data frame
 ##' @param regex for regular expressions.
 ##' @param sep seperator for naming of cut names.
+##' @param overwrite=TRUE to overwrite variable 
 ##' @param ... Optional additional arguments
 ##' @author Klaus K. Holst and Thomas Scheike
 ##' @examples
@@ -272,27 +273,27 @@ return(data)
 ##' drelevel(mena,newlevels=3:2) <- ncat4~cat4
 ##' dlevels(mena)
 ##' 
-##' dlevels(drelevel(mena,nca4~cat4,newlevels=list(list(c(1,4),2:3))))
+##' dlevels(drelevel(mena,nca4~cat4,newlevels=list(c(1,4),2:3)))
 ##' 
-##' drelevel(mena,newlevels=list(list(c(1,4),2:3))) <- nca4..2 ~ cat4
+##' drelevel(mena,newlevels=list(c(1,4),2:3))) <- nca4..2 ~ cat4
 ##' dlevels(mena)
 ##' 
-##' drelevel(mena,newlevels=list(list("I-III"=c("I","II","III"),"IV"="IV"))) <- nca4..3 ~ cat4
+##' drelevel(mena,newlevels=list("I-III"=c("I","II","III"),"IV"="IV")) <- nca4..3 ~ cat4
 ##' dlevels(mena)
 
-##' drelevel(mena,newlevels=list(list("I-III"=c("I","II","III")))) <- nca4..4 ~ cat4
+##' drelevel(mena,newlevels=list("I-III"=c("I","II","III"))) <- nca4..4 ~ cat4
 ##' dlevels(mena)
 ##' 
 ##' 
-##' drelevel(mena,newlevels=list(list(group1=c("I","II","III")))) <- nca4..5 ~ cat4
+##' drelevel(mena,newlevels=list(group1=c("I","II","III"))) <- nca4..5 ~ cat4
 ##' dlevels(mena)
 ##' 
-##' drelevel(mena,newlevels=list(list(g1=c("I","II","III"),g2="IV"))) <- nca4..6 ~ cat4
+##' drelevel(mena,newlevels=list(g1=c("I","II","III"),g2="IV")) <- nca4..6 ~ cat4
 ##' dlevels(mena)
 ##' 
 ##' @aliases dlevels drelevel drelevel<- dfactor dfactor<- dnumeric dnumeric<-
 ##' @export
-drelevel <- function(data,x,ref=NULL,newlevels=NULL,regex=mets.options()$regex,sep=NULL,...)
+drelevel <- function(data,x,ref=NULL,newlevels=NULL,regex=mets.options()$regex,sep=NULL,overwrite=FALSE,...)
 {# {{{
 
  if (missing(x) && is.data.frame(data))  stop("specify factor to relevel for data frame\n")
@@ -310,12 +311,12 @@ drelevel <- function(data,x,ref=NULL,newlevels=NULL,regex=mets.options()$regex,s
       if (is.vector(data)) data <- factor(data)
       if (!is.null(ref)) {
 	      if (is.numeric(ref)) ref <-  levels(data)[ref]
-              gx <- relevel(data,ref=ref)
+              gx <- relevel(data,ref=ref,...)
       return(gx)
       }
       if (!is.null(newlevels)) {
 	      pnewlevels <- levlev(data,newlevels)
-	      levels(data) <- pnewlevels
+	      levels(data,...) <- pnewlevels
 	      return(data)
       }
  } # }}}
@@ -404,15 +405,17 @@ for (k in 1:ll)
   if (!is.null(ref)) {
   name<- paste(xnames[k],ref[k],sep=sep)
   if (usernames) name <- newnames[k]
+  if (overwrite) name<-xnames[k]
       if (is.numeric(ref[k])) refk <-  levels(xx)[ref[k]] else refk <- ref[k]
-      gx <- relevel(xx,ref=refk)
+      gx <- relevel(xx,ref=refk,...)
       data[,name] <- gx
   }
   if (!is.null(newlevels)) {
   name<- paste(xnames[k],newlevels[[k]][1],sep=sep)
   if (usernames) name <- newnames[k]
+  if (overwrite) name<-xnames[k]
       pnewlevels <- levlev(xx,newlevels[[k]])
-      levels(xx) <- pnewlevels
+      levels(xx,...) <- pnewlevels
       data[,name] <- xx
   }
 }

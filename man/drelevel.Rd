@@ -32,7 +32,7 @@ drelevel(data, x, ref = NULL, newlevels = NULL,
 levels shows levels for variables in data frame, relevel relevels a factor in data.frame
 }
 \examples{
-
+library(mets)
 data(mena)
 dstr(mena)
 dfactor(mena)  <- ~twinnum
@@ -40,7 +40,10 @@ dnumeric(mena) <- ~twinnum.f
 
 dstr(mena)
 
+source("../R/dutils.R")
 mena2 <- drelevel(mena,"cohort","(1980,1982]")
+mena2 <- drelevel(mena,"cohort","(1980,1982]",overwrite=TRUE)
+
 mena2 <- drelevel(mena,~cohort,"(1980,1982]")
 mena2 <- drelevel(mena,cohortII~cohort,"(1980,1982]")
 dlevels(mena)
@@ -66,21 +69,21 @@ dlevels(drelevel(mena,ncat4~cat4,newlevels=3:2))
 drelevel(mena,newlevels=3:2) <- ncat4~cat4
 dlevels(mena)
 
-dlevels(drelevel(mena,nca4~cat4,newlevels=list(list(c(1,4),2:3))))
+dlevels(drelevel(mena,nca4~cat4,newlevels=list(c(1,4),2:3)))
 
-drelevel(mena,newlevels=list(list(c(1,4),2:3))) <- nca4..2 ~ cat4
+drelevel(mena,newlevels=list(c(1,4),2:3)) <- nca4..2 ~ cat4
 dlevels(mena)
 
-drelevel(mena,newlevels=list(list("I-III"=c("I","II","III"),"IV"="IV"))) <- nca4..3 ~ cat4
+drelevel(mena,newlevels=list("I-III"=c("I","II","III"),"IV"="IV")) <- nca4..3 ~ cat4
 dlevels(mena)
-drelevel(mena,newlevels=list(list("I-III"=c("I","II","III")))) <- nca4..4 ~ cat4
-dlevels(mena)
-
-
-drelevel(mena,newlevels=list(list(group1=c("I","II","III")))) <- nca4..5 ~ cat4
+drelevel(mena,newlevels=list("I-III"=c("I","II","III"))) <- nca4..4 ~ cat4
 dlevels(mena)
 
-drelevel(mena,newlevels=list(list(g1=c("I","II","III"),g2="IV"))) <- nca4..6 ~ cat4
+
+drelevel(mena,newlevels=list(group1=c("I","II","III"))) <- nca4..5 ~ cat4
+dlevels(mena)
+
+drelevel(mena,newlevels=list(g1=c("I","II","III"),g2="IV")) <- nca4..6 ~ cat4
 dlevels(mena)
 
 }
