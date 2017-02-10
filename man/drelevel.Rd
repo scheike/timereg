@@ -10,11 +10,13 @@
 \alias{drelevel<-}
 \title{relev levels for data frames}
 \usage{
-drelevel(data, x, ref = NULL, newlevels = NULL,
-  regex = mets.options()$regex, sep = NULL, ...)
+drelevel(data, y = NULL, x = NULL, ref = NULL, newlevels = NULL,
+  regex = mets.options()$regex, sep = NULL, overwrite = FALSE, ...)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}
+
+\item{y}{name of variable, or fomula, or names of variables on data frame.}
 
 \item{x}{name of variable, or fomula, or names of variables on data frame.}
 
@@ -26,13 +28,15 @@ drelevel(data, x, ref = NULL, newlevels = NULL,
 
 \item{sep}{seperator for naming of cut names.}
 
+\item{overwrite}{to overwrite variable}
+
 \item{...}{Optional additional arguments}
 }
 \description{
 levels shows levels for variables in data frame, relevel relevels a factor in data.frame
 }
 \examples{
-library(mets)
+
 data(mena)
 dstr(mena)
 dfactor(mena)  <- ~twinnum
@@ -40,12 +44,9 @@ dnumeric(mena) <- ~twinnum.f
 
 dstr(mena)
 
-source("../R/dutils.R")
-mena2 <- drelevel(mena,"cohort","(1980,1982]")
-mena2 <- drelevel(mena,"cohort","(1980,1982]",overwrite=TRUE)
-
-mena2 <- drelevel(mena,~cohort,"(1980,1982]")
-mena2 <- drelevel(mena,cohortII~cohort,"(1980,1982]")
+mena2 <- drelevel(mena,"cohort",ref="(1980,1982]")
+mena2 <- drelevel(mena,~cohort,ref="(1980,1982]")
+mena2 <- drelevel(mena,cohortII~cohort,ref="(1980,1982]")
 dlevels(mena)
 dlevels(mena2)
 drelevel(mena,ref="(1975,1977]")  <-  ~cohort
@@ -76,6 +77,7 @@ dlevels(mena)
 
 drelevel(mena,newlevels=list("I-III"=c("I","II","III"),"IV"="IV")) <- nca4..3 ~ cat4
 dlevels(mena)
+
 drelevel(mena,newlevels=list("I-III"=c("I","II","III"))) <- nca4..4 ~ cat4
 dlevels(mena)
 

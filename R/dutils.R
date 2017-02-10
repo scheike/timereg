@@ -4,6 +4,7 @@
 ##' using group size given by probs, or equispace groups on range. Default 
 ##' is equally sized groups if possible
 ##' @param data if x is formula or names for data frame then data frame is needed.
+##' @param y name of variable, or fomula, or names of variables on data frame.
 ##' @param x name of variable, or fomula, or names of variables on data frame.
 ##' @param probs groups defined from quantiles
 ##' @param breaks  number of breaks, for variables or vector of break points,
@@ -11,6 +12,8 @@
 ##' @param regex for regular expressions.
 ##' @param sep seperator for naming of cut names.
 ##' @param na.rm to remove NA for grouping variables.
+##' @param labels to use for cut groups 
+##' @param all to do all variables, even when breaks are not unique 
 ##' @param ... Optional additional arguments
 ##' @author Klaus K. Holst and Thomas Scheike
 ##' @examples
@@ -19,6 +22,9 @@
 ##' sTRACE$age3 <- sTRACE$age^3
 ##'
 ##' mm <- dcut(sTRACE,~age+wmi)
+##' head(mm)
+##'
+##' mm <- dcut(sTRACE,catage4+wmi4~age+wmi)
 ##' head(mm)
 ##'
 ##' mm <- dcut(sTRACE,~age+wmi,breaks=c(2,4))
@@ -49,6 +55,7 @@
 ##' head(mm)
 ##'
 ##' dcut(mm) <- c("age","*m*")
+##' dcut(mm) <- ageg1+wmig1~age+wmi
 ##' head(mm)
 ##'
 ##' ############################
@@ -56,7 +63,7 @@
 ##' ############################
 ##'
 ##' head(mm)
-##' drename(mm, ~age+wmi) <- c("Wmi","Age")
+##' drename(mm, ~Age+Wmi) <- c("wmi","age")
 ##' head(mm)
 ##' mm1 <- mm
 ##'
@@ -77,7 +84,7 @@
 ##' names(dd)
 ##' @aliases dcut dcut<- dunique drm drm<- dnames dnames<- drename drename<- dkeep dkeep<- ddrop ddrop<- 
 ##' @export
-dcut <- function(data,x,breaks=4,probs=NULL,equi=FALSE,regex=mets.options()$regex,sep=NULL,na.rm=TRUE,labels=NULL,all=FALSE,...)
+dcut <- function(data,y=NULL,x=NULL,breaks=4,probs=NULL,equi=FALSE,regex=mets.options()$regex,sep=NULL,na.rm=TRUE,labels=NULL,all=FALSE,...)
 {# {{{
     if (is.vector(data)) {# {{{
 	if (is.list(breaks)) breaks <- unlist(breaks)
@@ -112,51 +119,29 @@ dcut <- function(data,x,breaks=4,probs=NULL,equi=FALSE,regex=mets.options()$rege
 
 if (is.data.frame(data)) {# {{{
 
-  usernames <- FALSE# {{{
-
-  if (inherits(x,"formula")) {
-     vars <-mets:::procform(x,data=data,...)
-
-      usernames <- FALSE
-	 if (!is.null(vars$response)) usernames<-TRUE
-	 if (usernames) {
-            newnames <- vars$response
-	    if (length(vars$response)!=length(vars$predictor)) { 
-	    warning("length of new names not consistent with length of cut variables, uses default naming\n"); 
-	   usernames <- FALSE
-	   }
-	 }
- }
- 
  if (is.null(sep)) sep <- "cat."
- if (missing(x)) x<- ~.
 
- if (inherits(x,"formula")) {
-     x <- mets:::procform(x,data=data)$predictor
-###     x <- all.vars(x)
-     xnames <- x
-  } else if  (is.character(x)) {
-     xnames <- x
-     xxx<-c()
-     for (xx in xnames)
-     {
-        if (!regex) xx <- glob2rx(xx)
-        n <- grep(xx,names(data))
-        xxx <- c(xxx,names(data)[n])
+ usernames <- FALSE# {{{
+
+     vars <-mets::procform3(y,x,data=data,regex=regex,...)
+     x <-  xnames <- vars$x
+
+     if (!is.null(vars$y)) {
+         usernames<-TRUE
+         newnames <- vars$y
+	 if (length(vars$y)!=length(vars$x)) { 
+	   warning("length of new names not consistent with length of cut variables, uses default naming\n"); 
+	   usernames <- FALSE
+      }
      }
-     xnames <- xxx[!duplicated(xxx)]
-  }
 # }}}
 
   if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
   dots <- list()
-  args <- lapply(dots, function(x) {
-           if (length(x)==1 && is.character(x)) x <- data[,x]
-           x
-       })
+  args <- lapply(dots, function(x) { if (length(x)==1 && is.character(x)) x <- data[,x]; x })
+
   if (!is.list(x)) x <- list(x)
   ll <- length(x)
-
   if (ll==1 & !is.list(breaks) & length(breaks)>1) breaks <- list(breaks)
 
   break.points <- FALSE
@@ -224,18 +209,19 @@ return(data)
 }# }}}
 
 ##' @export
-"dcut<-" <- function(data,...,value) dcut(data,value,...)
+"dcut<-" <- function(data,...,value) dcut(data,y=value,...)
 
 ##' relev levels for data frames
 ##'
 ##' levels shows levels for variables in data frame, relevel relevels a factor in data.frame 
 ##' @param data if x is formula or names for data frame then data frame is needed.
+##' @param y name of variable, or fomula, or names of variables on data frame.
 ##' @param x name of variable, or fomula, or names of variables on data frame.
 ##' @param ref new reference variable 
 ##' @param newlevels to combine levels of factor in data frame
 ##' @param regex for regular expressions.
 ##' @param sep seperator for naming of cut names.
-##' @param overwrite=TRUE to overwrite variable 
+##' @param overwrite to overwrite variable 
 ##' @param ... Optional additional arguments
 ##' @author Klaus K. Holst and Thomas Scheike
 ##' @examples
@@ -247,9 +233,9 @@ return(data)
 ##' 
 ##' dstr(mena)
 ##' 
-##' mena2 <- drelevel(mena,"cohort","(1980,1982]")
-##' mena2 <- drelevel(mena,~cohort,"(1980,1982]")
-##' mena2 <- drelevel(mena,cohortII~cohort,"(1980,1982]")
+##' mena2 <- drelevel(mena,"cohort",ref="(1980,1982]")
+##' mena2 <- drelevel(mena,~cohort,ref="(1980,1982]")
+##' mena2 <- drelevel(mena,cohortII~cohort,ref="(1980,1982]")
 ##' dlevels(mena)
 ##' dlevels(mena2)
 ##' drelevel(mena,ref="(1975,1977]")  <-  ~cohort
@@ -275,12 +261,12 @@ return(data)
 ##' 
 ##' dlevels(drelevel(mena,nca4~cat4,newlevels=list(c(1,4),2:3)))
 ##' 
-##' drelevel(mena,newlevels=list(c(1,4),2:3))) <- nca4..2 ~ cat4
+##' drelevel(mena,newlevels=list(c(1,4),2:3)) <- nca4..2 ~ cat4
 ##' dlevels(mena)
 ##' 
 ##' drelevel(mena,newlevels=list("I-III"=c("I","II","III"),"IV"="IV")) <- nca4..3 ~ cat4
 ##' dlevels(mena)
-
+##' 
 ##' drelevel(mena,newlevels=list("I-III"=c("I","II","III"))) <- nca4..4 ~ cat4
 ##' dlevels(mena)
 ##' 
@@ -293,10 +279,9 @@ return(data)
 ##' 
 ##' @aliases dlevels drelevel drelevel<- dfactor dfactor<- dnumeric dnumeric<-
 ##' @export
-drelevel <- function(data,x,ref=NULL,newlevels=NULL,regex=mets.options()$regex,sep=NULL,overwrite=FALSE,...)
+drelevel <- function(data,y=NULL,x=NULL,ref=NULL,newlevels=NULL,regex=mets.options()$regex,sep=NULL,overwrite=FALSE,...)
 {# {{{
 
- if (missing(x) && is.data.frame(data))  stop("specify factor to relevel for data frame\n")
  if (is.null(ref) && is.null(newlevels)) stop("specify baseline-reference level or new levels \n")
 
  if (!is.null(ref) & !is.null(newlevels)) { 
@@ -323,62 +308,25 @@ drelevel <- function(data,x,ref=NULL,newlevels=NULL,regex=mets.options()$regex,s
 
 if (is.data.frame(data)) {# {{{
 
-  usernames <- FALSE# {{{
+ usernames <- FALSE# {{{
 
-  if (inherits(x,"formula")) {
-     vars <-mets:::procform(x,data=data,...)
+     vars <-mets::procform3(y,x,data=data,regex=regex,...)
+     x <-  xnames <- vars$x
 
-      usernames <- FALSE
-	 if (!is.null(vars$response)) usernames<-TRUE
-	 if (usernames) {
-            newnames <- vars$response
-	    if (length(vars$response)!=length(vars$predictor)) { 
-	    warning("length of new names not consistent with length of cut variables, uses default naming\n"); 
+     if (!is.null(vars$y)) {
+         usernames<-TRUE
+         newnames <- vars$y
+	 if (length(vars$y)!=length(vars$x)) { 
+	   warning("length of new names not consistent with length of cut variables, uses default naming\n"); 
 	   usernames <- FALSE
-	   }
-	 }
- }
- 
- if (inherits(x,"formula")) {
-     x <- mets:::procform(x,data=data)$predictor
-###     x <- all.vars(x)
-     xnames <- x
-  } else if  (is.character(x)) {
-     xnames <- x
-     xxx<-c()
-     for (xx in xnames)
-     {
-        if (!regex) xx <- glob2rx(xx)
-        n <- grep(xx,names(data))
-        xxx <- c(xxx,names(data)[n])
+      }
      }
-     xnames <- xxx[!duplicated(xxx)]
-  }
 # }}}
-
-### if (inherits(x,"formula")) {
-###     x <- all.vars(x)
-###     if (x[1]==".") x <- names(data)
-###     xnames <- x
-###  } else if  (is.character(x)) {
-###     xnames <- x
-###     xxx<-c()
-###     for (xx in xnames)
-###     {
-###        if (!regex) xx <- glob2rx(xx)
-###        n <- grep(xx,names(data))
-###        xxx <- c(xxx,names(data)[n])
-###     }
-###     xnames <- xxx[!duplicated(xxx)]
-###  }
-###
 
   if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
   dots <- list()
-  args <- lapply(dots, function(x) {
-			           if (length(x)==1 && is.character(x)) x <- data[,x]
-			           x
-	       })
+  args <- lapply(dots, function(x) { if (length(x)==1 && is.character(x)) x <- data[,x]; x })
+
   if (!is.list(x)) x <- list(x)
   ll <- length(x)
 
@@ -426,8 +374,11 @@ return(data)
 }# }}}
 
 ##' @export
-"drelevel<-" <- function(data,...,value) drelevel(data,value,...)
+"drelevel<-" <- function(data,x=NULL,...,value) drelevel(data,y=value,x=x,...)
 
+tsglob2rx <- function(x) {
+ glob2rx(gsub("\\+","\\\\+",x))
+}
 
 levlev <- function(fac,ref,regex=FALSE)
 {# {{{
@@ -444,7 +395,7 @@ for (k in 1:length(ref)) {
 	xxx <- c()
 	for (xx in refs)
 	{
-	   if (!regex) xx <- glob2rx(xx)
+	   if (!regex) xx <- tsglob2rx(xx)
            n <- grep(xx,lf)
 	   xxx <- c(xxx,lf[n])
 	}
@@ -458,8 +409,10 @@ for (k in 1:length(ref)) {
 	}
 	newreflist <- c(newreflist,setNames(list(refs),nn))
 	mm <- match(refs,lfr)
+
 	lfr <- lfr[-mm]
 }
+
 
 if (length(lfr)>=1)
 {
@@ -475,38 +428,32 @@ return(newreflist)
 }# }}}
 
 ##' @export
-dlevels <- function(data,x,regex=mets.options()$regex,max.levels=20,cols=FALSE,...)
+dlevels <- function(data,y=NULL,x=NULL,regex=mets.options()$regex,max.levels=20,cols=FALSE,...)
 {# {{{
 
  if (is.factor(data)) {
 	 return(base::levels(data,...)) 
- } else if (is.data.frame(data)) {
+ } 
 
- if (missing(x)) x <-  ~.
+ if (is.data.frame(data)) {
+   usernames <- FALSE# {{{
 
- if (inherits(x,"formula")) {
-     x <- all.vars(x)
-     if (x[1]==".") x <- names(data)
-     xnames <- x
-  } else if  (is.character(x)) {
-     xnames <- x
-     xxx<-c()
-     for (xx in xnames)
-     {
-        if (!regex) xx <- glob2rx(xx)
-        n <- grep(xx,names(data))
-        xxx <- c(xxx,names(data)[n])
+     vars <-mets::procform3(y,x,data=data,regex=regex,...)
+     x <-  xnames <- vars$x
+
+     if (!is.null(vars$y)) {
+         usernames<-TRUE
+         newnames <- vars$y
+	 if (length(vars$y)!=length(vars$x)) { 
+	   warning("length of new names not consistent with length of cut variables, uses default naming\n"); 
+	   usernames <- FALSE
+      }
      }
-     xnames <- xxx[!duplicated(xxx)]
-  }
-
+# }}}
 
   if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
   dots <- list()
-  args <- lapply(dots, function(x) {
-			           if (length(x)==1 && is.character(x)) x <- data[,x]
-			           x
-	       })
+  args <- lapply(dots, function(x) { if (length(x)==1 && is.character(x)) x <- data[,x]; x })
   if (!is.list(x)) x <- list(x)
   ll <- length(x)
 
@@ -555,211 +502,34 @@ if (cols==TRUE) {
 
 }# }}}
 
-#####' @export
-###"dlevels<-" <- function(data,x,...,value) dlevels(data,x,y=value,...)
-
 ##' @export
-drm <- function(data,x,regex=mets.options()$regex)
-{# {{{
- if (inherits(x,"formula")) {
-     xnames <- all.vars(x)
-  } else if  (is.character(x)) {
-     xnames <- x
-     xxx<-c()
-     for (xx in xnames)
-     {
-        if (!regex) xx <- glob2rx(xx)
-        n <- grep(xx,names(data))
-        xxx <- c(xxx,names(data)[n])
-     }
-     xnames <- xxx[!duplicated(xxx)]
-  }
-
-  data[,xnames] <- NULL
-
-return(data)
-}# }}}
-
-##' @export
-"drm<-" <- function(data,...,value) drm(data,value,...)
-
-##' @export
-drename <- function(data,var=NULL,value=NULL,fun=base::tolower,...)
+drename <- function(data,y=NULL,x=NULL,fun=base::tolower,...)
 {  # {{{
 
-	if (!is.null(var))    {
-		var <- procform(var,data=data,return.list=TRUE,...)
-	        varargs <-   c(!is.null(var$predictor),!is.null(var$response))
-	} else varargs <- c(0,0)
-	if (!is.null(value)) {
-		value <- procform(value,data=data,return.list=TRUE,...)
-	        valueargs <- c(!is.null(value$predictor),!is.null(value$response))
-	} else valueargs <- c(0,0)
+    vars <-mets::procform3(y,x,data=data,...)
+    x <-  xnames <- vars$x
 
-	vargs <- 1*varargs+1*valueargs
+    if (!is.null(vars$y)) {
+         newnames <- vars$y
+	 if (length(vars$y)!=length(vars$x)) { 
+	   stop("length of new names not consistent with length of cut variables, uses default naming\n"); 
+      }
+    } else { ## if newnames not given then use fun 
+       newnames <- do.call(fun,list(x))
+    }
 
-	if (sum(varargs)+sum(valueargs)>=3) 
-		stop("arguments specified multiple times \n")
+    varpos <- match(x,colnames(data))
 
-	if (sum(varargs)==2)   {
-		value <- var$response;
-		var <- var$predictor;   
-	} else if (sum(valueargs)==2) {
-		var <-   value$predictor; 
-		value <- value$response;
-	} else if (sum(vargs)==2) {
-		value   <- c(value$predictor,value$response)
-		var     <- c(var$predictor,var$response)
-	} else if (sum(vargs)==1) {## only one set of variables , so  use fun on these vars 
-		var <- c(value$predictor,value$response,var$response,var$predictor)
-	        value <- do.call(fun,list(var))
-        } else { ## nothing given so 
-		var <- colnames(data); varpos <- seq(ncol(data))
-	        value <- do.call(fun,list(var))
-        }
-
-        varpos <- match(var,colnames(data))
-
-    if (length(varpos)!= length(value)) stop("length of old and new variables must match")
-    colnames(data)[varpos] <- value
+    if (length(varpos)!= length(newnames)) stop("length of old and new variables must match")
+    colnames(data)[varpos] <- newnames
     return(data)
 } # }}}
 
 ##' @export
-"drename<-" <- function(data,...,value) drename(data,value=value,...)
+"drename<-" <- function(data,x=NULL,...,value) drename(data,y=value,x=x,...)
 
 ##' @export
-dnames <- function(data,...) drename(data,...)
-
-##' @export
-"dnames<-" <- function(data,...,value) drename(data,value=value,...)
-
-
-##' @export
-dkeep <- function(data,var,keep=TRUE,regex=mets.options()$regex)
-{  # {{{
-
- if (inherits(var,"formula")) { var <- all.vars(var) }
-
-if (is.character(var)) {
-        varxnames <- var
-        varnnames <- c()
-        xxx<-c()
-     for (xx in varxnames)
-     {
-        if (!regex) xx <- glob2rx(xx)
-        n <- grep(xx,names(data))
-        xxx <- c(xxx,names(data)[n])
-        varnnames <- c(varnnames,n)
-     }
-     varxnames <- xxx[!duplicated(xxx)]
-     varnnames <- varnnames[!duplicated(varnnames)]
-  }
-
-
-if (keep) data <- data[,varnnames] else data <- data[,-1*varnnames]
-  return(data)
-} # }}}
-
-##' @export
-"dkeep<-" <- function(x,...,value) dkeep(x,value,...)
-
-##' @export
-ddrop <- function(data,var,keep=FALSE) dkeep(data,var,keep=FALSE)
-
-##' @export
-"ddrop<-" <- function(x,...,value) dkeep(x,value,keep=FALSE,...)
-
-##' @export
-dfactorold <- function(data,x,regex=mets.options()$regex,sep=NULL,levels,labels,...)
-{# {{{
-
- if (is.null(sep))  sep <- ".f"
-
- if (is.vector(data)) {
-	 if (!is.factor(data)) {
-		 args <- list(data)
-		 if (!missing(levels)) args <- c(args,list(levels=levels))
-		 if (!missing(labels)) args <- c(args,list(labels=labels))
-	         gx <- do.call(factor,args)
-	 } else gx <- data
-      return(gx)
- } else {
-
- if (inherits(x,"formula")) {
-     x <- all.vars(x)
-     if (x[1]==".") x <- names(data)
-     xnames <- x
-  } else if  (is.character(x)) {
-     xnames <- x
-     xxx<-c()
-     for (xx in xnames)
-     {
-        if (!regex) xx <- glob2rx(xx)
-        n <- grep(xx,names(data))
-        xxx <- c(xxx,names(data)[n])
-     }
-     xnames <- xxx[!duplicated(xxx)]
-  }
-
-
-  if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
-  dots <- list()
-  args <- lapply(dots, function(x) {
-			           if (length(x)==1 && is.character(x)) x <- data[,x]
-			           x
-	       })
-  if (!is.list(x)) x <- list(x)
-  ll <- length(x)
-
- if (!missing(levels)) if (!is.list(levels))   levels <- list(levels)
- if (!missing(labels)) if (!is.list(labels) )   labels <- list(labels)
-
-### if (!missing(levels) ) print(levels)
-### if (!missing(labels) ) print(labels)
-
-  misslabel <- TRUE
-  if (!missing(labels))  {
-	  misslabel <- FALSE
-  if ((length(x)!=length(labels))) {
-	  warning("length of label list not consistent with variables")
-	  labels <- rep(list(labels[[1]]),ll)
-###	  print(labels)
-  }
-  }
-
-
-  misslevel <- TRUE
-  if (!missing(levels))  { 
-	  misslevel <- FALSE
-  if ((length(x)!=length(levels))) {
-	  warning("length of levels list not consistent with variables")
-	  levels <- rep(list(levels[[1]]),ll)
-  }
-  }
- 
-
-for (k in 1:ll)
-{
-  xx <- x[[k]]
-  name<- paste(xnames[k],sep,sep="")
-  if (!is.factor(xx) ) { 
-           args <- list(xx)
-           if (!misslevel) args <- c(args,list(levels=levels[[k]]))
-	   if (!misslabel) args <- c(args,list(labels=labels[[k]]))
-	   gx <- do.call(factor,args)
-           data[,name] <- gx  
-   }
-}
-
-return(data)
-}
-
-}# }}}
-
-##' @export
-dfactor <- function(data,x,regex=mets.options()$regex,sep=NULL,usernames=NULL,
-		     levels,labels,...)
+dfactor <- function(data,y=NULL,x=NULL,regex=mets.options()$regex,sep=NULL,usernames=NULL,levels,labels,...)
 {# {{{
 
  if (is.null(sep))  sep <- ".f"
@@ -775,47 +545,27 @@ dfactor <- function(data,x,regex=mets.options()$regex,sep=NULL,usernames=NULL,
  } 
 
 if (is.data.frame(data)) {
-  usernames <- FALSE
 
-  if (inherits(x,"formula")) {
-     vars <-mets:::procform(x,data=data,...)
+   usernames <- FALSE# {{{
 
-      usernames <- FALSE
-	 if (!is.null(vars$response)) usernames<-TRUE
-	 if (usernames) {
-            newnames <- vars$response
-	    if (length(vars$response)!=length(vars$predictor)) { 
-	    warning("length of new names not consistent with length of cut variables, uses default naming\n"); 
-	   usernames <- FALSE
-	   }
-	 }
- }
+vars <-mets::procform3(y,x,data=data,regex=regex,...)
+x <-  xnames <- vars$x
 
- if (inherits(x,"formula")) {
-     x <- mets:::procform(x,data=data)$predictor
-###     x <- all.vars(x)
-     xnames <- x
-  } else if  (is.character(x)) {
-     xnames <- x
-     xxx<-c()
-     for (xx in xnames)
-     {
-        if (!regex) xx <- glob2rx(xx)
-        n <- grep(xx,names(data))
-        xxx <- c(xxx,names(data)[n])
-     }
-     xnames <- xxx[!duplicated(xxx)]
-  }
-
+if (!is.null(vars$y)) {
+	usernames<-TRUE
+	newnames <- vars$y
+	if (length(vars$y)!=length(vars$x)) { 
+		usernames <- FALSE
+	}
+}
+# }}}
 
   if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
   dots <- list()
-  args <- lapply(dots, function(x) {
-			           if (length(x)==1 && is.character(x)) x <- data[,x]
-			           x
-	       })
+  args <- lapply(dots, function(x) { if (length(x)==1 && is.character(x)) x <- data[,x]; x })
   if (!is.list(x)) x <- list(x)
   ll <- length(x)
+
 
  if (!missing(levels)) if (!is.list(levels))   levels <- list(levels)
  if (!missing(labels)) if (!is.list(labels) )   labels <- list(labels)
@@ -866,10 +616,10 @@ return(data)
 }# }}}
 
 ##' @export
-"dfactor<-" <- function(data,...,value) dfactor(data,value,...)
+"dfactor<-" <- function(data,x=NULL,...,value) dfactor(data,y=value,x=x,...)
 
 ##' @export
-dnumeric <- function(data,x,regex=mets.options()$regex,sep=NULL,all=FALSE,...)
+dnumeric <- function(data,y=NULL,x=NULL,regex=mets.options()$regex,sep=NULL,all=FALSE,...)
 {# {{{
 
  if (is.null(sep))  sep <- ".n"
@@ -880,49 +630,28 @@ dnumeric <- function(data,x,regex=mets.options()$regex,sep=NULL,all=FALSE,...)
  } 
 
  if (is.data.frame(data)) {
-  usernames <- FALSE
 
-  if (inherits(x,"formula")) {
-     vars <-mets:::procform(x,data=data,...)
+   usernames <- FALSE# {{{
 
-      usernames <- FALSE
-	 if (!is.null(vars$response)) usernames<-TRUE
-	 if (usernames) {
-            newnames <- vars$response
-	    if (length(vars$response)!=length(vars$predictor)) { 
-	    warning("length of new names not consistent with length of cut variables, uses default naming\n"); 
+     vars <-mets::procform3(y,x,data=data,regex=regex,...)
+     x <-  xnames <- vars$x
+
+     if (!is.null(vars$y)) {
+         usernames<-TRUE
+         newnames <- vars$y
+	 if (length(vars$y)!=length(vars$x)) { 
+	   warning("length of new names not consistent with length of cut variables, uses default naming\n"); 
 	   usernames <- FALSE
-	   }
-	 }
- }
-
- if (inherits(x,"formula")) {
-     x <- mets:::procform(x,data=data)$predictor
-###     x <- all.vars(x)
-     xnames <- x
-  } else if  (is.character(x)) {
-     xnames <- x
-     xxx<-c()
-     for (xx in xnames)
-     {
-        if (!regex) xx <- glob2rx(xx)
-        n <- grep(xx,names(data))
-        xxx <- c(xxx,names(data)[n])
+      }
      }
-     xnames <- xxx[!duplicated(xxx)]
-  }
-
+# }}}
 
   if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
   dots <- list()
-  args <- lapply(dots, function(x) {
-			           if (length(x)==1 && is.character(x)) x <- data[,x]
-			           x
-	       })
+  args <- lapply(dots, function(x) { if (length(x)==1 && is.character(x)) x <- data[,x]; x })
   if (!is.list(x)) x <- list(x)
   ll <- length(x)
-###  if (ll>1 & length(ref)==1) ref <- rep(ref,ll)
-###  if (length(x)!=length(ref)) stop("length of baseline reference 'ref' not consistent with variables")
+
 
 for (k in 1:ll)
 {
@@ -941,7 +670,47 @@ return(data)
 }# }}}
 
 ##' @export
-"dnumeric<-" <- function(data,...,value) dnumeric(data,value,...)
+"dnumeric<-" <- function(data,x=NULL,...,value) dnumeric(data,y=value,x=x,...)
+
+##' @export
+drm <- function(data,x=NULL,regex=mets.options()$regex,...)
+{# {{{
+  vars <-mets::procform(x,data=data,no.match=FALSE,regex=regex,...)
+  xnames <- c(vars$predictor,vars$response)
+
+  data[,xnames] <- NULL
+  return(data)
+}# }}}
+
+##' @export
+"drm<-" <- function(data,...,value) drm(data,x=value,...)
+
+##' @export
+dkeep <- function(data,x=NULL,keep=TRUE,regex=mets.options()$regex,...)
+{  # {{{
+  vars <-mets::procform(x,data=data,no.match=FALSE,regex=regex,...)
+  xnames <- c(vars$predictor,vars$response)
+  nnames <- match(xnames,names(data))
+
+  if (keep) data <- data[,nnames] else data <- data[,-1*nnames]
+  return(data)
+} # }}}
+
+##' @export
+"dkeep<-" <- function(data,...,value) dkeep(data,x=value,...)
+
+##' @export
+ddrop <- function(data,x=NULL,keep=FALSE,...) dkeep(data,x,keep=FALSE,...)
+
+##' @export
+"ddrop<-" <- function(data,...,value) dkeep(data,x=value,keep=FALSE,...)
+
+##' @export
+dnames <- function(data,...) drename(data,...)
+
+##' @export
+"dnames<-" <- function(data,...,value) drename(data,value=value,...)
+
 
 ##' Lag operator
 ##'

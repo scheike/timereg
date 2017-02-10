@@ -9,8 +9,9 @@ gsub2 <- function(pattern, replacement, x, ...) {
   result
 }
 
+##' @export
 procform <- function(formula=NULL, sep="\\|", nsep=1, return.formula=FALSE, data=NULL,
-             no.match=TRUE, regex=FALSE, return.list=TRUE, specials=NULL,...) {
+             no.match=TRUE, regex=FALSE, return.list=TRUE, specials=NULL,...) {# {{{
     res <- NULL
     if (is.null(formula)) {
         res <- colnames(data)
@@ -200,8 +201,48 @@ procformdata <- function(formula,data,sep="\\|", na.action=na.pass, do.filter=TR
         return(list(response=y,predictor=x,group=group,specials=specials))
     }
     return(list(response=y,predictor=x,specials=specials))
-}
+}# }}}
 
+procform2 <- function(y,x=NULL,z=NULL,...) {# {{{
+    yx <- procform(y,return.formula=FALSE,...)
+    y <- yx$response
+    x0 <- yx$predictor
+    z0 <- NULL
+    if (length(yx$filter)>0) z0 <- yx$filter[[1]]
+    if (is.null(x) && length(y)>0) x <- x0
+    if (NCOL(x)==0) x <- NULL
+    if (length(y)==0) y <- x0
+    if (!is.null(x)) {
+        x <- unlist(procform(x,return.formula=FALSE,...))
+    }
+    if (is.null(z)) z <- z0
+    if (!is.null(z)) {
+        zz <- unlist(procform(z,return.formula=FALSE,...))
+    }
+    if (is.null(z)) z <- z0
+    return(list(y=y,x=x,z=z))
+}# }}}
+
+##' @export
+procform3 <- function(y,x=NULL,z=NULL,...) {# {{{
+    yx <- procform(y,return.formula=FALSE,...)
+    x0 <- yx$predictor
+    y  <- yx$response
+    if (is.null(yx$predictor)) { x0 <- yx$response ; y <- NULL} 
+
+    if (is.null(y)) 
+    if (!is.null(x)) {
+        x <- procform(x,return.formula=FALSE,...)
+        y <- c(x$predictor,x$response)
+    }
+
+###    if (is.null(z)) z <- z0
+###    if (!is.null(z)) {
+###        zz <- unlist(procform(z,return.formula=FALSE,...))
+###    }
+###    if (is.null(z)) z <- z0
+    return(list(y=y,x=x0,z=z))
+}# }}}
 
 
 ## Specials <- function(f,spec,split2="+",...) {
@@ -225,7 +266,7 @@ procformdata <- function(formula,data,sep="\\|", na.action=na.pass, do.filter=TR
 ## f <- Event(leftime,time,cause) ~ id(~1+z+z2,cluster) + strata(~s1+s2) + f(a) + z*x
 ## ff <- Specials(f,"id",split2=",")
 
-Specials <- function(f,spec,split1=",",split2=NULL,...) {
+Specials <- function(f,spec,split1=",",split2=NULL,...) {# {{{
   tt <- terms(f,spec)
   pos <- attributes(tt)$specials[[spec]]
   if (is.null(pos)) return(NULL)
@@ -244,7 +285,7 @@ Specials <- function(f,spec,split1=",",split2=NULL,...) {
   return(res)
 ##  if (is.null(split2)) return(res)
 ##  strsplit(res,"+",fixed=TRUE)
-}
+}# }}}
 
 decomp.specials <- function (x, pattern = "[()]", sep = ",", ...)
   {
