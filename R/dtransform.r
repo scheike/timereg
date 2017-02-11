@@ -1,4 +1,5 @@
 
+##' @export
 dtransform <- function(data,...,subset)
 {# {{{
     if (is.vector(data)) data <- data.frame(data)
