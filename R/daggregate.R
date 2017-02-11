@@ -44,6 +44,15 @@ by2mat <- function(x,nam,...) {
 ##'
 ##' dsum(iris, .~Species, matrix=TRUE, missing=TRUE)
 ##'
+##' par(mfrow=c(1,2))
+##' data(iris)
+##' drename(iris) <- ~.
+##' daggregate(iris,'sepal*'~species|species!="virginica",fun=plot)
+##' daggregate(iris,'sepal*'~I(as.numeric(species))|I(as.numeric(species))!=1,fun=summary)
+##'
+##' dnumeric(iris) <- ~species
+##' daggregate(iris,'sepal*'~species.n|species.n!=1,fun=summary)
+##'
 ##' @export
 ##' @param data data.frame
 ##' @param y name of variable, or formula, or names of variables on data frame.
@@ -57,6 +66,7 @@ by2mat <- function(x,nam,...) {
 ##' @param matrix if TRUE a matrix is returned instead of an array
 ##' @param silent suppress messages
 ##' @param na.action How model.frame deals with 'NA's
+##' @aliases daggr
 daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=mets.options()$regex, missing=FALSE, remove.empty=FALSE, matrix=FALSE, silent=FALSE, na.action=na.pass, convert=NULL)
 {# {{{
     if (is.vector(data)) data <- data.frame(data)
