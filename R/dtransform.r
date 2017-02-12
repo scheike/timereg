@@ -16,3 +16,8 @@ return(datanew)
 
 ###xx <- dtransform(mena,ll=log(agemena)+twinnum,zyg=="DZ")
 ###xx <- dtransform(mena,ll=log(agemena)+twinnum,I(agemena)<15)
+
+##' @export
+"dtransform<-" function(data,subset,value) dtransform(data,value,subet)
+
+
