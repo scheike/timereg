@@ -270,14 +270,13 @@ return(data)
 ##' drelevel(mena,newlevels=list("I-III"=c("I","II","III"))) <- nca4..4 ~ cat4
 ##' dlevels(mena)
 ##' 
-##' 
 ##' drelevel(mena,newlevels=list(group1=c("I","II","III"))) <- nca4..5 ~ cat4
 ##' dlevels(mena)
 ##' 
 ##' drelevel(mena,newlevels=list(g1=c("I","II","III"),g2="IV")) <- nca4..6 ~ cat4
 ##' dlevels(mena)
 ##' 
-##' @aliases dlevels drelevel drelevel<- dfactor dfactor<- dnumeric dnumeric<-
+##' @aliases dlevels dlevel dlev drelevel drelev dlev<- dlevel<- drelev<- drelevel<- dfactor dfactor<- dnumeric dnumeric<-
 ##' @export
 drelevel <- function(data,y=NULL,x=NULL,ref=NULL,newlevels=NULL,regex=mets.options()$regex,sep=NULL,overwrite=FALSE,...)
 {# {{{
@@ -372,6 +371,12 @@ return(data)
 }# }}}
 
 }# }}}
+
+##' @export
+"drelev<-" <- function(data,x=NULL,...,value) drelevel(data,y=value,x=x,...)
+
+##' @export
+drelev <- function(data,y=NULL,x=NULL,...) drelevel(data,y=y,x=x,...)
 
 ##' @export
 "drelevel<-" <- function(data,x=NULL,...,value) drelevel(data,y=value,x=x,...)
@@ -501,6 +506,12 @@ if (cols==TRUE) {
 }
 
 }# }}}
+
+##' @export
+dlevel <- function(data,y=NULL,x=NULL,...) dlevels(data,y=y,x=x,...)
+
+##' @export
+dlev <- function(data,y=NULL,x=NULL,...) dlevels(data,y=y,x=x,...)
 
 ##' @export
 drename <- function(data,y=NULL,x=NULL,fun=base::tolower,...)
