@@ -162,7 +162,8 @@ void fastpattern(const umat &y, umat &pattern, uvec &group, unsigned categories 
 
   uvec mygroup(n);
   unsigned npattern = (unsigned) pow((double) categories,(double) k);
-  umat mypattern(npattern,k);
+  npattern = std::min(n,npattern);
+  umat mypattern(npattern,k); 
   mypattern.fill(1);
   unsigned K=0;
 
