@@ -13,12 +13,16 @@
 ##' dsummary(xx,ll+ll2~I(agemena>15))
 ##' @aliases dtransform dtransform<- dtrans dtrans<- 
 ##' @export
-dtransform <- function(data,...)
+dtransform <- function(data,...,EXPRLIST)
 {# {{{
     if (is.vector(data)) data <- data.frame(data)
 
 ###    if (is.list(...)) e <- eval(substitute(...), data, parent.frame()) else 
+    if (!missing(EXPRLIST)) {
+	   e <- eval(substitute(c(list(...),EXPRLIST)), data, parent.frame())
+    } else
     e <- eval(substitute(list(...)), data, parent.frame())
+
     tags <- names(e)
     condn  <- match("",tags) 
 
@@ -66,7 +70,7 @@ return(data)
 dtrans <- function(data,...) dtransform(data,...)
 
 ##' @export
-"dtransform<-" <- function(data,value) dtransform(data,value)
+"dtransform<-" <- function(data,...,value) dtransform(data,EXPRLIST=value,...)
 
 ##' @export
 "dtrans<-" <- function(data,value) dtransform(data,value)
