@@ -18,12 +18,11 @@ dtransform <- function(data,...)
     if (is.vector(data)) data <- data.frame(data)
 
 ###    if (is.list(...)) e <- eval(substitute(...), data, parent.frame()) else 
-    if (!missing(EXPRLIST)) {
-	   e <- eval(substitute(c(list(...),EXPRLIST)), data, parent.frame())
-    } else
+###    if (!missing(EXPRLIST)) {
+###	   e <- eval(substitute(c(list(...),EXPRLIST)), data, parent.frame())
+###    } else
     e <- eval(substitute(list(...)), data, parent.frame())
 
-    browser()
     tags <- names(e)
     condn  <- match("",tags) 
 
@@ -69,6 +68,4 @@ return(data)
 
 ##' @export
 dtrans <- function(data,...) dtransform(data,...)
-
-
 
