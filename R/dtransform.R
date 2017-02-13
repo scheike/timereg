@@ -14,7 +14,20 @@
 ###return(datanew)
 ###}# }}}
 
-
+##' Transform that allows condition 
+##'
+##' Defines new variables under condition for data frame 
+##' @param data is data frame 
+##' @param ... new variable definitions including possible if condition
+##' @examples
+##' data(mena)
+##'
+##' xx <- dtransform(mena,ll=log(agemena)+twinnum)
+##'
+##' xx <- dtransform(mena,ll=log(agemena)+twinnum,agemena<15)
+##' xx <- dtransform(mena,ll=100+agemena,ll2=1000,agemena>15)
+##' dsummary(xx,ll+ll2~I(agemena>15))
+##' @aliases dtransform dtransform<- dtrans dtrans<- 
 ##' @export
 dtransform <- function(data,...)
 {# {{{
@@ -64,13 +77,12 @@ return(data)
 }# }}}
 
 
-
-
-
-###xx <- dtransform(mena,ll=log(agemena)+twinnum,zyg=="DZ")
-###xx <- dtransform(mena,ll=log(agemena)+twinnum,I(agemena)<15)
+##' @export
+dtrans <- function(data,...) dtransform(data,...)
 
 ##' @export
-"dtransform<-" function(data,subset,value) dtransform(data,value,subet)
+"dtransform<-" <- function(data,value) dtransform(data,value)
 
+##' @export
+"dtrans<-" <- function(data,value) dtransform(data,value)
 
