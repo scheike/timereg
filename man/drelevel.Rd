@@ -3,9 +3,15 @@
 \name{drelevel}
 \alias{dfactor}
 \alias{dfactor<-}
+\alias{dlev}
+\alias{dlev<-}
+\alias{dlevel}
+\alias{dlevel<-}
 \alias{dlevels}
 \alias{dnumeric}
 \alias{dnumeric<-}
+\alias{drelev}
+\alias{drelev<-}
 \alias{drelevel}
 \alias{drelevel<-}
 \title{relev levels for data frames}
@@ -80,7 +86,6 @@ dlevels(mena)
 
 drelevel(mena,newlevels=list("I-III"=c("I","II","III"))) <- nca4..4 ~ cat4
 dlevels(mena)
-
 
 drelevel(mena,newlevels=list(group1=c("I","II","III"))) <- nca4..5 ~ cat4
 dlevels(mena)
