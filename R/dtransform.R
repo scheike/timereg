@@ -13,7 +13,7 @@
 ##' dsummary(xx,ll+ll2~I(agemena>15))
 ##' @aliases dtransform dtransform<- dtrans dtrans<- 
 ##' @export
-dtransform <- function(data,...,EXPRLIST)
+dtransform <- function(data,...)
 {# {{{
     if (is.vector(data)) data <- data.frame(data)
 
@@ -23,6 +23,7 @@ dtransform <- function(data,...,EXPRLIST)
     } else
     e <- eval(substitute(list(...)), data, parent.frame())
 
+    browser()
     tags <- names(e)
     condn  <- match("",tags) 
 
@@ -68,29 +69,6 @@ return(data)
 
 ##' @export
 dtrans <- function(data,...) dtransform(data,...)
-
-##' @export
-"dtransform<-" <- function(data,...,value) dtransform(data,EXPRLIST=value,...)
-
-##' @export
-"dtrans<-" <- function(data,value) dtransform(data,value)
-
-
-
-#####' @export
-###dtransform <- function(data,...,subset)
-###{# {{{
-###    if (is.vector(data)) data <- data.frame(data)
-###    subs <- substitute(subset)
-###    if (!base::missing(subs)) {
-###        expr <- suppressWarnings(inherits(try(subset,silent=TRUE),"try-error"))
-###        if (expr) data <- data[which(eval(subs,envir=data)),,drop=FALSE]
-###        else data[subset,,drop=FALSE]
-###    }
-###
-###    datanew <- transform(data,...)
-###return(datanew)
-###}# }}}
 
 
 
