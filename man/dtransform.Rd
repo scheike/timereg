@@ -5,6 +5,7 @@
 \alias{dtrans<-}
 \alias{dtransform}
 \alias{dtransform<-}
+\title{Transform that allows condition}
 \usage{
 dtransform(data, ...)
 }
@@ -13,13 +14,16 @@ dtransform(data, ...)
 
 \item{...}{new variable definitions including possible if condition}
 }
+\description{
+Defines new variables under condition for data frame
+}
 \examples{
 data(mena)
 
 xx <- dtransform(mena,ll=log(agemena)+twinnum)
 
 xx <- dtransform(mena,ll=log(agemena)+twinnum,agemena<15)
-xx <- dtransform(mena,ll=100+agemena,ll2=1000,agemena>15)
+xx <- dtransform(xx  ,ll=100+agemena,ll2=1000,agemena>15)
 dsummary(xx,ll+ll2~I(agemena>15))
 }
 
