@@ -37,13 +37,15 @@
    -  Making a factor from existing numeric variable and vice versa
 
 
-Here are the key data-manipulation moves on a data-frame which is how we typically organize our data in R. 
+Here are some key data-manipulation moves on a data-frame which is how we typically organize our data in R. 
 After having read the data into R it will typically be a data-frame, if not we 
-can force it to be a data-frame.  The functions dcut, dfactor and so on are 
-all functions that basically does what the base R cut, factor do, but are 
-easier to use in the context of data-frames. 
+can force it to be a data-frame.   The basic idea of the utility functions is 
+to get a simple and easy to type way of making simple data-manipulation on a 
+data-frame much like what is possible in SAS or STATA.  
 
-
+The functions, say,  dcut, dfactor and so on are all functions that basically does what 
+the base R cut, factor do, but are easier to use in the context of data-frames 
+and have additional functionality. 
 
 #+BEGIN_SRC R :results output  :exports both :session *R* :cache no 
 library(mets)
@@ -88,7 +90,7 @@ condition ifcond is valid. The basic functions are
 
 
 A generic function daggregate, daggr,  can be called with a function as the 
-arguemnt 
+argument 
 
 
 -  daggregate(dataframe,y~x|ifcond,fun=function,...)
