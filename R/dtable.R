@@ -37,7 +37,7 @@
 ##' dtable(sTRACE,status+vf+sex~diabetes|age>60, level=2, prop=2, total=TRUE)
 ##' dtable(sTRACE,status+vf+sex~diabetes|age>60, level=2, prop=1:2, summary=summary)
 ##'
-##' @aliases dtable
+##' @aliases dtable dtab
 ##' @export
 dtable <- function(data,y=NULL,x=NULL,...,level=-1,response=NULL,flat=TRUE,total=FALSE,prop=FALSE,summary=NULL) {
     daggregate(data,y,x,...,
@@ -115,6 +115,9 @@ dtable <- function(data,y=NULL,x=NULL,...,level=-1,response=NULL,flat=TRUE,total
                    return(res)
                })
 }
+
+##' @export
+dtab <- function(data,y=NULL,x=NULL,...) dtable(data,y=NULL,x=NULL,...)
 
 ##' @export
 print.dtable <- function(x,sep="\n",...) {

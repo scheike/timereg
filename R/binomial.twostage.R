@@ -8,8 +8,9 @@
 ##'
 ##' The reported standard errors are based on a cluster corrected score equations from the 
 ##' pairwise likelihoods assuming that the marginals are known. This gives correct standard errors
-##' in the case of the Plackett distribution (OR model for dependence), but incorrect standard
-##' errors for the Clayton-Oakes types model. For the additive gamma version of the stanard errors
+##' in the case of the Odds-Ratio model (Plackett distribution) for dependence, but incorrect standard
+##' errors for the Clayton-Oakes types model (that is also called "gamma"-frailty). For the additive gamma version of the 
+##' standard errors
 ##' are adjusted for the uncertainty in the marginal models via an iid deomposition using the iid() function of
 ##' lava. For the clayton oakes model that is not speicifed via the random effects these can be 
 ##' fixed subsequently using the iid influence functions for the marginal model, but typically this does not
@@ -197,7 +198,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 { ## {{{
     ## {{{ seting up design and variables
     rate.sim <- 1; sym=1; 
-    if (model=="clayton.oakes") dep.model <- 1 else if (model=="plackett") dep.model <- 2 else stop("Model must by either clayton.oakes or plackett \n"); 
+    if (model=="clayton.oakes"  || model=="gamma") dep.model <- 1 else if (model=="plackett" || model=="or") dep.model <- 2 else stop("Model must by either clayton.oakes or plackett \n"); 
     antpers <- NROW(data); 
 
 ### marginal prediction and binomial response, two types of calls ## {{{
@@ -447,7 +448,8 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 		    mm <- mm/sp^4
 		 } else mm  <- numDeriv::hessian(var.func,par)
 	      } else {
-	          if (var.link==0) mm <- diag(length(epar)) else mm <- diag(c(epar))
+	          if (var.link==0) mm <- diag(length(epar)) else 
+			  mm <- diag(length(c(epar)))*c(epar)
 	      }
               if (twostage==0) {  ### beta for logistic regression also part of model
 		      mm0 <- diag(length(par))

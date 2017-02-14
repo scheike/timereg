@@ -93,8 +93,9 @@ regression (ALR).
 \details{
 The reported standard errors are based on a cluster corrected score equations from the 
 pairwise likelihoods assuming that the marginals are known. This gives correct standard errors
-in the case of the Plackett distribution (OR model for dependence), but incorrect standard
-errors for the Clayton-Oakes types model. For the additive gamma version of the stanard errors
+in the case of the Odds-Ratio model (Plackett distribution) for dependence, but incorrect standard
+errors for the Clayton-Oakes types model (that is also called "gamma"-frailty). For the additive gamma version of the 
+standard errors
 are adjusted for the uncertainty in the marginal models via an iid deomposition using the iid() function of
 lava. For the clayton oakes model that is not speicifed via the random effects these can be 
 fixed subsequently using the iid influence functions for the marginal model, but typically this does not
