@@ -1186,9 +1186,9 @@ summary.mets.twostage <- function(object,digits = 3,silent=1,...)
   if (!(inherits(object,"mets.twostage"))) stop("Must be a Two-Stage object")
   
   var.link<-attr(object,"var.link");
-  if ((object$model=="plackett") & (silent==0)) cat("Dependence parameter for Plackett model \n"); 
+  if ((object$model=="plackett") & (silent==0)) cat("Dependence parameter for Odds-Ratio (Plackett) model \n"); 
   if (attr(object,"response")=="binomial") response <- "binomial" else response <- "survival"
-  if ((object$model=="clayton.oakes") & (silent==0)) cat("Dependence parameter for Clayton-Oakes model \n"); 
+  if ((object$model=="clayton.oakes") & (silent==0)) cat("Dependence parameter for Clayton-Oakes model (Gamma distributed random effects) \n"); 
 
   if ((attr(object,"additive-gamma")==1) & (silent==0)) cat("Additive gamma model \n");
 
