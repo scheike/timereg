@@ -280,8 +280,8 @@ deval <- function(data,y=NULL,x=NULL,...,matrix=FALSE,fun=Summary,simplify=FALSE
 
 ##' @export
 dmeansd <- function(data,...)  {
-	sd <- dscalar(data,fun=stats::sd,...)[,3];
-	cbind(dscalar(data,fun=base::mean,...),sd)
+	cbind(dscalar(data,fun=base::mean,...),
+	      dscalar(data,fun=stats::sd,...));
 }
 
 
