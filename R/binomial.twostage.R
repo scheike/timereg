@@ -767,17 +767,19 @@ if (is.null(ags)) ags <- matrix(1,ncol(rv1),length(theta));
        if (var.par==1) pp <- pp/sum(pp)^2
        p11 <- p11.binomial.twostage.RV(pp,rv1l,rv2l,pm,pm,theta.des,ags=ags,link=0)
        casewise <- p11/pm
-       return(c(p11,casewise,pm))
+       ret <- c(p11,casewise,pm)
+       names(ret) <- c("concordance","casewise concordance","marginal")
+       return(ret)
    }# }}}
 
-print(c(theta,beta)); print(var.tot)
 
+   nnn<-c("MZ","DZ")
    tabs <- list()
    for (i in 1:nn)
    {
       rv1l <- rv1[i,]
       rv2l <- rv2[i,]
-      tabs[[i]] <- lava::estimate(coef=c(theta,beta),vcov=var.tot,f=function(p) fp(p))
+      tabs<-c(tabs,setNames(list(tabs[[i]] <- lava::estimate(coef=c(theta,beta),vcov=var.tot,f=function(p) fp(p))), nnn[i]))
    }
 
    return(tabs)
