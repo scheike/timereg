@@ -213,8 +213,9 @@ needed.
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 library(mets)
 data(twinstut)
-twinstut <- subset(twinstut,zyg%in%c("mz","dz"))
 twinstut$binstut <- 1*(twinstut$stutter=="yes")
+twinsall <- twinstut
+twinstut <- subset(twinstut,zyg%in%c("mz","dz"))
 head(twinstut)
 #+END_SRC
 
@@ -342,20 +343,6 @@ summary(out)
 
 #+RESULTS:
 #+BEGIN_example
-  zyg1 stutter1   sex1 age1 nr1    cage1 subfam zyg2 stutter2   sex2 age2 nr2
-1   mz       no female   71   1 1.992684      0   mz       no female   71   2
-2   mz       no female   71   1 1.992684      0   mz       no female   71   2
-3   mz       no female   71   1 1.992684      1   mz       no female   71   2
-4   mz       no female   71   1 1.992684      1   mz       no female   71   2
-5   dz       no   male   71   1 1.992684      2   dz       no   male   71   2
-6   dz       no   male   71   1 1.992684      2   dz       no   male   71   2
-     cage2 factor(zyg1)dz factor(zyg1)mz binstut tvparnr         ps id num
-1 1.992684              0              1       0 2001005 0.03069652  1   1
-2 1.992684              0              1       0 2001005 0.03069652  1   2
-3 1.992684              0              1       0 2001012 0.03069652  2   1
-4 1.992684              0              1       0 2001012 0.03069652  2   2
-5 1.992684              1              0       0 2001016 0.07026650  3   1
-6 1.992684              1              0       0 2001016 0.07026650  3   2
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
 $estimates
@@ -379,44 +366,33 @@ attr(,"class")
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
  ## refers to zygosity of first subject in eash pair : zyg1
  ## could also use zyg2 (since zyg2=zyg1 within twinpair's))
+ 
  desfs<-function(x,num1="zyg1",num2="zyg2")
          c(x[num1]=="dz",x[num1]=="mz",x[num1]=="os")*1
      
+ margbinall <- glm(binstut~factor(sex)+age,data=twinsall,family=binomial())
  out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
-       data=twinstut,response="binstut",id="tvparnr",var.link=1,
+       data=twinsall,response="binstut",id="tvparnr",var.link=1,
        theta.formula=desfs,desnames=c("mz","dz","os"))
  summary(out3)
 #+END_SRC
 
+
 #+RESULTS:
 #+BEGIN_example
-  zyg1 stutter1   sex1 age1 nr1    cage1 subfam zyg2 stutter2   sex2 age2 nr2
-1   mz       no female   71   1 1.992684      0   mz       no female   71   2
-2   mz       no female   71   1 1.992684      0   mz       no female   71   2
-3   mz       no female   71   1 1.992684      1   mz       no female   71   2
-4   mz       no female   71   1 1.992684      1   mz       no female   71   2
-5   dz       no   male   71   1 1.992684      2   dz       no   male   71   2
-6   dz       no   male   71   1 1.992684      2   dz       no   male   71   2
-     cage2 mz dz os binstut tvparnr         ps id num
-1 1.992684  0  1  0       0 2001005 0.03069652  1   1
-2 1.992684  0  1  0       0 2001005 0.03069652  1   2
-3 1.992684  0  1  0       0 2001012 0.03069652  2   1
-4 1.992684  0  1  0       0 2001012 0.03069652  2   2
-5 1.992684  1  0  0       0 2001016 0.07026650  3   1
-6 1.992684  1  0  0       0 2001016 0.07026650  3   2
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
 $estimates
-          theta        se
-[1,]  0.5221651 0.2401355
-[2,]  3.4853933 0.1866076
-[3,] -0.7000000 0.0000000
+         theta        se
+[1,] 0.5278527 0.2396796
+[2,] 3.4850037 0.1864190
+[3,] 0.7802940 0.2894394
 
 $or
-   Estimate Std.Err   2.5%  97.5%  P-value
-p1    1.686   0.405  0.892  2.479 3.12e-05
-p2   32.635   6.090 20.699 44.571 8.38e-08
-p3    0.497   0.000  0.497  0.497 0.00e+00
+   Estimate Std.Err   2.5% 97.5%  P-value
+p1     1.70   0.406  0.899  2.49 3.02e-05
+p2    32.62   6.081 20.703 44.54 8.13e-08
+p3     2.18   0.632  0.944  3.42 5.50e-04
 
 $type
 [1] "plackett"

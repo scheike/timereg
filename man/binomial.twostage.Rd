@@ -108,7 +108,7 @@ logit(P(Y=1|X)) = \alpha + x^T \beta
 }
 therefore conditional on the random effect the probability of the event is 
 \deqn{
-logit(P(Y=1|X,Z)) = exp( - Laplace^{-1}(lamtot,lamtot,P(Y=1|x)) )  
+logit(P(Y=1|X,Z)) = exp( -Z \cdot Laplace^{-1}(lamtot,lamtot,P(Y=1|x)) )  
 }
 
 Can also fit a structured additive gamma random effects model, such
