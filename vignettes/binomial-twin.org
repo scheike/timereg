@@ -243,8 +243,6 @@ The following object is masked _by_ ‘.GlobalEnv’:
 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
-
-
 margbin <- glm(binstut~factor(sex)+age,data=twinstut,family=binomial())
 bina <- binomial.twostage(margbin,data=twinstut,var.link=1,
                        clusters=twinstut$tvparnr,detail=0)
@@ -424,6 +422,52 @@ head(twinstut)
 11 2001015  dz      no   male  71  1       0
 #+END_example
 
+
+First testing for same dependence in MZ and DZ 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+b1 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="un")
+summary(b1)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_example
+
+                Estimate    Std.Err          Z p-value
+(Intercept)    -1.794823   0.023289 -77.066728  0.0000
+sexmale         0.401432   0.030179  13.301813  0.0000
+atanh(rho) MZ   1.096916   0.073574  14.909087  0.0000
+atanh(rho) DZ   0.132458   0.062516   2.118800  0.0341
+
+ Total MZ/DZ Complete pairs MZ/DZ
+ 8777/12511  3255/4058           
+
+                           Estimate 2.5%    97.5%  
+Tetrachoric correlation MZ 0.79939  0.74101 0.84577
+Tetrachoric correlation DZ 0.13169  0.00993 0.24960
+
+MZ:
+                     Estimate 2.5%     97.5%   
+Concordance           0.01698  0.01411  0.02042
+Casewise Concordance  0.46730  0.40383  0.53185
+Marginal              0.03634  0.03287  0.04016
+Rel.Recur.Risk       12.85882 10.87510 14.84253
+log(OR)               3.75632  3.37975  4.13289
+DZ:
+                     Estimate 2.5%    97.5%  
+Concordance          0.00235  0.00140 0.00393
+Casewise Concordance 0.06456  0.03937 0.10413
+Marginal             0.03634  0.03287 0.04016
+Rel.Recur.Risk       1.77662  0.92746 2.62577
+log(OR)              0.63527  0.09013 1.18040
+
+                         Estimate 2.5% 97.5%
+Broad-sense heritability   1      NaN  NaN
+#+END_example
+
+
+** Polygenic modelling 
+
+
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 b1 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="ace")
 summary(b1)
@@ -436,7 +480,7 @@ summary(b1)
 (Intercept)  -3.70371   0.24449 -15.14855       0
 sexmale       0.83310   0.08255  10.09201       0
 log(var(A))   1.18278   0.17179   6.88512       0
-log(var(C)) -31.19579        NA        NA      NA
+log(var(C)) -25.34566        NA        NA      NA
 
  Total MZ/DZ Complete pairs MZ/DZ
  8777/12511  3255/4058           
@@ -513,6 +557,65 @@ Broad-sense heritability 0.76545  0.70500 0.82590
 
 
 * Additive gamma random effects 
+
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut)
+margbin <- glm(binstut~sex,data=twinstut,family=binomial())
+bintwin <- binomial.twostage(margbin,data=twinstut,
+     clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=1,
+     theta.des=theta.des)
+summary(bintwin)
+
+### test for same dependence in MZ and DZ 
+theta.des <- model.matrix( ~factor(zyg),data=twinstut)
+margbin <- glm(binstut~sex,data=twinstut,family=binomial())
+bintwin <- binomial.twostage(margbin,data=twinstut,
+     clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=1,
+     theta.des=theta.des)
+summary(bintwin)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_example
+Dependence parameter for Odds-Ratio (Plackett) model 
+With log-link 
+$estimates
+         theta        se
+[1,] 0.5238541 0.2400861
+[2,] 3.4930902 0.1865567
+
+$or
+   Estimate Std.Err   2.5% 97.5%  P-value
+p1     1.69   0.405  0.894  2.48 3.11e-05
+p2    32.89   6.135 20.862 44.91 8.31e-08
+
+$type
+[1] "plackett"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+Dependence parameter for Odds-Ratio (Plackett) model 
+With log-link 
+$estimates
+         theta        se
+[1,] 0.5238541 0.2400861
+[2,] 2.9692361 0.3040473
+
+$or
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1     1.69   0.405 0.894  2.48 3.11e-05
+p2    19.48   5.922 7.870 31.08 1.01e-03
+
+$type
+[1] "plackett"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+#+END_example
+
+
+** Polygenic modelling 
 
   
 Setting random effects design, first design for random effects and then 
@@ -658,7 +761,6 @@ concordance           0.00477 0.000393 0.0040 0.00554  5.94e-34
 casewise concordance  0.13175 0.005417 0.1211 0.14237 1.14e-130
 marginal              0.03620 0.001877 0.0325 0.03988  7.15e-83
 #+END_example
-
 
 *  COMMENT 
 
