@@ -558,7 +558,7 @@ summary(bintwin1)
 #+RESULTS:
 #+BEGIN_example
 Dependence parameter for Clayton-Oakes model
-variance of Gamma distributed random effects 
+Variance of Gamma distributed random effects 
 $estimates
           theta        se
 [1,]  1.5261839 0.2475041
@@ -616,7 +616,7 @@ summary(bintwin)
 #+RESULTS:
 #+BEGIN_example
 Dependence parameter for Clayton-Oakes model
-variance of Gamma distributed random effects 
+Variance of Gamma distributed random effects 
 $estimates
          theta         se
 [1,] 0.9094847 0.09536268
