@@ -1087,7 +1087,6 @@ easy.binomial.twostage <- function(margbin=NULL,data=sys.parent(),score.method="
         print(head(data.fam[,response]));
 	cat("\n")
     } 
-    print(head(data.fam))
 
     out <- binomial.twostage(data.fam[,response],data=data.fam,
                              clusters=data.fam$subfam,
