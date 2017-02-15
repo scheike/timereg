@@ -1199,7 +1199,7 @@ summary.mets.twostage <- function(object,digits = 3,silent=0,...)
   if ((model=="gamma") && (silent==0)) {
 	  cat("Dependence parameter for Clayton-Oakes model\n")
 	  if (var.par==1 || !addgam) 
-	  cat("variance of Gamma distributed random effects \n"); 
+	  cat("Variance of Gamma distributed random effects \n"); 
 	  if (var.par==0 && addgam)
 	  cat("Inverse of variance of Gamma distributed random effects \n"); 
   }
