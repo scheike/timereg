@@ -188,12 +188,12 @@ where \( \theta \) is d-dimensional.  If \( M \) is diagonal we have no
 restrictions on parameters. 
 
 This parametrization is obtained with the var.par=0 option that thus estimates
-\( \theta \) 
+\( \theta \).
 
 The DEFAULT parametrization instead estimates the variances of the random effecs (var.par=1)
 via the parameters \( \nu \) 
 \[
- M \nu = ( \lambda_1/\lambda_{\bullet}^2, ..., \lambda_d/\lambda_{\bullet}^2)
+ M \nu = ( \lambda_1/\lambda_{\bullet}^2, ...,\lambda_d/\lambda_{\bullet}^2)^T
 \]
 
 
