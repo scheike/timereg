@@ -635,8 +635,8 @@ binomial.twostage <- function(margbin,data=sys.parent(),
   if (iid==1) var.theta <- robvar.theta else var.theta <- -hessi
   if (!is.null(colnames(theta.des))) thetanames <- colnames(theta.des) else thetanames <- paste("dependence",1:length(theta),sep="")
 ### fix names !!!
-###    theta <- matrix(theta,length(theta),1)
-###    if (length(thetanames)==nrow(theta)) { rownames(theta) <- thetanames; rownames(var.theta) <- colnames(var.theta) <- thetanames; }
+###    theta <- matrix(theta,length(c(theta)),1)
+   if (length(thetanames)==nrow(theta)) { rownames(theta) <- thetanames; rownames(var.theta) <- colnames(var.theta) <- thetanames; }
 
     ud <- list(theta=theta,score=score,hess=hess,hessi=hessi,var.theta=var.theta,model=model,robvar.theta=robvar.theta,
                theta.iid=theta.iid,thetanames=thetanames,

@@ -1594,8 +1594,7 @@ double claytonoakesbinRVC(vec theta,mat thetades,mat ags,int status1,int status2
 	dttheta = dtheta*dt*like + like*dtt;
 	dstheta = dtheta*ds*like + like*dts;
 	//
-	d3 = dts*dt*like+ds*dtt*like+ds*dt*dtheta*like+
-		like*dtdtds+dtheta*dsdt*like;
+	d3 = dts*dt*like+ds*dtt*like+ds*dt*dtheta*like+like*dtdtds+dtheta*dsdt*like;
 	//
 	dsdt =  ds*dt*like+like*dsdt;
 	dtheta =  dtheta *like;
@@ -1638,7 +1637,7 @@ double claytonoakesbinRVC(vec theta,mat thetades,mat ags,int status1,int status2
 
 // for binary case, R version 
 RcppExport SEXP claytonoakesbinRV(SEXP itheta,SEXP istatus1,SEXP istatus2,SEXP icif1,SEXP icif2,
-		SEXP irv1, SEXP irv2,SEXP ithetades,SEXP iags, SEXP ivarlink)
+	                  	  SEXP irv1, SEXP irv2,SEXP ithetades,SEXP iags, SEXP ivarlink)
 { // {{{
 	try {
 	colvec theta = Rcpp::as<colvec>(itheta);

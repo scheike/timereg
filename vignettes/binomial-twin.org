@@ -214,7 +214,15 @@ negative correlation. An advanatage is that no numerical integration is
 needed. 
 
 
-* Pairwise odds ratio model 
+* The twin-stutter data
+
+We consider the twin-stutter where for pairs of twins that are 
+either dizygotic or monozygotic we have recorded whether the twins
+are stuttering \cite{twinstut-ref}
+
+We here consider MZ and same sex DZ twins. 
+
+Looking at the data 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 library(mets)
@@ -230,7 +238,7 @@ head(twinstut)
 Loading required package: timereg
 Loading required package: survival
 Loading required package: lava
-lava version 1.4.7.1
+lava version 1.4.7
 mets version 1.2.1
 
 Attaching package: ‘mets’
@@ -248,8 +256,52 @@ The following object is masked _by_ ‘.GlobalEnv’:
 #+END_example
 
 
+* Pairwise odds ratio model 
+
+We start by fitting an overall dependence OR for both MZ and DZ even though 
+the dependence is expected to be different across zygosity.
+
+The first step is to fit the marginal model adjusting for marginal covariates. 
+We here note that there is a rather strong gender effect in the risk of
+stuttering. 
+
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 margbin <- glm(binstut~factor(sex)+age,data=twinstut,family=binomial())
+summary(margbin)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_example
+
+Call:
+glm(formula = binstut ~ factor(sex) + age, family = binomial(), 
+    data = twinstut)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-0.4419  -0.4078  -0.2842  -0.2672   2.6395  
+
+Coefficients:
+                 Estimate Std. Error z value Pr(>|z|)    
+(Intercept)     -3.027625   0.104012 -29.108  < 2e-16 ***
+factor(sex)male  0.869826   0.062197  13.985  < 2e-16 ***
+age             -0.005983   0.002172  -2.754  0.00588 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 9328.6  on 21287  degrees of freedom
+Residual deviance: 9117.0  on 21285  degrees of freedom
+AIC: 9123
+
+Number of Fisher Scoring iterations: 6
+#+END_example
+
+Now estimating the OR parameter. We see a strong dependence with an OR
+at around 8 that is clearly significant. 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 bina <- binomial.twostage(margbin,data=twinstut,var.link=1,
                        clusters=twinstut$tvparnr,detail=0)
 summary(bina)
@@ -260,12 +312,12 @@ summary(bina)
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
 $estimates
-        theta        se
-[1,] 2.085347 0.1274536
+               theta        se
+dependence1 2.085347 0.1274536
 
 $or
-   Estimate Std.Err 2.5% 97.5% P-value
-p1     8.05    1.03 6.04  10.1 4.3e-15
+            Estimate Std.Err 2.5% 97.5% P-value
+dependence1     8.05    1.03 6.04  10.1 4.3e-15
 
 $type
 [1] "plackett"
@@ -273,6 +325,13 @@ $type
 attr(,"class")
 [1] "summary.mets.twostage"
 #+END_example
+
+Now, and more interestingly, we consider an OR that depends on zygosity and
+note that MZ have a much larger OR than DZ twins. This type of trait is 
+somewhat complicated to interpret, but clearly, one option is that 
+that there is a genetic effect, alternatively there might be
+a stronger environmental effect for MZ twins. 
+
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 ### design for OR dependence 
@@ -287,14 +346,14 @@ summary(bin)
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
 $estimates
-         theta        se
-[1,] 0.5221651 0.2401355
-[2,] 3.4853933 0.1866076
+                  theta        se
+factor(zyg)dz 0.5221651 0.2401355
+factor(zyg)mz 3.4853933 0.1866076
 
 $or
-   Estimate Std.Err   2.5% 97.5%  P-value
-p1     1.69   0.405  0.892  2.48 3.12e-05
-p2    32.64   6.090 20.699 44.57 8.38e-08
+              Estimate Std.Err   2.5% 97.5%  P-value
+factor(zyg)dz     1.69   0.405  0.892  2.48 3.12e-05
+factor(zyg)mz    32.64   6.090 20.699 44.57 8.38e-08
 
 $type
 [1] "plackett"
@@ -303,10 +362,16 @@ attr(,"class")
 [1] "summary.mets.twostage"
 #+END_example
 
+
+We now consider further regression modelling of the OR structure by
+considering possible interactions between sex and zygozsity.
+We see that MZ has a much higher dependence and that males have
+a much lower dependence. We tested for interaction in this model and 
+these were not significant. 
      
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 twinstut$cage <- scale(twinstut$age)
-theta.des <- model.matrix( ~-1+factor(zyg)+cage,data=twinstut)
+theta.des <- model.matrix( ~-1+factor(zyg)+factor(sex),data=twinstut)
 bina <- binomial.twostage(margbin,data=twinstut,var.link=1,
                           clusters=twinstut$tvparnr,theta.des=theta.des)
 summary(bina)
@@ -317,16 +382,16 @@ summary(bina)
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
 $estimates
-          theta        se
-[1,] 0.52192175 0.2403808
-[2,] 3.49358114 0.1922929
-[3,] 0.02789556 0.1531335
+                     theta        se
+factor(zyg)dz    0.8098841 0.3138423
+factor(zyg)mz    3.7318076 0.2632250
+factor(sex)male -0.4075409 0.3055349
 
 $or
-   Estimate Std.Err   2.5% 97.5%  P-value
-p1     1.69   0.405  0.891  2.48 3.18e-05
-p2    32.90   6.327 20.503 45.30 1.99e-07
-p3     1.03   0.157  0.720  1.34 6.57e-11
+                Estimate Std.Err   2.5% 97.5%  P-value
+factor(zyg)dz      2.248   0.705  0.865  3.63 0.001441
+factor(zyg)mz     41.755  10.991 20.213 63.30 0.000145
+factor(sex)male    0.665   0.203  0.267  1.06 0.001064
 
 $type
 [1] "plackett"
@@ -335,6 +400,14 @@ attr(,"class")
 [1] "summary.mets.twostage"
 #+END_example
 
+
+** Alternative syntax 
+
+We now demonstrate how the models can fitted jointly and with anohter
+syntax, that ofcourse just fits the marginal model and subsequently fits
+the pairwise OR model. 
+
+First noticing as before that MZ twins have a much higher dependence. 
      
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
  ## refers to zygosity of first subject in eash pair : zyg1
@@ -350,14 +423,14 @@ summary(out)
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
 $estimates
-         theta        se
-[1,] 0.5221651 0.2401355
-[2,] 3.4853933 0.1866076
+                   theta        se
+factor(zyg1)dz 0.5221651 0.2401355
+factor(zyg1)mz 3.4853933 0.1866076
 
 $or
-   Estimate Std.Err   2.5% 97.5%  P-value
-p1     1.69   0.405  0.892  2.48 3.12e-05
-p2    32.64   6.090 20.699 44.57 8.38e-08
+               Estimate Std.Err   2.5% 97.5%  P-value
+factor(zyg1)dz     1.69   0.405  0.892  2.48 3.12e-05
+factor(zyg1)mz    32.64   6.090 20.699 44.57 8.38e-08
 
 $type
 [1] "plackett"
@@ -366,6 +439,10 @@ attr(,"class")
 [1] "summary.mets.twostage"
 #+END_example
 
+Now considering all data and estimating separate effects for the OR
+for opposite sex DZ twins and same sex twins. 
+We here find that os twins are not markedly different from the same sex DZ 
+twins. 
      
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
  ## refers to zygosity of first subject in eash pair : zyg1
@@ -387,16 +464,16 @@ attr(,"class")
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
 $estimates
-         theta        se
-[1,] 0.5278527 0.2396796
-[2,] 3.4850037 0.1864190
-[3,] 0.7802940 0.2894394
+       theta        se
+mz 0.5278527 0.2396796
+dz 3.4850037 0.1864190
+os 0.7802940 0.2894394
 
 $or
    Estimate Std.Err   2.5% 97.5%  P-value
-p1     1.70   0.406  0.899  2.49 3.02e-05
-p2    32.62   6.081 20.703 44.54 8.13e-08
-p3     2.18   0.632  0.944  3.42 5.50e-04
+mz     1.70   0.406  0.899  2.49 3.02e-05
+dz    32.62   6.081 20.703 44.54 8.13e-08
+os     2.18   0.632  0.944  3.42 5.50e-04
 
 $type
 [1] "plackett"
@@ -430,6 +507,7 @@ head(twinstut)
 
 
 First testing for same dependence in MZ and DZ 
+
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 b1 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="un")
 summary(b1)
@@ -486,7 +564,7 @@ summary(b1)
 (Intercept)  -3.70371   0.24449 -15.14855       0
 sexmale       0.83310   0.08255  10.09201       0
 log(var(A))   1.18278   0.17179   6.88512       0
-log(var(C)) -25.34566        NA        NA      NA
+log(var(C)) -25.34566   0.34507 -73.45055       0
 
  Total MZ/DZ Complete pairs MZ/DZ
  8777/12511  3255/4058           
@@ -564,6 +642,11 @@ Broad-sense heritability 0.76545  0.70500 0.82590
 
 * Additive gamma random effects 
 
+Fitting first a model with different size random effects for MZ and DZ. We 
+note that as before in the OR and biprobit model the dependence is much
+stronger for MZ twins. We also test if these are the same by parametrizing the
+OR model with an intercept. This clearly shows a significant difference. 
+
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut)
@@ -587,14 +670,14 @@ summary(bintwin)
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
 $estimates
-         theta        se
-[1,] 0.5238541 0.2400861
-[2,] 3.4930902 0.1865567
+                  theta        se
+factor(zyg)dz 0.5238541 0.2400861
+factor(zyg)mz 3.4930902 0.1865567
 
 $or
-   Estimate Std.Err   2.5% 97.5%  P-value
-p1     1.69   0.405  0.894  2.48 3.11e-05
-p2    32.89   6.135 20.862 44.91 8.31e-08
+              Estimate Std.Err   2.5% 97.5%  P-value
+factor(zyg)dz     1.69   0.405  0.894  2.48 3.11e-05
+factor(zyg)mz    32.89   6.135 20.862 44.91 8.31e-08
 
 $type
 [1] "plackett"
@@ -604,14 +687,14 @@ attr(,"class")
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
 $estimates
-         theta        se
-[1,] 0.5238541 0.2400861
-[2,] 2.9692361 0.3040473
+                  theta        se
+(Intercept)   0.5238541 0.2400861
+factor(zyg)mz 2.9692361 0.3040473
 
 $or
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1     1.69   0.405 0.894  2.48 3.11e-05
-p2    19.48   5.922 7.870 31.08 1.01e-03
+              Estimate Std.Err  2.5% 97.5%  P-value
+(Intercept)       1.69   0.405 0.894  2.48 3.11e-05
+factor(zyg)mz    19.48   5.922 7.870 31.08 1.01e-03
 
 $type
 [1] "plackett"
@@ -623,18 +706,17 @@ attr(,"class")
 
 ** Polygenic modelling 
 
-  
-Setting random effects design, first design for random effects and then 
-relationship between variances. We see that the genetic random effect has
-size one for MZ and 0.5 for DZ subjects, that have shared and non-shared 
-genetic components with variance 0.5 such that the total genetic variance is
-the same for all subjects. The shared environmental effect is the samme for 
-all.  Thus two paramters with these bands. 
+   First setting up the random effects design for the random effects and 
+   the the relationship between variance parameters.
+   We see that the genetic random effect has size one for MZ and 0.5 for DZ subjects, 
+   that have shared and non-shared genetic components with variance 0.5 such that the total 
+   genetic variance is the same for all subjects. The shared environmental effect is the samme for 
+all. Thus two parameters with these bands. 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 out <- twin.polygen.design(twinstut,id="tvparnr",zygname="zyg",zyg="dz",type="ace")
 head(out$des.rv)
-head(out$pardes)
+head(cbind(out$pardes,twinstut$id))
 #+END_SRC
 
 #+RESULTS:
@@ -655,6 +737,10 @@ head(out$pardes)
 #+END_example
 
 
+Now, fitting the ACE model, we see that the variance of the genetic, 
+component, is 1.5 and the environmental variance is -0.5. Thus suggesting that 
+the ACE model does not fit the data. 
+
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 
 margbin <- glm(binstut~sex,data=twinstut,family=binomial())
@@ -669,17 +755,17 @@ summary(bintwin1)
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
-          theta        se
-[1,]  1.5261839 0.2475041
-[2,] -0.5447955 0.1942159
+                 theta        se
+dependence1  1.5261839 0.2475041
+dependence2 -0.5447955 0.1942159
 
 $type
 [1] "clayton.oakes"
 
 $h
-   Estimate Std.Err   2.5%  97.5%  P-value
-p1    1.555   0.187  1.189  1.922 9.11e-17
-p2   -0.555   0.187 -0.922 -0.189 2.99e-03
+     Estimate Std.Err   2.5%  97.5%  P-value
+NA      1.555   0.187  1.189  1.922 9.11e-17
+NA.1   -0.555   0.187 -0.922 -0.189 2.99e-03
 
 $vare
 NULL
@@ -692,6 +778,9 @@ attr(,"class")
 [1] "summary.mets.twostage"
 #+END_example
 
+
+For this model we estimate the concordance and casewise concordance as well 
+as the marginal rates of stuttering for females. 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 concordance.twin.ace(bintwin1,type="ace")
@@ -713,6 +802,10 @@ marginal              0.03620 0.001877 0.0325 0.03988 7.15e-83
 #+END_example
 
 
+The E component was not consistent with the fit of the data and we
+now consider instead the AE model. 
+
+
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 out <- twin.polygen.design(twinstut,id="tvparnr",zygname="zyg",zyg="dz",type="ae")
 
@@ -727,15 +820,15 @@ summary(bintwin)
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
-         theta         se
-[1,] 0.9094847 0.09536268
+                theta         se
+dependence1 0.9094847 0.09536268
 
 $type
 [1] "clayton.oakes"
 
 $h
    Estimate Std.Err 2.5% 97.5% P-value
-p1        1       0    1     1       0
+NA        1       0    1     1       0
 
 $vare
 NULL
@@ -748,6 +841,7 @@ attr(,"class")
 [1] "summary.mets.twostage"
 #+END_example
 
+Again, the concordance can be computed: 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 concordance.twin.ace(bintwin,type="ae")
