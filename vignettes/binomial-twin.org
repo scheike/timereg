@@ -58,7 +58,7 @@ data \( Y_1, Y_2, X_1, X_2 \) where the responses are \( Y_1, Y_2 \) and we
 have covariates \( X_1, X_2 \).
 
 We start by giving a brief description of these different models.  First we
-for bivariate data one specify the marginal probability using logistic 
+for bivariate data one can specify the marginal probability using logistic 
 regression models 
 \[
 logit(P(Y_i=1|X_i)) = \alpha_i + X_i^T \beta  i=1,2.
@@ -129,8 +129,14 @@ We here simply estimate the parameters in a two stage-procedure
  - Estimating the marginal parameters via GEE
  - Using marginal estimates, estimate dependence parameters
 
+This gives efficient estimates of the dependence parameters because of
+orthogonality, but some efficiency may be gained for the marginal parameters 
+by using the full likelihood or iterative fitting such as for the ALR. 
+
+
 The pairwise odds-ratio model is very useful, but one do not have a random 
 effects model. 
+
 
 ** Additive gamma model 
 
@@ -142,10 +148,10 @@ logit(P(Y_i=1|X_i)) = \alpha_i + X_i^T \beta  i=1,2
 First with just one random effect \( Z \) we assume that  conditional
 on \( Z \) the responses are independent  and follow the model 
 \[
-logit(P(Y_i=1|X_i,Z)) = exp( -Z \cdot \Psi^{-1}(\lambda_{\bullet},1/\lambda_{\bullet},P(Y_i=1|X_i)) )  
+logit(P(Y_i=1|X_i,Z)) = exp( -Z \cdot \Psi^{-1}(\lambda_{\bullet},\lambda_{\bullet},P(Y_i=1|X_i)) )  
 \]
 where \( \Psi \) is the laplace transform of \( Z \) where we assume that
-\( Z \) is gamma distributed with variance \( \lambda_{\bullet} \) and mean 1. 
+\( Z \) is gamma distributed with variance \( \lambda_{\bullet}^{-1} \) and mean 1. 
 In general \( \Psi(\lambda_1,\lambda_2) \) is the laplace transform of  a Gamma distributed random 
 effect with \( Z \) with mean \( \lambda_1/\lambda_2 \) and variance \( \lambda_1/\lambda_2^2  \).
 
@@ -159,7 +165,7 @@ To deal with multiple random effects we consider random effects
 mean \( \lambda_j/\lambda_{\bullet} \) and variance \( 
 \lambda_j/\lambda_{\bullet}^2 \), where we define the scalar \( \lambda_{\bullet} \) below. 
 
-Now given a cluster-specifice design vector \( V_{12} \) we assume that 
+Now given a cluster-specific design vector \( V_{12} \) we assume that 
 \[
 V_{12}^T Z
 \]
@@ -167,16 +173,16 @@ is gamma distributed with mean 1 and variance \( \lambda_{\bullet}^{-1} \)
 such that critically the random effect variance is the same for all clusters.
 That is 
 \[
- \lambda_{\bullet} = V_{12}^T (\lambda_1,...,\lambda_d) 
+ \lambda_{\bullet} = V_{12}^T (\lambda_1,...,\lambda_d)^T 
 \]
 We return to some specific models below, and show how to fit the ACE and AE 
 model using this set-up. 
 
 One last option in the model-specification is to specify how the 
-parmaters \( \lambda_1,...,\lambda_d \) are related. We thus can specify a 
+parameters \( \lambda_1,...,\lambda_d \) are related. We thus can specify a 
 matrix \( M \) of dimension \( p \times d \) such that 
 \[
- (\lambda_1,...,\lambda_d)  = M \theta
+ (\lambda_1,...,\lambda_d)^T  = M \theta
 \]
 where \( \theta \) is d-dimensional.  If \( M \) is diagonal we have no 
 restrictions on parameters. 
@@ -187,7 +193,7 @@ This parametrization is obtained with the var.par=0 option that thus estimates
 The DEFAULT parametrization instead estimates the variances of the random effecs (var.par=1)
 via the parameters \( \nu \) 
 \[
- M \nu = ( \lambda_1/(\lambda_{\bullet})^2, ..., \lambda_d/\lambda_{\bullet}^2)
+ M \nu = ( \lambda_1/\lambda_{\bullet}^2, ..., \lambda_d/\lambda_{\bullet}^2)
 \]
 
 
