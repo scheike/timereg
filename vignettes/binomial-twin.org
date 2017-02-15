@@ -200,7 +200,7 @@ via the parameters \( \nu \)
 The basic modelling assumption is now that given random effects 
 \(Z=(Z_1,...,Z_d)\) we have independent probabilites 
 \[
-logit(P(Y_i=1|X_i,Z)) = exp( -Z \cdot \Psi^{-1}(\lambda_{\bullet},1/\lambda_{\bullet},P(Y_i=1|X_i)) )  
+logit(P(Y_i=1|X_i,Z)) = exp( -V_{12,i}^T Z \cdot \Psi^{-1}(\lambda_{\bullet},\lambda_{\bullet},P(Y_i=1|X_i)) )   i=1,2
 \]
 
 We fit this model by 
