@@ -1,0 +1,323 @@
+#+TITLE: Analysis of bivariate binomial data: Twin analysis
+#+AUTHOR: Klaus Holst & Thomas Scheike
+#+PROPERTY: session *R*
+#+PROPERTY: cache no
+#+PROPERTY: results output 
+#+PROPERTY: wrap example 
+#+PROPERTY: exports code 
+#+PROPERTY: tangle yes 
+#+PROPERTY: comments yes
+#+OPTIONS: LaTeX:nil timestamp:t author:nil d:t
+#+STARTUP: hideall 
+# http://orgmode.org/manual/Export-options.html
+#+OPTIONS: toc:t h:4 num:nil 
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="http://192.38.117.59/~ts/styles/orgmode5-ts.css">
+#+HTML_HEAD: <link rel="icon" type="image/x-icon" href="http://www.biostat.ku.dk/~kkho/styles/logo.ico"/>
+#+HTML_HEAD: <style type="text/css">body { background-image: url(http://www.biostat.ku.dk/~kkho/styles/sund.png); background-size:120px 95px; background-position: 2% 0.55em; }
+#+HTML_HEAD:  a.logo span { background: none; }
+#+HTML_HEAD:  th,td,tr,table th,table th,table td {
+#+HTML_HEAD:      background: rgba(240,240,240,1);         
+#+HTML_HEAD:      border: none;
+#+HTML_HEAD:  }
+#+HTML_HEAD:   body { width: 800px; text-align:justify; text-justify:inter-word; }
+#+HTML_HEAD: </style>
+#+BEGIN_HTML
+<a href="http://www.biostat.ku.dk/~ts/survival class="logo"><span></span></a>
+#+END_HTML
+
+----- 
+
+* Overview 
+
+When looking at bivariate binomial data with the aim of learning about the 
+dependence that is present, possibly after correcting for some covariates many
+models are available. 
+
+   -  Random-effects models logistic regression covered elsewhere (glmer in lme4).
+
+in the mets package you can fit the 
+
+   -  Pairwise odds ratio model
+   -  Bivariate Probit model 
+      - With random effects
+      - Special functionality for polygenic random effects modelling 
+        such as ACE, ADE ,AE and so forth.
+
+   -  Additive gamma random effects model 
+      - Special functionality for polygenic random effects modelling 
+        such as ACE, ADE ,AE and so forth.
+
+
+Typically it can be hard to specify random effects models with special 
+structure the parameters among the random effects. 
+
+We start by giving a brief description of these different models 
+
+
+
+
+For the Clayton-Oakes version of the model, given the gamma distributed random effects it is 
+assumed that the probabilities are indpendent, and that the marginal survival functions are on logistic form 
+\[
+logit(P(Y=1|X)) = \alpha + x^T \beta
+\]
+therefore conditional on the random effect the probability of the event is 
+\deqn{
+logit(P(Y=1|X,Z)) = exp( - Laplace^{-1}(lamtot,lamtot,P(Y=1|x)) )  
+}
+
+Can also fit a structured additive gamma random effects model, such
+the ACE, ADE model for survival data:
+
+Now random.design specificies the random effects for each subject within a cluster. This is
+a matrix of 1's and 0's with dimension n x d.  With d random effects. 
+For a cluster with two subjects, we let the random.design rows be 
+ \eqn{v_1} and \eqn{v_2}. 
+Such that the random effects for subject 
+1 is \deqn{v_1^T (Z_1,...,Z_d)}, for d random effects. Each random effect
+has an associated parameter \eqn{(\lambda_1,...,\lambda_d)}. By construction
+subjects 1's random effect are Gamma distributed with 
+mean \eqn{\lambda_j/v_1^T \lambda}
+and variance \eqn{\lambda_j/(v_1^T \lambda)^2}. Note that the random effect 
+\eqn{v_1^T (Z_1,...,Z_d)} has mean 1 and variance \eqn{1/(v_1^T \lambda)}.
+It is here asssumed that  \eqn{lamtot=v_1^T \lambda} is fixed over all clusters
+as it would be for the ACE model below.
+
+The DEFAULT parametrization uses the variances of the random effecs (var.par=1)
+\deqn{
+\theta_j  = \lambda_j/(v_1^T \lambda)^2
+}
+
+For alternative parametrizations (var.par=0) one can specify how the parameters relate 
+to \eqn{\lambda_j} with the function
+
+Based on these parameters the relative contribution (the heritability, h) is 
+equivalent to  the expected values of the random effects  \eqn{\lambda_j/v_1^T \lambda}
+
+Given the random effects the probabilities  are independent and on the form 
+\deqn{
+logit(P(Y=1|X)) = exp( - Laplace^{-1}(lamtot,lamtot,P(Y=1|x)) )  
+}
+with the inverse laplace of the gamma distribution with mean 1 and variance lamtot.
+
+The parameters \eqn{(\lambda_1,...,\lambda_d)}
+are related to the parameters of the model
+by a regression construction \eqn{pard} (d x k), that links the \eqn{d} 
+\eqn{\lambda} parameters
+with the (k) underlying \eqn{\theta} parameters 
+\deqn{
+\lambda = theta.des  \theta 
+}
+here using theta.des to specify these low-dimension association. 
+Default is a diagonal matrix.
+
+
+
+* Pairwise odds ratio model 
+
+* Bivariate Probit model 
+
+* Additive gamma random effects 
+
+
+  
+
+#+BEGIN_SRC R
+library(mets)
+b1 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",
+	     type="ace")
+summary(b1)
+
+out <- twin.polygen.design(twinstut,id="tvparnr",zygname="zyg",zyg="dz",
+			   type="ace")
+head(out$des.rv)
+head(out$pardes)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_example
+Loading required package: timereg
+Loading required package: survival
+Loading required package: lava
+lava version 1.4.7.1
+mets version 1.2.1
+
+Attaching package: ‘mets’
+
+The following object is masked _by_ ‘.GlobalEnv’:
+
+    object.defined
+ Error in bptwin(binstut ~ sex, data = twinstut, id = "tvparnr", zyg = "zyg",  : 
+  object 'twinstut' not found
+Error in summary(b1) : object 'b1' not found
+ Error in table(data[, id]) : object 'twinstut' not found
+Error in head(out$des.rv) : object 'out' not found
+Error in head(out$pardes) : object 'out' not found
+#+END_example
+
+#+BEGIN_SRC R
+margbin <- glm(binstut~sex,data=twinstut,family=binomial())
+bintwin1 <- binomial.twostage(margbin,data=twinstut,
+     clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
+     random.design=out$des.rv,theta.des=out$pardes)
+summary(bintwin1)
+
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_example
+Error in is.data.frame(data) : object 'twinstut' not found
+ Error in NROW(data) : object 'twinstut' not found
+Error in summary(bintwin1) : object 'bintwin1' not found
+#+END_example
+
+
+
+
+#+BEGIN_SRC R
+
+### example 1, twin stut data 
+data(twinstut)
+twinstut <- subset(twinstut,zyg%in%c("mz","dz"))
+twinstut$binstut <- 1*(twinstut$stutter=="yes")
+
+b0 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="ae")
+summary(b0)
+
+out <- twin.polygen.design(twinstut,id="tvparnr",zygname="zyg",zyg="dz",
+			   type="ae")
+margbin <- glm(binstut~sex,data=twinstut,family=binomial())
+bintwin <- binomial.twostage(margbin,data=twinstut,
+     clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
+     random.design=out$des.rv,theta.des=out$pardes)
+summary(bintwin)
+
+concordance.twin.ace(bintwin,type="ae")
+summary(b0)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_example
+
+             Estimate   Std.Err         Z p-value
+(Intercept)  -3.70371   0.24449 -15.14855       0
+sexmale       0.83310   0.08255  10.09201       0
+log(var(A))   1.18278   0.17179   6.88512       0
+
+ Total MZ/DZ Complete pairs MZ/DZ
+ 8777/12511  3255/4058           
+
+                   Estimate 2.5%    97.5%  
+A                  0.76545  0.70500 0.82590
+E                  0.23455  0.17410 0.29500
+MZ Tetrachoric Cor 0.76545  0.69793 0.81948
+DZ Tetrachoric Cor 0.38272  0.35210 0.41253
+
+MZ:
+                     Estimate 2.5%     97.5%   
+Concordance           0.01560  0.01273  0.01912
+Casewise Concordance  0.42830  0.36248  0.49677
+Marginal              0.03643  0.03294  0.04027
+Rel.Recur.Risk       11.75741  9.77237 13.74246
+log(OR)               3.52382  3.13466  3.91298
+DZ:
+                     Estimate 2.5%    97.5%  
+Concordance          0.00558  0.00465 0.00670
+Casewise Concordance 0.15327  0.13749 0.17050
+Marginal             0.03643  0.03294 0.04027
+Rel.Recur.Risk       4.20744  3.78588 4.62900
+log(OR)              1.69996  1.57262 1.82730
+
+                         Estimate 2.5%    97.5%  
+Broad-sense heritability 0.76545  0.70500 0.82590
+Dependence parameter for Clayton-Oakes model
+variance of Gamma distributed random effects 
+$estimates
+         theta         se
+[1,] 0.9094847 0.09536268
+
+$type
+[1] "clayton.oakes"
+
+$h
+   Estimate Std.Err 2.5% 97.5% P-value
+p1        1       0    1     1       0
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1    0.909  0.0954 0.723   1.1 1.47e-21
+
+attr(,"class")
+[1] "summary.mets.twostage"
+$MZ
+                     Estimate Std.Err   2.5%  97.5%  P-value
+concordance            0.0174 0.00143 0.0146 0.0202 5.00e-34
+casewise concordance   0.4795 0.03272 0.4154 0.5437 1.20e-48
+marginal               0.0362 0.00188 0.0325 0.0399 7.15e-83
+
+$DZ
+                     Estimate  Std.Err   2.5%   97.5%   P-value
+concordance           0.00477 0.000393 0.0040 0.00554  5.94e-34
+casewise concordance  0.13175 0.005417 0.1211 0.14237 1.14e-130
+marginal              0.03620 0.001877 0.0325 0.03988  7.15e-83
+
+             Estimate   Std.Err         Z p-value
+(Intercept)  -3.70371   0.24449 -15.14855       0
+sexmale       0.83310   0.08255  10.09201       0
+log(var(A))   1.18278   0.17179   6.88512       0
+
+ Total MZ/DZ Complete pairs MZ/DZ
+ 8777/12511  3255/4058           
+
+                   Estimate 2.5%    97.5%  
+A                  0.76545  0.70500 0.82590
+E                  0.23455  0.17410 0.29500
+MZ Tetrachoric Cor 0.76545  0.69793 0.81948
+DZ Tetrachoric Cor 0.38272  0.35210 0.41253
+
+MZ:
+                     Estimate 2.5%     97.5%   
+Concordance           0.01560  0.01273  0.01912
+Casewise Concordance  0.42830  0.36248  0.49677
+Marginal              0.03643  0.03294  0.04027
+Rel.Recur.Risk       11.75741  9.77237 13.74246
+log(OR)               3.52382  3.13466  3.91298
+DZ:
+                     Estimate 2.5%    97.5%  
+Concordance          0.00558  0.00465 0.00670
+Casewise Concordance 0.15327  0.13749 0.17050
+Marginal             0.03643  0.03294 0.04027
+Rel.Recur.Risk       4.20744  3.78588 4.62900
+log(OR)              1.69996  1.57262 1.82730
+
+                         Estimate 2.5%    97.5%  
+Broad-sense heritability 0.76545  0.70500 0.82590
+#+END_example
+
+
+*  COMMENT 
+
+ :PROPERTIES:
+ :BEAMER_opt: shrink=85
+ :END:
+#+BEGIN_SRC R :results graphics :cache no :file auto/remis-km-placebo.png :exports both :session *R*
+par(mfrow=c(2,2))
+plot(survfit(Surv(time,event)~placebo,data=remis),col=c("red","blue"))
+legend("topright",legend=c("Treatment","Placebo"),col=c("red","blue"),lty=c(1,1))
+plot(survfit(Surv(time,event)~placebo,data=remis),col=c("red","blue"),fun="cumhaz")
+legend("topright",legend=c("Treatment","Placebo"),col=c("red","blue"),lty=c(1,1))
+plot(survfit(Surv(time,event)~placebo,data=remis),col=c("red","blue"),fun="cloglog")
+legend("topright",legend=c("Treatment","Placebo"),col=c("red","blue"),lty=c(1,1))
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_example
+[[file:auto/remis-km-placebo.png]]
+#+END_example
+
+[[file:auto/remis-km-placebo.png]]
+
+ 

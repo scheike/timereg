@@ -76,7 +76,7 @@
 ##' Given the random effects the survival distributions with a cluster are independent and
 ##' on the form 
 ##' \deqn{
-##' P(T > t| x,z) = exp( - Laplace^{-1}(lamtot,lamtot,S(t|x)) )  
+##' P(T > t| x,z) = exp( -Z \cdot Laplace^{-1}(lamtot,lamtot,S(t|x)) )  
 ##' }
 ##' with the inverse laplace of the gamma distribution with mean 1 and variance lamtot.
 ##'

@@ -8,7 +8,8 @@ twinstut$binstut <- 1*(twinstut$stutter=="yes")
 b0 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="ae")
 summary(b0)
 
-out <- polygen.design(twinstut,id="tvparnr",zygname="zyg",zyg="dz",type="ae")
+out <- twin.polygen.design(twinstut,id="tvparnr",zygname="zyg",zyg="dz",
+			   type="ae")
 margbin <- glm(binstut~sex,data=twinstut,family=binomial())
 bintwin <- binomial.twostage(margbin,data=twinstut,
      clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
@@ -17,6 +18,22 @@ summary(bintwin)
 
 concordance.twin.ace(bintwin,type="ae")
 summary(b0)
+
+
+b1 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",
+	     type="ace")
+summary(b1)
+
+out <- twin.polygen.design(twinstut,id="tvparnr",zygname="zyg",zyg="dz",
+			   type="ace")
+margbin <- glm(binstut~sex,data=twinstut,family=binomial())
+bintwin1 <- binomial.twostage(margbin,data=twinstut,
+     clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
+     random.design=out$des.rv,theta.des=out$pardes)
+summary(bintwin1)
+
+
+
 
 
 ### example 2, simulated data  
