@@ -67,6 +67,17 @@ These model can be estimated under working independence
 \cite{zeger-liang-86}.  
 
 
+A typical twin analysis will typically consist of  looking at both 
+
+   -  Pairwise odds ratio model
+   -  Bivariate Probit model 
+  
+The additive gamma can be used for the same as the bivariate probit model but 
+is more restrictive in terms of dependence structure, but is nevertheless 
+still valuable to have also as a check of results of the bivariate probit
+model. 
+
+
 ** Biprobit with random effects
 
 For these model we assume that given random effects $Z$ and a covariate vector 
@@ -238,7 +249,7 @@ head(twinstut)
 Loading required package: timereg
 Loading required package: survival
 Loading required package: lava
-lava version 1.4.7
+lava version 1.4.7.1
 mets version 1.2.1
 
 Attaching package: ‘mets’
@@ -454,7 +465,7 @@ twins.
  margbinall <- glm(binstut~factor(sex)+age,data=twinsall,family=binomial())
  out3 <- easy.binomial.twostage(binstut~factor(sex)+age,
        data=twinsall,response="binstut",id="tvparnr",var.link=1,
-       theta.formula=desfs,desnames=c("mz","dz","os"))
+       theta.formula=desfs,desnames=c("dz","mz","os"))
  summary(out3)
 #+END_SRC
 
@@ -465,14 +476,14 @@ Dependence parameter for Odds-Ratio (Plackett) model
 With log-link 
 $estimates
        theta        se
-mz 0.5278527 0.2396796
-dz 3.4850037 0.1864190
+dz 0.5278527 0.2396796
+mz 3.4850037 0.1864190
 os 0.7802940 0.2894394
 
 $or
    Estimate Std.Err   2.5% 97.5%  P-value
-mz     1.70   0.406  0.899  2.49 3.02e-05
-dz    32.62   6.081 20.703 44.54 8.13e-08
+dz     1.70   0.406  0.899  2.49 3.02e-05
+mz    32.62   6.081 20.703 44.54 8.13e-08
 os     2.18   0.632  0.944  3.42 5.50e-04
 
 $type
@@ -505,8 +516,11 @@ head(twinstut)
 11 2001015  dz      no   male  71  1       0
 #+END_example
 
-
-First testing for same dependence in MZ and DZ 
+First testing for same dependence in MZ and DZ  that we recommend doing by 
+comparing the correlations of MZ and DZ twins. Apart from regression 
+correction in the mean this is an un-structured model, and the useful
+concordance and casewise concordance estimates can be reported from this
+analysis. 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 b1 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="un")
@@ -551,6 +565,13 @@ Broad-sense heritability   1      NaN  NaN
 
 ** Polygenic modelling 
 
+   We now turn attention to specific polygenic modelling where special random 
+   effects are used to specify ACE, AE, ADE models and so forth. This is very
+   easy with the bptwin function. The key parts of the output are the sizes of 
+   the genetic component A and the environmental component, and we can compare 
+   with the results of the unstructed model above. Also formally we can test 
+   if this submodel is acceptable by a likelihood ratio test. 
+
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 b1 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="ace")
@@ -564,7 +585,7 @@ summary(b1)
 (Intercept)  -3.70371   0.24449 -15.14855       0
 sexmale       0.83310   0.08255  10.09201       0
 log(var(A))   1.18278   0.17179   6.88512       0
-log(var(C)) -25.34566   0.34507 -73.45055       0
+log(var(C)) -25.34566        NA        NA      NA
 
  Total MZ/DZ Complete pairs MZ/DZ
  8777/12511  3255/4058           
@@ -715,19 +736,23 @@ all. Thus two parameters with these bands.
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 out <- twin.polygen.design(twinstut,id="tvparnr",zygname="zyg",zyg="dz",type="ace")
-head(out$des.rv)
-head(cbind(out$pardes,twinstut$id))
+head(cbind(out$des.rv,twinstut$tvparnr),10)
+out$pardes
 #+END_SRC
 
 #+RESULTS:
 #+BEGIN_example
-   MZ DZ DZns1 DZns2 env
-1   1  0     0     0   1
-2   1  0     0     0   1
-3   0  1     1     0   1
-8   1  0     0     0   1
-9   1  0     0     0   1
-11  0  1     1     0   1
+   MZ DZ DZns1 DZns2 env        
+1   1  0     0     0   1 2001005
+2   1  0     0     0   1 2001005
+3   0  1     1     0   1 2001006
+8   1  0     0     0   1 2001012
+9   1  0     0     0   1 2001012
+11  0  1     1     0   1 2001015
+12  0  1     1     0   1 2001016
+13  0  1     0     1   1 2001016
+15  0  1     1     0   1 2001020
+18  0  1     1     0   1 2001022
      [,1] [,2]
 [1,]  1.0    0
 [2,]  0.5    0
@@ -735,6 +760,7 @@ head(cbind(out$pardes,twinstut$id))
 [4,]  0.5    0
 [5,]  0.0    1
 #+END_example
+
 
 
 Now, fitting the ACE model, we see that the variance of the genetic, 
@@ -763,9 +789,9 @@ $type
 [1] "clayton.oakes"
 
 $h
-     Estimate Std.Err   2.5%  97.5%  P-value
-NA      1.555   0.187  1.189  1.922 9.11e-17
-NA.1   -0.555   0.187 -0.922 -0.189 2.99e-03
+            Estimate Std.Err   2.5%  97.5%  P-value
+dependence1    1.555   0.187  1.189  1.922 9.11e-17
+dependence2   -0.555   0.187 -0.922 -0.189 2.99e-03
 
 $vare
 NULL
@@ -827,8 +853,8 @@ $type
 [1] "clayton.oakes"
 
 $h
-   Estimate Std.Err 2.5% 97.5% P-value
-NA        1       0    1     1       0
+            Estimate Std.Err 2.5% 97.5% P-value
+dependence1        1       0    1     1       0
 
 $vare
 NULL
