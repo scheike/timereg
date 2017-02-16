@@ -2,6 +2,9 @@
 TAGS
 inst/misc/workshop*.org
 inst/misc/mena.org
+vignette/*.html
+vignette/*.tex
+vignette/auto
 *.o
 *.so
 *~
