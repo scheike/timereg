@@ -672,7 +672,7 @@ OR model with an intercept. This clearly shows a significant difference.
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut)
 margbin <- glm(binstut~sex,data=twinstut,family=binomial())
-bintwin <- binomial.twostage(margbin,data=twinstut,
+bintwin <- binomial.twostage(margbin,data=twinstut,model="gamma",
      clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=1,
      theta.des=theta.des)
 summary(bintwin)
@@ -680,7 +680,7 @@ summary(bintwin)
 ### test for same dependence in MZ and DZ 
 theta.des <- model.matrix( ~factor(zyg),data=twinstut)
 margbin <- glm(binstut~sex,data=twinstut,family=binomial())
-bintwin <- binomial.twostage(margbin,data=twinstut,
+bintwin <- binomial.twostage(margbin,data=twinstut,model="gamma",
      clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=1,
      theta.des=theta.des)
 summary(bintwin)
@@ -688,37 +688,39 @@ summary(bintwin)
 
 #+RESULTS:
 #+BEGIN_example
-Dependence parameter for Odds-Ratio (Plackett) model 
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
 With log-link 
 $estimates
-                  theta        se
-factor(zyg)dz 0.5238541 0.2400861
-factor(zyg)mz 3.4930902 0.1865567
+                    theta        se
+factor(zyg)dz -2.61194495 0.4854454
+factor(zyg)mz -0.01817181 0.1030735
 
-$or
-              Estimate Std.Err   2.5% 97.5%  P-value
-factor(zyg)dz     1.69   0.405  0.894  2.48 3.11e-05
-factor(zyg)mz    32.89   6.135 20.862 44.91 8.31e-08
+$vargam
+              Estimate Std.Err    2.5% 97.5%  P-value
+factor(zyg)dz   0.0734  0.0356 0.00356 0.143 3.94e-02
+factor(zyg)mz   0.9820  0.1012 0.78361 1.180 2.96e-22
 
 $type
-[1] "plackett"
+[1] "gamma"
 
 attr(,"class")
 [1] "summary.mets.twostage"
-Dependence parameter for Odds-Ratio (Plackett) model 
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
 With log-link 
 $estimates
                   theta        se
-(Intercept)   0.5238541 0.2400861
-factor(zyg)mz 2.9692361 0.3040473
+(Intercept)   -2.611945 0.4854454
+factor(zyg)mz  2.593773 0.4962675
 
-$or
-              Estimate Std.Err  2.5% 97.5%  P-value
-(Intercept)       1.69   0.405 0.894  2.48 3.11e-05
-factor(zyg)mz    19.48   5.922 7.870 31.08 1.01e-03
+$vargam
+              Estimate Std.Err    2.5%  97.5% P-value
+(Intercept)     0.0734  0.0356 0.00356  0.143  0.0394
+factor(zyg)mz  13.3802  6.6401 0.36573 26.395  0.0439
 
 $type
-[1] "plackett"
+[1] "gamma"
 
 attr(,"class")
 [1] "summary.mets.twostage"
@@ -762,10 +764,10 @@ out$pardes
 #+END_example
 
 
-
 Now, fitting the ACE model, we see that the variance of the genetic, 
 component, is 1.5 and the environmental variance is -0.5. Thus suggesting that 
-the ACE model does not fit the data. 
+the ACE model does not fit the data.  When the random design is given we 
+automatically use the gamma fralty model. 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 
