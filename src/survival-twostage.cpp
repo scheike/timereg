@@ -2321,7 +2321,7 @@ arma::cube thetadesi(thetadesvec.begin(), arrayDD[0], arrayDD[1], arrayDD[2], fa
 // mat thetades(arrayDD[0],arrayDD[1]); 
 // if  (depmodel!=3) 
 // mat thetades=mat(arrayDims1[0],arrayDims1[1]*arrayDD[2],thetadesvec.begin()); 
-mat thetades=mat(thetadesvec.begin(),arrayDims1[0],arrayDims1[1]*arrayDD[2],false); 
+ mat thetades=mat(thetadesvec.begin(),arrayDims1[0],arrayDims1[1]*arrayDD[2],false); 
 
 //printf(" mig rvdes \n"); 
 // array for parameter restrictions (one for each pair) pairs * (ant random effects)* (ant par)
@@ -2332,8 +2332,12 @@ mat thetades=mat(thetadesvec.begin(),arrayDims1[0],arrayDims1[1]*arrayDD[2],fals
  if (depmodel==3)  {
 	 arrayDD[0]=arrayDims2[0]; arrayDD[1]=arrayDims2[1]; arrayDD[2]=arrayDims2[2];  }
  else { arrayDD[0]=1; arrayDD[1]=1; arrayDD[2]=1;  }
-// printf(" %d %d %d \n",arrayDD[0], arrayDD[1], arrayDD[2]); 
-arma::cube rvdesC(rvdesvec.begin(), arrayDD[0], arrayDD[1], arrayDD[2], false);
+
+//  printf("rvdesC %d %d %d \n",arrayDD[0], arrayDD[1], arrayDD[2]); 
+  arma::cube rvdesC(rvdesvec.begin(), arrayDD[0], arrayDD[1], arrayDD[2], false);
+
+//  mat B=rvdesC.slice(1); B.print("rv.1"); 
+//  mat A=rvdesC.slice(0); A.print("rv.1"); 
 
 // printf(" her er lidt knas\n"); 
 mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false); 
@@ -2471,7 +2475,7 @@ for (j=0;j<antclust;j++) {
 
 // index of subject's in pair "j"
    i=clusterindex(j,0); k=clusterindex(j,1); 
-//	  printf("cci 2 \n"); 
+//	  printf("cci 2 %d %d \n",i,k); 
      if (strata(i)==strata(k)) { // 
 
      // basic survival status 
@@ -2526,8 +2530,11 @@ for (j=0;j<antclust;j++) {
 	// 3-dimensional array pairs*(2xrandom effects)
         int lnrv= nrvs(j)-1; // number of random effects for this cluster 	
 	mat rv=rvdesC.slice(j); 
+
         vec rv1= trans(rv.submat(span(0),span(0,lnrv)));
         vec rv2= trans(rv.submat(span(1),span(0,lnrv)));
+
+
 	if (j<-1 ) { rv.print("rv"); Rprintf(" %d \n",lnrv); rv1.print("rv1"); rv2.print("rv2"); }
 
 	// takes parameter relations for each pair
@@ -2535,10 +2542,11 @@ for (j=0;j<antclust;j++) {
 	mat thetadesvv=thetadesi.slice(j); 
 	mat thetadesv=thetadesvv.rows(0,lnrv); 
 
+
 	if (j< -10)  {
 	   Rprintf("%d %d %d %d %d %lf %lf \n",j,i,k,ci,ck,Li,Lk); 
-//         rv1.print("rv1");    rv2.print("rv2");    thetadesv.print("thetades "); 
-//	   etheta.print("e-theta");    ags.print("ags"); 
+         rv1.print("rv1");    rv2.print("rv2");    thetadesv.print("thetades "); 
+	   etheta.print("e-theta");    ags.print("ags"); 
 	}
 
            if (trunkp(i)<1 || trunkp(k)<1) { 

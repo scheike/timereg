@@ -784,6 +784,8 @@ if (!is.null(margsurv))  {
           } ## }}} 
           }
 
+###      browser()
+###      print(dim(random.design))
 
           outl<-.Call("twostageloglikeRVpairs", ## {{{
           icause=status,ipmargsurv=psurvmarg, 
