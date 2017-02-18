@@ -198,7 +198,6 @@ of the estimating equations. Here it is assumed that the second subject of each 
 proband.
 }
 \examples{
-	library(mets)
 library("timereg")
 library("survival")
 data(diabetes)
@@ -283,7 +282,6 @@ summary(fitp4)
 
 ### structured random effects model additive gamma ACE 
 ### simulate structured two-stage additive gamma ACE model
-library(mets)
 data <- simClaytonOakes.twin.ace(2000,2,1,0,3)
 out <- twin.polygen.design(data,id="cluster")
 pardes <- out$pardes
@@ -304,7 +302,7 @@ controls<-sort(sample(controls,min(ncont,length(controls))))
 cases <- sort( sample(cases,   min(ncase,length(cases))))
 clustco <- data2$cluster[controls]
 clustca <- data2$cluster[cases]
-ss <- data$cluster %in% c(clustco,clustca)
+ss <- data$cluster \%in\% c(clustco,clustca)
 datacc <- data[ss,]
 
 mm <- familycluster.index(datacc$cluster)

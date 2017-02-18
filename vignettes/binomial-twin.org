@@ -585,7 +585,7 @@ summary(b1)
 (Intercept)  -3.70371   0.24449 -15.14855       0
 sexmale       0.83310   0.08255  10.09201       0
 log(var(A))   1.18278   0.17179   6.88512       0
-log(var(C)) -25.34566        NA        NA      NA
+log(var(C)) -25.34566   0.34507 -73.45055       0
 
  Total MZ/DZ Complete pairs MZ/DZ
  8777/12511  3255/4058           
