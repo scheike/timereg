@@ -235,14 +235,9 @@ procform3 <- function(y,x=NULL,z=NULL,...) {# {{{
         x <- procform(x,return.formula=FALSE,...)
         y <- c(x$predictor,x$response)
     }
-
-###    if (is.null(z)) z <- z0
-###    if (!is.null(z)) {
-###        zz <- unlist(procform(z,return.formula=FALSE,...))
-###    }
-###    if (is.null(z)) z <- z0
     return(list(y=y,x=x0,z=z))
 }# }}}
+
 
 
 ## Specials <- function(f,spec,split2="+",...) {
@@ -260,7 +255,6 @@ procform3 <- function(y,x=NULL,z=NULL,...) {# {{{
 ## spec <- "id"
 ## split1=","
 ## split2="+"
-
 
 ## myspecials <- c("id","strata","f")
 ## f <- Event(leftime,time,cause) ~ id(~1+z+z2,cluster) + strata(~s1+s2) + f(a) + z*x
@@ -283,8 +277,6 @@ Specials <- function(f,spec,split1=",",split2=NULL,...) {# {{{
       res[[i]] <- as.formula(res[[i]])
   }
   return(res)
-##  if (is.null(split2)) return(res)
-##  strsplit(res,"+",fixed=TRUE)
 }# }}}
 
 decomp.specials <- function (x, pattern = "[()]", sep = ",", ...)

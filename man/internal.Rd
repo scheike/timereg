@@ -35,6 +35,8 @@
 \alias{plotcr}
 \alias{pmvn}
 \alias{predictPairPlack}
+\alias{procform}
+\alias{procform3}
 \alias{scoreMVN}
 \alias{sim}
 \alias{simBinFam}

@@ -151,6 +151,7 @@ NULL
 ##'  simClaytonOakes.family.ace simClaytonOakes.twin.ace
 ##'  simCompete.simple simCompete.twin.ace twin.polygen.design
 ##'  twostage.fullse
+##'  procform procform3
 NULL
 
 

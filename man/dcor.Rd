@@ -6,6 +6,7 @@
 \alias{deval}
 \alias{deval2}
 \alias{dmean}
+\alias{dmeansd}
 \alias{dquantile}
 \alias{dscalar}
 \alias{dsd}

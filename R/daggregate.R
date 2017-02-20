@@ -66,6 +66,7 @@ by2mat <- function(x,nam,...) {
 ##' @param matrix if TRUE a matrix is returned instead of an array
 ##' @param silent suppress messages
 ##' @param na.action How model.frame deals with 'NA's
+##' @param convert if TRUE try to coerce result into matrix. Can also be a user-defined function
 ##' @aliases daggr
 daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=mets.options()$regex, missing=FALSE, remove.empty=FALSE, matrix=FALSE, silent=FALSE, na.action=na.pass, convert=NULL)
 {# {{{
@@ -194,7 +195,7 @@ dunique <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=fu
 ##' dcor(dt,time+wmi~vf+chf)
 ##'
 ##' dcor(dt,c("time*","wmi*"),~vf+chf)
-##' @aliases dsummary dstr dcor dsubset dquantile dcount dmean dscalar deval deval2 dsum dsd
+##' @aliases dsummary dstr dcor dsubset dquantile dcount dmean dmeansd dscalar deval deval2 dsum dsd
 ##' @export
 dcor <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,...,fun=function(z,...) stats::cor(z,...))
 

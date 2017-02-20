@@ -33,6 +33,8 @@ daggregate(data, y = NULL, x = NULL, subset, ..., fun = "summary",
 \item{silent}{suppress messages}
 
 \item{na.action}{How model.frame deals with 'NA's}
+
+\item{convert}{if TRUE try to coerce result into matrix. Can also be a user-defined function}
 }
 \description{
 aggregating for for data frames
