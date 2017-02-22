@@ -3,3 +3,4 @@ test.*
 *.tex
 *.html
 *.R
+auto/
