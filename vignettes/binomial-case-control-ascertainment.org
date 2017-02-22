@@ -1,0 +1,187 @@
+#+TITLE: Analysis of multivariate binomial data: case control or ascertainment sampling 
+#+AUTHOR: Klaus Holst & Thomas Scheike
+#+PROPERTY: session *R*
+#+PROPERTY: cache no
+#+PROPERTY: results output 
+#+PROPERTY: wrap example 
+#+PROPERTY: exports code 
+#+PROPERTY: tangle yes 
+#+PROPERTY: comments yes
+#+OPTIONS: LaTeX:nil timestamp:t author:nil d:t
+#+STARTUP: hideall 
+# http://orgmode.org/manual/Export-options.html
+#+OPTIONS: toc:t h:4 num:nil 
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="http://192.38.117.59/~ts/styles/orgmode5-ts.css">
+#+HTML_HEAD: <link rel="icon" type="image/x-icon" href="http://www.biostat.ku.dk/~kkho/styles/logo.ico"/>
+#+HTML_HEAD: <style type="text/css">body { background-image: url(http://www.biostat.ku.dk/~kkho/styles/sund.png); background-size:120px 95px; background-position: 2% 0.55em; }
+#+HTML_HEAD:  a.logo span { background: none; }
+#+HTML_HEAD:  th,td,tr,table th,table th,table td {
+#+HTML_HEAD:      background: rgba(240,240,240,1);         
+#+HTML_HEAD:      border: none;
+#+HTML_HEAD:  }
+#+HTML_HEAD:   body { width: 800px; text-align:justify; text-justify:inter-word; }
+#+HTML_HEAD: </style>
+#+BEGIN_HTML
+<a href="http://www.biostat.ku.dk/~ts/survival class="logo"><span></span></a>
+#+END_HTML
+
+----- 
+
+
+* Overview 
+
+When looking at multivariate binomial data with the aim of learning about the 
+dependence that is present, possibly after correcting for some covariates many
+models are available. 
+
+   -  Random-effects models logistic regression covered elsewhere (glmer in lme4).
+
+in the mets package you can fit the 
+
+   -  Pairwise odds ratio model
+   -  Bivariate Probit model 
+      - With random effects
+      - Special functionality for polygenic random effects modelling 
+        such as ACE, ADE ,AE and so forth.
+   -  Additive gamma random effects model 
+      - Special functionality for polygenic random effects modelling 
+        such as ACE, ADE ,AE and so forth.
+
+These last three models are all fitted in the mets package using composite 
+likelihoods for pairs of data.  The models can be fitted specifically based 
+on specifying which pairs one wants to use for the composite score. 
+
+The models are described in futher details in the binomial-twin vignette. 
+
+
+** Case-Control Sampling 
+
+Sometimes, pairs are recruited after a case-proband is selected. This 
+proband, can be either  a 
+
+ - case: must be representative of cases
+
+or  a 
+
+ - control: must be representative of controls
+
+First thinking about pairs, we estimate parameters using the conditional 
+likelihood given sampling wich for a binary 2 x 2 table can be 
+written as
+\[
+\frac{P(i,j)}{P(j)}
+\]
+the probailty of seeing \( (i,j) \) for the pair, given that the proband was
+observed as \( (j) \).
+
+
+We note that if the marginal is known, or possibly estimated from the full 
+cohort. Then we can estimate dependence paramters using just the terms
+\( P(i,j) \) for the pairs. We can thus ignore the special sampling for
+models with marginal specification.  If the marginal can not be obtained 
+from other sources we need to maximize the full-pairwise-likelihood in all
+paramters, that is both dependence and marginal parameters. 
+
+
+
+Similary, one can select a whole family based on having selected a proband, that is 
+selected a representative member of  either cases or controls.  In this case we 
+fit the models by using composited likelihoods, considering all
+pairs that involves the probands.  This will give some lacking efficiency 
+compared to looking at the full likelihood of the family given the proband. 
+
+
+** Ascertainment Sampling 
+
+Similarly, in the setting of pairs we can select all pairs where there is at 
+least one event of interest.  
+
+First thinking about pairs, we estimate parameters using the conditional 
+likelihood given sampling wich for a binary 2 x 2 table can be 
+written as
+\[
+\frac{P(i,j)}{1-P(0,0)}
+\]
+the probailty of seeing \( (i,j) \) for the pair, given that it is sampled. 
+
+If the marginal can estimated from a full sample we can then estimate the
+dependence paramter using the ascertainment likelihood.
+
+
+
+* The twin-stutter data
+
+We consider the twin-stutter where for pairs of twins that are 
+either dizygotic or monozygotic we have recorded whether the twins
+are stuttering \cite{twinstut-ref}
+
+We here consider MZ and same sex DZ twins. 
+
+Looking at the data 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+library(mets)
+data(twinstut)
+twinstut$binstut <- 1*(twinstut$stutter=="yes")
+twinsall <- twinstut
+twinstut <- subset(twinstut,zyg%in%c("mz","dz"))
+head(twinstut)
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_example
+Loading required package: timereg
+Loading required package: survival
+Loading required package: lava
+lava version 1.4.7.1
+mets version 1.2.1
+
+Attaching package: ‘mets’
+
+The following object is masked _by_ ‘.GlobalEnv’:
+
+    object.defined
+   tvparnr zyg stutter    sex age nr binstut
+1  2001005  mz      no female  71  1       0
+2  2001005  mz      no female  71  2       0
+3  2001006  dz      no female  71  1       0
+8  2001012  mz      no female  71  1       0
+9  2001012  mz      no female  71  2       0
+11 2001015  dz      no   male  71  1       0
+#+END_example
+
+
+We first select a case-control sample of this data to illustrate the use
+of the methods.
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+END_SRC  
+
+#+RESULTS:
+#+BEGIN_example
+#+END_example
+
+Secondly, we select an ascertaiment sample of the data, thus selecting
+a random sample of all ascertained pairs. 
+
+
+* Case Control Sampling 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+END_SRC  
+
+#+RESULTS:
+#+BEGIN_example
+#+END_example
+
+* Ascertaiment Sampling 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+END_SRC  
+
+#+RESULTS:
+#+BEGIN_example
+#+END_example
+
+* COMMENT 
+
