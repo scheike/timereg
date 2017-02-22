@@ -200,6 +200,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     rate.sim <- 1; sym=1; 
     if (model=="clayton.oakes"  || model=="gamma") dep.model <- 1 else if (model=="plackett" || model=="or") dep.model <- 2 else stop("Model must by either clayton.oakes or plackett \n"); 
     antpers <- NROW(data); 
+    if (!is.null(pairs)) nn <- NROW(pairs) else nn <- 1
 
 ### marginal prediction and binomial response, two types of calls ## {{{
     if (class(margbin)[1]=="glm") {
@@ -284,8 +285,11 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 ###    else theta.des<-as.matrix(theta.des); 
 ###    ptheta<-ncol(theta.des); 
 ###    if (nrow(theta.des)!=antpers) stop("Theta design does not have correct dim");
+
+  if (!is.null(pairs)) { pair.structure <- 1; } else  pair.structure <- 0;  
   if (length(dim(theta.des))==3) ptheta<-dim(theta.des)[2] else if (length(dim(theta.des))==2) ptheta<-ncol(theta.des)
-  if (nrow(theta.des)!=antpers & dep.model!=3 ) stop("Theta design does not have correct dim");
+  if  (nrow(theta.des)!=antpers & dep.model!=3 & pair.structure==0 ) stop("Theta design does not have correct dim");
+  if  (nrow(theta.des)!=nn      & dep.model!=3 & pair.structure==1 ) stop("Theta design does not have correct dim");
 
    if (length(dim(theta.des))!=3) theta.des <- as.matrix(theta.des)
 ###   theta.des <- as.matrix(theta.des)
@@ -301,11 +305,11 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 
     if (maxclust==1) stop("No clusters, maxclust size=1\n"); 
 
-  antpairs <- 1; ### to define 
+    antpairs <- 1; ### to define 
 
   if (is.null(additive.gamma.sum)) additive.gamma.sum <- matrix(1,dim.rv,ptheta)
 
-  if (!is.null(pairs)) { pair.structure <- 1; } else  pair.structure <- 0;  
+
   if (pair.structure==1 & dep.model==3) { ## {{{ 
 ### something with dimensions of rv.des 
 ### theta.des
@@ -379,6 +383,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 		
       if (pair.structure==0 | dep.model!=3) Xtheta <- as.matrix(theta.des) %*% matrix(c(par[seq(1,ptheta)]),nrow=ptheta,ncol=1);
       if (pair.structure==1 & dep.model==3) Xtheta <- matrix(0,antpers,1); ## not needed 
+      if (pair.structure==1 & dep.model!=3) Xtheta <- as.matrix(theta.des) %*% matrix(c(par[seq(1,ptheta)]),nrow=ptheta,ncol=1);
       DXtheta <- array(0,c(1,1,1));
 
       if (twostage==0) epar <- par[seq(1,ptheta)] else epar <- par

@@ -796,6 +796,7 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
   
   colvec likepairs(antclust); 
 //  double claytonoakesbinRVC(); 
+//    printf("--------%d  \n",antclust); 
 
 for (j=0;j<antclust;j++) { 
 
@@ -814,14 +815,20 @@ for (j=0;j<antclust;j++) {
      int flexfunc=0; 
       if (flexfunc==0) {
 	  if (depmodel!=3) {
-		  thetak=Xtheta(i,0);  
-		  pthetavec= trans(thetades.row(i)); 
+//		  thetak=Xtheta(i,0);  
+//		  pthetavec= trans(thetades.row(i)); 
+//		  vthetascore=1*pthetavec; 
+                  thetak=Xtheta(j,0);  
+		  pthetavec= trans(thetades.row(j)); 
 		  vthetascore=1*pthetavec; 
 	  }
       } else { // {{{ 
 	  thetak=Xtheta(i,s); 
 	  pthetavec = DXtheta(span(s),span(i),span::all); 
       } // }}} 
+
+//  pthetavec.print("pthetavec");
+//  printf(" %lf \n",thetak);
 
   if (depmodel==1){ if (varlink==1) deppar=1/exp(thetak); else deppar=1/thetak;}
   if (depmodel==2){ if (varlink==1) deppar=exp(thetak); else deppar=thetak; }

@@ -1,4 +1,4 @@
-#+TITLE: Analysis of bivariate binomial data: Twin analysis
+#+TITLE: Analysis of multivariate binomial data: family analysis
 #+AUTHOR: Klaus Holst & Thomas Scheike
 #+PROPERTY: session *R*
 #+PROPERTY: cache no
@@ -27,9 +27,10 @@
 
 ----- 
 
+
 * Overview 
 
-When looking at bivariate binomial data with the aim of learning about the 
+When looking at multivariate binomial data with the aim of learning about the 
 dependence that is present, possibly after correcting for some covariates many
 models are available. 
 
@@ -42,97 +43,31 @@ in the mets package you can fit the
       - With random effects
       - Special functionality for polygenic random effects modelling 
         such as ACE, ADE ,AE and so forth.
-
    -  Additive gamma random effects model 
       - Special functionality for polygenic random effects modelling 
         such as ACE, ADE ,AE and so forth.
 
+These last three models are all fitted in the mets package using composite 
+likelihoods for pairs of data.  The models can be fitted specifically based 
+on specifying which pairs one wants to use for the composite score. 
 
-Typically it can be hard to specify random effects models with special 
-structure the parameters among the random effects. 
-
-We start by giving a brief description of these different models 
-
-
+The models are described in futher details in the binomial-twin vignette. 
 
 
-For the Clayton-Oakes version of the model, given the gamma distributed random effects it is 
-assumed that the probabilities are indpendent, and that the marginal survival functions are on logistic form 
-\[
-logit(P(Y=1|X)) = \alpha + x^T \beta
-\]
-therefore conditional on the random effect the probability of the event is 
-\deqn{
-logit(P(Y=1|X,Z)) = exp( - Laplace^{-1}(lamtot,lamtot,P(Y=1|x)) )  
-}
+* Simulated family data
 
-Can also fit a structured additive gamma random effects model, such
-the ACE, ADE model for survival data:
+We start by simulating family data with and additive gamma structure
+on ACE form.  Here 40000 families consisting of two parents and
+two children. The response is ybin and there is one covariate x. 
 
-Now random.design specificies the random effects for each subject within a cluster. This is
-a matrix of 1's and 0's with dimension n x d.  With d random effects. 
-For a cluster with two subjects, we let the random.design rows be 
- \eqn{v_1} and \eqn{v_2}. 
-Such that the random effects for subject 
-1 is \deqn{v_1^T (Z_1,...,Z_d)}, for d random effects. Each random effect
-has an associated parameter \eqn{(\lambda_1,...,\lambda_d)}. By construction
-subjects 1's random effect are Gamma distributed with 
-mean \eqn{\lambda_j/v_1^T \lambda}
-and variance \eqn{\lambda_j/(v_1^T \lambda)^2}. Note that the random effect 
-\eqn{v_1^T (Z_1,...,Z_d)} has mean 1 and variance \eqn{1/(v_1^T \lambda)}.
-It is here asssumed that  \eqn{lamtot=v_1^T \lambda} is fixed over all clusters
-as it would be for the ACE model below.
-
-The DEFAULT parametrization uses the variances of the random effecs (var.par=1)
-\deqn{
-\theta_j  = \lambda_j/(v_1^T \lambda)^2
-}
-
-For alternative parametrizations (var.par=0) one can specify how the parameters relate 
-to \eqn{\lambda_j} with the function
-
-Based on these parameters the relative contribution (the heritability, h) is 
-equivalent to  the expected values of the random effects  \eqn{\lambda_j/v_1^T \lambda}
-
-Given the random effects the probabilities  are independent and on the form 
-\deqn{
-logit(P(Y=1|X)) = exp( - Laplace^{-1}(lamtot,lamtot,P(Y=1|x)) )  
-}
-with the inverse laplace of the gamma distribution with mean 1 and variance lamtot.
-
-The parameters \eqn{(\lambda_1,...,\lambda_d)}
-are related to the parameters of the model
-by a regression construction \eqn{pard} (d x k), that links the \eqn{d} 
-\eqn{\lambda} parameters
-with the (k) underlying \eqn{\theta} parameters 
-\deqn{
-\lambda = theta.des  \theta 
-}
-here using theta.des to specify these low-dimension association. 
-Default is a diagonal matrix.
-
-
-
-* Pairwise odds ratio model 
-
-* Bivariate Probit model 
-
-* Additive gamma random effects 
-
-
-  
-
-#+BEGIN_SRC R
-library(mets)
-b1 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",
-	     type="ace")
-summary(b1)
-
-out <- twin.polygen.design(twinstut,id="tvparnr",zygname="zyg",zyg="dz",
-			   type="ace")
-head(out$des.rv)
-head(out$pardes)
-#+END_SRC
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+ library(mets)
+ set.seed(100)
+ data <- simbinClaytonOakes.family.ace(40000,2,1,beta=NULL,alpha=NULL)
+ data$number <- c(1,2,3,4)
+ data$child <- 1*(data$number==3)
+ head(data)
+#+END_SRC  
 
 #+RESULTS:
 #+BEGIN_example
@@ -147,177 +82,703 @@ Attaching package: ‘mets’
 The following object is masked _by_ ‘.GlobalEnv’:
 
     object.defined
- Error in bptwin(binstut ~ sex, data = twinstut, id = "tvparnr", zyg = "zyg",  : 
-  object 'twinstut' not found
-Error in summary(b1) : object 'b1' not found
- Error in table(data[, id]) : object 'twinstut' not found
-Error in head(out$des.rv) : object 'out' not found
-Error in head(out$pardes) : object 'out' not found
-#+END_example
-
-#+BEGIN_SRC R
-margbin <- glm(binstut~sex,data=twinstut,family=binomial())
-bintwin1 <- binomial.twostage(margbin,data=twinstut,
-     clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
-     random.design=out$des.rv,theta.des=out$pardes)
-summary(bintwin1)
-
-#+END_SRC
-
-#+RESULTS:
-#+BEGIN_example
-Error in is.data.frame(data) : object 'twinstut' not found
- Error in NROW(data) : object 'twinstut' not found
-Error in summary(bintwin1) : object 'bintwin1' not found
+  ybin x   type cluster number child
+1    1 0 mother       1      1     0
+2    1 1 father       1      2     0
+3    1 1  child       1      3     1
+4    1 1  child       1      4     0
+5    0 0 mother       2      1     0
+6    1 1 father       2      2     0
 #+END_example
 
 
+We fit the marginal models, and here find a covariate
+effect at 0.3 for x. The marginals can be specified excatly as one
+wants. 
 
-
-#+BEGIN_SRC R
-
-### example 1, twin stut data 
-data(twinstut)
-twinstut <- subset(twinstut,zyg%in%c("mz","dz"))
-twinstut$binstut <- 1*(twinstut$stutter=="yes")
-
-b0 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="ae")
-summary(b0)
-
-out <- twin.polygen.design(twinstut,id="tvparnr",zygname="zyg",zyg="dz",
-			   type="ae")
-margbin <- glm(binstut~sex,data=twinstut,family=binomial())
-bintwin <- binomial.twostage(margbin,data=twinstut,
-     clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
-     random.design=out$des.rv,theta.des=out$pardes)
-summary(bintwin)
-
-concordance.twin.ace(bintwin,type="ae")
-summary(b0)
-#+END_SRC
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+ aa <- margbin <- glm(ybin~x,data=data,family=binomial())
+ summary(aa)
+#+END_SRC 
 
 #+RESULTS:
 #+BEGIN_example
 
-             Estimate   Std.Err         Z p-value
-(Intercept)  -3.70371   0.24449 -15.14855       0
-sexmale       0.83310   0.08255  10.09201       0
-log(var(A))   1.18278   0.17179   6.88512       0
+Call:
+glm(formula = ybin ~ x, family = binomial(), data = data)
 
- Total MZ/DZ Complete pairs MZ/DZ
- 8777/12511  3255/4058           
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-1.5283  -1.3910   0.8632   0.9779   0.9779  
 
-                   Estimate 2.5%    97.5%  
-A                  0.76545  0.70500 0.82590
-E                  0.23455  0.17410 0.29500
-MZ Tetrachoric Cor 0.76545  0.69793 0.81948
-DZ Tetrachoric Cor 0.38272  0.35210 0.41253
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)    
+(Intercept) 0.489258   0.007291    67.1   <2e-16 ***
+x           0.306070   0.010553    29.0   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-MZ:
-                     Estimate 2.5%     97.5%   
-Concordance           0.01560  0.01273  0.01912
-Casewise Concordance  0.42830  0.36248  0.49677
-Marginal              0.03643  0.03294  0.04027
-Rel.Recur.Risk       11.75741  9.77237 13.74246
-log(OR)               3.52382  3.13466  3.91298
-DZ:
-                     Estimate 2.5%    97.5%  
-Concordance          0.00558  0.00465 0.00670
-Casewise Concordance 0.15327  0.13749 0.17050
-Marginal             0.03643  0.03294 0.04027
-Rel.Recur.Risk       4.20744  3.78588 4.62900
-log(OR)              1.69996  1.57262 1.82730
+(Dispersion parameter for binomial family taken to be 1)
 
-                         Estimate 2.5%    97.5%  
-Broad-sense heritability 0.76545  0.70500 0.82590
+    Null deviance: 206272  on 159999  degrees of freedom
+Residual deviance: 205428  on 159998  degrees of freedom
+AIC: 205432
+
+Number of Fisher Scoring iterations: 4
+#+END_example
+
+
+* Additive gamma model 
+
+For the additive gamma of this type we set-up the random effects
+included in such a family to make the ACE valid using some
+special functions for this. 
+
+The model is constructe with one enviromental effect shared by
+all in the family and 8 genetic random effects with size (1/4) genetic
+variance. Looking at the first family we see that the mother and
+father both share half the genes with the children and that the
+two children also share half their genes with this specification.
+Below we also show an alternative specification of this model
+using all pairs. 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+### make ace random effects design
+out <- ace.family.design(data,member="type",id="cluster")
+out$pardes
+head(out$des.rv,4)
+#+END_SRC 
+
+#+RESULTS:
+#+BEGIN_example
+      [,1] [,2]
+ [1,] 0.25    0
+ [2,] 0.25    0
+ [3,] 0.25    0
+ [4,] 0.25    0
+ [5,] 0.25    0
+ [6,] 0.25    0
+ [7,] 0.25    0
+ [8,] 0.25    0
+ [9,] 0.00    1
+     m1 m2 m3 m4 f1 f2 f3 f4 env
+[1,]  1  1  1  1  0  0  0  0   1
+[2,]  0  0  0  0  1  1  1  1   1
+[3,]  1  1  0  0  1  1  0  0   1
+[4,]  1  0  1  0  1  0  1  0   1
+#+END_example
+
+We can now fit the model calling the two-stage function
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+### fitting ace model for family structure
+ts <- binomial.twostage(margbin,data=data,clusters=data$cluster,
+theta=c(2,1)/9,
+random.design=out$des.rv,theta.des=out$pardes)
+summary(ts)
+## true variance parameters
+c(2,1)/9
+###total variance 
+1/3
+#+END_SRC 
+
+#+RESULTS:
+#+BEGIN_example
 Dependence parameter for Clayton-Oakes model
-variance of Gamma distributed random effects 
+Variance of Gamma distributed random effects 
 $estimates
-         theta         se
-[1,] 0.9094847 0.09536268
+                theta         se
+dependence1 0.2425610 0.03747680
+dependence2 0.1255742 0.01607478
 
 $type
 [1] "clayton.oakes"
 
 $h
-   Estimate Std.Err 2.5% 97.5% P-value
-p1        1       0    1     1       0
+            Estimate Std.Err  2.5% 97.5%  P-value
+dependence1    0.659  0.0611 0.539 0.779 4.25e-27
+dependence2    0.341  0.0611 0.221 0.461 2.39e-08
 
 $vare
 NULL
 
 $vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.909  0.0954 0.723   1.1 1.47e-21
+p1    0.368  0.0252 0.319 0.418 3.31e-48
 
 attr(,"class")
 [1] "summary.mets.twostage"
-$MZ
-                     Estimate Std.Err   2.5%  97.5%  P-value
-concordance            0.0174 0.00143 0.0146 0.0202 5.00e-34
-casewise concordance   0.4795 0.03272 0.4154 0.5437 1.20e-48
-marginal               0.0362 0.00188 0.0325 0.0399 7.15e-83
-
-$DZ
-                     Estimate  Std.Err   2.5%   97.5%   P-value
-concordance           0.00477 0.000393 0.0040 0.00554  5.94e-34
-casewise concordance  0.13175 0.005417 0.1211 0.14237 1.14e-130
-marginal              0.03620 0.001877 0.0325 0.03988  7.15e-83
-
-             Estimate   Std.Err         Z p-value
-(Intercept)  -3.70371   0.24449 -15.14855       0
-sexmale       0.83310   0.08255  10.09201       0
-log(var(A))   1.18278   0.17179   6.88512       0
-
- Total MZ/DZ Complete pairs MZ/DZ
- 8777/12511  3255/4058           
-
-                   Estimate 2.5%    97.5%  
-A                  0.76545  0.70500 0.82590
-E                  0.23455  0.17410 0.29500
-MZ Tetrachoric Cor 0.76545  0.69793 0.81948
-DZ Tetrachoric Cor 0.38272  0.35210 0.41253
-
-MZ:
-                     Estimate 2.5%     97.5%   
-Concordance           0.01560  0.01273  0.01912
-Casewise Concordance  0.42830  0.36248  0.49677
-Marginal              0.03643  0.03294  0.04027
-Rel.Recur.Risk       11.75741  9.77237 13.74246
-log(OR)               3.52382  3.13466  3.91298
-DZ:
-                     Estimate 2.5%    97.5%  
-Concordance          0.00558  0.00465 0.00670
-Casewise Concordance 0.15327  0.13749 0.17050
-Marginal             0.03643  0.03294 0.04027
-Rel.Recur.Risk       4.20744  3.78588 4.62900
-log(OR)              1.69996  1.57262 1.82730
-
-                         Estimate 2.5%    97.5%  
-Broad-sense heritability 0.76545  0.70500 0.82590
+[1] 0.2222222 0.1111111
+[1] 0.3333333
 #+END_example
 
 
-*  COMMENT 
+** Pairwise fitting 
 
- :PROPERTIES:
- :BEAMER_opt: shrink=85
- :END:
-#+BEGIN_SRC R :results graphics :cache no :file auto/remis-km-placebo.png :exports both :session *R*
-par(mfrow=c(2,2))
-plot(survfit(Surv(time,event)~placebo,data=remis),col=c("red","blue"))
-legend("topright",legend=c("Treatment","Placebo"),col=c("red","blue"),lty=c(1,1))
-plot(survfit(Surv(time,event)~placebo,data=remis),col=c("red","blue"),fun="cumhaz")
-legend("topright",legend=c("Treatment","Placebo"),col=c("red","blue"),lty=c(1,1))
-plot(survfit(Surv(time,event)~placebo,data=remis),col=c("red","blue"),fun="cloglog")
-legend("topright",legend=c("Treatment","Placebo"),col=c("red","blue"),lty=c(1,1))
-#+END_SRC
+We now specify the same model via extracting all pairs.  The random
+effecs structure is simpler when just looking at pairs. 
+A special function writes up all combinations of pairs. 
+There are 6 pairs within each family, and we keep track of
+who belongs to the different families. We first simply give the
+pairs and we then should get the same result as before. 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+mm <- familycluster.index(data$cluster)
+head(mm$familypairindex,n=20)
+pairs <- mm$pairs
+dim(pairs)
+head(pairs,12)
+
+tsp <- binomial.twostage(margbin,data=data,
+                     clusters=data$cluster,
+                     theta=c(2,1)/9,detail=0,
+              random.design=out$des.rv,theta.des=out$pardes,pairs=pairs)
+summary(tsp)
+#+END_SRC 
 
 #+RESULTS:
 #+BEGIN_example
-[[file:auto/remis-km-placebo.png]]
+ [1] 1 2 1 3 1 4 2 3 2 4 3 4 5 6 5 7 5 8 6 7
+[1] 240000      2
+      [,1] [,2]
+ [1,]    1    2
+ [2,]    1    3
+ [3,]    1    4
+ [4,]    2    3
+ [5,]    2    4
+ [6,]    3    4
+ [7,]    5    6
+ [8,]    5    7
+ [9,]    5    8
+[10,]    6    7
+[11,]    6    8
+[12,]    7    8
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                theta         se
+dependence1 0.2425610 0.03747680
+dependence2 0.1255742 0.01607478
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err  2.5% 97.5%  P-value
+dependence1    0.659  0.0611 0.539 0.779 4.25e-27
+dependence2    0.341  0.0611 0.221 0.461 2.39e-08
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1    0.368  0.0252 0.319 0.418 3.31e-48
+
+attr(,"class")
+[1] "summary.mets.twostage"
 #+END_example
 
-[[file:auto/remis-km-placebo.png]]
 
- 
+Here a random sample of pairs are given instead and we get other
+estimates. 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+set.seed(100)
+ssid <- sort(sample(1:nrow(pairs),nrow(pairs)/2))
+tsd <- binomial.twostage(aa,data=data,clusters=data$cluster,
+               theta=c(2,1)/9,step=1.0,
+               random.design=out$des.rv,iid=1,Nit=10,
+  	           theta.des=out$pardes,pairs=pairs[ssid,])
+summary(tsd)
+#+END_SRC 
+
+#+RESULTS:
+#+BEGIN_example
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                 theta         se
+dependence1 0.31196731 0.05585463
+dependence2 0.09833816 0.02328983
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err   2.5% 97.5%  P-value
+dependence1     0.76  0.0734 0.6165 0.904 3.79e-25
+dependence2     0.24  0.0734 0.0958 0.384 1.09e-03
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1     0.41  0.0373 0.337 0.483 3.58e-28
+
+attr(,"class")
+[1] "summary.mets.twostage"
+#+END_example
+
+
+To specify such a model  when only the pairs are availble we show
+we can specify the same model. We here use the same marginal "aa"
+to make the results comparable, and they should be identical. 
+The marginal can also be fitted based on available data. 
+
+This requires that pair.new refers to id's in data so we need to
+respecify and the data. 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+head(pairs[ssid,])
+ids <- sort(unique(c(pairs[ssid,])))
+###
+pairsids <- c(pairs[ssid,])
+pair.new <- matrix(fast.approx(ids,c(pairs[ssid,])),ncol=2)
+head(pair.new)
+
+## this requires that pair.new refers to id's in dataid (survival, status and so forth)
+## random.design and theta.des are constructed to be the array 3 dims via individual specfication from ace.family.design
+dataid <- dsort(data[ids,],"cluster")
+outid <- ace.family.design(dataid,member="type",id="cluster")
+outid$pardes
+head(outid$des.rv)
+
+
+tsdid <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
+         theta=c(2,1)/9,
+         random.design=outid$des.rv,theta.des=outid$pardes,pairs=pair.new)
+summary(tsdid)
+#+END_SRC 
+
+#+RESULTS:
+#+BEGIN_example
+     [,1] [,2]
+[1,]    1    2
+[2,]    1    3
+[3,]    2    4
+[4,]    3    4
+[5,]    5    6
+[6,]    5    7
+     [,1] [,2]
+[1,]    1    2
+[2,]    1    3
+[3,]    2    4
+[4,]    3    4
+[5,]    5    6
+[6,]    5    7
+      [,1] [,2]
+ [1,] 0.25    0
+ [2,] 0.25    0
+ [3,] 0.25    0
+ [4,] 0.25    0
+ [5,] 0.25    0
+ [6,] 0.25    0
+ [7,] 0.25    0
+ [8,] 0.25    0
+ [9,] 0.00    1
+     m1 m2 m3 m4 f1 f2 f3 f4 env
+[1,]  1  1  1  1  0  0  0  0   1
+[2,]  0  0  0  0  1  1  1  1   1
+[3,]  1  1  0  0  1  1  0  0   1
+[4,]  1  0  1  0  1  0  1  0   1
+[5,]  1  1  1  1  0  0  0  0   1
+[6,]  0  0  0  0  1  1  1  1   1
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                 theta         se
+dependence1 0.31196731 0.05585438
+dependence2 0.09833816 0.02328230
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err   2.5% 97.5%  P-value
+dependence1     0.76  0.0734 0.6165 0.904 3.76e-25
+dependence2     0.24  0.0734 0.0958 0.384 1.09e-03
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1     0.41  0.0373 0.337 0.483 3.47e-28
+
+attr(,"class")
+[1] "summary.mets.twostage"
+#+END_example
+
+We now specify the design specifically using the pairs. 
+The random.design and design on the parameters
+are now given for each pair, as  a 3 dimensional matrix. 
+with a direct specification of random.design and the 
+design on the parameters theta.design.
+
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+dataid <- dsort(data[ids,],"cluster")
+outid <- ace.family.design(dataid,member="type",id="cluster")
+outid$pardes
+head(outid$des.rv)
+tsdid <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
+         theta=c(2,1)/9,
+         random.design=outid$des.rv,
+         theta.des=outid$pardes,pairs=pair.new)
+summary(tsdid)
+
+#+END_SRC 
+
+#+RESULTS:
+#+BEGIN_example
+      [,1] [,2]
+ [1,] 0.25    0
+ [2,] 0.25    0
+ [3,] 0.25    0
+ [4,] 0.25    0
+ [5,] 0.25    0
+ [6,] 0.25    0
+ [7,] 0.25    0
+ [8,] 0.25    0
+ [9,] 0.00    1
+     m1 m2 m3 m4 f1 f2 f3 f4 env
+[1,]  1  1  1  1  0  0  0  0   1
+[2,]  0  0  0  0  1  1  1  1   1
+[3,]  1  1  0  0  1  1  0  0   1
+[4,]  1  0  1  0  1  0  1  0   1
+[5,]  1  1  1  1  0  0  0  0   1
+[6,]  0  0  0  0  1  1  1  1   1
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                 theta         se
+dependence1 0.31196731 0.05585438
+dependence2 0.09833816 0.02328230
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err   2.5% 97.5%  P-value
+dependence1     0.76  0.0734 0.6165 0.904 3.76e-25
+dependence2     0.24  0.0734 0.0958 0.384 1.09e-03
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1     0.41  0.0373 0.337 0.483 3.47e-28
+
+attr(,"class")
+[1] "summary.mets.twostage"
+#+END_example
+
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+
+head(pairs[ssid,])
+ids <- sort(unique(c(pairs[ssid,])))
+###
+pairsids <- c(pairs[ssid,])
+pair.new <- matrix(fast.approx(ids,c(pairs[ssid,])),ncol=2)
+head(pair.new)
+
+pair.types <-  matrix(data[c(t(pair.new)),"type"],byrow=T,ncol=2)
+head(pair.new,7)
+head(pair.types,7)
+
+theta.des  <- array(0,c(4,2,nrow(pair.new)))
+random.des <- array(0,c(2,4,nrow(pair.new)))
+### random variables in each pair 
+rvs <- c()
+for (i in 1:nrow(pair.new))
+{
+	if (pair.types[i,1]=="mother" & pair.types[i,2]=="father")
+	{
+	theta.des[,,i] <- rbind(c(1,0),c(1,0),c(0,1),c(0,0))
+       	random.des[,,i] <- rbind(c(1,0,1,0),c(0,1,1,0))
+	rvs <- c(rvs,3)
+	} else {
+  	theta.des[,,i] <- rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
+	random.des[,,i] <- rbind(c(1,1,0,1),c(1,0,1,1))
+	rvs <- c(rvs,4)
+	}
+}
+#+END_SRC 
+
+#+RESULTS:
+#+BEGIN_example
+     [,1] [,2]
+[1,]    1    2
+[2,]    1    3
+[3,]    2    4
+[4,]    3    4
+[5,]    5    6
+[6,]    5    7
+     [,1] [,2]
+[1,]    1    2
+[2,]    1    3
+[3,]    2    4
+[4,]    3    4
+[5,]    5    6
+[6,]    5    7
+     [,1] [,2]
+[1,]    1    2
+[2,]    1    3
+[3,]    2    4
+[4,]    3    4
+[5,]    5    6
+[6,]    5    7
+[7,]    5    8
+     [,1]     [,2]    
+[1,] "mother" "father"
+[2,] "mother" "child" 
+[3,] "father" "child" 
+[4,] "child"  "child" 
+[5,] "mother" "father"
+[6,] "mother" "child" 
+[7,] "mother" "child"
+#+END_example
+
+
+For pair 1 that is a mother/farther pair, we see that they share 
+1 environmental random effect of size 1. There are also two genetic
+effects that are unshared between the two. In contrast 
+we also consider a mother/child pair that share half the genes, now
+with random effects with (1/2) gene variance. 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+### 3 rvs here 
+random.des[,,1]
+theta.des[,,1]
+### 4 rvs here 
+random.des[,,2]
+theta.des[,,2]
+head(rvs)
+#+END_SRC 
+
+#+RESULTS:
+#+BEGIN_example
+     [,1] [,2] [,3] [,4]
+[1,]    1    0    1    0
+[2,]    0    1    1    0
+     [,1] [,2]
+[1,]    1    0
+[2,]    1    0
+[3,]    0    1
+[4,]    0    0
+     [,1] [,2] [,3] [,4]
+[1,]    1    1    0    1
+[2,]    1    0    1    1
+     [,1] [,2]
+[1,]  0.5    0
+[2,]  0.5    0
+[3,]  0.5    0
+[4,]  0.0    1
+[1] 3 4 4 4 3 4
+#+END_example
+
+Now fitting the model, and we see that it is a lot quicker due to the
+fewer random effects needed for pairs. 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+tsdid2 <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
+           theta=c(2,1)/9,
+           random.design=random.des,
+           theta.des=theta.des,pairs=pair.new,pairs.rvs=rvs)
+summary(tsdid2)
+#+END_SRC 
+
+#+RESULTS:
+#+BEGIN_example
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                 theta         se
+dependence1 0.06726296 0.05405587
+dependence2 0.18675898 0.02313485
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err    2.5% 97.5%  P-value
+dependence1    0.265   0.178 -0.0844 0.614 1.37e-01
+dependence2    0.735   0.178  0.3860 1.084 3.69e-05
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1    0.254  0.0352 0.185 0.323 5.37e-13
+
+attr(,"class")
+[1] "summary.mets.twostage"
+#+END_example
+
+The same model can be specifed even simpler via the kinship
+coefficient. 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+kinship  <- c()
+for (i in 1:nrow(pair.new))
+{
+if (pair.types[i,1]=="mother" & pair.types[i,2]=="father") pk1 <- 0 else pk1 <- 0.5
+kinship <- c(kinship,pk1)
+}
+head(kinship,n=10)
+
+out <- make.pairwise.design(pair.new,kinship,type="ace") 
+names(out)
+### 4 rvs here , here independence since shared component has variance 0 !
+out$random.des[,,9]
+out$theta.des[,,9]
+
+tsdid3 <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
+             theta=c(2,1)/9,random.design=out$random.design,
+             theta.des=out$theta.des,pairs=pair.new,pairs.rvs=out$ant.rvs)
+summary(tsdid3)
+#+END_SRC 
+
+#+RESULTS:
+#+BEGIN_example
+ [1] 0.0 0.5 0.5 0.5 0.0 0.5 0.5 0.5 0.5 0.5
+[1] "random.design" "theta.des"     "ant.rvs"
+     [,1] [,2] [,3] [,4]
+[1,]    1    1    0    1
+[2,]    1    0    1    1
+     [,1] [,2]
+[1,]  0.5    0
+[2,]  0.5    0
+[3,]  0.5    0
+[4,]  0.0    1
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                 theta         se
+dependence1 0.06726296 0.05405587
+dependence2 0.18675898 0.02313485
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err    2.5% 97.5%  P-value
+dependence1    0.265   0.178 -0.0844 0.614 1.37e-01
+dependence2    0.735   0.178  0.3860 1.084 3.69e-05
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1    0.254  0.0352 0.185 0.323 5.37e-13
+
+attr(,"class")
+[1] "summary.mets.twostage"
+#+END_example
+
+
+* Pairwise odds ratio model 
+
+To fit the pairwise odds-ratio model in the case of a pair-specification there 
+are two options for fitting the model. 
+
+1. One option is to set up some artificial data similar to twin data with
+ - a pair-cluster-id  (clusters) 
+ - with a cluster-id to get GEE type standard errors (se.cluster) 
+- We can also use the specify the design via the theta.des that is also a 
+  matrix of dimension pairs x design with the design for POR model.  
+
+
+Starting by the second option. We need to start by specify the design of
+the odds-ratio of each pair. We set up the data and find all combinations 
+within the pairs. Subsequently, we remove all the empty groups, by grouping
+together the factor levels 4:9, and then we construct the design. 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+tdp <-cbind( dataid[pair.new[,1],],dataid[pair.new[,2],])
+names(tdp) <- c(paste(names(dataid),"1",sep=""),
+		paste(names(dataid),"2",sep=""))
+tdp <-transform(tdp,tt=interaction(type1,type2))
+dlevel(tdp)
+drelevel(tdp,newlevels=list(mother.father=4:9)) <-  obs.types~tt
+dtable(tdp,~tt+obs.types)
+tdp <- model.matrix(~-1+factor(obs.types),tdp)
+#+END_SRC 
+
+#+RESULTS:
+#+BEGIN_example
+type1 #levels=:3 
+[1] "child"  "father" "mother"
+-----------------------------------------
+type2 #levels=:3 
+[1] "child"  "father" "mother"
+-----------------------------------------
+tt #levels=:9 
+[1] "child.child"   "father.child"  "mother.child"  "child.father" 
+[5] "father.father" "mother.father" "child.mother"  "father.mother"
+[9] "mother.mother"
+-----------------------------------------
+
+              obs.types mother.father child.child father.child mother.child
+tt                                                                         
+child.child                         0       19991            0            0
+father.child                        0           0        39837            0
+mother.child                        0           0            0        40212
+child.father                        0           0            0            0
+father.father                       0           0            0            0
+mother.father                   19960           0            0            0
+child.mother                        0           0            0            0
+father.mother                       0           0            0            0
+mother.mother                       0           0            0            0
+#+END_example
+
+We then can fit the pairwise model using the pairs and the pair-design for
+descrbing the OR. The results are consistent with the the ACE model as
+the mother-father have a lower dependence as is due only the environmental
+effects. All other combinations should have the same dependence as also seem
+to be the case. 
+
+To fit the OR model it is generally recommended to use the var.link to
+use the parmetrization with log-odd-ratio regression.
+
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+porpair <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
+           theta.des=tdp,pairs=pair.new,model="or",var.link=1)
+summary(porpair)
+#+END_SRC 
+
+#+RESULTS:
+#+BEGIN_example
+Dependence parameter for Odds-Ratio (Plackett) model 
+With log-link 
+$estimates
+                                   theta         se
+factor(obs.types)mother.father 0.1269881 0.03132228
+factor(obs.types)child.child   0.3819107 0.03108233
+factor(obs.types)father.child  0.3046284 0.02239909
+factor(obs.types)mother.child  0.3293741 0.02233648
+
+$or
+                            Estimate Std.Err 2.5% 97.5%   P-value
+factor(obs.types)moth....       1.14  0.0356 1.07  1.21 1.16e-223
+factor(obs.types)chil....       1.47  0.0455 1.38  1.55 4.26e-227
+factor(obs.types)fath....       1.36  0.0304 1.30  1.42  0.00e+00
+factor(obs.types)moth.....1     1.39  0.0310 1.33  1.45  0.00e+00
+
+$type
+[1] "or"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+#+END_example
+
+
+* COMMENT 
+
