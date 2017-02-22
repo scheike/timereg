@@ -228,12 +228,6 @@ head(mm$familypairindex,n=20)
 pairs <- mm$pairs
 dim(pairs)
 head(pairs,12)
-
-tsp <- binomial.twostage(margbin,data=data,
-                     clusters=data$cluster,
-                     theta=c(2,1)/9,detail=0,
-              random.design=out$des.rv,theta.des=out$pardes,pairs=pairs)
-summary(tsp)
 #+END_SRC 
 
 #+RESULTS:
@@ -253,6 +247,20 @@ summary(tsp)
 [10,]    6    7
 [11,]    6    8
 [12,]    7    8
+#+END_example
+
+Now with the pairs we fit the model 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+tsp <- binomial.twostage(margbin,data=data,
+                     clusters=data$cluster,
+                     theta=c(2,1)/9,detail=0,
+              random.design=out$des.rv,theta.des=out$pardes,pairs=pairs)
+summary(tsp)
+#+END_SRC 
+
+#+RESULTS:
+#+BEGIN_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
@@ -322,13 +330,16 @@ attr(,"class")
 #+END_example
 
 
-To specify such a model  when only the pairs are availble we show
-we can specify the same model. We here use the same marginal "aa"
-to make the results comparable, and they should be identical. 
+To specify such a model when only the pairs are availble we show
+how to specify the model. We here use the same marginal "aa"
+to make the results comparable. 
 The marginal can also be fitted based on available data. 
 
-This requires that pair.new refers to id's in data so we need to
-respecify and the data. 
+We start by selecting the data related to the pairs, and sets up new id's and 
+to start we specify the model using the full design with 9 random effects. 
+Below we show how one can use with only the random effects needed for each 
+pair, which is typically simpler.
+
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 head(pairs[ssid,])
@@ -338,18 +349,10 @@ pairsids <- c(pairs[ssid,])
 pair.new <- matrix(fast.approx(ids,c(pairs[ssid,])),ncol=2)
 head(pair.new)
 
-## this requires that pair.new refers to id's in dataid (survival, status and so forth)
-## random.design and theta.des are constructed to be the array 3 dims via individual specfication from ace.family.design
 dataid <- dsort(data[ids,],"cluster")
 outid <- ace.family.design(dataid,member="type",id="cluster")
 outid$pardes
 head(outid$des.rv)
-
-
-tsdid <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
-         theta=c(2,1)/9,
-         random.design=outid$des.rv,theta.des=outid$pardes,pairs=pair.new)
-summary(tsdid)
 #+END_SRC 
 
 #+RESULTS:
@@ -385,6 +388,19 @@ summary(tsdid)
 [4,]  1  0  1  0  1  0  1  0   1
 [5,]  1  1  1  1  0  0  0  0   1
 [6,]  0  0  0  0  1  1  1  1   1
+#+END_example
+
+Now fitting the model with the data set up 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+tsdid <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
+         theta=c(2,1)/9,
+         random.design=outid$des.rv,theta.des=outid$pardes,pairs=pair.new)
+summary(tsdid)
+#+END_SRC 
+
+#+RESULTS:
+#+BEGIN_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
@@ -413,80 +429,16 @@ attr(,"class")
 
 We now specify the design specifically using the pairs. 
 The random.design and design on the parameters
-are now given for each pair, as  a 3 dimensional matrix. 
+are now given for each pair, as a 3 dimensional matrix. 
 with a direct specification of random.design and the 
 design on the parameters theta.design.
+In addition we need also to give the number of random effects for
+each pair. These basic things are constructed by certain functions
+for the ACE design. 
 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
-dataid <- dsort(data[ids,],"cluster")
-outid <- ace.family.design(dataid,member="type",id="cluster")
-outid$pardes
-head(outid$des.rv)
-tsdid <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
-         theta=c(2,1)/9,
-         random.design=outid$des.rv,
-         theta.des=outid$pardes,pairs=pair.new)
-summary(tsdid)
-
-#+END_SRC 
-
-#+RESULTS:
-#+BEGIN_example
-      [,1] [,2]
- [1,] 0.25    0
- [2,] 0.25    0
- [3,] 0.25    0
- [4,] 0.25    0
- [5,] 0.25    0
- [6,] 0.25    0
- [7,] 0.25    0
- [8,] 0.25    0
- [9,] 0.00    1
-     m1 m2 m3 m4 f1 f2 f3 f4 env
-[1,]  1  1  1  1  0  0  0  0   1
-[2,]  0  0  0  0  1  1  1  1   1
-[3,]  1  1  0  0  1  1  0  0   1
-[4,]  1  0  1  0  1  0  1  0   1
-[5,]  1  1  1  1  0  0  0  0   1
-[6,]  0  0  0  0  1  1  1  1   1
-Dependence parameter for Clayton-Oakes model
-Variance of Gamma distributed random effects 
-$estimates
-                 theta         se
-dependence1 0.31196731 0.05585438
-dependence2 0.09833816 0.02328230
-
-$type
-[1] "clayton.oakes"
-
-$h
-            Estimate Std.Err   2.5% 97.5%  P-value
-dependence1     0.76  0.0734 0.6165 0.904 3.76e-25
-dependence2     0.24  0.0734 0.0958 0.384 1.09e-03
-
-$vare
-NULL
-
-$vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1     0.41  0.0373 0.337 0.483 3.47e-28
-
-attr(,"class")
-[1] "summary.mets.twostage"
-#+END_example
-
-
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
-
-head(pairs[ssid,])
-ids <- sort(unique(c(pairs[ssid,])))
-###
-pairsids <- c(pairs[ssid,])
-pair.new <- matrix(fast.approx(ids,c(pairs[ssid,])),ncol=2)
-head(pair.new)
-
-pair.types <-  matrix(data[c(t(pair.new)),"type"],byrow=T,ncol=2)
+pair.types <-  matrix(dataid[c(t(pair.new)),"type"],byrow=T,ncol=2)
 head(pair.new,7)
 head(pair.types,7)
 
@@ -518,20 +470,6 @@ for (i in 1:nrow(pair.new))
 [4,]    3    4
 [5,]    5    6
 [6,]    5    7
-     [,1] [,2]
-[1,]    1    2
-[2,]    1    3
-[3,]    2    4
-[4,]    3    4
-[5,]    5    6
-[6,]    5    7
-     [,1] [,2]
-[1,]    1    2
-[2,]    1    3
-[3,]    2    4
-[4,]    3    4
-[5,]    5    6
-[6,]    5    7
 [7,]    5    8
      [,1]     [,2]    
 [1,] "mother" "father"
@@ -546,9 +484,14 @@ for (i in 1:nrow(pair.new))
 
 For pair 1 that is a mother/farther pair, we see that they share 
 1 environmental random effect of size 1. There are also two genetic
-effects that are unshared between the two. In contrast 
-we also consider a mother/child pair that share half the genes, now
-with random effects with (1/2) gene variance. 
+effects that are unshared between the two. 
+So a total of 3 random effects are needed here. The theta.des relates the 3 
+random effects to possible relationships in the parameters. Here the genetic
+effects are full and so is the environmental effect. 
+In contrast we also consider a mother/child pair that share half the genes, now
+with random effects with (1/2) gene variance.  We there need 4 random effects,
+2 non-shared half-gene, 1 shared half-gene, and one shared full environmental 
+effect. 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 ### 3 rvs here 
@@ -598,30 +541,34 @@ Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
                  theta         se
-dependence1 0.06726296 0.05405587
-dependence2 0.18675898 0.02313485
+dependence1 0.31196731 0.05585438
+dependence2 0.09833816 0.02328230
 
 $type
 [1] "clayton.oakes"
 
 $h
-            Estimate Std.Err    2.5% 97.5%  P-value
-dependence1    0.265   0.178 -0.0844 0.614 1.37e-01
-dependence2    0.735   0.178  0.3860 1.084 3.69e-05
+            Estimate Std.Err   2.5% 97.5%  P-value
+dependence1     0.76  0.0734 0.6165 0.904 3.76e-25
+dependence2     0.24  0.0734 0.0958 0.384 1.09e-03
 
 $vare
 NULL
 
 $vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.254  0.0352 0.185 0.323 5.37e-13
+p1     0.41  0.0373 0.337 0.483 3.47e-28
 
 attr(,"class")
 [1] "summary.mets.twostage"
 #+END_example
 
 The same model can be specifed even simpler via the kinship
-coefficient. 
+coefficient.  For this speicification there are 4 random effects for
+each pair, but some have variance 0. The mother-father pair, here
+shares a random effect with variance 0, and have two non-shared genetic 
+effects with full variance, in addition to a fully shared environmental 
+effect.
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 kinship  <- c()
@@ -634,14 +581,8 @@ head(kinship,n=10)
 
 out <- make.pairwise.design(pair.new,kinship,type="ace") 
 names(out)
-### 4 rvs here , here independence since shared component has variance 0 !
-out$random.des[,,9]
-out$theta.des[,,9]
-
-tsdid3 <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
-             theta=c(2,1)/9,random.design=out$random.design,
-             theta.des=out$theta.des,pairs=pair.new,pairs.rvs=out$ant.rvs)
-summary(tsdid3)
+out$random.des[,,1]
+out$theta.des[,,1]
 #+END_SRC 
 
 #+RESULTS:
@@ -652,31 +593,44 @@ summary(tsdid3)
 [1,]    1    1    0    1
 [2,]    1    0    1    1
      [,1] [,2]
-[1,]  0.5    0
-[2,]  0.5    0
-[3,]  0.5    0
-[4,]  0.0    1
+[1,]    0    0
+[2,]    1    0
+[3,]    1    0
+[4,]    0    1
+#+END_example
+
+Now, fitting the model we get the results from before. 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+tsdid3 <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
+             theta=c(2,1)/9,random.design=out$random.design,
+             theta.des=out$theta.des,pairs=pair.new,pairs.rvs=out$ant.rvs)
+summary(tsdid3)
+#+END_SRC 
+
+#+RESULTS:
+#+BEGIN_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
                  theta         se
-dependence1 0.06726296 0.05405587
-dependence2 0.18675898 0.02313485
+dependence1 0.31196731 0.05585438
+dependence2 0.09833816 0.02328230
 
 $type
 [1] "clayton.oakes"
 
 $h
-            Estimate Std.Err    2.5% 97.5%  P-value
-dependence1    0.265   0.178 -0.0844 0.614 1.37e-01
-dependence2    0.735   0.178  0.3860 1.084 3.69e-05
+            Estimate Std.Err   2.5% 97.5%  P-value
+dependence1     0.76  0.0734 0.6165 0.904 3.76e-25
+dependence2     0.24  0.0734 0.0958 0.384 1.09e-03
 
 $vare
 NULL
 
 $vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.254  0.0352 0.185 0.323 5.37e-13
+p1     0.41  0.0373 0.337 0.483 3.47e-28
 
 attr(,"class")
 [1] "summary.mets.twostage"
