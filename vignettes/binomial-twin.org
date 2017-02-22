@@ -100,10 +100,12 @@ The more standard link function \( logit \) rather than the \( probit \) link
 is often used and implemented in for example 
 \cite{mm}.  The advantage is that one now gets an odds-ratio interpretation 
 of the subject specific effects, but one then needs  numerical integration to
-fit the model. We note that 
+fit the model. 
 
- - Numerical integration is involved and this can be difficult for many random 
-   effects. 
+#We note that 
+#
+# - Numerical integration is involved and this can be difficult for many random 
+#   effects. 
 
 
 ** Pairwise odds ratio model 
