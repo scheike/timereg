@@ -40,7 +40,7 @@
 ##' @aliases dtable dtab
 ##' @export
 dtable <- function(data,y=NULL,x=NULL,...,level=-1,response=NULL,flat=TRUE,total=FALSE,prop=FALSE,summary=NULL) {
-    daggregate(data,y,x,...,
+       	daggregate(data,y,x,...,
                fun=function(z) {
                    res <- sum <- c()
                    if (level==1 || ncol(z)==1) {
@@ -136,3 +136,90 @@ print.dtable <- function(x,sep="\n",...) {
     }
 
 }
+
+dreg <- function(data,formula,...,level=1,summary="summary",regex=FALSE) {# {{{
+
+   pp <- mets:::procformdata(formula,data,regex=regex)
+   z <- pp$response
+   xx <- as.matrix(pp$predictor)
+
+   res <- sum <- c()
+   if (level==1) {
+       for (i in seq_len(ncol(z))) {
+	   nn <- colnames(z)[i]
+           y <- z[,i]
+	   x <- xx
+	   val <- lm(y~x,...)
+###	   names(attr(val,"dimnames")) <- nn
+	   val <- list(val)
+	   names(val) <- nn
+	   res <- c(res, val)
+	   if (!is.null(summary)) {
+	       sval <- list(do.call(summary,list(val[[1]])))
+	       names(sval) <- nn
+	       sum <- c(sum, sval)
+	   }
+       }
+       res <- list(lm=res,summary=sum,...)
+       class(res) <- "dreg"
+       return(res)
+   }
+   if (level==-1)  {
+	   ny <- colnames(z)[1]
+           for (i in seq_len(ncol(xx))) {
+	   nn <- colnames(xx)[i]
+	   nn <- paste(ny,"~",nn,sep="")
+           y <- z[,1]
+	   x <- xx[,i]
+	   val <- lm(y~x,...)
+###	   names(attr(val,"dimnames")) <- nn
+	   val <- list(val)
+	   names(val) <- nn
+	   res <- c(res, val)
+	   if (!is.null(summary)) {
+	       sval <- list(do.call(summary,list(val[[1]])))
+	       names(sval) <- nn
+	       sum <- c(sum, sval)
+	   }
+       }
+       res <- list(lm=res,summary=sum,...)
+       class(res) <- "dreg"
+       return(res)
+   }
+
+}# }}}
+
+print.dreg <- function(x,sep="----------------------------\n",...) {# {{{
+    cat(sep)
+###    if (inherits(x$lm, c("lm"))) {
+###        print(x$lm)
+###        if (!is.null(x$summary)) print(x$summary)
+###        return(invisible(x))
+###    }
+    nn <-  names(x$lm)
+    for (i in seq_along(x$lm)) {
+        cat(paste(nn[i],"\n"))
+        if (!is.null(x$summary))
+            print(x$summary[[i]],...)
+        else print(x$lm[[i]],...)
+        cat(sep)
+    }
+
+}# }}}
+
+###library(mets)
+###data(iris)
+###drename(iris) <- ~.
+###names(iris)
+######
+###ll <- dreg(iris,"*.length"~"*.width"|species=="setosa")
+###ll <- dreg(iris,"*.length"~"*.width")
+######ll
+###ll <- dreg(iris,"*.length"~"*.width",summary=NULL)
+###ll
+###ll <- dreg(iris,"*.length"~"*.width",level=-1,summary=NULL)
+###ll
+###ll <- dreg(iris,"sep*.length"~"*.width")
+###ll
+
+
