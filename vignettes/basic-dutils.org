@@ -59,7 +59,7 @@ melanoma=as.data.frame(melanoma)
 Loading required package: timereg
 Loading required package: survival
 Loading required package: lava
-lava version 1.4.7
+lava version 1.4.7.1
 mets version 1.2.1
 
 Attaching package: ‘mets’
