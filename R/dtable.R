@@ -139,7 +139,7 @@ print.dtable <- function(x,sep="\n",...) {
 
 dreg <- function(data,formula,...,level=1,summary="summary",regex=FALSE) {# {{{
 
-   pp <- mets:::procformdata(formula,data,regex=regex)
+   pp <- procformdata(formula,data,regex=regex)
    z <- pp$response
    xx <- as.matrix(pp$predictor)
 
