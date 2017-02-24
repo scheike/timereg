@@ -1,0 +1,1277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Analysis of bivariate binomial data: Twin analysis</title>
+<!-- 2017-02-22 Wed 10:08 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="http://192.38.117.59/~ts/styles/orgmode5-ts.css">
+<link rel="icon" type="image/x-icon" href="http://www.biostat.ku.dk/~kkho/styles/logo.ico"/>
+<style type="text/css">body { background-image: url(http://www.biostat.ku.dk/~kkho/styles/sund.png); background-size:120px 95px; background-position: 2% 0.55em; }
+a.logo span { background: none; }
+th,td,tr,table th,table th,table td {
+background: rgba(240,240,240,1);
+border: none;
+}
+body { width: 800px; text-align:justify; text-justify:inter-word; }
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+<script type="text/javascript" src="http://orgmode.org/mathjax/MathJax.js"></script>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+    MathJax.Hub.Config({
+        // Only one of the two following lines, depending on user settings
+        // First allows browser-native MathML display, second forces HTML/CSS
+        //  config: ["MMLorHTML.js"], jax: ["input/TeX"],
+            jax: ["input/TeX", "output/HTML-CSS"],
+        extensions: ["tex2jax.js","TeX/AMSmath.js","TeX/AMSsymbols.js",
+                     "TeX/noUndefined.js"],
+        tex2jax: {
+            inlineMath: [ ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"], ["\\begin{displaymath}","\\end{displaymath}"] ],
+            skipTags: ["script","noscript","style","textarea","pre","code"],
+            ignoreClass: "tex2jax_ignore",
+            processEscapes: false,
+            processEnvironments: true,
+            preview: "TeX"
+        },
+        showProcessingMessages: true,
+        displayAlign: "center",
+        displayIndent: "2em",
+
+        "HTML-CSS": {
+             scale: 100,
+             availableFonts: ["STIX","TeX"],
+             preferredFont: "TeX",
+             webFont: "TeX",
+             imageFont: "TeX",
+             showMathMenu: true,
+        },
+        MMLorHTML: {
+             prefer: {
+                 MSIE:    "MML",
+                 Firefox: "MML",
+                 Opera:   "HTML",
+                 other:   "HTML"
+             }
+        }
+    });
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="preamble" class="status">
+
+<script type="text/javascript">
+  function swapStyleSheet(sheet){
+      document.getElementById('pagestyle').setAttribute('href', sheet);
+  }
+  document.addEventListener('DOMContentLoaded',function() {
+      document.getElementById('content').onclick = function() {
+          var elem = document.getElementById('text-table-of-contents');
+          elem.style.display = elem.style.display == 'block' ? 'none' : 'block';
+      }
+  });
+  document.addEventListener('DOMContentLoaded',function() {
+      document.getElementById('content').onclick = function() {
+          var elem = document.getElementsByClassName('nav');
+          for (i = 0; i < elem.length; i++) { 
+               elem[i].style.display = elem[i].style.display == 'block' ? 'none' : 'block';
+          }
+      }
+  });
+</script>
+</div>
+<div id="content">
+<h1 class="title">Analysis of bivariate binomial data: Twin analysis</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">Overview</a>
+<ul>
+<li><a href="#sec-1-1">Biprobit with random effects</a></li>
+<li><a href="#sec-1-2">Pairwise odds ratio model</a></li>
+<li><a href="#sec-1-3">Additive gamma model</a></li>
+</ul>
+</li>
+<li><a href="#sec-2">The twin-stutter data</a></li>
+<li><a href="#sec-3">Pairwise odds ratio model</a>
+<ul>
+<li><a href="#sec-3-1">Alternative syntax</a></li>
+</ul>
+</li>
+<li><a href="#sec-4">Bivariate Probit model</a>
+<ul>
+<li><a href="#sec-4-1">Polygenic modelling</a></li>
+</ul>
+</li>
+<li><a href="#sec-5">Additive gamma random effects</a>
+<ul>
+<li><a href="#sec-5-1">Polygenic modelling</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<a href="http://www.biostat.ku.dk/~ts/survival class="logo"><span></span></a>
+
+<hr  />
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">Overview</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+When looking at bivariate binomial data with the aim of learning about the 
+dependence that is present, possibly after correcting for some covariates many
+models are available. 
+</p>
+
+<ul class="org-ul">
+<li>Random-effects models logistic regression covered elsewhere (glmer in lme4).
+</li>
+</ul>
+
+<p>
+in the mets package you can fit the 
+</p>
+
+<ul class="org-ul">
+<li>Pairwise odds ratio model
+</li>
+<li>Bivariate Probit model 
+<ul class="org-ul">
+<li>With random effects
+</li>
+<li>Special functionality for polygenic random effects modelling 
+such as ACE, ADE ,AE and so forth.
+</li>
+</ul>
+</li>
+
+<li>Additive gamma random effects model 
+<ul class="org-ul">
+<li>Special functionality for polygenic random effects modelling 
+such as ACE, ADE ,AE and so forth.
+</li>
+</ul>
+</li>
+</ul>
+
+
+<p>
+Typically it can be hard or impossible 
+to specify random effects models with special 
+structure among the parameters of the random effects. This is possible in
+our models. 
+</p>
+
+<p>
+To be concrete about the model structure assume that we have paired binomial 
+data \( Y_1, Y_2, X_1, X_2 \) where the responses are \( Y_1, Y_2 \) and we
+have covariates \( X_1, X_2 \).
+</p>
+
+<p>
+We start by giving a brief description of these different models.  First we
+for bivariate data one can specify the marginal probability using logistic 
+regression models 
+\[
+logit(P(Y_i=1|X_i)) = \alpha_i + X_i^T \beta  i=1,2.
+\]
+These model can be estimated under working independence 
+\cite{zeger-liang-86}.  
+</p>
+
+
+<p>
+A typical twin analysis will typically consist of  looking at both 
+</p>
+
+<ul class="org-ul">
+<li>Pairwise odds ratio model
+</li>
+<li>Bivariate Probit model 
+</li>
+</ul>
+
+<p>
+The additive gamma can be used for the same as the bivariate probit model but 
+is more restrictive in terms of dependence structure, but is nevertheless 
+still valuable to have also as a check of results of the bivariate probit
+model. 
+</p>
+</div>
+
+
+<div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1">Biprobit with random effects</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+For these model we assume that given random effects \(Z\) and a covariate vector 
+\( V_{12} \)
+we have independent logistic regression models 
+\[
+probit(P(Y_i=1|X_i, Z)) = \alpha_i + X_i^T \beta + V_{12}^T Z  i=1,2.
+\]
+where \( Z \) is a bivariate normal distribution with some covariance 
+\( \Sigma \). The general covariance structure 
+\( \Sigma \) makes the model very flexible. 
+</p>
+
+<p>
+We note that 
+</p>
+
+<ul class="org-ul">
+<li>Paramters \( \beta \) are subject specific
+</li>
+<li>The \( \Sigma \) will reflect dependence
+</li>
+</ul>
+
+
+<p>
+The more standard link function \( logit \) rather than the \( probit \) link
+is often used and implemented in for example 
+\cite{mm}.  The advantage is that one now gets an odds-ratio interpretation 
+of the subject specific effects, but one then needs  numerical integration to
+fit the model. 
+</p>
+
+<p>
+#We note that 
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2">Pairwise odds ratio model</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Now the pairwise odds ratio model the specifies that given \( X_1, X_2 \)
+the marginal models are 
+\[
+logit(P(Y_i=1|X_i)) = \alpha_i + X_i^T \beta  i=1,2
+\]
+</p>
+
+<p>
+The primary object of interest are the odds ratio between \(Y_{1}\) and \(Y_{2}\)
+\[
+\gamma_{12} = \frac{ P(  Y_{ki} =1 , Y_{kj} =1) P(  Y_{ki} =0 , Y_{kj} =0) }{ 
+  P(  Y_{ki} =1 , Y_{kj} =0) P(  Y_{ki} =0 , Y_{kj} =1) }
+\]
+given \(X_{ki}\), \(X_{kj}\), and \(Z_{kji}\). 
+</p>
+
+<p>
+We model the odds ratio with the regression 
+\[
+\gamma_{12} = \exp( Z_{12}^T \lambda)
+\]
+Where \( Z_{12} \) are some covarites that may influence the odds-ratio 
+between between \(Y_{1}\) and \(Y_{2}\) and contains the marginal covariates,
+\cite{carey-1993,dale1986global,palmgren1989,molenberghs1994marginal}. 
+This odds-ratio is given covariates as well as marginal covariates. 
+The odds-ratio and marginals specify the joint bivariate distribution via
+the so-called Placckett-distribution. 
+</p>
+
+<p>
+One way of fitting this model is the ALR algoritm, the alternating 
+logistic regression ahd this has been described in several papers
+\cite{kuk2004permutation,kuk2007hybrid,qaqish2012orthogonalized}.
+We here simply estimate the parameters in a two stage-procedure
+</p>
+
+<ul class="org-ul">
+<li>Estimating the marginal parameters via GEE
+</li>
+<li>Using marginal estimates, estimate dependence parameters
+</li>
+</ul>
+
+<p>
+This gives efficient estimates of the dependence parameters because of
+orthogonality, but some efficiency may be gained for the marginal parameters 
+by using the full likelihood or iterative fitting such as for the ALR. 
+</p>
+
+
+<p>
+The pairwise odds-ratio model is very useful, but one do not have a random 
+effects model. 
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3">Additive gamma model</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+Again we operate under  marginal logistic regression models are 
+\[
+logit(P(Y_i=1|X_i)) = \alpha_i + X_i^T \beta  i=1,2
+\]
+</p>
+
+<p>
+First with just one random effect \( Z \) we assume that  conditional
+on \( Z \) the responses are independent  and follow the model 
+\[
+logit(P(Y_i=1|X_i,Z)) = exp( -Z \cdot \Psi^{-1}(\lambda_{\bullet},\lambda_{\bullet},P(Y_i=1|X_i)) )  
+\]
+where \( \Psi \) is the laplace transform of \( Z \) where we assume that
+\( Z \) is gamma distributed with variance \( \lambda_{\bullet}^{-1} \) and mean 1. 
+In general \( \Psi(\lambda_1,\lambda_2) \) is the laplace transform of  a Gamma distributed random 
+effect with \( Z \) with mean \( \lambda_1/\lambda_2 \) and variance \( \lambda_1/\lambda_2^2  \).
+</p>
+
+<p>
+We fit this model by 
+</p>
+
+<ul class="org-ul">
+<li>Estimating the marginal parameters via GEE
+</li>
+<li>Using marginal estimates, estimate dependence parameters
+</li>
+</ul>
+
+<p>
+To deal with multiple random effects we consider random effects 
+\( Z_i  i=1,...,d \)   such that  \( Z_i \) is gamma distributed with 
+mean \( \lambda_j/\lambda_{\bullet} \) and variance \( 
+\lambda_j/\lambda_{\bullet}^2 \), where we define the scalar \( \lambda_{\bullet} \) below. 
+</p>
+
+<p>
+Now given a cluster-specific design vector \( V_{12} \) we assume that 
+\[
+V_{12}^T Z
+\]
+is gamma distributed with mean 1 and variance \( \lambda_{\bullet}^{-1} \) 
+such that critically the random effect variance is the same for all clusters.
+That is 
+\[
+ \lambda_{\bullet} = V_{12}^T (\lambda_1,...,\lambda_d)^T 
+\]
+We return to some specific models below, and show how to fit the ACE and AE 
+model using this set-up. 
+</p>
+
+<p>
+One last option in the model-specification is to specify how the 
+parameters \( \lambda_1,...,\lambda_d \) are related. We thus can specify a 
+matrix \( M \) of dimension \( p \times d \) such that 
+\[
+ (\lambda_1,...,\lambda_d)^T  = M \theta
+\]
+where \( \theta \) is d-dimensional.  If \( M \) is diagonal we have no 
+restrictions on parameters. 
+</p>
+
+<p>
+This parametrization is obtained with the var.par=0 option that thus estimates
+\( \theta \).
+</p>
+
+<p>
+The DEFAULT parametrization instead estimates the variances of the random effecs (var.par=1)
+via the parameters \( \nu \) 
+\[
+ M \nu = ( \lambda_1/\lambda_{\bullet}^2, ...,\lambda_d/\lambda_{\bullet}^2)^T
+\]
+</p>
+
+
+<p>
+The basic modelling assumption is now that given random effects 
+\(Z=(Z_1,...,Z_d)\) we have independent probabilites 
+\[
+logit(P(Y_i=1|X_i,Z)) = exp( -V_{12,i}^T Z \cdot \Psi^{-1}(\lambda_{\bullet},\lambda_{\bullet},P(Y_i=1|X_i)) )   i=1,2
+\]
+</p>
+
+<p>
+We fit this model by 
+</p>
+
+<ul class="org-ul">
+<li>Estimating the marginal parameters via GEE
+</li>
+<li>Using marginal estimates, estimate dependence parameters
+</li>
+</ul>
+
+<p>
+Even though the model not formaly in this formulation allows negative 
+correlation in practice the paramters can be negative and this reflects
+negative correlation. An advanatage is that no numerical integration is 
+needed. 
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">The twin-stutter data</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+We consider the twin-stutter where for pairs of twins that are 
+either dizygotic or monozygotic we have recorded whether the twins
+are stuttering \cite{twinstut-ref}
+</p>
+
+<p>
+We here consider MZ and same sex DZ twins. 
+</p>
+
+<p>
+Looking at the data 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R"><span style="font-weight: bold; text-decoration: underline;">library</span>(mets)
+data(twinstut)
+twinstut$binstut <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> 1*(twinstut$stutter==<span style="font-style: italic;">"yes"</span>)
+twinsall <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> twinstut
+twinstut <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> subset(twinstut,zyg%<span style="font-weight: bold;">in</span>%c(<span style="font-style: italic;">"mz"</span>,<span style="font-style: italic;">"dz"</span>))
+head(twinstut)
+</pre>
+</div>
+
+<pre class="example">
+   tvparnr zyg stutter    sex age nr binstut
+1  2001005  mz      no female  71  1       0
+2  2001005  mz      no female  71  2       0
+3  2001006  dz      no female  71  1       0
+8  2001012  mz      no female  71  1       0
+9  2001012  mz      no female  71  2       0
+11 2001015  dz      no   male  71  1       0
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">Pairwise odds ratio model</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+We start by fitting an overall dependence OR for both MZ and DZ even though 
+the dependence is expected to be different across zygosity.
+</p>
+
+<p>
+The first step is to fit the marginal model adjusting for marginal covariates. 
+We here note that there is a rather strong gender effect in the risk of
+stuttering. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">margbin <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> glm(binstut~factor(sex)+age,data=twinstut,family=binomial())
+summary(margbin)
+</pre>
+</div>
+
+<pre class="example">
+Call:
+glm(formula = binstut ~ factor(sex) + age, family = binomial(), 
+    data = twinstut)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-0.4419  -0.4078  -0.2842  -0.2672   2.6395  
+
+Coefficients:
+                 Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)     -3.027625   0.104012 -29.108  &lt; 2e-16 ***
+factor(sex)male  0.869826   0.062197  13.985  &lt; 2e-16 ***
+age             -0.005983   0.002172  -2.754  0.00588 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 9328.6  on 21287  degrees of freedom
+Residual deviance: 9117.0  on 21285  degrees of freedom
+AIC: 9123
+
+Number of Fisher Scoring iterations: 6
+</pre>
+
+<p>
+Now estimating the OR parameter. We see a strong dependence with an OR
+at around 8 that is clearly significant. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">bina <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(margbin,data=twinstut,var.link=1,
+                       clusters=twinstut$tvparnr,detail=0)
+summary(bina)
+</pre>
+</div>
+
+<pre class="example">
+Dependence parameter for Odds-Ratio (Plackett) model 
+With log-link 
+$estimates
+               theta        se
+dependence1 2.085347 0.1274536
+
+$or
+            Estimate Std.Err 2.5% 97.5% P-value
+dependence1     8.05    1.03 6.04  10.1 4.3e-15
+
+$type
+[1] "plackett"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+</pre>
+
+<p>
+Now, and more interestingly, we consider an OR that depends on zygosity and
+note that MZ have a much larger OR than DZ twins. This type of trait is 
+somewhat complicated to interpret, but clearly, one option is that 
+that there is a genetic effect, alternatively there might be
+a stronger environmental effect for MZ twins. 
+</p>
+
+
+<div class="org-src-container">
+
+<pre class="src src-R"><span style="font-weight: bold; font-style: italic;">### </span><span style="font-weight: bold; font-style: italic;">design for OR dependence </span>
+theta.des <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> model.matrix( ~-1+factor(zyg),data=twinstut)
+bin <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(margbin,data=twinstut,var.link=1,
+                          clusters=twinstut$tvparnr,theta.des=theta.des)
+summary(bin)
+</pre>
+</div>
+
+<pre class="example">
+Dependence parameter for Odds-Ratio (Plackett) model 
+With log-link 
+$estimates
+                  theta        se
+factor(zyg)dz 0.5221651 0.2401355
+factor(zyg)mz 3.4853933 0.1866076
+
+$or
+              Estimate Std.Err   2.5% 97.5%  P-value
+factor(zyg)dz     1.69   0.405  0.892  2.48 3.12e-05
+factor(zyg)mz    32.64   6.090 20.699 44.57 8.38e-08
+
+$type
+[1] "plackett"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+</pre>
+
+
+<p>
+We now consider further regression modelling of the OR structure by
+considering possible interactions between sex and zygozsity.
+We see that MZ has a much higher dependence and that males have
+a much lower dependence. We tested for interaction in this model and 
+these were not significant. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">twinstut$cage <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> scale(twinstut$age)
+theta.des <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> model.matrix( ~-1+factor(zyg)+factor(sex),data=twinstut)
+bina <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(margbin,data=twinstut,var.link=1,
+                          clusters=twinstut$tvparnr,theta.des=theta.des)
+summary(bina)
+</pre>
+</div>
+
+<pre class="example">
+Dependence parameter for Odds-Ratio (Plackett) model 
+With log-link 
+$estimates
+                     theta        se
+factor(zyg)dz    0.8098841 0.3138423
+factor(zyg)mz    3.7318076 0.2632250
+factor(sex)male -0.4075409 0.3055349
+
+$or
+                Estimate Std.Err   2.5% 97.5%  P-value
+factor(zyg)dz      2.248   0.705  0.865  3.63 0.001441
+factor(zyg)mz     41.755  10.991 20.213 63.30 0.000145
+factor(sex)male    0.665   0.203  0.267  1.06 0.001064
+
+$type
+[1] "plackett"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+</pre>
+</div>
+
+
+<div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1">Alternative syntax</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+We now demonstrate how the models can fitted jointly and with anohter
+syntax, that ofcourse just fits the marginal model and subsequently fits
+the pairwise OR model. 
+</p>
+
+<p>
+First noticing as before that MZ twins have a much higher dependence. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R"> <span style="font-weight: bold; font-style: italic;">## </span><span style="font-weight: bold; font-style: italic;">refers to zygosity of first subject in eash pair : zyg1</span>
+ <span style="font-weight: bold; font-style: italic;">## </span><span style="font-weight: bold; font-style: italic;">could also use zyg2 (since zyg2=zyg1 within twinpair's)</span>
+ out <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut,
+                response=<span style="font-style: italic;">"binstut"</span>,id=<span style="font-style: italic;">"tvparnr"</span>,var.link=1,
+                theta.formula=~-1+factor(zyg1))
+summary(out)
+</pre>
+</div>
+
+<pre class="example">
+Dependence parameter for Odds-Ratio (Plackett) model 
+With log-link 
+$estimates
+                   theta        se
+factor(zyg1)dz 0.5221651 0.2401355
+factor(zyg1)mz 3.4853933 0.1866076
+
+$or
+               Estimate Std.Err   2.5% 97.5%  P-value
+factor(zyg1)dz     1.69   0.405  0.892  2.48 3.12e-05
+factor(zyg1)mz    32.64   6.090 20.699 44.57 8.38e-08
+
+$type
+[1] "plackett"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+</pre>
+
+<p>
+Now considering all data and estimating separate effects for the OR
+for opposite sex DZ twins and same sex twins. 
+We here find that os twins are not markedly different from the same sex DZ 
+twins. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R"><span style="font-weight: bold; font-style: italic;">## </span><span style="font-weight: bold; font-style: italic;">refers to zygosity of first subject in eash pair : zyg1</span>
+<span style="font-weight: bold; font-style: italic;">## </span><span style="font-weight: bold; font-style: italic;">could also use zyg2 (since zyg2=zyg1 within twinpair's))</span>
+
+<span style="font-weight: bold;">desfs</span><span style="font-weight: bold; text-decoration: underline;">&lt;-</span><span style="font-weight: bold;">function</span>(x,num1=<span style="font-style: italic;">"zyg1"</span>,num2=<span style="font-style: italic;">"zyg2"</span>)
+        c(x[num1]==<span style="font-style: italic;">"dz"</span>,x[num1]==<span style="font-style: italic;">"mz"</span>,x[num1]==<span style="font-style: italic;">"os"</span>)*1
+
+margbinall <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> glm(binstut~factor(sex)+age,data=twinsall,family=binomial())
+out3 <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> easy.binomial.twostage(binstut~factor(sex)+age,
+      data=twinsall,response=<span style="font-style: italic;">"binstut"</span>,id=<span style="font-style: italic;">"tvparnr"</span>,var.link=1,
+      theta.formula=desfs,desnames=c(<span style="font-style: italic;">"dz"</span>,<span style="font-style: italic;">"mz"</span>,<span style="font-style: italic;">"os"</span>))
+summary(out3)
+</pre>
+</div>
+
+
+<pre class="example">
+Dependence parameter for Odds-Ratio (Plackett) model 
+With log-link 
+$estimates
+       theta        se
+dz 0.5278527 0.2396796
+mz 3.4850037 0.1864190
+os 0.7802940 0.2894394
+
+$or
+   Estimate Std.Err   2.5% 97.5%  P-value
+dz     1.70   0.406  0.899  2.49 3.02e-05
+mz    32.62   6.081 20.703 44.54 8.13e-08
+os     2.18   0.632  0.944  3.42 5.50e-04
+
+$type
+[1] "plackett"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+</pre>
+</div>
+</div>
+</div>
+
+
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4">Bivariate Probit model</h2>
+<div class="outline-text-2" id="text-4">
+<div class="org-src-container">
+
+<pre class="src src-R"><span style="font-weight: bold; text-decoration: underline;">library</span>(mets)
+data(twinstut)
+twinstut <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> subset(twinstut,zyg%<span style="font-weight: bold;">in</span>%c(<span style="font-style: italic;">"mz"</span>,<span style="font-style: italic;">"dz"</span>))
+twinstut$binstut <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> 1*(twinstut$stutter==<span style="font-style: italic;">"yes"</span>)
+head(twinstut)
+</pre>
+</div>
+
+<pre class="example">
+   tvparnr zyg stutter    sex age nr binstut
+1  2001005  mz      no female  71  1       0
+2  2001005  mz      no female  71  2       0
+3  2001006  dz      no female  71  1       0
+8  2001012  mz      no female  71  1       0
+9  2001012  mz      no female  71  2       0
+11 2001015  dz      no   male  71  1       0
+</pre>
+
+<p>
+First testing for same dependence in MZ and DZ  that we recommend doing by 
+comparing the correlations of MZ and DZ twins. Apart from regression 
+correction in the mean this is an un-structured model, and the useful
+concordance and casewise concordance estimates can be reported from this
+analysis. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">b1 <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> bptwin(binstut~sex,data=twinstut,id=<span style="font-style: italic;">"tvparnr"</span>,zyg=<span style="font-style: italic;">"zyg"</span>,DZ=<span style="font-style: italic;">"dz"</span>,type=<span style="font-style: italic;">"un"</span>)
+summary(b1)
+</pre>
+</div>
+
+<pre class="example">
+                Estimate    Std.Err          Z p-value
+(Intercept)    -1.794823   0.023289 -77.066728  0.0000
+sexmale         0.401432   0.030179  13.301813  0.0000
+atanh(rho) MZ   1.096916   0.073574  14.909087  0.0000
+atanh(rho) DZ   0.132458   0.062516   2.118800  0.0341
+
+ Total MZ/DZ Complete pairs MZ/DZ
+ 8777/12511  3255/4058           
+
+                           Estimate 2.5%    97.5%  
+Tetrachoric correlation MZ 0.79939  0.74101 0.84577
+Tetrachoric correlation DZ 0.13169  0.00993 0.24960
+
+MZ:
+                     Estimate 2.5%     97.5%   
+Concordance           0.01698  0.01411  0.02042
+Casewise Concordance  0.46730  0.40383  0.53185
+Marginal              0.03634  0.03287  0.04016
+Rel.Recur.Risk       12.85882 10.87510 14.84253
+log(OR)               3.75632  3.37975  4.13289
+DZ:
+                     Estimate 2.5%    97.5%  
+Concordance          0.00235  0.00140 0.00393
+Casewise Concordance 0.06456  0.03937 0.10413
+Marginal             0.03634  0.03287 0.04016
+Rel.Recur.Risk       1.77662  0.92746 2.62577
+log(OR)              0.63527  0.09013 1.18040
+
+                         Estimate 2.5% 97.5%
+Broad-sense heritability   1      NaN  NaN
+</pre>
+</div>
+
+
+<div id="outline-container-sec-4-1" class="outline-3">
+<h3 id="sec-4-1">Polygenic modelling</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+We now turn attention to specific polygenic modelling where special random 
+effects are used to specify ACE, AE, ADE models and so forth. This is very
+easy with the bptwin function. The key parts of the output are the sizes of 
+the genetic component A and the environmental component, and we can compare 
+with the results of the unstructed model above. Also formally we can test 
+if this submodel is acceptable by a likelihood ratio test. 
+</p>
+
+
+<div class="org-src-container">
+
+<pre class="src src-R">b1 <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> bptwin(binstut~sex,data=twinstut,id=<span style="font-style: italic;">"tvparnr"</span>,zyg=<span style="font-style: italic;">"zyg"</span>,DZ=<span style="font-style: italic;">"dz"</span>,type=<span style="font-style: italic;">"ace"</span>)
+summary(b1)
+</pre>
+</div>
+
+<pre class="example">
+             Estimate   Std.Err         Z p-value
+(Intercept)  -3.70371   0.24449 -15.14855       0
+sexmale       0.83310   0.08255  10.09201       0
+log(var(A))   1.18278   0.17179   6.88512       0
+log(var(C)) -27.69364        NA        NA      NA
+
+ Total MZ/DZ Complete pairs MZ/DZ
+ 8777/12511  3255/4058           
+
+                   Estimate 2.5%    97.5%  
+A                  0.76545  0.70500 0.82590
+C                  0.00000  0.00000 0.00000
+E                  0.23455  0.17410 0.29500
+MZ Tetrachoric Cor 0.76545  0.69793 0.81948
+DZ Tetrachoric Cor 0.38272  0.35210 0.41253
+
+MZ:
+                     Estimate 2.5%     97.5%   
+Concordance           0.01560  0.01273  0.01912
+Casewise Concordance  0.42830  0.36248  0.49677
+Marginal              0.03643  0.03294  0.04027
+Rel.Recur.Risk       11.75741  9.77237 13.74246
+log(OR)               3.52382  3.13466  3.91298
+DZ:
+                     Estimate 2.5%    97.5%  
+Concordance          0.00558  0.00465 0.00670
+Casewise Concordance 0.15327  0.13749 0.17050
+Marginal             0.03643  0.03294 0.04027
+Rel.Recur.Risk       4.20744  3.78588 4.62900
+log(OR)              1.69996  1.57262 1.82730
+
+                         Estimate 2.5%    97.5%  
+Broad-sense heritability 0.76545  0.70500 0.82590
+</pre>
+
+
+<div class="org-src-container">
+
+<pre class="src src-R">b0 <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> bptwin(binstut~sex,data=twinstut,id=<span style="font-style: italic;">"tvparnr"</span>,zyg=<span style="font-style: italic;">"zyg"</span>,DZ=<span style="font-style: italic;">"dz"</span>,type=<span style="font-style: italic;">"ae"</span>)
+summary(b0)
+</pre>
+</div>
+
+<pre class="example">
+             Estimate   Std.Err         Z p-value
+(Intercept)  -3.70371   0.24449 -15.14855       0
+sexmale       0.83310   0.08255  10.09201       0
+log(var(A))   1.18278   0.17179   6.88512       0
+
+ Total MZ/DZ Complete pairs MZ/DZ
+ 8777/12511  3255/4058           
+
+                   Estimate 2.5%    97.5%  
+A                  0.76545  0.70500 0.82590
+E                  0.23455  0.17410 0.29500
+MZ Tetrachoric Cor 0.76545  0.69793 0.81948
+DZ Tetrachoric Cor 0.38272  0.35210 0.41253
+
+MZ:
+                     Estimate 2.5%     97.5%   
+Concordance           0.01560  0.01273  0.01912
+Casewise Concordance  0.42830  0.36248  0.49677
+Marginal              0.03643  0.03294  0.04027
+Rel.Recur.Risk       11.75741  9.77237 13.74246
+log(OR)               3.52382  3.13466  3.91298
+DZ:
+                     Estimate 2.5%    97.5%  
+Concordance          0.00558  0.00465 0.00670
+Casewise Concordance 0.15327  0.13749 0.17050
+Marginal             0.03643  0.03294 0.04027
+Rel.Recur.Risk       4.20744  3.78588 4.62900
+log(OR)              1.69996  1.57262 1.82730
+
+                         Estimate 2.5%    97.5%  
+Broad-sense heritability 0.76545  0.70500 0.82590
+</pre>
+</div>
+</div>
+</div>
+
+
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5">Additive gamma random effects</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+Fitting first a model with different size random effects for MZ and DZ. We 
+note that as before in the OR and biprobit model the dependence is much
+stronger for MZ twins. We also test if these are the same by parametrizing the
+OR model with an intercept. This clearly shows a significant difference. 
+</p>
+
+
+<div class="org-src-container">
+
+<pre class="src src-R">theta.des <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> model.matrix( ~-1+factor(zyg),data=twinstut)
+margbin <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> glm(binstut~sex,data=twinstut,family=binomial())
+bintwin <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(margbin,data=twinstut,model=<span style="font-style: italic;">"gamma"</span>,
+     clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=1,
+     theta.des=theta.des)
+summary(bintwin)
+
+<span style="font-weight: bold; font-style: italic;">### </span><span style="font-weight: bold; font-style: italic;">test for same dependence in MZ and DZ </span>
+theta.des <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> model.matrix( ~factor(zyg),data=twinstut)
+margbin <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> glm(binstut~sex,data=twinstut,family=binomial())
+bintwin <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(margbin,data=twinstut,model=<span style="font-style: italic;">"gamma"</span>,
+     clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=1,
+     theta.des=theta.des)
+summary(bintwin)
+</pre>
+</div>
+
+<pre class="example">
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+With log-link 
+$estimates
+                    theta        se
+factor(zyg)dz -2.61194495 0.4854454
+factor(zyg)mz -0.01817181 0.1030735
+
+$vargam
+              Estimate Std.Err    2.5% 97.5%  P-value
+factor(zyg)dz   0.0734  0.0356 0.00356 0.143 3.94e-02
+factor(zyg)mz   0.9820  0.1012 0.78361 1.180 2.96e-22
+
+$type
+[1] "gamma"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+With log-link 
+$estimates
+                  theta        se
+(Intercept)   -2.611945 0.4854454
+factor(zyg)mz  2.593773 0.4962675
+
+$vargam
+              Estimate Std.Err    2.5%  97.5% P-value
+(Intercept)     0.0734  0.0356 0.00356  0.143  0.0394
+factor(zyg)mz  13.3802  6.6401 0.36573 26.395  0.0439
+
+$type
+[1] "gamma"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+</pre>
+</div>
+
+
+<div id="outline-container-sec-5-1" class="outline-3">
+<h3 id="sec-5-1">Polygenic modelling</h3>
+<div class="outline-text-3" id="text-5-1">
+<p>
+   First setting up the random effects design for the random effects and 
+   the the relationship between variance parameters.
+   We see that the genetic random effect has size one for MZ and 0.5 for DZ subjects, 
+   that have shared and non-shared genetic components with variance 0.5 such that the total 
+   genetic variance is the same for all subjects. The shared environmental effect is the samme for 
+all. Thus two parameters with these bands. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">out <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> twin.polygen.design(twinstut,id=<span style="font-style: italic;">"tvparnr"</span>,zygname=<span style="font-style: italic;">"zyg"</span>,zyg=<span style="font-style: italic;">"dz"</span>,type=<span style="font-style: italic;">"ace"</span>)
+head(cbind(out$des.rv,twinstut$tvparnr),10)
+out$pardes
+</pre>
+</div>
+
+<pre class="example">
+   MZ DZ DZns1 DZns2 env        
+1   1  0     0     0   1 2001005
+2   1  0     0     0   1 2001005
+3   0  1     1     0   1 2001006
+8   1  0     0     0   1 2001012
+9   1  0     0     0   1 2001012
+11  0  1     1     0   1 2001015
+12  0  1     1     0   1 2001016
+13  0  1     0     1   1 2001016
+15  0  1     1     0   1 2001020
+18  0  1     1     0   1 2001022
+     [,1] [,2]
+[1,]  1.0    0
+[2,]  0.5    0
+[3,]  0.5    0
+[4,]  0.5    0
+[5,]  0.0    1
+</pre>
+
+
+<p>
+Now, fitting the ACE model, we see that the variance of the genetic, 
+component, is 1.5 and the environmental variance is -0.5. Thus suggesting that 
+the ACE model does not fit the data.  When the random design is given we 
+automatically use the gamma fralty model. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">margbin <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> glm(binstut~sex,data=twinstut,family=binomial())
+bintwin1 <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(margbin,data=twinstut,
+     clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
+     random.design=out$des.rv,theta.des=out$pardes)
+summary(bintwin1)
+</pre>
+</div>
+
+<pre class="example">
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                 theta        se
+dependence1  1.5261839 0.2475041
+dependence2 -0.5447955 0.1942159
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err   2.5%  97.5%  P-value
+dependence1    1.555   0.187  1.189  1.922 9.11e-17
+dependence2   -0.555   0.187 -0.922 -0.189 2.99e-03
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1    0.981   0.102 0.781  1.18 8.29e-22
+
+attr(,"class")
+[1] "summary.mets.twostage"
+</pre>
+
+
+<p>
+For this model we estimate the concordance and casewise concordance as well 
+as the marginal rates of stuttering for females. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">concordance.twin.ace(bintwin1,type=<span style="font-style: italic;">"ace"</span>)
+</pre>
+</div>
+
+<pre class="example">
+$MZ
+                     Estimate Std.Err   2.5%  97.5%  P-value
+concordance            0.0182 0.00147 0.0153 0.0211 2.61e-35
+casewise concordance   0.5033 0.03256 0.4395 0.5672 6.49e-54
+marginal               0.0362 0.00188 0.0325 0.0399 7.15e-83
+
+$DZ
+                     Estimate  Std.Err   2.5%   97.5%  P-value
+concordance           0.00235 0.000589 0.0012 0.00351 6.45e-05
+casewise concordance  0.06501 0.015836 0.0340 0.09604 4.04e-05
+marginal              0.03620 0.001877 0.0325 0.03988 7.15e-83
+</pre>
+
+
+<p>
+The E component was not consistent with the fit of the data and we
+now consider instead the AE model. 
+</p>
+
+
+<div class="org-src-container">
+
+<pre class="src src-R">out <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> twin.polygen.design(twinstut,id=<span style="font-style: italic;">"tvparnr"</span>,zygname=<span style="font-style: italic;">"zyg"</span>,zyg=<span style="font-style: italic;">"dz"</span>,type=<span style="font-style: italic;">"ae"</span>)
+
+bintwin <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(margbin,data=twinstut,
+     clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
+     random.design=out$des.rv,theta.des=out$pardes)
+summary(bintwin)
+</pre>
+</div>
+
+<pre class="example">
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                theta         se
+dependence1 0.9094847 0.09536268
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err 2.5% 97.5% P-value
+dependence1        1       0    1     1       0
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1    0.909  0.0954 0.723   1.1 1.47e-21
+
+attr(,"class")
+[1] "summary.mets.twostage"
+</pre>
+
+<p>
+Again, the concordance can be computed: 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">concordance.twin.ace(bintwin,type=<span style="font-style: italic;">"ae"</span>)
+</pre>
+</div>
+
+<pre class="example">
+$MZ
+                     Estimate Std.Err   2.5%  97.5%  P-value
+concordance            0.0174 0.00143 0.0146 0.0202 5.00e-34
+casewise concordance   0.4795 0.03272 0.4154 0.5437 1.20e-48
+marginal               0.0362 0.00188 0.0325 0.0399 7.15e-83
+
+$DZ
+                     Estimate  Std.Err   2.5%   97.5%   P-value
+concordance           0.00477 0.000393 0.0040 0.00554  5.94e-34
+casewise concordance  0.13175 0.005417 0.1211 0.14237 1.14e-130
+marginal              0.03620 0.001877 0.0325 0.03988  7.15e-83
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Created: 2017-02-22 Wed 10:08</p>
+<p class="validation"></p>
+</div>
+</body>
+</html>

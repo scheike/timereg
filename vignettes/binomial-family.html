@@ -1,0 +1,992 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>Analysis of multivariate binomial data: family analysis</title>
+<!-- 2017-02-22 Wed 12:04 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="http://192.38.117.59/~ts/styles/orgmode5-ts.css">
+<link rel="icon" type="image/x-icon" href="http://www.biostat.ku.dk/~kkho/styles/logo.ico"/>
+<style type="text/css">body { background-image: url(http://www.biostat.ku.dk/~kkho/styles/sund.png); background-size:120px 95px; background-position: 2% 0.55em; }
+a.logo span { background: none; }
+th,td,tr,table th,table th,table td {
+background: rgba(240,240,240,1);
+border: none;
+}
+body { width: 800px; text-align:justify; text-justify:inter-word; }
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="preamble" class="status">
+
+<script type="text/javascript">
+  function swapStyleSheet(sheet){
+      document.getElementById('pagestyle').setAttribute('href', sheet);
+  }
+  document.addEventListener('DOMContentLoaded',function() {
+      document.getElementById('content').onclick = function() {
+          var elem = document.getElementById('text-table-of-contents');
+          elem.style.display = elem.style.display == 'block' ? 'none' : 'block';
+      }
+  });
+  document.addEventListener('DOMContentLoaded',function() {
+      document.getElementById('content').onclick = function() {
+          var elem = document.getElementsByClassName('nav');
+          for (i = 0; i < elem.length; i++) { 
+               elem[i].style.display = elem[i].style.display == 'block' ? 'none' : 'block';
+          }
+      }
+  });
+</script>
+</div>
+<div id="content">
+<h1 class="title">Analysis of multivariate binomial data: family analysis</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">Overview</a></li>
+<li><a href="#sec-2">Simulated family data</a></li>
+<li><a href="#sec-3">Additive gamma model</a>
+<ul>
+<li><a href="#sec-3-1">Pairwise fitting</a></li>
+</ul>
+</li>
+<li><a href="#sec-4">Pairwise odds ratio model</a></li>
+</ul>
+</div>
+</div>
+<a href="http://www.biostat.ku.dk/~ts/survival class="logo"><span></span></a>
+
+<hr  />
+
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">Overview</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+When looking at multivariate binomial data with the aim of learning about the 
+dependence that is present, possibly after correcting for some covariates many
+models are available. 
+</p>
+
+<ul class="org-ul">
+<li>Random-effects models logistic regression covered elsewhere (glmer in lme4).
+</li>
+</ul>
+
+<p>
+in the mets package you can fit the 
+</p>
+
+<ul class="org-ul">
+<li>Pairwise odds ratio model
+</li>
+<li>Bivariate Probit model 
+<ul class="org-ul">
+<li>With random effects
+</li>
+<li>Special functionality for polygenic random effects modelling 
+such as ACE, ADE ,AE and so forth.
+</li>
+</ul>
+</li>
+<li>Additive gamma random effects model 
+<ul class="org-ul">
+<li>Special functionality for polygenic random effects modelling 
+such as ACE, ADE ,AE and so forth.
+</li>
+</ul>
+</li>
+</ul>
+
+<p>
+These last three models are all fitted in the mets package using composite 
+likelihoods for pairs of data.  The models can be fitted specifically based 
+on specifying which pairs one wants to use for the composite score. 
+</p>
+
+<p>
+The models are described in futher details in the binomial-twin vignette. 
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">Simulated family data</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+We start by simulating family data with and additive gamma structure
+on ACE form.  Here 40000 families consisting of two parents and
+two children. The response is ybin and there is one covariate x. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R"><span style="font-weight: bold; text-decoration: underline;">library</span>(mets)
+set.seed(100)
+data <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> simbinClaytonOakes.family.ace(40000,2,1,beta=<span style="font-weight: bold; text-decoration: underline;">NULL</span>,alpha=<span style="font-weight: bold; text-decoration: underline;">NULL</span>)
+data$number <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> c(1,2,3,4)
+data$child <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> 1*(data$number==3)
+head(data)
+</pre>
+</div>
+
+<pre class="example">
+  ybin x   type cluster number child
+1    1 0 mother       1      1     0
+2    1 1 father       1      2     0
+3    1 1  child       1      3     1
+4    1 1  child       1      4     0
+5    0 0 mother       2      1     0
+6    1 1 father       2      2     0
+</pre>
+
+
+<p>
+We fit the marginal models, and here find a covariate
+effect at 0.3 for x. The marginals can be specified excatly as one
+wants. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">aa <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> margbin <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> glm(ybin~x,data=data,family=binomial())
+summary(aa)
+</pre>
+</div>
+
+<pre class="example">
+Call:
+glm(formula = ybin ~ x, family = binomial(), data = data)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-1.5283  -1.3910   0.8632   0.9779   0.9779  
+
+Coefficients:
+            Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept) 0.489258   0.007291    67.1   &lt;2e-16 ***
+x           0.306070   0.010553    29.0   &lt;2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 206272  on 159999  degrees of freedom
+Residual deviance: 205428  on 159998  degrees of freedom
+AIC: 205432
+
+Number of Fisher Scoring iterations: 4
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">Additive gamma model</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+For the additive gamma of this type we set-up the random effects
+included in such a family to make the ACE valid using some
+special functions for this. 
+</p>
+
+<p>
+The model is constructe with one enviromental effect shared by
+all in the family and 8 genetic random effects with size (1/4) genetic
+variance. Looking at the first family we see that the mother and
+father both share half the genes with the children and that the
+two children also share half their genes with this specification.
+Below we also show an alternative specification of this model
+using all pairs. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R"><span style="font-weight: bold; font-style: italic;">### </span><span style="font-weight: bold; font-style: italic;">make ace random effects design</span>
+out <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> ace.family.design(data,member=<span style="font-style: italic;">"type"</span>,id=<span style="font-style: italic;">"cluster"</span>)
+out$pardes
+head(out$des.rv,4)
+</pre>
+</div>
+
+<pre class="example">
+      [,1] [,2]
+ [1,] 0.25    0
+ [2,] 0.25    0
+ [3,] 0.25    0
+ [4,] 0.25    0
+ [5,] 0.25    0
+ [6,] 0.25    0
+ [7,] 0.25    0
+ [8,] 0.25    0
+ [9,] 0.00    1
+     m1 m2 m3 m4 f1 f2 f3 f4 env
+[1,]  1  1  1  1  0  0  0  0   1
+[2,]  0  0  0  0  1  1  1  1   1
+[3,]  1  1  0  0  1  1  0  0   1
+[4,]  1  0  1  0  1  0  1  0   1
+</pre>
+
+<p>
+We can now fit the model calling the two-stage function
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R"><span style="font-weight: bold; font-style: italic;">### </span><span style="font-weight: bold; font-style: italic;">fitting ace model for family structure</span>
+ts <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(margbin,data=data,clusters=data$cluster,
+theta=c(2,1)/9,
+random.design=out$des.rv,theta.des=out$pardes)
+summary(ts)
+<span style="font-weight: bold; font-style: italic;">## </span><span style="font-weight: bold; font-style: italic;">true variance parameters</span>
+c(2,1)/9
+<span style="font-weight: bold; font-style: italic;">###</span><span style="font-weight: bold; font-style: italic;">total variance </span>
+1/3
+</pre>
+</div>
+
+<pre class="example">
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                theta         se
+dependence1 0.2425610 0.03747680
+dependence2 0.1255742 0.01607478
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err  2.5% 97.5%  P-value
+dependence1    0.659  0.0611 0.539 0.779 4.25e-27
+dependence2    0.341  0.0611 0.221 0.461 2.39e-08
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1    0.368  0.0252 0.319 0.418 3.31e-48
+
+attr(,"class")
+[1] "summary.mets.twostage"
+[1] 0.2222222 0.1111111
+[1] 0.3333333
+</pre>
+</div>
+
+
+<div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1">Pairwise fitting</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+We now specify the same model via extracting all pairs.  The random
+effecs structure is simpler when just looking at pairs. 
+A special function writes up all combinations of pairs. 
+There are 6 pairs within each family, and we keep track of
+who belongs to the different families. We first simply give the
+pairs and we then should get the same result as before. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">mm <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> familycluster.index(data$cluster)
+head(mm$familypairindex,n=20)
+pairs <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> mm$pairs
+dim(pairs)
+head(pairs,12)
+</pre>
+</div>
+
+<pre class="example">
+ [1] 1 2 1 3 1 4 2 3 2 4 3 4 5 6 5 7 5 8 6 7
+[1] 240000      2
+      [,1] [,2]
+ [1,]    1    2
+ [2,]    1    3
+ [3,]    1    4
+ [4,]    2    3
+ [5,]    2    4
+ [6,]    3    4
+ [7,]    5    6
+ [8,]    5    7
+ [9,]    5    8
+[10,]    6    7
+[11,]    6    8
+[12,]    7    8
+</pre>
+
+<p>
+Now with the pairs we fit the model 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">tsp <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(margbin,data=data,
+                     clusters=data$cluster,
+                     theta=c(2,1)/9,detail=0,
+              random.design=out$des.rv,theta.des=out$pardes,pairs=pairs)
+summary(tsp)
+</pre>
+</div>
+
+<pre class="example">
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                theta         se
+dependence1 0.2425610 0.03747680
+dependence2 0.1255742 0.01607478
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err  2.5% 97.5%  P-value
+dependence1    0.659  0.0611 0.539 0.779 4.25e-27
+dependence2    0.341  0.0611 0.221 0.461 2.39e-08
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1    0.368  0.0252 0.319 0.418 3.31e-48
+
+attr(,"class")
+[1] "summary.mets.twostage"
+</pre>
+
+
+<p>
+Here a random sample of pairs are given instead and we get other
+estimates. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">set.seed(100)
+ssid <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> sort(sample(1:nrow(pairs),nrow(pairs)/2))
+tsd <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(aa,data=data,clusters=data$cluster,
+               theta=c(2,1)/9,step=1.0,
+               random.design=out$des.rv,iid=1,Nit=10,
+                   theta.des=out$pardes,pairs=pairs[ssid,])
+summary(tsd)
+</pre>
+</div>
+
+<pre class="example">
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                 theta         se
+dependence1 0.31196731 0.05585463
+dependence2 0.09833816 0.02328983
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err   2.5% 97.5%  P-value
+dependence1     0.76  0.0734 0.6165 0.904 3.79e-25
+dependence2     0.24  0.0734 0.0958 0.384 1.09e-03
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1     0.41  0.0373 0.337 0.483 3.58e-28
+
+attr(,"class")
+[1] "summary.mets.twostage"
+</pre>
+
+
+<p>
+To specify such a model when only the pairs are availble we show
+how to specify the model. We here use the same marginal "aa"
+to make the results comparable. 
+The marginal can also be fitted based on available data. 
+</p>
+
+<p>
+We start by selecting the data related to the pairs, and sets up new id's and 
+to start we specify the model using the full design with 9 random effects. 
+Below we show how one can use with only the random effects needed for each 
+pair, which is typically simpler.
+</p>
+
+
+<div class="org-src-container">
+
+<pre class="src src-R">head(pairs[ssid,])
+ids <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> sort(unique(c(pairs[ssid,])))
+<span style="font-weight: bold; font-style: italic;">###</span>
+pairsids <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> c(pairs[ssid,])
+pair.new <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> matrix(fast.approx(ids,c(pairs[ssid,])),ncol=2)
+head(pair.new)
+
+dataid <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> dsort(data[ids,],<span style="font-style: italic;">"cluster"</span>)
+outid <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> ace.family.design(dataid,member=<span style="font-style: italic;">"type"</span>,id=<span style="font-style: italic;">"cluster"</span>)
+outid$pardes
+head(outid$des.rv)
+</pre>
+</div>
+
+<pre class="example">
+     [,1] [,2]
+[1,]    1    2
+[2,]    1    3
+[3,]    2    4
+[4,]    3    4
+[5,]    5    6
+[6,]    5    7
+     [,1] [,2]
+[1,]    1    2
+[2,]    1    3
+[3,]    2    4
+[4,]    3    4
+[5,]    5    6
+[6,]    5    7
+      [,1] [,2]
+ [1,] 0.25    0
+ [2,] 0.25    0
+ [3,] 0.25    0
+ [4,] 0.25    0
+ [5,] 0.25    0
+ [6,] 0.25    0
+ [7,] 0.25    0
+ [8,] 0.25    0
+ [9,] 0.00    1
+     m1 m2 m3 m4 f1 f2 f3 f4 env
+[1,]  1  1  1  1  0  0  0  0   1
+[2,]  0  0  0  0  1  1  1  1   1
+[3,]  1  1  0  0  1  1  0  0   1
+[4,]  1  0  1  0  1  0  1  0   1
+[5,]  1  1  1  1  0  0  0  0   1
+[6,]  0  0  0  0  1  1  1  1   1
+</pre>
+
+<p>
+Now fitting the model with the data set up 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">tsdid <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
+         theta=c(2,1)/9,
+         random.design=outid$des.rv,theta.des=outid$pardes,pairs=pair.new)
+summary(tsdid)
+</pre>
+</div>
+
+<pre class="example">
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                 theta         se
+dependence1 0.31196731 0.05585438
+dependence2 0.09833816 0.02328230
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err   2.5% 97.5%  P-value
+dependence1     0.76  0.0734 0.6165 0.904 3.76e-25
+dependence2     0.24  0.0734 0.0958 0.384 1.09e-03
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1     0.41  0.0373 0.337 0.483 3.47e-28
+
+attr(,"class")
+[1] "summary.mets.twostage"
+</pre>
+
+<p>
+We now specify the design specifically using the pairs. 
+The random.design and design on the parameters
+are now given for each pair, as a 3 dimensional matrix. 
+with a direct specification of random.design and the 
+design on the parameters theta.design.
+In addition we need also to give the number of random effects for
+each pair. These basic things are constructed by certain functions
+for the ACE design. 
+</p>
+
+
+<div class="org-src-container">
+
+<pre class="src src-R">pair.types <span style="font-weight: bold; text-decoration: underline;">&lt;-</span>  matrix(dataid[c(t(pair.new)),<span style="font-style: italic;">"type"</span>],byrow=T,ncol=2)
+head(pair.new,7)
+head(pair.types,7)
+
+theta.des  <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> array(0,c(4,2,nrow(pair.new)))
+random.des <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> array(0,c(2,4,nrow(pair.new)))
+<span style="font-weight: bold; font-style: italic;">### </span><span style="font-weight: bold; font-style: italic;">random variables in each pair </span>
+rvs <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> c()
+<span style="font-weight: bold;">for</span> (i <span style="font-weight: bold;">in</span> 1:nrow(pair.new))
+{
+        <span style="font-weight: bold;">if</span> (pair.types[i,1]==<span style="font-style: italic;">"mother"</span> &amp; pair.types[i,2]==<span style="font-style: italic;">"father"</span>)
+        {
+        theta.des[,,i] <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> rbind(c(1,0),c(1,0),c(0,1),c(0,0))
+        random.des[,,i] <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> rbind(c(1,0,1,0),c(0,1,1,0))
+        rvs <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> c(rvs,3)
+        } <span style="font-weight: bold;">else</span> {
+        theta.des[,,i] <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
+        random.des[,,i] <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> rbind(c(1,1,0,1),c(1,0,1,1))
+        rvs <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> c(rvs,4)
+        }
+}
+</pre>
+</div>
+
+<pre class="example">
+     [,1] [,2]
+[1,]    1    2
+[2,]    1    3
+[3,]    2    4
+[4,]    3    4
+[5,]    5    6
+[6,]    5    7
+[7,]    5    8
+     [,1]     [,2]    
+[1,] "mother" "father"
+[2,] "mother" "child" 
+[3,] "father" "child" 
+[4,] "child"  "child" 
+[5,] "mother" "father"
+[6,] "mother" "child" 
+[7,] "mother" "child"
+</pre>
+
+
+<p>
+For pair 1 that is a mother/farther pair, we see that they share 
+1 environmental random effect of size 1. There are also two genetic
+effects that are unshared between the two. 
+So a total of 3 random effects are needed here. The theta.des relates the 3 
+random effects to possible relationships in the parameters. Here the genetic
+effects are full and so is the environmental effect. 
+In contrast we also consider a mother/child pair that share half the genes, now
+with random effects with (1/2) gene variance.  We there need 4 random effects,
+2 non-shared half-gene, 1 shared half-gene, and one shared full environmental 
+effect. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R"><span style="font-weight: bold; font-style: italic;">### </span><span style="font-weight: bold; font-style: italic;">3 rvs here </span>
+random.des[,,1]
+theta.des[,,1]
+<span style="font-weight: bold; font-style: italic;">### </span><span style="font-weight: bold; font-style: italic;">4 rvs here </span>
+random.des[,,2]
+theta.des[,,2]
+head(rvs)
+</pre>
+</div>
+
+<pre class="example">
+     [,1] [,2] [,3] [,4]
+[1,]    1    0    1    0
+[2,]    0    1    1    0
+     [,1] [,2]
+[1,]    1    0
+[2,]    1    0
+[3,]    0    1
+[4,]    0    0
+     [,1] [,2] [,3] [,4]
+[1,]    1    1    0    1
+[2,]    1    0    1    1
+     [,1] [,2]
+[1,]  0.5    0
+[2,]  0.5    0
+[3,]  0.5    0
+[4,]  0.0    1
+[1] 3 4 4 4 3 4
+</pre>
+
+<p>
+Now fitting the model, and we see that it is a lot quicker due to the
+fewer random effects needed for pairs. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">tsdid2 <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
+           theta=c(2,1)/9,
+           random.design=random.des,
+           theta.des=theta.des,pairs=pair.new,pairs.rvs=rvs)
+summary(tsdid2)
+</pre>
+</div>
+
+<pre class="example">
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                 theta         se
+dependence1 0.31196731 0.05585438
+dependence2 0.09833816 0.02328230
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err   2.5% 97.5%  P-value
+dependence1     0.76  0.0734 0.6165 0.904 3.76e-25
+dependence2     0.24  0.0734 0.0958 0.384 1.09e-03
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1     0.41  0.0373 0.337 0.483 3.47e-28
+
+attr(,"class")
+[1] "summary.mets.twostage"
+</pre>
+
+<p>
+The same model can be specifed even simpler via the kinship
+coefficient.  For this speicification there are 4 random effects for
+each pair, but some have variance 0. The mother-father pair, here
+shares a random effect with variance 0, and have two non-shared genetic 
+effects with full variance, in addition to a fully shared environmental 
+effect.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">kinship  <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> c()
+<span style="font-weight: bold;">for</span> (i <span style="font-weight: bold;">in</span> 1:nrow(pair.new))
+{
+<span style="font-weight: bold;">if</span> (pair.types[i,1]==<span style="font-style: italic;">"mother"</span> &amp; pair.types[i,2]==<span style="font-style: italic;">"father"</span>) pk1 <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> 0 <span style="font-weight: bold;">else</span> pk1 <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> 0.5
+kinship <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> c(kinship,pk1)
+}
+head(kinship,n=10)
+
+out <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> make.pairwise.design(pair.new,kinship,type=<span style="font-style: italic;">"ace"</span>) 
+names(out)
+out$random.des[,,1]
+out$theta.des[,,1]
+</pre>
+</div>
+
+<pre class="example">
+ [1] 0.0 0.5 0.5 0.5 0.0 0.5 0.5 0.5 0.5 0.5
+[1] "random.design" "theta.des"     "ant.rvs"
+     [,1] [,2] [,3] [,4]
+[1,]    1    1    0    1
+[2,]    1    0    1    1
+     [,1] [,2]
+[1,]    0    0
+[2,]    1    0
+[3,]    1    0
+[4,]    0    1
+</pre>
+
+<p>
+Now, fitting the model we get the results from before. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">tsdid3 <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
+             theta=c(2,1)/9,random.design=out$random.design,
+             theta.des=out$theta.des,pairs=pair.new,pairs.rvs=out$ant.rvs)
+summary(tsdid3)
+</pre>
+</div>
+
+<pre class="example">
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                 theta         se
+dependence1 0.31196731 0.05585438
+dependence2 0.09833816 0.02328230
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err   2.5% 97.5%  P-value
+dependence1     0.76  0.0734 0.6165 0.904 3.76e-25
+dependence2     0.24  0.0734 0.0958 0.384 1.09e-03
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1     0.41  0.0373 0.337 0.483 3.47e-28
+
+attr(,"class")
+[1] "summary.mets.twostage"
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4">Pairwise odds ratio model</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+To fit the pairwise odds-ratio model in the case of a pair-specification there 
+are two options for fitting the model. 
+</p>
+
+<ol class="org-ol">
+<li>One option is to set up some artificial data similar to twin data with
+<ul class="org-ul">
+<li>a pair-cluster-id  (clusters) 
+</li>
+<li>with a cluster-id to get GEE type standard errors (se.cluster) 
+</li>
+</ul>
+</li>
+<li>We can also use the specify the design via the theta.des that is also a 
+matrix of dimension pairs x design with the design for POR model.  
+</li>
+</ol>
+
+
+<p>
+Starting by the second option. We need to start by specify the design of
+the odds-ratio of each pair. We set up the data and find all combinations 
+within the pairs. Subsequently, we remove all the empty groups, by grouping
+together the factor levels 4:9, and then we construct the design. 
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">tdp <span style="font-weight: bold; text-decoration: underline;">&lt;-</span>cbind( dataid[pair.new[,1],],dataid[pair.new[,2],])
+names(tdp) <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> c(paste(names(dataid),<span style="font-style: italic;">"1"</span>,sep=<span style="font-style: italic;">""</span>),
+                paste(names(dataid),<span style="font-style: italic;">"2"</span>,sep=<span style="font-style: italic;">""</span>))
+tdp <span style="font-weight: bold; text-decoration: underline;">&lt;-</span>transform(tdp,tt=interaction(type1,type2))
+dlevel(tdp)
+drelevel(tdp,newlevels=list(mother.father=4:9)) <span style="font-weight: bold; text-decoration: underline;">&lt;-</span>  obs.types~tt
+dtable(tdp,~tt+obs.types)
+tdp <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> model.matrix(~-1+factor(obs.types),tdp)
+</pre>
+</div>
+
+<pre class="example">
+type1 #levels=:3 
+[1] "child"  "father" "mother"
+-----------------------------------------
+type2 #levels=:3 
+[1] "child"  "father" "mother"
+-----------------------------------------
+tt #levels=:9 
+[1] "child.child"   "father.child"  "mother.child"  "child.father" 
+[5] "father.father" "mother.father" "child.mother"  "father.mother"
+[9] "mother.mother"
+-----------------------------------------
+
+              obs.types mother.father child.child father.child mother.child
+tt                                                                         
+child.child                         0       19991            0            0
+father.child                        0           0        39837            0
+mother.child                        0           0            0        40212
+child.father                        0           0            0            0
+father.father                       0           0            0            0
+mother.father                   19960           0            0            0
+child.mother                        0           0            0            0
+father.mother                       0           0            0            0
+mother.mother                       0           0            0            0
+</pre>
+
+<p>
+We then can fit the pairwise model using the pairs and the pair-design for
+descrbing the OR. The results are consistent with the the ACE model as
+the mother-father have a lower dependence as is due only the environmental
+effects. All other combinations should have the same dependence as also seem
+to be the case. 
+</p>
+
+<p>
+To fit the OR model it is generally recommended to use the var.link to
+use the parmetrization with log-odd-ratio regression.
+</p>
+
+
+<div class="org-src-container">
+
+<pre class="src src-R">porpair <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
+           theta.des=tdp,pairs=pair.new,model=<span style="font-style: italic;">"or"</span>,var.link=1)
+summary(porpair)
+</pre>
+</div>
+
+<pre class="example">
+Dependence parameter for Odds-Ratio (Plackett) model 
+With log-link 
+$estimates
+                                   theta         se
+factor(obs.types)mother.father 0.1269881 0.03132228
+factor(obs.types)child.child   0.3819107 0.03108233
+factor(obs.types)father.child  0.3046284 0.02239909
+factor(obs.types)mother.child  0.3293741 0.02233648
+
+$or
+                            Estimate Std.Err 2.5% 97.5%   P-value
+factor(obs.types)moth....       1.14  0.0356 1.07  1.21 1.16e-223
+factor(obs.types)chil....       1.47  0.0455 1.38  1.55 4.26e-227
+factor(obs.types)fath....       1.36  0.0304 1.30  1.42  0.00e+00
+factor(obs.types)moth.....1     1.39  0.0310 1.33  1.45  0.00e+00
+
+$type
+[1] "or"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+</pre>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Created: 2017-02-22 Wed 12:04</p>
+<p class="validation"></p>
+</div>
+</body>
+</html>
