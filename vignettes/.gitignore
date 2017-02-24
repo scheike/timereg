@@ -1,6 +1,5 @@
 test.*
 *.pdf
-*.html
 *.tex
 *.R
 auto/
