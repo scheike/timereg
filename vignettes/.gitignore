@@ -2,6 +2,5 @@ test.*
 *.pdf
 *.html
 *.tex
-*.html
 *.R
 auto/
