@@ -82,8 +82,6 @@ models with marginal specification.  If the marginal can not be obtained
 from other sources we need to maximize the full-pairwise-likelihood in all
 paramters, that is both dependence and marginal parameters. 
 
-
-
 Similary, one can select a whole family based on having selected a proband, that is 
 selected a representative member of  either cases or controls.  In this case we 
 fit the models by using composited likelihoods, considering all
@@ -107,6 +105,37 @@ the probailty of seeing \( (i,j) \) for the pair, given that it is sampled.
 If the marginal can estimated from a full sample we can then estimate the
 dependence paramter using the ascertainment likelihood.
 
+Generally, when whole families are ascertained the computation of the
+true truncation probability can be hard to the fact that families are
+hard to define in the real world. Nevertheless, if a random sample of such
+family is at hand. We suggest to in these families take out all pairs that 
+satisfies the ascertainment criterion. With a family, with given size \( n \)
+we have binary observations \( (Y_1,...,Y_n) \). The family is sampled or  a
+random sample of families such that
+\[ 
+\sum_{i=1}^n Y_i \geq 1.
+\]
+We let the conditional distribution given sampling, be denoted as 
+\[ 
+P^O(\cdot) = P(\cdot | \sum_{i=1}^n Y_i \geq 1) 
+\]
+
+Now, we note that all pairs within these family that satisfies that 
+\( Y_i+Y_j \geq 1 \), will have distribution
+\begin{align*}
+P^O(Y_i=o_1, Y_j=o_2 | Y_i+Y_j \geq 1)  & = \frac{P^O(o_1,o_2)}{P^O( Y_i+Y_j \geq 1)} \\
+                                        & = \frac{P(Y_i=o_1,Y_j=o_2, \sum_{i=1}^n Y_i \geq 1)}{ P( Y_i+Y_j \geq 1, \sum_{i=1}^n Y_i \geq 1)} \\
+                                        & = \frac{P(Y_i=o_1,Y_j=o_2) }{ P( Y_i+Y_j \geq 1)} = \frac{P(o_1,o_2)}{1 - P(0,0)} 
+\end{align*}
+since we only consider the probabilities where \( o_1+o_2 \geq 1 \). 
+Also here we could condition on covariates. 
+
+So considering these pairs, or a random sample of them should yield valid 
+inference. When standard errors are computed we need to rely on GEE type 
+arguments. An advantage of this is that the ascertainment probability is much 
+easier to get for the pairs. Again using the pairwise structure will   lead
+to loss of efficiency compared to using the full likelihood of the ascertained
+families. 
 
 
 * The twin-stutter data
