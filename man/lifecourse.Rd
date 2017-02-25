@@ -2,7 +2,7 @@
 % Please edit documentation in R/lifecourse.R
 \name{lifecourse}
 \alias{lifecourse}
-\title{Spaghetti plot}
+\title{Life-course plot}
 \usage{
 lifecourse(formula, data, id = "id", group = NULL, type = "l", lty = 1,
   col = 1:10, alpha = 0.3, lwd = 1, recurrent.col = NULL,
@@ -10,7 +10,7 @@ lifecourse(formula, data, id = "id", group = NULL, type = "l", lty = 1,
   place.sl = "bottomright", xlab = "Time", ylab = "", add = FALSE, ...)
 }
 \arguments{
-\item{formula}{Formula (Event(start,slut,status) ~ )}
+\item{formula}{Formula (Event(start,slut,status) ~ ...)}
 
 \item{data}{data.frame}
 
@@ -47,7 +47,7 @@ lifecourse(formula, data, id = "id", group = NULL, type = "l", lty = 1,
 \item{...}{Additional arguments to lower level arguments}
 }
 \description{
-Life-course plot for event life data  with recurrent events
+Life-course plot for event life data with recurrent events
 }
 \examples{
 data = data.frame(id=c(1,1,1,2,2),start=c(0,1,2,3,4),slut=c(1,2,4,4,7),

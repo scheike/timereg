@@ -1,7 +1,7 @@
-##' Life-course plot for event life data  with recurrent events 
+##' Life-course plot for event life data with recurrent events 
 ##'
-##' @title Spaghetti plot
-##' @param formula Formula (Event(start,slut,status) ~ ) 
+##' @title Life-course plot
+##' @param formula Formula (Event(start,slut,status) ~ ...) 
 ##' @param data data.frame
 ##' @param id Id variable 
 ##' @param group group variable

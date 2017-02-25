@@ -1,9 +1,10 @@
-* Version 1.2.1 <2017-2-xx>
-  - dsample
-  - unit tests
+* Version 1.2.1 <2017-02-25 Sat>
+  - New vignettes
+  - Additional examples and unit tests
+  - lifecourse plot function: lifecourse
+  - block sampling function: dsample
 
 * Version 1.2 <2017-02-03 Fri>
-
   - Namespace cleaning (twostage)...
   - Dependency on R>=3.3 radix algorithm
   - Case-Control sampling for twostage model. 
@@ -34,7 +35,6 @@
     - dhead, dtail, 
     - dsummary, 
     - dprint, dlist, dlevels, dunique
-
 
 * Version 1.1.1 <2015-05-27 Wed>
   - Support for left-truncation 
@@ -125,14 +125,12 @@
   - code clean-up and minor bug-fixes
 
 * Version 0.1.1 <2012-05-06 Sun>
-
   - Random effects CIF models moved from MultiComp to mets
   - new data sets: np, multcif
   - Documentation via roxygen2
   - bug fixes
 
 * Version 0.1.0 <2012-04-25 Wed>
-
   - Initialization of the new package 'mets' with implementation of the
     Clayton-Oakes model with piecewise constant marginal hazards, and
     the bivariate probit random effects model (Liability model) for
