@@ -1,0 +1,20 @@
+#+LATEX_CLASS: tufte-handout
+#+LATEX_CLASS_OPTIONS: [a4paper]
+#+PROPERTY: header-args:R  :session *R* :cache no :width 550 :height 450
+#+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
+#+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
+#+PROPERTY: header-args:R+ :wrap example
+#+OPTIONS: timestamp:t title:t date:t author:t creator:nil toc:t 
+#+OPTIONS: h:4 num:t tags:nil d:t
+#+LATEX_HEADER: \setlength{\parindent}{0pt} % Kills annoying indents. 
+#+STARTUP: hideall 
+#+OPTIONS: toc:t h:4 num:nil 
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="orgmode5-ts.css">
+#+HTML_HEAD: <style type="text/css">
+#+HTML_HEAD:  a.logo span { background: none; }
+#+HTML_HEAD:  th,td,tr,table th,table th,table td {
+#+HTML_HEAD:      background: rgba(240,240,240,1);         
+#+HTML_HEAD:      border: none;
+#+HTML_HEAD:  }
+#+HTML_HEAD:   body { width: 800px; text-align:justify; text-justify:inter-word; }
+#+HTML_HEAD: </style>

@@ -1,0 +1,769 @@
+/* 
+   orgmode.css - CSS Stylesheet for http://www.biostat.ku.dk/~kkho
+   Copyright (C) 2014  Klaus K. Holst
+   Author: Klaus K. Holst <kkho@biostat.ku.dk>
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
+/* Solarized colors */
+$base03:    #002b36;
+$base02:    #073642;
+$base01:    #586e75;
+$base00:    #657b83;
+$base0:     #839496;
+$base1:     #93a1a1;
+$base2:     #eee8d5;
+$base3:     #fdf6e3;
+$yellow:    #b58900;
+$orange:    #cb4b16;
+$red:       #dc322f;
+$magenta:   #d33682;
+$violet:    #6c71c4;
+$blue:      #268bd2;
+$cyan:      #2aa198;
+$green:     #859900;
+@mixin rebase($rebase03,$rebase02,$rebase01,$rebase00,$rebase0,$rebase1,$rebase2,$rebase3)
+
+
+/*************************************************/
+/*                   Fonts                       */
+/*************************************************/
+
+/* @import href="http://fonts.googleapis.com/css?family=Tangerine"> */
+/* @import url(http://fonts.googleapis.com/css?family=Droid+Sans|Droid+Sans+Mono|Droid+Serif); */
+/* @font-face { */
+/*   font-family: 'Droid Sans'; */
+/*   font-style: normal; */
+/*   font-weight: 400; */
+/*   src: local('Droid Sans'), local('DroidSans'), url(http://themes.googleusercontent.com/static/fonts/droidsans/v4/s-BiyweUPV0v-yRb-cjciL3hpw3pgy2gAi-Ip7WPMi0.woff) format('woff'); */
+/* } */
+/* @font-face { */
+/*   font-family: 'Droid Sans Mono'; */
+/*   font-style: normal; */
+/*   font-weight: 400; */
+/*   src: local('Droid Sans Mono'), local('DroidSansMono'), url(http://themes.googleusercontent.com/static/fonts/droidsansmono/v5/ns-m2xQYezAtqh7ai59hJaH0X__W3S3MJL29bc5CWfs.woff) format('woff'); */
+/* } */
+@font-face {
+  font-family: 'Droid Serif';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Droid Serif'), local('DroidSerif'), url(droidserif.woff) format('woff') , url(http://themes.googleusercontent.com/static/fonts/droidserif/v4/0AKsP294HTD-nvJgucYTaLrIa-7acMAeDBVuclsi6Gc.woff) format('woff'); */
+}
+
+/*************************************************/
+/*                   General                     */
+/*************************************************/
+
+html {
+     /* font: 300 .9em/1.6em "Droid Serif", Cambria, Georgia, "DejaVu Serif", serif;  *\/ */
+    margin-top: 0.6em;
+    margin-left: 0.8em;
+    margin-right:0.8em;
+    background: rgba(230,230,230,1.0);
+}
+
+body {
+    text-align:justify;
+    text-justify:inter-word;
+    font-size: 12pt;
+    /* font-family: arial, helvetica, sans-serif; */
+    font-family: 'Droid Serif', serif; 
+    color: #000000;
+    margin-top: 0em;
+    margin-left: .5em;
+    margin-right: .5em;
+    margin-bottom: 0.6em;
+    background-color: #ffffff;
+    background-image: url(http://www.biostat.ku.dk/~kkho/styles/logo.png);
+    background-position: 5px 7px;
+    background-repeat: no-repeat;
+    border-top: 1px solid gray;
+    border-bottom: 1px solid gray;
+    border-right: 1px solid gray;
+    border-left: 1px solid gray;
+    padding-bottom: 0.5em;
+    min-width: 800px;
+}
+
+#box-link {
+
+    padding-left: 0em;
+    padding-right: 0em;
+    margin-left: -1.7em;
+    top:0.5em;
+    position: absolute;
+    width: 90px;
+    height: 110px;    
+    list-style: none;
+    border: 1px solid transparent;
+}	
+
+div {
+    margin-left: 1.0em;
+    margin-right: 1.0em;
+}
+
+dt {
+    margin-left: 1.0em;
+    margin-right: 1.0em;
+}
+
+p {
+    margin-left: 1.0em;
+    margin-right: 1.0em;
+}
+
+
+/* Two-columns in <div id="columns"> environment... */
+.columns
+{
+    -moz-column-count:2; /* Firefox */
+    -webkit-column-count:2; /* Safari and Chrome */
+    column-width:100px;
+    min-width:100px;
+    column-count:2;
+}
+.title  {
+    /* [-moz- | -webkit-]column-span: all; */
+}
+
+/*************************************************/
+/*                   Headers                     */
+/*************************************************/
+
+h1, h2, h3, h4, h5, h6
+{
+    margin-top: .25em;
+    margin-bottom: .2em;
+    color: black;
+    background: none;
+    /* font-variant: small-caps; text-transform: none; font-weight: 100; margin-bottom: 0; */
+    /* font: 300 .9em/1.6em "Droid Serif", Cambria, Georgia, "DejaVu Serif", serif; */
+    font-weight:bold;
+    text-shadow: 2px 2px 2px #aaa;
+}
+
+h2,h3,h4 {
+    background-image:url(http://www.biostat.ku.dk/~kkho/images/dline.png);
+    background-repeat: repeat-x;
+}
+
+h3,h4 {
+    /* text-shadow: 4px 4px 4px #aaa; */
+}
+
+h1
+{
+    /* font-family:sans-serif; */
+    color: black;
+    font-weight: normal;
+    letter-spacing: .02em;
+    line-height: 1.1em;
+    margin:0px;
+    font-size: 2em;
+    padding-top: 1em;
+    padding-bottom: 1.0em;
+}
+
+.title {
+    /* font-family:sans-serif; */
+    padding-left: 2.9em;
+    text-align:left;
+    font-weight:bold;
+}
+
+h2
+{
+    font-family:sans-serif;
+    color: #6E2432;
+    font-size: 1.4em;
+    margin-top:.8em;
+    margin-bottom:.5em;
+    height:40px;
+    padding-top: .3em;
+    padding-bottom: 0.2em;
+}
+
+
+h3
+{
+    color: rgba(149,54,34,1); /* #A34D32; */
+    font-size: 1.2em;
+    margin-top:1.5em;
+    margin-bottom:.5em;
+    height:40px;
+    padding-top: .4em;
+    padding-bottom: .1em;
+}
+
+h4 
+{ 
+    color: rgba(163,107,40,1); /* #A34D32; */ /* #CC6600; */
+    font-size: 1em; 
+    margin-top:1.5em;
+    margin-bottom:0em;
+    height:40px;
+    padding-top: .6em;
+    padding-bottom: 0em;
+}
+
+
+h5 
+{ 
+    color: #CC6600; /* #98855b; */
+    font-size: 1em; 
+}
+
+
+/*************************************************/
+/*               Table of Contents               */
+/*************************************************/
+/* Contents inspired by http://jashkenas.github.com/coffee-script */
+#table-of-contents {
+    z-index: 20; /* larger than navigation */
+    font-weight:bold;
+    font-size: 10pt;
+    position: fixed;
+    margin-right: 0em;
+    right: 0em;
+    top: 0em;
+    background: white;
+    box-shadow: 0 0 1em #777777;
+    -webkit-box-shadow: 0 0 1em #777777;
+    -moz-box-shadow: 0 0 1em #777777;
+    -webkit-border-bottom-left-radius: 5px;
+    -moz-border-radius-bottomleft: 5px;
+    text-align: right;
+    /* ensure doesn't flow off the screen when expanded */
+    max-height: 80%;
+}
+
+#table-of-contents h2 {
+    background-image: none;
+    filter: alpha(opacity=80);
+    opacity: 0.8;
+    color: rgba(20,50,134,1); /* #A34D32; */
+    font-size: 10pt;
+    max-width: 9em;
+    margin-top:.15em;
+    margin-bottom:.2em;
+    height:1.3em;
+    font-weight: normal;
+    font-weight:bold;
+    padding-left: 1.7em;
+    padding-right: 1.7em;
+    padding-top: 0.2em;
+    padding-bottom: 0.05em;
+}
+
+#table-of-contents #text-table-of-contents {
+    font-size: 10pt;
+    display: none;
+    text-align: left;
+}
+
+#table-of-contents:hover #text-table-of-contents {
+    overflow: auto;
+    display: block;
+    padding: 0.5em;
+    margin-top: -1em;
+}
+
+
+/*************************************************/
+/*                 Paragraphs                    */
+/*************************************************/
+
+.bigskip {
+    color: red;
+}
+
+/*************************************************/
+/*                   Tables                      */
+/*************************************************/
+
+table {
+    /* font-family: Monaco, Consolas, "Lucida Console", monospace; */
+    font-size: 90%;
+    margin: 1em 1em 1em 0;
+    background: #f9f9f9;
+    border: 1px #aaaaaa solid; 
+    border-collapse: collapse;
+    box-shadow: 5px 5px 5px #999999;
+    -webkit-box-shadow: 5px 5px 6px #999999;
+    -moz-box-shadow: 5px 5px 6px #999999;
+} 
+
+table th, table td
+{
+    border: 1px rgb(232,232,232) solid;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
+
+td,th {
+    padding-bottom: 0.2em;
+    padding-top: 0.2em;
+}
+
+table th
+{
+    background: #ccc; 
+    text-align: center;
+}
+
+table tr:nth-of-type(odd) {
+    background-color: #eee; /* #E6E6FA; */
+}
+/* table#plain tr:nth-of-type(even) { */
+/*     background-color: #ccc; /\* #E6E6FA; *\/ */
+/* } */
+/*table tr.stripe { background-color: #cfcfcf; } */
+
+table caption
+{
+    margin-left: inherit;
+    margin-right: inherit;
+}
+
+.plain,.plaincenter,.plainright {
+    font-size: 100%;
+    border-color: #fff;
+    color: black;
+    text-align: center;
+    padding: 0em;
+    background: #fff;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+}
+.plaincenter {
+    margin-left: auto; 
+    margin-right: auto;
+}
+.plainright {
+    margin-left: auto;
+}
+
+table#plain tr:nth-of-type(odd) {
+    background-color: white; /* #E6E6FA; */
+}
+
+.plain tr, .plain td, .plain th
+.plaincenter tr, .plaincenter td, .plaincenter th
+.plainright tr, .plainright td, .plainright th
+{
+    background: #fff;
+    border-color: #fff;
+    padding-bottom: 0em;
+    padding-top: 0em;
+}
+
+/*************************************************/
+/*             images & verbatim                 */
+/*************************************************/
+
+img, img.src {
+    font-family: Monaco, Consolas, "Lucida Console", monospace;
+    -webkit-box-shadow: 5px 5px 6px rgba(0,0,0,0.23);
+    -moz-box-shadow: 5px 5px 6px rgba(0,0,0,0.23);
+    box-shadow: 5px 5px 6px rgba(0,0,0,0.23);
+    border: 1pt solid #AEBDCC; /* #eee; */
+    padding: 0pt;
+    margin: 10pt;
+}
+
+/* Source blocks */
+pre {
+    font-family: Monaco, Consolas, "Lucida Console", monospace;
+    -webkit-box-shadow: 5px 5px 6px rgba(0,0,0,0.23);
+    -moz-box-shadow: 5px 5px 6px rgba(0,0,0,0.23);
+    box-shadow: 5px 5px 6px rgba(0,0,0,0.23);
+    border: 1pt solid #AEBDCC;
+    padding: 5pt;
+    font-size: 90%;
+    overflow: auto;
+}
+
+/* results */
+pre.example {
+    font-family: Monaco, Consolas, "Lucida Console", monospace;
+    -webkit-box-shadow: 5px 5px 6px rgba(0,0,0,0.23);
+    -moz-box-shadow: 5px 5px 6px rgba(0,0,0,0.23);
+    box-shadow: 5px 5px 6px rgba(0,0,0,0.23);
+    border: 1pt solid #AEBDCC;
+     background-color: #FFFFFF; /* #F3F5F7;*/
+    padding: 5pt;
+    font-size: 90%;
+    overflow: auto;
+    margin: 0em;
+    margin-left: 2.5em;
+    margin-right: 2.5em;
+    color: rgba(75,75,75,1);
+}
+
+pre.src {
+    box-shadow: 5px 5px 6px rgba(0,0,0,0.23);
+    border: 1pt solid #AEBDCC;
+    background-color: #ddd;
+    color: #000;
+    position: relative; 
+    overflow: visible;
+    padding-top: 0.5em;
+    padding: 0.5em;
+    overflow: auto;
+    margin: 1em;
+}
+
+pre.src:before {
+  display: none;
+  position: absolute;
+  background-color: white;
+  top: -10px;
+  right: 10px;
+  padding: 3px;
+  border: 1px solid black;
+}
+
+pre.src:hover:before { display: inline;} 
+pre.src-sh:before    { content: 'sh'; }
+pre.src-R:before     { content: 'R'; }
+
+
+a:hover > img {
+    /* border:5px solid; */
+}
+
+/* a.image-link img { */
+/*     border:1px solid #000; */
+/*     margin-right:20px; */
+/* } */
+
+p.image-link
+{
+    float:left;
+}
+
+
+/*************************************************/
+/*                  Specific org entries         */
+/*************************************************/
+
+.org-string {
+    color: #00008a;
+}
+.org-constant {
+    color: #E3319D;
+}
+.org-type {
+    color: #4AA02C;
+}
+.org-comment-delimiter {
+    color: #827839;
+}
+.org-comment {
+    color: #aaa;
+}
+.org-keyword {
+    color: #38ACEC;
+}
+.org-function-name {
+    color: #FBB117;
+}
+
+#postamble {
+    font-size: 60%;
+    margin-top: 5em;
+    padding: .1em;
+    border: 1px solid gray;
+    background-color: #eeeeee;
+}
+
+
+/*************************************************/
+/*               Navigation bar                  */
+/*************************************************/
+
+/* http://onwebdev.blogspot.com/2011/04/css-drop-down-menu-tutorial.html */
+#navigation {
+    z-index: 10; /* small than table of contents  */
+    float:left;
+    padding-left: 4.4em;
+    top:0.64em;
+    position: absolute;
+    margin: 0;
+    list-style: none;
+    min-width: 600px;    
+    /* font-weight: bold; */
+    color: #6E2432;
+}
+
+
+#navigation > li {
+    font-size: 65%;
+    line-height: 3.5;
+    font-weight:bold;
+    font-family: arial;
+    text-transform: uppercase;
+    text-shadow: 3px 3px 3px #aaa;
+    float: left;
+    height: 100%;
+    color: #6E2432;
+    margin-right: 0.5em;
+    height: 100%;
+    padding: 0 1.5em;
+}
+
+/* li:hover a { */
+/*     background: transparent; */
+/* } */
+
+li:focus a {
+    background: transparent;
+}
+
+#navigation > li > a {   
+    color: rgba(20,50,134,1); /* #A34D32; */
+}
+
+#navigation > li > a:hover { 
+    /* color: orange; */
+    /* text-decoration: underline; */
+}
+
+#navigation > li.sub {
+    position: relative; 
+}
+
+#navigation > li.sub li {
+ line-height: 1.5;
+}
+
+#navigation > li.sub ul {
+    margin: 0;
+    margin-top: 0.5em;
+    line-height: 1.1;
+    text-transform: none;
+    font-size: 140%;
+    padding: 0.5em 0 0.2em 0;
+    list-style: none;
+    border-bottom: 1px solid #ccc; 
+    border-top: 1px solid #ccc; 
+    border-right: 1px solid #ccc; 
+    border-left: 1px solid #ccc; 
+    box-shadow: 0 0 1em #777777;
+    -webkit-box-shadow: 0 0 1em #777777;
+    -moz-box-shadow: 0 0 1em #777777;
+    -webkit-border-bottom-left-radius: 5px;
+    -moz-border-radius-bottomleft: 5px;
+    background: #fff;
+    position: absolute;
+    /* display: none; */
+    /* -webkit-transition: opacity .35s linear; */
+    /*    -moz-transition: opacity .35s linear; */
+    /*     -ms-transition: opacity .35s linear; */
+    /*      -o-transition: opacity .35s linear; */
+    /*         transition: opacity .35s linear; */
+    /* -webkit-transition: opacity 0.5s ease-out; */
+    /* -moz-transition: opacity 0.5s ease-out; */
+    /* transition: opacity 0.5s ease-out width ; */
+    width: 25em;
+    height: 0;
+    opacity: 0; 
+    visibility:hidden;
+    /* top: -1000em;  */
+    overflow: visible;
+}
+
+#navigation > li.sub ul li {
+    width: 90%;
+    margin: 0 auto 0.3em auto; 
+}
+
+#navigation > li.sub ul li a {
+    font-size: 80%;
+    height: 100%;
+    display: block;
+    padding: 0.25em;
+    color: #6E2432;
+    color: rgba(20,50,90,1);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+#navigation > li.sub ul li a:hover {
+    background: rgba(240,240,245,1); /* #c60; */
+}
+
+#navigation > li.sub:hover ul {
+    /* -webkit-transition: all 0.5s ease-in; */
+    /*    -moz-transition: all 0.5s ease-in; */
+    /*     -ms-transition: all 0.5s ease-in; */
+    /*      -o-transition: all 0.5s ease-in; */
+    /*         transition: all 0.5s ease-in; */
+    -webkit-transition: top 0.5s ease-out;
+       -moz-transition: top 0.5s ease-out;
+        -ms-transition: top 0.5s ease-out;
+         -o-transition: top 0.5s ease-out;
+            transition: top 0.5s ease-out;
+    /* -webkit-transition: top 0.5s ease-out, opacity 0.2s linear; */
+    /*    -moz-transition: top 0.5s ease-out, opacity 0.2s linear; */
+    /*     -ms-transition: top 0.5s ease-out, opacity 0.2s linear; */
+    /*      -o-transition: top 0.5s ease-out, opacity 0.2s linear; */
+    /*         transition: top 0.5s ease-out, opacity 0.2s linear; */
+    height: auto;
+    top: 1.5em;
+    left: 0em;
+    visibility:visible;
+    opacity:1;
+}
+
+/*************************************************/
+/*                   Links                       */
+/*************************************************/
+
+
+a {
+    filter: alpha(opacity=80);
+    opacity: 0.8;
+   transition: opacity .35s ease-in-out;
+   -moz-transition: opacity .35s ease-in-out;
+   -webkit-transition: opacity .35s ease-in-out;
+
+}
+
+a,a.plain {
+    text-decoration: none;
+    border: none;
+    background: none;
+    color: rgba(20,50,134,1); /* #A34D32; */
+}
+
+a:hover,a.plain:hover {
+    /* text-decoration: underline; */
+    color: #6E2432;
+    /* filter: alpha(opacity=100); */
+    /* opacity: 1; */
+    /* zoom: 1; */
+    /* border: 1px solid black; */
+    /* opacity: .5; */
+}
+
+
+/* a.image-link img */
+/* { */
+/*     opacity: 1; */
+/*     transition: opacity .25s ease-in-out; */
+/*    -moz-transition: opacity .25s ease-in-out; */
+/*    -webkit-transition: opacity .25s ease-in-out; */
+/* } */
+
+/* a.image-link:hover  */
+/* { */
+/*     opacity: 0.4; */
+/* } */
+
+/* .fade:hover { */
+/*     opacity: 0.2; */
+/* } */
+
+/*************************************************/
+/*                 Hrz. rule                     */
+/*************************************************/
+
+hr 
+{
+    height: 1px;
+    color: #aaa;
+    background-color: #ddd;
+    margin: 1em 0 .2em 0;
+}
+
+
+
+/*************************************************/
+/*                   Fancy stuff                 */
+/*************************************************/
+
+div.shadow {
+	width: 300px;
+	margin: 20px;
+	border: 1px solid #ccc;
+	padding: 10px;
+	}
+
+div.shadow:hover {
+	-moz-box-shadow: 0 0 5px rgba(0,0,0,0.5);
+	-webkit-box-shadow: 0 0 5px rgba(0,0,0,0.5);
+	box-shadow: 0 0 5px rgba(0,0,0,0.5);
+	}
+
+.fade {
+    opacity: 1;
+    transition: opacity .25s ease-in-out;
+   -moz-transition: opacity .25s ease-in-out;
+   -webkit-transition: opacity .25s ease-in-out;
+}
+
+.fade:hover {
+    opacity: 0.5;
+}
+
+.reflectionstop {
+    border: none; /* #eee; */
+    -webkit-box-reflect: below -2px -webkit-gradient(linear, left top, left bottom, from(transparent), color-stop(80%, transparent), /* to(white));     */
+    to(rgba(255,255,255,0.4)));
+}
+
+
+/* Shiny logo */
+/* http://davidwalsh.name/sheen-effect */
+a.logo {
+    padding-left: 0em;
+    padding-right: 0em;
+    margin-left: 0em;
+    top:1em;
+    position: absolute;
+    width: 90px;
+    height: 110px;    
+    list-style: none;
+    border: 1px solid transparent;
+    /* display: block; */
+    /* background: url("sund.png") 0 0 no-repeat; */
+    /* height: 70px; */
+    /* width: 91px; */
+    /* overflow: hidden; */
+}
+
+a.logo span {
+	display: block;
+	background: url("shine.png") -60px -80px no-repeat;	
+	transition-property: all;
+	transition-duration: .8s;
+	border: 1px solid transparent; 
+	height: 90px;
+	width: 71px;
+}
+
+a.logo:hover span {
+	background-position: 90px 90px;
+}
+
+/* circular */
+a.logo span {
+/* border-radius: 50%; */
+}
+
+

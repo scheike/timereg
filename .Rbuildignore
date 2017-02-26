@@ -4,3 +4,4 @@
 \.gitignore$
 README.org
 ^examples$
+^org$
