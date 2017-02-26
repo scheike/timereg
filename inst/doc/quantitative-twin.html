@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-02-26 Sun 16:55 -->
+<!-- 2017-02-26 Sun 17:52 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Twin analysis</title>
@@ -282,22 +282,6 @@ for the JavaScript code in this tag.
 </div>
 <div id="content">
 <h1 class="title">Twin analysis</h1>
-<div id="table-of-contents">
-<h2>Table of Contents</h2>
-<div id="text-table-of-contents">
-<ul>
-<li><a href="#orgbc82716">Mets package</a></li>
-<li><a href="#org6911d0e">Twin analysis, continuous traits</a>
-<ul>
-<li><a href="#org06d6e52">Polygenic model</a></li>
-</ul>
-</li>
-<li><a href="#org6fea32a">Twin analysis, censored outcomes</a></li>
-<li><a href="#org6e72be4">Twin analysis,  binary traits</a></li>
-<li><a href="#org40d3456">Time to event</a></li>
-</ul>
-</div>
-</div>
 \(
 \newcommand{\cov}{\mathbb{C}\text{ov}}
 \newcommand{\cor}{\mathbb{C}\text{or}}
@@ -308,9 +292,9 @@ for the JavaScript code in this tag.
 \)
 <hr />
 
-<div id="outline-container-orgbc82716" class="outline-2">
-<h2 id="orgbc82716">Mets package</h2>
-<div class="outline-text-2" id="text-orgbc82716">
+<div id="outline-container-org48d0ca8" class="outline-2">
+<h2 id="org48d0ca8">Mets package</h2>
+<div class="outline-text-2" id="text-org48d0ca8">
 <p>
 This document provides a brief tutorial to analyzing twin data using
 the <b><code>mets</code></b> package:
@@ -333,9 +317,9 @@ devtools::install_github(<span style="color: #2aa198;">"kkholst/mets"</span>)
 </div>
 </div>
 
-<div id="outline-container-org6911d0e" class="outline-2">
-<h2 id="org6911d0e">Twin analysis, continuous traits</h2>
-<div class="outline-text-2" id="text-org6911d0e">
+<div id="outline-container-orgb8a503d" class="outline-2">
+<h2 id="orgb8a503d">Twin analysis, continuous traits</h2>
+<div class="outline-text-2" id="text-orgb8a503d">
 <p>
   In the following we examine the heritability of Body Mass Index\n{}<a class='org-ref-reference' href="#korkeila_bmi_1991">korkeila_bmi_1991</a> <a class='org-ref-reference' href="#hjelmborg_bmi_2008">hjelmborg_bmi_2008</a>, based on
 data on self-reported BMI-values from a random sample of 11,411 same-sex twins. First, we will load data
@@ -429,7 +413,7 @@ We here show the log-transformed data which is slightly more symmetric
 and more appropiate for the twin analysis (see Figure <a href="#fig:scatter1">fig:scatter1</a> and <a href="#fig:scatter2">fig:scatter2</a>)
 </p>
 <div class="org-src-container">
-<pre class="src src-R" id="org3b6bab6">mz <span style="color: #268bd2; font-weight: bold;">&lt;-</span> log(subset(twinwide, zyg==<span style="color: #2aa198;">"MZ"</span>)[,c(<span style="color: #2aa198;">"bmi1"</span>,<span style="color: #2aa198;">"bmi2"</span>)])
+<pre class="src src-R" id="org48e3ecc">mz <span style="color: #268bd2; font-weight: bold;">&lt;-</span> log(subset(twinwide, zyg==<span style="color: #2aa198;">"MZ"</span>)[,c(<span style="color: #2aa198;">"bmi1"</span>,<span style="color: #2aa198;">"bmi2"</span>)])
 scatterdens(mz)
 </pre>
 </div>
@@ -437,7 +421,7 @@ scatterdens(mz)
 <div class="marginfigure">
 
 <div class="figure">
-<p><img src="fig/scatter1.png" alt="scatter1.png" />
+<p><img src="scatter1.png" alt="scatter1.png" />
 </p>
 <p><span class="figure-number">Figure 1: </span>Scatter plot of logarithmic BMI measurements in MZ twins  <div id="fig:scatter1"></p>
 </div>
@@ -446,7 +430,7 @@ scatterdens(mz)
 
 
 <div class="org-src-container">
-<pre class="src src-R" id="org2e715da">dz <span style="color: #268bd2; font-weight: bold;">&lt;-</span> log(subset(twinwide, zyg==<span style="color: #2aa198;">"DZ"</span>)[,c(<span style="color: #2aa198;">"bmi1"</span>,<span style="color: #2aa198;">"bmi2"</span>)])
+<pre class="src src-R" id="org99a5e46">dz <span style="color: #268bd2; font-weight: bold;">&lt;-</span> log(subset(twinwide, zyg==<span style="color: #2aa198;">"DZ"</span>)[,c(<span style="color: #2aa198;">"bmi1"</span>,<span style="color: #2aa198;">"bmi2"</span>)])
 scatterdens(dz)
 </pre>
 </div>
@@ -454,7 +438,7 @@ scatterdens(dz)
 <div class="marginfigure">
 
 <div class="figure">
-<p><img src="fig/scatter2.png" alt="scatter2.png" />
+<p><img src="scatter2.png" alt="scatter2.png" />
 </p>
 <p><span class="figure-number">Figure 2: </span>Scatter plot of logarithmic BMI measurements in DZ twins. <div id="fig:scatter2"></p>
 </div>
@@ -524,7 +508,7 @@ marg1 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> estimate(l1,
 </div>
 
 <div class="org-src-container">
-<pre class="src src-R" id="org851e584">dm <span style="color: #268bd2; font-weight: bold;">&lt;-</span> Expand(twinbmi,
+<pre class="src src-R" id="orgfcd913e">dm <span style="color: #268bd2; font-weight: bold;">&lt;-</span> Expand(twinbmi,
             bmi=0,
             gender=c(<span style="color: #2aa198;">"male"</span>),
             age=seq(33,61,length.out=50))
@@ -547,7 +531,7 @@ legend(<span style="color: #2aa198;">"bottomright"</span>, c(<span style="color:
 <div class="marginfigure">
 
 <div class="figure">
-<p><img src="fig/marg1.png" alt="marg1.png" />
+<p><img src="marg1.png" alt="marg1.png" />
 </p>
 <p><span class="figure-number">Figure 3: </span>&#x2026; <div id="fig:marg1"></p>
 </div>
@@ -555,9 +539,9 @@ legend(<span style="color: #2aa198;">"bottomright"</span>, c(<span style="color:
 </div>
 </div>
 
-<div id="outline-container-org06d6e52" class="outline-3">
-<h3 id="org06d6e52">Polygenic model</h3>
-<div class="outline-text-3" id="text-org06d6e52">
+<div id="outline-container-orgc5e266d" class="outline-3">
+<h3 id="orgc5e266d">Polygenic model</h3>
+<div class="outline-text-3" id="text-orgc5e266d">
 <p>
 Decompose outcome into
 </p>
@@ -724,20 +708,18 @@ BIC: 58093.76
 </div>
 </div>
 
-
-<div id="outline-container-org6fea32a" class="outline-2">
-<h2 id="org6fea32a">Twin analysis, censored outcomes</h2>
+<div id="outline-container-orga4086f2" class="outline-2">
+<h2 id="orga4086f2">Twin analysis, censored outcomes</h2>
 </div>
 
-<div id="outline-container-org6e72be4" class="outline-2">
-<h2 id="org6e72be4">Twin analysis,  binary traits</h2>
+<div id="outline-container-org00800c2" class="outline-2">
+<h2 id="org00800c2">Twin analysis,  binary traits</h2>
 </div>
 
 
-<div id="outline-container-org40d3456" class="outline-2">
-<h2 id="org40d3456">Time to event</h2>
+<div id="outline-container-orgb890cb6" class="outline-2">
+<h2 id="orgb890cb6">Time to event</h2>
 </div>
-
 
 
 <p>
@@ -750,7 +732,7 @@ BIC: 58093.76
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Klaus Holst &amp; Thomas Scheike</p>
-<p class="date">Created: 2017-02-26 Sun 16:55</p>
+<p class="date">Created: 2017-02-26 Sun 17:52</p>
 <p class="validation"></p>
 </div>
 </body>
