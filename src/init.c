@@ -33,6 +33,8 @@ extern SEXP mets_ApplyBy2(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP mets_loglikMVN(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP mets_RcppExport_registerCCallable();
 extern SEXP pBhat(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP pmvn0(SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP Dpmvn(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP survivalloglikeRVpairs(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP twostageloglikebin(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP twostageloglikebinpairs(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
@@ -67,6 +69,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"mets_loglikMVN",                    (DL_FUNC) &mets_loglikMVN,                    14},
     {"mets_RcppExport_registerCCallable", (DL_FUNC) &mets_RcppExport_registerCCallable,  0},
     {"pBhat",                             (DL_FUNC) &pBhat,                              6},
+    {"pmvn0",                             (DL_FUNC) &pmvn0,                              5},
+    {"Dpmvn",                             (DL_FUNC) &Dpmvn,                              5},
     {"survivalloglikeRVpairs",            (DL_FUNC) &survivalloglikeRVpairs,            25},
     {"twostageloglikebin",                (DL_FUNC) &twostageloglikebin,                24},
     {"twostageloglikebinpairs",           (DL_FUNC) &twostageloglikebinpairs,           28},

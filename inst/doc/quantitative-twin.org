@@ -4,8 +4,9 @@
 #+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
 #+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
 #+INCLUDE: header.org
+#+OPTIONS: toc:nil
 ----- 
-#+LaTeX: \clearpage
+# +LaTeX: \clearpage
 
 * Mets package 
 
@@ -27,7 +28,7 @@ devtools::install_github("kkholst/mets")
 
 * Twin analysis, continuous traits
 
-In the following we examine the heritability of Body Mass Index\cite{korkeila_bmi_1991, hjelmborg_bmi_2008}, based on
+  In the following we examine the heritability of Body Mass Index\n{}cite:korkeila_bmi_1991 cite:hjelmborg_bmi_2008, based on
 data on self-reported BMI-values from a random sample of 11,411 same-sex twins. First, we will load data
   
 #+BEGIN_SRC R
@@ -71,7 +72,7 @@ head(twinwide)
 
 Next we plot the association within each zygosity group
 
-#+BEGIN_SRC R
+#+BEGIN_SRC R :exports code
   library("cowplot")
 
   scatterdens <- function(x) {    
@@ -100,42 +101,35 @@ Next we plot the association within each zygosity group
 #+END_SRC
 
 #+RESULTS:
-: Loading required package: ggplot2
-: 
-: Attaching package: ‘cowplot’
-: 
-: The following object is masked from ‘package:ggplot2’:
-: 
-:     ggsave
 
 We here show the log-transformed data which is slightly more symmetric
 and more appropiate for the twin analysis (see Figure ref:fig:scatter1 and ref:fig:scatter2)
 #+NAME: scatter1
-#+BEGIN_SRC R :exports both :results output graphics :file tmp/scatter1.pdf :width 7 :height 7
-mz <- log(subset(twinwide, zyg=="MZ")[,c("bmi1","bmi2")])
-scatterdens(mz)
+#+BEGIN_SRC R :exports both :results output graphics :file fig/scatter1.png 
+  mz <- log(subset(twinwide, zyg=="MZ")[,c("bmi1","bmi2")])
+  scatterdens(mz)
 #+END_SRC
 
 #+BEGIN_marginfigure
 #+CAPTION: Scatter plot of logarithmic BMI measurements in MZ twins  label:fig:scatter1
 #+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: scatter1
-[[file:tmp/scatter1.pdf]]
+[[file:fig/scatter1.png]]
 
 #+END_marginfigure
 
 
 #+NAME: scatter2
-#+BEGIN_SRC R :exports both :results output graphics :file tmp/scatter2.pdf :width 7 :height 7
-dz <- log(subset(twinwide, zyg=="DZ")[,c("bmi1","bmi2")])
-scatterdens(dz)
+#+BEGIN_SRC R :exports both :results output graphics :file fig/scatter2.png
+  dz <- log(subset(twinwide, zyg=="DZ")[,c("bmi1","bmi2")])
+  scatterdens(dz)
 #+END_SRC
 
 #+BEGIN_marginfigure
 #+CAPTION: Scatter plot of logarithmic BMI measurements in DZ twins. label:fig:scatter2
 #+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: scatter2
-[[file:tmp/scatter2.pdf]]
+[[file:fig/scatter2.png]]
 #+END_marginfigure
 
 The plots and raw association measures shows considerable stronger
@@ -195,7 +189,7 @@ independence)
 
 
 #+NAME: marg1
-#+BEGIN_SRC R :exports both :results output graphics :file tmp/marg1.pdf :width 7 :height 7
+#+BEGIN_SRC R :exports both :results output graphics :file fig/marg1.png
 	  dm <- Expand(twinbmi,
 		      bmi=0,
 		      gender=c("male"),
@@ -219,7 +213,7 @@ independence)
 #+CAPTION: ... label:fig:marg1
 #+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: marg1
-[[file:tmp/marg1.pdf]]
+[[file:fig/marg1.png]]
 #+END_marginfigure
 
 ** Polygenic model
@@ -345,19 +339,49 @@ estimate(l,contr(5:6,6))
     summary(l)
 #+END_SRC
 
+#+RESULTS:
+#+begin_example
+____________________________________________________
+Group 1
+                        Estimate Std. Error   Z value Pr(>|z|)
+Regressions:                                                  
+   bmi.1~ns(age, 1).1    4.08914    0.16354  25.00328   <1e-12
+   bmi.1~gendermale.1    1.41143    0.07285  19.37536   <1e-12
+Intercepts:                                                   
+   bmi.1                22.57414    0.07187 314.08431   <1e-12
+Additional Parameters:                                        
+   log(var)              2.44584    0.01425 171.68385   <1e-12
+   atanh(rhoMZ)          0.78216    0.02290  34.15832   <1e-12
+____________________________________________________
+Group 2
+                        Estimate Std. Error   Z value Pr(>|z|)
+Regressions:                                                  
+   bmi.1~ns(age, 1).1    4.08914    0.16354  25.00328   <1e-12
+   bmi.1~gendermale.1    1.41143    0.07285  19.37536   <1e-12
+Intercepts:                                                   
+   bmi.1                22.57414    0.07187 314.08431   <1e-12
+Additional Parameters:                                        
+   log(var)              2.44584    0.01425 171.68385   <1e-12
+   atanh(rhoDZ)          0.29927    0.01848  16.19766   <1e-12
+
+                       Estimate 2.5%    97.5%  
+Correlation within MZ: 0.65394  0.62750 0.67888
+Correlation within DZ: 0.29064  0.25715 0.32344
+
+'log Lik.' -29020.35 (df=6)
+AIC: 58052.71 
+BIC: 58093.76
+#+end_example
 
 * Twin analysis, censored outcomes
 
 * Twin analysis,  binary traits
 
 
-
 * Time to event
 
 
+* backmatter :ignore:
 
-
-
-\bibliography{huge}
-\bibliographystyle{plainnat}
-
+bibliography:huge.bib
+bibliographystyle:plain

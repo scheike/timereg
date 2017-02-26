@@ -7,6 +7,7 @@
 #+OPTIONS: timestamp:t title:t date:t author:t creator:nil toc:t 
 #+OPTIONS: h:4 num:t tags:nil d:t
 #+LATEX_HEADER: \setlength{\parindent}{0pt} % Kills annoying indents. 
+#+LATEX_HEADER: \newcommand{\n}{}
 #+STARTUP: hideall 
 #+OPTIONS: toc:t h:4 num:nil 
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="orgmode5-ts.css">
@@ -24,5 +25,7 @@
 \newcommand{\cor}{\mathbb{C}\text{or}}
 \newcommand{\var}{\mathbb{V}\text{ar}}
 \newcommand{\E}{\mathbb{E}}
+\newcommand{\unitfrac}[2]{#1/#2}
+\newcommand{\n}{}
 \)
 #+END_EXPORT

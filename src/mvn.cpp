@@ -604,8 +604,8 @@ void cov2cor0(const mat &x, rowvec &Cor, rowvec &sx, bool nrm=true) {
   }  
 }
 
-RcppExport SEXP pmvn(SEXP lower, SEXP upper, 
-		     SEXP mu, SEXP sigma, SEXP cor) { 
+RcppExport SEXP pmvn0(SEXP lower, SEXP upper, 
+		      SEXP mu, SEXP sigma, SEXP cor) { 
 BEGIN_RCPP  
   mat Sigma = Rcpp::as<mat>(sigma);
   bool asCor = Rcpp::as<bool>(cor); 
