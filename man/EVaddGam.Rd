@@ -60,10 +60,9 @@ thetades <- dout$theta.des[,,nrow(out)/2]
 x <- dout$random.design[,,nrow(out)/2]
 ##EVaddGam(rep(1,6),x[1,],x[4,],thetades,matrix(1,18,6))
 }
-\author{
-Thomas Scheike
-}
 \references{
 Eriksson and Scheike (2015), Additive Gamma frailty models for competing risks data, Biometrics (2015)
 }
-
+\author{
+Thomas Scheike
+}

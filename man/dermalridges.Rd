@@ -20,4 +20,3 @@ data(dermalridges)
 fast.reshape(dermalridges,id="family",varying=c("child.left","child.right","sex"))
 }
 \keyword{data}
-

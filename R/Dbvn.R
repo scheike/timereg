@@ -24,6 +24,6 @@ Dbvn <- function(p,design=function(p,...) {
   mS <- design(p)
   U0 <- with(mS,.Call("biprobit0",
                           mu,
-                          S,dS,Y,dmu,NULL,FALSE));
+                          S,dS,Y,dmu,NULL,FALSE,FALSE));
   return(c(U0,mS))
 }

@@ -327,9 +327,6 @@ summary(tscce)
 ### see also pairwise*.r demos under inst for frailty, competing risks and
 ### case control sampling 
 }
-\author{
-Thomas Scheike
-}
 \references{
 Estimating heritability for cause specific mortality based on twins studies
 Scheike, Holst, Hjelmborg (2014), LIDA  
@@ -343,5 +340,7 @@ Scheike and Holst, working paper
 Additive Gamma frailty models for competing risks data, Biometrics (2015)
 Eriksson and Scheike (2015),
 }
+\author{
+Thomas Scheike
+}
 \keyword{survival}
-

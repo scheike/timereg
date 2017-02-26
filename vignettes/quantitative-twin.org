@@ -1,8 +1,10 @@
 #+TITLE: Twin analysis
 #+AUTHOR: Klaus Holst & Thomas Scheike
+#+PROPERTY: header-args:R  :session *R* :cache no :width 550 :height 450
+#+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
+#+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
 #+INCLUDE: header.org
 ----- 
-
 #+LaTeX: \clearpage
 
 * Mets package 
@@ -326,9 +328,22 @@ BIC: 58093.76
 
 A formal test of genetic effects can be obtained by comparing the MZ and DZ correlation:
 #+BEGIN_SRC R
-estimate(l,contr(c(10,11),11))
+estimate(l,contr(5:6,6))
 #+END_SRC
 
+#+RESULTS:
+:                           Estimate Std.Err  2.5% 97.5% P-value
+: [1@atanh(rhoMZ)] - [4....    0.483  0.0418 0.401 0.565 6.4e-31
+: 
+:  Null Hypothesis: 
+:   [1@atanh(rhoMZ)] - [4@atanh(rhoDZ)] = 0
+
+
+#+BEGIN_SRC R
+    l <- twinlm(bmi ~ ns(age,1)+gender, data=twinbmi, 
+               DZ="DZ", zyg="zyg", id="tvparnr", type="cor", missing=TRUE)
+    summary(l)
+#+END_SRC
 
 
 * Twin analysis, censored outcomes

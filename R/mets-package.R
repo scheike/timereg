@@ -7,7 +7,7 @@
 ##' @name mets-package
 ##' @docType package
 ##' @author Klaus K. Holst and Thomas Scheike
-##' @useDynLib mets
+##' @useDynLib mets, .registration=TRUE
 ##' @import stats splines timereg Rcpp
 ##' @importFrom lava iid estimate bootstrap compare score information twostage %++% %ni% addvar<- blockdiag cancel Col
 ##'                  confband constrain<- constraints covariance covariance<- coxWeibull.lvm devcoords distribution<-

@@ -18,3 +18,11 @@
 #+HTML_HEAD:  }
 #+HTML_HEAD:   body { width: 800px; text-align:justify; text-justify:inter-word; }
 #+HTML_HEAD: </style>
+#+BEGIN_EXPORT html
+\(
+\newcommand{\cov}{\mathbb{C}\text{ov}}
+\newcommand{\cor}{\mathbb{C}\text{or}}
+\newcommand{\var}{\mathbb{V}\text{ar}}
+\newcommand{\E}{\mathbb{E}}
+\)
+#+END_EXPORT

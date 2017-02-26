@@ -34,4 +34,3 @@ dsort(hubble,~sigma-v)
 ## with direct asignment
 dsort(hubble) <- ~sigma-v
 }
-

@@ -2,9 +2,9 @@
 % Please edit documentation in R/dby.R
 \name{dby}
 \alias{dby}
+\alias{dby<-}
 \alias{dby2}
 \alias{dby2<-}
-\alias{dby<-}
 \alias{dbyr}
 \title{Calculate summary statistics grouped by}
 \usage{
@@ -110,4 +110,3 @@ dby(a,Species=="versicolor") <- list(y=2)
 \author{
 Klaus K. Holst and Thomas Scheike
 }
-

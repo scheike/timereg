@@ -31,4 +31,3 @@ distributed frailty and constant intensity.
 \author{
 Klaus K. Holst
 }
-

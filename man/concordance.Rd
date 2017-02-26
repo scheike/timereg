@@ -28,4 +28,3 @@ Concordance
 \author{
 Thomas Scheike
 }
-

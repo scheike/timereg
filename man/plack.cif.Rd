@@ -20,4 +20,3 @@ plack.cif(cif1, cif2, object)
 \author{
 Thomas Scheike
 }
-

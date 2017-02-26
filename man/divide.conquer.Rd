@@ -31,4 +31,3 @@ res <- divide.conquer(prop.odds,TRACE,
 \author{
 Thomas Scheike, Klaus K. Holst
 }
-

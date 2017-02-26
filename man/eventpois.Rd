@@ -36,4 +36,3 @@ Summary for survival analyses via the 'lifetable' function
 \author{
 Klaus K. Holst
 }
-
