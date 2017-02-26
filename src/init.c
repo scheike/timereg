@@ -23,8 +23,8 @@ extern SEXP cor(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP
 extern SEXP familypairindex(SEXP, SEXP, SEXP);
 extern SEXP FastApprox(SEXP, SEXP, SEXP, SEXP);
 extern SEXP FastCluster(SEXP);
-extern SEXP FastCoxPL(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP FastCoxPrep(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP FastCoxPL(SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP FastCoxPrep(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP FastLong2(SEXP, SEXP, SEXP, SEXP);
 extern SEXP FastPattern(SEXP, SEXP, SEXP);
 extern SEXP MatxCube(SEXP, SEXP, SEXP);
@@ -47,6 +47,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"BhatAddGamCC",                      (DL_FUNC) &BhatAddGamCC,                      17},
     {"biprobit0",                         (DL_FUNC) &biprobit0,                          8},
     {"biprobit2",                         (DL_FUNC) &biprobit2,                         10},
+    {"bvncdf",                            (DL_FUNC) &bvncdf,                             3},
     {"claytonoakes",                      (DL_FUNC) &claytonoakes,                       9},
     {"claytonoakesbinRV",                 (DL_FUNC) &claytonoakesbinRV,                 10},
     {"claytonoakesR",                     (DL_FUNC) &claytonoakesR,                      5},
@@ -54,8 +55,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"clusterindexM",                     (DL_FUNC) &clusterindexM,                      5},
     {"cor",                               (DL_FUNC) &cor,                               40},
     {"familypairindex",                   (DL_FUNC) &familypairindex,                    3},
-    {"FastCoxPL",                         (DL_FUNC) &FastCoxPL,                          6},
-    {"FastCoxPrep",                       (DL_FUNC) &FastCoxPrep,                        7},
+    {"FastApprox",                        (DL_FUNC) &FastApprox,                         4},
+    {"FastCluster",                       (DL_FUNC) &FastCluster,                        1},
+    {"FastCoxPL",                         (DL_FUNC) &FastCoxPL,                          5},
+    {"FastCoxPrep",                       (DL_FUNC) &FastCoxPrep,                        6},
     {"FastLong2",                         (DL_FUNC) &FastLong2,                          4},
     {"FastPattern",                       (DL_FUNC) &FastPattern,                        3},
     {"MatxCube",                          (DL_FUNC) &MatxCube,                           3},

@@ -18,14 +18,14 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
                        as.matrix(X)[ii,,drop=FALSE],
                        id[ii],
                        trunc,
-                       package="mets")
+                       PACKAGE="mets")
                  })
     if (!is.null(id))
       id <- unlist(lapply(dd,function(x) x$id[x$jumps+1]))
     obj <- function(pp,U=FALSE,all=FALSE) {
       val <- lapply(dd,function(d)
                     with(d,
-                         .Call("FastCoxPL",pp,X,XX,sign,jumps,package="mets")))
+                         .Call("FastCoxPL",pp,X,XX,sign,jumps,PACKAGE="mets")))
       ploglik <- Reduce("+",lapply(val,function(x) x$ploglik))
       gradient <- Reduce("+",lapply(val,function(x) x$gradient))
       hessian <- Reduce("+",lapply(val,function(x) x$hessian))
@@ -50,12 +50,12 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
                               entry,exit,status,X,
                               as.integer(seq_along(entry)),
                               !is.null(entry),
-                              package="mets"))
+                              PACKAGE="mets"))
       if (!is.null(id))
           id <- dd$id[dd$jumps+1]
       obj <- function(pp,U=FALSE,all=FALSE) {
           val <- with(dd,
-                      .Call("FastCoxPL",pp,X,XX,sign,jumps,package="mets"))
+                      .Call("FastCoxPL",pp,X,XX,sign,jumps,PACKAGE="mets"))
           if (all) {
               val$time <- dd$time[dd$ord+1]
               val$ord <- dd$ord+1

@@ -21,8 +21,8 @@
 ##' system.time(out<-aalen(update(f,Surv(time,status)~.),dd,n.sim=0,robust=0))
 ##' dix <- which(dd$status==1)
 ##' t1 <- system.time(bb <- .Call("Bhat",as.integer(dd$status),
-##'                               X,0.2,as.integer(dd$id),NULL,NULL,-1,
-##'                               package="mets"))
+##'                               X,0.2,as.integer(dd$id),NULL,NULL,
+##'                               PACKAGE="mets"))
 ##' spec <- 1
 ##' ##plot(out,spec=spec)
 ##' ## plot(dd$time[dix],bb$B2[,spec],col="red",type="s",
