@@ -1,5 +1,5 @@
 
-uniprobit <- function(mu,dmu,S,dS,y,w=NULL,indiv=FALSE,...) {
+marginalprobit <- function(mu,dmu,S,dS,y,w=NULL,indiv=FALSE,...) {
   sigma <- S^0.5
   alpha <- alpha0 <- pnorm(mu,sd=sigma)
   alpha[y==0] <- 1-alpha[y==0]
