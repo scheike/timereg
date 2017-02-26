@@ -1,5 +1,5 @@
 * Version 1.2.1 <2017-02-25 Sat>
-  - New vignettes
+  - New documentation/vignettes 
   - Additional examples and unit tests
   - lifecourse plot function: lifecourse
   - block sampling function: dsample
