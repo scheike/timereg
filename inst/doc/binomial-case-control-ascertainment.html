@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Analysis of multivariate binomial data: case control or ascertainment sampling</title>
-<!-- 2017-02-27 Mon 15:51 -->
+<!-- 2017-02-27 Mon 16:10 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Klaus Holst &amp; Thomas Scheike" />
@@ -230,6 +230,7 @@ for the JavaScript code in this tag.
 </ul>
 </li>
 <li><a href="#sec-4">Case Control Sampling</a></li>
+<li><a href="#sec-5">Combining Case Control and Ascertainment Sampling</a></li>
 </ul>
 </div>
 </div>
@@ -416,6 +417,7 @@ families.
 </div>
 </div>
 </div>
+
 
 
 <div id="outline-container-sec-2" class="outline-2">
@@ -929,6 +931,12 @@ Then we write up the random design vectors  and the parameter design for
 each pair using the kinship coefficient. 
 </p>
 
+<p>
+When specifying the pairs in the case-control setup the second column should
+be the probands. 
+</p>
+
+
 <div class="org-src-container">
 
 <pre class="src src-R">twinstut  <span style="font-weight: bold; text-decoration: underline;">&lt;-</span>   dby(twinstut,binstut~tvparnr,stuttot=sum,nn=seq_along,n=length)
@@ -964,12 +972,12 @@ out$theta.des[,,1]
 
 <pre class="example">
      [,1] [,2]
-[1,]   10    9
-[2,]   28   27
-[3,]   32   31
-[4,]   60   59
-[5,]   66   65
-[6,]   78   77
+[1,]    4    3
+[2,]   14   13
+[3,]   16   15
+[4,]   32   31
+[5,]   36   35
+[6,]   38   37
 [1] "random.design" "theta.des"     "ant.rvs"
      [,1] [,2] [,3]
 [1,]    1    1    0
@@ -1004,7 +1012,7 @@ Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
                 theta         se
-dependence1 0.8973263 0.09875075
+dependence1 0.8749978 0.09673605
 
 $type
 [1] "clayton.oakes"
@@ -1018,7 +1026,7 @@ NULL
 
 $vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.897  0.0988 0.704  1.09 1.02e-19
+p1    0.875  0.0967 0.685  1.06 1.49e-19
 
 attr(,"class")
 [1] "summary.mets.twostage"
@@ -1048,7 +1056,7 @@ Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
                 theta         se
-dependence1 0.8973263 0.09875075
+dependence1 0.8749978 0.09673605
 
 $type
 [1] "clayton.oakes"
@@ -1062,7 +1070,7 @@ NULL
 
 $vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.897  0.0988 0.704  1.09 1.02e-19
+p1    0.875  0.0967 0.685  1.06 1.49e-19
 
 attr(,"class")
 [1] "summary.mets.twostage"
@@ -1096,7 +1104,7 @@ Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
                 theta         se
-dependence1 0.9320269 0.09819766
+dependence1 0.9000777 0.09553707
 
 $type
 [1] "clayton.oakes"
@@ -1109,13 +1117,13 @@ $vare
 NULL
 
 $vartot
-   Estimate Std.Err 2.5% 97.5%  P-value
-p1    0.932  0.0982 0.74  1.12 2.28e-21
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1      0.9  0.0955 0.713  1.09 4.46e-21
 
 $marginal
-             Coef.      SE Robust SE       z P-val lower2.5% upper97.5%
-dependence2 -3.590 0.00252   0.00252 -1420.0     0    -3.590     -3.590
-dependence3  0.695 0.01340   0.01340    51.9     0     0.669      0.721
+            Coef.       SE Robust SE     z P-val lower2.5% upper97.5%
+dependence2 -3.81 0.000625  0.000625 -6100     0     -3.81      -3.81
+dependence3  1.11 0.007900  0.007900   141     0      1.09       1.13
 
 attr(,"class")
 [1] "summary.mets.twostage"
@@ -1132,10 +1140,20 @@ clusters since these also are identical across pairs.
 </p>
 </div>
 </div>
+
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5">Combining Case Control and Ascertainment Sampling</h2>
+<div class="outline-text-2" id="text-5">
+When specifying such models based on the pairs, it is in fact possible to
+combine ascertained pairs with case-control sampling by specifing vectors
+as the case.control=c(1,0,1,0) and pair.ascertained=c(0,1,0,1) arguments.  
+Here with two case-control pairs, and two ascertained pairs. 
+</div>
+</div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Klaus Holst &amp; Thomas Scheike</p>
-<p class="date">Created: 2017-02-27 Mon 15:51</p>
+<p class="date">Created: 2017-02-27 Mon 16:10</p>
 <p class="validation"></p>
 </div>
 </body>
