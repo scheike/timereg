@@ -1239,7 +1239,6 @@ summary.mets.twostage <- function(object,digits = 3,silent=0,...)
 	 marginal <- coefBase(obj.marginal)
       }
 
-
       if (var.par==0) 
       if (var.link==1) { ## {{{ 
 	     fp <- function(p,d,t){  res <- exp(p*t)/(sum(rv1* c(theta.des %*% matrix(exp(p),col=1))))^d; 
@@ -1298,7 +1297,7 @@ summary.mets.twostage <- function(object,digits = 3,silent=0,...)
       } ## }}} 
   }
 
-  if (attr(object,"twostage")==0)  res <- list(res,marginal=marginal)
+  if (attr(object,"twostage")==0)  res <- c(res,list(marginal=marginal))
   class(res) <- "summary.mets.twostage"
   res
 } ## }}}
@@ -1347,7 +1346,7 @@ coef.mets.twostage <- function(object,var.link=NULL,response="survival",...)
 ##' @export
 print.mets.twostage<-function(x,digits=3,...)
 { ## {{{
-  print(x$call); 
+###  print(x$call); 
   cat("\n")
   print(summary(x,silent=0)); 
 } ## }}} 

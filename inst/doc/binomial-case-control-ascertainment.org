@@ -29,7 +29,6 @@ on specifying which pairs one wants to use for the composite score.
 
 The models are described in futher details in the binomial-twin vignette. 
 
-
 ** Case-Control Sampling 
 
 Sometimes, pairs are recruited after a case-proband is selected. This 
@@ -181,55 +180,46 @@ twina     <-   subset(twinstut,n==2 & stuttot>=1)
 
 #+RESULTS:
 
+
+Selecting on the pairs where there is stuttering at taking a look at the 
+tables of discordance and concordance for the twins. 
+
+
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 twinda <- fast.reshape(twina,id="tvparnr")
 twind <- fast.reshape(twinstut,id="tvparnr")
-dtable(twind,"binst*"~I(stuttot>=1))
+dtable(twind,"binst*"~I(stuttot1>=1))
 dtable(twinda,~"binst*")
 #+END_SRC  
 
 #+RESULTS:
-: Error in unique(c("AsIs", oldClass(x))) : object 'stuttot' not found
-: 
-:          binstut2   0   1
-: binstut1                 
-: 0                   0 289
-: 1                 281 111
+#+begin_example
+I(stuttot1 >= 1): FALSE
+
+         binstut2    0
+binstut1              
+0                 6632
+------------------------------------------------------------ 
+I(stuttot1 >= 1): TRUE
+
+         binstut2   0   1
+binstut1                 
+0                   0 289
+1                 281 111
+
+         binstut2   0   1
+binstut1                 
+0                   0 289
+1                 281 111
+#+end_example
 
 
 Now doing the analyses 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
-ba1 <- biprobit(binstut~sex,~-1+binzyg,data=twina,id="tvparnr",pair.ascertained=TRUE)
-summary(ba1)
-#+END_SRC  
+** Biprobit model 
 
-#+RESULTS:
-#+begin_example
-
-              Estimate    Std.Err          Z p-value
-(Intercept)   0.101193   0.031912   3.170993  0.0015
-sexmale       0.049255   0.042886   1.148495  0.2508
-r:binzygDZ   -3.952376   0.282620 -13.984759  0.0000
-r:binzygMZ   -0.840831   0.169676  -4.955514  0.0000
-
-logLik: -690.9136  mean(score^2): 5.008e-11 
-    n pairs 
- 1362   681 
-
-Contrast:
-	Dependence    [binzygDZ] 
-	Mean          [(Intercept)] 
-
-                        Estimate 2.5%     97.5%   
-Rel.Recur.Risk           0.27611  0.13140  0.42081
-OR                       0.00000      NaN      NaN
-Tetrachoric correlation -0.99926 -0.99976 -0.99777
-                                                  
-Concordance              0.08060  0.04294  0.14627
-Casewise Concordance     0.14918  0.08234  0.25520
-Marginal                 0.54030  0.51540  0.56501
-#+end_example
+Looking at the full data for comparison. We estimate an unstructured
+probit model with different correlations for MZ and DZ twins. 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 b1 <- biprobit(binstut~sex,~-1+binzyg,data=twinstut,id="tvparnr")
@@ -264,91 +254,51 @@ Marginal                0.03634  0.03287 0.04016
 #+end_example
 
 
+
+
+A similar analysis of the ascertained data reveals (some problems) ...
+
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
-b1 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="un")
-summary(b1)
+ba1 <- biprobit(binstut~sex,~-1+binzyg,data=twina,id="tvparnr",pair.ascertained=TRUE)
+summary(ba1)
 #+END_SRC  
 
 #+RESULTS:
 #+begin_example
 
-                Estimate    Std.Err          Z p-value
-(Intercept)    -1.794823   0.023289 -77.066728  0.0000
-sexmale         0.401432   0.030179  13.301813  0.0000
-atanh(rho) MZ   1.096916   0.073574  14.909087  0.0000
-atanh(rho) DZ   0.132458   0.062516   2.118800  0.0341
+              Estimate    Std.Err          Z p-value
+(Intercept)   0.101193   0.031912   3.170993  0.0015
+sexmale       0.049255   0.042886   1.148495  0.2508
+r:binzygDZ   -3.952376   0.282620 -13.984759  0.0000
+r:binzygMZ   -0.840831   0.169676  -4.955514  0.0000
 
- Total MZ/DZ Complete pairs MZ/DZ
- 8777/12511  3255/4058           
+logLik: -690.9136  mean(score^2): 5.008e-11 
+    n pairs 
+ 1362   681 
 
-                           Estimate 2.5%    97.5%  
-Tetrachoric correlation MZ 0.79939  0.74101 0.84577
-Tetrachoric correlation DZ 0.13169  0.00993 0.24960
+Contrast:
+	Dependence    [binzygDZ] 
+	Mean          [(Intercept)] 
 
-MZ:
-                     Estimate 2.5%     97.5%   
-Concordance           0.01698  0.01411  0.02042
-Casewise Concordance  0.46730  0.40383  0.53185
-Marginal              0.03634  0.03287  0.04016
-Rel.Recur.Risk       12.85882 10.87510 14.84253
-log(OR)               3.75632  3.37975  4.13289
-DZ:
-                     Estimate 2.5%    97.5%  
-Concordance          0.00235  0.00140 0.00393
-Casewise Concordance 0.06456  0.03937 0.10413
-Marginal             0.03634  0.03287 0.04016
-Rel.Recur.Risk       1.77662  0.92746 2.62577
-log(OR)              0.63527  0.09013 1.18040
-
-                         Estimate 2.5% 97.5%
-Broad-sense heritability   1      NaN  NaN
-#+end_example
-
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
-b1 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="ae")
-summary(b1)
-#+END_SRC  
-
-#+RESULTS:
-#+begin_example
-
-             Estimate   Std.Err         Z p-value
-(Intercept)  -3.70371   0.24449 -15.14855       0
-sexmale       0.83310   0.08255  10.09201       0
-log(var(A))   1.18278   0.17179   6.88512       0
-
- Total MZ/DZ Complete pairs MZ/DZ
- 8777/12511  3255/4058           
-
-                   Estimate 2.5%    97.5%  
-A                  0.76545  0.70500 0.82590
-E                  0.23455  0.17410 0.29500
-MZ Tetrachoric Cor 0.76545  0.69793 0.81948
-DZ Tetrachoric Cor 0.38272  0.35210 0.41253
-
-MZ:
-                     Estimate 2.5%     97.5%   
-Concordance           0.01560  0.01273  0.01912
-Casewise Concordance  0.42830  0.36248  0.49677
-Marginal              0.03643  0.03294  0.04027
-Rel.Recur.Risk       11.75741  9.77237 13.74246
-log(OR)               3.52382  3.13466  3.91298
-DZ:
-                     Estimate 2.5%    97.5%  
-Concordance          0.00558  0.00465 0.00670
-Casewise Concordance 0.15327  0.13749 0.17050
-Marginal             0.03643  0.03294 0.04027
-Rel.Recur.Risk       4.20744  3.78588 4.62900
-log(OR)              1.69996  1.57262 1.82730
-
-                         Estimate 2.5%    97.5%  
-Broad-sense heritability 0.76545  0.70500 0.82590
+                        Estimate 2.5%     97.5%   
+Rel.Recur.Risk           0.27611  0.13140  0.42081
+OR                       0.00000      NaN      NaN
+Tetrachoric correlation -0.99926 -0.99976 -0.99777
+                                                  
+Concordance              0.08060  0.04294  0.14627
+Casewise Concordance     0.14918  0.08234  0.25520
+Marginal                 0.54030  0.51540  0.56501
 #+end_example
 
 
+** Odd-Ratio modelling 
+
+   First looking at the marginal model based on the full data we find the 
+   overall level of stuttering and also that males have a much higher 
+   stuttering risk.
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
-margbin <- glm(binstut~factor(sex)+age,data=twinstut,family=binomial())
+margbin <- glm(binstut~factor(sex),data=twinstut,family=binomial())
 summary(margbin)
 #+END_SRC  
 
@@ -356,29 +306,31 @@ summary(margbin)
 #+begin_example
 
 Call:
-glm(formula = binstut ~ factor(sex) + age, family = binomial(), 
-    data = twinstut)
+glm(formula = binstut ~ factor(sex), family = binomial(), data = twinstut)
 
 Deviance Residuals: 
     Min       1Q   Median       3Q      Max  
--0.4419  -0.4078  -0.2842  -0.2672   2.6395  
+-0.4127  -0.4127  -0.2716  -0.2716   2.5763  
 
 Coefficients:
-                 Estimate Std. Error z value Pr(>|z|)    
-(Intercept)     -3.027625   0.104012 -29.108  < 2e-16 ***
-factor(sex)male  0.869826   0.062197  13.985  < 2e-16 ***
-age             -0.005983   0.002172  -2.754  0.00588 ** 
+                Estimate Std. Error z value Pr(>|z|)    
+(Intercept)     -3.28191    0.05000  -65.64   <2e-16 ***
+factor(sex)male  0.86171    0.06211   13.87   <2e-16 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 (Dispersion parameter for binomial family taken to be 1)
 
     Null deviance: 9328.6  on 21287  degrees of freedom
-Residual deviance: 9117.0  on 21285  degrees of freedom
-AIC: 9123
+Residual deviance: 9124.7  on 21286  degrees of freedom
+AIC: 9128.7
 
 Number of Fisher Scoring iterations: 6
 #+end_example
+
+
+First, fitting the OR model for MZ and DZ for the full data, we find 
+that MZ have a much higher dependence than DZ twins. 
 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
@@ -394,13 +346,13 @@ Dependence parameter for Odds-Ratio (Plackett) model
 With log-link 
 $estimates
                   theta        se
-factor(zyg)dz 0.5221651 0.2401355
-factor(zyg)mz 3.4853933 0.1866076
+factor(zyg)dz 0.5238541 0.2400861
+factor(zyg)mz 3.4930902 0.1865567
 
 $or
               Estimate Std.Err   2.5% 97.5%  P-value
-factor(zyg)dz     1.69   0.405  0.892  2.48 3.12e-05
-factor(zyg)mz    32.64   6.090 20.699 44.57 8.38e-08
+factor(zyg)dz     1.69   0.405  0.894  2.48 3.11e-05
+factor(zyg)mz    32.89   6.135 20.862 44.91 8.31e-08
 
 $type
 [1] "plackett"
@@ -409,13 +361,16 @@ attr(,"class")
 [1] "summary.mets.twostage"
 #+end_example
 
+Now, using the overall marginal we look at the adjusted likelihood and
+find very similar results on the ascertained sample. Note, that the marginals 
+are crucial for this analysis to give  useful results.
 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 theta.des <- model.matrix( ~-1+factor(zyg),data=twina)
 bina <- binomial.twostage(margbin,data=twina,var.link=1,
-                          clusters=twina$tvparnr,theta.des=theta.des,
-			  pair.ascertained=1)
+             clusters=twina$tvparnr,theta.des=theta.des,
+			 pair.ascertained=1)
 summary(bina)
 #+END_SRC  
 
@@ -425,42 +380,13 @@ Dependence parameter for Odds-Ratio (Plackett) model
 With log-link 
 $estimates
                   theta        se
-factor(zyg)dz 0.4886837 0.2473226
-factor(zyg)mz 3.4518876 0.1986753
+factor(zyg)dz 0.4874213 0.2472523
+factor(zyg)mz 3.4753766 0.1985974
 
 $or
-              Estimate Std.Err  2.5% 97.5%  P-value
-factor(zyg)dz     1.63   0.403  0.84  2.42 5.27e-05
-factor(zyg)mz    31.56   6.270 19.27 43.85 4.82e-07
-
-$type
-[1] "plackett"
-
-attr(,"class")
-[1] "summary.mets.twostage"
-#+end_example
-
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
-theta.des <- model.matrix( ~-1+factor(zyg),data=twina)
-bina <- binomial.twostage(margbin,data=twina,var.link=1,
-                          clusters=twina$tvparnr,theta.des=theta.des,
-			  pair.ascertained=1)
-summary(bina)
-#+END_SRC  
-
-#+RESULTS:
-#+begin_example
-Dependence parameter for Odds-Ratio (Plackett) model 
-With log-link 
-$estimates
-                  theta        se
-factor(zyg)dz 0.4886837 0.2473226
-factor(zyg)mz 3.4518876 0.1986753
-
-$or
-              Estimate Std.Err  2.5% 97.5%  P-value
-factor(zyg)dz     1.63   0.403  0.84  2.42 5.27e-05
-factor(zyg)mz    31.56   6.270 19.27 43.85 4.82e-07
+              Estimate Std.Err   2.5% 97.5%  P-value
+factor(zyg)dz     1.63   0.403  0.839  2.42 5.24e-05
+factor(zyg)mz    32.31   6.417 19.734 44.89 4.77e-07
 
 $type
 [1] "plackett"
@@ -470,43 +396,10 @@ attr(,"class")
 #+end_example
 
 
+** Additive gamma modelling 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
-out <- twin.polygen.design(twinstut,id="tvparnr",zygname="zyg",zyg="dz",type="ace")
-margbin <- glm(binstut~sex,data=twinstut,family=binomial())
-bintwin1 <- binomial.twostage(margbin,data=twinstut,
-     clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
-     random.design=out$des.rv,theta.des=out$pardes)
-summary(bintwin1)
-#+END_SRC  
-
-#+RESULTS:
-#+begin_example
-Dependence parameter for Clayton-Oakes model
-Variance of Gamma distributed random effects 
-$estimates
-                 theta        se
-dependence1  1.5261839 0.2475041
-dependence2 -0.5447955 0.1942159
-
-$type
-[1] "clayton.oakes"
-
-$h
-            Estimate Std.Err   2.5%  97.5%  P-value
-dependence1    1.555   0.187  1.189  1.922 9.11e-17
-dependence2   -0.555   0.187 -0.922 -0.189 2.99e-03
-
-$vare
-NULL
-
-$vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.981   0.102 0.781  1.18 8.29e-22
-
-attr(,"class")
-[1] "summary.mets.twostage"
-#+end_example
+   First, again for comparision fitting the full data for the AE model. We get 
+   the size of the genetic variance in this model. 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 out <- twin.polygen.design(twinstut,id="tvparnr",zygname="zyg",zyg="dz",type="ae")
@@ -543,49 +436,54 @@ attr(,"class")
 #+end_example
 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
-outa <- twin.polygen.design(twina,id="tvparnr",zygname="zyg",zyg="dz",type="ace")
-marga <- glm(binstut~sex,data=twina,family=binomial())
-abintwin1 <- binomial.twostage(margbin,data=twina,
-     clusters=twina$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
-     random.design=outa$des.rv,theta.des=outa$pardes,pair.ascertained=1)
-summary(abintwin1)
-#+END_SRC  
+We first here take at the look at the marginal model for the ascertained 
+sample, and note as expected that this sample give highly biased estimated for 
+the
+ marginal model. 
 
-#+RESULTS:
-#+begin_example
-Dependence parameter for Clayton-Oakes model
-Variance of Gamma distributed random effects 
-$estimates
-                 theta        se
-dependence1  1.5325708 0.2588839
-dependence2 -0.5618869 0.1990532
 
-$type
-[1] "clayton.oakes"
-
-$h
-            Estimate Std.Err   2.5%  97.5%  P-value
-dependence1    1.579   0.191  1.205  1.953 1.23e-16
-dependence2   -0.579   0.191 -0.953 -0.205 2.40e-03
-
-$vare
-NULL
-
-$vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.971   0.107 0.761  1.18 1.34e-19
-
-attr(,"class")
-[1] "summary.mets.twostage"
-#+end_example
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 outa <- twin.polygen.design(twina,id="tvparnr",zygname="zyg",zyg="dz",type="ae")
 marga <- glm(binstut~sex,data=twina,family=binomial())
+summary(marga)
+#+END_SRC  
+
+#+RESULTS:
+#+begin_example
+
+Call:
+glm(formula = binstut ~ sex, family = binomial(), data = twina)
+
+Deviance Residuals: 
+   Min      1Q  Median      3Q     Max  
+-1.334  -1.298   1.028   1.028   1.061  
+
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)   
+(Intercept)  0.27895    0.08739   3.192  0.00141 **
+sexmale      0.08242    0.11237   0.733  0.46328   
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 1851.8  on 1361  degrees of freedom
+Residual deviance: 1851.2  on 1360  degrees of freedom
+AIC: 1855.2
+
+Number of Fisher Scoring iterations: 4
+#+end_example
+
+
+Now, using the overall marginal model we look at the adjusted likelihood and
+find very similar results on the ascertained sample. Note, that the marginals 
+are crucial for this analysis to give  useful results.
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 abintwin1 <- binomial.twostage(margbin,data=twina,
-     clusters=twina$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
-     random.design=outa$des.rv,theta.des=outa$pardes,pair.ascertained=1)
+               clusters=twina$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
+               random.design=outa$des.rv,theta.des=outa$pardes,pair.ascertained=1)
 summary(abintwin1)
 #+END_SRC  
 
@@ -616,11 +514,17 @@ attr(,"class")
 #+end_example
 
 
+In fact for this model we can also do a full-MLE fitting jointly the 
+dependence paramters and the marginal model. This is based on the
+twostage option (twostage=0 is MLE). Here the starting value is given at
+the marginal model for the ascertained model. This gives quite similar
+results to the previous analyses with a genetic variance around 1. 
+
+
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
-marga <- glm(binstut~sex,data=twina,family=binomial())
 aabintwin1 <- binomial.twostage(marga,data=twina,
-     clusters=twina$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
-     random.design=outa$des.rv,theta.des=outa$pardes,pair.ascertained=1,twostage=0)
+                clusters=twina$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
+                random.design=outa$des.rv,theta.des=outa$pardes,pair.ascertained=1,twostage=0)
 summary(aabintwin1)
 coef(marga)
 coef(margbin)
@@ -630,25 +534,23 @@ coef(margbin)
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
-[[1]]
-[[1]]$estimates
+$estimates
                theta        se
 dependence1 1.014398 0.1045593
 
-[[1]]$type
+$type
 [1] "clayton.oakes"
 
-[[1]]$h
+$h
             Estimate Std.Err 2.5% 97.5% P-value
 dependence1        1       0    1     1       0
 
-[[1]]$vare
+$vare
 NULL
 
-[[1]]$vartot
+$vartot
    Estimate Std.Err  2.5% 97.5%  P-value
 p1     1.01   0.105 0.809  1.22 2.97e-22
-
 
 $marginal
              Coef.      SE Robust SE     z P-val lower2.5% upper97.5%
@@ -659,12 +561,19 @@ attr(,"class")
 [1] "summary.mets.twostage"
 (Intercept)     sexmale 
   0.2789484   0.0824214
-(Intercept)     sexmale 
- -3.2819072   0.8617053
+    (Intercept) factor(sex)male 
+     -3.2819072       0.8617053
 #+end_example
 
 
 * Case Control Sampling 
+
+  First, taking out all cases and one control for each case, we establish the
+  pairs of these probands. This is based on keeping track of the twin related 
+  to the proband. Here using some utility functions in the mets packages. 
+
+  Then we write up the random design vectors  and the parameter design for 
+  each pair using the kinship coefficient. 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 
@@ -701,12 +610,12 @@ out$theta.des[,,1]
 #+RESULTS:
 #+begin_example
      [,1] [,2]
-[1,]   10    9
-[2,]   28   27
-[3,]   32   31
-[4,]   54   53
-[5,]   58   57
-[6,]   64   63
+[1,]   18   17
+[2,]   32   31
+[3,]   34   33
+[4,]   60   59
+[5,]   62   61
+[6,]   72   71
 [1] "random.design" "theta.des"     "ant.rvs"
      [,1] [,2] [,3]
 [1,]    1    1    0
@@ -714,32 +623,22 @@ out$theta.des[,,1]
 [1] 0.5 0.5 0.5
 #+end_example
 
-Now doing the analyses 
+
+Now doing the analyses, first with know marginals, that is marginals from the 
+full data. For this analysis, since marginals do not contain dependence 
+parameters we do not need to specify that this is case-control sampling. 
+Having a correct is crucial for this to work, but this is certainly often 
+possible in register based studies where a full cohort is also available. 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 cc  <- binomial.twostage(margbin,data=dataid,
 			    clusters=dataid$tvparnr,
-	     pairs=pair.new,
-	     random.design=out$random.design,
+	         pairs=pair.new,
+	         random.design=out$random.design,
              theta.des=out$theta.des,
-	     pairs.rvs=out$ant.rvs,
+	         pairs.rvs=out$ant.rvs,
              case.control=0,twostage=1)
-summary(tsdid3)
-#+END_SRC  
-
-#+RESULTS:
-: Error in summary(tsdid3) : object 'tsdid3' not found
-
-
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
-cc3 <- binomial.twostage(margbin,data=dataid,
-			    clusters=dataid$tvparnr,
-	     pairs=pair.new,
-	     random.design=out$random.design,
-             theta.des=out$theta.des,
-	     pairs.rvs=out$ant.rvs,
-             case.control=1,twostage=1)
-summary(cc3)
+summary(cc)
 #+END_SRC  
 
 #+RESULTS:
@@ -748,7 +647,7 @@ Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
                 theta         se
-dependence1 0.8845341 0.09758998
+dependence1 0.8700651 0.09627946
 
 $type
 [1] "clayton.oakes"
@@ -762,21 +661,68 @@ NULL
 
 $vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.885  0.0976 0.693  1.08 1.26e-19
+p1     0.87  0.0963 0.681  1.06 1.61e-19
 
 attr(,"class")
 [1] "summary.mets.twostage"
 #+end_example
 
 
+We now do the same analysis specifying the case-control sampling. This 
+should result in the same dependence parameters as is also the case.
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+cc3 <- binomial.twostage(margbin,data=dataid,
+			    clusters=dataid$tvparnr,
+                 pairs=pair.new,
+                 random.design=out$random.design,
+                 theta.des=out$theta.des,
+                 pairs.rvs=out$ant.rvs,
+                 case.control=1,twostage=1)
+summary(cc3)
+#+END_SRC  
+
+#+RESULTS:
+#+begin_example
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                theta         se
+dependence1 0.8700651 0.09627946
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err 2.5% 97.5% P-value
+dependence1        1       0    1     1       0
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1     0.87  0.0963 0.681  1.06 1.61e-19
+
+attr(,"class")
+[1] "summary.mets.twostage"
+#+end_example
+
+This model can  also be fitted using a full likelhood of both dependence 
+parameters and marginal parameters. Here there is no need to have a 
+correctly specified marginal. We here use the marginal fitting from the
+case-control data as as starting values.  Again we find a genetic variance 
+around 1. The marginal parameters are also consistent with the results from 
+the full analyses for the marginal parameters. 
+
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 marga <- glm(binstut~sex,data=dataid,family=binomial())
 cc3 <- binomial.twostage(marga,data=dataid,
              clusters=dataid$tvparnr,
-	     pairs=pair.new,
-	     random.design=out$random.design,
+             pairs=pair.new,
+             random.design=out$random.design,
              theta.des=out$theta.des,
-	     pairs.rvs=out$ant.rvs,
+             pairs.rvs=out$ant.rvs,
              case.control=1,twostage=0)
 summary(cc3)
 #+END_SRC  
@@ -785,35 +731,40 @@ summary(cc3)
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
-[[1]]
-[[1]]$estimates
-                theta         se
-dependence1 0.9128708 0.09740372
+$estimates
+                theta        se
+dependence1 0.8908294 0.0957289
 
-[[1]]$type
+$type
 [1] "clayton.oakes"
 
-[[1]]$h
+$h
             Estimate Std.Err 2.5% 97.5% P-value
 dependence1        1       0    1     1       0
 
-[[1]]$vare
+$vare
 NULL
 
-[[1]]$vartot
+$vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.913  0.0974 0.722   1.1 7.11e-21
-
+p1    0.891  0.0957 0.703  1.08 1.33e-20
 
 $marginal
-             Coef.      SE Robust SE      z P-val lower2.5% upper97.5%
-dependence2 -3.440 0.00422   0.00422 -816.0     0    -3.450     -3.430
-dependence3  0.634 0.01990   0.01990   31.8     0     0.595      0.673
+             Coef.      SE Robust SE    z P-val lower2.5% upper97.5%
+dependence2 -3.420 0.00693   0.00693 -493     0    -3.430     -3.410
+dependence3  0.715 0.00150   0.00150  476     0     0.712      0.718
 
 attr(,"class")
 [1] "summary.mets.twostage"
 #+end_example
 
+
+When probands are related, here we may choose both case and controls from
+the same twin-pair then we need to adjust standard errors by grouping together
+contribution from related probands. This can be done using the
+se.cluster option that specifies how to cluster in the computation of the
+standard errors. In this case, however, this will be same as the 
+clusters since these also are identical across pairs.
 
 
 * COMMENT 
@@ -1276,25 +1227,23 @@ attr(,"class")
 [1] "summary.mets.twostage"
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
-[[1]]
-[[1]]$estimates
+$estimates
                theta        se
 dependence1 1.014398 0.1045593
 
-[[1]]$type
+$type
 [1] "clayton.oakes"
 
-[[1]]$h
+$h
             Estimate Std.Err 2.5% 97.5% P-value
 dependence1        1       0    1     1       0
 
-[[1]]$vare
+$vare
 NULL
 
-[[1]]$vartot
+$vartot
    Estimate Std.Err  2.5% 97.5%  P-value
 p1     1.01   0.105 0.809  1.22 2.97e-22
-
 
 $marginal
              Coef.      SE Robust SE     z P-val lower2.5% upper97.5%
@@ -1308,12 +1257,12 @@ attr(,"class")
 (Intercept)     sexmale 
  -3.2819072   0.8617053
      [,1] [,2]
-[1,]   12   11
-[2,]   18   17
-[3,]   20   19
-[4,]   40   39
-[5,]   44   43
-[6,]   54   53
+[1,]   14   13
+[2,]   24   23
+[3,]   30   29
+[4,]   48   47
+[5,]   56   55
+[6,]   68   67
 [1] "random.design" "theta.des"     "ant.rvs"
      [,1] [,2] [,3]
 [1,]    1    1    0
@@ -1322,8 +1271,8 @@ attr(,"class")
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
-                theta       se
-dependence1 0.8782406 0.096999
+                theta         se
+dependence1 0.8877176 0.09790786
 
 $type
 [1] "clayton.oakes"
@@ -1337,15 +1286,15 @@ NULL
 
 $vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.878   0.097 0.688  1.07 1.38e-19
+p1    0.888  0.0979 0.696  1.08 1.22e-19
 
 attr(,"class")
 [1] "summary.mets.twostage"
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
-                theta       se
-dependence1 0.8782406 0.096999
+                theta         se
+dependence1 0.8877176 0.09790786
 
 $type
 [1] "clayton.oakes"
@@ -1359,36 +1308,34 @@ NULL
 
 $vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.878   0.097 0.688  1.07 1.38e-19
+p1    0.888  0.0979 0.696  1.08 1.22e-19
 
 attr(,"class")
 [1] "summary.mets.twostage"
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
-[[1]]
-[[1]]$estimates
-               theta         se
-dependence1 0.908619 0.09671327
+$estimates
+                theta         se
+dependence1 0.9160627 0.09741419
 
-[[1]]$type
+$type
 [1] "clayton.oakes"
 
-[[1]]$h
+$h
             Estimate Std.Err 2.5% 97.5% P-value
 dependence1        1       0    1     1       0
 
-[[1]]$vare
+$vare
 NULL
 
-[[1]]$vartot
+$vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.909  0.0967 0.719   1.1 5.72e-21
-
+p1    0.916  0.0974 0.725  1.11 5.26e-21
 
 $marginal
-             Coef.      SE Robust SE       z P-val lower2.5% upper97.5%
-dependence2 -3.340 0.00117   0.00117 -2850.0     0    -3.340     -3.340
-dependence3  0.485 0.01320   0.01320    36.7     0     0.459      0.511
+            Coef.       SE Robust SE     z P-val lower2.5% upper97.5%
+dependence2 -3.33 8.00e-03  8.00e-03  -417     0     -3.35      -3.31
+dependence3  0.48 3.27e-05  3.27e-05 14700     0      0.48       0.48
 
 attr(,"class")
 [1] "summary.mets.twostage"
