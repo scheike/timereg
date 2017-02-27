@@ -33,3 +33,4 @@ Weibull type baseline and Cox marginals.
 \author{
 Klaus K. Holst
 }
+

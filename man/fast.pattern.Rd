@@ -30,3 +30,4 @@ fast.pattern(X,categories=4)
 \author{
 Klaus K. Holst
 }
+

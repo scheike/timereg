@@ -3,17 +3,17 @@
 \name{dcut}
 \alias{dcut}
 \alias{dcut<-}
-\alias{dunique}
-\alias{drm}
-\alias{drm<-}
+\alias{ddrop}
+\alias{ddrop<-}
+\alias{dkeep}
+\alias{dkeep<-}
 \alias{dnames}
 \alias{dnames<-}
 \alias{drename}
 \alias{drename<-}
-\alias{dkeep}
-\alias{dkeep<-}
-\alias{ddrop}
-\alias{ddrop<-}
+\alias{drm}
+\alias{drm<-}
+\alias{dunique}
 \title{Cutting, sorting, rm (removing), rename for data frames}
 \usage{
 dcut(data, y = NULL, x = NULL, breaks = 4, probs = NULL, equi = FALSE,
@@ -120,3 +120,4 @@ names(dd)
 \author{
 Klaus K. Holst and Thomas Scheike
 }
+

@@ -15,3 +15,4 @@ convert to timereg object
 \author{
 Thomas Scheike
 }
+

@@ -668,10 +668,10 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     if (dep.model==3 & pair.structure==1) attr(ud, "likepairs") <- c(out$likepairs)
     if (dep.model==3 & pair.structure==0) attr(ud, "pardes") <- theta.des
     if (dep.model==3 & pair.structure==0) attr(ud, "theta.des") <- theta.des
-    if (dep.model==3 & pair.structure==1) attr(ud, "pardes") <- theta.des[,,1]
-    if (dep.model==3 & pair.structure==1) attr(ud, "theta.des") <- theta.des[,,1]
-    if (dep.model==3 & pair.structure==0) attr(ud, "rv1") <- random.design[1,]
-    if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <- random.design[1,,1]
+    if (dep.model==3 & pair.structure==1) attr(ud, "pardes") <-    theta.des[,,1,drop=FALSE]
+    if (dep.model==3 & pair.structure==1) attr(ud, "theta.des") <- theta.des[,,1,drop=FALSE]
+    if (dep.model==3 & pair.structure==0) attr(ud, "rv1") <-    random.design[1,,drop=FALSE]
+    if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <-    random.design[1,,1,drop=FALSE]
  
     attr(ud, "response") <- "binomial"
     return(ud);

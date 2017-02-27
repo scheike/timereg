@@ -2,8 +2,8 @@
 % Please edit documentation in R/biprobit.R
 \name{biprobit}
 \alias{biprobit}
-\alias{biprobit.vector}
 \alias{biprobit.time}
+\alias{biprobit.vector}
 \title{Bivariate Probit model}
 \usage{
 biprobit(x, data, id, rho = ~1, num = NULL, strata = NULL,
@@ -126,3 +126,4 @@ confband(pp2$x,pp2[,2],pp2[,3],center=pp2[,1])
     plot(a,which=3,ylim=c(0,0.1))
 } 
 }
+

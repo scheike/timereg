@@ -4,6 +4,7 @@
 #+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
 #+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
 #+PROPERTY: header-args:R+ :wrap example
+#+PROPERTY: tangle yes 
 #+OPTIONS: timestamp:t title:t date:t author:t creator:nil toc:t 
 #+OPTIONS: h:4 num:t tags:nil d:t
 #+LATEX_HEADER: \setlength{\parindent}{0pt} % Kills annoying indents. 

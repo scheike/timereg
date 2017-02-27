@@ -19,3 +19,4 @@ data(dermalridgesMZ)
 fast.reshape(dermalridgesMZ,id="id",varying=c("left","right"))
 }
 \keyword{data}
+

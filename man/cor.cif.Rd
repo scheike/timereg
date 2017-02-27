@@ -231,6 +231,9 @@ names(or1g)
 head(or1g$theta.iid)
 }
 }
+\author{
+Thomas Scheike
+}
 \references{
 Cross odds ratio Modelling of dependence for
 Multivariate Competing Risks Data, Scheike and Sun (2010), work in progress.
@@ -238,7 +241,5 @@ Multivariate Competing Risks Data, Scheike and Sun (2010), work in progress.
 A Semiparametric Random Effects Model for Multivariate Competing Risks Data,
 Scheike, Zhang, Sun, Jensen (2010), Biometrika.
 }
-\author{
-Thomas Scheike
-}
 \keyword{survival}
+

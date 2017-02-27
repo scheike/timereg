@@ -48,6 +48,9 @@ summary(out1)
 pad <- predict(add,X=1,Z=0,se=0,uniform=0)
 summary(out1,marg.cif=pad)
 }
+\author{
+Thomas Scheike
+}
 \references{
 Cross odds ratio Modelling of dependence for
 Multivariate Competing Risks Data, Scheike and Sun (2012), Biostatistics to appear.
@@ -55,7 +58,5 @@ Multivariate Competing Risks Data, Scheike and Sun (2012), Biostatistics to appe
 A Semiparametric Random Effects Model for Multivariate Competing Risks Data,
 Scheike, Zhang, Sun, Jensen (2010), Biometrika.
 }
-\author{
-Thomas Scheike
-}
 \keyword{survival}
+

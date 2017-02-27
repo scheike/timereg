@@ -19,3 +19,4 @@ test.conc(conc1, conc2, same.cluster = FALSE)
 \author{
 Thomas Scheike
 }
+

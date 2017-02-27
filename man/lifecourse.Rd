@@ -66,3 +66,4 @@ ll = lifecourse(Event(start,slut,status)~id,data,id="id",group=~group,col=1:2,st
 \author{
 Thomas Scheike Klaus K. Holst
 }
+

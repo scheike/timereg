@@ -233,11 +233,12 @@ concordance.twin.ace(bintwin)
 }
 
 }
-\references{
-Two-stage binomial modelling
-}
 \author{
 Thomas Scheike
 }
+\references{
+Two-stage binomial modelling
+}
 \keyword{binomial}
 \keyword{regression}
+

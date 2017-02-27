@@ -23,12 +23,13 @@ i<-c(1,1,2,2,1,3)
 d<- familycluster.index(i)
 print(d)
 }
+\author{
+Klaus Holst, Thomas Scheike
+}
 \references{
 Cluster indeces
 }
 \seealso{
 cluster.index familyclusterWithProbands.index
 }
-\author{
-Klaus Holst, Thomas Scheike
-}
+

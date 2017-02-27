@@ -31,7 +31,7 @@ melanoma=as.data.frame(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
+#+begin_example
 Loading required package: timereg
 Loading required package: survival
 Loading required package: lava
@@ -44,7 +44,7 @@ The following object is masked _by_ ‘.GlobalEnv’:
 
     object.defined
 [1] TRUE
-#+END_example
+#+end_example
 
 
 Here we work on the melanoma data that is already read into R and is 
@@ -81,9 +81,7 @@ names(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-[1] "no"       "status"   "days"     "ulc"      "tykkelse" "sex"
-#+END_example
+: [1] "no"       "status"   "days"     "ulc"      "tykkelse" "sex"
 
 
 Deleting variables
@@ -95,9 +93,7 @@ names(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-[1] "no"     "status" "days"   "ulc"
-#+END_example
+: [1] "no"     "status" "days"   "ulc"
 
 or sas style
 
@@ -108,9 +104,7 @@ names(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-[1] "no"     "status" "days"   "ulc"
-#+END_example
+: [1] "no"     "status" "days"   "ulc"
 
 alternatively we can also keep certain variables
 
@@ -121,9 +115,7 @@ names(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-[1] "thick"  "sex"    "status" "days"
-#+END_example
+: [1] "thick"  "sex"    "status" "days"
 
 
 * Looking at the data 
@@ -134,15 +126,13 @@ dstr(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-'data.frame':	205 obs. of  6 variables:
- $ no    : int  789 13 97 16 21 469 685 7 932 944 ...
- $ status: int  3 3 2 3 1 1 1 1 3 1 ...
- $ days  : int  10 30 35 99 185 204 210 232 232 279 ...
- $ ulc   : int  1 0 0 0 1 1 1 1 1 1 ...
- $ thick : int  676 65 134 290 1208 484 516 1288 322 741 ...
- $ sex   : int  1 1 1 0 1 1 1 1 0 0 ...
-#+END_example
+: 'data.frame':	205 obs. of  6 variables:
+:  $ no    : int  789 13 97 16 21 469 685 7 932 944 ...
+:  $ status: int  3 3 2 3 1 1 1 1 3 1 ...
+:  $ days  : int  10 30 35 99 185 204 210 232 232 279 ...
+:  $ ulc   : int  1 0 0 0 1 1 1 1 1 1 ...
+:  $ thick : int  676 65 134 290 1208 484 516 1288 322 741 ...
+:  $ sex   : int  1 1 1 0 1 1 1 1 0 0 ...
 
 The data can in Rstudio be seen as a data-table but to list certain parts of 
 the data in output window 
@@ -152,7 +142,7 @@ dlist(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
+#+begin_example
     no  status days ulc thick sex
 1   789 3       10  1    676  1  
 2    13 3       30  0     65  1  
@@ -165,14 +155,14 @@ dlist(melanoma)
 203 806 2      4688 0    48   0  
 204 606 2      4926 0   226   0  
 205 328 2      5565 0   290   0
-#+END_example
+#+end_example
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 dlist(melanoma, ~.|sex==1)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
+#+begin_example
     no  status days ulc thick
 1   789 3       10  1    676 
 2    13 3       30  0     65 
@@ -185,14 +175,14 @@ dlist(melanoma, ~.|sex==1)
 197 175 2      4207 0    65  
 198 493 2      4310 0   210  
 201 317 2      4492 1   706
-#+END_example
+#+end_example
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 dlist(melanoma, ~ulc+days+thick+sex|sex==1)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
+#+begin_example
     ulc days thick sex
 1   1    10   676  1  
 2   0    30    65  1  
@@ -205,7 +195,7 @@ dlist(melanoma, ~ulc+days+thick+sex|sex==1)
 197 0   4207  65   1  
 198 0   4310 210   1  
 201 1   4492 706   1
-#+END_example
+#+end_example
 
 
 Getting summaries
@@ -215,7 +205,7 @@ dsummary(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
+#+begin_example
        no            status          days           ulc            thick     
  Min.   :  2.0   Min.   :1.00   Min.   :  10   Min.   :0.000   Min.   :  10  
  1st Qu.:222.0   1st Qu.:1.00   1st Qu.:1525   1st Qu.:0.000   1st Qu.:  97  
@@ -230,7 +220,7 @@ dsummary(melanoma)
  Mean   :0.3854  
  3rd Qu.:1.0000  
  Max.   :1.0000
-#+END_example
+#+end_example
 
 or for specfic variables
 
@@ -239,15 +229,13 @@ dsummary(melanoma,~thick+status+sex)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-     thick          status          sex        
- Min.   :  10   Min.   :1.00   Min.   :0.0000  
- 1st Qu.:  97   1st Qu.:1.00   1st Qu.:0.0000  
- Median : 194   Median :2.00   Median :0.0000  
- Mean   : 292   Mean   :1.79   Mean   :0.3854  
- 3rd Qu.: 356   3rd Qu.:2.00   3rd Qu.:1.0000  
- Max.   :1742   Max.   :3.00   Max.   :1.0000
-#+END_example
+:      thick          status          sex        
+:  Min.   :  10   Min.   :1.00   Min.   :0.0000  
+:  1st Qu.:  97   1st Qu.:1.00   1st Qu.:0.0000  
+:  Median : 194   Median :2.00   Median :0.0000  
+:  Mean   : 292   Mean   :1.79   Mean   :0.3854  
+:  3rd Qu.: 356   3rd Qu.:2.00   3rd Qu.:1.0000  
+:  Max.   :1742   Max.   :3.00   Max.   :1.0000
 
 Summaries in different groups (sex)
 
@@ -256,7 +244,7 @@ dsummary(melanoma,thick+days+status~sex)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
+#+begin_example
 sex: 0
      thick             days          status     
  Min.   :  10.0   Min.   :  99   Min.   :1.000  
@@ -274,7 +262,7 @@ sex: 1
  Mean   : 361.1   Mean   :1946   Mean   :1.722  
  3rd Qu.: 484.0   3rd Qu.:2784   3rd Qu.:2.000  
  Max.   :1466.0   Max.   :4492   Max.   :3.000
-#+END_example
+#+end_example
 
 and only among those with thin-tumours or only females (sex==1)
 
@@ -283,7 +271,7 @@ dsummary(melanoma,thick+days+status~sex|thick<97)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
+#+begin_example
 sex: 0
      thick            days          status     
  Min.   :10.00   Min.   : 355   Min.   :1.000  
@@ -301,22 +289,20 @@ sex: 1
  Mean   :55.75   Mean   :2632   Mean   :1.875  
  3rd Qu.:81.00   3rd Qu.:3328   3rd Qu.:2.000  
  Max.   :81.00   Max.   :4207   Max.   :3.000
-#+END_example
+#+end_example
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 dsummary(melanoma,thick+status~+1|sex==1)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-     thick            status     
- Min.   :  16.0   Min.   :1.000  
- 1st Qu.: 105.0   1st Qu.:1.000  
- Median : 258.0   Median :2.000  
- Mean   : 361.1   Mean   :1.722  
- 3rd Qu.: 484.0   3rd Qu.:2.000  
- Max.   :1466.0   Max.   :3.000
-#+END_example
+:      thick            status     
+:  Min.   :  16.0   Min.   :1.000  
+:  1st Qu.: 105.0   1st Qu.:1.000  
+:  Median : 258.0   Median :2.000  
+:  Mean   : 361.1   Mean   :1.722  
+:  3rd Qu.: 484.0   3rd Qu.:2.000  
+:  Max.   :1466.0   Max.   :3.000
 
 
 Tables between variables
@@ -326,14 +312,12 @@ dtable(melanoma,~status+sex)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-
-       sex  0  1
-status          
-1          28 29
-2          91 43
-3           7  7
-#+END_example
+: 
+:        sex  0  1
+: status          
+: 1          28 29
+: 2          91 43
+: 3           7  7
 
 All bivariate tables
 
@@ -342,7 +326,7 @@ dtable(melanoma,~status+sex+ulc,level=2)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
+#+begin_example
 
    status
 sex  1  2  3
@@ -358,7 +342,7 @@ ulc  1  2  3
 ulc  0  1
   0 79 36
   1 47 43
-#+END_example
+#+end_example
 
 All univariate tables
 
@@ -367,7 +351,7 @@ dtable(melanoma,~status+sex+ulc,level=1)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
+#+begin_example
 
 status
   1   2   3 
@@ -380,7 +364,7 @@ sex
 ulc
   0   1 
 115  90
-#+END_example
+#+end_example
 
 * Making new variales for the analysis
 
@@ -394,15 +378,13 @@ dhead(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-   no status days ulc thick sex  thick2   lthick
-1 789      3   10   1   676   1  456976 6.516193
-2  13      3   30   0    65   1    4225 4.174387
-3  97      2   35   0   134   1   17956 4.897840
-4  16      3   99   0   290   0   84100 5.669881
-5  21      1  185   1  1208   1 1459264 7.096721
-6 469      1  204   1   484   1  234256 6.182085
-#+END_example
+:    no status days ulc thick sex  thick2   lthick
+: 1 789      3   10   1   676   1  456976 6.516193
+: 2  13      3   30   0    65   1    4225 4.174387
+: 3  97      2   35   0   134   1   17956 4.897840
+: 4  16      3   99   0   290   0   84100 5.669881
+: 5  21      1  185   1  1208   1 1459264 7.096721
+: 6 469      1  204   1   484   1  234256 6.182085
 
 
 When the above definitions are done using a condition this can be achieved 
@@ -411,52 +393,15 @@ using the dtransform function that extends transform with a possible condition
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
  melanoma=dtransform(melanoma,ll=thick*1.05^ulc,sex==1)  
  melanoma=dtransform(melanoma,ll=thick,sex!=1)  
- dsummary(melanoma,ll~sex+ulc)
-
+ dmean(melanoma,ll~sex+ulc)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-sex: 0
-ulc: 0
-       ll        
- Min.   :  10.0  
- 1st Qu.:  65.0  
- Median : 129.0  
- Mean   : 173.7  
- 3rd Qu.: 194.0  
- Max.   :1288.0  
------------------------------------------------------------- 
-sex: 1
-ulc: 0
-       ll        
- Min.   :  16.0  
- 1st Qu.:  65.0  
- Median :  97.0  
- Mean   : 197.4  
- 3rd Qu.: 198.0  
- Max.   :1466.0  
------------------------------------------------------------- 
-sex: 0
-ulc: 1
-       ll        
- Min.   :  16.0  
- 1st Qu.: 177.0  
- Median : 258.0  
- Mean   : 374.6  
- 3rd Qu.: 403.0  
- Max.   :1742.0  
------------------------------------------------------------- 
-sex: 1
-ulc: 1
-       ll         
- Min.   :  85.05  
- 1st Qu.: 338.10  
- Median : 506.10  
- Mean   : 523.12  
- 3rd Qu.: 659.40  
- Max.   :1352.40
-#+END_example
+:   sex ulc       ll
+: 1   0   0 173.7342
+: 2   1   0 197.3611
+: 3   0   1 374.5532
+: 4   1   1 523.1198
 
 
 
@@ -471,8 +416,6 @@ melanoma=dcut(melanoma,~thick,breaks=c(0,200,500,800,2000))
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-#+END_example
 
 New variable is named thickcat.0 by default.
 
@@ -482,11 +425,9 @@ dlevels(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-thickcat.0 #levels=:4 
-[1] "[0,200]"     "(200,500]"   "(500,800]"   "(800,2e+03]"
------------------------------------------
-#+END_example
+: thickcat.0 #levels=:4 
+: [1] "[0,200]"     "(200,500]"   "(500,800]"   "(800,2e+03]"
+: -----------------------------------------
 
 Checking group sizes 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
@@ -494,12 +435,10 @@ dtable(melanoma,~thickcat.0)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-
-thickcat.0
-    [0,200]   (200,500]   (500,800] (800,2e+03] 
-        109          64          20          12
-#+END_example
+: 
+: thickcat.0
+:     [0,200]   (200,500]   (500,800] (800,2e+03] 
+:         109          64          20          12
 
 With adding to the data-frame directly 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
@@ -508,14 +447,12 @@ dlevels(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-thickcat.0 #levels=:4 
-[1] "[0,200]"     "(200,500]"   "(500,800]"   "(800,2e+03]"
------------------------------------------
-gr.thick1 #levels=:4 
-[1] "[0,200]"     "(200,500]"   "(500,800]"   "(800,2e+03]"
------------------------------------------
-#+END_example
+: thickcat.0 #levels=:4 
+: [1] "[0,200]"     "(200,500]"   "(500,800]"   "(800,2e+03]"
+: -----------------------------------------
+: gr.thick1 #levels=:4 
+: [1] "[0,200]"     "(200,500]"   "(500,800]"   "(800,2e+03]"
+: -----------------------------------------
 
 new variable is named thickcat.0 (after first cut-point), 
 or to get quartiles with default names thick.cat.4 
@@ -526,17 +463,15 @@ dlevels(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-thickcat.0 #levels=:4 
-[1] "[0,200]"     "(200,500]"   "(500,800]"   "(800,2e+03]"
------------------------------------------
-gr.thick1 #levels=:4 
-[1] "[0,200]"     "(200,500]"   "(500,800]"   "(800,2e+03]"
------------------------------------------
-thickcat.4 #levels=:4 
-[1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
------------------------------------------
-#+END_example
+: thickcat.0 #levels=:4 
+: [1] "[0,200]"     "(200,500]"   "(500,800]"   "(800,2e+03]"
+: -----------------------------------------
+: gr.thick1 #levels=:4 
+: [1] "[0,200]"     "(200,500]"   "(500,800]"   "(800,2e+03]"
+: -----------------------------------------
+: thickcat.4 #levels=:4 
+: [1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
+: -----------------------------------------
 
 or median groups, here starting again with the original data, 
 
@@ -547,11 +482,9 @@ dlevels(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-thickcat.2 #levels=:2 
-[1] "[10,194]"       "(194,1.74e+03]"
------------------------------------------
-#+END_example
+: thickcat.2 #levels=:2 
+: [1] "[10,194]"       "(194,1.74e+03]"
+: -----------------------------------------
 
 
 
@@ -564,15 +497,13 @@ dlevels(mela)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-thickcat4 #levels=:4 
-[1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
------------------------------------------
-dayscat4 #levels=:4 
-[1] "[10,1.52e+03]"       "(1.52e+03,2e+03]"    "(2e+03,3.04e+03]"   
-[4] "(3.04e+03,5.56e+03]"
------------------------------------------
-#+END_example
+: thickcat4 #levels=:4 
+: [1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
+: -----------------------------------------
+: dayscat4 #levels=:4 
+: [1] "[10,1.52e+03]"       "(1.52e+03,2e+03]"    "(2e+03,3.04e+03]"   
+: [4] "(3.04e+03,5.56e+03]"
+: -----------------------------------------
 
 or
 
@@ -583,15 +514,13 @@ dlevels(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-thickcat4 #levels=:4 
-[1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
------------------------------------------
-dayscat4 #levels=:4 
-[1] "[10,1.52e+03]"       "(1.52e+03,2e+03]"    "(2e+03,3.04e+03]"   
-[4] "(3.04e+03,5.56e+03]"
------------------------------------------
-#+END_example
+: thickcat4 #levels=:4 
+: [1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
+: -----------------------------------------
+: dayscat4 #levels=:4 
+: [1] "[10,1.52e+03]"       "(1.52e+03,2e+03]"    "(2e+03,3.04e+03]"   
+: [4] "(3.04e+03,5.56e+03]"
+: -----------------------------------------
 
 This can also be typed out more specifically
 
@@ -601,8 +530,6 @@ melanoma$gthick = cut(melanoma$thick,breaks=quantile(melanoma$thick),include.low
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-#+END_example
 
 
 * Working with factors
@@ -616,11 +543,9 @@ dlevels(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-thickcat4 #levels=:4 
-[1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
------------------------------------------
-#+END_example
+: thickcat4 #levels=:4 
+: [1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
+: -----------------------------------------
 
 To relevel the factor
 
@@ -631,7 +556,7 @@ dlevels(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
+#+begin_example
 
 thickcat4
        [10,97]       (97,194]      (194,356] (356,1.74e+03] 
@@ -642,7 +567,7 @@ thickcat4 #levels=:4
 thickcat4.(194,356] #levels=:4 
 [1] "(194,356]"      "[10,97]"        "(97,194]"       "(356,1.74e+03]"
 -----------------------------------------
-#+END_example
+#+end_example
 
 or to take the third level in the list of levels, same as above, 
 
@@ -652,17 +577,15 @@ dlevels(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-thickcat4 #levels=:4 
-[1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
------------------------------------------
-thickcat4.(194,356] #levels=:4 
-[1] "(194,356]"      "[10,97]"        "(97,194]"       "(356,1.74e+03]"
------------------------------------------
-thickcat4.2 #levels=:4 
-[1] "(97,194]"       "[10,97]"        "(194,356]"      "(356,1.74e+03]"
------------------------------------------
-#+END_example
+: thickcat4 #levels=:4 
+: [1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
+: -----------------------------------------
+: thickcat4.(194,356] #levels=:4 
+: [1] "(194,356]"      "[10,97]"        "(97,194]"       "(356,1.74e+03]"
+: -----------------------------------------
+: thickcat4.2 #levels=:4 
+: [1] "(97,194]"       "[10,97]"        "(194,356]"      "(356,1.74e+03]"
+: -----------------------------------------
 
 
 To combine levels of a factor (first combinining first 3 groups into one)
@@ -673,7 +596,7 @@ dlevels(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
+#+begin_example
 thickcat4 #levels=:4 
 [1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
 -----------------------------------------
@@ -686,7 +609,7 @@ thickcat4.2 #levels=:4
 thickcat4.1:3 #levels=:2 
 [1] "[10,97]-(194,356]" "(356,1.74e+03]"   
 -----------------------------------------
-#+END_example
+#+end_example
 
 or to combine groups 1 and 2 into one group and 3 and 4 into another
 
@@ -697,14 +620,12 @@ dlevels(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-thickcat4 #levels=:4 
-[1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
------------------------------------------
-gthick2 #levels=:2 
-[1] "[10,97]-(97,194]"         "(194,356]-(356,1.74e+03]"
------------------------------------------
-#+END_example
+: thickcat4 #levels=:4 
+: [1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
+: -----------------------------------------
+: gthick2 #levels=:2 
+: [1] "[10,97]-(97,194]"         "(194,356]-(356,1.74e+03]"
+: -----------------------------------------
 
 Do the same but control name of new groups 
 
@@ -714,17 +635,15 @@ dlevels(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-thickcat4 #levels=:4 
-[1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
------------------------------------------
-gthick2 #levels=:2 
-[1] "[10,97]-(97,194]"         "(194,356]-(356,1.74e+03]"
------------------------------------------
-gthick3 #levels=:2 
-[1] "group1.2" "group3.4"
------------------------------------------
-#+END_example
+: thickcat4 #levels=:4 
+: [1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
+: -----------------------------------------
+: gthick2 #levels=:2 
+: [1] "[10,97]-(97,194]"         "(194,356]-(356,1.74e+03]"
+: -----------------------------------------
+: gthick3 #levels=:2 
+: [1] "group1.2" "group3.4"
+: -----------------------------------------
 
 
 * Making a factor from existing numeric variable and vice versa
@@ -739,13 +658,11 @@ dtable(melanoma,~sexl+status.f)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
-
-        status.f malignant-melanoma censoring dead-other
-sexl                                                    
-females                          28        91          7
-males                            29        43          7
-#+END_example
+: 
+:         status.f malignant-melanoma censoring dead-other
+: sexl                                                    
+: females                          28        91          7
+: males                            29        43          7
 
 A gender factor with values "M", "F" can be converted into numerics by
 
@@ -756,7 +673,7 @@ dtable(melanoma,~'sex*',level=2)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
+#+begin_example
 'data.frame':	205 obs. of  3 variables:
  $ sex   : int  1 1 1 0 1 1 1 1 0 0 ...
  $ sexl  : Factor w/ 2 levels "females","males": 2 2 2 1 2 2 2 2 1 1 ...
@@ -776,7 +693,7 @@ sexl.n   0   1
 sexl.n females males
      1     126     0
      2       0    79
-#+END_example
+#+end_example
 
 
 *  COMMENT 
@@ -795,9 +712,7 @@ legend("topright",legend=c("Treatment","Placebo"),col=c("red","blue"),lty=c(1,1)
 #+END_SRC
 
 #+RESULTS:
-#+BEGIN_example
 [[file:auto/remis-km-placebo.png]]
-#+END_example
 
 [[file:auto/remis-km-placebo.png]]
 

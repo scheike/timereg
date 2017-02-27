@@ -161,6 +161,9 @@ with the (k) underlying \eqn{\theta} parameters
 
 }
 }
+\author{
+Thomas Scheike
+}
 \references{
 A Semiparametric Random Effects Model for Multivariate Competing Risks Data,
 Scheike, Zhang, Sun, Jensen (2010), Biometrika.
@@ -171,7 +174,5 @@ Multivariate Competing Risks Data, Scheike and Sun (2013), Biostatitistics.
 Scheike, Holst, Hjelmborg (2014),  LIDA,  
 Estimating heritability for cause specific hazards based on twin data
 }
-\author{
-Thomas Scheike
-}
 \keyword{survival}
+
