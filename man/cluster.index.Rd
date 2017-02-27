@@ -34,13 +34,12 @@ type<-c("m","f","m","c","c","c")
 d<- cluster.index(i,num=type,Rindex=1)
 print(d)
 }
-\author{
-Klaus Holst, Thomas Scheike
-}
 \references{
 Cluster indeces
 }
 \seealso{
 familycluster.index familyclusterWithProbands.index
 }
-
+\author{
+Klaus Holst, Thomas Scheike
+}

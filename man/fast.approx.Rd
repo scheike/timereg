@@ -36,4 +36,3 @@ fast.approx(t,n,type="left")
 \author{
 Klaus K. Holst
 }
-

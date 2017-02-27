@@ -2,8 +2,8 @@
 % Please edit documentation in R/bptwin.R
 \name{bptwin}
 \alias{bptwin}
-\alias{bptwin.time}
 \alias{twinlm.time}
+\alias{bptwin.time}
 \title{Liability model for twin data}
 \usage{
 bptwin(x, data, id, zyg, DZ, group = NULL, num = NULL, weights = NULL,
@@ -83,10 +83,9 @@ b0 <- bptwin(stutter~sex,
              id="tvparnr",zyg="zyg",DZ="dz",type="ae")
 summary(b0)
 }
-\author{
-Klaus K. Holst
-}
 \seealso{
 \code{\link{twinlm}}, \code{\link{twinlm.time}}, \code{\link{twinlm.strata}}, \code{\link{twinsim}}
 }
-
+\author{
+Klaus K. Holst
+}

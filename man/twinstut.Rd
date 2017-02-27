@@ -13,4 +13,3 @@ nr: number within twin-pair}
 Based on nation-wide questionnaire answers from 33,317 Danish twins
 }
 \keyword{data}
-

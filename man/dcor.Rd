@@ -2,18 +2,18 @@
 % Please edit documentation in R/daggregate.R
 \name{dcor}
 \alias{dcor}
-\alias{dcount}
-\alias{deval}
-\alias{deval2}
-\alias{dmean}
-\alias{dmeansd}
-\alias{dquantile}
-\alias{dscalar}
-\alias{dsd}
+\alias{dsummary}
 \alias{dstr}
 \alias{dsubset}
+\alias{dquantile}
+\alias{dcount}
+\alias{dmean}
+\alias{dmeansd}
+\alias{dscalar}
+\alias{deval}
+\alias{deval2}
 \alias{dsum}
-\alias{dsummary}
+\alias{dsd}
 \title{summary, tables, and correlations for data frames}
 \usage{
 dcor(data, y = NULL, x = NULL, ...)
@@ -48,4 +48,3 @@ dcor(dt,c("time*","wmi*"),~vf+chf)
 \author{
 Klaus K. Holst and Thomas Scheike
 }
-

@@ -11,4 +11,3 @@ Simulated data
 Prostate data set
 }
 \keyword{data}
-

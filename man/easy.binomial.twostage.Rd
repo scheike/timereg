@@ -199,4 +199,3 @@ summary(udxai2)
 }
 \keyword{binomial}
 \keyword{regression}
-

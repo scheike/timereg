@@ -37,12 +37,11 @@ the variance components w.r.t. x1,x2,...}
 \description{
 Simulate twin data from a linear normal ACE/ADE/AE model.
 }
-\author{
-Klaus K. Holst
-}
 \seealso{
 \code{\link{twinlm}}
 }
+\author{
+Klaus K. Holst
+}
 \keyword{models}
 \keyword{regression}
-
