@@ -45,4 +45,3 @@ plot(out$marg) ## marginal model output
 \author{
 Thomas Scheike
 }
-

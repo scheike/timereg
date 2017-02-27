@@ -60,4 +60,3 @@ legend("topright",legend=unique(prtw$country),col=1:4,pch=-1,lty=1)
 \author{
 Klaus K. Holst
 }
-

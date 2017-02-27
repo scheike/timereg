@@ -108,9 +108,6 @@ cluster covariates.
  summary(out4) ## negative dependence
 }
 }
-\author{
-Thomas Scheike
-}
 \references{
 A Semiparametric Random Effects Model for Multivariate Competing Risks Data,
 Scheike, Zhang, Sun, Jensen (2010), Biometrika. 
@@ -118,5 +115,7 @@ Scheike, Zhang, Sun, Jensen (2010), Biometrika.
 Cross odds ratio Modelling of dependence for
 Multivariate Competing Risks Data, Scheike and Sun (2012), work in progress.
 }
+\author{
+Thomas Scheike
+}
 \keyword{survival}
-

@@ -89,4 +89,3 @@ summary(out2)
 \author{
 Thomas Scheike
 }
-

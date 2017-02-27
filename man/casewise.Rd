@@ -46,4 +46,3 @@ summary(cmz)
 \author{
 Thomas Scheike
 }
-

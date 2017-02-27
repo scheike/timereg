@@ -19,4 +19,3 @@ printcasewisetest(x, digits = 3, ...)
 \author{
 Thomas Scheike
 }
-

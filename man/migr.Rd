@@ -8,4 +8,3 @@
 Migraine data
 }
 \keyword{data}
-

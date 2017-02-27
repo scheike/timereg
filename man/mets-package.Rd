@@ -18,4 +18,3 @@ and bivariate random effects probit models (Liability models)
 Klaus K. Holst and Thomas Scheike
 }
 \keyword{package}
-

@@ -31,4 +31,3 @@ piecewise constant marginals.
 \author{
 Klaus K. Holst
 }
-

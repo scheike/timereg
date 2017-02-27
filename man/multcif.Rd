@@ -11,4 +11,3 @@ Simulated data
 Multivariate Cumulative Incidence Function example data set
 }
 \keyword{data}
-
