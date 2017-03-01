@@ -29,7 +29,9 @@ Suggests:
     lava.tobit (>= 0.4-7),
     prodlim,
     testthat (>= 0.11),
-    ucminf
+    ucminf,
+    R.rsp (>= 0.40)
+VignetteBuilder: R.rsp    
 ByteCompile: yes
 LinkingTo: Rcpp, RcppArmadillo
 Roxygen: list(wrap = FALSE)
