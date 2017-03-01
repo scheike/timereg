@@ -1241,7 +1241,7 @@ summary.mets.twostage <- function(object,digits = 3,silent=0,...)
 
       if (var.par==0) 
       if (var.link==1) { ## {{{ 
-	     fp <- function(p,d,t){  res <- exp(p*t)/(sum(rv1* c(theta.des %*% matrix(exp(p),col=1))))^d; 
+	     fp <- function(p,d,t){  res <- exp(p*t)/(sum(rv1* c(theta.des %*% matrix(exp(p),ncol=1))))^d; 
                                      if (t==0) res <- res[1]; return(res); }
              e      <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,1),labels=rownames(theta))
              pare <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) exp(p),labels=rownames(theta))
