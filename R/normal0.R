@@ -9,7 +9,7 @@ loglikMVN <- function(yl,yu,status,mu,S,thres) {
           z=NULL,su=NULL,dsu=NULL,
           threshold=as.matrix(thres),dthreshold=NULL,
           score=FALSE,
-          package="mets")        
+          PACKAGE="mets")
 }
 
 
@@ -24,5 +24,5 @@ scoreMVN <- function(y,mu,S,dmu,dS) {
           z=NULL,su=NULL,dsu=NULL,
           threshold=NULL,dthreshold=NULL,
           score=TRUE,
-          package="mets")        
+          PACKAGE="mets")
 }

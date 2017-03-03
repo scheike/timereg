@@ -288,14 +288,10 @@ summary.casewise <- function(object,marg=FALSE,...)
       cat("Marginal cumulative incidence and standard errors \n"); 
       print(signif(cbind(object$marg),3))
    }
-
-   if (!is.null(object$test)) {
-	   printcasewisetest(object)
-   }
-
+   print(object,...)
 } ## }}}
 
-##' .. content for description (no empty lines) ..
+##' prints Concordance test 
 ##'
 ##' @title prints Concordance test 
 ##' @param x output from casewise.test 
@@ -303,16 +299,18 @@ summary.casewise <- function(object,marg=FALSE,...)
 ##' @param \dots Additional arguments to lower level functions
 ##' @author Thomas Scheike
 ##' @export
-printcasewisetest <- function(x,digits=3,...)
+print.casewise <- function(x,digits=3,...)
 { ## {{{
-  cat("\n")
-  cat("Pepe-Mori type test for H_0: conc_1(t)= conc_2(t)\n")
-  if (x$same.cluster==TRUE) cat("Assuming same clusters for the two functions\n") else 
-  cat("Assuming independence for estimators\n");
-  cat(paste("Time.range =",signif(x$mintime,3),"--",signif(x$maxtime,3),"\n\n"));
-  prmatrix(signif(x$test,digits))
-  invisible(x)
-}	## }}}
+    cat("\n")
+    if (!is.null(x$test)) {
+        cat("Pepe-Mori type test for H_0: conc_1(t)= conc_2(t)\n")
+        if (x$same.cluster==TRUE) cat("Assuming same clusters for the two functions\n") else 
+                                                                                           cat("Assuming independence for estimators\n");
+        cat(paste("Time.range =",signif(x$mintime,3),"--",signif(x$maxtime,3),"\n\n"));
+        prmatrix(signif(x$test,digits))
+        invisible(x)
+    }    
+} ## }}}
 
 ##' .. content for description (no empty lines) ..
 ##'

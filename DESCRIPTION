@@ -2,7 +2,7 @@ Package: mets
 Type: Package
 Title: Analysis of Multivariate Event Times
 Version: 1.2.1.2
-Date: 2017-02-27
+Date: 2017-03-03
 Author: Klaus K. Holst and Thomas Scheike
 Maintainer: Klaus K. Holst <klaus@holst.it>
 Description: Implementation of various statistical models for multivariate
@@ -31,7 +31,7 @@ Suggests:
     testthat (>= 0.11),
     ucminf,
     R.rsp (>= 0.40)
-VignetteBuilder: R.rsp    
+VignetteBuilder: R.rsp
 ByteCompile: yes
 LinkingTo: Rcpp, RcppArmadillo
 Roxygen: list(wrap = FALSE)
