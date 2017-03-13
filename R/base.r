@@ -17,6 +17,22 @@ coefBase<- function(object, digits=3, d2logl=0,ci=1,alpha=0.05) { ## {{{
   return(res)
 } ## }}}
 
+coefcox <- function(object, digits=3, d2logl=0,ci=1,alpha=0.05) { ## {{{
+  res <- cbind(object$coef, diag(object$var)^0.5)
+  wald <- object$coef/diag(object$var)^0.5
+  waldp <- (1 - pnorm(abs(wald))) * 2
+  res <- signif(as.matrix(cbind(res, wald, waldp)),digits=digits)
+  colnames(res) <- c("Coef.", "SE", "z", "P-val")
+  if (ci==1) {
+     slower <- paste("lower",signif(100*alpha/2,2),"%",sep="")
+     supper <- paste("upper",signif(100*(1-alpha/2),3),"%",sep="")
+     res <- signif(cbind(res,res[,1]+qnorm(alpha/2)*res[,2],res[,1]+qnorm(1-alpha/2)*res[,2]),digits=digits); 
+     nn <- ncol(res); colnames(res)[(nn-1):nn] <- c(slower,supper)
+  }
+###  prmatrix(signif(res, digits))
+  return(res)
+} ## }}}
+
 wald.test <- function(object=NULL,coef=NULL,Sigma=NULL,contrast,coef.null=NULL,null=NULL,print.coef=TRUE,alpha=0.05)
 { ## {{{
 

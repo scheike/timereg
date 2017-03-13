@@ -17,6 +17,7 @@ export("aalen", ## {{{
        "cluster.index.timereg",
        "coefBase",
        "cox.ipw",
+       "coefcox",
        "cox.marg",
        "comp.risk",
        "comprisk.ipw",
@@ -79,6 +80,9 @@ export("aalen", ## {{{
        "sindex.prodlim",
 ###    "pls.surv.cv",
        "pc.hazard",
+       "sim.pc.hazard",
+       "sim.cox",
+       "sim.cause.pc.hazard",
        "timecox",
        "timecoxBase",
        "timetest",
@@ -240,5 +244,6 @@ importFrom("stats", "approx", "as.formula", "coef", "delete.response", "formula"
    "model.matrix", "na.omit","pchisq", "pnorm", "predict", "qnorm", "quantile", "runif", "terms", "time", "update")
 importFrom("utils", "head","tail")
 importFrom("stats", "rexp")
+importFrom("stats", "get_all_vars")
 
 

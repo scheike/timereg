@@ -5,6 +5,7 @@
 \alias{plot.resmean}
 \alias{print.resmean}
 \alias{coef.resmean}
+\alias{coefcox}
 \alias{kmplot}
 \alias{pval}
 \alias{additive.compSs}

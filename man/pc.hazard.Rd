@@ -1,8 +1,10 @@
 \name{pc.hazard}
 \alias{pc.hazard}
+\alias{sim.pc.hazard}
+\alias{sim.cause.pc.hazard}
 \title{Simulation of Piecewise constant hazard model (Cox).}
-\description{ Simulates data from piecwise constant baseline hazard that can also be of Cox type. Censor data
-automatically for highest value of the break points. 
+\description{Simulates data from piecwise constant baseline hazard that can also be of Cox type. Censor data
+             at highest value of the break points. 
 }
 \usage{
 pc.hazard(cumhazard,rr,cum.hazard=TRUE)

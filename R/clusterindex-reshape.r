@@ -11,7 +11,7 @@ if (index.type==FALSE)  {
 
  nclust <- .C("nclusters",
 	as.integer(antpers), as.integer(clusters), as.integer(rep(0,antpers)), 
-	as.integer(0), as.integer(0), package="timereg")
+	as.integer(0), as.integer(0), PACKAGE="timereg")
   maxclust <- nclust[[5]]
   antclust <- nclust[[4]]
   cluster.size <- nclust[[3]][1:antclust]
@@ -28,7 +28,7 @@ clustud <- .C("clusterindex",
 	      as.integer(clusters), as.integer(antclust),
 	      as.integer(antpers), as.integer(rep(init,antclust*maxclust)),
 	      as.integer(rep(0,antclust)), as.integer(mednum), 
-	      as.integer(numnum),as.integer(rep(0,antclust)), package="timereg")
+	      as.integer(numnum),as.integer(rep(0,antclust)), PACKAGE="timereg")
 
 if (Rindex==1) idclust  <- matrix(clustud[[4]],antclust,maxclust)+1
 else idclust <- matrix(clustud[[4]],antclust,maxclust)
@@ -51,7 +51,7 @@ out <- list(clusters=clusters,maxclust=maxclust,antclust=antclust,idclust=idclus
 ###
 ### nclust <- .C("nclusters",
 ###	as.integer(antpers), as.integer(clusters), as.integer(rep(0,antpers)), 
-###	as.integer(0), as.integer(0), package="timereg")
+###	as.integer(0), as.integer(0), PACKAGE="timereg")
 ###  maxclust <- nclust[[5]]
 ###  antclust <- nclust[[4]]
 ###  cluster.size <- nclust[[3]][1:antclust]
@@ -68,7 +68,7 @@ out <- list(clusters=clusters,maxclust=maxclust,antclust=antclust,idclust=idclus
 ###	        as.integer(clusters), as.integer(antclust),as.integer(antpers),
 ###                as.integer(rep(init,antclust*maxclust)),as.integer(rep(0,antclust)), as.integer(mednum), 
 ###		as.integer(numnum), as.double(c(data)), 
-###		as.integer(p), as.double(rep(init*1.0,antclust*maxclust*p)), package="timereg")
+###		as.integer(p), as.double(rep(init*1.0,antclust*maxclust*p)), PACKAGE="timereg")
 ###idclust <- matrix(clustud[[4]],antclust,maxclust)
 ###xny <- matrix(clustud[[10]],antclust,maxclust*p)
 ###if(Rindex==1) xny[idclust==-1] <- NA 
