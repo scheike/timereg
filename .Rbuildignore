@@ -1,4 +1,6 @@
 .git
+.gitignore
 \.gitignore$
 README.org
+src/makeCmedoption
 
