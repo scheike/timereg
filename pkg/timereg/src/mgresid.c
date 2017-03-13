@@ -248,7 +248,8 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
     }
 
    vec_zeros(VdB);  vec_zeros(respm); 
-   if (*coxaalen==1 || weighted==1)   
+//   if (*coxaalen==1 || weighted==1)   
+//   if (*coxaalen==1 || weighted==1)   
    for (j=0;j<*antclust;j++)  {
 //       if (s==1) { printf(" %d \n",j); print_vec(gammaiid[j]); }
        if (*coxaalen==1)  { 
@@ -256,12 +257,12 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
           vec_subtr(cumA[j],respm,cumA[j]);  // - dS gammaiid(j), total St gammaiid(j) 
         }
         replace_row(modelMGT[j],s,cumA[j]); 
-	if (weighted==1) {
+//	if (weighted==1) {
            vec_star(cumA[j],cumA[j],vtmp); 
 	   vec_add(vtmp,VdB,VdB); 
-	}
+//	}
    }
-   if (weighted==1) 
+//   if (weighted==1) 
    for (k=1;k<*pm+1;k++) robvarcum[k*(*nmgt)+s]=VE(VdB,k-1); 
  
   /* comp observed sup statistics */ 

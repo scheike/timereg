@@ -10,7 +10,7 @@ the hypothesis of time-varying effects with
 re-sampled processes under the null.
 }
 \usage{
-\method{plot}{aalen}(x,pointwise.ci=1,hw.ci=0,sim.ci=0,robust=0,
+\method{plot}{aalen}(x,pointwise.ci=1,hw.ci=0,sim.ci=0,robust.ci=0,col=NULL,
 specific.comps=FALSE,level=0.05, start.time=0,stop.time=0,add.to.plot=FALSE,
 mains=TRUE,xlab="Time",ylab="Cumulative coefficients",score=FALSE,...)
 }
@@ -26,9 +26,13 @@ plotted with lty=hw.ci. Only 0.95 \% bands can be constructed.
 plotted with lty=sim.ci. These confidence bands are robust to
 non-martingale behaviour.
 }
-\item{robust}{robust standard errors are used to estimate standard 
-error of estimate, otherwise martingale based standard errors are
-used.
+\item{robust.ci}{robust standard errors are used to estimate standard 
+error of estimate, otherwise martingale based standard errors are used.
+}
+\item{col}{specifice colors of different components of plot,
+in order: c(estimate,pointwise.ci,robust.ci,hw.ci,sim.ci) so for example, 
+when we ask to get pointwise.ci, hw.ci and sim.ci we would say c(1,2,3,4) to
+use colors as specified. 
 }
 \item{specific.comps}{all components of the model is plotted by default,
 but a list of components may be specified, for example first and third
@@ -52,5 +56,11 @@ Springer (2006).
 \author{Thomas Scheike}
 \examples{
 # see help(aalen) 
+data(sTRACE)
+out<-aalen(Surv(time,status==9)~chf+vf,sTRACE,max.time=7,n.sim=100)
+par(mfrow=c(2,2))
+plot(out,pointwise.ci=1,hw.ci=1,sim.ci=1,col=c(1,2,3,4))
+par(mfrow=c(2,2))
+plot(out,pointwise.ci=0,robust.ci=1,hw.ci=1,sim.ci=1,col=c(1,2,3,4))
 }
 \keyword{survival}

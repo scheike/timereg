@@ -66,18 +66,18 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
                            Z=NULL,n.sim=500, uniform=TRUE,
                            se=TRUE,alpha=0.05,resample.iid=0,...)
 {
-    ## {{{
+## {{{
 ###    if (object$conv$convd>=1) stop("Model did not converge.")
+
  ### {{{ reading designs  and models 
   if (!(inherits(object,'comprisk') || inherits(object,'aalen')
         || inherits(object,'cox.aalen')))
-        stop ("Must be output from comp.risk function")
+        stop ("Must be output from comp.risk, aalen, cox.aalen, prop.odds function")
 
   if(inherits(object,'aalen')) { modelType <- 'aalen';
   } else if(inherits(object,'comprisk')) { modelType <- object$model;
   } else if(inherits(object,'cox.aalen')) { 
-	  if (is.null(object$prop.odds)) modelType <- 'cox.aalen' else  modelType <- 'prop.odds'; 
-	  
+	  if (object$prop.odds==0) modelType <- 'cox.aalen' else  modelType <- 'prop.odds'; 
   }
   type <- "na"
   if (modelType=="prop.odds")  type <- attr(object,'type')
@@ -114,7 +114,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     ## Then extract the time-varying effects
     ###    time.coef <- data.frame(object$cum)
     time.coef <- as.matrix(object$cum)
-    if (!is.null(times)) {time.coef<-Cpred(time.coef,times); iidtimechange <- 1; iidtime <- object$cum[,1];} 
+    if (!is.null(times)) {time.coef<-Cpred(time.coef,times,strict=FALSE); iidtimechange <- 1; iidtime <- object$cum[,1];} 
     ### SE based on iid decomposition so uses time-resolution for cox.aalen model 
     if (modelType=="cox.aalen" && (!is.null(object$time.sim.resolution)) && (se==TRUE)) 
     { iidtime <- object$time.sim.resolution; iidtimechange <- 1} 
@@ -143,9 +143,12 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     ## Then extract the time-varying effects
     time.coef <- as.matrix(object$cum)
 
-    if (!is.null(times)) {time.coef<-Cpred(time.coef,times); iidtimechange <- 1; iidtime <- object$cum[,1];} 
+    if (!is.null(times)) {time.coef<-Cpred(time.coef,times,strict=FALSE); iidtimechange <- 1; iidtime <- object$cum[,1];} 
     ### SE based on iid decomposition so uses time-resolution for cox.aalen model 
     if (modelType=="cox.aalen" && (!is.null(object$time.sim.resolution)) && (se==TRUE)) 
+    { iidtime <- object$time.sim.resolution; iidtimechange <- 1} 
+    ## prop.odds via cox.aalen
+    if (modelType=="prop.odds" && (!is.null(object$time.sim.resolution)) && (se==TRUE)) 
     { iidtime <- object$time.sim.resolution; iidtimechange <- 1} 
 
     ## }}} 
@@ -249,7 +252,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     delta<-c();
     for (i in 1:n) {
        if (iidtimechange==1) 
-       tmptiid<- t(Cpred(cbind(iidtime,object$B.iid[[i]]),times)[,-1,drop=FALSE])
+       tmptiid<- t(Cpred(cbind(iidtime,object$B.iid[[i]]),times,strict=FALSE)[,-1,drop=FALSE])
        else tmptiid <- t(object$B.iid[[i]])
        tmp<- as.matrix(time.vars) %*% tmptiid
 
@@ -276,8 +279,12 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
 	else if (modelType=="prop" || modelType=="rcif") { tmp<-RR*tmp+RR*tmp.const; } 
 	else if (modelType=="logistic" || modelType=="rcif2") { tmp<-RR*tmp+RR*cumhaz*tmp.const; } 
 	else if (modelType=="logistic2") { tmp<-RR*tmp+RR*cumhaz*tmp.const; } 
-	else if (modelType=="cox.aalen") { tmp <- RR * tmp + RR * cumhaz * tmp.const }
-	else if (modelType=="prop.odds") { tmp <- RR * tmp + RR * cumhaz * tmp.const; }
+	else if (modelType=="cox.aalen") {
+	       	tmp <- RR * tmp + RR * cumhaz * tmp.const }
+	else if (modelType=="prop.odds") {
+###		print(dim(RR)); print(dim(tmp)); 
+                tmp <- RR * tmp + RR * cumhaz * tmp.const; 
+	}
       } else {
 	if (modelType=="prop") { tmp<-RR*tmp; } 
       }
@@ -386,6 +393,19 @@ pava <- function(x, w=rep(1,length(x)))  # R interface to the compiled code
         as.integer(n) )
   result[["y"]]
 } ## }}}
+
+
+pava.pred <- function(pred,increasing=TRUE)  
+{ ## {{{
+### row-wise predictions
+   isvec<- is.vector(pred)
+   if (is.vector(pred)) pred<- matrix(pred,1,length(pred))
+   if (increasing==TRUE) mpred <- t(apply(pred,1,pava))
+   if (increasing==FALSE) mpred <- t(-1*apply(-pred,1,pava))
+   if (isvec) mpred <- c(mpred)
+   return(mpred)
+} ## }}}
+
 
 plot.predict.timereg<-function(x,uniform=1,new=1,se=1,col=1,lty=1,lwd=2,multiple=0,specific.comps=0,ylim=c(0,1),
 xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
@@ -501,7 +521,7 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
       #print(t); print(ci)
       n<-length(time)
       tt<-seq(time[1],time[n],length=n*10); 
-      ud<-Cpred(cbind(time,upper,lower),tt)[,2:3]
+      ud<-Cpred(cbind(time,upper,lower),tt,strict=FALSE)[,2:3]
       tt <- c(tt, rev(tt))
       yy <- c(upper, rev(lower))
 #      tt <- c(time, rev(time))

@@ -14,8 +14,11 @@ export("aalen", ## {{{
 ###    "additive.plsR",
        "check.missing",
        "rm.missing",
+       "cluster.index.timereg",
        "coefBase",
        "cox.ipw",
+       "coefcox",
+       "cox.marg",
        "comp.risk",
        "comprisk.ipw",
        "const",       
@@ -31,6 +34,7 @@ export("aalen", ## {{{
        "dynreg",   	
        "dynregBase",	
        "Event",	
+       "event.split",	
        "as.matrix.Event",	
        "as.character.Event",	
        "format.Event",	
@@ -47,6 +51,7 @@ export("aalen", ## {{{
        "nameestimate",	
        "namematrix",
        "names2formula",
+       "pava.pred",
        "pe.sasieni",
        "percen",
        "pred.cum",
@@ -54,13 +59,16 @@ export("aalen", ## {{{
        "predictpropodds",
 ###    "summary.pls",
        "prep.comp.risk",	
+       "prep.glm.comprisk",	
        "pred.stratKM",	
        "prop",	"prop.excess",	"prop.excessBase",
        "prop.odds",
 ###    "prop.odds.gam",
        "prop.odds.subdist",
+       "prop.odds.subdist.ipw",
        "pval",
        "pava",
+       "qcut",
        "res.mean",
        "read.design",
        "read.surv",
@@ -71,6 +79,10 @@ export("aalen", ## {{{
        "semiregBase",
        "sindex.prodlim",
 ###    "pls.surv.cv",
+       "pc.hazard",
+       "sim.pc.hazard",
+       "sim.cox",
+       "sim.cause.pc.hazard",
        "timecox",
        "timecoxBase",
        "timetest",
@@ -78,6 +90,22 @@ export("aalen", ## {{{
        "two.stage",
        "wald.test"
 ) ## }}} 
+
+S3method(coef,comprisk.ipw)
+S3method(print,comprisk.ipw)
+S3method(summary,comprisk.ipw)
+export("coef.comprisk.ipw","print.comprisk.ipw","summary.comprisk.ipw")
+
+S3method(coef,cox.ipw)
+S3method(print,cox.ipw)
+S3method(summary,cox.ipw)
+export("coef.cox.ipw","print.cox.ipw","summary.cox.ipw")
+
+S3method(coef,cox.marg)
+S3method(print,cox.marg)
+S3method(summary,cox.marg)
+export("coef.cox.marg","print.cox.marg","summary.cox.marg")
+
 
 S3method(coef,resmean)
 S3method(plot,resmean)
@@ -150,6 +178,13 @@ S3method(coef,comprisk)
 S3method(predict,timereg)
 S3method(plot,cums)
 
+S3method(vcov,aalen)
+S3method(vcov,cox.aalen)
+###S3method(coef,dynreg)
+###S3method(coef,timecox)
+S3method(vcov,two.stage)
+S3method(vcov,comp.risk)
+
 export("plot.aalen",
        "plot.comprisk",
        "plot.cum.residuals",
@@ -195,5 +230,20 @@ export("plot.aalen",
        "coef.comprisk",
        "coef.dynreg",
        "coef.timecox",
-       "coef.two.stage"
+       "coef.two.stage",
+       "vcov.two.stage",
+       "vcov.comp.risk",
+       "vcov.cox.aalen",
+       "vcov.aalen"
 )
+
+
+importFrom("grDevices", "col2rgb", "rgb")
+importFrom("graphics", "abline", "legend", "lines", "matplot", "plot", "points", "polygon", "title")
+importFrom("stats", "approx", "as.formula", "coef", "delete.response", "formula", "glm", "model.extract", "model.frame",
+   "model.matrix", "na.omit","pchisq", "pnorm", "predict", "qnorm", "quantile", "runif", "terms", "time", "update")
+importFrom("utils", "head","tail")
+importFrom("stats", "rexp")
+importFrom("stats", "get_all_vars")
+
+

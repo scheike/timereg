@@ -11,10 +11,11 @@ kmplot<- function(x,loc=NULL,col=NULL,lty=NULL,...)
 	else if (loc=="tl") loc <- "topleft"
 	else loc <- "bottomleft"
 	nn <- names(x$strata)
-	ll <- length(nn)
-	if (is.null(col)) cols <- seq(1,ll) else cols <- col
-	if (is.null(lty)) ltys <- seq(1,ll)  else ltys <- lty
+	if (is.null(nn)) ll <- 1 else ll <- length(nn)
+	   if (is.null(col)) cols <- seq(1,ll) else cols <- col
+	   if (is.null(lty)) ltys <- seq(1,ll)  else ltys <- lty
 	plot(x,col=cols,lty=ltys,...)
-	legend(loc,legend=names(x$strata),col=cols,lty=ltys)
+	if (!is.null(nn)) legend(loc,legend=names(x$strata),col=cols,lty=ltys)
+
 } ## }}}
 

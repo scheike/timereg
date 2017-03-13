@@ -1,32 +1,58 @@
-coefBase<- function(object, digits=3, d2logl=0,ci=0,alpha=0.05) { ## {{{
+coefBase<- function(object, digits=3, d2logl=0,ci=1,alpha=0.05) { ## {{{
   res <- cbind(object$gamma,
                diag(object$var.gamma)^0.5,
                diag(object$robvar.gamma)^0.5)
   if (d2logl==1) res<-cbind(res,diag(object$D2linv)^.5)
   wald <- object$gamma/diag(object$robvar.gamma)^0.5
   waldp <- (1 - pnorm(abs(wald))) * 2
-  res <- round(as.matrix(cbind(res, wald, waldp)),digits=digits)
+  res <- signif(as.matrix(cbind(res, wald, waldp)),digits=digits)
   if (d2logl==1) colnames(res) <- c("Coef.", "SE", "Robust SE","D2log(L)^-1","z","P-val") else colnames(res) <- c("Coef.", "SE", "Robust SE", "z", "P-val")
-  if (ci==1) {res <- round(cbind(res,res[,1]+qnorm(alpha/2)*res[,2],res[,1]+qnorm(1-alpha/2)*res[,2]),digits=digits); 
-               nn <- ncol(res); colnames(res)[(nn-1):nn] <- c("lower","upper")
+  if (ci==1) {
+     slower <- paste("lower",signif(100*alpha/2,2),"%",sep="")
+     supper <- paste("upper",signif(100*(1-alpha/2),3),"%",sep="")
+     res <- signif(cbind(res,res[,1]+qnorm(alpha/2)*res[,2],res[,1]+qnorm(1-alpha/2)*res[,2]),digits=digits); 
+     nn <- ncol(res); colnames(res)[(nn-1):nn] <- c(slower,supper)
   }
 ###  prmatrix(signif(res, digits))
   return(res)
 } ## }}}
 
-wald.test <- function(object=NULL,coef=NULL,Sigma=NULL,contrast,coef.null=NULL,null=NULL)
+coefcox <- function(object, digits=3, d2logl=0,ci=1,alpha=0.05) { ## {{{
+  res <- cbind(object$coef, diag(object$var)^0.5)
+  wald <- object$coef/diag(object$var)^0.5
+  waldp <- (1 - pnorm(abs(wald))) * 2
+  res <- signif(as.matrix(cbind(res, wald, waldp)),digits=digits)
+  colnames(res) <- c("Coef.", "SE", "z", "P-val")
+  if (ci==1) {
+     slower <- paste("lower",signif(100*alpha/2,2),"%",sep="")
+     supper <- paste("upper",signif(100*(1-alpha/2),3),"%",sep="")
+     res <- signif(cbind(res,res[,1]+qnorm(alpha/2)*res[,2],res[,1]+qnorm(1-alpha/2)*res[,2]),digits=digits); 
+     nn <- ncol(res); colnames(res)[(nn-1):nn] <- c(slower,supper)
+  }
+###  prmatrix(signif(res, digits))
+  return(res)
+} ## }}}
+
+wald.test <- function(object=NULL,coef=NULL,Sigma=NULL,contrast,coef.null=NULL,null=NULL,print.coef=TRUE,alpha=0.05)
 { ## {{{
+
+  if (class(object)=="coxph")  {coef <-  matrix(coef(object),ncol=1); 
+                              Sigma=object$var;}
+  if (class(object)=="cox.aalen")  {coef <- object$gamma; Sigma=object$var.gamma;}
+
   if (is.null(Sigma)) {
      if (class(object)=="cor" || class(object)=="twostage") Sigma <- object$var.theta else Sigma <- object$var.gamma;
   }
   if (!is.null(object)) {
      if (class(object)=="cor" || class(object)=="twostage") coefs <- object$theta else coefs <- object$gamma;
-  } else if (!is.null(coef)) coefs <- coef else stop("No estimates given \n"); 
+  } 
+  if (!is.null(coef)) coefs <- coef ## else stop("No estimates given \n"); 
   nl <- length(coefs)
   if (missing(contrast)) {
       contrast <- rep(1,length(coefs))
       contrast <- diag(1,nl);
-  }
+###      namesc <- names(c(coefs))
+  } 
   if (!is.null(coef.null)) {
 	  contrast <- c()
 	  for (i in coef.null) 
@@ -39,14 +65,23 @@ wald.test <- function(object=NULL,coef=NULL,Sigma=NULL,contrast,coef.null=NULL,n
   p <- coefs
   if (is.vector(B)) { B <- rbind(B); colnames(B) <- names(contrast) }
 
- Q <- t(B%*%p-null)%*%solve(B%*%Sigma%*%t(B))%*%(B%*%p-null)
+ varBp <- B%*%Sigma%*%t(B)
+ seBp <- diag(varBp)^.5
+ lin.comb <- B %*% p
+ Q <- t(B%*%p-null)%*%solve(varBp)%*%(B%*%p-null)
+ zvals <- lin.comb/seBp
+ pvals <- 2*(1-pnorm(abs(zvals)))
+ coef.out <- cbind(lin.comb,seBp,lin.comb+seBp*qnorm(alpha/2),lin.comb+seBp*qnorm(1-alpha/2),pvals)
+ colnames(coef.out) <- c("lin.comb","se","lower","upper","pval")
+ if (print.coef) prmatrix(coef.out)
+
  df <- qr(B)$rank; names(df) <- "df"
  attributes(Q) <- NULL; names(Q) <- "chisq";
  pQ <- ifelse(df==0,NA,1-pchisq(Q,df))
  method = "Wald test";
  ##    hypothesis <-
  res <- list(##data.name=hypothesis,
-  statistic = Q, parameter = df, p.value=pQ, method = method)
+  statistic = Q, parameter = df, p.value=pQ, method = method,coef.out=coef.out,varBp=varBp,lin.comb=lin.comb)
   class(res) <- "htest"
   attributes(res)$B <- B
 return(res)
@@ -90,76 +125,6 @@ if (ndiag>0.0000001) ud <- FALSE;
 return(ud)
 } ## }}}
 
-residualsTimereg <- function(object,data=data)
-{ ## {{{
-
-if (class(object)!="cox.aalen" & class(object)!="aalen") stop("Computes residuals for Aalen or Cox.aalen object") 
-else {
- formula<-attr(object,"Formula");
- beta.fixed <- attr(object,"beta.fixed")
- if (is.null(beta.fixed)) beta.fixed <- 1; 
- model <- class(object); 
- ldata<-aalen.des(formula,data=data,model=model);
- id <- attr(object,"id"); 
- mclusters <- attr(object,"cluster")
- X<-ldata$X; 
- time<-ldata$time2; 
- Z<-ldata$Z;  
- status<-ldata$status;
- time2 <- attr(object,"stop"); 
- start <- attr(object,"start");
- status <- attr(object,"status");
- if (!is.null(attr(object,"max.time"))) status <- status*(time2< attr(object,"max.time")); 
- antpers<-nrow(X);
- if (is.null(Z)==TRUE) {npar<-TRUE; semi<-0;}  else { Z<-as.matrix(Z); npar<-FALSE; semi<-1;}
- if (npar==TRUE) {Z<-matrix(0,antpers,1); pz<-1; fixed<-0;} else {fixed<-1;pz<-ncol(Z);}
- px<-ncol(X);
-
- if (sum(abs(start))>0) lefttrunk <- 1  else lefttrunk <- 0;  
- cumhazleft <- 0; 
- nn <- nrow(object$cum) 
-
- cum <- Cpred(object$cum,time2)[,-1]
- cumhaz0 <- apply(cum*X,1,sum)
- cumhazleft <- rep(0,antpers)
- RR <- rep(1,antpers); 
-
-if (class(object)=="cox.aalen")
-{ ## {{{
-  RR <- exp(Z %*% object$gamma); 
-  cumhaz <- cumhaz0 * RR;
-  if (lefttrunk==1) {
-      cum <- Cpred(object$cum,start)[,-1]
-      cumhazleft <- apply(cum*X,1,sum)
-      cumhazleft <- cumhazleft * RR;
-  }
-} ## }}}
-
-if (class(object)=="aalen")
-{#{{{
-  if (npar==FALSE) { ## semi-parametric risk model
-      ex.haz <- (Z %*% object$gamma) ; 
-      cumhaz <- cumhaz0+ex.haz*time2
-     if (lefttrunk==1) {
-	 cum <- Cpred(object$cum,start)[,-1]
-	 cumhazleft <- apply(cum*X,1,sum)
-	 cumhazleft  <-  cumhazleft+ex.haz*start
-     }
-  } else {  ## Aalen model
-	  cumhaz <- cumhaz0
-          if (lefttrunk==1) {
-	     cum <- Cpred(object$cum,start)[,-1]
-	     cumhazleft <- apply(cum*X,1,sum)
-	     if (npar==TRUE) cumhazleft <-  cumhazleft
-          }
-  }
-} #}}}
-
-} 
-
-residuals <- status- cumhaz
-out <- list(residuals=c(residuals),status=c(status),cumhaz=c(cumhaz),cumhazleft=c(cumhazleft),RR=RR)
-} ## }}}
 
 risk.index <- function(start,stop,id,times)
 { ## {{{

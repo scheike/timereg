@@ -3,15 +3,17 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
     sim = 1, antsim = 1000, weighted.test= 0, robust = 1, 
     ratesim = 0, residuals = 0, covariance = 1,
     resample.iid=0,namesZ=NULL,namesX=NULL,beta.fixed=0,strata=NULL,
-    entry=NULL,offsets=0,exactderiv=1,max.timepoint.sim=100,silent=1,basesim=0)  ## {{{
+    entry=NULL,offsets=0,exactderiv=1,max.timepoint.sim=100,silent=1,basesim=0,
+    propodds=0,caseweight=NULL)  ## {{{
 {
   additive.resamp <-0; ridge <- 0; XligZ <- 0; 
   Ntimes <- length(times)
-  sim <- rep(sim,3); 
-  sim[2] <- basesim; ##  tmp tmp tmp  
+###  sim <- rep(sim,3); 
+  sim <- basesim; ##  c(1,0.2), to simulat starting at 0.2 
+  if (length(sim)==1) sim <- c(sim,0)
 ###  if (ratesim==0 && (max(by(status,clusters,sum))>1)) mjump <- 1 else mjump <- 0; 
   mjump <- 0        ### not working
-  sim[3] <- mjump;  ### multiple jumps within cluster
+###  sim[2] <- mjump;  ### multiple jumps within cluster
 
   if (ratesim==0 && mjump==1) cat("Multiple jumps in some clusters, use rate.sim=1\n"); 
 
@@ -44,12 +46,13 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   if (residuals == 2)  cumAi <- rep(0, fdata$antpers * 1) 
   cumint <- vcum <- matrix(0, Ntimes , px + 1); 
   Rvcu <- matrix(0, mts, px + 1); 
+  if (any(is.na(beta))) { cat(" Starting values include NA, possibly from call of coxph\n"); beta[is.na(beta)] <- 0;}
   if (sum(abs(beta)) == 0) betaS <- rep(0, pg) else betaS <- beta
   if (length(betaS)!=pg) betaS <- rep(betaS[1],pg); 
   score <- betaS; 
   loglike <- rep(0,2); 
   RVarbeta <- Iinv <- Varbeta <- matrix(0, pg, pg); 
-  if (sim[1] == 1) Uit <- matrix(0, mts , 50 * pg) else Uit <- NULL
+  if (antsim>0) Uit <- matrix(0, mts , 50 * pg) else Uit <- NULL
   if (additive.resamp == 1) baseproc <- matrix(0, mts, 50 * px) else baseproc <- NULL
   if (resample.iid == 1) biid <- matrix(0, mts, fdata$antclust * px) else biid <- NULL; 
   gamiid<- matrix(0,fdata$antclust,pg); 
@@ -64,6 +67,12 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
 
 ### print(stratum); ### print(weights); print(offsets)
 
+  icase <- 0
+  if (!is.null(caseweight)) {icase <- 1; caseweight <-c(0,caseweight)
+###	  cumint[,1] <- c(0,caseweight)
+  } else caseweight<-rep(0,Ntimes+1)
+  silent <- c(silent,propodds,icase)
+
   nparout <- .C("score", as.double(times), as.integer(Ntimes), 
                 as.double(designX), as.integer(nx), as.integer(px), 
                 as.double(designG), as.integer(ng), as.integer(pg), 
@@ -72,7 +81,8 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
                 as.double(vcum), as.double(weights), as.integer(mw), 
                 as.double(loglike), as.double(Iinv), as.double(Varbeta), 
                 as.integer(detail), as.double(offsets), as.integer(mof), 
-                as.integer(sim), as.integer(antsim), as.integer(rani), 
+                as.double(sim), as.integer(antsim), 
+###		as.integer(rani), 
                 as.double(Rvcu), as.double(RVarbeta), as.double(test), 
                 as.double(testOBS), as.double(Ut), as.double(simUt), 
                 as.double(Uit), as.integer(XligZ), as.double(aalen), 
@@ -86,11 +96,11 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
                 as.double(var.score),as.integer(beta.fixed),
 		as.double(weights),as.integer(entry) ,as.integer(exactderiv),
 	        as.integer(time.group), as.integer(max.timepoint.sim),as.integer(stratum),
-		as.integer(silent),PACKAGE = "timereg")
+		as.integer(silent),as.double(caseweight),PACKAGE = "timereg")
 
   Iinv <- matrix(nparout[[19]], pg, pg); 
-  RVarbeta <- -matrix(nparout[[28]], pg, pg)
-  rvcu <- matrix(nparout[[27]], mts , px + 1); ## convert to approx for times 
+  RVarbeta <- -matrix(nparout[[27]], pg, pg)
+  rvcu <- matrix(nparout[[26]], mts , px + 1); ## convert to approx for times 
   Rvcu <- times; 
   for (i  in 2:(px+1)) Rvcu <- cbind(Rvcu,approx(rvcu[,1],rvcu[,i],times,f=0.5)$y)
 
@@ -98,15 +108,15 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   cumint <- matrix(nparout[[14]], Ntimes, px + 1); 
   vcum <- matrix(nparout[[15]], Ntimes, px + 1)
   gamma <- matrix(nparout[[12]], pg, 1); 
-  score <- matrix(nparout[[42]], pg, 1)
+  score <- matrix(nparout[[41]], pg, 1)
 
-  Ut <- matrix(nparout[[31]], mts , pg + 1)
-  if (beta.fixed==1) var.score<-matrix(nparout[[57]],Ntimes,pg+1)
+  Ut <- matrix(nparout[[30]], mts , pg + 1)
+  if (beta.fixed==1) var.score<-matrix(nparout[[56]],Ntimes,pg+1)
 
-  gammaiid <-t( matrix(nparout[[44]],pg,fdata$antclust * 1))
-  gamiid<-matrix(nparout[[53]],fdata$antclust,pg);
+  gammaiid <-t( matrix(nparout[[43]],pg,fdata$antclust * 1))
+  gamiid<-matrix(nparout[[52]],fdata$antclust,pg);
   if (resample.iid==1)  {
-    biid<-matrix(nparout[[54]],mts,fdata$antclust*px);
+    biid<-matrix(nparout[[53]],mts,fdata$antclust*px);
     B.iid<-list();
     for (i in (0:(fdata$antclust-1))*px) {
       B.iid[[i/px+1]]<-as.matrix(biid[,i+(1:px)]);
@@ -115,31 +125,31 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
   } else B.iid<-gamiid<-NULL; 
 
   if (covariance == 1) {
-    covit <- matrix(nparout[[49]], mts, px * px)
+    covit <- matrix(nparout[[48]], mts, px * px)
     cov.list <- list()
     for (i in 1:mts) cov.list[[i]] <- matrix(covit[i,], px, px) 
   } else cov.list <- NULL
-  if (residuals == 1) cumAi <- matrix(nparout[[43]],Ntimes,fdata$antpers * 1)
+  if (residuals == 1) cumAi <- matrix(nparout[[42]],Ntimes,fdata$antpers * 1)
 ###  if (residuals == 1) dNit <- matrix(nparout[[40]],Ntimes,fdata$antpers * 1)
-  if (residuals == 2) cumAi <- nparout[[43]]
+  if (residuals == 2) cumAi <- nparout[[42]]
   cumAi <- list(time = times, dM = cumAi)
 
     testUt <- test <- unifCI <- supUtOBS <- UIt <- testOBS <- testval <- pval.testBeq0 <- 
     pval.testBeqC <- obs.testBeq0 <- obs.testBeqC <- sim.testBeq0 <- sim.testBeqC <- testUt <- sim.supUt <- NULL 
 	               
-  if (sim[1] >= 1) {
-    Uit <- matrix(nparout[[33]], mts, 50 * pg)
+  if (antsim>0) {
+    Uit <- matrix(nparout[[32]], mts, 50 * pg)
     UIt <- list()
     for (i in (0:49) * pg) UIt[[i/pg + 1]] <- as.matrix(Uit[, i + (1:pg)])
-    simUt <- matrix(nparout[[32]], antsim, pg)
+    simUt <- matrix(nparout[[31]], antsim, pg)
     supUtOBS <- apply(abs(as.matrix(Ut[, -1])), 2, max)
     testUt <- c()
     for (i in 1:pg) testUt <- c(testUt, pval(simUt[, i], supUtOBS[i]))
     sim.supUt <- as.matrix(simUt)
 
-if (basesim==1) {
-    test <- matrix(nparout[[29]], antsim, 2 * px)
-	    testOBS <- nparout[[30]]
+   if (basesim[1]>0) {
+    test <- matrix(nparout[[28]], antsim, 2 * px)
+	    testOBS <- nparout[[29]]
 	    for (i in 1:(2 * px)) testval <- c(testval, pval(test[, i], testOBS[i]))
 	    for (i in 1:px) unifCI <- c(unifCI, percen(test[, i], 0.95))
 	    pval.testBeq0 <- as.vector(testval[1:px])
@@ -152,7 +162,7 @@ if (basesim==1) {
   }
 
   if (additive.resamp == 1) {
-    baseproc <- matrix(nparout[[51]], mts, 50 * pg)
+    baseproc <- matrix(nparout[[50]], mts, 50 * pg)
     additive.proc <- list()
     for (i in (0:49) * px)
       additive.proc[[i/px+1]]<-as.matrix(baseproc[,i+(1:px)])

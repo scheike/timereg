@@ -142,8 +142,8 @@ Springer (2006).
 }
 \author{Thomas Scheike}
 \examples{
+\donttest{ 
 ## this runs slowly and is therfore donttest
-\donttest{
 data(csl)
 indi.m<-rep(1,length(csl$lt)) 
 

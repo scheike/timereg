@@ -3,7 +3,7 @@ aalen<-function (formula = formula(data),
      robust=1, id=NULL, clusters=NULL, residuals = 0, n.sim = 1000,  
      weighted.test= 0,covariance=0,resample.iid=0,
      deltaweight=1,silent=1,weights=NULL,max.clust=1000,
-     gamma=NULL,offsets=0){ ## {{{
+     gamma=NULL,offsets=0,caseweight=NULL){ ## {{{
 ## {{{ setting up variables 
   if (n.sim == 0) sim <- 0 else sim <- 1
   if (resample.iid==1 & robust==0) { robust <- 1;}
@@ -15,7 +15,7 @@ aalen<-function (formula = formula(data),
     m$start.time <- m$weighted.test <- m$max.time <- m$robust <- 
     m$weights <- m$residuals <- m$n.sim <- m$id <- m$covariance <- 
     m$resample.iid <- m$clusters <- m$deltaweight<-m$silent <- 
-    m$max.clust <- m$gamma <- m$offsets <- NULL
+    m$max.clust <- m$gamma <- m$offsets <- m$caseweight <- NULL
   special <- c("const","cluster") 
   Terms <- if (missing(data)){
     terms(formula, special)
@@ -105,7 +105,7 @@ ldata<-list(start=survs$start,stop=survs$stop,antpers=survs$antpers,antclust=sur
    sim = sim, retur = residuals, antsim = n.sim,
    weighted.test = weighted.test,covariance=covariance,
    resample.iid=resample.iid,namesX=covnamesX,
-   silent=silent,weights=weights,entry=entry,offsets=offsets)
+   silent=silent,weights=weights,entry=entry,offsets=offsets,caseweight=caseweight)
 
     colnames(ud$cum) <- colnames(ud$var.cum) <- c("time",covnamesX)
     if (robust == 1) colnames(ud$robvar.cum) <- c("time", covnamesX)
@@ -123,7 +123,7 @@ ldata<-list(start=survs$start,stop=survs$stop,antpers=survs$antpers,antclust=sur
 	residuals,covariance=covariance,
 	resample.iid=resample.iid,namesX=covnamesX,namesZ=covnamesZ,
 	deltaweight=deltaweight,gamma=gamma,
-	silent=silent,weights=weights,entry=entry,offsets=offsets)
+	silent=silent,weights=weights,entry=entry,offsets=offsets,caseweight=caseweight)
 
     if (px > 0) {
       colnames(ud$cum) <- colnames(ud$var.cum) <- c("time", covnamesX)
@@ -167,7 +167,8 @@ ldata<-list(start=survs$start,stop=survs$stop,antpers=survs$antpers,antclust=sur
 } ## }}}
 
 plot.aalen <-  function (x, pointwise.ci=1, hw.ci=0,
-sim.ci=0, robust=0, specific.comps=FALSE,level=0.05, start.time = 0, 
+sim.ci=0, robust.ci=0, col=NULL,
+specific.comps=FALSE,level=0.05, start.time = 0, 
 stop.time = 0, add.to.plot=FALSE, mains=TRUE, xlab="Time",
 ylab ="Cumulative coefficients",score=FALSE,...) 
 { ## {{{
@@ -176,13 +177,20 @@ ylab ="Cumulative coefficients",score=FALSE,...)
     stop ("Must be output from Aalen function") 
  
   if (score==FALSE) plot.cums(object, pointwise.ci=pointwise.ci, 
-        hw.ci=hw.ci,
-        sim.ci=sim.ci, robust=robust, specific.comps=specific.comps,level=level, 
+        hw.ci=hw.ci, sim.ci=sim.ci, robust.ci=robust.ci, col=col, 
+	specific.comps=specific.comps,level=level, 
         start.time = start.time, stop.time = stop.time, add.to.plot=add.to.plot, 
         mains=mains, xlab=xlab, ylab =ylab) 
   else plotScore(object, specific.comps=specific.comps, mains=mains,
                   xlab=xlab,ylab =ylab); 
 } ## }}}
+
+vcov.aalen <- function(object,robust=0, ...) {
+  if (robust==0) rv <- object$var.gamma else  rv <- object$robvar.gamma
+  if (!identical(rv, matrix(0, nrow = 1L, ncol = 1L))) rv # else return NULL
+}
+
+
 
 "print.aalen" <- function (x,...) 
 { ## {{{

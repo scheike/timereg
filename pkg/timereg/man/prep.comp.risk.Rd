@@ -11,7 +11,7 @@ here \eqn{H} is the estimator of the truncation distribution and \eqn{G_c} is th
 prep.comp.risk(data,times=NULL,entrytime=NULL,
 	       time="time",cause="cause",cname="cweight",tname="tweight",
 	       strata=NULL,nocens.out=TRUE,cens.formula=NULL,cens.code=0,
-	       prec.factor=100)
+			   prec.factor=100,trunc.mintau=FALSE)
 }
 \arguments{
 \item{data}{ data frame for comp.risk.}
@@ -28,6 +28,8 @@ case.}
 model.}
 \item{cens.code}{code for censoring among causes.}
 \item{prec.factor}{precision factor, for ties between censoring/even times, truncation times/event times}
+\item{trunc.mintau}{specicies wether the truncation distribution is evaluated in death times or death times minimum max(times), FALSE makes the estimator equivalent to
+Kaplan-Meier (in the no covariate case).}
 }
 \value{
 Returns an object. With the following arguments:

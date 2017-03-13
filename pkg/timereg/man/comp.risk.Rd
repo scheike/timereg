@@ -64,7 +64,7 @@ In general p may be powers of the same length as z.
 }
 \usage{
 comp.risk(formula,data=sys.parent(),cause,times=NULL,Nit=50,
-clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=500,weighted=0,model="fg",
+clusters=NULL,est=NULL,fix.gamma=0,gamma=0,n.sim=0,weighted=0,model="fg",
 detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",cens.formula=NULL,
 time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
@@ -123,7 +123,7 @@ Default is 1000 to save memory and time. }
   estimates that are much quicker.}
 \item{monotone}{ monotone=0, uses estimating equations 
 \deqn{
-(D_beta P_1) w(t) ( Y(t)/G_c(t) - P_1(t,X)) and 
+(D_\beta P_1) w(t) ( Y(t)/G_c(t) - P_1(t,X)) and 
 }
 montone 1 uses 
 \deqn{
@@ -143,9 +143,7 @@ the new code is
 
 comp.risk(Event(time,cause)~x1+x2,data=mydata,cause=1)
 
-Also the argument cens.code is now obsolete since cens.code is an
-argument of \code{\link{Event}}.
-
+Also the argument cens.code is now obsolete since cens.code is an argument of \code{\link{Event}}.
 }
 \value{returns an object of type 'comprisk'. With the following arguments:
 \item{cum}{cumulative timevarying regression coefficient estimates are 
@@ -252,7 +250,7 @@ cause=1,resample.iid=1,model="prop",n.sim=100)
 summary(fg2)
 
 #################################################################
-## Delayed entry models, must use semi-parametric model call 
+## Delayed entry models, 
 #################################################################
 nn <- nrow(bmt)
 entrytime <- rbinom(nn,1,0.5)*(bmt$time*runif(nn))

@@ -5,7 +5,7 @@ beta=NULL,Nit=20,detail=0,start.time=0,max.time=NULL, id=NULL,
 clusters=NULL, n.sim=500, residuals=0,robust=1,
 weighted.test=0,covariance=0,resample.iid=1,weights=NULL,
 rate.sim=1,beta.fixed=0,max.clust=1000,exact.deriv=1,silent=1,
-max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL)
+max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL,propodds=0,caseweight=NULL)
 { ## {{{
 # {{{ set up variables 
   if (n.sim == 0) sim <- 0 else sim <- 1
@@ -20,7 +20,7 @@ max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL)
 	  m$max.time<-m$residuals<-m$n.sim<-m$id<-m$covariance<-m$resample.iid<-
 	  m$clusters<-m$rate.sim<-m$beta.fixed<- m$max.clust <- m$exact.deriv <- 
 	  m$silent <- m$max.timepoint.sim <- m$silent <- m$basesim  <- 
-	  m$offsets <- m$strata <- NULL
+	  m$offsets <- m$strata <- m$propodds <- m$caseweight <- NULL
 
   special <- c("prop","cluster")
   Terms <- if(missing(data)) terms(formula, special)
@@ -159,7 +159,7 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
             covariance=covariance,resample.iid=resample.iid,namesX=covnamesX,
 	    namesZ=covnamesZ,beta.fixed=beta.fixed,entry=entry,basesim=basesim,
 	    offsets=offsets,exactderiv=exact.deriv,max.timepoint.sim=max.timepoint.sim,silent=silent,
-	    strata=strata)
+	    strata=strata,propodds=propodds,caseweight=caseweight)
 
   ## {{{ output handling
   colnames(ud$test.procProp)<-c("time",covnamesZ)
@@ -171,7 +171,7 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
     if (robust==1) colnames(ud$robvar.cum)<- c("time",covnamesX)
     if (sim==1) {
       names(ud$pval.Prop)<- covnamesZ
-    if (basesim==1) {
+    if (basesim[1]>0) {
       names(ud$conf.band)<- names(ud$pval.testBeq0)<- names(ud$pval.testBeqC)<-
       names(ud$obs.testBeq0)<- names(ud$obs.testBeqC)<- 
       colnames(ud$sim.testBeq0)<- covnamesX; 
@@ -188,11 +188,13 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
                       ud$robvar.gamma<-matrix(0,pz,pz);
   }
   namematrix(ud$D2linv,covnamesZ); 
+  ud$prop.odds <- propodds
 
   class(ud)<-"cox.aalen"
   attr(ud,"Call")<-call; 
   attr(ud,"stratum")<-ud$stratum; 
   attr(ud,"Formula")<-formula;
+  attr(ud,"formula")<-formula;
   attr(ud,"rate.sim")<-rate.sim;
   attr(ud,"id.call")<-id.call;
   attr(ud,"id")<-id.call;
@@ -204,6 +206,8 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
   attr(ud,"stop")<-stop.call; 
   attr(ud,"weights")<-weights.call; 
   attr(ud,"offsets")<-offsets.call; 
+  attr(ud,"propodds")<-propodds 
+  attr(ud,"type")<-"survival"
   attr(ud,"beta.fixed")<-beta.fixed
   attr(ud,"status")<-status.call; 
   attr(ud,"residuals")<-residuals; 
@@ -219,7 +223,7 @@ ldata<-list(start=start,stop=stop,antpers=survs$antpers,antclust=survs$antclust)
 } ## }}}
 
 "plot.cox.aalen" <-  function (x,pointwise.ci=1, hw.ci=0,
-sim.ci=0, robust=0, specific.comps=FALSE,level=0.05, start.time = 0,
+sim.ci=0, robust.ci=0, col=NULL, specific.comps=FALSE,level=0.05, start.time = 0,
 stop.time = 0, add.to.plot=FALSE,main=NULL,mains=TRUE,xlab="Time",score=FALSE,
 ylab="Cumulative coefficients",...)
 { ## {{{
@@ -228,7 +232,7 @@ ylab="Cumulative coefficients",...)
   if (ylab=="Cumulative coefficients" && (1*score)>=1) ylab <- "Cumulative MG-residuals"
 
   if (score==FALSE) plot.cums(object, pointwise.ci=pointwise.ci,
-        hw.ci=hw.ci, sim.ci=sim.ci, robust=robust, specific.comps=specific.comps,level=level,
+        hw.ci=hw.ci, sim.ci=sim.ci, robust.ci=robust.ci, col=col, specific.comps=specific.comps,level=level,
         start.time = start.time, stop.time = stop.time, add.to.plot=add.to.plot,
 	main=main, mains=mains, xlab=xlab,ylab=ylab,...)
   else plotScore(object, specific.comps=specific.comps, mains=mains,
@@ -268,7 +272,7 @@ summary.cox.aalen(x,...)
   
   prop<-TRUE; 
   if (is.null(cox.aalen.object$gamma)==TRUE) stop(" No regression terms"); 
-  if (is.null(cox.aalen.object$prop.odds)==TRUE) p.o<-FALSE else p.o<-TRUE
+  if (cox.aalen.object$prop.odds==0) p.o<-FALSE else p.o<-TRUE
     
   if (p.o==FALSE) cat("Cox-Aalen Model \n\n") else cat("Proportional Odds model \n\n")
 
@@ -291,8 +295,7 @@ summary.cox.aalen(x,...)
     out=signif(out,digits=digits)
     print(out)
 
-    if (p.o==FALSE) cat("Test for Proportionality \n") else  
-    cat("Test for Goodness-of-fit \n")
+    if (p.o==FALSE) cat("Test of Proportionality \n") else  cat("Test of Goodness-of-fit \n")
     if (is.null(obj$pval.Prop)==TRUE)  ptest<-FALSE else ptest<-TRUE; 
     if (ptest==FALSE) cat("Test not computed, sim=0 \n\n")
     if (ptest==TRUE) { 
@@ -312,3 +315,10 @@ summary.cox.aalen(x,...)
 coef.cox.aalen<-function(object,digits=3,d2logl=1,...) {
    coefBase(object,digits=digits, d2logl=d2logl,...)
 }
+
+vcov.cox.aalen <- function(object,robust=0, ...) {
+  if (robust==0) rv <- object$var.gamma else  rv <- object$robvar.gamma
+  if (!identical(rv, matrix(0, nrow = 1L, ncol = 1L))) rv # else return NULL
+}
+
+

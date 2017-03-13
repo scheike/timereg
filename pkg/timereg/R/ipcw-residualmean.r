@@ -258,9 +258,9 @@ conservative=1,weights=NULL){
            test.procBeqC=Ut,sim.test.procBeqC=UIt,conv=conv,
 	   cens.weights=Gcx,time=time2,delta.tau=deltatau,time2tau=time2tau)
 
-  ud$call<-call; ud$model<-model; ud$n<-n; 
+  ud$call<-match.call(); ud$model<-model; ud$n<-n; 
   ud$formula<-formula; class(ud)<-"resmean"; 
-  attr(ud, "Call") <- sys.call()
+  attr(ud, "Call") <- match.call()
   attr(ud, "Formula") <- formula
   attr(ud, "time.pow") <- time.pow
   attr(ud, "cause") <- cause
@@ -360,6 +360,11 @@ summary.resmean <- function (object,digits = 3,ci=0, alpha=0.05,silent=0, ...) {
   out
 } ## }}}
 
+vcov.resmean <- function(object, ...) {
+  rv <- object$robvar.gamma
+  if (!identical(rv, matrix(0, nrow = 1L, ncol = 1L))) rv # else return NULL
+}
+
 plot.resmean <-  function (x, pointwise.ci=1, hw.ci=0,
                             sim.ci=0, specific.comps=FALSE,level=0.05, start.time = 0,
                             stop.time = 0, add.to.plot=FALSE, mains=TRUE, xlab="Time",
@@ -407,8 +412,8 @@ plot.resmean <-  function (x, pointwise.ci=1, hw.ci=0,
           cat("Hall-Wellner bands only 95 % \n");
         }
         tau<-length(B[,1])
-        nl<-B[,v]-1.13*V[tau,v]^.5*(1+V[,v]/V[tau,v])
-        ul<-B[,v]+1.13*V[tau,v]^.5*(1+V[,v]/V[tau,v])
+        nl<-B[,v]-1.27*V[tau,v]^.5*(1+V[,v]/V[tau,v])
+        ul<-B[,v]+1.27*V[tau,v]^.5*(1+V[,v]/V[tau,v])
         lines(B[,1],ul,lty=hw.ci,type="l"); 
         lines(B[,1],nl,lty=hw.ci,type="l");
       }

@@ -101,8 +101,11 @@ matplot(x$timetau,x$S0tau,type="s")
 
 summary.restricted.residual.mean <- function(object, digits=3,...)
 { ## {{{ 
+if (!is.null(object$se)) {
 out <- cbind(object$mean,object$se)
-colnames(out) <- c("mean","se")
+colnames(out) <- c("mean","se") } else {
+out <- matrix(object$mean,ncol=1)
+colnames(out) <- "mean"} 
 
 prmatrix(signif(out,digits))
 cat("\n"); 

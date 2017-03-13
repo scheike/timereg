@@ -37,7 +37,6 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
 
   if (class(object)=="cox.aalen") 
   ldata<-aalen.des(formula,data,model="cox.aalen") else ldata<-aalen.des(formula,data) 
-
   X<-ldata$X; covar<-X; px<-ldata$px; 
 
   time<-attr(object,"start"); 
@@ -51,7 +50,8 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   if (length(weights1)!=nrow(X)) stop("Lengths of weights from aalen/cox.aalen and data do not match\n"); 
 
   if (coxaalen==1) {
-    Z<-ldata$Z;  covnamesZ<-ldata$covnamesZ; 
+    Z<-ldata$Z;  
+    covnamesZ<-ldata$covnamesZ; 
     pg<-ncol(Z); 
   } else Z <- 0
   Ntimes <- sum(status); 
@@ -107,9 +107,12 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   ntot <- nrow(X); 
 
   if (coxaalen==1) { gamma.iid<-object$gamma.iid 
-                     covar<-cbind(X,Z);
-                     ptot<-px+pg;
+	     covar<-cbind(X,Z);
+             cnames<- c(ldata$covnamesX,ldata$covnamesZ)
+             if (ncol(covar)==length(cnames)) colnames(covar)<-cnames
+             ptot<-px+pg;
   } else { covar<-covar; ptot<-px; gamma.iid<-0; }
+
 
   covnames0<-colnames(covar); 
   if (is.null(covnames0)) covnames0  <- rep("",ptot); 
@@ -297,6 +300,7 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
       stop("To plot cumulative residuals vs. covariates, cum.resid=1"); 
   }
 
+
   if (score==0)  ## {{{ 
   {
     B<-object$cum; 
@@ -341,8 +345,8 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
       if (hw.ci>=1) {
         if (level!=0.05) cat("Hall-Wellner bands only 95 % \n");
         tau<-length(B[,1])
-        nl<-B[,v]-1.13*V[tau,v]^.5*(1+V[,v]/V[tau,v])
-        ul<-B[,v]+1.13*V[tau,v]^.5*(1+V[,v]/V[tau,v])
+        nl<-B[,v]-1.27*V[tau,v]^.5*(1+V[,v]/V[tau,v])
+        ul<-B[,v]+1.27*V[tau,v]^.5*(1+V[,v]/V[tau,v])
         lines(B[,1],ul,lty=hw.ci,type="s"); 
         lines(B[,1],nl,lty=hw.ci,type="s"); 
       }

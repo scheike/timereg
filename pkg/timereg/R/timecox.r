@@ -1,7 +1,7 @@
 timecoxBase<-function(times,fdata,designX,status,id,bhat,
 method="basic",band=1,degree=1,it=20,sim=1,retur=0,robust=1,
 antsim=1000,sim2=sim2,weighted.test=0,covariance=0)
-{
+{ ## {{{ 
 Ntimes <- length(times); designX<-as.matrix(designX); 
 if(is.matrix(designX) == TRUE) p<-as.integer(dim(designX)[2]);
 if(is.matrix(designX) == TRUE) nx<-as.integer(dim(designX)[1]);
@@ -167,12 +167,12 @@ conf.band=unifCI,test.procBeqC=Ut,sim.test.procBeqC=UIt,
 sim.testBeqC.is=sim.testBeqC.is, sim.testBeqC.is=sim.testBeqC.is1,
 sim.testBeqC.is=sim.testBeqC.is2,covariance=cov.list)
 return(ud); 
-}
+} ## }}} 
 
 semicox<-function(times,fdata,designX,designG,status,id,bhat,gamma=0,
 band=1,degree=1,it=10,method="basic",sim=0,retur=0,antsim=1000,
 robust=1,weighted.test=0,covariance=0) 
-{
+{ ## {{{ 
 Nalltimes <- length(times); 
 Ntimes<-sum(status[(fdata$stop>times[1]) & (fdata$stop<=times[Nalltimes])])+1;
 designX<-as.matrix(designX); designG<-as.matrix(designG); 
@@ -355,7 +355,7 @@ sim.testBeqC.is=sim.testBeqC.is,
 conf.band=unifCI,test.procBeqC=Ut,sim.test.procBeqC=UIt,
 covariance=cov.list)
 return(ud);
-}
+} ## }}} 
 
 pval<-function(simt,Otest)
 {

@@ -5,6 +5,7 @@
 \alias{plot.resmean}
 \alias{print.resmean}
 \alias{coef.resmean}
+\alias{coefcox}
 \alias{kmplot}
 \alias{pval}
 \alias{additive.compSs}
@@ -12,14 +13,6 @@
 \alias{mypbc}
 \alias{Csmooth2B}
 \alias{pval}
-\alias{Event}
-\alias{as.character.Event}
-\alias{as.matrix.Event} 
-\alias{[.Event} 
-\alias{format.Event}
-\alias{print.Event} 
-\alias{rbind.Event} 
-\alias{summary.Event}
 \alias{kernel}
 \alias{percen}
 \alias{localTimeReg}
@@ -59,17 +52,25 @@
 \alias{plot.cox.aalen2}
 \alias{plot.predict}
 \alias{coef.aalen}
-\alias{cox.ipw}
+\alias{cox.marg}
+\alias{summary.cox.marg}
+\alias{coef.cox.marg}
+\alias{print.cox.marg}
 \alias{comprisk.ipw}
+\alias{coef.comprisk.ipw}
+\alias{print.comprisk.ipw}
+\alias{prop.odds.subdist.ipw}
+\alias{summary.comprisk.ipw}
 \alias{coef.cox.aalen}
 \alias{coef.comprisk}
 \alias{coef.two.stage}
-\alias{cluster.index}
+\alias{cluster.index.timereg}
 \alias{coefBase}
 \alias{des.aalen}
 \alias{timetest}
 \alias{print.pe.sasieni} 
 \alias{pred.stratKM} 
+\alias{prep.glm.comprisk} 
 \alias{print.predict.timereg}
 \alias{print.two.stage}
 \alias{residualsTimereg}
@@ -85,6 +86,10 @@
 \alias{timereg.formula}
 \alias{names2formula}
 \alias{twin.clustertrunc}
+\alias{vcov.aalen}
+\alias{vcov.cox.aalen}
+\alias{vcov.two.stage}
+\alias{vcov.comp.risk}
 \title{For internal use}
 \description{for internal use}
 \author{Thomas Scheike}

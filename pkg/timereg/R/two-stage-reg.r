@@ -5,8 +5,9 @@ Nit=60,detail=0,start.time=0,max.time=NULL,id=NULL,clusters=NULL,
 robust=1,theta=NULL,theta.des=NULL,var.link=0,step=0.5,notaylor=0,se.clusters=NULL)
 { ## {{{
 ## {{{ seting up design and variables
-rate.sim <- 1; 
-if (class(margsurv)!="coxph") {
+rate.sim <- 1; secluster <- NULL
+
+if (class(margsurv)!="coxph") { ## {{{ 
  formula<-attr(margsurv,"Formula");
  beta.fixed <- attr(margsurv,"beta.fixed")
  if (is.null(beta.fixed)) beta.fixed <- 1; 
@@ -23,11 +24,12 @@ if (class(margsurv)!="coxph") {
  if (is.null(Z)==TRUE) {npar<-TRUE; semi<-0;}  else { Z<-as.matrix(Z); npar<-FALSE; semi<-1;}
  if (npar==TRUE) {Z<-matrix(0,antpers,1); pz<-1; fixed<-0;} else {fixed<-1;pz<-ncol(Z);}
  px<-ncol(X);
+
  if (is.null(clusters) && is.null(mclusters)) 
 	 stop("No cluster variabel specified in marginal or twostage call \n"); 
  if (is.null(clusters)) { clusters <- mclusters; cluster.call <- cluster.call} else {cluster.call <- clusters;}
 
- if (is.null(se.clusters)) secluster <- mclusters;
+ if (is.null(se.clusters)) secluster <- clusters;
  antsecluster <- length(unique(secluster))
  if (is.numeric(secluster)) secluster <-  sindex.prodlim(unique(secluster),secluster)-1 else  {
       seclusters <- as.integer(factor(clusters, labels = 1:antsecluster))-1
@@ -37,6 +39,7 @@ if (class(margsurv)!="coxph") {
  if (is.null(cluster.call)) notaylor <- 1
  if (is.null(margsurv$gamma.iid)) notaylor <- 1
 
+ ## }}} 
 } else { ## coxph ## {{{ 
   notaylor <- 1
   antpers <- margsurv$n
@@ -60,23 +63,29 @@ if (class(margsurv)!="coxph") {
    beta.fixed <- 0
    semi <- 1
    start.time <- 0
-   if (is.null(se.clusters)) secluster <- clusters;
-   antsecluster <- length(unique(secluster))
-   if (is.numeric(secluster)) secluster <-  sindex.prodlim(unique(secluster),secluster)-1 else  {
-       clusters <- as.integer(factor(clusters, labels = 1:antsecluster))-1
-   }
 }  ## }}} 
 
- if (length(clusters)!=length(secluster)) stop("length of se.clusters not consistent with cluster length\n"); 
 
-  if (anyNA(clusters)) stop("Missing values in cluster varaibles\n"); 
-  out.clust <- cluster.index(clusters);  
+  if (any(is.na(clusters))) stop("Missing values in cluster varaibles\n"); 
+  out.clust <- cluster.index.timereg(clusters);  
   clusters <- out.clust$clusters
   maxclust <- out.clust$maxclust 
   antclust <- out.clust$antclust
   idiclust <- out.clust$idclust
   cluster.size <- out.clust$cluster.size
+###  if (anyNA(idiclust)) idiclust[is.na(idiclust)] <- 0
 
+  ### setting secluster after cluster.index call to deal with characters 
+  if (class(margsurv)=="coxph") {
+  if (is.null(se.clusters) & is.null(secluster) ) secluster <- clusters;
+  antsecluster <- length(unique(secluster))
+  if (is.numeric(secluster)) secluster <-  sindex.prodlim(unique(secluster),secluster)-1 else  {
+       clusters <- as.integer(factor(clusters, labels = 1:antsecluster))-1
+  }
+  }
+
+ if (length(clusters)!=length(secluster)) stop("length of se.clusters not consistent with cluster length\n"); 
+   
   if (sum(abs(start))>0) lefttrunk <- 1  else lefttrunk <- 0;  
   cumhazleft <- 0; 
   RR <-  rep(1,antpers); 
@@ -177,7 +186,14 @@ if (class(margsurv)!="coxph") {
   theta.iid <- matrix(0,antsecluster,ptheta)
   ## }}}
 
+
+###  print(ant.clust)
+###  print(dim(idiclust))
+###  print(sum(is.na(idiclust)))
+###  print(table(clusters))
+###  print(table(secluster))
   
+  DUbeta <- matrix(0,pz,ptheta); 
   nparout <- .C("twostagereg", 
         as.double(times), as.integer(Ntimes), as.double(X),
    	as.integer(antpers), as.integer(px), as.double(Z), 
@@ -193,7 +209,7 @@ if (class(margsurv)!="coxph") {
 	as.double(gamma.iid),as.double(Biid),as.integer(semi), as.double(cumhaz) ,
 	as.double(cumhazleft),as.integer(lefttrunk),as.double(RR),
 	as.integer(maxtimesim),as.integer(time.group),as.integer(secluster),
-	as.integer(antsecluster),as.double(theta.iid), as.double(timereso),PACKAGE = "timereg")
+	as.integer(antsecluster),as.double(theta.iid), as.double(timereso),as.double(DUbeta),PACKAGE = "timereg")
 
 ## {{{ handling output
    gamma <- margsurv$gamma
@@ -208,6 +224,7 @@ if (class(margsurv)!="coxph") {
    theta.iid  <- matrix(nparout[[43]],antsecluster,ptheta); 
    theta.iid <- theta.iid %*% SthetaI
 
+  DUbeta <- matrix(nparout[[45]],ptheta,1);  
 ###  if (is.null(call.secluster) & is.null(max.clust)) rownames(theta.iid) <- unique(cluster.call) else rownames(theta.iid) <- unique(se.clusters)
 
    ud <- list(cum = cumint, var.cum = vcum, robvar.cum = Rvcu, 
@@ -222,7 +239,7 @@ if (class(margsurv)!="coxph") {
 		names(ud$theta.score)<- rownames(ud$theta)<-"intercept" } 
 
 
-  attr(ud,"Call")<-call; 
+  attr(ud,"Call")<- match.call(); 
   class(ud)<-"two.stage"
   attr(ud,"Formula")<-formula;
   attr(ud,"id")<-id;
@@ -234,12 +251,13 @@ if (class(margsurv)!="coxph") {
   attr(ud,"var.link")<-var.link
   attr(ud,"beta.fixed")<-beta.fixed
   attr(ud,"marg.model")<-class(margsurv)
+  attr(ud,"DUbeta")<-DUbeta
 
   return(ud) 
   ## }}} 
 } ## }}} 
   
-  summary.two.stage<-function (object,digits = 3,...) { ## {{{ 
+summary.two.stage<-function (object,digits=3,...) { ## {{{ 
 
   if (!(inherits(object, 'two.stage') )) stop("Must be a Two-Stage object")
   prop<-TRUE; 
@@ -251,30 +269,11 @@ if (class(margsurv)!="coxph") {
   if (sum(abs(object$theta.score)>0.000001) ) 
     cat("Variance parameters did not converge, allow more iterations\n\n"); 
 
-  ptheta<-nrow(object$theta)
-  sdtheta<-diag(object$var.theta)^.5
-  if (var.link==0) {
-      vari<-object$theta
-      sdvar<-diag(object$var.theta)^.5
-  }
-  else {
-      vari<-exp(object$theta)
-      sdvar<-vari*diag(object$var.theta)^.5
-  }
-  dep<-cbind(object$theta[,1],sdtheta)
-  walddep<-object$theta[,1]/sdtheta; 
-  waldpdep<-(1-pnorm(abs(walddep)))*2
+  resdep <- coef.two.stage(object,...)
 
-  kendall<-1/(1+2/vari) 
-  kendall.ll<-1/(1+2/(object$theta+1.96*sdvar)) 
-  kendall.ul<-1/(1+2/(object$theta-1.96*sdvar)) 
-  if (var.link==0) resdep<-signif(as.matrix(cbind(dep,walddep,waldpdep,kendall)),digits)
-  else resdep<-signif(as.matrix(cbind(dep,walddep,waldpdep,vari,sdvar,kendall)),digits);
+  prmatrix(resdep[,1:6,drop=FALSE]); cat("   \n");  
 
-  if (var.link==0) colnames(resdep) <- c("Variance","SE","z","P-val","Kendall's tau") 
-  else colnames(resdep)<-c("log(Variance)","SE","z","P-val","Variance","SE Var.",
-                           "Kendall's tau")
-  prmatrix(resdep); cat("   \n");  
+  prmatrix(resdep[,7:9,drop=FALSE]); cat("   \n");  
 
   if (attr(object,"marg.model")!="coxph")
   if (attr(object,"beta.fixed")==0) { ## {{{ 
@@ -314,7 +313,12 @@ print.two.stage <- function (x,digits = 3,...) { ## {{{
 ###  print(attr(object,'Call'))
 } ## }}}
 
-coef.two.stage<-function(object,digits=3,d2logl=1,...) { ## {{{ 
+vcov.two.stage <- function(object, ...) {
+  rv <- object$robvar.gamma
+  if (!identical(rv, matrix(0, nrow = 1L, ncol = 1L))) rv # else return NULL
+}
+
+coef.two.stage<-function(object,digits=3,d2logl=1,alpha=0.05,...) { ## {{{ 
 
   if (!(inherits(object, 'two.stage') )) stop("Must be a Two-Stage object")
   var.link <- attr(object,"var.link")
@@ -324,23 +328,30 @@ coef.two.stage<-function(object,digits=3,d2logl=1,...) { ## {{{
   if (var.link==0) {
       vari<-object$theta
       sdvar<-diag(object$var.theta)^.5
+      upper <- object$theta-qnorm(alpha/2)*sdvar
+      lower <- object$theta+qnorm(alpha/2)*sdvar
   }
   else {
       vari<-exp(object$theta)
       sdvar<-vari*diag(object$var.theta)^.5
+      upper <- exp(object$theta-qnorm(alpha/2)*sdtheta)
+      lower <- exp(object$theta+qnorm(alpha/2)*sdtheta)
   }
   dep<-cbind(object$theta[,1],sdtheta)
   walddep<-object$theta[,1]/sdtheta; 
   waldpdep<-(1-pnorm(abs(walddep)))*2
 
   kendall<-1/(1+2/vari) 
-  kendall.ll<-1/(1+2/(object$theta+1.96*sdvar)) 
-  kendall.ul<-1/(1+2/(object$theta-1.96*sdvar)) 
-  if (var.link==0) resdep<-signif(as.matrix(cbind(dep,walddep,waldpdep,kendall)),digits)
-  else resdep<-signif(as.matrix(cbind(dep,walddep,waldpdep,vari,sdvar,kendall)),digits);
+  kendall.ll<-1/(1+2/(object$theta+qnorm(alpha/2)*sdvar)) 
+  kendall.ul<-1/(1+2/(object$theta-qnorm(alpha/2)*sdvar)) 
+  if (var.link==0) resdep<-signif(as.matrix(cbind(dep,lower,upper,walddep,waldpdep,kendall,kendall.ll,kendall.ul)),digits)
+  else resdep<-signif(as.matrix(cbind(dep,lower,upper,walddep,waldpdep,vari,sdvar,kendall,kendall.ll,kendall.ul)),digits);
 
-  if (var.link==0) colnames(resdep) <- c("Variance","SE","z","P-val","Kendall's tau") 
-  else colnames(resdep)<-c("log(Variance)","SE","z","P-val","Variance","SE Var.","Kendall's tau")
+  slower <- paste("lower",signif(100*alpha/2,2),"%",sep="")
+  supper <- paste("upper",signif(100*(1-alpha/2),3),"%",sep="")
+  if (var.link==0) colnames(resdep) <- c("Variance","SE",slower,supper,"z","P-val","Kendall's tau",slower,supper) 
+  else colnames(resdep)<-c("log(Variance)","SE",slower,supper,"z","P-val","Variance","SE Var.","Kendall's tau",slower,supper)
+
 ###  prmatrix(resdep); cat("   \n");  
   return(resdep)
 } ## }}} 

@@ -28,7 +28,7 @@ cox.aalen(formula=formula(data),data=sys.parent(),beta=NULL,Nit=20,detail=0,
 start.time=0,max.time=NULL,id=NULL,clusters=NULL,n.sim=500,residuals=0,
 robust=1,weighted.test=0,covariance=0,resample.iid=1,weights=NULL,rate.sim=1,
 beta.fixed=0,max.clust=1000,exact.deriv=1,silent=1,max.timepoint.sim=100,
-basesim=0,offsets=NULL,strata=NULL)
+basesim=0,offsets=NULL,strata=NULL,propodds=0,caseweight=NULL)
 }
 \arguments{
 \item{formula}{
@@ -84,6 +84,10 @@ simulations, see time.sim.resolution argument}
 contant effects.}
 \item{offsets}{offsets for analysis on log-scale. RR=exp(offsets+ x beta).}
 \item{strata}{future option for making strata in a different day than through X design in cox-aalen model (~-1+factor(strata)).}
+\item{propodds}{if 1 will fit the proportional odds model. Slightly less efficient than prop.odds() function but much
+quicker, for large data this also works.}
+\item{caseweight}{these weights have length equal to number of jump times, and are multiplied all jump times dN. 
+Useful for getting the program to fit for example the proportional odds model or frailty models.}
 }
 \details{
 The data for a subject is presented as multiple rows or 'observations',
@@ -101,7 +105,8 @@ computed within the estimation interval.
 \item{var.cum}{the martingale based pointwise variance estimates.  }
 \item{robvar.cum}{robust pointwise variances estimates.  }
 \item{gamma}{estimate of parametric components of model.  }
-\item{var.gamma}{variance for gamma.  }
+\item{var.gamma}{variance for gamma sandwhich estimator based on optional variation 
+estimator of score and 2nd derivative.}
 \item{robvar.gamma}{robust variance for gamma.  }
 \item{residuals}{list with residuals.}
 \item{obs.testBeq0}{observed absolute value of supremum of 

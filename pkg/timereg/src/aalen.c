@@ -4,6 +4,22 @@
 #include <time.h>
 #include <sys/types.h>
 
+
+void D2lapsf(double y, double x, double z, double *zz) 
+{ 
+zz[0]= pow(x,y)* pow(x+z,(-y-1))* (y* log(x+z)-y* log(x)-1) ;
+zz[1]= y* pow(x,(y-1))* pow(x+z,(-y-2))*(x-y* z) ;
+zz[2]= y* (y+1)* pow(x,y)*pow((x+z),(-y-2));
+zz[3]= 
+pow(y,2)* (y+1)* pow(x,(y-1))* pow(x+z,(-y-2))+(-y-2)* y* (y+1)* pow(x,y)* pow(x+z,(-y-3));
+zz[4]= y* pow(x,y)* pow(x+z,(-y-2))+(y+1)*pow(x,y)* 
+	pow(x+z,(-y-2))+y* (y+1)* pow(x,y) *log(x)* 
+	pow(x+z,(-y-2))-y *(y+1)* pow(x,y)* pow(x+z,(-y-2))* log(x+z);
+zz[5]= y* (y+1)* (y+2)* (-pow(x,y))* pow(x+z,(-y-3));
+} 
+
+
+
 void aalen(times,Ntimes,designX,nx,p,antpers,start,stop,cu,vcu,status)
 double *designX,*times,*start,*stop,*cu,*vcu;
 int *nx,*p,*antpers,*Ntimes,*status;
@@ -58,10 +74,11 @@ int *nx,*p,*antpers,*Ntimes,*status;
 void robaalen(times,Ntimes,designX,nx,p,antpers,start,stop,cu,vcu,
 	      robvcu,sim,antsim,retur,cumAit,test,testOBS,status,
 	      Ut,simUt,id,weighted,robust,covariance,covs,resample,
-	      Biid,clusters,antclust,silent,weights,entry,mof,offsets,strata) 
-double *designX,*times,*start,*stop,*cu,*vcu,*robvcu,*cumAit,*test,*testOBS,*Ut,*simUt,*covs,*Biid,*weights,*offsets; 
+	      Biid,clusters,antclust,silent,weights,entry,mof,offsets,strata,
+	      caseweight,icase) 
+double *designX,*times,*start,*stop,*cu,*vcu,*robvcu,*cumAit,*test,*testOBS,*Ut,*simUt,*covs,*Biid,*weights,*offsets,*caseweight; 
 int *nx,*p,*antpers,*Ntimes,*sim,*retur,*antsim,*status,*id,*covariance,
-    *weighted,*robust,*resample,*clusters,*antclust,*silent,*entry,*mof,*strata;
+    *weighted,*robust,*resample,*clusters,*antclust,*silent,*entry,*mof,*strata,*icase;
 { // {{{
  // {{{ setting up variables and allocating
   matrix *ldesignX,*wX,*A,*AI,*Vcov;
@@ -92,6 +109,12 @@ int *nx,*p,*antpers,*Ntimes,*sim,*retur,*antsim,*status,*id,*covariance,
 //     for (c=0;(c<*nx);c++) Rprintf(" %lf \n",weights[c]); 
 //     Rprintf(" entry \n"); 
 //     for (c=0;(c<*nx);c++) Rprintf(" %d \n",entry[c]); 
+
+
+//  double *zzz=calloc(6,sizeof(double));
+//  double x=0.11, y=1/3, z=1/3; 
+//for (s=1;s<40000;s++) D2lapsf(x,y,z,zzz); 
+
 
 for (s=1;s<*Ntimes;s++){
     time=times[s]; vec_zeros(dB); 
@@ -150,7 +173,12 @@ for (s=1;s<*Ntimes;s++){
 //    scl_vec_mult(weights[ci],xi,xi); 
 //    print_vec(xi); 
       
-    Mv(AI,xi,dB); vec_star(dB,dB,VdB); 
+    Mv(AI,xi,dB); 
+    if (*icase==1) {
+//	    printf(" %lf \n",caseweight[s-1]); 
+	    scl_vec_mult(caseweight[s-1],dB,dB); 
+    }
+    vec_star(dB,dB,VdB); 
 
     for (k=1;k<*p+1;k++) {
       cu[k*(*Ntimes)+s]=cu[k*(*Ntimes)+s-1]+VE(dB,k-1);
@@ -228,9 +256,10 @@ for (s=1;s<*Ntimes;s++){
   free(cluster);  free(idd); free(vcudif); 
 } // }}}
 
-void semiaalen(alltimes,Nalltimes,Ntimes,designX,nx,px,designG,ng,pg,antpers,start,stop,nb,bhat,cu,vcu,Robvcu,gamma,Vgamma,RobVgamma,sim,antsim,test,testOBS,robust,status,Ut,simUt,id,weighted,cumAit,retur,covariance,covs,resample,gammaiid,Biid,clusters,antclust,intZHZ,intZHdN,deltaweight,silent,weights,entry,fixedgamma,mof,offsets,gamma2,Vgamma2)
-double *designX,*alltimes,*start,*stop,*cu,*vcu,*bhat,*designG,*gamma,*Vgamma,*RobVgamma,*Robvcu,*test,*testOBS,*Ut,*simUt,*cumAit,*covs,*Biid,*gammaiid,*intZHZ,*intZHdN,*weights,*offsets,*gamma2,*Vgamma2; 
-int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status,*id,*weighted,*retur,*covariance,*resample,*clusters,*antclust,*deltaweight,*silent,*entry,*fixedgamma,*mof;
+void semiaalen(alltimes,Nalltimes,Ntimes,designX,nx,px,designG,ng,pg,antpers,start,stop,nb,bhat,cu,vcu,Robvcu,gamma,Vgamma,RobVgamma,sim,antsim,test,testOBS,robust,status,Ut,simUt,id,weighted,cumAit,retur,covariance,covs,resample,gammaiid,Biid,clusters,antclust,intZHZ,intZHdN,deltaweight,silent,weights,entry,fixedgamma,mof,offsets,gamma2,Vgamma2,
+		caseweight,icase)
+double *designX,*alltimes,*start,*stop,*cu,*vcu,*bhat,*designG,*gamma,*Vgamma,*RobVgamma,*Robvcu,*test,*testOBS,*Ut,*simUt,*cumAit,*covs,*Biid,*gammaiid,*intZHZ,*intZHdN,*weights,*offsets,*gamma2,*Vgamma2,*caseweight; 
+int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status,*id,*weighted,*retur,*covariance,*resample,*clusters,*antclust,*deltaweight,*silent,*entry,*fixedgamma,*mof,*icase;
 { // {{{
 // {{{ setting up variables and allocating
   matrix *Vcov,*X,*WX,*A,*AI,*AIXW,*Z,*WZ;

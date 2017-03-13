@@ -13,6 +13,10 @@ considering the score functions is also computed by resampling methods.
 
 The modelling formula uses the standard survival modelling given in the
 \bold{survival} package.
+
+For large data sets use the divide.conquer.timereg of the mets package to
+run the model on splits of the data, or the alternative estimator by
+the cox.aalen function.
 }
 \usage{
 prop.odds(formula,data=sys.parent(),beta=NULL,
@@ -118,5 +122,12 @@ plot(out,score=1)
 
 pout <- predict(out,Z=c(70,0,0,0,0))
 plot(pout)
+
+### alternative estimator for large data sets 
+form <- Surv(time,status==9)~age+diabetes+chf+vf+sex
+pform <- timereg.formula(form)
+out2<-cox.aalen(pform,data=sTRACE,max.time=7,
+	propodds=1,n.sim=0,robust=0,detail=0,Nit=40)
+summary(out2)
 }
 \keyword{survival}

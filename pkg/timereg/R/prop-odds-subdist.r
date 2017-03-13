@@ -1,6 +1,7 @@
 prop.odds.subdist<-function(formula,data=sys.parent(),cause=1,beta=NULL,
 Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
-profile=1,sym=0,cens.model="KM",clusters=NULL,max.clust=1000,baselinevar=1,weights=NULL,
+profile=1,sym=0,cens.model="KM",cens.formula=NULL,
+clusters=NULL,max.clust=1000,baselinevar=1,weights=NULL,
 cens.weights=NULL)
 {
 ## {{{ 
@@ -18,7 +19,7 @@ cens.weights=NULL)
     residuals<-0;  robust<-1; resample.iid <- 1 
     m$cens.model <- m$cause <- m$sym<-m$profile <- m$max.time<- m$start.time<- m$weighted.test<- m$n.sim<-
     m$id<-m$Nit<-m$detail<-m$beta <- m$baselinevar <- m$clusters <- m$max.clust <- m$weights <-  NULL
-    m$cens.weights <- NULL
+    m$cens.weights <- m$cens.formula  <- NULL
 
     special <- c("cluster")
     if (missing(data)) {
@@ -136,7 +137,7 @@ if ((!is.null(max.clust))) if (max.clust<antclust) {
 
 
 if ((is.null(beta)==FALSE)) {
-	if (length(beta)!=pg) beta <- rep(beta[1],pg); 
+	if (length(c(beta))!=pg) beta <- rep(beta[1],pg); 
 } else {
       beta<-coxph(Surv(eventtime,event)~desX)$coef
      if (max(abs(beta))>5) {
@@ -174,18 +175,25 @@ if (cens.model=="KM") { ## {{{
     KMti<-Cpred(Gfit,time2)[,2];
     KMtimes<-Cpred(Gfit,times)[,2]; ## }}}
   } else if (cens.model=="cox") { ## {{{
-    ud.cens<-coxph(Surv(time2,delta==cens.code)~desX)
-    aseout <- basehaz(ud.cens,centered=FALSE); 
-    baseout <- cbind(baseout$time,baseout$hazard)
-    Gcx<-Cpred(baseout,time2)[,2];
-    RR<-exp(desX %*% coef(ud.cens))
+
+     if (!is.null(cens.formula)) desXc <- model.matrix(cens.formula,data=data)[,-1] else desXc <- desX; 
+
+    ud.cens<-cox.aalen(Surv(time2,delta==cens.code)~prop(desXc),n.sim=0,robust=0)
+###  baseout <- basehaz(ud.cens,centered=FALSE); 
+###  baseout <- cbind(baseout$time,baseout$hazard)
+    Gcx<-Cpred(ud.cens$cum,time2)[,2];
+    RR<-exp(desXc %*% ud.cens$gamma)
     KMti<-exp(-Gcx*RR)
-    KMtimes<-Cpred(Gfit,times)[,2]; 
+    KMtimes<-Cpred(cbind(time2,KMti),times)[,2]; 
     ## }}}
   } else if (cens.model=="aalen") {  ## {{{
-    ud.cens<-aalen(Surv(time2,delta==cens.code)~desX+cluster(clusters),n.sim=0,residuals=0,robust=0,silent=1)
+
+     if (!is.null(cens.formula)) desXc <- model.matrix(cens.formula,data=data) else desXc <- desX; 
+
+    ud.cens<-aalen(Surv(time2,delta==cens.code)~desXc+
+    cluster(clusters),n.sim=0,residuals=0,robust=0,silent=1)
     KMti <- Cpred(ud.cens$cum,time2)[,-1];
-    Gcx<-exp(-apply(Gcx*desX,1,sum))
+    Gcx<-exp(-apply(Gcx*desXc,1,sum))
     Gcx[Gcx>1]<-1; Gcx[Gcx<0]<-0
     Gfit<-rbind(c(0,1),cbind(time2,Gcx)); 
     KMti <- Gcx
@@ -336,6 +344,7 @@ if (cens.model!="po") attr(ud,"type") <- "comprisk" else attr(ud,"type") <- "sur
 class(ud)<-"cox.aalen"
 return(ud); 
 } ## }}} 
+## }}} 
 
 predictpropodds <- function(out,X=NULL,times=NULL)
 {  ## {{{ 
@@ -352,4 +361,65 @@ pred <- HRR/(1+HRR)
 
 return(list(pred=pred,time=btimes))
 }  ## }}}
+
+prop.odds.subdist.ipw <- function(compriskformula,glmformula,data=sys.parent(),cause=1,
+			 max.clust=NULL,ipw.se=FALSE,...)
+{ ## {{{ 
+  ggl <- glm(glmformula,family='binomial',data=data)
+  mat <-  model.matrix(glmformula,data=data);
+  glmcovs <- attr(ggl$terms,"term.labels")
+  data$ppp <- predict(ggl,type='response')
+
+  dcc <- data[ggl$y==1,]
+  ppp <- dcc$ppp
+  udca <- prop.odds.subdist(compriskformula,data=dcc,cause=cause,weights=1/ppp,n.sim=0,
+		    max.clust=max.clust,...)  
+  ### iid of beta for comprisk model 
+  compriskiid <- udca$gamma.iid
+
+if (ipw.se==TRUE)  { ## {{{ 
+###requireNamespace("lava"); 
+###requireNamespace("NumDeriv"); 
+	glmiid <-   lava::iid(ggl)
+	mat <- mat[ggl$y==1,]
+	par <- coef(ggl)
+
+	compriskalpha <- function(par)
+	{ ## {{{ 
+	  rr <- mat %*% par
+	  pw <- c(exp(rr)/(1+exp(rr)))
+	  assign("pw",pw,envir=environment(compriskformula))
+	  ud <- prop.odds.subdist(compriskformula,data=dcc,
+			  cause=cause,
+			  weights=1/pw,baselinevar=0,beta=udca$gamma,
+			  Nit=1,n.sim=0,...)  
+	  ud$score
+	} ## }}} 
+
+	DU <-  numDeriv::jacobian(compriskalpha,par)
+	IDU <-  udca$D2linv %*% DU 
+	alphaiid <-t( IDU %*% t(glmiid))
+	###
+	iidfull <- alphaiid
+	###
+	iidfull[ggl$y==1,] <- compriskiid + alphaiid[ggl$y==1,]
+	###
+	var2 <- t(iidfull) %*% iidfull
+	se <- cbind(diag(var2)^.5); colnames(se) <- "se"
+} else { iidfull <- NULL; var2 <- NULL; se <- NULL} ## }}} 
+
+var.naive=udca$robvar.gamma
+se.naive=matrix(diag(var.naive)^.5,nrow(var.naive),1); 
+colnames(se.naive) <- "se.naive"
+
+res <- list(iid=iidfull,coef=udca$gamma,var.naive=var.naive,
+	    se.naive=se.naive,var=var2,se=se,
+	    comprisk.ipw=udca)
+class(res) <- "comprisk.ipw"
+return(res)
+} ## }}} 
+
+
+
+
 

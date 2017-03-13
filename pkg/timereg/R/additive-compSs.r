@@ -69,7 +69,7 @@ as.double(X),as.integer(nx),as.integer(px),
  as.integer(survs$antpers),as.double(time),as.double(time2),
  as.integer(id),as.integer(status), as.integer(deltaweight),
  as.double(intZHZ),as.double(intZHdN),as.integer(silent)
-,package="timereg")
+,PACKAGE="timereg")
 }
 if (fix==1) {
 semiout<-.C("compSsrev",

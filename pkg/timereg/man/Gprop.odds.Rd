@@ -112,9 +112,8 @@ Springer (2006).
 \author{Thomas Scheike}
 \examples{
 data(sTRACE)
-### runs slowly and is therefore not tested 
 \donttest{
-library(timereg)
+### runs slowly and is therefore donttest 
 data(sTRACE)
 # Fits Proportional odds model with stratified baseline
 age.c<-scale(sTRACE$age,scale=FALSE); 

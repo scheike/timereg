@@ -1,6 +1,7 @@
 comprisk.ipw <- function(compriskformula,glmformula,data=sys.parent(),cause=1,
 			 max.clust=NULL,ipw.se=FALSE,...)
-{ ## {{{ 
+{
+ ## {{{ 
   ggl <- glm(glmformula,family='binomial',data=data)
   mat <-  model.matrix(glmformula,data=data);
   glmcovs <- attr(ggl$terms,"term.labels")
@@ -48,9 +49,13 @@ se.naive=matrix(diag(var.naive)^.5,nrow(var.naive),1);
 colnames(se.naive) <- "se.naive"
 
 res <- list(iid=iidfull,coef=udca$gamma,var.naive=var.naive,
-	    se.naive=se.naive,var=var2,se=se)
+	    se.naive=se.naive,var=var2,se=se,
+	    comprisk.ipw=udca)
+class(res) <- "comprisk.ipw"
 return(res)
-} ## }}} 
+## }}} 
+} 
+
 
 ### glmformula must have cause specific covariates if 
 ###      logit(P(e_i==1| V_i , cause_i==1))
@@ -59,4 +64,27 @@ return(res)
 ###      logit(P(e_i==1| V_i , cause_i==i)) can be specified where V_i are the covariates that 
 ###   are always observed and used for estimating the probability of sampling 
 ###   then glmformula must allow this but can still use comprisk.ipw function 
+
+
+summary.comprisk.ipw <- function(object,digits=3,...)
+{ ## {{{ 
+
+tval <- object$coef/object$se
+pval <- 2*(1-pnorm(abs(tval)))
+res <- cbind(object$coef,object$se,object$se.naive,pval)
+colnames(res) <- c("coef","se","se.naive","pval")
+
+return(res)
+} ## }}} 
+
+coef.comprisk.ipw<- function(object,digits=3,...)
+{ ## {{{ 
+summary.comprisk.ipw(object)
+} ## }}} 
+
+print.comprisk.ipw  <-  function(x,...)
+{  ## {{{ 
+summary.comprisk.ipw(x)
+}  ## }}} 
+
 

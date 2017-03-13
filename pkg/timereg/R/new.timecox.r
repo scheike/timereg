@@ -182,7 +182,7 @@ method="basic",weighted.test=0,degree=1,covariance=0)
 }
 
 "plot.timecox" <-  function (x,..., pointwise.ci=1,
-hw.ci=0, sim.ci=0, robust=0, specific.comps=FALSE,level=0.05,
+hw.ci=0, sim.ci=0, robust.ci=0, col=NULL, specific.comps=FALSE,level=0.05,
 start.time = 0,
 stop.time = 0, add.to.plot=FALSE, mains=TRUE, xlab="Time",
 ylab ="Cumulative coefficients",score=FALSE)
@@ -194,7 +194,7 @@ from Cox-Aalen function")
   if (score==FALSE) plot.cums(object,
         pointwise.ci=pointwise.ci,
         hw.ci=hw.ci,
-        sim.ci=sim.ci, robust=robust,
+        sim.ci=sim.ci, robust.ci=robust.ci,col=col,
         specific.comps=specific.comps,level=level,
         start.time = start.time, stop.time = stop.time,
         add.to.plot=add.to.plot,
