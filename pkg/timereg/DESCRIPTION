@@ -1,0 +1,67 @@
+Package: timereg
+Title: Flexible Regression Models for Survival Data
+Version: 1.9.1
+Date: 2016-10-13
+Author: Thomas Scheike with contributions from Torben Martinussen, Jeremy Silver 
+        and Klaus Holst 
+Maintainer: Thomas Scheike <ts@biostat.ku.dk>
+Description: Programs for Martinussen and Scheike (2006), `Dynamic Regression
+    Models for Survival Data', Springer Verlag.  Plus more recent developments.
+    Additive survival model, semiparametric proportional odds model, fast cumulative
+    residuals, excess risk models and more. Flexible competing risks regression
+    including GOF-tests. Two-stage frailty modelling. 
+    PLS for the additive risk model. Lasso in the 'ahaz' package.
+LazyLoad: yes
+URL: https://github.com/scheike/timereg.git
+Depends:
+    R (>= 2.15),
+    survival,
+Imports:
+    lava,
+    numDeriv,
+    stats, 
+    graphics, 
+    grDevices, 
+    utils
+License: GPL (>= 2)
+Collate:
+    'aalenC.r'
+    'aalen-des.r'
+    'aalen.r'
+    'additive-compSs.r'
+    'base.r'
+    'clusterindex-reshape.r'
+    'comprisk.r'
+    'comprisk.ipw.r'
+    'cox-aalen.r'
+    'cox.ipw.r'
+    'cox.marg.r'
+    'Cpred.r'
+    'Csmooth.r'
+    'dynadd.r'
+    'event.r'
+    'event.split.r'
+    'Gprop-odds.r'
+    'krylow.pls.r'
+    'kmplot.r'
+    'mgresid.r'
+    'new.aalen.r'
+    'new.cox-aalen.r'
+    'new.dynreg.r'
+    'new.pe-sasieni.r'
+    'new.prop-excess.r'
+    'new.timecox.r'
+    'plots.r'
+    'predict-timereg.r'
+    'residualsTimereg.r'
+    'glm-comprisk.r'
+    'prop-excess.r'
+    'prop-odds.r'
+    'prop-odds-subdist.r'
+    'read-design.r'
+    'restricted.residual.mean.r'
+    'ipcw-residualmean.r'
+    'two-stage-reg.r'
+    'timecox.r'
+    'qcut.r'
+    'sim-pc-hazard.r'

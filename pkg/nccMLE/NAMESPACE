@@ -1,0 +1,16 @@
+useDynLib(nccMLE)
+
+import(survival)
+
+export("em.ncc", "simNCC", "simNCCg", "simCC.ny", "testII")
+
+###S3method(print,geno.setup)
+###S3method(print,haplo.freqs)
+###S3method(summary,haplo.freqs)
+###S3method(summary,geno.setup)
+
+###export("print.geno.setup",
+###       "print.haplo.freqs",
+###       "summary.haplo.freqs",
+###       "summary.geno.setup"
+###)
