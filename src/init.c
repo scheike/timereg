@@ -27,7 +27,7 @@ extern SEXP FastPattern(SEXP, SEXP, SEXP);
 extern SEXP MatxCube(SEXP, SEXP, SEXP);
 extern SEXP mets_ApplyBy(SEXP, SEXP, SEXP);
 extern SEXP mets_ApplyBy2(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP mets_loglikMVN(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP mets_loglikMVN(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP mets_RcppExport_registerCCallable();
 extern SEXP pBhat(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP pmvn0(SEXP, SEXP, SEXP, SEXP, SEXP);
@@ -63,7 +63,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"MatxCube",                          (DL_FUNC) &MatxCube,                           3},
     {"mets_ApplyBy",                      (DL_FUNC) &mets_ApplyBy,                       3},
     {"mets_ApplyBy2",                     (DL_FUNC) &mets_ApplyBy2,                      8},
-    {"mets_loglikMVN",                    (DL_FUNC) &mets_loglikMVN,                    14},
+    {"mets_loglikMVN",                    (DL_FUNC) &mets_loglikMVN,                    13},
     {"mets_RcppExport_registerCCallable", (DL_FUNC) &mets_RcppExport_registerCCallable,  0},
     {"pBhat",                             (DL_FUNC) &pBhat,                              6},
     {"pmvn0",                             (DL_FUNC) &pmvn0,                              5},
