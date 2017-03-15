@@ -179,6 +179,7 @@ dunique <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=fu
 ##' @param data if x is formula or names for data frame then data frame is needed.
 ##' @param y name of variable, or fomula, or names of variables on data frame.
 ##' @param x possible group variable
+##' @param use how to handle missing values 
 ##' @param ... Optional additional arguments
 ##' @author Klaus K. Holst and Thomas Scheike
 ##' @examples
@@ -197,7 +198,7 @@ dunique <- function(data,y=NULL,x=NULL,...) invisible(daggregate(data,y,x,fun=fu
 ##' dcor(dt,c("time*","wmi*"),~vf+chf)
 ##' @aliases dsummary dstr dcor dsubset dquantile dcount dmean dmeansd dscalar deval deval2 dsum dsd
 ##' @export
-dcor <- function(data,y=NULL,x=NULL,...) daggregate(data,y,x,...,fun=function(z,...) stats::cor(z,...))
+dcor <- function(data,y=NULL,x=NULL,use="pairwise.complete.obs",...) daggregate(data,y,x,...,fun=function(z,...) stats::cor(z,use=use,...))
 
 ##' @export
 dscalar <- function(data,y=NULL,x=NULL,...,na.rm=TRUE,matrix=TRUE,fun=base::mean) {
