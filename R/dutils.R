@@ -178,6 +178,7 @@ for (k in 1:ll)
 	   	if (!equi) { 
 			probs <- seq(0, 1, length.out = breaks[k] + 1)
 			bb <- quantile(xx, probs, na.rm=na.rm,...)
+			print(bb)
 		} 
 		if (equi) { 
 			rr <- range(xx,na.rm=na.rm)
