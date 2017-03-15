@@ -178,7 +178,6 @@ for (k in 1:ll)
 	   	if (!equi) { 
 			probs <- seq(0, 1, length.out = breaks[k] + 1)
 			bb <- quantile(xx, probs, na.rm=na.rm,...)
-			print(bb)
 		} 
 		if (equi) { 
 			rr <- range(xx,na.rm=na.rm)
@@ -546,38 +545,45 @@ dfactor <- function(data,y=NULL,x=NULL,regex=mets.options()$regex,sep=NULL,usern
 
  if (is.null(sep))  sep <- ".f"
 
- if (is.vector(data)) {
-	 if (!is.factor(data)) {
+ if (!is.data.frame(data)) {
+       if (!is.factor(data) || !missing(levels) || !missing(labels)) {
 		 args <- list(data)
-		 if (!missing(levels)) args <- c(args,list(levels=levels))
-		 if (!missing(labels)) args <- c(args,list(labels=labels))
+		 if (!missing(levels))  {
+			 if (is.numeric(levels) & is.factor(data)) 
+				 levels <-  levels(data)[levels]
+			 args <- c(args,list(levels=levels,...))
+		 }
+		 if (!missing(labels)) {
+			 args <- c(args,list(labels=labels,...))
+		 }
 	         gx <- do.call(factor,args)
-	 } else gx <- data
       return(gx)
- } 
+      } 
+ }
 
 if (is.data.frame(data)) {
 
    usernames <- FALSE# {{{
 
-vars <-mets::procform3(y,x,data=data,regex=regex,...)
-x <-  xnames <- vars$x
+   vars <-mets::procform3(y,x,data=data,regex=regex,...)
+   x <-  xnames <- vars$x
 
-if (!is.null(vars$y)) {
+   if (!is.null(vars$y)) {
 	usernames<-TRUE
 	newnames <- vars$y
 	if (length(vars$y)!=length(vars$x)) { 
 		usernames <- FALSE
 	}
-}
+   }
 # }}}
 
-  if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
+  if (is.character(x) && length(x)<=ncol(data)) {
+	  x <- lapply(xnames,function(z) data[,z])
+  }
   dots <- list()
   args <- lapply(dots, function(x) { if (length(x)==1 && is.character(x)) x <- data[,x]; x })
   if (!is.list(x)) x <- list(x)
   ll <- length(x)
-
 
  if (!missing(levels)) if (!is.list(levels))   levels <- list(levels)
  if (!missing(labels)) if (!is.list(labels) )   labels <- list(labels)
@@ -613,13 +619,18 @@ for (k in 1:ll)
 
   if (usernames) name <- newnames[k]
 
-  if (!is.factor(xx) ) { 
+  if (!is.factor(xx) || !missing(levels) || !missing(labels)) {
            args <- list(xx)
-           if (!misslevel) args <- c(args,list(levels=levels[[k]]))
-	   if (!misslabel) args <- c(args,list(labels=labels[[k]]))
+           if (!misslevel) {
+		 if (is.numeric(levels[[k]]) & is.factor(xx)) 
+				 llevels <-  levels(xx)[levels[[k]]]
+			 else llevels <- levels[[k]]
+		   args <- c(args,list(levels=llevels,...))
+	   }
+	   if (!misslabel) args <- c(args,list(labels=labels[[k]],...))
 	   gx <- do.call(factor,args)
            data[,name] <- gx  
-   }
+ }
 }
 
 return(data)
@@ -629,6 +640,94 @@ return(data)
 
 ##' @export
 "dfactor<-" <- function(data,x=NULL,...,value) dfactor(data,y=value,x=x,...)
+
+#####' @export
+###dfactor <- function(data,y=NULL,x=NULL,regex=mets.options()$regex,sep=NULL,usernames=NULL,levels,labels,...)
+###{# {{{
+###
+### if (is.null(sep))  sep <- ".f"
+###
+### if (is.vector(data)) {
+###	 if (!is.factor(data)) {
+###		 args <- list(data)
+###		 if (!missing(levels)) args <- c(args,list(levels=levels,...))
+###		 if (!missing(labels)) args <- c(args,list(labels=labels,...))
+###	         gx <- do.call(factor,args)
+###	 } else gx <- data
+###      return(gx)
+### } 
+###
+###if (is.data.frame(data)) {
+###
+###   usernames <- FALSE# {{{
+###
+###vars <-mets::procform3(y,x,data=data,regex=regex,...)
+###x <-  xnames <- vars$x
+###
+###if (!is.null(vars$y)) {
+###	usernames<-TRUE
+###	newnames <- vars$y
+###	if (length(vars$y)!=length(vars$x)) { 
+###		usernames <- FALSE
+###	}
+###}
+#### }}}
+###
+###  if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
+###  dots <- list()
+###  args <- lapply(dots, function(x) { if (length(x)==1 && is.character(x)) x <- data[,x]; x })
+###  if (!is.list(x)) x <- list(x)
+###  ll <- length(x)
+###
+###
+### if (!missing(levels)) if (!is.list(levels))   levels <- list(levels)
+### if (!missing(labels)) if (!is.list(labels) )   labels <- list(labels)
+###
+###### if (!missing(levels) ) print(levels)
+###### if (!missing(labels) ) print(labels)
+###
+###  misslabel <- TRUE
+###  if (!missing(labels))  {
+###	  misslabel <- FALSE
+###  if ((length(x)!=length(labels))) {
+###	  warning("length of label list not consistent with variables")
+###	  labels <- rep(list(labels[[1]]),ll)
+######	  print(labels)
+###  }
+###  }
+###
+###
+###  misslevel <- TRUE
+###  if (!missing(levels))  { 
+###	  misslevel <- FALSE
+###  if ((length(x)!=length(levels))) {
+###	  warning("length of levels list not consistent with variables")
+###	  levels <- rep(list(levels[[1]]),ll)
+###  }
+###  }
+### 
+###
+###for (k in 1:ll)
+###{
+###  xx <- x[[k]]
+###  name<- paste(xnames[k],sep,sep="")
+###
+###  if (usernames) name <- newnames[k]
+###
+###  if (!is.factor(xx) ) { 
+###           args <- list(xx)
+###           if (!misslevel) args <- c(args,list(levels=levels[[k]],...))
+###	   if (!misslabel) args <- c(args,list(labels=labels[[k]],...))
+###	   gx <- do.call(factor,args)
+###           data[,name] <- gx  
+###   }
+###}
+###
+###return(data)
+###}
+###
+###}# }}}
+
 
 ##' @export
 dnumeric <- function(data,y=NULL,x=NULL,regex=mets.options()$regex,sep=NULL,all=FALSE,...)
@@ -671,7 +770,7 @@ for (k in 1:ll)
   name<- paste(xnames[k],sep,sep="")
   if (usernames) name <- newnames[k]
   if (!is.numeric(xx) || all==TRUE) { 
-	  gx <- as.numeric(xx); 
+	  gx <- as.numeric(xx,...); 
           data[,name] <- gx 
   } 
 }

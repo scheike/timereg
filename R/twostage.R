@@ -1157,11 +1157,11 @@ if (!is.null(margsurv))  {
 	     marginal.surv=marginal.surv,marginal.trunc=marginal.trunc,baseline=out$baseline,
 	     se=diag(robvar.theta)^.5)
   class(ud) <- "mets.twostage" 
-  attr(ud, "response") <- "survival"
-  attr(ud, "Formula") <- formula
-  attr(ud, "clusters") <- clusters
-  attr(ud, "cluster.call") <- cluster.call
-  attr(ud, "secluster") <- c(se.clusters)
+  attr(ud,"response") <- "survival"
+  attr(ud,"Formula") <- formula
+  attr(ud,"clusters") <- clusters
+  attr(ud,"cluster.call") <- cluster.call
+  attr(ud,"secluster") <- c(se.clusters)
   attr(ud,"sym")<-sym; 
   attr(ud,"var.link")<-var.link; 
   attr(ud,"var.par")<-var.par; 
@@ -1169,18 +1169,19 @@ if (!is.null(margsurv))  {
   attr(ud,"ptheta")<-ptheta
   attr(ud,"antpers")<-antpers; 
   attr(ud,"antclust")<-antclust; 
-  attr(ud, "Type") <- model
-  attr(ud, "additive-gamma") <- (dep.model==3)*1
+  attr(ud,"Type") <- model
+  attr(ud,"twostage") <- two.stage
+  attr(ud,"additive-gamma") <- (dep.model==3)*1
   if (!is.null(marginal.trunc)) attr(ud,"trunclikeiid")<- out$trunclikeiid
   if (dep.model==3 & two.stage==0) attr(ud,"all.likepairs")<- all.likepairs
   if (dep.model==3 ) attr(ud,"additive.gamma.sum") <- additive.gamma.sum
-#likepairs=likepairs,##  if (dep.model==3 & pair.structure==1) attr(ud, "likepairs") <- c(out$likepairs)
-  if (dep.model==3 & pair.structure==0) attr(ud, "pardes") <- theta.des
+  #likepairs=likepairs,##  if (dep.model==3 & pair.structure==1) attr(ud, "likepairs") <- c(out$likepairs)
+  if (dep.model==3 & pair.structure==0) attr(ud, "pardes") <-    theta.des
   if (dep.model==3 & pair.structure==0) attr(ud, "theta.des") <- theta.des
-  if (dep.model==3 & pair.structure==1) attr(ud, "pardes") <- theta.des[,,1,drop=FALSE]
-  if (dep.model==3 & pair.structure==1) attr(ud, "theta.des") <- theta.des[,,1,drop=FALSE]
-  if (dep.model==3 & pair.structure==0) attr(ud, "rv1") <- random.design[1,,drop=FALSE]
-  if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <- random.design[,,1,drop=FALSE]
+  if (dep.model==3 & pair.structure==1) attr(ud, "pardes") <-    theta.des[,,1]
+  if (dep.model==3 & pair.structure==1) attr(ud, "theta.des") <- theta.des[,,1]
+  if (dep.model==3 & pair.structure==0) attr(ud, "rv1") <- random.design[1,]
+  if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <- random.design[,,1]
   return(ud);
   ## }}}
 

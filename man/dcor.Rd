@@ -16,7 +16,7 @@
 \alias{dsd}
 \title{summary, tables, and correlations for data frames}
 \usage{
-dcor(data, y = NULL, x = NULL, ...)
+dcor(data, y = NULL, x = NULL, use = "pairwise.complete.obs", ...)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}
@@ -24,6 +24,8 @@ dcor(data, y = NULL, x = NULL, ...)
 \item{y}{name of variable, or fomula, or names of variables on data frame.}
 
 \item{x}{possible group variable}
+
+\item{use}{how to handle missing values}
 
 \item{...}{Optional additional arguments}
 }
