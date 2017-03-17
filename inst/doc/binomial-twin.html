@@ -3,30 +3,23 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2017-02-26 Sun 08:13 -->
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Analysis of bivariate binomial data: Twin analysis</title>
-<meta name="generator" content="Org mode" />
-<meta name="author" content="Klaus Holst &amp; Thomas Scheike" />
+<!-- 2017-03-17 Fri 09:51 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Klaus Holst &amp; Thomas Scheike" />
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
-  .title  { text-align: center;
-             margin-bottom: .2em; }
-  .subtitle { text-align: center;
-              font-size: medium;
-              font-weight: bold;
-              margin-top:0; }
+  .title  { text-align: center; }
   .todo   { font-family: monospace; color: red; }
-  .done   { font-family: monospace; color: green; }
-  .priority { font-family: monospace; color: orange; }
+  .done   { color: green; }
   .tag    { background-color: #eee; font-family: monospace;
             padding: 2px; font-size: 80%; font-weight: normal; }
   .timestamp { color: #bebebe; }
   .timestamp-kwd { color: #5f9ea0; }
-  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
-  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
-  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
   .underline { text-decoration: underline; }
   #postamble p, #preamble p { font-size: 90%; margin: .2em; }
   p.verse { margin-left: 3%; }
@@ -53,110 +46,27 @@
     border: 1px solid black;
   }
   pre.src:hover:before { display: inline;}
-  /* Languages per Org manual */
-  pre.src-asymptote:before { content: 'Asymptote'; }
-  pre.src-awk:before { content: 'Awk'; }
-  pre.src-C:before { content: 'C'; }
-  /* pre.src-C++ doesn't work in CSS */
-  pre.src-clojure:before { content: 'Clojure'; }
-  pre.src-css:before { content: 'CSS'; }
-  pre.src-D:before { content: 'D'; }
-  pre.src-ditaa:before { content: 'ditaa'; }
-  pre.src-dot:before { content: 'Graphviz'; }
-  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
   pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
-  pre.src-fortran:before { content: 'Fortran'; }
-  pre.src-gnuplot:before { content: 'gnuplot'; }
-  pre.src-haskell:before { content: 'Haskell'; }
-  pre.src-java:before { content: 'Java'; }
-  pre.src-js:before { content: 'Javascript'; }
-  pre.src-latex:before { content: 'LaTeX'; }
-  pre.src-ledger:before { content: 'Ledger'; }
-  pre.src-lisp:before { content: 'Lisp'; }
-  pre.src-lilypond:before { content: 'Lilypond'; }
-  pre.src-lua:before { content: 'Lua'; }
-  pre.src-matlab:before { content: 'MATLAB'; }
-  pre.src-mscgen:before { content: 'Mscgen'; }
-  pre.src-ocaml:before { content: 'Objective Caml'; }
-  pre.src-octave:before { content: 'Octave'; }
-  pre.src-org:before { content: 'Org mode'; }
-  pre.src-oz:before { content: 'OZ'; }
-  pre.src-plantuml:before { content: 'Plantuml'; }
-  pre.src-processing:before { content: 'Processing.js'; }
-  pre.src-python:before { content: 'Python'; }
-  pre.src-R:before { content: 'R'; }
-  pre.src-ruby:before { content: 'Ruby'; }
-  pre.src-sass:before { content: 'Sass'; }
-  pre.src-scheme:before { content: 'Scheme'; }
-  pre.src-screen:before { content: 'Gnu Screen'; }
-  pre.src-sed:before { content: 'Sed'; }
-  pre.src-sh:before { content: 'shell'; }
-  pre.src-sql:before { content: 'SQL'; }
-  pre.src-sqlite:before { content: 'SQLite'; }
-  /* additional languages in org.el's org-babel-load-languages alist */
-  pre.src-forth:before { content: 'Forth'; }
-  pre.src-io:before { content: 'IO'; }
-  pre.src-J:before { content: 'J'; }
-  pre.src-makefile:before { content: 'Makefile'; }
-  pre.src-maxima:before { content: 'Maxima'; }
-  pre.src-perl:before { content: 'Perl'; }
-  pre.src-picolisp:before { content: 'Pico Lisp'; }
-  pre.src-scala:before { content: 'Scala'; }
-  pre.src-shell:before { content: 'Shell Script'; }
-  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
-  /* additional language identifiers per "defun org-babel-execute"
-       in ob-*.el */
-  pre.src-cpp:before  { content: 'C++'; }
-  pre.src-abc:before  { content: 'ABC'; }
-  pre.src-coq:before  { content: 'Coq'; }
-  pre.src-groovy:before  { content: 'Groovy'; }
-  /* additional language identifiers from org-babel-shell-names in
-     ob-shell.el: ob-shell is the only babel language using a lambda to put
-     the execution function name together. */
-  pre.src-bash:before  { content: 'bash'; }
-  pre.src-csh:before  { content: 'csh'; }
-  pre.src-ash:before  { content: 'ash'; }
-  pre.src-dash:before  { content: 'dash'; }
-  pre.src-ksh:before  { content: 'ksh'; }
-  pre.src-mksh:before  { content: 'mksh'; }
-  pre.src-posh:before  { content: 'posh'; }
-  /* Additional Emacs modes also supported by the LaTeX listings package */
-  pre.src-ada:before { content: 'Ada'; }
-  pre.src-asm:before { content: 'Assembler'; }
-  pre.src-caml:before { content: 'Caml'; }
-  pre.src-delphi:before { content: 'Delphi'; }
-  pre.src-html:before { content: 'HTML'; }
-  pre.src-idl:before { content: 'IDL'; }
-  pre.src-mercury:before { content: 'Mercury'; }
-  pre.src-metapost:before { content: 'MetaPost'; }
-  pre.src-modula-2:before { content: 'Modula-2'; }
-  pre.src-pascal:before { content: 'Pascal'; }
-  pre.src-ps:before { content: 'PostScript'; }
-  pre.src-prolog:before { content: 'Prolog'; }
-  pre.src-simula:before { content: 'Simula'; }
-  pre.src-tcl:before { content: 'tcl'; }
-  pre.src-tex:before { content: 'TeX'; }
-  pre.src-plain-tex:before { content: 'Plain TeX'; }
-  pre.src-verilog:before { content: 'Verilog'; }
-  pre.src-vhdl:before { content: 'VHDL'; }
-  pre.src-xml:before { content: 'XML'; }
-  pre.src-nxml:before { content: 'XML'; }
-  /* add a generic configuration mode; LaTeX export needs an additional
-     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
-  pre.src-conf:before { content: 'Configuration File'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
 
   table { border-collapse:collapse; }
   caption.t-above { caption-side: top; }
   caption.t-bottom { caption-side: bottom; }
   td, th { vertical-align:top;  }
-  th.org-right  { text-align: center;  }
-  th.org-left   { text-align: center;   }
-  th.org-center { text-align: center; }
-  td.org-right  { text-align: right;  }
-  td.org-left   { text-align: left;   }
-  td.org-center { text-align: center; }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
   dt { font-weight: bold; }
-  .footpara { display: inline; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
   .footdef  { margin-bottom: 1em; }
   .figure { padding: 1em; }
   .figure p { text-align: center; }
@@ -176,7 +86,6 @@
     { font-size: 10px; font-weight: bold; white-space: nowrap; }
   .org-info-js_search-highlight
     { background-color: #ffff00; color: #000000; font-weight: bold; }
-  .org-svg { width: 90%; }
   /*]]>*/-->
 </style>
 <link rel="stylesheet" type="text/css" href="orgmode5-ts.css">
@@ -234,28 +143,48 @@ for the JavaScript code in this tag.
  }
 /*]]>*///-->
 </script>
-<script type="text/x-mathjax-config">
+<script type="text/javascript" src="http://orgmode.org/mathjax/MathJax.js"></script>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
     MathJax.Hub.Config({
+        // Only one of the two following lines, depending on user settings
+        // First allows browser-native MathML display, second forces HTML/CSS
+        //  config: ["MMLorHTML.js"], jax: ["input/TeX"],
+            jax: ["input/TeX", "output/HTML-CSS"],
+        extensions: ["tex2jax.js","TeX/AMSmath.js","TeX/AMSsymbols.js",
+                     "TeX/noUndefined.js"],
+        tex2jax: {
+            inlineMath: [ ["\\(","\\)"] ],
+            displayMath: [ ['$$','$$'], ["\\[","\\]"], ["\\begin{displaymath}","\\end{displaymath}"] ],
+            skipTags: ["script","noscript","style","textarea","pre","code"],
+            ignoreClass: "tex2jax_ignore",
+            processEscapes: false,
+            processEnvironments: true,
+            preview: "TeX"
+        },
+        showProcessingMessages: true,
         displayAlign: "center",
-        displayIndent: "0em",
+        displayIndent: "2em",
 
-        "HTML-CSS": { scale: 100,
-                        linebreaks: { automatic: "false" },
-                        webFont: "TeX"
-                       },
-        SVG: {scale: 100,
-              linebreaks: { automatic: "false" },
-              font: "TeX"},
-        NativeMML: {scale: 100},
-        TeX: { equationNumbers: {autoNumber: "AMS"},
-               MultLineWidth: "85%",
-               TagSide: "right",
-               TagIndent: ".8em"
+        "HTML-CSS": {
+             scale: 100,
+             availableFonts: ["STIX","TeX"],
+             preferredFont: "TeX",
+             webFont: "TeX",
+             imageFont: "TeX",
+             showMathMenu: true,
+        },
+        MMLorHTML: {
+             prefer: {
+                 MSIE:    "MML",
+                 Firefox: "MML",
+                 Opera:   "HTML",
+                 other:   "HTML"
              }
-});
+        }
+    });
+/*]]>*///-->
 </script>
-<script type="text/javascript"
-        src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
 </head>
 <body>
 <div id="preamble" class="status">
@@ -286,37 +215,48 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgd2003a7">Overview</a>
+<li><a href="#sec-1">Overview</a>
 <ul>
-<li><a href="#org1404ed8">Biprobit with random effects</a></li>
-<li><a href="#org7a5cae2">Pairwise odds ratio model</a></li>
-<li><a href="#org5fc8ffb">Additive gamma model</a></li>
+<li><a href="#sec-1-1">Biprobit with random effects</a></li>
+<li><a href="#sec-1-2">Pairwise odds ratio model</a></li>
+<li><a href="#sec-1-3">Additive gamma model</a></li>
 </ul>
 </li>
-<li><a href="#org76ec7e1">The twin-stutter data</a></li>
-<li><a href="#orgb79fdb0">Pairwise odds ratio model</a>
+<li><a href="#sec-2">The twin-stutter data</a></li>
+<li><a href="#sec-3">Pairwise odds ratio model</a>
 <ul>
-<li><a href="#org361be15">Alternative syntax</a></li>
+<li><a href="#sec-3-1">Alternative syntax</a></li>
 </ul>
 </li>
-<li><a href="#org9ecca7b">Bivariate Probit model</a>
+<li><a href="#sec-4">Bivariate Probit model</a>
 <ul>
-<li><a href="#org7670d24">Polygenic modelling</a></li>
+<li><a href="#sec-4-1">Polygenic modelling</a></li>
 </ul>
 </li>
-<li><a href="#orgfaf79f9">Additive gamma random effects</a>
+<li><a href="#sec-5">Additive gamma random effects</a>
 <ul>
-<li><a href="#orge840e35">Polygenic modelling</a></li>
+<li><a href="#sec-5-1">Polygenic modelling</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
-<hr />
+<div class="export">
+\(
+\newcommand{\cov}{\mathbb{C}\text{ov}}
+\newcommand{\cor}{\mathbb{C}\text{or}}
+\newcommand{\var}{\mathbb{V}\text{ar}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\unitfrac}[2]{#1/#2}
+\newcommand{\n}{}
+\)
 
-<div id="outline-container-orgd2003a7" class="outline-2">
-<h2 id="orgd2003a7">Overview</h2>
-<div class="outline-text-2" id="text-orgd2003a7">
+</div>
+<hr  />
+
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1">Overview</h2>
+<div class="outline-text-2" id="text-1">
 <p>
 When looking at bivariate binomial data with the aim of learning about the 
 dependence that is present, possibly after correcting for some covariates many
@@ -324,7 +264,8 @@ models are available.
 </p>
 
 <ul class="org-ul">
-<li>Random-effects models logistic regression covered elsewhere (glmer in lme4).</li>
+<li>Random-effects models logistic regression covered elsewhere (glmer in lme4).
+</li>
 </ul>
 
 <p>
@@ -332,19 +273,25 @@ in the mets package you can fit the
 </p>
 
 <ul class="org-ul">
-<li>Pairwise odds ratio model</li>
+<li>Pairwise odds ratio model
+</li>
 <li>Bivariate Probit model 
 <ul class="org-ul">
-<li>With random effects</li>
+<li>With random effects
+</li>
 <li>Special functionality for polygenic random effects modelling 
-such as ACE, ADE ,AE and so forth.</li>
-</ul></li>
+such as ACE, ADE ,AE and so forth.
+</li>
+</ul>
+</li>
 
 <li>Additive gamma random effects model 
 <ul class="org-ul">
 <li>Special functionality for polygenic random effects modelling 
-such as ACE, ADE ,AE and so forth.</li>
-</ul></li>
+such as ACE, ADE ,AE and so forth.
+</li>
+</ul>
+</li>
 </ul>
 
 
@@ -378,8 +325,10 @@ A typical twin analysis will typically consist of  looking at both
 </p>
 
 <ul class="org-ul">
-<li>Pairwise odds ratio model</li>
-<li>Bivariate Probit model</li>
+<li>Pairwise odds ratio model
+</li>
+<li>Bivariate Probit model 
+</li>
 </ul>
 
 <p>
@@ -391,9 +340,9 @@ model.
 </div>
 
 
-<div id="outline-container-org1404ed8" class="outline-3">
-<h3 id="org1404ed8">Biprobit with random effects</h3>
-<div class="outline-text-3" id="text-org1404ed8">
+<div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1">Biprobit with random effects</h3>
+<div class="outline-text-3" id="text-1-1">
 <p>
 For these model we assume that given random effects \(Z\) and a covariate vector 
 \( V_{12} \)
@@ -411,8 +360,10 @@ We note that
 </p>
 
 <ul class="org-ul">
-<li>Paramters \( \beta \) are subject specific</li>
-<li>The \( \Sigma \) will reflect dependence</li>
+<li>Paramters \( \beta \) are subject specific
+</li>
+<li>The \( \Sigma \) will reflect dependence
+</li>
 </ul>
 
 
@@ -431,9 +382,9 @@ fit the model.
 </div>
 
 
-<div id="outline-container-org7a5cae2" class="outline-3">
-<h3 id="org7a5cae2">Pairwise odds ratio model</h3>
-<div class="outline-text-3" id="text-org7a5cae2">
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2">Pairwise odds ratio model</h3>
+<div class="outline-text-3" id="text-1-2">
 <p>
 Now the pairwise odds ratio model the specifies that given \( X_1, X_2 \)
 the marginal models are 
@@ -472,8 +423,10 @@ We here simply estimate the parameters in a two stage-procedure
 </p>
 
 <ul class="org-ul">
-<li>Estimating the marginal parameters via GEE</li>
-<li>Using marginal estimates, estimate dependence parameters</li>
+<li>Estimating the marginal parameters via GEE
+</li>
+<li>Using marginal estimates, estimate dependence parameters
+</li>
 </ul>
 
 <p>
@@ -491,9 +444,9 @@ effects model.
 </div>
 
 
-<div id="outline-container-org5fc8ffb" class="outline-3">
-<h3 id="org5fc8ffb">Additive gamma model</h3>
-<div class="outline-text-3" id="text-org5fc8ffb">
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3">Additive gamma model</h3>
+<div class="outline-text-3" id="text-1-3">
 <p>
 Again we operate under  marginal logistic regression models are 
 \[
@@ -518,8 +471,10 @@ We fit this model by
 </p>
 
 <ul class="org-ul">
-<li>Estimating the marginal parameters via GEE</li>
-<li>Using marginal estimates, estimate dependence parameters</li>
+<li>Estimating the marginal parameters via GEE
+</li>
+<li>Using marginal estimates, estimate dependence parameters
+</li>
 </ul>
 
 <p>
@@ -582,8 +537,10 @@ We fit this model by
 </p>
 
 <ul class="org-ul">
-<li>Estimating the marginal parameters via GEE</li>
-<li>Using marginal estimates, estimate dependence parameters</li>
+<li>Estimating the marginal parameters via GEE
+</li>
+<li>Using marginal estimates, estimate dependence parameters
+</li>
 </ul>
 
 <p>
@@ -597,9 +554,9 @@ needed.
 </div>
 
 
-<div id="outline-container-org76ec7e1" class="outline-2">
-<h2 id="org76ec7e1">The twin-stutter data</h2>
-<div class="outline-text-2" id="text-org76ec7e1">
+<div id="outline-container-sec-2" class="outline-2">
+<h2 id="sec-2">The twin-stutter data</h2>
+<div class="outline-text-2" id="text-2">
 <p>
 We consider the twin-stutter where for pairs of twins that are 
 either dizygotic or monozygotic we have recorded whether the twins
@@ -615,11 +572,12 @@ Looking at the data
 </p>
 
 <div class="org-src-container">
-<pre class="src src-R"><span style="color: #268bd2; font-weight: bold;">library</span>(mets)
+
+<pre class="src src-R"><span style="font-weight: bold; text-decoration: underline;">library</span>(mets)
 data(twinstut)
-twinstut$binstut <span style="color: #268bd2; font-weight: bold;">&lt;-</span> 1*(twinstut$stutter==<span style="color: #2aa198;">"yes"</span>)
-twinsall <span style="color: #268bd2; font-weight: bold;">&lt;-</span> twinstut
-twinstut <span style="color: #268bd2; font-weight: bold;">&lt;-</span> subset(twinstut,zyg<span style="color: #268bd2; font-weight: bold;">%in%</span>c(<span style="color: #2aa198;">"mz"</span>,<span style="color: #2aa198;">"dz"</span>))
+twinstut$binstut <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> 1*(twinstut$stutter==<span style="font-style: italic;">"yes"</span>)
+twinsall <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> twinstut
+twinstut <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> subset(twinstut,zyg%<span style="font-weight: bold;">in</span>%c(<span style="font-style: italic;">"mz"</span>,<span style="font-style: italic;">"dz"</span>))
 head(twinstut)
 </pre>
 </div>
@@ -628,8 +586,8 @@ head(twinstut)
 Loading required package: timereg
 Loading required package: survival
 Loading required package: lava
-lava version 1.4.7.1
-mets version 1.2.1
+lava version 1.5
+mets version 1.2.1.2
 
 Attaching package: ‘mets’
 
@@ -648,9 +606,9 @@ The following object is masked _by_ ‘.GlobalEnv’:
 </div>
 
 
-<div id="outline-container-orgb79fdb0" class="outline-2">
-<h2 id="orgb79fdb0">Pairwise odds ratio model</h2>
-<div class="outline-text-2" id="text-orgb79fdb0">
+<div id="outline-container-sec-3" class="outline-2">
+<h2 id="sec-3">Pairwise odds ratio model</h2>
+<div class="outline-text-2" id="text-3">
 <p>
 We start by fitting an overall dependence OR for both MZ and DZ even though 
 the dependence is expected to be different across zygosity.
@@ -663,7 +621,8 @@ stuttering.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-R">margbin <span style="color: #268bd2; font-weight: bold;">&lt;-</span> glm(binstut~factor(sex)+age,data=twinstut,family=binomial())
+
+<pre class="src src-R">margbin <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> glm(binstut~factor(sex)+age,data=twinstut,family=binomial())
 summary(margbin)
 </pre>
 </div>
@@ -700,7 +659,8 @@ at around 8 that is clearly significant.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-R">bina <span style="color: #268bd2; font-weight: bold;">&lt;-</span> binomial.twostage(margbin,data=twinstut,var.link=1,
+
+<pre class="src src-R">bina <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(margbin,data=twinstut,var.link=1,
                        clusters=twinstut$tvparnr,detail=0)
 summary(bina)
 </pre>
@@ -734,9 +694,10 @@ a stronger environmental effect for MZ twins.
 
 
 <div class="org-src-container">
-<pre class="src src-R"><span style="color: #586e75;">### </span><span style="color: #586e75;">design for OR dependence </span>
-theta.des <span style="color: #268bd2; font-weight: bold;">&lt;-</span> model.matrix( ~-1+factor(zyg),data=twinstut)
-bin <span style="color: #268bd2; font-weight: bold;">&lt;-</span> binomial.twostage(margbin,data=twinstut,var.link=1,
+
+<pre class="src src-R"><span style="font-weight: bold; font-style: italic;">### </span><span style="font-weight: bold; font-style: italic;">design for OR dependence </span>
+theta.des <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> model.matrix( ~-1+factor(zyg),data=twinstut)
+bin <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(margbin,data=twinstut,var.link=1,
                           clusters=twinstut$tvparnr,theta.des=theta.des)
 summary(bin)
 </pre>
@@ -772,9 +733,10 @@ these were not significant.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-R">twinstut$cage <span style="color: #268bd2; font-weight: bold;">&lt;-</span> scale(twinstut$age)
-theta.des <span style="color: #268bd2; font-weight: bold;">&lt;-</span> model.matrix( ~-1+factor(zyg)+factor(sex),data=twinstut)
-bina <span style="color: #268bd2; font-weight: bold;">&lt;-</span> binomial.twostage(margbin,data=twinstut,var.link=1,
+
+<pre class="src src-R">twinstut$cage <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> scale(twinstut$age)
+theta.des <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> model.matrix( ~-1+factor(zyg)+factor(sex),data=twinstut)
+bina <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(margbin,data=twinstut,var.link=1,
                           clusters=twinstut$tvparnr,theta.des=theta.des)
 summary(bina)
 </pre>
@@ -804,9 +766,9 @@ attr(,"class")
 </div>
 
 
-<div id="outline-container-org361be15" class="outline-3">
-<h3 id="org361be15">Alternative syntax</h3>
-<div class="outline-text-3" id="text-org361be15">
+<div id="outline-container-sec-3-1" class="outline-3">
+<h3 id="sec-3-1">Alternative syntax</h3>
+<div class="outline-text-3" id="text-3-1">
 <p>
 We now demonstrate how the models can fitted jointly and with anohter
 syntax, that ofcourse just fits the marginal model and subsequently fits
@@ -818,10 +780,11 @@ First noticing as before that MZ twins have a much higher dependence.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-R"> <span style="color: #586e75;">## </span><span style="color: #586e75;">refers to zygosity of first subject in eash pair : zyg1</span>
- <span style="color: #586e75;">## </span><span style="color: #586e75;">could also use zyg2 (since zyg2=zyg1 within twinpair's)</span>
- out <span style="color: #268bd2; font-weight: bold;">&lt;-</span> easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut,
-                response=<span style="color: #2aa198;">"binstut"</span>,id=<span style="color: #2aa198;">"tvparnr"</span>,var.link=1,
+
+<pre class="src src-R"> <span style="font-weight: bold; font-style: italic;">## </span><span style="font-weight: bold; font-style: italic;">refers to zygosity of first subject in eash pair : zyg1</span>
+ <span style="font-weight: bold; font-style: italic;">## </span><span style="font-weight: bold; font-style: italic;">could also use zyg2 (since zyg2=zyg1 within twinpair's)</span>
+ out <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut,
+                response=<span style="font-style: italic;">"binstut"</span>,id=<span style="font-style: italic;">"tvparnr"</span>,var.link=1,
                 theta.formula=~-1+factor(zyg1))
 summary(out)
 </pre>
@@ -855,16 +818,17 @@ twins.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-R"><span style="color: #586e75;">## </span><span style="color: #586e75;">refers to zygosity of first subject in eash pair : zyg1</span>
-<span style="color: #586e75;">## </span><span style="color: #586e75;">could also use zyg2 (since zyg2=zyg1 within twinpair's))</span>
 
-<span style="color: #268bd2;">desfs</span><span style="color: #268bd2; font-weight: bold;">&lt;-</span><span style="color: #859900; font-weight: bold;">function</span>(x,num1=<span style="color: #2aa198;">"zyg1"</span>,num2=<span style="color: #2aa198;">"zyg2"</span>)
-        c(x[num1]==<span style="color: #2aa198;">"dz"</span>,x[num1]==<span style="color: #2aa198;">"mz"</span>,x[num1]==<span style="color: #2aa198;">"os"</span>)*1
+<pre class="src src-R"><span style="font-weight: bold; font-style: italic;">## </span><span style="font-weight: bold; font-style: italic;">refers to zygosity of first subject in eash pair : zyg1</span>
+<span style="font-weight: bold; font-style: italic;">## </span><span style="font-weight: bold; font-style: italic;">could also use zyg2 (since zyg2=zyg1 within twinpair's))</span>
 
-margbinall <span style="color: #268bd2; font-weight: bold;">&lt;-</span> glm(binstut~factor(sex)+age,data=twinsall,family=binomial())
-out3 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> easy.binomial.twostage(binstut~factor(sex)+age,
-      data=twinsall,response=<span style="color: #2aa198;">"binstut"</span>,id=<span style="color: #2aa198;">"tvparnr"</span>,var.link=1,
-      theta.formula=desfs,desnames=c(<span style="color: #2aa198;">"dz"</span>,<span style="color: #2aa198;">"mz"</span>,<span style="color: #2aa198;">"os"</span>))
+<span style="font-weight: bold;">desfs</span><span style="font-weight: bold; text-decoration: underline;">&lt;-</span><span style="font-weight: bold;">function</span>(x,num1=<span style="font-style: italic;">"zyg1"</span>,num2=<span style="font-style: italic;">"zyg2"</span>)
+        c(x[num1]==<span style="font-style: italic;">"dz"</span>,x[num1]==<span style="font-style: italic;">"mz"</span>,x[num1]==<span style="font-style: italic;">"os"</span>)*1
+
+margbinall <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> glm(binstut~factor(sex)+age,data=twinsall,family=binomial())
+out3 <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> easy.binomial.twostage(binstut~factor(sex)+age,
+      data=twinsall,response=<span style="font-style: italic;">"binstut"</span>,id=<span style="font-style: italic;">"tvparnr"</span>,var.link=1,
+      theta.formula=desfs,desnames=c(<span style="font-style: italic;">"dz"</span>,<span style="font-style: italic;">"mz"</span>,<span style="font-style: italic;">"os"</span>))
 summary(out3)
 </pre>
 </div>
@@ -897,14 +861,15 @@ attr(,"class")
 
 
 
-<div id="outline-container-org9ecca7b" class="outline-2">
-<h2 id="org9ecca7b">Bivariate Probit model</h2>
-<div class="outline-text-2" id="text-org9ecca7b">
+<div id="outline-container-sec-4" class="outline-2">
+<h2 id="sec-4">Bivariate Probit model</h2>
+<div class="outline-text-2" id="text-4">
 <div class="org-src-container">
-<pre class="src src-R"><span style="color: #268bd2; font-weight: bold;">library</span>(mets)
+
+<pre class="src src-R"><span style="font-weight: bold; text-decoration: underline;">library</span>(mets)
 data(twinstut)
-twinstut <span style="color: #268bd2; font-weight: bold;">&lt;-</span> subset(twinstut,zyg<span style="color: #268bd2; font-weight: bold;">%in%</span>c(<span style="color: #2aa198;">"mz"</span>,<span style="color: #2aa198;">"dz"</span>))
-twinstut$binstut <span style="color: #268bd2; font-weight: bold;">&lt;-</span> 1*(twinstut$stutter==<span style="color: #2aa198;">"yes"</span>)
+twinstut <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> subset(twinstut,zyg%<span style="font-weight: bold;">in</span>%c(<span style="font-style: italic;">"mz"</span>,<span style="font-style: italic;">"dz"</span>))
+twinstut$binstut <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> 1*(twinstut$stutter==<span style="font-style: italic;">"yes"</span>)
 head(twinstut)
 </pre>
 </div>
@@ -928,7 +893,8 @@ analysis.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-R">b1 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> bptwin(binstut~sex,data=twinstut,id=<span style="color: #2aa198;">"tvparnr"</span>,zyg=<span style="color: #2aa198;">"zyg"</span>,DZ=<span style="color: #2aa198;">"dz"</span>,type=<span style="color: #2aa198;">"un"</span>)
+
+<pre class="src src-R">b1 <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> bptwin(binstut~sex,data=twinstut,id=<span style="font-style: italic;">"tvparnr"</span>,zyg=<span style="font-style: italic;">"zyg"</span>,DZ=<span style="font-style: italic;">"dz"</span>,type=<span style="font-style: italic;">"un"</span>)
 summary(b1)
 </pre>
 </div>
@@ -968,9 +934,9 @@ Broad-sense heritability   1      NaN  NaN
 </div>
 
 
-<div id="outline-container-org7670d24" class="outline-3">
-<h3 id="org7670d24">Polygenic modelling</h3>
-<div class="outline-text-3" id="text-org7670d24">
+<div id="outline-container-sec-4-1" class="outline-3">
+<h3 id="sec-4-1">Polygenic modelling</h3>
+<div class="outline-text-3" id="text-4-1">
 <p>
 We now turn attention to specific polygenic modelling where special random 
 effects are used to specify ACE, AE, ADE models and so forth. This is very
@@ -982,24 +948,25 @@ if this submodel is acceptable by a likelihood ratio test.
 
 
 <div class="org-src-container">
-<pre class="src src-R">b1 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> bptwin(binstut~sex,data=twinstut,id=<span style="color: #2aa198;">"tvparnr"</span>,zyg=<span style="color: #2aa198;">"zyg"</span>,DZ=<span style="color: #2aa198;">"dz"</span>,type=<span style="color: #2aa198;">"ace"</span>)
+
+<pre class="src src-R">b1 <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> bptwin(binstut~sex,data=twinstut,id=<span style="font-style: italic;">"tvparnr"</span>,zyg=<span style="font-style: italic;">"zyg"</span>,DZ=<span style="font-style: italic;">"dz"</span>,type=<span style="font-style: italic;">"ace"</span>)
 summary(b1)
 </pre>
 </div>
 
 <pre class="example">
-             Estimate   Std.Err         Z p-value
-(Intercept)  -3.70371   0.24449 -15.14855       0
-sexmale       0.83310   0.08255  10.09201       0
-log(var(A))   1.18278   0.17179   6.88512       0
-log(var(C)) -25.34566   0.34507 -73.45055       0
+              Estimate    Std.Err          Z p-value
+(Intercept)   -3.70371    0.24449  -15.14855       0
+sexmale        0.83310    0.08255   10.09201       0
+log(var(A))    1.18278    0.17179    6.88512       0
+log(var(C))  -31.88101    0.14929 -213.54544       0
 
  Total MZ/DZ Complete pairs MZ/DZ
  8777/12511  3255/4058           
 
                    Estimate 2.5%    97.5%  
 A                  0.76545  0.70500 0.82590
-C                  0.00000  0.00000 0.00000
+C                  0.00000      NaN     NaN
 E                  0.23455  0.17410 0.29500
 MZ Tetrachoric Cor 0.76545  0.69793 0.81948
 DZ Tetrachoric Cor 0.38272  0.35210 0.41253
@@ -1021,11 +988,16 @@ log(OR)              1.69996  1.57262 1.82730
 
                          Estimate 2.5%    97.5%  
 Broad-sense heritability 0.76545  0.70500 0.82590
+
+Warning messages:
+1: In sqrt(diag(vcovACDE)) : NaNs produced
+2: In sqrt(diag(vcovACDE)) : NaNs produced
 </pre>
 
 
 <div class="org-src-container">
-<pre class="src src-R">b0 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> bptwin(binstut~sex,data=twinstut,id=<span style="color: #2aa198;">"tvparnr"</span>,zyg=<span style="color: #2aa198;">"zyg"</span>,DZ=<span style="color: #2aa198;">"dz"</span>,type=<span style="color: #2aa198;">"ae"</span>)
+
+<pre class="src src-R">b0 <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> bptwin(binstut~sex,data=twinstut,id=<span style="font-style: italic;">"tvparnr"</span>,zyg=<span style="font-style: italic;">"zyg"</span>,DZ=<span style="font-style: italic;">"dz"</span>,type=<span style="font-style: italic;">"ae"</span>)
 summary(b0)
 </pre>
 </div>
@@ -1069,9 +1041,9 @@ Broad-sense heritability 0.76545  0.70500 0.82590
 
 
 
-<div id="outline-container-orgfaf79f9" class="outline-2">
-<h2 id="orgfaf79f9">Additive gamma random effects</h2>
-<div class="outline-text-2" id="text-orgfaf79f9">
+<div id="outline-container-sec-5" class="outline-2">
+<h2 id="sec-5">Additive gamma random effects</h2>
+<div class="outline-text-2" id="text-5">
 <p>
 Fitting first a model with different size random effects for MZ and DZ. We 
 note that as before in the OR and biprobit model the dependence is much
@@ -1081,17 +1053,18 @@ OR model with an intercept. This clearly shows a significant difference.
 
 
 <div class="org-src-container">
-<pre class="src src-R">theta.des <span style="color: #268bd2; font-weight: bold;">&lt;-</span> model.matrix( ~-1+factor(zyg),data=twinstut)
-margbin <span style="color: #268bd2; font-weight: bold;">&lt;-</span> glm(binstut~sex,data=twinstut,family=binomial())
-bintwin <span style="color: #268bd2; font-weight: bold;">&lt;-</span> binomial.twostage(margbin,data=twinstut,model=<span style="color: #2aa198;">"gamma"</span>,
+
+<pre class="src src-R">theta.des <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> model.matrix( ~-1+factor(zyg),data=twinstut)
+margbin <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> glm(binstut~sex,data=twinstut,family=binomial())
+bintwin <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(margbin,data=twinstut,model=<span style="font-style: italic;">"gamma"</span>,
      clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=1,
      theta.des=theta.des)
 summary(bintwin)
 
-<span style="color: #586e75;">### </span><span style="color: #586e75;">test for same dependence in MZ and DZ </span>
-theta.des <span style="color: #268bd2; font-weight: bold;">&lt;-</span> model.matrix( ~factor(zyg),data=twinstut)
-margbin <span style="color: #268bd2; font-weight: bold;">&lt;-</span> glm(binstut~sex,data=twinstut,family=binomial())
-bintwin <span style="color: #268bd2; font-weight: bold;">&lt;-</span> binomial.twostage(margbin,data=twinstut,model=<span style="color: #2aa198;">"gamma"</span>,
+<span style="font-weight: bold; font-style: italic;">### </span><span style="font-weight: bold; font-style: italic;">test for same dependence in MZ and DZ </span>
+theta.des <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> model.matrix( ~factor(zyg),data=twinstut)
+margbin <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> glm(binstut~sex,data=twinstut,family=binomial())
+bintwin <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(margbin,data=twinstut,model=<span style="font-style: italic;">"gamma"</span>,
      clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=1,
      theta.des=theta.des)
 summary(bintwin)
@@ -1139,9 +1112,9 @@ attr(,"class")
 </div>
 
 
-<div id="outline-container-orge840e35" class="outline-3">
-<h3 id="orge840e35">Polygenic modelling</h3>
-<div class="outline-text-3" id="text-orge840e35">
+<div id="outline-container-sec-5-1" class="outline-3">
+<h3 id="sec-5-1">Polygenic modelling</h3>
+<div class="outline-text-3" id="text-5-1">
 <p>
    First setting up the random effects design for the random effects and 
    the the relationship between variance parameters.
@@ -1152,7 +1125,8 @@ all. Thus two parameters with these bands.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-R">out <span style="color: #268bd2; font-weight: bold;">&lt;-</span> twin.polygen.design(twinstut,id=<span style="color: #2aa198;">"tvparnr"</span>,zygname=<span style="color: #2aa198;">"zyg"</span>,zyg=<span style="color: #2aa198;">"dz"</span>,type=<span style="color: #2aa198;">"ace"</span>)
+
+<pre class="src src-R">out <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> twin.polygen.design(twinstut,id=<span style="font-style: italic;">"tvparnr"</span>,zygname=<span style="font-style: italic;">"zyg"</span>,zyg=<span style="font-style: italic;">"dz"</span>,type=<span style="font-style: italic;">"ace"</span>)
 head(cbind(out$des.rv,twinstut$tvparnr),10)
 out$pardes
 </pre>
@@ -1187,8 +1161,9 @@ automatically use the gamma fralty model.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-R">margbin <span style="color: #268bd2; font-weight: bold;">&lt;-</span> glm(binstut~sex,data=twinstut,family=binomial())
-bintwin1 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> binomial.twostage(margbin,data=twinstut,
+
+<pre class="src src-R">margbin <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> glm(binstut~sex,data=twinstut,family=binomial())
+bintwin1 <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(margbin,data=twinstut,
      clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
      random.design=out$des.rv,theta.des=out$pardes)
 summary(bintwin1)
@@ -1229,7 +1204,8 @@ as the marginal rates of stuttering for females.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-R">concordance.twin.ace(bintwin1,type=<span style="color: #2aa198;">"ace"</span>)
+
+<pre class="src src-R">concordance.twin.ace(bintwin1,type=<span style="font-style: italic;">"ace"</span>)
 </pre>
 </div>
 
@@ -1255,9 +1231,10 @@ now consider instead the AE model.
 
 
 <div class="org-src-container">
-<pre class="src src-R">out <span style="color: #268bd2; font-weight: bold;">&lt;-</span> twin.polygen.design(twinstut,id=<span style="color: #2aa198;">"tvparnr"</span>,zygname=<span style="color: #2aa198;">"zyg"</span>,zyg=<span style="color: #2aa198;">"dz"</span>,type=<span style="color: #2aa198;">"ae"</span>)
 
-bintwin <span style="color: #268bd2; font-weight: bold;">&lt;-</span> binomial.twostage(margbin,data=twinstut,
+<pre class="src src-R">out <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> twin.polygen.design(twinstut,id=<span style="font-style: italic;">"tvparnr"</span>,zygname=<span style="font-style: italic;">"zyg"</span>,zyg=<span style="font-style: italic;">"dz"</span>,type=<span style="font-style: italic;">"ae"</span>)
+
+bintwin <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> binomial.twostage(margbin,data=twinstut,
      clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
      random.design=out$des.rv,theta.des=out$pardes)
 summary(bintwin)
@@ -1294,7 +1271,8 @@ Again, the concordance can be computed:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-R">concordance.twin.ace(bintwin,type=<span style="color: #2aa198;">"ae"</span>)
+
+<pre class="src src-R">concordance.twin.ace(bintwin,type=<span style="font-style: italic;">"ae"</span>)
 </pre>
 </div>
 
@@ -1317,7 +1295,7 @@ marginal              0.03620 0.001877 0.0325 0.03988  7.15e-83
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Klaus Holst &amp; Thomas Scheike</p>
-<p class="date">Created: 2017-02-26 Sun 08:13</p>
+<p class="date">Created: 2017-03-17 Fri 09:51</p>
 <p class="validation"></p>
 </div>
 </body>

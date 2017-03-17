@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Analysis of multivariate binomial data: family analysis</title>
-<!-- 2017-02-27 Mon 13:08 -->
+<!-- 2017-03-17 Fri 12:23 -->
 <meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta  name="generator" content="Org-mode" />
 <meta  name="author" content="Klaus Holst &amp; Thomas Scheike" />
@@ -313,6 +313,17 @@ head(data)
 </div>
 
 <pre class="example">
+Loading required package: timereg
+Loading required package: survival
+Loading required package: lava
+lava version 1.5
+mets version 1.2.1.2
+
+Attaching package: ‘mets’
+
+The following object is masked _by_ ‘.GlobalEnv’:
+
+    object.defined
   ybin x   type cluster number child
 1    1 0 mother       1      1     0
 2    1 1 father       1      2     0
@@ -515,28 +526,7 @@ summary(tsp)
 <pre class="example">
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
-$estimates
-                theta         se
-dependence1 0.2425610 0.03747680
-dependence2 0.1255742 0.01607478
-
-$type
-[1] "clayton.oakes"
-
-$h
-            Estimate Std.Err  2.5% 97.5%  P-value
-dependence1    0.659  0.0611 0.539 0.779 4.25e-27
-dependence2    0.341  0.0611 0.221 0.461 2.39e-08
-
-$vare
-NULL
-
-$vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.368  0.0252 0.319 0.418 3.31e-48
-
-attr(,"class")
-[1] "summary.mets.twostage"
+Error in theta.des %*% theta : non-conformable arguments
 </pre>
 
 
@@ -560,28 +550,7 @@ summary(tsd)
 <pre class="example">
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
-$estimates
-                 theta         se
-dependence1 0.31196731 0.05585463
-dependence2 0.09833816 0.02328983
-
-$type
-[1] "clayton.oakes"
-
-$h
-            Estimate Std.Err   2.5% 97.5%  P-value
-dependence1     0.76  0.0734 0.6165 0.904 3.79e-25
-dependence2     0.24  0.0734 0.0958 0.384 1.09e-03
-
-$vare
-NULL
-
-$vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1     0.41  0.0373 0.337 0.483 3.58e-28
-
-attr(,"class")
-[1] "summary.mets.twostage"
+Error in theta.des %*% theta : non-conformable arguments
 </pre>
 
 
@@ -666,28 +635,7 @@ summary(tsdid)
 <pre class="example">
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
-$estimates
-                 theta         se
-dependence1 0.31196731 0.05585438
-dependence2 0.09833816 0.02328230
-
-$type
-[1] "clayton.oakes"
-
-$h
-            Estimate Std.Err   2.5% 97.5%  P-value
-dependence1     0.76  0.0734 0.6165 0.904 3.76e-25
-dependence2     0.24  0.0734 0.0958 0.384 1.09e-03
-
-$vare
-NULL
-
-$vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1     0.41  0.0373 0.337 0.483 3.47e-28
-
-attr(,"class")
-[1] "summary.mets.twostage"
+Error in theta.des %*% theta : non-conformable arguments
 </pre>
 
 <p>
@@ -811,28 +759,7 @@ summary(tsdid2)
 <pre class="example">
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
-$estimates
-                 theta         se
-dependence1 0.31196731 0.05585438
-dependence2 0.09833816 0.02328230
-
-$type
-[1] "clayton.oakes"
-
-$h
-            Estimate Std.Err   2.5% 97.5%  P-value
-dependence1     0.76  0.0734 0.6165 0.904 3.76e-25
-dependence2     0.24  0.0734 0.0958 0.384 1.09e-03
-
-$vare
-NULL
-
-$vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1     0.41  0.0373 0.337 0.483 3.47e-28
-
-attr(,"class")
-[1] "summary.mets.twostage"
+Error in theta.des %*% theta : non-conformable arguments
 </pre>
 
 <p>
@@ -890,28 +817,7 @@ summary(tsdid3)
 <pre class="example">
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
-$estimates
-                 theta         se
-dependence1 0.31196731 0.05585438
-dependence2 0.09833816 0.02328230
-
-$type
-[1] "clayton.oakes"
-
-$h
-            Estimate Std.Err   2.5% 97.5%  P-value
-dependence1     0.76  0.0734 0.6165 0.904 3.76e-25
-dependence2     0.24  0.0734 0.0958 0.384 1.09e-03
-
-$vare
-NULL
-
-$vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1     0.41  0.0373 0.337 0.483 3.47e-28
-
-attr(,"class")
-[1] "summary.mets.twostage"
+Error in theta.des %*% theta : non-conformable arguments
 </pre>
 </div>
 </div>
@@ -1037,7 +943,7 @@ attr(,"class")
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Klaus Holst &amp; Thomas Scheike</p>
-<p class="date">Created: 2017-02-27 Mon 13:08</p>
+<p class="date">Created: 2017-03-17 Fri 12:23</p>
 <p class="validation"></p>
 </div>
 </body>
