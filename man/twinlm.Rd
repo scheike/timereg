@@ -7,8 +7,8 @@
 \usage{
 twinlm(formula, data, id, zyg, DZ, group = NULL, group.equal = FALSE,
   strata = NULL, weights = NULL, type = c("ace"), twinnum = "twinnum",
-  binary = FALSE, keep = weights, estimator = "gaussian",
-  constrain = TRUE, control = list(), messages = 1, ...)
+  binary = FALSE, keep = weights, estimator = NULL, constrain = TRUE,
+  control = list(), messages = 1, ...)
 }
 \arguments{
 \item{formula}{Formula specifying effects of covariates on the response}
