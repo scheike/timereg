@@ -53,7 +53,7 @@
 ##' @param group Optional. Variable name defining group for interaction analysis (e.g., gender)
 ##' @param group.equal If TRUE marginals of groups are asummed to be the same
 ##' @param strata Strata variable name
-##' @param weight Weight matrix if needed by the chosen estimator. For use
+##' @param weights Weights matrix if needed by the chosen estimator. For use
 ##'     with Inverse Probability Weights
 ##' @param type Character defining the type of analysis to be
 ##'     performed. Should be a subset of "aced" (additive genetic factors, common
@@ -71,9 +71,9 @@
 ##' @param messages Control amount of messages shown 
 ##' @param ... Additional arguments parsed on to lower-level functions
 twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
-                   group.equal=FALSE, strata=NULL, weight=NULL, type=c("ace"),
+                   group.equal=FALSE, strata=NULL, weights=NULL, type=c("ace"),
                    twinnum="twinnum",
-                   binary=FALSE,keep=weight,estimator="gaussian",
+                   binary=FALSE,keep=weights,estimator="gaussian",
                    constrain=TRUE,control=list(),messages=1,...)
 {
     
@@ -223,7 +223,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
           optim$method <- "nlminb1"
       suppressWarnings(e <- estimate(mm,dd,control=optim,...))
   } else {
-      suppressWarnings(e <- estimate(mm,dd,weight=weight,estimator=estimator,fix=FALSE,control=optim,...))
+      suppressWarnings(e <- estimate(mm,dd,weights=weights,estimator=estimator,fix=FALSE,control=optim,...))
   }
 
   if (!is.null(optim$refit) && optim$refit) {
@@ -232,7 +232,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
     if (inherits(mf[,yvar],"Surv")) {
         suppressWarnings(e <- estimate(mm,dd,estimator=estimator,fix=FALSE,control=optim,...))
     } else {
-        suppressWarnings(e <- estimate(mm,dd,weight=weight,estimator=estimator,fix=FALSE,control=optim,...))
+        suppressWarnings(e <- estimate(mm,dd,weights=weights,estimator=estimator,fix=FALSE,control=optim,...))
     }
   }
   e$vcov <- Inverse(information(e,type="hessian"))

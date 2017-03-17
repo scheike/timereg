@@ -6,8 +6,8 @@
 \title{Classic twin model for quantitative traits}
 \usage{
 twinlm(formula, data, id, zyg, DZ, group = NULL, group.equal = FALSE,
-  strata = NULL, weight = NULL, type = c("ace"), twinnum = "twinnum",
-  binary = FALSE, keep = weight, estimator = "gaussian",
+  strata = NULL, weights = NULL, type = c("ace"), twinnum = "twinnum",
+  binary = FALSE, keep = weights, estimator = "gaussian",
   constrain = TRUE, control = list(), messages = 1, ...)
 }
 \arguments{
@@ -35,7 +35,7 @@ the dyzogitic twins}
 
 \item{strata}{Strata variable name}
 
-\item{weight}{Weight matrix if needed by the chosen estimator. For use
+\item{weights}{Weights matrix if needed by the chosen estimator. For use
 with Inverse Probability Weights}
 
 \item{type}{Character defining the type of analysis to be
