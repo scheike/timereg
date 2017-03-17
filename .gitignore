@@ -1,5 +1,6 @@
 *.gcno
 TAGS
+inst/doc
 inst/misc/workshop*.org
 inst/misc/mena.org
 vignette/*.html
