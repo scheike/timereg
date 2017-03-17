@@ -73,7 +73,7 @@
 twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
                    group.equal=FALSE, strata=NULL, weights=NULL, type=c("ace"),
                    twinnum="twinnum",
-                   binary=FALSE,keep=weights,estimator="gaussian",
+                   binary=FALSE,keep=weights,estimator=NULL,
                    constrain=TRUE,control=list(),messages=1,...)
 {
     
@@ -158,8 +158,9 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
   if (!is.null(group) && type%in%c("u","flex","sat")) stop("Only polygenic models are allowed with 'group' ('type' subset of 'acde'). See also the 'strata' argument.")      
   ## To wide format:
   num <- NULL; if (twinnum%in%colnames(data)) num <- twinnum
-    if (!is.null(group)) data[,group] <- as.factor(data[,group])
-    y <- cbind(as.vector(y)); colnames(y) <- yvar
+  if (!is.null(group)) data[,group] <- as.factor(data[,group])
+  y <- data.frame(y); names(y) <- yvar
+  #y <- cbind(as.vector(y)); colnames(y) <- yvar
   data <- cbind(y,data[,c(keep,num,zyg,id,group)],M)
   ddd <- fast.reshape(data,id=c(id),varying=c(yvar,keep,covars,group),keep=zyg,num=num,sep=".",labelnum=TRUE)
   groups <- paste(group,".",1:2,sep="")
@@ -209,19 +210,20 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
   }
   
   newkeep <- unlist(sapply(keep, function(x) paste(x, 1:2, sep = ".")))
-  if (is.null(estimator)) return(multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep,type=2))
-  optim <- list(method="nlminb2",refit=FALSE,gamma=1,start=rep(0.1,length(coef(mm[[1]]))*length(mm)))
+  if (!is.null(estimator) && (inherits(estimator,c("numeric","logical")) && !estimator)) return(multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep,type=2))
+    optim <- list(start=rep(0.1,length(coef(mm[[1]]))*length(mm)))
+##    optim <- list(method="nlminb2",refit=FALSE,gamma=1,start=rep(0.1,length(coef(mm[[1]]))*length(mm)))
 
     optim$start <- twinlmStart(formula,na.omit(mf),type,hasIntercept,surv=inherits(data[,yvar],"Surv"),model=mm, group=levgrp, group.equal=group.equal)
   if (length(control)>0) {
     optim[names(control)] <- control
   }
 
+  
   if (inherits(data[,yvar],"Surv")) {
-      if (!requireNamespace("lava.tobit",quietly=TRUE)) stop("lava.tobit required")
-      if (is.null(optim$method))
-          optim$method <- "nlminb1"
-      suppressWarnings(e <- estimate(mm,dd,control=optim,...))
+      ##if (!requireNamespace("lava.tobit",quietly=TRUE)) stop("lava.tobit required")
+      if (!is.null(estimator) && estimator%in%c("gaussian","tobit")) optim$method <- "nlminb1"
+      suppressWarnings(e <- estimate(mm,dd,control=optim,estimator=estimator,...))
   } else {
       suppressWarnings(e <- estimate(mm,dd,weights=weights,estimator=estimator,fix=FALSE,control=optim,...))
   }
