@@ -375,7 +375,7 @@ RcppExport SEXP BhatAddGamCC(SEXP itwostage,SEXP idBaalen,SEXP icause,
 //    vec cumhaz2(ncr); cumhaz2.fill(0); 
 
   double s1=1,s2=1,caseweight=1,ll=1; 
-  double s1t=1,llt=1; 
+  double llt=1; //s1t=1,
 //    mat rv2=0*rv.slice(0); 
 //    mat rv1=rv.slice(0); 
 
@@ -396,7 +396,7 @@ RcppExport SEXP BhatAddGamCC(SEXP itwostage,SEXP idBaalen,SEXP icause,
         if ((recursive==0) & (k>0)) cumhaz=xjump.slice(k)*trans(Bit.row(k)); 
         cumhazt=xjump.slice(k)*trans(Bit.row(k)); 
 
-        int lnrv= nrvs(k)-1; // number of random effects for this cluster 	
+        //int lnrv= nrvs(k)-1; // number of random effects for this cluster 	
 	mat rvm=rv.slice(k);
 	int nnn=rvm.n_rows; 
 //	rvm.print("rvm"); 

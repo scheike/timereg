@@ -1,3 +1,4 @@
+
 #include <RcppArmadillo.h>
 #include <Rcpp.h>
 #include <algorithm>
@@ -701,7 +702,8 @@ double val,val2,val3,val4;
 //double laplace(),ilaplace(),Dilaplace(),Dlaplace(),D2laplace(); 
 double t0;
 
-if (x<0) x=0.0001; if (y<0) y=0.0001; 
+if (x<0) x=0.0001;
+if (y<0) y=0.0001; 
 
 val=ilaplace(t,exp(-x))+ilaplace(t,exp(-y)); val2=laplace(t,val); 
 ckij(0)=1-exp(-x)-exp(-y)+val2; 
