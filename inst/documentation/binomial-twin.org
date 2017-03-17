@@ -213,7 +213,7 @@ We here consider MZ and same sex DZ twins.
 
 Looking at the data 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 library(mets)
 data(twinstut)
 twinstut$binstut <- 1*(twinstut$stutter=="yes")
@@ -222,13 +222,13 @@ twinstut <- subset(twinstut,zyg%in%c("mz","dz"))
 head(twinstut)
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_example
+#+RESULTS[<2017-03-17 09:51:41> 64ff666970f0af532f5c746eea5aad956f3fc971]:
+#+begin_example
 Loading required package: timereg
 Loading required package: survival
 Loading required package: lava
-lava version 1.4.7.1
-mets version 1.2.1
+lava version 1.5
+mets version 1.2.1.2
 
 Attaching package: ‘mets’
 
@@ -242,7 +242,7 @@ The following object is masked _by_ ‘.GlobalEnv’:
 8  2001012  mz      no female  71  1       0
 9  2001012  mz      no female  71  2       0
 11 2001015  dz      no   male  71  1       0
-#+END_example
+#+end_example
 
 
 * Pairwise odds ratio model 
@@ -254,13 +254,13 @@ The first step is to fit the marginal model adjusting for marginal covariates.
 We here note that there is a rather strong gender effect in the risk of
 stuttering. 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 margbin <- glm(binstut~factor(sex)+age,data=twinstut,family=binomial())
 summary(margbin)
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_example
+#+RESULTS[<2017-03-17 09:51:42> 95f58b0c86319b7e71df5cc74ef25ded37ce82c4]:
+#+begin_example
 
 Call:
 glm(formula = binstut ~ factor(sex) + age, family = binomial(), 
@@ -285,19 +285,19 @@ Residual deviance: 9117.0  on 21285  degrees of freedom
 AIC: 9123
 
 Number of Fisher Scoring iterations: 6
-#+END_example
+#+end_example
 
 Now estimating the OR parameter. We see a strong dependence with an OR
 at around 8 that is clearly significant. 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 bina <- binomial.twostage(margbin,data=twinstut,var.link=1,
                        clusters=twinstut$tvparnr,detail=0)
 summary(bina)
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_example
+#+RESULTS[<2017-03-17 09:51:42> ff319142c8b46d9249ca1485257742753312531b]:
+#+begin_example
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
 $estimates
@@ -313,7 +313,7 @@ $type
 
 attr(,"class")
 [1] "summary.mets.twostage"
-#+END_example
+#+end_example
 
 Now, and more interestingly, we consider an OR that depends on zygosity and
 note that MZ have a much larger OR than DZ twins. This type of trait is 
@@ -322,7 +322,7 @@ that there is a genetic effect, alternatively there might be
 a stronger environmental effect for MZ twins. 
 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 ### design for OR dependence 
 theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut)
 bin <- binomial.twostage(margbin,data=twinstut,var.link=1,
@@ -330,8 +330,8 @@ bin <- binomial.twostage(margbin,data=twinstut,var.link=1,
 summary(bin)
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_example
+#+RESULTS[<2017-03-17 09:51:42> be6159bcc8b713945745e7ad1cfefe97c58acf7d]:
+#+begin_example
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
 $estimates
@@ -349,7 +349,7 @@ $type
 
 attr(,"class")
 [1] "summary.mets.twostage"
-#+END_example
+#+end_example
 
 
 We now consider further regression modelling of the OR structure by
@@ -358,7 +358,7 @@ We see that MZ has a much higher dependence and that males have
 a much lower dependence. We tested for interaction in this model and 
 these were not significant. 
      
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 twinstut$cage <- scale(twinstut$age)
 theta.des <- model.matrix( ~-1+factor(zyg)+factor(sex),data=twinstut)
 bina <- binomial.twostage(margbin,data=twinstut,var.link=1,
@@ -366,8 +366,8 @@ bina <- binomial.twostage(margbin,data=twinstut,var.link=1,
 summary(bina)
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_example
+#+RESULTS[<2017-03-17 09:51:42> ebecbc845e3b64a7844d205130704cc12a16b1f5]:
+#+begin_example
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
 $estimates
@@ -387,7 +387,7 @@ $type
 
 attr(,"class")
 [1] "summary.mets.twostage"
-#+END_example
+#+end_example
 
 
 ** Alternative syntax 
@@ -398,7 +398,7 @@ the pairwise OR model.
 
 First noticing as before that MZ twins have a much higher dependence. 
      
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
  ## refers to zygosity of first subject in eash pair : zyg1
  ## could also use zyg2 (since zyg2=zyg1 within twinpair's)
  out <- easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut,
@@ -407,8 +407,8 @@ First noticing as before that MZ twins have a much higher dependence.
 summary(out)
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_example
+#+RESULTS[<2017-03-17 09:51:42> 8be524c3ec929079ef70752f43c638680dd6c0cb]:
+#+begin_example
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
 $estimates
@@ -426,14 +426,14 @@ $type
 
 attr(,"class")
 [1] "summary.mets.twostage"
-#+END_example
+#+end_example
 
 Now considering all data and estimating separate effects for the OR
 for opposite sex DZ twins and same sex twins. 
 We here find that os twins are not markedly different from the same sex DZ 
 twins. 
      
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
  ## refers to zygosity of first subject in eash pair : zyg1
  ## could also use zyg2 (since zyg2=zyg1 within twinpair's))
  
@@ -448,8 +448,8 @@ twins.
 #+END_SRC
 
 
-#+RESULTS:
-#+BEGIN_example
+#+RESULTS[<2017-03-17 09:51:44> 02770b669abde75e154f46e3ec9d1f9fdf7c678c]:
+#+begin_example
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
 $estimates
@@ -469,13 +469,13 @@ $type
 
 attr(,"class")
 [1] "summary.mets.twostage"
-#+END_example
+#+end_example
 
  
 
 * Bivariate Probit model 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 library(mets)
 data(twinstut)
 twinstut <- subset(twinstut,zyg%in%c("mz","dz"))
@@ -483,16 +483,14 @@ twinstut$binstut <- 1*(twinstut$stutter=="yes")
 head(twinstut)
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_example
-   tvparnr zyg stutter    sex age nr binstut
-1  2001005  mz      no female  71  1       0
-2  2001005  mz      no female  71  2       0
-3  2001006  dz      no female  71  1       0
-8  2001012  mz      no female  71  1       0
-9  2001012  mz      no female  71  2       0
-11 2001015  dz      no   male  71  1       0
-#+END_example
+#+RESULTS[<2017-03-17 09:51:44> 91a000699cf2f3f471197ed73db339d2f923946a]:
+:    tvparnr zyg stutter    sex age nr binstut
+: 1  2001005  mz      no female  71  1       0
+: 2  2001005  mz      no female  71  2       0
+: 3  2001006  dz      no female  71  1       0
+: 8  2001012  mz      no female  71  1       0
+: 9  2001012  mz      no female  71  2       0
+: 11 2001015  dz      no   male  71  1       0
 
 First testing for same dependence in MZ and DZ  that we recommend doing by 
 comparing the correlations of MZ and DZ twins. Apart from regression 
@@ -500,13 +498,13 @@ correction in the mean this is an un-structured model, and the useful
 concordance and casewise concordance estimates can be reported from this
 analysis. 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 b1 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="un")
 summary(b1)
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_example
+#+RESULTS[<2017-03-17 09:51:46> ac373f8ca2f478273c20ca2b9b8c3f6d33a4e902]:
+#+begin_example
 
                 Estimate    Std.Err          Z p-value
 (Intercept)    -1.794823   0.023289 -77.066728  0.0000
@@ -538,7 +536,7 @@ log(OR)              0.63527  0.09013 1.18040
 
                          Estimate 2.5% 97.5%
 Broad-sense heritability   1      NaN  NaN
-#+END_example
+#+end_example
 
 
 ** Polygenic modelling 
@@ -551,26 +549,26 @@ Broad-sense heritability   1      NaN  NaN
    if this submodel is acceptable by a likelihood ratio test. 
 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 b1 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="ace")
 summary(b1)
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_example
+#+RESULTS[<2017-03-17 09:51:49> bef5381b41a7d33682352f3c55ae14f34b309c31]:
+#+begin_example
 
-             Estimate   Std.Err         Z p-value
-(Intercept)  -3.70371   0.24449 -15.14855       0
-sexmale       0.83310   0.08255  10.09201       0
-log(var(A))   1.18278   0.17179   6.88512       0
-log(var(C)) -25.34566   0.34507 -73.45055       0
+              Estimate    Std.Err          Z p-value
+(Intercept)   -3.70371    0.24449  -15.14855       0
+sexmale        0.83310    0.08255   10.09201       0
+log(var(A))    1.18278    0.17179    6.88512       0
+log(var(C))  -31.88101    0.14929 -213.54544       0
 
  Total MZ/DZ Complete pairs MZ/DZ
  8777/12511  3255/4058           
 
                    Estimate 2.5%    97.5%  
 A                  0.76545  0.70500 0.82590
-C                  0.00000  0.00000 0.00000
+C                  0.00000      NaN     NaN
 E                  0.23455  0.17410 0.29500
 MZ Tetrachoric Cor 0.76545  0.69793 0.81948
 DZ Tetrachoric Cor 0.38272  0.35210 0.41253
@@ -592,17 +590,21 @@ log(OR)              1.69996  1.57262 1.82730
 
                          Estimate 2.5%    97.5%  
 Broad-sense heritability 0.76545  0.70500 0.82590
-#+END_example
+
+Warning messages:
+1: In sqrt(diag(vcovACDE)) : NaNs produced
+2: In sqrt(diag(vcovACDE)) : NaNs produced
+#+end_example
 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 
 b0 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="ae")
 summary(b0)
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_example
+#+RESULTS[<2017-03-17 09:51:50> 61947b150415a5f41814e2b8fd35974ef47e5ba0]:
+#+begin_example
 
              Estimate   Std.Err         Z p-value
 (Intercept)  -3.70371   0.24449 -15.14855       0
@@ -635,7 +637,7 @@ log(OR)              1.69996  1.57262 1.82730
 
                          Estimate 2.5%    97.5%  
 Broad-sense heritability 0.76545  0.70500 0.82590
-#+END_example
+#+end_example
 
 
 
@@ -647,7 +649,7 @@ stronger for MZ twins. We also test if these are the same by parametrizing the
 OR model with an intercept. This clearly shows a significant difference. 
 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut)
 margbin <- glm(binstut~sex,data=twinstut,family=binomial())
 bintwin <- binomial.twostage(margbin,data=twinstut,model="gamma",
@@ -664,8 +666,8 @@ bintwin <- binomial.twostage(margbin,data=twinstut,model="gamma",
 summary(bintwin)
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_example
+#+RESULTS[<2017-03-17 09:51:51> 7e47d62d9a1ce0cc75eca35cc69e334c3d0b3323]:
+#+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 With log-link 
@@ -702,7 +704,7 @@ $type
 
 attr(,"class")
 [1] "summary.mets.twostage"
-#+END_example
+#+end_example
 
 
 ** Polygenic modelling 
@@ -714,14 +716,14 @@ attr(,"class")
    genetic variance is the same for all subjects. The shared environmental effect is the samme for 
 all. Thus two parameters with these bands. 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 out <- twin.polygen.design(twinstut,id="tvparnr",zygname="zyg",zyg="dz",type="ace")
 head(cbind(out$des.rv,twinstut$tvparnr),10)
 out$pardes
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_example
+#+RESULTS[<2017-03-17 09:51:51> 0728a8818634f324a0ca81c51b7f70c5c63de8c1]:
+#+begin_example
    MZ DZ DZns1 DZns2 env        
 1   1  0     0     0   1 2001005
 2   1  0     0     0   1 2001005
@@ -739,7 +741,7 @@ out$pardes
 [3,]  0.5    0
 [4,]  0.5    0
 [5,]  0.0    1
-#+END_example
+#+end_example
 
 
 Now, fitting the ACE model, we see that the variance of the genetic, 
@@ -747,7 +749,7 @@ component, is 1.5 and the environmental variance is -0.5. Thus suggesting that
 the ACE model does not fit the data.  When the random design is given we 
 automatically use the gamma fralty model. 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 
 margbin <- glm(binstut~sex,data=twinstut,family=binomial())
 bintwin1 <- binomial.twostage(margbin,data=twinstut,
@@ -756,8 +758,8 @@ bintwin1 <- binomial.twostage(margbin,data=twinstut,
 summary(bintwin1)
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_example
+#+RESULTS[<2017-03-17 09:51:52> 00f233f690f5a3787b852e793b10a1591a943aec]:
+#+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
@@ -782,18 +784,18 @@ p1    0.981   0.102 0.781  1.18 8.29e-22
 
 attr(,"class")
 [1] "summary.mets.twostage"
-#+END_example
+#+end_example
 
 
 For this model we estimate the concordance and casewise concordance as well 
 as the marginal rates of stuttering for females. 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 concordance.twin.ace(bintwin1,type="ace")
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_example
+#+RESULTS[<2017-03-17 09:51:52> 70386d07f3dc715342edb320e405818af50090b8]:
+#+begin_example
 $MZ
                      Estimate Std.Err   2.5%  97.5%  P-value
 concordance            0.0182 0.00147 0.0153 0.0211 2.61e-35
@@ -805,14 +807,14 @@ $DZ
 concordance           0.00235 0.000589 0.0012 0.00351 6.45e-05
 casewise concordance  0.06501 0.015836 0.0340 0.09604 4.04e-05
 marginal              0.03620 0.001877 0.0325 0.03988 7.15e-83
-#+END_example
+#+end_example
 
 
 The E component was not consistent with the fit of the data and we
 now consider instead the AE model. 
 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 out <- twin.polygen.design(twinstut,id="tvparnr",zygname="zyg",zyg="dz",type="ae")
 
 bintwin <- binomial.twostage(margbin,data=twinstut,
@@ -821,8 +823,8 @@ bintwin <- binomial.twostage(margbin,data=twinstut,
 summary(bintwin)
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_example
+#+RESULTS[<2017-03-17 09:51:53> 35f6f8153ffefea9dfb3b82cd2c37b12c7490b18]:
+#+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
@@ -845,16 +847,16 @@ p1    0.909  0.0954 0.723   1.1 1.47e-21
 
 attr(,"class")
 [1] "summary.mets.twostage"
-#+END_example
+#+end_example
 
 Again, the concordance can be computed: 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 concordance.twin.ace(bintwin,type="ae")
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_example
+#+RESULTS[<2017-03-17 09:51:53> 3c035294818911d6ce061ee2d5c25c9ce21bedd1]:
+#+begin_example
 $MZ
                      Estimate Std.Err   2.5%  97.5%  P-value
 concordance            0.0174 0.00143 0.0146 0.0202 5.00e-34
@@ -866,14 +868,14 @@ $DZ
 concordance           0.00477 0.000393 0.0040 0.00554  5.94e-34
 casewise concordance  0.13175 0.005417 0.1211 0.14237 1.14e-130
 marginal              0.03620 0.001877 0.0325 0.03988  7.15e-83
-#+END_example
+#+end_example
 
 *  COMMENT 
 
  :PROPERTIES:
  :BEAMER_opt: shrink=85
  :END:
-#+BEGIN_SRC R :results graphics :cache no :file auto/remis-km-placebo.png :exports both :session *R*
+#+BEGIN_SRC R :results graphics :cache yes :file auto/remis-km-placebo.png :exports both :session *R*
 par(mfrow=c(2,2))
 plot(survfit(Surv(time,event)~placebo,data=remis),col=c("red","blue"))
 legend("topright",legend=c("Treatment","Placebo"),col=c("red","blue"),lty=c(1,1))
@@ -883,10 +885,8 @@ plot(survfit(Surv(time,event)~placebo,data=remis),col=c("red","blue"),fun="clogl
 legend("topright",legend=c("Treatment","Placebo"),col=c("red","blue"),lty=c(1,1))
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_example
+#+RESULTS[<2017-03-17 09:51:53> 0755fe766c35a9bb8fc085f62890d1d5823e7ebd]:
 [[file:auto/remis-km-placebo.png]]
-#+END_example
 
 [[file:auto/remis-km-placebo.png]]
 

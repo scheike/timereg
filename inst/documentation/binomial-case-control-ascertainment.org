@@ -124,7 +124,7 @@ We here consider MZ and same sex DZ twins.
 
 Looking at the data 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 library(mets)
 data(twinstut)
 twinstut$binstut <- 1*(twinstut$stutter=="yes")
@@ -132,13 +132,13 @@ twinstut <- subset(twinstut,zyg%in%c("mz","dz"))
 head(twinstut)
 #+END_SRC
 
-#+RESULTS:
+#+RESULTS[<2017-03-17 11:19:17> 099e04bb957b10633bae8f6ce1f5ed94ad452fee]:
 #+begin_example
 Loading required package: timereg
 Loading required package: survival
 Loading required package: lava
-lava version 1.4.7.1
-mets version 1.2.1
+lava version 1.5
+mets version 1.2.1.2
 
 Attaching package: ‘mets’
 
@@ -166,7 +166,7 @@ The following object is masked _by_ ‘.GlobalEnv’:
 
 Selecting the ascertained pairs 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 library(mets)
 data(twinstut)
 twinstut$binstut <- 1*(twinstut$stutter=="yes")
@@ -179,21 +179,21 @@ twinstut  <-   dby(twinstut,binstut~tvparnr,stuttot=sum,nn=seq_along,n=length)
 twina     <-   subset(twinstut,n==2 & stuttot>=1)
 #+END_SRC  
 
-#+RESULTS:
+#+RESULTS[<2017-03-17 11:19:17> 75170e971a30da13ed42c8378f8514c90a8bf978]:
 
 
 Selecting on the pairs where there is stuttering at taking a look at the 
 tables of discordance and concordance for the twins. 
 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 twinda <- fast.reshape(twina,id="tvparnr")
 twind <- fast.reshape(twinstut,id="tvparnr")
 dtable(twind,"binst*"~I(stuttot1>=1))
 dtable(twinda,~"binst*")
 #+END_SRC  
 
-#+RESULTS:
+#+RESULTS[<2017-03-17 11:19:17> 6266853e2101d95580fe6e039f17f646caeb54dc]:
 #+begin_example
 I(stuttot1 >= 1): FALSE
 
@@ -222,12 +222,12 @@ Now doing the analyses
 Looking at the full data for comparison. We estimate an unstructured
 probit model with different correlations for MZ and DZ twins. 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 b1 <- biprobit(binstut~sex,~-1+binzyg,data=twinstut,id="tvparnr")
 summary(b1)
 #+END_SRC  
 
-#+RESULTS:
+#+RESULTS[<2017-03-17 11:19:19> 595e2280e724baa72974ee5e2cf4aad61fb5c9d3]:
 #+begin_example
 
               Estimate    Std.Err          Z p-value
@@ -259,18 +259,18 @@ Marginal                0.03634  0.03287 0.04016
 
 A similar analysis of the ascertained data reveals (some problems) ...
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 ba1 <- biprobit(binstut~sex,~-1+binzyg,data=twina,id="tvparnr",pair.ascertained=TRUE)
 summary(ba1)
 #+END_SRC  
 
-#+RESULTS:
+#+RESULTS[<2017-03-17 11:19:20> f1d820374f95f2247cc09af43650e972f25e4a82]:
 #+begin_example
 
               Estimate    Std.Err          Z p-value
-(Intercept)   0.101193   0.031912   3.170993  0.0015
-sexmale       0.049255   0.042886   1.148495  0.2508
-r:binzygDZ   -3.952376   0.282620 -13.984759  0.0000
+(Intercept)   0.101193   0.031912   3.170992  0.0015
+sexmale       0.049255   0.042886   1.148494  0.2508
+r:binzygDZ   -3.952377   0.296844 -13.314676  0.0000
 r:binzygMZ   -0.840831   0.169676  -4.955514  0.0000
 
 logLik: -690.9136  mean(score^2): 5.008e-11 
@@ -284,7 +284,7 @@ Contrast:
                         Estimate 2.5%     97.5%   
 Rel.Recur.Risk           0.27611  0.13140  0.42081
 OR                       0.00000      NaN      NaN
-Tetrachoric correlation -0.99926 -0.99976 -0.99777
+Tetrachoric correlation -0.99926 -0.99977 -0.99764
                                                   
 Concordance              0.08060  0.04294  0.14627
 Casewise Concordance     0.14918  0.08234  0.25520
@@ -298,12 +298,12 @@ Marginal                 0.54030  0.51540  0.56501
    overall level of stuttering and also that males have a much higher 
    stuttering risk.
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 margbin <- glm(binstut~factor(sex),data=twinstut,family=binomial())
 summary(margbin)
 #+END_SRC  
 
-#+RESULTS:
+#+RESULTS[<2017-03-17 11:19:20> bbe201cc8af98748f9e043180a914b4b6107ea71]:
 #+begin_example
 
 Call:
@@ -334,14 +334,14 @@ First, fitting the OR model for MZ and DZ for the full data, we find
 that MZ have a much higher dependence than DZ twins. 
 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut)
 bin <- binomial.twostage(margbin,data=twinstut,var.link=1,
                           clusters=twinstut$tvparnr,theta.des=theta.des)
 summary(bin)
 #+END_SRC  
 
-#+RESULTS:
+#+RESULTS[<2017-03-17 11:19:20> 357ae2b9fb38aa5c386e815e3b974b6726997601]:
 #+begin_example
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
@@ -367,7 +367,7 @@ find very similar results on the ascertained sample. Note, that the marginals
 are crucial for this analysis to give  useful results.
 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 theta.des <- model.matrix( ~-1+factor(zyg),data=twina)
 bina <- binomial.twostage(margbin,data=twina,var.link=1,
              clusters=twina$tvparnr,theta.des=theta.des,
@@ -375,7 +375,7 @@ bina <- binomial.twostage(margbin,data=twina,var.link=1,
 summary(bina)
 #+END_SRC  
 
-#+RESULTS:
+#+RESULTS[<2017-03-17 11:19:20> 4dd5146358a23ba8a59a21569661cb470ea2406f]:
 #+begin_example
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
@@ -402,7 +402,7 @@ attr(,"class")
    First, again for comparision fitting the full data for the AE model. We get 
    the size of the genetic variance in this model. 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 out <- twin.polygen.design(twinstut,id="tvparnr",zygname="zyg",zyg="dz",type="ae")
 bintwin <- binomial.twostage(margbin,data=twinstut,
      clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
@@ -410,7 +410,7 @@ bintwin <- binomial.twostage(margbin,data=twinstut,
 summary(bintwin)
 #+END_SRC  
 
-#+RESULTS:
+#+RESULTS[<2017-03-17 11:19:21> a2fd9dada2e5ae45b3ada4da1d1f405fc9556c66]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
@@ -444,13 +444,13 @@ the
 
 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 outa <- twin.polygen.design(twina,id="tvparnr",zygname="zyg",zyg="dz",type="ae")
 marga <- glm(binstut~sex,data=twina,family=binomial())
 summary(marga)
 #+END_SRC  
 
-#+RESULTS:
+#+RESULTS[<2017-03-17 11:19:21> 8e79572095aca46e45fd8edcb5b69c61097c8098]:
 #+begin_example
 
 Call:
@@ -481,14 +481,14 @@ Now, using the overall marginal model we look at the adjusted likelihood and
 find very similar results on the ascertained sample. Note, that the marginals 
 are crucial for this analysis to give  useful results.
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 abintwin1 <- binomial.twostage(margbin,data=twina,
                clusters=twina$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
                random.design=outa$des.rv,theta.des=outa$pardes,pair.ascertained=1)
 summary(abintwin1)
 #+END_SRC  
 
-#+RESULTS:
+#+RESULTS[<2017-03-17 11:19:21> 441b39daa7370b212404c1731fad5b2075e2eada]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
@@ -522,7 +522,7 @@ the marginal model for the ascertained model. This gives quite similar
 results to the previous analyses with a genetic variance around 1. 
 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 aabintwin1 <- binomial.twostage(marga,data=twina,
                 clusters=twina$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
                 random.design=outa$des.rv,theta.des=outa$pardes,pair.ascertained=1,twostage=0)
@@ -531,7 +531,7 @@ coef(marga)
 coef(margbin)
 #+END_SRC  
 
-#+RESULTS:
+#+RESULTS[<2017-03-17 11:19:21> 65d55c884f42929ace03eb8b0e4750c7c6b2cfbd]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
@@ -580,7 +580,7 @@ attr(,"class")
   be the probands. 
 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 
 twinstut  <-   dby(twinstut,binstut~tvparnr,stuttot=sum,nn=seq_along,n=length)
 twinstut <-    subset(twinstut,n==2)
@@ -612,15 +612,15 @@ out$random.des[,,1]
 out$theta.des[,,1]
 #+END_SRC  
 
-#+RESULTS:
+#+RESULTS[<2017-03-17 11:19:21> e7f5c5865a90259a4566b1355aaa9a3c977f7ce6]:
 #+begin_example
      [,1] [,2]
-[1,]   12   11
-[2,]   24   23
-[3,]   30   29
-[4,]   58   57
-[5,]   62   61
-[6,]   72   71
+[1,]   10    9
+[2,]   22   21
+[3,]   28   27
+[4,]   50   49
+[5,]   54   53
+[6,]   68   67
 [1] "random.design" "theta.des"     "ant.rvs"
      [,1] [,2] [,3]
 [1,]    1    1    0
@@ -635,7 +635,7 @@ parameters we do not need to specify that this is case-control sampling.
 Having a correct is crucial for this to work, but this is certainly often 
 possible in register based studies where a full cohort is also available. 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 cc  <- binomial.twostage(margbin,data=dataid,
 			    clusters=dataid$tvparnr,
 	         pairs=pair.new,
@@ -646,13 +646,13 @@ cc  <- binomial.twostage(margbin,data=dataid,
 summary(cc)
 #+END_SRC  
 
-#+RESULTS:
+#+RESULTS[<2017-03-17 11:19:21> 02faceb6c0c97ead51810500b0168a985e5d370d]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
-                theta        se
-dependence1 0.8669662 0.0959708
+                theta         se
+dependence1 0.8615072 0.09548868
 
 $type
 [1] "clayton.oakes"
@@ -666,7 +666,7 @@ NULL
 
 $vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.867   0.096 0.679  1.06 1.66e-19
+p1    0.862  0.0955 0.674  1.05 1.85e-19
 
 attr(,"class")
 [1] "summary.mets.twostage"
@@ -676,7 +676,7 @@ attr(,"class")
 We now do the same analysis specifying the case-control sampling. This 
 should result in the same dependence parameters as is also the case.
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 cc3 <- binomial.twostage(margbin,data=dataid,
 			    clusters=dataid$tvparnr,
                  pairs=pair.new,
@@ -687,13 +687,13 @@ cc3 <- binomial.twostage(margbin,data=dataid,
 summary(cc3)
 #+END_SRC  
 
-#+RESULTS:
+#+RESULTS[<2017-03-17 11:19:21> 8a1861cc50e501fb4959179c22e3b7d312dac180]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
-                theta        se
-dependence1 0.8669662 0.0959708
+                theta         se
+dependence1 0.8615072 0.09548868
 
 $type
 [1] "clayton.oakes"
@@ -707,7 +707,7 @@ NULL
 
 $vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.867   0.096 0.679  1.06 1.66e-19
+p1    0.862  0.0955 0.674  1.05 1.85e-19
 
 attr(,"class")
 [1] "summary.mets.twostage"
@@ -720,7 +720,7 @@ case-control data as as starting values.  Again we find a genetic variance
 around 1. The marginal parameters are also consistent with the results from 
 the full analyses for the marginal parameters. 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 marga <- glm(binstut~sex,data=dataid,family=binomial())
 cc3 <- binomial.twostage(marga,data=dataid,
              clusters=dataid$tvparnr,
@@ -732,13 +732,13 @@ cc3 <- binomial.twostage(marga,data=dataid,
 summary(cc3)
 #+END_SRC  
 
-#+RESULTS:
+#+RESULTS[<2017-03-17 11:19:22> 1d8f47ba30773fbc04496ab74ba2371654b37cd0]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
                 theta         se
-dependence1 0.9015167 0.09626802
+dependence1 0.8876072 0.09472541
 
 $type
 [1] "clayton.oakes"
@@ -752,12 +752,12 @@ NULL
 
 $vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.902  0.0963 0.713  1.09 7.63e-21
+p1    0.888  0.0947 0.702  1.07 7.23e-21
 
 $marginal
              Coef.      SE Robust SE      z P-val lower2.5% upper97.5%
-dependence2 -3.240 0.00868   0.00868 -373.0     0    -3.260     -3.220
-dependence3  0.308 0.02480   0.02480   12.4     0     0.259      0.357
+dependence2 -3.560 0.00379   0.00379 -939.0     0    -3.570     -3.550
+dependence3  0.807 0.01220   0.01220   66.3     0     0.783      0.831
 
 attr(,"class")
 [1] "summary.mets.twostage"
