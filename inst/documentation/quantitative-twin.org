@@ -383,5 +383,5 @@ BIC: 58093.76
 
 * backmatter :ignore:
 
-bibliography:huge.bib
+bibliography:mets.bib
 bibliographystyle:plain
