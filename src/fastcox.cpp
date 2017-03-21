@@ -60,8 +60,8 @@ BEGIN_RCPP
     Status = Status%(1+Sign);
   }
   //Rcout << "Status=" << Status << std::endl;
-  arma::uvec idx0 = sort_index(Status,1); 
-  arma::uvec idx = stable_sort_index(Exit.elem(idx0),0);
+  arma::uvec idx0 = sort_index(Status,"descend"); 
+  arma::uvec idx = stable_sort_index(Exit.elem(idx0),"ascend");
   idx = idx0.elem(idx);
   //Rcout << "idx=" << idx << std::endl;
   if (Truncation) {

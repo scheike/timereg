@@ -62,11 +62,20 @@ library(mets)
 #+END_SRC
 
 #+RESULTS:
-: Loading required package: timereg
-: Loading required package: survival
-: Loading required package: lava
-: lava version 1.4.7
-: mets version 1.1.2
+#+begin_example
+Loading required package: timereg
+Loading required package: survival
+Loading required package: lava
+lava version 1.5
+mets version 1.2.1.2
+
+Attaching package: ‘mets’
+
+The following object is masked _by_ ‘.GlobalEnv’:
+
+    object.defined
+#+end_example
+
 
 * Data summary
 
@@ -252,42 +261,43 @@ X2927 2927 1.6      0   1 62.997   0        0 7.126000  0
 X4511 4511 1.0      9   1 67.644   1        0 4.532606  0
 vf: 0
 
-             wmicat [0.398,0.975] (0.975,1.55] (1.55,2.12] (2.12,2.7]
-sex diabetes                                                         
-0   0                           2            4           8          0
-    1                           0            2           2          0
-1   0                           4           30          58          1
-    1                           0            3           3          0
+             wmicat [0.4,1.1] (1.1,1.4] (1.4,1.8] (1.8,2.7]
+sex diabetes                                               
+0   0                       4         2         3         5
+    1                       0         2         1         1
+1   0                      15        17        37        24
+    1                       0         3         2         1
 ------------------------------------------------------------ 
 vf: 1
 
-             wmicat [0.398,0.975] (0.975,1.55] (1.55,2.12] (2.12,2.7]
-sex diabetes                                                         
-0   0                           0            2           1          0
-1   0                           0            3           2          0
+             wmicat [0.4,1.1] (1.1,1.4] (1.4,1.8] (1.8,2.7]
+sex diabetes                                               
+0   0                       1         1         0         1
+1   0                       1         2         2         0
   diabetes sex        m  q50        sd
-1        1   1 1.437762 1.50 0.3810298
-2        0   1 1.384211 1.30 0.4272173
+1        0   0 1.437762 1.50 0.3810298
+2        1   0 1.384211 1.30 0.4272173
 3        0   1 1.434839 1.45 0.4017105
-4        0   1 1.150000 1.15 0.4299009
+4        1   1 1.150000 1.15 0.4299009
 sex: 0
-      wmi        wmicat
-X5783 1.9   (1.55,2.12]
-X784  0.8 [0.398,0.975]
-X2927 1.6   (1.55,2.12]
-X1085 0.9 [0.398,0.975]
-X5249 1.7   (1.55,2.12]
-X6311 0.7 [0.398,0.975]
+      wmi    wmicat
+X5783 1.9 (1.8,2.7]
+X784  0.8 [0.4,1.1]
+X2927 1.6 (1.4,1.8]
+X1085 0.9 [0.4,1.1]
+X5249 1.7 (1.4,1.8]
+X6311 0.7 [0.4,1.1]
 ------------------------------------------------------------ 
 sex: 1
-      wmi       wmicat
-X1944 1.5 (0.975,1.55]
-X3763 1.3 (0.975,1.55]
-X4511 1.0 (0.975,1.55]
-X3122 1.9  (1.55,2.12]
-X5441 1.4 (0.975,1.55]
-X1280 1.1 (0.975,1.55]
+      wmi    wmicat
+X1944 1.5 (1.4,1.8]
+X3763 1.3 (1.1,1.4]
+X4511 1.0 [0.4,1.1]
+X3122 1.9 (1.8,2.7]
+X5441 1.4 (1.1,1.4]
+X1280 1.1 [0.4,1.1]
 #+end_example
+
 
 #+BEGIN_SRC R
 library("magrittr")
