@@ -5,7 +5,7 @@
   #+email: k.k.holst@biostat.ku.dk
   #+LATEX_CLASS: tufte-handout
   #+LATEX_CLASS_OPTIONS: [a4paper]
-  #+PROPERTY: header-args:R  :session *R* :cache no :width 550 :height 450
+  #+PROPERTY: header-args:R  :session *R* :cache yes :width 550 :height 450
   #+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
   #+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
   #+OPTIONS: timestamp:t title:t date:t author:t creator:nil toc:nil 
@@ -46,6 +46,7 @@ Data processing
 
 
 Aggregation
+
 | =dby=                         |   |
 | =daggregate=                  |   |
 | =deval=                       |   |
@@ -57,11 +58,12 @@ Aggregation
 | =dtable=                      |   |
 
 
-#+BEGIN_SRC R
+#+BEGIN_SRC R :cache no
 library(mets)
 #+END_SRC
 
 #+RESULTS:
+<<<<<<< HEAD
 #+begin_example
 Loading required package: timereg
 Loading required package: survival
@@ -76,6 +78,8 @@ The following object is masked _by_ ‘.GlobalEnv’:
     object.defined
 #+end_example
 
+=======
+>>>>>>> a0fca72dd6d410529ed706d9ac0e8261178e266c
 
 * Data summary
 
@@ -98,60 +102,18 @@ dhead(sTRACE)
 : X2927 2927 1.6      0   1 62.997   0        0 7.126000  0
 : X4511 4511 1.0      9   1 67.644   1        0 4.532606  0
 
-\cite{TRACE}
-
-
-
-- no :: 
-- wmi ::
-- status :: 
-
-Search
- 
-timereg
-Flexible Regression Models for Survival Data
-Search within the timereg package
-
-
-Man pages 37
-Functions 157
-Home /  CRAN  /  timereg  /  TRACE: The TRACE study group of myocardial infarction
-TRACE: The TRACE study group of myocardial infarction
-
-Description Format Source Examples
-Description
-
-The TRACE data frame contains 1877 patients and is a subset of a data set consisting of approximately 6000 patients. It contains data relating survival of patients after myocardial infarction to various risk factors.
-
-sTRACE is a subsample consisting of 300 patients.
-
-tTRACE is a subsample consisting of 1000 patients.
-
-Format
-
+\citet{TRACE}
 This data frame contains the following columns:
 
-id
-a numeric vector. Patient code.
-status
-a numeric vector code. Survival status. 9: dead from myocardial infarction, 0: alive, 7: dead from other causes.
-time
-a numeric vector. Survival time in years.
-chf
-a numeric vector code. Clinical heart pump failure, 1: present, 0: absent.
-diabetes
-a numeric vector code. Diabetes, 1: present, 0: absent.
-vf
-a numeric vector code. Ventricular fibrillation, 1: present, 0: absent.
-wmi
-a numeric vector. Measure of heart pumping effect based on ultrasound measurements where 2 is normal and 0 is worst.
-sex
-a numeric vector code. 1: female, 0: male.
-age
-a numeric vector code. Age of patient.
-Source
-
-The TRACE study group.
+- id :: Patient code (numeric).
+- wmi :: Measure of heart pumping effect based on ultrasound measurements where 2 is normal and 0 is worst.
+- status :: Survival status. 9: dead from myocardial infarction, 0: alive, 7: dead from other causes.
+- time :: Survival time in years.
+- chf :: Clinical heart pump failure, 1: present, 0: absent.
+- diabetes :: Diabetes, 1: present, 0: absent.
+- vf ::e. Ventricular fibrillation, 1: present, 0: absent.
+- sex :: Gender, 1: female, 0: male.
+- age :: Age of patient.
 
 
   #+BEGIN_mnote
@@ -161,7 +123,6 @@ The TRACE study group.
 ** a 
 
 #+BEGIN_SRC R
-
 n <- 20
 m <- lava::lvm(letters)
 d <- lava::sim(m,n)
@@ -173,35 +134,32 @@ dlist(d, a+b~c>0 | a>0)
 
 #+RESULTS:
 #+begin_example
-    a       b         c      
-2   0.46194  0.3921   -1.0336
-3   0.04078 -1.0158   -0.5276
-5   1.54748  2.2264    1.2505
-6   1.14713  0.3490   -2.0616
-8   0.50202 -1.0107   -0.3254
----                          
-12  0.35184  0.229618  0.2654
-13  0.75788  0.878370  0.5124
-16  0.88593 -1.531461  0.8248
-17  0.73966  0.191873  1.3537
-18  0.05047  0.009801 -0.1950
+   a      b        c      
+3  1.0292  1.25094 -0.1173
+5  1.3474  0.25779 -1.4698
+6  1.0489  0.39471 -0.7589
+9  0.2031  0.49432 -1.4107
+10 0.6157  1.33776  0.2050
+12 0.1896 -1.82505 -0.1357
+13 0.8510  1.24508 -1.1697
+14 0.2704  1.00063  1.0994
+17 1.1842  0.06479  0.7248
+19 2.6453 -0.84940  0.6119
 c > 0: FALSE
-   a       b        
-2  0.46194  0.392068
-3  0.04078 -1.015844
-6  1.14713  0.349026
-8  0.50202 -1.010701
-9  0.41647  0.293009
-18 0.05047  0.009801
+   a      b      
+3  1.0292  1.2509
+5  1.3474  0.2578
+6  1.0489  0.3947
+9  0.2031  0.4943
+12 0.1896 -1.8250
+13 0.8510  1.2451
 ------------------------------------------------------------ 
 c > 0: TRUE
-   a       b      
-5  1.54748  2.2264
-11 0.07824  1.3422
-12 0.35184  0.2296
-13 0.75788  0.8784
-16 0.88593 -1.5315
-17 0.73966  0.1919
+   a      b       
+10 0.6157  1.33776
+14 0.2704  1.00063
+17 1.1842  0.06479
+19 2.6453 -0.84940
 #+end_example
 
 
@@ -224,6 +182,7 @@ dmean('Petal' ~ Species, data=iris, regex=TRUE)
   #+ATTR_LaTeX: :width \textwidth :center t
   #+CAPTION: Important figure. label:fig1
   #+RESULTS: fig1
+  [[file:figs/fig1.png]]
 
   \vspace*{1em}
 
@@ -237,8 +196,6 @@ dmean('Petal' ~ Species, data=iris, regex=TRUE)
 
 
 
-
-  \cite{Tufte2006}
 * Tables
 
 #+BEGIN_SRC R
@@ -320,6 +277,7 @@ dtable(iris, Species+dcut(Petal.Width,4)~
 
 #+RESULTS:
 #+begin_example
+Error in plot.new() : could not open file 'figs/fig1.png'
 
            dcut(Petal.Width, 4) [0.1,0.3] (0.3,1.3] (1.3,1.8] (1.8,2.5]
 Species                                                                
@@ -356,18 +314,33 @@ sTRACE %>% dby2(chf+vf~1, mean, median) %>% dhead
 #+END_SRC
 
 #+RESULTS:
-: Error in terms.formula(formula, data = data, specials = "regex") : 
-:   object '.' not found
+#+begin_example
+        no wmi status chf    age sex diabetes     time vf    wmicat mean.chf
+X1944 1944 1.5      9   0 84.924   1        1 1.345000  0 (1.4,1.8]    0.522
+X5783 5783 1.9      0   1 74.193   0        0 6.910000  0 (1.8,2.7]    0.522
+X784   784 0.8      9   0 78.081   0        1 0.196000  0 [0.4,1.1]    0.522
+X3763 3763 1.3      0   0 55.479   1        0 7.543000  0 (1.1,1.4]    0.522
+X2927 2927 1.6      0   1 62.997   0        0 7.126000  0 (1.4,1.8]    0.522
+X4511 4511 1.0      9   1 67.644   1        0 4.532606  0 [0.4,1.1]    0.522
+      mean.vf median.chf median.vf
+X1944   0.058          1         0
+X5783   0.058          1         0
+X784    0.058          1         0
+X3763   0.058          1         0
+X2927   0.058          1         0
+X4511   0.058          1         0
+#+end_example
 
 #+BEGIN_SRC R
 library(magrittr)
-sTRACE %>% dby(chf+vf, mean, median) 
+sTRACE %>% dby(chf+vf~1, mean, median,REDUCE=TRUE) 
 #+END_SRC
 
-#+BEGIN_SRC R
+#+RESULTS:
+:  mean median
+:  0.29      0
 
-
-
+#+BEGIN_SRC R :eval never
 dby(iris, 'Length' ~ Species, mean, REGEX=T, COLUMN=T, REDUCE=T)
 dby(iris, 'Length' ~ Species, mean, REGEX=T, COLUMN=T, REDUCE=T)
 dby(iris, '*Length' ~ Species, mean, COLUMN=T, REDUCE=T)
@@ -385,19 +358,31 @@ dby(iris, 'Length' ~ Species, mean, REGEX=T, REDUCE=1, COLUMN=T)
 lapply(list(median, mean), function(f) dscalar(sTRACE, chf+vf~sex, fun=f))
 #+END_SRC
 
+#+RESULTS:
+: [[1]]
+:   sex chf vf
+: 1   0   1  0
+: 2   1   0  0
+: 
+: [[2]]
+:   sex       chf         vf
+: 1   0 0.6172840 0.07407407
+: 2   1 0.4763314 0.05029586
+
 
 #+BEGIN_SRC R
 dbyr(sTRACE, wmi ~ vf+sex|age>80, mean(x^2), mean(log(x)), mean, n=length)
 #+END_SRC
 
 #+RESULTS:
-:   vf sex mean(x^2) mean(log(x))     mean   n
-: 1  0   0  2.224133    0.3231019 1.440000 150
-: 2  1   0  1.857500    0.2492690 1.325000  12
-: 3  0   1  2.184361    0.3028986 1.420561 321
-: 4  1   1  1.701176    0.1402013 1.235294  17
+:   vf sex mean(x^2) mean(log(x))     mean  n
+: 1  0   0  2.344286   0.33534719 1.471429 21
+: 2  1   0  1.370000   0.02439508 1.100000  2
+: 3  0   1  2.212162   0.33285730 1.445946 37
+: 4  1   1  0.745000  -0.17833747 0.850000  2
 
 
-#+BEGIN_SRC R
-dby(sTRACE, wmi+age ~ vf+sex, 
-#+END_SRC
+* backmatter :ignore:
+
+bibliography:mets.bib
+bibliographystyle:plain
