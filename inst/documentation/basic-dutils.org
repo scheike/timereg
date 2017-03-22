@@ -630,8 +630,16 @@ dlevels(melanoma)
 : [1] "[10,97]-(97,194]"         "(194,356]-(356,1.74e+03]"
 : -----------------------------------------
 
-Do the same but control name of new groups 
 
+Changing order of factor levels 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+dfactor(melanoma,levels=c(3,1,2,4)) <-  thickcat4.2~thickcat4
+dlevel(melanoma,~ "thickcat4*")
+dtable(melanoma,~thickcat4+thickcat4.2)
+#+END_SRC
+
+Combine levels but now control factor-level names 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 melanoma=drelevel(melanoma,gthick3~thickcat4,newlevels=list(group1.2=1:2,group3.4=3:4))
 dlevels(melanoma)
