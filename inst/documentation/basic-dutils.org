@@ -1,21 +1,7 @@
-* preample 							     
-  :ignore:
-
-  #+TITLE: Utility functions
-  #+AUTHOR: Klaus K. Holst and Thomas Scheike
-  #+email: k.k.holst@biostat.ku.dk
-  #+LATEX_CLASS: tufte-handout
-  #+LATEX_CLASS_OPTIONS: [a4paper]
-  #+PROPERTY: header-args:R  :session *R* :cache yes :width 550 :height 450
-  #+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
-  #+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
-  #+OPTIONS: timestamp:t title:t date:t author:t creator:nil toc:nil 
-  #+OPTIONS: h:4 num:t tags:nil d:t ^:{}
-  #+LATEX_HEADER: \lstset{language=R,keywords={},morekeywords={}}
-  #+LATEX_HEADER: \usepackage{zlmtt}
-  #+LATEX_HEADER: \setlength{\parindent}{0em}
-  #+LATEX_HEADER: %%\setlength{\parindent}{default}
-  #+LaTeX: \setlength{\parindent}{0em} %\setlength{\parindent}{default}
+#+TITLE: Analysis of bivariate binomial data: Twin analysis
+#+AUTHOR: Klaus Holst & Thomas Scheike
+#+INCLUDE: header.org
+----- 
 
 
 * Simple data manipulation for data-frames 
@@ -44,22 +30,7 @@ data(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-Loading required package: timereg
-Loading required package: survival
-Loading required package: lava
-lava version 1.5.1
-mets version 1.2.1.2
-
-Attaching package: ‘mets’
-
-The following object is masked _by_ ‘.GlobalEnv’:
-
-    object.defined
-
-Warning message:
-failed to assign RegisteredNativeSymbol for cor to cor since cor is already defined in the ‘mets’ namespace
-#+end_example
+: melanoma
 
 #+BEGIN_SRC R :results output  :exports both :session *R* :cache no 
 is.data.frame(melanoma)
