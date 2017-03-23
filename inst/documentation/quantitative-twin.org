@@ -134,7 +134,7 @@ and more appropiate for the twin analysis (see Figure ref:fig:scatter1 and ref:f
 #+END_SRC
 
 #+RESULTS: scatter1
-[[file:scatter1.png]]
+[[file:figs/scatter1.png]]
 
 #+BEGIN_marginfigure
 #+CAPTION: Scatter plot of logarithmic BMI measurements in MZ twins  label:fig:scatter1
@@ -149,7 +149,7 @@ and more appropiate for the twin analysis (see Figure ref:fig:scatter1 and ref:f
 #+END_SRC
 
 #+RESULTS: scatter2
-[[file:scatter2.png]]
+[[file:figs/scatter2.png]]
 
 #+BEGIN_marginfigure
 #+CAPTION: Scatter plot of logarithmic BMI measurements in DZ twins. label:fig:scatter2
@@ -232,7 +232,7 @@ independence)
 #+END_SRC
 
 #+RESULTS: marg1
-[[file:marg1.png]]
+[[file:figs/marg1.png]]
 
 
 #+BEGIN_marginfigure
