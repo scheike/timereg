@@ -19,4 +19,4 @@
 #+END_SRC
 
 #+RESULTS:
-: 4
+: [1] 4

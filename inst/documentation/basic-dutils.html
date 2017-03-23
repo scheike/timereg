@@ -3,23 +3,30 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
+<!-- 2017-03-22 Wed 14:41 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Basic use of dfunctions for data-frames in mets</title>
-<!-- 2017-03-19 Sun 14:33 -->
-<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
-<meta  name="generator" content="Org-mode" />
-<meta  name="author" content="Klaus Holst &amp; Thomas Scheike" />
+<meta name="generator" content="Org mode" />
+<meta name="author" content="Klaus Holst &amp; Thomas Scheike" />
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
-  .title  { text-align: center; }
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
   .todo   { font-family: monospace; color: red; }
-  .done   { color: green; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
   .tag    { background-color: #eee; font-family: monospace;
             padding: 2px; font-size: 80%; font-weight: normal; }
   .timestamp { color: #bebebe; }
   .timestamp-kwd { color: #5f9ea0; }
-  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
-  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
-  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
   .underline { text-decoration: underline; }
   #postamble p, #preamble p { font-size: 90%; margin: .2em; }
   p.verse { margin-left: 3%; }
@@ -46,27 +53,111 @@
     border: 1px solid black;
   }
   pre.src:hover:before { display: inline;}
-  pre.src-sh:before    { content: 'sh'; }
-  pre.src-bash:before  { content: 'sh'; }
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
   pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
-  pre.src-R:before     { content: 'R'; }
-  pre.src-perl:before  { content: 'Perl'; }
-  pre.src-java:before  { content: 'Java'; }
-  pre.src-sql:before   { content: 'SQL'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
 
   table { border-collapse:collapse; }
   caption.t-above { caption-side: top; }
   caption.t-bottom { caption-side: bottom; }
   td, th { vertical-align:top;  }
-  th.right  { text-align: center;  }
-  th.left   { text-align: center;   }
-  th.center { text-align: center; }
-  td.right  { text-align: right;  }
-  td.left   { text-align: left;   }
-  td.center { text-align: center; }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
   dt { font-weight: bold; }
-  .footpara:nth-child(2) { display: inline; }
-  .footpara { display: block; }
+  .footpara { display: inline; }
   .footdef  { margin-bottom: 1em; }
   .figure { padding: 1em; }
   .figure p { text-align: center; }
@@ -86,6 +177,7 @@
     { font-size: 10px; font-weight: bold; white-space: nowrap; }
   .org-info-js_search-highlight
     { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
   /*]]>*/-->
 </style>
 <link rel="stylesheet" type="text/css" href="orgmode5-ts.css">
@@ -143,48 +235,6 @@ for the JavaScript code in this tag.
  }
 /*]]>*///-->
 </script>
-<script type="text/javascript" src="http://orgmode.org/mathjax/MathJax.js"></script>
-<script type="text/javascript">
-<!--/*--><![CDATA[/*><!--*/
-    MathJax.Hub.Config({
-        // Only one of the two following lines, depending on user settings
-        // First allows browser-native MathML display, second forces HTML/CSS
-        //  config: ["MMLorHTML.js"], jax: ["input/TeX"],
-            jax: ["input/TeX", "output/HTML-CSS"],
-        extensions: ["tex2jax.js","TeX/AMSmath.js","TeX/AMSsymbols.js",
-                     "TeX/noUndefined.js"],
-        tex2jax: {
-            inlineMath: [ ["\\(","\\)"] ],
-            displayMath: [ ['$$','$$'], ["\\[","\\]"], ["\\begin{displaymath}","\\end{displaymath}"] ],
-            skipTags: ["script","noscript","style","textarea","pre","code"],
-            ignoreClass: "tex2jax_ignore",
-            processEscapes: false,
-            processEnvironments: true,
-            preview: "TeX"
-        },
-        showProcessingMessages: true,
-        displayAlign: "center",
-        displayIndent: "2em",
-
-        "HTML-CSS": {
-             scale: 100,
-             availableFonts: ["STIX","TeX"],
-             preferredFont: "TeX",
-             webFont: "TeX",
-             imageFont: "TeX",
-             showMathMenu: true,
-        },
-        MMLorHTML: {
-             prefer: {
-                 MSIE:    "MML",
-                 Firefox: "MML",
-                 Opera:   "HTML",
-                 other:   "HTML"
-             }
-        }
-    });
-/*]]>*///-->
-</script>
 </head>
 <body>
 <div id="preamble" class="status">
@@ -215,18 +265,17 @@ for the JavaScript code in this tag.
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#sec-1">Simple data manipulation for data-frames</a></li>
-<li><a href="#sec-2">dUtility functions</a></li>
-<li><a href="#sec-3">Renaming, deleting, keeping, dropping  variables</a></li>
-<li><a href="#sec-4">Looking at the data</a></li>
-<li><a href="#sec-5">Making new variales for the analysis</a></li>
-<li><a href="#sec-6">Making factors (groupings)</a></li>
-<li><a href="#sec-7">Working with factors</a></li>
-<li><a href="#sec-8">Making a factor from existing numeric variable and vice versa</a></li>
+<li><a href="#org5d0a2aa">Simple data manipulation for data-frames</a></li>
+<li><a href="#org5e53138">dUtility functions</a></li>
+<li><a href="#org6b9a67e">Renaming, deleting, keeping, dropping  variables</a></li>
+<li><a href="#org33b73a0">Looking at the data</a></li>
+<li><a href="#org2e9b27d">Making new variales for the analysis</a></li>
+<li><a href="#orgbde564e">Making factors (groupings)</a></li>
+<li><a href="#orga760951">Working with factors</a></li>
+<li><a href="#org15573ce">Making a factor from existing numeric variable and vice versa</a></li>
 </ul>
 </div>
 </div>
-<div class="export">
 \(
 \newcommand{\cov}{\mathbb{C}\text{ov}}
 \newcommand{\cor}{\mathbb{C}\text{or}}
@@ -235,26 +284,18 @@ for the JavaScript code in this tag.
 \newcommand{\unitfrac}[2]{#1/#2}
 \newcommand{\n}{}
 \)
+<hr />
 
-</div>
-<hr  />
-
-<div id="outline-container-sec-1" class="outline-2">
-<h2 id="sec-1">Simple data manipulation for data-frames</h2>
-<div class="outline-text-2" id="text-1">
+<div id="outline-container-org5d0a2aa" class="outline-2">
+<h2 id="org5d0a2aa">Simple data manipulation for data-frames</h2>
+<div class="outline-text-2" id="text-org5d0a2aa">
 <ul class="org-ul">
-<li>Renaming variables, Deleting variables
-</li>
-<li>Looking at the data
-</li>
-<li>Making new variales for the analysis
-</li>
-<li>Making factors (groupings)
-</li>
-<li>Working with factors
-</li>
-<li>Making a factor from existing numeric variable and vice versa
-</li>
+<li>Renaming variables, Deleting variables</li>
+<li>Looking at the data</li>
+<li>Making new variales for the analysis</li>
+<li>Making factors (groupings)</li>
+<li>Working with factors</li>
+<li>Making a factor from existing numeric variable and vice versa</li>
 </ul>
 
 
@@ -273,7 +314,6 @@ and have additional functionality.
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R"><span style="font-weight: bold; text-decoration: underline;">library</span>(mets)
 data(melanoma)
 is.data.frame(melanoma)
@@ -282,7 +322,20 @@ melanoma=as.data.frame(melanoma)
 </div>
 
 <pre class="example">
- Error in plot.new() (from #9) : could not open file 'auto/remis-km-placebo.png'
+Loading required package: timereg
+Loading required package: survival
+Loading required package: lava
+lava version 1.5.1
+mets version 1.2.1.2
+
+Attaching package: ‘mets’
+
+The following object is masked _by_ ‘.GlobalEnv’:
+
+    object.defined
+
+Warning message:
+failed to assign RegisteredNativeSymbol for cor to cor since cor is already defined in the ‘mets’ namespace
 [1] TRUE
 </pre>
 
@@ -296,17 +349,16 @@ a data-frame.
 
 
 
-<div id="outline-container-sec-2" class="outline-2">
-<h2 id="sec-2">dUtility functions</h2>
-<div class="outline-text-2" id="text-2">
+<div id="outline-container-org5e53138" class="outline-2">
+<h2 id="org5e53138">dUtility functions</h2>
+<div class="outline-text-2" id="text-org5e53138">
 <p>
 The structure for all functions 
 is  
 </p>
 
 <ul class="org-ul">
-<li>dfunction(dataframe,y~x|ifcond,&#x2026;)
-</li>
+<li>dfunction(dataframe,y~x|ifcond,&#x2026;)</li>
 </ul>
 
 <p>
@@ -326,19 +378,17 @@ argument
 
 
 <ul class="org-ul">
-<li>daggregate(dataframe,y~x|ifcond,fun=function,&#x2026;)
-</li>
+<li>daggregate(dataframe,y~x|ifcond,fun=function,&#x2026;)</li>
 </ul>
 </div>
 </div>
 
 
 
-<div id="outline-container-sec-3" class="outline-2">
-<h2 id="sec-3">Renaming, deleting, keeping, dropping  variables</h2>
-<div class="outline-text-2" id="text-3">
+<div id="outline-container-org6b9a67e" class="outline-2">
+<h2 id="org6b9a67e">Renaming, deleting, keeping, dropping  variables</h2>
+<div class="outline-text-2" id="text-org6b9a67e">
 <div class="org-src-container">
-
 <pre class="src src-R">melanoma=drename(melanoma,tykkelse~thick)
 names(melanoma)
 </pre>
@@ -354,7 +404,6 @@ Deleting variables
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">data(melanoma)
 melanoma=drm(melanoma,~thick+sex)
 names(melanoma)
@@ -370,7 +419,6 @@ or sas style
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">data(melanoma)
 melanoma=ddrop(melanoma,~thick+sex)
 names(melanoma)
@@ -386,7 +434,6 @@ alternatively we can also keep certain variables
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">data(melanoma)
 melanoma=dkeep(melanoma,~thick+sex+status+days)
 names(melanoma)
@@ -400,18 +447,17 @@ names(melanoma)
 </div>
 
 
-<div id="outline-container-sec-4" class="outline-2">
-<h2 id="sec-4">Looking at the data</h2>
-<div class="outline-text-2" id="text-4">
+<div id="outline-container-org33b73a0" class="outline-2">
+<h2 id="org33b73a0">Looking at the data</h2>
+<div class="outline-text-2" id="text-org33b73a0">
 <div class="org-src-container">
-
 <pre class="src src-R">data(melanoma)
 dstr(melanoma)
 </pre>
 </div>
 
 <pre class="example">
-'data.frame':   205 obs. of  6 variables:
+'data.frame':	205 obs. of  6 variables:
  $ no    : int  789 13 97 16 21 469 685 7 932 944 ...
  $ status: int  3 3 2 3 1 1 1 1 3 1 ...
  $ days  : int  10 30 35 99 185 204 210 232 232 279 ...
@@ -426,7 +472,6 @@ the data in output window
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">dlist(melanoma)
 </pre>
 </div>
@@ -447,7 +492,6 @@ the data in output window
 </pre>
 
 <div class="org-src-container">
-
 <pre class="src src-R">dlist(melanoma, ~.|sex==1)
 </pre>
 </div>
@@ -468,7 +512,6 @@ the data in output window
 </pre>
 
 <div class="org-src-container">
-
 <pre class="src src-R">dlist(melanoma, ~ulc+days+thick+sex|sex==1)
 </pre>
 </div>
@@ -494,7 +537,6 @@ Getting summaries
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">dsummary(melanoma)
 </pre>
 </div>
@@ -521,7 +563,6 @@ or for specfic variables
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">dsummary(melanoma,~thick+status+sex)
 </pre>
 </div>
@@ -541,7 +582,6 @@ Summaries in different groups (sex)
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">dsummary(melanoma,thick+days+status~sex)
 </pre>
 </div>
@@ -571,7 +611,6 @@ and only among those with thin-tumours or only females (sex==1)
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">dsummary(melanoma,thick+days+status~sex|thick&lt;97)
 </pre>
 </div>
@@ -597,7 +636,6 @@ sex: 1
 </pre>
 
 <div class="org-src-container">
-
 <pre class="src src-R">dsummary(melanoma,thick+status~+1|sex==1)
 </pre>
 </div>
@@ -618,7 +656,6 @@ Tables between variables
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">dtable(melanoma,~status+sex)
 </pre>
 </div>
@@ -636,7 +673,6 @@ All bivariate tables
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">dtable(melanoma,~status+sex+ulc,level=2)
 </pre>
 </div>
@@ -663,7 +699,6 @@ All univariate tables
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">dtable(melanoma,~status+sex+ulc,level=1)
 </pre>
 </div>
@@ -684,15 +719,14 @@ ulc
 </div>
 </div>
 
-<div id="outline-container-sec-5" class="outline-2">
-<h2 id="sec-5">Making new variales for the analysis</h2>
-<div class="outline-text-2" id="text-5">
+<div id="outline-container-org2e9b27d" class="outline-2">
+<h2 id="org2e9b27d">Making new variales for the analysis</h2>
+<div class="outline-text-2" id="text-org2e9b27d">
 <p>
 To define a bunch of new covariates within a data-frame
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">melanoma= transform(melanoma, 
            thick2=thick^2, 
            lthick=log(thick) ) 
@@ -717,7 +751,6 @@ using the dtransform function that extends transform with a possible condition
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">melanoma=dtransform(melanoma,ll=thick*1.05^ulc,sex==1)  
 melanoma=dtransform(melanoma,ll=thick,sex!=1)  
 dmean(melanoma,ll~sex+ulc)
@@ -738,15 +771,14 @@ dmean(melanoma,ll~sex+ulc)
 
 
 
-<div id="outline-container-sec-6" class="outline-2">
-<h2 id="sec-6">Making factors (groupings)</h2>
-<div class="outline-text-2" id="text-6">
+<div id="outline-container-orgbde564e" class="outline-2">
+<h2 id="orgbde564e">Making factors (groupings)</h2>
+<div class="outline-text-2" id="text-orgbde564e">
 <p>
 On the melanoma data the variable thick gives the thickness of the melanom tumour. For some analyses we would like to make a factor depending on the thickness. This can be done in several different ways
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">melanoma=dcut(melanoma,~thick,breaks=c(0,200,500,800,2000))
 </pre>
 </div>
@@ -759,7 +791,6 @@ New variable is named thickcat.0 by default.
 To see levels of factors in data-frame
 </p>
 <div class="org-src-container">
-
 <pre class="src src-R">dlevels(melanoma)
 </pre>
 </div>
@@ -774,7 +805,6 @@ thickcat.0 #levels=:4
 Checking group sizes 
 </p>
 <div class="org-src-container">
-
 <pre class="src src-R">dtable(melanoma,~thickcat.0)
 </pre>
 </div>
@@ -789,7 +819,6 @@ thickcat.0
 With adding to the data-frame directly 
 </p>
 <div class="org-src-container">
-
 <pre class="src src-R">dcut(melanoma,breaks=c(0,200,500,800,2000)) <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> gr.thick1~thick
 dlevels(melanoma)
 </pre>
@@ -810,7 +839,6 @@ or to get quartiles with default names thick.cat.4
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">dcut(melanoma) <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> ~ thick  <span style="font-weight: bold; font-style: italic;">### </span><span style="font-weight: bold; font-style: italic;">new variable is thickcat.4</span>
 dlevels(melanoma)
 </pre>
@@ -833,7 +861,6 @@ or median groups, here starting again with the original data,
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">data(melanoma)
 dcut(melanoma,breaks=2) <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> ~ thick  <span style="font-weight: bold; font-style: italic;">### </span><span style="font-weight: bold; font-style: italic;">new variable is thick.2</span>
 dlevels(melanoma)
@@ -853,7 +880,6 @@ to control new names
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">data(melanoma)
 mela= dcut(melanoma,thickcat4+dayscat4~thick+days,breaks=4)
 dlevels(mela)
@@ -875,7 +901,6 @@ or
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">data(melanoma)
 dcut(melanoma,breaks=4) <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> thickcat4+dayscat4~thick+days
 dlevels(melanoma)
@@ -897,7 +922,6 @@ This can also be typed out more specifically
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">melanoma$gthick = cut(melanoma$thick,breaks=c(0,200,500,800,2000))
 melanoma$gthick = cut(melanoma$thick,breaks=quantile(melanoma$thick),include.lowest=<span style="font-weight: bold; text-decoration: underline;">TRUE</span>)
 </pre>
@@ -906,15 +930,14 @@ melanoma$gthick = cut(melanoma$thick,breaks=quantile(melanoma$thick),include.low
 </div>
 
 
-<div id="outline-container-sec-7" class="outline-2">
-<h2 id="sec-7">Working with factors</h2>
-<div class="outline-text-2" id="text-7">
+<div id="outline-container-orga760951" class="outline-2">
+<h2 id="orga760951">Working with factors</h2>
+<div class="outline-text-2" id="text-orga760951">
 <p>
 To see levels of covariates in data-frame
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">data(melanoma)
 dcut(melanoma,breaks=4) <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> thickcat4~thick
 dlevels(melanoma)
@@ -932,7 +955,6 @@ To relevel the factor
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">dtable(melanoma,~thickcat4)
 melanoma = drelevel(melanoma,~thickcat4,ref=<span style="font-style: italic;">"(194,356]"</span>)
 dlevels(melanoma)
@@ -956,7 +978,6 @@ or to take the third level in the list of levels, same as above,
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">melanoma = drelevel(melanoma,~thickcat4,ref=2)
 dlevels(melanoma)
 </pre>
@@ -980,7 +1001,6 @@ To combine levels of a factor (first combinining first 3 groups into one)
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">melanoma = drelevel(melanoma,~thickcat4,newlevels=1:3)
 dlevels(melanoma)
 </pre>
@@ -1006,7 +1026,6 @@ or to combine groups 1 and 2 into one group and 3 and 4 into another
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">dkeep(melanoma) <span style="font-weight: bold; text-decoration: underline;">&lt;-</span> ~thick+thickcat4
 melanoma = drelevel(melanoma,gthick2~thickcat4,newlevels=list(1:2,3:4))
 dlevels(melanoma)
@@ -1022,12 +1041,38 @@ gthick2 #levels=:2
 -----------------------------------------
 </pre>
 
+
 <p>
-Do the same but control name of new groups 
+Changing order of factor levels 
 </p>
 
 <div class="org-src-container">
+<pre class="src src-R">dfactor(melanoma,levels=c(3,1,2,4)) <span style="font-weight: bold; text-decoration: underline;">&lt;-</span>  thickcat4.2~thickcat4
+dlevel(melanoma,~ <span style="font-style: italic;">"thickcat4*"</span>)
+dtable(melanoma,~thickcat4+thickcat4.2)
+</pre>
+</div>
 
+<pre class="example">
+thickcat4 #levels=:4 
+[1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
+-----------------------------------------
+thickcat4.2 #levels=:4 
+[1] "(194,356]"      "[10,97]"        "(97,194]"       "(356,1.74e+03]"
+-----------------------------------------
+
+               thickcat4.2 (194,356] [10,97] (97,194] (356,1.74e+03]
+thickcat4                                                           
+[10,97]                            0      56        0              0
+(97,194]                           0       0       53              0
+(194,356]                         45       0        0              0
+(356,1.74e+03]                     0       0        0             51
+</pre>
+
+<p>
+Combine levels but now control factor-level names 
+</p>
+<div class="org-src-container">
 <pre class="src src-R">melanoma=drelevel(melanoma,gthick3~thickcat4,newlevels=list(group1.2=1:2,group3.4=3:4))
 dlevels(melanoma)
 </pre>
@@ -1040,6 +1085,9 @@ thickcat4 #levels=:4
 gthick2 #levels=:2 
 [1] "[10,97]-(97,194]"         "(194,356]-(356,1.74e+03]"
 -----------------------------------------
+thickcat4.2 #levels=:4 
+[1] "(194,356]"      "[10,97]"        "(97,194]"       "(356,1.74e+03]"
+-----------------------------------------
 gthick3 #levels=:2 
 [1] "group1.2" "group3.4"
 -----------------------------------------
@@ -1048,15 +1096,14 @@ gthick3 #levels=:2
 </div>
 
 
-<div id="outline-container-sec-8" class="outline-2">
-<h2 id="sec-8">Making a factor from existing numeric variable and vice versa</h2>
-<div class="outline-text-2" id="text-8">
+<div id="outline-container-org15573ce" class="outline-2">
+<h2 id="org15573ce">Making a factor from existing numeric variable and vice versa</h2>
+<div class="outline-text-2" id="text-org15573ce">
 <p>
 A numeric variable "status" with values 1,2,3 into a factor by
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">data(melanoma)
 melanoma = dfactor(melanoma,~status, labels=c(<span style="font-style: italic;">"malignant-melanoma"</span>,<span style="font-style: italic;">"censoring"</span>,<span style="font-style: italic;">"dead-other"</span>))
 melanoma = dfactor(melanoma,sexl~sex,labels=c(<span style="font-style: italic;">"females"</span>,<span style="font-style: italic;">"males"</span>))
@@ -1076,7 +1123,6 @@ A gender factor with values "M", "F" can be converted into numerics by
 </p>
 
 <div class="org-src-container">
-
 <pre class="src src-R">melanoma = dnumeric(melanoma,~sexl)
 dstr(melanoma,<span style="font-style: italic;">"sex*"</span>)
 dtable(melanoma,~<span style="font-style: italic;">'sex*'</span>,level=2)
@@ -1109,7 +1155,7 @@ sexl.n females males
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Klaus Holst &amp; Thomas Scheike</p>
-<p class="date">Created: 2017-03-19 Sun 14:33</p>
+<p class="date">Created: 2017-03-22 Wed 14:41</p>
 <p class="validation"></p>
 </div>
 </body>

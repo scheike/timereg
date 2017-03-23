@@ -132,12 +132,12 @@ twinstut <- subset(twinstut,zyg%in%c("mz","dz"))
 head(twinstut)
 #+END_SRC
 
-#+RESULTS[<2017-03-17 11:19:17> 099e04bb957b10633bae8f6ce1f5ed94ad452fee]:
+#+RESULTS[460986aef71a4f8d43e07e2c3f2eeb6b8fafc0ae]:
 #+begin_example
 Loading required package: timereg
 Loading required package: survival
 Loading required package: lava
-lava version 1.5
+lava version 1.5.1
 mets version 1.2.1.2
 
 Attaching package: ‘mets’
@@ -145,6 +145,9 @@ Attaching package: ‘mets’
 The following object is masked _by_ ‘.GlobalEnv’:
 
     object.defined
+
+Warning message:
+failed to assign RegisteredNativeSymbol for cor to cor since cor is already defined in the ‘mets’ namespace
    tvparnr zyg stutter    sex age nr binstut
 1  2001005  mz      no female  71  1       0
 2  2001005  mz      no female  71  2       0
@@ -179,7 +182,7 @@ twinstut  <-   dby(twinstut,binstut~tvparnr,stuttot=sum,nn=seq_along,n=length)
 twina     <-   subset(twinstut,n==2 & stuttot>=1)
 #+END_SRC  
 
-#+RESULTS[<2017-03-17 11:19:17> 75170e971a30da13ed42c8378f8514c90a8bf978]:
+#+RESULTS[283e616501f0835eb3d97858e099321661ff2e30]:
 
 
 Selecting on the pairs where there is stuttering at taking a look at the 
@@ -193,7 +196,7 @@ dtable(twind,"binst*"~I(stuttot1>=1))
 dtable(twinda,~"binst*")
 #+END_SRC  
 
-#+RESULTS[<2017-03-17 11:19:17> 6266853e2101d95580fe6e039f17f646caeb54dc]:
+#+RESULTS[fdc6bdd7d0a1714bf6a5ab78c21402cfd94d4c71]:
 #+begin_example
 I(stuttot1 >= 1): FALSE
 
@@ -227,7 +230,7 @@ b1 <- biprobit(binstut~sex,~-1+binzyg,data=twinstut,id="tvparnr")
 summary(b1)
 #+END_SRC  
 
-#+RESULTS[<2017-03-17 11:19:19> 595e2280e724baa72974ee5e2cf4aad61fb5c9d3]:
+#+RESULTS[bea6e1be22170e51a234141d1e0dec930b050ac2]:
 #+begin_example
 
               Estimate    Std.Err          Z p-value
@@ -264,13 +267,13 @@ ba1 <- biprobit(binstut~sex,~-1+binzyg,data=twina,id="tvparnr",pair.ascertained=
 summary(ba1)
 #+END_SRC  
 
-#+RESULTS[<2017-03-17 11:19:20> f1d820374f95f2247cc09af43650e972f25e4a82]:
+#+RESULTS[9c3652bd08fd976f96268483c24fedb479271f54]:
 #+begin_example
 
               Estimate    Std.Err          Z p-value
-(Intercept)   0.101193   0.031912   3.170992  0.0015
-sexmale       0.049255   0.042886   1.148494  0.2508
-r:binzygDZ   -3.952377   0.296844 -13.314676  0.0000
+(Intercept)   0.101193   0.031912   3.170993  0.0015
+sexmale       0.049255   0.042886   1.148495  0.2508
+r:binzygDZ   -3.952376   0.282620 -13.984759  0.0000
 r:binzygMZ   -0.840831   0.169676  -4.955514  0.0000
 
 logLik: -690.9136  mean(score^2): 5.008e-11 
@@ -284,7 +287,7 @@ Contrast:
                         Estimate 2.5%     97.5%   
 Rel.Recur.Risk           0.27611  0.13140  0.42081
 OR                       0.00000      NaN      NaN
-Tetrachoric correlation -0.99926 -0.99977 -0.99764
+Tetrachoric correlation -0.99926 -0.99976 -0.99777
                                                   
 Concordance              0.08060  0.04294  0.14627
 Casewise Concordance     0.14918  0.08234  0.25520
@@ -303,7 +306,7 @@ margbin <- glm(binstut~factor(sex),data=twinstut,family=binomial())
 summary(margbin)
 #+END_SRC  
 
-#+RESULTS[<2017-03-17 11:19:20> bbe201cc8af98748f9e043180a914b4b6107ea71]:
+#+RESULTS[43c119c7bb198ea53d0767c4092b2e9806c6448b]:
 #+begin_example
 
 Call:
@@ -341,7 +344,7 @@ bin <- binomial.twostage(margbin,data=twinstut,var.link=1,
 summary(bin)
 #+END_SRC  
 
-#+RESULTS[<2017-03-17 11:19:20> 357ae2b9fb38aa5c386e815e3b974b6726997601]:
+#+RESULTS[8c26ce701761f89ffb95486a513cd5f5e6997251]:
 #+begin_example
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
@@ -375,7 +378,7 @@ bina <- binomial.twostage(margbin,data=twina,var.link=1,
 summary(bina)
 #+END_SRC  
 
-#+RESULTS[<2017-03-17 11:19:20> 4dd5146358a23ba8a59a21569661cb470ea2406f]:
+#+RESULTS[09872d053ab60974d32ac4746b1318422ef5d50e]:
 #+begin_example
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
@@ -410,7 +413,7 @@ bintwin <- binomial.twostage(margbin,data=twinstut,
 summary(bintwin)
 #+END_SRC  
 
-#+RESULTS[<2017-03-17 11:19:21> a2fd9dada2e5ae45b3ada4da1d1f405fc9556c66]:
+#+RESULTS[fedcb0c760bb61780b7308eb54c14c7156945e51]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
@@ -450,7 +453,7 @@ marga <- glm(binstut~sex,data=twina,family=binomial())
 summary(marga)
 #+END_SRC  
 
-#+RESULTS[<2017-03-17 11:19:21> 8e79572095aca46e45fd8edcb5b69c61097c8098]:
+#+RESULTS[141ed981ded3d765143fdecd0e64abe3247268f8]:
 #+begin_example
 
 Call:
@@ -488,7 +491,7 @@ abintwin1 <- binomial.twostage(margbin,data=twina,
 summary(abintwin1)
 #+END_SRC  
 
-#+RESULTS[<2017-03-17 11:19:21> 441b39daa7370b212404c1731fad5b2075e2eada]:
+#+RESULTS[a75e336dbc2c0e29b853d3176999f82fe284c5ec]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
@@ -531,7 +534,7 @@ coef(marga)
 coef(margbin)
 #+END_SRC  
 
-#+RESULTS[<2017-03-17 11:19:21> 65d55c884f42929ace03eb8b0e4750c7c6b2cfbd]:
+#+RESULTS[2ff58c09a7bf895d2e0fc51d09b74fcd3460c5e1]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
@@ -612,15 +615,15 @@ out$random.des[,,1]
 out$theta.des[,,1]
 #+END_SRC  
 
-#+RESULTS[<2017-03-17 11:19:21> e7f5c5865a90259a4566b1355aaa9a3c977f7ce6]:
+#+RESULTS[3651f85485d35a77ed42c7c7baefb656edfa0662]:
 #+begin_example
      [,1] [,2]
 [1,]   10    9
-[2,]   22   21
-[3,]   28   27
-[4,]   50   49
-[5,]   54   53
-[6,]   68   67
+[2,]   18   17
+[3,]   22   21
+[4,]   40   39
+[5,]   44   43
+[6,]   58   57
 [1] "random.design" "theta.des"     "ant.rvs"
      [,1] [,2] [,3]
 [1,]    1    1    0
@@ -646,13 +649,13 @@ cc  <- binomial.twostage(margbin,data=dataid,
 summary(cc)
 #+END_SRC  
 
-#+RESULTS[<2017-03-17 11:19:21> 02faceb6c0c97ead51810500b0168a985e5d370d]:
+#+RESULTS[71541277ed8066c4e68e3d0e00d12dd627335a87]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
                 theta         se
-dependence1 0.8615072 0.09548868
+dependence1 0.8877835 0.09785569
 
 $type
 [1] "clayton.oakes"
@@ -666,7 +669,7 @@ NULL
 
 $vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.862  0.0955 0.674  1.05 1.85e-19
+p1    0.888  0.0979 0.696  1.08 1.16e-19
 
 attr(,"class")
 [1] "summary.mets.twostage"
@@ -687,13 +690,13 @@ cc3 <- binomial.twostage(margbin,data=dataid,
 summary(cc3)
 #+END_SRC  
 
-#+RESULTS[<2017-03-17 11:19:21> 8a1861cc50e501fb4959179c22e3b7d312dac180]:
+#+RESULTS[5a7c61318ba1b8697ef5d99d9fd98c0f53905858]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
                 theta         se
-dependence1 0.8615072 0.09548868
+dependence1 0.8877835 0.09785569
 
 $type
 [1] "clayton.oakes"
@@ -707,7 +710,7 @@ NULL
 
 $vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.862  0.0955 0.674  1.05 1.85e-19
+p1    0.888  0.0979 0.696  1.08 1.16e-19
 
 attr(,"class")
 [1] "summary.mets.twostage"
@@ -732,13 +735,13 @@ cc3 <- binomial.twostage(marga,data=dataid,
 summary(cc3)
 #+END_SRC  
 
-#+RESULTS[<2017-03-17 11:19:22> 1d8f47ba30773fbc04496ab74ba2371654b37cd0]:
+#+RESULTS[309850e156fcbca4ae3376cabd3bdf6a7113be20]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
                 theta         se
-dependence1 0.8876072 0.09472541
+dependence1 0.9276133 0.09759565
 
 $type
 [1] "clayton.oakes"
@@ -752,12 +755,12 @@ NULL
 
 $vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.888  0.0947 0.702  1.07 7.23e-21
+p1    0.928  0.0976 0.736  1.12 2.01e-21
 
 $marginal
-             Coef.      SE Robust SE      z P-val lower2.5% upper97.5%
-dependence2 -3.560 0.00379   0.00379 -939.0     0    -3.570     -3.550
-dependence3  0.807 0.01220   0.01220   66.3     0     0.783      0.831
+             Coef.      SE Robust SE       z P-val lower2.5% upper97.5%
+dependence2 -3.250 0.00149   0.00149 -2180.0     0     -3.25     -3.250
+dependence3  0.182 0.01620   0.01620    11.3     0      0.15      0.214
 
 attr(,"class")
 [1] "summary.mets.twostage"

@@ -9,6 +9,7 @@
 #+OPTIONS: h:4 num:t tags:nil d:t
 #+LATEX_HEADER: \setlength{\parindent}{0pt} % Kills annoying indents. 
 #+LATEX_HEADER: \newcommand{\n}{}
+#+LATEX_HEADER: \usepackage[cachedir=minted]{minted}
 #+STARTUP: hideall 
 #+OPTIONS: toc:t h:4 num:nil 
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="orgmode5-ts.css">

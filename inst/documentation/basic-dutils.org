@@ -23,31 +23,21 @@ The functions, say,  dcut, dfactor and so on are all functions that basically do
 the base R cut, factor do, but are easier to use in the context of data-frames 
 and have additional functionality. 
 
-#+BEGIN_SRC R :results output  :exports both :session *R* :cache no 
+#+BEGIN_SRC R :results no :exports code :session *R* :cache no 
 library(mets)
 data(melanoma)
+#+END_SRC
+
+#+RESULTS:
+: melanoma
+
+#+BEGIN_SRC R :results output  :exports both :session *R* :cache no 
 is.data.frame(melanoma)
 melanoma=as.data.frame(melanoma)
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-Loading required package: timereg
-Loading required package: survival
-Loading required package: lava
-lava version 1.4.7.3
-mets version 1.2.1.2
-
-Attaching package: ‘mets’
-
-The following object is masked _by_ ‘.GlobalEnv’:
-
-    object.defined
-
-Warning message:
-failed to assign RegisteredNativeSymbol for cor to cor since cor is already defined in the ‘mets’ namespace
-[1] TRUE
-#+end_example
+: [1] TRUE
 
 
 Here we work on the melanoma data that is already read into R and is 
@@ -639,6 +629,23 @@ dlevel(melanoma,~ "thickcat4*")
 dtable(melanoma,~thickcat4+thickcat4.2)
 #+END_SRC
 
+#+RESULTS:
+#+begin_example
+thickcat4 #levels=:4 
+[1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
+-----------------------------------------
+thickcat4.2 #levels=:4 
+[1] "(194,356]"      "[10,97]"        "(97,194]"       "(356,1.74e+03]"
+-----------------------------------------
+
+               thickcat4.2 (194,356] [10,97] (97,194] (356,1.74e+03]
+thickcat4                                                           
+[10,97]                            0      56        0              0
+(97,194]                           0       0       53              0
+(194,356]                         45       0        0              0
+(356,1.74e+03]                     0       0        0             51
+#+end_example
+
 Combine levels but now control factor-level names 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 melanoma=drelevel(melanoma,gthick3~thickcat4,newlevels=list(group1.2=1:2,group3.4=3:4))
@@ -646,15 +653,20 @@ dlevels(melanoma)
 #+END_SRC
 
 #+RESULTS:
-: thickcat4 #levels=:4 
-: [1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
-: -----------------------------------------
-: gthick2 #levels=:2 
-: [1] "[10,97]-(97,194]"         "(194,356]-(356,1.74e+03]"
-: -----------------------------------------
-: gthick3 #levels=:2 
-: [1] "group1.2" "group3.4"
-: -----------------------------------------
+#+begin_example
+thickcat4 #levels=:4 
+[1] "[10,97]"        "(97,194]"       "(194,356]"      "(356,1.74e+03]"
+-----------------------------------------
+gthick2 #levels=:2 
+[1] "[10,97]-(97,194]"         "(194,356]-(356,1.74e+03]"
+-----------------------------------------
+thickcat4.2 #levels=:4 
+[1] "(194,356]"      "[10,97]"        "(97,194]"       "(356,1.74e+03]"
+-----------------------------------------
+gthick3 #levels=:2 
+[1] "group1.2" "group3.4"
+-----------------------------------------
+#+end_example
 
 
 * Making a factor from existing numeric variable and vice versa
@@ -707,24 +719,3 @@ sexl.n females males
 #+end_example
 
 
-*  COMMENT 
-
- :PROPERTIES:
- :BEAMER_opt: shrink=85
- :END:
-#+BEGIN_SRC R :results graphics :cache no :file auto/remis-km-placebo.png :exports both :session *R*
-par(mfrow=c(2,2))
-plot(survfit(Surv(time,event)~placebo,data=remis),col=c("red","blue"))
-legend("topright",legend=c("Treatment","Placebo"),col=c("red","blue"),lty=c(1,1))
-plot(survfit(Surv(time,event)~placebo,data=remis),col=c("red","blue"),fun="cumhaz")
-legend("topright",legend=c("Treatment","Placebo"),col=c("red","blue"),lty=c(1,1))
-plot(survfit(Surv(time,event)~placebo,data=remis),col=c("red","blue"),fun="cloglog")
-legend("topright",legend=c("Treatment","Placebo"),col=c("red","blue"),lty=c(1,1))
-#+END_SRC
-
-#+RESULTS:
-[[file:auto/remis-km-placebo.png]]
-
-[[file:auto/remis-km-placebo.png]]
-
- 

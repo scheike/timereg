@@ -222,12 +222,12 @@ twinstut <- subset(twinstut,zyg%in%c("mz","dz"))
 head(twinstut)
 #+END_SRC
 
-#+RESULTS[<2017-03-17 09:51:41> 64ff666970f0af532f5c746eea5aad956f3fc971]:
+#+RESULTS[62fe0999787106317ce6dff129e87bfa2baa6c19]:
 #+begin_example
 Loading required package: timereg
 Loading required package: survival
 Loading required package: lava
-lava version 1.5
+lava version 1.5.1
 mets version 1.2.1.2
 
 Attaching package: ‘mets’
@@ -235,6 +235,9 @@ Attaching package: ‘mets’
 The following object is masked _by_ ‘.GlobalEnv’:
 
     object.defined
+
+Warning message:
+failed to assign RegisteredNativeSymbol for cor to cor since cor is already defined in the ‘mets’ namespace
    tvparnr zyg stutter    sex age nr binstut
 1  2001005  mz      no female  71  1       0
 2  2001005  mz      no female  71  2       0
@@ -259,7 +262,7 @@ margbin <- glm(binstut~factor(sex)+age,data=twinstut,family=binomial())
 summary(margbin)
 #+END_SRC
 
-#+RESULTS[<2017-03-17 09:51:42> 95f58b0c86319b7e71df5cc74ef25ded37ce82c4]:
+#+RESULTS[f5d919d0a45404ea8f38dfe139342fe2fb7bfd2b]:
 #+begin_example
 
 Call:
@@ -296,7 +299,7 @@ bina <- binomial.twostage(margbin,data=twinstut,var.link=1,
 summary(bina)
 #+END_SRC
 
-#+RESULTS[<2017-03-17 09:51:42> ff319142c8b46d9249ca1485257742753312531b]:
+#+RESULTS[b2eb4b4373c82791142711af2127668742abfb84]:
 #+begin_example
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
@@ -330,7 +333,7 @@ bin <- binomial.twostage(margbin,data=twinstut,var.link=1,
 summary(bin)
 #+END_SRC
 
-#+RESULTS[<2017-03-17 09:51:42> be6159bcc8b713945745e7ad1cfefe97c58acf7d]:
+#+RESULTS[f2056de424e0f7a2766c5a2bedf4b4e6c9fddfa7]:
 #+begin_example
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
@@ -366,7 +369,7 @@ bina <- binomial.twostage(margbin,data=twinstut,var.link=1,
 summary(bina)
 #+END_SRC
 
-#+RESULTS[<2017-03-17 09:51:42> ebecbc845e3b64a7844d205130704cc12a16b1f5]:
+#+RESULTS[501f457b60186708573aa21c41f65a4c8265dc22]:
 #+begin_example
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
@@ -407,7 +410,7 @@ First noticing as before that MZ twins have a much higher dependence.
 summary(out)
 #+END_SRC
 
-#+RESULTS[<2017-03-17 09:51:42> 8be524c3ec929079ef70752f43c638680dd6c0cb]:
+#+RESULTS[32d85ce79f891db174751b95044171c13338856a]:
 #+begin_example
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
@@ -448,7 +451,7 @@ twins.
 #+END_SRC
 
 
-#+RESULTS[<2017-03-17 09:51:44> 02770b669abde75e154f46e3ec9d1f9fdf7c678c]:
+#+RESULTS[ab612e8e6a6b0524899fd4e6b348da54f69364d5]:
 #+begin_example
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
@@ -483,7 +486,7 @@ twinstut$binstut <- 1*(twinstut$stutter=="yes")
 head(twinstut)
 #+END_SRC
 
-#+RESULTS[<2017-03-17 09:51:44> 91a000699cf2f3f471197ed73db339d2f923946a]:
+#+RESULTS[f047f8f21718896d2853e27f1dca87e1c4e7df0c]:
 :    tvparnr zyg stutter    sex age nr binstut
 : 1  2001005  mz      no female  71  1       0
 : 2  2001005  mz      no female  71  2       0
@@ -503,7 +506,7 @@ b1 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="un")
 summary(b1)
 #+END_SRC
 
-#+RESULTS[<2017-03-17 09:51:46> ac373f8ca2f478273c20ca2b9b8c3f6d33a4e902]:
+#+RESULTS[0c42d124ac5210d6cce78eacdd90bd560894be4f]:
 #+begin_example
 
                 Estimate    Std.Err          Z p-value
@@ -554,21 +557,21 @@ b1 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="ace"
 summary(b1)
 #+END_SRC
 
-#+RESULTS[<2017-03-17 09:51:49> bef5381b41a7d33682352f3c55ae14f34b309c31]:
+#+RESULTS[4b037a3a539e9ace423fbe5a1dea309499aacc66]:
 #+begin_example
 
-              Estimate    Std.Err          Z p-value
-(Intercept)   -3.70371    0.24449  -15.14855       0
-sexmale        0.83310    0.08255   10.09201       0
-log(var(A))    1.18278    0.17179    6.88512       0
-log(var(C))  -31.88101    0.14929 -213.54544       0
+             Estimate   Std.Err         Z p-value
+(Intercept)  -3.70371   0.24449 -15.14855       0
+sexmale       0.83310   0.08255  10.09201       0
+log(var(A))   1.18278   0.17179   6.88512       0
+log(var(C)) -29.99519        NA        NA      NA
 
  Total MZ/DZ Complete pairs MZ/DZ
  8777/12511  3255/4058           
 
                    Estimate 2.5%    97.5%  
 A                  0.76545  0.70500 0.82590
-C                  0.00000      NaN     NaN
+C                  0.00000  0.00000 0.00000
 E                  0.23455  0.17410 0.29500
 MZ Tetrachoric Cor 0.76545  0.69793 0.81948
 DZ Tetrachoric Cor 0.38272  0.35210 0.41253
@@ -590,10 +593,6 @@ log(OR)              1.69996  1.57262 1.82730
 
                          Estimate 2.5%    97.5%  
 Broad-sense heritability 0.76545  0.70500 0.82590
-
-Warning messages:
-1: In sqrt(diag(vcovACDE)) : NaNs produced
-2: In sqrt(diag(vcovACDE)) : NaNs produced
 #+end_example
 
 
@@ -603,7 +602,7 @@ b0 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="ae")
 summary(b0)
 #+END_SRC
 
-#+RESULTS[<2017-03-17 09:51:50> 61947b150415a5f41814e2b8fd35974ef47e5ba0]:
+#+RESULTS[889b421032a38fd63d591a0d48a544f8e09ab485]:
 #+begin_example
 
              Estimate   Std.Err         Z p-value
@@ -666,7 +665,7 @@ bintwin <- binomial.twostage(margbin,data=twinstut,model="gamma",
 summary(bintwin)
 #+END_SRC
 
-#+RESULTS[<2017-03-17 09:51:51> 7e47d62d9a1ce0cc75eca35cc69e334c3d0b3323]:
+#+RESULTS[4cf3e13d29d7beb823e6e887bf6b7767eb097aad]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
@@ -722,7 +721,7 @@ head(cbind(out$des.rv,twinstut$tvparnr),10)
 out$pardes
 #+END_SRC
 
-#+RESULTS[<2017-03-17 09:51:51> 0728a8818634f324a0ca81c51b7f70c5c63de8c1]:
+#+RESULTS[2588be5aef4361eafbeaaecc575bca033a4bae98]:
 #+begin_example
    MZ DZ DZns1 DZns2 env        
 1   1  0     0     0   1 2001005
@@ -758,7 +757,7 @@ bintwin1 <- binomial.twostage(margbin,data=twinstut,
 summary(bintwin1)
 #+END_SRC
 
-#+RESULTS[<2017-03-17 09:51:52> 00f233f690f5a3787b852e793b10a1591a943aec]:
+#+RESULTS[7c9ecfd3de2a7a21cd094d17335e9c54e451b1ba]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
@@ -794,7 +793,7 @@ as the marginal rates of stuttering for females.
 concordance.twin.ace(bintwin1,type="ace")
 #+END_SRC
 
-#+RESULTS[<2017-03-17 09:51:52> 70386d07f3dc715342edb320e405818af50090b8]:
+#+RESULTS[da942c4db812504fa21675461b79d42ccaa847c7]:
 #+begin_example
 $MZ
                      Estimate Std.Err   2.5%  97.5%  P-value
@@ -823,7 +822,7 @@ bintwin <- binomial.twostage(margbin,data=twinstut,
 summary(bintwin)
 #+END_SRC
 
-#+RESULTS[<2017-03-17 09:51:53> 35f6f8153ffefea9dfb3b82cd2c37b12c7490b18]:
+#+RESULTS[439d5efa81280956f8b1664432a62744370a5126]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
@@ -855,7 +854,7 @@ Again, the concordance can be computed:
 concordance.twin.ace(bintwin,type="ae")
 #+END_SRC
 
-#+RESULTS[<2017-03-17 09:51:53> 3c035294818911d6ce061ee2d5c25c9ce21bedd1]:
+#+RESULTS[4ded570c3cd7aa95b657656394ad1d758a884207]:
 #+begin_example
 $MZ
                      Estimate Std.Err   2.5%  97.5%  P-value
@@ -885,7 +884,7 @@ plot(survfit(Surv(time,event)~placebo,data=remis),col=c("red","blue"),fun="clogl
 legend("topright",legend=c("Treatment","Placebo"),col=c("red","blue"),lty=c(1,1))
 #+END_SRC
 
-#+RESULTS[<2017-03-17 09:51:53> 0755fe766c35a9bb8fc085f62890d1d5823e7ebd]:
+#+RESULTS[649b2a7f46db9e123a34b27e5e4a1c0078611460]:
 [[file:auto/remis-km-placebo.png]]
 
 [[file:auto/remis-km-placebo.png]]

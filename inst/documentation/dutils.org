@@ -67,7 +67,7 @@ library(mets)
 Loading required package: timereg
 Loading required package: survival
 Loading required package: lava
-lava version 1.4.7.3
+lava version 1.5.1
 mets version 1.2.1.2
 
 Attaching package: ‘mets’
