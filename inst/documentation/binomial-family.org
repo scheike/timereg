@@ -1,7 +1,12 @@
 #+TITLE: Analysis of multivariate binomial data: family analysis
 #+AUTHOR: Klaus Holst & Thomas Scheike
+#+PROPERTY: header-args:R  :session *R* :cache no :width 550 :height 450
+#+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
+#+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
 #+INCLUDE: header.org
+#+OPTIONS: toc:nil
 ----- 
+# +LaTeX: \clearpage
 
 
 * Overview 
@@ -45,7 +50,7 @@ two children. The response is ybin and there is one covariate x.
  head(data)
 #+END_SRC  
 
-#+RESULTS[3252fee6a681341a232b922a88bd513436dffc63]:
+#+RESULTS[27e4ff59d6c57b64dfea494da55eefcc71265da6]:
 #+begin_example
 Loading required package: timereg
 Loading required package: survival
@@ -80,7 +85,7 @@ wants.
  summary(aa)
 #+END_SRC 
 
-#+RESULTS[7e6df4e6b9b6e70d2fe0d28f67e3ce88f4dc5011]:
+#+RESULTS[590c57384c65b5b484a3d1c9cf1242b039c5bff4]:
 #+begin_example
 
 Call:
@@ -128,7 +133,7 @@ out$pardes
 head(out$des.rv,4)
 #+END_SRC 
 
-#+RESULTS[a024cf7f129a2c09da3c73870d0932f17c840b5a]:
+#+RESULTS[eda2ae38cebdf87ea316bd53b74f9a35b064608c]:
 #+begin_example
       [,1] [,2]
  [1,] 0.25    0
@@ -161,7 +166,7 @@ c(2,1)/9
 1/3
 #+END_SRC 
 
-#+RESULTS[4a5e65da4df7407618c182dfa61a5fc2096fa37f]:
+#+RESULTS[61bb5855b777de8534d2c14e627e9fa56b2a4828]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
@@ -209,7 +214,7 @@ dim(pairs)
 head(pairs,12)
 #+END_SRC 
 
-#+RESULTS[968f9b1d41759a965b5232f2fbc400bbf7a1f3cb]:
+#+RESULTS[d36e9dab79ac94bc13d0fad305a098ba343ea904]:
 #+begin_example
  [1] 1 2 1 3 1 4 2 3 2 4 3 4 5 6 5 7 5 8 6 7
 [1] 240000      2
@@ -238,7 +243,7 @@ tsp <- binomial.twostage(margbin,data=data,
 summary(tsp)
 #+END_SRC 
 
-#+RESULTS[b580e9c0e1bbdb103203c640592cdaa3479db3fa]:
+#+RESULTS[38e726dc0ad121df87192fbd8f65f499ae2c367a]:
 : Dependence parameter for Clayton-Oakes model
 : Variance of Gamma distributed random effects 
 : Error in theta.des %*% theta : non-conformable arguments
@@ -257,7 +262,7 @@ tsd <- binomial.twostage(aa,data=data,clusters=data$cluster,
 summary(tsd)
 #+END_SRC 
 
-#+RESULTS[4e436dec86f83ce0c362d6ad91332d92080212fd]:
+#+RESULTS[ac77be6001e9390c518f184e1c3e980f09e0d98f]:
 : Dependence parameter for Clayton-Oakes model
 : Variance of Gamma distributed random effects 
 : Error in theta.des %*% theta : non-conformable arguments
@@ -288,7 +293,7 @@ outid$pardes
 head(outid$des.rv)
 #+END_SRC 
 
-#+RESULTS[3cb068f93a09f8d4c35756a55cd039831e40fae0]:
+#+RESULTS[26b3d1289180f1990078bf8d031288608d7fe438]:
 #+begin_example
      [,1] [,2]
 [1,]    1    2
@@ -332,7 +337,7 @@ tsdid <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
 summary(tsdid)
 #+END_SRC 
 
-#+RESULTS[8b7b5d3d50572f8e7b6b96dab16a07e757f95da9]:
+#+RESULTS[7a9e897d1493321500a094c04471dc9bfd3fcbce]:
 : Dependence parameter for Clayton-Oakes model
 : Variance of Gamma distributed random effects 
 : Error in theta.des %*% theta : non-conformable arguments
@@ -371,7 +376,7 @@ for (i in 1:nrow(pair.new))
 }
 #+END_SRC 
 
-#+RESULTS[8842bcbd5f02e47f310c80bcb550bde7e687ff0d]:
+#+RESULTS[906e24ad3e6fa43248975dfcf2d2a93237d25f83]:
 #+begin_example
      [,1] [,2]
 [1,]    1    2
@@ -413,7 +418,7 @@ theta.des[,,2]
 head(rvs)
 #+END_SRC 
 
-#+RESULTS[540a9c1517a07e98f9ddaa0a903fa669ab15e9c5]:
+#+RESULTS[05d72dd3c5c9565fa8590ffc8fc85a71abee3772]:
 #+begin_example
      [,1] [,2] [,3] [,4]
 [1,]    1    0    1    0
@@ -445,7 +450,7 @@ tsdid2 <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
 summary(tsdid2)
 #+END_SRC 
 
-#+RESULTS[3139460f1ee4512f91238e7da86313f3ec0531dd]:
+#+RESULTS[dd95dd23d99675ae36e3239b4aeec50fa989eeec]:
 : Dependence parameter for Clayton-Oakes model
 : Variance of Gamma distributed random effects 
 : Error in theta.des %*% theta : non-conformable arguments
@@ -472,7 +477,7 @@ out$random.des[,,1]
 out$theta.des[,,1]
 #+END_SRC 
 
-#+RESULTS[201894d9f2f4361fdc3726cbe9569fb13bef02a0]:
+#+RESULTS[11c9949740bb3fe5d415b91c9f4d99b0565bd7d9]:
 #+begin_example
  [1] 0.0 0.5 0.5 0.5 0.0 0.5 0.5 0.5 0.5 0.5
 [1] "random.design" "theta.des"     "ant.rvs"
@@ -495,7 +500,7 @@ tsdid3 <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
 summary(tsdid3)
 #+END_SRC 
 
-#+RESULTS[82d7b588dd9499ab764b04b343b0dac691138bfa]:
+#+RESULTS[6f93e6815d5d4e5b174712b4163c9d0d59ba977a]:
 : Dependence parameter for Clayton-Oakes model
 : Variance of Gamma distributed random effects 
 : Error in theta.des %*% theta : non-conformable arguments
@@ -529,7 +534,7 @@ dtable(tdp,~tt+obs.types)
 tdp <- model.matrix(~-1+factor(obs.types),tdp)
 #+END_SRC 
 
-#+RESULTS[4fe6fd0df00e4ac058fd54f0e6145da623d1ce57]:
+#+RESULTS[9a469da2b726c7c7e4093e1f3e61d751fdd46384]:
 #+begin_example
 type1 #levels=:3 
 [1] "child"  "father" "mother"
@@ -572,7 +577,7 @@ porpair <- binomial.twostage(aa,data=dataid,clusters=dataid$cluster,
 summary(porpair)
 #+END_SRC 
 
-#+RESULTS[9d148df270fb3a29a167821a085d9e120d41c1ce]:
+#+RESULTS[c4026bc9a6236f8e96b140585e44876e3bcce6a5]:
 #+begin_example
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 

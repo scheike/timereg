@@ -118,6 +118,8 @@ Next we plot the association within each zygosity group
 
 #+RESULTS:
 : Loading required package: ggplot2
+: Find out what's changed in ggplot2 at
+: http://github.com/tidyverse/ggplot2/releases.
 : 
 : Attaching package: ‘cowplot’
 : 

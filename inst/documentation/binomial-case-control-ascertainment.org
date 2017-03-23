@@ -1,7 +1,13 @@
 #+TITLE: Analysis of multivariate binomial data: case control or ascertainment sampling 
 #+AUTHOR: Klaus Holst & Thomas Scheike
+#+PROPERTY: header-args:R  :session *R* :cache no :width 550 :height 450
+#+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
+#+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
 #+INCLUDE: header.org
+#+OPTIONS: toc:nil
 ----- 
+# +LaTeX: \clearpage
+
 
 
 * Overview 
@@ -132,7 +138,7 @@ twinstut <- subset(twinstut,zyg%in%c("mz","dz"))
 head(twinstut)
 #+END_SRC
 
-#+RESULTS[460986aef71a4f8d43e07e2c3f2eeb6b8fafc0ae]:
+#+RESULTS[4c41ab99466bf4a108ce410bed6469f1a5a75e08]:
 #+begin_example
 Loading required package: timereg
 Loading required package: survival
@@ -182,7 +188,7 @@ twinstut  <-   dby(twinstut,binstut~tvparnr,stuttot=sum,nn=seq_along,n=length)
 twina     <-   subset(twinstut,n==2 & stuttot>=1)
 #+END_SRC  
 
-#+RESULTS[283e616501f0835eb3d97858e099321661ff2e30]:
+#+RESULTS[708d8d2a3d568c08b0831320a0c05425b3b4a4f9]:
 
 
 Selecting on the pairs where there is stuttering at taking a look at the 
@@ -196,7 +202,7 @@ dtable(twind,"binst*"~I(stuttot1>=1))
 dtable(twinda,~"binst*")
 #+END_SRC  
 
-#+RESULTS[fdc6bdd7d0a1714bf6a5ab78c21402cfd94d4c71]:
+#+RESULTS[35fcd3ee8431268e066816a5b4dc83d3466d57bd]:
 #+begin_example
 I(stuttot1 >= 1): FALSE
 
@@ -230,7 +236,7 @@ b1 <- biprobit(binstut~sex,~-1+binzyg,data=twinstut,id="tvparnr")
 summary(b1)
 #+END_SRC  
 
-#+RESULTS[bea6e1be22170e51a234141d1e0dec930b050ac2]:
+#+RESULTS[de1a8dfd25cb6147320d5d9861f6daf5e594585d]:
 #+begin_example
 
               Estimate    Std.Err          Z p-value
@@ -267,7 +273,7 @@ ba1 <- biprobit(binstut~sex,~-1+binzyg,data=twina,id="tvparnr",pair.ascertained=
 summary(ba1)
 #+END_SRC  
 
-#+RESULTS[9c3652bd08fd976f96268483c24fedb479271f54]:
+#+RESULTS[c3fb5ee93d0be3ee5590c20aa3e1281564d1618a]:
 #+begin_example
 
               Estimate    Std.Err          Z p-value
@@ -306,7 +312,7 @@ margbin <- glm(binstut~factor(sex),data=twinstut,family=binomial())
 summary(margbin)
 #+END_SRC  
 
-#+RESULTS[43c119c7bb198ea53d0767c4092b2e9806c6448b]:
+#+RESULTS[5c622eb4645658450203040164fd3ef28aafcf35]:
 #+begin_example
 
 Call:
@@ -344,7 +350,7 @@ bin <- binomial.twostage(margbin,data=twinstut,var.link=1,
 summary(bin)
 #+END_SRC  
 
-#+RESULTS[8c26ce701761f89ffb95486a513cd5f5e6997251]:
+#+RESULTS[4268bb77084537539e34cdd71bc77fd15b77c50b]:
 #+begin_example
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
@@ -378,7 +384,7 @@ bina <- binomial.twostage(margbin,data=twina,var.link=1,
 summary(bina)
 #+END_SRC  
 
-#+RESULTS[09872d053ab60974d32ac4746b1318422ef5d50e]:
+#+RESULTS[f3318d5681b780d4438c0320fb02087b04f9fadf]:
 #+begin_example
 Dependence parameter for Odds-Ratio (Plackett) model 
 With log-link 
@@ -413,7 +419,7 @@ bintwin <- binomial.twostage(margbin,data=twinstut,
 summary(bintwin)
 #+END_SRC  
 
-#+RESULTS[fedcb0c760bb61780b7308eb54c14c7156945e51]:
+#+RESULTS[850aeaf3f26b8ce7689814808e139a60ee679365]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
@@ -453,7 +459,7 @@ marga <- glm(binstut~sex,data=twina,family=binomial())
 summary(marga)
 #+END_SRC  
 
-#+RESULTS[141ed981ded3d765143fdecd0e64abe3247268f8]:
+#+RESULTS[e12e7a711b5694f9fd66796e492527f064f099fc]:
 #+begin_example
 
 Call:
@@ -491,7 +497,7 @@ abintwin1 <- binomial.twostage(margbin,data=twina,
 summary(abintwin1)
 #+END_SRC  
 
-#+RESULTS[a75e336dbc2c0e29b853d3176999f82fe284c5ec]:
+#+RESULTS[30009e0cbff60c162c2b35ad4fd0fdc7dd0958de]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
@@ -534,7 +540,7 @@ coef(marga)
 coef(margbin)
 #+END_SRC  
 
-#+RESULTS[2ff58c09a7bf895d2e0fc51d09b74fcd3460c5e1]:
+#+RESULTS[391071c5ee9508d90ec0f05e51ced1e4b7748914]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
@@ -615,15 +621,15 @@ out$random.des[,,1]
 out$theta.des[,,1]
 #+END_SRC  
 
-#+RESULTS[3651f85485d35a77ed42c7c7baefb656edfa0662]:
+#+RESULTS[e1d7096ecb3cb7555111fba243ea5435a1dfbd02]:
 #+begin_example
      [,1] [,2]
-[1,]   10    9
-[2,]   18   17
-[3,]   22   21
-[4,]   40   39
-[5,]   44   43
-[6,]   58   57
+[1,]    6    5
+[2,]   22   21
+[3,]   24   23
+[4,]   44   43
+[5,]   48   47
+[6,]   52   51
 [1] "random.design" "theta.des"     "ant.rvs"
      [,1] [,2] [,3]
 [1,]    1    1    0
@@ -649,13 +655,13 @@ cc  <- binomial.twostage(margbin,data=dataid,
 summary(cc)
 #+END_SRC  
 
-#+RESULTS[71541277ed8066c4e68e3d0e00d12dd627335a87]:
+#+RESULTS[62fb48d46a4ab954ee6af6d69c67194bd49cc40f]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
                 theta         se
-dependence1 0.8877835 0.09785569
+dependence1 0.8572081 0.09509316
 
 $type
 [1] "clayton.oakes"
@@ -669,7 +675,7 @@ NULL
 
 $vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.888  0.0979 0.696  1.08 1.16e-19
+p1    0.857  0.0951 0.671  1.04 1.98e-19
 
 attr(,"class")
 [1] "summary.mets.twostage"
@@ -690,13 +696,13 @@ cc3 <- binomial.twostage(margbin,data=dataid,
 summary(cc3)
 #+END_SRC  
 
-#+RESULTS[5a7c61318ba1b8697ef5d99d9fd98c0f53905858]:
+#+RESULTS[8d60869115499564dea360fca115d41ea5608bb9]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
                 theta         se
-dependence1 0.8877835 0.09785569
+dependence1 0.8572081 0.09509316
 
 $type
 [1] "clayton.oakes"
@@ -710,7 +716,7 @@ NULL
 
 $vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.888  0.0979 0.696  1.08 1.16e-19
+p1    0.857  0.0951 0.671  1.04 1.98e-19
 
 attr(,"class")
 [1] "summary.mets.twostage"
@@ -735,13 +741,13 @@ cc3 <- binomial.twostage(marga,data=dataid,
 summary(cc3)
 #+END_SRC  
 
-#+RESULTS[309850e156fcbca4ae3376cabd3bdf6a7113be20]:
+#+RESULTS[422c3590cd02fa9a235febac6c0b4334239a7fac]:
 #+begin_example
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
                 theta         se
-dependence1 0.9276133 0.09759565
+dependence1 0.8701439 0.09457095
 
 $type
 [1] "clayton.oakes"
@@ -755,12 +761,12 @@ NULL
 
 $vartot
    Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.928  0.0976 0.736  1.12 2.01e-21
+p1     0.87  0.0946 0.685  1.06 3.55e-20
 
 $marginal
-             Coef.      SE Robust SE       z P-val lower2.5% upper97.5%
-dependence2 -3.250 0.00149   0.00149 -2180.0     0     -3.25     -3.250
-dependence3  0.182 0.01620   0.01620    11.3     0      0.15      0.214
+            Coef.      SE Robust SE      z P-val lower2.5% upper97.5%
+dependence2 -3.60 0.00903   0.00903 -399.0     0     -3.62      -3.58
+dependence3  1.05 0.01960   0.01960   53.4     0      1.01       1.09
 
 attr(,"class")
 [1] "summary.mets.twostage"

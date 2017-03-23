@@ -1,7 +1,12 @@
 #+TITLE: Analysis of bivariate binomial data: Twin analysis
 #+AUTHOR: Klaus Holst & Thomas Scheike
+#+PROPERTY: header-args:R  :session *R* :cache no :width 550 :height 450
+#+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
+#+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
 #+INCLUDE: header.org
+#+OPTIONS: toc:nil
 ----- 
+# +LaTeX: \clearpage
 
 
 * Simple data manipulation for data-frames 
@@ -30,7 +35,22 @@ data(melanoma)
 #+END_SRC
 
 #+RESULTS:
-: melanoma
+#+begin_example
+Loading required package: timereg
+Loading required package: survival
+Loading required package: lava
+lava version 1.5.1
+mets version 1.2.1.2
+
+Attaching package: ‘mets’
+
+The following object is masked _by_ ‘.GlobalEnv’:
+
+    object.defined
+
+Warning message:
+failed to assign RegisteredNativeSymbol for cor to cor since cor is already defined in the ‘mets’ namespace
+#+end_example
 
 #+BEGIN_SRC R :results output  :exports both :session *R* :cache no 
 is.data.frame(melanoma)
