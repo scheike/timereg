@@ -1,4 +1,5 @@
-* preample 							     :ignore:
+* preample 							     
+  :ignore:
 
   #+TITLE: Utility functions
   #+AUTHOR: Klaus K. Holst and Thomas Scheike
@@ -110,7 +111,7 @@ data(sTRACE, package="timereg")
 dhead(sTRACE)
 #+END_SRC
 
-#+RESULTS[<2017-03-21 13:33:58> 01b4952643bb968b9b1e194a2056b925ff7c5052]:
+#+RESULTS[01b4952643bb968b9b1e194a2056b925ff7c5052]:
 :         no wmi status chf    age sex diabetes     time vf
 : X1944 1944 1.5      9   0 84.924   1        1 1.345000  0
 : X5783 5783 1.9      0   1 74.193   0        0 6.910000  0
@@ -149,37 +150,32 @@ dlist(d, a+b~c>0 | a>0)
 
 #+END_SRC
 
-#+RESULTS[<2017-03-21 13:33:58> 84fda9ca89b2ebc100e10fa6305cd1c85694c607]:
+#+RESULTS[84fda9ca89b2ebc100e10fa6305cd1c85694c607]:
 #+begin_example
-    a       b        c      
-2   0.5756  -0.04235 -0.2588
-5   0.2221   0.33581 -0.2982
-7   0.8153  -1.47833 -0.3315
-10  1.1594  -0.12544 -1.1509
-11  0.9545  -0.31498  0.3747
----                         
-15  0.03786 -0.7537   1.7697
-16  0.58729  0.2290  -0.7783
-17  0.70808  1.1360  -0.5603
-19  1.32331  0.8197  -0.5184
-20  0.31357  1.0211   0.3927
+   a      b        c        
+1  0.2931  0.08600 -1.523897
+3  0.7401 -1.52052  0.602183
+7  0.9079 -0.50419  0.001286
+10 0.3768  0.42186 -0.824860
+11 1.3748 -0.09775  1.386935
+14 0.7545 -1.80065  1.494348
+15 0.4461  0.54516 -0.337498
+17 0.5001 -0.23887 -0.562333
+20 0.7586  1.66598  0.482238
 c > 0: FALSE
-   a      b       
-2  0.5756 -0.04235
-5  0.2221  0.33581
-7  0.8153 -1.47833
-10 1.1594 -0.12544
-12 1.3905 -0.11794
-16 0.5873  0.22899
-17 0.7081  1.13599
-19 1.3233  0.81965
+   a      b      
+1  0.2931  0.0860
+10 0.3768  0.4219
+15 0.4461  0.5452
+17 0.5001 -0.2389
 ------------------------------------------------------------ 
 c > 0: TRUE
-   a       b      
-11 0.95454 -0.3150
-13 0.03094  0.1406
-15 0.03786 -0.7537
-20 0.31357  1.0211
+   a      b       
+3  0.7401 -1.52052
+7  0.9079 -0.50419
+11 1.3748 -0.09775
+14 0.7545 -1.80065
+20 0.7586  1.66598
 #+end_example
 
 
@@ -187,31 +183,30 @@ c > 0: TRUE
 dmean('Petal' ~ Species, data=iris, regex=TRUE)
 #+END_SRC
 
-#+RESULTS[<2017-03-21 13:33:58> 62e576971a5c3a003bbb36ab4ea834eb293e063d]:
+#+RESULTS[62e576971a5c3a003bbb36ab4ea834eb293e063d]:
 :      Species Petal.Length Petal.Width
 : 1     setosa        1.462       0.246
 : 2 versicolor        4.260       1.326
 : 3  virginica        5.552       2.026
 
 
-  #+NAME: fig1
-  #+BEGIN_SRC R :exports both :file figs/fig1.png :results output graphics
-    plot(1)
-    #+END_SRC
 
-  #+ATTR_LaTeX: :width \textwidth :center t
-  #+CAPTION: Important figure. label:fig1
-  \vspace*{1em}
+#+NAME: fig1
+#+BEGIN_SRC R :exports both :file figs/fig1.png :results output graphics
+ plot(1)
+#+END_SRC
 
-  #+BEGIN_marginfigure
-  #+ATTR_LATEX: :width 2cm :float nil :center t
-  #+CAPTION: Important margin figure. label:fig2
-  #+RESULTS[<2017-03-21 13:33:58> e3904b17cae30c3ef0f5d112eb46725fac469094]: fig1
-  [[file:figs/fig1.png]]
+#+RESULTS[e3904b17cae30c3ef0f5d112eb46725fac469094]: fig1
+[[file:figs/fig1.png]]
 
-  #+END_marginfigure
+#+ATTR_LaTeX: :width \textwidth :center t
+#+CAPTION: Important figure. label:fig1
+\vspace*{1em}
 
-
+#+BEGIN_marginfigure
+#+ATTR_LATEX: :width 2cm :float nil :center t
+#+CAPTION: Important margin figure. label:fig2
+#+END_marginfigure
 
 
 * Tables
@@ -225,7 +220,7 @@ dby(sTRACE, wmi ~ diabetes+sex, m=mean, q50=median, sd=sd, REDUCE=T)
 dhead(sTRACE, 'wmi*' ~ sex)
 #+END_SRC
 
-#+RESULTS[<2017-03-21 13:33:58> b5f8d7f29e1ed8fbda4349938306044b44e90c62]:
+#+RESULTS[b5f8d7f29e1ed8fbda4349938306044b44e90c62]:
 #+begin_example
         no wmi status chf    age sex diabetes     time vf
 X1944 1944 1.5      9   0 84.924   1        1 1.345000  0
@@ -293,9 +288,8 @@ dtable(iris, Species+dcut(Petal.Width,4)~
 
 #+END_SRC
 
-#+RESULTS[<2017-03-21 13:33:59> 14a09cf4e6531704516d9d76305b8cb3355e7a04]:
+#+RESULTS[14a09cf4e6531704516d9d76305b8cb3355e7a04]:
 #+begin_example
- Error in plot.new() : could not open file 'figs/fig1.png'
 
            dcut(Petal.Width, 4) [0.1,0.3] (0.3,1.3] (1.3,1.8] (1.8,2.5]
 Species                                                                
@@ -308,7 +302,7 @@ Species
 setosa                                 28        12         2         0
 versicolor                              0         0         8         0
 virginica                               0         0         2        15
- dcut(Petal.Length, breaks = 2): [1,1.6]
+dcut(Petal.Length, breaks = 2): [1,1.6]
 
            dcut(Petal.Width, 4) [0.1,0.2] (0.2,0.4] (0.4,1.8] (1.8,2.5]
 Species                                                                
@@ -331,7 +325,7 @@ library(magrittr)
 sTRACE %>% dby2(chf+vf~1, mean, median) %>% dhead
 #+END_SRC
 
-#+RESULTS[<2017-03-21 13:33:59> 66b2d4af5d5a7bb11ea96d4d0101df9819e74cc2]:
+#+RESULTS[66b2d4af5d5a7bb11ea96d4d0101df9819e74cc2]:
 #+begin_example
         no wmi status chf    age sex diabetes     time vf    wmicat mean.chf
 X1944 1944 1.5      9   0 84.924   1        1 1.345000  0 (1.4,1.8]    0.522
@@ -354,7 +348,7 @@ library(magrittr)
 sTRACE %>% dby(chf+vf~1, mean, median,REDUCE=TRUE) 
 #+END_SRC
 
-#+RESULTS[<2017-03-21 13:33:59> 1f8eaa03cb32b30d5b54c3910cbb531355aef819]:
+#+RESULTS[1f8eaa03cb32b30d5b54c3910cbb531355aef819]:
 :  mean median
 :  0.29      0
 
@@ -376,7 +370,7 @@ dby(iris, 'Length' ~ Species, mean, REGEX=T, REDUCE=1, COLUMN=T)
 lapply(list(median, mean), function(f) dscalar(sTRACE, chf+vf~sex, fun=f))
 #+END_SRC
 
-#+RESULTS[<2017-03-21 13:33:59> e727cd7a1e3e789e19c8941719fef4e5d47c3172]:
+#+RESULTS[e727cd7a1e3e789e19c8941719fef4e5d47c3172]:
 : [[1]]
 :   sex chf vf
 : 1   0   1  0
@@ -392,7 +386,7 @@ lapply(list(median, mean), function(f) dscalar(sTRACE, chf+vf~sex, fun=f))
 dbyr(sTRACE, wmi ~ vf+sex|age>80, mean(x^2), mean(log(x)), mean, n=length)
 #+END_SRC
 
-#+RESULTS[<2017-03-21 13:33:59> cb7e817a19236a46a94c2b2ebd27d49dce7be1cb]:
+#+RESULTS[cb7e817a19236a46a94c2b2ebd27d49dce7be1cb]:
 :   vf sex mean(x^2) mean(log(x))     mean  n
 : 1  0   0  2.344286   0.33534719 1.471429 21
 : 2  1   0  1.370000   0.02439508 1.100000  2
@@ -400,7 +394,8 @@ dbyr(sTRACE, wmi ~ vf+sex|age>80, mean(x^2), mean(log(x)), mean, n=length)
 : 4  1   1  0.745000  -0.17833747 0.850000  2
 
 
-* backmatter :ignore:
+* backmatter
+  :ignore:
 
 bibliography:mets.bib
 bibliographystyle:plain

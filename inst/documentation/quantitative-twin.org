@@ -117,37 +117,43 @@ Next we plot the association within each zygosity group
 #+END_SRC
 
 #+RESULTS:
-: Error in library("cowplot") : there is no package called ‘cowplot’
+: Loading required package: ggplot2
+: 
+: Attaching package: ‘cowplot’
+: 
+: The following object is masked from ‘package:ggplot2’:
+: 
+:     ggsave
 
 We here show the log-transformed data which is slightly more symmetric
 and more appropiate for the twin analysis (see Figure ref:fig:scatter1 and ref:fig:scatter2)
 #+NAME: scatter1
-#+BEGIN_SRC R :exports both :results output graphics :file scatter1.png 
+#+BEGIN_SRC R :exports both :results output graphics :file figs/scatter1.png 
   mz <- log(subset(twinwide, zyg=="MZ")[,c("bmi1","bmi2")])
   scatterdens(mz)
 #+END_SRC
 
-#+BEGIN_marginfigure
-#+CAPTION: Scatter plot of logarithmic BMI measurements in MZ twins  label:fig:scatter1
-#+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: scatter1
 [[file:scatter1.png]]
 
+#+BEGIN_marginfigure
+#+CAPTION: Scatter plot of logarithmic BMI measurements in MZ twins  label:fig:scatter1
+#+ATTR_LATEX: :width \textwidth :float nil :center t
 #+END_marginfigure
 
 
 #+NAME: scatter2
-#+BEGIN_SRC R :exports both :results output graphics :file scatter2.png
+#+BEGIN_SRC R :exports both :results output graphics :file figs/scatter2.png
   dz <- log(subset(twinwide, zyg=="DZ")[,c("bmi1","bmi2")])
   scatterdens(dz)
 #+END_SRC
 
-#+BEGIN_marginfigure
-#+CAPTION: Scatter plot of logarithmic BMI measurements in DZ twins. label:fig:scatter2
-#+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: scatter2
 [[file:scatter2.png]]
-#+END_marginfigure
+
+#+BEGIN_marginfigure
+#+CAPTION: Scatter plot of logarithmic BMI measurements in DZ twins. label:fig:scatter2
+#+ATTR_LATEX: :width \textwidth :float nil :center t#+END_marginfigure
 
 The plots and raw association measures shows considerable stronger
 dependence in the MZ twins, thus indicating genetic influence of the
@@ -206,7 +212,7 @@ independence)
 
 
 #+NAME: marg1
-#+BEGIN_SRC R :exports both :results output graphics :file marg1.png
+#+BEGIN_SRC R :exports both :results output graphics :file figs/marg1.png
 	  dm <- Expand(twinbmi,
 		      bmi=0,
 		      gender=c("male"),
@@ -225,13 +231,13 @@ independence)
 		 col=c("black","red"), lty=1, bty="n")
 #+END_SRC
 
+#+RESULTS: marg1
+[[file:marg1.png]]
+
 
 #+BEGIN_marginfigure
 #+CAPTION: ... label:fig:marg1
-#+ATTR_LATEX: :width \textwidth :float nil :center t
-#+RESULTS: marg1
-[[file:marg1.png]]
-#+END_marginfigure
+#+ATTR_LATEX: :width \textwidth :float nil :center t#+END_marginfigure
 
 ** Polygenic model
 
@@ -338,7 +344,8 @@ estimate(l,contr(5:6,6))
 * Time to event
 
 
-* backmatter :ignore:
+* backmatter
+  :ignore:
 
 bibliography:mets.bib
 bibliographystyle:plain
