@@ -1,4 +1,4 @@
-#+TITLE: Analysis of bivariate binomial data: Twin analysis
+#+TITLE: Manipulation of data-frame data with dutility functions
 #+AUTHOR: Klaus Holst & Thomas Scheike
 #+PROPERTY: header-args:R  :session *R* :cache no :width 550 :height 450
 #+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
