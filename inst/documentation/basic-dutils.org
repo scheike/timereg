@@ -1,7 +1,22 @@
-#+TITLE: Basic use of dfunctions for data-frames in mets 
-#+AUTHOR: Klaus Holst & Thomas Scheike
-#+INCLUDE: header.org
------ 
+* preample 							     
+  :ignore:
+
+  #+TITLE: Utility functions
+  #+AUTHOR: Klaus K. Holst and Thomas Scheike
+  #+email: k.k.holst@biostat.ku.dk
+  #+LATEX_CLASS: tufte-handout
+  #+LATEX_CLASS_OPTIONS: [a4paper]
+  #+PROPERTY: header-args:R  :session *R* :cache yes :width 550 :height 450
+  #+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
+  #+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
+  #+OPTIONS: timestamp:t title:t date:t author:t creator:nil toc:nil 
+  #+OPTIONS: h:4 num:t tags:nil d:t ^:{}
+  #+LATEX_HEADER: \lstset{language=R,keywords={},morekeywords={}}
+  #+LATEX_HEADER: \usepackage{zlmtt}
+  #+LATEX_HEADER: \setlength{\parindent}{0em}
+  #+LATEX_HEADER: %%\setlength{\parindent}{default}
+  #+LaTeX: \setlength{\parindent}{0em} %\setlength{\parindent}{default}
+
 
 * Simple data manipulation for data-frames 
 
@@ -29,7 +44,22 @@ data(melanoma)
 #+END_SRC
 
 #+RESULTS:
-: melanoma
+#+begin_example
+Loading required package: timereg
+Loading required package: survival
+Loading required package: lava
+lava version 1.5.1
+mets version 1.2.1.2
+
+Attaching package: ‘mets’
+
+The following object is masked _by_ ‘.GlobalEnv’:
+
+    object.defined
+
+Warning message:
+failed to assign RegisteredNativeSymbol for cor to cor since cor is already defined in the ‘mets’ namespace
+#+end_example
 
 #+BEGIN_SRC R :results output  :exports both :session *R* :cache no 
 is.data.frame(melanoma)
@@ -42,7 +72,6 @@ melanoma=as.data.frame(melanoma)
 
 Here we work on the melanoma data that is already read into R and is 
 a data-frame.
-
 
 
 * dUtility functions 
@@ -64,6 +93,39 @@ argument
 
 -  daggregate(dataframe,y~x|ifcond,fun=function,...)
 
+without the grouping variable (x)
+
+-  daggregate(dataframe,~y|ifcond,fun=function,...)
+
+A useful feature is that y and x as well as the subset condition
+can be specified using regular-expressions or by wildcards (default).
+Here to illustrate this, we compute the means of certain variables. 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+dmean(melanoma,thick+I(log(thick))~sex|I(days>500))
+dmean(melanoma,~thick+I(log(thick))|I(days>500))
+dmean(melanoma,~thick+I(log(thick)))
+#+END_SRC
+
+#+RESULTS:
+:   sex    thick I(log(thick))
+: 1   0 242.9580      5.060086
+: 2   1 320.2429      5.353321
+:         thick I(log(thick)) 
+:    271.582011      5.168691
+:         thick I(log(thick)) 
+:    291.985366      5.223341
+
+or summary of all variables starting with "s" and that contains "a"
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+dmean(melanoma,"s*"+"*a*"~sex|I(days>500))
+#+END_SRC
+
+#+RESULTS:
+:   sex   status     days
+: 1   0 1.831933 2399.143
+: 2   1 1.714286 2169.800
 
 
 * Renaming, deleting, keeping, dropping  variables
