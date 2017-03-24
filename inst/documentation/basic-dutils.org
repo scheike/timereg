@@ -52,14 +52,13 @@ Warning message:
 failed to assign RegisteredNativeSymbol for cor to cor since cor is already defined in the ‘mets’ namespace
 #+end_example
 
+
 #+BEGIN_SRC R :results output  :exports both :session *R* :cache no 
 is.data.frame(melanoma)
-melanoma=as.data.frame(melanoma)
 #+END_SRC
 
 #+RESULTS:
 : [1] TRUE
-
 
 Here we work on the melanoma data that is already read into R and is 
 a data-frame.
@@ -92,20 +91,45 @@ A useful feature is that y and x as well as the subset condition
 can be specified using regular-expressions or by wildcards (default).
 Here to illustrate this, we compute the means of certain variables. 
 
+First just oveall 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+dmean(melanoma,~thick+I(log(thick)))
+#+END_SRC
+
+#+RESULTS:
+:         thick I(log(thick)) 
+:    291.985366      5.223341
+
+now only when days>500
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+dmean(melanoma,~thick+I(log(thick))|I(days>500))
+#+END_SRC
+
+#+RESULTS:
+:         thick I(log(thick)) 
+:    271.582011      5.168691
+
+and now after sex but only when days>500
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 dmean(melanoma,thick+I(log(thick))~sex|I(days>500))
-dmean(melanoma,~thick+I(log(thick))|I(days>500))
-dmean(melanoma,~thick+I(log(thick)))
 #+END_SRC
 
 #+RESULTS:
 :   sex    thick I(log(thick))
 : 1   0 242.9580      5.060086
 : 2   1 320.2429      5.353321
-:         thick I(log(thick)) 
-:    271.582011      5.168691
-:         thick I(log(thick)) 
-:    291.985366      5.223341
+
+and finally after quartiles of days (via the dcut function)
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+dmean(melanoma,thick+I(log(thick))~I(dcut(days)))
+#+END_SRC
+
+#+RESULTS:
+:         I(dcut(days))    thick I(log(thick))
+: 1       [10,1.52e+03] 482.1731      5.799525
+: 2    (1.52e+03,2e+03] 208.5490      4.987652
+: 3    (2e+03,3.04e+03] 223.2941      4.974759
+: 4 (3.04e+03,5.56e+03] 250.1961      5.120129
 
 or summary of all variables starting with "s" and that contains "a"
 
