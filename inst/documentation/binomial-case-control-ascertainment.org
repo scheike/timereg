@@ -139,29 +139,13 @@ head(twinstut)
 #+END_SRC
 
 #+RESULTS[4c41ab99466bf4a108ce410bed6469f1a5a75e08]:
-#+begin_example
-Loading required package: timereg
-Loading required package: survival
-Loading required package: lava
-lava version 1.5.1
-mets version 1.2.1.2
-
-Attaching package: ‘mets’
-
-The following object is masked _by_ ‘.GlobalEnv’:
-
-    object.defined
-
-Warning message:
-failed to assign RegisteredNativeSymbol for cor to cor since cor is already defined in the ‘mets’ namespace
-   tvparnr zyg stutter    sex age nr binstut
-1  2001005  mz      no female  71  1       0
-2  2001005  mz      no female  71  2       0
-3  2001006  dz      no female  71  1       0
-8  2001012  mz      no female  71  1       0
-9  2001012  mz      no female  71  2       0
-11 2001015  dz      no   male  71  1       0
-#+end_example
+:    tvparnr zyg stutter    sex age nr binstut
+: 1  2001005  mz      no female  71  1       0
+: 2  2001005  mz      no female  71  2       0
+: 3  2001006  dz      no female  71  1       0
+: 8  2001012  mz      no female  71  1       0
+: 9  2001012  mz      no female  71  2       0
+: 11 2001015  dz      no   male  71  1       0
 
 
 - First,  we select an ascertaiment sample of the data, thus selecting
@@ -263,43 +247,9 @@ Casewise Concordance    0.06456  0.03937 0.10413
 Marginal                0.03634  0.03287 0.04016
 #+end_example
 
-
-
-
-A similar analysis of the ascertained data reveals (some problems) ...
-
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
-ba1 <- biprobit(binstut~sex,~-1+binzyg,data=twina,id="tvparnr",pair.ascertained=TRUE)
-summary(ba1)
-#+END_SRC  
-
-#+RESULTS[c3fb5ee93d0be3ee5590c20aa3e1281564d1618a]:
-#+begin_example
-
-              Estimate    Std.Err          Z p-value
-(Intercept)   0.101193   0.031912   3.170993  0.0015
-sexmale       0.049255   0.042886   1.148495  0.2508
-r:binzygDZ   -3.952376   0.282620 -13.984759  0.0000
-r:binzygMZ   -0.840831   0.169676  -4.955514  0.0000
-
-logLik: -690.9136  mean(score^2): 5.008e-11 
-    n pairs 
- 1362   681 
-
-Contrast:
-	Dependence    [binzygDZ] 
-	Mean          [(Intercept)] 
-
-                        Estimate 2.5%     97.5%   
-Rel.Recur.Risk           0.27611  0.13140  0.42081
-OR                       0.00000      NaN      NaN
-Tetrachoric correlation -0.99926 -0.99976 -0.99777
-                                                  
-Concordance              0.08060  0.04294  0.14627
-Casewise Concordance     0.14918  0.08234  0.25520
-Marginal                 0.54030  0.51540  0.56501
-#+end_example
-
+Note, that the Casewise Concordance is a consistently estimated under
+complete ascertainment, i.e., when we consider a random sample of
+affected twins (at least on of the twins must have the event).
 
 ** Odd-Ratio modelling 
 

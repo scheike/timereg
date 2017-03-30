@@ -1,12 +1,14 @@
 
 ##' @export
 biprobit.vector <- function(x,id,X=NULL,Z=NULL,
-                            weights=NULL,
-                            biweight=function(x) { u <- min(x); ifelse(u==0,u,1/u) },
-                            ## biweight=function(x) { u <- min(x); ifelse(u==0,0,1/max(u,lava.options()$min.weight)) },
-                            eqmarg=TRUE,add=NULL,control=list(),p=NULL,
-                            cells,
-                            ...) {
+                    weights=NULL,
+                    biweight=function(x) { u <- min(x); ifelse(u==0,u,1/u) },
+                    ## biweight=function(x) { u <- min(x); ifelse(u==0,0,1/max(u,lava.options()$min.weight)) },
+                    eqmarg=TRUE,add=NULL,control=list(),p=NULL,
+                    pair.ascertained=FALSE,
+                    marg=NULL,
+                    cells,
+                    ...) {
 
     if (is.factor(x)) x <- factor(x,labels=c(0,1))
     else x <- factor(x*1,levels=c(0,1))
@@ -155,18 +157,48 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
             p0[midx2] <- coef(b2)
         }     
     }
-   
+
+    U0 <- function(p) {
+        MyData0 <- MyData
+        MyData0$Y0[,] <- 0
+        val0 <- Ubiprobit(p,SigmaFun,eqmarg,nx,MyData0,indiv=TRUE)
+        P <- exp(attr(val0,"logLik"))
+        res <- log(1-P)
+        dlogP <- val0
+        dres <- (-P/(1-P)) %x% rbind(rep(1,ncol(val0)))
+        structure(res,score=dres)
+    }
+       
     U <- function(p,w0) {
         val <- Ubiprobit(p,SigmaFun,eqmarg,nx,MyData,indiv=TRUE)
+        if (pair.ascertained) {
+            ## log Pij - log (1-P00)
+            ## U := Uij + dP00/(1-P00) = Uij+ DlogP00*P00/(1-P00)
+            MyData0 <- MyData
+            MyData0$Y0[,] <- 0
+            dlogP00 <- Ubiprobit(p,SigmaFun,eqmarg,nx,MyData0,indiv=TRUE)
+            logP00 <- attr(dlogP00,"logLik")
+            P00 <- exp(logP00)
+            ll00 <- log(1-P00)
+            dll00 <- -(P00/(1-P00)) %x% rbind(rep(1,ncol(dlogP00)))
+            dll00 <- dll00 * dlogP00
+            val1 <- val
+            attr(val,"logLik") <- attr(val,"logLik") - ll00
+            val <- val-dll00
+        }
         logl <- w0*as.vector(attributes(val)$logLik)
         score <- apply(val,2,function(x) w0*x)
         return(structure(score,logLik=logl))
     }
 
-
     f0 <- function(p) -sum(attributes(U(p,w0))$logLik)
-    g0 <- function(p) -as.numeric(colSums(U(p,w0)))   
-    if (!is.null(p)) op <- list(par=p) else {
+    ## f00 <- function(p) -sum(attributes(U(c(0,p),w0))$logLik)
+    g0 <- function(p) -as.numeric(colSums(U(p,w0)))
+    aa <- U(c(0.203,0),c(0,1,1,1))
+    exp(attr(aa,"logLik"))
+    
+    if (!is.null(p)) op <- list(par=p)
+    else {
         suppressWarnings(op <- nlminb(p0,f0,gradient=g0,control=control))
     }
     
@@ -240,7 +272,6 @@ biprobit.vector <- function(x,id,X=NULL,Z=NULL,
 ##' @param control Control argument parsed on to the optimization routine. Starting values may be parsed as '\code{start}'.
 ##' @param messages Control amount of messages shown 
 ##' @param constrain Vector of parameter constraints (NA where free). Use this to set an offset.
-##' @param pair.ascertained pair.ascertained if pairs are sampled only when there are events in the pair i.e. Y1+Y2>=1. 
 ##' @param table Type of estimation procedure
 ##' @param p Parameter vector p in which to evaluate log-Likelihood and score function
 ##' @param ... Optional arguments
@@ -378,7 +409,7 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
       if (table && NCOL(Z)<10 && length(unique(sample(Z,min(1000,length(Z)))))<10) { ## Not quantitative?
           if (!is.null(weights)) weights <- data[,weights]
           if (length(attr(yx,"x")>0)) X <- model.matrix(x,data);
-          return(biprobit.vector(data[,yx],X=X,Z=Z,id=data[,id],weights,biweight=biweight,eqmarg=eqmarg,add=list(formula=formula,rho.formula=rho),control=control,p=p,...))
+          return(biprobit.vector(data[,yx],X=X,Z=Z,id=data[,id],weights,biweight=biweight,eqmarg=eqmarg,pair.ascertained=pair.ascertained,add=list(formula=formula,rho.formula=rho),control=control,p=p,...))
       }
   }
   
