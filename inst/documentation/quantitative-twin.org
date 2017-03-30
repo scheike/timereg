@@ -18,22 +18,7 @@ options(warn=-1)
 #+END_SRC
 
 #+RESULTS:
-#+begin_example
-Loading required package: timereg
-Loading required package: survival
-Loading required package: lava
-lava version 1.5.1
-mets version 1.2.1.2
-
-Attaching package: ‘mets’
-
-The following object is masked _by_ ‘.GlobalEnv’:
-
-    object.defined
-
-Warning message:
-failed to assign RegisteredNativeSymbol for cor to cor since cor is already defined in the ‘mets’ namespace
-#+end_example
+: Error in library("mets") : there is no package called ‘mets’
 
 The development version may be installed from /github/, i.e., with the
 =devtools= package:
@@ -53,13 +38,7 @@ head(twinbmi)
 #+END_SRC
 
 #+RESULTS:
-:          tvparnr      bmi      age gender zyg
-: 100001.1  100001 26.33289 57.57974   male  DZ
-: 100002.1  100002 28.65014 57.04860   male  MZ
-: 100003.1  100003 28.40909 57.67830   male  DZ
-: 100004.1  100004 27.25089 53.51677   male  DZ
-: 100005.1  100005 27.77778 52.57495   male  DZ
-: 100006.1  100006 28.04282 52.57221   male  DZ
+: Error in head(twinbmi) : object 'twinbmi' not found
 
 The data is on /long/ format with one subject per row.
 #+BEGIN_mnote
@@ -78,13 +57,8 @@ head(twinwide)
 #+END_SRC
 
 #+RESULTS:
-:          tvparnr     bmi1      age gender zyg     bmi2
-: 100001.1  100001 26.33289 57.57974   male  DZ 25.46939
-: 100002.1  100002 28.65014 57.04860   male  MZ       NA
-: 100003.1  100003 28.40909 57.67830   male  DZ       NA
-: 100004.1  100004 27.25089 53.51677   male  DZ 28.07504
-: 100005.1  100005 27.77778 52.57495   male  DZ       NA
-: 100006.1  100006 28.04282 52.57221   male  DZ 22.30936
+: Error: could not find function "fast.reshape"
+: Error in head(twinwide) : object 'twinwide' not found
 
 Next we plot the association within each zygosity group
 
@@ -117,15 +91,7 @@ Next we plot the association within each zygosity group
 #+END_SRC
 
 #+RESULTS:
-: Loading required package: ggplot2
-: Find out what's changed in ggplot2 at
-: http://github.com/tidyverse/ggplot2/releases.
-: 
-: Attaching package: ‘cowplot’
-: 
-: The following object is masked from ‘package:ggplot2’:
-: 
-:     ggsave
+: Error in library("cowplot") : there is no package called ‘cowplot’
 
 We here show the log-transformed data which is slightly more symmetric
 and more appropiate for the twin analysis (see Figure ref:fig:scatter1 and ref:fig:scatter2)
@@ -165,30 +131,16 @@ cor.test(mz[,1],mz[,2], method="spearman")
 #+END_SRC
 
 #+RESULTS:
-: 
-: 	Spearman's rank correlation rho
-: 
-: data:  mz[, 1] and mz[, 2]
-: S = 165460000, p-value < 2.2e-16
-: alternative hypothesis: true rho is not equal to 0
-: sample estimates:
-:       rho 
-: 0.6956209
+: Error in cor.test(mz[, 1], mz[, 2], method = "spearman") : 
+:   object 'mz' not found
 
 #+BEGIN_SRC R
 cor.test(dz[,1],dz[,2], method="spearman")
 #+END_SRC
 
 #+RESULTS:
-: 
-: 	Spearman's rank correlation rho
-: 
-: data:  dz[, 1] and dz[, 2]
-: S = 2162500000, p-value < 2.2e-16
-: alternative hypothesis: true rho is not equal to 0
-: sample estimates:
-:       rho 
-: 0.4012686
+: Error in cor.test(dz[, 1], dz[, 2], method = "spearman") : 
+:   object 'dz' not found
 
 Ńext we examine the marginal distribution (GEE model with working
 independence)
@@ -199,10 +151,8 @@ independence)
 #+END_SRC
 
 #+RESULTS:
-:             Estimate Std.Err   2.5%  97.5%   P-value
-: (Intercept)   23.369 0.05453 23.262 23.476  0.00e+00
-: gendermale     1.407 0.07322  1.264  1.551  2.35e-82
-: I(age - 40)    0.118 0.00479  0.108  0.127 2.00e-133
+: Error in is.data.frame(data) : object 'twinbmi' not found
+: Error: could not find function "estimate"
 
 #+BEGIN_SRC R
   library("splines")
@@ -211,6 +161,8 @@ independence)
 #+END_SRC
 
 #+RESULTS:
+: Error in is.data.frame(data) : object 'twinbmi' not found
+: Error: could not find function "estimate"
 
 
 #+NAME: marg1
@@ -304,8 +256,8 @@ only! \(\cor(E_1,E_2)=0\) and
 #+END_SRC
 
 #+RESULTS:
-: Error in estimate.multigroup(mg, ...) : 
-:   argument 2 matches multiple formal arguments
+: Error in na.omit(twinbmi) : object 'twinbmi' not found
+: Error: could not find function "twinlm"
 
 #+BEGIN_SRC R
     l <- twinlm(bmi ~ ns(age,1)+gender, data=twinbmi, 
@@ -314,8 +266,7 @@ only! \(\cor(E_1,E_2)=0\) and
 #+END_SRC
 
 #+RESULTS:
-: Error in estimate.multigroup(mg, ...) : 
-:   argument 2 matches multiple formal arguments
+: Error: could not find function "twinlm"
 : Error in summary(l) : object 'l' not found
 
 A formal test of genetic effects can be obtained by comparing the MZ and DZ correlation:
@@ -324,7 +275,7 @@ estimate(l,contr(5:6,6))
 #+END_SRC
 
 #+RESULTS:
-: Error in estimate(l, contr(5:6, 6)) : object 'l' not found
+: Error: could not find function "estimate"
 
 
 #+BEGIN_SRC R
@@ -334,8 +285,7 @@ estimate(l,contr(5:6,6))
 #+END_SRC
 
 #+RESULTS:
-: Error in estimate.multigroup(mg, ...) : 
-:   argument 2 matches multiple formal arguments
+: Error: could not find function "twinlm"
 : Error in summary(l) : object 'l' not found
 
 * Twin analysis, censored outcomes
