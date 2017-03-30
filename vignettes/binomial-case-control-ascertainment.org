@@ -4,7 +4,14 @@
 #+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
 #+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
 #+INCLUDE: header.org
-#+OPTIONS: toc:nil
+#+OPTIONS: toc:nil timestamp:nil
+
+#+BEGIN_SRC emacs-lisp :results silent :exports results :eval
+(setq org-latex-listings t)
+(setq org-latex-compiler-file-string 
+"%%\\VignetteIndexEntry{Analysis of multivariate binomial data: case control or ascertainment sampling}\n%%\\VignetteEngine{R.rsp::tex}\n%%\\VignetteKeyword{R}\n%%\\VignetteKeyword{package}\n%%\\VignetteKeyword{vignette}\n%%\\VignetteKeyword{LaTeX}\n")
+#+END_SRC
+
 ----- 
 # +LaTeX: \clearpage
 
@@ -555,7 +562,7 @@ rpairs <- c(rowsca,rowsco)
 cc.pairs <- cbind( with(twinstut,pairnr.nnrow[rpairs]),rpairs)
 
 ids <- sort(unique(c(cc.pairs)))
-###
+
 pairsids <- c(cc.pairs)
 pair.new <- matrix(fast.approx(ids,pairsids),ncol=2)
 head(pair.new)

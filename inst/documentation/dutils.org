@@ -4,7 +4,7 @@
   #+TITLE: Utility functions
   #+AUTHOR: Klaus K. Holst and Thomas Scheike
   #+email: k.k.holst@biostat.ku.dk
-  #+LATEX_CLASS: tufte-handout
+  #+LATEX_CLASS: tufte-handout+listings
   #+LATEX_CLASS_OPTIONS: [a4paper]
   #+PROPERTY: header-args:R  :session *R* :cache yes :width 550 :height 450
   #+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
@@ -16,6 +16,12 @@
   #+LATEX_HEADER: \setlength{\parindent}{0em}
   #+LATEX_HEADER: %%\setlength{\parindent}{default}
   #+LaTeX: \setlength{\parindent}{0em} %\setlength{\parindent}{default}
+
+#+BEGIN_SRC emacs-lisp :results silent :exports results :eval
+(setq org-latex-listings t)
+(setq org-latex-compiler-file-string 
+"%%\\VignetteIndexEntry{dutils overview}\n%%\\VignetteEngine{R.rsp::tex}\n%%\\VignetteKeyword{R}\n%%\\VignetteKeyword{package}\n%%\\VignetteKeyword{vignette}\n%%\\VignetteKeyword{LaTeX}\n")
+#+END_SRC
 
 * Introduction
 

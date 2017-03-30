@@ -1,0 +1,872 @@
+%\VignetteIndexEntry{Analysis of multivariate binomial data: case control or ascertainment sampling}
+%\VignetteEngine{R.rsp::tex}
+%\VignetteKeyword{R}
+%\VignetteKeyword{package}
+%\VignetteKeyword{vignette}
+%\VignetteKeyword{LaTeX}
+\PassOptionsToPackage{usenames}{xcolor}
+\PassOptionsToPackage{hidelinks,colorlinks,linkcolor={blue!50!black},urlcolor={blue!50!black},citecolor={blue!50!black}}{hyperref}
+\documentclass[a4paper]{tufte-handout}
+\usepackage{etex}
+\usepackage[l2tabu,orthodox]{nag}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{mathtools}
+\usepackage[strict=true]{csquotes}
+\usepackage{xcolor}
+\usepackage{natbib}
+\usepackage{amsmath,amssymb,textcomp}
+\usepackage{units}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage{capt-of}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{longtable}
+\usepackage{zlmtt}
+\usepackage{float}
+\usepackage{fancyvrb}
+\usepackage{verbatim}
+\usepackage[english]{babel}
+\usepackage{hyperref}
+\usepackage{environ}
+\NewEnviron{mnote}{\marginnote{\BODY}}
+\NewEnviron{snote}{\sidenote{\BODY}}
+\usepackage{xspace}
+\usepackage{url}
+\usepackage{amsthm}
+\newtheorem{thm}{Theorem.}
+\newtheorem{prop}{Proposition.}
+\theoremstyle{definition}
+\newtheorem{defn}[thm]{Definition.}
+\newtheorem{exa}[thm]{Example}
+\newcommand{\R}{\ensuremath{\mathbb{R}}} 
+\newcommand{\Real}{\ensuremath{\mathbb{R}}} 
+\newcommand{\Complex}{\ensuremath{\mathbb{C}}} 
+\newcommand{\Z}{\ensuremath{\mathbb{Z}}} 
+\newcommand{\N}{\ensuremath{\mathbb{N}}} 
+\newcommand{\norm}[1]{\ensuremath{\left\Vert#1\right\Vert}} 
+\newcommand{\var}{\ensuremath{\mathbb{V}\text{ar}}} 
+\newcommand{\cov}{\ensuremath{\mathbb{C}\text{ov}}} 
+\newcommand{\cor}{\ensuremath{\mathbb{C}\text{or}}} 
+\newcommand{\E}{\ensuremath{\mathbb{E}}} 
+\newcommand{\pr}{\ensuremath{\mathbb{P}}} 
+\newcommand{\from}{\leftarrow} 
+\newcommand{\To}[2]{\ensuremath{#1\!\to\!#2}}
+\newcommand{\From}[2]{\ensuremath{#1\!\from\!#2}}
+\newcommand{\chain}[3]{\ensuremath{#1\!\to\!#2\to\!#3}}
+\newcommand{\ichain}[3]{\ensuremath{#1\!\from\!#2\from\!#3}}
+\newcommand{\fork}[3]{\ensuremath{#1\!\from\!#2\to\!#3}}
+\newcommand{\ifork}[3]{\ensuremath{#1\!\to\!#2\from\!#3}}
+\newcommand{\pa}{\text{pa}}
+\newcommand{\abs}[1]{\ensuremath{\left\vert#1\right\vert}} 
+\newcommand{\ipr}[1]{\langle#1\rangle} 
+\newcommand{\set}[1]{\left{#1\right}} 
+\newcommand{\seq}[1]{\left<#1\right>} 
+\renewcommand{\subset}{\subseteq}  
+\renewcommand{\supset}{\supseteq} 
+\newcommand{\argmax}{\operatorname{arg\,\max}} 
+\newcommand{\argmin}{\operatorname{arg\,\min}} 
+\newcommand{\sgn}{\operatorname{sgn}} 
+\newcommand{\mvec}{\operatorname{vec}} 
+\newcommand{\logit}{\operatorname{logit}} 
+\newcommand{\tr}{\operatorname{tr}} 
+\newcommand{\im}{\operatorname{im}}
+\newcommand{\diag}{\operatorname{diag}} 
+\newcommand{\bias}{\operatorname{bias}} 
+\newcommand{\rank}{\operatorname{rank}} 
+\makeatletter
+ \def\mathcolor#1#{\@mathcolor{#1}}
+ \def\@mathcolor#1#2#3{%
+   \protect\leavevmode
+   \begingroup
+     \color#1{#2}#3%
+  \endgroup
+ }
+\newcommand{\Dto}{\overset{\mathcal{D}}{\longrightarrow}}
+\newcommand{\Pto}{\overset{P}{\longrightarrow}}
+\newcommand{\Wto}{\overset{W}{\longrightarrow}}
+\newcommand{\VV}{\bm{\Omega}_\theta}
+\newcommand{\independenT}[2]{\mathrel{\setbox0\hbox{$#1#2$}\copy0\kern-\wd0\mkern4mu\box0}} 
+\newcommand{\indep}{\protect\mathpalette{\protect\independenT}{\perp}}
+\DefineVerbatimEnvironment{verbatim}{Verbatim}{xleftmargin=0.5em,xrightmargin=0em,numbers=none,frame=none,fontsize=\footnotesize,formatcom={\color[rgb]{0.2,0.2,0.2}}}
+\setlength{\parindent}{0pt} % Kills annoying indents. 
+\let\iint\relax 
+\let\iiint\relax
+
+\lstset{basicstyle=\ttfamily\small,keywordstyle=\color{black},commentstyle=\color{gray}\ttfamily\itshape,stringstyle=\color[rgb]{0,0,0.5},columns=fullflexible,alsoletter=.,texcl=true,escapeinside={*@}{@*)},escapebegin=\lst@commentstyle\,,breaklines=true,breakatwhitespace=false,numbers=left,numberstyle=\ttfamily\tiny\color{gray},stepnumber=1,numbersep=10pt,backgroundcolor=\color{white},tabsize=4,showspaces=false,showstringspaces=false,xleftmargin=.23in,frame=lines
+,rulesepcolor=\color[rgb]{0.85,0.85,0.85},basewidth={0.5em,0.42em},language=r,label=
+,caption= ,captionpos=b}
+\lstset{basicstyle=\ttfamily\small,keywordstyle=\color{black},commentstyle=\color{gray}\ttfamily\itshape,stringstyle=\color[rgb]{0,0,0.5},columns=fullflexible,alsoletter=.,texcl=true,escapeinside={*@}{@*)},escapebegin=\lst@commentstyle\,,breaklines=true,breakatwhitespace=false,numbers=left,numberstyle=\ttfamily\tiny\color{gray},stepnumber=1,numbersep=10pt,backgroundcolor=\color{white},tabsize=4,showspaces=false,showstringspaces=false,xleftmargin=.23in,frame=lines
+,rulesepcolor=\color[rgb]{0.85,0.85,0.85},basewidth={0.5em,0.42em},language=python,label=
+,caption= ,captionpos=b}
+
+\setlength{\parindent}{0pt} % Kills annoying indents.
+\newcommand{\n}{}
+\author{Klaus Holst \& Thomas Scheike}
+\date{\today}
+\title{Analysis of multivariate binomial data: case control or ascertainment sampling}
+\hypersetup{
+ pdfauthor={Klaus Holst \& Thomas Scheike},
+ pdftitle={Analysis of multivariate binomial data: case control or ascertainment sampling},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 25.1.1 (Org mode 9.0.5)}, 
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+\rule{\linewidth}{0.5pt}
+
+
+
+\section*{Overview}
+\label{sec:org7239130}
+
+When looking at multivariate binomial data with the aim of learning about the 
+dependence that is present, possibly after correcting for some covariates many
+models are available. 
+
+\begin{itemize}
+\item Random-effects models logistic regression covered elsewhere (glmer in lme4).
+\end{itemize}
+
+in the mets package you can fit the 
+
+\begin{itemize}
+\item Pairwise odds ratio model
+\item Bivariate Probit model 
+\begin{itemize}
+\item With random effects
+\item Special functionality for polygenic random effects modelling 
+such as ACE, ADE ,AE and so forth.
+\end{itemize}
+\item Additive gamma random effects model 
+\begin{itemize}
+\item Special functionality for polygenic random effects modelling 
+such as ACE, ADE ,AE and so forth.
+\end{itemize}
+\end{itemize}
+
+These last three models are all fitted in the mets package using composite 
+likelihoods for pairs of data.  The models can be fitted specifically based 
+on specifying which pairs one wants to use for the composite score. 
+
+The models are described in futher details in the binomial-twin vignette. 
+
+\subsection*{Case-Control Sampling}
+\label{sec:org697563f}
+
+Sometimes, pairs are recruited after a case-proband is selected. This 
+proband, can be either  a 
+
+\begin{itemize}
+\item case: must be representative of cases
+\end{itemize}
+
+or  a 
+
+\begin{itemize}
+\item control: must be representative of controls
+\end{itemize}
+
+First thinking about pairs, we estimate parameters using the conditional 
+likelihood given sampling wich for a binary 2 x 2 table can be 
+written as
+\[
+\frac{P(i,j)}{P(j)}
+\]
+the probailty of seeing \((i,j)\) for the pair, given that the proband was
+observed as \((j)\).
+
+
+We note that if the marginal is known, or possibly estimated from the full 
+cohort. Then we can estimate dependence paramters using just the terms
+\(P(i,j)\) for the pairs. We can thus ignore the special sampling for
+models with marginal specification.  If the marginal can not be obtained 
+from other sources we need to maximize the full-pairwise-likelihood in all
+paramters, that is both dependence and marginal parameters. 
+
+Similary, one can select a whole family based on having selected a proband, that is 
+selected a representative member of  either cases or controls.  In this case we 
+fit the models by using composited likelihoods, considering all
+pairs that involves the probands.  This will give some lacking efficiency 
+compared to looking at the full likelihood of the family given the proband. 
+
+
+\subsection*{Ascertainment Sampling}
+\label{sec:orgaf2e29f}
+
+Similarly, in the setting of pairs we can select all pairs where there is at 
+least one event of interest.  
+
+First thinking about pairs, we estimate parameters using the conditional 
+likelihood given sampling wich for a binary 2 x 2 table can be 
+written as
+\[
+\frac{P(i,j)}{1-P(0,0)}
+\]
+the probailty of seeing \((i,j)\) for the pair, given that it is sampled. 
+
+If the marginal can estimated from a full sample we can then estimate the
+dependence paramter using the ascertainment likelihood.
+
+Generally, when whole families are ascertained the computation of the
+true truncation probability can be hard to the fact that families are
+hard to define in the real world. Nevertheless, if a random sample of such
+family is at hand. We suggest to in these families take out all pairs that 
+satisfies the ascertainment criterion. With a family, with given size \(n\)
+we have binary observations \((Y_1,...,Y_n)\). The family is sampled or  a
+random sample of families such that
+\[ 
+\sum_{i=1}^n Y_i \geq 1.
+\]
+We let the conditional distribution given sampling, be denoted as 
+\[ 
+P^O(\cdot) = P(\cdot | \sum_{i=1}^n Y_i \geq 1) 
+\]
+
+Now, we note that all pairs within these family that satisfies that 
+\(Y_i+Y_j \geq 1\), will have distribution
+\begin{align*}
+P^O(Y_i=o_1, Y_j=o_2 | Y_i+Y_j \geq 1)  & = \frac{P^O(o_1,o_2)}{P^O( Y_i+Y_j \geq 1)} \\
+                                        & = \frac{P(Y_i=o_1,Y_j=o_2, \sum_{i=1}^n Y_i \geq 1)}{ P( Y_i+Y_j \geq 1, \sum_{i=1}^n Y_i \geq 1)} \\
+                                        & = \frac{P(Y_i=o_1,Y_j=o_2) }{ P( Y_i+Y_j \geq 1)} = \frac{P(o_1,o_2)}{1 - P(0,0)} 
+\end{align*}
+since we only consider the probabilities where \(o_1+o_2 \geq 1\). 
+Also here we could condition on covariates. 
+
+So considering these pairs, or a random sample of them should yield valid 
+inference. When standard errors are computed we need to rely on GEE type 
+arguments. An advantage of this is that the ascertainment probability is much 
+easier to get for the pairs. Again using the pairwise structure will   lead
+to loss of efficiency compared to using the full likelihood of the ascertained
+families. 
+
+
+
+\section*{The twin-stutter data}
+\label{sec:orge1ded61}
+
+We consider the twin-stutter where for pairs of twins that are 
+either dizygotic or monozygotic we have recorded whether the twins
+are stuttering \cite{twinstut-ref}
+
+We here consider MZ and same sex DZ twins. 
+
+Looking at the data 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+library(mets)
+data(twinstut)
+twinstut$binstut <- 1*(twinstut$stutter=="yes")
+twinstut <- subset(twinstut,zyg%in%c("mz","dz"))
+head(twinstut)
+\end{lstlisting}
+
+\begin{verbatim}
+   tvparnr zyg stutter    sex age nr binstut
+1  2001005  mz      no female  71  1       0
+2  2001005  mz      no female  71  2       0
+3  2001006  dz      no female  71  1       0
+8  2001012  mz      no female  71  1       0
+9  2001012  mz      no female  71  2       0
+11 2001015  dz      no   male  71  1       0
+\end{verbatim}
+
+
+\begin{itemize}
+\item First,  we select an ascertaiment sample of the data, thus selecting
+a random sample of all ascertained pairs.
+
+\item Secondly, we select a case-control sample of this data to illustrate the use
+of the methods.
+\end{itemize}
+
+
+\section*{Ascertaiment Sampling}
+\label{sec:org463904e}
+
+Selecting the ascertained pairs 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+library(mets)
+data(twinstut)
+twinstut$binstut <- 1*(twinstut$stutter=="yes")
+twinstut <- subset(twinstut,zyg%in%c("mz","dz"))
+dnumeric(twinstut) <- ~.
+dfactor(twinstut,labels=c("DZ","MZ")) <- binzyg~zyg.n
+ddrop(twinstut) <- ~"*.n"
+
+twinstut  <-   dby(twinstut,binstut~tvparnr,stuttot=sum,nn=seq_along,n=length)
+twina     <-   subset(twinstut,n==2 & stuttot>=1)
+\end{lstlisting}
+
+Selecting on the pairs where there is stuttering at taking a look at the 
+tables of discordance and concordance for the twins. 
+
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+twinda <- fast.reshape(twina,id="tvparnr")
+twind <- fast.reshape(twinstut,id="tvparnr")
+dtable(twind,"binst*"~I(stuttot1>=1))
+dtable(twinda,~"binst*")
+\end{lstlisting}
+
+\begin{verbatim}
+I(stuttot1 >= 1): FALSE
+
+         binstut2    0
+binstut1              
+0                 6632
+------------------------------------------------------------ 
+I(stuttot1 >= 1): TRUE
+
+         binstut2   0   1
+binstut1                 
+0                   0 289
+1                 281 111
+
+         binstut2   0   1
+binstut1                 
+0                   0 289
+1                 281 111
+\end{verbatim}
+
+
+Now doing the analyses 
+
+\subsection*{Biprobit model}
+\label{sec:org06cd928}
+
+Looking at the full data for comparison. We estimate an unstructured
+probit model with different correlations for MZ and DZ twins. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+b1 <- biprobit(binstut~sex,~-1+binzyg,data=twinstut,id="tvparnr")
+summary(b1)
+\end{lstlisting}
+
+\begin{verbatim}
+              Estimate    Std.Err          Z p-value
+(Intercept)  -1.794821   0.023289 -77.066826  0.0000
+sexmale       0.401430   0.030179  13.301756  0.0000
+r:binzygDZ    0.132458   0.062516   2.118802  0.0341
+r:binzygMZ    1.096915   0.073574  14.909085  0.0000
+
+logLik: -4400.536  mean(score^2): 1.022e-06 
+    n pairs 
+21288  7313 
+
+Contrast:
+	Dependence    [binzygDZ] 
+	Mean          [(Intercept)] 
+
+                        Estimate 2.5%    97.5%  
+Rel.Recur.Risk          1.77662  0.92746 2.62577
+OR                      1.88752  1.09432 3.25566
+Tetrachoric correlation 0.13169  0.00993 0.24960
+                                                
+Concordance             0.00235  0.00140 0.00393
+Casewise Concordance    0.06456  0.03937 0.10413
+Marginal                0.03634  0.03287 0.04016
+\end{verbatim}
+
+Note, that the Casewise Concordance is a consistently estimated under
+complete ascertainment, i.e., when we consider a random sample of
+affected twins (at least on of the twins must have the event).
+
+\subsection*{Odd-Ratio modelling}
+\label{sec:org2a48669}
+
+First looking at the marginal model based on the full data we find the 
+overall level of stuttering and also that males have a much higher 
+stuttering risk.
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+margbin <- glm(binstut~factor(sex),data=twinstut,family=binomial())
+summary(margbin)
+\end{lstlisting}
+
+\begin{verbatim}
+Call:
+glm(formula = binstut ~ factor(sex), family = binomial(), data = twinstut)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-0.4127  -0.4127  -0.2716  -0.2716   2.5763  
+
+Coefficients:
+                Estimate Std. Error z value Pr(>|z|)    
+(Intercept)     -3.28191    0.05000  -65.64   <2e-16 ***
+factor(sex)male  0.86171    0.06211   13.87   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 9328.6  on 21287  degrees of freedom
+Residual deviance: 9124.7  on 21286  degrees of freedom
+AIC: 9128.7
+
+Number of Fisher Scoring iterations: 6
+\end{verbatim}
+
+
+First, fitting the OR model for MZ and DZ for the full data, we find 
+that MZ have a much higher dependence than DZ twins. 
+
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut)
+bin <- binomial.twostage(margbin,data=twinstut,var.link=1,
+			  clusters=twinstut$tvparnr,theta.des=theta.des)
+summary(bin)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Odds-Ratio (Plackett) model 
+With log-link 
+$estimates
+                  theta        se
+factor(zyg)dz 0.5238541 0.2400861
+factor(zyg)mz 3.4930902 0.1865567
+
+$or
+              Estimate Std.Err   2.5% 97.5%  P-value
+factor(zyg)dz     1.69   0.405  0.894  2.48 3.11e-05
+factor(zyg)mz    32.89   6.135 20.862 44.91 8.31e-08
+
+$type
+[1] "plackett"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+Now, using the overall marginal we look at the adjusted likelihood and
+find very similar results on the ascertained sample. Note, that the marginals 
+are crucial for this analysis to give  useful results.
+
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+theta.des <- model.matrix( ~-1+factor(zyg),data=twina)
+bina <- binomial.twostage(margbin,data=twina,var.link=1,
+	     clusters=twina$tvparnr,theta.des=theta.des,
+			 pair.ascertained=1)
+summary(bina)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Odds-Ratio (Plackett) model 
+With log-link 
+$estimates
+                  theta        se
+factor(zyg)dz 0.4874213 0.2472523
+factor(zyg)mz 3.4753766 0.1985974
+
+$or
+              Estimate Std.Err   2.5% 97.5%  P-value
+factor(zyg)dz     1.63   0.403  0.839  2.42 5.24e-05
+factor(zyg)mz    32.31   6.417 19.734 44.89 4.77e-07
+
+$type
+[1] "plackett"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+
+\subsection*{Additive gamma modelling}
+\label{sec:org003e4e1}
+
+First, again for comparision fitting the full data for the AE model. We get 
+the size of the genetic variance in this model. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+out <- twin.polygen.design(twinstut,id="tvparnr",zygname="zyg",zyg="dz",type="ae")
+bintwin <- binomial.twostage(margbin,data=twinstut,
+     clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
+     random.design=out$des.rv,theta.des=out$pardes)
+summary(bintwin)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                theta         se
+dependence1 0.9094847 0.09536268
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err 2.5% 97.5% P-value
+dependence1        1       0    1     1       0
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1    0.909  0.0954 0.723   1.1 1.47e-21
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+
+We first here take at the look at the marginal model for the ascertained 
+sample, and note as expected that this sample give highly biased estimated for 
+the
+ marginal model. 
+
+
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+outa <- twin.polygen.design(twina,id="tvparnr",zygname="zyg",zyg="dz",type="ae")
+marga <- glm(binstut~sex,data=twina,family=binomial())
+summary(marga)
+\end{lstlisting}
+
+\begin{verbatim}
+Call:
+glm(formula = binstut ~ sex, family = binomial(), data = twina)
+
+Deviance Residuals: 
+   Min      1Q  Median      3Q     Max  
+-1.334  -1.298   1.028   1.028   1.061  
+
+Coefficients:
+            Estimate Std. Error z value Pr(>|z|)   
+(Intercept)  0.27895    0.08739   3.192  0.00141 **
+sexmale      0.08242    0.11237   0.733  0.46328   
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 1851.8  on 1361  degrees of freedom
+Residual deviance: 1851.2  on 1360  degrees of freedom
+AIC: 1855.2
+
+Number of Fisher Scoring iterations: 4
+\end{verbatim}
+
+
+Now, using the overall marginal model we look at the adjusted likelihood and
+find very similar results on the ascertained sample. Note, that the marginals 
+are crucial for this analysis to give  useful results.
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+abintwin1 <- binomial.twostage(margbin,data=twina,
+	       clusters=twina$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
+	       random.design=outa$des.rv,theta.des=outa$pardes,pair.ascertained=1)
+summary(abintwin1)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                theta         se
+dependence1 0.8920274 0.09732786
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err 2.5% 97.5% P-value
+dependence1        1       0    1     1       0
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1    0.892  0.0973 0.701  1.08 4.95e-20
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+
+In fact for this model we can also do a full-MLE fitting jointly the 
+dependence paramters and the marginal model. This is based on the
+twostage option (twostage=0 is MLE). Here the starting value is given at
+the marginal model for the ascertained model. This gives quite similar
+results to the previous analyses with a genetic variance around 1. 
+
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+aabintwin1 <- binomial.twostage(marga,data=twina,
+		clusters=twina$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
+		random.design=outa$des.rv,theta.des=outa$pardes,pair.ascertained=1,twostage=0)
+summary(aabintwin1)
+coef(marga)
+coef(margbin)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+               theta        se
+dependence1 1.014398 0.1045593
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err 2.5% 97.5% P-value
+dependence1        1       0    1     1       0
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1     1.01   0.105 0.809  1.22 2.97e-22
+
+$marginal
+             Coef.      SE Robust SE     z P-val lower2.5% upper97.5%
+dependence2 -4.350 0.08560   0.08560 -50.8     0    -4.520     -4.180
+dependence3  0.551 0.00606   0.00606  90.8     0     0.539      0.563
+
+attr(,"class")
+[1] "summary.mets.twostage"
+(Intercept)     sexmale 
+  0.2789484   0.0824214
+    (Intercept) factor(sex)male 
+     -3.2819072       0.8617053
+\end{verbatim}
+
+
+\section*{Case Control Sampling}
+\label{sec:org0110b26}
+
+First, taking out all cases and one control for each case, we establish the
+pairs of these probands. This is based on keeping track of the twin related 
+to the proband. Here using some utility functions in the mets packages. 
+
+Then we write up the random design vectors  and the parameter design for 
+each pair using the kinship coefficient. 
+
+When specifying the pairs in the case-control setup the second column should
+be the probands. 
+
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+twinstut  <-   dby(twinstut,binstut~tvparnr,stuttot=sum,nn=seq_along,n=length)
+twinstut <-    subset(twinstut,n==2)
+twinstut  <-   dtransform(twinstut,nnrow=1:nrow(twinstut))
+twinstut  <-   dby(twinstut,binstut~tvparnr,nnn=seq_along)
+twinstut  <-   dby2(twinstut,nnrow~tvparnr,pairnr=rev)
+
+cases <- which(twinstut$binstut==1)
+controls <- sample(which(twinstut$binstut==0),1217)
+rowsca <- with(twinstut,nnrow[cases])
+rowsco <- with(twinstut,nnrow[controls])
+rpairs <- c(rowsca,rowsco)
+cc.pairs <- cbind( with(twinstut,pairnr.nnrow[rpairs]),rpairs)
+
+ids <- sort(unique(c(cc.pairs)))
+
+pairsids <- c(cc.pairs)
+pair.new <- matrix(fast.approx(ids,pairsids),ncol=2)
+head(pair.new)
+
+dataid <- dsort(twinstut[ids,],"tvparnr")
+dataid=dtransform(dataid,kinship=0.5)
+dataid=dtransform(dataid,kinship=1,binzyg=="MZ")
+kinship <- dataid$kinship[pair.new[,2]]
+
+out <- make.pairwise.design(pair.new,kinship,type="ae") 
+names(out)
+out$random.des[,,1]
+out$theta.des[,,1]
+\end{lstlisting}
+
+\begin{verbatim}
+     [,1] [,2]
+[1,]    6    5
+[2,]   22   21
+[3,]   24   23
+[4,]   44   43
+[5,]   48   47
+[6,]   52   51
+[1] "random.design" "theta.des"     "ant.rvs"
+     [,1] [,2] [,3]
+[1,]    1    1    0
+[2,]    1    0    1
+[1] 0.5 0.5 0.5
+\end{verbatim}
+
+
+Now doing the analyses, first with know marginals, that is marginals from the 
+full data. For this analysis, since marginals do not contain dependence 
+parameters we do not need to specify that this is case-control sampling. 
+Having a correct is crucial for this to work, but this is certainly often 
+possible in register based studies where a full cohort is also available. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+cc  <- binomial.twostage(margbin,data=dataid,
+			    clusters=dataid$tvparnr,
+		 pairs=pair.new,
+		 random.design=out$random.design,
+	     theta.des=out$theta.des,
+		 pairs.rvs=out$ant.rvs,
+	     case.control=0,twostage=1)
+summary(cc)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                theta         se
+dependence1 0.8572081 0.09509316
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err 2.5% 97.5% P-value
+dependence1        1       0    1     1       0
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1    0.857  0.0951 0.671  1.04 1.98e-19
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+
+We now do the same analysis specifying the case-control sampling. This 
+should result in the same dependence parameters as is also the case.
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+cc3 <- binomial.twostage(margbin,data=dataid,
+			    clusters=dataid$tvparnr,
+		 pairs=pair.new,
+		 random.design=out$random.design,
+		 theta.des=out$theta.des,
+		 pairs.rvs=out$ant.rvs,
+		 case.control=1,twostage=1)
+summary(cc3)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                theta         se
+dependence1 0.8572081 0.09509316
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err 2.5% 97.5% P-value
+dependence1        1       0    1     1       0
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1    0.857  0.0951 0.671  1.04 1.98e-19
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+This model can  also be fitted using a full likelhood of both dependence 
+parameters and marginal parameters. Here there is no need to have a 
+correctly specified marginal. We here use the marginal fitting from the
+case-control data as as starting values.  Again we find a genetic variance 
+around 1. The marginal parameters are also consistent with the results from 
+the full analyses for the marginal parameters. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+marga <- glm(binstut~sex,data=dataid,family=binomial())
+cc3 <- binomial.twostage(marga,data=dataid,
+	     clusters=dataid$tvparnr,
+	     pairs=pair.new,
+	     random.design=out$random.design,
+	     theta.des=out$theta.des,
+	     pairs.rvs=out$ant.rvs,
+	     case.control=1,twostage=0)
+summary(cc3)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                theta         se
+dependence1 0.8701439 0.09457095
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err 2.5% 97.5% P-value
+dependence1        1       0    1     1       0
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%  P-value
+p1     0.87  0.0946 0.685  1.06 3.55e-20
+
+$marginal
+            Coef.      SE Robust SE      z P-val lower2.5% upper97.5%
+dependence2 -3.60 0.00903   0.00903 -399.0     0     -3.62      -3.58
+dependence3  1.05 0.01960   0.01960   53.4     0      1.01       1.09
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+
+When probands are related, here we may choose both case and controls from
+the same twin-pair then we need to adjust standard errors by grouping together
+contribution from related probands. This can be done using the
+se.cluster option that specifies how to cluster in the computation of the
+standard errors. In this case, however, this will be same as the 
+clusters since these also are identical across pairs.
+
+\section*{Combining Case Control and Ascertainment Sampling}
+\label{sec:org735b923}
+
+When specifying such models based on the pairs, it is in fact possible to
+combine ascertained pairs with case-control sampling by specifing vectors
+as the case.control=c(1,0,1,0) and pair.ascertained=c(0,1,0,1) arguments.  
+Here with two case-control pairs, and two ascertained pairs. 
+\end{document}

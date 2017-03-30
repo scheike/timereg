@@ -4,7 +4,14 @@
 #+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
 #+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
 #+INCLUDE: header.org
-#+OPTIONS: toc:nil
+#+OPTIONS: toc:nil timestamp:nil
+
+#+BEGIN_SRC emacs-lisp :results silent :exports results :eval
+(setq org-latex-listings t)
+(setq org-latex-compiler-file-string 
+"%%\\VignetteIndexEntry{Manipulation of data-frame data with dutility functions}\n%%\\VignetteEngine{R.rsp::tex}\n%%\\VignetteKeyword{R}\n%%\\VignetteKeyword{package}\n%%\\VignetteKeyword{vignette}\n%%\\VignetteKeyword{LaTeX}\n")
+#+END_SRC
+
 ----- 
 # +LaTeX: \clearpage
 
@@ -528,7 +535,7 @@ new variable is named thickcat.0 (after first cut-point),
 or to get quartiles with default names thick.cat.4 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
-dcut(melanoma) <- ~ thick  ### new variable is thickcat.4
+dcut(melanoma) <- ~ thick  # new variable is thickcat.4
 dlevels(melanoma)
 #+END_SRC
 
@@ -547,7 +554,7 @@ or median groups, here starting again with the original data,
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 data(melanoma)
-dcut(melanoma,breaks=2) <- ~ thick  ### new variable is thick.2
+dcut(melanoma,breaks=2) <- ~ thick  # new variable is thick.2
 dlevels(melanoma)
 #+END_SRC
 
