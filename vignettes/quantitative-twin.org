@@ -114,34 +114,44 @@ We here show the log-transformed data which is slightly more symmetric
 and more appropiate for the twin analysis (see Figure ref:fig:scatter1 and ref:fig:scatter2)
 
 #+NAME: scatter1
-#+BEGIN_SRC R :exports both :results output graphics :file scatter1.jpg :ravel fig=TRUE,include=FALSE
+#+BEGIN_SRC R :exports both :results output graphics :file scatter1.jpg :ravel fig=TRUE,include=FALSE 
   mz <- log(subset(twinwide, zyg=="MZ")[,c("bmi1","bmi2")])
   scatterdens(mz)
 #+END_SRC
 
 #+BEGIN_marginfigure
-
-#+CAPTION: Scatter plot of logarithmic BMI measurements in MZ twins  label:fig:scatter1
+# +CAPTION: Scatter plot of logarithmic BMI measurements in MZ twins  label:fig:scatter1
 #+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: scatter1
 [[file:scatter1.jpg]]
-#+LATEX: <<scatter1>>
 
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<scatter1>>
+#+END_SRC
+
+#+LATEX: \captionof{figure}{Scatter plot of logarithmic BMI measurements in MZ twins.}
+label:fig:scatter1
 #+END_marginfigure
 
-#+BEGIN_marginfigure
-
 #+NAME: scatter2
-#+BEGIN_SRC R :exports both :results output graphics :file scatter2.jpg :ravel fig=TRUE
+#+BEGIN_SRC R :exports both :results output graphics :file scatter2.jpg :ravel fig=TRUE,include=FALSE
   dz <- log(subset(twinwide, zyg=="DZ")[,c("bmi1","bmi2")])
   scatterdens(dz)
 #+END_SRC
 
-#+CAPTION: Scatter plot of logarithmic BMI measurements in DZ twins. label:fig:scatter2
+#+BEGIN_marginfigure
 #+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: scatter2
 [[file:scatter2.jpg]]
 
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<scatter2>>
+#+END_SRC
+
+#+LATEX: \captionof{figure}{Scatter plot of logarithmic BMI measurements in DZ twins.}
+label:fig:scatter2
 #+END_marginfigure
 
 The plots and raw association measures shows considerable stronger
@@ -200,10 +210,8 @@ independence)
 #+RESULTS:
 
 
-#+BEGIN_marginfigure
-
 #+NAME: marg1
-#+BEGIN_SRC R :exports both :results output graphics :file marg1.jpg :ravel fig=TRUE
+#+BEGIN_SRC R :exports both :results output graphics :file marg1.jpg :ravel include=FALSE,fig=TRUE
 	  dm <- Expand(twinbmi,
 		      bmi=0,
 		      gender=c("male"),
@@ -223,11 +231,18 @@ independence)
 #+END_SRC
 
 
-#+CAPTION: ... label:fig:marg1
+#+BEGIN_marginfigure
 #+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: marg1
 [[file:marg1.jpg]]
 
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<marg1>>
+#+END_SRC
+
+#+LATEX: \captionof{figure}{...}
+label:fig:marg1
 #+END_marginfigure
 
 ** Polygenic model
