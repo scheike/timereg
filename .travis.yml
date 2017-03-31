@@ -1,9 +1,12 @@
 language: r
 sudo: required
 
-r_build_args: --no-build-vignettes --no-manual --no-resave-data
+r_build_args: --no-manual --no-resave-data
 r_check_args: --run-donttest --no-build-vignettes --no-manual
 
+before_install:
+ - tlmgr install fancyvrb units nag capt-of zlmtt environ
+  
 warnings_are_errors: true
 
 r_binary_packages:

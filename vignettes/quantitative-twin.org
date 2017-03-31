@@ -4,6 +4,7 @@
 #+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
 #+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
 #+INCLUDE: header.org
+#+LATEX_HEADER: \usepackage{units}
 #+OPTIONS: toc:nil
 
 #+BEGIN_SRC emacs-lisp :results silent :exports results :eval
@@ -19,7 +20,7 @@
 
 This document provides a brief tutorial to analyzing twin data using
 the *=mets=* package:
-#+BEGIN_SRC R :exports code
+#+BEGIN_SRC R :exports code :ravel echo=FALSE
 library("mets")
 options(warn=-1)
 #+END_SRC
@@ -28,7 +29,7 @@ options(warn=-1)
 
 The development version may be installed from /github/, i.e., with the
 =devtools= package:
-#+BEGIN_SRC R :eval never :exports code
+#+BEGIN_SRC R :eval never :exports code :ravel eval=FALSE
 devtools::install_github("kkholst/lava")
 devtools::install_github("kkholst/mets")
 #+END_SRC
@@ -113,32 +114,34 @@ We here show the log-transformed data which is slightly more symmetric
 and more appropiate for the twin analysis (see Figure ref:fig:scatter1 and ref:fig:scatter2)
 
 #+NAME: scatter1
-#+BEGIN_SRC R :exports both :results output graphics :file scatter1.jpg 
+#+BEGIN_SRC R :exports both :results output graphics :file scatter1.jpg :ravel fig=TRUE,include=FALSE
   mz <- log(subset(twinwide, zyg=="MZ")[,c("bmi1","bmi2")])
   scatterdens(mz)
 #+END_SRC
 
-
 #+BEGIN_marginfigure
+
 #+CAPTION: Scatter plot of logarithmic BMI measurements in MZ twins  label:fig:scatter1
 #+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: scatter1
 [[file:scatter1.jpg]]
+#+LATEX: <<scatter1>>
 
 #+END_marginfigure
 
+#+BEGIN_marginfigure
+
 #+NAME: scatter2
-#+BEGIN_SRC R :exports both :results output graphics :file scatter2.jpg
+#+BEGIN_SRC R :exports both :results output graphics :file scatter2.jpg :ravel fig=TRUE
   dz <- log(subset(twinwide, zyg=="DZ")[,c("bmi1","bmi2")])
   scatterdens(dz)
 #+END_SRC
 
-
-#+BEGIN_marginfigure
 #+CAPTION: Scatter plot of logarithmic BMI measurements in DZ twins. label:fig:scatter2
 #+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: scatter2
 [[file:scatter2.jpg]]
+
 #+END_marginfigure
 
 The plots and raw association measures shows considerable stronger
@@ -188,7 +191,7 @@ independence)
 : gendermale    1.4075 0.073216  1.2640  1.5510  2.346e-82
 : I(age - 40)   0.1177 0.004788  0.1083  0.1271 1.996e-133
 
-#+BEGIN_SRC R
+#+BEGIN_SRC R :ravel echo=FALSE
   library("splines")
   l1 <- lm(bmi ~ gender*ns(age,3), data=twinbmi)
   marg1 <- estimate(l1, id=twinbmi$tvparnr)
@@ -197,8 +200,10 @@ independence)
 #+RESULTS:
 
 
+#+BEGIN_marginfigure
+
 #+NAME: marg1
-#+BEGIN_SRC R :exports both :results output graphics :file marg1.jpg
+#+BEGIN_SRC R :exports both :results output graphics :file marg1.jpg :ravel fig=TRUE
 	  dm <- Expand(twinbmi,
 		      bmi=0,
 		      gender=c("male"),
@@ -218,7 +223,6 @@ independence)
 #+END_SRC
 
 
-#+BEGIN_marginfigure
 #+CAPTION: ... label:fig:marg1
 #+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: marg1
