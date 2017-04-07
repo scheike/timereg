@@ -1,10 +1,18 @@
+
 #+TITLE: Analysis of multivariate binomial data: family analysis
 #+AUTHOR: Klaus Holst & Thomas Scheike
 #+PROPERTY: header-args:R  :session *R* :cache no :width 550 :height 450
 #+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
 #+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
 #+INCLUDE: header.org
-#+OPTIONS: toc:nil
+#+OPTIONS: toc:nil timestamp:nil
+
+#+BEGIN_SRC emacs-lisp :results silent :exports results :eval
+(setq org-latex-listings t)
+(setq org-latex-compiler-file-string 
+"%%\\VignetteIndexEntry{Analysis of multivariate binomial data: family analysis}\n%%\\VignetteEngine{R.rsp::tex}\n%%\\VignetteKeyword{R}\n%%\\VignetteKeyword{package}\n%%\\VignetteKeyword{vignette}\n%%\\VignetteKeyword{LaTeX}\n")
+#+END_SRC
+
 ----- 
 # +LaTeX: \clearpage
 
@@ -127,7 +135,7 @@ Below we also show an alternative specification of this model
 using all pairs. 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
-### make ace random effects design
+# make ace random effects design
 out <- ace.family.design(data,member="type",id="cluster")
 out$pardes
 head(out$des.rv,4)
@@ -155,14 +163,14 @@ head(out$des.rv,4)
 We can now fit the model calling the two-stage function
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
-### fitting ace model for family structure
+# fitting ace model for family structure
 ts <- binomial.twostage(margbin,data=data,clusters=data$cluster,
 theta=c(2,1)/9,
 random.design=out$des.rv,theta.des=out$pardes)
 summary(ts)
-## true variance parameters
+# true variance parameters
 c(2,1)/9
-###total variance 
+# total variance 
 1/3
 #+END_SRC 
 
@@ -282,7 +290,7 @@ pair, which is typically simpler.
 #+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 head(pairs[ssid,])
 ids <- sort(unique(c(pairs[ssid,])))
-###
+
 pairsids <- c(pairs[ssid,])
 pair.new <- matrix(fast.approx(ids,c(pairs[ssid,])),ncol=2)
 head(pair.new)
@@ -359,7 +367,7 @@ head(pair.types,7)
 
 theta.des  <- array(0,c(4,2,nrow(pair.new)))
 random.des <- array(0,c(2,4,nrow(pair.new)))
-### random variables in each pair 
+# random variables in each pair 
 rvs <- c()
 for (i in 1:nrow(pair.new))
 {
@@ -409,10 +417,10 @@ with random effects with (1/2) gene variance.  We there need 4 random effects,
 effect. 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
-### 3 rvs here 
+# 3 rvs here 
 random.des[,,1]
 theta.des[,,1]
-### 4 rvs here 
+# 4 rvs here 
 random.des[,,2]
 theta.des[,,2]
 head(rvs)

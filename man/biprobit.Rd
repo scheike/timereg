@@ -50,8 +50,6 @@ biprobit(x, data, id, rho = ~1, num = NULL, strata = NULL,
 
 \item{constrain}{Vector of parameter constraints (NA where free). Use this to set an offset.}
 
-\item{pair.ascertained}{pair.ascertained if pairs are sampled only when there are events in the pair i.e. Y1+Y2>=1.}
-
 \item{table}{Type of estimation procedure}
 
 \item{p}{Parameter vector p in which to evaluate log-Likelihood and score function}

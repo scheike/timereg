@@ -1,4 +1,4 @@
-#+LATEX_CLASS: tufte-handout
+#+LATEX_CLASS: tufte-handout+listings
 #+LATEX_CLASS_OPTIONS: [a4paper]
 #+PROPERTY: header-args:R  :session *R* :cache no :width 550 :height 450
 #+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
@@ -9,7 +9,6 @@
 #+OPTIONS: h:4 num:t tags:nil d:t
 #+LATEX_HEADER: \setlength{\parindent}{0pt} % Kills annoying indents. 
 #+LATEX_HEADER: \newcommand{\n}{}
-#+LATEX_HEADER: \usepackage[cachedir=minted]{minted}
 #+STARTUP: hideall 
 #+OPTIONS: toc:t h:4 num:nil 
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="orgmode5-ts.css">

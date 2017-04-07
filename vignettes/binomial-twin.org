@@ -4,7 +4,14 @@
 #+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
 #+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
 #+INCLUDE: header.org
-#+OPTIONS: toc:nil
+#+OPTIONS: toc:nil timestamp:nil
+
+#+BEGIN_SRC emacs-lisp :results silent :exports results :eval
+(setq org-latex-listings t)
+(setq org-latex-compiler-file-string 
+"%%\\VignetteIndexEntry{Analysis of bivariate binomial data: Twin analysis}\n%%\\VignetteEngine{R.rsp::tex}\n%%\\VignetteKeyword{R}\n%%\\VignetteKeyword{package}\n%%\\VignetteKeyword{vignette}\n%%\\VignetteKeyword{LaTeX}\n")
+#+END_SRC
+
 ----- 
 # +LaTeX: \clearpage
 
@@ -332,7 +339,7 @@ a stronger environmental effect for MZ twins.
 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
-### design for OR dependence 
+# design for OR dependence 
 theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut)
 bin <- binomial.twostage(margbin,data=twinstut,var.link=1,
                           clusters=twinstut$tvparnr,theta.des=theta.des)
@@ -408,8 +415,8 @@ the pairwise OR model.
 First noticing as before that MZ twins have a much higher dependence. 
      
 #+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
- ## refers to zygosity of first subject in eash pair : zyg1
- ## could also use zyg2 (since zyg2=zyg1 within twinpair's)
+ # refers to zygosity of first subject in eash pair : zyg1
+ # could also use zyg2 (since zyg2=zyg1 within twinpair's)
  out <- easy.binomial.twostage(stutter~factor(sex)+age,data=twinstut,
                 response="binstut",id="tvparnr",var.link=1,
                 theta.formula=~-1+factor(zyg1))
@@ -443,8 +450,8 @@ We here find that os twins are not markedly different from the same sex DZ
 twins. 
      
 #+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
- ## refers to zygosity of first subject in eash pair : zyg1
- ## could also use zyg2 (since zyg2=zyg1 within twinpair's))
+ # refers to zygosity of first subject in eash pair : zyg1
+ # could also use zyg2 (since zyg2=zyg1 within twinpair's))
  
  desfs<-function(x,num1="zyg1",num2="zyg2")
          c(x[num1]=="dz",x[num1]=="mz",x[num1]=="os")*1
@@ -662,7 +669,7 @@ bintwin <- binomial.twostage(margbin,data=twinstut,model="gamma",
      theta.des=theta.des)
 summary(bintwin)
 
-### test for same dependence in MZ and DZ 
+# test for same dependence in MZ and DZ 
 theta.des <- model.matrix( ~factor(zyg),data=twinstut)
 margbin <- glm(binstut~sex,data=twinstut,family=binomial())
 bintwin <- binomial.twostage(margbin,data=twinstut,model="gamma",

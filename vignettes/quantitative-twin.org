@@ -4,7 +4,15 @@
 #+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
 #+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
 #+INCLUDE: header.org
+#+LATEX_HEADER: \usepackage{units}
 #+OPTIONS: toc:nil
+
+#+BEGIN_SRC emacs-lisp :results silent :exports results :eval
+(setq org-latex-listings t)
+(setq org-latex-compiler-file-string 
+"%%\\VignetteIndexEntry{Twin analysis of quantitative outcomes}\n%%\\VignetteEngine{R.rsp::tex}\n%%\\VignetteKeyword{R}\n%%\\VignetteKeyword{package}\n%%\\VignetteKeyword{vignette}\n%%\\VignetteKeyword{LaTeX}\n")
+#+END_SRC
+
 ----- 
 # +LaTeX: \clearpage
 
@@ -12,17 +20,20 @@
 
 This document provides a brief tutorial to analyzing twin data using
 the *=mets=* package:
-#+BEGIN_SRC R :exports code
+#+BEGIN_SRC R :exports code :ravel echo=FALSE
 library("mets")
 options(warn=-1)
 #+END_SRC
 
 #+RESULTS:
+<<<<<<< HEAD:inst/documentation/quantitative-twin.org
 : Error in library("mets") : there is no package called ‘mets’
+=======
+>>>>>>> 1fd93cdfcae8d3f4386e70e745e93e796b68bb39:vignettes/quantitative-twin.org
 
 The development version may be installed from /github/, i.e., with the
 =devtools= package:
-#+BEGIN_SRC R :eval never :exports code
+#+BEGIN_SRC R :eval never :exports code :ravel eval=FALSE
 devtools::install_github("kkholst/lava")
 devtools::install_github("kkholst/mets")
 #+END_SRC
@@ -91,37 +102,54 @@ Next we plot the association within each zygosity group
 #+END_SRC
 
 #+RESULTS:
+<<<<<<< HEAD:inst/documentation/quantitative-twin.org
 : Error in library("cowplot") : there is no package called ‘cowplot’
+=======
+>>>>>>> 1fd93cdfcae8d3f4386e70e745e93e796b68bb39:vignettes/quantitative-twin.org
 
 We here show the log-transformed data which is slightly more symmetric
 and more appropiate for the twin analysis (see Figure ref:fig:scatter1 and ref:fig:scatter2)
+
 #+NAME: scatter1
-#+BEGIN_SRC R :exports both :results output graphics :file figs/scatter1.png 
+#+BEGIN_SRC R :exports both :results output graphics :file scatter1.jpg :ravel fig=TRUE,include=FALSE 
   mz <- log(subset(twinwide, zyg=="MZ")[,c("bmi1","bmi2")])
   scatterdens(mz)
 #+END_SRC
 
-#+RESULTS: scatter1
-[[file:figs/scatter1.png]]
-
 #+BEGIN_marginfigure
-#+CAPTION: Scatter plot of logarithmic BMI measurements in MZ twins  label:fig:scatter1
+# +CAPTION: Scatter plot of logarithmic BMI measurements in MZ twins  label:fig:scatter1
 #+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: scatter1
+[[file:scatter1.jpg]]
+
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<scatter1>>
+#+END_SRC
+
+#+LATEX: \captionof{figure}{Scatter plot of logarithmic BMI measurements in MZ twins.}
+label:fig:scatter1
 #+END_marginfigure
 
-
 #+NAME: scatter2
-#+BEGIN_SRC R :exports both :results output graphics :file figs/scatter2.png
+#+BEGIN_SRC R :exports both :results output graphics :file scatter2.jpg :ravel fig=TRUE,include=FALSE
   dz <- log(subset(twinwide, zyg=="DZ")[,c("bmi1","bmi2")])
   scatterdens(dz)
 #+END_SRC
 
-#+RESULTS: scatter2
-[[file:figs/scatter2.png]]
-
 #+BEGIN_marginfigure
-#+CAPTION: Scatter plot of logarithmic BMI measurements in DZ twins. label:fig:scatter2
-#+ATTR_LATEX: :width \textwidth :float nil :center t#+END_marginfigure
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: scatter2
+[[file:scatter2.jpg]]
+
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<scatter2>>
+#+END_SRC
+
+#+LATEX: \captionof{figure}{Scatter plot of logarithmic BMI measurements in DZ twins.}
+label:fig:scatter2
+#+END_marginfigure
 
 The plots and raw association measures shows considerable stronger
 dependence in the MZ twins, thus indicating genetic influence of the
@@ -151,10 +179,17 @@ independence)
 #+END_SRC
 
 #+RESULTS:
+<<<<<<< HEAD:inst/documentation/quantitative-twin.org
 : Error in is.data.frame(data) : object 'twinbmi' not found
 : Error: could not find function "estimate"
+=======
+:             Estimate  Std.Err    2.5%   97.5%    P-value
+: (Intercept)  23.3687 0.054528 23.2619 23.4756  0.000e+00
+: gendermale    1.4075 0.073216  1.2640  1.5510  2.346e-82
+: I(age - 40)   0.1177 0.004788  0.1083  0.1271 1.996e-133
+>>>>>>> 1fd93cdfcae8d3f4386e70e745e93e796b68bb39:vignettes/quantitative-twin.org
 
-#+BEGIN_SRC R
+#+BEGIN_SRC R :ravel echo=FALSE
   library("splines")
   l1 <- lm(bmi ~ gender*ns(age,3), data=twinbmi)
   marg1 <- estimate(l1, id=twinbmi$tvparnr)
@@ -166,7 +201,7 @@ independence)
 
 
 #+NAME: marg1
-#+BEGIN_SRC R :exports both :results output graphics :file figs/marg1.png
+#+BEGIN_SRC R :exports both :results output graphics :file marg1.jpg :ravel include=FALSE,fig=TRUE
 	  dm <- Expand(twinbmi,
 		      bmi=0,
 		      gender=c("male"),
@@ -185,13 +220,20 @@ independence)
 		 col=c("black","red"), lty=1, bty="n")
 #+END_SRC
 
-#+RESULTS: marg1
-[[file:figs/marg1.png]]
-
 
 #+BEGIN_marginfigure
-#+CAPTION: ... label:fig:marg1
-#+ATTR_LATEX: :width \textwidth :float nil :center t#+END_marginfigure
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: marg1
+[[file:marg1.jpg]]
+
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<marg1>>
+#+END_SRC
+
+#+LATEX: \captionof{figure}{...}
+label:fig:marg1
+#+END_marginfigure
 
 ** Polygenic model
 
@@ -256,8 +298,11 @@ only! \(\cor(E_1,E_2)=0\) and
 #+END_SRC
 
 #+RESULTS:
+<<<<<<< HEAD:inst/documentation/quantitative-twin.org
 : Error in na.omit(twinbmi) : object 'twinbmi' not found
 : Error: could not find function "twinlm"
+=======
+>>>>>>> 1fd93cdfcae8d3f4386e70e745e93e796b68bb39:vignettes/quantitative-twin.org
 
 #+BEGIN_SRC R
     l <- twinlm(bmi ~ ns(age,1)+gender, data=twinbmi, 
@@ -266,8 +311,43 @@ only! \(\cor(E_1,E_2)=0\) and
 #+END_SRC
 
 #+RESULTS:
+<<<<<<< HEAD:inst/documentation/quantitative-twin.org
 : Error: could not find function "twinlm"
 : Error in summary(l) : object 'l' not found
+=======
+#+begin_example
+____________________________________________________
+Group 1
+                        Estimate Std. Error   Z value Pr(>|z|)
+Regressions:                                                  
+   bmi.1~ns(age, 1).1    4.08914    0.16354  25.00328   <1e-12
+   bmi.1~gendermale.1    1.41143    0.07285  19.37536   <1e-12
+Intercepts:                                                   
+   bmi.1                22.57414    0.07187 314.08431   <1e-12
+Additional Parameters:                                        
+   log(var)              2.44584    0.01425 171.68385   <1e-12
+   atanh(rhoMZ)          0.78216    0.02290  34.15832   <1e-12
+____________________________________________________
+Group 2
+                        Estimate Std. Error   Z value Pr(>|z|)
+Regressions:                                                  
+   bmi.1~ns(age, 1).1    4.08914    0.16354  25.00328   <1e-12
+   bmi.1~gendermale.1    1.41143    0.07285  19.37536   <1e-12
+Intercepts:                                                   
+   bmi.1                22.57414    0.07187 314.08431   <1e-12
+Additional Parameters:                                        
+   log(var)              2.44584    0.01425 171.68385   <1e-12
+   atanh(rhoDZ)          0.29927    0.01848  16.19766   <1e-12
+
+                       Estimate 2.5%    97.5%  
+Correlation within MZ: 0.65394  0.62750 0.67888
+Correlation within DZ: 0.29064  0.25715 0.32344
+
+'log Lik.' -29020.35 (df=6)
+AIC: 58052.71 
+BIC: 58093.76
+#+end_example
+>>>>>>> 1fd93cdfcae8d3f4386e70e745e93e796b68bb39:vignettes/quantitative-twin.org
 
 A formal test of genetic effects can be obtained by comparing the MZ and DZ correlation:
 #+BEGIN_SRC R
@@ -275,7 +355,15 @@ estimate(l,contr(5:6,6))
 #+END_SRC
 
 #+RESULTS:
+<<<<<<< HEAD:inst/documentation/quantitative-twin.org
 : Error: could not find function "estimate"
+=======
+:                           Estimate Std.Err  2.5%  97.5%   P-value
+: [1@atanh(rhoMZ)] - [4....   0.4829 0.04176 0.401 0.5647 6.403e-31
+: 
+:  Null Hypothesis: 
+:   [1@atanh(rhoMZ)] - [4@atanh(rhoDZ)] = 0
+>>>>>>> 1fd93cdfcae8d3f4386e70e745e93e796b68bb39:vignettes/quantitative-twin.org
 
 
 #+BEGIN_SRC R
@@ -285,8 +373,43 @@ estimate(l,contr(5:6,6))
 #+END_SRC
 
 #+RESULTS:
+<<<<<<< HEAD:inst/documentation/quantitative-twin.org
 : Error: could not find function "twinlm"
 : Error in summary(l) : object 'l' not found
+=======
+#+begin_example
+____________________________________________________
+Group 1
+                        Estimate Std. Error   Z value Pr(>|z|)
+Regressions:                                                  
+   bmi.1~ns(age, 1).1    4.08914    0.16354  25.00328   <1e-12
+   bmi.1~gendermale.1    1.41143    0.07285  19.37536   <1e-12
+Intercepts:                                                   
+   bmi.1                22.57414    0.07187 314.08431   <1e-12
+Additional Parameters:                                        
+   log(var)              2.44584    0.01425 171.68385   <1e-12
+   atanh(rhoMZ)          0.78216    0.02290  34.15832   <1e-12
+____________________________________________________
+Group 2
+                        Estimate Std. Error   Z value Pr(>|z|)
+Regressions:                                                  
+   bmi.1~ns(age, 1).1    4.08914    0.16354  25.00328   <1e-12
+   bmi.1~gendermale.1    1.41143    0.07285  19.37536   <1e-12
+Intercepts:                                                   
+   bmi.1                22.57414    0.07187 314.08431   <1e-12
+Additional Parameters:                                        
+   log(var)              2.44584    0.01425 171.68385   <1e-12
+   atanh(rhoDZ)          0.29927    0.01848  16.19766   <1e-12
+
+                       Estimate 2.5%    97.5%  
+Correlation within MZ: 0.65394  0.62750 0.67888
+Correlation within DZ: 0.29064  0.25715 0.32344
+
+'log Lik.' -29020.35 (df=6)
+AIC: 58052.71 
+BIC: 58093.76
+#+end_example
+>>>>>>> 1fd93cdfcae8d3f4386e70e745e93e796b68bb39:vignettes/quantitative-twin.org
 
 * Twin analysis, censored outcomes
 
@@ -296,8 +419,7 @@ estimate(l,contr(5:6,6))
 * Time to event
 
 
-* backmatter
-  :ignore:
+* backmatter                                                         :ignore:
 
-bibliography:mets.bib
-bibliographystyle:plain
+  bibliography:mets.bib
+  bibliographystyle:plain
