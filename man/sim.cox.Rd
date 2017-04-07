@@ -1,0 +1,44 @@
+\name{sim.cox}
+\alias{sim.cox}
+\title{Simulation of output from Cox model.}
+\description{ Simulates data that looks like fit from Cox model. Censor data
+automatically for highest value of the break points. 
+}
+\usage{
+sim.cox(cox,n,data=NULL,cens=NULL,rrc=NULL)
+}
+\arguments{
+  \item{cox}{output form coxph or cox.aalen model fitting cox model.}
+  \item{n}{number of simulations. }
+  \item{data}{to extract covariates for simulations (draws from observed covariates).}
+  \item{cens}{specifies censoring model, 
+  if "is.matrix" then uses cumulative hazard given,
+  if "is.scalar" then uses rate for exponential, and if not given then takes 
+  average rate of in simulated data from cox model. }
+  \item{rrc}{possible vector of relative risk for cox-type censoring.}
+}
+\author{Thomas Scheike}
+\examples{
+data(TRACE)
+
+cox <-  coxph(Surv(time,status==9)~vf+chf+wmi,data=TRACE)
+sim1 <- sim.cox(cox,1000,data=TRACE)
+cc <- coxph(Surv(time,status)~vf+chf+wmi,data=sim1)
+cbind(cox$coef,cc$coef)
+
+cor(sim1[,c("vf","chf","wmi")])
+cor(TRACE[,c("vf","chf","wmi")])
+###library(mets)
+###dcor(sim1,~vf+chf+wmi)
+###dcor(TRACE,~vf+chf+wmi)
+
+cox <-  cox.aalen(Surv(time, status==9) ~ prop(vf)+prop(chf)+prop(wmi),TRACE,robust=0)
+sim2 <- sim.cox(cox,1000,data=TRACE)
+cc <-  cox.aalen(Surv(time, status)~prop(vf)+prop(chf)+prop(wmi),data=sim2,robust=0)
+###
+plot(cox)
+lines(cc$cum,type="s",col=2)
+cbind(cox$gamma,cc$gamma)
+
+}
+\keyword{survival}
