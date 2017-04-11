@@ -1026,7 +1026,7 @@ breaks=Inf,pairsonly=TRUE,fix.marg=NULL,cens.formula,cens.model="aalen",weights=
 ##' @param model model
 ##' @param marginal.p vector of marginal probabilities 
 ##' @param strata strata for fitting 
-##' @param max.clust max clusters
+##' @param max.clust max clusters used for i.i.d. decompostion
 ##' @param se.clusters clusters for iid decomposition for roubst standard errors
 easy.binomial.twostage <- function(margbin=NULL,data=sys.parent(),score.method="fisher.scoring",
                                    response="response",id="id",
