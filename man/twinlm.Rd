@@ -7,8 +7,8 @@
 \usage{
 twinlm(formula, data, id, zyg, DZ, group = NULL, group.equal = FALSE,
   strata = NULL, weights = NULL, type = c("ace"), twinnum = "twinnum",
-  binary = FALSE, keep = weights, estimator = NULL, constrain = TRUE,
-  control = list(), messages = 1, ...)
+  binary = FALSE, ordinal = 0, keep = weights, estimator = NULL,
+  constrain = TRUE, control = list(), messages = 1, ...)
 }
 \arguments{
 \item{formula}{Formula specifying effects of covariates on the response}
@@ -48,6 +48,8 @@ twins (1,2). If it does not exist in \code{data} it will
 automatically be created.}
 
 \item{binary}{If \code{TRUE} a liability model is fitted. Note that if the right-hand-side of the formula is a factor, character vector, og logical variable, then the liability model is automatically chosen (wrapper of the \code{bptwin} function).}
+
+\item{ordinal}{If non-zero (number of bins) a liability model is fitted.}
 
 \item{keep}{Vector of variables from \code{data} that are not
 specified in \code{formula}, to be added to data.frame of the SEM}

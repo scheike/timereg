@@ -11,7 +11,7 @@ biprobit(x, data, id, rho = ~1, num = NULL, strata = NULL,
   samecens = TRUE, randomeffect = FALSE, vcov = "robust",
   pairs.only = FALSE, allmarg = samecens & !is.null(weights),
   control = list(trace = 0), messages = 1, constrain = NULL,
-  pair.ascertained = FALSE, table = pairs.only, p = NULL, ...)
+  table = pairs.only, p = NULL, ...)
 }
 \arguments{
 \item{x}{formula (or vector)}
@@ -49,8 +49,6 @@ biprobit(x, data, id, rho = ~1, num = NULL, strata = NULL,
 \item{messages}{Control amount of messages shown}
 
 \item{constrain}{Vector of parameter constraints (NA where free). Use this to set an offset.}
-
-\item{pair.ascertained}{pair.ascertained if pairs are sampled only when there are events in the pair i.e. Y1+Y2>=1.}
 
 \item{table}{Type of estimation procedure}
 

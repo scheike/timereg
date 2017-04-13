@@ -22,7 +22,7 @@ summarygroup.twinlm <- function(object,...) {
     coefs <- c()
     acde <- c()
     nn <- c()
-    lambdas <- c("~a","~c","~d","~e")    
+    lambdas <- c("~a","~c","~d","~e")
     for (i in seq(length(mz))) {
         res <- coef(object$estimate,level=1)[ii[[i]],,drop=FALSE]
         pp <- sapply(lambdas,function(x) ii[[i]][grep(x,rownames(res),fixed=TRUE)])
@@ -65,6 +65,7 @@ print.summary.twinlm.group <- function(x,...) {
 
 ##' @export
 summary.twinlm <- function(object,transform=FALSE,...) {
+
     if (!is.null(object$group) && !object$group.equal) {
         return(summarygroup.twinlm(object,...))
     }   
@@ -148,14 +149,16 @@ summary.twinlm <- function(object,transform=FALSE,...) {
         if ("c1"%in%latent(e)) { varcomp <- c(varcomp,"lambda[c]"); pos <- pos+1 }
         if ("d1"%in%latent(e)) { varcomp <- c(varcomp,"lambda[d]"); pos <- pos+1;
                                  genpos <- c(genpos,pos) }
-        if ("e1"%in%latent(e)) { varcomp <- c(varcomp,"lambda[e]"); pos <- pos+1 }
+        isOrdinal <- (object$ordinal>0)*1
+        if (isOrdinal) varEst[4] <- 1
+        if ("e1"%in%latent(e) & !isOrdinal) { varcomp <- c(varcomp,"lambda[e]"); pos <- pos+1 }
         f <- paste("h2~",paste(varcomp,collapse="+"))
-
         constrain(e, as.formula(f)) <- function(x) {
-            L$linkfun(sum(x[genpos]^2)/sum(x^2))
+            L$linkfun(sum(x[genpos]^2)/sum(x^2+isOrdinal))
         }
 
     }
+
     ci.logit <- L$linkinv(constraints(e,k=1)["h2",5:6])
     
     h <- function(x) (x[1]^2)/(sum(x^2))
@@ -196,7 +199,6 @@ summary.twinlm <- function(object,transform=FALSE,...) {
     
     corMZ <- c(tanh(c(e1,ci1)))
     corDZ <- c(tanh(c(e2,ci2)))  
-
     acde <- acde.twinlm(object,transform=transform)
     coef <- rbind(acde)  
 
@@ -222,7 +224,7 @@ summary.twinlm <- function(object,transform=FALSE,...) {
 
 ##' @export
 print.summary.twinlm <- function(x,signif.stars=FALSE,...) {
-    
+
     if (x$type%in%c("flex","u","sat")) {
         cat(x$estimate,sep="\n")
     } else {
@@ -323,12 +325,13 @@ acde.twinlm <- function(x,index,transform=FALSE,estimate.return=FALSE,...) {
         names(index) <- c("A","C","D","E")[ACDE]
     }
 
+    ord <- x$ordinal>0
     ##    f <- function(p) structure(log(p/(1-p)),grad=cbind(0,1/(p*(1-p)),0))    
     if (transform) {        
         suppressWarnings(res <- estimate(x,function(p)
                                          lapply(index,
                                                 function(z)
-                                                lava::logit((p[z]^2/sum(p[index]^2)))),
+                                                lava::logit((p[z]^2/sum(c(p[index]^2,ord))))),
                                          vcov=vcov(x)))
         if (estimate.return) return(res)
         res <- res$coefmat[,c(1,3,4),drop=FALSE]
@@ -336,8 +339,9 @@ acde.twinlm <- function(x,index,transform=FALSE,estimate.return=FALSE,...) {
     } else {
         suppressWarnings(res <- estimate(x,function(p)
                                          lapply(index,
-                                                function(z)
-                                                (p[z]^2/sum(p[index]^2))),
+                                                function(z) {
+                                                    p[z]^2/sum(c(p[index]^2),ord)
+                                                }),                                                
                                          vcov=vcov(x)))
         if (estimate.return) return(res)        
         res <- res$coefmat[,c(1,3,4),drop=FALSE]

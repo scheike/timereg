@@ -348,7 +348,6 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
                      allmarg=samecens&!is.null(weights),
                      control=list(trace=0),
                      messages=1, constrain=NULL,
-                     pair.ascertained=FALSE,
                      table=pairs.only,
                      p=NULL,
                      ...) {
@@ -409,7 +408,7 @@ biprobit <- function(x, data, id, rho=~1, num=NULL, strata=NULL, eqmarg=TRUE,
       if (table && NCOL(Z)<10 && length(unique(sample(Z,min(1000,length(Z)))))<10) { ## Not quantitative?
           if (!is.null(weights)) weights <- data[,weights]
           if (length(attr(yx,"x")>0)) X <- model.matrix(x,data);
-          return(biprobit.vector(data[,yx],X=X,Z=Z,id=data[,id],weights,biweight=biweight,eqmarg=eqmarg,pair.ascertained=pair.ascertained,add=list(formula=formula,rho.formula=rho),control=control,p=p,...))
+          return(biprobit.vector(data[,yx],X=X,Z=Z,id=data[,id],weights,biweight=biweight,eqmarg=eqmarg,add=list(formula=formula,rho.formula=rho),control=control,p=p,...))
       }
   }
   

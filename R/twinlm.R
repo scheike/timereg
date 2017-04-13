@@ -63,6 +63,7 @@
 ##'     twins (1,2). If it does not exist in \code{data} it will
 ##'     automatically be created.
 ##' @param binary If \code{TRUE} a liability model is fitted. Note that if the right-hand-side of the formula is a factor, character vector, og logical variable, then the liability model is automatically chosen (wrapper of the \code{bptwin} function).
+##' @param ordinal If non-zero (number of bins) a liability model is fitted.
 ##' @param keep Vector of variables from \code{data} that are not
 ##'     specified in \code{formula}, to be added to data.frame of the SEM
 ##' @param estimator Choice of estimator/model
@@ -71,10 +72,11 @@
 ##' @param messages Control amount of messages shown 
 ##' @param ... Additional arguments parsed on to lower-level functions
 twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
-                   group.equal=FALSE, strata=NULL, weights=NULL, type=c("ace"),
-                   twinnum="twinnum",
-                   binary=FALSE,keep=weights,estimator=NULL,
-                   constrain=TRUE,control=list(),messages=1,...)
+           group.equal=FALSE, strata=NULL, weights=NULL, type=c("ace"),
+           twinnum="twinnum",
+           binary=FALSE,ordinal=0,
+           keep=weights,estimator=NULL,
+           constrain=TRUE,control=list(),messages=1,...)
 {
     
   cl <- match.call(expand.dots=TRUE)
@@ -89,12 +91,22 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
   if (!(id%in%colnames(data))) stop("'id' not found in data")
   if (missing(id)) stop("Twin-pair variable not specified")
 
-  if (binary | is.factor(mf[,yvar]) | is.character(mf[,yvar]) | is.logical(mf[,yvar])) {
-      args <- as.list(cl)
-      names(args)[which(names(args)=="formula")] <- "x"
-      args[[1]] <- NULL
-      return(do.call("bptwin",args,envir=parent.frame()))
+  if (binary || ordinal || is.factor(mf[,yvar]) || is.character(mf[,yvar]) || is.logical(mf[,yvar])) {
+      if (length(unique(mf[,yvar]))>2 || ordinal) {
+          if (is.character(mf[,yvar])) {
+              y <- as.factor(y)
+          }
+          if (ordinal<2) ordinal <- length(unique(mf[,yvar]))
+          y <- as.numeric(y)-1
+          
+      } else {
+          args <- as.list(cl)
+          names(args)[which(names(args)=="formula")] <- "x"
+          args[[1]] <- NULL
+          return(do.call("bptwin",args,envir=parent.frame()))
+      }
   }
+  cl$ordinal <- ordinal
   
   formulaId <- unlist(Specials(formula,"cluster"))
   formulaStrata <- unlist(Specials(formula,"strata"))
@@ -186,9 +198,10 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
               idxDZ <- which(wide2[,groups[1]]==i1 & wide2[,groups[2]]==i2)
               dDZ <- wide2[idxDZ,,drop=FALSE]
               m0 <- twinsem1(outcomes,c(i1,i2),
-                             levels=levgrp,covars=covars,type=type,
-                             data=list(dMZ,dDZ),constrain=constrain,
-                             equal.marg=group.equal,intercept=hasIntercept)$model
+                            levels=levgrp,covars=covars,type=type,
+                            data=list(dMZ,dDZ),constrain=constrain,
+                            equal.marg=group.equal,intercept=hasIntercept,
+                            ordinal=ordinal)$model
               if (length(idxMZ)>0) {
                   nn <- c(nn,paste("MZ:",i1,sep=""))
                   dd <- c(dd,list(dMZ))
@@ -205,7 +218,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
       mm <- twinsem1(outcomes,NULL,
                      levels=NULL,covars=covars,type=type,
                      data=list(wide1,wide2),constrain=constrain,
-                     intercept=hasIntercept)$model
+                     intercept=hasIntercept,ordinal=ordinal)$model
       dd <- list(MZ=wide1,DZ=wide2)
   }
   
@@ -214,12 +227,13 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
     optim <- list(start=rep(0.1,length(coef(mm[[1]]))*length(mm)))
 ##    optim <- list(method="nlminb2",refit=FALSE,gamma=1,start=rep(0.1,length(coef(mm[[1]]))*length(mm)))
 
-    optim$start <- twinlmStart(formula,na.omit(mf),type,hasIntercept,surv=inherits(data[,yvar],"Surv"),model=mm, group=levgrp, group.equal=group.equal)
+    optim$start <- twinlmStart(formula,na.omit(mf),type,hasIntercept,
+                              surv=inherits(data[,yvar],"Surv"),ordinal=ordinal,
+                              model=mm, group=levgrp, group.equal=group.equal)
   if (length(control)>0) {
     optim[names(control)] <- control
   }
-
-  
+    
   if (inherits(data[,yvar],"Surv")) {
       ##if (!requireNamespace("lava.tobit",quietly=TRUE)) stop("lava.tobit required")
       if (!is.null(estimator) && estimator%in%c("gaussian","tobit")) optim$method <- "nlminb1"
@@ -260,7 +274,7 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
               id=id, twinnum=twinnum, type=type,  group=group,
               constrain=constrain, outcomes=outcomes, zygtab=zygtab,
               nam=nn, groups=levgrp, group.equal=group.equal,
-              counts=counts)
+              counts=counts,ordinal=ordinal)
   class(res) <- "twinlm"
   return(res)
 }
@@ -271,17 +285,24 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
 
 ##outcomes <- c("y1","y2"); groups <- c("M","F"); covars <- NULL; type <- "ace"
 ##twinsem1(c("y1","y2"),c("M","F"))
-twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",data,constrain=TRUE,equal.marg=FALSE,intercept=TRUE,...) {
+twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",data,constrain=TRUE,equal.marg=FALSE,intercept=TRUE,ordinal=0,...) {
     isA <- length(grep("a",type))>0 & type!="sat"
     isC <- length(grep("c",type))>0
     isD <- length(grep("d",type))>0
-    isE <- length(grep("e",type))>0 | type=="sat" | type=="u"
+    isE <- length(grep("e",type))>0 | type=="sat" | type=="u" 
     lambdas <- c("lambda[a]","lambda[c]","lambda[d]","lambda[e]")
     varidx <- which(c(isA,isC,isD,isE))
     vMZ1 <- c("a1","c1","d1","e1")
     vMZ2 <- c("a1","c1","d1","e2")
     vDZ2 <- c("a2","c1","d2","e2")
-    rhoA <- rhoD <- zA <- zD <- NULL        
+    rhoA <- rhoD <- zA <- zD <- NULL
+
+    ##if (ordinal>0) {
+    ##     mm <- lapply(mm, function(x) {
+    ##         x
+    ##     })
+    ## }
+
     if (is.list(outcomes)) {
         if (!is.null(groups) & is.null(levels)) stop("missing levels")
         if (is.null(groups)) groups <- c("","")
@@ -289,6 +310,7 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
         sameGroup <- groups[1]==groups[2]
         model1 <- outcomes[[1]]
         model2 <- outcomes[[2]]
+
         if (!is.null(levels)) {
             pars <- c()
             for (i in seq(length(levels)-1)) for (j in seq(i+1,length(levels)))
@@ -341,10 +363,29 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
                 constrain(model2, rhoD,zD) <- function(x) tanh(x)
             }
         }
+        if (ordinal>0) {            
+            for (i in c("model1","model2")) {
+                model <- get(i)
+                yy <- lava::endogenous(model)
+                if (type=="sat") {
+                    lava::ordinal(model,K=ordinal) <- yy
+                } else {
+                    pname <- paste0("t",seq_len(ordinal-1))
+                    if (type=="flex") pname <- paste0(pname,gsub("model","",i))
+                    lava::ordinal(model,K=ordinal,pname) <- yy
+                }
+                if (!(type%in%c("u","flex","sat"))) {
+                    lava::covariance(model,yy) <- 0
+                    lava::regression(model,from="e1",to=yy[1]) <- 1
+                    lava::regression(model,from="e2",to=yy[2]) <- 1
+                }
+                assign(i,model)
+            }
+        }
         return(list(model=list(MZ=model1,DZ=model2),
                     zA=zA, rhoA=rhoA, zD=zD, rhoD=rhoD))
     }
-
+    
     ### Build model from scratch....
     model1<- lvm()    
     if (!(type%in%c("u","flex","sat"))) {
@@ -398,16 +439,28 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
     }
     if (type%in%c("u","flex","sat")) {
         if (constrain) {
+            if (ordinal) {
+                covariance(model1,outcomes,pairwise=TRUE) <- "covMZ"
+                covariance(model2,outcomes,pairwise=TRUE) <- "covDZ"
+                constrain(model1,"atanh(rhoMZ)","covMZ") <- tanh
+                constrain(model2,"atanh(rhoDZ)","covDZ") <- tanh
+            }            
             if (type=="sat") {
-                model1 <- covariance(model1,outcomes,constrain=TRUE,rname="atanh(rhoMZ)",cname="covMZ",lname="log(var(MZ)).1",l2name="log(var(MZ)).2")
-                model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var(DZ)).1",l2name="log(var(DZ)).2")
+                if (!ordinal) {
+                    model1 <- covariance(model1,outcomes,constrain=TRUE,rname="atanh(rhoMZ)",cname="covMZ",lname="log(var(MZ)).1",l2name="log(var(MZ)).2")
+                    model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var(DZ)).1",l2name="log(var(DZ)).2")
+                }
             } else {
                 if (type=="flex") {
-                    model1 <- covariance(model1,outcomes,constrain=TRUE,rname="atanh(rhoMZ)",cname="covMZ",lname="log(var(MZ))")
-                    model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var(DZ))")
-                }  else {
-                    model1 <- covariance(model1,outcomes,constrain=TRUE,rname="atanh(rhoMZ)",cname="covMZ",lname="log(var)")
-                    model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var)")
+                    if (!ordinal) {
+                        model1 <- covariance(model1,outcomes,constrain=TRUE,rname="atanh(rhoMZ)",cname="covMZ",lname="log(var(MZ))")
+                        model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var(DZ))")
+                    }
+                } else {
+                    if (!ordinal) {
+                        model1 <- covariance(model1,outcomes,constrain=TRUE,rname="atanh(rhoMZ)",cname="covMZ",lname="log(var)")
+                        model2 <- covariance(model2,outcomes,constrain=TRUE,rname="atanh(rhoDZ)",cname="covDZ",lname="log(var)")
+                    }
                 }        
             }     
         } else {
@@ -426,7 +479,6 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
             regression(model2, from=paste(covars[i],".2",sep=""), to=outcomes[2],silent=TRUE) <- paste("beta2",sta,"[",i,"]",sep="")
         }
     }
-
     if (!intercept) {
         intercept(model1,outcomes) <- 0
         intercept(model2,outcomes) <- 0
@@ -457,52 +509,63 @@ twinsem1 <- function(outcomes,groups=NULL,levels=NULL,covars=NULL,type="ace",dat
             kill(model2) <- trash
         }
     }
-    twinsem1(list(MZ=model1,DZ=model2),groups=groups,type=type,levels=levels,constrain=constrain,equal.marg=equal.marg)
+    twinsem1(list(MZ=model1,DZ=model2),groups=groups,type=type,levels=levels,constrain=constrain,equal.marg=equal.marg,ordinal=ordinal)
 }
 
 ###}}} twinsem1
 
 ###{{{ twinlmStart (starting values)
 
-twinlmStart <- function(formula,mf,type,hasIntercept,surv=FALSE,model,group=NULL,group.equal,...)  {
+twinlmStart <- function(formula,mf,type,hasIntercept,surv=FALSE,ordinal=0,model,group=NULL,group.equal,...)  {
     if (surv) {
         l <- survival::survreg(formula,data=mf,dist="gaussian")
         beta <- coef(l)
         sigma <- l$scale
     } else {
-        l <- lm.fit(model.matrix(formula,mf),mf[,1])
-        beta <- l$coefficients
-        sigma <- sd(l$residuals)
-    }    
+        if (ordinal) {
+            l <- lava::ordreg(formula,mf)
+            beta <- coef(l)
+            sigma <- 1
+        } else {
+            l <- lm.fit(model.matrix(formula,mf),mf[,1])
+            beta <- l$coefficients
+            sigma <- sd(l$residuals)
+        }
+    }
+    intidx <- 1
+    if (ordinal) intidx <- seq_len(ordinal-1)
     start <- rep(sigma/sqrt(nchar(type)),nchar(type))
+    if (ordinal) start <- start[-length(start)]
     if (hasIntercept) {
-        start <- c(beta[1],start)
-        start <- c(start,beta[-1])
+        start <- c(beta[intidx],start)
+        start <- c(start,beta[-intidx])
     } else start <- c(start,beta)
     if (type=="sat") {
-        varp <- c(rep(log(sigma^2),2),0.5)
+        varp <- c(0.5)
+        if (!ordinal) varp <- c(rep(log(sigma^2),2),varp)
         start <- c()
         if (hasIntercept) {
-            start <- rep(beta[1],4)
-            beta <- beta[-1]
+            start <- rep(beta[intidx],4)
+            beta <- beta[-intidx]
         }
         start <- c(start,rep(c(rep(beta,2),varp),2))
     }
     if (type=="flex") {
-        varp <- c(log(sigma^2),0.5)
+        varp <- c(0.5)
+        if (!ordinal) varp <- c(log(sigma^2),varp)
         start <- c()
         if (hasIntercept) {
-            start <- c(beta[1],beta[1])
-            beta <- beta[-1]
+            start <- c(beta[intidx],beta[intidx])
+            beta <- beta[-intidx]
         }
         start <- c(start,rep(c(beta,varp),2))
     }
     if (type=="u") {
-        start <- c(log(sigma^2),0.5,0.5)
+        start <- c(0.5,0.5)
+        if (!ordinal) varp <- c(log(sigma^2),varp)
         start <- c(beta,start)
     }
     names(start) <- NULL
-
     if (!is.null(group)) {
         cc <- coef(model[[1]])        
         iA <- grep(c("z(A):"),cc,fixed=TRUE)
