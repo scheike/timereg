@@ -1,3 +1,123 @@
+#' Fit time-varying regression model
+#' 
+#' Fits time-varying regression model with partly parametric components.
+#' Time-dependent variables for longitudinal data.  The model assumes that the
+#' mean of the observed responses given covariates is a linear time-varying
+#' regression model :
+#' 
+#' \deqn{ E( Z_{ij} | X_{ij}(t) ) = \beta^T(t) X_{ij}^1(t) + \gamma^T
+#' X_{ij}^2(t) } where \eqn{Z_{ij}} is the j'th measurement at time t for the
+#' i'th subject with covariates \eqn{X_{ij}^1} and \eqn{X_{ij}^2}. Resampling
+#' is used for computing p-values for tests of timevarying effects.
+#' 
+#' The data for a subject is presented as multiple rows or 'observations', each
+#' of which applies to an interval of observation (start, stop].  For counting
+#' process data with the )start,stop] notation is used the 'id' variable is
+#' needed to identify the records for each subject. The program assumes that
+#' there are no ties, and if such are present random noise is added to break
+#' the ties.
+#' 
+#' @param formula a formula object with the response on the left of a '~'
+#' operator, and the independent terms on the right as regressors.
+#' @param data a data.frame with the variables.
+#' @param start.time start of observation period where estimates are computed.
+#' @param max.time end of observation period where estimates are computed.
+#' Estimates thus computed from [start.time, max.time]. Default is max of data.
+#' @param id For timevarying covariates the variable must associate each record
+#' with the id of a subject.
+#' @param n.sim number of simulations in resampling.
+#' @param weighted.test to compute a variance weighted version of the
+#' test-processes used for testing time-varying effects.
+#' @param aalenmod Aalen model for measurement times. Specified as a survival
+#' model (see aalen function).
+#' @param bandwidth bandwidth for local iterations. Default is 50\% of the
+#' range of the considered observation period.
+#' @param bhat initial value for estimates. If NULL local linear estimate is
+#' computed.
+#' @param meansub if '1' then the mean of the responses is subtracted before
+#' the estimation is carried out.
+#' @param resample returns resample processes.
+#' @return returns an object of type "dynreg". With the following arguments:
+#' \item{cum}{the cumulative regression coefficients. This is the efficient
+#' estimator based on an initial smoother obtained by local linear regression :
+#' \deqn{ \hat B(t) = \int_0^t \tilde \beta(s) ds+ \hspace{4 cm}}{} \deqn{
+#' }{}\deqn{\int_0^t X^{-} (Diag(z) -Diag( X^T(s) \tilde \beta(s)) ) dp(ds
+#' \times dz), }{} where \eqn{\tilde \beta(t)} is an initial estimate either
+#' provided or computed by local linear regression. To plot this estimate use
+#' type="eff.smooth" in the plot() command. } \item{var.cum}{the martingale
+#' based pointwise variance estimates.} \item{robvar.cum}{robust pointwise
+#' variances estimates.} \item{gamma}{estimate of semi-parametric components of
+#' model.} \item{var.gamma}{variance for gamma.} \item{robvar.gamma}{robust
+#' variance for gamma.} \item{cum0}{simple estimate of cumulative regression
+#' coefficients that does not use use an initial smoothing based estimate
+#' \deqn{ \hat B_0(t) = \int_0^t X^{-} Diag(z) dp(ds \times dz). } To plot this
+#' estimate use type="0.mpp" in the plot() command. } \item{var.cum0}{the
+#' martingale based pointwise variance estimates of cum0.}
+#' \item{cum.ms}{estimate of cumulative regression coefficients based on
+#' initial smoother (but robust to this estimator).  \deqn{ \hat B_{ms}(t) =
+#' \int_0^t X^{-} (Diag(z)-f(s)) dp(ds \times dz), } where \eqn{f} is chosen as
+#' the matrix \deqn{ f(s) = Diag( X^T(s) \tilde \beta(s)) ( I - X_\alpha(s)
+#' X_\alpha^-(s) ), } where \eqn{X_{\alpha}} is the design for the sampling
+#' intensities.
+#' 
+#' This is also an efficient estimator when the initial estimator is consistent
+#' for \eqn{\beta(t)} and then asymptotically equivalent to cum, but small
+#' sample properties appear inferior. Its variance is estimated by var.cum.
+#' 
+#' To plot this estimate use type="ms.mpp" in the plot() command. }
+#' \item{cum.ly}{estimator where local averages are subtracted. Special case of
+#' cum.ms. To plot this estimate use type="ly.mpp" in plot.  }
+#' \item{var.cum.ly}{the martingale based pointwise variance estimates. }
+#' \item{gamma0}{estimate of parametric component of model.  }
+#' \item{var.gamma0}{estimate of variance of parametric component of model. }
+#' \item{gamma.ly}{estimate of parametric components of model. }
+#' \item{var.gamma.ly}{estimate of variance of parametric component of model. }
+#' \item{gamma.ms}{estimate of variance of parametric component of model. }
+#' \item{var.gamma.ms}{estimate of variance of parametric component of model.}
+#' \item{obs.testBeq0}{observed absolute value of supremum of cumulative
+#' components scaled with the variance.} \item{pval.testBeq0}{p-value for
+#' covariate effects based on supremum test.} \item{sim.testBeq0}{resampled
+#' supremum values.} \item{obs.testBeqC}{observed absolute value of supremum of
+#' difference between observed cumulative process and estimate under null of
+#' constant effect.} \item{pval.testBeqC}{p-value based on resampling.}
+#' \item{sim.testBeqC}{resampled supremum values.}
+#' \item{obs.testBeqC.is}{observed integrated squared differences between
+#' observed cumulative and estimate under null of constant effect.}
+#' \item{pval.testBeqC.is}{p-value based on resampling.}
+#' \item{sim.testBeqC.is}{resampled supremum values.}
+#' \item{conf.band}{resampling based constant to construct robust 95\% uniform
+#' confidence bands.} \item{test.procBeqC}{observed test-process of difference
+#' between observed cumulative process and estimate under null of constant
+#' effect.} \item{sim.test.procBeqC}{list of 50 random realizations of
+#' test-processes under null based on resampling.}
+#' \item{covariance}{covariances for nonparametric terms of model.}
+#' @author Thomas Scheike
+#' @references Martinussen and Scheike, Dynamic Regression Models for Survival
+#' Data, Springer (2006).
+#' @keywords survival
+#' @examples
+#' 
+#' \donttest{ 
+#' ## this runs slowly and is therfore donttest
+#' data(csl)
+#' indi.m<-rep(1,length(csl$lt)) 
+#' 
+#' # Fits time-varying regression model 
+#' out<-dynreg(prot~treat+prot.prev+sex+age,data=csl,
+#' Surv(lt,rt,indi.m)~+1,start.time=0,max.time=2,id=csl$id,
+#' n.sim=100,bandwidth=0.7,meansub=0)
+#' summary(out)
+#' par(mfrow=c(2,3))
+#' plot(out)
+#' 
+#' # Fits time-varying semi-parametric regression model.
+#' outS<-dynreg(prot~treat+const(prot.prev)+const(sex)+const(age),data=csl,
+#' Surv(lt,rt,indi.m)~+1,start.time=0,max.time=2,id=csl$id,
+#' n.sim=100,bandwidth=0.7,meansub=0)
+#' summary(outS)
+#' }
+#' 
+#' @export
 dynreg<-function(formula,data=sys.parent(),aalenmod,
 bandwidth=0.5,id=NULL,bhat=NULL,start.time=0,
 max.time=NULL,n.sim=500,meansub=1,weighted.test=0,resample=0)
@@ -170,6 +290,63 @@ namematrix<-function(mat,names)
 nameestimate<-function(mat,names)
 { colnames(mat)<-"estimate"; rownames(mat)<-names; return(mat); }
 
+
+
+#' Plots estimates and test-processes
+#' 
+#' This function plots the non-parametric cumulative estimates for the additive
+#' risk model or the test-processes for the hypothesis of constant effects with
+#' re-sampled processes under the null.
+#' 
+#' 
+#' @param x the output from the "dynreg" function.
+#' @param type the estimator plotted. Choices "eff.smooth", "ms.mpp", "0.mpp"
+#' and "ly.mpp". See the dynreg function for more on this.
+#' @param pointwise.ci if >1 pointwise confidence intervals are plotted with
+#' lty=pointwise.ci
+#' @param hw.ci if >1 Hall-Wellner confidence bands are plotted with lty=hw.ci.
+#' Only 0.95 \% bands can be constructed.
+#' @param sim.ci if >1 simulation based confidence bands are plotted with
+#' lty=sim.ci. These confidence bands are robust to non-martingale behaviour.
+#' @param robust robust standard errors are used to estimate standard error of
+#' estimate, otherwise martingale based estimate are used.
+#' @param specific.comps all components of the model is plotted by default, but
+#' a list of components may be specified, for example first and third "c(1,3)".
+#' @param level gives the significance level.
+#' @param start.time start of observation period where estimates are plotted.
+#' @param stop.time end of period where estimates are plotted. Estimates thus
+#' plotted from [start.time, max.time].
+#' @param add.to.plot to add to an already existing plot.
+#' @param mains add names of covariates as titles to plots.
+#' @param xlab label for x-axis.
+#' @param ylab label for y-axis.
+#' @param score to plot test processes for test of time-varying effects along
+#' with 50 random realization under the null-hypothesis.
+#' @param ... unused arguments - for S3 compatibility
+#' @author Thomas Scheike
+#' @references Martinussen and Scheike, Dynamic Regression Models for Survival
+#' Data, Springer (2006).
+#' @keywords survival
+#' @examples
+#' 
+#' \donttest{
+#' ### runs slowly and therefore donttest 
+#' data(csl)
+#' indi.m<-rep(1,length(csl$lt))
+#' 
+#' # Fits time-varying regression model
+#' out<-dynreg(prot~treat+prot.prev+sex+age,csl,
+#' Surv(lt,rt,indi.m)~+1,start.time=0,max.time=3,id=csl$id,
+#' n.sim=100,bandwidth=0.7,meansub=0)
+#' 
+#' par(mfrow=c(2,3))
+#' # plots estimates 
+#' plot(out)
+#' # plots tests-processes for time-varying effects 
+#' plot(out,score=TRUE)
+#' }
+#' 
+#' @export
 plot.dynreg<-function(x,type="eff.smooth",pointwise.ci=1,hw.ci=0,
 sim.ci=0,robust=0,specific.comps=FALSE,level=0.05,start.time=0,stop.time=0,
 add.to.plot=FALSE,mains=TRUE,xlab="Time",ylab ="Cumulative coefficients",score=FALSE,...)
@@ -254,6 +431,7 @@ add.to.plot=FALSE,mains=TRUE,xlab="Time",ylab ="Cumulative coefficients",score=F
 
 }
 
+#' @export
 "print.dynreg" <-
 function (x,...) 
 {
@@ -278,6 +456,7 @@ if (is.null(dynreg.object$gamma0)==TRUE) semi<-FALSE else semi<-TRUE
 }
 
 
+#' @export
 "summary.dynreg" <- function(object,digits = 3,...) 
 {
   dynreg.object <- object; rm(object);
@@ -307,10 +486,12 @@ if (is.null(dynreg.object$gamma0)==TRUE) semi<-FALSE else semi<-TRUE
 }
 
 
+#' @export
 coef.dynreg<- function(object,...,digits=3) {
    coefBase(object,digits=digits)
 }
 
+#' @export
 aalen.des<-function(formula=formula(data),data=sys.parent(),model="aalen")
 {
   call <- match.call(); 

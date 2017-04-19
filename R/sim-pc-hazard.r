@@ -1,3 +1,64 @@
+#' Simulation of Piecewise constant hazard model (Cox).
+#' 
+#' Simulates data from piecwise constant baseline hazard that can also be of
+#' Cox type. Censor data at highest value of the break points.
+#' 
+#' 
+#' @param cumhazard cumulative hazard, or piece-constant rates for periods
+#' defined by first column of input.
+#' @param rr number of simulations or vector of relative risk for simuations.
+#' @param cum.hazard specifies wheter input is cumulative hazard or rates.
+#' @author Thomas Scheike
+#' @keywords survival
+#' @examples
+#' 
+#' 
+#' rates <-  c(0,0.01,0.052,0.01,0.04)
+#' breaks <- c(0,10,   20,  30,   40)
+#' haz <- cbind(breaks,rates)
+#' n <- 1000
+#' X <- rbinom(n,1,0.5)
+#' beta <- 0.2
+#' rrcox <- exp(X * beta)
+#' cumhaz <- cumsum(c(0,diff(breaks)*rates[-1]))
+#' cumhaz <- cbind(breaks,cumhaz)
+#' 
+#' pctime <- pc.hazard(haz,1000,cum.hazard=FALSE)
+#' 
+#' par(mfrow=c(1,2))
+#' ss <- aalen(Surv(time,status)~+1,data=pctime,robust=0)
+#' plot(ss)
+#' lines(cumhaz,col=2,lwd=2)
+#' 
+#' pctimecox <- pc.hazard(cumhaz,rrcox)
+#' pctime <- cbind(pctime,X)
+#' ssx <- cox.aalen(Surv(time,status)~+prop(X),data=pctimecox,robust=0)
+#' plot(ssx)
+#' lines(cumhaz,col=2,lwd=2)
+#' 
+#' ### simulating data with hazard as real data 
+#' data(TRACE)
+#' 
+#' par(mfrow=c(1,2))
+#' ss <- cox.aalen(Surv(time,status==9)~+prop(vf),data=TRACE,robust=0)
+#' par(mfrow=c(1,2))
+#' plot(ss)
+#' ###
+#' pctime <- pc.hazard(ss$cum,1000)
+#' ###
+#' sss <- aalen(Surv(time,status)~+1,data=pctime,robust=0)
+#' lines(sss$cum,col=2,lwd=2)
+#' 
+#' pctime <- pc.hazard(ss$cum,rrcox)
+#' pctime <- cbind(pctime,X)
+#' ###
+#' sss <- cox.aalen(Surv(time,status)~+prop(X),data=pctime,robust=0)
+#' summary(sss)
+#' plot(ss)
+#' lines(sss$cum,col=3,lwd=3)
+#' 
+#' @export
+#' @aliases pchazard.sim cause.pchazard.sim 
 pc.hazard <- function(cumhazard,rr,cum.hazard=TRUE)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
@@ -24,7 +85,8 @@ pc.hazard <- function(cumhazard,rr,cum.hazard=TRUE)
    return(dt)
 }# }}}
 
-sim.pc.hazard <- function(cumhazard,rr,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE)
+#' @export
+pchazard.sim <- function(cumhazard,rr,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
 ### cumh=cbind(breaks,cumhazard) if cumh=TRUE
@@ -50,7 +112,8 @@ sim.pc.hazard <- function(cumhazard,rr,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE)
    return(dt)
 }# }}}
 
-sim.cause.pc.hazard <- function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE)
+#' @export
+cause.pchazard.sim <- function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
 ### cumh=cbind(breaks,cumhazard) if cumh=TRUE
@@ -79,6 +142,47 @@ sim.cause.pc.hazard <- function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.
    return(ptt)
 }# }}}
 
+
+#' Simulation of output from Cox model.
+#' 
+#' Simulates data that looks like fit from Cox model. Censor data automatically
+#' for highest value of the break points.
+#' 
+#' 
+#' @param cox output form coxph or cox.aalen model fitting cox model.
+#' @param n number of simulations.
+#' @param data to extract covariates for simulations (draws from observed
+#' covariates).
+#' @param cens specifies censoring model, if "is.matrix" then uses cumulative
+#' hazard given, if "is.scalar" then uses rate for exponential, and if not
+#' given then takes average rate of in simulated data from cox model.
+#' @param rrc possible vector of relative risk for cox-type censoring.
+#' @author Thomas Scheike
+#' @keywords survival
+#' @examples
+#' 
+#' data(TRACE)
+#' 
+#' cox <-  coxph(Surv(time,status==9)~vf+chf+wmi,data=TRACE)
+#' sim1 <- sim.cox(cox,1000,data=TRACE)
+#' cc <- coxph(Surv(time,status)~vf+chf+wmi,data=sim1)
+#' cbind(cox$coef,cc$coef)
+#' 
+#' cor(sim1[,c("vf","chf","wmi")])
+#' cor(TRACE[,c("vf","chf","wmi")])
+#' ###library(mets)
+#' ###dcor(sim1,~vf+chf+wmi)
+#' ###dcor(TRACE,~vf+chf+wmi)
+#' 
+#' cox <-  cox.aalen(Surv(time, status==9) ~ prop(vf)+prop(chf)+prop(wmi),TRACE,robust=0)
+#' sim2 <- sim.cox(cox,1000,data=TRACE)
+#' cc <-  cox.aalen(Surv(time, status)~prop(vf)+prop(chf)+prop(wmi),data=sim2,robust=0)
+#' ###
+#' plot(cox)
+#' lines(cc$cum,type="s",col=2)
+#' cbind(cox$gamma,cc$gamma)
+#' 
+#' @export
 sim.cox <- function(cox,n,data=NULL,cens=NULL,rrc=NULL)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE

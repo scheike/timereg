@@ -33,6 +33,46 @@ coefcox <- function(object, digits=3, d2logl=0,ci=1,alpha=0.05) { ## {{{
   return(res)
 } ## }}}
 
+
+
+#' Makes wald test
+#' 
+#' Makes wald test, either by contrast matrix or testing components to 0. Can
+#' also specify the regression coefficients and the variance matrix.  Also
+#' makes confidence intervals of the defined contrasts.  Reads coefficientes
+#' and variances from timereg and coxph objects.
+#' 
+#' 
+#' @param object timereg object
+#' @param coef estimates from some model
+#' @param Sigma variance of estimates
+#' @param contrast contrast matrix for testing
+#' @param coef.null which indeces to test to 0
+#' @param null mean of null, 0 by default
+#' @param print.coef print the coefficients of the linear combinations.
+#' @param alpha significance level for CI for linear combinations of
+#' coefficients.
+#' @author Thomas Scheike
+#' @keywords survival
+#' @examples
+#' 
+#' data(sTRACE)
+#' # Fits Cox model 
+#' out<-cox.aalen(Surv(time,status==9)~prop(age)+prop(sex)+
+#' prop(vf)+prop(chf)+prop(diabetes),data=sTRACE,n.sim=0)
+#' 
+#' wald.test(out,coef.null=c(1,2,3))
+#' ### test age=sex   vf=chf
+#' wald.test(out,contrast=rbind(c(1,-1,0,0,0),c(0,0,1,-1,0)))
+#' 
+#' ### now same with direct specifation of estimates and variance
+#' wald.test(coef=out$gamma,Sigma=out$var.gamma,coef.null=c(1,2,3))
+#' wald.test(coef=out$gamma,Sigma=out$robvar.gamma,coef.null=c(1,2,3))
+#' ### test age=sex   vf=chf
+#' wald.test(coef=out$gamma,Sigma=out$var.gamma,
+#' 	  contrast=rbind(c(1,-1,0,0,0),c(0,0,1,-1,0)))
+#' 
+#' @export
 wald.test <- function(object=NULL,coef=NULL,Sigma=NULL,contrast,coef.null=NULL,null=NULL,print.coef=TRUE,alpha=0.05)
 { ## {{{
 
@@ -185,6 +225,7 @@ return(list(type=type,time=time,time2=time2,status=status,
  covnamesX=covnamesX,covnamesZ=covnamesZ,clusters=clusters))
 } ## }}}
 
+#' @export
 names2formula <- function(formula,names)
 { ## {{{ 
 covs <- paste("~",names[1],sep="")
@@ -198,6 +239,7 @@ return(formula)
 } ## }}} 
 
 
+#' @export
 timereg.formula <- function(formula,propterms=NULL,special="prop")
 { ## {{{ 
 vars <- all.vars(update(formula,0~.))

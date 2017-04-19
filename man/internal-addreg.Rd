@@ -10,7 +10,6 @@
 \alias{pval}
 \alias{additive.compSs}
 \alias{CsmoothB}
-\alias{mypbc}
 \alias{Csmooth2B}
 \alias{pval}
 \alias{kernel}

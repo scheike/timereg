@@ -1,4 +1,5 @@
 
+#' @export
 kmplot<- function(x,loc=NULL,col=NULL,lty=NULL,...)
 { ## {{{ 
 	### default location if loc not given 

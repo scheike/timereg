@@ -1,3 +1,46 @@
+#' EventSplit (SurvSplit).
+#' 
+#' contstructs start stop formulation of event time data after a variable in
+#' the data.set. Similar to SurvSplit of the survival package but can also
+#' split after random time given in data frame.
+#' 
+#' 
+#' @param data data to be split
+#' @param time time variable.
+#' @param status status variable.
+#' @param cuts cuts variable or numeric cut (only one value)
+#' @param name.start name of start variable in data, start can also be numeric
+#' "0"
+#' @param name.id name of id variable.
+#' @param cens.code code for the censoring.
+#' @param order.id order data after id and start.
+#' @param time.group make variable "before"."cut" that keeps track of wether
+#' start,stop is before (1) or after cut (0).
+#' @author Thomas Scheike
+#' @keywords survival
+#' @examples
+#' 
+#' set.seed(1)
+#' d <- data.frame(event=round(5*runif(5),2),start=1:5,time=2*1:5,
+#' 		status=rbinom(5,1,0.5),x=1:5)
+#' d
+#' 
+#' d0 <- event.split(d,cuts="event",name.start=0)
+#' d0
+#' 
+#' dd <- event.split(d,cuts="event")
+#' dd
+#' ddd <- event.split(dd,cuts=3.5)
+#' ddd
+#' event.split(ddd,cuts=5.5)
+#' 
+#' ### successive cutting for many values 
+#' dd <- d
+#' for  (cuts in seq(2,3,by=0.3)) dd <- event.split(dd,cuts=cuts)
+#' dd
+#' 
+#' 
+#' @export
 event.split <- function(data,
 			time="time",status="status",cuts="cuts",
 			name.id="id",

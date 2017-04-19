@@ -58,10 +58,133 @@ aalen.des2 <-  function(formula,data=sys.parent(),model=NULL,...){ ## {{{
   return(des) 
 } ## }}}
 
+##' @export
 predict.cox.aalen <- function(object,...) predict.timereg(object,...)
+
+##' @export
 predict.aalen <- function(object,...) predict.timereg(object,...)
+
+##' @export
 predict.comprisk <- function(object,...) predict.timereg(object,...)
 
+
+#' Predictions for Survival and Competings Risks Regression for timereg
+#' 
+#' Make predictions based on the survival models (Aalen and Cox-Aalen) and the
+#' competing risks models for the cumulative incidence function (comp.risk).
+#' Computes confidence intervals and confidence bands based on resampling.
+#' 
+#' 
+#' @aliases predict.timereg predict.aalen predict.comprisk predict.cox.aalen
+#' @param object an object belonging to one of the following classes: comprisk,
+#' aalen or cox.aalen
+#' @param newdata specifies the data at which the predictions are wanted.
+#' @param X alternative to newdata, specifies the nonparametric components for
+#' predictions.
+#' @param Z alternative to newdata, specifies the parametric components of the
+#' model for predictions.
+#' @param times times in which predictions are computed, default is all
+#' time-points for baseline
+#' @param n.sim number of simulations in resampling.
+#' @param uniform computes resampling based uniform confidence bands.
+#' @param se computes pointwise standard errors
+#' @param alpha specificies the significance levelwhich cause we consider.
+#' @param resample.iid set to 1 to return iid decomposition of estimates, 3-dim
+#' matrix (predictions x times x subjects)
+#' @param ... unused arguments - for S3 compatability
+#' @return \item{time}{vector of time points where the predictions are
+#' computed.} \item{unif.band}{resampling based constant to construct 95\%
+#' uniform confidence bands.} \item{model}{specifies what model that was
+#' fitted.} \item{alpha}{specifies the significance level for the confidence
+#' intervals. This relates directly to the constant given in unif.band.}
+#' \item{newdata}{specifies the newdata given in the call.} \item{RR}{gives
+#' relative risk terms for Cox-type models.} \item{call}{gives call for predict
+#' funtion.} \item{initial.call}{gives call for underlying object used for
+#' predictions.} \item{P1}{gives cumulative inicidence predictions for
+#' competing risks models. Predictions given in matrix form with different
+#' subjects in different rows.} \item{S0}{gives survival predictions for
+#' survival models.  Predictions given in matrix form with different subjects
+#' in different rows.} \item{se.P1}{pointwise standard errors for predictions
+#' of P1.} \item{se.S0}{pointwise standard errors for predictions of S0.}
+#' @author Thomas Scheike, Jeremy Silver
+#' @references Scheike, Zhang and Gerds (2008), Predicting cumulative incidence
+#' probability by direct binomial regression, Biometrika, 95, 205-220.
+#' 
+#' Scheike and Zhang (2007), Flexible competing risks regression modelling and
+#' goodness of fit, LIDA, 14, 464-483 .
+#' 
+#' Martinussen and Scheike (2006), Dynamic regression models for survival data,
+#' Springer.
+#' @keywords survival
+#' @examples
+#' 
+#' data(bmt); 
+#' 
+#' ## competing risks 
+#' add<-comp.risk(Event(time,cause)~platelet+age+tcell,data=bmt,cause=1)
+#' 
+#' ndata<-data.frame(platelet=c(1,0,0),age=c(0,1,0),tcell=c(0,0,1))
+#' out<-predict(add,newdata=ndata,uniform=1,n.sim=1000)
+#' par(mfrow=c(2,2))
+#' plot(out,multiple=0,uniform=1,col=1:3,lty=1,se=1)
+#' # see comp.risk for further examples. 
+#' 
+#' add<-comp.risk(Event(time,cause)~factor(tcell),data=bmt,cause=1)
+#' summary(add)
+#' out<-predict(add,newdata=ndata,uniform=1,n.sim=1000)
+#' plot(out,multiple=1,uniform=1,col=1:3,lty=1,se=1)
+#' 
+#' add<-prop.odds.subdist(Event(time,cause)~factor(tcell),
+#' 	       data=bmt,cause=1)
+#' out <- predict(add,X=1,Z=1)
+#' plot(out,multiple=1,uniform=1,col=1:3,lty=1,se=1)
+#' 
+#' 
+#' ## SURVIVAL predictions aalen function
+#' data(sTRACE)
+#' out<-aalen(Surv(time,status==9)~sex+ diabetes+chf+vf,
+#' data=sTRACE,max.time=7,n.sim=0,resample.iid=1)
+#' 
+#' pout<-predict(out,X=rbind(c(1,0,0,0,0),rep(1,5)))
+#' head(pout$S0[,1:5]); head(pout$se.S0[,1:5])
+#' par(mfrow=c(2,2))
+#' plot(pout,multiple=1,se=0,uniform=0,col=1:2,lty=1:2)
+#' plot(pout,multiple=0,se=1,uniform=1,col=1:2)
+#' 
+#' out<-aalen(Surv(time,status==9)~const(age)+const(sex)+
+#' const(diabetes)+chf+vf,
+#' data=sTRACE,max.time=7,n.sim=0,resample.iid=1)
+#' 
+#' pout<-predict(out,X=rbind(c(1,0,0),c(1,1,0)),
+#' Z=rbind(c(55,0,1),c(60,1,1)))
+#' head(pout$S0[,1:5]); head(pout$se.S0[,1:5])
+#' par(mfrow=c(2,2))
+#' plot(pout,multiple=1,se=0,uniform=0,col=1:2,lty=1:2)
+#' plot(pout,multiple=0,se=1,uniform=1,col=1:2)
+#' 
+#' pout<-predict(out,uniform=0,se=0,newdata=sTRACE[1:10,]) 
+#' plot(pout,multiple=1,se=0,uniform=0)
+#' 
+#' #### cox.aalen
+#' out<-cox.aalen(Surv(time,status==9)~prop(age)+prop(sex)+
+#' prop(diabetes)+chf+vf,
+#' data=sTRACE,max.time=7,n.sim=0,resample.iid=1)
+#' 
+#' pout<-predict(out,X=rbind(c(1,0,0),c(1,1,0)),Z=rbind(c(55,0,1),c(60,1,1)))
+#' head(pout$S0[,1:5]); head(pout$se.S0[,1:5])
+#' par(mfrow=c(2,2))
+#' plot(pout,multiple=1,se=0,uniform=0,col=1:2,lty=1:2)
+#' plot(pout,multiple=0,se=1,uniform=1,col=1:2)
+#' 
+#' pout<-predict(out,uniform=0,se=0,newdata=sTRACE[1:10,]) 
+#' plot(pout,multiple=1,se=0,uniform=0)
+#' 
+#' #### prop.odds model 
+#' add<-prop.odds(Event(time,cause!=0)~factor(tcell),data=bmt)
+#' out <- predict(add,X=1,Z=0)
+#' plot(out,multiple=1,uniform=1,col=1:3,lty=1,se=1)
+#' 
+##' @export
 predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
                            Z=NULL,n.sim=500, uniform=TRUE,
                            se=TRUE,alpha=0.05,resample.iid=0,...)
@@ -383,6 +506,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
   return(out)
 } ## }}}
 
+##' @export
 pava <- function(x, w=rep(1,length(x)))  # R interface to the compiled code
 { ## {{{
   n = length(x)
@@ -395,6 +519,37 @@ pava <- function(x, w=rep(1,length(x)))  # R interface to the compiled code
 } ## }}}
 
 
+
+#' Make predictions of predict functions in rows mononotone
+#' 
+#' Make predictions of predict functions in rows mononotone using the
+#' pool-adjacent-violators-algorithm
+#' 
+#' 
+#' @param pred predictions, either vector or rows of predictions.
+#' @param increasing increasing or decreasing.
+#' @return mononotone predictions.
+#' @author Thomas Scheike
+#' @keywords survival
+#' @examples
+#' 
+#' data(bmt); 
+#' 
+#' ## competing risks 
+#' add<-comp.risk(Event(time,cause)~platelet+age+tcell,data=bmt,cause=1)
+#' ndata<-data.frame(platelet=c(1,0,0),age=c(0,1,0),tcell=c(0,0,1))
+#' out<-predict(add,newdata=ndata,uniform=0)
+#' 
+#' par(mfrow=c(1,1))
+#' head(out$P1)
+#' matplot(out$time,t(out$P1),type="s")
+#' 
+#' ###P1m <- t(apply(out$P1,1,pava))
+#' P1monotone <- pava.pred(out$P1)
+#' head(P1monotone)
+#' matlines(out$time,t(P1monotone),type="s")
+#' 
+##' @export
 pava.pred <- function(pred,increasing=TRUE)  
 { ## {{{
 ### row-wise predictions
@@ -407,6 +562,7 @@ pava.pred <- function(pred,increasing=TRUE)
 } ## }}}
 
 
+##' @export
 plot.predict.timereg<-function(x,uniform=1,new=1,se=1,col=1,lty=1,lwd=2,multiple=0,specific.comps=0,ylim=c(0,1),
 xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
 { ## {{{
@@ -516,7 +672,8 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
      lty.ci<-2
       if (col.alpha==0) col.trans <- col.ci
       else
-      col.trans <- sapply(col.ci, FUN=function(x) do.call(rgb,as.list(c(col2rgb(x)/255,col.alpha))))
+      col.trans <- sapply(col.ci, FUN=function(x) 
+                   do.call(rgb,as.list(c(col2rgb(x)/255,col.alpha))))
 
       #print(t); print(ci)
       n<-length(time)
@@ -526,7 +683,7 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
       yy <- c(upper, rev(lower))
 #      tt <- c(time, rev(time))
 #      yy <- c(upper, rev(lower))
-     yy <- c(ud[,1], rev(ud[,2]))
+      yy <- c(ud[,1], rev(ud[,2]))
       polygon(tt,yy, col=col.trans, lty=0)      
   } ## }}}
 
@@ -534,6 +691,7 @@ xlab="Time",ylab="Probability",transparency=FALSE,monotone=TRUE,...)
   }
 } ## }}}
 
+##' @export
 print.predict.timereg <- function(x,...){ ## {{{
 
   object <- x; rm(x);
@@ -575,6 +733,7 @@ print.predict.timereg <- function(x,...){ ## {{{
     
 } ## }}}
 
+##' @export
 summary.predict.timereg <- function(object,...){ ## {{{
 
   if(!(inherits(object,'predict.timereg') )) stop('Wrong class of object');

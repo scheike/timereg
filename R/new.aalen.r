@@ -1,3 +1,129 @@
+#' Fit additive hazards model
+#' 
+#' Fits both the additive hazards model of Aalen and the semi-parametric
+#' additive hazards model of McKeague and Sasieni.  Estimates are un-weighted.
+#' Time dependent variables and counting process data (multiple events per
+#' subject) are possible.
+#' 
+#' Resampling is used for computing p-values for tests of time-varying effects.
+#' 
+#' The modelling formula uses the standard survival modelling given in the
+#' \bold{survival} package.
+#' 
+#' The data for a subject is presented as multiple rows or 'observations', each
+#' of which applies to an interval of observation (start, stop].  For counting
+#' process data with the )start,stop] notation is used the 'id' variable is
+#' needed to identify the records for each subject. The program assumes that
+#' there are no ties, and if such are present random noise is added to break
+#' the ties.
+#' 
+#' @param formula a formula object with the response on the left of a '~'
+#' operator, and the independent terms on the right as regressors.The response
+#' must be a survival object as returned by the `Surv' function. Time-
+#' invariant regressors are specified by the wrapper const(), and cluster
+#' variables (for computing robust variances) by the wrapper cluster().
+#' @param data a data.frame with the variables.
+#' @param start.time start of observation period where estimates are computed.
+#' @param max.time end of observation period where estimates are computed.
+#' Estimates thus computed from [start.time, max.time]. Default is max of data.
+#' @param robust to compute robust variances and construct processes for
+#' resampling. May be set to 0 to save memory.
+#' @param id For timevarying covariates the variable must associate each record
+#' with the id of a subject.
+#' @param clusters cluster variable for computation of robust variances.
+#' @param n.sim number of simulations in resampling.
+#' @param weighted.test to compute a variance weighted version of the
+#' test-processes used for testing time-varying effects.
+#' @param residuals to returns residuals that can be used for model validation
+#' in the function cum.residuals
+#' @param covariance to compute covariance estimates for nonparametric terms
+#' rather than just the variances.
+#' @param resample.iid to return i.i.d. representation for nonparametric and
+#' parametric terms.
+#' @param deltaweight uses weights to estimate semiparametric model, under
+#' construction, default=1 is standard least squares estimates
+#' @param silent set to 0 to print warnings for non-inverible design-matrices
+#' for different timepoints, default is 1.
+#' @param weights weights for estimating equations.
+#' @param max.clust sets the total number of i.i.d. terms in i.i.d.
+#' decompostition. This can limit the amount of memory used by coarsening the
+#' clusters. When NULL then all clusters are used.  Default is 1000 to save
+#' memory and time.
+#' @param gamma fixes gamme at this value for estimation.
+#' @param offsets offsets for the additive model, to make excess risk
+#' modelling.
+#' @param caseweight caseweight: mutiplied onto dN for score equations.
+#' @return returns an object of type "aalen". With the following arguments:
+#' \item{cum}{cumulative timevarying regression coefficient estimates are
+#' computed within the estimation interval. } \item{var.cum}{the martingale
+#' based pointwise variance estimates for cumulatives.}
+#' \item{robvar.cum}{robust pointwise variances estimates for cumulatives.}
+#' \item{gamma}{estimate of parametric components of model.  }
+#' \item{var.gamma}{variance for gamma.  } \item{robvar.gamma}{robust variance
+#' for gamma.  } \item{residuals}{list with residuals. Estimated martingale
+#' increments (dM) and corresponding time vector (time).}
+#' \item{obs.testBeq0}{observed absolute value of supremum of cumulative
+#' components scaled with the variance.} \item{pval.testBeq0}{p-value for
+#' covariate effects based on supremum test.} \item{sim.testBeq0}{resampled
+#' supremum values.} \item{obs.testBeqC}{observed absolute value of supremum of
+#' difference between observed cumulative process and estimate under null of
+#' constant effect.} \item{pval.testBeqC}{p-value based on resampling.}
+#' \item{sim.testBeqC}{resampled supremum values.}
+#' \item{obs.testBeqC.is}{observed integrated squared differences between
+#' observed cumulative and estimate under null of constant effect.}
+#' \item{pval.testBeqC.is}{p-value based on resampling.}
+#' \item{sim.testBeqC.is}{resampled supremum values.}
+#' \item{conf.band}{resampling based constant to construct robust 95\% uniform
+#' confidence bands. } \item{test.procBeqC}{observed test-process of difference
+#' between observed cumulative process and estimate under null of constant
+#' effect over time.  } \item{sim.test.procBeqC}{list of 50 random realizations
+#' of test-processes under null based on resampling.}
+#' \item{covariance}{covariances for nonparametric terms of model.}
+#' \item{B.iid}{Resample processes for nonparametric terms of model.}
+#' \item{gamma.iid}{Resample processes for parametric terms of model.}
+#' \item{deviance}{Least squares of increments.}
+#' @author Thomas Scheike
+#' @references Martinussen and Scheike, Dynamic Regression Models for Survival
+#' Data, Springer (2006).
+#' @keywords survival
+#' @examples
+#' 
+#' data(sTRACE)
+#' # Fits Aalen model 
+#' out<-aalen(Surv(time,status==9)~age+sex+diabetes+chf+vf,
+#' sTRACE,max.time=7,n.sim=100)
+#' 
+#' summary(out)
+#' par(mfrow=c(2,3))
+#' plot(out)
+#' 
+#' # Fits semi-parametric additive hazards model 
+#' out<-aalen(Surv(time,status==9)~const(age)+const(sex)+const(diabetes)+chf+vf,
+#' sTRACE,max.time=7,n.sim=100)
+#' 
+#' summary(out)
+#' par(mfrow=c(2,3))
+#' plot(out)
+#' 
+#' ## Excess risk additive modelling 
+#' data(mela.pop)
+#' dummy<-rnorm(nrow(mela.pop));
+#' 
+#' # Fits Aalen model  with offsets 
+#' out<-aalen(Surv(start,stop,status==1)~age+sex+const(dummy),
+#' mela.pop,max.time=7,n.sim=100,offsets=mela.pop$rate,id=mela.pop$id,
+#' gamma=0)
+#' summary(out)
+#' par(mfrow=c(2,3))
+#' plot(out,main="Additive excess riks model")
+#' 
+#' # Fits semi-parametric additive hazards model  with offsets 
+#' out<-aalen(Surv(start,stop,status==1)~age+const(sex),
+#' mela.pop,max.time=7,n.sim=100,offsets=mela.pop$rate,id=mela.pop$id)
+#' summary(out)
+#' plot(out,main="Additive excess riks model")
+#' 
+##' @export
 aalen<-function (formula = formula(data),
      data = sys.parent(), start.time = 0, max.time = NULL, 
      robust=1, id=NULL, clusters=NULL, residuals = 0, n.sim = 1000,  
@@ -166,6 +292,57 @@ ldata<-list(start=survs$start,stop=survs$stop,antpers=survs$antpers,antclust=sur
   return(ud)
 } ## }}}
 
+
+
+#' Plots estimates and test-processes
+#' 
+#' This function plots the non-parametric cumulative estimates for the additive
+#' risk model or the test-processes for the hypothesis of time-varying effects
+#' with re-sampled processes under the null.
+#' 
+#' 
+#' @aliases plot.aalen plot.cox.aalen plot.timecox plot.prop.excess
+#' @param x the output from the "aalen" function.
+#' @param pointwise.ci if >1 pointwise confidence intervals are plotted with
+#' lty=pointwise.ci
+#' @param hw.ci if >1 Hall-Wellner confidence bands are plotted with lty=hw.ci.
+#' Only 0.95 \% bands can be constructed.
+#' @param sim.ci if >1 simulation based confidence bands are plotted with
+#' lty=sim.ci. These confidence bands are robust to non-martingale behaviour.
+#' @param robust.ci robust standard errors are used to estimate standard error
+#' of estimate, otherwise martingale based standard errors are used.
+#' @param col specifice colors of different components of plot, in order:
+#' c(estimate,pointwise.ci,robust.ci,hw.ci,sim.ci) so for example, when we ask
+#' to get pointwise.ci, hw.ci and sim.ci we would say c(1,2,3,4) to use colors
+#' as specified.
+#' @param specific.comps all components of the model is plotted by default, but
+#' a list of components may be specified, for example first and third "c(1,3)".
+#' @param level gives the significance level.
+#' @param start.time start of observation period where estimates are plotted.
+#' @param stop.time end of period where estimates are plotted. Estimates thus
+#' plotted from [start.time, max.time].
+#' @param add.to.plot to add to an already existing plot.
+#' @param mains add names of covariates as titles to plots.
+#' @param xlab label for x-axis.
+#' @param ylab label for y-axis.
+#' @param score to plot test processes for test of time-varying effects along
+#' with 50 random realization under the null-hypothesis.
+#' @param ... unused arguments - for S3 compatibility
+#' @author Thomas Scheike
+#' @references Martinussen and Scheike, Dynamic Regression models for Survival
+#' Data, Springer (2006).
+#' @keywords survival
+#' @examples
+#' 
+#' # see help(aalen) 
+#' data(sTRACE)
+#' out<-aalen(Surv(time,status==9)~chf+vf,sTRACE,max.time=7,n.sim=100)
+#' par(mfrow=c(2,2))
+#' plot(out,pointwise.ci=1,hw.ci=1,sim.ci=1,col=c(1,2,3,4))
+#' par(mfrow=c(2,2))
+#' plot(out,pointwise.ci=0,robust.ci=1,hw.ci=1,sim.ci=1,col=c(1,2,3,4))
+#' 
+##' @export
 plot.aalen <-  function (x, pointwise.ci=1, hw.ci=0,
 sim.ci=0, robust.ci=0, col=NULL,
 specific.comps=FALSE,level=0.05, start.time = 0, 
@@ -185,13 +362,25 @@ ylab ="Cumulative coefficients",score=FALSE,...)
                   xlab=xlab,ylab =ylab); 
 } ## }}}
 
+
+##' @export
 vcov.aalen <- function(object,robust=0, ...) {
   if (robust==0) rv <- object$var.gamma else  rv <- object$robvar.gamma
   if (!identical(rv, matrix(0, nrow = 1L, ncol = 1L))) rv # else return NULL
 }
 
 
-
+#' Prints call
+#' 
+#' Prints call for object. Lists nonparametric and parametric terms of model
+#' 
+#' 
+#' @aliases print.aalen print.cox.aalen print.comprisk print.prop.excess
+#' print.dynreg print.timecox print.cum.residuals
+#' @param x an aalen object
+#' @param ... unused arguments - for S3 compatibility
+#' @author Thomas Scheike
+#' @keywords survival
 "print.aalen" <- function (x,...) 
 { ## {{{
 summary.aalen(x,...)
@@ -212,6 +401,30 @@ summary.aalen(x,...)
 ###  cat("  Call: \n"); dput(attr(object, "Call")); cat("\n"); 
 } ## }}}
 
+
+
+#' Prints summary statistics
+#' 
+#' Computes p-values for test of significance for nonparametric terms of model,
+#' p-values for test of constant effects based on both supremum and integrated
+#' squared difference.
+#' 
+#' Returns parameter estimates and their standard errors.
+#' 
+#' 
+#' @aliases summary.aalen summary.cox.aalen summary.prop.excess summary.timecox
+#' summary.dynreg
+#' @param object an aalen object.
+#' @param digits number of digits in printouts.
+#' @param ... unused arguments - for S3 compatibility
+#' @author Thomas Scheike
+#' @references Martinussen and Scheike,
+#' @keywords survival
+#' @examples
+#' 
+#' ### see help(aalen)
+#' 
+##' @export
 "summary.aalen" <-
 function (object,digits = 3,...) 
 { ## {{{
@@ -254,6 +467,7 @@ function (object,digits = 3,...)
   cat("\n")
 } ## }}}
 
+##' @export
 coef.aalen <- function(object, digits=3,...) {
    coefBase(object,digits=digits,...)
 }

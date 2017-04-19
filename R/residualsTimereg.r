@@ -1,4 +1,5 @@
 
+#' @export
 residualsTimereg <- function(object,data=data)
 { ## {{{
 ### computes residuals for data based on model given in object 

@@ -1,3 +1,68 @@
+#' Model validation based on cumulative residuals
+#' 
+#' Computes cumulative residuals and approximative p-values based on resampling
+#' techniques.
+#' 
+#' 
+#' @param object an object of class 'aalen', 'timecox', 'cox.aalen' where the
+#' residuals are returned ('residuals=1')
+#' @param data data frame based on which residuals are computed.
+#' @param modelmatrix specifies a grouping of the data that is used for
+#' cumulating residuals. Must have same size as data and be ordered in the same
+#' way.
+#' @param n.sim number of simulations in resampling.
+#' @param weighted.test to compute a variance weighted version of the
+#' test-processes used for testing constant effects of covariates.
+#' @param cum.resid to compute residuals versus each of the continuous
+#' covariates in the model.
+#' @param max.point.func limits the amount of computations, only considers a
+#' max of 50 points on the covariate scales.
+#' @param weights weights for sum of martingale residuals, now for cum.resid=1.
+#' @return returns an object of type "cum.residuals" with the following
+#' arguments: \item{cum}{cumulative residuals versus time for the groups
+#' specified by modelmatrix. } \item{var.cum}{the martingale based pointwise
+#' variance estimates.} \item{robvar.cum}{robust pointwise variances estimates
+#' of cumulatives.} \item{obs.testBeq0}{observed absolute value of supremum of
+#' cumulative components scaled with the variance.}
+#' \item{pval.testBeq0}{p-value covariate effects based on supremum test.}
+#' \item{sim.testBeq0}{resampled supremum value.} \item{conf.band}{resampling
+#' based constant to construct robust 95\% uniform confidence bands for
+#' cumulative residuals.} \item{obs.test}{absolute value of supremum of
+#' observed test-process.} \item{pval.test}{p-value for supremum test
+#' statistic.} \item{sim.test}{resampled absolute value of supremum cumulative
+#' residuals.} \item{proc.cumz}{observed cumulative residuals versus all
+#' continuous covariates of model.} \item{sim.test.proccumz}{list of 50 random
+#' realizations of test-processes under model for all continuous covariates.}
+#' @author Thomas Scheike
+#' @references Martinussen and Scheike, Dynamic Regression Models for Survival
+#' Data, Springer (2006).
+#' @keywords survival
+#' @examples
+#' 
+#' data(sTRACE)
+#' # Fits Aalen model and returns residuals
+#' fit<-aalen(Surv(time,status==9)~age+sex+diabetes+chf+vf,
+#'            data=sTRACE,max.time=7,n.sim=0,residuals=1)
+#' 
+#' # constructs and simulates cumulative residuals versus age groups
+#' fit.mg<-cum.residuals(fit,data=sTRACE,n.sim=100,
+#' modelmatrix=model.matrix(~-1+factor(cut(age,4)),sTRACE))
+#' 
+#' par(mfrow=c(1,4))
+#' # cumulative residuals with confidence intervals
+#' plot(fit.mg);
+#' # cumulative residuals versus processes under model
+#' plot(fit.mg,score=1); 
+#' summary(fit.mg)
+#' 
+#' # cumulative residuals vs. covariates Lin, Wei, Ying style 
+#' fit.mg<-cum.residuals(fit,data=sTRACE,cum.resid=1,n.sim=100)
+#' 
+#' par(mfrow=c(2,4))
+#' plot(fit.mg,score=2)
+#' summary(fit.mg)
+#' 
+#' @export
 cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim=500,
 	weighted.test=0,max.point.func=50,weights=NULL)
 { ## {{{
@@ -269,6 +334,7 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
   return(ud); 
 } ## }}}
 
+#' @export
 "print.cum.residuals"<- function (x,...)
 { ## {{{
     object <- x; rm(x);
@@ -279,6 +345,57 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
 	cat("\n")
 } ## }}}
 
+
+
+#' Plots cumulative residuals
+#' 
+#' This function plots the output from the cumulative residuals function
+#' "cum.residuals".  The cumulative residuals are compared with the performance
+#' of similar processes under the model.
+#' 
+#' 
+#' @param x the output from the "cum.residuals" function.
+#' @param pointwise.ci if >1 pointwise confidence intervals are plotted with
+#' lty=pointwise.ci
+#' @param hw.ci if >1 Hall-Wellner confidence bands are plotted with lty=hw.ci.
+#' Only 95\% bands can be constructed.
+#' @param sim.ci if >1 simulation based confidence bands are plotted with
+#' lty=sim.ci. These confidence bands are robust to non-martingale behaviour.
+#' @param robust if "1" robust standard errors are used to estimate standard
+#' error of estimate, otherwise martingale based estimate are used.
+#' @param specific.comps all components of the model is plotted by default, but
+#' a list of components may be specified, for example first and third "c(1,3)".
+#' @param level gives the significance level. Default is 0.05.
+#' @param start.time start of observation period where estimates are plotted.
+#' Default is 0.
+#' @param stop.time end of period where estimates are plotted. Estimates thus
+#' plotted from [start.time, max.time].
+#' @param add.to.plot to add to an already existing plot. Default is "FALSE".
+#' @param mains add names of covariates as titles to plots.
+#' @param main vector of names for titles in plots.
+#' @param xlab label for x-axis. NULL is default which leads to "Time" or "".
+#' Can also give a character vector.
+#' @param ylab label for y-axis. Default is "Cumulative MG-residuals".
+#' @param ylim limits for y-axis.
+#' @param score if '0' plots related to modelmatrix are specified, thus
+#' resulting in grouped residuals, if '1' plots for modelmatrix but with random
+#' realizations under model, if '2' plots residuals versus continuous
+#' covariates of model with random realizations under the model.
+#' @param conf.band makes simulation based confidence bands for the test
+#' processes under the 0 based on variance of these processes limits for
+#' y-axis. These will give additional information of whether the observed
+#' cumulative residuals are extreme or not when based on a variance weighted
+#' test.
+#' @param ... unused arguments - for S3 compatibility
+#' @author Thomas Scheike
+#' @references Martinussen and Scheike, Dynamic Regression Models for Survival
+#' Data, Springer (2006).
+#' @keywords survival
+#' @examples
+#' 
+#' # see cum.residuals for examples 
+#' 
+#' @export
 "plot.cum.residuals" <- function (x,pointwise.ci=1,hw.ci=0,sim.ci=0,
 	robust=1, specific.comps=FALSE,level=0.05, start.time = 0, 
 	stop.time = 0, add.to.plot=FALSE, mains=TRUE, main=NULL,
@@ -469,6 +586,24 @@ cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim
 
 } ## }}}
 
+
+
+#' Prints summary statistics for goodness-of-fit tests based on cumulative
+#' residuals
+#' 
+#' Computes p-values for extreme behaviour relative to the model of various
+#' cumulative residual processes.
+#' 
+#' 
+#' @param object output from the cum.residuals() function.
+#' @param digits number of digits in printouts.
+#' @param ... unused arguments - for S3 compatibility
+#' @author Thomas Scheike
+#' @keywords survival
+#' @examples
+#' 
+#' # see cum.residuals for examples
+#' 
 "summary.cum.residuals" <- function (object,digits=3,...) 
 {## {{{
   if (!inherits(object, 'cum.residuals')) stop ("Must be an cum.residuals object")

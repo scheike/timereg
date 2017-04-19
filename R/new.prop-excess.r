@@ -1,5 +1,78 @@
+#' Identifies proportional excess terms of model
+#' 
+#' Specifies which of the regressors that lead to proportional excess hazard
+#' 
+#' @param x variable
+#' 
+#' @author Thomas Scheike
+#' @keywords survival
 cox<-function(x) x
 
+
+
+#' Fits Proportional excess hazards model
+#' 
+#' Fits proportional excess hazards model.
+#' 
+#' The models are written using the survival modelling given in the survival
+#' package.
+#' 
+#' The program assumes that there are no ties, and if such are present random
+#' noise is added to break the ties.
+#' 
+#' @param formula a formula object, with the response on the left of a `~'
+#' operator, and the terms on the right.  The response must be a survival
+#' object as returned by the `Surv' function.
+#' @param data a data.frame with the variables.
+#' @param excess specifies for which of the subjects the excess term is
+#' present. Default is that the term is present for all subjects.
+#' @param tol tolerance for numerical procedure.
+#' @param max.time stopping considered time-period if different from 0.
+#' Estimates thus computed from [0,max.time] if max.time>0. Default is max of
+#' data.
+#' @param n.sim number of simulations in re-sampling.
+#' @param alpha tuning paramter in Newton-Raphson procedure. Value smaller than
+#' one may give more stable convergence.
+#' @param frac number between 0 and 1.  Is used in supremum test where observed
+#' jump times t1, ..., tk is replaced by t1, ..., tl with l=round(frac*k).
+#' @return Returns an object of type "prop.excess". With the following
+#' arguments: \item{cum}{estimated cumulative regression functions. First
+#' column contains the jump times, then follows the estimated components of
+#' additive part of model and finally the excess cumulative baseline. }
+#' \item{var.cum}{robust pointwise variance estimates for estimated
+#' cumulatives. } \item{gamma}{estimate of parametric components of model. }
+#' \item{var.gamma}{robust variance estimate for gamma. } \item{pval}{p-value
+#' of Kolmogorov-Smirnov test (variance weighted) for excess baseline and Aalen
+#' terms, H: B(t)=0. } \item{pval.HW}{p-value of supremum test (corresponding
+#' to Hall-Wellner band) for excess baseline and Aalen terms, H: B(t)=0.
+#' Reported in summary. } \item{pval.CM}{p-value of Cramer von Mises test for
+#' excess baseline and Aalen terms, H: B(t)=0. } \item{quant}{95 percent
+#' quantile in distribution of resampled Kolmogorov-Smirnov test statistics for
+#' excess baseline and Aalen terms. Used to construct 95 percent simulation
+#' band.  } \item{quant95HW}{95 percent quantile in distribution of resampled
+#' supremum test statistics corresponding to Hall-Wellner band for excess
+#' baseline and Aalen terms. Used to construct 95 percent Hall-Wellner band.  }
+#' \item{simScoreProp}{observed scoreprocess and 50 resampled scoreprocesses
+#' (under model). List with 51 elements. }
+#' @author Torben Martinussen
+#' @references Martinussen and Scheike, Dynamic Regression Models for Survival
+#' Data, Springer Verlag (2006).
+#' @keywords survival
+#' @examples
+#' 
+#' ###working on memory leak issue, 3/3-2015
+#' ###data(melanoma)
+#' ###lt<-log(melanoma$thick)          # log-thickness 
+#' ###excess<-(melanoma$thick>=210)    # excess risk for thick tumors
+#' ###
+#' #### Fits Proportional Excess hazards model 
+#' ###fit<-prop.excess(Surv(days/365,status==1)~sex+ulc+cox(sex)+
+#' ###                 cox(ulc)+cox(lt),melanoma,excess=excess,n.sim=100)
+#' ###summary(fit)
+#' ###par(mfrow=c(2,3))
+#' ###plot(fit)
+#' 
+#' @export
 prop.excess<-function(formula=formula(data),data=sys.parent(),excess=1,
 tol=0.0001,max.time=NULL,n.sim=1000,alpha=1,frac=1)
   {
@@ -65,6 +138,7 @@ tol=0.0001,max.time=NULL,n.sim=1000,alpha=1,frac=1)
   }
 
 
+#' @export
 "plot.prop.excess" <- function(x, 
 pointwise.ci=1, hw.ci=0,sim.ci=0,specific.comps=FALSE,level=0.95,start.time = 0, stop.time = 0, add.to.plot=FALSE, mains=TRUE, 
 xlab="Time", ylab ="Cumulative regression function",score=FALSE,...) 
@@ -153,6 +227,7 @@ xlab="Time", ylab ="Cumulative regression function",score=FALSE,...)
       } }
 }
 
+#' @export
 "print.prop.excess" <- function (x,...) {
   prop.excess.object <- x; rm(x);
   if (!inherits(prop.excess.object, 'prop.excess')) 
@@ -177,6 +252,7 @@ xlab="Time", ylab ="Cumulative regression function",score=FALSE,...)
 }
 
 
+#' @export
 "summary.prop.excess" <-
 function (object,digits=3,...) 
 {

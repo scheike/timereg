@@ -65,3 +65,4 @@ Collate:
     'sim-pc-hazard.r'
     'timecox.r'
     'two-stage-reg.r'
+RoxygenNote: 6.0.1

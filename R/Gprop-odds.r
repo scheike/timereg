@@ -1,3 +1,107 @@
+#' Fit Generalized Semiparametric Proportional 0dds Model
+#' 
+#' Fits a semiparametric proportional odds model: \deqn{ logit(1-S_{X,Z}(t)) =
+#' log(X^T A(t)) + \beta^T Z } where A(t) is increasing but otherwise
+#' unspecified. Model is fitted by maximising the modified partial likelihood.
+#' A goodness-of-fit test by considering the score functions is also computed
+#' by resampling methods.
+#' 
+#' An alternative way of writing the model : \deqn{ S_{X,Z}(t)) = \frac{ \exp(
+#' - \beta^T Z )}{ (X^T A(t)) + \exp( - \beta^T Z) } } such that \eqn{\beta} is
+#' the log-odds-ratio of dying before time t, and \eqn{A(t)} is the odds-ratio.
+#' 
+#' The modelling formula uses the standard survival modelling given in the
+#' \bold{survival} package.
+#' 
+#' The data for a subject is presented as multiple rows or "observations", each
+#' of which applies to an interval of observation (start, stop]. The program
+#' essentially assumes no ties, and if such are present a little random noise
+#' is added to break the ties.
+#' 
+#' @param formula a formula object, with the response on the left of a '~'
+#' operator, and the terms on the right.  The response must be a survival
+#' object as returned by the `Surv' function.
+#' @param data a data.frame with the variables.
+#' @param start.time start of observation period where estimates are computed.
+#' @param max.time end of observation period where estimates are computed.
+#' Estimates thus computed from [start.time, max.time].  This is very useful to
+#' obtain stable estimates, especially for the baseline. Default is max of
+#' data.
+#' @param id For timevarying covariates the variable must associate each record
+#' with the id of a subject.
+#' @param n.sim number of simulations in resampling.
+#' @param weighted.test to compute a variance weighted version of the
+#' test-processes used for testing time-varying effects.
+#' @param beta starting value for relative risk estimates
+#' @param Nit number of iterations for Newton-Raphson algorithm.
+#' @param detail if 0 no details is printed during iterations, if 1 details are
+#' given.
+#' @param sym to use symmetrized second derivative in the case of the
+#' estimating equation approach (profile=0).  This may improve the numerical
+#' performance.
+#' @param mle.start starting values for relative risk parameters.
+#' @return returns an object of type 'cox.aalen'. With the following arguments:
+#' 
+#' \item{cum}{cumulative timevarying regression coefficient estimates are
+#' computed within the estimation interval.} \item{var.cum}{the martingale
+#' based pointwise variance estimates.  } \item{robvar.cum}{robust pointwise
+#' variances estimates.  } \item{gamma}{estimate of proportional odds
+#' parameters of model.} \item{var.gamma}{variance for gamma.  }
+#' \item{robvar.gamma}{robust variance for gamma.  } \item{residuals}{list with
+#' residuals. Estimated martingale increments (dM) and corresponding time
+#' vector (time).} \item{obs.testBeq0}{observed absolute value of supremum of
+#' cumulative components scaled with the variance.}
+#' \item{pval.testBeq0}{p-value for covariate effects based on supremum test.}
+#' \item{sim.testBeq0}{resampled supremum values.} \item{obs.testBeqC}{observed
+#' absolute value of supremum of difference between observed cumulative process
+#' and estimate under null of constant effect.} \item{pval.testBeqC}{p-value
+#' based on resampling.} \item{sim.testBeqC}{resampled supremum values.}
+#' \item{obs.testBeqC.is}{observed integrated squared differences between
+#' observed cumulative and estimate under null of constant effect.}
+#' \item{pval.testBeqC.is}{p-value based on resampling.}
+#' \item{sim.testBeqC.is}{resampled supremum values.}
+#' \item{conf.band}{resampling based constant to construct robust 95\% uniform
+#' confidence bands. } \item{test.procBeqC}{observed test-process of difference
+#' between observed cumulative process and estimate under null of constant
+#' effect over time.} \item{loglike}{modified partial likelihood, pseudo
+#' profile likelihood for regression parameters.} \item{D2linv}{inverse of the
+#' derivative of the score function.} \item{score}{value of score for final
+#' estimates.} \item{test.procProp}{observed score process for proportional
+#' odds regression effects.} \item{pval.Prop}{p-value based on resampling.}
+#' \item{sim.supProp}{re-sampled supremum values.}
+#' \item{sim.test.procProp}{list of 50 random realizations of test-processes
+#' for constant proportional odds under the model based on resampling.}
+#' @author Thomas Scheike
+#' @references Scheike, A flexible semiparametric transformation model for
+#' survival data, Lifetime Data Anal. (to appear).
+#' 
+#' Martinussen and Scheike, Dynamic Regression Models for Survival Data,
+#' Springer (2006).
+#' @keywords survival
+#' @examples
+#' 
+#' data(sTRACE)
+#' \donttest{
+#' ### runs slowly and is therefore donttest 
+#' data(sTRACE)
+#' # Fits Proportional odds model with stratified baseline
+#' age.c<-scale(sTRACE$age,scale=FALSE); 
+#' out<-Gprop.odds(Surv(time,status==9)~-1+factor(diabetes)+prop(age.c)+prop(chf)+
+#'                 prop(sex)+prop(vf),data=sTRACE,max.time=7,n.sim=50)
+#' summary(out) 
+#' par(mfrow=c(2,3))
+#' plot(out,sim.ci=2); plot(out,score=1) 
+#' 
+#' # Fits Proportional odds model with baseline on additive form
+#' # thus giving odds-ratio of dyings for vf and diabetes
+#' out<-Gprop.odds(Surv(time,status==9)~vf+diabetes+prop(age.c)+prop(chf)+
+#' 		prop(sex),data=sTRACE,max.time=7,n.sim=50)
+#' summary(out) 
+#' par(mfrow=c(2,3))
+#' plot(out,sim.ci=2); plot(out,score=1) 
+#' }
+#' 
+#' @export
 Gprop.odds<-function(formula=formula(data),data=sys.parent(),beta=0,Nit=50,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,sym=0,mle.start=0)
 {
 id.call<-id; call<-match.call(); residuals<-0;  

@@ -107,7 +107,18 @@ conf.band=unifCI,test.procBeqC=Ut,sim.test.procBeqC=UIt,
 covariance=cov.list,B.iid=B.iid,stratum=stratum)
 }
 
+
+
+#' Identifies parametric terms of model
+#' 
+#' Specifies which of the regressors that have constant effect.
+#' 
+#' @param x variable
+#' 
+#' @author Thomas Scheike
+#' @keywords survival
 const <- function(x) x 
+
 
 pval<-function(simt,Otest)
 {

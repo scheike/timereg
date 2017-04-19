@@ -1,4 +1,5 @@
 
+#' @export
 prep.glm.comprisk <- function(out,time="time",cause="cause",times,censmod=0,cens.code=0)
 { ## {{{
     ###

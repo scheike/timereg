@@ -5,6 +5,31 @@
 ## h <- Hist(t2,ca)
 ## s <- Surv(t2,ca)
 
+
+
+#' Event history object
+#' 
+#' Constructur for Event History objects
+#' 
+#' ... content for details
+#' 
+#' @aliases Event as.character.Event as.matrix.Event [.Event format.Event
+#' print.Event rbind.Event summary.Event
+#' @param time Time
+#' @param time2 Time 2
+#' @param cause Cause
+#' @param cens.code Censoring code (default 0)
+#' @param ... Additional arguments
+#' @return Object of class Event (a matrix)
+#' @author Klaus K. Holst and Thomas Scheike
+#' @examples
+#' 
+#' 	t1 <- 1:10
+#' 	t2 <- t1+runif(10)
+#' 	ca <- rbinom(10,2,0.4)
+#' 	(x <- Event(t1,t2,ca))
+#' 
+#' @export
 Event <- function(time,time2=TRUE,cause=NULL,cens.code=0,...) {
     out <- cbind(time,time2,cause)
     if (!missing(cause)) {
@@ -26,8 +51,10 @@ Event <- function(time,time2=TRUE,cause=NULL,cens.code=0,...) {
     return(out)
 }
 
+#' @export
 as.matrix.Event <- function(x,...) structure(x,class="matrix")
 
+#' @export
 as.character.Event <- function(x,...) {
     if (ncol(x)==3) { 
         res <- paste("(",format(x[,1],...),";",
@@ -38,13 +65,19 @@ as.character.Event <- function(x,...) {
     }
     return(res)
 }
+
+#' @export
 format.Event <- function(x, ...) format(as.character.Event(x), ...)
+
+#' @export
 as.data.frame.Event <- as.data.frame.model.matrix
 
+#' @export
 print.Event <- function(x,...) {
     print(as.matrix(x),...,quote=FALSE)
 }
 
+#' @export
 summary.Event <- function(object,...) {    
     cat(paste("cens.code=",attr(object,"cens.code"),"\n"))
     cat("causes:\n")
@@ -60,6 +93,7 @@ summary.Event <- function(object,...) {
 }
 
 
+#' @export
 "[.Event" <- function (x, i, j, drop = FALSE) 
 {
     if (missing(j)) {
@@ -78,6 +112,7 @@ summary.Event <- function(object,...) {
     }
 }
 
+#' @export
 rbind.Event <- function(...) {
   dots <- list(...)
   cens.code <- attributes(dots[[1]])$cens.code

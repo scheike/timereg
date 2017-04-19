@@ -1,3 +1,44 @@
+#' Missing data IPW Cox
+#' 
+#' Fits an Cox-Aalen survival model with missing data, with glm specification
+#' of probability of missingness.
+#' 
+#' Taylor expansion of Cox's partial likelihood in direction of glm parameters
+#' using num-deriv and iid expansion of Cox and glm paramters (lava).
+#' 
+#' @aliases cox.ipw summary.cox.ipw print.cox.ipw coef.cox.ipw
+#' @param survformula a formula object with the response on the left of a '~'
+#' operator, and the independent terms on the right as regressors. The response
+#' must be a survival object as returned by the `Surv' function.
+#' 
+#' Adds the prop() wrapper internally for using cox.aalen function for fitting
+#' Cox model.
+#' @param glmformula formula for "being" observed, that is not missing.
+#' @param d data frame.
+#' @param max.clust number of clusters in iid approximation. Default is all.
+#' @param ipw.se if TRUE computes standard errors based on iid decompositon of
+#' cox and glm model, thus should be asymptotically correct.
+#' @param tie.seed if there are ties these are broken, and to get same break
+#' the seed must be the same. Recommend to break them prior to entering the
+#' program.
+#' @return returns an object of type "cox.aalen". With the following arguments:
+#' \item{iid}{iid decomposition.} \item{coef}{missing data estiamtes for
+#' weighted cox. } \item{var}{robust pointwise variances estimates.  }
+#' \item{se}{robust pointwise variances estimates.  } \item{se.naive}{estimate
+#' of parametric components of model.  } \item{ties}{list of ties and times
+#' with random noise to break ties.} \item{cox}{output from weighted cox
+#' model.}
+#' @author Thomas Scheike
+#' @references Paik et al.
+#' @keywords survival
+#' @examples
+#' 
+#' 
+#' ### fit <- cox.ipw(Surv(time,status)~X+Z,obs~Z+X+time+status,data=d,ipw.se=TRUE)
+#' ### summary(fit)
+#' 
+#' 
+##' @export
 cox.ipw <- function(survformula,glmformula,d=sys.parent(),max.clust=NULL,ipw.se=FALSE,tie.seed=100)
 { ## {{{ 
   ggl <- glm(glmformula,family='binomial',data=d)
@@ -69,6 +110,7 @@ class(res) <- "cox.ipw"
 return(res)
 } ## }}} 
 
+##' @export
 summary.cox.ipw <- function(object,digits=3,...)
 {
 	tval <- object$coef/object$se
@@ -79,11 +121,13 @@ summary.cox.ipw <- function(object,digits=3,...)
 return(res)
 }
 
+##' @export
 coef.cox.ipw<- function(object,digits=3,...)
 {
 summary.cox.ipw(object)
 }
 
+##' @export
 print.cox.ipw  <-  function(x,...)
 { 
 summary.cox.ipw(x)

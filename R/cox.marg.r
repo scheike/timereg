@@ -1,3 +1,5 @@
+
+#' @export
 cox.marg <- function(survformula,glmformula,d=sys.parent(),max.clust=NULL,ipw.se=FALSE,tie.seed=100)
 { ## {{{ 
   ggl <- glm(glmformula,family='binomial',data=d)
@@ -76,6 +78,7 @@ class(res) <- "cox.marg"
 return(res)
 } ## }}} 
 
+#' @export
 summary.cox.marg <- function(object,digits=3,...)
 {
 	tval <- object$coef/object$se
@@ -86,11 +89,13 @@ summary.cox.marg <- function(object,digits=3,...)
 return(res)
 }
 
+#' @export
 coef.cox.marg<- function(object,digits=3,...)
 {
 summary.cox.marg(object)
 }
 
+#' @export
 print.cox.marg  <-  function(x,...)
 { 
 summary.cox.marg(x)
