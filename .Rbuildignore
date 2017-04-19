@@ -2,5 +2,5 @@
 .gitignore
 \.gitignore$
 README.org
-src/makeCmedoption
+src/makeCmedgoption
 
