@@ -219,13 +219,11 @@ END_RCPP
 }/*}}}*/
 
 
-RcppExport SEXP PropTestCox(SEXP U,
-			  SEXP dUt,
-			  SEXP insim
+RcppExport SEXP PropTestCox(SEXP iU, SEXP idUt, SEXP insim
 			  ) {
 BEGIN_RCPP/*{{{*/
-  mat U   = Rcpp::as<mat>(XSEXP);
-  mat dUt = Rcpp::as<mat>(XXSEXP);
+  mat U   = Rcpp::as<mat>(iU);
+  mat dUt = Rcpp::as<mat>(idUt);
   int nsim = Rcpp::as<int>(insim);
 
   unsigned p = U.n_cols;
@@ -247,20 +245,27 @@ BEGIN_RCPP/*{{{*/
 //cat(nnames[i],":","sup=",obs[i],"pval=",pvals[i],"\n")
 //}
   mat Uthati(n,p); 
+  mat Uti(n,p); 
+  mat sup(nsim,p); 
+
+//  dUt.print("dUt"); 
+     printf("hh1"); 
 
   for (unsigned j=0; j<nsim; j++) {
-     g = randu<vec>(n); 
-     mat  Uti= g*U; 
-     for (unsigned i=0; i<p; i++)  Uti.col(j) = cumsum(Uti.col(j));
+     vec g = randu<vec>(n); 
+     for (unsigned k=0; k<n; k++)  Uti.row(k)=g(k)*U.row(k); 
+//     mat  Uti= g*U; 
+     for (unsigned k=0; k<p; k++)  Uti.col(k) = cumsum(Uti.col(k));
 
      for (unsigned k=0; k<n; k++)  {
-	  Uthati.row(k)=(reshape(dUt.row(k),p,p)*Uti.row(n)).t();
+	  Uthati.row(k)=(reshape(dUt.row(k),p,p)*(Uti.row(n-1)).t()).t();
      }
      Uthati=Uti - Uthati; 
 
-     for (unsigned i=0; i<p; i++)  {
-     sup(j,i)=max(abs(Uthati.col(i))); 
+     for (unsigned k=0; k<p; k++)  {
+     sup(j,k)=max(abs(Uthati.col(k))); 
      }
+
   }
 
   return(Rcpp::List::create(Rcpp::Named("supUsim")=sup));
