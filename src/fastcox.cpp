@@ -248,40 +248,12 @@ BEGIN_RCPP/*{{{*/
 //}
 
   for (unsigned j=0; j<nsim; j++) {
-     colvec g = norm(n) * U; 
-
+     colvec g = norm(n) ; 
+     mat  Uti= g*U; 
+     CubeVec(dUt,Uti[nd,])$XXbeta
   }
 
-  E = E.rows(Jumps);
-  mat E2(E.n_rows, E.n_cols*E.n_cols); // Calculate E' E at each time-point
-  for (unsigned i=0; i<E.n_rows; i++) {
-    rowvec Xi = E.row(i);
-    E2.row(i) = vectorise(Xi.t()*Xi,1);
-  }
-
-  mat XX2 = XX;
-  for (unsigned j=0; j<XX2.n_cols; j++) { // int S2/S0(s)
-    XX2.col(j) = revcumsum(XX2.col(j),eXb,S0);
-  }
-
-  XX2 = XX2.rows(Jumps);
-  //  X = X.rows(Jumps);
-  S0 = S0.elem(Jumps);
-  mat grad = (X.rows(Jumps)-E); // Score
-  vec val = Xb.elem(Jumps)-log(S0); // Partial log-likelihood
-  mat hess = -(reshape(sum(XX2),p,p)-E.t()*E);
-  mat hesst = -(XX2-E2);
-
-  return(Rcpp::List::create(Rcpp::Named("jumps")=Jumps,
-			    Rcpp::Named("ploglik")=sum(val),
-			    Rcpp::Named("U")=grad,
-			    Rcpp::Named("gradient")=sum(grad),
-			    Rcpp::Named("hessian")=hess,
-			    Rcpp::Named("hessianttime")=hesst,
-			    Rcpp::Named("S2S0")=XX,
-			    Rcpp::Named("E")=E,
-			    Rcpp::Named("S0")=S0
-			    ));
+  return(Rcpp::List::create(Rcpp::Named("supUsim")=sup));
 END_RCPP
   }/*}}}*/
 
