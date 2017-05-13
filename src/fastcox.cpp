@@ -219,4 +219,70 @@ END_RCPP
 }/*}}}*/
 
 
+RcppExport SEXP PropTestCox(SEXP U,
+			  SEXP dUt,
+			  SEXP insim
+			  ) {
+BEGIN_RCPP/*{{{*/
+  mat U   = Rcpp::as<mat>(XSEXP);
+  mat dUt = Rcpp::as<mat>(XXSEXP);
+  int nsim = Rcpp::as<int>(insim);
+
+  unsigned p = U.n_cols;
+  unsigned n = U.n_rows;
+
+//for (i in 1:n.sim)
+//{
+//g <- rnorm(nd)
+//Uti <- apply(U*g,2,cumsum)
+//hatti <-  .Call("CubeVec",Pt,Uti[nd,],PACKAGE="mets")$XXbeta
+//Uthati <- Uti - hatti
+//sup[i,] <- apply( abs(Uthati),2,max)
+//}
+//
+//pvals <- rep(0,p)
+//for (i in 1:p) 
+//{
+//pvals[i] <- pval(sup[,i],obs[i])
+//cat(nnames[i],":","sup=",obs[i],"pval=",pvals[i],"\n")
+//}
+
+  for (unsigned j=0; j<nsim; j++) {
+     colvec g = norm(n) * U; 
+
+  }
+
+  E = E.rows(Jumps);
+  mat E2(E.n_rows, E.n_cols*E.n_cols); // Calculate E' E at each time-point
+  for (unsigned i=0; i<E.n_rows; i++) {
+    rowvec Xi = E.row(i);
+    E2.row(i) = vectorise(Xi.t()*Xi,1);
+  }
+
+  mat XX2 = XX;
+  for (unsigned j=0; j<XX2.n_cols; j++) { // int S2/S0(s)
+    XX2.col(j) = revcumsum(XX2.col(j),eXb,S0);
+  }
+
+  XX2 = XX2.rows(Jumps);
+  //  X = X.rows(Jumps);
+  S0 = S0.elem(Jumps);
+  mat grad = (X.rows(Jumps)-E); // Score
+  vec val = Xb.elem(Jumps)-log(S0); // Partial log-likelihood
+  mat hess = -(reshape(sum(XX2),p,p)-E.t()*E);
+  mat hesst = -(XX2-E2);
+
+  return(Rcpp::List::create(Rcpp::Named("jumps")=Jumps,
+			    Rcpp::Named("ploglik")=sum(val),
+			    Rcpp::Named("U")=grad,
+			    Rcpp::Named("gradient")=sum(grad),
+			    Rcpp::Named("hessian")=hess,
+			    Rcpp::Named("hessianttime")=hesst,
+			    Rcpp::Named("S2S0")=XX,
+			    Rcpp::Named("E")=E,
+			    Rcpp::Named("S0")=S0
+			    ));
+END_RCPP
+  }/*}}}*/
+
 
