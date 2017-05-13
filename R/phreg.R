@@ -38,7 +38,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
         S0 <- lapply(val,function(x) x$S0)
         nevent  <- unlist(lapply(S0,length))
         return(list(ploglik=ploglik,gradient=gradient,hessian=hessian,
-                    U=U,S0=S0,nevent=nevent,
+                    U=U,S0=S0,nevent=nevent,hessiantime=hessiantime,
                     ord=ord,time=time,jumps=jumps,jumptimes=jumptimes))
       }
       structure(-ploglik,gradient=-gradient,hessian=-hessian)

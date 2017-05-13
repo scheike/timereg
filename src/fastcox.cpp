@@ -14,7 +14,7 @@ RcppExport SEXP FastCoxPrep(SEXP EntrySEXP,
 			    SEXP XSEXP,
 			    SEXP IdSEXP,
 			    SEXP TruncationSEXP) {
-BEGIN_RCPP
+BEGIN_RCPP/*{{{*/
   arma::vec Entry = Rcpp::as<arma::vec>(EntrySEXP);
   arma::vec  Exit  = Rcpp::as<arma::vec>(ExitSEXP);
   arma::Col<int> Status= Rcpp::as<arma::Col<int> >(StatusSEXP);
@@ -92,7 +92,7 @@ BEGIN_RCPP
 				       Rcpp::Named("id")=newId				       
 				       )));
 END_RCPP
-}
+}/*}}}*/
 
 
 // colvec revcumsum(const colvec &a) {
@@ -118,9 +118,7 @@ RcppExport SEXP FastCoxPL(SEXP betaSEXP,
 			  SEXP XXSEXP,
 			  SEXP SignSEXP,
 			  SEXP JumpsSEXP) {
-
-
-BEGIN_RCPP
+BEGIN_RCPP/*{{{*/
   colvec beta = Rcpp::as<colvec>(betaSEXP);
   mat X = Rcpp::as<mat>(XSEXP);
   mat XX = Rcpp::as<mat>(XXSEXP);
@@ -151,28 +149,74 @@ BEGIN_RCPP
     E.col(j) = revcumsum(X.col(j),eXb,S0);
   }
 
+  E = E.rows(Jumps);
+  mat E2(E.n_rows, E.n_cols*E.n_cols); // Calculate E' E at each time-point
+  for (unsigned i=0; i<E.n_rows; i++) {
+    rowvec Xi = E.row(i);
+    E2.row(i) = vectorise(Xi.t()*Xi,1);
+  }
+
   mat XX2 = XX;
   for (unsigned j=0; j<XX2.n_cols; j++) { // int S2/S0(s)
     XX2.col(j) = revcumsum(XX2.col(j),eXb,S0);
   }
 
   XX2 = XX2.rows(Jumps);
-
   //  X = X.rows(Jumps);
-  E = E.rows(Jumps);
   S0 = S0.elem(Jumps);
   mat grad = (X.rows(Jumps)-E); // Score
   vec val = Xb.elem(Jumps)-log(S0); // Partial log-likelihood
   mat hess = -(reshape(sum(XX2),p,p)-E.t()*E);
+  mat hesst = -(XX2-E2);
 
   return(Rcpp::List::create(Rcpp::Named("jumps")=Jumps,
 			    Rcpp::Named("ploglik")=sum(val),
 			    Rcpp::Named("U")=grad,
 			    Rcpp::Named("gradient")=sum(grad),
 			    Rcpp::Named("hessian")=hess,
+			    Rcpp::Named("hessianttime")=hesst,
 			    Rcpp::Named("S2S0")=XX,
 			    Rcpp::Named("E")=E,
 			    Rcpp::Named("S0")=S0
 			    ));
 END_RCPP
+  }/*}}}*/
+
+RcppExport SEXP CubeVec( SEXP XXSEXP, SEXP betaSEXP)
+		  {
+BEGIN_RCPP/*{{{*/
+  colvec beta = Rcpp::as<colvec>(betaSEXP);
+  mat XX = Rcpp::as<mat>(XXSEXP);
+  unsigned p = beta.n_rows;
+  unsigned n = XX.n_rows;
+
+//  XX.print("XX"); 
+
+  mat XXbeta(n,p);
+  for (unsigned j=0; j<n; j++)  {
+	  XXbeta.row(j)=(reshape(XX.row(j),p,p)*beta).t();
   }
+
+  return(Rcpp::List::create(Rcpp::Named("XXbeta")=XXbeta));
+END_RCPP
+}/*}}}*/
+
+RcppExport SEXP CubeMat( SEXP XXSEXP, SEXP XSEXP)
+		  {
+BEGIN_RCPP/*{{{*/
+  mat XX = Rcpp::as<mat>(XXSEXP);
+  mat X  = Rcpp::as<mat>(XSEXP);
+  unsigned p = X.n_cols;
+  unsigned n = XX.n_rows;
+
+  mat XXX(n,p*p);
+  for (unsigned j=0; j<n; j++)  {
+	  XXX.row(j)=vectorise(reshape(XX.row(j),p,p)*X,1);
+  }
+
+  return(Rcpp::List::create(Rcpp::Named("XXX")=XXX));
+END_RCPP
+}/*}}}*/
+
+
+

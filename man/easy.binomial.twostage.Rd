@@ -56,7 +56,7 @@ easy.binomial.twostage(margbin = NULL, data = sys.parent(),
 
 \item{strata}{strata for fitting}
 
-\item{max.clust}{max clusters}
+\item{max.clust}{max clusters used for i.i.d. decompostion}
 
 \item{se.clusters}{clusters for iid decomposition for roubst standard errors}
 }

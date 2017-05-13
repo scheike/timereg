@@ -7,70 +7,13 @@
 using namespace arma;
 using namespace Rcpp;
 
-//extern "C" double 
-RcppExport SEXP claytonoakesR(SEXP itheta,SEXP  iistatus1,SEXP  iistatus2,SEXP  icif1,SEXP  icif2,SEXP iags) 
-{ // {{{
- colvec theta = Rcpp::as<colvec>(itheta);
- colvec cif1 = Rcpp::as<colvec>(icif1);
- colvec cif2 = Rcpp::as<colvec>(icif2);
- colvec istatus1 = Rcpp::as<colvec>(iistatus1);
- colvec istatus2 = Rcpp::as<colvec>(iistatus2);
 
- colvec L=theta; 
- colvec dL=theta; 
- int n=cif1.size(); 
- double valr=1,dp=0;
- double x,y,z;
- int status1,status2; 
-
-//  theta.print("theta"); 
-//  istatus1.print("theta"); istatus2.print("theta"); cif1.print("cif1 "); cif2.print("cif2 "); 
-
-  for (int i=0;i<n;i++)
-  { // {{{
-  x=theta(i); y=cif1(i); z=cif2(i); 
-  status1=istatus1(i); status2=istatus2(i); 
-
-// {{{ 
-
-if (status1==0 && status2==0) { // {{{
-valr=  pow((1/pow(y,1/x) + 1/pow(z,1/x)) - 1,-x);
-dp= (-((x*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x))) - log(-1 + pow(y,-1/x) + pow(z,-1/x)))/pow(-1 + pow(y,-1/x) + pow(z,-1/x),x);
-} // }}}
-
-if (status1==1 && status2==0) { // {{{
-valr=pow(y,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x);
-dp=(pow(y,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*log(y))/pow(x,2) + pow(y,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*(((-1 - x)*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x)) - log(-1 + pow(y,-1/x) + pow(z,-1/x)));
-} // }}}
-
-if (status1==0 && status2==1) { // {{{
-valr=pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x);
-dp=(pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*log(z))/pow(x,2) + pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-1 - x)*(((-1 - x)*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x)) - log(-1 + pow(y,-1/x) + pow(z,-1/x)));
-} // }}}
-
-if (status1==1 && status2==1) { // {{{
-valr= -(((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x))/x);
-dp=((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x))/pow(x,2) + (pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x))/x - ((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x)*log(y))/pow(x,3) - ((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x)*log(z))/pow(x,3) - ((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/x),-2 - x)*(((-2 - x)*(log(y)/(pow(x,2)*pow(y,1/x)) + log(z)/(pow(x,2)*pow(z,1/x))))/(-1 + pow(y,-1/x) + pow(z,-1/x)) - log(-1 + pow(y,-1/x) + pow(z,-1/x))))/x;
-} // }}}
-
-// }}} 
-
-  L(i)=valr;
-  dL(i)=dp; 
-  } // }}} 
-
-List res; 
-res["like"]=L; 
-res["dlike"]=dL; 
-
-return(res);  
-} // }}}
- 
 double claytonoakes(double theta,int status1,int status2,double cif1,double cif2,vec &dp) 
 { // {{{
   double valr=1,x,y,z;
   //double cifs=cif1+cif2; 
   //double S=1+(cifs*(theta-1)); 
+  // theta is 1/variance, which is how this function is called  
   x=theta; y=cif1; z=cif2; 
 
 if (status1==0 && status2==0) { // {{{
@@ -94,6 +37,43 @@ dp(0)=((-1 - x)*pow(y,-1 - 1/x)*pow(z,-1 - 1/x)*pow(-1 + pow(y,-1/x) + pow(z,-1/
 } // }}}
 
 return(valr); 
+} // }}}
+
+//extern "C" double 
+RcppExport SEXP claytonoakesR(SEXP itheta,SEXP  iistatus1,SEXP  iistatus2,SEXP  icif1,SEXP  icif2,SEXP iags) 
+{ // {{{
+ colvec theta = Rcpp::as<colvec>(itheta);
+ colvec cif1 = Rcpp::as<colvec>(icif1);
+ colvec cif2 = Rcpp::as<colvec>(icif2);
+ colvec istatus1 = Rcpp::as<colvec>(iistatus1);
+ colvec istatus2 = Rcpp::as<colvec>(iistatus2);
+
+ colvec L=theta; 
+ colvec dL=theta; 
+ int n=cif1.size(); 
+ double valr=1;
+ double x,y,z;
+ int status1,status2; 
+ colvec vdp(1); 
+
+//  theta.print("theta"); 
+//  istatus1.print("theta"); istatus2.print("theta"); cif1.print("cif1 "); cif2.print("cif2 "); 
+
+  for (int i=0;i<n;i++)
+  { // {{{
+  x=theta(i); y=cif1(i); z=cif2(i); 
+  status1=istatus1(i); status2=istatus2(i); 
+
+  valr=claytonoakes(x,status1,status2,y,z,vdp); 
+  L(i)=valr;
+  dL(i)=vdp(0); 
+  } // }}} 
+
+List res; 
+res["like"]=L; 
+res["dlike"]=dL; 
+
+return(res);  
 } // }}}
  
 double placklike(double theta,int status1,int status2,double cif1,double cif2,vec &dp) 
