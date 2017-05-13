@@ -246,11 +246,21 @@ BEGIN_RCPP/*{{{*/
 //pvals[i] <- pval(sup[,i],obs[i])
 //cat(nnames[i],":","sup=",obs[i],"pval=",pvals[i],"\n")
 //}
+  mat Uthati(n,p); 
 
   for (unsigned j=0; j<nsim; j++) {
-     colvec g = norm(n) ; 
+     g = randu<vec>(n); 
      mat  Uti= g*U; 
-     CubeVec(dUt,Uti[nd,])$XXbeta
+     for (unsigned i=0; i<p; i++)  Uti.col(j) = cumsum(Uti.col(j));
+
+     for (unsigned k=0; k<n; k++)  {
+	  Uthati.row(k)=(reshape(dUt.row(k),p,p)*Uti.row(n)).t();
+     }
+     Uthati=Uti - Uthati; 
+
+     for (unsigned i=0; i<p; i++)  {
+     sup(j,i)=max(abs(Uthati.col(i))); 
+     }
   }
 
   return(Rcpp::List::create(Rcpp::Named("supUsim")=sup));
