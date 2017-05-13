@@ -249,24 +249,28 @@ BEGIN_RCPP/*{{{*/
   mat sup(nsim,p); 
 
 //  dUt.print("dUt"); 
-     printf("hh1"); 
+
+  GetRNGstate();  /* to use R random normals */
 
   for (unsigned j=0; j<nsim; j++) {
-     vec g = randu<vec>(n); 
-     for (unsigned k=0; k<n; k++)  Uti.row(k)=g(k)*U.row(k); 
-//     mat  Uti= g*U; 
+//     vec g = randu<vec>(n); 
+//     g.print("g");  
+     for (unsigned k=0; k<n; k++)  Uti.row(k)=norm_rand()*U.row(k); 
+//   mat  Uti= g*U; 
      for (unsigned k=0; k<p; k++)  Uti.col(k) = cumsum(Uti.col(k));
 
      for (unsigned k=0; k<n; k++)  {
 	  Uthati.row(k)=(reshape(dUt.row(k),p,p)*(Uti.row(n-1)).t()).t();
      }
-     Uthati=Uti - Uthati; 
+     Uthati=Uti-Uthati; 
+//     if(j==0) Uthati.print("one sim"); 
 
-     for (unsigned k=0; k<p; k++)  {
+     for (unsigned k=0;k<p;k++)  {
+//	     printf(" %lf \n",sup(j,k)); 
      sup(j,k)=max(abs(Uthati.col(k))); 
      }
-
   }
+  PutRNGstate();  /* to use R random normals */
 
   return(Rcpp::List::create(Rcpp::Named("supUsim")=sup));
 END_RCPP
