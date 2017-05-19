@@ -581,6 +581,7 @@ if (is.null(theta))  theta <- object$theta
 if (!is.null(theta.des)) theta <- c(theta.des %*% theta)
 if (attr(object,"var.link")==1) theta  <- exp(theta) 
 
+### theta is variance 
 if (diag==FALSE) St1t2<- (outer(c(S1)^{-(theta)},c(S2)^{-(theta)},FUN="+") - 1)^(-(1/theta)) else 
 St1t2<- ((S1^{-(theta)}+S2^{-(theta)})-1)^(-(1/theta))
 ###St1t2<- ((S1^{-(1/theta)}+S2^{-(1/theta)})-1)^(-(theta))

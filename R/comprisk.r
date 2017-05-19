@@ -322,7 +322,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
 	left <- 1
 	if (max(entrytime)==0) left <- 0
     }
-    event <- (status==cause)
+    event <- (abs(status)==cause)
     if (sum(event)==0) stop("No events of interest in data\n"); 
 
     ## }}} 

@@ -126,7 +126,10 @@ for (s=0;s<*Ntimes;s++)
 
       replace_row(cX,j,dp); 
 
-      VE(Y,j)=((x[j]<=time) & (cause[j]==*CA))*1;
+//      printf(" %d \n",cause[j]); printf(" %d \n",abs(cause[j])); 
+
+      VE(Y,j)=((x[j]<=time) & (abs(cause[j])==*CA))*1;
+      if (cause[j]<0) VE(Y,j)=-1*VE(Y,j); 
 
       if (it==(*Nit-1) && (*conservative==0)) { // {{{ for censoring distrubution
            if (*monotone==1)  scl_vec_mult(1,xi,dp1); 
