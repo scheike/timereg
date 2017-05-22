@@ -10,11 +10,13 @@
 ##' @param left Left truncation
 ##' @param pairleft pairwise (1) left truncation or individual (0)
 ##' @param trunc.prob Truncation probability 
-##' @author Klaus K. Holst
+##' @param same if 1 then left-truncation is same also for univariate truncation
+##' @author Thomas Scheike and Klaus K. Holst
 ##' @export
-simClaytonOakes <- function(K,n,eta,beta,stoptime,left=0,pairleft=0,trunc.prob=0.5)  ## {{{ 
+simClaytonOakes <- function(K,n,eta,beta,stoptime,left=0,pairleft=0,trunc.prob=0.5,same=0)  ## {{{ 
 {
   ## K antal clustre, n=antal i clustre
+  ###	K <- 100; n=2; stoptime=2; eta=1/2; beta=0; left=0.5; trunc.prob=0.5; pairleft=0; same=0
   x<-array(c(runif(n*K),rep(0,n*K),rbinom(n*K,1,0.5)),dim=c(K,n,3))
   C<-matrix(stoptime,K,n);
   Gam1 <-matrix(rgamma(K,eta)/eta,K,n)
@@ -32,11 +34,13 @@ if (left>0) {
        trunk <- (lefttime > minstime)
        medleft <- rep(trunk,each=n)
      } else {
-###       lefttime <- rexp(n*K)*left
-       lefttime <- runif(K)*(stoptime-left)
-       left <- rbinom(n*K,1,trunc.prob) ## not trunation times!
-       lefttime <- apply(cbind(lefttime*left,3),1,min)
-       trunk <- (lefttime > ud[,1])
+       if (same==0) lefttime <- rexp(n*K)*left
+       if (same==1) lefttime <- rep(rexp(K)*left,each=n)
+###       lefttime <- runif(K)*(stoptime-left)
+       if (same==0) left <- rbinom(n*K,1,trunc.prob) ## not trunation times!
+       if (same==1) left <- rep(rbinom(K,1,trunc.prob),each=n)
+       lefttime <- lefttime*left
+       trunk <- ud[,1] > lefttime
        medleft <- trunk
      }
   } else { lefttime <- trunk <- rep(0,K);}
@@ -56,6 +60,7 @@ if (left>0) {
   return(ud)
 } ## }}} 
 
+
 ##' Simulate observations from the Clayton-Oakes copula model with
 ##' Weibull type baseline and Cox marginals.
 ##'
@@ -71,8 +76,8 @@ if (left>0) {
 ##' @param pairleft pairwise (1) left truncation or individual (0)
 ##' @author Klaus K. Holst 
 ##' @export
-simClaytonOakesWei <- function(K,n,eta,beta,stoptime,
-	       weiscale=1,weishape=2,left=0,pairleft=0)
+simClaytonOakesWei <- function(K,n,eta,beta,stoptime,weiscale=1,
+			       weishape=2,left=0,pairleft=0)
 { ## {{{ 
 cat(" not quite \n"); 
 ## K antal clustre, n=antal i clustre

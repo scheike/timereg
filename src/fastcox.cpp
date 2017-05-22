@@ -225,7 +225,6 @@ BEGIN_RCPP/*{{{*/
   mat U   = Rcpp::as<mat>(iU);
   mat dUt = Rcpp::as<mat>(idUt);
   int nsim = Rcpp::as<int>(insim);
-
   unsigned p = U.n_cols;
   unsigned n = U.n_rows;
 
@@ -247,6 +246,7 @@ BEGIN_RCPP/*{{{*/
   mat Uthati(n,p); 
   mat Uti(n,p); 
   mat sup(nsim,p); 
+  mat simUti(n,50*p); 
 
 //  dUt.print("dUt"); 
 
@@ -263,16 +263,19 @@ BEGIN_RCPP/*{{{*/
 	  Uthati.row(k)=(reshape(dUt.row(k),p,p)*(Uti.row(n-1)).t()).t();
      }
      Uthati=Uti-Uthati; 
+
 //     if(j==0) Uthati.print("one sim"); 
 
      for (unsigned k=0;k<p;k++)  {
 //	     printf(" %lf \n",sup(j,k)); 
-     sup(j,k)=max(abs(Uthati.col(k))); 
+        sup(j,k)=max(abs(Uthati.col(k))); 
+        if (j<50) { simUti.col(j*p+k)=Uthati.col(k); }
      }
   }
   PutRNGstate();  /* to use R random normals */
 
-  return(Rcpp::List::create(Rcpp::Named("supUsim")=sup));
+  return(Rcpp::List::create(Rcpp::Named("supUsim")=sup,
+			    Rcpp::Named("simUt")=simUti)); 
 END_RCPP
   }/*}}}*/
 
