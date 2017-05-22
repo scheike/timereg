@@ -57,7 +57,7 @@ return(out)
 ##' @export
 plot.gof.phreg <-  function(x)
 {# {{{
-p <- ncol(sim$score)
+p <- ncol(x$score)
 for (i in 1:p)
 {
 simU <- x$simUt[,(0:49)*p+i]
