@@ -5,7 +5,7 @@
 \title{Simulate from the Clayton-Oakes frailty model}
 \usage{
 simClaytonOakes(K, n, eta, beta, stoptime, left = 0, pairleft = 0,
-  trunc.prob = 0.5)
+  trunc.prob = 0.5, same = 0)
 }
 \arguments{
 \item{K}{Number of clusters}
@@ -23,11 +23,13 @@ simClaytonOakes(K, n, eta, beta, stoptime, left = 0, pairleft = 0,
 \item{pairleft}{pairwise (1) left truncation or individual (0)}
 
 \item{trunc.prob}{Truncation probability}
+
+\item{same}{if 1 then left-truncation is same also for univariate truncation}
 }
 \description{
 Simulate observations from the Clayton-Oakes copula model with
 piecewise constant marginals.
 }
 \author{
-Klaus K. Holst
+Thomas Scheike and Klaus K. Holst
 }
