@@ -40,16 +40,21 @@ return(valr);
 } // }}}
 
 //extern "C" double 
-RcppExport SEXP claytonoakesR(SEXP itheta,SEXP  iistatus1,SEXP  iistatus2,SEXP  icif1,SEXP  icif2,SEXP iags) 
+RcppExport SEXP claytonoakesR(SEXP itheta,SEXP  iistatus1,SEXP  iistatus2,SEXP  icif1,SEXP  icif2,SEXP ivarlink) 
 { // {{{
  colvec theta = Rcpp::as<colvec>(itheta);
  colvec cif1 = Rcpp::as<colvec>(icif1);
  colvec cif2 = Rcpp::as<colvec>(icif2);
  colvec istatus1 = Rcpp::as<colvec>(iistatus1);
  colvec istatus2 = Rcpp::as<colvec>(iistatus2);
+ int varlink = Rcpp::as<int>(ivarlink);
+
+ // parametrization of Clayton-Oakes model 
+ if (varlink==1) theta=1/exp(theta); else theta=1/theta;
 
  colvec L=theta; 
- colvec dL=theta; 
+ colvec logL=theta; 
+ colvec dlogL=theta; 
  int n=cif1.size(); 
  double valr=1;
  double x,y,z;
@@ -66,12 +71,16 @@ RcppExport SEXP claytonoakesR(SEXP itheta,SEXP  iistatus1,SEXP  iistatus2,SEXP  
 
   valr=claytonoakes(x,status1,status2,y,z,vdp); 
   L(i)=valr;
-  dL(i)=vdp(0); 
+  logL(i)=log(valr);
+  if (varlink==1) dlogL(i)=-pow(x,1)*vdp(0)/logL(i);  
+  if (varlink==0) dlogL(i)=-1*pow(x,2)*vdp(0)/logL(i); 
+
   } // }}} 
 
 List res; 
 res["like"]=L; 
-res["dlike"]=dL; 
+res["loglike"]=logL; 
+res["dloglike"]=dlogL; 
 
 return(res);  
 } // }}}

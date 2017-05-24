@@ -26,9 +26,10 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
       val <- lapply(dd,function(d)
                     with(d,
                          .Call("FastCoxPL",pp,X,XX,sign,jumps,PACKAGE="mets")))
-      ploglik <- Reduce("+",lapply(val,function(x) x$ploglik))
-      gradient <- Reduce("+",lapply(val,function(x) x$gradient))
-      hessian <- Reduce("+",lapply(val,function(x) x$hessian))
+      ploglik <-     Reduce("+",lapply(val,function(x) x$ploglik))
+      gradient <-    Reduce("+",lapply(val,function(x) x$gradient))
+      hessian <-     Reduce("+",lapply(val,function(x) x$hessian))
+###      hessiantime <- Reduce("+",lapply(val,function(x) x$hessiantime))
       if (all) {
         U <- do.call("rbind",lapply(val,function(x) x$U))
         time <- lapply(dd,function(x) x$time[x$ord+1])

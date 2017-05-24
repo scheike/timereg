@@ -369,7 +369,6 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 	   cluster.call <- clusters; 
 	   X <- matrix(1,antpers,1); ### Z <- matrix(0,antpers,1); ### no use for these
 	   px <- 1; pz <- ncol(Z); 
-	   if (sum(abs(start.time))>0) lefttrunk <- 1 else lefttrunk <- 0
 	   start <- rep(0,antpers);
 	   beta.fixed <- 0
 	   semi <- 1
@@ -379,9 +378,11 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 
 ###print("00"); print(summary(psurvmarg)); print(summary(ptrunc))
 
+  if (any(abs(start.time)>0)) lefttrunk <- 1 else lefttrunk <- 0
   if (!is.null(start.time)) {
-  if (sum(abs(start.time))>0) lefttrunk <- 1  else lefttrunk <- 0;  
+  if (any(abs(start.time)>0)) lefttrunk <- 1  else lefttrunk <- 0;  
   } else lefttrunk <- 0
+
 
 if (!is.null(margsurv))  {
   if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen")  { ## {{{
@@ -401,6 +402,7 @@ if (!is.null(margsurv))  {
        ptrunc <- rep(1,length(psurvmarg)); 
        RR<- exp(margsurv$linear.predictors-sum(margsurv$means*coef(margsurv)))
         if ((lefttrunk==1)) { 
+         stop("Use cox.aalen function for truncation case \n"); 
          baseout <- survival::basehaz(margsurv,centered=FALSE); 
          cum <- cbind(baseout$time,baseout$hazard)
 	 cum <- Cpred(cum,start.time)[,2]
@@ -414,9 +416,8 @@ if (!is.null(margsurv))  {
 
   if (is.null(psurvmarg)) psurvmarg <- rep(1,antpers);
   if (!is.null(marginal.survival)) psurvmarg <- marginal.survival 
-  if (!is.null(marginal.trunc)) ptrunc <- marginal.trunc else {
-	  if (two.stage==1) ptrunc <- matrix(1,nrow=length(psurvmarg),ncol=1) else ptrunc <- 0*psurvmarg; 
-  }
+  if (!is.null(marginal.trunc)) ptrunc <- marginal.trunc 
+  if (is.null(ptrunc)) ptrunc <- rep(1,length(psurvmarg))
 
 ###  print(summary(psurvmarg)); print(summary(ptrunc))
 

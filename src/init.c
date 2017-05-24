@@ -13,7 +13,7 @@ extern SEXP biprobit2(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP
 extern SEXP bvncdf(SEXP, SEXP, SEXP);
 extern SEXP claytonoakes(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP claytonoakesbinRV(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP claytonoakesR(SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP claytonoakesR(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP clusterindexdata(SEXP, SEXP, SEXP, SEXP);
 extern SEXP clusterindexM(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP cor(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
@@ -53,7 +53,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"bvncdf",                            (DL_FUNC) &bvncdf,                             3},
     {"claytonoakes",                      (DL_FUNC) &claytonoakes,                       9},
     {"claytonoakesbinRV",                 (DL_FUNC) &claytonoakesbinRV,                 10},
-    {"claytonoakesR",                     (DL_FUNC) &claytonoakesR,                      5},
+    {"claytonoakesR",                     (DL_FUNC) &claytonoakesR,                      6},
     {"clusterindexdata",                  (DL_FUNC) &clusterindexdata,                   4},
     {"clusterindexM",                     (DL_FUNC) &clusterindexM,                      5},
     {"cor",                               (DL_FUNC) &cor,                               40},

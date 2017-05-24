@@ -5,6 +5,7 @@
 ##' @param data Data frame
 ##' @param theta.des design for dependence parameters in two-stage model 
 ##' @param clusters clustering variable for twins
+##' @param var.link exp link for theta
 ##' @param Nit number of iteration 
 ##' @param final.fitting TRUE to do final estimation with SE and ... arguments for marginal models 
 ##' @param ... Additional arguments to lower level functions
@@ -26,7 +27,7 @@
 ##'			 data=diabetes,clusters="id")
 ##' out$two        ## twostage output
 ##' plot(out$marg) ## marginal model output
-twin.clustertrunc <- function(survformula,data=sys.parent(),theta.des=NULL,clusters=NULL,
+twin.clustertrunc <- function(survformula,data=sys.parent(),theta.des=NULL,clusters=NULL,var.link=1,
 		      Nit=10,final.fitting=FALSE,...)
 { ## {{{ 
 ## {{{  adding names of covariates from survival model to data frame if needed
@@ -39,7 +40,6 @@ if (length(survnames)!=3) stop("Must give entry, exit and status")
 entry <- survnames[1]
 exit <- survnames[2]
 status <- survnames[3]
-
 
 tss <- terms(survformula)
 Znames <- attr(tss,"term.labels")
@@ -102,8 +102,8 @@ for (i in 1:Nit)
   if (i==1) { 
    if (model=="cox.aalen") pbeta <- 0*c(aout$gamma,aout$cum[,-1]) else pbeta <- 0*aout$cum[,-1]
   } 
-  if (i>=2) tout <- two.stage(aout,data=data,clusters=nclusters,theta.des=theta.des,theta=ptheta)
-  else tout <- two.stage(aout,data=data,clusters=nclusters,theta.des=theta.des)
+  if (i>=2) tout <- twostage(aout,data=data,clusters=nclusters,theta.des=theta.des,theta=ptheta,var.link=var.link)
+  else tout <- twostage(aout,data=data,clusters=nclusters,theta.des=theta.des,var.link=var.link)
   if (!is.null(theta.des)) theta <- c(theta.des %*% tout$theta) else theta <- tout$theta
   if (attr(tout, "var.link") == 1) theta <- exp(tout$theta) 
 ###
@@ -130,10 +130,10 @@ for (i in 1:Nit)
   ptrunct1v2 <- predict.two.stage(tout,X=X1,X2=X2,times=time1,times2=v2,theta=theta)
   } ## }}} 
   nn <- nrow(dd)
-  ppv1t2 <- .Call("claytonoakesR",1/dd$thetades1,rep(0,nn),status2,
-		  ptruncv1t2$S1,ptruncv1t2$S2)$like
-  ppt1v2 <- .Call("claytonoakesR",1/dd$thetades1,status1,rep(0,nn),
-		  ptrunct1v2$S1,ptrunct1v2$S2)$like
+  ppv1t2 <- .Call("claytonoakesR",dd$thetades1,rep(0,nn),status2,
+		  ptruncv1t2$S1,ptruncv1t2$S2,var.link=var.link)$like
+  ppt1v2 <- .Call("claytonoakesR",dd$thetades1,status1,rep(0,nn),
+		  ptrunct1v2$S1,ptrunct1v2$S2,var.link=var.link)$like
   ppt1v2[status1==0] <- ppt1v2[status1==0]/ptrunct1v2$S1[status1==0]
   ppv1t2[status2==0] <- ppv1t2[status2==0]/ptruncv1t2$S2[status2==0]
 ###
@@ -153,7 +153,7 @@ for (i in 1:Nit)
 if (final.fitting==TRUE) {  ## {{{ 
   if (model=="cox.aalen") aout <- cox.aalen(survformula,data=data,weights=1/pweight,n.sim=0,...) else 
            aout <- aalen(survformula,data=data,weights=1/pweight,n.sim=0,...)
-  tout <- two.stage(aout,data=data,clusters=nclusters,theta.des=theta.des)
+  tout <- twostage(aout,data=data,clusters=nclusters,theta.des=theta.des,var.link=var.link)
 } ## }}} 
 
 res <- list(marg=aout,two=tout,marg.weights=pweight,dtheta=dtheta,dmarg=dmarg,model=model)
