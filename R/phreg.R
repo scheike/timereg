@@ -29,9 +29,9 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
       ploglik <-     Reduce("+",lapply(val,function(x) x$ploglik))
       gradient <-    Reduce("+",lapply(val,function(x) x$gradient))
       hessian <-     Reduce("+",lapply(val,function(x) x$hessian))
-###      hessiantime <- Reduce("+",lapply(val,function(x) x$hessiantime))
       if (all) {
         U <- do.call("rbind",lapply(val,function(x) x$U))
+        hessiantime <- do.call("rbind",lapply(val,function(x) x$hessianttime))
         time <- lapply(dd,function(x) x$time[x$ord+1])
         ord <- lapply(dd,function(x) x$ord+1)
         jumps <- lapply(dd,function(x) x$jumps+1)
@@ -39,7 +39,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
         S0 <- lapply(val,function(x) x$S0)
         nevent  <- unlist(lapply(S0,length))
         return(list(ploglik=ploglik,gradient=gradient,hessian=hessian,
-                    U=U,S0=S0,nevent=nevent,hessiantime=hessiantime,
+                    U=U,S0=S0,nevent=nevent,hessianttime=hessiantime,
                     ord=ord,time=time,jumps=jumps,jumptimes=jumptimes))
       }
       structure(-ploglik,gradient=-gradient,hessian=-hessian)
