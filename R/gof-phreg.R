@@ -15,14 +15,20 @@
 ##' gg <- gof.phreg(m1)
 ##' par(mfrow=c(1,3))
 ##' plot(gg)
+##' 
+##' m1 <- phreg(Surv(time,status==9)~strata(vf)+chf+diabetes,data=TRACE) 
+##' gg <- gof.phreg(m1)
 gof.phreg  <- function(x,n.sim=1000)
 {# {{{
 ### test for proportionality 
 p <- length(x$coef)
 nnames <- names(x$coef)
 ii <- solve(x$hessian)
-U <-  x$U
-Pt <- apply(x$hessianttime,2,cumsum)
+if (is.list(x$jumptimes)) jumptimes <- unlist(x$jumptimes) else jumptimes <- x$jumptimes
+ord <- order(jumptimes)
+Pt <- x$hessianttime[ord,]
+U <-  x$U[ord,]
+Pt <- apply(Pt,2,cumsum)
 Ut <- apply(U,2,cumsum)
 
 nd <- nrow(x$U)
@@ -39,7 +45,6 @@ pvals <- rep(0,p)
 for (i in 1:p) 
 {
 pvals[i] <- pval(sup[,i],obs[i])
-###cat(nnames[i],":","sup=",obs[i],"pval=",pvals[i],"\n")
 res[i,] <- c(obs[i],pvals[i])
 }
 if (length(nnames)==p) rownames(res) <- nnames

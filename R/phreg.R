@@ -22,7 +22,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
                  })
     if (!is.null(id))
       id <- unlist(lapply(dd,function(x) x$id[x$jumps+1]))
-    obj <- function(pp,U=FALSE,all=FALSE) {
+      obj <- function(pp,U=FALSE,all=FALSE) {
       val <- lapply(dd,function(d)
                     with(d,
                          .Call("FastCoxPL",pp,X,XX,sign,jumps,PACKAGE="mets")))
