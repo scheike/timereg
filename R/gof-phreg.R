@@ -18,6 +18,7 @@
 ##' 
 ##' m1 <- phreg(Surv(time,status==9)~strata(vf)+chf+diabetes,data=TRACE) 
 ##' gg <- gof.phreg(m1)
+##' @export
 gof.phreg  <- function(x,n.sim=1000)
 {# {{{
 ### test for proportionality 
