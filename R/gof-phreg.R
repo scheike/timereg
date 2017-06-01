@@ -37,17 +37,15 @@ hatt <- Pt
 sup <- matrix(0,n.sim,nrow(ii))
 hatti <- matrix(0,nd,nrow(ii))
 obs <- apply(abs(Ut),2,max)
-simcox <-  .Call("PropTestCox",U,Pt,n.sim,PACKAGE="mets")
-sup <-  simcox$supUsim
 
+tt <- system.time(simcox1<-.Call("PropTestCox",U,Pt,10,obs,PACKAGE="mets"))
+prt <- n.sim*tt[3]/(10*60)
+if (prt>1) cat(paste("Predicted time minutes",signif(prt,2),"\n"))
+
+simcox <-  .Call("PropTestCox",U,Pt,n.sim,obs,PACKAGE="mets")
+sup <-  simcox$supUsim
 res <- matrix(0,p,2)
-pvals <- rep(0,p)
-for (i in 1:p) 
-{
-pvals[i] <- pval(sup[,i],obs[i])
-res[i,] <- c(obs[i],pvals[i])
-}
-if (length(nnames)==p) rownames(res) <- nnames
+res[,2] <- simcox$pval
 colnames(res) <- c("Sup|U(t)|","pval")
 
 cat("Cumulative score process test for Proportionality:\n")

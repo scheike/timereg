@@ -219,44 +219,28 @@ END_RCPP
 }/*}}}*/
 
 
-RcppExport SEXP PropTestCox(SEXP iU, SEXP idUt, SEXP insim
+RcppExport SEXP PropTestCox(SEXP iU, SEXP idUt, SEXP insim, SEXP iobssup
 			  ) {
 BEGIN_RCPP/*{{{*/
-  mat U   = Rcpp::as<mat>(iU);
+  mat U      = Rcpp::as<mat>(iU);
   mat dUt = Rcpp::as<mat>(idUt);
+  arma::vec osup = Rcpp::as<arma::vec>(iobssup);
   int nsim = Rcpp::as<int>(insim);
   unsigned p = U.n_cols;
   unsigned n = U.n_rows;
 
-//for (i in 1:n.sim)
-//{
-//g <- rnorm(nd)
-//Uti <- apply(U*g,2,cumsum)
-//hatti <-  .Call("CubeVec",Pt,Uti[nd,],PACKAGE="mets")$XXbeta
-//Uthati <- Uti - hatti
-//sup[i,] <- apply( abs(Uthati),2,max)
-//}
-//
-//pvals <- rep(0,p)
-//for (i in 1:p) 
-//{
-//pvals[i] <- pval(sup[,i],obs[i])
-//cat(nnames[i],":","sup=",obs[i],"pval=",pvals[i],"\n")
-//}
+  vec pval(p); 
   mat Uthati(n,p); 
   mat Uti(n,p); 
   mat sup(nsim,p); 
   mat simUti(n,50*p); 
 
-//  dUt.print("dUt"); 
 
   GetRNGstate();  /* to use R random normals */
 
   for (unsigned j=0; j<nsim; j++) {
-//     vec g = randu<vec>(n); 
-//     g.print("g");  
+     int thissiml=0; 
      for (unsigned k=0; k<n; k++)  Uti.row(k)=norm_rand()*U.row(k); 
-//   mat  Uti= g*U; 
      for (unsigned k=0; k<p; k++)  Uti.col(k) = cumsum(Uti.col(k));
 
      for (unsigned k=0; k<n; k++)  {
@@ -269,13 +253,18 @@ BEGIN_RCPP/*{{{*/
      for (unsigned k=0;k<p;k++)  {
 //	     printf(" %lf \n",sup(j,k)); 
         sup(j,k)=max(abs(Uthati.col(k))); 
+//      count if sup for this realization is larger than supObs
+        if (sup(j,k)>=osup(k) & thissiml==0) { pval(k)++; thissiml=1;}
         if (j<50) { simUti.col(j*p+k)=Uthati.col(k); }
      }
   }
+  pval=pval/nsim; 
+
   PutRNGstate();  /* to use R random normals */
 
   return(Rcpp::List::create(Rcpp::Named("supUsim")=sup,
-			    Rcpp::Named("simUt")=simUti)); 
+			    Rcpp::Named("simUt")=simUti,
+			    Rcpp::Named("pval")=pval)); 
 END_RCPP
   }/*}}}*/
 

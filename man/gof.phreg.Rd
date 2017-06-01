@@ -21,12 +21,12 @@ data(TRACE)
 
 m1 <- phreg(Surv(time,status==9)~vf+chf+diabetes,data=TRACE) 
 
-gg <- gof.phreg(m1)
+gg <- mets:::gof.phreg(m1)
 par(mfrow=c(1,3))
 plot(gg)
 
 m1 <- phreg(Surv(time,status==9)~strata(vf)+chf+diabetes,data=TRACE) 
-gg <- gof.phreg(m1)
+gg <- mets:::gof.phreg(m1)
 }
 \author{
 THomas Scheike and Klaus K. Holst

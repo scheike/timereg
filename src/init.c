@@ -42,7 +42,7 @@ extern SEXP uniprobit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP CubeVec(SEXP, SEXP);
 extern SEXP CubeMat(SEXP, SEXP);
 extern SEXP CubeMat(SEXP, SEXP);
-extern SEXP PropTestCox(SEXP, SEXP,SEXP);
+extern SEXP PropTestCox(SEXP, SEXP,SEXP,SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
     {"Bhat",                              (DL_FUNC) &Bhat,                               6},
@@ -72,7 +72,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"mets_loglikMVN",                    (DL_FUNC) &mets_loglikMVN,                    13},
     {"mets_RcppExport_registerCCallable", (DL_FUNC) &mets_RcppExport_registerCCallable,  0},
     {"pBhat",                             (DL_FUNC) &pBhat,                              6},
-    {"PropTestCox",                       (DL_FUNC) &PropTestCox,                        3},
+    {"PropTestCox",                       (DL_FUNC) &PropTestCox,                        4},
     {"pmvn0",                             (DL_FUNC) &pmvn0,                              5},
     {"Dpmvn",                             (DL_FUNC) &Dpmvn,                              5},
     {"survivalloglikeRVpairs",            (DL_FUNC) &survivalloglikeRVpairs,            25},
