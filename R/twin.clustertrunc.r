@@ -105,8 +105,7 @@ for (i in 1:Nit)
   if (i>=2) tout <- twostage(aout,data=data,clusters=nclusters,theta.des=theta.des,theta=ptheta,var.link=var.link)
   else tout <- twostage(aout,data=data,clusters=nclusters,theta.des=theta.des,var.link=var.link)
   if (!is.null(theta.des)) theta <- c(theta.des %*% tout$theta) else theta <- tout$theta
-  if (attr(tout, "var.link") == 1) theta <- exp(tout$theta) 
-###
+###  if (attr(tout, "var.link") == 1) theta <- exp(tout$theta) 
   data$thetades  <- c(theta)
   data$delay <- tout$marginal.trunc
   data$surv <-  tout$marginal.surv
@@ -121,40 +120,13 @@ for (i in 1:Nit)
   status2 <- dd[,paste(status,"2",sep="")]
   nn <- nrow(dd)
 
-###  if (model=="cox.aalen")
-###  { ## {{{  prediction using covariates of subject 1 and 2
-###  Z1 <- as.matrix(dd[,paste(namesZ,"1",sep="")])
-###  Z2 <- as.matrix(dd[,paste(namesZ,"2",sep="")])
-######  print(head(Z1)); print(head(Z2))
-###  ptruncv1t2 <- predict.two.stage(tout,Z=Z1,Z2=Z2,times=v1,times2=time2,theta=theta)
-###  ptrunct1v2 <- predict.two.stage(tout,Z=Z1,Z2=Z2,times=time1,times2=v2,theta=theta)
-###  } else {
-###  X1 <- as.matrix(dd[,paste(namesX,"1",sep="")])
-###  X2 <- as.matrix(dd[,paste(namesX,"2",sep="")])
-######  print(head(X1)); print(head(X2))
-###  ptruncv1t2 <- predict.two.stage(tout,X=X1,X2=X2,times=v1,times2=time2,theta=theta)
-###  ptrunct1v2 <- predict.two.stage(tout,X=X1,X2=X2,times=time1,times2=v2,theta=theta)
-###  } ## }}} 
-
-  varlink <- 1
-  ppv1t2 <- .Call("claytonoakesR",dd$thetades1,rep(0,nn),status2,dd$delay1,dd$surv2,varlink)$like
+  ppv1t2 <- .Call("claytonoakesR",dd$thetades1,rep(0,nn),status2,dd$delay1,dd$surv2,var.link)$like
   ppv1t2[status2==0] <- ppv1t2[dd$status2==0]/dd$surv2[status2==0]
-  ppt1v2 <- .Call("claytonoakesR",dd$thetades1,dd$status1,rep(0,nn),dd$surv1,dd$delay2,varlink)$like
+  ppt1v2 <- .Call("claytonoakesR",dd$thetades1,dd$status1,rep(0,nn),dd$surv1,dd$delay2,var.link)$like
   ppt1v2[status1==0] <- ppt1v2[status1==0]/dd$surv1[status1==0]
   dd$weight1 <- c(ppt1v2)
   dd$weight2 <- c(ppv1t2)
   nn <- nrow(dd)
-
-###  ppv1t2 <- .Call("claytonoakesR",dd$thetades1,rep(0,nn),status2,
-###		  ptruncv1t2$S1,ptruncv1t2$S2,var.link=var.link)$like
-###  ppt1v2 <- .Call("claytonoakesR",dd$thetades1,status1,rep(0,nn),
-###		  ptrunct1v2$S1,ptrunct1v2$S2,var.link=var.link)$like
-###  ppt1v2[status1==0] <- ppt1v2[status1==0]/ptrunct1v2$S1[status1==0]
-###  ppv1t2[status2==0] <- ppv1t2[status2==0]/ptruncv1t2$S2[status2==0]
-###
-###  dd$weight1 <- c(ppt1v2)
-###  dd$weight2 <- c(ppv1t2)
-###  head(dd); dim(dd)
 
   dd2 <- fast.reshape(dd,labelnum=TRUE)
   pweight <- dd2$weight
@@ -163,7 +135,6 @@ for (i in 1:Nit)
   if ((dtheta+dmarg) < 0.001) break; 
   ptheta <- tout$theta
   if (model=="aalen") pbeta <- aout$cum[,-1] else  pbeta <- c(aout$gamma,aout$cum[,-1])
-###  print(c(dtheta,dmarg))
 } ## }}} 
 
 if (final.fitting==TRUE) {  ## {{{ 
