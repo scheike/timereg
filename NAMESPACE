@@ -83,6 +83,7 @@ export("aalen", ## {{{
        "pchazard.sim",
        "cause.pchazard.sim",
        "sim.cox",
+       "sim.cause.cox",
        "timecox",
        "timecoxBase",
        "timetest",

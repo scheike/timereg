@@ -73,7 +73,7 @@ pc.hazard <- function(cumhazard,rr,cum.hazard=TRUE)
   } else cumh <- cumhazard[,2] 
    n <- length(rr)
    ttt <- rexp(n)/rr
-###
+   ###
    ri <- sindex.prodlim(cumh,ttt)
    rr <- (ttt-cumh[ri])/(cumh[ri+1]-cumh[ri])
    rrx <- rr*(breaks[ri+1]-breaks[ri])+breaks[ri]
@@ -81,6 +81,7 @@ pc.hazard <- function(cumhazard,rr,cum.hazard=TRUE)
    status[is.na(rrx)] <- 0
    rrx[is.na(rrx)] <- mm
    dt <- data.frame(time=rrx,status=status)
+   names(dt) <- c("time","status")
    attr(dt,"cumhaz") <- cumhazard
    return(dt)
 }# }}}
@@ -112,29 +113,79 @@ pchazard.sim <- function(cumhazard,rr,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE)
    return(dt)
 }# }}}
 
+#' Simulation of Piecewise constant hazard models with two causes (Cox).
+#' 
+#' Simulates data from piecwise constant baseline hazard that can also be of
+#' Cox type. Censor data at highest value of the break points.
+#' 
+#' @param cumhaz1 cumulative hazard of cause 1
+#' @param cumhaz2 cumulative hazard of cause 1
+#' @param rr1 number of simulations or vector of relative risk for simuations.
+#' @param rr2 number of simulations or vector of relative risk for simuations.
+#' @param cens 
+#' @param rrc retlativ risk for censoring.
+#' @param cens.cum.hazard possible cumulative hazard for censoring.
+#' @author Thomas Scheike
+#' @keywords survival
+#' @examples
+#
+#' library(timereg)
+#'
+#' library(mets)
+#' data(TRACE)
+#' dtable(TRACE,~status)
+#' dsummary(TRACE,time~status)
+#'
+#' cox1 <- cox.aalen(Surv(time,status==9)~prop(vf)+prop(chf)+prop(wmi),
+#'             data=TRACE,robust=0)
+#' cox2 <-  cox.aalen(Surv(time,status==0)~prop(vf)+prop(chf)+prop(wmi),
+#'             data=TRACE,robust=0)
+#'
+#' X1 <- TRACE[,c("vf","chf","wmi")]
+#' n <- 100000
+#' xid <- sample(1:nrow(X1),n,replace=TRUE)
+#' Z1 <- X1[xid,]
+#' Z2 <- X1[xid,]
+#' rr1 <- exp(as.matrix(Z1) %*% cox1$gamma)
+#' rr2 <- exp(as.matrix(Z2) %*% cox2$gamma)
+#'
+#' cumhaz1 <- cox1$cum
+#' cumhaz2 <- cox2$cum
+#' d <-  cause.pchazard.sim(cox1$cum,cox2$cum,rr1,rr2)
+#' d <- cbind(dd,Z0)
+#' c1 <-   cox.aalen(Surv(time,status==1)~prop(vf)+prop(chf)+prop(wmi),
+#'                   data=dd,robust=0)
+#' cbind(sc1$gamma, cox1$gamma)
+#' c2 <-  cox.aalen(Surv(time,status==2)~prop(vf)+prop(chf)+prop(wmi),
+#'                   data=dd,robust=0)
+#' cbind(sc2$gamma, cox2$gamma)
+#' par(mfrow=c(1,2))
+#' plot(cox1); lines(sc1$cum,col=2)
+#' plot(cox2$cum,type="l");
+#' lines(sc2$cum,col=2)
 #' @export
 cause.pchazard.sim <- function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE)
-{# {{{
-### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
-### cumh=cbind(breaks,cumhazard) if cumh=TRUE
-
+{#'# {{{
+##'## cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
+##'## cumh=cbind(breaks,cumhazard) if cumh=TRUE
+ 
    if (length(rr1)==1) n<-rr1 else n <- length(rr1)
    if (missing(rr2)) rr2 <- n
-
+ 
    ptt1 <- pc.hazard(cumhaz1,rr1,cum.hazard=TRUE)
    ptt2 <- pc.hazard(cumhaz2,rr2,cum.hazard=TRUE)
    ptt <- data.frame(time=pmin(ptt1$time,ptt2$time),status=ifelse(ptt1$time<=ptt2$time,ptt1$status,ptt2$status*2))
-
+ 
    if (!is.null(cens)) {
       if (is.null(rrc)) rrc <- n 
-	   if (is.matrix(cens)) {
-		   pct <- pc.hazard(cens,rrc,cum.hazard=cens.cum.hazard)
-		   pct <- pct$time
-	   } else {
-		   if (is.numeric(cens)) pct<- rexp(n)/cens  else {
-		      chaz <-sum(ptt1$status+ptt2$status)/sum(ptt1$time+ptt2$time)  ## hazard averate T haz 
-		      pct<- rexp(n)/chaz 
-		   }
+           if (is.matrix(cens)) {
+        	   pct <- pc.hazard(cens,rrc,cum.hazard=cens.cum.hazard)
+        	   pct <- pct$time
+           } else {
+        	   if (is.numeric(cens)) pct<- rexp(n)/cens  else {
+        	      chaz <-sum(ptt1$status+ptt2$status)/sum(ptt1$time+ptt2$time)  ## hazard averate T haz 
+        	      pct<- rexp(n)/chaz 
+        	   }
 	   }
 	   ptt <- data.frame(time=pmin(ptt$time,pct), status=ifelse(ptt$time<pct,ptt$status,0))
    }
@@ -189,7 +240,7 @@ sim.cox <- function(cox,n,data=NULL,cens=NULL,rrc=NULL)
 ### cumh=cbind(breaks,cumhazard) if cumh=TRUE
 
 if (class(cox)=="coxph")
-{
+{# {{{
    base <- basehaz(cox,centered=FALSE)[,c(2,1)] 
    mt <- model.frame(cox)
    Y <- model.extract(mt, "response")
@@ -209,9 +260,9 @@ if (class(cox)=="coxph")
   rr <- rr[xid]
   Z <- Z[xid,]
   colnames(Z) <- nn
-}
+}# }}}
 if (class(cox)=="cox.aalen")
-{
+{# {{{
    formula <- attr(cox, "Formula")
 ###   Z1 <- na.omit(model.matrix(cox,data=data))
    p <- nrow(cox$gamma)
@@ -224,7 +275,7 @@ if (class(cox)=="cox.aalen")
    xid <- sample(1:nrow(Z),n,replace=TRUE)
    rr <- rr[xid]
    Z <- Z[xid,]
-}
+}# }}}
 
    ptt <- pc.hazard(cumhazard,rr)
 
@@ -248,4 +299,205 @@ if (class(cox)=="cox.aalen")
    return(dt)
 }# }}}
 
+
+#' Simulation of cause specific from Cox models.
+#' 
+#' Simulates data that looks like fit from cause specific Cox models. 
+#' Censor data automatically. When censoring is given in the  list of causes this
+#' will give censoring that looks like the data.  Covariates are drawn from data-set
+#' with replacement. This gives covariates like the data. 
+#' 
+#' 
+#' @param coxs list of cox models.
+#' @param n number of simulations.
+#' @param data to extract covariates for simulations (draws from observed
+#' covariates).
+#' @param cens specifies censoring model, if NULL then only censoring for 
+#'   	       each cause at end of last event of this type. 
+#' 	       if "is.matrix" then uses cumulative. 
+#'             hazard given, if "is.scalar" then uses rate for exponential, and if not
+#'             given then takes average rate of in simulated data from cox model.
+#'             But censoring can also be given as a cause.
+#' @param rrc possible vector of relative risk for cox-type censoring.
+#' @author Thomas Scheike
+#' @keywords survival
+#' @examples
+#' 
+#' data(TRACE)
+#' cox1 <- cox.aalen(Surv(time,status==9)~prop(vf)+prop(chf)+prop(wmi),
+#'              data=TRACE,robust=0)
+#'  cox2 <-  cox.aalen(Surv(time,status==0)~prop(vf)+prop(chf)+prop(wmi),
+#'              data=TRACE,robust=0)
+#'  coxs <- list(cox1,cox2)
+#' 
+#'  dd <- sim.cause.cox(coxs,1000,data=TRACE)
+#'  scox1 <- cox.aalen(Surv(time,status==1)~prop(vf)+prop(chf)+prop(wmi),
+#'              data=dd,robust=0)
+#'  scox2 <-  cox.aalen(Surv(time,status==2)~prop(vf)+prop(chf)+prop(wmi),
+#'              data=dd,robust=0)
+#'  ### 
+#'  cbind(cox1$gamma,scox1$gamma)
+#'  cbind(cox2$gamma,scox2$gamma)
+#'  par(mfrow=c(1,2))
+#'  plot(cox1); lines(scox1$cum,col=2)
+#'  plot(cox2$cum,type="l");
+#'  lines(scox2$cum,col=2)
+#' 
+#' cox1 <- coxph(Surv(time,status==9)~vf+chf+wmi, data=TRACE)
+#' cox2 <- coxph(Surv(time,status==0)~vf+chf+wmi, data=TRACE)
+#'  
+#' coxs <- list(cox1,cox2)
+#' dd <- sim.cause.cox(coxs,100000,data=TRACE)
+#' scox1 <- cox.aalen(Surv(time,status==1)~prop(vf)+prop(chf)+prop(wmi),
+#'               data=dd,robust=0)
+#' scox2 <-  cox.aalen(Surv(time,status==2)~prop(vf)+prop(chf)+prop(wmi),
+#'               data=dd,robust=0)
+#' cbind(coef(cox1),scox1$gamma)
+#' cbind(coef(cox2),scox2$gamma)
+#'  
+#' @export
+sim.cause.cox <- function(coxs,n,data=NULL,cens=NULL,rrc=NULL)
+{# {{{
+### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
+### cumh=cbind(breaks,cumhazard) if cumh=TRUE
+
+if (!is.list(coxs)) stop("Cox models in list form\n"); 
+
+if (class(coxs[[1]])=="coxph")
+{# {{{
+   sims <- c()
+   simscovs <- c()
+   cox <- coxs[[1]]
+
+   base <- basehaz(cox,centered=FALSE)[,c(2,1)] 
+   mt <- model.frame(cox)
+   Y <- model.extract(mt, "response")
+   if (!inherits(Y, "Surv")) 
+    stop("Response must be a survival object")
+   if (attr(Y, "type") == "right") {
+    time <- Y[, "time"]; 
+    status <- Y[, "status"]
+   } else stop("Expected right-censored data.");
+  Z <- na.omit(model.matrix(cox))
+  nn <- colnames(Z)
+  rownames(Z) <- NULL
+  jtime <- sort(time[status==1])
+  cumhazard <- Cpred(base,jtime)
+  rr <- exp( Z %*% matrix(coef(cox),ncol=1))
+  xid <- sample(1:nrow(Z),n,replace=TRUE)
+  rr <- rr[xid]
+  Z <- Z[xid,]
+  colnames(Z) <- nn
+  simcovs <- Z
+  ptt <- pc.hazard(cumhazard,rr)
+
+  i=2
+   if (length(coxs)>=2)
+   for (i in 2:length(coxs)) {
+   cox <- coxs[[i]]
+
+   base <- basehaz(cox,centered=FALSE)[,c(2,1)] 
+   mt <- model.frame(cox)
+   Y <- model.extract(mt, "response")
+   if (!inherits(Y, "Surv")) 
+    stop("Response must be a survival object")
+   if (attr(Y, "type") == "right") {
+    time <- Y[, "time"]; 
+    status <- Y[, "status"]
+   } else stop("Expected right-censored data.");
+  Z <- na.omit(model.matrix(cox))
+  nn <- colnames(Z)
+  rownames(Z) <- NULL
+  jtime <- sort(time[status==1])
+  cumhazard <- Cpred(base,jtime)
+  rr <- exp( Z %*% matrix(coef(cox),ncol=1))
+###  xid <- sample(1:nrow(Z),n,replace=TRUE)
+  rr <- rr[xid]
+  colnames(Z) <- nn
+
+  Z1 <- as.matrix(Z[xid,])
+  ptt1 <- pc.hazard(cumhazard,rr)
+  ### removes covariates already included 
+  rmn <- match(names(Z1),names(simcovs))
+  Z1e <- Z1[,-rmn]
+  simcovs <- cbind(simcovs,Z1e)
+
+  ptt <- data.frame(time=pmin(ptt$time,ptt1$time),status=ifelse(ptt$time<=ptt1$time,ptt$status,ptt1$status*i))
+   }
+
+dt <- cbind(ptt,simcovs)
+
+}# }}}
+
+if (class(coxs[[1]])=="cox.aalen")
+{# {{{
+
+   simcovs <- c()
+   cox <- coxs[[1]]
+   formula <- attr(cox, "Formula")
+###   Z1 <- na.omit(model.matrix(cox,data=data))
+   p <- nrow(cox$gamma)
+   Z <- na.omit(get_all_vars(formula,data=data))
+   nz <- ncol(Z)
+   Z <- Z[,seq(nz-p+1,nz)]
+   lrr <- as.matrix(Z) %*% cox$gamma
+   cumhazard <- cox$cum
+   rr <- exp(lrr)
+   xid <- sample(1:nrow(Z),n,replace=TRUE)
+   rr <- rr[xid]
+   Z <- Z[xid,]
+   ptt <- pc.hazard(cumhazard,rr)
+   simcovs <- Z
+
+   if (length(coxs)>=2)
+   for (i in 2:length(coxs)) {# {{{
+   cox <- coxs[[i]]
+   formula <- attr(cox, "Formula")
+###   Z1 <- na.omit(model.matrix(cox,data=data))
+   p <- nrow(cox$gamma)
+   Z <- na.omit(get_all_vars(formula,data=data))
+   nz <- ncol(Z)
+   Z <- Z[,seq(nz-p+1,nz)]
+   lrr <- as.matrix(Z) %*% cox$gamma
+   cumhazard <- cox$cum
+   rr <- exp(lrr)
+   rr <- rr[xid]
+   Z1 <- Z[xid,]
+   ptt1 <- pc.hazard(cumhazard,rr)
+   ### removes covariates already included 
+   rmn <- match(names(Z1),names(simcovs))
+   Z1e <- Z1[,-rmn]
+   simcovs <- cbind(simcovs,Z1e)
+
+   ptt <- data.frame(time=pmin(ptt$time,ptt1$time),status=ifelse(ptt$time<=ptt1$time,ptt$status,ptt1$status*i))
+   }# }}}
+
+dt <- cbind(ptt,simcovs)
+
+}# }}}
+
+
+   if (length(rr)==1) n<-rr else n <- length(rr)
+   if (is.null(rrc)) {
+	   if (length(rr)==1) rrc<-rr else rrc <- length(rr)
+   }
+   if (!is.null(cens)) {
+   if (is.matrix(cens)) {
+	   pct <- pc.hazard(cens,rr,cum.hazard=TRUE)
+	   pct <- pct$time
+   }
+   else {
+	   if (is.numeric(cens)) pct<- rexp(n)/cens  else {
+	      chaz <-sum(ptt$status)/sum(ptt$time)  ## hazard averate T haz 
+	      pct<- rexp(n)/chaz 
+	   }
+   }
+
+   dt <- cbind(data.frame(time=pmin(ptt$time,pct),
+			  status=ifelse(ptt$time<pct,ptt$status,0)),simcovs)
+   }
+
+
+   return(dt)
+}# }}}
 

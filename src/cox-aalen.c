@@ -220,7 +220,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*X
 		S0+=RR*weights[c]; 
 		S0strata[stratum[c+2]]+=RR*weights[c]; 
                 for(j=0;j<pmax;j++) {
-	        if (j<*px) {ME(WX,id[c],j)=RR*designX[j*(*nx)+c];}
+	        if (j<*px) {ME(WX,id[c],j)=weights[c]*RR*designX[j*(*nx)+c];}
 	        if (j<*pg) {ME(WZ,id[c],j)=weights[c]*designG[j*(*ng)+c];} 
 		}
 		if (time==stop[c] && status[c]==1) {pers=id[c];stratpers=stratum[c+2];} 
@@ -255,7 +255,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*X
 	    if (entry[ci]==1)  {
 	         replace_row(X,id[ci],xi); 
 		 replace_row(Z,id[ci],zi); 
-		 scl_vec_mult(RR,xi,tmpv1);
+		 scl_vec_mult(weights[ci]*RR,xi,tmpv1);
 		 replace_row(WX,id[ci],tmpv1);
 		 scl_vec_mult(weights[ci],zi,tmpv2);
 		 replace_row(WZ,id[ci],tmpv2); 
@@ -362,6 +362,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*X
 
   /* First derivative U and Second derivative S  */ 
   extract_row(Z,pers,zi);  
+  scl_vec_mult(scale,zi,zi); 
   Mv(ZX,dA,zav); 
 
 // pweight multiplied onto dA and therefore already on zav
@@ -568,7 +569,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*X
 		S0+=RR*weights[c]; 
 	        S0strata[stratum[c+2]]+=RR*weights[c]; 
                 for(j=0;j<pmax;j++) {
-	        if (j<*px) {ME(WX,id[c],j)=RR*designX[j*(*nx)+c];}
+	        if (j<*px) {ME(WX,id[c],j)=weights[c]*RR*designX[j*(*nx)+c];}
 	        if (j<*pg) {ME(WZ,id[c],j)=weights[c]*designG[j*(*ng)+c];} 
 		}
 		if (time==stop[c] && status[c]==1) {pers=id[c];stratpers=stratum[c+2];} 
@@ -594,8 +595,8 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*X
 	    if (entry[ci]==1)  {
 	         replace_row(X,id[ci],xi); 
 		 replace_row(Z,id[ci],zi); 
-//		 scl_vec_mult(RR*weights[ci],xi,tmpv1);
-		 scl_vec_mult(RR,xi,tmpv1);
+		 scl_vec_mult(RR*weights[ci],xi,tmpv1);
+//		 scl_vec_mult(RR,xi,tmpv1);
 		 replace_row(WX,id[ci],tmpv1);
 		 scl_vec_mult(weights[ci],zi,tmpv2);
 		 replace_row(WZ,id[ci],tmpv2); 
