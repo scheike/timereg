@@ -45,15 +45,15 @@ if (prt>1) cat(paste("Predicted time minutes",signif(prt,2),"\n"))
 
 simcox <-  .Call("PropTestCox",U,Pt,n.sim,obs,PACKAGE="mets")
 sup <-  simcox$supUsim
-res <- matrix(0,p,2)
-res[,2] <- simcox$pvals
+res <- cbind(obs,simcox$pval)
 colnames(res) <- c("Sup|U(t)|","pval")
+rownames(res) <- nnames 
 
 cat("Cumulative score process test for Proportionality:\n")
-print(res)
+prmatrix(round(res,digits=2))
 
 out <- list(jumptimes=x$jumptimes,supUsim=sup,res=res,supU=obs,
-	    pvals=pvals,score=Ut,simUt=simcox$simUt)
+	    pvals=simcox$pval,score=Ut,simUt=simcox$simUt)
 class(out) <- "gof.phreg"
 return(out)
 }# }}}
