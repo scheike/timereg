@@ -46,7 +46,7 @@ if (prt>1) cat(paste("Predicted time minutes",signif(prt,2),"\n"))
 simcox <-  .Call("PropTestCox",U,Pt,n.sim,obs,PACKAGE="mets")
 sup <-  simcox$supUsim
 res <- matrix(0,p,2)
-res[,2] <- simcox$pval
+res[,2] <- simcox$pvals
 colnames(res) <- c("Sup|U(t)|","pval")
 
 cat("Cumulative score process test for Proportionality:\n")
