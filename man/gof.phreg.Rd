@@ -4,7 +4,7 @@
 \alias{gof.phreg}
 \title{GOF for Cox PH regression}
 \usage{
-\method{gof}{phreg}(x, n.sim = 1000)
+\method{gof}{phreg}(x, n.sim = 1000, silent = 0)
 }
 \arguments{
 \item{x}{is phreg object}
@@ -21,12 +21,12 @@ data(TRACE)
 
 m1 <- phreg(Surv(time,status==9)~vf+chf+diabetes,data=TRACE) 
 
-gg <- gof.phreg(m1)
+gg <- gof(m1)
 par(mfrow=c(1,3))
 plot(gg)
 
 m1 <- phreg(Surv(time,status==9)~strata(vf)+chf+diabetes,data=TRACE) 
-gg <- gof.phreg(m1)
+gg <- gof(m1)
 }
 \author{
 THomas Scheike and Klaus K. Holst

@@ -12,14 +12,14 @@
 ##' 
 ##' m1 <- phreg(Surv(time,status==9)~vf+chf+diabetes,data=TRACE) 
 ##' 
-##' gg <- gof.phreg(m1)
+##' gg <- gof(m1)
 ##' par(mfrow=c(1,3))
 ##' plot(gg)
 ##' 
 ##' m1 <- phreg(Surv(time,status==9)~strata(vf)+chf+diabetes,data=TRACE) 
-##' gg <- gof.phreg(m1)
+##' gg <- gof(m1)
 ##' @export
-gof.phreg  <- function(x,n.sim=1000)
+gof.phreg  <- function(x,n.sim=1000,silent=0)
 {# {{{
 ### test for proportionality 
 p <- length(x$coef)
@@ -41,7 +41,7 @@ obs <- apply(abs(Ut),2,max)
 
 tt <- system.time(simcox1<-.Call("PropTestCox",U,Pt,10,obs,PACKAGE="mets"))
 prt <- n.sim*tt[3]/(10*60)
-if (prt>1) cat(paste("Predicted time minutes",signif(prt,2),"\n"))
+if (prt>1 & silent==0) cat(paste("Predicted time minutes",signif(prt,2),"\n"))
 
 simcox <-  .Call("PropTestCox",U,Pt,n.sim,obs,PACKAGE="mets")
 sup <-  simcox$supUsim
@@ -49,8 +49,10 @@ res <- cbind(obs,simcox$pval)
 colnames(res) <- c("Sup|U(t)|","pval")
 rownames(res) <- nnames 
 
+if (silent==0) {
 cat("Cumulative score process test for Proportionality:\n")
 prmatrix(round(res,digits=2))
+}
 
 out <- list(jumptimes=x$jumptimes,supUsim=sup,res=res,supU=obs,
 	    pvals=simcox$pval,score=Ut,simUt=simcox$simUt)
@@ -77,6 +79,13 @@ lines(x$jumptimes,x$score[,i],lwd=1.5)
 
 ##' @export
 summary.gof.phreg <-  function(x)
+{# {{{
+cat("Cumulative score process test for Proportionality:\n")
+print(x$res)
+} # }}}
+
+##' @export
+print.gof.phreg <-  function(x)
 {# {{{
 cat("Cumulative score process test for Proportionality:\n")
 print(x$res)
