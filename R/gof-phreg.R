@@ -3,6 +3,7 @@
 ##' Cumulative score process residuals for Cox PH regression
 ##' @param x is phreg object 
 ##' @param n.sim number of simulations for score processes
+##' @param silent to keep it absolutely silent, otherwise timing estimate will be prduced for longer jobs.
 ##' @param ... Additional arguments to lower level funtions
 ##' @author THomas Scheike and Klaus K. Holst
 ##' @export
