@@ -54,9 +54,130 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
                               PACKAGE="mets"))
       if (!is.null(id))
           id <- dd$id[dd$jumps+1]
+
+      print(dim(X));
+
       obj <- function(pp,U=FALSE,all=FALSE) {
           val <- with(dd,
                       .Call("FastCoxPL",pp,X,XX,sign,jumps,PACKAGE="mets"))
+          if (all) {
+              val$time <- dd$time[dd$ord+1]
+              val$ord <- dd$ord+1
+              val$jumps <- dd$jumps+1
+              val$jumptimes <- val$time[val$jumps]
+              val$nevent <- length(val$S0)
+              return(val)
+          }
+          with(val, structure(-ploglik,gradient=-gradient,hessian=-hessian))
+      }
+  }
+  opt <- NULL
+  if (p>0) {
+      if (tolower(method)=="nr") {
+          opt <- lava::NR(beta,obj,...)
+          opt$estimate <- opt$par
+      } else {
+          opt <- nlm(obj,beta,...)
+          opt$method <- "nlm"
+      }
+      cc <- opt$estimate;  names(cc) <- colnames(X)
+      if (!stderr) return(cc)
+      val <- c(list(coef=cc),obj(opt$estimate,all=TRUE))
+  } else {
+      val <- obj(0,all=TRUE)
+      val[c("ploglik","gradient","hessian","U")] <- NULL
+  }
+  res <- c(val,
+           list(strata=strata,
+                entry=entry,
+                exit=exit,
+                status=status,                
+                p=p,
+                X=X,
+                id=id, opt=opt))
+  class(res) <- "phreg"
+  res
+}
+
+###}}} phreg0
+
+###{{{ phreg01
+
+phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,nstrata=nstrata,beta,stderr=TRUE,method="NR",...) {
+  p <- ncol(X)
+  if (missing(beta)) beta <- rep(0,p)
+  if (p==0) X <- cbind(rep(0,length(exit)))
+  if (!is.null(strata)) {# {{{
+    stratalev <- levels(strata)
+    strataidx <- lapply(stratalev,function(x) which(strata==x))
+    if (!all(unlist(lapply(strataidx,function(x) length(x)>0))))
+      stop("Strata without any observation")
+    dd <- lapply(strataidx, function(ii) {
+        entryi <- entry[ii]
+        trunc <- !is.null(entryi)
+        if (!trunc) entryi <- rep(0,length(exit[ii]))
+                 .Call("FastCoxPrep",
+                       entryi,exit[ii],status[ii],
+                       as.matrix(X)[ii,,drop=FALSE],
+                       id[ii],
+                       trunc,
+                       PACKAGE="mets")
+                 })
+    if (!is.null(id))
+      id <- unlist(lapply(dd,function(x) x$id[x$jumps+1]))
+      obj <- function(pp,U=FALSE,all=FALSE) {
+      val <- lapply(dd,function(d)
+                    with(d,
+                         .Call("FastCoxPL",pp,X,XX,sign,jumps,PACKAGE="mets")))
+      ploglik <-     Reduce("+",lapply(val,function(x) x$ploglik))
+      gradient <-    Reduce("+",lapply(val,function(x) x$gradient))
+      hessian <-     Reduce("+",lapply(val,function(x) x$hessian))
+      if (all) {
+        U <- do.call("rbind",lapply(val,function(x) x$U))
+        hessiantime <- do.call("rbind",lapply(val,function(x) x$hessianttime))
+        time <- lapply(dd,function(x) x$time[x$ord+1])
+        ord <- lapply(dd,function(x) x$ord+1)
+        jumps <- lapply(dd,function(x) x$jumps+1)
+        jumptimes <- lapply(dd,function(x) x$time[x$ord+1][x$jumps+1])
+        S0 <- lapply(val,function(x) x$S0)
+        nevent  <- unlist(lapply(S0,length))
+        return(list(ploglik=ploglik,gradient=gradient,hessian=hessian,
+                    U=U,S0=S0,nevent=nevent,hessianttime=hessiantime,
+                    ord=ord,time=time,jumps=jumps,jumptimes=jumptimes))
+      }
+      structure(-ploglik,gradient=-gradient,hessian=-hessian)
+    }# }}}
+  } else {
+      trunc <- !is.null(entry)
+      if (!trunc) entry <- rep(0,length(exit))
+      system.time(dd <- .Call("FastCoxPrepStrata",
+                              entry,exit,status,X, as.integer(seq_along(entry)),
+                              !is.null(entry),nstrata, PACKAGE="mets"))
+
+
+      print("====================="); 
+      nnstrata <- length(unique(nstrata))
+      print(dim(X));
+      print(nnstrata)
+      print(head(nstrata))
+
+      print("====================="); 
+      nstrata <- dd$strata
+      nnstrata <- length(unique(dd$strata))
+      print(dim(X));
+      print(nnstrata)
+      print(head(nstrata))
+      dd$nnstrata <- nnstrata
+      dd$dstrata <- dd$strata
+
+
+
+      if (!is.null(id))
+          id <- dd$id[dd$jumps+1]
+
+      obj <- function(pp,U=FALSE,all=FALSE) {
+          val <- with(dd,
+                      .Call("FastCoxPLstrata",pp,X,XX,sign,jumps,dstrata,nnstrata,PACKAGE="mets"))
           if (all) {
               val$time <- dd$time[dd$ord+1]
               val$ord <- dd$ord+1
@@ -201,6 +322,95 @@ phreg <- function(formula,data,...) {
   res
 }
 ###}}} phreg
+
+###{{{ phreg1
+##' Fast Cox PH regression
+##'
+##' Fast Cox PH regression
+##' @param formula formula with 'Surv' outcome (see \code{coxph})
+##' @param data data frame
+##' @param ... Additional arguments to lower level funtions
+##' @author Klaus K. Holst
+##' @export
+##' @aliases phreg phreg.par
+##' @examples
+##' simcox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
+##'   if (!is.null(seed))
+##'     set.seed(seed)
+##'   library(lava)
+##'   m <- lvm()
+##'   regression(m,T~X1+X2) <- beta
+##'   distribution(m,~T+C) <- coxWeibull.lvm(scale=1/100)
+##'   distribution(m,~entry) <- coxWeibull.lvm(scale=1/10)
+##'   m <- eventTime(m,time~min(T,C=0),"status")
+##'   d <- sim(m,n);
+##'   if (!entry) d$entry <- 0
+##'   else d <- subset(d, time>entry,select=-c(T,C))
+##'   return(d)
+##' }
+##' \dontrun{
+##' n <- 10;
+##' d <- mets:::simCox(n); d$id <- seq(nrow(d)); d$group <- factor(rbinom(nrow(d),1,0.5))
+##' 
+##' (m1 <- phreg(Surv(entry,time,status)~X1+X2,data=d))
+##' (m2 <- coxph(Surv(entry,time,status)~X1+X2+cluster(id),data=d))
+##' (coef(m3 <-cox.aalen(Surv(entry,time,status)~prop(X1)+prop(X2),data=d)))
+##' 
+##' 
+##' (m1b <- phreg(Surv(entry,time,status)~X1+X2+strata(group),data=d))
+##' (m2b <- coxph(Surv(entry,time,status)~X1+X2+cluster(id)+strata(group),data=d))
+##' (coef(m3b <-cox.aalen(Surv(entry,time,status)~-1+group+prop(X1)+prop(X2),data=d)))
+##' 
+##' m <- phreg(Surv(entry,time,status)~X1*X2+strata(group)+cluster(id),data=d)
+##' m
+##' plot(m,ylim=c(0,1))
+##' }
+phreg1 <- function(formula,data,nstrata,...) {
+  cl <- match.call()
+  m <- match.call(expand.dots = TRUE)[1:3]
+  special <- c("strata", "cluster")
+  Terms <- terms(formula, special, data = data)
+  m$formula <- Terms
+  m[[1]] <- as.name("model.frame")
+  m <- eval(m, parent.frame())
+  Y <- model.extract(m, "response")
+  if (!is.Surv(Y)) stop("Expected a 'Surv'-object")
+  if (ncol(Y)==2) {
+    exit <- Y[,1]
+    entry <- NULL ## rep(0,nrow(Y))
+    status <- Y[,2]
+  } else {
+    entry <- Y[,1]
+    exit <- Y[,2]
+    status <- Y[,3]
+  }
+  id <- strata <- NULL
+  if (!is.null(attributes(Terms)$specials$cluster)) {
+    ts <- survival::untangle.specials(Terms, "cluster")
+    Terms  <- Terms[-ts$terms]
+    id <- m[[ts$vars]]
+  }
+  if (!is.null(stratapos <- attributes(Terms)$specials$strata)) {
+    ts <- survival::untangle.specials(Terms, "strata")
+    Terms  <- Terms[-ts$terms]
+    strata <- m[[ts$vars]]
+  }  
+  X <- model.matrix(Terms, m)
+  if (!is.null(intpos  <- attributes(Terms)$intercept))
+    X <- X[,-intpos,drop=FALSE]
+  if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
+
+  print(dim(X))
+  print(length(entry))
+  print(head(nstrata))
+  print(length(nstrata))
+  res <- c(phreg01(X,entry,exit,status,id,nstrata=nstrata,...),list(call=cl,model.frame=m))
+  class(res) <- "phreg"
+  
+  res
+}
+###}}} phreg
+
 
 ###{{{ vcov
 

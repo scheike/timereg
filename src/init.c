@@ -21,7 +21,9 @@ extern SEXP familypairindex(SEXP, SEXP, SEXP);
 extern SEXP FastApprox(SEXP, SEXP, SEXP, SEXP);
 extern SEXP FastCluster(SEXP);
 extern SEXP FastCoxPL(SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP FastCoxPLstrata(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP FastCoxPrep(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP FastCoxPrepStrata(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP,SEXP);
 extern SEXP FastLong2(SEXP, SEXP, SEXP, SEXP);
 extern SEXP FastPattern(SEXP, SEXP, SEXP);
 extern SEXP MatxCube(SEXP, SEXP, SEXP);
@@ -63,7 +65,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"FastApprox",                        (DL_FUNC) &FastApprox,                         4},
     {"FastCluster",                       (DL_FUNC) &FastCluster,                        1},
     {"FastCoxPL",                         (DL_FUNC) &FastCoxPL,                          5},
+    {"FastCoxPLstrata",                  (DL_FUNC) &FastCoxPLstrata,                          7},
     {"FastCoxPrep",                       (DL_FUNC) &FastCoxPrep,                        6},
+    {"FastCoxPrepStrata",                 (DL_FUNC) &FastCoxPrepStrata,                        7},
     {"FastLong2",                         (DL_FUNC) &FastLong2,                          4},
     {"FastPattern",                       (DL_FUNC) &FastPattern,                        3},
     {"MatxCube",                          (DL_FUNC) &MatxCube,                           3},
