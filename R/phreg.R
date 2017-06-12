@@ -54,9 +54,6 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
                               PACKAGE="mets"))
       if (!is.null(id))
           id <- dd$id[dd$jumps+1]
-
-      print(dim(X));
-
       obj <- function(pp,U=FALSE,all=FALSE) {
           val <- with(dd,
                       .Call("FastCoxPL",pp,X,XX,sign,jumps,PACKAGE="mets"))
@@ -152,25 +149,11 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,nstrata=nstrata,beta
       if (!trunc) entry <- rep(0,length(exit))
       system.time(dd <- .Call("FastCoxPrepStrata",
                               entry,exit,status,X, as.integer(seq_along(entry)),
-                              !is.null(entry),nstrata, PACKAGE="mets"))
+                              !is.null(entry),nstrata,PACKAGE="mets"))
 
-
-      print("====================="); 
-      nnstrata <- length(unique(nstrata))
-      print(dim(X));
-      print(nnstrata)
-      print(head(nstrata))
-
-      print("====================="); 
-      nstrata <- dd$strata
-      nnstrata <- length(unique(dd$strata))
-      print(dim(X));
-      print(nnstrata)
-      print(head(nstrata))
-      dd$nnstrata <- nnstrata
+      print(table(dd$strata)); 
       dd$dstrata <- dd$strata
-
-
+      dd$nnstrata <- length(unique(dd$strata))
 
       if (!is.null(id))
           id <- dd$id[dd$jumps+1]
@@ -365,7 +348,7 @@ phreg <- function(formula,data,...) {
 ##' m
 ##' plot(m,ylim=c(0,1))
 ##' }
-phreg1 <- function(formula,data,nstrata,...) {
+phreg1 <- function(formula,data,nstrata=NULL,...) {
   cl <- match.call()
   m <- match.call(expand.dots = TRUE)[1:3]
   special <- c("strata", "cluster")

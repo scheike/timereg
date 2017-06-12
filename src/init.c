@@ -45,6 +45,8 @@ extern SEXP CubeVec(SEXP, SEXP);
 extern SEXP CubeMat(SEXP, SEXP);
 extern SEXP CubeMat(SEXP, SEXP);
 extern SEXP PropTestCox(SEXP, SEXP,SEXP,SEXP);
+extern SEXP revcumsumR(SEXP);
+extern SEXP revcumsumstrataR(SEXP,SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
     {"Bhat",                              (DL_FUNC) &Bhat,                               6},
@@ -78,6 +80,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"pBhat",                             (DL_FUNC) &pBhat,                              6},
     {"PropTestCox",                       (DL_FUNC) &PropTestCox,                        4},
     {"pmvn0",                             (DL_FUNC) &pmvn0,                              5},
+    {"revcumsumR",                        (DL_FUNC) &revcumsumR,                         1},
+    {"revcumsumstrataR",                  (DL_FUNC) &revcumsumstrataR,                   3},
     {"Dpmvn",                             (DL_FUNC) &Dpmvn,                              5},
     {"survivalloglikeRVpairs",            (DL_FUNC) &survivalloglikeRVpairs,            25},
     {"twostageloglikebin",                (DL_FUNC) &twostageloglikebin,                24},

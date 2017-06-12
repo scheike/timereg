@@ -147,7 +147,6 @@ BEGIN_RCPP/*{{{*/
     Sign.reshape(n,1); Sign.fill(1);
     for (unsigned i=0; i<(n/2); i++) Sign(i) = -1;
     Status = Status%(1+Sign);
-    strata = strata%(1+Sign);
   }
   //Rcout << "Status=" << Status << std::endl;
   arma::uvec idx0 = sort_index(Status,"descend"); 
@@ -202,19 +201,51 @@ colvec revcumsum(const colvec &a, const colvec &v1, const colvec &v2) {
   return(revcumsum(a%v1)/v2);
 }/*}}}*/
 
+RcppExport SEXP revcumsumR(SEXP ia) {/*{{{*/
+  colvec a = Rcpp::as<colvec>(ia);
+  unsigned n = a.n_rows;
+  colvec res = a; double prev=0;  
+  for (unsigned i=0; i<n; i++) {
+    prev += a(n-i-1);
+    res(n-i-1) = prev;
+  }  
+List rres; 
+rres["res"]=res; 
+
+return(rres);
+}/*}}}*/
+
+
+RcppExport SEXP revcumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
+  colvec a = Rcpp::as<colvec>(ia);
+  IntegerVector intstrata(istrata); 
+  int nstrata = Rcpp::as<int>(instrata);
+  unsigned n = a.n_rows;
+
+  colvec tmpsum(nstrata); 
+  colvec res = a; 
+  for (unsigned i=0; i<n; i++) {
+    int ss=intstrata(n-i-1); 
+    tmpsum(ss) += a(n-i-1); 
+    res(n-i-1) = tmpsum(ss);
+  }  
+
+  List rres; 
+  rres["res"]=res; 
+
+  return(rres);
+} /*}}}*/
+
 
 colvec revcumsumstrata(const colvec &a,IntegerVector strata,int nstrata) {/*{{{*/
   unsigned n = a.n_rows;
   colvec tmpsum(nstrata); 
-//  printf("%d %d %d  %lf \n",n,strata(0),nstrata,tmpsum(strata(0))); 
-  colvec res = a; double prev=0;  
-//  printf("nn %d %d \n",nstrata,strata(0)); 
+  colvec res = a; 
 
   for (unsigned i=0; i<n; i++) {
-//    printf("%d %d %lf \n",i,strata(n-i-1),tmpsum(strata(0))); 
-    tmpsum(strata(n-i-1)) += a(n-i-1); 
-//    printf("%d  %d %lf \n",i,strata(n-i-1),tmpsum(strata(n-i-1))); 
-    res(n-i-1) = tmpsum(strata(n-i-1));
+    int ss=strata(n-i-1); 
+    tmpsum(ss) += a(n-i-1); 
+    res(n-i-1) = tmpsum(ss);
   }  
   return(res);
 }
@@ -279,9 +310,6 @@ BEGIN_RCPP/*{{{*/
   mat hess = -(reshape(sum(XX2),p,p)-E.t()*E);
   mat hesst = -(XX2-E2);
 
-  vec gradient = sum(grad); 
-  gradient.print("grad"); 
-
   return(Rcpp::List::create(Rcpp::Named("jumps")=Jumps,
 			    Rcpp::Named("ploglik")=sum(val),
 			    Rcpp::Named("U")=grad,
@@ -308,12 +336,12 @@ BEGIN_RCPP/*{{{*/
   mat XX = Rcpp::as<mat>(XXSEXP);
   arma::uvec Jumps = Rcpp::as<uvec >(JumpsSEXP);
   arma::Col<int> Sign = Rcpp::as<arma::Col<int> >(SignSEXP);
-  IntegerVector  strata(strataSEXP);
+  IntegerVector strata(strataSEXP);
   int nstrata = Rcpp::as<int>(nstrataSEXP);
   // unsigned n = X.n_rows;
   unsigned p = X.n_cols;
 
-  printf("XX %d \n",X.n_rows); 
+  printf("XX %d %d \n",X.n_rows,nstrata); 
 
   colvec Xb = X*beta;
   colvec eXb = exp(Xb);
@@ -321,8 +349,8 @@ BEGIN_RCPP/*{{{*/
     eXb = Sign%eXb;
   }
 
-
   colvec S0 = revcumsumstrata(eXb,strata,nstrata);
+
   //Rcout << "S0\n" << S0;
 
   // mat S1(X.n_rows,p);
@@ -358,8 +386,8 @@ BEGIN_RCPP/*{{{*/
   mat hess = -(reshape(sum(XX2),p,p)-E.t()*E);
   mat hesst = -(XX2-E2);
 
-  vec gradient = sum(grad); 
-  gradient.print("grad"); 
+//  vec gradient = sum(grad); 
+//  gradient.print("grad"); 
 
   return(Rcpp::List::create(Rcpp::Named("jumps")=Jumps,
 			    Rcpp::Named("ploglik")=sum(val),
