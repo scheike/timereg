@@ -159,6 +159,7 @@ BEGIN_RCPP/*{{{*/
   if (X.n_rows>0) {
     XX = XX.rows(idx);
     X = X.rows(idx);  
+    strata = strata(idx); 
   }
   Status = Status.elem(idx);
   arma::uvec jumps = find(Status>0);

@@ -4,7 +4,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
   p <- ncol(X)
   if (missing(beta)) beta <- rep(0,p)
   if (p==0) X <- cbind(rep(0,length(exit)))
-  if (!is.null(strata)) {
+  if (!is.null(strata)) {# {{{
     stratalev <- levels(strata)
     strataidx <- lapply(stratalev,function(x) which(strata==x))
     if (!all(unlist(lapply(strataidx,function(x) length(x)>0))))
@@ -43,10 +43,11 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
                     ord=ord,time=time,jumps=jumps,jumptimes=jumptimes))
       }
       structure(-ploglik,gradient=-gradient,hessian=-hessian)
-    }
-  } else {
+    }# }}}
+  } else {# {{{
       trunc <- !is.null(entry)
       if (!trunc) entry <- rep(0,length(exit))
+      print(!is.null(entry))
       system.time(dd <- .Call("FastCoxPrep",
                               entry,exit,status,X,
                               as.integer(seq_along(entry)),
@@ -67,7 +68,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
           }
           with(val, structure(-ploglik,gradient=-gradient,hessian=-hessian))
       }
-  }
+  }# }}}
   opt <- NULL
   if (p>0) {
       if (tolower(method)=="nr") {
