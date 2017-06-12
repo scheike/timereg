@@ -159,8 +159,8 @@ BEGIN_RCPP/*{{{*/
   if (X.n_rows>0) {
     XX = XX.rows(idx);
     X = X.rows(idx);  
-    strata = strata(idx); 
   }
+  strata = strata.elem(idx); 
   Status = Status.elem(idx);
   arma::uvec jumps = find(Status>0);
   //Rprintf("jumps");
@@ -233,7 +233,6 @@ RcppExport SEXP revcumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
 
   List rres; 
   rres["res"]=res; 
-
   return(rres);
 } /*}}}*/
 
@@ -247,11 +246,19 @@ colvec revcumsumstrata(const colvec &a,IntegerVector strata,int nstrata) {/*{{{*
     int ss=strata(n-i-1); 
     tmpsum(ss) += a(n-i-1); 
     res(n-i-1) = tmpsum(ss);
+    printf("%d %d %d %lf %lf \n",i,ss,strata(n-i-1),tmpsum(ss),a(n-i-1)); 
   }  
+  printf("===========================\n"); 
   return(res);
 }
 colvec revcumsumstrata1(const colvec &a, const colvec &v1, const colvec &v2,IntegerVector strata,int nstrata) {
-  return(revcumsumstrata(a%v1/v2,strata,nstrata));
+//  unsigned n = a.n_rows;
+//  colvec dd= revcumsumstrata(a%v1,strata,nstrata); 
+//  for (unsigned i=0; i<n; i++) {
+//	  if (v2(i)>0) dd(i)=dd(i)/v2(i); else dd(i)=0; 
+//  }  
+//  return(dd); 
+  return(revcumsumstrata(a%v1,strata,nstrata)/v2);
 }/*}}}*/
 
 
@@ -311,6 +318,15 @@ BEGIN_RCPP/*{{{*/
   mat hess = -(reshape(sum(XX2),p,p)-E.t()*E);
   mat hesst = -(XX2-E2);
 
+//  hess.print("hess"); 
+//  S0.print("S0"); 
+//  grad.print("grad"); 
+//  E.print("E"); 
+//  XX2.print("XX"); 
+//  printf("============================ \n"); 
+
+
+
   return(Rcpp::List::create(Rcpp::Named("jumps")=Jumps,
 			    Rcpp::Named("ploglik")=sum(val),
 			    Rcpp::Named("U")=grad,
@@ -342,7 +358,6 @@ BEGIN_RCPP/*{{{*/
   // unsigned n = X.n_rows;
   unsigned p = X.n_cols;
 
-  printf("XX %d %d \n",X.n_rows,nstrata); 
 
   colvec Xb = X*beta;
   colvec eXb = exp(Xb);
@@ -387,8 +402,21 @@ BEGIN_RCPP/*{{{*/
   mat hess = -(reshape(sum(XX2),p,p)-E.t()*E);
   mat hesst = -(XX2-E2);
 
-//  vec gradient = sum(grad); 
-//  gradient.print("grad"); 
+//    hess.print("hess"); 
+//       S0.print("S0"); 
+//       grad.print("grad"); 
+//       E.print("E"); 
+//       XX2.print("XX2"); 
+//       printf("============================ \n"); 
+//
+//    if (isnan(hess(0,0))) {
+//       printf("============================ \n"); 
+//       S0.print("S0"); 
+//       grad.print("grad"); 
+//       E.print("E"); 
+//       XX2.print("XX"); 
+//       printf("============================ \n"); 
+//    }
 
   return(Rcpp::List::create(Rcpp::Named("jumps")=Jumps,
 			    Rcpp::Named("ploglik")=sum(val),

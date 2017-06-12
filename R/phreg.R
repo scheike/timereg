@@ -47,12 +47,12 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
   } else {# {{{
       trunc <- !is.null(entry)
       if (!trunc) entry <- rep(0,length(exit))
-      print(!is.null(entry))
       system.time(dd <- .Call("FastCoxPrep",
                               entry,exit,status,X,
                               as.integer(seq_along(entry)),
                               !is.null(entry),
                               PACKAGE="mets"))
+
       if (!is.null(id))
           id <- dd$id[dd$jumps+1]
       obj <- function(pp,U=FALSE,all=FALSE) {
@@ -152,7 +152,6 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,nstrata=nstrata,beta
                               entry,exit,status,X, as.integer(seq_along(entry)),
                               !is.null(entry),nstrata,PACKAGE="mets"))
 
-      print(table(dd$strata)); 
       dd$dstrata <- dd$strata
       dd$nnstrata <- length(unique(dd$strata))
 
