@@ -197,7 +197,7 @@ END_RCPP
 }/*}}}*/
 
 
-matrix  vecmatrow(const colvec &a, const matrix &b) {
+mat  vecmatrow(const colvec &a, const mat b) {
   unsigned n = b.n_cols;
   mat res=b; 
   for (unsigned i=0; i<n; i++) {
@@ -424,40 +424,31 @@ BEGIN_RCPP/*{{{*/
   XX2 = XX2.rows(Jumps);
   //  X = X.rows(Jumps);
   colvec weightsJ=weights.elem(Jumps);  
-
   S0 = S0.elem(Jumps);
   mat grad = (X.rows(Jumps)-E); // Score
   vec val =  (Xb.elem(Jumps)-log(S0)); // Partial log-likelihood
-
-//  S0 = weightsJ%S0.elem(Jumps);
-//  mat grad = weightsJ%(X.rows(Jumps)-E); // Score
-//  vec val = weightsJ%(Xb.elem(Jumps)-log(S0)); // Partial log-likelihood
-//  mat hess = -reshape(sum( weights.elem(Jumps)*(XX2-E2)),p,p);
-//  mat hesst = -weightsJ%(XX2-E2);
+  colvec S02 = weightsJ%S0;
+  mat grad2=vecmatrow(weightsJ,grad);   // score 
+  vec val2 = weightsJ%(Xb.elem(Jumps)-log(S0)); // Partial log-likelihood
   mat hesst = -(XX2-E2);
-  mat hess = reshape(sum(hesst),p,p);
+  mat hesst2 = -vecmatrow(weightsJ,XX2-E2);
+  mat hess  = reshape(sum(hesst),p,p);
+  mat hess2 = reshape(sum(hesst2),p,p);
 
-//    hess.print("hess"); 
-//       S0.print("S0"); 
-//       grad.print("grad"); 
-//       E.print("E"); 
-//       XX2.print("XX2"); 
-//       printf("============================ \n"); 
-//
-    if (isnan(hess(0,0))) {
-       printf("============================ \n"); 
-       S0.print("S0"); 
-       grad.print("grad"); 
-       E.print("E"); 
-       XX2.print("XX"); 
-       printf("============================ \n"); 
-    }
+	if (isnan(hess(0,0))) {
+	printf("============================ \n"); 
+	S0.print("S0"); 
+	grad.print("grad"); 
+	E.print("E"); 
+	XX2.print("XX"); 
+	printf("============================ \n"); 
+	}
 
   return(Rcpp::List::create(Rcpp::Named("jumps")=Jumps,
-			    Rcpp::Named("ploglik")=sum(val),
-			    Rcpp::Named("U")=grad,
-			    Rcpp::Named("gradient")=sum(grad),
-			    Rcpp::Named("hessian")=hess,
+			    Rcpp::Named("ploglik")=sum(val2),
+			    Rcpp::Named("U")=grad2,
+			    Rcpp::Named("gradient")=sum(grad2),
+			    Rcpp::Named("hessian")=hess2,
 			    Rcpp::Named("hessianttime")=hesst,
 			    Rcpp::Named("S2S0")=XX,
 			    Rcpp::Named("E")=E,
