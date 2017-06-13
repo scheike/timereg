@@ -101,7 +101,8 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
 
 ###{{{ phreg01
 
-phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,nstrata=nstrata,beta,stderr=TRUE,method="NR",...) {
+phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,nstrata=NULL,weights=NULL,offsets=NULL,
+		    beta,stderr=TRUE,method="NR",...) {
   p <- ncol(X)
   if (missing(beta)) beta <- rep(0,p)
   if (p==0) X <- cbind(rep(0,length(exit)))
@@ -148,9 +149,11 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,nstrata=nstrata,beta
   } else {
       trunc <- !is.null(entry)
       if (!trunc) entry <- rep(0,length(exit))
+      if (is.null(weights)) weights  <- rep(1,length(exit))
+      if (is.null(offsets)) offsets  <- rep(1,length(exit))
       system.time(dd <- .Call("FastCoxPrepStrata",
                               entry,exit,status,X, as.integer(seq_along(entry)),
-                              trunc,nstrata,PACKAGE="mets"))
+                              trunc,nstrata,weights,offsets,PACKAGE="mets"))
 
       dd$dstrata <- dd$strata
       dd$nnstrata <- length(unique(dd$strata))
@@ -160,7 +163,8 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,nstrata=nstrata,beta
 
       obj <- function(pp,U=FALSE,all=FALSE) {
           val <- with(dd,
-                      .Call("FastCoxPLstrata",pp,X,XX,sign,jumps,dstrata,nnstrata,PACKAGE="mets"))
+                      .Call("FastCoxPLstrata",pp,X,XX,sign,jumps,
+			    dstrata,nnstrata,weights,offsets,PACKAGE="mets"))
           if (all) {
               val$time <- dd$time[dd$ord+1]
               val$ord <- dd$ord+1

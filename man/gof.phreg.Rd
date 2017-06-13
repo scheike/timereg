@@ -11,6 +11,8 @@
 
 \item{n.sim}{number of simulations for score processes}
 
+\item{silent}{to keep it absolutely silent, otherwise timing estimate will be prduced for longer jobs.}
+
 \item{...}{Additional arguments to lower level funtions}
 }
 \description{

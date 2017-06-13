@@ -100,7 +100,10 @@ RcppExport SEXP FastCoxPrepStrata(SEXP EntrySEXP,
 			    SEXP XSEXP,
 			    SEXP IdSEXP,
 			    SEXP TruncationSEXP,
-			    SEXP strataSEXP) {
+			    SEXP strataSEXP,
+               		    SEXP weightsSEXP,
+			    SEXP offsetsSEXP
+			    ) {
 BEGIN_RCPP/*{{{*/
   arma::vec Entry = Rcpp::as<arma::vec>(EntrySEXP);
   arma::vec  Exit  = Rcpp::as<arma::vec>(ExitSEXP);
@@ -112,6 +115,8 @@ BEGIN_RCPP/*{{{*/
   }
   catch(...) {}
 
+  colvec weights = Rcpp::as<colvec>(weightsSEXP);
+  colvec offsets = Rcpp::as<colvec>(offsetsSEXP);
   //bool haveId = Rcpp::as<bool>(haveIdSEXP);
   bool Truncation = Rcpp::as<bool>(TruncationSEXP);
   // vec Exit = Rcpp::as<vec>(exit);  
@@ -144,6 +149,8 @@ BEGIN_RCPP/*{{{*/
     X.insert_rows(0,X);
     Status.insert_rows(0,Status);
     strata.insert_rows(0,strata);
+//    weights.insert_rows(0,weights);
+//    offsets.insert_rows(0,offsets);
     Sign.reshape(n,1); Sign.fill(1);
     for (unsigned i=0; i<(n/2); i++) Sign(i) = -1;
     Status = Status%(1+Sign);
@@ -161,6 +168,8 @@ BEGIN_RCPP/*{{{*/
     X = X.rows(idx);  
   }
   strata = strata.elem(idx); 
+  weights = weights.elem(idx); 
+  offsets = offsets.elem(idx); 
   Status = Status.elem(idx);
   arma::uvec jumps = find(Status>0);
   //Rprintf("jumps");
@@ -180,10 +189,22 @@ BEGIN_RCPP/*{{{*/
 				       Rcpp::Named("ord")=idx,
 				       Rcpp::Named("time")=Exit,
 				       Rcpp::Named("id")=newId,				       
+				       Rcpp::Named("weights")=weights,
+				       Rcpp::Named("offsets")=offsets,				       
 				       Rcpp::Named("strata")=strata				       
 				       )));
 END_RCPP
 }/*}}}*/
+
+
+matrix  vecmatrow(const colvec &a, const matrix &b) {
+  unsigned n = b.n_cols;
+  mat res=b; 
+  for (unsigned i=0; i<n; i++) {
+	  res.col(i)=a%b.col(i); 
+  }  
+  return(res);
+} 
 
 
 // colvec revcumsum(const colvec &a) {
@@ -316,8 +337,8 @@ BEGIN_RCPP/*{{{*/
   S0 = S0.elem(Jumps);
   mat grad = (X.rows(Jumps)-E); // Score
   vec val = Xb.elem(Jumps)-log(S0); // Partial log-likelihood
-  mat hess = -(reshape(sum(XX2),p,p)-E.t()*E);
   mat hesst = -(XX2-E2);
+  mat hess = reshape(sum(hesst),p,p);
 
 //  hess.print("hess"); 
 //  S0.print("S0"); 
@@ -325,7 +346,6 @@ BEGIN_RCPP/*{{{*/
 //  E.print("E"); 
 //  XX2.print("XX"); 
 //  printf("============================ \n"); 
-
 
 
   return(Rcpp::List::create(Rcpp::Named("jumps")=Jumps,
@@ -347,7 +367,10 @@ RcppExport SEXP FastCoxPLstrata(SEXP betaSEXP,
 			  SEXP SignSEXP,
 			  SEXP JumpsSEXP, 
 			  SEXP strataSEXP, 
-			  SEXP nstrataSEXP) {
+			  SEXP nstrataSEXP,
+			  SEXP weightsSEXP,
+			  SEXP offsetsSEXP
+			  ) {
 BEGIN_RCPP/*{{{*/
   colvec beta = Rcpp::as<colvec>(betaSEXP);
   mat X = Rcpp::as<mat>(XSEXP);
@@ -358,10 +381,13 @@ BEGIN_RCPP/*{{{*/
   int nstrata = Rcpp::as<int>(nstrataSEXP);
   // unsigned n = X.n_rows;
   unsigned p = X.n_cols;
+  colvec weights = Rcpp::as<colvec>(weightsSEXP);
+  colvec offsets = Rcpp::as<colvec>(offsetsSEXP);
 
 
   colvec Xb = X*beta;
-  colvec eXb = exp(Xb);
+  colvec eXb = exp(Xb)%weights%offsets;
+//  colvec eXb = exp(Xb);
   if (Sign.n_rows==eXb.n_rows) { // Truncation
     eXb = Sign%eXb;
   }
@@ -397,11 +423,19 @@ BEGIN_RCPP/*{{{*/
 
   XX2 = XX2.rows(Jumps);
   //  X = X.rows(Jumps);
+  colvec weightsJ=weights.elem(Jumps);  
+
   S0 = S0.elem(Jumps);
   mat grad = (X.rows(Jumps)-E); // Score
-  vec val = Xb.elem(Jumps)-log(S0); // Partial log-likelihood
-  mat hess = -(reshape(sum(XX2),p,p)-E.t()*E);
+  vec val =  (Xb.elem(Jumps)-log(S0)); // Partial log-likelihood
+
+//  S0 = weightsJ%S0.elem(Jumps);
+//  mat grad = weightsJ%(X.rows(Jumps)-E); // Score
+//  vec val = weightsJ%(Xb.elem(Jumps)-log(S0)); // Partial log-likelihood
+//  mat hess = -reshape(sum( weights.elem(Jumps)*(XX2-E2)),p,p);
+//  mat hesst = -weightsJ%(XX2-E2);
   mat hesst = -(XX2-E2);
+  mat hess = reshape(sum(hesst),p,p);
 
 //    hess.print("hess"); 
 //       S0.print("S0"); 
@@ -433,7 +467,7 @@ END_RCPP
   }/*}}}*/
 
 
-RcppExport SEXP CubeVec( SEXP XXSEXP, SEXP betaSEXP)
+RcppExport SEXP CubeVec(SEXP XXSEXP, SEXP betaSEXP)
 		  {
 BEGIN_RCPP/*{{{*/
   colvec beta = Rcpp::as<colvec>(betaSEXP);
