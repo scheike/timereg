@@ -240,15 +240,16 @@ RcppExport SEXP revcumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
 colvec revcumsumstrata(const colvec &a,IntegerVector strata,int nstrata) {/*{{{*/
   unsigned n = a.n_rows;
   colvec tmpsum(nstrata); 
+  tmpsum=tmpsum*0; 
   colvec res = a; 
 
   for (unsigned i=0; i<n; i++) {
     int ss=strata(n-i-1); 
     tmpsum(ss) += a(n-i-1); 
     res(n-i-1) = tmpsum(ss);
-    printf("%d %d %d %lf %lf \n",i,ss,strata(n-i-1),tmpsum(ss),a(n-i-1)); 
+//    printf("%d %d %d %lf %lf \n",i,ss,strata(n-i-1),tmpsum(ss),a(n-i-1)); 
   }  
-  printf("===========================\n"); 
+//  printf("===========================\n"); 
   return(res);
 }
 colvec revcumsumstrata1(const colvec &a, const colvec &v1, const colvec &v2,IntegerVector strata,int nstrata) {
@@ -409,14 +410,14 @@ BEGIN_RCPP/*{{{*/
 //       XX2.print("XX2"); 
 //       printf("============================ \n"); 
 //
-//    if (isnan(hess(0,0))) {
-//       printf("============================ \n"); 
-//       S0.print("S0"); 
-//       grad.print("grad"); 
-//       E.print("E"); 
-//       XX2.print("XX"); 
-//       printf("============================ \n"); 
-//    }
+    if (isnan(hess(0,0))) {
+       printf("============================ \n"); 
+       S0.print("S0"); 
+       grad.print("grad"); 
+       E.print("E"); 
+       XX2.print("XX"); 
+       printf("============================ \n"); 
+    }
 
   return(Rcpp::List::create(Rcpp::Named("jumps")=Jumps,
 			    Rcpp::Named("ploglik")=sum(val),
