@@ -150,7 +150,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,nstrata=nstrata,beta
       if (!trunc) entry <- rep(0,length(exit))
       system.time(dd <- .Call("FastCoxPrepStrata",
                               entry,exit,status,X, as.integer(seq_along(entry)),
-                              !is.null(entry),nstrata,PACKAGE="mets"))
+                              trunc,nstrata,PACKAGE="mets"))
 
       dd$dstrata <- dd$strata
       dd$nnstrata <- length(unique(dd$strata))
