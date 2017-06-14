@@ -436,7 +436,7 @@ BEGIN_RCPP/*{{{*/
   mat hess  = reshape(sum(hesst),p,p);
   mat hess2 = reshape(sum(hesst2),p,p);
 
-  if (hess.has_nan())) {
+  if (hess.has_nan()) {
 	printf("============================ \n"); 
 	S0.print("S0"); 
 	grad.print("grad"); 
