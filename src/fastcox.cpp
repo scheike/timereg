@@ -201,7 +201,7 @@ mat  vecmatrow(const colvec &a, const mat b) {
   unsigned n = b.n_cols;
   mat res=b; 
   for (unsigned i=0; i<n; i++) {
-	  res.col(i)=a%b.col(i); 
+    res.col(i)=a%b.col(i); 
   }  
   return(res);
 } 
@@ -431,11 +431,12 @@ BEGIN_RCPP/*{{{*/
   mat grad2=vecmatrow(weightsJ,grad);   // score 
   vec val2 = weightsJ%(Xb.elem(Jumps)-log(S0)); // Partial log-likelihood
   mat hesst = -(XX2-E2);
+
   mat hesst2 = -vecmatrow(weightsJ,XX2-E2);
   mat hess  = reshape(sum(hesst),p,p);
   mat hess2 = reshape(sum(hesst2),p,p);
 
-	if (isnan(hess(0,0))) {
+  if (hess.has_nan()) {
 	printf("============================ \n"); 
 	S0.print("S0"); 
 	grad.print("grad"); 
