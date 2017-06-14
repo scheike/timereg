@@ -387,10 +387,6 @@ phreg1 <- function(formula,data,nstrata=NULL,...) {
     X <- X[,-intpos,drop=FALSE]
   if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
 
-  print(dim(X))
-  print(length(entry))
-  print(head(nstrata))
-  print(length(nstrata))
   res <- c(phreg01(X,entry,exit,status,id,nstrata=nstrata,...),list(call=cl,model.frame=m))
   class(res) <- "phreg"
   
