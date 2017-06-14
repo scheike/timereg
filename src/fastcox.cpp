@@ -190,7 +190,7 @@ BEGIN_RCPP/*{{{*/
 				       Rcpp::Named("time")=Exit,
 				       Rcpp::Named("id")=newId,				       
 				       Rcpp::Named("weights")=weights,
-				       Rcpp::Named("offsets")=offsets,				       
+				       Rcpp::Named("offset")=offsets,				       
 				       Rcpp::Named("strata")=strata				       
 				       )));
 END_RCPP

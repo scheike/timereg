@@ -101,70 +101,76 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
 
 ###{{{ phreg01
 
-phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,nstrata=NULL,weights=NULL,offsets=NULL,
+phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=NULL,
 		    beta,stderr=TRUE,method="NR",...) {
   p <- ncol(X)
   if (missing(beta)) beta <- rep(0,p)
   if (p==0) X <- cbind(rep(0,length(exit)))
-  if (!is.null(strata)) {# {{{
-    stratalev <- levels(strata)
-    strataidx <- lapply(stratalev,function(x) which(strata==x))
-    if (!all(unlist(lapply(strataidx,function(x) length(x)>0))))
-      stop("Strata without any observation")
-    dd <- lapply(strataidx, function(ii) {
-        entryi <- entry[ii]
-        trunc <- !is.null(entryi)
-        if (!trunc) entryi <- rep(0,length(exit[ii]))
-                 .Call("FastCoxPrep",
-                       entryi,exit[ii],status[ii],
-                       as.matrix(X)[ii,,drop=FALSE],
-                       id[ii],
-                       trunc,
-                       PACKAGE="mets")
-                 })
-    if (!is.null(id))
-      id <- unlist(lapply(dd,function(x) x$id[x$jumps+1]))
-      obj <- function(pp,U=FALSE,all=FALSE) {
-      val <- lapply(dd,function(d)
-                    with(d,
-                         .Call("FastCoxPL",pp,X,XX,sign,jumps,PACKAGE="mets")))
-      ploglik <-     Reduce("+",lapply(val,function(x) x$ploglik))
-      gradient <-    Reduce("+",lapply(val,function(x) x$gradient))
-      hessian <-     Reduce("+",lapply(val,function(x) x$hessian))
-      if (all) {
-        U <- do.call("rbind",lapply(val,function(x) x$U))
-        hessiantime <- do.call("rbind",lapply(val,function(x) x$hessianttime))
-        time <- lapply(dd,function(x) x$time[x$ord+1])
-        ord <- lapply(dd,function(x) x$ord+1)
-        jumps <- lapply(dd,function(x) x$jumps+1)
-        jumptimes <- lapply(dd,function(x) x$time[x$ord+1][x$jumps+1])
-        S0 <- lapply(val,function(x) x$S0)
-        nevent  <- unlist(lapply(S0,length))
-        return(list(ploglik=ploglik,gradient=gradient,hessian=hessian,
-                    U=U,S0=S0,nevent=nevent,hessianttime=hessiantime,
-                    ord=ord,time=time,jumps=jumps,jumptimes=jumptimes))
-      }
-      structure(-ploglik,gradient=-gradient,hessian=-hessian)
-    }# }}}
-  } else {
+  if (is.null(strata)) { strata <- rep(0,length(exit)); nstrata <- 1} else {
+	  ustrata <- unique(strata)
+	  nstrata <- length(ustrata)
+      if (is.numeric(strata)) strata <-  fast.approx(ustrata,strata)-1 else  {
+      strata <- as.integer(factor(strata, labels = seq(nstrata)))-1
+    }
+  }
+  if (is.null(offset)) offset <- rep(1,length(exit)) else offset <- exp(offset); 
+  if (is.null(weights)) weights <- rep(1,length(exit)) 
+
+###  if (!is.null(strata)) {# {{{
+###    stratalev <- levels(strata)
+###    strataidx <- lapply(stratalev,function(x) which(strata==x))
+###    if (!all(unlist(lapply(strataidx,function(x) length(x)>0))))
+###      stop("Strata without any observation")
+###    dd <- lapply(strataidx, function(ii) {
+###        entryi <- entry[ii]
+###        trunc <- !is.null(entryi)
+###        if (!trunc) entryi <- rep(0,length(exit[ii]))
+###                 .Call("FastCoxPrep",
+###                       entryi,exit[ii],status[ii],
+###                       as.matrix(X)[ii,,drop=FALSE],
+###                       id[ii],
+###                       trunc,
+###                       PACKAGE="mets")
+###                 })
+###    if (!is.null(id))
+###      id <- unlist(lapply(dd,function(x) x$id[x$jumps+1]))
+###      obj <- function(pp,U=FALSE,all=FALSE) {
+###      val <- lapply(dd,function(d)
+###                    with(d,
+###                         .Call("FastCoxPL",pp,X,XX,sign,jumps,PACKAGE="mets")))
+###      ploglik <-     Reduce("+",lapply(val,function(x) x$ploglik))
+###      gradient <-    Reduce("+",lapply(val,function(x) x$gradient))
+###      hessian <-     Reduce("+",lapply(val,function(x) x$hessian))
+###      if (all) {
+###        U <- do.call("rbind",lapply(val,function(x) x$U))
+###        hessiantime <- do.call("rbind",lapply(val,function(x) x$hessianttime))
+###        time <- lapply(dd,function(x) x$time[x$ord+1])
+###        ord <- lapply(dd,function(x) x$ord+1)
+###        jumps <- lapply(dd,function(x) x$jumps+1)
+###        jumptimes <- lapply(dd,function(x) x$time[x$ord+1][x$jumps+1])
+###        S0 <- lapply(val,function(x) x$S0)
+###        nevent  <- unlist(lapply(S0,length))
+###        return(list(ploglik=ploglik,gradient=gradient,hessian=hessian,
+###                    U=U,S0=S0,nevent=nevent,hessianttime=hessiantime,
+###                    ord=ord,time=time,jumps=jumps,jumptimes=jumptimes))
+###      }
+###      structure(-ploglik,gradient=-gradient,hessian=-hessian)
+###    }# }}}
+###  } else {
+
+
       trunc <- !is.null(entry)
       if (!trunc) entry <- rep(0,length(exit))
-      if (is.null(weights)) weights  <- rep(1,length(exit))
-      if (is.null(offsets)) offsets  <- rep(1,length(exit))
       system.time(dd <- .Call("FastCoxPrepStrata",
                               entry,exit,status,X, as.integer(seq_along(entry)),
-                              trunc,nstrata,weights,offsets,PACKAGE="mets"))
-
-      dd$dstrata <- dd$strata
-      dd$nnstrata <- length(unique(dd$strata))
-
+                              trunc,strata,weights,offset,PACKAGE="mets"))
+      dd$nstrata <- nstrata
       if (!is.null(id))
           id <- dd$id[dd$jumps+1]
-
       obj <- function(pp,U=FALSE,all=FALSE) {
           val <- with(dd,
                       .Call("FastCoxPLstrata",pp,X,XX,sign,jumps,
-			    dstrata,nnstrata,weights,offsets,PACKAGE="mets"))
+			    strata,nstrata,weights,offset,PACKAGE="mets"))
           if (all) {
               val$time <- dd$time[dd$ord+1]
               val$ord <- dd$ord+1
@@ -174,8 +180,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,nstrata=NULL,weights
               return(val)
           }
           with(val, structure(-ploglik,gradient=-gradient,hessian=-hessian))
-      }
-  }
+       }
   opt <- NULL
   if (p>0) {
       if (tolower(method)=="nr") {
@@ -316,6 +321,7 @@ phreg <- function(formula,data,...) {
 ##' Fast Cox PH regression
 ##' @param formula formula with 'Surv' outcome (see \code{coxph})
 ##' @param data data frame
+##' @param weights weights for Cox score equations
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Klaus K. Holst
 ##' @export
@@ -352,7 +358,8 @@ phreg <- function(formula,data,...) {
 ##' m
 ##' plot(m,ylim=c(0,1))
 ##' }
-phreg1 <- function(formula,data,nstrata=NULL,...) {
+##' @export
+phreg1 <- function(formula,data,offset=NULL,weights=NULL,...) {
   cl <- match.call()
   m <- match.call(expand.dots = TRUE)[1:3]
   special <- c("strata", "cluster")
@@ -382,12 +389,17 @@ phreg1 <- function(formula,data,nstrata=NULL,...) {
     Terms  <- Terms[-ts$terms]
     strata <- m[[ts$vars]]
   }  
+###  if (!is.null(offsetpos <- attributes(Terms)$specials$offset)) {
+###    ts <- survival::untangle.specials(Terms, "offset")
+###    Terms  <- Terms[-ts$terms]
+###    offset <- m[[ts$vars]]
+###  }  
   X <- model.matrix(Terms, m)
   if (!is.null(intpos  <- attributes(Terms)$intercept))
     X <- X[,-intpos,drop=FALSE]
   if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
 
-  res <- c(phreg01(X,entry,exit,status,id,nstrata=nstrata,...),list(call=cl,model.frame=m))
+  res <- c(phreg01(X,entry,exit,status,id,strata,offset,weights,...),list(call=cl,model.frame=m))
   class(res) <- "phreg"
   
   res
