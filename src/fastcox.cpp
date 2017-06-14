@@ -197,11 +197,11 @@ END_RCPP
 }/*}}}*/
 
 
-matrix  vecmatrow(const colvec &a, const matrix &b) {
+mat  vecmatrow(const colvec &a, const mat &b) {
   unsigned n = b.n_cols;
   mat res=b; 
   for (unsigned i=0; i<n; i++) {
-	  res.col(i)=a%b.col(i); 
+    res.col(i)=a%b.col(i); 
   }  
   return(res);
 } 
@@ -444,14 +444,14 @@ BEGIN_RCPP/*{{{*/
 //       XX2.print("XX2"); 
 //       printf("============================ \n"); 
 //
-    if (isnan(hess(0,0))) {
-       printf("============================ \n"); 
-       S0.print("S0"); 
-       grad.print("grad"); 
-       E.print("E"); 
-       XX2.print("XX"); 
-       printf("============================ \n"); 
-    }
+  if (hess.has_nan()) {
+    Rprintf("============================ \n");
+    S0.print("S0"); 
+    grad.print("grad"); 
+    E.print("E"); 
+    XX2.print("XX"); 
+    Rprintf("============================ \n"); 
+  }
 
   return(Rcpp::List::create(Rcpp::Named("jumps")=Jumps,
 			    Rcpp::Named("ploglik")=sum(val),
