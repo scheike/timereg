@@ -114,7 +114,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 	  ustrata <- unique(strata)
 	  nstrata <- length(ustrata)
       if (is.numeric(strata)) strata <-  fast.approx(ustrata,strata)-1 else  {
-      strata <- as.integer(factor(strata, labels = seq(nstrata)))-1
+      strata <- as.integer(factor(strata,labels=seq(nstrata)))-1
     }
   }
   if (is.null(offset)) offset <- rep(1,length(exit)) else offset <- exp(offset); 
@@ -220,6 +220,19 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 
  colnames(cumhaz)    <- c("time","cumhaz")
  colnames(se.cumhaz) <- c("time","se.cumhaz")
+
+    if (nstrata>1) {
+	 lcumhaz <- lse.cumhaz <- list()
+ 	 cumhaz    <- cbind(cumhaz,val$strata[val$jumps])
+         se.cumhaz <- cbind(se.cumhaz,val$strata[val$jumps])
+	 for (i in 0:(nstrata-1)) {
+		 ii <- (val$strata[val$jumps]==i)
+		 if (length(ii)>1) {
+			 lcumhaz[[i+1]]  <-  cumhaz[ii,1:2]
+			 lse.cumhaz[[i+1]]  <- se.cumhaz[ii,1:2]
+		 }
+	 }
+    }
  } # }}} 
  else {se.cumhaz <- NULL}
 
@@ -232,8 +245,8 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
                 X=X,
                 id=id, 
 		opt=opt, 
-		cumhaz=cumhaz,
-		se.cumhaz=se.cumhaz,
+		cumhaz=cumhaz, se.cumhaz=se.cumhaz,
+		lcumhaz=lcumhaz, se.cumhaz=se.cumhaz,
 		II=II))
   class(res) <- "phreg"
   res
