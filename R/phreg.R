@@ -234,7 +234,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 	 }
     }
  } # }}} 
- else {se.cumhaz <- NULL}
+ else {se.cumhaz <- lcumhaz <- lse.cumhaz <- NULL}
 
   res <- c(val,
            list(strata=strata,
