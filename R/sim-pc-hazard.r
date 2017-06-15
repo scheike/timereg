@@ -199,7 +199,6 @@ cause.pchazard.sim <- function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.c
 #' Simulates data that looks like fit from Cox model. Censor data automatically
 #' for highest value of the break points.
 #' 
-#' 
 #' @param cox output form coxph or cox.aalen model fitting cox model.
 #' @param n number of simulations.
 #' @param data to extract covariates for simulations (draws from observed
@@ -298,6 +297,7 @@ if (class(cox)=="phreg")
    if (is.null(rrc)) {
 	   if (length(rr)==1) rrc<-rr else rrc <- length(rr)
    }
+   if (!is.null(cens))  {
    if (is.matrix(cens)) {
 	   pct <- pc.hazard(cens,rr,cum.hazard=TRUE)
 	   pct <- pct$time
@@ -310,6 +310,7 @@ if (class(cox)=="phreg")
    }
    dt <- cbind(data.frame(time=pmin(ptt$time,pct),
 			  status=ifelse(ptt$time<pct,ptt$status,0)),Z)
+   } else { dt <- cbind(data.frame(time=ptt$time,status=ptt$status,Z)) }
 
    return(dt)
 }# }}}
