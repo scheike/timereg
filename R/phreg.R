@@ -504,85 +504,33 @@ print.summary.phreg  <- function(x,max.strata=5,...) {
 
 ###}}} print.summary
 
-###{{{ predict
-
-predictPhreg <- function(jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
-    ## Brewslow estimator
-    chaz <- cbind(jumptimes,cumsum(1/S0))
-    if (!is.null(time)) {
-        chaz <- Cpred(chaz,time)
-    }
-    colnames(chaz) <- c("time","chaz")
-    if (!is.null(X)) {
-      H <- exp(X%*%beta)
-      if (nrow(chaz)==length(H)) {
-        chaz[,2] <- chaz[,2]*H
-      } else {
-        chaz2 <- c()
-        X <- rbind(X)
-        for (i in seq(nrow(X)))
-          chaz2 <- rbind(chaz2,
-                         cbind(chaz[,1],chaz[,2]*H[i],
-                               rep(1,nrow(chaz))%x%X[i,,drop=FALSE]))
-        chaz <- chaz2;
-        nn <- c("time","chaz",names(beta))
-        colnames(chaz) <- nn
-      }
-    }
-    if (surv) {    
-      chaz[,2] <- exp(-chaz[,2])
-      colnames(chaz)[2] <- "surv"
-    }
-    return(chaz)
+cumsumstrata <- function(x,strata,nstrata)
+{
+res <- .Call("cumsumstrataR",x,strata,nstrata)$res
+return(res)
 }
-
-##' @export
-predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,strata=object$strata,...) {
-    if (object$p==0) X <- NULL
-    if (!is.null(object$strata)) {
-        lev <- levels(object$strata)
-        if (!is.null(object$strata) &&
-            !(is.list(time) & !is.data.frame(time)) &&
-            !(is.list(X) & !is.data.frame(X))) {
-            X0 <- X
-            time0 <- time
-            X <- time <- c()
-            for (i in seq(length(lev))) {
-                idx <- which(strata==lev[i])
-                X <- c(X,list(X0[idx,,drop=FALSE]))
-                time <- c(time,list(time0[idx]))
-            }
-        }
-        chaz <- c()
-        for (i in seq(length(lev)))
-            chaz <- c(chaz,list(predictPhreg(object$jumptimes[[i]],
-                                             object$S0[[i]],
-                                             coef(object),
-                                             time[[i]],X[[i]],surv)))
-        names(chaz) <- lev    
-    } else {
-        chaz <- predictPhreg(object$jumptimes,object$S0,coef(object),time,X,surv)
-    }
-    return(chaz)
-}
-
-###}}} predict
 
 ###{{{ predict with se for baseline
 
 predictPhreg1 <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
     x <- x$jumptimes
     S0 <- x$S0
-    strata <- x$strata
-    nstrata <- x$nstrata
     II <- -solve(x$hessian)
+    strata <- x$strata[x$jumps]
+    nstrata <- x$nstrata
+
     ## Brewslow estimator
-
     chaz <- cbind(jumptimes,cumsum(1/S0))
-
     DLambeta.t <- apply(x$E/c(x$S0)^2,2,cumsum)
     varbetat <- apply((DLambeta.t %*%  II)*DLambeta.t,1,sum)
     se.chaz <- cbind(jumptimes,(cumsum(1/S0^2)-varbetat)^.5)
+
+    ### with strata 
+###    chaz <- cbind(jumptimes,cumsumstrata(1/S0,strata,nstrata))
+###    DLambeta.t <- apply(x$E/c(x$S0)^2,2,cumsumstrata,strata,nstrata)
+###    varbetat <- apply((DLambeta.t %*%  II)*DLambeta.t,1,sum)
+###    se.chaz <- cbind(jumptimes,(cumsumstrata(1/S0^2,strata,nstrata)-varbetat)^.5)
+
 
     if (!is.null(time)) {
         chaz <- Cpred(chaz,time)
