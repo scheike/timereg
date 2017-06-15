@@ -578,6 +578,7 @@ predictPhreg1 <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
     ## Brewslow estimator
 
     chaz <- cbind(jumptimes,cumsum(1/S0))
+
     DLambeta.t <- apply(x$E/c(x$S0)^2,2,cumsum)
     varbetat <- apply((DLambeta.t %*%  II)*DLambeta.t,1,sum)
     se.chaz <- cbind(jumptimes,(cumsum(1/S0^2)-varbetat)^.5)

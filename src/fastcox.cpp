@@ -238,6 +238,26 @@ return(rres);
 }/*}}}*/
 
 
+RcppExport SEXP cumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
+  colvec a = Rcpp::as<colvec>(ia);
+  IntegerVector intstrata(istrata); 
+  int nstrata = Rcpp::as<int>(instrata);
+  unsigned n = a.n_rows;
+
+  colvec tmpsum(nstrata); 
+  tmpsum=tmpsum*0; 
+  colvec res = a; 
+  for (unsigned i=0; i<n; i++) {
+    int ss=intstrata(i); 
+    tmpsum(ss) += a(i); 
+    res(i) = tmpsum(ss);
+  }  
+
+  List rres; 
+  rres["res"]=res; 
+  return(rres);
+} /*}}}*/
+
 RcppExport SEXP revcumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   colvec a = Rcpp::as<colvec>(ia);
   IntegerVector intstrata(istrata); 
@@ -245,6 +265,7 @@ RcppExport SEXP revcumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   unsigned n = a.n_rows;
 
   colvec tmpsum(nstrata); 
+  tmpsum=tmpsum*0; 
   colvec res = a; 
   for (unsigned i=0; i<n; i++) {
     int ss=intstrata(n-i-1); 
@@ -256,7 +277,6 @@ RcppExport SEXP revcumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   rres["res"]=res; 
   return(rres);
 } /*}}}*/
-
 
 colvec revcumsumstrata(const colvec &a,IntegerVector strata,int nstrata) {/*{{{*/
   unsigned n = a.n_rows;
