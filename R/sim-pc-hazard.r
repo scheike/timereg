@@ -276,6 +276,21 @@ if (class(cox)=="cox.aalen")
    rr <- rr[xid]
    Z <- Z[xid,]
 }# }}}
+if (class(cox)=="phreg")
+{# {{{
+###   formula <- attr(cox, "Formula")
+######   Z1 <- na.omit(model.matrix(cox,data=data))
+   p <- length(cox$coef)
+###   Z <- na.omit(get_all_vars(formula,data=data))
+   Z  <-  cox$model.matrx[,-1]
+   nz <- ncol(Z)
+   lrr <- as.matrix(Z) %*% cox$coef
+   cumhazard <- cox$cumhaz
+   rr <- exp(lrr)
+   xid <- sample(1:nrow(Z),n,replace=TRUE)
+   rr <- rr[xid]
+   Z <- Z[xid,]
+}# }}}
 
    ptt <- pc.hazard(cumhazard,rr)
 
