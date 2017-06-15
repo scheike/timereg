@@ -149,8 +149,8 @@ BEGIN_RCPP/*{{{*/
     X.insert_rows(0,X);
     Status.insert_rows(0,Status);
     strata.insert_rows(0,strata);
-//    weights.insert_rows(0,weights);
-//    offsets.insert_rows(0,offsets);
+    weights.insert_rows(0,weights);
+    offsets.insert_rows(0,offsets);
     Sign.reshape(n,1); Sign.fill(1);
     for (unsigned i=0; i<(n/2); i++) Sign(i) = -1;
     Status = Status%(1+Sign);
@@ -167,10 +167,10 @@ BEGIN_RCPP/*{{{*/
     XX = XX.rows(idx);
     X = X.rows(idx);  
   }
-  strata = strata.elem(idx); 
   weights = weights.elem(idx); 
   offsets = offsets.elem(idx); 
   Status = Status.elem(idx);
+  strata = strata.elem(idx); 
   arma::uvec jumps = find(Status>0);
   //Rprintf("jumps");
   arma::Col<unsigned> newId;

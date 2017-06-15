@@ -113,6 +113,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
   if (is.null(strata)) { strata <- rep(0,length(exit)); nstrata <- 1} else {
 	  ustrata <- unique(strata)
 	  nstrata <- length(ustrata)
+	  strata.values <- unique(strata)
       if (is.numeric(strata)) strata <-  fast.approx(ustrata,strata)-1 else  {
       strata <- as.integer(factor(strata,labels=seq(nstrata)))-1
     }
@@ -162,8 +163,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 ###    }# }}}
 ###  } else {
 
-
-      trunc <- !is.null(entry)
+      trunc <- (!is.null(entry))
       if (!trunc) entry <- rep(0,length(exit))
       system.time(dd <- .Call("FastCoxPrepStrata",
                               entry,exit,status,X, as.integer(seq_along(entry)),
