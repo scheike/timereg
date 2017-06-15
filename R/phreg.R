@@ -85,6 +85,10 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
       val <- obj(0,all=TRUE)
       val[c("ploglik","gradient","hessian","U")] <- NULL
   }
+
+  ### computes Breslow estimator 
+  cumhaz <- NULL
+
   res <- c(val,
            list(strata=strata,
                 entry=entry,
@@ -92,7 +96,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
                 status=status,                
                 p=p,
                 X=X,
-                id=id, opt=opt))
+                id=id, opt=opt,cum=cumhaz))
   class(res) <- "phreg"
   res
 }
@@ -101,7 +105,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
 
 ###{{{ phreg01
 
-phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=NULL,
+phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=NULL,cumhaz=TRUE,
 		    beta,stderr=TRUE,method="NR",...) {
   p <- ncol(X)
   if (missing(beta)) beta <- rep(0,p)
@@ -199,6 +203,26 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
       val <- obj(0,all=TRUE)
       val[c("ploglik","gradient","hessian","U")] <- NULL
   }
+
+  II <- -solve(val$hessian)
+  ### computes Breslow estimator 
+  if (cumhaz==TRUE) { # {{{
+
+ strata <- val$strata[val$jumps]
+ nstrata <- val$nstrata
+ jumptimes <- val$jumptimes
+
+ ## Brewslow estimator
+ cumhaz <- cbind(jumptimes,cumsumstrata(1/val$S0,strata,nstrata))
+ DLambeta.t <- apply(val$E/c(val$S0)^2,2,cumsumstrata,strata,nstrata)
+ varbetat <- apply((DLambeta.t %*%  II)*DLambeta.t,1,sum)
+ se.cumhaz <- cbind(jumptimes,(cumsumstrata(1/val$S0^2,strata,nstrata)-varbetat)^.5)
+
+ colnames(cumhaz)    <- c("time","cumhaz")
+ colnames(se.cumhaz) <- c("time","se.cumhaz")
+ } # }}} 
+ else {se.cumhaz <- NULL}
+
   res <- c(val,
            list(strata=strata,
                 entry=entry,
@@ -206,7 +230,11 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
                 status=status,                
                 p=p,
                 X=X,
-                id=id, opt=opt))
+                id=id, 
+		opt=opt, 
+		cumhaz=cumhaz,
+		se.cumhaz=se.cumhaz,
+		II=II))
   class(res) <- "phreg"
   res
 }
