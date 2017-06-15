@@ -178,6 +178,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
               val$jumptimes <- val$time[val$jumps]
               val$nevent <- length(val$S0)
 	      val$nstrata <- dd$nstrata
+	      val$strata <- dd$strata
               return(val)
           }
           with(val, structure(-ploglik,gradient=-gradient,hessian=-hessian))
