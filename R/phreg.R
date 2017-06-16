@@ -106,7 +106,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
 ###{{{ phreg01
 
 phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=NULL,cumhaz=TRUE,
-		    beta,stderr=TRUE,method="NR",...) {
+		    beta,stderr=TRUE,method="NR",no.it=FALSE,...) {
   p <- ncol(X)
   if (missing(beta)) beta <- rep(0,p)
   if (p==0) X <- cbind(rep(0,length(exit)))
@@ -198,16 +198,23 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
       }
       cc <- opt$estimate;  names(cc) <- colnames(X)
       if (!stderr) return(cc)
-      val <- c(list(coef=cc),obj(opt$estimate,all=TRUE))
+      if (no.it)
+         val <- c(list(coef=beta),obj(beta,all=TRUE))
+      if (!no.it)
+         val <- c(list(coef=cc),obj(opt$estimate,all=TRUE))
   } else {
       val <- obj(0,all=TRUE)
-      val[c("ploglik","gradient","hessian","U")] <- NULL
+###      val[c("ploglik","gradient","hessian","U")] <- NULL
   }
+###  if (run.anyway==TRUE) val <- obj(beta,all=TRUE)
 
-  II <- -solve(val$hessian)
+  se.cumhaz <- lcumhaz <- lse.cumhaz <- NULL
+### II <- -solve(val$hessian)
+  II <- NULL
   ### computes Breslow estimator 
   if (cumhaz==TRUE) { # {{{
 
+ II <- -solve(val$hessian)
  strata <- val$strata[val$jumps]
  nstrata <- val$nstrata
  jumptimes <- val$jumptimes
@@ -246,7 +253,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
                 id=id, 
 		opt=opt, 
 		cumhaz=cumhaz, se.cumhaz=se.cumhaz,
-		lcumhaz=lcumhaz, se.cumhaz=se.cumhaz,
+		lcumhaz=lcumhaz, lse.cumhaz=lse.cumhaz,
 		II=II))
   class(res) <- "phreg"
   res
@@ -556,9 +563,11 @@ return(res)
 predictPhreg1 <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
     x <- x$jumptimes
     S0 <- x$S0
-    II <- -solve(x$hessian)
+    II <- x$II ###  -solve(x$hessian)
     strata <- x$strata[x$jumps]
     nstrata <- x$nstrata
+
+    ### check if baseline is already computed before computing it
 
     ## Brewslow estimator
     chaz <- cbind(jumptimes,cumsum(1/S0))

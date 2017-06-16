@@ -404,7 +404,6 @@ BEGIN_RCPP/*{{{*/
   colvec weights = Rcpp::as<colvec>(weightsSEXP);
   colvec offsets = Rcpp::as<colvec>(offsetsSEXP);
 
-
   colvec Xb = X*beta;
   colvec eXb = exp(Xb)%weights%offsets;
 //  colvec eXb = exp(Xb);
@@ -436,7 +435,7 @@ BEGIN_RCPP/*{{{*/
     E2.row(i) = vectorise(Xi.t()*Xi,1);
   }
 
-  mat XX2 = XX;
+    mat XX2 = XX;
   for (unsigned j=0; j<XX2.n_cols; j++) { // int S2/S0(s)
     XX2.col(j) = revcumsumstrata1(XX2.col(j),eXb,S0,strata,nstrata);
   }
@@ -452,6 +451,9 @@ BEGIN_RCPP/*{{{*/
   vec val2 = weightsJ%(Xb.elem(Jumps)-log(S0)); // Partial log-likelihood
   mat hesst = -(XX2-E2);
 
+//  S0.print("SO"); eXb.print("exB"); E.print("E"); 
+//  grad.print("grad"); grad2.print("grad2"); weightsJ.print("weights"); 
+
   mat hesst2 = -vecmatrow(weightsJ,XX2-E2);
   mat hess  = reshape(sum(hesst),p,p);
   mat hess2 = reshape(sum(hesst2),p,p);
@@ -459,9 +461,11 @@ BEGIN_RCPP/*{{{*/
   if (hess.has_nan()) {
 	printf("============================ \n"); 
 	S0.print("S0"); 
+	eXb.print("exb"); 
 	grad.print("grad"); 
 	E.print("E"); 
 	XX2.print("XX"); 
+	X.print("X"); 
 	printf("============================ \n"); 
 	}
 
