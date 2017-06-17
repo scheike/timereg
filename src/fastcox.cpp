@@ -551,7 +551,7 @@ END_RCPP
 
 mat  vecmatmat(mat a,mat b) 
 {/*{{{*/
-  unsigned n = b.n_cols;
+  unsigned n = b.n_rows;
   unsigned p1 = a.n_cols;
   unsigned p2 = b.n_cols;
 
@@ -662,9 +662,15 @@ BEGIN_RCPP/*{{{*/
      for (unsigned k=0; k<mp; k++)  Uti.col(k) = cumsum(Uti.col(k));
      for (unsigned k=0; k<p; k++)   betati.col(k) = cumsum(betati.col(k));
 
+
      for (unsigned k=0; k<n; k++)  {
-	  Uthati.row(k)=(reshape(dUt.row(k),mp,p)*(Uti.row(n-1)).t()).t();
+//	     mat mm=reshape(dUt.row(k),mp,p); 
+//	     mm.print("mm"); 
+//	     rowvec uti=betati.row(k);
+//	     uti.print("puti"); 
+	  Uthati.row(k)=(reshape(dUt.row(k),mp,p)*(betati.row(k)).t()).t();
      }
+
      Uthati=Uti-Uthati; 
 
 //     if(j==0) Uthati.print("one sim"); 
