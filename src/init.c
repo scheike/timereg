@@ -42,9 +42,11 @@ extern SEXP twostageloglikeRVpairs(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEX
 extern SEXP Uhat(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP uniprobit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP CubeVec(SEXP, SEXP);
+extern SEXP vecMatMat(SEXP, SEXP);
 extern SEXP CubeMat(SEXP, SEXP);
 extern SEXP CubeMat(SEXP, SEXP);
 extern SEXP PropTestCox(SEXP, SEXP,SEXP,SEXP);
+extern SEXP ModelMatrixTestCox(SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP revcumsumR(SEXP);
 extern SEXP revcumsumstrataR(SEXP,SEXP, SEXP);
 extern SEXP cumsumstrataR(SEXP,SEXP, SEXP);
@@ -80,6 +82,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"mets_RcppExport_registerCCallable", (DL_FUNC) &mets_RcppExport_registerCCallable,  0},
     {"pBhat",                             (DL_FUNC) &pBhat,                              6},
     {"PropTestCox",                       (DL_FUNC) &PropTestCox,                        4},
+    {"ModelMatrixTestCox",                (DL_FUNC) &ModelMatrixTestCox,                 5},
     {"pmvn0",                             (DL_FUNC) &pmvn0,                              5},
     {"revcumsumR",                        (DL_FUNC) &revcumsumR,                         1},
     {"revcumsumstrataR",                  (DL_FUNC) &revcumsumstrataR,                   3},
@@ -92,6 +95,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"twostageloglikeRVpairs",            (DL_FUNC) &twostageloglikeRVpairs,            25},
     {"Uhat",                              (DL_FUNC) &Uhat,                               5},
     {"uniprobit",                         (DL_FUNC) &uniprobit,                          8},
+    {"vecMatMat",                         (DL_FUNC) &vecMatMat,                          2},
     {NULL, NULL, 0}
 };
 

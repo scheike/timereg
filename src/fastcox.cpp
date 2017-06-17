@@ -134,7 +134,7 @@ BEGIN_RCPP/*{{{*/
 
  //Rcout << "n=" << X.n_rows << ", p=" << X.n_cols << std::endl;
 
- mat XX(n, X.n_cols*X.n_cols); // Calculate XX' at each time-point
+  mat XX(n, X.n_cols*X.n_cols); // Calculate XX' at each time-point
   for (unsigned i=0; i<X.n_rows; i++) {
     rowvec Xi = X.row(i);
     //    XX.row(i) = reshape(Xi.t()*Xi,1,XX.n_cols);
@@ -213,16 +213,14 @@ END_RCPP
 }/*}}}*/
 
 
-
-mat  vecmatrow(const colvec &a, const mat b) {
+mat  vecmatrow(const colvec &a, const mat b) {/*{{{*/
   unsigned n = b.n_cols;
   mat res=b; 
   for (unsigned i=0; i<n; i++) {
     res.col(i)=a%b.col(i); 
   }  
   return(res);
-} 
-
+} /*}}}*/
 
 // colvec revcumsum(const colvec &a) {
 //   return(flipud(cumsum(flipud(a))));
@@ -551,6 +549,37 @@ BEGIN_RCPP/*{{{*/
 END_RCPP
 }/*}}}*/
 
+mat  vecmatmat(mat a,mat b) 
+{/*{{{*/
+  unsigned n = b.n_cols;
+  unsigned p1 = a.n_cols;
+  unsigned p2 = b.n_cols;
+
+  mat res(n,p1*p2); 
+  for (unsigned i=0; i<n; i++) {
+     rowvec ai = a.row(i);
+     rowvec bi = b.row(i);
+     res.row(i)=vectorise(bi.t()*ai,1);
+//     mat tt=reshape(res.row(i),p1,p2);  // now tt is ai.t() * bi
+//     tt.print("tt"); 
+  }  
+  return(res);
+} /*}}}*/
+
+RcppExport SEXP  vecMatMat(SEXP iX,SEXP iZ) {
+BEGIN_RCPP/*{{{*/
+  arma::mat X = Rcpp::as<arma::mat>(iX);
+  arma::mat Z = Rcpp::as<arma::mat>(iZ);
+
+  unsigned n =Z.n_rows; 
+  unsigned p1=X.n_cols; 
+  unsigned p2=Z.n_cols; 
+
+  mat res=vecmatmat(X,Z); 
+ return(Rcpp::List::create(Rcpp::Named("vXZ")=res)); 
+END_RCPP
+} /*}}}*/
+
 
 RcppExport SEXP PropTestCox(SEXP iU, SEXP idUt, SEXP insim, SEXP iobssup
 			  ) {
@@ -567,7 +596,6 @@ BEGIN_RCPP/*{{{*/
   mat Uti(n,p); 
   mat sup(nsim,p); 
   mat simUti(n,50*p); 
-
 
   GetRNGstate();  /* to use R random normals */
 
@@ -601,4 +629,61 @@ BEGIN_RCPP/*{{{*/
 END_RCPP
   }/*}}}*/
 
+RcppExport SEXP ModelMatrixTestCox(SEXP iU, SEXP idUt,SEXP ibetaiid, SEXP insim, SEXP iobssup
+			  ) {
+BEGIN_RCPP/*{{{*/
+  mat U   = Rcpp::as<mat>(iU);
+  mat dUt = Rcpp::as<mat>(idUt);
+  mat betaiid = Rcpp::as<mat>(ibetaiid);
+  arma::vec osup = Rcpp::as<arma::vec>(iobssup);
+  int nsim = Rcpp::as<int>(insim);
+  unsigned mp = U.n_cols;
+  unsigned p = betaiid.n_cols;
+  unsigned n = U.n_rows;
+
+  vec pval(mp); 
+  mat Uthati(n,mp); 
+  mat Uti(n,mp); 
+  mat betati(n,p); 
+  mat sup(nsim,mp); 
+  mat simUti(n,50*mp); 
+
+  GetRNGstate();  /* to use R random normals */
+
+  colvec nr(Uti.n_rows);
+  for (unsigned j=0; j<nsim; j++) {
+     int thissiml=0; 
+
+     for (unsigned k=0; k<n; k++)  nr(k)=norm_rand(); 
+     Uti=vecmatrow(nr,U); 
+     betati=vecmatrow(nr,betaiid); 
+//     for (unsigned k=0; k<n; k++)  Uti.row(k)=norm_rand()*U.row(k); 
+//     for (unsigned k=0; k<n; k++)  betati.row(k)=norm_rand()*betaiid.row(k); 
+     for (unsigned k=0; k<mp; k++)  Uti.col(k) = cumsum(Uti.col(k));
+     for (unsigned k=0; k<p; k++)   betati.col(k) = cumsum(betati.col(k));
+
+     for (unsigned k=0; k<n; k++)  {
+	  Uthati.row(k)=(reshape(dUt.row(k),mp,p)*(Uti.row(n-1)).t()).t();
+     }
+     Uthati=Uti-Uthati; 
+
+//     if(j==0) Uthati.print("one sim"); 
+
+     for (unsigned k=0;k<mp;k++)  {
+//	     printf(" %lf \n",sup(j,k)); 
+        sup(j,k)=max(abs(Uthati.col(k))); 
+//      count if sup for this realization is larger than supObs
+        if (sup(j,k)>=osup(k) & thissiml==0) { pval(k)++; thissiml=1;}
+        if (j<50) { simUti.col(j*mp+k)=Uthati.col(k); }
+     }
+  }
+  pval=pval/nsim; 
+
+  PutRNGstate();  /* to use R random normals */
+
+  return(Rcpp::List::create(Rcpp::Named("supUsim")=sup,
+			    Rcpp::Named("simUt")=simUti,
+			    Rcpp::Named("pval")=pval)); 
+END_RCPP
+  }/*}}}*/
 
