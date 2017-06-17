@@ -166,6 +166,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
       Zcall <- matrix(1,1,1) ## to not use for ZX products in  
       if (!is.null(Z)) Zcall <- Z
 
+
       trunc <- (!is.null(entry))
       if (!trunc) entry <- rep(0,length(exit))
       system.time(dd <- .Call("FastCoxPrepStrata",
