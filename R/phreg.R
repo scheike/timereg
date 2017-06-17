@@ -106,7 +106,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
 ###{{{ phreg01
 
 phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=NULL,cumhaz=TRUE,
-		    beta,stderr=TRUE,method="NR",no.it=FALSE,...) {
+  beta,stderr=TRUE,method="NR",no.opt=FALSE,Z=NULL,...) {
   p <- ncol(X)
   if (missing(beta)) beta <- rep(0,p)
   if (p==0) X <- cbind(rep(0,length(exit)))
@@ -162,19 +162,23 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 ###      structure(-ploglik,gradient=-gradient,hessian=-hessian)
 ###    }# }}}
 ###  } else {
+      if (is.null(Z)) Z <- matrix(1,1,1) ## to not use for ZX products in  
 
       trunc <- (!is.null(entry))
       if (!trunc) entry <- rep(0,length(exit))
       system.time(dd <- .Call("FastCoxPrepStrata",
                               entry,exit,status,X, as.integer(seq_along(entry)),
-                              trunc,strata,weights,offset,PACKAGE="mets"))
+                              trunc,strata,weights,offset,Z,PACKAGE="mets"))
       dd$nstrata <- nstrata
+
+      print(head(Z)); 
+
       if (!is.null(id))
           id <- dd$id[dd$jumps+1]
       obj <- function(pp,U=FALSE,all=FALSE) {
           val <- with(dd,
                       .Call("FastCoxPLstrata",pp,X,XX,sign,jumps,
-			    strata,nstrata,weights,offset,PACKAGE="mets"))
+			    strata,nstrata,weights,offset,ZX,PACKAGE="mets"))
           if (all) {
               val$time <- dd$time[dd$ord+1]
               val$ord <- dd$ord+1
@@ -189,6 +193,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
        }
   opt <- NULL
   if (p>0) {
+  if (no.opt==FALSE) {
       if (tolower(method)=="nr") {
           opt <- lava::NR(beta,obj,...)
           opt$estimate <- opt$par
@@ -198,15 +203,12 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
       }
       cc <- opt$estimate;  names(cc) <- colnames(X)
       if (!stderr) return(cc)
-      if (no.it)
-         val <- c(list(coef=beta),obj(beta,all=TRUE))
-      if (!no.it)
-         val <- c(list(coef=cc),obj(opt$estimate,all=TRUE))
+      val <- c(list(coef=cc),obj(opt$estimate,all=TRUE))
+      } else val <- c(list(coef=beta),obj(beta,all=TRUE))
   } else {
       val <- obj(0,all=TRUE)
 ###      val[c("ploglik","gradient","hessian","U")] <- NULL
   }
-###  if (run.anyway==TRUE) val <- obj(beta,all=TRUE)
 
   se.cumhaz <- lcumhaz <- lse.cumhaz <- NULL
 ### II <- -solve(val$hessian)

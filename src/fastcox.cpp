@@ -7,7 +7,6 @@
 using namespace Rcpp;
 using namespace arma;
 
-
 RcppExport SEXP FastCoxPrep(SEXP EntrySEXP,
 			    SEXP ExitSEXP,
 			    SEXP StatusSEXP,
@@ -102,13 +101,15 @@ RcppExport SEXP FastCoxPrepStrata(SEXP EntrySEXP,
 			    SEXP TruncationSEXP,
 			    SEXP strataSEXP,
                		    SEXP weightsSEXP,
-			    SEXP offsetsSEXP
+			    SEXP offsetsSEXP, 
+			    SEXP ZSEXP
 			    ) {
 BEGIN_RCPP/*{{{*/
   arma::vec Entry = Rcpp::as<arma::vec>(EntrySEXP);
   arma::vec  Exit  = Rcpp::as<arma::vec>(ExitSEXP);
   arma::Col<int> Status= Rcpp::as<arma::Col<int> >(StatusSEXP);
   arma::mat  X     = Rcpp::as<arma::mat>(XSEXP);
+  arma::mat  Z     = Rcpp::as<arma::mat>(ZSEXP);
   arma::Col<int> strata= Rcpp::as<arma::Col<int> >(strataSEXP);
   try {
     arma::Col<unsigned> Id    = Rcpp::as<arma::Col<unsigned> >(IdSEXP);
@@ -131,7 +132,7 @@ BEGIN_RCPP/*{{{*/
   unsigned n = Exit.n_elem;
   if (Truncation) n *= 2;
 
-  //Rcout << "n=" << X.n_rows << ", p=" << X.n_cols << std::endl;
+ //Rcout << "n=" << X.n_rows << ", p=" << X.n_cols << std::endl;
 
  mat XX(n, X.n_cols*X.n_cols); // Calculate XX' at each time-point
   for (unsigned i=0; i<X.n_rows; i++) {
@@ -140,7 +141,18 @@ BEGIN_RCPP/*{{{*/
     XX.row(i) = vectorise(Xi.t()*Xi,1);
     if (Truncation) XX.row(i+n/2) = XX.row(i);
   }
-  
+
+  unsigned nZ = Z.n_rows;
+  if (Truncation) nZ = 2*Z.n_rows;
+  mat ZX(nZ , Z.n_cols * X.n_cols);
+  if (Z.n_rows==X.n_rows) 
+  for (unsigned i=0; i<X.n_rows; i++) {
+    rowvec Xi = X.row(i);
+    rowvec Zi = Z.row(i);
+    ZX.row(i) = vectorise(Zi.t()*Xi,1);
+    if (Truncation) ZX.row(i+n/2) = ZX.row(i);
+  }
+
 
   arma::Col<int> Sign;
   if (Truncation) {
@@ -167,6 +179,9 @@ BEGIN_RCPP/*{{{*/
     XX = XX.rows(idx);
     X = X.rows(idx);  
   }
+  if (XZ.n_rows==XX.n_rows) {
+    ZX = ZX.rows(idx);  
+  }
   weights = weights.elem(idx); 
   offsets = offsets.elem(idx); 
   Status = Status.elem(idx);
@@ -191,10 +206,12 @@ BEGIN_RCPP/*{{{*/
 				       Rcpp::Named("id")=newId,				       
 				       Rcpp::Named("weights")=weights,
 				       Rcpp::Named("offset")=offsets,				       
-				       Rcpp::Named("strata")=strata				       
+				       Rcpp::Named("strata")=strata,				       
+				       Rcpp::Named("ZX")=ZX				       
 				       )));
 END_RCPP
 }/*}}}*/
+
 
 
 mat  vecmatrow(const colvec &a, const mat b) {
@@ -389,12 +406,14 @@ RcppExport SEXP FastCoxPLstrata(SEXP betaSEXP,
 			  SEXP strataSEXP, 
 			  SEXP nstrataSEXP,
 			  SEXP weightsSEXP,
-			  SEXP offsetsSEXP
+			  SEXP offsetsSEXP,
+			  SEXP ZXSEXP
 			  ) {
 BEGIN_RCPP/*{{{*/
   colvec beta = Rcpp::as<colvec>(betaSEXP);
   mat X = Rcpp::as<mat>(XSEXP);
   mat XX = Rcpp::as<mat>(XXSEXP);
+  mat ZX = Rcpp::as<mat>(ZXSEXP);
   arma::uvec Jumps = Rcpp::as<uvec >(JumpsSEXP);
   arma::Col<int> Sign = Rcpp::as<arma::Col<int> >(SignSEXP);
   IntegerVector strata(strataSEXP);
@@ -435,10 +454,18 @@ BEGIN_RCPP/*{{{*/
     E2.row(i) = vectorise(Xi.t()*Xi,1);
   }
 
-    mat XX2 = XX;
+  mat XX2 = XX;
   for (unsigned j=0; j<XX2.n_cols; j++) { // int S2/S0(s)
     XX2.col(j) = revcumsumstrata1(XX2.col(j),eXb,S0,strata,nstrata);
   }
+
+  mat ZX2 = ZX;
+  if (ZX.n_rows==X.n_rows) {
+  for (unsigned j=0; j<ZX2.n_cols; j++) { // int S2/S0(s)
+    ZX2.col(j) = revcumsumstrata1(ZX2.col(j),eXb,S0,strata,nstrata);
+  }
+  } 
+
 
   XX2 = XX2.rows(Jumps);
   //  X = X.rows(Jumps);
@@ -451,6 +478,10 @@ BEGIN_RCPP/*{{{*/
   vec val2 = weightsJ%(Xb.elem(Jumps)-log(S0)); // Partial log-likelihood
   mat hesst = -(XX2-E2);
 
+  // maybe also with weights ??
+  if (ZX.n_rows==X.n_rows) {
+     ZX2 = ZX2.rows(Jumps);
+  }
 //  S0.print("SO"); eXb.print("exB"); E.print("E"); 
 //  grad.print("grad"); grad2.print("grad2"); weightsJ.print("weights"); 
 
@@ -477,7 +508,8 @@ BEGIN_RCPP/*{{{*/
 			    Rcpp::Named("hessianttime")=hesst,
 			    Rcpp::Named("S2S0")=XX,
 			    Rcpp::Named("E")=E,
-			    Rcpp::Named("S0")=S0
+			    Rcpp::Named("S0")=S0,
+			    Rcpp::Named("ZXeXb")=ZX2
 			    ));
 END_RCPP
   }/*}}}*/
