@@ -629,8 +629,7 @@ BEGIN_RCPP/*{{{*/
 END_RCPP
   }/*}}}*/
 
-RcppExport SEXP ModelMatrixTestCox(SEXP iU, SEXP idUt,SEXP ibetaiid, SEXP insim, SEXP iobssup
-			  ) {
+RcppExport SEXP ModelMatrixTestCox(SEXP iU, SEXP idUt,SEXP ibetaiid, SEXP insim, SEXP iobssup) {
 BEGIN_RCPP/*{{{*/
   mat U   = Rcpp::as<mat>(iU);
   mat dUt = Rcpp::as<mat>(idUt);
@@ -659,7 +658,7 @@ BEGIN_RCPP/*{{{*/
      betati=vecmatrow(nr,betaiid); 
 //     for (unsigned k=0; k<n; k++)  Uti.row(k)=norm_rand()*U.row(k); 
 //     for (unsigned k=0; k<n; k++)  betati.row(k)=norm_rand()*betaiid.row(k); 
-     for (unsigned k=0; k<mp; k++)  Uti.col(k) = cumsum(Uti.col(k));
+     for (unsigned k=0; k<mp; k++)  Uti.col(k)    = cumsum(Uti.col(k));
      for (unsigned k=0; k<p; k++)   betati.col(k) = cumsum(betati.col(k));
 
 
@@ -672,7 +671,6 @@ BEGIN_RCPP/*{{{*/
      }
 
      Uthati=Uti-Uthati; 
-
 //     if(j==0) Uthati.print("one sim"); 
 
      for (unsigned k=0;k<mp;k++)  {
