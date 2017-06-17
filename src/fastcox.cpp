@@ -179,7 +179,7 @@ BEGIN_RCPP/*{{{*/
     XX = XX.rows(idx);
     X = X.rows(idx);  
   }
-  if (XZ.n_rows==XX.n_rows) {
+  if (ZX.n_rows==XX.n_rows) {
     ZX = ZX.rows(idx);  
   }
   weights = weights.elem(idx); 
