@@ -162,16 +162,14 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 ###      structure(-ploglik,gradient=-gradient,hessian=-hessian)
 ###    }# }}}
 ###  } else {
-      if (is.null(Z)) Z <- matrix(1,1,1) ## to not use for ZX products in  
+      if (is.null(Z)) Zcall <- matrix(1,1,1) ## to not use for ZX products in  
 
       trunc <- (!is.null(entry))
       if (!trunc) entry <- rep(0,length(exit))
       system.time(dd <- .Call("FastCoxPrepStrata",
                               entry,exit,status,X, as.integer(seq_along(entry)),
-                              trunc,strata,weights,offset,Z,PACKAGE="mets"))
+                              trunc,strata,weights,offset,Zcall,PACKAGE="mets"))
       dd$nstrata <- nstrata
-
-      print(head(Z)); 
 
       if (!is.null(id))
           id <- dd$id[dd$jumps+1]
