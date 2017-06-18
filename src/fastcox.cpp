@@ -650,6 +650,7 @@ BEGIN_RCPP/*{{{*/
   GetRNGstate();  /* to use R random normals */
 
   colvec nr(Uti.n_rows);
+
   for (unsigned j=0; j<nsim; j++) {
      int thissiml=0; 
 
@@ -658,20 +659,18 @@ BEGIN_RCPP/*{{{*/
      betati=vecmatrow(nr,betaiid); 
 //     for (unsigned k=0; k<n; k++)  Uti.row(k)=norm_rand()*U.row(k); 
 //     for (unsigned k=0; k<n; k++)  betati.row(k)=norm_rand()*betaiid.row(k); 
-     for (unsigned k=0; k<mp; k++)  Uti.col(k)    = cumsum(Uti.col(k));
-     for (unsigned k=0; k<p; k++)   betati.col(k) = cumsum(betati.col(k));
-
+     for (unsigned k=0;k<mp;k++)  Uti.col(k)=cumsum(Uti.col(k));
+     rowvec betatti=sum(betati);
 
      for (unsigned k=0; k<n; k++)  {
 //	     mat mm=reshape(dUt.row(k),mp,p); 
 //	     mm.print("mm"); 
 //	     rowvec uti=betati.row(k);
 //	     uti.print("puti"); 
-	  Uthati.row(k)=(reshape(dUt.row(k),mp,p)*(betati.row(k)).t()).t();
+	  Uthati.row(k)=(reshape(dUt.row(k),mp,p)*betatti.t()).t();
      }
 
-     Uthati=Uti-Uthati; 
-//     if(j==0) Uthati.print("one sim"); 
+     Uthati=Uti-Uthati; //     if(j==0) Uthati.print("one sim"); 
 
      for (unsigned k=0;k<mp;k++)  {
 //	     printf(" %lf \n",sup(j,k)); 
