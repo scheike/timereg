@@ -94,16 +94,17 @@ gofM.phreg  <- function(formula,data,offset=NULL,weights=NULL,modelmatrix=NULL,
 
 if (is.null(modelmatrix)) stop(" must give matrix for cumulating residuals\n"); 
 
+browser()
 cox1 <- phreg1(formula,data,offset=NULL,weights=NULL,Z=modelmatrix,cumhaz=FALSE,...) 
 offsets <- as.matrix(cox1$model.frame[,-1]) %*% cox1$coef
-coxM <- phreg1(cox1$model.frame[,1]~modelmatrix,data,offset=offsets,no.opt=TRUE,cumhaz=FALSE)
+coxM <- phreg1(cox1$model.frame[,1]~modelmatrix,data,offset=offsets,no.opt=TRUE,cumhaz=FALSE,...)
 nnames <- names(modelmatrix)
 
 Ut <- apply(coxM$U,2,cumsum)
 jumptimes <- coxM$jumptimes
 U <- coxM$U
 Ubeta <- cox1$U
-ii <- - solve(cox1$hessian)
+ii <- -solve(cox1$hessian)
 EE <- .Call("vecMatMat",coxM$E,cox1$E)$vXZ; 
 Pt <- cox1$ZX - EE
 Pt <- apply(Pt,2,cumsum)
