@@ -60,7 +60,30 @@ out <- list(jumptimes=x$jumptimes,supUsim=sup,res=res,supU=obs,
 }# }}}
 
 
-
+##' GOF for Cox covariates in  PH regression
+##'
+##' Cumulative residuals after model matrix for Cox PH regression
+##' @param formula formula for cox regression 
+##' @param data data for model
+##' @param offset offset 
+##' @param weights weights 
+##' @param modelmatrix  matrix for cumulating residuals
+##' @param n.sim number of simulations for score processes
+##' @param silent to keep it absolutely silent, otherwise timing estimate will be prduced for longer jobs.
+##' @param ... Additional arguments to lower level funtions
+##' @author THomas Scheike and Klaus K. Holst
+##' @export
+##' @examples
+##' data(TRACE)
+##' 
+##' dcut(TRACE)
+##' mm <- model.matrix(~-1+factor(wmicat.4),data=TRACE)
+##' m1 <- gofM.phreg(Surv(time,status==9)~vf+chf+diabetes,data=TRACE,modelmatrix=mm) 
+##' 
+##' summary(m1)
+##' par(mfrow=c(2,2))
+##' plot(m1)
+##' 
 ##' @export
 gofM.phreg  <- function(formula,data,offset=NULL,weights=NULL,modelmatrix=NULL,
 			n.sim=1000,silent=1,...)
