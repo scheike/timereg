@@ -93,7 +93,7 @@ procform <- function(formula=NULL, sep="\\|", nsep=1, return.formula=FALSE, data
                 x <- attributes(terms(f,data=data))$term.labels
                 pred <- x
             }
-            if (filter%in%c("1","0","-1")) {
+            if (filter%in%c("0","-1")) {
                 filter <- list()
                 filter.expression <- NULL
             } else {
