@@ -92,9 +92,11 @@ gofM.phreg  <- function(formula,data,offset=NULL,weights=NULL,modelmatrix=NULL,
 			n.sim=1000,silent=1,...)
 {# {{{
 
+if (is.null(modelmatrix)) stop(" must give matrix for cumulating residuals\n"); 
+
 cox1 <- phreg1(formula,data,offset=NULL,weights=NULL,Z=modelmatrix,cumhaz=FALSE,...) 
 offsets <- as.matrix(cox1$model.frame[,-1]) %*% cox1$coef
-coxM <- phreg1(Surv(time,status==9)~modelmatrix,data,offset=offsets,no.opt=TRUE,cumhaz=FALSE)
+coxM <- phreg1(cox1$model.frame[,1]~modelmatrix,data,offset=offsets,no.opt=TRUE,cumhaz=FALSE)
 nnames <- names(modelmatrix)
 
 Ut <- apply(coxM$U,2,cumsum)
