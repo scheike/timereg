@@ -55,8 +55,11 @@ if (silent==0) {
 cat("Cumulative score process test for Proportionality:\n")
 prmatrix(round(res,digits=2))
 }
+
 out <- list(jumptimes=x$jumptimes,supUsim=sup,res=res,supU=obs,
 	    pvals=simcox$pval,score=Ut,simUt=simcox$simUt)
+class(out) <- "gof.phreg"
+return(out)
 }# }}}
 
 
@@ -76,9 +79,9 @@ out <- list(jumptimes=x$jumptimes,supUsim=sup,res=res,supU=obs,
 ##' @examples
 ##' data(TRACE)
 ##' 
-##' dcut(TRACE)
+##' dcut(TRACE)  <- ~. 
 ##' mm <- model.matrix(~-1+factor(wmicat.4),data=TRACE)
-##' m1 <- gofM.phreg(Surv(time,status==9)~vf+chf+diabetes,data=TRACE,modelmatrix=mm) 
+##' m1 <- gofM.phreg(Surv(time,status==9)~vf+chf+wmi,data=TRACE,modelmatrix=mm) 
 ##' 
 ##' summary(m1)
 ##' par(mfrow=c(2,2))
@@ -118,8 +121,8 @@ prmatrix(round(res,digits=2))
 
 out <- list(jumptimes=jumptimes,supUsim=simcox$supUsim,res=res,supU=obs,
 	    pvals=simcox$pval,score=Ut,simUt=simcox$simUt)
-
 class(out) <- "gof.phreg"
+
 return(out)
 }# }}}
 
