@@ -149,7 +149,15 @@ BEGIN_RCPP/*{{{*/
   for (unsigned i=0; i<X.n_rows; i++) {
     rowvec Xi = X.row(i);
     rowvec Zi = Z.row(i);
-    ZX.row(i) = vectorise(Zi.t()*Xi,1);
+    ZX.row(i) = vectorise((Xi.t()*Zi),1); // to get back to right form with reshape
+    if (i==-1) {
+       rowvec zx=ZX.row(i) ; 
+       Xi.print("xi"); 
+       Zi.print("zi"); 
+       zx.print("zx"); 
+       mat mm=reshape(zx,Z.n_cols,X.n_cols);
+       mm.print("mm"); 
+    }
     if (Truncation) ZX.row(i+n/2) = ZX.row(i);
   }
 
@@ -472,7 +480,7 @@ BEGIN_RCPP/*{{{*/
   mat grad = (X.rows(Jumps)-E); // Score
   vec val =  (Xb.elem(Jumps)-log(S0)); // Partial log-likelihood
   colvec S02 = weightsJ%S0;
-  mat grad2=vecmatrow(weightsJ,grad);   // score 
+  mat grad2= vecmatrow(weightsJ,grad);   // score 
   vec val2 = weightsJ%(Xb.elem(Jumps)-log(S0)); // Partial log-likelihood
   mat hesst = -(XX2-E2);
 
@@ -600,8 +608,12 @@ BEGIN_RCPP/*{{{*/
   GetRNGstate();  /* to use R random normals */
 
   for (unsigned j=0; j<nsim; j++) {
-     int thissiml=0; 
-     for (unsigned k=0; k<n; k++)  Uti.row(k)=norm_rand()*U.row(k); 
+     vec thissiml(p); 
+//     uvec thissiml(p); 
+     thissiml=0*thissiml;
+     vec nr=rnorm(n); 
+     Uti=vecmatrow(nr,U); 
+//     for (unsigned k=0; k<n; k++)  Uti.row(k)=rnorm(1)*U.row(k); 
      for (unsigned k=0; k<p; k++)  Uti.col(k) = cumsum(Uti.col(k));
 
      for (unsigned k=0; k<n; k++)  {
@@ -615,7 +627,7 @@ BEGIN_RCPP/*{{{*/
 //	     printf(" %lf \n",sup(j,k)); 
         sup(j,k)=max(abs(Uthati.col(k))); 
 //      count if sup for this realization is larger than supObs
-        if (sup(j,k)>=osup(k) & thissiml==0) { pval(k)++; thissiml=1;}
+        if (sup(j,k)>=osup(k) & thissiml(k)<.5) { pval(k)++; thissiml(k)=1;}
         if (j<50) { simUti.col(j*p+k)=Uthati.col(k); }
      }
   }
@@ -652,9 +664,11 @@ BEGIN_RCPP/*{{{*/
   colvec nr(Uti.n_rows);
 
   for (unsigned j=0; j<nsim; j++) {
-     int thissiml=0; 
+     vec thissiml(mp); 
+     thissiml=thissiml*0; 
 
-     for (unsigned k=0; k<n; k++)  nr(k)=norm_rand(); 
+//     for (unsigned k=0; k<n; k++)  nr(k)=norm_rand(); 
+     nr=rnorm(n); 
      Uti=vecmatrow(nr,U); 
      betati=vecmatrow(nr,betaiid); 
 //     for (unsigned k=0; k<n; k++)  Uti.row(k)=norm_rand()*U.row(k); 
@@ -663,8 +677,10 @@ BEGIN_RCPP/*{{{*/
      rowvec betatti=sum(betati);
 
      for (unsigned k=0; k<n; k++)  {
+//	     if (j==0) {
 //	     mat mm=reshape(dUt.row(k),mp,p); 
 //	     mm.print("mm"); 
+//	     ]
 //	     rowvec uti=betati.row(k);
 //	     uti.print("puti"); 
 	  Uthati.row(k)=(reshape(dUt.row(k),mp,p)*betatti.t()).t();
@@ -676,7 +692,7 @@ BEGIN_RCPP/*{{{*/
 //	     printf(" %lf \n",sup(j,k)); 
         sup(j,k)=max(abs(Uthati.col(k))); 
 //      count if sup for this realization is larger than supObs
-        if (sup(j,k)>=osup(k) & thissiml==0) { pval(k)++; thissiml=1;}
+        if (sup(j,k)>=osup(k) & thissiml(k)<0.5) { pval(k)++; thissiml(k)=1;}
         if (j<50) { simUti.col(j*mp+k)=Uthati.col(k); }
      }
   }
