@@ -22,6 +22,7 @@
 ##' @export
 gof.phreg  <- function(x,n.sim=1000,silent=0)
 {# {{{
+
 ### test for proportionality 
 p <- length(x$coef)
 nnames <- names(x$coef)
@@ -54,9 +55,47 @@ if (silent==0) {
 cat("Cumulative score process test for Proportionality:\n")
 prmatrix(round(res,digits=2))
 }
-
 out <- list(jumptimes=x$jumptimes,supUsim=sup,res=res,supU=obs,
 	    pvals=simcox$pval,score=Ut,simUt=simcox$simUt)
+}# }}}
+
+
+
+##' @export
+gofM.phreg  <- function(formula,data,offset=NULL,weights=NULL,modelmatrix=NULL,
+			n.sim=1000,silent=1,...)
+{# {{{
+
+cox1 <- phreg1(formula,data,offset=NULL,weights=NULL,Z=modelmatrix,cumhaz=FALSE,...) 
+offsets <- as.matrix(cox1$model.frame[,-1]) %*% cox1$coef
+coxM <- phreg1(Surv(time,status==9)~modelmatrix,data,offset=offsets,no.opt=TRUE,cumhaz=FALSE)
+nnames <- names(modelmatrix)
+
+Ut <- apply(coxM$U,2,cumsum)
+jumptimes <- coxM$jumptimes
+U <- coxM$U
+Ubeta <- cox1$U
+ii <- - solve(cox1$hessian)
+EE <- .Call("vecMatMat",coxM$E,cox1$E)$vXZ; 
+Pt <- cox1$ZX - EE
+Pt <- apply(Pt,2,cumsum)
+betaiid <- t(ii %*% t(Ubeta))
+obs <- apply(abs(Ut),2,max)
+simcox <-  .Call("ModelMatrixTestCox",U,Pt,betaiid,n.sim,obs,PACKAGE="mets")
+
+sup <-  simcox$supUsim
+res <- cbind(obs,simcox$pval)
+colnames(res) <- c("Sup|U(t)|","pval")
+rownames(res) <- nnames 
+
+if (silent==0) {
+cat("Cumulative score process test for modelmatrix:\n")
+prmatrix(round(res,digits=2))
+}
+
+out <- list(jumptimes=jumptimes,supUsim=simcox$supUsim,res=res,supU=obs,
+	    pvals=simcox$pval,score=Ut,simUt=simcox$simUt)
+
 class(out) <- "gof.phreg"
 return(out)
 }# }}}
