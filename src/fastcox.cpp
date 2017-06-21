@@ -235,7 +235,8 @@ mat  vecmatrow(const colvec &a, const mat b) {/*{{{*/
 // }
 colvec revcumsum(const colvec &a) {/*{{{*/
   unsigned n = a.n_rows;
-  colvec res = a; double prev=0;  
+  colvec res = a; 
+  double prev=0;  
   for (unsigned i=0; i<n; i++) {
     prev += a(n-i-1);
     res(n-i-1) = prev;
@@ -249,7 +250,8 @@ colvec revcumsum(const colvec &a, const colvec &v1, const colvec &v2) {
 RcppExport SEXP revcumsumR(SEXP ia) {/*{{{*/
   colvec a = Rcpp::as<colvec>(ia);
   unsigned n = a.n_rows;
-  colvec res = a; double prev=0;  
+  colvec res = a; 
+  double prev=0;  
   for (unsigned i=0; i<n; i++) {
     prev += a(n-i-1);
     res(n-i-1) = prev;
@@ -267,8 +269,8 @@ RcppExport SEXP cumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   int nstrata = Rcpp::as<int>(instrata);
   unsigned n = a.n_rows;
 
-  colvec tmpsum(nstrata); 
-  tmpsum=tmpsum*0; 
+  colvec tmpsum(nstrata,0); 
+//  tmpsum=tmpsum*0; 
   colvec res = a; 
   for (unsigned i=0; i<n; i++) {
     int ss=intstrata(i); 
@@ -287,8 +289,8 @@ RcppExport SEXP revcumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   int nstrata = Rcpp::as<int>(instrata);
   unsigned n = a.n_rows;
 
-  colvec tmpsum(nstrata); 
-  tmpsum=tmpsum*0; 
+  colvec tmpsum(nstrata,0); 
+//  tmpsum=tmpsum*0; 
   colvec res = a; 
   for (unsigned i=0; i<n; i++) {
     int ss=intstrata(n-i-1); 
@@ -608,9 +610,9 @@ BEGIN_RCPP/*{{{*/
   GetRNGstate();  /* to use R random normals */
 
   for (unsigned j=0; j<nsim; j++) {
-     vec thissiml(p); 
+     vec thissiml(p,0); 
 //     uvec thissiml(p); 
-     thissiml=0*thissiml;
+//     thissiml=0*thissiml;
      vec nr=rnorm(n); 
      Uti=vecmatrow(nr,U); 
 //     for (unsigned k=0; k<n; k++)  Uti.row(k)=rnorm(1)*U.row(k); 
@@ -664,8 +666,8 @@ BEGIN_RCPP/*{{{*/
   colvec nr(Uti.n_rows);
 
   for (unsigned j=0; j<nsim; j++) {
-     vec thissiml(mp); 
-     thissiml=thissiml*0; 
+     vec thissiml(mp,0); 
+//     thissiml=thissiml*0; 
 
 //     for (unsigned k=0; k<n; k++)  nr(k)=norm_rand(); 
      nr=rnorm(n); 
