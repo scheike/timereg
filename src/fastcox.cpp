@@ -235,7 +235,8 @@ mat  vecmatrow(const colvec &a, const mat b) {/*{{{*/
 // }
 colvec revcumsum(const colvec &a) {/*{{{*/
   unsigned n = a.n_rows;
-  colvec res = a; double prev=0;  
+  colvec res = a; 
+  double prev=0;  
   for (unsigned i=0; i<n; i++) {
     prev += a(n-i-1);
     res(n-i-1) = prev;
@@ -249,7 +250,8 @@ colvec revcumsum(const colvec &a, const colvec &v1, const colvec &v2) {
 RcppExport SEXP revcumsumR(SEXP ia) {/*{{{*/
   colvec a = Rcpp::as<colvec>(ia);
   unsigned n = a.n_rows;
-  colvec res = a; double prev=0;  
+  colvec res = a; 
+  double prev=0;  
   for (unsigned i=0; i<n; i++) {
     prev += a(n-i-1);
     res(n-i-1) = prev;
@@ -608,9 +610,9 @@ BEGIN_RCPP/*{{{*/
   GetRNGstate();  /* to use R random normals */
 
   for (unsigned j=0; j<nsim; j++) {
-     vec thissiml(p); 
+     vec thissiml(p,0); 
 //     uvec thissiml(p); 
-     thissiml=0*thissiml;
+//     thissiml=0*thissiml;
      vec nr=rnorm(n); 
      Uti=vecmatrow(nr,U); 
 //     for (unsigned k=0; k<n; k++)  Uti.row(k)=rnorm(1)*U.row(k); 
