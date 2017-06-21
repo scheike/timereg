@@ -267,8 +267,8 @@ RcppExport SEXP cumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   int nstrata = Rcpp::as<int>(instrata);
   unsigned n = a.n_rows;
 
-  colvec tmpsum(nstrata); 
-  tmpsum=tmpsum*0; 
+  colvec tmpsum(nstrata,0); 
+//  tmpsum=tmpsum*0; 
   colvec res = a; 
   for (unsigned i=0; i<n; i++) {
     int ss=intstrata(i); 
@@ -287,8 +287,8 @@ RcppExport SEXP revcumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   int nstrata = Rcpp::as<int>(instrata);
   unsigned n = a.n_rows;
 
-  colvec tmpsum(nstrata); 
-  tmpsum=tmpsum*0; 
+  colvec tmpsum(nstrata,0); 
+//  tmpsum=tmpsum*0; 
   colvec res = a; 
   for (unsigned i=0; i<n; i++) {
     int ss=intstrata(n-i-1); 
@@ -303,8 +303,8 @@ RcppExport SEXP revcumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
 
 colvec revcumsumstrata(const colvec &a,IntegerVector strata,int nstrata) {/*{{{*/
   unsigned n = a.n_rows;
-  colvec tmpsum(nstrata); 
-  tmpsum=tmpsum*0; 
+  colvec tmpsum(nstrata,0); 
+//  tmpsum=tmpsum*0; 
   colvec res = a; 
 
   for (unsigned i=0; i<n; i++) {
@@ -664,8 +664,8 @@ BEGIN_RCPP/*{{{*/
   colvec nr(Uti.n_rows);
 
   for (unsigned j=0; j<nsim; j++) {
-     vec thissiml(mp); 
-     thissiml=thissiml*0; 
+     vec thissiml(mp,0); 
+//     thissiml=thissiml*0; 
 
 //     for (unsigned k=0; k<n; k++)  nr(k)=norm_rand(); 
      nr=rnorm(n); 
