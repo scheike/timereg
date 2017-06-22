@@ -269,8 +269,9 @@ RcppExport SEXP cumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   int nstrata = Rcpp::as<int>(instrata);
   unsigned n = a.n_rows;
 
-  colvec tmpsum(nstrata,0); 
+  colvec tmpsum(nstrata); 
 //  tmpsum=tmpsum*0; 
+  tmpsum.zeros(); 
   colvec res = a; 
   for (unsigned i=0; i<n; i++) {
     int ss=intstrata(i); 
@@ -289,7 +290,8 @@ RcppExport SEXP revcumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   int nstrata = Rcpp::as<int>(instrata);
   unsigned n = a.n_rows;
 
-  colvec tmpsum(nstrata,0); 
+  colvec tmpsum(nstrata); 
+  tmpsum.zeros(); 
 //  tmpsum=tmpsum*0; 
   colvec res = a; 
   for (unsigned i=0; i<n; i++) {
@@ -305,26 +307,23 @@ RcppExport SEXP revcumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
 
 colvec revcumsumstrata(const colvec &a,IntegerVector strata,int nstrata) {/*{{{*/
   unsigned n = a.n_rows;
-  colvec tmpsum(nstrata,0); 
+  colvec tmpsum(nstrata); 
+  tmpsum.zeros(); 
 //  tmpsum=tmpsum*0; 
   colvec res = a; 
 
   for (unsigned i=0; i<n; i++) {
-    int ss=strata(n-i-1); 
-    tmpsum(ss) += a(n-i-1); 
-    res(n-i-1) = tmpsum(ss);
+//    int ss=strata(n-i-1); 
+    tmpsum(strata(n-i-1)) += a(n-i-1); 
+    res(n-i-1) = tmpsum(strata(n-i-1));
 //    printf("%d %d %d %lf %lf \n",i,ss,strata(n-i-1),tmpsum(ss),a(n-i-1)); 
   }  
 //  printf("===========================\n"); 
   return(res);
 }
-colvec revcumsumstrata1(const colvec &a, const colvec &v1, const colvec &v2,IntegerVector strata,int nstrata) {
-//  unsigned n = a.n_rows;
-//  colvec dd= revcumsumstrata(a%v1,strata,nstrata); 
-//  for (unsigned i=0; i<n; i++) {
-//	  if (v2(i)>0) dd(i)=dd(i)/v2(i); else dd(i)=0; 
-//  }  
-//  return(dd); 
+
+colvec revcumsumstrata1(const colvec &a,const  colvec &v1,const  colvec &v2,
+		        IntegerVector strata,int nstrata) {
   return(revcumsumstrata(a%v1,strata,nstrata)/v2);
 }/*}}}*/
 
@@ -474,9 +473,8 @@ BEGIN_RCPP/*{{{*/
   }
   } 
 
-
-  XX2 = XX2.rows(Jumps);
   //  X = X.rows(Jumps);
+  XX2 = XX2.rows(Jumps);
   colvec weightsJ=weights.elem(Jumps);  
   S0 = S0.elem(Jumps);
   mat grad = (X.rows(Jumps)-E); // Score
@@ -591,8 +589,7 @@ END_RCPP
 } /*}}}*/
 
 
-RcppExport SEXP PropTestCox(SEXP iU, SEXP idUt, SEXP insim, SEXP iobssup
-			  ) {
+RcppExport SEXP PropTestCox(SEXP iU, SEXP idUt, SEXP insim, SEXP iobssup) {
 BEGIN_RCPP/*{{{*/
   mat U      = Rcpp::as<mat>(iU);
   mat dUt = Rcpp::as<mat>(idUt);
@@ -601,7 +598,7 @@ BEGIN_RCPP/*{{{*/
   unsigned p = U.n_cols;
   unsigned n = U.n_rows;
 
-  vec pval(p); 
+  arma::vec pval(p); 
   mat Uthati(n,p); 
   mat Uti(n,p); 
   mat sup(nsim,p); 
@@ -610,14 +607,11 @@ BEGIN_RCPP/*{{{*/
   GetRNGstate();  /* to use R random normals */
 
   for (unsigned j=0; j<nsim; j++) {
-     vec thissiml(p,0); 
-//     uvec thissiml(p); 
-//     thissiml=0*thissiml;
+//      arma::vec thissiml(p); 
+//     uvec thissiml(p); thissiml=0*thissiml;
      vec nr=rnorm(n); 
      Uti=vecmatrow(nr,U); 
-//     for (unsigned k=0; k<n; k++)  Uti.row(k)=rnorm(1)*U.row(k); 
      for (unsigned k=0; k<p; k++)  Uti.col(k) = cumsum(Uti.col(k));
-
      for (unsigned k=0; k<n; k++)  {
 	  Uthati.row(k)=(reshape(dUt.row(k),p,p)*(Uti.row(n-1)).t()).t();
      }
@@ -626,10 +620,12 @@ BEGIN_RCPP/*{{{*/
 //     if(j==0) Uthati.print("one sim"); 
 
      for (unsigned k=0;k<p;k++)  {
-//	     printf(" %lf \n",sup(j,k)); 
+//     printf(" %lf \n",sup(j,k)); 
+//        int thissiml=0; 
         sup(j,k)=max(abs(Uthati.col(k))); 
-//      count if sup for this realization is larger than supObs
-        if (sup(j,k)>=osup(k) & thissiml(k)<.5) { pval(k)++; thissiml(k)=1;}
+//      count if sup for this realization is larger than supObs only once
+//        if ((sup(j,k)>=osup(k)) & (thissiml==0)) { pval(k)++; thissiml=1;}
+        if ((sup(j,k)>=osup(k))) { pval(k)++; }
         if (j<50) { simUti.col(j*p+k)=Uthati.col(k); }
      }
   }
@@ -654,7 +650,7 @@ BEGIN_RCPP/*{{{*/
   unsigned p = betaiid.n_cols;
   unsigned n = U.n_rows;
 
-  vec pval(mp); 
+  arma::vec pval(mp); 
   mat Uthati(n,mp); 
   mat Uti(n,mp); 
   mat betati(n,p); 
@@ -665,8 +661,8 @@ BEGIN_RCPP/*{{{*/
 
   colvec nr(Uti.n_rows);
 
-  for (unsigned j=0; j<nsim; j++) {
-     vec thissiml(mp,0); 
+  for (unsigned j=0;j<nsim; j++) {
+//     vec thissiml(mp); 
 //     thissiml=thissiml*0; 
 
 //     for (unsigned k=0; k<n; k++)  nr(k)=norm_rand(); 
@@ -691,10 +687,10 @@ BEGIN_RCPP/*{{{*/
      Uthati=Uti-Uthati; //     if(j==0) Uthati.print("one sim"); 
 
      for (unsigned k=0;k<mp;k++)  {
-//	     printf(" %lf \n",sup(j,k)); 
         sup(j,k)=max(abs(Uthati.col(k))); 
-//      count if sup for this realization is larger than supObs
-        if (sup(j,k)>=osup(k) & thissiml(k)<0.5) { pval(k)++; thissiml(k)=1;}
+//      count if sup for this realization is larger than supObs only once
+//        if ((sup(j,k)>=osup(k)) & (thissiml(k)<0.5)) { pval(k)++; thissiml(k)=1;}
+        if ((sup(j,k)>=osup(k))) {pval(k)++;}
         if (j<50) { simUti.col(j*mp+k)=Uthati.col(k); }
      }
   }

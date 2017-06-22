@@ -121,76 +121,34 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
   if (is.null(offset)) offset <- rep(1,length(exit)) else offset <- exp(offset); 
   if (is.null(weights)) weights <- rep(1,length(exit)) 
 
-###  if (!is.null(strata)) {# {{{
-###    stratalev <- levels(strata)
-###    strataidx <- lapply(stratalev,function(x) which(strata==x))
-###    if (!all(unlist(lapply(strataidx,function(x) length(x)>0))))
-###      stop("Strata without any observation")
-###    dd <- lapply(strataidx, function(ii) {
-###        entryi <- entry[ii]
-###        trunc <- !is.null(entryi)
-###        if (!trunc) entryi <- rep(0,length(exit[ii]))
-###                 .Call("FastCoxPrep",
-###                       entryi,exit[ii],status[ii],
-###                       as.matrix(X)[ii,,drop=FALSE],
-###                       id[ii],
-###                       trunc,
-###                       PACKAGE="mets")
-###                 })
-###    if (!is.null(id))
-###      id <- unlist(lapply(dd,function(x) x$id[x$jumps+1]))
-###      obj <- function(pp,U=FALSE,all=FALSE) {
-###      val <- lapply(dd,function(d)
-###                    with(d,
-###                         .Call("FastCoxPL",pp,X,XX,sign,jumps,PACKAGE="mets")))
-###      ploglik <-     Reduce("+",lapply(val,function(x) x$ploglik))
-###      gradient <-    Reduce("+",lapply(val,function(x) x$gradient))
-###      hessian <-     Reduce("+",lapply(val,function(x) x$hessian))
-###      if (all) {
-###        U <- do.call("rbind",lapply(val,function(x) x$U))
-###        hessiantime <- do.call("rbind",lapply(val,function(x) x$hessianttime))
-###        time <- lapply(dd,function(x) x$time[x$ord+1])
-###        ord <- lapply(dd,function(x) x$ord+1)
-###        jumps <- lapply(dd,function(x) x$jumps+1)
-###        jumptimes <- lapply(dd,function(x) x$time[x$ord+1][x$jumps+1])
-###        S0 <- lapply(val,function(x) x$S0)
-###        nevent  <- unlist(lapply(S0,length))
-###        return(list(ploglik=ploglik,gradient=gradient,hessian=hessian,
-###                    U=U,S0=S0,nevent=nevent,hessianttime=hessiantime,
-###                    ord=ord,time=time,jumps=jumps,jumptimes=jumptimes))
-###      }
-###      structure(-ploglik,gradient=-gradient,hessian=-hessian)
-###    }# }}}
-###  } else {
+   Zcall <- matrix(1,1,1) ## to not use for ZX products in  
+   if (!is.null(Z)) Zcall <- Z
 
-      Zcall <- matrix(1,1,1) ## to not use for ZX products in  
-      if (!is.null(Z)) Zcall <- Z
+	trunc <- (!is.null(entry))
+	if (!trunc) entry <- rep(0,length(exit))
+	system.time(dd <- .Call("FastCoxPrepStrata",
+			      entry,exit,status,X, as.integer(seq_along(entry)),
+			      trunc,strata,weights,offset,Zcall,PACKAGE="mets"))
+	dd$nstrata <- nstrata
 
-      trunc <- (!is.null(entry))
-      if (!trunc) entry <- rep(0,length(exit))
-      system.time(dd <- .Call("FastCoxPrepStrata",
-                              entry,exit,status,X, as.integer(seq_along(entry)),
-                              trunc,strata,weights,offset,Zcall,PACKAGE="mets"))
-      dd$nstrata <- nstrata
-
-      if (!is.null(id))
-          id <- dd$id[dd$jumps+1]
-      obj <- function(pp,U=FALSE,all=FALSE) {
-          val <- with(dd,
-                      .Call("FastCoxPLstrata",pp,X,XX,sign,jumps,
+	if (!is.null(id))
+	  id <- dd$id[dd$jumps+1]
+	obj <- function(pp,U=FALSE,all=FALSE) {
+	  val <- with(dd,
+		      .Call("FastCoxPLstrata",pp,X,XX,sign,jumps,
 			    strata,nstrata,weights,offset,ZX,PACKAGE="mets"))
-          if (all) {
-              val$time <- dd$time[dd$ord+1]
-              val$ord <- dd$ord+1
-              val$jumps <- dd$jumps+1
-              val$jumptimes <- val$time[val$jumps]
-              val$nevent <- length(val$S0)
+	  if (all) {
+	      val$time <- dd$time[dd$ord+1]
+	      val$ord <- dd$ord+1
+	      val$jumps <- dd$jumps+1
+	      val$jumptimes <- val$time[val$jumps]
+	      val$nevent <- length(val$S0)
 	      val$nstrata <- dd$nstrata
 	      val$strata <- dd$strata
-              return(val)
-          }
-          with(val, structure(-ploglik,gradient=-gradient,hessian=-hessian))
-       }
+	      return(val)
+	  }
+	  with(val, structure(-ploglik,gradient=-gradient,hessian=-hessian))
+	}
   opt <- NULL
   if (p>0) {
   if (no.opt==FALSE) {
