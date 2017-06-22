@@ -598,7 +598,7 @@ BEGIN_RCPP/*{{{*/
   unsigned p = U.n_cols;
   unsigned n = U.n_rows;
 
-  arma::vec pval(p); 
+  vec pval(p); pval.zeros(); 
   mat Uthati(n,p); 
   mat Uti(n,p); 
   mat sup(nsim,p); 
@@ -650,7 +650,7 @@ BEGIN_RCPP/*{{{*/
   unsigned p = betaiid.n_cols;
   unsigned n = U.n_rows;
 
-  arma::vec pval(mp); 
+  vec pval(mp); pval.zeros(); 
   mat Uthati(n,mp); 
   mat Uti(n,mp); 
   mat betati(n,p); 
