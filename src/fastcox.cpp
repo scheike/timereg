@@ -221,7 +221,7 @@ END_RCPP
 }/*}}}*/
 
 
-mat  vecmatrow(const colvec &a, const mat b) {/*{{{*/
+mat  vecmatrow(const colvec &a, const mat &b) {/*{{{*/
   unsigned n = b.n_cols;
   mat res=b; 
   for (unsigned i=0; i<n; i++) {
