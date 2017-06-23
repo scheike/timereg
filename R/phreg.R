@@ -188,18 +188,19 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
  colnames(cumhaz)    <- c("time","cumhaz")
  colnames(se.cumhaz) <- c("time","se.cumhaz")
 
-    if (nstrata>1) {
-	 lcumhaz <- lse.cumhaz <- list()
- 	 cumhaz    <- cbind(cumhaz,val$strata[val$jumps])
-         se.cumhaz <- cbind(se.cumhaz,val$strata[val$jumps])
-	 for (i in 0:(nstrata-1)) {
-		 ii <- (val$strata[val$jumps]==i)
-		 if (length(ii)>1) {
-			 lcumhaz[[i+1]]  <-  cumhaz[ii,1:2]
-			 lse.cumhaz[[i+1]]  <- se.cumhaz[ii,1:2]
-		 }
-	 }
-    }
+###    making this list takes time
+###    if (nstrata>1) {
+###	 lcumhaz <- lse.cumhaz <- list()
+### 	 cumhaz    <- cbind(cumhaz,val$strata[val$jumps])
+###         se.cumhaz <- cbind(se.cumhaz,val$strata[val$jumps])
+###	 for (i in 0:(nstrata-1)) {
+###		 ii <- (val$strata[val$jumps]==i)
+###		 if (length(ii)>1) {
+###			 lcumhaz[[i+1]]  <-  cumhaz[ii,1:2]
+###			 lse.cumhaz[[i+1]]  <- se.cumhaz[ii,1:2]
+###		 }
+###	 }
+###    }
  } # }}} 
  else {se.cumhaz <- lcumhaz <- lse.cumhaz <- NULL}
 
@@ -511,6 +512,7 @@ print.summary.phreg  <- function(x,max.strata=5,...) {
 }
 
 ###}}} print.summary
+
 
 cumsumstrata <- function(x,strata,nstrata)
 {
