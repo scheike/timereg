@@ -806,7 +806,7 @@ if (!is.null(margsurv))  {
 	  }
 
       } ## }}} 
-      else { ## {{{  survival model 
+      else { ## {{{  survival model two.stage==0
 
 ###      cum1 <- cbind(dtimesst,Bit)
 	 entry.cause  <- rep(0,nrow(data))

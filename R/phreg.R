@@ -202,7 +202,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 ###	 }
 ###    }
  } # }}} 
- else {se.cumhaz <- lcumhaz <- lse.cumhaz <- NULL}
+ else {cumhaz <- se.cumhaz <- lcumhaz <- lse.cumhaz <- NULL}
 
   res <- c(val,
            list(strata=strata,
@@ -529,22 +529,19 @@ predictPhreg1 <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
     strata <- x$strata[x$jumps]
     nstrata <- x$nstrata
 
-    ### check if baseline is already computed before computing it
-
     ## Brewslow estimator
-    chaz <- cbind(jumptimes,cumsum(1/S0))
-    DLambeta.t <- apply(x$E/c(x$S0)^2,2,cumsum)
-    varbetat <- apply((DLambeta.t %*%  II)*DLambeta.t,1,sum)
-    se.chaz <- cbind(jumptimes,(cumsum(1/S0^2)-varbetat)^.5)
-
-    ### with strata 
-###    chaz <- cbind(jumptimes,cumsumstrata(1/S0,strata,nstrata))
-###    DLambeta.t <- apply(x$E/c(x$S0)^2,2,cumsumstrata,strata,nstrata)
-###    varbetat <- apply((DLambeta.t %*%  II)*DLambeta.t,1,sum)
-###    se.chaz <- cbind(jumptimes,(cumsumstrata(1/S0^2,strata,nstrata)-varbetat)^.5)
-
+    if (is.null(x$cumhaz)) {
+	    chaz <- cbind(jumptimes,cumsumstrata(1/S0,strata,nstrata))
+	    DLambeta.t <- apply(x$E/c(x$S0)^2,2,cumsumstrata,strata,nstrata)
+	    varbetat <- apply((DLambeta.t %*%  II)*DLambeta.t,1,sum)
+	    se.chaz <- cbind(jumptimes,(cumsumstrata(1/S0^2,strata,nstrata)-varbetat)^.5)
+    } else {
+	    chaz <- x$cumhaz
+	    se.chaz <- x$se.cumhaz
+    }
 
     if (!is.null(time)) {
+	### do within strata
         chaz <- Cpred(chaz,time)
         se.chaz <- Cpred(se.chaz,time)
     }
