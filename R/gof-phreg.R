@@ -12,15 +12,15 @@
 ##' @examples
 ##' data(TRACE)
 ##' 
-##' m1 <- phreg(Surv(time,status==9)~vf+chf+diabetes,data=TRACE) 
+##' m1 <- phreg1(Surv(time,status==9)~vf+chf+diabetes,data=TRACE) 
 ##' gg <- gof(m1)
 ##' par(mfrow=c(1,3))
 ##' plot(gg)
 ##' 
-##' m1 <- phreg(Surv(time,status==9)~strata(vf)+chf+diabetes,data=TRACE) 
+##' m1 <- phreg1(Surv(time,status==9)~strata(vf)+chf+diabetes,data=TRACE) 
 ##' gg <- gof(m1)
 ##' @export
-gof.phreg  <- function(x,n.sim=1000,silent=0)
+gof.phreg  <- function(x,n.sim=1000,silent=1)
 {# {{{
 
 ### test for proportionality 
