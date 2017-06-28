@@ -87,9 +87,6 @@ return(out)
 ##' par(mfrow=c(2,2))
 ##' plot(m1)
 ##' 
-##' m1 <- gofM.phreg(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE,modelmatrix=mm) 
-##' summary(m1)
-##' 
 ##' @export
 gofM.phreg  <- function(formula,data,offset=NULL,weights=NULL,modelmatrix=NULL,
 			n.sim=1000,silent=1,...)
