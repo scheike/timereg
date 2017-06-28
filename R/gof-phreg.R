@@ -1,6 +1,7 @@
 ##' GOF for Cox PH regression
 ##'
 ##' Cumulative score process residuals for Cox PH regression
+##' p-values based on Lin, Wei, Ying resampling.
 ##' @param x is phreg object 
 ##' @param n.sim number of simulations for score processes
 ##' @param silent to keep it absolutely silent, otherwise timing estimate will be prduced for longer jobs.
@@ -12,7 +13,6 @@
 ##' data(TRACE)
 ##' 
 ##' m1 <- phreg(Surv(time,status==9)~vf+chf+diabetes,data=TRACE) 
-##' 
 ##' gg <- gof(m1)
 ##' par(mfrow=c(1,3))
 ##' plot(gg)
@@ -57,7 +57,7 @@ prmatrix(round(res,digits=2))
 }
 
 out <- list(jumptimes=x$jumptimes,supUsim=sup,res=res,supU=obs,
-	    pvals=simcox$pval,score=Ut,simUt=simcox$simUt)
+	    pvals=simcox$pval,score=Ut,simUt=simcox$simUt,type="prop")
 class(out) <- "gof.phreg"
 return(out)
 }# }}}
@@ -66,6 +66,7 @@ return(out)
 ##' GOF for Cox covariates in  PH regression
 ##'
 ##' Cumulative residuals after model matrix for Cox PH regression
+##' p-values based on Lin, Wei, Ying resampling.
 ##' @param formula formula for cox regression 
 ##' @param data data for model
 ##' @param offset offset 
@@ -82,10 +83,12 @@ return(out)
 ##' dcut(TRACE)  <- ~. 
 ##' mm <- model.matrix(~-1+factor(wmicat.4),data=TRACE)
 ##' m1 <- gofM.phreg(Surv(time,status==9)~vf+chf+wmi,data=TRACE,modelmatrix=mm) 
-##' 
 ##' summary(m1)
 ##' par(mfrow=c(2,2))
 ##' plot(m1)
+##' 
+##' m1 <- gofM.phreg(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE,modelmatrix=mm) 
+##' summary(m1)
 ##' 
 ##' @export
 gofM.phreg  <- function(formula,data,offset=NULL,weights=NULL,modelmatrix=NULL,
@@ -95,8 +98,10 @@ gofM.phreg  <- function(formula,data,offset=NULL,weights=NULL,modelmatrix=NULL,
 if (is.null(modelmatrix)) stop(" must give matrix for cumulating residuals\n"); 
 
 cox1 <- phreg1(formula,data,offset=NULL,weights=NULL,Z=modelmatrix,cumhaz=FALSE,...) 
-offsets <- as.matrix(cox1$model.frame[,-1]) %*% cox1$coef
-coxM <- phreg1(cox1$model.frame[,1]~modelmatrix,data,offset=offsets,no.opt=TRUE,cumhaz=FALSE,...)
+offsets <- as.matrix(cox1$model.frame[,names(cox1$coef)]) %*% cox1$coef
+if (!is.null(cox1$strata)) 
+     coxM <- phreg1(cox1$model.frame[,1]~modelmatrix+strata(cox1$strata),data,offset=offsets,no.opt=TRUE,cumhaz=FALSE,...)
+else coxM <- phreg1(cox1$model.frame[,1]~modelmatrix,data,offset=offsets,no.opt=TRUE,cumhaz=FALSE,...)
 nnames <- names(modelmatrix)
 
 Ut <- apply(coxM$U,2,cumsum)
@@ -122,7 +127,7 @@ prmatrix(round(res,digits=2))
 }
 
 out <- list(jumptimes=jumptimes,supUsim=simcox$supUsim,res=res,supU=obs,
-	    pvals=simcox$pval,score=Ut,simUt=simcox$simUt)
+	    pvals=simcox$pval,score=Ut,simUt=simcox$simUt,type="modelmatrix")
 class(out) <- "gof.phreg"
 
 return(out)
@@ -148,14 +153,18 @@ lines(x$jumptimes,x$score[,i],lwd=1.5)
 ##' @export
 summary.gof.phreg <-  function(x)
 {# {{{
-cat("Cumulative score process test for Proportionality:\n")
+if (x$type=="prop")
+     cat("Cumulative score process test for Proportionality:\n")
+else cat("Cumulative residuals versus modelmatrix :\n")
 print(x$res)
 } # }}}
 
 ##' @export
 print.gof.phreg <-  function(x)
 {# {{{
-cat("Cumulative score process test for Proportionality:\n")
+if (x$type=="prop")
+     cat("Cumulative score process test for Proportionality:\n")
+else cat("Cumulative residuals versus modelmatrix :\n")
 print(x$res)
 } # }}}
 

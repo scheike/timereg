@@ -262,7 +262,7 @@
 ##' @param se.clusters for clusters for se calculation with iid
 ##' @param max.clust max se.clusters for se calculation with iid
 ##' @param numDeriv to get numDeriv version of second derivative, otherwise uses sum of squared score 
-##' @param random.design random effect design for additive gamma modeli, when pairs are given this is
+##' @param random.design random effect design for additive gamma model, when pairs are given this is
 ##' a (pairs) x (2) x (max number random effects) matrix, see pairs.rvs below
 ##' @param pairs matrix with rows of indeces (two-columns) for the pairs considered in the pairwise
 ##' composite score, useful for case-control sampling when marginal is known.
@@ -374,7 +374,7 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 	   semi <- 1
 ###	   start.time <- 0
 } ## }}}
-}
+} else { start.time<- 0}
 
 ###print("00"); print(summary(psurvmarg)); print(summary(ptrunc))
 
@@ -499,7 +499,10 @@ if (!is.null(margsurv))  {
 
   if (!is.null(pairs)) { pair.structure <- 1;} else  pair.structure <- 0;  
 
-  
+  print(c(pair.structure,dep.model,fix.baseline))
+  print(head(theta.des))
+  print(c(case.control,ascertained))
+
   if (pair.structure==1 & dep.model==3) { ## {{{ 
 
 ### something with dimensions of rv.des 
@@ -549,7 +552,6 @@ if (!is.null(margsurv))  {
 
 ###  setting up arguments for Aalen baseline profile estimates
  if (fix.baseline==0)  { ## {{{  when baseline is estimated when baseline is estimated 
-
  if (is.null(cr.models)) stop("give hazard models for different causes, ex cr.models=list(Surv(time,status==1)~+1,Surv(time,status==2)~+1) \n")
 
       if (case.control==0 & ascertained==0) { ## {{{ 
@@ -592,13 +594,17 @@ if (!is.null(margsurv))  {
 
 	## }}} 
 
+
        	#### organize subject specific random variables and design
         ###  for additive gamma model
 	## {{{ 
-	dimt <- dim(theta.des[,,1])
-	dimr <- dim(random.design[,,])
+	dimt <- dim(theta.des[,,1,drop=FALSE])[-3]
+	dimr <- dim(random.design[,,,drop=FALSE])
 	mtheta.des <- array(0,c(dimt,nrow(data)))
 	mrv.des <- array(0,c(dimr[1]/2,dimr[2],nrow(data)))
+	nrv.des <- rep(0,nrow(data))
+	nrv.des[pairs[,1]] <- pairs.rvs
+	nrv.des[pairs[,2]] <- pairs.rvs
 	mtheta.des[,,pairs[,1]] <- theta.des
 	mtheta.des[,,pairs[,2]] <- theta.des
 	mrv.des[,,pairs[,1]] <- random.design[1:(dimr[1]/2),,,drop=FALSE]
@@ -609,6 +615,27 @@ if (!is.null(margsurv))  {
 	mrv.des <- mrv.des[,,ids,drop=FALSE]
 	nrv.des <- pairs.rvs[ids]
 	## }}} 
+
+###       	#### organize subject specific random variables and design
+###        ###  for additive gamma model
+###	## {{{ 
+###	dimt <- dim(theta.des[,,1])
+###	dimr <- dim(random.design[,,])
+###	mtheta.des <- array(0,c(dimt,nrow(data)))
+###	mrv.des <- array(0,c(dimr[1]/2,dimr[2],nrow(data)))
+###	mtheta.des[,,pairs[,1]] <- theta.des
+###	mtheta.des[,,pairs[,2]] <- theta.des
+###	mrv.des[,,pairs[,1]] <- random.design[1:(dimr[1]/2),,,drop=FALSE]
+###	mrv.des[,,pairs[,2]] <- random.design[(dimr[1]/2+1):dimr[1],,,drop=FALSE]
+###	nrv.des <- rep(0,nrow(data))
+###	nrv.des[pairs[,1]] <- pairs.rvs
+###	nrv.des[pairs[,2]] <- pairs.rvs
+###	### array thetades to jump times (subjects)
+###	mtheta.des <- mtheta.des[,,ids,drop=FALSE]
+###	### array randomdes to jump times (subjects)
+###	mrv.des <- mrv.des[,,ids,drop=FALSE]
+###	nrv.des <- pairs.rvs[ids]
+###	## }}} 
 
       } ## }}} 
 
@@ -693,6 +720,7 @@ if (!is.null(margsurv))  {
 	 mrv.des <- array(0,c(1,1,1)); mtheta.des <- array(0,c(1,1,1)); margthetades <- array(0,c(1,1,1)); 
 	 xjump <- array(0,c(1,1,1)); dBaalen <- matrix(0,1,1); nrv.des <- 3
  } ## }}} 
+
 
 
   loglike <- function(par) 
@@ -1981,7 +2009,6 @@ print.survival.twostage.fullse  <-  function(x,...)
 summary.survival.twostage.fullse(x)
 } ## }}} 
 
-
 ##' @export
 twin.polygen.design <-function (data,id="id",zyg="DZ",zygname="zyg",type="ace",tv=NULL,...) { ## {{{
   ### twin case 
@@ -2071,14 +2098,20 @@ make.pairwise.design  <- function(pairs,kinship,type="ace")
 if (type=="ace" | type=="ade") {
 theta.des  <- array(0,c(4,2,nrow(pairs)))
 random.des <- array(0,c(2,4,nrow(pairs)))
+rvs <- c()
 }
-
 if (type=="ae") {
 theta.des  <- array(0,c(3,1,nrow(pairs)))
 random.des <- array(0,c(2,3,nrow(pairs)))
+rvs <- c()
+}
+if (type=="simple") {
+theta.des  <- array(1,c(1,1,nrow(pairs)))
+random.des <- array(1,c(2,1,nrow(pairs)))
+rvs <- rep(1,nrow(pairs))
 }
 
-rvs <- c()
+
 for (i in 1:nrow(pairs))
 { 
 	if (type=="ace" | type=="ade") {
@@ -2350,7 +2383,6 @@ make.pairwise.design.competing <- function(pairs,kinship,type="ace",compete=2,ov
 ##' head(dout$ant.rvs)
 ##' ## MZ
 ##' dim(dout$theta.des)
-##' dout$theta.des[,,1]
 ##' dout$random.design[,,1]
 ##' ## DZ
 ##' dout$theta.des[,,nrow(pairs)]

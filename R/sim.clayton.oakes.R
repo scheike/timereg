@@ -60,7 +60,6 @@ if (left>0) {
   return(ud)
 } ## }}} 
 
-
 ##' Simulate observations from the Clayton-Oakes copula model with
 ##' Weibull type baseline and Cox marginals.
 ##'
@@ -435,6 +434,73 @@ if (left>0) { ## {{{
 names(ud)<-c("time","status","x","cluster","zyg","mintime","lefttime","truncated")
 return(ud)
 } ## }}} 
+
+##' @export
+simFrailty.simple <- function(K,varr,beta,stoptime,lam0=c(0.2),
+		Cvar=0,left=0,pairleft=0,trunc.prob=0.5,overall=1,all.sum=1)  ## {{{ 
+{
+  n=2 
+  ## length(lam0) competing risk with constant hazards lam0
+  x<-array(c(runif(n*K),rep(0,n*K),rbinom(n*K,1,0.5)),dim=c(K,n,3))
+  if (Cvar==0) C<-matrix(stoptime,K,n) else C<-matrix(Cvar*runif(K*n)*stoptime,K,n) 
+  if (length(varr)==1) varr  <- rep(varr,length(lam0)+overall)
+  eta <- varr
+  etat <- sum(eta)
+  ### total variance for each cause + overall
+  nc <- length(lam0); 
+
+  mz <- c(rep(1,K/2),rep(0,K/2)); dz <- 1-mz;
+  if (overall==1) {
+    etal <- etat
+    Gams1 <-cbind(rgamma(K,varr[nc+1])/etal)
+  Gamoa <- Gams1
+  } else Gamoa <- 0
+
+  temp1 <- matrix(0,K,length(lam0))
+  temp2 <- matrix(0,K,length(lam0))
+  for (i in 1:nc)
+  {
+  etal <- etat
+  Gams1 <-cbind( rgamma(K,varr[i])/etal )
+  Gam1 <- Gams1+Gamoa
+  Gam1 <- cbind(Gam1,Gam1)
+  ttemp<-matrix(rexp(2*K),K,2)/(Gam1*exp(beta*x[,,3])*lam0[i])
+  temp1[,i] <- ttemp[,1]
+  temp2[,i] <- ttemp[,2]
+  }
+  temp <- cbind( apply(temp1,1,min), apply(temp2,1,min))
+  cause1 <- apply(temp1,1,which.min)
+  cause2 <- apply(temp2,1,which.min)
+###
+  x[,,2]<- ifelse(temp<=C,1,0)*cbind(cause1,cause2);
+  x[,,1]<-pmin(temp,C)
+  minstime <- apply(x[,,1],1,min)  
+  ud <- as.data.frame(cbind(apply(x,3,t),rep(1:K,each=n)))  
+  zyg <- c(rep("MZ",K),rep("DZ",K))
+
+if (left>0) { ## {{{ 
+     if (pairleft==1) {
+     lefttime <- runif(K)*(stoptime-left)
+     left <- rbinom(K,1,trunc.prob) ## not trunation times!
+     lefttime <- apply(cbind(lefttime*left,3),1,min)
+       trunk <- (lefttime > minstime)
+       medleft <- rep(trunk,each=n)
+     } else {
+###       lefttime <- rexp(n*K)*left
+       lefttime <- runif(K)*(stoptime-left)
+       left <- rbinom(n*K,1,trunc.prob) ## not trunation times!
+       lefttime <- apply(cbind(lefttime*left,3),1,min)
+       trunk <- (lefttime > ud[,1])
+       medleft <- trunk
+     }
+  } else { lefttime <- trunk <- rep(0,K);} ## }}} 
+  if (pairleft==1) ud <- cbind(ud,zyg,rep(minstime,each=n),rep(lefttime,each=n),rep(trunk,each=n))
+  else ud <- cbind(ud,zyg,rep(minstime,each=n),lefttime,trunk)
+
+names(ud)<-c("time","status","x","cluster","zyg","mintime","lefttime","truncated")
+return(ud)
+} ## }}} 
+
 
 ##' @export
 kendall.ClaytonOakes.twin.ace <- function(parg,parc,K=10000)  ## {{{ 
