@@ -150,14 +150,14 @@ BEGIN_RCPP/*{{{*/
     rowvec Xi = X.row(i);
     rowvec Zi = Z.row(i);
     ZX.row(i) = vectorise((Xi.t()*Zi),1); // to get back to right form with reshape
-    if (i==-1) {
-       rowvec zx=ZX.row(i) ; 
-       Xi.print("xi"); 
-       Zi.print("zi"); 
-       zx.print("zx"); 
-       mat mm=reshape(zx,Z.n_cols,X.n_cols);
-       mm.print("mm"); 
-    }
+//    if (i==-1) {
+//       rowvec zx=ZX.row(i) ; 
+//       Xi.print("xi"); 
+//       Zi.print("zi"); 
+//       zx.print("zx"); 
+//       mat mm=reshape(zx,Z.n_cols,X.n_cols);
+//       mm.print("mm"); 
+//    }
     if (Truncation) ZX.row(i+n/2) = ZX.row(i);
   }
 
@@ -477,34 +477,31 @@ BEGIN_RCPP/*{{{*/
   XX2 = XX2.rows(Jumps);
   colvec weightsJ=weights.elem(Jumps);  
   S0 = S0.elem(Jumps);
-  mat grad = (X.rows(Jumps)-E); // Score
+  mat grad = (X.rows(Jumps)-E);        // Score
   vec val =  (Xb.elem(Jumps)-log(S0)); // Partial log-likelihood
-  colvec S02 = weightsJ%S0;
-  mat grad2= vecmatrow(weightsJ,grad);   // score 
-  vec val2 = weightsJ%(Xb.elem(Jumps)-log(S0)); // Partial log-likelihood
-  mat hesst = -(XX2-E2);
-
+  colvec S02 = weightsJ%S0;            // S0 with weights to estimate baseline 
+  mat grad2= vecmatrow(weightsJ,grad); // score  with weights
+  vec val2 = weightsJ%val;             // Partial log-likelihood with weights
+  mat hesst = -(XX2-E2);               // hessian contributions in jump times 
+  mat hess  = reshape(sum(hesst),p,p);
   if (ZX.n_rows==X.n_rows) {
      ZX2 = ZX2.rows(Jumps);
   }
+  mat hesst2 = vecmatrow(weightsJ,hesst); // hessian over time with weights 
+  mat hess2 = reshape(sum(hesst2),p,p);  // hessian with weights 
+
 //  S0.print("SO"); eXb.print("exB"); E.print("E"); 
 //  grad.print("grad"); grad2.print("grad2"); weightsJ.print("weights"); 
-
-  mat hesst2 = -vecmatrow(weightsJ,hesst);
-  mat hess  = reshape(sum(hesst),p,p);
-  mat hess2 = reshape(sum(hesst2),p,p);
-//  XX2 = -vecmatrow(weightsJ,XX2);
-
-  if (hess.has_nan()) {
-	printf("============================ \n"); 
-	S0.print("S0"); 
-	eXb.print("exb"); 
-	grad.print("grad"); 
-	E.print("E"); 
-	XX2.print("XX"); 
-	X.print("X"); 
-	printf("============================ \n"); 
-	}
+//  if (hess.has_nan()) {
+//	printf("============================ \n"); 
+//	S0.print("S0"); 
+//	eXb.print("exb"); 
+//	grad.print("grad"); 
+//	E.print("E"); 
+//	XX2.print("XX"); 
+//	X.print("X"); 
+//	printf("============================ \n"); 
+//	}
 
   return(Rcpp::List::create(Rcpp::Named("jumps")=Jumps,
 			    Rcpp::Named("ploglik")=sum(val2),
@@ -520,6 +517,18 @@ BEGIN_RCPP/*{{{*/
 			    ));
 END_RCPP
   }/*}}}*/
+
+
+mat CubeVecC(mat XX, vec beta,int dim1) {
+  unsigned p = beta.n_rows;
+  unsigned n = XX.n_rows;
+
+  mat XXbeta(n,dim1);
+  for (unsigned j=0; j<n; j++)  {
+	  XXbeta.row(j)=(reshape(XX.row(j),dim1,p)*beta).t();
+  }
+  return(XXbeta); 
+}
 
 
 RcppExport SEXP CubeVec(SEXP XXSEXP, SEXP betaSEXP)
@@ -541,7 +550,7 @@ BEGIN_RCPP/*{{{*/
 END_RCPP
 }/*}}}*/
 
-RcppExport SEXP CubeMat( SEXP XXSEXP, SEXP XSEXP)
+RcppExport SEXP CubeMat(SEXP XXSEXP,SEXP XSEXP)
 		  {
 BEGIN_RCPP/*{{{*/
   mat XX = Rcpp::as<mat>(XXSEXP);
@@ -600,7 +609,7 @@ BEGIN_RCPP/*{{{*/
   unsigned n = U.n_rows;
 
   vec pval(p); pval.zeros(); 
-  mat Uthati(n,p); 
+//  mat Uthati(n,p); 
   mat Uti(n,p); 
   mat sup(nsim,p); 
   mat simUti(n,50*p); 
@@ -613,16 +622,17 @@ BEGIN_RCPP/*{{{*/
      vec nr=rnorm(n); 
      Uti=vecmatrow(nr,U); 
      for (unsigned k=0; k<p; k++)  Uti.col(k) = cumsum(Uti.col(k));
-     for (unsigned k=0; k<n; k++)  {
-	  Uthati.row(k)=(reshape(dUt.row(k),p,p)*(Uti.row(n-1)).t()).t();
-     }
+     mat Uthati= CubeVecC(dUt,(Uti.row(n-1)).t(),p); 
+//     for (unsigned k=0; k<n; k++)  {
+//	  Uthati.row(k)=(reshape(dUt.row(k),p,p)*(Uti.row(n-1)).t()).t();
+//     }
      Uthati=Uti-Uthati; 
 
 //     if(j==0) Uthati.print("one sim"); 
 
      for (unsigned k=0;k<p;k++)  {
 //     printf(" %lf \n",sup(j,k)); 
-//        int thissiml=0; 
+//     int thissiml=0; 
         sup(j,k)=max(abs(Uthati.col(k))); 
 //      count if sup for this realization is larger than supObs only once
 //        if ((sup(j,k)>=osup(k)) & (thissiml==0)) { pval(k)++; thissiml=1;}
@@ -652,7 +662,7 @@ BEGIN_RCPP/*{{{*/
   unsigned n = U.n_rows;
 
   vec pval(mp); pval.zeros(); 
-  mat Uthati(n,mp); 
+//  mat Uthati(n,mp); 
   mat Uti(n,mp); 
   mat betati(n,p); 
   mat sup(nsim,mp); 
@@ -672,18 +682,18 @@ BEGIN_RCPP/*{{{*/
 //     for (unsigned k=0; k<n; k++)  Uti.row(k)=norm_rand()*U.row(k); 
 //     for (unsigned k=0; k<n; k++)  betati.row(k)=norm_rand()*betaiid.row(k); 
      for (unsigned k=0;k<mp;k++)  Uti.col(k)=cumsum(Uti.col(k));
-     rowvec betatti=sum(betati);
+     colvec betatti=(sum(betati)).t();
 
-     for (unsigned k=0; k<n; k++)  {
+   mat Uthati= CubeVecC(dUt,betatti,mp); 
+//     for (unsigned k=0; k<n; k++)  {
 //	     if (j==0) {
 //	     mat mm=reshape(dUt.row(k),mp,p); 
 //	     mm.print("mm"); 
 //	     ]
 //	     rowvec uti=betati.row(k);
-//	     uti.print("puti"); 
-	  Uthati.row(k)=(reshape(dUt.row(k),mp,p)*betatti.t()).t();
-     }
-
+////	     uti.print("puti"); 
+//	  Uthati.row(k)=(reshape(dUt.row(k),mp,p)*betatti).t();
+//     }
      Uthati=Uti-Uthati; //     if(j==0) Uthati.print("one sim"); 
 
      for (unsigned k=0;k<mp;k++)  {
