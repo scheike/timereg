@@ -140,9 +140,9 @@ for (i in 1:p)
 simU <- x$simUt[,(0:49)*p+i]
 rsU <- max(abs(simU))
 rsU <- max(rsU,abs(x$score[,i]))
-plot(x$jumptimes,x$score[,i],type="l",ylim=c(-rsU,rsU),xlab="",ylab="")
+plot(x$jumptimes,x$score[,i],type="s",ylim=c(-rsU,rsU),xlab="",ylab="")
 title(main=rownames(x$res)[i])
-matlines(x$jumptimes,simU,type="l",lwd=0.6,col=3)
+matlines(x$jumptimes,simU,type="s",lwd=0.6,col=3)
 lines(x$jumptimes,x$score[,i],lwd=1.5)
 }
 
