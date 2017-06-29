@@ -484,16 +484,16 @@ BEGIN_RCPP/*{{{*/
   vec val2 = weightsJ%(Xb.elem(Jumps)-log(S0)); // Partial log-likelihood
   mat hesst = -(XX2-E2);
 
-  // maybe also with weights ??
   if (ZX.n_rows==X.n_rows) {
      ZX2 = ZX2.rows(Jumps);
   }
 //  S0.print("SO"); eXb.print("exB"); E.print("E"); 
 //  grad.print("grad"); grad2.print("grad2"); weightsJ.print("weights"); 
 
-  mat hesst2 = -vecmatrow(weightsJ,XX2-E2);
+  mat hesst2 = -vecmatrow(weightsJ,hesst);
   mat hess  = reshape(sum(hesst),p,p);
   mat hess2 = reshape(sum(hesst2),p,p);
+//  XX2 = -vecmatrow(weightsJ,XX2);
 
   if (hess.has_nan()) {
 	printf("============================ \n"); 
@@ -511,10 +511,10 @@ BEGIN_RCPP/*{{{*/
 			    Rcpp::Named("U")=grad2,
 			    Rcpp::Named("gradient")=sum(grad2),
 			    Rcpp::Named("hessian")=hess2,
-			    Rcpp::Named("hessianttime")=hesst,
-			    Rcpp::Named("S2S0")=XX,
+			    Rcpp::Named("hessianttime")=hesst2,
+			    Rcpp::Named("S2S0")=XX2,
 			    Rcpp::Named("E")=E,
-			    Rcpp::Named("S0")=S0,
+			    Rcpp::Named("S0")=S02,
 			    Rcpp::Named("ZXeXb")=ZX2
 			    ));
 END_RCPP
@@ -664,7 +664,6 @@ BEGIN_RCPP/*{{{*/
   for (unsigned j=0;j<nsim; j++) {
 //     vec thissiml(mp); 
 //     thissiml=thissiml*0; 
-
 //     for (unsigned k=0; k<n; k++)  nr(k)=norm_rand(); 
      nr=rnorm(n); 
      Uti=vecmatrow(nr,U); 
