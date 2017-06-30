@@ -47,6 +47,7 @@ extern SEXP CubeMat(SEXP, SEXP);
 extern SEXP CubeMat(SEXP, SEXP);
 extern SEXP PropTestCox(SEXP, SEXP,SEXP,SEXP);
 extern SEXP ModelMatrixTestCox(SEXP,SEXP,SEXP,SEXP,SEXP);
+extern SEXP simBandCumHazCox(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP revcumsumR(SEXP);
 extern SEXP revcumsumstrataR(SEXP,SEXP, SEXP);
 extern SEXP cumsumstrataR(SEXP,SEXP, SEXP);
@@ -88,6 +89,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"revcumsumstrataR",                  (DL_FUNC) &revcumsumstrataR,                   3},
     {"cumsumstrataR",                     (DL_FUNC) &cumsumstrataR,                   3},
     {"Dpmvn",                             (DL_FUNC) &Dpmvn,                              5},
+    {"simBandCumHazCox",                  (DL_FUNC) &simBandCumHazCox,                 6},
     {"survivalloglikeRVpairs",            (DL_FUNC) &survivalloglikeRVpairs,            25},
     {"twostageloglikebin",                (DL_FUNC) &twostageloglikebin,                24},
     {"twostageloglikebinpairs",           (DL_FUNC) &twostageloglikebinpairs,           28},

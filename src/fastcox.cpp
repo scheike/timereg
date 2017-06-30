@@ -728,3 +728,45 @@ BEGIN_RCPP/*{{{*/
 END_RCPP
   }/*}}}*/
 
+RcppExport SEXP simBandCumHazCox(SEXP iU, SEXP idUt,SEXP ibetaiid, SEXP insim, SEXP isig, SEXP isecum) {
+BEGIN_RCPP/*{{{*/
+  mat U   = Rcpp::as<mat>(iU);
+  mat dUt = Rcpp::as<mat>(idUt);
+  mat betaiid = Rcpp::as<mat>(ibetaiid);
+  arma::vec secum = Rcpp::as<arma::vec>(isecum);
+  int nsim = Rcpp::as<int>(insim);
+  double sig = Rcpp::as<int>(isig);
+  unsigned mp = U.n_cols;
+  unsigned p = betaiid.n_cols;
+  unsigned n = U.n_rows;
+
+//  vec pval(mp); pval.zeros(); mat Uthati(n,mp); mat simUti(n,50*mp); 
+  mat Uti(n,mp); 
+  mat betati(n,p); 
+  mat sup(nsim,mp); 
+  mat simUti(n,50*mp); 
+
+  GetRNGstate();  /* to use R random normals */
+  colvec nr(Uti.n_rows);
+
+  for (unsigned j=0;j<nsim; j++) {
+     nr=rnorm(n); 
+     Uti=vecmatrow(nr,U); 
+     betati=vecmatrow(nr,betaiid); 
+     colvec betatti=(sum(betati)).t();
+     mat Uthati= dUt * betatti; 
+     for (unsigned k=0;k<mp;k++)  Uti.col(k)=cumsum(Uti.col(k));
+     Uthati=Uti-Uthati; //     if(j==0) Uthati.print("one sim"); 
+     for (unsigned k=0;k<mp;k++)  {
+        sup(j,k)=max(abs(Uthati.col(k)/secum)); 
+        if (j<50) { simUti.col(j*mp+k)=Uthati.col(k); }
+     }
+  }
+
+  PutRNGstate();  /* to use R random normals */
+
+  return(Rcpp::List::create(Rcpp::Named("supUsim")=sup,
+			    Rcpp::Named("simUt")=simUti)); 
+END_RCPP
+  }/*}}}*/
+
