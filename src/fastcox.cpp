@@ -327,6 +327,17 @@ colvec revcumsumstrata1(const colvec &a,const  colvec &v1,const  colvec &v2,
   return(revcumsumstrata(a%v1,strata,nstrata)/v2);
 }/*}}}*/
 
+mat  revcumsumstrataMatCols(const mat  &a,const  colvec &v1,const  colvec &v2,
+		        IntegerVector strata,int nstrata) {
+  mat res =a; 
+  unsigned p=a.n_cols; 
+  for (unsigned j=0; j<p; j++) {
+    res.col(j) = revcumsumstrata1(a.col(j),v1,v2,strata,nstrata);
+  }
+
+  return(res); 
+}/*}}}*/
+
 
 RcppExport SEXP FastCoxPL(SEXP betaSEXP,
 			  SEXP XSEXP,
@@ -449,10 +460,13 @@ BEGIN_RCPP/*{{{*/
   // for (unsigned j=0; j<p; j++) {
   //   S2.col(j) = revcumsum(XX.col(j),eXb);
   // }
-  mat E(X.n_rows,p); // S1/S0(s)
-  for (unsigned j=0; j<p; j++) {
-    E.col(j) = revcumsumstrata1(X.col(j),eXb,S0,strata,nstrata);
-  }
+//  mat E(X.n_rows,p); // S1/S0(s)
+//
+  mat E=revcumsumstrataMatCols(X,eXb,S0,strata,nstrata); 
+
+//  for (unsigned j=0; j<p; j++) {
+//    E.col(j) = revcumsumstrata1(X.col(j),eXb,S0,strata,nstrata);
+//  }
 
   E = E.rows(Jumps);
   mat E2(E.n_rows, E.n_cols*E.n_cols); // Calculate E' E at each time-point
@@ -461,16 +475,17 @@ BEGIN_RCPP/*{{{*/
     E2.row(i) = vectorise(Xi.t()*Xi,1);
   }
 
-  mat XX2 = XX;
-  for (unsigned j=0; j<XX2.n_cols; j++) { // int S2/S0(s)
-    XX2.col(j) = revcumsumstrata1(XX2.col(j),eXb,S0,strata,nstrata);
-  }
+  mat XX2=revcumsumstrataMatCols(XX,eXb,S0,strata,nstrata); 
+//  mat XX2 = XX;
+//  for (unsigned j=0; j<XX2.n_cols; j++) { // int S2/S0(s)
+//    XX2.col(j) = revcumsumstrata1(XX2.col(j),eXb,S0,strata,nstrata);
+//  }
 
   mat ZX2 = ZX;
   if (ZX.n_rows==X.n_rows) {
-  for (unsigned j=0; j<ZX2.n_cols; j++) { // int S2/S0(s)
-    ZX2.col(j) = revcumsumstrata1(ZX2.col(j),eXb,S0,strata,nstrata);
-  }
+  ZX2=revcumsumstrataMatCols(ZX,eXb,S0,strata,nstrata); 
+//  for (unsigned j=0; j<ZX2.n_cols; j++) { // int S2/S0(s)
+//    ZX2.col(j) = revcumsumstrata1(ZX2.col(j),eXb,S0,strata,nstrata);
   } 
 
   //  X = X.rows(Jumps);
@@ -597,7 +612,6 @@ BEGIN_RCPP/*{{{*/
  return(Rcpp::List::create(Rcpp::Named("vXZ")=res)); 
 END_RCPP
 } /*}}}*/
-
 
 RcppExport SEXP PropTestCox(SEXP iU, SEXP idUt, SEXP insim, SEXP iobssup) {
 BEGIN_RCPP/*{{{*/

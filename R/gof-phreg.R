@@ -100,7 +100,7 @@ if (!is.null(offset)) offsets <- offsets*offset
 if (!is.null(cox1$strata)) 
      coxM <- phreg1(cox1$model.frame[,1]~modelmatrix+strata(cox1$strata),data,offset=offsets,weights=weights,no.opt=TRUE,cumhaz=FALSE,...)
 else coxM <- phreg1(cox1$model.frame[,1]~modelmatrix,data,offset=offsets,weights=weights,no.opt=TRUE,cumhaz=FALSE,...)
-nnames <- names(modelmatrix)
+nnames <- colnames(modelmatrix)
 
 Ut <- apply(coxM$U,2,cumsum)
 jumptimes <- coxM$jumptimes
