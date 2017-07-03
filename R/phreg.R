@@ -169,29 +169,26 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
   }
 
   se.cumhaz <- lcumhaz <- lse.cumhaz <- NULL
-### II <- -solve(val$hessian)
   II <- NULL
   ### computes Breslow estimator 
   if (cumhaz==TRUE) { # {{{
 
- II <- -solve(val$hessian)
- strata <- val$strata[val$jumps]
- nstrata <- val$nstrata
- jumptimes <- val$jumptimes
+	 II <- -solve(val$hessian)
+	 strata <- val$strata[val$jumps]
+	 nstrata <- val$nstrata
+	 jumptimes <- val$jumptimes
 
- ## Brewslow estimator
- cumhaz <- cbind(jumptimes,cumsumstrata(1/val$S0,strata,nstrata))
- DLambeta.t <- apply(val$E/c(val$S0),2,cumsumstrata,strata,nstrata)
-### covv <- apply(val$U/c(val$S0),2,cumsumstrata,strata,nstrata)
- varbetat <-   rowSums((DLambeta.t %*%  II)*DLambeta.t)
-### covv <-  apply(covv*DLambeta.t,1,sum) Covaraince is "0" by construction
- var.cumhaz <- cumsumstrata(1/val$S0^2,strata,nstrata)+varbetat
- se.cumhaz <- cbind(jumptimes,(var.cumhaz)^.5)
+	 ## Brewslow estimator
+	 cumhaz <- cbind(jumptimes,cumsumstrata(1/val$S0,strata,nstrata))
+	 DLambeta.t <- apply(val$E/c(val$S0),2,cumsumstrata,strata,nstrata)
+	 varbetat <-   rowSums((DLambeta.t %*% II)*DLambeta.t)
+	 ### covv <-  apply(covv*DLambeta.t,1,sum) Covaraince is "0" by construction
+	 var.cumhaz <- cumsumstrata(1/val$S0^2,strata,nstrata)+varbetat
+	 se.cumhaz <- cbind(jumptimes,(var.cumhaz)^.5)
 
- colnames(cumhaz)    <- c("time","cumhaz")
- colnames(se.cumhaz) <- c("time","se.cumhaz")
+	 colnames(cumhaz)    <- c("time","cumhaz")
+	 colnames(se.cumhaz) <- c("time","se.cumhaz")
 
-###    making this list takes time
 ###    if (nstrata>1) {
 ###	 lcumhaz <- lse.cumhaz <- list()
 ### 	 cumhaz    <- cbind(cumhaz,val$strata[val$jumps])
@@ -516,12 +513,12 @@ print.summary.phreg  <- function(x,max.strata=5,...) {
 
 ###}}} print.summary
 
-
 cumsumstrata <- function(x,strata,nstrata)
-{
+{# {{{
 res <- .Call("cumsumstrataR",x,strata,nstrata)$res
 return(res)
-}
+}# }}}
+
 
 ###{{{ predict with se for baseline
 
@@ -539,8 +536,8 @@ predictPhreg1 <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
        varbetat <- apply((DLambeta.t %*%  II)*DLambeta.t,1,sum)
        se.chaz <- cbind(jumptimes,(cumsumstrata(1/S0^2,strata,nstrata)+varbetat)^.5)
     } else {
-	    chaz <- x$cumhaz
-	    se.chaz <- x$se.cumhaz
+        chaz <- x$cumhaz
+        se.chaz <- x$se.cumhaz
     }
 
     if (!is.null(time)) {
@@ -558,21 +555,20 @@ predictPhreg1 <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
       betaiid <- t(ii %*% t(Ubeta))
       cumhaz <-  x$cumhaz[,1,drop=FALSE]
       se.chaz <- x$se.cumhaz[,1]
-###
+      ###
       rr <- c( exp(sum(c(Z) %*% x$coef)))
       Pt      <- outer(cumhaz[,2],c(Z))
       DLambeta.t <- apply(x$E/c(x$S0),2,cumsumstrata,strata,nstrata)
       Pt <- DLambeta.t  - Pt
       ### se of cumulaive hazard for this covariate , can use different versions of variance for beta
-###      varbetat <- rowSums((Pt %*% ii)*Pt)
-      varbetat <- rowSums((Pt %*% vcov(x))*Pt)
-      se.chazexb <- cbind(jumptimes,rr*(cumsumstrata(1/S0^2,strata,nstrata)+varbetat)^.5)
-      sig <- 0.95
-###
-      n.sim <- 1000
-      simband <-  .Call("simBandCumHazCox",rr/x$S0,Pt,betaiid,n.sim,sig,se.chazexb[,2],PACKAGE="mets")
-      ## coefficients for uniform bands on log-scale 
-      uband <- apply(simband$supUsim,2,percen,per=1-sig);
+      varbetat <- rowSums((Pt %*% ii)*Pt)
+###   varbetat <- rowSums((Pt %*% vcov(x))*Pt)
+            se.chazexb <- cbind(jumptimes,rr*(cumsumstrata(1/S0^2,strata,nstrata)+varbetat)^.5)
+###      sig <- 0.95
+###      n.sim <- 1000
+###      simband <-  .Call("simBandCumHazCox",rr/x$S0,Pt,betaiid,n.sim,sig,se.chazexb[,2],PACKAGE="mets")
+###      ## coefficients for uniform bands on log-scale 
+###      uband <- apply(simband$supUsim,2,percen,per=1-sig);
     }
 
 

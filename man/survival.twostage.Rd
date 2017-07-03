@@ -69,7 +69,7 @@ survival.twostage(margsurv,data=sys.parent(),score.method="fisher.scoring",
 
 \item{numDeriv}{to get numDeriv version of second derivative, otherwise uses sum of squared score}
 
-\item{random.design}{random effect design for additive gamma modeli, when pairs are given this is
+\item{random.design}{random effect design for additive gamma model, when pairs are given this is
 a (pairs) x (2) x (max number random effects) matrix, see pairs.rvs below}
 
 \item{pairs}{matrix with rows of indeces (two-columns) for the pairs considered in the pairwise

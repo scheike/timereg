@@ -4,7 +4,7 @@
 \alias{gof.phreg}
 \title{GOF for Cox PH regression}
 \usage{
-\method{gof}{phreg}(x, n.sim = 1000, silent = 0)
+\method{gof}{phreg}(x, n.sim = 1000, silent = 1)
 }
 \arguments{
 \item{x}{is phreg object}
@@ -17,17 +17,17 @@
 }
 \description{
 Cumulative score process residuals for Cox PH regression
+p-values based on Lin, Wei, Ying resampling.
 }
 \examples{
 data(TRACE)
 
-m1 <- phreg(Surv(time,status==9)~vf+chf+diabetes,data=TRACE) 
-
+m1 <- phreg1(Surv(time,status==9)~vf+chf+diabetes,data=TRACE) 
 gg <- gof(m1)
 par(mfrow=c(1,3))
 plot(gg)
 
-m1 <- phreg(Surv(time,status==9)~strata(vf)+chf+diabetes,data=TRACE) 
+m1 <- phreg1(Surv(time,status==9)~strata(vf)+chf+diabetes,data=TRACE) 
 gg <- gof(m1)
 }
 \author{

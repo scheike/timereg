@@ -89,7 +89,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"revcumsumstrataR",                  (DL_FUNC) &revcumsumstrataR,                   3},
     {"cumsumstrataR",                     (DL_FUNC) &cumsumstrataR,                   3},
     {"Dpmvn",                             (DL_FUNC) &Dpmvn,                              5},
-    {"simBandCumHazCox",                  (DL_FUNC) &simBandCumHazCox,                 6},
+    {"simBandCumHazCox",                  (DL_FUNC) &simBandCumHazCox,                 5},
     {"survivalloglikeRVpairs",            (DL_FUNC) &survivalloglikeRVpairs,            25},
     {"twostageloglikebin",                (DL_FUNC) &twostageloglikebin,                24},
     {"twostageloglikebinpairs",           (DL_FUNC) &twostageloglikebinpairs,           28},

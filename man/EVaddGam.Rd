@@ -45,7 +45,6 @@ dout <- make.pairwise.design.competing(pairs,kinship,
 head(dout$ant.rvs)
 ## MZ
 dim(dout$theta.des)
-dout$theta.des[,,1]
 dout$random.design[,,1]
 ## DZ
 dout$theta.des[,,nrow(pairs)]

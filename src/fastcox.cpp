@@ -187,7 +187,7 @@ BEGIN_RCPP/*{{{*/
     XX = XX.rows(idx);
     X = X.rows(idx);  
   }
-  if (ZX.n_rows==XX.n_rows) {
+  if ((ZX.n_rows==XX.n_rows) & (XX.n_rows>0)) {
     ZX = ZX.rows(idx);  
   }
   weights = weights.elem(idx); 
@@ -604,9 +604,9 @@ BEGIN_RCPP/*{{{*/
   arma::mat X = Rcpp::as<arma::mat>(iX);
   arma::mat Z = Rcpp::as<arma::mat>(iZ);
 
-  unsigned n =Z.n_rows; 
-  unsigned p1=X.n_cols; 
-  unsigned p2=Z.n_cols; 
+//  unsigned n =Z.n_rows; 
+//  unsigned p1=X.n_cols; 
+//  unsigned p2=Z.n_cols; 
 
   mat res=vecmatmat(X,Z); 
  return(Rcpp::List::create(Rcpp::Named("vXZ")=res)); 
@@ -618,12 +618,11 @@ BEGIN_RCPP/*{{{*/
   mat U      = Rcpp::as<mat>(iU);
   mat dUt = Rcpp::as<mat>(idUt);
   arma::vec osup = Rcpp::as<arma::vec>(iobssup);
-  int nsim = Rcpp::as<int>(insim);
+  unsigned nsim = Rcpp::as<int>(insim);
   unsigned p = U.n_cols;
   unsigned n = U.n_rows;
 
   vec pval(p); pval.zeros(); 
-//  mat Uthati(n,p); 
   mat Uti(n,p); 
   mat sup(nsim,p); 
   mat simUti(n,50*p); 
@@ -631,8 +630,6 @@ BEGIN_RCPP/*{{{*/
   GetRNGstate();  /* to use R random normals */
 
   for (unsigned j=0; j<nsim; j++) {
-//      arma::vec thissiml(p); 
-//     uvec thissiml(p); thissiml=0*thissiml;
      vec nr=rnorm(n); 
      Uti=vecmatrow(nr,U); 
      for (unsigned k=0; k<p; k++)  Uti.col(k) = cumsum(Uti.col(k));
@@ -642,14 +639,8 @@ BEGIN_RCPP/*{{{*/
 //     }
      Uthati=Uti-Uthati; 
 
-//     if(j==0) Uthati.print("one sim"); 
-
      for (unsigned k=0;k<p;k++)  {
-//     printf(" %lf \n",sup(j,k)); 
-//     int thissiml=0; 
         sup(j,k)=max(abs(Uthati.col(k))); 
-//      count if sup for this realization is larger than supObs only once
-//        if ((sup(j,k)>=osup(k)) & (thissiml==0)) { pval(k)++; thissiml=1;}
         if ((sup(j,k)>=osup(k))) { pval(k)++; }
         if (j<50) { simUti.col(j*p+k)=Uthati.col(k); }
      }
@@ -670,7 +661,7 @@ BEGIN_RCPP/*{{{*/
   mat dUt = Rcpp::as<mat>(idUt);
   mat betaiid = Rcpp::as<mat>(ibetaiid);
   arma::vec osup = Rcpp::as<arma::vec>(iobssup);
-  int nsim = Rcpp::as<int>(insim);
+  unsigned nsim = Rcpp::as<int>(insim);
   unsigned mp = U.n_cols;
   unsigned p = betaiid.n_cols;
   unsigned n = U.n_rows;
@@ -687,33 +678,16 @@ BEGIN_RCPP/*{{{*/
   colvec nr(Uti.n_rows);
 
   for (unsigned j=0;j<nsim; j++) {
-//     vec thissiml(mp); 
-//     thissiml=thissiml*0; 
-//     for (unsigned k=0; k<n; k++)  nr(k)=norm_rand(); 
      nr=rnorm(n); 
      Uti=vecmatrow(nr,U); 
      betati=vecmatrow(nr,betaiid); 
-//     for (unsigned k=0; k<n; k++)  Uti.row(k)=norm_rand()*U.row(k); 
-//     for (unsigned k=0; k<n; k++)  betati.row(k)=norm_rand()*betaiid.row(k); 
      for (unsigned k=0;k<mp;k++)  Uti.col(k)=cumsum(Uti.col(k));
      colvec betatti=(sum(betati)).t();
-
-   mat Uthati= CubeVecC(dUt,betatti,mp); 
-//     for (unsigned k=0; k<n; k++)  {
-//	     if (j==0) {
-//	     mat mm=reshape(dUt.row(k),mp,p); 
-//	     mm.print("mm"); 
-//	     ]
-//	     rowvec uti=betati.row(k);
-////	     uti.print("puti"); 
-//	  Uthati.row(k)=(reshape(dUt.row(k),mp,p)*betatti).t();
-//     }
+     mat Uthati= CubeVecC(dUt,betatti,mp); 
      Uthati=Uti-Uthati; //     if(j==0) Uthati.print("one sim"); 
 
      for (unsigned k=0;k<mp;k++)  {
         sup(j,k)=max(abs(Uthati.col(k))); 
-//      count if sup for this realization is larger than supObs only once
-//        if ((sup(j,k)>=osup(k)) & (thissiml(k)<0.5)) { pval(k)++; thissiml(k)=1;}
         if ((sup(j,k)>=osup(k))) {pval(k)++;}
         if (j<50) { simUti.col(j*mp+k)=Uthati.col(k); }
      }
@@ -728,14 +702,13 @@ BEGIN_RCPP/*{{{*/
 END_RCPP
   }/*}}}*/
 
-RcppExport SEXP simBandCumHazCox(SEXP iU, SEXP idUt,SEXP ibetaiid, SEXP insim, SEXP isig, SEXP isecum) {
+RcppExport SEXP simBandCumHazCox(SEXP iU, SEXP idUt,SEXP ibetaiid, SEXP insim,  SEXP isecum) {
 BEGIN_RCPP/*{{{*/
   mat U   = Rcpp::as<mat>(iU);
   mat dUt = Rcpp::as<mat>(idUt);
   mat betaiid = Rcpp::as<mat>(ibetaiid);
   arma::vec secum = Rcpp::as<arma::vec>(isecum);
-  int nsim = Rcpp::as<int>(insim);
-  double sig = Rcpp::as<int>(isig);
+  unsigned nsim = Rcpp::as<int>(insim);
   unsigned mp = U.n_cols;
   unsigned p = betaiid.n_cols;
   unsigned n = U.n_rows;
