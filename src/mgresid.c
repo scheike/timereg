@@ -219,6 +219,10 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
       mat_subtr(cumZP,tmp2,dS);  
       mat_add(dS,S,S); 
       scl_mat_mult(1,S,St[s]); 
+//      printf("=========================== %d \n",s); 
+//       print_mat(cumZP); print_mat(tmp2); 
+//       print_mat(dS); 
+//       print_mat(S); 
    } /*coxaalen=1 */ 
 
    if (*ratesim==1) 

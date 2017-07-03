@@ -96,7 +96,7 @@ cox.aalenBase<-function (times, fdata, designX, designG, status,
                 as.double(var.score),as.integer(beta.fixed),
 		as.double(weights),as.integer(entry) ,as.integer(exactderiv),
 	        as.integer(time.group), as.integer(max.timepoint.sim),as.integer(stratum),
-		as.integer(silent),as.double(caseweight),PACKAGE = "timereg")
+		as.double(silent),as.double(caseweight),PACKAGE = "timereg")
 
   Iinv <- matrix(nparout[[19]], pg, pg); 
   RVarbeta <- -matrix(nparout[[27]], pg, pg)

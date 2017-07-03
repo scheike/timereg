@@ -11,13 +11,15 @@ test,testOBS,Ut,simUt,Uit,XligZ,aalen,nb,id,status,wscore,dNit,ratesim,score,dha
 retur,robust,covariance,Vcovs,addresamp,addproc,
 resample,gamiid,biid,clusters,antclust,vscore,betafixed,weights,entry,exactderiv,
 timegroup,maxtimepoint,stratum,silent,caseweight)
-double *designX,*designG,*times,*betaS,*start,*stop,*cu,*w,*loglike,*Vbeta,*RVbeta,*vcu,*offs,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*aalen,*score,*dhatMit,*gammaiid,*dmgiid,*Vcovs,*addproc,*gamiid,*biid,*vscore,*weights,*dNit,*sim,*caseweight;
-int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*XligZ,*nb,*id,*status,*wscore,*ratesim,*retur,*robust,*addresamp,*resample,*clusters,*antclust,*betafixed,*entry,*exactderiv,*timegroup,*maxtimepoint,*stratum,*silent;
+double *designX,*designG,*times,*betaS,*start,*stop,*cu,*w,*loglike,*Vbeta,*RVbeta,*vcu,*offs,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*aalen,*score,*dhatMit,*gammaiid,*dmgiid,*Vcovs,*addproc,*gamiid,*biid,*vscore,*weights,*dNit,*sim,*caseweight,*silent;
+int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*XligZ,*nb,*id,*status,*wscore,*ratesim,*retur,*robust,*addresamp,*resample,*clusters,*antclust,*betafixed,*entry,*exactderiv,*timegroup,*maxtimepoint,*stratum;
 { 
   int timing=0; 
   double basesim=0,basestart=0; 
-  int propodds=silent[1]; 
-  int icaseweight=silent[2]; 
+  int ssilent=round(silent[0]); 
+  double propodds=silent[1]; 
+  int icaseweight=round(silent[2]); 
+//  printf("%d %d  %lf \n",ssilent,icaseweight,propodds); 
   clock_t c0,c1; 
   c0=clock();
 //  mjump=sim[2];   // multiple jumps in clusters, relevant for ratesim=0 simulering via cholesky simulering 
@@ -315,14 +317,14 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*X
 	     print_mat(A);  print_mat(ZPZ); 
            }
 
-   if (stratum[0]==0)  invertS(A,AI,*silent); 
-   if (ME(AI,0,0)==0 && stratum[0]==0 && *silent==0) {
+   if (stratum[0]==0)  invertS(A,AI,ssilent); 
+   if (ME(AI,0,0)==0 && stratum[0]==0 && ssilent==0) {
       Rprintf("additive design X'X not invertible at time (number, value): %d %lf \n",s,time); print_mat(A);
    }
-   if (ME(AI,0,0)==0 && stratum[0]==0 && *silent==2) {
+   if (ME(AI,0,0)==0 && stratum[0]==0 && ssilent==2) {
       Rprintf("additive design X'X not invertible at time (number, value) : %d %lf \n",s,time); print_mat(A);
       Rprintf("print only first time with non-invertible design X'X\n"); 
-      silent[0]=0; 
+      ssilent=0; 
    }
 
    if (stratum[0]==1)  {
@@ -339,9 +341,9 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*X
     MxA(ZX,AI,ZXAI); 
 //  if (*detail==3) {print_vec(xi); print_mat(A); print_mat(AI); }
 
-  if (propodds==1) {
+  if (propodds>0) { // intensity 1/(1+theta exp(Z^T beta) A(t-1))
           xdA=vec_prod(xi,cumm); 
-	  pweight=(1+exp(+VE(Gbeta,pers))*xdA);
+	  pweight=(1+propodds*exp(+VE(Gbeta,pers))*xdA);
 	  powi[s]=pweight; 
 	  scl_vec_mult(pweight,dA,dA); 
   }
@@ -366,10 +368,10 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*X
   Mv(ZX,dA,zav); 
 
 // pweight multiplied onto dA and therefore already on zav
-  if (propodds==1 || icaseweight==1) scl_vec_mult(pweight,zi,zi); 
+  if (propodds>0 || icaseweight==1) scl_vec_mult(pweight,zi,zi); 
   vec_subtr(zi,zav,difzzav); 
 //  scl_vec_mult(scale,difzzav,difzzav); 
-//  if (propodds==1 || icaseweight==1)   scl_vec_mult(pweight,difzzav,difzzav); 
+//  if (propodds>0 || icaseweight==1)   scl_vec_mult(pweight,difzzav,difzzav); 
 
   vec_add(difzzav,U,U); 
 
@@ -412,11 +414,11 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*X
    MxA(ZXAI,ZPXo,tmp2); mat_subtr(ZPZo,tmp2, dS); 
 
   // also case-weights here
-//  if (propodds==1)   scl_mat_mult(pweight,dS,dS); 
+//  if (propodds>0)   scl_mat_mult(pweight,dS,dS); 
   if (icaseweight==1) scl_mat_mult(pweight,dS,dS); 
 
    // extra term for second derivative wrt beta  
-  if (propodds==1) {
+  if (propodds>0) {
 	  // (Z-E) Z exp(Z beta) x^T A(t-1)
 	  mat_add(dS,dSprop,dS); 
   }
@@ -479,7 +481,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*X
   } // }}}
 
 
-  if (propodds==1) {
+  if (propodds>0) {
   // cumulative hazard (to use for prop odds model 
     vec_add(dA,cumm,cumm); 
   }
@@ -493,7 +495,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*X
   } // }}}
 
 /* for (k=0;k<*pg;k++) ME(S1,k,k)=ME(S1,k,k)+*ridge;  */
-  invertS(S1,SI,*silent); 
+  invertS(S1,SI,ssilent); 
   if (*betafixed==0 )  {
       Mv(SI,U,delta); MxA(SI,VU,S2); MxA(S2,SI,VU); 
   }
@@ -680,7 +682,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*X
       Mv(ZXAI,xi,tmpv2);  
       vec_subtr(zi,tmpv2,tmpv2); 
       if (*mw==1) scl_vec_mult(VE(weight,pers),tmpv2,tmpv2); 
-      if (propodds==1 || icaseweight==1) scl_vec_mult(powi[s],tmpv2,tmpv2); 
+      if (propodds>0 || icaseweight==1) scl_vec_mult(powi[s],tmpv2,tmpv2); 
 
       vec_add(tmpv2,W2[cin],W2[cin]);
 
@@ -691,7 +693,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*X
       if (basesim>=0) {
 	      Mv(AI,xi,rowX); 
 	      if (*mw==1) scl_vec_mult(VE(weight,pers),rowX,rowX); 
-              if (propodds==1 || icaseweight==1) scl_vec_mult(powi[s],rowX,rowX); 
+              if (propodds>0 || icaseweight==1) scl_vec_mult(powi[s],rowX,rowX); 
 	      vec_add(rowX,W3[cin],W3[cin]);
       }
 
@@ -727,13 +729,19 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*X
          ME(M1M2t,j,i)=ME(M1M2n,j,(s-1)*(*px)+i);
          ME(Ct,i,j)= ME(Cn,(s-1)*(*px)+i,j);
     }
+//    printf(" s %d \n",s); 
+//    print_mat(Ct); 
 
     MxA(Ct,VU,tmp3); MAt(tmp3,Ct,CtVUCt);
+//    print_mat(CtVUCt); 
+
     MxA(Ct,SI,tmp3); MxA(tmp3,M1M2t,COV); 
+//    print_mat(COV); 
 
     for (k=1;k<=*px;k++) {
       if (*betafixed==0) 
 	vcu[k*(*Ntimes)+s]+=ME(CtVUCt,k-1,k-1)+2*ME(COV,k-1,k-1); 
+//	vcu[k*(*Ntimes)+s]+=ME(CtVUCt,k-1,k-1);
     }
     } // }}} 
 

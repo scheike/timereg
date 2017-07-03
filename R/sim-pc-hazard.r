@@ -232,6 +232,9 @@ cause.pchazard.sim <- function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.c
 #' lines(cc$cum,type="s",col=2)
 #' cbind(cox$gamma,cc$gamma)
 #' 
+#' # library(mets)
+#' # cc <-  phreg(Surv(time, status)~vf+chf+wmi,data=TRACE)
+#' # sim3 <- sim.cox(cc,1000,data=TRACE)
 #' @export
 sim.cox <- function(cox,n,data=NULL,cens=NULL,rrc=NULL)
 {# {{{
@@ -281,10 +284,10 @@ if (class(cox)=="phreg")
 ######   Z1 <- na.omit(model.matrix(cox,data=data))
    p <- length(cox$coef)
 ###   Z <- na.omit(get_all_vars(formula,data=data))
-   Z  <-  cox$model.matrx[,-1]
+   Z  <-  cox$model.frame[,-1]
    nz <- ncol(Z)
    lrr <- as.matrix(Z) %*% cox$coef
-   cumhazard <- cox$cumhaz
+   cumhazard <- rbind(c(0,0),cox$cumhaz)
    rr <- exp(lrr)
    xid <- sample(1:nrow(Z),n,replace=TRUE)
    rr <- rr[xid]
