@@ -27,10 +27,9 @@ gof.phreg  <- function(x,n.sim=1000,silent=1)
 p <- length(x$coef)
 nnames <- names(x$coef)
 ii <- solve(x$hessian)
-if (is.list(x$jumptimes)) jumptimes <- unlist(x$jumptimes) else jumptimes <- x$jumptimes
-ord <- order(jumptimes)
-Pt <- x$hessianttime[ord,]
-U <-  x$U[ord,]
+jumptimes <- x$jumptimes
+Pt <- x$hessianttime
+U <-  x$U
 Pt <- apply(Pt,2,cumsum)
 Ut <- apply(U,2,cumsum)
 
@@ -132,6 +131,89 @@ class(out) <- "gof.phreg"
 
 return(out)
 }# }}}
+
+##' Stratified baseline graphical GOF test for Cox covariates in  PH regression
+##'
+##' Looks at stratified baseline in Cox model and plots all baselines versus each
+##' other to see if lines are straight, with 50 resample versions under the 
+##' assumptiosn that the stratified Cox is correct 
+##'
+##' @param formula formula for cox regression 
+##' @param data data for model
+##' @param offset offset 
+##' @param weights weights 
+##' @param modelmatrix  matrix for cumulating residuals
+##' @param n.sim number of simulations for bands on differences 
+##' @param silent to keep it absolutely silent 
+##' @param ... Additional arguments to lower level funtions
+##' @author THomas Scheike and Klaus K. Holst
+##' @export
+##' @examples
+##' data(TRACE)
+##' 
+##' m1 <- phreg1(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE) 
+##' m2 <- phreg1(Surv(time,status==9)~vf+strata(chf)+wmi,data=TRACE) 
+##' par(mfrow=c(2,2))
+##' plot(m1)
+##' plot(m2)
+##' 
+##' @export
+gofG  <- function(x,coefcox,sim=1,silent=1,...)
+{# {{{
+
+p <- length(x$coef)
+nnames <- names(x$coef)
+strata <- x$strata[x$jumps]
+nstrata <- x$nstrata
+jumptimes <- x$jumptimes
+ii <- -solve(x$hessian)
+cumhaz <- x$cumhaz
+
+if (is.null(cumhaz)) stop("Must run phreg with cumhaz=TRUE (default)"); 
+if (nstrata==1) stop("Stratified Cox to look at baselines");
+###
+Pt <- DLambeta.t <- apply(x$E/c(x$S0),2,mets:::cumsumstrata,strata,nstrata)
+betaiid <- t(ii %*% t(x$U))
+###var.cumhaz <- cumsumstrata(1/val$S0^2,strata,nstrata)
+
+for (i in 0:(nstrata-2))
+for (j in (i+1):(nstrata-1)) { 
+      iij <- which(strata %in% c(i,j))
+      ii <- which(strata %in% i)
+      ij <- which(strata %in% j)
+      dijjumps  <- jumptimes[iij] 
+
+###      print(c(i,j))
+###      print(length(dijjumps)); 
+###      print(ii)
+###      print(ij)
+###      dijcumhaz <- cumhaz[iij,]
+###      dijvcum <- var.cumhaz[iij,]
+      cumhazi <- Cpred(cumhaz[ii,],dijjumps,strict=FALSE)
+      cumhazj <- Cpred(cumhaz[ij,],dijjumps,strict=FALSE)
+
+      plot(cumhazj[,2],cumhazi[,2],type="s",lwd=2,xlab=paste("strata",j),
+	   ylab=paste("strata",i))
+      title(paste("Stratified baselines for",x$strata.name))
+      legend("topleft",c("Nonparametric","lm","Stratified-Cox-Sim"),lty=1,col=1:3)
+      ab <- lm(cumhazi[,2]~-1+cumhazj[,2])
+      if (sim==1) {
+	     simband <-  .Call("simBandCumHazCox",1/x$S0,Pt,betaiid,50,rep(1,958),
+			       PACKAGE="mets")
+	     simU <-simband$simUt
+	     for (k in 1:50)
+	     {
+	      di <- Cpred(cbind(jumptimes[ii],simU[ii,k]),dijjumps,strict=FALSE)[,2]
+	      dj <- Cpred(cbind(jumptimes[ij],simU[ij,k]),dijjumps,strict=FALSE)[,2]
+	      lines(cumhazj[,2]+dj,cumhazi[,2]+di,type="s",lwd=0.1,col=3)
+	     }
+      }
+      lines(cumhazj[,2],cumhazi[,2],type="s",lwd=2,col=1)
+      abline(c(0,coef(ab)),col=2,lwd=2)
+}
+
+}# }}}
+
 
 ##' @export
 plot.gof.phreg <-  function(x)

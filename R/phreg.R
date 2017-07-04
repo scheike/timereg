@@ -105,7 +105,8 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
 
 ###{{{ phreg01
 
-phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=NULL,cumhaz=TRUE,
+phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=NULL,
+		    strata.name=NULL,cumhaz=TRUE,
   beta,stderr=TRUE,method="NR",no.opt=FALSE,Z=NULL,...) {
   p <- ncol(X)
   if (missing(beta)) beta <- rep(0,p)
@@ -215,7 +216,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 		opt=opt, 
 		cumhaz=cumhaz, se.cumhaz=se.cumhaz,
 		lcumhaz=lcumhaz, lse.cumhaz=lse.cumhaz,
-		II=II))
+		II=II,strata.name=strata.name))
   class(res) <- "phreg"
   res
 }
@@ -399,6 +400,7 @@ phreg1 <- function(formula,data,offset=NULL,weights=NULL,...) {
     ts <- survival::untangle.specials(Terms, "strata")
     Terms  <- Terms[-ts$terms]
     strata <- m[[ts$vars]]
+    strata.name <- ts$vars
   }  
 ###  if (!is.null(offsetpos <- attributes(Terms)$specials$offset)) {
 ###    ts <- survival::untangle.specials(Terms, "offset")
@@ -410,7 +412,7 @@ phreg1 <- function(formula,data,offset=NULL,weights=NULL,...) {
     X <- X[,-intpos,drop=FALSE]
   if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
 
-  res <- c(phreg01(X,entry,exit,status,id,strata,offset,weights,...),list(call=cl,model.frame=m))
+  res <- c(phreg01(X,entry,exit,status,id,strata,offset,weights,strata.name,...),list(call=cl,model.frame=m))
   class(res) <- "phreg"
   
   res
@@ -523,7 +525,7 @@ return(res)
 ###{{{ predict with se for baseline
 
 predictPhreg1 <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
-    x <- x$jumptimes
+    	x <- x$jumptimes
     S0 <- x$S0
     II <- x$II ###  -solve(x$hessian)
     strata <- x$strata[x$jumps]
@@ -626,6 +628,7 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 }
 
 ###}}} predict
+
 
 
 ###{{{ plot
