@@ -73,6 +73,7 @@ pc.hazard <- function(cumhazard,rr,cum.hazard=TRUE)
   } else cumh <- cumhazard[,2] 
    n <- length(rr)
    ttt <- rexp(n)/rr
+   if (cumh[1]>0) warning("Safest to start with cumulative hazard 0 to avoid problems\n"); 
    ###
    ri <- sindex.prodlim(cumh,ttt)
    rr <- (ttt-cumh[ri])/(cumh[ri+1]-cumh[ri])
