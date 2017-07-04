@@ -158,7 +158,7 @@ return(out)
 ##' plot(m2)
 ##' 
 ##' @export
-gofG  <- function(x,coefcox,sim=1,silent=1,...)
+gofG.phreg  <- function(x,coefcox,sim=1,silent=1,...)
 {# {{{
 
 p <- length(x$coef)
@@ -174,7 +174,6 @@ if (nstrata==1) stop("Stratified Cox to look at baselines");
 ###
 Pt <- DLambeta.t <- apply(x$E/c(x$S0),2,mets:::cumsumstrata,strata,nstrata)
 betaiid <- t(ii %*% t(x$U))
-###var.cumhaz <- cumsumstrata(1/val$S0^2,strata,nstrata)
 
 for (i in 0:(nstrata-2))
 for (j in (i+1):(nstrata-1)) { 
@@ -182,13 +181,6 @@ for (j in (i+1):(nstrata-1)) {
       ii <- which(strata %in% i)
       ij <- which(strata %in% j)
       dijjumps  <- jumptimes[iij] 
-
-###      print(c(i,j))
-###      print(length(dijjumps)); 
-###      print(ii)
-###      print(ij)
-###      dijcumhaz <- cumhaz[iij,]
-###      dijvcum <- var.cumhaz[iij,]
       cumhazi <- Cpred(cumhaz[ii,],dijjumps,strict=FALSE)
       cumhazj <- Cpred(cumhaz[ij,],dijjumps,strict=FALSE)
 
@@ -198,8 +190,7 @@ for (j in (i+1):(nstrata-1)) {
       legend("topleft",c("Nonparametric","lm","Stratified-Cox-Sim"),lty=1,col=1:3)
       ab <- lm(cumhazi[,2]~-1+cumhazj[,2])
       if (sim==1) {
-	     simband <-  .Call("simBandCumHazCox",1/x$S0,Pt,betaiid,50,rep(1,958),
-			       PACKAGE="mets")
+	     simband <-  .Call("simBandCumHazCox",1/x$S0,Pt,betaiid,50,rep(1,958),PACKAGE="mets")
 	     simU <-simband$simUt
 	     for (k in 1:50)
 	     {
