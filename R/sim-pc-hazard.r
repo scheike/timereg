@@ -7,6 +7,7 @@
 #' @param cumhazard cumulative hazard, or piece-constant rates for periods
 #' defined by first column of input.
 #' @param rr number of simulations or vector of relative risk for simuations.
+#' @param entry delayed entry time for simuations.
 #' @param cum.hazard specifies wheter input is cumulative hazard or rates.
 #' @author Thomas Scheike
 #' @keywords survival
@@ -59,7 +60,7 @@
 #' 
 #' @export
 #' @aliases pchazard.sim cause.pchazard.sim 
-pc.hazard <- function(cumhazard,rr,cum.hazard=TRUE)
+pc.hazard <- function(cumhazard,rr,entry=NULL,cum.hazard=TRUE)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
 ### cumh=cbind(breaks,cumhazard) if cumh=TRUE
@@ -75,32 +76,42 @@ pc.hazard <- function(cumhazard,rr,cum.hazard=TRUE)
    ttt <- rexp(n)/rr
    if (cumh[1]>0) warning("Safest to start with cumulative hazard 0 to avoid problems\n"); 
    ###
-   ri <- sindex.prodlim(cumh,ttt)
-   rr <- (ttt-cumh[ri])/(cumh[ri+1]-cumh[ri])
-   rrx <- rr*(breaks[ri+1]-breaks[ri])+breaks[ri]
-   status <- rep(1,n)
-   status[is.na(rrx)] <- 0
+   if (!is.null(entry)) {
+	   if (length(entry)==1) entry <- rep(entry,n) else entry <- entry
+	   ## cumhazard at entry 
+           ri <- sindex.prodlim(breaks,entry)
+           rrr <- (entry-breaks[ri])/(breaks[ri+1]-breaks[ri])
+           cumentry <- rrr*(cumh[ri+1]-cumh[ri])+cumh[ri]
+	   cumentry <- rr*cumentry
+   } else { entry <- cumentry <- rep(0,n) }
+   ###
+   ttte <- ttt+cumentry
+   ri <- sindex.prodlim(cumh,ttte)
+   rrr <- (ttte-cumh[ri])/(cumh[ri+1]-cumh[ri])
+   rrx <- rrr*(breaks[ri+1]-breaks[ri])+breaks[ri]
    rrx[is.na(rrx)] <- mm
-   dt <- data.frame(time=rrx,status=status)
-   names(dt) <- c("time","status")
+   rrx <- ifelse(rrx>mm,mm,rrx)
+   status <- rep(0,n)
+   status <- ifelse(rrx<mm,1,status)
+   dt <- data.frame(entry=entry,time=rrx,status=status,rr=rr)
    attr(dt,"cumhaz") <- cumhazard
    return(dt)
 }# }}}
 
 #' @export
-pchazard.sim <- function(cumhazard,rr,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE)
+pchazard.sim <- function(cumhazard,rr,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE,...)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
 ### cumh=cbind(breaks,cumhazard) if cumh=TRUE
 
-   ptt <- pc.hazard(cumhazard,rr,cum.hazard=TRUE)
+   ptt <- pc.hazard(cumhazard,rr,cum.hazard=TRUE,...)
 
    if (length(rr)==1) n<-rr else n <- length(rr)
    if (is.null(rrc)) {
 	   if (length(rr)==1) rrc<-rr else rrc <- length(rr)
    }
    if (is.matrix(cens)) {
-	   pct <- pc.hazard(cumhazard,rr,cum.hazard=cens.cum.hazard)
+	   pct <- pc.hazard(cumhazard,rr,cum.hazard=cens.cum.hazard,...)
 	   pct <- pct$time
    }
    else {
@@ -126,6 +137,7 @@ pchazard.sim <- function(cumhazard,rr,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE)
 #' @param cens 
 #' @param rrc retlativ risk for censoring.
 #' @param cens.cum.hazard possible cumulative hazard for censoring.
+#' @param ... arguments for pc.hazard 
 #' @author Thomas Scheike
 #' @keywords survival
 #' @examples
@@ -165,7 +177,7 @@ pchazard.sim <- function(cumhazard,rr,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE)
 #' plot(cox2$cum,type="l");
 #' lines(sc2$cum,col=2)
 #' @export
-cause.pchazard.sim <- function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE)
+cause.pchazard.sim <- function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE,...)
 {#'# {{{
 ##'## cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
 ##'## cumh=cbind(breaks,cumhazard) if cumh=TRUE
@@ -173,14 +185,14 @@ cause.pchazard.sim <- function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.c
    if (length(rr1)==1) n<-rr1 else n <- length(rr1)
    if (missing(rr2)) rr2 <- n
  
-   ptt1 <- pc.hazard(cumhaz1,rr1,cum.hazard=TRUE)
-   ptt2 <- pc.hazard(cumhaz2,rr2,cum.hazard=TRUE)
+   ptt1 <- pc.hazard(cumhaz1,rr1,cum.hazard=TRUE,...)
+   ptt2 <- pc.hazard(cumhaz2,rr2,cum.hazard=TRUE,...)
    ptt <- data.frame(time=pmin(ptt1$time,ptt2$time),status=ifelse(ptt1$time<=ptt2$time,ptt1$status,ptt2$status*2))
  
    if (!is.null(cens)) {
       if (is.null(rrc)) rrc <- n 
            if (is.matrix(cens)) {
-        	   pct <- pc.hazard(cens,rrc,cum.hazard=cens.cum.hazard)
+        	   pct <- pc.hazard(cens,rrc,cum.hazard=cens.cum.hazard,...)
         	   pct <- pct$time
            } else {
         	   if (is.numeric(cens)) pct<- rexp(n)/cens  else {
@@ -208,6 +220,7 @@ cause.pchazard.sim <- function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.c
 #' hazard given, if "is.scalar" then uses rate for exponential, and if not
 #' given then takes average rate of in simulated data from cox model.
 #' @param rrc possible vector of relative risk for cox-type censoring.
+#' @param ... arguments for pc.hazard, for example entry-time
 #' @author Thomas Scheike
 #' @keywords survival
 #' @examples
@@ -237,7 +250,7 @@ cause.pchazard.sim <- function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.c
 #' # cc <-  phreg(Surv(time, status)~vf+chf+wmi,data=TRACE)
 #' # sim3 <- sim.cox(cc,1000,data=TRACE)
 #' @export
-sim.cox <- function(cox,n,data=NULL,cens=NULL,rrc=NULL)
+sim.cox <- function(cox,n,data=NULL,cens=NULL,rrc=NULL,...)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
 ### cumh=cbind(breaks,cumhazard) if cumh=TRUE
@@ -285,38 +298,60 @@ if (class(cox)=="phreg")
 ######   Z1 <- na.omit(model.matrix(cox,data=data))
    p <- length(cox$coef)
 ###   Z <- na.omit(get_all_vars(formula,data=data))
-   Z  <-  cox$model.frame[,-1]
+	   Z <- cox$model.frame[,-1]
+   if (cox$nstrata>1) {
+	   ms <- match(cox$strata.name,names(Z))
+	   strata <- cox$strata
+	   Z  <-  Z[,-ms]
+   }
    nz <- ncol(Z)
    lrr <- as.matrix(Z) %*% cox$coef
    cumhazard <- rbind(c(0,0),cox$cumhaz)
    rr <- exp(lrr)
    xid <- sample(1:nrow(Z),n,replace=TRUE)
+   if (cox$nstrata>1) stratid <- strata[xid]
    rr <- rr[xid]
    Z <- Z[xid,]
 }# }}}
 
-   ptt <- pc.hazard(cumhazard,rr)
 
-   if (length(rr)==1) n<-rr else n <- length(rr)
-   if (is.null(rrc)) {
-	   if (length(rr)==1) rrc<-rr else rrc <- length(rr)
-   }
+if (class(cox)!="phreg") {
+	ptt <- pc.hazard(cumhazard,rr,...) 
+	ptt <- cbind(ptt,Z)
+} else {
+	ptt <- data.frame()
+	if (cox$nstrata>1) {
+		for (j in 0:(cox$nstrata-1)) {
+			stratj <- cox$strata[cox$jumps]
+                        cumhazardj <- rbind(c(0,0),cox$cumhaz[stratj==j,])
+	                pttj <- pc.hazard(cumhazardj,rr[stratid==j],...) 
+			pttj$strata <- j
+			pttj <- cbind(pttj,Z[stratid==j,])
+			ptt  <-  rbind(ptt,pttj)
+		}
+	} else {
+		ptt <- pc.hazard(cumhazard,rr,...) 
+		ptt <- cbind(ptt,Z)
+	}
+}
+
    if (!is.null(cens))  {
-   if (is.matrix(cens)) {
-	   pct <- pc.hazard(cens,rr,cum.hazard=TRUE)
+      if (is.null(rrc)) rrc <- rep(1,n)
+      if (is.matrix(cens)) {
+	   pct <- pc.hazard(cens,rrc,cum.hazard=TRUE,...)
 	   pct <- pct$time
-   }
-   else {
+      }
+      else {
 	   if (is.numeric(cens)) pct<- rexp(n)/cens  else {
 	      chaz <-sum(ptt$status)/sum(ptt$time)  ## hazard averate T haz 
 	      pct<- rexp(n)/chaz 
-	   }
-   }
-   dt <- cbind(data.frame(time=pmin(ptt$time,pct),
-			  status=ifelse(ptt$time<pct,ptt$status,0)),Z)
-   } else { dt <- cbind(data.frame(time=ptt$time,status=ptt$status,Z)) }
+           }
+      }
+      ptt$time <- pmin(ptt$time,pct),
+      ptt$status <- ifelse(ptt$time<pct,ptt$status,0)
+   } 
 
-   return(dt)
+   return(ptt)
 }# }}}
 
 
@@ -339,6 +374,7 @@ if (class(cox)=="phreg")
 #'             given then takes average rate of in simulated data from cox model.
 #'             But censoring can also be given as a cause.
 #' @param rrc possible vector of relative risk for cox-type censoring.
+#' @param ... arguments for pc.hazard, for example entry-time
 #' @author Thomas Scheike
 #' @keywords survival
 #' @examples
@@ -376,7 +412,7 @@ if (class(cox)=="phreg")
 #' cbind(coef(cox2),scox2$gamma)
 #'  
 #' @export
-sim.cause.cox <- function(coxs,n,data=NULL,cens=NULL,rrc=NULL)
+sim.cause.cox <- function(coxs,n,data=NULL,cens=NULL,rrc=NULL,...)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
 ### cumh=cbind(breaks,cumhazard) if cumh=TRUE
@@ -409,7 +445,7 @@ if (class(coxs[[1]])=="coxph")
   Z <- Z[xid,]
   colnames(Z) <- nn
   simcovs <- Z
-  ptt <- pc.hazard(cumhazard,rr)
+  ptt <- pc.hazard(cumhazard,rr,...)
 
   i=2
    if (length(coxs)>=2)
@@ -436,7 +472,7 @@ if (class(coxs[[1]])=="coxph")
   colnames(Z) <- nn
 
   Z1 <- as.matrix(Z[xid,])
-  ptt1 <- pc.hazard(cumhazard,rr)
+  ptt1 <- pc.hazard(cumhazard,rr,...)
   ### removes covariates already included 
   rmn <- match(names(Z1),names(simcovs))
   Z1e <- Z1[,-rmn]
