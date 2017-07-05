@@ -401,7 +401,7 @@ phreg1 <- function(formula,data,offset=NULL,weights=NULL,...) {
     Terms  <- Terms[-ts$terms]
     strata <- m[[ts$vars]]
     strata.name <- ts$vars
-  }  
+  }  else strata.name <- NULL
 ###  if (!is.null(offsetpos <- attributes(Terms)$specials$offset)) {
 ###    ts <- survival::untangle.specials(Terms, "offset")
 ###    Terms  <- Terms[-ts$terms]
