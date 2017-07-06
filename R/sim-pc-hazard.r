@@ -247,8 +247,11 @@ cause.pchazard.sim <- function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.c
 #' cbind(cox$gamma,cc$gamma)
 #' 
 #' # library(mets)
-#' # cc <-  phreg(Surv(time, status)~vf+chf+wmi,data=TRACE)
-#' # sim3 <- sim.cox(cc,1000,data=TRACE)
+#' cc <-  phreg(Surv(time, status==9)~vf+chf+wmi,data=TRACE)
+#' sim3 <- sim.cox(cc,1000,data=TRACE)
+#' 
+#' cc <-  phreg(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE)
+#' sim3 <- sim.cox(cc,1000,data=TRACE)
 #' @export
 sim.cox <- function(cox,n,data=NULL,cens=NULL,rrc=NULL,...)
 {# {{{
@@ -301,6 +304,7 @@ if (class(cox)=="phreg")
 	   Z <- cox$model.frame[,-1]
    if (cox$nstrata>1) {
 	   ms <- match(cox$strata.name,names(Z))
+           stratname <-  substring(cox$strata.name,8,nchar(cox$strata.name)-1)
 	   strata <- cox$strata
 	   Z  <-  Z[,-ms]
    }
@@ -325,7 +329,7 @@ if (class(cox)!="phreg") {
 			stratj <- cox$strata[cox$jumps]
                         cumhazardj <- rbind(c(0,0),cox$cumhaz[stratj==j,])
 	                pttj <- pc.hazard(cumhazardj,rr[stratid==j],...) 
-			pttj$strata <- j
+			pttj[,stratname] <- j
 			pttj <- cbind(pttj,Z[stratid==j,])
 			ptt  <-  rbind(ptt,pttj)
 		}
@@ -347,7 +351,7 @@ if (class(cox)!="phreg") {
 	      pct<- rexp(n)/chaz 
            }
       }
-      ptt$time <- pmin(ptt$time,pct),
+      ptt$time <- pmin(ptt$time,pct)
       ptt$status <- ifelse(ptt$time<pct,ptt$status,0)
    } 
 
@@ -391,13 +395,13 @@ if (class(cox)!="phreg") {
 #'              data=dd,robust=0)
 #'  scox2 <-  cox.aalen(Surv(time,status==2)~prop(vf)+prop(chf)+prop(wmi),
 #'              data=dd,robust=0)
-#'  ### 
-#'  cbind(cox1$gamma,scox1$gamma)
-#'  cbind(cox2$gamma,scox2$gamma)
-#'  par(mfrow=c(1,2))
-#'  plot(cox1); lines(scox1$cum,col=2)
-#'  plot(cox2$cum,type="l");
-#'  lines(scox2$cum,col=2)
+#' ### 
+#' cbind(cox1$gamma,scox1$gamma)
+#' cbind(cox2$gamma,scox2$gamma)
+#' par(mfrow=c(1,2))
+#' plot(cox1); lines(scox1$cum,col=2)
+#' plot(cox2$cum,type="l");
+#' lines(scox2$cum,col=2)
 #' 
 #' cox1 <- coxph(Surv(time,status==9)~vf+chf+wmi, data=TRACE)
 #' cox2 <- coxph(Surv(time,status==0)~vf+chf+wmi, data=TRACE)
