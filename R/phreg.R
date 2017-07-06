@@ -335,41 +335,20 @@ phreg <- function(formula,data,...) {
 ##' @param data data frame
 ##' @param weights weights for Cox score equations
 ##' @param ... Additional arguments to lower level funtions
-##' @author Klaus K. Holst
+##' @author Klaus K. Holst, Thomas Scheike
 ##' @export
 ##' @aliases phreg phreg.par
 ##' @examples
-##' simcox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
-##'   if (!is.null(seed))
-##'     set.seed(seed)
-##'   library(lava)
-##'   m <- lvm()
-##'   regression(m,T~X1+X2) <- beta
-##'   distribution(m,~T+C) <- coxWeibull.lvm(scale=1/100)
-##'   distribution(m,~entry) <- coxWeibull.lvm(scale=1/10)
-##'   m <- eventTime(m,time~min(T,C=0),"status")
-##'   d <- sim(m,n);
-##'   if (!entry) d$entry <- 0
-##'   else d <- subset(d, time>entry,select=-c(T,C))
-##'   return(d)
-##' }
-##' \dontrun{
-##' n <- 10;
-##' d <- mets:::simCox(n); d$id <- seq(nrow(d)); d$group <- factor(rbinom(nrow(d),1,0.5))
+##' data(TRACE)
+##' dcut(TRACE) <- ~.
+##' out1 <- phreg1(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
+##' tracesim <- sim.cox(out1,1000)
+##' sout1 <- phreg1(Surv(time,status==1)~vf+chf+strata(wmicat.4),data=tracesim)
 ##' 
-##' (m1 <- phreg(Surv(entry,time,status)~X1+X2,data=d))
-##' (m2 <- coxph(Surv(entry,time,status)~X1+X2+cluster(id),data=d))
-##' (coef(m3 <-cox.aalen(Surv(entry,time,status)~prop(X1)+prop(X2),data=d)))
+##' par(mfrow=c(1,2))
+##' baseplot.phreg(out1)
+##' baseplot.phreg(sout1)
 ##' 
-##' 
-##' (m1b <- phreg(Surv(entry,time,status)~X1+X2+strata(group),data=d))
-##' (m2b <- coxph(Surv(entry,time,status)~X1+X2+cluster(id)+strata(group),data=d))
-##' (coef(m3b <-cox.aalen(Surv(entry,time,status)~-1+group+prop(X1)+prop(X2),data=d)))
-##' 
-##' m <- phreg(Surv(entry,time,status)~X1*X2+strata(group)+cluster(id),data=d)
-##' m
-##' plot(m,ylim=c(0,1))
-##' }
 ##' @export
 phreg1 <- function(formula,data,offset=NULL,weights=NULL,...) {
   cl <- match.call()
@@ -632,48 +611,53 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 ###{{{ plot
 
 ##' @export
-baseplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,lty=NULL,col=NULL,legend=TRUE,ylab="Cumulative hazard",polygon=TRUE,...) {# {{{
+baseplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,lty=NULL,col=NULL,legend=TRUE,
+			    ylab="Cumulative hazard",polygon=TRUE,level=0.95,stratas=NULL,...) {# {{{
 
+   level <- -qnorm((1-level)/2)
    rr <- range(x$cumhaz[,-1])
    strat <- x$strata[x$jumps]
    if (is.null(ylim)) ylim <- rr
    if (se==TRUE) {
 	   if (is.null(x$se.cumhaz)) stop("phreg must be with cumhazard=TRUE\n"); 
-       rrse <- range(c(x$cumhaz[,-1]+1.96*x$se.cumhaz[,-1]))
+       rrse <- range(c(x$cumhaz[,-1]+level*x$se.cumhaz[,-1]))
        ylim <- rrse
    }
 
-   if (x$nstrata>1) {
+   ## all strata
+   if (is.null(stratas)) stratas <- 0:(x$nstrata-1) 
+
+   if (length(stratas)>0 & x$nstrata>1) { ## with strata
       ms <- match(x$strata.name,names(x$model.frame))
-      lstrata <- levels(x$model.frame[,ms])
+      lstrata <- levels(x$model.frame[,ms])[(stratas+1)]
       stratn <-  substring(x$strata.name,8,nchar(x$strata.name)-1)
       stratnames <- paste(stratn,lstrata,sep=":")
-      if (is.null(lty)) ltys <- 1:x$nstrata
-      if (is.null(col)) cols <- 1:x$nstrata 
+      if (is.null(lty)) ltys <- 1:length(stratas)
+      if (is.null(col)) cols <- 1:length(stratas)
    } else { 
      stratnames <- "Baseline" 
      if (is.null(lty)) ltys <- 1
      if (is.null(col)) cols <- 1 
    }
 
-     if (!is.matrix(ltys))  ltys <- cbind(ltys,ltys,ltys)
-     if (!is.matrix(cols))  cols <- cbind(cols,cols,cols)
+  if (!is.matrix(ltys))  ltys <- cbind(ltys,ltys,ltys)
+  if (!is.matrix(cols))  cols <- cbind(cols,cols,cols)
 
-   j <- 0
+   i <- 1
+   j <- stratas[i]
    cumhazard <- x$cumhaz[strat==j,]
     if (add) {
-        lines(cumhazard,type="s",lty=ltys[1,1],col=cols[1,1],...)
+        lines(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],...)
     } else {
-        plot(cumhazard,type="s",lty=ltys[1,1],col=cols[1,1],
-	     ylim=ylim,ylab=ylab,...)
+         plot(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],ylim=ylim,ylab=ylab,...)
     }
     if (se==TRUE) {
       secumhazard <- x$se.cumhaz[strat==j,]
-      ul <-cbind(cumhazard[,1],cumhazard[,2]+1.96*secumhazard[,2])
-      nl <-cbind(cumhazard[,1],cumhazard[,2]-1.96*secumhazard[,2])
+      ul <-cbind(cumhazard[,1],cumhazard[,2]+level*secumhazard[,2])
+      nl <-cbind(cumhazard[,1],cumhazard[,2]-level*secumhazard[,2])
       if (!polygon) {
-      lines(nl,type="s",lty=ltys[1,2],col=cols[1,2])
-      lines(ul,type="s",lty=ltys[1,3],col=cols[1,3])
+      lines(nl,type="s",lty=ltys[i,2],col=cols[i,2])
+      lines(ul,type="s",lty=ltys[i,3],col=cols[i,3])
       } else {
          tt <- c(nl[,1],rev(ul[,1]))
          yy <- c(nl[,2],rev(ul[,2]))
@@ -681,21 +665,22 @@ baseplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,lty=NULL,co
          col.ci<-cols[j+1]
          col.trans <- sapply(col.ci, FUN=function(x) 
                    do.call(rgb,as.list(c(col2rgb(x)/255,col.alpha))))
-	 polygon(tt,yy,lty=ltys[1,2],col=col.trans)
+	 polygon(tt,yy,lty=ltys[i,2],col=col.trans)
       }
     }
 
-    if (x$nstrata>1) 
-    for (j in 1:(x$nstrata-1)) {
+    if (length(stratas)>1)  {
+    for (i in 2:length(stratas)) {
+	j <- stratas[i]
         cumhazard <- x$cumhaz[strat==j,]
-        lines(cumhazard,type="s",lty=ltys[j+1,1],col=cols[j+1,1])   
+        lines(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1])   
         if (se==TRUE) {
          secumhazard <- x$se.cumhaz[strat==j,]
-         ul <-cbind(cumhazard[,1],cumhazard[,2]+1.96*secumhazard[,2])
-         nl <-cbind(cumhazard[,1],cumhazard[,2]-1.96*secumhazard[,2])
+         ul <-cbind(cumhazard[,1],cumhazard[,2]+level*secumhazard[,2])
+         nl <-cbind(cumhazard[,1],cumhazard[,2]-level*secumhazard[,2])
       if (!polygon) {
-      lines(nl,type="s",lty=ltys[j+1,2],col=cols[j+1,2])
-      lines(ul,type="s",lty=ltys[j+1,3],col=cols[j+1,3])
+      lines(nl,type="s",lty=ltys[i,2],col=cols[i,2])
+      lines(ul,type="s",lty=ltys[i,3],col=cols[i,3])
       } else {
          tt <- c(nl[,1],rev(ul[,1]))
          yy <- c(nl[,2],rev(ul[,2]))
@@ -706,13 +691,13 @@ baseplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,lty=NULL,co
 	 polygon(tt,yy,lty=ltys[1,2],col=col.trans)
       }
     }
-    if (legend)
-    legend("topleft",legend=stratnames,col=cols[,1],lty=ltys[,1])
+    }
     }
 
+    if (legend)
+    legend("topleft",legend=stratnames,col=cols[,1],lty=ltys[,1])
+
 }# }}}
-
-
 
 
 ##' @export
