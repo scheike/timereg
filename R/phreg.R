@@ -629,6 +629,96 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 
 ###}}} predict
 
+###{{{ plot
+
+##' @export
+baseplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,lty=NULL,col=NULL,legend=TRUE,ylab="Cumulative hazard",polygon=TRUE,...) {# {{{
+
+   rr <- range(x$cumhaz[,-1])
+   strat <- x$strata[x$jumps]
+   if (is.null(ylim)) ylim <- rr
+   if (se==TRUE) {
+	   if (is.null(x$se.cumhaz)) stop("phreg must be with cumhazard=TRUE\n"); 
+       rrse <- range(c(x$cumhaz[,-1]+1.96*x$se.cumhaz[,-1]))
+       ylim <- rrse
+   }
+
+   if (x$nstrata>1) {
+      ms <- match(x$strata.name,names(x$model.frame))
+      lstrata <- levels(x$model.frame[,ms])
+      stratn <-  substring(x$strata.name,8,nchar(x$strata.name)-1)
+      stratnames <- paste(stratn,lstrata,sep=":")
+      if (is.null(lty)) ltys <- 1:x$nstrata
+      if (is.null(col)) cols <- 1:x$nstrata 
+   } else { 
+     stratnames <- "Baseline" 
+     if (is.null(lty)) ltys <- 1
+     if (is.null(col)) cols <- 1 
+   }
+
+     if (!is.matrix(ltys))  ltys <- cbind(ltys,ltys,ltys)
+     if (!is.matrix(cols))  cols <- cbind(cols,cols,cols)
+
+   j <- 0
+   cumhazard <- x$cumhaz[strat==j,]
+    if (add) {
+        lines(cumhazard,type="s",lty=ltys[1,1],col=cols[1,1],...)
+    } else {
+        plot(cumhazard,type="s",lty=ltys[1,1],col=cols[1,1],
+	     ylim=ylim,ylab=ylab,...)
+    }
+    if (se==TRUE) {
+      secumhazard <- x$se.cumhaz[strat==j,]
+      ul <-cbind(cumhazard[,1],cumhazard[,2]+1.96*secumhazard[,2])
+      nl <-cbind(cumhazard[,1],cumhazard[,2]-1.96*secumhazard[,2])
+      if (!polygon) {
+      lines(nl,type="s",lty=ltys[1,2],col=cols[1,2])
+      lines(ul,type="s",lty=ltys[1,3],col=cols[1,3])
+      } else {
+         tt <- c(nl[,1],rev(ul[,1]))
+         yy <- c(nl[,2],rev(ul[,2]))
+         col.alpha<-0.1
+         col.ci<-cols[j+1]
+         col.trans <- sapply(col.ci, FUN=function(x) 
+                   do.call(rgb,as.list(c(col2rgb(x)/255,col.alpha))))
+	 polygon(tt,yy,lty=ltys[1,2],col=col.trans)
+      }
+    }
+
+    if (x$nstrata>1) 
+    for (j in 1:(x$nstrata-1)) {
+        cumhazard <- x$cumhaz[strat==j,]
+        lines(cumhazard,type="s",lty=ltys[j+1,1],col=cols[j+1,1])   
+        if (se==TRUE) {
+         secumhazard <- x$se.cumhaz[strat==j,]
+         ul <-cbind(cumhazard[,1],cumhazard[,2]+1.96*secumhazard[,2])
+         nl <-cbind(cumhazard[,1],cumhazard[,2]-1.96*secumhazard[,2])
+      if (!polygon) {
+      lines(nl,type="s",lty=ltys[j+1,2],col=cols[j+1,2])
+      lines(ul,type="s",lty=ltys[j+1,3],col=cols[j+1,3])
+      } else {
+         tt <- c(nl[,1],rev(ul[,1]))
+         yy <- c(nl[,2],rev(ul[,2]))
+         col.alpha<-0.1
+         col.ci<-cols[j+1]
+         col.trans <- sapply(col.ci, FUN=function(x) 
+                   do.call(rgb,as.list(c(col2rgb(x)/255,col.alpha))))
+	 polygon(tt,yy,lty=ltys[1,2],col=col.trans)
+      }
+    }
+    if (legend)
+    legend("topleft",legend=stratnames,col=cols[,1],lty=ltys[,1])
+    }
+
+}# }}}
+
+
+
+
+##' @export
+lines.phreg <- function(x,...,add=TRUE) plot(x,...,add=add)
+
+###}}} plot
 
 
 ###{{{ plot
