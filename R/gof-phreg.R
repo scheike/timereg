@@ -166,14 +166,16 @@ nnames <- names(x$coef)
 strata <- x$strata[x$jumps]
 nstrata <- x$nstrata
 jumptimes <- x$jumptimes
-ii <- -solve(x$hessian)
 cumhaz <- x$cumhaz
+
+ms <- match(x$strata.name,names(x$model.frame))
+lstrata <- levels(x$model.frame[,ms])
+stratn <-  substring(x$strata.name,8,nchar(x$strata.name)-1)
+stratnames <- paste(stratn,lstrata,sep=":")
 
 if (is.null(cumhaz)) stop("Must run phreg with cumhaz=TRUE (default)"); 
 if (nstrata==1) stop("Stratified Cox to look at baselines");
 ###
-Pt <- DLambeta.t <- apply(x$E/c(x$S0),2,mets:::cumsumstrata,strata,nstrata)
-betaiid <- t(ii %*% t(x$U))
 
 for (i in 0:(nstrata-2))
 for (j in (i+1):(nstrata-1)) { 
@@ -184,13 +186,16 @@ for (j in (i+1):(nstrata-1)) {
       cumhazi <- Cpred(cumhaz[ii,],dijjumps,strict=FALSE)
       cumhazj <- Cpred(cumhaz[ij,],dijjumps,strict=FALSE)
 
-      plot(cumhazj[,2],cumhazi[,2],type="s",lwd=2,xlab=paste("strata",j),
-	   ylab=paste("strata",i))
-      title(paste("Stratified baselines for",x$strata.name))
+      plot(cumhazj[,2],cumhazi[,2],type="s",lwd=2,
+	   xlab=stratnames[j+1],ylab=stratnames[i+1])
+      title(paste("Stratified baselines for",stratn))
       legend("topleft",c("Nonparametric","lm","Stratified-Cox-Sim"),lty=1,col=1:3)
       ab <- lm(cumhazi[,2]~-1+cumhazj[,2])
       if (sim==1) {
-	     simband <-  .Call("simBandCumHazCox",1/x$S0,Pt,betaiid,50,rep(1,958),PACKAGE="mets")
+             Pt <- DLambeta.t <- apply(x$E/c(x$S0),2,mets:::cumsumstrata,strata,nstrata)
+             II <- -solve(x$hessian)
+             betaiid <- t(II %*% t(x$U))
+	     simband <-  .Call("simBandCumHazCox",1/x$S0,Pt,betaiid,50,rep(1,nrow(Pt)),PACKAGE="mets")
 	     simU <-simband$simUt
 	     for (k in 1:50)
 	     {
