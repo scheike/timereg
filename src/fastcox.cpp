@@ -360,16 +360,6 @@ BEGIN_RCPP/*{{{*/
   }
 
   colvec S0 = revcumsum(eXb);
-  //Rcout << "S0\n" << S0;
-
-  // mat S1(X.n_rows,p);
-  // for (unsigned j=0; j<X.n_cols; j++) {
-  //   S1.col(j) = revcumsum(X.col(j),eXb);
-  // }
-  // mat S2(X.n_rows,XX.n_cols);
-  // for (unsigned j=0; j<p; j++) {
-  //   S2.col(j) = revcumsum(XX.col(j),eXb);
-  // }
   mat E(X.n_rows,p); // S1/S0(s)
   for (unsigned j=0; j<p; j++) {
     E.col(j) = revcumsum(X.col(j),eXb,S0);
@@ -394,14 +384,6 @@ BEGIN_RCPP/*{{{*/
   vec val = Xb.elem(Jumps)-log(S0); // Partial log-likelihood
   mat hesst = -(XX2-E2);
   mat hess = reshape(sum(hesst),p,p);
-
-//  hess.print("hess"); 
-//  S0.print("S0"); 
-//  grad.print("grad"); 
-//  E.print("E"); 
-//  XX2.print("XX"); 
-//  printf("============================ \n"); 
-
 
   return(Rcpp::List::create(Rcpp::Named("jumps")=Jumps,
 			    Rcpp::Named("ploglik")=sum(val),
@@ -488,16 +470,9 @@ BEGIN_RCPP/*{{{*/
   mat hesst2 = vecmatrow(weightsJ,hesst); // hessian over time with weights 
   mat hess2 = reshape(sum(hesst2),p,p);  // hessian with weights 
 
-//  S0.print("SO"); eXb.print("exB"); E.print("E"); 
-//  grad.print("grad"); grad2.print("grad2"); weightsJ.print("weights"); 
 //  if (hess.has_nan()) {
 //	printf("============================ \n"); 
-//	S0.print("S0"); 
-//	eXb.print("exb"); 
-//	grad.print("grad"); 
-//	E.print("E"); 
-//	XX2.print("XX"); 
-//	X.print("X"); 
+//	S0.print("S0"); exb.print("exb"); grad.print("grad"); e.print("e"); xx2.print("xx"); X.print("X"); 
 //	printf("============================ \n"); 
 //	}
 
@@ -536,8 +511,6 @@ BEGIN_RCPP/*{{{*/
   mat XX = Rcpp::as<mat>(XXSEXP);
   unsigned p = beta.n_rows;
   unsigned n = XX.n_rows;
-
-//  XX.print("XX"); 
 
   mat XXbeta(n,p);
   for (unsigned j=0; j<n; j++)  {
