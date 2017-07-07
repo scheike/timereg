@@ -441,27 +441,13 @@ BEGIN_RCPP/*{{{*/
   colvec weights = Rcpp::as<colvec>(weightsSEXP);
   colvec offsets = Rcpp::as<colvec>(offsetsSEXP);
 
-  colvec Xb = X*beta;
-  colvec eXb = exp(Xb)%weights%offsets;
-//  colvec eXb = exp(Xb);
+  colvec Xb = X*beta+offsets;
+  colvec eXb = exp(Xb)%weights;
   if (Sign.n_rows==eXb.n_rows) { // Truncation
     eXb = Sign%eXb;
   }
 
   colvec S0 = revcumsumstrata(eXb,strata,nstrata);
-
-  //Rcout << "S0\n" << S0;
-
-  // mat S1(X.n_rows,p);
-  // for (unsigned j=0; j<X.n_cols; j++) {
-  //   S1.col(j) = revcumsum(X.col(j),eXb);
-  // }
-  // mat S2(X.n_rows,XX.n_cols);
-  // for (unsigned j=0; j<p; j++) {
-  //   S2.col(j) = revcumsum(XX.col(j),eXb);
-  // }
-//  mat E(X.n_rows,p); // S1/S0(s)
-//
   mat E=revcumsumstrataMatCols(X,eXb,S0,strata,nstrata); 
 
 //  for (unsigned j=0; j<p; j++) {
@@ -483,12 +469,9 @@ BEGIN_RCPP/*{{{*/
 
   mat ZX2 = ZX;
   if (ZX.n_rows==X.n_rows) {
-  ZX2=revcumsumstrataMatCols(ZX,eXb,S0,strata,nstrata); 
-//  for (unsigned j=0; j<ZX2.n_cols; j++) { // int S2/S0(s)
-//    ZX2.col(j) = revcumsumstrata1(ZX2.col(j),eXb,S0,strata,nstrata);
+     ZX2=revcumsumstrataMatCols(ZX,eXb,S0,strata,nstrata); 
   } 
 
-  //  X = X.rows(Jumps);
   XX2 = XX2.rows(Jumps);
   colvec weightsJ=weights.elem(Jumps);  
   S0 = S0.elem(Jumps);

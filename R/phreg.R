@@ -119,7 +119,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
       strata <- as.integer(factor(strata,labels=seq(nstrata)))-1
     }
   }
-  if (is.null(offset)) offset <- rep(1,length(exit)) else offset <- exp(offset); 
+  if (is.null(offset)) offset <- rep(0,length(exit)) 
   if (is.null(weights)) weights <- rep(1,length(exit)) 
 
    Zcall <- matrix(1,1,1) ## to not use for ZX products in  
@@ -353,7 +353,7 @@ phreg <- function(formula,data,...) {
 phreg1 <- function(formula,data,offset=NULL,weights=NULL,...) {
   cl <- match.call()
   m <- match.call(expand.dots = TRUE)[1:3]
-  special <- c("strata", "cluster")
+  special <- c("strata", "cluster","offset")
   Terms <- terms(formula, special, data = data)
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
@@ -381,11 +381,11 @@ phreg1 <- function(formula,data,offset=NULL,weights=NULL,...) {
     strata <- m[[ts$vars]]
     strata.name <- ts$vars
   }  else strata.name <- NULL
-###  if (!is.null(offsetpos <- attributes(Terms)$specials$offset)) {
-###    ts <- survival::untangle.specials(Terms, "offset")
-###    Terms  <- Terms[-ts$terms]
-###    offset <- m[[ts$vars]]
-###  }  
+  if (!is.null(offsetpos <- attributes(Terms)$specials$offset)) {
+    ts <- survival::untangle.specials(Terms, "offset")
+    Terms  <- Terms[-ts$terms]
+    offset <- m[[ts$vars]]
+  }  
   X <- model.matrix(Terms, m)
   if (!is.null(intpos  <- attributes(Terms)$intercept))
     X <- X[,-intpos,drop=FALSE]
