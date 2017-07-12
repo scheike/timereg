@@ -6,7 +6,7 @@
 \alias{cause.pchazard.sim}
 \title{Simulation of Piecewise constant hazard model (Cox).}
 \usage{
-pc.hazard(cumhazard, rr, cum.hazard = TRUE)
+pc.hazard(cumhazard, rr, entry = NULL, cum.hazard = TRUE, cause = 1)
 }
 \arguments{
 \item{cumhazard}{cumulative hazard, or piece-constant rates for periods
@@ -14,14 +14,17 @@ defined by first column of input.}
 
 \item{rr}{number of simulations or vector of relative risk for simuations.}
 
+\item{entry}{delayed entry time for simuations.}
+
 \item{cum.hazard}{specifies wheter input is cumulative hazard or rates.}
+
+\item{cause}{name of cause}
 }
 \description{
 Simulates data from piecwise constant baseline hazard that can also be of
 Cox type. Censor data at highest value of the break points.
 }
 \examples{
-
 
 rates <-  c(0,0.01,0.052,0.01,0.04)
 breaks <- c(0,10,   20,  30,   40)

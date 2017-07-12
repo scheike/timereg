@@ -2,9 +2,10 @@
 % Please edit documentation in R/sim-pc-hazard.r
 \name{sim.cox}
 \alias{sim.cox}
+\alias{read.fit}
 \title{Simulation of output from Cox model.}
 \usage{
-\method{sim}{cox}(cox, n, data = NULL, cens = NULL, rrc = NULL)
+\method{sim}{cox}(cox, n, data = NULL, cens = NULL, rrc = NULL, ...)
 }
 \arguments{
 \item{cox}{output form coxph or cox.aalen model fitting cox model.}
@@ -19,10 +20,12 @@ hazard given, if "is.scalar" then uses rate for exponential, and if not
 given then takes average rate of in simulated data from cox model.}
 
 \item{rrc}{possible vector of relative risk for cox-type censoring.}
+
+\item{...}{arguments for pc.hazard, for example entry-time}
 }
 \description{
 Simulates data that looks like fit from Cox model. Censor data automatically
-for highest value of the break points.
+for highest value of the event times by using cumulative hazard.
 }
 \examples{
 
@@ -35,9 +38,6 @@ cbind(cox$coef,cc$coef)
 
 cor(sim1[,c("vf","chf","wmi")])
 cor(TRACE[,c("vf","chf","wmi")])
-###library(mets)
-###dcor(sim1,~vf+chf+wmi)
-###dcor(TRACE,~vf+chf+wmi)
 
 cox <-  cox.aalen(Surv(time, status==9) ~ prop(vf)+prop(chf)+prop(wmi),TRACE,robust=0)
 sim2 <- sim.cox(cox,1000,data=TRACE)
@@ -47,6 +47,20 @@ plot(cox)
 lines(cc$cum,type="s",col=2)
 cbind(cox$gamma,cc$gamma)
 
+library(mets)
+cox <-  phreg1(Surv(time, status==9)~vf+chf+wmi,data=TRACE)
+sim3 <- sim.cox(cox,1000,data=TRACE)
+cc <-  phreg1(Surv(time, status)~vf+chf+wmi,data=sim3)
+cbind(cox$coef,cc$coef)
+baseplot.phreg(cox,se=TRUE)
+lines(cc$cumhaz,col=2)
+
+cox <-  phreg1(Surv(time,status==9)~strata(chf)+vf+wmi,data=TRACE)
+sim3 <- sim.cox(cox,1000,data=TRACE)
+cc <-   phreg1(Surv(time, status)~strata(chf)+vf+wmi,data=sim3)
+cbind(cox$coef,cc$coef)
+baseplot.phreg(cox)
+baseplot.phreg(cc,add=TRUE)
 }
 \author{
 Thomas Scheike
