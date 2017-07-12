@@ -611,7 +611,8 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 ###{{{ plot
 
 ##' @export
-baseplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,lty=NULL,col=NULL,legend=TRUE,
+baseplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,
+			    lty=NULL,col=NULL,legend=TRUE,
 			    ylab="Cumulative hazard",polygon=TRUE,level=0.95,stratas=NULL,...) {# {{{
 
    level <- -qnorm((1-level)/2)
@@ -627,17 +628,26 @@ baseplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,lty=NULL,co
    ## all strata
    if (is.null(stratas)) stratas <- 0:(x$nstrata-1) 
 
+   ltys <- lty
+   cols <- col
    if (length(stratas)>0 & x$nstrata>1) { ## with strata
       ms <- match(x$strata.name,names(x$model.frame))
       lstrata <- levels(x$model.frame[,ms])[(stratas+1)]
       stratn <-  substring(x$strata.name,8,nchar(x$strata.name)-1)
       stratnames <- paste(stratn,lstrata,sep=":")
-      if (is.null(lty)) ltys <- 1:length(stratas)
-      if (is.null(col)) cols <- 1:length(stratas)
+      if (!is.matrix(lty)) {
+         if (is.null(lty)) ltys <- 1:length(stratas) else if (length(lty)!=length(stratas)) ltys <- rep(lty[1],length(stratas))
+      } else ltys <- lty
+      if (!is.matrix(col)) {
+         if (is.null(col)) cols <- 1:length(stratas) else 
+		 if (length(col)!=length(stratas)) cols <- rep(col[1],length(stratas))
+      } else cols <- col
    } else { 
      stratnames <- "Baseline" 
-     if (is.null(lty)) ltys <- 1
-     if (is.null(col)) cols <- 1 
+     if (is.matrix(col))  cols <- col
+     if (is.null(col)) cols <- 1  else cols <- col[1]
+     if (is.matrix(lty))  ltys <- lty
+     if (is.null(lty)) ltys <- 1  else ltys <- lty[1]
    }
 
   if (!is.matrix(ltys))  ltys <- cbind(ltys,ltys,ltys)
