@@ -3,7 +3,6 @@
 \name{pc.hazard}
 \alias{pc.hazard}
 \alias{pchazard.sim}
-\alias{cause.pchazard.sim}
 \title{Simulation of Piecewise constant hazard model (Cox).}
 \usage{
 pc.hazard(cumhazard, rr, entry = NULL, cum.hazard = TRUE, cause = 1)

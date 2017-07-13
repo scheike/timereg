@@ -58,7 +58,7 @@
 #' lines(sss$cum,col=3,lwd=3)
 #' 
 #' @export
-#' @aliases pchazard.sim cause.pchazard.sim 
+#' @aliases pchazard.sim 
 pc.hazard <- function(cumhazard,rr,entry=NULL,cum.hazard=TRUE,cause=1)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
@@ -502,7 +502,7 @@ if (!is.list(coxs)) stop("Cox models in list form\n");
 #' #lines(tt,F1p(tt),col=2)
 #' #plot(pp,cause="2")
 #' #lines(tt,F1p(tt,lam0=0.1),col=2)
-#' @aliases simsubdist invF1
+#' @aliases simsubdist
 #' @export
 simsubdist <- function(cumhazard,rr,entry=NULL,type="cloglog",startcum=c(0,0),...)
 {# {{{
@@ -553,7 +553,8 @@ simsubdist <- function(cumhazard,rr,entry=NULL,type="cloglog",startcum=c(0,0),..
 #' @param F1 matrix with x, and F1(x) 
 #' @param u points for which to compute inverse
 #' @param entry possible delayed entry points
-#' @param cond 1 indcates that we draw given that this subdistribution is used, so scales mass to 1 to get distribution function.
+#' @param cond 1 indcates that we draw given that this subdistribution is used, so scales mass to 1 to get conditional 
+#'               distribution function
 #' @param ptrunc possible trunction weigth for delayed entry, if NULL then uses ptrunc=1-F1(entry)
 #' @author Thomas Scheike
 #' @keywords survival
@@ -690,8 +691,7 @@ simsubdist <- function(cumhazard,rr,entry=NULL,type="cloglog",startcum=c(0,0),..
 #' # lines(entry1+F1e[,1],F1e[,2],col=2)
 #' # lines(entry1+F2e[,1],F2e[,2],col=2)
 #' 
-#' #' @aliases invF1
-#' #' @export
+#' @export
 invF1 <- function(F1,u,entry=NULL,cond=1,ptrunc=NULL)
 {# {{{
   x <- breaks <- F1[,1]

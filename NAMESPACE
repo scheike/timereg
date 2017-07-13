@@ -82,6 +82,7 @@ export("aalen", ## {{{
        "semicox",	
        "semiregBase",
        "sindex.prodlim",
+       "simsubdist",
 ###    "pls.surv.cv",
        "pc.hazard",
        "pchazard.sim",
