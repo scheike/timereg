@@ -45,7 +45,6 @@ export("aalen", ## {{{
        "Gprop.odds",
 ###    "Gprop.odds.subdist",
        "is.diag",
-       "invsubdist",
        "invF1",
        "subdist",
        "krylow.pls",
