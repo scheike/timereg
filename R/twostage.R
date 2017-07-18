@@ -380,9 +380,8 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 
   if (any(abs(start.time)>0)) lefttrunk <- 1 else lefttrunk <- 0
   if (!is.null(start.time)) {
-  if (any(abs(start.time)>0)) lefttrunk <- 1  else lefttrunk <- 0;  
+      if (any(abs(start.time)>0)) lefttrunk <- 1  else lefttrunk <- 0;  
   } else lefttrunk <- 0
-
 
 if (!is.null(margsurv))  {
   if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen")  { ## {{{
@@ -460,10 +459,10 @@ if (!is.null(margsurv))  {
   ratesim<-rate.sim; 
 ###  pxz <- px + pz;
 
-   if (!is.null(random.design)) { ### different parameters for Additive random effects 
+   if (!is.null(random.design)) { ### different parameters for Additive random effects # {{{
      dep.model <- 3
 
-###     if (is.null(random.design)) random.design <- matrix(1,antpers,1); 
+###  if (is.null(random.design)) random.design <- matrix(1,antpers,1); 
      dim.rv <- ncol(random.design); 
      if (is.null(theta.des)) theta.des<-diag(dim.rv);
 
@@ -471,13 +470,19 @@ if (!is.null(margsurv))  {
 ###     ptheta <- dimpar <- ncol(theta.des); 
 ###   if (dim(theta.des)[2]!=ncol(random.design)) 
 ###   stop("nrow(theta.des)!= ncol(random.design),\nspecifies restrictions on paramters, if theta.des not given =diag (free)\n"); 
- } else { random.design <- matrix(0,1,1);  additive.gamma.sum <- matrix(1,1,1); }
-
+ } else { random.design <- matrix(0,1,1);  dim.rv <- 1; 
+           additive.gamma.sum <- matrix(1,1,1); 
+   }
 
   if (is.null(theta.des)) ptheta<-1; 
   if (is.null(theta.des)) theta.des<-matrix(1,antpers,ptheta); ###  else theta.des<-as.matrix(theta.des); 
+###    ptheta<-ncol(theta.des); 
+###    if (nrow(theta.des)!=antpers) stop("Theta design does not have correct dim");
+
   if (length(dim(theta.des))==3) ptheta<-dim(theta.des)[2] else if (length(dim(theta.des))==2) ptheta<-ncol(theta.des)
   if (nrow(theta.des)!=antpers & dep.model!=3 ) stop("Theta design does not have correct dim");
+
+  if (length(dim(theta.des))!=3) theta.des <- as.matrix(theta.des)
 
   if (is.null(theta)==TRUE) {
          if (var.link==1) theta<- rep(-0.7,ptheta);  
@@ -490,7 +495,6 @@ if (!is.null(margsurv))  {
          theta<-rep(theta[1],ptheta); 
   }
   theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
-  if (length(dim(theta.des))!=3) theta.des <- as.matrix(theta.des)
 
   if (maxclust==1) stop("No clusters, maxclust size=1\n"); 
 
@@ -499,12 +503,12 @@ if (!is.null(margsurv))  {
 
   if (!is.null(pairs)) { pair.structure <- 1;} else  pair.structure <- 0;  
 
-  print(c(pair.structure,dep.model,fix.baseline))
-  print(head(theta.des))
-  print(c(case.control,ascertained))
+## ppprint 
+###  print(c(pair.structure,dep.model,fix.baseline))
+###  print(head(theta.des))
+###  print(c(case.control,ascertained))
 
   if (pair.structure==1 & dep.model==3) { ## {{{ 
-
 ### something with dimensions of rv.des 
 ### theta.des
        antpairs <- nrow(pairs); 
@@ -547,7 +551,8 @@ if (!is.null(margsurv))  {
        clusterindex <- pairs-1; 
        antpairs <- nrow(pairs); 
        pairs.rvs <- 1
-  }
+  }# }}}
+  
   ## }}}
 
 ###  setting up arguments for Aalen baseline profile estimates
@@ -593,7 +598,6 @@ if (!is.null(margsurv))  {
         }
 
 	## }}} 
-
 
        	#### organize subject specific random variables and design
         ###  for additive gamma model
@@ -721,8 +725,6 @@ if (!is.null(margsurv))  {
 	 xjump <- array(0,c(1,1,1)); dBaalen <- matrix(0,1,1); nrv.des <- 3
  } ## }}} 
 
-
-
   loglike <- function(par) 
   { ## {{{
 
@@ -815,6 +817,9 @@ if (!is.null(margsurv))  {
 
 ###      browser()
 ###      print(dim(random.design))
+
+	 print("er vi her marg"); 
+
 
           outl<-.Call("twostageloglikeRVpairs", ## {{{
           icause=status,ipmargsurv=psurvmarg, 
@@ -941,15 +946,25 @@ if (!is.null(margsurv))  {
 
 ###	 if (fix.baseline==1) if (is.null(psurvmarg)) stop("must provide baselines or set fix.baseline=0\n"); 
 
-###         print(dim(psurvmarg)); print(dim(ptrunc))
-###         print(summary(psurvmarg)); print(summary(ptrunc))
+###	 print("er vi her surv "); 
+###	 print(fix.baseline)
+###         print(dim(as.matrix(psurvmarg))); print(dim(as.matrix(ptrunc)))
+###	 print(dim(pairs))
+###	 print(head(pairs))
 ###         print(summary(psurvmarg[pairs,])); print(summary(ptrunc[pairs,]))
 
-      outl<-.Call("survivalloglikeRVpairs",icause=status,ipmargsurv=psurvmarg, 
+      ### cumulative hazard for this model  when fix.baseline==1
+      if (fix.baseline==1) {
+	      psurvmarg <- -log(psurvmarg); 
+	      ptrunc <- -log(ptrunc); 
+      }
+###      print(summary(psurvmarg)); print(summary(ptrunc))
+
+      outl<-.Call("survivalloglikeRVpairs",icause=status,ipmargsurv=as.matrix(psurvmarg), 
       itheta=c(partheta),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
       icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
       iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
-      itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
+      itrunkp=as.matrix(ptrunc),istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
       irvdes=random.design,
       idimthetades=dim(theta.des),idimrvdes=dim(random.design),
       irvs=pairs.rvs,iags=additive.gamma.sum,ientry.cause=entry.cause,iascertained=(ascertained+case.control>0)*1) 
@@ -1009,8 +1024,8 @@ if (!is.null(margsurv))  {
   } ## }}}
 
   if (score.method=="optimize" && ptheta!=1) {
-  cat("optimize only works for d==1, score.mehod set to nlminb \n"); 
-  score.method <- "nlminb";
+     cat("optimize only works for d==1, score.mehod set to nlminb \n"); 
+     score.method <- "nlminb";
   } 
 
   score1 <- NULL

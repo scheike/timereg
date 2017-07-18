@@ -132,7 +132,7 @@ class(out) <- "gof.phreg"
 return(out)
 }# }}}
 
-##' Stratified baseline graphical GOF test for Cox covariates in  PH regression
+##' Stratified baseline graphical GOF test for Cox covariates in PH regression
 ##'
 ##' Looks at stratified baseline in Cox model and plots all baselines versus each
 ##' other to see if lines are straight, with 50 resample versions under the 
@@ -154,8 +154,8 @@ return(out)
 ##' m1 <- phreg1(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE) 
 ##' m2 <- phreg1(Surv(time,status==9)~vf+strata(chf)+wmi,data=TRACE) 
 ##' par(mfrow=c(2,2))
-##' plot(m1)
-##' plot(m2)
+##' gofG.phreg(m1)
+##' gofG.phreg(m2)
 ##' 
 ##' @export
 gofG.phreg  <- function(x,coefcox,sim=1,silent=1,...)

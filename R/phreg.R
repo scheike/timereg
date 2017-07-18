@@ -122,7 +122,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
   if (is.null(offset)) offset <- rep(0,length(exit)) 
   if (is.null(weights)) weights <- rep(1,length(exit)) 
 
-   Zcall <- matrix(1,1,1) ## to not use for ZX products in  
+   Zcall <- matrix(1,1,1) ## to not use for ZX products when Z is not given 
    if (!is.null(Z)) Zcall <- Z
 
 	trunc <- (!is.null(entry))
@@ -503,12 +503,12 @@ return(res)
 
 ###{{{ predict with se for baseline
 
-predictPhreg1 <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
-    	x <- x$jumptimes
-    S0 <- x$S0
-    II <- x$II ###  -solve(x$hessian)
-    strata <- x$strata[x$jumps]
-    nstrata <- x$nstrata
+predictPhreg <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
+###    x <- x$jumptimes
+###    S0 <- x$S0
+###    II <- x$II ###  -solve(x$hessian)
+###    strata <- x$strata[x$jumps]
+###    nstrata <- x$nstrata
 
     ## Brewslow estimator
     if (is.null(x$cumhaz)) {
@@ -529,8 +529,7 @@ predictPhreg1 <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
     colnames(chaz) <- c("time","chaz")
     colnames(se.chaz) <- c("time","se.chaz")
 
-
-    if (band==TRUE) { ## on log-scale  for one strata
+    if (band==TRUE) { ## on log-scale  for one strata# {{{
       ii <- -solve(x$hessian)
       Ubeta <- x$U
       betaiid <- t(ii %*% t(Ubeta))
@@ -550,8 +549,7 @@ predictPhreg1 <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
 ###      simband <-  .Call("simBandCumHazCox",rr/x$S0,Pt,betaiid,n.sim,sig,se.chazexb[,2],PACKAGE="mets")
 ###      ## coefficients for uniform bands on log-scale 
 ###      uband <- apply(simband$supUsim,2,percen,per=1-sig);
-    }
-
+    }# }}}
 
     if (!is.null(X)) {
       H <- exp(X%*%beta)
@@ -610,6 +608,39 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 
 ###{{{ plot
 
+
+##' Plotting the baslines of stratified Cox 
+##'
+##' Plotting the baslines of stratified Cox 
+##' @param x phreg object
+##' @param se to include standard errors
+##' @param time to plot for specific time variables
+##' @param add to add to previous plot 
+##' @param ylim to give ylim 
+##' @param lty to specify lty of components
+##' @param col to specify col of components
+##' @param legend to specify col of components
+##' @param ylab to specify ylab 
+##' @param polygon to get standard error in shaded form
+##' @param level of standard errors
+##' @param stratas wich strata to plot 
+##' @param ... Additional arguments to lower level funtions
+##' @author Klaus K. Holst, Thomas Scheike
+##' @export
+##' @aliases phreg phreg.par
+
+##' @examples
+##' data(TRACE)
+##' dcut(TRACE) <- ~.
+##' out1 <- phreg1(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
+##' 
+##' par(mfrow=c(2,2))
+##' baseplot.phreg(out1)
+##' baseplot.phreg(out1,stratas=c(0,3))
+##' baseplot.phreg(out1,stratas=c(0,3),col=2:3,lty=1:2,se=TRUE)
+##' baseplot.phreg(out1,stratas=c(0),col=2,lty=2,se=TRUE,polygon=FALSE)
+##' baseplot.phreg(out1,stratas=c(0),col=matrix(c(2,1,3),1,3),
+##'                                  lty=matrix(c(1,2,3),1,3),se=TRUE,polygon=FALSE)
 ##' @export
 baseplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,
 			    lty=NULL,col=NULL,legend=TRUE,
@@ -708,7 +739,6 @@ baseplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,
     legend("topleft",legend=stratnames,col=cols[,1],lty=ltys[,1])
 
 }# }}}
-
 
 ##' @export
 lines.phreg <- function(x,...,add=TRUE) plot(x,...,add=add)

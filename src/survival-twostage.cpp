@@ -243,7 +243,6 @@ cube dd(d.n_elem,x1x2.n_rows,2);
 return(dd); 
 } // }}} 
 
-
 double survivalRVC(vec theta,mat thetades,mat ags,int cause1,int cause2,vec cif1,vec cif2,mat x1, mat x2, vec &dp, vec &alllike) 
 { // {{{
   double lamtot1=1,valr=1;
@@ -523,17 +522,17 @@ double survivalRVC2(vec theta,mat thetades,mat ags,int cause1,int cause2,vec cif
   if (cause1==0) icause1=1; 
   if (cause2==0) icause2=1; 
 
-//  int test=0,itest=0;
-//  if (itest==1) { // {{{
-//	  theta.print("theta"); 
-//	  thetades.print("theta-des"); 
-//	  printf(" %d %d \n",cause1,cause2); 
-//	  cif1.print("ci1"); 
-//	  cif2.print("ci1"); 
-//	  x1.print("x1"); 
-//	  x2.print("x2"); 
-//	  ags.print("ags"); 
-//  } // }}} 
+  int itest=0;
+  if (itest==1) { // {{{
+	  theta.print("theta"); 
+	  thetades.print("theta-des"); 
+	  printf(" %d %d \n",cause1,cause2); 
+	  cif1.print("ci1"); 
+	  cif2.print("ci1"); 
+	  x1.print("x1"); 
+	  x2.print("x2"); 
+	  ags.print("ags"); 
+  } // }}} 
 
 int type=0; 
 if (cause1==0 && cause2==0) type=0; 
@@ -573,6 +572,7 @@ vec x1f1, x2f2;
 x1f1= trans(x1) * cif1; 
 x2f2= trans(x2) * cif2; 
 
+//printf(" hej 1  \n"); 
 //if (test==1) printf(" hej\n"); 
 //if (test==1) { x1f1.print("x1f1"); } 
 //ags.print("ags"); theta.print("par"); 
@@ -605,6 +605,8 @@ D133(i)  =  y* pow(x,y)* pow(x+z,(-y-2))+(y+1)*pow(x,y)*
 D233(i) =  pow(y,2)* (y+1)* pow(x,(y-1))* pow(x+z,(-y-2))+(-y-2)* y* (y+1)* pow(x,y)* pow(x+z,(-y-3));
 D333(i) = y* (y+1)* (y+2)* (-pow(x,y))* pow(x+z,(-y-3));
 }
+
+//printf(" hej  \n"); 
 
 
 //if (test==3) {
@@ -639,6 +641,8 @@ msum=trans(ags.row(i));
 dthetaj = (mdesi*D1(i)+msum*D2(i));
 dtheta =  dtheta+dthetaj/resv(i);
 //
+//printf(" hej 2  \n"); 
+
 if (type==1 || type==3) {
 dtj = D3(i)*x1(icause1-1,i);
 dt  = dt+dtj/resv(i);
@@ -655,6 +659,7 @@ ds  = ds+dsj/resv(i);
 //dcifdt=dcifdt+(resv(i)*d3like2-dtj*d3like)/pow(resv(i),2);
 //d3like3=D33(i)*x2(icause2-1,i)*x2.col(i); 
 
+//printf(" hej 3  \n"); 
 
 // {{{  2nd deriv 
 
@@ -676,6 +681,8 @@ dsdt     = dsdt+numdsdtj/pow(resv(i),2);
 }
 // }}} 
 
+//printf(" hej 4  \n"); 
+
 // {{{ 3rd deriv 
 if (type==3) {
 dthetad33 = (mdesi*D133(i)+msum*D233(i))*x2(icause2-1,i)*x1(icause1-1,i);
@@ -689,6 +696,8 @@ dtdtds = dtdtds+(led3-led2)/pow(resv(i),4);
 
 } // }}} 
 
+//printf(" hej 5  \n"); 
+
 vec dttheta(lpar),dstheta(lpar),d3(lpar); 
 if (type==1 ) dttheta = dtheta*dt*like + like*dtt;
 if (type==2 ) dstheta = dtheta*ds*like + like*dts;
@@ -701,6 +710,7 @@ dtheta =  dtheta *like;
 dt = like*dt;
 ds = like*ds;
 
+//printf(" hej 6  \n"); 
 //printf(" %lf %lf \n",dt,ds); 
 // }}} 
 
@@ -725,11 +735,13 @@ alllike(5)=cause2;
 //printf("%d %d %lf %lf %lf %lf \n",cause1,cause2,like,dt,ds,dsdt); 
 //alllike.print("all-2"); 
 
+
 double valr=1; 
 if (type==0) {  valr=like;  dp=-1*dtheta; } 
 if (type==1) {  valr=-1*dt; dp=dttheta ; } 
 if (type==2) {  valr=-1*ds; dp=dstheta ; } 
 if (type==3) {  valr=dsdt;  dp=-1*d3; } 
+
 
 return(valr); 
 } // }}}
@@ -1100,7 +1112,7 @@ if (varlink==1) theta=exp(theta);
  int lpar=thetades.n_cols; 
 
 vec dp(lpar); dp.fill(0); 
-vec all(4); 
+vec all(6); 
 
 double like=0; 
 if (status1==0 && status2==0) { // {{{
@@ -1114,6 +1126,85 @@ like=survivalRVC(theta,thetades,ags,status1,0,cif1,cif2,x1,x2,dp,all) ;
 } // }}}
 if (status1!=0 && status2!=0) { // {{{
 like=survivalRVC(theta,thetades,ags,status1,status2,cif1,cif2,x1,x2,dp,all);
+} // }}}
+
+ressl["like"]=like; 
+if (varlink==1) dp=dp % theta;  
+ressl["dlike"]=dp;
+
+ressl["theta"]=theta; 
+ressl["par.des"]=thetades; 
+ressl["varlink"]=varlink; 
+ressl["alllike"]=all; 
+
+return(ressl);  
+} catch( std::exception &ex ) {
+    forward_exception_to_r( ex );
+  } catch(...) {  
+    ::Rf_error( "c++ exception (unknown reason)" ); 
+  }
+  return R_NilValue; // -Wall
+
+} // }}}
+
+RcppExport SEXP survivalRV2(SEXP itheta,SEXP istatus1,SEXP istatus2,
+	   	     SEXP icif1,SEXP icif2,
+                     SEXP irv1, SEXP irv2,SEXP ithetades,
+		     SEXP iags, SEXP ivarlink)
+{ // {{{
+
+	try {
+ colvec theta = Rcpp::as<colvec>(itheta);
+ mat thetades = Rcpp::as<mat>(ithetades);
+ mat x1= Rcpp::as<mat>(irv1);
+ mat x2= Rcpp::as<mat>(irv2);
+ mat ags= Rcpp::as<mat>(iags);
+// colvec x2= Rcpp::as<colvec>(irv2);
+ vec cif1 = Rcpp::as<vec>(icif1);
+ vec cif2 = Rcpp::as<vec>(icif2);
+ int varlink = Rcpp::as<int>(ivarlink);
+ int status1 = Rcpp::as<int>(istatus1);
+ int status2 = Rcpp::as<int>(istatus2);
+
+ int test=0; 
+ if (test==1) {
+	 theta.print("the"); 
+	 thetades.print("the"); 
+	 ags.print("ags"); 
+	 x1.print("x1 "); 
+	 x2.print("x2 "); 
+	 cif1.print("cif"); 
+	 cif2.print("cif"); 
+ }
+
+List ressl; 
+ressl["par"]=theta; 
+
+if (varlink==1) theta=exp(theta); 
+
+ colvec dL=theta; dL.fill(0); 
+// double f1,f2;
+ //double cifs=cif1+cif2; 
+ //double S=1+(cifs*(theta-1)); 
+ colvec par = thetades * theta; 
+
+ int lpar=thetades.n_cols; 
+
+vec dp(lpar); dp.fill(0); 
+vec all(6); 
+
+double like=0; 
+if (status1==0 && status2==0) { // {{{
+like=survivalRVC2(theta,thetades,ags,0,0,cif1,cif2,x1,x2,dp,all) ;
+} // }}}
+if (status1==0 && status2!=0) { // {{{
+like=survivalRVC2(theta,thetades,ags,0,status2,cif1,cif2,x1,x2,dp,all) ;
+} // }}}
+if (status1!=0 && status2==0) { // {{{
+like=survivalRVC2(theta,thetades,ags,status1,0,cif1,cif2,x1,x2,dp,all) ;
+} // }}}
+if (status1!=0 && status2!=0) { // {{{
+like=survivalRVC2(theta,thetades,ags,status1,status2,cif1,cif2,x1,x2,dp,all);
 } // }}}
 
 ressl["like"]=like; 
@@ -2839,7 +2930,7 @@ for (j=0;j<antclust;j++) { // {{{
 //	   test.print("test"); 
 	}
 
-           if (any(trunkp.row(i)>0) || any(trunkp.row(k)>0)) { //  
+           if (any(trunkp.row(i)>0) || any(trunkp.row(k)>0)) { //  /*{{{*/
 	      vec Lit=trans(trunkp.row(i)); 
 	      vec Lkt=trans(trunkp.row(k)); 
               if (j<-10) {  
@@ -2861,14 +2952,21 @@ for (j=0;j<antclust;j++) { // {{{
 	      ssf+=weights(i)*(log(ll)-log(llt));
 	      loglikecont=(log(ll)-log(llt));
 	      vthetascore=dplack/ll-dplackt/llt; 
-	   } else {
+	   /*}}}*/
+	   } else {/*{{{*/
 //	      printf("hhhhh %d  %d %d %d %d \n",ascertained,i,k,(int) ci,(int) ck); 
 	      ll=survivalRVC2(etheta,thetadesv,ags,cause(i),cause(k),Li,Lk,rv1,rv2,dplack,allvec);
 	      ssf+=weights(i)*log(ll); 
 	      loglikecont=log(ll);
-	      if (j<-10)    { Rprintf("%lf %lf \n",weights(i),ll); allvec.print("allvec"); dplack.print("dll"); }
+	      if (j<-10)    { 
+		etheta.print("theta"); 
+		Li.print("Li"); Lk.print("Lk"); 
+		Rprintf("%d %d  %lf %lf \n",cause(i),cause(k),weights(i),ll); 
+		allvec.print("allvec"); 
+		dplack.print("dll"); 
+	      }
 	      vthetascore=dplack/ll; 
-	   } 
+	   } /*}}}*/
 	   // }}} 
 	} else if (depmodel==2) { 
         // not possible only additive gamma model 
