@@ -61,8 +61,8 @@ F1p<-function(t,lam0=0.4,beta=0.3,x=0) # proportional version
 n=10000
 tt=seq(0,3,by=.01)
 tt=seq(0,3,by=.01)
-t1 <- invF1(cbind(tt,F1p(tt)),runif(n))
-t2 <- invF1(cbind(tt,F1p(tt,lam0=0.1)),runif(n))
+t1 <- invsubdist(cbind(tt,F1p(tt)),runif(n))
+t2 <- invsubdist(cbind(tt,F1p(tt,lam0=0.1)),runif(n))
 rt <- rbinom(n,1,(F1p(3)+F1p(3,lam0=0.1)))
 rb <- rbinom(n,1,F1p(3)/(F1p(3)+F1p(3,lam0=0.1)))
 cause=ifelse(rb==1,1,2)

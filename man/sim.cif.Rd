@@ -11,7 +11,7 @@
   cens = NULL, rrc = NULL, cumstart = c(0, 0), ...)
 }
 \arguments{
-\item{cif}{output form prop.odds.subdist or ccr (cmprsk), can also call invF1 with
+\item{cif}{output form prop.odds.subdist or ccr (cmprsk), can also call invsubdist with
 with cumulative and linear predictor}
 
 \item{n}{number of simulations.}
@@ -31,7 +31,7 @@ given then takes average rate of in simulated data from cox model.}
 
 \item{cumstart}{to start cumulatives at time 0 in 0.}
 
-\item{...}{arguments for invF1}
+\item{...}{arguments for invsubdist}
 }
 \description{
 Simulates data that looks like fit from fitted cumulative incidence model

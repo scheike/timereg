@@ -474,8 +474,8 @@ if (!is.list(coxs)) stop("Cox models in list form\n");
 #' n=10000
 #' tt=seq(0,3,by=.01)
 #' tt=seq(0,3,by=.01)
-#' t1 <- invF1(cbind(tt,F1p(tt)),runif(n))
-#' t2 <- invF1(cbind(tt,F1p(tt,lam0=0.1)),runif(n))
+#' t1 <- invsubdist(cbind(tt,F1p(tt)),runif(n))
+#' t2 <- invsubdist(cbind(tt,F1p(tt,lam0=0.1)),runif(n))
 #' rt <- rbinom(n,1,(F1p(3)+F1p(3,lam0=0.1)))
 #' rb <- rbinom(n,1,F1p(3)/(F1p(3)+F1p(3,lam0=0.1)))
 #' cause=ifelse(rb==1,1,2)
@@ -562,16 +562,16 @@ simsubdist <- function(cumhazard,rr,entry=NULL,type="cloglog",startcum=c(0,0),..
 #' F1 <- cbind(c(0,5,8,10),c(0,0.1,0.3,0.9))
 #' plot(F1,type="l")
 #' u <- runif(100)
-#' Fiu <- invF1(F1,u,cond=0)
+#' Fiu <- invsubdist(F1,u,cond=0)
 #' points(Fiu$time,u,pch="x")
 #' 
 #' F1cond <- F1
 #' F1cond[,2] <- F1cond[,2]/0.9
 #' plot(F1cond,type="l")
 #' u <- runif(100)
-#' Ficond <- invF1(F1cond,u,cond=0)
+#' Ficond <- invsubdist(F1cond,u,cond=0)
 #' points(Ficond$time,u,pch="-")
-#' Fiu <- invF1(F1,u,cond=1)
+#' Fiu <- invsubdist(F1,u,cond=1)
 #' points(Fiu$time,u,pch="x")
 #' 
 #' entry <- 4
@@ -587,10 +587,10 @@ simsubdist <- function(cumhazard,rr,entry=NULL,type="cloglog",startcum=c(0,0),..
 #' ###
 #' plot(F1entry5,ylim=c(0,1),type="l")
 #' u <- runif(100)
-#' Fiu <- invF1(F1entry5,u,cond=0)
+#' Fiu <- invsubdist(F1entry5,u,cond=0)
 #' points(Fiu$time,u,pch="-")
 #' ###
-#' Fiu2 <- invF1(F1,u,cond=0,entry=entry)
+#' Fiu2 <- invsubdist(F1,u,cond=0,entry=entry)
 #' points(Fiu2$time-entry,u,pch="x")
 #' sum(Fiu2$time-entry-Fiu$time)
 #' 
@@ -598,9 +598,9 @@ simsubdist <- function(cumhazard,rr,entry=NULL,type="cloglog",startcum=c(0,0),..
 #' F1ce[,2] <- F1ce[,2]/tail(F1entry5[,2],1)
 #' plot(F1ce,type="l")
 #' u <- runif(100)
-#' Fi1ce <- invF1(F1ce,u,cond=0)
+#' Fi1ce <- invsubdist(F1ce,u,cond=0)
 #' points(Fi1ce$time,u,pch="-")
-#' Fice <- invF1(F1,u,cond=1,entry=entry)
+#' Fice <- invsubdist(F1,u,cond=1,entry=entry)
 #' points(Fice$time-entry,u,pch="x")
 #' sum(Fice$time-entry-Fi1ce$time)
 #' 
@@ -616,7 +616,7 @@ simsubdist <- function(cumhazard,rr,entry=NULL,type="cloglog",startcum=c(0,0),..
 #' ###entry <- rep(3,n)
 #' u <- runif(n+10000)
 #' ###
-#' Fiu <- invF1(F1,u,cond=0,entry=entry)
+#' Fiu <- invsubdist(F1,u,cond=0,entry=entry)
 #' ###
 #' # library(prodlim)
 #' # pp <- prodlim(Hist(time,status,entry=entry)~+1,data=Fiu)
@@ -671,8 +671,8 @@ simsubdist <- function(cumhazard,rr,entry=NULL,type="cloglog",startcum=c(0,0),..
 #' F1entry <- subdist(F1,entry)[,2]
 #' F2entry <- subdist(F2,entry)[,2]
 #' ptrunc <- 1-( F1entry+F2entry)
-#' Fiu1 <- invF1(F1,u,cond=1,entry=entry,ptrunc=ptrunc)
-#' Fiu2 <- invF1(F1,u,cond=1,entry=entry,ptrunc=ptrunc)
+#' Fiu1 <- invsubdist(F1,u,cond=1,entry=entry,ptrunc=ptrunc)
+#' Fiu2 <- invsubdist(F1,u,cond=1,entry=entry,ptrunc=ptrunc)
 #' ###
 #' ptot <- (tail(F1[,2],1)+tail(F2[,2],1)-F1entry-F2entry)/(ptrunc)
 #' rt <- rbinom(n+10000,1,ptot)
@@ -692,7 +692,7 @@ simsubdist <- function(cumhazard,rr,entry=NULL,type="cloglog",startcum=c(0,0),..
 #' # lines(entry1+F2e[,1],F2e[,2],col=2)
 #' 
 #' @export
-invF1 <- function(F1,u,entry=NULL,cond=1,ptrunc=NULL)
+invsubdist <- function(F1,u,entry=NULL,cond=1,ptrunc=NULL)
 {# {{{
   x <- breaks <- F1[,1]
   y <- F1t <- F1[,2] 
@@ -745,7 +745,7 @@ subdist <- function(F1,times)
 #' 
 #' Simulates data that looks like fit from fitted cumulative incidence model
 #' 
-#' @param cif output form prop.odds.subdist or ccr (cmprsk), can also call invF1 with
+#' @param cif output form prop.odds.subdist or ccr (cmprsk), can also call invsubdist with
 #'  with cumulative and linear predictor 
 #' @param n number of simulations.
 #' @param data to extract covariates for simulations (draws from observed
@@ -757,7 +757,7 @@ subdist <- function(F1,times)
 #' given then takes average rate of in simulated data from cox model.
 #' @param rrc possible vector of relative risk for cox-type censoring.
 #' @param cumstart to start cumulatives at time 0 in 0. 
-#' @param ... arguments for invF1
+#' @param ... arguments for invsubdist
 #' @author Thomas Scheike
 #' @keywords survival
 #' @examples
