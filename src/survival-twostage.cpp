@@ -522,17 +522,17 @@ double survivalRVC2(vec theta,mat thetades,mat ags,int cause1,int cause2,vec cif
   if (cause1==0) icause1=1; 
   if (cause2==0) icause2=1; 
 
-  int itest=0;
-  if (itest==1) { // {{{
-	  theta.print("theta"); 
-	  thetades.print("theta-des"); 
-	  printf(" %d %d \n",cause1,cause2); 
-	  cif1.print("ci1"); 
-	  cif2.print("ci1"); 
-	  x1.print("x1"); 
-	  x2.print("x2"); 
-	  ags.print("ags"); 
-  } // }}} 
+//  int itest=0;
+//  if (itest==1) { // {{{
+//	  theta.print("theta"); 
+//	  thetades.print("theta-des"); 
+//	  printf(" %d %d \n",cause1,cause2); 
+//	  cif1.print("ci1"); 
+//	  cif2.print("ci1"); 
+//	  x1.print("x1"); 
+//	  x2.print("x2"); 
+//	  ags.print("ags"); 
+//  } // }}} 
 
 int type=0; 
 if (cause1==0 && cause2==0) type=0; 
@@ -540,14 +540,18 @@ if (cause1!=0 && cause2==0) type=1;
 if (cause1==0 && cause2!=0) type=2; 
 if (cause1!=0 && cause2!=0) type=3; 
 
+
  colvec dL=theta; dL.fill(0); 
  colvec par = thetades * theta; 
 
 // if (test==1) { cif1.print("c1"); x1.print("x1"); }
 // if (test==1) { theta.print("theta"); thetades.print("t-des "); par.print("pp"); }
 
+//printf(" hej 1  \n"); 
+
 vec sumtheta=ags * theta; 
 
+//printf(" hej 2  \n"); 
 // test=3; 
 // wall_clock timer; 
 // timer.tic(); 
@@ -572,7 +576,6 @@ vec x1f1, x2f2;
 x1f1= trans(x1) * cif1; 
 x2f2= trans(x2) * cif2; 
 
-//printf(" hej 1  \n"); 
 //if (test==1) printf(" hej\n"); 
 //if (test==1) { x1f1.print("x1f1"); } 
 //ags.print("ags"); theta.print("par"); 
@@ -714,6 +717,7 @@ ds = like*ds;
 //printf(" %lf %lf \n",dt,ds); 
 // }}} 
 
+
 //if (test==3) {
 // double nt3 = timer.toc();
 // printf("timer-loop 3 %lf \n",100000*nt3); 
@@ -735,13 +739,11 @@ alllike(5)=cause2;
 //printf("%d %d %lf %lf %lf %lf \n",cause1,cause2,like,dt,ds,dsdt); 
 //alllike.print("all-2"); 
 
-
 double valr=1; 
 if (type==0) {  valr=like;  dp=-1*dtheta; } 
 if (type==1) {  valr=-1*dt; dp=dttheta ; } 
 if (type==2) {  valr=-1*ds; dp=dstheta ; } 
 if (type==3) {  valr=dsdt;  dp=-1*d3; } 
-
 
 return(valr); 
 } // }}}
@@ -1068,13 +1070,70 @@ if (cause1!=0 ) { valr=-1*dt; dp=dttheta;   ddp=-1*dtheta; }
 return(valr); 
 } // }}}
 
+RcppExport SEXP RsurvivalRVCmarg(SEXP itheta, 
+	                 	 SEXP ithetades, 
+				 SEXP istatus1,
+				 SEXP icif1,
+				 SEXP irv1, 
+				 SEXP iags, 
+				 SEXP ivarlink)
+{ // {{{
+try {
+ colvec theta = Rcpp::as<colvec>(itheta);
+ mat thetades = Rcpp::as<mat>(ithetades);
+ mat x1= Rcpp::as<mat>(irv1);
+ mat ags= Rcpp::as<mat>(iags);
+ vec cif1 = Rcpp::as<vec>(icif1);
+ int varlink = Rcpp::as<int>(ivarlink);
+ int status1 = Rcpp::as<int>(istatus1);
+// IntegerVector status1(istatus1);
+
+// int nn=status1.n_rows(); 
+// int nn2=cif1.n_rows(); 
+// printf(" %d %d \n",nn,nn2); 
+
+
+ int test=0; 
+ if (test==1) {
+	 theta.print("the"); thetades.print("the"); 
+	 ags.print("ags"); x1.print("x1 "); cif1.print("cif"); 
+ }
+
+int lpar=thetades.n_cols; 
+vec dp(lpar);   dp.fill(0); 
+vec ddp(lpar); ddp.fill(0); 
+vec all(6); 
+//vec like(nn); 
+
+//for (int i=0; i<nn ; i++) { 
+double like=survivalRVCmarg(theta,thetades,ags,status1,cif1,x1,dp,ddp,all); 
+//}
+
+List ressl; 
+ressl["like"]=like; 
+if (varlink==1) dp=dp % theta;  
+ressl["dlike"]=dp;
+ressl["theta"]=theta; 
+ressl["par.des"]=thetades; 
+ressl["varlink"]=varlink; 
+ressl["alllike"]=all; 
+
+return(ressl);  
+} catch( std::exception &ex ) {
+    forward_exception_to_r( ex );
+  } catch(...) {  
+    ::Rf_error( "c++ exception (unknown reason)" ); 
+  }
+  return R_NilValue; // -Wall
+} // }}}
+
+
 RcppExport SEXP survivalRV(SEXP itheta,SEXP istatus1,SEXP istatus2,
 	   	     SEXP icif1,SEXP icif2,
                      SEXP irv1, SEXP irv2,SEXP ithetades,
 		     SEXP iags, SEXP ivarlink)
 { // {{{
-
-	try {
+try {
  colvec theta = Rcpp::as<colvec>(itheta);
  mat thetades = Rcpp::as<mat>(ithetades);
  mat x1= Rcpp::as<mat>(irv1);
@@ -1131,7 +1190,6 @@ like=survivalRVC(theta,thetades,ags,status1,status2,cif1,cif2,x1,x2,dp,all);
 ressl["like"]=like; 
 if (varlink==1) dp=dp % theta;  
 ressl["dlike"]=dp;
-
 ressl["theta"]=theta; 
 ressl["par.des"]=thetades; 
 ressl["varlink"]=varlink; 
@@ -1152,8 +1210,7 @@ RcppExport SEXP survivalRV2(SEXP itheta,SEXP istatus1,SEXP istatus2,
                      SEXP irv1, SEXP irv2,SEXP ithetades,
 		     SEXP iags, SEXP ivarlink)
 { // {{{
-
-	try {
+try {
  colvec theta = Rcpp::as<colvec>(itheta);
  mat thetades = Rcpp::as<mat>(ithetades);
  mat x1= Rcpp::as<mat>(irv1);
@@ -1166,16 +1223,16 @@ RcppExport SEXP survivalRV2(SEXP itheta,SEXP istatus1,SEXP istatus2,
  int status1 = Rcpp::as<int>(istatus1);
  int status2 = Rcpp::as<int>(istatus2);
 
- int test=0; 
- if (test==1) {
-	 theta.print("the"); 
-	 thetades.print("the"); 
-	 ags.print("ags"); 
-	 x1.print("x1 "); 
-	 x2.print("x2 "); 
-	 cif1.print("cif"); 
-	 cif2.print("cif"); 
- }
+// int test=1; 
+// if (test==1) {
+//	 theta.print("the"); 
+//	 thetades.print("the"); 
+//	 ags.print("ags"); 
+//	 x1.print("x1 "); 
+//	 x2.print("x2 "); 
+//	 cif1.print("cif"); 
+//	 cif2.print("cif"); 
+// }
 
 List ressl; 
 ressl["par"]=theta; 
@@ -2723,18 +2780,24 @@ return(res);
 // here consider (V^T Z) hazard(t,X)
 // where hazard(t,X) is given as pmargsurv 
 //
-//This version of the program specifies which pairs that should be considered 
+// This version of the program specifies which pairs that should be considered 
+// in addition and more importantly the random effects specifiation is within 
+// each pair, therefore all needed quantities comes for each pair : 
+// theta.des and the random effects vectors, cluster and pair id's
+// cluster og secluster now also follows the pairs 
 //
-//in addition and more importantly the random effects specifiation is within each pair 
-//therefore all needed quantities comes for each pair : 
-//theta.des and the random effects vectors, cluster and pair id's
-//cluster og secluster now also follows the pairs 
+// the needed weights for fitting the marginal hazard models given theta 
+// is based on the fact that the marginal hazards are on the form:  
+// weight(Hist) hazard(t,X) 
 //
-// computes also the needed weights for fitting the hazard models 
-// given theta 
-// That is the pairwise intensities are
-// weight(Hist) * lambda(t,X) 
-// where weight(Hist) is computed via additive hazards model
+// In the simple survival case this becomes 
+//  (V^T Z) hazard(t,X) = Z_tot  hazard(t,X) that has marginal hazards on the form
+// 1/(1+thetatot Lambda(t,X)) lambda(t,X) 
+// this is fitted using for fixed theta 
+// Note also that in the case of competing risks this requires that 
+// weights that depend on the cause specific hazards are computed 
+// and then weight(Hist) is computed 
+// via additive hazards model
 // for all jumps (conditional on what is known), these can
 // be expressed via joint model 
 // Lam(T_1) are the cumulative marginal hazards in T_1 and T_2
@@ -2742,12 +2805,18 @@ return(res);
 // D_1 D_t S_(T_1,T_2), D_s D_2 S_(T_1,T_2), 
 // D_1 D_s D_t S_(T_1,T_2), D_t D_s D_2 S_(T_1,T_2), 
 //
-// left-truncation handled by giving ptrunc such that truncation probability can be computed
-// case control is also a matter of conditioning on marginal status of proband (second in pair), so similar to normal left truncation
+// left-truncation handled by giving ptrunc such that truncation 
+// probability can be computed
+// case control is also a matter of conditioning on marginal status 
+// of proband (second in pair), so similar to normal left truncation
 // L(T1,T2,d1,d2)/L(0,T2,0,d2)
-// ascertainment is equivalent except we here have delayed entry for first component also a matter of conditioning on marginal status of proband (second in pair)
-// L(T1,T2,d1,d2)/L(T2,T2,0,d2) (where by construction T1>T2, since T2 is the first jump)
-// we handle this by giving the cumulatives of ascertainment pairs/controls appropriately
+// ascertainment is equivalent except we here have delayed entry 
+// for first component also a matter of conditioning on marginal 
+// status of proband (second in pair)
+// L(T1,T2,d1,d2)/L(T2,T2,0,d2) (where by construction T1>T2, 
+// since T2 is the first jump)
+// we handle this by giving the cumulatives of ascertainment 
+// pairs/controls appropriately
 RcppExport SEXP survivalloglikeRVpairs( 
 		SEXP icause, SEXP ipmargsurv, 
 		SEXP itheta, SEXP iXtheta, SEXP iDXtheta, SEXP idimDX, 

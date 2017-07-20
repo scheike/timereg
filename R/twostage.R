@@ -52,8 +52,8 @@
 ##'  \eqn{v_1} and \eqn{v_2}. 
 ##' Such that the random effects for subject 
 ##' 1 is \deqn{v_1^T (Z_1,...,Z_d)}, for d random effects. Each random effect
-##' has an associated parameter \eqn{(\lambda_1,...,\lambda_d)}. By construction
-##' subjects 1's random effect are Gamma distributed with 
+##' has an associated parameter \eqn{(\lambda_1,...,\lambda_d)}. 
+##' By construction subjects 1's random effect are Gamma distributed with 
 ##' mean \eqn{\lambda_j/v_1^T \lambda}
 ##' and variance \eqn{\lambda_j/(v_1^T \lambda)^2}. Note that the random effect 
 ##' \eqn{v_1^T (Z_1,...,Z_d)} has mean 1 and variance \eqn{1/(v_1^T \lambda)}.
@@ -315,6 +315,7 @@ start.time <- NULL; ptrunc <- NULL; psurvmarg <- NULL; status <- NULL
 fix.baseline <- 0; 
 convergence.bp <- 1;  ### to control if baseline profiler converges
 if ((!is.null(margsurv)) | (!is.null(marginal.survival))) fix.baseline <- 1
+
 
 if (!is.null(margsurv)) {
 if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
@@ -818,8 +819,6 @@ if (!is.null(margsurv))  {
 ###      browser()
 ###      print(dim(random.design))
 
-	 print("er vi her marg"); 
-
 
           outl<-.Call("twostageloglikeRVpairs", ## {{{
           icause=status,ipmargsurv=psurvmarg, 
@@ -910,9 +909,17 @@ if (!is.null(margsurv))  {
           } ## }}} 
 	  else { ## {{{ profile out baseline, recursive estimator
 
-           profile.baseline  <- .Call("BhatAddGam",recursive=1,
-            dBaalen,dcauses,dim(xjump),xjump,c(partheta), dim(mtheta.des),mtheta.des, 
-	    additive.gamma.sum,var.link,dim(mrv.des),mrv.des,1,matrix(0,1,1))
+
+          profile.baseline  <- .Call("BhatAddGam",recursive=1,
+          dBaalen,dcauses,dim(xjump),xjump,c(partheta),
+	  dim(mtheta.des),mtheta.des, 
+	  additive.gamma.sum,0,dim(mrv.des),mrv.des,0,matrix(0,1,1))
+
+###	  print(summary(cbind(dtimesst,profile.baseline$B)))
+###	  matplot(dtimesst,profile.baseline$B,type="l")
+###	  print(head(profile.baseline$B))
+###	  abline(c(0,0.2),col=3)
+###	  abline(c(0,0.4),col=3)
 
 	  marg.model <- "no-cox"
           if (marg.model=="cox") {# {{{
@@ -954,11 +961,11 @@ if (!is.null(margsurv))  {
 ###         print(summary(psurvmarg[pairs,])); print(summary(ptrunc[pairs,]))
 
       ### cumulative hazard for this model  when fix.baseline==1
-      if (fix.baseline==1) {
+      if (fix.baseline==1 ) {
 	      psurvmarg <- -log(psurvmarg); 
 	      ptrunc <- -log(ptrunc); 
       }
-###      print(summary(psurvmarg)); print(summary(ptrunc))
+
 
       outl<-.Call("survivalloglikeRVpairs",icause=status,ipmargsurv=as.matrix(psurvmarg), 
       itheta=c(partheta),iXtheta=Xtheta,iDXtheta=DXtheta,idimDX=dim(DXtheta),ithetades=theta.des,
@@ -1108,6 +1115,7 @@ if (!is.null(margsurv))  {
         ## }}}
   } else if (score.method=="nlminb") { ## {{{ nlminb optimizer
     oout <- 0; 
+    if (two.stage==0) oout <- 1 ## score 
     tryCatch(opt <- nlminb(theta,loglike,control=control),error=function(x) NA)
     if (detail==1) print(opt); 
     if (detail==1 && iid==1) cat("iid decomposition\n"); 
@@ -1279,9 +1287,9 @@ summary.mets.twostage <- function(object,digits = 3,silent=0,...)
 
       if (attr(object,"twostage")==0) {
          ###         cat("MLE estimates of marginal parameters\n"); 
-         var.gamma <- object$robvar.theta[seq(ptheta+1,npar),seq(ptheta+1,npar)]
-         obj.marginal <- list(gamma=object$theta[seq(ptheta+1,npar),1],var.gamma=var.gamma,robvar.gamma=var.gamma)
-	 marginal <- coefBase(obj.marginal)
+###         var.gamma <- object$robvar.theta[seq(ptheta+1,npar),seq(ptheta+1,npar)]
+###         obj.marginal <- list(gamma=object$theta[seq(ptheta+1,npar),1],var.gamma=var.gamma,robvar.gamma=var.gamma)
+###	 marginal <- coefBase(obj.marginal)
       }
 
       if (var.par==0) 
@@ -1342,7 +1350,7 @@ summary.mets.twostage <- function(object,digits = 3,silent=0,...)
       } ## }}} 
   }
 
-  if (attr(object,"twostage")==0)  res <- c(res,list(marginal=marginal))
+###  if (attr(object,"twostage")==0)  res <- c(res,list(marginal=marginal))
   class(res) <- "summary.mets.twostage"
   res
 } ## }}}
@@ -1353,8 +1361,9 @@ coef.mets.twostage <- function(object,var.link=NULL,response="survival",...)
   pt <- attr(object,"ptheta")
   theta <- object$theta[seq(pt),1]
 
-  if (is.null(object$robvar.theta)) var.theta  <-  object$var.theta[seq(1,pt),seq(1,pt),drop=FALSE] else 
-	                            var.theta  <-   object$robvar.theta[seq(1,pt),seq(1,pt),drop=FALSE]
+  if (is.null(object$robvar.theta)) 
+	  var.theta  <-  object$var.theta[seq(1,pt),seq(1,pt),drop=FALSE] else 
+	  var.theta  <-   object$robvar.theta[seq(1,pt),seq(1,pt),drop=FALSE]
   se <- diag(var.theta)^.5
 
   if (is.null(var.link))
@@ -1507,7 +1516,6 @@ ascertained.pairs <-function (pairs,data,cr.models,bin=FALSE)
       pairs <- apairs
       return(pairs)
 } # }}}
-
 
 ##' @export
 alpha2spear <- function(theta,link=1) { ## {{{ 
@@ -2264,19 +2272,18 @@ make.pairwise.design.competing <- function(pairs,kinship,type="ace",compete=2,ov
  ### overall ace + 1 ace , 2 ace (6 pars) 
  
  if (type=="ace") {
- theta.des  <- array(0,c((compete+overall*1)*4+overall*2,(compete+overall)*2,nrow(pairs)))
- random.des <- array(0,c(2*compete,(compete+overall*1)*4+overall*2,nrow(pairs)))
+    theta.des  <- array(0,c((2*compete+overall*1)*4+overall*2,(compete+overall)*2,nrow(pairs)))
+    random.des <- array(0,c(2*compete,(2*compete+overall*1)*4+overall*2,nrow(pairs)))
  }
  
  if (type=="simple") {
- theta.des  <- array(0,c((compete+overall),(compete+overall),nrow(pairs)))
- random.des <- array(0,c(2*compete,(compete+overall),nrow(pairs)))
+    theta.des <- array(0,c((3*compete+overall),(compete+overall),nrow(pairs)))
+    random.des <- array(0,c(2*compete,(3*compete+overall),nrow(pairs)))
  }
  
- 
  if (type=="ae") {
- theta.des  <- array(0,c(6,1,nrow(pairs)))
- random.des <- array(0,c(2*compete,6,nrow(pairs)))
+    theta.des  <- array(0,c(6,1,nrow(pairs)))
+    random.des <- array(0,c(2*compete,6,nrow(pairs)))
  }
  
  rvs <- c()
@@ -2335,13 +2342,44 @@ make.pairwise.design.competing <- function(pairs,kinship,type="ace",compete=2,ov
         if (type=="simple") {  ## {{{ 
           ### only 3 random variables 
  	if (compete==3) { ## {{{ 
+        	if (overall==1)  { ## {{{ 
+ 		 theta.des[,,i] <- rbind( c(1,0,0),
+ 		                          c(1,0,0),
+ 		                          c(1,0,0),
+ 		                          c(1,0,0),
+ 		                          c(0,1,0),
+ 		                          c(0,1,0),
+ 		                          c(0,1,0),
+ 		                          c(0,1,0),
+ 		                          c(0,0,1))
+ 		 random.des[,,i] <- rbind(c(1,0,0,1,0,0,1),
+ 					  c(0,1,0,0,1,0,1),
+ 					  c(0,0,1,0,0,1,1),
+					  c(1,0,0,1,0,0,1),
+ 					  c(0,1,0,0,1,0,1),
+ 					  c(0,0,1,0,0,1,1))
+ 		 rvs <- c(rvs,7)
+ 		} ## }}} 
+ 		if (overall==0)  { ## {{{ 
+ 			stop("not done"); 
+ 		 rvs <- c(rvs,2)
+ 		} ## }}} 
+
  	} ## }}} 
  	if (compete==2) { ## {{{ 
  		if (overall==1)  { ## {{{ 
- 		 theta.des[,,i] <- diag(3)
- 		 random.des[,,i] <- rbind(c(1,0,1),c(0,1,1),
- 					  c(1,0,1),c(0,1,1))
- 		 rvs <- c(rvs,3)
+ 		 theta.des[,,i] <- rbind( c(1,0,0),
+ 		                          c(1,0,0),
+ 		                          c(1,0,0),
+ 		                          c(0,1,0),
+ 		                          c(0,1,0),
+ 		                          c(0,1,0),
+ 		                          c(0,0,1))
+ 		 random.des[,,i] <- rbind(c(1,0,0,0,1,0,1),
+ 					  c(0,1,0,1,0,0,1),
+					  c(1,0,0,0,0,1,1),
+					  c(0,0,1,1,0,0,1))
+ 		 rvs <- c(rvs,7)
  		} ## }}} 
  		if (overall==0)  { ## {{{ 
  			stop("not done"); 

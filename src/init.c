@@ -22,6 +22,8 @@ extern SEXP FastApprox(SEXP, SEXP, SEXP, SEXP);
 extern SEXP FastCluster(SEXP);
 extern SEXP FastCoxPL(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP FastCoxPLstrata(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP,SEXP,SEXP,SEXP);
+extern SEXP FastCoxPLstrataPO(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP,SEXP,SEXP,
+		SEXP, SEXP);
 extern SEXP FastCoxPrep(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP FastCoxPrepStrata(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP FastLong2(SEXP, SEXP, SEXP, SEXP);
@@ -35,6 +37,7 @@ extern SEXP pBhat(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP pmvn0(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP Dpmvn(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP survivalRV(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP RsurvivalRVCmarg(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP survivalRV2(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP survivalloglikeRVpairs(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP twostageloglikebin(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
@@ -74,6 +77,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"FastCluster",                       (DL_FUNC) &FastCluster,                        1},
     {"FastCoxPL",                         (DL_FUNC) &FastCoxPL,                          5},
     {"FastCoxPLstrata",                  (DL_FUNC) &FastCoxPLstrata,                     10},
+    {"FastCoxPLstrataPO",                (DL_FUNC) &FastCoxPLstrataPO,                   11},
     {"FastCoxPrep",                       (DL_FUNC) &FastCoxPrep,                        6},
     {"FastCoxPrepStrata",                 (DL_FUNC) &FastCoxPrepStrata,                  10},
     {"FastLong2",                         (DL_FUNC) &FastLong2,                          4},
@@ -92,6 +96,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"cumsumstrataR",                     (DL_FUNC) &cumsumstrataR,                      3},
     {"Dpmvn",                             (DL_FUNC) &Dpmvn,                              5},
     {"simBandCumHazCox",                  (DL_FUNC) &simBandCumHazCox,                   5},
+    {"RsurvivalRVCmarg",                  (DL_FUNC) &RsurvivalRVCmarg,                   8},
     {"survivalRV",                        (DL_FUNC) &survivalRV,                        10},
     {"survivalRV2",                       (DL_FUNC) &survivalRV2,                       10},
     {"survivalloglikeRVpairs",            (DL_FUNC) &survivalloglikeRVpairs,            25},

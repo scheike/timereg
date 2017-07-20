@@ -107,7 +107,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
 
 phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=NULL,
 		    strata.name=NULL,cumhaz=TRUE,
-  beta,stderr=TRUE,method="NR",no.opt=FALSE,Z=NULL,...) {
+  beta,stderr=TRUE,method="NR",no.opt=FALSE,Z=NULL,propodds=NULL,...) {
   p <- ncol(X)
   if (missing(beta)) beta <- rep(0,p)
   if (p==0) X <- cbind(rep(0,length(exit)))
@@ -125,19 +125,24 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
    Zcall <- matrix(1,1,1) ## to not use for ZX products when Z is not given 
    if (!is.null(Z)) Zcall <- Z
 
-	trunc <- (!is.null(entry))
-	if (!trunc) entry <- rep(0,length(exit))
-	system.time(dd <- .Call("FastCoxPrepStrata",
+   trunc <- (!is.null(entry))
+   if (!trunc) entry <- rep(0,length(exit))
+
+   system.time(dd <- .Call("FastCoxPrepStrata",
 			      entry,exit,status,X, as.integer(seq_along(entry)),
 			      trunc,strata,weights,offset,Zcall,PACKAGE="mets"))
-	dd$nstrata <- nstrata
+   dd$nstrata <- nstrata
 
 	if (!is.null(id))
 	  id <- dd$id[dd$jumps+1]
 	obj <- function(pp,U=FALSE,all=FALSE) {
+		if (is.null(propodds)) 
 	  val <- with(dd,
-		      .Call("FastCoxPLstrata",pp,X,XX,sign,jumps,
-			    strata,nstrata,weights,offset,ZX,PACKAGE="mets"))
+		   .Call("FastCoxPLstrata",pp,X,XX,sign,jumps,
+		    strata,nstrata,weights,offset,ZX,PACKAGE="mets"))
+         else val <- with(dd,
+		   .Call("FastCoxPLstrataPO",pp,X,XX,sign,jumps,
+		    strata,nstrata,weights,offset,ZX,propodds,PACKAGE="mets"))
 	  if (all) {
 	      val$time <- dd$time[dd$ord+1]
 	      val$ord <- dd$ord+1
@@ -216,7 +221,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 		opt=opt, 
 		cumhaz=cumhaz, se.cumhaz=se.cumhaz,
 		lcumhaz=lcumhaz, lse.cumhaz=lse.cumhaz,
-		II=II,strata.name=strata.name))
+		II=II,strata.name=strata.name,propodds=propodds))
   class(res) <- "phreg"
   res
 }

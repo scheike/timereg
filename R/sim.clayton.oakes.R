@@ -364,19 +364,18 @@ return(ud)
 
 ##' @export
 simCompete.simple <- function(K,varr,beta,stoptime,lam0=c(0.2,0.3),
-		Cvar=0,left=0,pairleft=0,trunc.prob=0.5,overall=1,all.sum=1)  ## {{{ 
+	Cvar=0,left=0,pairleft=0,trunc.prob=0.5,overall=1,all.sum=1)  ## {{{ 
 {
   ## K antal clustre, n=antal i clustre
   n=2 # twins with ace structure
   ## length(lam0) competing risk with constant hazards lam0
   x<-array(c(runif(n*K),rep(0,n*K),rbinom(n*K,1,0.5)),dim=c(K,n,3))
   if (Cvar==0) C<-matrix(stoptime,K,n) else C<-matrix(Cvar*runif(K*n)*stoptime,K,n) 
-  ### total variance of gene and env. 
-  ### one for each cause and one shared (across causes)
-  ###  random effects with 
-  ###  means varg/(varg+varc) and variances varg/(varg+varc)^2
-  if (length(varr)==1) varr  <- rep(varr,length(lam0)+overall)
-  eta <- varr
+  ## variance and mean of additve gamma via paramenters 
+  sp <- sum(varr)
+  partheta <- varr/sp^2 
+
+  eta <- partheta
   etat <- sum(eta)
   ### total variance for each cause + overall
   nc <- length(lam0); 
@@ -386,7 +385,7 @@ simCompete.simple <- function(K,varr,beta,stoptime,lam0=c(0.2,0.3),
   if (overall==1) {
   ###    if (all.sum==1) etal <-  etat else etal <- vargl+varcl
     etal <- etat
-    Gams1 <-cbind(rgamma(K,varr[nc+1])/etal)
+    Gams1 <-cbind(rgamma(K,eta[nc+1])/etal)
   Gamoa <- Gams1
   } else Gamoa <- 0
 
@@ -395,12 +394,19 @@ simCompete.simple <- function(K,varr,beta,stoptime,lam0=c(0.2,0.3),
   for (i in 1:nc)
   {
 	  etal <- etat
-  Gams1 <-cbind( rgamma(K,varr[i])/etal )
-  Gam1 <- Gams1+Gamoa
-  Gam1 <- cbind(Gam1,Gam1)
-  ttemp<-matrix(rexp(2*K),K,2)/(Gam1*exp(beta*x[,,3])*lam0[i])
-  temp1[,i] <- ttemp[,1]
-  temp2[,i] <- ttemp[,2]
+	  Gams1 <-cbind(rgamma(K,eta[i])/etal)
+	  Gam1 <- Gams1+Gamoa
+	  Gam1 <- cbind(Gam1,Gam1)
+	  occ <- (1:nc)[-i]
+	  for (j in  occ) {
+	     Gamo <- cbind(rgamma(K,eta[j]/etal),rgamma(K,eta[j]/etal))
+	     Gam1 <- Gam1+Gamo
+	  }
+###  print(apply(Gam1,2,mean))
+###  print(apply(Gam1,2,var))
+	  ttemp<-matrix(rexp(2*K),K,2)/(Gam1*exp(beta*x[,,3])*lam0[i])
+	  temp1[,i] <- ttemp[,1]
+	  temp2[,i] <- ttemp[,2]
   }
   temp <- cbind( apply(temp1,1,min), apply(temp2,1,min))
   cause1 <- apply(temp1,1,which.min)
@@ -437,7 +443,7 @@ return(ud)
 
 ##' @export
 simFrailty.simple <- function(K,varr,beta,stoptime,lam0=c(0.2),
-		Cvar=0,left=0,pairleft=0,trunc.prob=0.5,overall=1,all.sum=1)  ## {{{ 
+		Cvar=0,left=0,pairleft=0,trunc.prob=0.5,overall=1,all.sum=NULL)  ## {{{ 
 {
   n=2 
   ## length(lam0) competing risk with constant hazards lam0
@@ -445,7 +451,9 @@ simFrailty.simple <- function(K,varr,beta,stoptime,lam0=c(0.2),
   if (Cvar==0) C<-matrix(stoptime,K,n) else C<-matrix(Cvar*runif(K*n)*stoptime,K,n) 
   if (length(varr)==1) varr  <- rep(varr,length(lam0)+overall)
   eta <- varr
-  etat <- sum(eta)
+  etat <- sum(varr)
+  if (!is.null(all.sum)) etat <- all.sum 
+  varr <- varr/etat 
   ### total variance for each cause + overall
   nc <- length(lam0); 
 
@@ -453,17 +461,22 @@ simFrailty.simple <- function(K,varr,beta,stoptime,lam0=c(0.2),
   if (overall==1) {
     etal <- etat
     Gams1 <-cbind(rgamma(K,varr[nc+1])/etal)
-  Gamoa <- Gams1
+    Gamoa <- Gams1
   } else Gamoa <- 0
 
+  print(etat); print(varr)
   temp1 <- matrix(0,K,length(lam0))
   temp2 <- matrix(0,K,length(lam0))
   for (i in 1:nc)
   {
   etal <- etat
-  Gams1 <-cbind( rgamma(K,varr[i])/etal )
+  Gams1 <-cbind(rgamma(K,varr[i])/etal)
   Gam1 <- Gams1+Gamoa
   Gam1 <- cbind(Gam1,Gam1)
+  print(i); 
+  print(apply(Gam1,2,mean)); print(apply(Gam1,2,var)); 
+  print(apply(Gams1,2,mean)); print(apply(Gams1,2,var)); 
+  print(apply(as.matrix(Gamoa),2,mean)); print(apply(as.matrix(Gamoa),2,var)); 
   ttemp<-matrix(rexp(2*K),K,2)/(Gam1*exp(beta*x[,,3])*lam0[i])
   temp1[,i] <- ttemp[,1]
   temp2[,i] <- ttemp[,2]
