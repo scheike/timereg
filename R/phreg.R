@@ -107,7 +107,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
 
 phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=NULL,
 		    strata.name=NULL,cumhaz=TRUE,
-  beta,stderr=TRUE,method="NR",no.opt=FALSE,Z=NULL,propodds=NULL,...) {
+  beta,stderr=TRUE,method="NR",no.opt=FALSE,Z=NULL,propodds=NULL,AddGam=NULL,...) {
   p <- ncol(X)
   if (missing(beta)) beta <- rep(0,p)
   if (p==0) X <- cbind(rep(0,length(exit)))
@@ -136,13 +136,19 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 	if (!is.null(id))
 	  id <- dd$id[dd$jumps+1]
 	obj <- function(pp,U=FALSE,all=FALSE) {
-		if (is.null(propodds)) 
+		if (is.null(propodds) & is.null(AddGam)) 
 	  val <- with(dd,
 		   .Call("FastCoxPLstrata",pp,X,XX,sign,jumps,
 		    strata,nstrata,weights,offset,ZX,PACKAGE="mets"))
-         else val <- with(dd,
+         else if (is.null(AddGam)) 
+		 val <- with(dd,
 		   .Call("FastCoxPLstrataPO",pp,X,XX,sign,jumps,
 		    strata,nstrata,weights,offset,ZX,propodds,PACKAGE="mets"))
+	 else val <- with(dd,
+		   .Call("FastCoxPLstrataAddGam",pp,X,XX,sign,jumps,
+		    strata,nstrata,weights,offset,ZX,
+		    AddGam$theta,AddGam$dimthetades,AddGam$thetades,AddGam$ags,AddGam$varlink,AddGam$dimjumprv,AddGam$jumprv,AddGam$JumpsCauses,PACKAGE="mets"))
+	 
 	  if (all) {
 	      val$time <- dd$time[dd$ord+1]
 	      val$ord <- dd$ord+1
@@ -547,8 +553,7 @@ predictPhreg <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
       Pt <- DLambeta.t  - Pt
       ### se of cumulaive hazard for this covariate , can use different versions of variance for beta
       varbetat <- rowSums((Pt %*% ii)*Pt)
-###   varbetat <- rowSums((Pt %*% vcov(x))*Pt)
-            se.chazexb <- cbind(jumptimes,rr*(cumsumstrata(1/S0^2,strata,nstrata)+varbetat)^.5)
+      se.chazexb <- cbind(jumptimes,rr*(cumsumstrata(1/S0^2,strata,nstrata)+varbetat)^.5)
 ###      sig <- 0.95
 ###      n.sim <- 1000
 ###      simband <-  .Call("simBandCumHazCox",rr/x$S0,Pt,betaiid,n.sim,sig,se.chazexb[,2],PACKAGE="mets")

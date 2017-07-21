@@ -139,7 +139,7 @@ RcppExport SEXP MatxCube(
 		SEXP idim,SEXP iDBhat 
 		)  
 { // {{{ 
-  try {
+try {
 
  mat  xmat = Rcpp::as<mat>(imat);
 
@@ -226,7 +226,6 @@ RcppExport SEXP BhatAddGam(SEXP irecursive, SEXP idBaalen,SEXP icause,
     vec cumhaz(ncr); cumhaz.fill(0); 
     vec Dcumhaz1(ncr); 
 //    vec cumhaz2(ncr); cumhaz2.fill(0); 
-
     double  caseweight=1,ll; 
 //    mat rv2=0*rv.slice(0); 
       mat rv1=rv.slice(0); 
@@ -246,12 +245,16 @@ RcppExport SEXP BhatAddGam(SEXP irecursive, SEXP idBaalen,SEXP icause,
         // computes weights based on additive gamma model 
         mat thetadesv=thetades.slice(k); 
 	rv1=rv.slice(k); 
-//	thetadesv.print("thetades"); rv1.print("rv1"); etheta.print("theta"); 
-//	cumhaz.print("cumhaz"); 
         ll=survivalRVCmarg(etheta,thetadesv,ags,(int) cause(k),cumhaz,rv1,DthetaS,DthetaDtS,allvec);
         caseweight=allvec(0)/ll; //   S / D_1 S
 	casev(k)=caseweight; 
-//	printf(" %d %lf %lf %lf \n",cause(k),caseweight,ll,allvec(0));  
+	vec dbb=trans(dBaalen.row(k)); 
+//	Rprintf("%d %d %lf %lf \n",k,cause(k),ll,allvec(0),dbb(0),dbb(1));  
+//	etheta.print("theta"); 
+//	thetadesv.print("thetades"); 
+//	cumhaz.print("cumhaz"); 
+//	rv1.print("rv1"); 
+
 //	DthetaW=(ll*DthetaDtS-allvec(0)*DthetaS)/(ll*ll);
 
         //  increments 
@@ -298,7 +301,8 @@ RcppExport SEXP BhatAddGam(SEXP irecursive, SEXP idBaalen,SEXP icause,
 
 // marginal hazard estimation via iterative estimator
 // pairs where we condition on second subjects 
-// ascertainment correction is equivalent to case-control sampling (except for delayed entry)
+// ascertainment correction is equivalent to case-control sampling 
+// (except for delayed entry)
 RcppExport SEXP BhatAddGamCC(SEXP itwostage,SEXP idBaalen,SEXP icause,
 		SEXP idimxjump,SEXP ixjump, // cube 
 		SEXP itheta,

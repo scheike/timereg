@@ -379,6 +379,8 @@ simCompete.simple <- function(K,varr,beta,stoptime,lam0=c(0.2,0.3),
   etat <- sum(eta)
   ### total variance for each cause + overall
   nc <- length(lam0); 
+  print(eta)
+  print(etat)
 
   mz <- c(rep(1,K/2),rep(0,K/2)); dz <- 1-mz;
   ### ace overall 
@@ -389,6 +391,9 @@ simCompete.simple <- function(K,varr,beta,stoptime,lam0=c(0.2,0.3),
   Gamoa <- Gams1
   } else Gamoa <- 0
 
+###  print(apply(Gamoa,2,mean))
+###  print(apply(Gamoa,2,var))
+
   temp1 <- matrix(0,K,length(lam0))
   temp2 <- matrix(0,K,length(lam0))
   for (i in 1:nc)
@@ -397,13 +402,19 @@ simCompete.simple <- function(K,varr,beta,stoptime,lam0=c(0.2,0.3),
 	  Gams1 <-cbind(rgamma(K,eta[i])/etal)
 	  Gam1 <- Gams1+Gamoa
 	  Gam1 <- cbind(Gam1,Gam1)
-	  occ <- (1:nc)[-i]
-	  for (j in  occ) {
-	     Gamo <- cbind(rgamma(K,eta[j]/etal),rgamma(K,eta[j]/etal))
-	     Gam1 <- Gam1+Gamo
-	  }
+###  print("_________________")
 ###  print(apply(Gam1,2,mean))
 ###  print(apply(Gam1,2,var))
+	  occ <- (1:nc)[-i]
+	  for (j in  occ) {
+		  print(eta[j])
+	     Gamo <- cbind(rgamma(K,eta[j])/etal,rgamma(K,eta[j])/etal)
+###             print(apply(Gamo,2,mean))
+###             print(apply(Gamo,2,var))
+	     Gam1 <- Gam1+Gamo
+	  }
+  print(apply(Gam1,2,mean))
+  print(apply(Gam1,2,var))
 	  ttemp<-matrix(rexp(2*K),K,2)/(Gam1*exp(beta*x[,,3])*lam0[i])
 	  temp1[,i] <- ttemp[,1]
 	  temp2[,i] <- ttemp[,2]

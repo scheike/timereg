@@ -2,6 +2,8 @@
 
 #include <RcppArmadillo.h>
 #include <Rmath.h>
+#include "twostage.h"
+
 
 //#include "fastcox.h"
 using namespace Rcpp;
@@ -316,7 +318,43 @@ colvec  cumsumstrataPO(colvec a,IntegerVector strata,int nstrata,double propodds
   return(pow);
 } /*}}}*/
 
+colvec  cumsumstrataAddGam(colvec a,IntegerVector strata,int nstrata,
+		colvec exb,colvec etheta,cube thetades,cube rv,mat ags,
+		uvec Jumps) {/*{{{*/
+//		umat JumpsCauses) {/*{{{*/
+  unsigned n = a.n_rows;
+  colvec tmpsum(nstrata); 
+  tmpsum.zeros(); tmpsum.zeros(); 
+  colvec res = a; 
+  colvec pow = a; 
+  vec allvec(6); 
+  vec DthetaS(etheta.n_elem),DthetaDtS(etheta.n_elem); 
+  colvec exbs(2); 
 
+  for (unsigned i=0; i<n; i++) {
+    int ss=strata(i); 
+    mat thetadesv=thetades.slice(i); 
+    mat rv1=rv.slice(i); 
+    // ordered after time and comes two and two 
+    if (strata(i)==0) { exbs(0)=exb(Jumps(i)); exbs(1)=exb(Jumps(i)+1); }
+    if (strata(i)==1) { exbs(1)=exb(Jumps(i)); exbs(0)=exb(Jumps(i)+1); }
+//    exbs(0)=exb(Jumps(i)); exbs(1)=exb(0); 
+//    exbs(1)=exb(i); 
+//    printf(" %d %d \n",(int) JumpsCauses(i,0),JumpsCauses(i,1)); 
+//    exbs.print("exbs"); 
+    double ll=survivalRVCmarg(etheta,thetadesv,ags,strata(i)+1,exbs%tmpsum,rv1,DthetaS,DthetaDtS,allvec);
+//    Rprintf(" %d %d %lf %lf %lf \n",i,strata(i),ll,allvec(0),1/a(i)); 
+//    etheta.print("etheta"); 
+//    thetadesv.print("thetades"); 
+//    tmpsum.print("tmpsum"); 
+//    rv1.print("rv1"); 
+    pow(i)=allvec(0)/ll; //   S / D_1 S
+    tmpsum(ss) += pow(i)/a(i); 
+    res(i) = tmpsum(ss);
+  }  
+
+  return(pow);
+} /*}}}*/
 
 RcppExport SEXP revcumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   colvec a = Rcpp::as<colvec>(ia);
@@ -362,7 +400,7 @@ colvec revcumsumstrata1(const colvec &a,const  colvec &v1,const  colvec &v2,
 }/*}}}*/
 
 mat  revcumsumstrataMatCols(const mat  &a,const  colvec &v1,const  colvec &v2,
-		        IntegerVector strata,int nstrata) {
+		        IntegerVector strata,int nstrata) { // {{{
   mat res =a; 
   unsigned p=a.n_cols; 
   for (unsigned j=0; j<p; j++) {
@@ -634,6 +672,150 @@ BEGIN_RCPP/*{{{*/
 			    ));
 END_RCPP
   }/*}}}*/
+
+
+RcppExport SEXP FastCoxPLstrataAddGam(SEXP betaSEXP,
+				SEXP XSEXP,
+				SEXP XXSEXP,
+				SEXP SignSEXP,
+				SEXP JumpsSEXP, 
+				SEXP strataSEXP, 
+				SEXP nstrataSEXP,
+				SEXP weightsSEXP,
+				SEXP offsetsSEXP,
+				SEXP ZXSEXP,
+		SEXP itheta, SEXP idimthetades,SEXP ithetades, 
+		SEXP iags, SEXP ivarlink, SEXP idimjumprv,SEXP ijumprv,
+		SEXP iJumpsCauses
+		 ) {
+BEGIN_RCPP/*{{{*/
+  colvec beta = Rcpp::as<colvec>(betaSEXP);
+  mat X = Rcpp::as<mat>(XSEXP);
+  mat XX = Rcpp::as<mat>(XXSEXP);
+  mat ZX = Rcpp::as<mat>(ZXSEXP);
+  arma::uvec Jumps = Rcpp::as<uvec >(JumpsSEXP);
+  arma::Col<int> Sign = Rcpp::as<arma::Col<int> >(SignSEXP);
+  IntegerVector strata(strataSEXP);
+  int nstrata = Rcpp::as<int>(nstrataSEXP);
+//  double propodds = Rcpp::as<int>(propoddsSEXP);
+  // unsigned n = X.n_rows;
+  unsigned p = X.n_cols;
+  colvec weights = Rcpp::as<colvec>(weightsSEXP);
+  colvec offsets = Rcpp::as<colvec>(offsetsSEXP);
+
+
+// {{{ reading in matrices and cubes for AddGam  cause is in strata 
+    vec                  theta = Rcpp::as<vec>(itheta); 
+    mat                    ags = Rcpp::as<mat>(iags);
+    int                varlink = Rcpp::as<int>(ivarlink);
+
+// array for xjump covariates of jump subject, for all causes 
+// NumericVector vxjump(ixjump);
+// IntegerVector arrayDims(idimxjump);
+// arma::cube xjump(vxjump.begin(), arrayDims[0], arrayDims[1], arrayDims[2], false);
+
+// array for xjump covariates of jump subject, for all causes 
+ NumericVector vecthetades(ithetades);
+ IntegerVector arrayDims1(idimthetades);
+ arma::cube thetades(vecthetades.begin(), arrayDims1[0], arrayDims1[1], arrayDims1[2], false);
+
+// array for xjump covariates of jump subject, for all causes 
+ NumericVector vrv(ijumprv);
+ IntegerVector arrayDims2(idimjumprv);
+ arma::cube rv(vrv.begin(), arrayDims2[0], arrayDims2[1], arrayDims2[2], false);
+
+ // indeces of the causes relatd to the two jumps
+ arma::umat JumpsCauses = Rcpp::as<umat >(iJumpsCauses);
+// arma::uvec ij1 = JumpsCauses.col(0); 
+// arma::uvec ij2 = JumpsCauses.col(1); 
+ // }}}
+ 
+  vec etheta=theta; 
+  if (varlink==1) etheta=exp(theta); 
+
+  colvec Xb = X*beta+offsets;
+  colvec eXb = exp(Xb)%weights;
+  if (Sign.n_rows==eXb.n_rows) { // Truncation
+    eXb = Sign%eXb;
+  }
+
+  colvec S0 = revcumsumstrata(eXb,strata,nstrata);
+  mat E=revcumsumstrataMatCols(X,eXb,S0,strata,nstrata); 
+
+//  for (unsigned j=0; j<p; j++) {
+//    E.col(j) = revcumsumstrata1(X.col(j),eXb,S0,strata,nstrata);
+//  }
+
+  E = E.rows(Jumps);
+  mat E2(E.n_rows, E.n_cols*E.n_cols); // Calculate E' E at each time-point
+  for (unsigned i=0; i<E.n_rows; i++) {
+    rowvec Xi = E.row(i);
+    E2.row(i) = vectorise(Xi.t()*Xi,1);
+  }
+
+  mat XX2=revcumsumstrataMatCols(XX,eXb,S0,strata,nstrata); 
+//  mat XX2 = XX;
+//  for (unsigned j=0; j<XX2.n_cols; j++) { // int S2/S0(s)
+//    XX2.col(j) = revcumsumstrata1(XX2.col(j),eXb,S0,strata,nstrata);
+//  }
+
+  mat ZX2 = ZX;
+  if (ZX.n_rows==X.n_rows) {
+     ZX2=revcumsumstrataMatCols(ZX,eXb,S0,strata,nstrata); 
+  } 
+
+  XX2 = XX2.rows(Jumps);
+  colvec weightsJ=weights.elem(Jumps);  
+  S0 = S0.elem(Jumps);
+
+  IntegerVector strataJ = seq_len(Jumps.n_rows);  
+  for (unsigned i=0; i<Jumps.n_rows; i++) {
+	  strataJ(i)=strata(Jumps(i)); 
+  }
+//  colvec pow=cumsumstrataPO(S0,strataJ,nstrata,propodds,eXb.elem(Jumps)); 
+
+  // for now use that covariates are the same for the two causes 
+colvec  pow=cumsumstrataAddGam(S0,strataJ,nstrata,eXb,etheta,thetades,rv,ags,Jumps); 
+
+
+  mat grad = (X.rows(Jumps)-E);        // Score
+  vec val =  (Xb.elem(Jumps)-log(S0)); // Partial log-likelihood
+
+  colvec S02 = S0/(pow%weightsJ);            // S0 with weights to estimate baseline 
+  mat grad2  = vecmatrow(pow%weightsJ,grad); // score  with weights
+  vec val2   = pow%weightsJ%val;             // Partial log-likelihood with weights
+
+  mat hesst = -(XX2-E2);               // hessian contributions in jump times 
+  mat hess  = reshape(sum(hesst),p,p);
+  if (ZX.n_rows==X.n_rows) {
+     ZX2 = ZX2.rows(Jumps);
+  }
+
+//  mat hesst2 = vecmatrow(pow%weightsJ,hesst); // hessian over time with weights 
+  mat hesst2 = vecmatrow(weightsJ,hesst); // hessian over time with weights 
+  mat hess2 = reshape(sum(hesst2),p,p);  // hessian with weights 
+
+//  if (hess.has_nan()) {
+//	printf("============================ \n"); 
+//	S0.print("S0"); exb.print("exb"); grad.print("grad"); e.print("e"); xx2.print("xx"); X.print("X"); 
+//	printf("============================ \n"); 
+//	}
+
+  return(Rcpp::List::create(Rcpp::Named("jumps")=Jumps,
+			    Rcpp::Named("ploglik")=sum(val2),
+			    Rcpp::Named("U")=grad2,
+			    Rcpp::Named("gradient")=sum(grad2),
+			    Rcpp::Named("hessian")=hess2,
+			    Rcpp::Named("hessianttime")=hesst2,
+			    Rcpp::Named("S2S0")=XX2,
+			    Rcpp::Named("E")=E,
+			    Rcpp::Named("S0")=S02,
+			    Rcpp::Named("ZXeXb")=ZX2,
+			    Rcpp::Named("weights")=weightsJ
+			    ));
+END_RCPP
+  }/*}}}*/
+
 
 
 mat CubeVecC(mat XX, vec beta,int dim1) {/*{{{*/

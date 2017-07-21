@@ -22,8 +22,10 @@ extern SEXP FastApprox(SEXP, SEXP, SEXP, SEXP);
 extern SEXP FastCluster(SEXP);
 extern SEXP FastCoxPL(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP FastCoxPLstrata(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP,SEXP,SEXP,SEXP);
-extern SEXP FastCoxPLstrataPO(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP,SEXP,SEXP,
-		SEXP, SEXP);
+extern SEXP FastCoxPLstrataPO(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP,SEXP,SEXP,SEXP,SEXP); 
+extern SEXP FastCoxPLstrataAddGam(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP,SEXP,SEXP,
+		SEXP, SEXP, SEXP, SEXP,
+		SEXP, SEXP, SEXP, SEXP, SEXP );
 extern SEXP FastCoxPrep(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP FastCoxPrepStrata(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP FastLong2(SEXP, SEXP, SEXP, SEXP);
@@ -78,6 +80,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"FastCoxPL",                         (DL_FUNC) &FastCoxPL,                          5},
     {"FastCoxPLstrata",                  (DL_FUNC) &FastCoxPLstrata,                     10},
     {"FastCoxPLstrataPO",                (DL_FUNC) &FastCoxPLstrataPO,                   11},
+    {"FastCoxPLstrataAddGam",            (DL_FUNC) &FastCoxPLstrataAddGam,               18},
     {"FastCoxPrep",                       (DL_FUNC) &FastCoxPrep,                        6},
     {"FastCoxPrepStrata",                 (DL_FUNC) &FastCoxPrepStrata,                  10},
     {"FastLong2",                         (DL_FUNC) &FastLong2,                          4},
