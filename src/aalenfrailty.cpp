@@ -488,3 +488,46 @@ RcppExport SEXP BhatAddGamCC(SEXP itwostage,SEXP idBaalen,SEXP icause,
   return R_NilValue; // -Wall
 } // }}}
 
+RcppExport SEXP XBmindex(SEXP imindex,SEXP iX,SEXP icumt)  
+{ // {{{ 
+try {
+ mat  index = Rcpp::as<mat>(imindex);
+ mat  cumt  = Rcpp::as<mat>(icumt);
+ mat  X     = Rcpp::as<mat>(iX);
+ int n=index.n_rows; 
+ int p=X.n_cols; 
+
+ mat XBmindex(n,n); 
+ vec vcumt(p); 
+
+// XBmindex.print("XB"); 
+
+ for (int r=0; r<n; r++) { // Iterate over events
+   rowvec Xvec=X.row(r); 
+ for (int c=0; c<n; c++) { // Iterate over events
+   int ii=index(r,c)-1; 
+   if (ii>0) {
+   vcumt=trans(cumt.row(ii)); 
+//   vcumt.print("vcum"); 
+//   Xvec.print("Xv"); 
+//   printf(" %d %d \n",r,c); 
+   mat  out = Xvec*vcumt; 
+   XBmindex(r,c)= out(0,0); 
+   }
+ } 
+ }
+
+    return(Rcpp::List::create(Rcpp::Named("XBmindex")=XBmindex));
+  } catch( std::exception &ex ) {
+    forward_exception_to_r( ex );
+  } catch(...) {  
+    ::Rf_error( "c++ exception (unknown reason)" ); 
+  }
+  return R_NilValue; // -Wall
+} // }}}
+
+
+
+
+
+

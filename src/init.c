@@ -58,6 +58,7 @@ extern SEXP simBandCumHazCox(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP revcumsumR(SEXP);
 extern SEXP revcumsumstrataR(SEXP,SEXP, SEXP);
 extern SEXP cumsumstrataR(SEXP,SEXP, SEXP);
+extern SEXP XBmindex(SEXP,SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
     {"Bhat",                              (DL_FUNC) &Bhat,                               6},
@@ -110,6 +111,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"Uhat",                              (DL_FUNC) &Uhat,                               5},
     {"uniprobit",                         (DL_FUNC) &uniprobit,                          8},
     {"vecMatMat",                         (DL_FUNC) &vecMatMat,                          2},
+    {"XBmindex",                          (DL_FUNC) &XBmindex,                               3},
     {NULL, NULL, 0}
 };
 

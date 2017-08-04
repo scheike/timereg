@@ -155,8 +155,8 @@ For a cluster with two subjects, we let the random.design rows be
  \eqn{v_1} and \eqn{v_2}. 
 Such that the random effects for subject 
 1 is \deqn{v_1^T (Z_1,...,Z_d)}, for d random effects. Each random effect
-has an associated parameter \eqn{(\lambda_1,...,\lambda_d)}. By construction
-subjects 1's random effect are Gamma distributed with 
+has an associated parameter \eqn{(\lambda_1,...,\lambda_d)}. 
+By construction subjects 1's random effect are Gamma distributed with 
 mean \eqn{\lambda_j/v_1^T \lambda}
 and variance \eqn{\lambda_j/(v_1^T \lambda)^2}. Note that the random effect 
 \eqn{v_1^T (Z_1,...,Z_d)} has mean 1 and variance \eqn{1/(v_1^T \lambda)}.
