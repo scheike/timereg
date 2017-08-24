@@ -254,7 +254,7 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 
 ###}}} simcox
 
-###{{{ phreg
+###{{{ phreg1
 ##' Fast Cox PH regression
 ##'
 ##' Fast Cox PH regression
@@ -296,7 +296,7 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' m
 ##' plot(m,ylim=c(0,1))
 ##' }
-phreg <- function(formula,data,...) {
+phreg1 <- function(formula,data,...) {
   cl <- match.call()
   m <- match.call(expand.dots = TRUE)[1:3]
   special <- c("strata", "cluster")
@@ -338,7 +338,7 @@ phreg <- function(formula,data,...) {
 }
 ###}}} phreg
 
-###{{{ phreg1
+###{{{ phreg
 ##' Fast Cox PH regression
 ##'
 ##' Fast Cox PH regression
@@ -352,16 +352,16 @@ phreg <- function(formula,data,...) {
 ##' @examples
 ##' data(TRACE)
 ##' dcut(TRACE) <- ~.
-##' out1 <- phreg1(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
+##' out1 <- phreg(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
 ##' tracesim <- sim.cox(out1,1000)
-##' sout1 <- phreg1(Surv(time,status==1)~vf+chf+strata(wmicat.4),data=tracesim)
+##' sout1 <- phreg(Surv(time,status==1)~vf+chf+strata(wmicat.4),data=tracesim)
 ##' 
 ##' par(mfrow=c(1,2))
 ##' baseplot.phreg(out1)
 ##' baseplot.phreg(sout1)
 ##' 
 ##' @export
-phreg1 <- function(formula,data,offset=NULL,weights=NULL,...) {
+phreg <- function(formula,data,offset=NULL,weights=NULL,...) {
   cl <- match.call()
   m <- match.call(expand.dots = TRUE)[1:3]
   special <- c("strata", "cluster","offset")
@@ -642,7 +642,7 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 ##' @examples
 ##' data(TRACE)
 ##' dcut(TRACE) <- ~.
-##' out1 <- phreg1(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
+##' out1 <- phreg(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
 ##' 
 ##' par(mfrow=c(2,2))
 ##' baseplot.phreg(out1)

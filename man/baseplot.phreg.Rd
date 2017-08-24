@@ -43,7 +43,7 @@ Plotting the baslines of stratified Cox
 \examples{
 data(TRACE)
 dcut(TRACE) <- ~.
-out1 <- phreg1(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
+out1 <- phreg(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
 
 par(mfrow=c(2,2))
 baseplot.phreg(out1)
