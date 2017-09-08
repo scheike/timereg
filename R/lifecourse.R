@@ -36,8 +36,8 @@
 ##'
 lifecourse <- function(formula,data,id="id",group=NULL,
                type="l",lty=1,col=1:10,alpha=0.3,lwd=1,
-               recurrent.col=NULL,
-               legend=NULL,
+               recurrent.col=NULL, recurrent.lty=NULL,
+               legend=NULL,pchlegend=NULL,
                by=NULL,
                status.legend=NULL,place.sl="bottomright",
                xlab="Time",ylab="",add=FALSE,...) 
@@ -123,10 +123,23 @@ lifecourse <- function(formula,data,id="id",group=NULL,
 
     }# }}}
 	 plot(X,Y,xlab=xlab,ylab=ylab,...,type="n")        
-         if (!is.null(status.legend)) {
-            graphics::legend(place.sl,legend=status.legend,pch=unique(status))
-         }
-	}
+
+       if (!is.null(status.legend)) {# {{{
+	    if (is.null(pchlegend)) {
+	       if (length(status.legend)!=length(unique(status)))
+		   {
+		           warning("Not all legends represented, legends could be wrong give pchlegend\n"); 
+			   print(cbind(status.legend,sort(unique(status))))
+		   }
+                    points(t2,x,pch=status)
+		    graphics::legend(place.sl,legend=status.legend,pch=sort(unique(status)))
+	    } else { 
+            points(t2,x,pch=pchlegend[status])
+            graphics::legend(place.sl,legend=status.legend,pch=pchlegend)
+       }
+       }# }}}
+
+       }
 
         dd <- split(data,M)
         K <- length(dd)
@@ -141,9 +154,11 @@ lifecourse <- function(formula,data,id="id",group=NULL,
                      lty=lty[i],col=col[i],lwd=lwd[i],
                      alpha=alpha[i],
 		     recurrent.col=recurrent.col,
+		     recurrent.lty=recurrent.lty,
                      group=NULL,
                      add=TRUE,...)
         }
+
         if (!is.null(legend)) {
             graphics::legend(legend,names(dd),lwd=lwd,col=col,lty=lty)
         }
@@ -182,19 +197,31 @@ lifecourse <- function(formula,data,id="id",group=NULL,
 ###	print(dim(X)); print(dim(Y)); print(dim(status)); print(summary(X)); print(summary(Y)); 
 
 	if (is.null(recurrent.col))  {
-            matplot(t(X),t(Y),type=type,lty=lty,lwd=lwd,
-	          col=col[1],xlab=xlab,ylab=ylab,add=add,...)
+	    if (!is.null(recurrent.lty))   {
+            cl <- data[ccm,recurrent.lty]
+            matplot(t(X),t(Y),type=type,lty=cl,lwd=lwd,col=col[1],xlab=xlab,ylab=ylab,add=add,...)
+	    } else matplot(t(X),t(Y),type=type,lty=lty,lwd=lwd,col=col[1],xlab=xlab,ylab=ylab,add=add,...)
 	} else {
 	   cn <- data[ccm,recurrent.col]
-	   matplot(t(X),t(Y),type=type,lty=lty,lwd=lwd,
-	       col=cn,xlab=xlab,ylab=ylab,add=add,...)
-		}
+	   matplot(t(X),t(Y),type=type,lty=lty,lwd=lwd,col=cn,xlab=xlab,ylab=ylab,add=add,...)
+	}
 
-         points(t2,x,pch=status)
+       if (!is.null(status.legend)) {# {{{
+	    if (is.null(pchlegend)) {
+	       if (length(status.legend)!=length(unique(status)))
+		   {
+		           warning("Not all legends represented, legends could be wrong give pchlegend\n"); 
+			   print(cbind(status.legend,sort(unique(status))))
+		   }
+                    points(t2,x,pch=status)
+		    graphics::legend(place.sl,legend=status.legend,pch=sort(unique(status)))
+	    } else { 
+            points(t2,x,pch=pchlegend[status])
+            graphics::legend(place.sl,legend=status.legend,pch=pchlegend)
+       }
+       }# }}}
 
-         if (!is.null(status.legend)) {
-            graphics::legend(place.sl,legend=status.legend,pch=unique(status))
-         }
+
 # }}}
     } else {# {{{
         y <- response <- all.vars( update(formula,.~+1))
@@ -221,20 +248,51 @@ lifecourse <- function(formula,data,id="id",group=NULL,
 
 ###	print(dim(X)); print(dim(Y)); print(dim(status)); print(summary(X)); print(summary(Y)); 
 
-	if (is.null(recurrent.col))  {
-         matplot(t(X),t(Y),type=type,lty=lty,lwd=lwd,
-###	          col=Col(col[1],alpha[1]),xlab=xlab,ylab=ylab,...)
-	          col=col[1],xlab=xlab,ylab=ylab,add=add,...)
-	} else {
-       cn <- data[ccm,recurrent.col]
-       matplot(t(X),t(Y),type=type,lty=lty,lwd=lwd,
-	       col=cn,xlab=xlab,ylab=ylab,add=add,...)
-		}
-      points(t2,x,pch=status)
 
-       if (!is.null(status.legend)) {
-            graphics::legend(place.sl,legend=status.legend,pch=unique(status))
+
+	if (is.null(recurrent.col))  cols <- col[1] else { 
+            cols <- data[ccm,recurrent.lty]
+	}
+        if (is.null(recurrent.lty))  ltys <- lty else { 
+            ltys <- data[ccm,recurrent.lty]
+	}
+
+###	print("hej")
+###	print(t(Y))
+###	print(t(X))
+###	print(type)
+###        matplot(t(X),t(Y),type="l",lwd=lwd,col=cols,xlab=xlab,ylab=ylab,add=add,...)
+
+	if (is.null(recurrent.col))  {
+###         matplot(t(X),t(Y),type=type,lty=lty,lwd=lwd,
+###	          col=Col(col[1],alpha[1]),xlab=xlab,ylab=ylab,...)
+###	          col=col[1],xlab=xlab,ylab=ylab,add=add,...)
+	    if (!is.null(recurrent.lty))   {
+            cl <- data[ccm,recurrent.lty]
+            matplot(t(X),t(Y),type=type,lty=cl,lwd=lwd,col=col[1],xlab=xlab,ylab=ylab,add=add,...)
+	    } else matplot(t(X),t(Y),type=type,lty=lty,lwd=lwd,col=col[1],xlab=xlab,ylab=ylab,add=add,...)
+	} else {
+            cn <- data[ccm,recurrent.col]
+	    if (!is.null(recurrent.lty))   {
+            cl <- data[ccm,recurrent.lty]
+            matplot(t(X),t(Y),type=type,lty=cl,lwd=lwd,col=cn,xlab=xlab,ylab=ylab,add=add,...)
+	    } else matplot(t(X),t(Y),type=type,lty=lty,lwd=lwd,col=cn,xlab=xlab,ylab=ylab,add=add,...)
        }
+
+       if (!is.null(status.legend)) {# {{{
+	    if (is.null(pchlegend)) {
+	       if (length(status.legend)!=length(unique(status)))
+		   {
+		           warning("Not all legends represented, legends could be wrong give pchlegend\n"); 
+			   print(cbind(status.legend,sort(unique(status))))
+		   }
+                    points(t2,x,pch=status)
+		    graphics::legend(place.sl,legend=status.legend,pch=sort(unique(status)))
+	    } else { 
+            points(t2,x,pch=pchlegend[status])
+            graphics::legend(place.sl,legend=status.legend,pch=pchlegend)
+       }
+       }# }}}
 
     }# }}}
 

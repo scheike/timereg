@@ -253,7 +253,7 @@ RcppExport SEXP FastApprox(const SEXP time,
 			   const SEXP newtime,
 			   const SEXP equal,
 			   const SEXP type // (0: nearest, 1: right, 2: left)
-			   ) {
+			   ) {/*{{{*/
 BEGIN_RCPP
   unsigned Type = Rcpp::as<unsigned>(type);
   NumericVector NewTime(newtime);
@@ -302,4 +302,53 @@ BEGIN_RCPP
   } 
   return(Rcpp::wrap(idx));
 END_RCPP
-}
+}/*}}}*/
+
+//vec FastApproxC(vec time, vec newtime,int equal,int type 
+//		// (0: nearest, 1: right, 2: left)
+//	        ) {/*{{{*/
+//  unsigned Type = Rcpp::as<unsigned>(type);
+//  NumericVector NewTime(newtime);
+//  NumericVector Sorted(time);
+//  // IntegerVector Order;
+//  // NumericVector Sorted = Time;
+//  // std::sort(Sorted.begin(), Sorted.end());
+//  // //    .sort();
+//  // IntegerVector Order = match(Sorted, Time);
+//  // return(Rcpp::wrap(Time));  
+//  unsigned Equal  = Rcpp::as<unsigned>(equal);
+////  bool Equal = Rcpp::as<bool>(equal);
+//  vector<int> eq(NewTime.size());
+//
+//  vector<int> idx(NewTime.size());
+////  IntegerVector idx(NewTime.size(),0);
+//
+//  double vmax = Sorted[Sorted.size()-1];
+//  NumericVector::iterator it;  
+//  double upper=0.0; int pos=0;
+//  for (int i=0; i<NewTime.size(); i++) {    
+//    eq[i] = 0;
+//    if (NewTime[i]>vmax) {
+//      pos = Sorted.size()-1;
+//    } else {
+//      it = lower_bound(Sorted.begin(), Sorted.end(), NewTime[i]);
+//      upper = *it;
+//      if (it == Sorted.begin()) { 
+//	pos = 0; 
+//	if ((Equal==1) && (NewTime[i]==upper)) { eq[i] = 1; }
+//      }
+//      // else if (int(it-Sorted.end())==0) {
+//      // 	pos = Sorted.size()-1;
+//      // }
+//      else {
+//	pos = int(it-Sorted.begin());
+//	if (Type==0 && fabs(NewTime[i]-Sorted[pos-1])<fabs(NewTime[i]-Sorted[pos])) pos -= 1;
+//	if ((Equal==1) && (NewTime[i]==upper)) { eq[i] = pos+1; }
+//      }
+//    }
+//    if (Type==2 && NewTime[i]<upper) pos--;
+//    idx[i] = pos+1;
+//  }
+//  return(idx); 
+//
+//}/*}}}*/

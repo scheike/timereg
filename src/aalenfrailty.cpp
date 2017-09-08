@@ -527,7 +527,104 @@ try {
 } // }}}
 
 
+//RcppExport SEXP backfitEaEt(SEXP iYt,SEXP iage0, SEXP iagenull, SEXP iage, 
+//		SEXP itime0, SEXP itime, SEXP iajumps, SEXP itjumps,SEXP ia0)  
+//{ // {{{ 
+//try {
+//
+// vec  Yt  = Rcpp::as<vec>(iYt);
+// vec  age = Rcpp::as<vec>(iage); 
+// vec  age0 = Rcpp::as<vec>(iage0); 
+// vec  agenull = Rcpp::as<vec>(iagenull); 
+// vec  time = Rcpp::as<vec>(itime); 
+// vec  time0 = Rcpp::as<vec>(itime0); 
+// vec  ajumps = Rcpp::as<vec>(iajumps); 
+// vec  tjumps = Rcpp::as<vec>(itjumps); 
+// double a0= Rcpp::as<double>(ia0);
+// 
+// int n=Yt.n_rows; 
+// mat Ea(n,n); Ea.zeros(); 
+// mat Et(n,n); Et.zeros(); 
+// double ao,to,nn,ttt; 
+//
+// for (int i=0; i<n; i++) { 
+// for (int j=0; j<n; j++) { // Iterate over events
+//     ao=ajumps(i); to=tjumps(j);
+//     vec who=(to+agenull>age0)*(to+agenull<=age); 
+//     vec top=who*(a0-agenull<to)*(to<=ao-agenull); 
+//     nn=sum(who); 
+//     ttt=sum(top)/nn; 
+//     if (nn>0) Et(i,j)=ttt; 
+//     vec aaa=ao-agenull; 
+//// ###     aaa[aaa<0] <- 0
+////     arma::uvec fff = FastApproxC(jumps,aaa,TRUE,2); 
+////     vec yaai=Yt.elem(fff); 
+//     vec yaai=(top>0);  
+//     vec ww=(yaai>0); 
+////     ### at risk at time a
+//     who=(ao-agenull>time0)*(ao-agenull<time); 
+//     top= who*(agenull<ao)*(ao<=agenull+to); 
+//     ttt=0; 
+//     for (int k=0;k<n; k++) 
+//	     if (yaai(k)>0) ttt+=top(k)/yaai(k); 
+//     Ea(j,i) = ttt; 
+// }
+// }
+//
+//    return(Rcpp::List::create(Rcpp::Named("Et")=Et, Rcpp::Named("Ea")=Ea));
+//  } catch( std::exception &ex ) {
+//    forward_exception_to_r( ex );
+//  } catch(...) {  
+//    ::Rf_error( "c++ exception (unknown reason)" ); 
+//  }
+//  return R_NilValue; // -Wall
+//} // }}}
 
-
-
-
+//arma::uvec FastApproxC(vec time, vec newtime,int equal,int type 
+//		// (0: nearest, 1: right, 2: left)
+//	        ) {/*{{{*/
+//  int Type = Rcpp::as<int>(type);
+//  NumericVector NewTime(newtime);
+//  NumericVector Sorted(time);
+//  // IntegerVector Order;
+//  // NumericVector Sorted = Time;
+//  // std::sort(Sorted.begin(), Sorted.end());
+//  // //    .sort();
+//  // IntegerVector Order = match(Sorted, Time);
+//  // return(Rcpp::wrap(Time));  
+//  int Equal  = Rcpp::as<int>(equal);
+////  bool Equal = Rcpp::as<bool>(equal);
+//  vector<int> eq(NewTime.size());
+//  vector<int> idx(NewTime.size());
+////  IntegerVector idx(NewTime.size(),0);
+//
+//  double vmax = Sorted[Sorted.size()-1];
+//  NumericVector::iterator it;  
+//  double upper=0.0; int pos=0;
+//  for (int i=0; i<NewTime.size(); i++) {    
+//    eq[i] = 0;
+//    if (NewTime[i]>vmax) {
+//      pos = Sorted.size()-1;
+//    } else {
+//      it = lower_bound(Sorted.begin(), Sorted.end(), NewTime[i]);
+//      upper = *it;
+//      if (it == Sorted.begin()) { 
+//	pos = 0; 
+//	if ((Equal==1) && (NewTime[i]==upper)) { eq[i] = 1; }
+//      }
+//      // else if (int(it-Sorted.end())==0) {
+//      // 	pos = Sorted.size()-1;
+//      // }
+//      else {
+//	pos = int(it-Sorted.begin());
+//	if (Type==0 && fabs(NewTime[i]-Sorted[pos-1])<fabs(NewTime[i]-Sorted[pos])) pos -= 1;
+//	if ((Equal==1) && (NewTime[i]==upper)) { eq[i] = pos+1; }
+//      }
+//    }
+//    if (Type==2 && NewTime[i]<upper) pos--;
+//    idx[i] = pos+1;
+//  }
+//  return(idx); 
+//
+//}/*}}}*/
+//

@@ -178,6 +178,10 @@ procformdata <- function(formula,data,sep="\\|", na.action=na.pass, do.filter=TR
     if (!do.filter) {
         filter <- NULL
     }
+    ### print(filter); print(missing(filter)); print(is.null(filter)); print(filter[[1]])
+    ### when filter.expression is expression(1) then also no filter, ts 
+    if ((!missing(filter))) if (!is.null(filter)) if (as.character(filter)=="1") filter <- NULL
+
     if (length(res$response)>0) {
         if (is.null(filter)) y <- model.frame(res$response,data=data,na.action=na.action)
         else y <- model.frame(res$response,data=subset(data,eval(filter)),na.action=na.action)
@@ -187,6 +191,7 @@ procformdata <- function(formula,data,sep="\\|", na.action=na.pass, do.filter=TR
         else x <- model.frame(res$predictor,data=subset(data,eval(filter)),na.action=na.action)
 
     }
+
     specials <- NULL
     if (!is.null(res$specials)) {
         specials <- lapply(res$specials,
