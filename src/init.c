@@ -59,11 +59,13 @@ extern SEXP revcumsumR(SEXP);
 extern SEXP revcumsumstrataR(SEXP,SEXP, SEXP);
 extern SEXP cumsumstrataR(SEXP,SEXP, SEXP);
 extern SEXP XBmindex(SEXP,SEXP, SEXP);
+//extern SEXP backfitEaEt(SEXP,SEXP, SEXP,SEXP,SEXP, SEXP, SEXP, SEXP,SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
     {"Bhat",                              (DL_FUNC) &Bhat,                               6},
     {"BhatAddGam",                        (DL_FUNC) &BhatAddGam,                        14},
     {"BhatAddGamCC",                      (DL_FUNC) &BhatAddGamCC,                      17},
+//    {"backfitEaEt",                       (DL_FUNC) &backfitEaEtt,                       9},
     {"biprobit0",                         (DL_FUNC) &biprobit0,                          8},
     {"biprobit2",                         (DL_FUNC) &biprobit2,                         10},
     {"bvncdf",                            (DL_FUNC) &bvncdf,                             3},

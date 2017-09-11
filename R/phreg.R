@@ -112,15 +112,16 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
   if (missing(beta)) beta <- rep(0,p)
   if (p==0) X <- cbind(rep(0,length(exit)))
   if (is.null(strata)) { strata <- rep(0,length(exit)); nstrata <- 1} else {
-	  ustrata <- unique(strata)
+	  ustrata <- sort(unique(strata))
 	  nstrata <- length(ustrata)
-	  strata.values <- unique(strata)
+	  strata.values <- ustrata
       if (is.numeric(strata)) strata <-  fast.approx(ustrata,strata)-1 else  {
       strata <- as.integer(factor(strata,labels=seq(nstrata)))-1
     }
   }
   if (is.null(offset)) offset <- rep(0,length(exit)) 
   if (is.null(weights)) weights <- rep(1,length(exit)) 
+  strata.call <- strata
 
    Zcall <- matrix(1,1,1) ## to not use for ZX products when Z is not given 
    if (!is.null(Z)) Zcall <- Z
@@ -194,7 +195,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 	 cumhaz <- cbind(jumptimes,cumsumstrata(1/val$S0,strata,nstrata))
 	 DLambeta.t <- apply(val$E/c(val$S0),2,cumsumstrata,strata,nstrata)
 	 varbetat <-   rowSums((DLambeta.t %*% II)*DLambeta.t)
-	 ### covv <-  apply(covv*DLambeta.t,1,sum) Covaraince is "0" by construction
+	 ### covv <-  apply(covv*DLambeta.t,1,sum) Covariance is "0" by construction
 	 var.cumhaz <- cumsumstrata(1/val$S0^2,strata,nstrata)+varbetat
 	 se.cumhaz <- cbind(jumptimes,(var.cumhaz)^.5)
 
@@ -217,7 +218,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
  else {cumhaz <- se.cumhaz <- lcumhaz <- lse.cumhaz <- NULL}
 
   res <- c(val,
-           list(strata=strata,
+           list(strata.call=strata.call,
                 entry=entry,
                 exit=exit,
                 status=status,                
@@ -254,7 +255,7 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 
 ###}}} simcox
 
-###{{{ phreg
+###{{{ phreg1
 ##' Fast Cox PH regression
 ##'
 ##' Fast Cox PH regression
@@ -296,7 +297,7 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' m
 ##' plot(m,ylim=c(0,1))
 ##' }
-phreg <- function(formula,data,...) {
+phreg1 <- function(formula,data,...) {
   cl <- match.call()
   m <- match.call(expand.dots = TRUE)[1:3]
   special <- c("strata", "cluster")
@@ -338,7 +339,7 @@ phreg <- function(formula,data,...) {
 }
 ###}}} phreg
 
-###{{{ phreg1
+###{{{ phreg
 ##' Fast Cox PH regression
 ##'
 ##' Fast Cox PH regression
@@ -352,16 +353,16 @@ phreg <- function(formula,data,...) {
 ##' @examples
 ##' data(TRACE)
 ##' dcut(TRACE) <- ~.
-##' out1 <- phreg1(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
+##' out1 <- phreg(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
 ##' tracesim <- sim.cox(out1,1000)
-##' sout1 <- phreg1(Surv(time,status==1)~vf+chf+strata(wmicat.4),data=tracesim)
+##' sout1 <- phreg(Surv(time,status==1)~vf+chf+strata(wmicat.4),data=tracesim)
 ##' 
 ##' par(mfrow=c(1,2))
 ##' baseplot.phreg(out1)
 ##' baseplot.phreg(sout1)
 ##' 
 ##' @export
-phreg1 <- function(formula,data,offset=NULL,weights=NULL,...) {
+phreg <- function(formula,data,offset=NULL,weights=NULL,...) {
   cl <- match.call()
   m <- match.call(expand.dots = TRUE)[1:3]
   special <- c("strata", "cluster","offset")
@@ -402,7 +403,7 @@ phreg1 <- function(formula,data,offset=NULL,weights=NULL,...) {
     X <- X[,-intpos,drop=FALSE]
   if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
 
-  res <- c(phreg01(X,entry,exit,status,id,strata,offset,weights,strata.name,...),list(call=cl,model.frame=m))
+  res <- c(phreg01(X,entry,exit,status,id,strata,offset,weights,strata.name,...),list(call=cl,model.frame=m,formula=formula))
   class(res) <- "phreg"
   
   res
@@ -436,7 +437,7 @@ coef.phreg  <- function(object,...) {
 
 ##' @export
 iid.phreg  <- function(x,...) {
-    invhess <- solve(x$hessian)
+  invhess <- solve(x$hessian)
   ncluster <- NULL
   if (!is.null(x$id)) {
     ii <- mets::cluster.index(x$id)
@@ -618,7 +619,6 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 
 ###{{{ plot
 
-
 ##' Plotting the baslines of stratified Cox 
 ##'
 ##' Plotting the baslines of stratified Cox 
@@ -642,7 +642,7 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 ##' @examples
 ##' data(TRACE)
 ##' dcut(TRACE) <- ~.
-##' out1 <- phreg1(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
+##' out1 <- phreg(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
 ##' 
 ##' par(mfrow=c(2,2))
 ##' baseplot.phreg(out1)
@@ -754,7 +754,6 @@ baseplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,
 lines.phreg <- function(x,...,add=TRUE) plot(x,...,add=add)
 
 ###}}} plot
-
 
 ###{{{ plot
 

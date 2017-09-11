@@ -12,12 +12,12 @@
 ##' @examples
 ##' data(TRACE)
 ##' 
-##' m1 <- phreg1(Surv(time,status==9)~vf+chf+diabetes,data=TRACE) 
+##' m1 <- phreg(Surv(time,status==9)~vf+chf+diabetes,data=TRACE) 
 ##' gg <- gof(m1)
 ##' par(mfrow=c(1,3))
 ##' plot(gg)
 ##' 
-##' m1 <- phreg1(Surv(time,status==9)~strata(vf)+chf+diabetes,data=TRACE) 
+##' m1 <- phreg(Surv(time,status==9)~strata(vf)+chf+diabetes,data=TRACE) 
 ##' gg <- gof(m1)
 ##' @export
 gof.phreg  <- function(x,n.sim=1000,silent=1)
@@ -95,12 +95,12 @@ gofM.phreg  <- function(formula,data,offset=NULL,weights=NULL,modelmatrix=NULL,
 
 if (is.null(modelmatrix)) stop(" must give matrix for cumulating residuals\n"); 
 
-cox1 <- phreg1(formula,data,offset=NULL,weights=NULL,Z=modelmatrix,cumhaz=FALSE,...) 
+cox1 <- phreg(formula,data,offset=NULL,weights=NULL,Z=modelmatrix,cumhaz=FALSE,...) 
 offsets <- as.matrix(cox1$model.frame[,names(cox1$coef)]) %*% cox1$coef
 if (!is.null(offset)) offsets <- offsets*offset
 if (!is.null(cox1$strata)) 
-     coxM <- phreg1(cox1$model.frame[,1]~modelmatrix+strata(cox1$strata),data,offset=offsets,weights=weights,no.opt=TRUE,cumhaz=FALSE,...)
-else coxM <- phreg1(cox1$model.frame[,1]~modelmatrix,data,offset=offsets,weights=weights,no.opt=TRUE,cumhaz=FALSE,...)
+     coxM <- phreg(cox1$model.frame[,1]~modelmatrix+strata(cox1$strata),data,offset=offsets,weights=weights,no.opt=TRUE,cumhaz=FALSE,...)
+else coxM <- phreg(cox1$model.frame[,1]~modelmatrix,data,offset=offsets,weights=weights,no.opt=TRUE,cumhaz=FALSE,...)
 nnames <- colnames(modelmatrix)
 
 Ut <- apply(coxM$U,2,cumsum)
@@ -151,8 +151,8 @@ return(out)
 ##' @examples
 ##' data(TRACE)
 ##' 
-##' m1 <- phreg1(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE) 
-##' m2 <- phreg1(Surv(time,status==9)~vf+strata(chf)+wmi,data=TRACE) 
+##' m1 <- phreg(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE) 
+##' m2 <- phreg(Surv(time,status==9)~vf+strata(chf)+wmi,data=TRACE) 
 ##' par(mfrow=c(2,2))
 ##' gofG.phreg(m1)
 ##' gofG.phreg(m2)

@@ -304,7 +304,7 @@ colvec  cumsumstrata(colvec a,IntegerVector strata,int nstrata) {/*{{{*/
 colvec  cumsumstrataPO(colvec a,IntegerVector strata,int nstrata,double propodds,colvec exb) {/*{{{*/
   unsigned n = a.n_rows;
   colvec tmpsum(nstrata); 
-  tmpsum.zeros(); tmpsum.zeros(); 
+  tmpsum.zeros(); 
   colvec res = a; 
   colvec pow = a; 
 
@@ -585,7 +585,7 @@ BEGIN_RCPP/*{{{*/
   arma::Col<int> Sign = Rcpp::as<arma::Col<int> >(SignSEXP);
   IntegerVector strata(strataSEXP);
   int nstrata = Rcpp::as<int>(nstrataSEXP);
-  double propodds = Rcpp::as<int>(propoddsSEXP);
+  double propodds = Rcpp::as<double>(propoddsSEXP);
   // unsigned n = X.n_rows;
   unsigned p = X.n_cols;
   colvec weights = Rcpp::as<colvec>(weightsSEXP);
