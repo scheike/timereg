@@ -171,11 +171,11 @@ for (s=0;s<*Ntimes;s++)
 	  print_mat(A); 
    }
    if (*stratum==1)  {
-      for (k=0;k<*px;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);
+      for (k=0;k<*px;k++) ME(AI,k,k)=1/ME(A,k,k);
    }
 
 
-    if (( fabs(ME(AI,0,0))<.0000001) && (*stratum==0)) {
+    if (( ME(AI,0,0)==0) && (*stratum==0)) {
       convproblems=1; convt=0; silent[s]=1;
       for (c=0;c<ps;c++) VE(beta,c)=0; 
       for (c=0;c<*px;c++) VE(bet1,c)=betaS[c]; 
@@ -410,9 +410,9 @@ malloc_vec((*px)+(*pg),qs);
     extract_row(ldesignX,j,xi); extract_row(ldesignG,j,zi); 
     if (*estimator==2 && *monotone==1) {
          for(k=0;k<pmax;k++)   {
-		 if (k<*px)  ME(wX,j,k)= pow(weights[j]/KMtimes[s],0.5)*z[k*(*antpers)+j];
-		 if (k<*pg)  ME(wZ,j,k)= pow(weights[j]/KMtimes[s],0.5)*zsem[k*(*antpers)+j];
-	 }
+	 if (k<*px)  ME(wX,j,k)= pow(weights[j]/KMtimes[s],0.5)*z[k*(*antpers)+j];
+	 if (k<*pg)  ME(wZ,j,k)= pow(weights[j]/KMtimes[s],0.5)*zsem[k*(*antpers)+j];
+       }
     }
     lrr=0;  lrrt=0; 
     // {{{ compute P_1 and DP_1 
@@ -565,7 +565,7 @@ malloc_vec((*px)+(*pg),qs);
       varp=VE(plamt,j)*(1-VE(plamt,j)); 
       scl_vec_mult(VE(plamt,j),xi,dpx); 
       scl_vec_mult(VE(plamt,j),zi,dpz); 
-      if ((trunkp[j]<1)) { 
+      if ((trunkp[j]<1)) { /*{{{*/
 	 extract_row(ldesignG,j,zit); extract_row(ldesignX,j,xit); 
 	 for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*antpers)+j];
 	 for (l=0;l<*pg;l++) {
@@ -580,7 +580,7 @@ malloc_vec((*px)+(*pg),qs);
 	 scl_vec_mult(1/trunkp[j],dpx,dpx);
 	 scl_vec_mult(1/trunkp[j],dpz,dpz);  
 	 VE(plamt,j)=(VE(plamt,j)-phattrunc)/trunkp[j];
-      } 
+      } /*}}}*/
    } // }}} 
    if (*trans==5) { // relative risk, param 2 // {{{ 
       for (l=0;l<*pg;l++) { VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
@@ -591,7 +591,7 @@ malloc_vec((*px)+(*pg),qs);
       varp=VE(plamt,j)*(1-VE(plamt,j)); 
       scl_vec_mult(exp(lrr),xi,dpx); 
       scl_vec_mult(VE(plamt,j),zi,dpz); 
-      if ((trunkp[j]<1)) { 
+      if ((trunkp[j]<1)) { /*{{{*/
 	 extract_row(ldesignG,j,zit); extract_row(ldesignX,j,xit); 
 	 for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*antpers)+j];
 	 for (l=0;l<*pg;l++) { 
@@ -606,7 +606,7 @@ malloc_vec((*px)+(*pg),qs);
 		 scl_vec_mult(1/trunkp[j],dpx,dpx);
 		 scl_vec_mult(1/trunkp[j],dpz,dpz);  
 	 VE(plamt,j)=(VE(plamt,j)-phattrunc)/trunkp[j];
-      }
+      }/*}}}*/
    }  // }}} 
    if (*trans==8) { // log-relative risk, // {{{ 
       for (l=0;l<*pg;l++) { VE(zi,l)= pow(time,timepow[l])*VE(zi,l); 
@@ -679,16 +679,20 @@ malloc_vec((*px)+(*pg),qs);
        
   if (*monotone==0) MtM(cdesignX,A); else  MtA(cdesignX,ldesignX,A); 
 //  MtM(cdesignX,A); 
+  
+
   invertS(A,AI,osilent); sing=0; 
   if (ME(AI,0,0)==0 && (*stratum==0) && (osilent==0)) {
      Rprintf(" X'X not invertible at time %d %lf %d \n",s,time,osilent); 
      print_mat(A); 
   }
   if (*stratum==1)  {
-     for (k=0;k<*px;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);
+//     for (k=0;k<*px;k++) if (fabs(ME(A,k,k))<0.000001)  ME(AI,k,k)=0; else ME(AI,k,k)=1/ME(A,k,k);
+     for (k=0;k<*px;k++) ME(AI,k,k)=1/ME(A,k,k);
   }
 
-  if ((fabs(ME(AI,0,0))<.00001) && ((*stratum==0) || ((*stratum==1) && (*px==1)))) {
+
+  if ((ME(AI,0,0)==0) && ((*stratum==0) || ((*stratum==1) && (*px==1))))   {
      convproblems=1;  silent[s]=1; 
      if (osilent==0) Rprintf("Iteration %d: non-invertible design at time %lf\n",itt,time); 
      for (k=1;k<=*px;k++) { inc[k*(*Ntimes)+s]=0; est[k*(*Ntimes)+s]=0; }
