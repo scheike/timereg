@@ -852,6 +852,7 @@ dlag <- function(data,x,k=1,combine=TRUE,simplify=TRUE,names,...) {
     if (is.character(x)) x <- data[,x,drop=FALSE]
     if (inherits(x,"formula")) {
         ##x <- as.data.frame(model.matrix(update(x,~.-1), model.frame(~.,data=data, na.action=na.pass)))
+        environment(x) <- environment()
         x <- model.frame(x,data=data, na.action=na.pass)
     }
     kmin0 <- abs(min(k,0))
@@ -860,7 +861,7 @@ dlag <- function(data,x,k=1,combine=TRUE,simplify=TRUE,names,...) {
     pad <- function(x) c(rep(NA,kmax0),x,rep(NA,kmin0))
     kidx <- match(k,seq(min(k,0),max(k,0)))
     val <- lapply(x,function(y) embed(pad(y),dimension=kmax+1)[,kidx,drop=FALSE])
-    dval <- as.data.frame(val)    
+    dval <- as.data.frame(val)
     if (!missing(names)) {
         base::names(dval) <- names
     } else {
