@@ -468,6 +468,37 @@ ulc
 115  90
 #+end_example
 
+and with new variables 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+dtable(melanoma,~status+sex+ulc+dcut(days)+I(days>300),level=1)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+status
+  1   2   3 
+ 57 134  14 
+
+sex
+  0   1 
+126  79 
+
+ulc
+  0   1 
+115  90 
+
+dcut(days)
+      [10,1.52e+03]    (1.52e+03,2e+03]    (2e+03,3.04e+03] (3.04e+03,5.56e+03] 
+                 52                  51                  51                  51 
+
+I(days > 300)
+FALSE  TRUE 
+   11   194
+#+end_example
+
+
 * Making new variales for the analysis
 
 To define a bunch of new covariates within a data-frame
@@ -502,7 +533,6 @@ using the dtransform function that extends transform with a possible condition
 : 2   1   0 197.3611
 : 3   0   1 374.5532
 : 4   1   1 523.1198
-
 
 
 
