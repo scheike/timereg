@@ -216,6 +216,9 @@ ddrop(melanoma) <- ~thick+sex
 names(melanoma)
 #+END_SRC
 
+#+RESULTS:
+: [1] "no"     "status" "days"   "ulc"
+
 
 * Looking at the data 
 
