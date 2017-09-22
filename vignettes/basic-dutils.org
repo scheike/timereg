@@ -78,7 +78,23 @@ is
 to use the function on y in a dataframe grouped by x if 
 condition ifcond is valid. The basic functions are 
 
-...
+Data processing
+    - dsort
+    - dreshape
+    - dcut
+    - drm, drename, ddrop, dkeep, dsubset
+    - drelevel
+    - dlag
+    - dfactor, dnumeric
+Data aggregation
+    - dby, dby2
+    - dscalar, deval, daggregate
+    - dmean, dsd, dsum, dquantile, dcor
+    - dtable, dcount
+Data summaries
+    - dhead, dtail, 
+    - dsummary, 
+    - dprint, dlist, dlevels, dunique
 
 
 A generic function daggregate, daggr,  can be called with a function as the 
@@ -190,6 +206,15 @@ names(melanoma)
 
 #+RESULTS:
 : [1] "thick"  "sex"    "status" "days"
+
+
+This can also be done with direct asignment 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+data(melanoma)
+ddrop(melanoma) <- ~thick+sex
+names(melanoma)
+#+END_SRC
 
 
 * Looking at the data 
@@ -445,9 +470,7 @@ ulc
 To define a bunch of new covariates within a data-frame
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
-melanoma= transform(melanoma, 
-           thick2=thick^2, 
-           lthick=log(thick) ) 
+melanoma= transform(melanoma, thick2=thick^2, lthick=log(thick) ) 
 dhead(melanoma)
 #+END_SRC
 
@@ -476,7 +499,6 @@ using the dtransform function that extends transform with a possible condition
 : 2   1   0 197.3611
 : 3   0   1 374.5532
 : 4   1   1 523.1198
-
 
 
 
