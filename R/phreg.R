@@ -235,6 +235,24 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 
 ###}}} phreg0
 
+##' @export
+iid.phreg <- function(x) {
+  if (!is.null(seed))
+      set.seed(seed)
+  m <- lvm()
+  regression(m,T~X1+X2) <- beta
+  distribution(m,~T+C) <- coxWeibull.lvm(scale=1/100)
+  distribution(m,~entry) <- coxWeibull.lvm(scale=1/10)
+  m <- eventTime(m,time~min(T,C=0),"status")
+  d <- sim(m,n);
+  if (!entry) d$entry <- 0
+  else d <- subset(d, time>entry,select=-c(T,C))
+  return(d)
+}
+
+
+
+
 ###{{{ simcox
 
 ##' @export
@@ -433,23 +451,56 @@ coef.phreg  <- function(object,...) {
 
 ###}}} coef
 
-###{{{ iid
+###{{{ iid & Robust variances 
 
 ##' @export
-iid.phreg  <- function(x,...) {
-  invhess <- solve(x$hessian)
+iid.phreg  <- function(x,type="robust",...) {# {{{
+    invhess <- solve(x$hessian)
+  if (type=="robust") {	
+    ii <- invhess 
+    S0 <- rep(0,length(x$strata))
+    S0i <- S0
+    S0[x$jumps] <- x$S0
+    S0i[x$jumps] <- 1/x$S0
+    c(S0i)
+    Z <- x$X[x$ord,,drop=FALSE]
+    strata <- x$strata
+    exit <-   x$exit[x$ord] 
+    entry <-  x$entry[x$ord]
+    U <- E <- matrix(0,nrow(x$X),x$p)
+    E[x$jumps,] <- x$E
+    U[x$jumps,] <- x$U
+###    
+  cumhaz <- cbind(exit,mets:::cumsumstrata(S0i,strata,x$nstrata))
+  EdLam0 <- apply(E*S0i,2,mets:::cumsumstrata,strata,x$nstrata)
+  rr <- c(exp(Z %*% coef(x)))
+### Martingale  as a function of time
+  MGt <- U[,drop=FALSE]-rr*Z*cumhaz[,2]+rr*EdLam0
+  orig.order <- (1:nrow(Z))[x$ord]
+  ### back to order of data-set
+  MGt <- MGt[order(orig.order),]
+  } else MGt <- x$U
+
   ncluster <- NULL
   if (!is.null(x$id)) {
     ii <- mets::cluster.index(x$id)
     UU <- matrix(nrow=ii$uniqueclust,ncol=ncol(invhess))
     for (i in seq(ii$uniqueclust)) {
-      UU[i,] <- colSums(x$U[ii$idclustmat[i,seq(ii$cluster.size[i])]+1,,drop=FALSE])
+      UU[i,] <- colSums(MGt[ii$idclustmat[i,seq(ii$cluster.size[i])]+1,,drop=FALSE])
     }
     ncluster <- nrow(UU)
   } else {
-      UU <- x$U
+      UU <- MGt
   }
+
   structure(UU%*%invhess,invhess=invhess,ncluster=ncluster)
+} # }}}
+
+
+##' @export
+robust.phreg  <- function(x,...) {
+ gamma.iid <- iid.phreg(x) 
+ robvar <- crossprod(gamma.iid)
 }
 
 ###}}}
@@ -457,11 +508,11 @@ iid.phreg  <- function(x,...) {
 ###{{{ summary
 
 ##' @export
-summary.phreg <- function(object,se="robust",...) {
+summary.phreg <- function(object,se=c("robust","martingale"),...) {
   cc <- ncluster <- NULL
   if (length(object$p)>0 && object$p>0) {
     I <- -solve(object$hessian)
-    V <- vcov(object)
+    V <- vcov(object,type=se[1])
     cc <- cbind(coef(object),diag(V)^0.5,diag(I)^0.5)
     cc  <- cbind(cc,2*(pnorm(abs(cc[,1]/cc[,2]),lower.tail=FALSE)))
     colnames(cc) <- c("Estimate","S.E.","dU^-1/2","P-value")
@@ -474,8 +525,7 @@ summary.phreg <- function(object,se="robust",...) {
   } else {
     n <- length(object$time)    
   }  
-  res <- list(coef=cc,n=n,nevent=object$nevent,
-              strata=Strata,ncluster=ncluster)
+  res <- list(coef=cc,n=n,nevent=object$nevent,strata=Strata,ncluster=ncluster)
   class(res) <- "summary.phreg"
   res
 }
