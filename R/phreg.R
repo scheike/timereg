@@ -123,6 +123,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
   if (is.null(weights)) weights <- rep(1,length(exit)) 
   strata.call <- strata
 
+
    Zcall <- matrix(1,1,1) ## to not use for ZX products when Z is not given 
    if (!is.null(Z)) Zcall <- Z
 
@@ -135,7 +136,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
    dd$nstrata <- nstrata
 
 	if (!is.null(id))
-	  id <- dd$id[dd$jumps+1]
+###	  id <- dd$id[dd$jumps+1]
 	obj <- function(pp,U=FALSE,all=FALSE) {
 		if (is.null(propodds) & is.null(AddGam)) 
 	  val <- with(dd,
@@ -478,12 +479,14 @@ iid.phreg  <- function(x,type="robust",...) {# {{{
   MGt <- U[,drop=FALSE]-rr*Z*cumhaz[,2]+rr*EdLam0
   orig.order <- (1:nrow(Z))[x$ord]
   ### back to order of data-set
-  MGt <- MGt[order(orig.order),]
+  MGt <- MGt[order(orig.order),,drop=FALSE]
   } else MGt <- x$U
 
   ncluster <- NULL
   if (!is.null(x$id)) {
-    ii <- mets::cluster.index(x$id)
+    id <- x$id
+    if (type=="martingale") id <- x$id[x$jumps]
+    ii <- mets::cluster.index(id)
     UU <- matrix(nrow=ii$uniqueclust,ncol=ncol(invhess))
     for (i in seq(ii$uniqueclust)) {
       UU[i,] <- colSums(MGt[ii$idclustmat[i,seq(ii$cluster.size[i])]+1,,drop=FALSE])
@@ -508,11 +511,11 @@ robust.phreg  <- function(x,...) {
 ###{{{ summary
 
 ##' @export
-summary.phreg <- function(object,se=c("robust","martingale"),...) {
+summary.phreg <- function(object,type=c("robust","martingale"),...) {
   cc <- ncluster <- NULL
   if (length(object$p)>0 && object$p>0) {
     I <- -solve(object$hessian)
-    V <- vcov(object,type=se[1])
+    V <- vcov(object,type=type[1])
     cc <- cbind(coef(object),diag(V)^0.5,diag(I)^0.5)
     cc  <- cbind(cc,2*(pnorm(abs(cc[,1]/cc[,2]),lower.tail=FALSE)))
     colnames(cc) <- c("Estimate","S.E.","dU^-1/2","P-value")
