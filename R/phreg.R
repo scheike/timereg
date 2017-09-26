@@ -1,6 +1,6 @@
 ###{{{ phreg0 
 
-phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,method="NR",...) {
+phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,method="NR",...) {# {{{
   p <- ncol(X)
   if (missing(beta)) beta <- rep(0,p)
   if (p==0) X <- cbind(rep(0,length(exit)))
@@ -99,7 +99,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
                 id=id, opt=opt,cum=cumhaz))
   class(res) <- "phreg"
   res
-}
+} # }}}
 
 ###}}} phreg0
 
@@ -122,22 +122,27 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
   if (is.null(offset)) offset <- rep(0,length(exit)) 
   if (is.null(weights)) weights <- rep(1,length(exit)) 
   strata.call <- strata
+  Zcall <- matrix(1,1,1) ## to not use for ZX products when Z is not given 
+  if (!is.null(Z)) Zcall <- Z
 
+  trunc <- (!is.null(entry))
+  if (!trunc) entry <- rep(0,length(exit))
 
-   Zcall <- matrix(1,1,1) ## to not use for ZX products when Z is not given 
-   if (!is.null(Z)) Zcall <- Z
-
-   trunc <- (!is.null(entry))
-   if (!trunc) entry <- rep(0,length(exit))
+  id.orig <- id; 
+  if (!is.null(id)) {
+	  ids <- sort(unique(id))
+	  nid <- length(ids)
+      if (is.numeric(id)) id <-  fast.approx(ids,id)-1 else  {
+      id <- as.integer(factor(id,labels=seq(nid)))-1
+     }
+   } else id <- as.integer(seq_along(entry))
 
    system.time(dd <- .Call("FastCoxPrepStrata",
-			      entry,exit,status,X, as.integer(seq_along(entry)),
+			      entry,exit,status,X, id, ### as.integer(seq_along(entry)),
 			      trunc,strata,weights,offset,Zcall,PACKAGE="mets"))
    dd$nstrata <- nstrata
 
-	if (!is.null(id))
-###	  id <- dd$id[dd$jumps+1]
-	obj <- function(pp,U=FALSE,all=FALSE) {
+	obj <- function(pp,U=FALSE,all=FALSE) {# {{{
 		if (is.null(propodds) & is.null(AddGam)) 
 	  val <- with(dd,
 		   .Call("FastCoxPLstrata",pp,X,XX,sign,jumps,
@@ -162,7 +167,8 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 	      return(val)
 	  }
 	  with(val, structure(-ploglik,gradient=-gradient,hessian=-hessian))
-	}
+	}# }}}
+
   opt <- NULL
   if (p>0) {
   if (no.opt==FALSE) {
@@ -186,7 +192,6 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
   II <- NULL
   ### computes Breslow estimator 
   if (cumhaz==TRUE) { # {{{
-
 	 II <- -solve(val$hessian)
 	 strata <- val$strata[val$jumps]
 	 nstrata <- val$nstrata
@@ -219,13 +224,15 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
  else {cumhaz <- se.cumhaz <- lcumhaz <- lse.cumhaz <- NULL}
 
   res <- c(val,
-           list(strata.call=strata.call,
+           list(cox.prep=dd,
+		strata.call=strata.call,
                 entry=entry,
                 exit=exit,
                 status=status,                
                 p=p,
                 X=X,
-                id=id, 
+###             id.orig=id.orig, 
+                id=id.orig, 
 		opt=opt, 
 		cumhaz=cumhaz, se.cumhaz=se.cumhaz,
 		lcumhaz=lcumhaz, lse.cumhaz=lse.cumhaz,
@@ -236,21 +243,20 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 
 ###}}} phreg0
 
-##' @export
-iid.phreg <- function(x) {
-  if (!is.null(seed))
-      set.seed(seed)
-  m <- lvm()
-  regression(m,T~X1+X2) <- beta
-  distribution(m,~T+C) <- coxWeibull.lvm(scale=1/100)
-  distribution(m,~entry) <- coxWeibull.lvm(scale=1/10)
-  m <- eventTime(m,time~min(T,C=0),"status")
-  d <- sim(m,n);
-  if (!entry) d$entry <- 0
-  else d <- subset(d, time>entry,select=-c(T,C))
-  return(d)
-}
-
+#####' @export
+###iid.phreg <- function(x) {# {{{
+###  if (!is.null(seed))
+###      set.seed(seed)
+###  m <- lvm()
+###  regression(m,T~X1+X2) <- beta
+###  distribution(m,~T+C) <- coxWeibull.lvm(scale=1/100)
+###  distribution(m,~entry) <- coxWeibull.lvm(scale=1/10)
+###  m <- eventTime(m,time~min(T,C=0),"status")
+###  d <- sim(m,n);
+###  if (!entry) d$entry <- 0
+###  else d <- subset(d, time>entry,select=-c(T,C))
+###  return(d)
+###} # }}}
 
 
 
@@ -454,47 +460,98 @@ coef.phreg  <- function(object,...) {
 
 ###{{{ iid & Robust variances 
 
+
+#####' @export
+###iid.phreg  <- function(x,type="robust",...) {# {{{
+###  invhess <- solve(x$hessian)
+###  if (type=="robust") {
+###    ii <- invhess
+###    S0 <- rep(0,length(x$strata))
+###    S0i <- S0
+###    S0[x$jumps] <- x$S0
+###    S0i[x$jumps] <- 1/x$S0
+###    c(S0i)
+###    Z <- x$X[x$ord,,drop=FALSE]
+###    strata <- x$strata
+###    exit <-   x$exit[x$ord]
+###    entry <-  x$entry[x$ord]
+###    U <- E <- matrix(0,nrow(x$X),x$p)
+###    E[x$jumps,] <- x$E
+###    U[x$jumps,] <- x$U
+######
+###  cumhaz <- cbind(exit,mets:::cumsumstrata(S0i,strata,x$nstrata))
+###  EdLam0 <- apply(E*S0i,2,mets:::cumsumstrata,strata,x$nstrata)
+###  rr <- c(exp(Z %*% coef(x)))
+###### Martingale  as a function of time
+###  MGt <- U[,drop=FALSE]-rr*Z*cumhaz[,2]+rr*EdLam0
+###  orig.order <- (1:nrow(Z))[x$ord]
+###  ### back to order of data-set
+###  MGt <- MGt[order(orig.order),,drop=FALSE]
+###  } else MGt <- x$U
+###
+###  ncluster <- NULL
+###  if (!is.null(x$id)) {
+###    id <- x$id
+###    if (type=="martingale") id <- x$id[x$jumps]
+###    ii <- mets::cluster.index(id)
+###    UU <- matrix(nrow=ii$uniqueclust,ncol=ncol(invhess))
+###    for (i in seq(ii$uniqueclust)) {
+###      UU[i,] <- colSums(MGt[ii$idclustmat[i,seq(ii$cluster.size[i])]+1,,drop=FALSE])
+###    }
+###    ncluster <- nrow(UU)
+###  } else {
+###      UU <- MGt
+###  }
+###
+###  structure(UU%*%invhess,invhess=invhess,ncluster=ncluster)
+###} # }}}
+
+
 ##' @export
 iid.phreg  <- function(x,type="robust",...) {# {{{
-    invhess <- solve(x$hessian)
+  invhess <- solve(x$hessian)
   if (type=="robust") {	
+    xx <- x$cox.prep
     ii <- invhess 
-    S0 <- rep(0,length(x$strata))
+    S0 <- rep(0,length(xx$strata))
     S0i <- S0
-    S0[x$jumps] <- x$S0
-    S0i[x$jumps] <- 1/x$S0
-    c(S0i)
-    Z <- x$X[x$ord,,drop=FALSE]
-    strata <- x$strata
-    exit <-   x$exit[x$ord] 
-    entry <-  x$entry[x$ord]
-    U <- E <- matrix(0,nrow(x$X),x$p)
-    E[x$jumps,] <- x$E
-    U[x$jumps,] <- x$U
+    S0[xx$jumps+1] <- c(x$S0)
+    S0i[xx$jumps+1] <- 1/x$S0
+    Z <- xx$X
+    strata <- xx$strata
+    U <- E <- matrix(0,nrow(xx$X),x$p)
+    E[xx$jumps+1,] <- x$E
+    U[xx$jumps+1,] <- x$U
 ###    
-  cumhaz <- cbind(exit,mets:::cumsumstrata(S0i,strata,x$nstrata))
-  EdLam0 <- apply(E*S0i,2,mets:::cumsumstrata,strata,x$nstrata)
-  rr <- c(exp(Z %*% coef(x)))
-### Martingale  as a function of time
+  cumhaz <- cbind(xx$time,mets:::cumsumstrata(S0i,xx$strata,xx$nstrata))
+  EdLam0 <- apply(E*S0i,2,mets:::cumsumstrata,xx$strata,xx$nstrata)
+###    
+  rr <- c(xx$sign*exp(Z %*% coef(x)))
+### Martingale  as a function of time and for all subjects to handle strata also
   MGt <- U[,drop=FALSE]-rr*Z*cumhaz[,2]+rr*EdLam0
-  orig.order <- (1:nrow(Z))[x$ord]
+  orig.order <- (1:nrow(xx$X))[xx$ord+1]
+  ooo <- order(orig.order)
   ### back to order of data-set
-  MGt <- MGt[order(orig.order),,drop=FALSE]
+  MGt <- MGt[ooo,,drop=FALSE]
+  id <- xx$id[ooo]
   } else MGt <- x$U
 
   ncluster <- NULL
-  if (!is.null(x$id)) {
-    id <- x$id
+  if (type=="robust" & (!is.null(x$id.orig) | any(x$entry>0))) {
+###    id <- c(xx$id)
     if (type=="martingale") id <- x$id[x$jumps]
     ii <- mets::cluster.index(id)
     UU <- matrix(nrow=ii$uniqueclust,ncol=ncol(invhess))
-    for (i in seq(ii$uniqueclust)) {
-      UU[i,] <- colSums(MGt[ii$idclustmat[i,seq(ii$cluster.size[i])]+1,,drop=FALSE])
-    }
+    xxx <- data.frame(xx=MGt,id=id)
+    UU <- as.matrix(dby2(xxx,"xx*"~id,sum,REDUCE=TRUE)[,-1])
+###    for (i in seq(ii$uniqueclust)) {
+###      UU[i,] <- colSums(MGt[ii$idclustmat[i,seq(ii$cluster.size[i])]+1,,drop=FALSE])
+###    }
     ncluster <- nrow(UU)
   } else {
       UU <- MGt
   }
+  
 
   structure(UU%*%invhess,invhess=invhess,ncluster=ncluster)
 } # }}}

@@ -113,10 +113,11 @@ BEGIN_RCPP/*{{{*/
   arma::mat  X     = Rcpp::as<arma::mat>(XSEXP);
   arma::mat  Z     = Rcpp::as<arma::mat>(ZSEXP);
   arma::Col<int> strata= Rcpp::as<arma::Col<int> >(strataSEXP);
-  try {
-    arma::Col<unsigned> Id    = Rcpp::as<arma::Col<unsigned> >(IdSEXP);
-  }
-  catch(...) {}
+  arma::Col<int> Id= Rcpp::as<arma::Col<int> >(IdSEXP);
+//  try {
+//    arma::Col<unsigned> Id    = Rcpp::as<arma::Col<unsigned> >(IdSEXP);
+//  }
+//  catch(...) {}
 
   colvec weights = Rcpp::as<colvec>(weightsSEXP);
   colvec offsets = Rcpp::as<colvec>(offsetsSEXP);
@@ -165,15 +166,16 @@ BEGIN_RCPP/*{{{*/
 
 
   arma::Col<int> Sign;
+  Sign.reshape(n,1); Sign.fill(1);
   if (Truncation) {
     // vec Entry = Rcpp::as<vec>(entry);  
     Exit.insert_rows(0,Entry);
     X.insert_rows(0,X);
     Status.insert_rows(0,Status);
+    Id.insert_rows(0,Id);
     strata.insert_rows(0,strata);
     weights.insert_rows(0,weights);
     offsets.insert_rows(0,offsets);
-    Sign.reshape(n,1); Sign.fill(1);
     for (unsigned i=0; i<(n/2); i++) Sign(i) = -1;
     Status = Status%(1+Sign);
   }
@@ -192,13 +194,15 @@ BEGIN_RCPP/*{{{*/
   if ((ZX.n_rows==XX.n_rows) & (XX.n_rows>0)) {
     ZX = ZX.rows(idx);  
   }
+  Exit = Exit.elem(idx); 
   weights = weights.elem(idx); 
   offsets = offsets.elem(idx); 
   Status = Status.elem(idx);
+  Id = Id.elem(idx); 
   strata = strata.elem(idx); 
   arma::uvec jumps = find(Status>0);
   //Rprintf("jumps");
-  arma::Col<unsigned> newId;
+//  arma::Col<unsigned> newId;
   // if (haveId) {
   //   // uvec Id = Rcpp::as<uvec>(id);
   //   if (Truncation) {
@@ -213,7 +217,7 @@ BEGIN_RCPP/*{{{*/
 				       Rcpp::Named("sign")=Sign,
 				       Rcpp::Named("ord")=idx,
 				       Rcpp::Named("time")=Exit,
-				       Rcpp::Named("id")=newId,				       
+				       Rcpp::Named("id")=Id,				       
 				       Rcpp::Named("weights")=weights,
 				       Rcpp::Named("offset")=offsets,				       
 				       Rcpp::Named("strata")=strata,				       
