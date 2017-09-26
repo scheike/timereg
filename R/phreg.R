@@ -585,7 +585,7 @@ summary.phreg <- function(object,type=c("robust","martingale"),...) {
   } else {
     n <- length(object$time)    
   }  
-  res <- list(coef=cc,n=n,nevent=object$nevent,strata=Strata,ncluster=ncluster)
+  res <- list(coef=cc,n=n,nevent=object$nevent,strata=Strata,ncluster=ncluster,var=V)
   class(res) <- "summary.phreg"
   res
 }
