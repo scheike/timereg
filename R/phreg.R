@@ -138,8 +138,8 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
    } else id <- as.integer(seq_along(entry))
 
    system.time(dd <- .Call("FastCoxPrepStrata",
-			      entry,exit,status,X, id, ### as.integer(seq_along(entry)),
-			      trunc,strata,weights,offset,Zcall,PACKAGE="mets"))
+		     entry,exit,status,X, id, ### as.integer(seq_along(entry)),
+		     trunc,strata,weights,offset,Zcall,PACKAGE="mets"))
    dd$nstrata <- nstrata
 
 	obj <- function(pp,U=FALSE,all=FALSE) {# {{{
@@ -157,7 +157,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 		    AddGam$theta,AddGam$dimthetades,AddGam$thetades,AddGam$ags,AddGam$varlink,AddGam$dimjumprv,AddGam$jumprv,AddGam$JumpsCauses,PACKAGE="mets"))
 	 
 	  if (all) {
-	      val$time <- dd$time[dd$ord+1]
+	      val$time <- dd$time
 	      val$ord <- dd$ord+1
 	      val$jumps <- dd$jumps+1
 	      val$jumptimes <- val$time[val$jumps]

@@ -121,8 +121,8 @@ colnames(res) <- c("Sup|U(t)|","pval")
 rownames(res) <- nnames 
 
 if (silent==0) {
-cat("Cumulative score process test for modelmatrix:\n")
-prmatrix(round(res,digits=2))
+   cat("Cumulative score process test for modelmatrix:\n")
+   prmatrix(round(res,digits=2))
 }
 
 out <- list(jumptimes=jumptimes,supUsim=simcox$supUsim,res=res,supU=obs,
