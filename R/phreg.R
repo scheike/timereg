@@ -509,7 +509,7 @@ coef.phreg  <- function(object,...) {
 
 ##' @export
 iid.phreg  <- function(x,type="robust",...) {# {{{
-  invhess <- solve(x$hessian)
+  invhess <- -solve(x$hessian)
   if (type=="robust") {	
     xx <- x$cox.prep
     ii <- invhess 
