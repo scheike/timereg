@@ -460,53 +460,6 @@ coef.phreg  <- function(object,...) {
 
 ###{{{ iid & Robust variances 
 
-
-#####' @export
-###iid.phreg  <- function(x,type="robust",...) {# {{{
-###  invhess <- solve(x$hessian)
-###  if (type=="robust") {
-###    ii <- invhess
-###    S0 <- rep(0,length(x$strata))
-###    S0i <- S0
-###    S0[x$jumps] <- x$S0
-###    S0i[x$jumps] <- 1/x$S0
-###    c(S0i)
-###    Z <- x$X[x$ord,,drop=FALSE]
-###    strata <- x$strata
-###    exit <-   x$exit[x$ord]
-###    entry <-  x$entry[x$ord]
-###    U <- E <- matrix(0,nrow(x$X),x$p)
-###    E[x$jumps,] <- x$E
-###    U[x$jumps,] <- x$U
-######
-###  cumhaz <- cbind(exit,mets:::cumsumstrata(S0i,strata,x$nstrata))
-###  EdLam0 <- apply(E*S0i,2,mets:::cumsumstrata,strata,x$nstrata)
-###  rr <- c(exp(Z %*% coef(x)))
-###### Martingale  as a function of time
-###  MGt <- U[,drop=FALSE]-rr*Z*cumhaz[,2]+rr*EdLam0
-###  orig.order <- (1:nrow(Z))[x$ord]
-###  ### back to order of data-set
-###  MGt <- MGt[order(orig.order),,drop=FALSE]
-###  } else MGt <- x$U
-###
-###  ncluster <- NULL
-###  if (!is.null(x$id)) {
-###    id <- x$id
-###    if (type=="martingale") id <- x$id[x$jumps]
-###    ii <- mets::cluster.index(id)
-###    UU <- matrix(nrow=ii$uniqueclust,ncol=ncol(invhess))
-###    for (i in seq(ii$uniqueclust)) {
-###      UU[i,] <- colSums(MGt[ii$idclustmat[i,seq(ii$cluster.size[i])]+1,,drop=FALSE])
-###    }
-###    ncluster <- nrow(UU)
-###  } else {
-###      UU <- MGt
-###  }
-###
-###  structure(UU%*%invhess,invhess=invhess,ncluster=ncluster)
-###} # }}}
-
-
 ##' @export
 iid.phreg  <- function(x,type="robust",...) {# {{{
   invhess <- -solve(x$hessian)
@@ -545,7 +498,7 @@ iid.phreg  <- function(x,type="robust",...) {# {{{
   } else  { MGt <- x$U; MG.base <- 1/x$S0; }
 
   ncluster <- NULL
-  if (type=="robust" & (!is.null(x$id.orig) | any(x$entry>0))) {
+  if (type=="robust" & (!is.null(x$id) | any(x$entry>0))) {
 ###    id <- c(xx$id)
     if (type=="martingale") id <- x$id[x$jumps]
     ii <- mets::cluster.index(id)
