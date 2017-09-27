@@ -513,8 +513,7 @@ iid.phreg  <- function(x,type="robust",...) {# {{{
   if (type=="robust") {	
     xx <- x$cox.prep
     ii <- invhess 
-    S0 <- rep(0,length(xx$strata))
-    S0i <- S0
+    S0i <- S0 <- rep(0,length(xx$strata))
     S0[xx$jumps+1] <- c(x$S0)
     S0i[xx$jumps+1] <- 1/x$S0
     Z <- xx$X
@@ -522,19 +521,28 @@ iid.phreg  <- function(x,type="robust",...) {# {{{
     U <- E <- matrix(0,nrow(xx$X),x$p)
     E[xx$jumps+1,] <- x$E
     U[xx$jumps+1,] <- x$U
+###  S0i2[xx$jumps+1] <- 1/x$S0^2
+###  base <- S0i
 ###    
   cumhaz <- cbind(xx$time,mets:::cumsumstrata(S0i,xx$strata,xx$nstrata))
+###  cumS0i2 <- mets:::cumsumstrata(S0i2,xx$strata,xx$nstrata)
   EdLam0 <- apply(E*S0i,2,mets:::cumsumstrata,xx$strata,xx$nstrata)
 ###    
   rr <- c(xx$sign*exp(Z %*% coef(x)))
 ### Martingale  as a function of time and for all subjects to handle strata also
   MGt <- U[,drop=FALSE]-rr*Z*cumhaz[,2]+rr*EdLam0
+###  if (base==TRUE) {# {{{
+###     MG.base <- base- rr*cumS0i2
+###     Ht <- apply(E*S0i2,2,mets:::cumsumstrata,xx$strata,xx$nstrata)
+###     MG.base <- MG.base - Ht * 
+###  }
+###  base <- base - Ht %*% (MGt %*% invhess)# }}}
   orig.order <- (1:nrow(xx$X))[xx$ord+1]
   ooo <- order(orig.order)
   ### back to order of data-set
   MGt <- MGt[ooo,,drop=FALSE]
   id <- xx$id[ooo]
-  } else MGt <- x$U
+  } else  { MGt <- x$U; MG.base <- 1/x$S0; }
 
   ncluster <- NULL
   if (type=="robust" & (!is.null(x$id.orig) | any(x$entry>0))) {
@@ -552,7 +560,6 @@ iid.phreg  <- function(x,type="robust",...) {# {{{
       UU <- MGt
   }
   
-
   structure(UU%*%invhess,invhess=invhess,ncluster=ncluster)
 } # }}}
 
