@@ -4,7 +4,8 @@
 ##' p-values based on Lin, Wei, Ying resampling.
 ##' @param x is phreg object 
 ##' @param n.sim number of simulations for score processes
-##' @param silent to keep it absolutely silent, otherwise timing estimate will be prduced for longer jobs.
+##' @param silent to not give results, 
+##' @prognosis  to show timing estimate will be produced for longer jobs.
 ##' @param ... Additional arguments to lower level funtions
 ##' @author THomas Scheike and Klaus K. Holst
 ##' @export
@@ -20,7 +21,7 @@
 ##' m1 <- phreg(Surv(time,status==9)~strata(vf)+chf+diabetes,data=TRACE) 
 ##' gg <- gof(m1)
 ##' @export
-gof.phreg  <- function(x,n.sim=1000,silent=1)
+gof.phreg  <- function(x,n.sim=1000,silent=1,prognosis=1)
 {# {{{
 
 ### test for proportionality 
@@ -35,14 +36,13 @@ Ut <- apply(U,2,cumsum)
 
 nd <- nrow(x$U)
 Pt <-  .Call("CubeMat",Pt,ii,PACKAGE="mets")$XXX
-hatt <- Pt
 sup <- matrix(0,n.sim,nrow(ii))
 hatti <- matrix(0,nd,nrow(ii))
 obs <- apply(abs(Ut),2,max)
 
 tt <- system.time(simcox1<-.Call("PropTestCox",U,Pt,10,obs,PACKAGE="mets"))
 prt <- n.sim*tt[3]/(10*60)
-if (prt>1 & silent==0) cat(paste("Predicted time minutes",signif(prt,2),"\n"))
+if (prt>1 & prognosis==1) cat(paste("Predicted time minutes",signif(prt,2),"\n"))
 
 simcox <-  .Call("PropTestCox",U,Pt,n.sim,obs,PACKAGE="mets")
 sup <-  simcox$supUsim

@@ -156,6 +156,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 		    strata,nstrata,weights,offset,ZX,
 		    AddGam$theta,AddGam$dimthetades,AddGam$thetades,AddGam$ags,AddGam$varlink,AddGam$dimjumprv,AddGam$jumprv,AddGam$JumpsCauses,PACKAGE="mets"))
 	 
+
 	  if (all) {
 	      val$time <- dd$time
 	      val$ord <- dd$ord+1
@@ -461,35 +462,23 @@ coef.phreg  <- function(object,...) {
 ###{{{ iid & Robust variances 
 
 ##' @export
-iid.phreg  <- function(x,type="robust",...) {# {{{
+iid.phreg  <- function(x,type="robust",all=FALSE,...) {# {{{
   invhess <- -solve(x$hessian)
   if (type=="robust") {	
-    xx <- x$cox.prep
-    ii <- invhess 
-    S0i <- S0 <- rep(0,length(xx$strata))
-    S0[xx$jumps+1] <- c(x$S0)
-    S0i[xx$jumps+1] <- 1/x$S0
-    Z <- xx$X
-    strata <- xx$strata
-    U <- E <- matrix(0,nrow(xx$X),x$p)
-    E[xx$jumps+1,] <- x$E
-    U[xx$jumps+1,] <- x$U
-###  S0i2[xx$jumps+1] <- 1/x$S0^2
-###  base <- S0i
-###    
+  xx <- x$cox.prep
+  ii <- invhess 
+  S0i <- S0 <- rep(0,length(xx$strata))
+  S0[xx$jumps+1] <- c(x$S0)
+  S0i[xx$jumps+1] <- 1/x$S0
+  Z <- xx$X
+  U <- E <- matrix(0,nrow(xx$X),x$p)
+  E[xx$jumps+1,] <- x$E
+  U[xx$jumps+1,] <- x$U
   cumhaz <- cbind(xx$time,mets:::cumsumstrata(S0i,xx$strata,xx$nstrata))
-###  cumS0i2 <- mets:::cumsumstrata(S0i2,xx$strata,xx$nstrata)
   EdLam0 <- apply(E*S0i,2,mets:::cumsumstrata,xx$strata,xx$nstrata)
-###    
   rr <- c(xx$sign*exp(Z %*% coef(x)))
-### Martingale  as a function of time and for all subjects to handle strata also
+  ### Martingale  as a function of time and for all subjects to handle strata also
   MGt <- U[,drop=FALSE]-rr*Z*cumhaz[,2]+rr*EdLam0
-###  if (base==TRUE) {# {{{
-###     MG.base <- base- rr*cumS0i2
-###     Ht <- apply(E*S0i2,2,mets:::cumsumstrata,xx$strata,xx$nstrata)
-###     MG.base <- MG.base - Ht * 
-###  }
-###  base <- base - Ht %*% (MGt %*% invhess)# }}}
   orig.order <- (1:nrow(xx$X))[xx$ord+1]
   ooo <- order(orig.order)
   ### back to order of data-set
@@ -502,15 +491,15 @@ iid.phreg  <- function(x,type="robust",...) {# {{{
 ###    id <- c(xx$id)
     if (type=="martingale") id <- x$id[x$jumps]
     ii <- mets::cluster.index(id)
-    UU <- matrix(nrow=ii$uniqueclust,ncol=ncol(invhess))
-    xxx <- data.frame(xx=MGt,id=id)
-    UU <- as.matrix(dby2(xxx,"xx*"~id,sum,REDUCE=TRUE)[,-1])
+###    UU <- matrix(nrow=ii$uniqueclust,ncol=ncol(invhess))
+###    xxx <- data.frame(xx=MGt,id=id)
+    UU <- apply(MGt,2,sumstrata,ii$clusters,ii$uniqueclust)
 ###    for (i in seq(ii$uniqueclust)) {
 ###      UU[i,] <- colSums(MGt[ii$idclustmat[i,seq(ii$cluster.size[i])]+1,,drop=FALSE])
 ###    }
     ncluster <- nrow(UU)
   } else {
-      UU <- MGt
+     UU <- MGt
   }
   
   structure(UU%*%invhess,invhess=invhess,ncluster=ncluster)
@@ -576,9 +565,25 @@ print.summary.phreg  <- function(x,max.strata=5,...) {
 
 ###}}} print.summary
 
+##' @export
+sumstrata <- function(x,strata,nstrata)
+{# {{{
+res <- .Call("sumstrataR",x,strata,nstrata)$res
+return(res)
+}# }}}
+
+
+##' @export
 cumsumstrata <- function(x,strata,nstrata)
 {# {{{
 res <- .Call("cumsumstrataR",x,strata,nstrata)$res
+return(res)
+}# }}}
+
+##' @export
+revcumsumstrata <- function(x,strata,nstrata)
+{# {{{
+res <- .Call("revcumsumstrataR",x,strata,nstrata)$res
 return(res)
 }# }}}
 
@@ -706,9 +711,6 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 ##' @param stratas wich strata to plot 
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Klaus K. Holst, Thomas Scheike
-##' @export
-##' @aliases phreg phreg.par
-
 ##' @examples
 ##' data(TRACE)
 ##' dcut(TRACE) <- ~.
@@ -725,7 +727,6 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 baseplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,
 			    lty=NULL,col=NULL,legend=TRUE,
 			    ylab="Cumulative hazard",polygon=TRUE,level=0.95,stratas=NULL,...) {# {{{
-
    level <- -qnorm((1-level)/2)
    rr <- range(x$cumhaz[,-1])
    strat <- x$strata[x$jumps]
