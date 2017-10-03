@@ -212,7 +212,7 @@ for (j in (i+1):(nstrata-1)) {
 
 
 ##' @export
-plot.gof.phreg <-  function(x)
+plot.gof.phreg <-  function(x,col=3)
 {# {{{
 p <- ncol(x$score)
 for (i in 1:p)
@@ -222,7 +222,7 @@ rsU <- max(abs(simU))
 rsU <- max(rsU,abs(x$score[,i]))
 plot(x$jumptimes,x$score[,i],type="s",ylim=c(-rsU,rsU),xlab="",ylab="")
 title(main=rownames(x$res)[i])
-matlines(x$jumptimes,simU,type="s",lwd=0.6,col=3)
+matlines(x$jumptimes,simU,type="s",lwd=0.3,col=col)
 lines(x$jumptimes,x$score[,i],lwd=1.5)
 }
 
