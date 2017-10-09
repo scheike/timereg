@@ -14,7 +14,7 @@
 ##' @author Klaus K. Holst
 ##' @examples
 ##' set.seed(1)
-##' d <- subset(simClaytonOakes(500,4,2,1,stoptime=2,left=2),!truncated)
+##' d <- subset(simClaytonOakes(500,4,2,1,stoptime=2,left=2),truncated)
 ##' e <- ClaytonOakes(survival::Surv(lefttime,time,status)~x+cluster(~1,cluster),
 ##'                   cuts=c(0,0.5,1,2),data=d)
 ##' e

@@ -4,8 +4,7 @@
 ##' p-values based on Lin, Wei, Ying resampling.
 ##' @param x is phreg object 
 ##' @param n.sim number of simulations for score processes
-##' @param silent to not give results, 
-##' @prognosis  to show timing estimate will be produced for longer jobs.
+##' @param silent to show timing estimate will be produced for longer jobs
 ##' @param ... Additional arguments to lower level funtions
 ##' @author THomas Scheike and Klaus K. Holst
 ##' @export
@@ -21,7 +20,7 @@
 ##' m1 <- phreg(Surv(time,status==9)~strata(vf)+chf+diabetes,data=TRACE) 
 ##' gg <- gof(m1)
 ##' @export
-gof.phreg  <- function(x,n.sim=1000,silent=1,prognosis=1,martingale=0)
+gof.phreg  <- function(x,n.sim=1000,silent=0,...)
 {# {{{
 
 ### test for proportionality 
@@ -42,7 +41,7 @@ obs <- apply(abs(Ut),2,max)
 
 tt <- system.time(simcox1<-.Call("PropTestCox",U,Pt,10,obs,PACKAGE="mets"))
 prt <- n.sim*tt[3]/(10*60)
-if (prt>1 & prognosis==1) cat(paste("Predicted time minutes",signif(prt,2),"\n"))
+if (prt>1 & silent==0) cat(paste("Predicted time minutes",signif(prt,2),"\n"))
 
 simcox <-  .Call("PropTestCox",U,Pt,n.sim,obs,PACKAGE="mets")
 sup <-  simcox$supUsim
@@ -138,12 +137,8 @@ return(out)
 ##' other to see if lines are straight, with 50 resample versions under the 
 ##' assumptiosn that the stratified Cox is correct 
 ##'
-##' @param formula formula for cox regression 
-##' @param data data for model
-##' @param offset offset 
-##' @param weights weights 
-##' @param modelmatrix  matrix for cumulating residuals
-##' @param n.sim number of simulations for bands on differences 
+##' @param x phreg object
+##' @param sim to simulate som variation from cox model to put on graph
 ##' @param silent to keep it absolutely silent 
 ##' @param ... Additional arguments to lower level funtions
 ##' @author THomas Scheike and Klaus K. Holst
@@ -158,7 +153,7 @@ return(out)
 ##' gofG.phreg(m2)
 ##' 
 ##' @export
-gofG.phreg  <- function(x,coefcox,sim=1,silent=1,...)
+gofG.phreg  <- function(x,sim=1,silent=1,...)
 {# {{{
 
 p <- length(x$coef)
@@ -192,7 +187,7 @@ for (j in (i+1):(nstrata-1)) {
       legend("topleft",c("Nonparametric","lm","Stratified-Cox-Sim"),lty=1,col=1:3)
       ab <- lm(cumhazi[,2]~-1+cumhazj[,2])
       if (sim==1) {
-             Pt <- DLambeta.t <- apply(x$E/c(x$S0),2,mets:::cumsumstrata,strata,nstrata)
+             Pt <- DLambeta.t <- apply(x$E/c(x$S0),2,cumsumstrata,strata,nstrata)
              II <- -solve(x$hessian)
              betaiid <- t(II %*% t(x$U))
 	     simband <-  .Call("simBandCumHazCox",1/x$S0,Pt,betaiid,50,rep(1,nrow(Pt)),PACKAGE="mets")

@@ -278,92 +278,8 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
   return(d)
 }
 
-
 ###}}} simcox
 
-###{{{ phreg1
-##' Fast Cox PH regression
-##'
-##' Fast Cox PH regression
-##' @param formula formula with 'Surv' outcome (see \code{coxph})
-##' @param data data frame
-##' @param ... Additional arguments to lower level funtions
-##' @author Klaus K. Holst
-##' @export
-##' @aliases phreg phreg.par
-##' @examples
-##' simcox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
-##'   if (!is.null(seed))
-##'     set.seed(seed)
-##'   library(lava)
-##'   m <- lvm()
-##'   regression(m,T~X1+X2) <- beta
-##'   distribution(m,~T+C) <- coxWeibull.lvm(scale=1/100)
-##'   distribution(m,~entry) <- coxWeibull.lvm(scale=1/10)
-##'   m <- eventTime(m,time~min(T,C=0),"status")
-##'   d <- sim(m,n);
-##'   if (!entry) d$entry <- 0
-##'   else d <- subset(d, time>entry,select=-c(T,C))
-##'   return(d)
-##' }
-##' \dontrun{
-##' n <- 10;
-##' d <- mets:::simCox(n); d$id <- seq(nrow(d)); d$group <- factor(rbinom(nrow(d),1,0.5))
-##' 
-##' (m1 <- phreg(Surv(entry,time,status)~X1+X2,data=d))
-##' (m2 <- coxph(Surv(entry,time,status)~X1+X2+cluster(id),data=d))
-##' (coef(m3 <-cox.aalen(Surv(entry,time,status)~prop(X1)+prop(X2),data=d)))
-##' 
-##' 
-##' (m1b <- phreg(Surv(entry,time,status)~X1+X2+strata(group),data=d))
-##' (m2b <- coxph(Surv(entry,time,status)~X1+X2+cluster(id)+strata(group),data=d))
-##' (coef(m3b <-cox.aalen(Surv(entry,time,status)~-1+group+prop(X1)+prop(X2),data=d)))
-##' 
-##' m <- phreg(Surv(entry,time,status)~X1*X2+strata(group)+cluster(id),data=d)
-##' m
-##' plot(m,ylim=c(0,1))
-##' }
-phreg1 <- function(formula,data,...) {
-  cl <- match.call()
-  m <- match.call(expand.dots = TRUE)[1:3]
-  special <- c("strata", "cluster")
-  Terms <- terms(formula, special, data = data)
-  m$formula <- Terms
-  m[[1]] <- as.name("model.frame")
-  m <- eval(m, parent.frame())
-  Y <- model.extract(m, "response")
-  if (!is.Surv(Y)) stop("Expected a 'Surv'-object")
-  if (ncol(Y)==2) {
-    exit <- Y[,1]
-    entry <- NULL ## rep(0,nrow(Y))
-    status <- Y[,2]
-  } else {
-    entry <- Y[,1]
-    exit <- Y[,2]
-    status <- Y[,3]
-  }
-  id <- strata <- NULL
-  if (!is.null(attributes(Terms)$specials$cluster)) {
-    ts <- survival::untangle.specials(Terms, "cluster")
-    Terms  <- Terms[-ts$terms]
-    id <- m[[ts$vars]]
-  }
-  if (!is.null(stratapos <- attributes(Terms)$specials$strata)) {
-    ts <- survival::untangle.specials(Terms, "strata")
-    Terms  <- Terms[-ts$terms]
-    strata <- m[[ts$vars]]
-  }  
-  X <- model.matrix(Terms, m)
-  if (!is.null(intpos  <- attributes(Terms)$intercept))
-    X <- X[,-intpos,drop=FALSE]
-  if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
-
-  res <- c(phreg0(X,entry,exit,status,id,strata,...),list(call=cl,model.frame=m))
-  class(res) <- "phreg"
-  
-  res
-}
-###}}} phreg
 
 ###{{{ phreg
 ##' Fast Cox PH regression
@@ -371,10 +287,10 @@ phreg1 <- function(formula,data,...) {
 ##' Fast Cox PH regression
 ##' @param formula formula with 'Surv' outcome (see \code{coxph})
 ##' @param data data frame
+##' @param offset offsets for cox model
 ##' @param weights weights for Cox score equations
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Klaus K. Holst, Thomas Scheike
-##' @export
 ##' @aliases phreg phreg.par
 ##' @examples
 ##' data(TRACE)
@@ -474,8 +390,8 @@ iid.phreg  <- function(x,type="robust",all=FALSE,...) {# {{{
   U <- E <- matrix(0,nrow(xx$X),x$p)
   E[xx$jumps+1,] <- x$E
   U[xx$jumps+1,] <- x$U
-  cumhaz <- cbind(xx$time,mets:::cumsumstrata(S0i,xx$strata,xx$nstrata))
-  EdLam0 <- apply(E*S0i,2,mets:::cumsumstrata,xx$strata,xx$nstrata)
+  cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
+  EdLam0 <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
   rr <- c(xx$sign*exp(Z %*% coef(x)))
   ### Martingale  as a function of time and for all subjects to handle strata also
   MGt <- U[,drop=FALSE]-rr*Z*cumhaz[,2]+rr*EdLam0
@@ -490,7 +406,6 @@ iid.phreg  <- function(x,type="robust",all=FALSE,...) {# {{{
   if (type=="robust" & (!is.null(x$id) | any(x$entry>0))) {
     if (type=="martingale") id <- x$id[x$jumps]
     ###  ii <- mets::cluster.index(id)
-    print(summary(id))
     UU <- apply(MGt,2,sumstrata,id,max(id)+1)
 ###    for (i in seq(ii$uniqueclust)) {
 ###      UU[i,] <- colSums(MGt[ii$idclustmat[i,seq(ii$cluster.size[i])]+1,,drop=FALSE])

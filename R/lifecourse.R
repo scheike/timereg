@@ -11,7 +11,9 @@
 ##' @param alpha transparency (0-1)
 ##' @param lwd Line width
 ##' @param recurrent.col col of recurrence type
+##' @param recurrent.lty lty's of  of recurrence type
 ##' @param legend position of optional id legend
+##' @param pchlegend point type legends 
 ##' @param by make separate plot for each level in 'by' (formula, name of column, or vector)
 ##' @param status.legend Status legend
 ##' @param place.sl Placement of status legend
