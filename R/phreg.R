@@ -135,7 +135,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
       if (is.numeric(id)) id <-  fast.approx(ids,id)-1 else  {
       id <- as.integer(factor(id,labels=seq(nid)))-1
      }
-   } else id <- as.integer(seq_along(entry))
+   } else id <- as.integer(seq_along(entry))-1; 
 
    system.time(dd <- .Call("FastCoxPrepStrata",
 		     entry,exit,status,X, id, ### as.integer(seq_along(entry)),
@@ -488,12 +488,10 @@ iid.phreg  <- function(x,type="robust",all=FALSE,...) {# {{{
 
   ncluster <- NULL
   if (type=="robust" & (!is.null(x$id) | any(x$entry>0))) {
-###    id <- c(xx$id)
     if (type=="martingale") id <- x$id[x$jumps]
-    ii <- mets::cluster.index(id)
-###    UU <- matrix(nrow=ii$uniqueclust,ncol=ncol(invhess))
-###    xxx <- data.frame(xx=MGt,id=id)
-    UU <- apply(MGt,2,sumstrata,ii$clusters,ii$uniqueclust)
+    ###  ii <- mets::cluster.index(id)
+    print(summary(id))
+    UU <- apply(MGt,2,sumstrata,id,max(id)+1)
 ###    for (i in seq(ii$uniqueclust)) {
 ###      UU[i,] <- colSums(MGt[ii$idclustmat[i,seq(ii$cluster.size[i])]+1,,drop=FALSE])
 ###    }

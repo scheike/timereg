@@ -976,6 +976,55 @@ BEGIN_RCPP/*{{{*/
 END_RCPP
   }/*}}}*/
 
+RcppExport SEXP PropTestCoxClust(SEXP iU, SEXP idUt, SEXP iid, SEXP inid, SEXP insim, SEXP iobssup) {
+BEGIN_RCPP/*{{{*/
+  mat U      = Rcpp::as<mat>(iU);
+  mat dUt = Rcpp::as<mat>(idUt);
+  arma::vec osup = Rcpp::as<arma::vec>(iobssup);
+  IntegerVector id(iid); 
+  unsigned nid = Rcpp::as<int>(inid);
+  unsigned nsim = Rcpp::as<int>(insim);
+  unsigned p = U.n_cols;
+  unsigned n = U.n_rows;
+
+  vec pval(p); pval.zeros(); 
+  mat Uti(n,p); 
+  mat sup(nsim,p); 
+  mat simUti(n,50*p); 
+  vec nr(n); 
+
+  GetRNGstate();  /* to use R random normals */
+
+  for (unsigned j=0; j<nsim; j++) {
+     vec nrc=rnorm(nid); 
+     for (unsigned k=0; k<n; k++)  nr(k)= nrc(id(k)); 
+     Uti=vecmatrow(nr,U); 
+     for (unsigned k=0; k<p; k++)  Uti.col(k) = cumsum(Uti.col(k));
+     mat Uthati= CubeVecC(dUt,(Uti.row(n-1)).t(),p); 
+//     Uti.print("cumsum Uti"); Uthati.print("Pt Uti last"); 
+//     for (unsigned k=0; k<n; k++)  {
+//	  Uthati.row(k)=(reshape(dUt.row(k),p,p)*(Uti.row(n-1)).t()).t();
+//     }
+     Uthati=Uti-Uthati; 
+//     Uthati.print("Uti- Pt Uti last"); 
+
+     for (unsigned k=0;k<p;k++)  {
+        sup(j,k)=max(abs(Uthati.col(k))); 
+        if ((sup(j,k)>=osup(k))) { pval(k)++; }
+        if (j<50) { simUti.col(j*p+k)=Uthati.col(k); }
+     }
+  }
+  pval=pval/nsim; 
+
+  PutRNGstate();  /* to use R random normals */
+
+  return(Rcpp::List::create(Rcpp::Named("supUsim")=sup,
+			    Rcpp::Named("simUt")=simUti,
+			    Rcpp::Named("pval")=pval)); 
+END_RCPP
+  }/*}}}*/
+
+
 RcppExport SEXP ModelMatrixTestCox(SEXP iU, SEXP idUt,SEXP ibetaiid, SEXP insim, SEXP iobssup) {
 BEGIN_RCPP/*{{{*/
   mat U   = Rcpp::as<mat>(iU);
