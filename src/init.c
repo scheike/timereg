@@ -50,14 +50,16 @@ extern SEXP Uhat(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP uniprobit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP CubeVec(SEXP, SEXP);
 extern SEXP vecMatMat(SEXP, SEXP);
-extern SEXP CubeMat(SEXP, SEXP);
+extern SEXP MatxCube(SEXP, SEXP, SEXP);
 extern SEXP CubeMat(SEXP, SEXP);
 extern SEXP PropTestCox(SEXP, SEXP,SEXP,SEXP);
+extern SEXP PropTestCoxClust(SEXP, SEXP, SEXP, SEXP,SEXP,SEXP);
 extern SEXP ModelMatrixTestCox(SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP simBandCumHazCox(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP revcumsumR(SEXP);
 extern SEXP revcumsumstrataR(SEXP,SEXP, SEXP);
 extern SEXP cumsumstrataR(SEXP,SEXP, SEXP);
+extern SEXP sumstrataR(SEXP,SEXP, SEXP);
 extern SEXP XBmindex(SEXP,SEXP, SEXP);
 //extern SEXP backfitEaEt(SEXP,SEXP, SEXP,SEXP,SEXP, SEXP, SEXP, SEXP,SEXP);
 
@@ -95,11 +97,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"_mets_RcppExport_registerCCallable", (DL_FUNC) &_mets_RcppExport_registerCCallable,  0},
     {"pBhat",                             (DL_FUNC) &pBhat,                              6},
     {"PropTestCox",                       (DL_FUNC) &PropTestCox,                        4},
+    {"PropTestCoxClust",                 (DL_FUNC) &PropTestCoxClust,                    6},
     {"ModelMatrixTestCox",                (DL_FUNC) &ModelMatrixTestCox,                 5},
     {"pmvn0",                             (DL_FUNC) &pmvn0,                              5},
     {"revcumsumR",                        (DL_FUNC) &revcumsumR,                         1},
     {"revcumsumstrataR",                  (DL_FUNC) &revcumsumstrataR,                   3},
     {"cumsumstrataR",                     (DL_FUNC) &cumsumstrataR,                      3},
+    {"sumstrataR",                        (DL_FUNC) &sumstrataR,                      3},
     {"Dpmvn",                             (DL_FUNC) &Dpmvn,                              5},
     {"simBandCumHazCox",                  (DL_FUNC) &simBandCumHazCox,                   5},
     {"RsurvivalRVCmarg",                  (DL_FUNC) &RsurvivalRVCmarg,                   8},

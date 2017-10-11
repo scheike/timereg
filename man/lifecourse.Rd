@@ -31,7 +31,11 @@ lifecourse(formula, data, id = "id", group = NULL, type = "l", lty = 1,
 
 \item{recurrent.col}{col of recurrence type}
 
+\item{recurrent.lty}{lty's of  of recurrence type}
+
 \item{legend}{position of optional id legend}
+
+\item{pchlegend}{point type legends}
 
 \item{by}{make separate plot for each level in 'by' (formula, name of column, or vector)}
 

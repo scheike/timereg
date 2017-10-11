@@ -40,23 +40,23 @@ tail(pairs,n=12)
 #
 kinship <- (out[pairs[,1],"zyg"]=="MZ")+ (out[pairs[,1],"zyg"]=="DZ")*0.5
 
-dout <- make.pairwise.design.competing(pairs,kinship,
-	       type="ace",compete=length(lam0),overall=1)
-head(dout$ant.rvs)
+# dout <- make.pairwise.design.competing(pairs,kinship,
+#          type="ace",compete=length(lam0),overall=1)
+# head(dout$ant.rvs)
 ## MZ
-dim(dout$theta.des)
-dout$random.design[,,1]
+# dim(dout$theta.des)
+# dout$random.design[,,1]
 ## DZ
-dout$theta.des[,,nrow(pairs)]
-dout$random.design[,,nrow(pairs)]
+# dout$theta.des[,,nrow(pairs)]
+# dout$random.design[,,nrow(pairs)]
 #
-thetades <- dout$theta.des[,,1]
-x <- dout$random.design[,,1]
-x
+# thetades <- dout$theta.des[,,1]
+# x <- dout$random.design[,,1]
+# x
 ##EVaddGam(rep(1,6),x[1,],x[3,],thetades,matrix(1,18,6))
 
-thetades <- dout$theta.des[,,nrow(out)/2]
-x <- dout$random.design[,,nrow(out)/2]
+# thetades <- dout$theta.des[,,nrow(out)/2]
+# x <- dout$random.design[,,nrow(out)/2]
 ##EVaddGam(rep(1,6),x[1,],x[4,],thetades,matrix(1,18,6))
 }
 \references{

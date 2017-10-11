@@ -2272,8 +2272,8 @@ make.pairwise.design.competing <- function(pairs,kinship,type="ace",compete=2,ov
  ### overall ace + 1 ace , 2 ace (6 pars) 
  
  if (type=="ace") {
-    theta.des  <- array(0,c((2*compete+overall*1)*4+overall*2,(compete+overall)*2,nrow(pairs)))
-    random.des <- array(0,c(2*compete,(2*compete+overall*1)*4+overall*2,nrow(pairs)))
+    theta.des  <- array(0,c((2*compete+overall*1)*4+overall*2,(compete)*2,nrow(pairs))) 
+    random.des <- array(0,c(2*compete,(2*compete+overall*1)*4+overall*2,nrow(pairs))) 
  }
  
  if (type=="simple") {
@@ -2286,6 +2286,9 @@ make.pairwise.design.competing <- function(pairs,kinship,type="ace",compete=2,ov
     random.des <- array(0,c(2*compete,6,nrow(pairs)))
  }
  
+ print(dim(theta.des))
+ print(dim(random.des))
+
  rvs <- c()
  for (i in 1:nrow(pairs))
  { 
@@ -2297,8 +2300,14 @@ make.pairwise.design.competing <- function(pairs,kinship,type="ace",compete=2,ov
  		stop("to do ")
  	} ## }}} 
  	if (compete==2) { ## {{{ 
+ 		stop("to do ")
  		k <- kinship
  		if (overall==1)  { ## {{{ 
+### 		 random.des[,,i] <- rbind( c(1,1,0,1,rep(0,4),c(1,1,0,0,0,1)),
+ 		 rd           <- rbind( c(1,1,0,1,rep(0,4),c(1,1,0,0,0,1)),
+ 					   c(rep(0,4),1,1,0,1,c(1,0,1,0,0,1)),
+ 					   c(1,0,1,1,rep(0,4),c(1,0,0,1,0,1)),
+ 					   c(rep(0,4),1,0,1,1,c(1,0,0,0,1,1)))
  			theta.des[,,i] <- matrix(0,14,6)
  			mini <- rbind( c(k[i],  0), c(1-k[i],0), c(1-k[i],0), c(0,     1))
  			minis <- rbind( c(k[i],0), 
@@ -2314,10 +2323,6 @@ make.pairwise.design.competing <- function(pairs,kinship,type="ace",compete=2,ov
 ### 					   c(rep(0,4),1,1,0,1,c(1,0,1,0,0,0,1,0,0,1)),
 ### 					   c(1,0,1,1,rep(0,4),c(1,0,0,1,0,0,0,1,0,1)),
 ### 					   c(rep(0,4),1,0,1,1,c(1,0,0,0,1,0,0,0,1,1)))
- 		 random.des[,,i] <- rbind( c(1,1,0,1,rep(0,4),c(1,1,0,0,0,1)),
- 					   c(rep(0,4),1,1,0,1,c(1,0,1,0,0,1)),
- 					   c(1,0,1,1,rep(0,4),c(1,0,0,1,0,1)),
- 					   c(rep(0,4),1,0,1,1,c(1,0,0,0,1,1)))
  		 rvs <- c(rvs,14)
  		} ## }}} 
  		if (overall==0)  { ## {{{ 
@@ -2431,23 +2436,23 @@ make.pairwise.design.competing <- function(pairs,kinship,type="ace",compete=2,ov
 ##' #
 ##' kinship <- (out[pairs[,1],"zyg"]=="MZ")+ (out[pairs[,1],"zyg"]=="DZ")*0.5
 ##' 
-##' dout <- make.pairwise.design.competing(pairs,kinship,
-##' 	       type="ace",compete=length(lam0),overall=1)
-##' head(dout$ant.rvs)
+##' # dout <- make.pairwise.design.competing(pairs,kinship,
+##' #          type="ace",compete=length(lam0),overall=1)
+##' # head(dout$ant.rvs)
 ##' ## MZ
-##' dim(dout$theta.des)
-##' dout$random.design[,,1]
+##' # dim(dout$theta.des)
+##' # dout$random.design[,,1]
 ##' ## DZ
-##' dout$theta.des[,,nrow(pairs)]
-##' dout$random.design[,,nrow(pairs)]
+##' # dout$theta.des[,,nrow(pairs)]
+##' # dout$random.design[,,nrow(pairs)]
 ##' #
-##' thetades <- dout$theta.des[,,1]
-##' x <- dout$random.design[,,1]
-##' x
+##' # thetades <- dout$theta.des[,,1]
+##' # x <- dout$random.design[,,1]
+##' # x
 ##' ##EVaddGam(rep(1,6),x[1,],x[3,],thetades,matrix(1,18,6))
 ##' 
-##' thetades <- dout$theta.des[,,nrow(out)/2]
-##' x <- dout$random.design[,,nrow(out)/2]
+##' # thetades <- dout$theta.des[,,nrow(out)/2]
+##' # x <- dout$random.design[,,nrow(out)/2]
 ##' ##EVaddGam(rep(1,6),x[1,],x[4,],thetades,matrix(1,18,6))
 ##' @author Thomas Scheike 
 ##' @export
