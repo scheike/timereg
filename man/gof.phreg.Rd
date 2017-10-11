@@ -4,10 +4,10 @@
 \alias{gof.phreg}
 \title{GOF for Cox PH regression}
 \usage{
-\method{gof}{phreg}(x, n.sim = 1000, silent = 0, ...)
+\method{gof}{phreg}(object, n.sim = 1000, silent = 0, ...)
 }
 \arguments{
-\item{x}{is phreg object}
+\item{object}{is phreg object}
 
 \item{n.sim}{number of simulations for score processes}
 

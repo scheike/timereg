@@ -2,7 +2,7 @@
 ##'
 ##' Cumulative score process residuals for Cox PH regression
 ##' p-values based on Lin, Wei, Ying resampling.
-##' @param x is phreg object 
+##' @param object is phreg object 
 ##' @param n.sim number of simulations for score processes
 ##' @param silent to show timing estimate will be produced for longer jobs
 ##' @param ... Additional arguments to lower level funtions
@@ -20,20 +20,20 @@
 ##' m1 <- phreg(Surv(time,status==9)~strata(vf)+chf+diabetes,data=TRACE) 
 ##' gg <- gof(m1)
 ##' @export
-gof.phreg  <- function(x,n.sim=1000,silent=0,...)
+gof.phreg  <- function(object,n.sim=1000,silent=0,...)
 {# {{{
 
 ### test for proportionality 
-p <- length(x$coef)
-nnames <- names(x$coef)
-ii <- solve(x$hessian)
-jumptimes <- x$jumptimes
-Pt <- x$hessianttime
-U <-  x$U
+p <- length(object$coef)
+nnames <- names(object$coef)
+ii <- solve(object$hessian)
+jumptimes <- object$jumptimes
+Pt <- object$hessianttime
+U <-  object$U
 Pt <- apply(Pt,2,cumsum)
 Ut <- apply(U,2,cumsum)
 
-nd <- nrow(x$U)
+nd <- nrow(object$U)
 Pt <-  .Call("CubeMat",Pt,ii,PACKAGE="mets")$XXX
 sup <- matrix(0,n.sim,nrow(ii))
 hatti <- matrix(0,nd,nrow(ii))
@@ -54,7 +54,7 @@ cat("Cumulative score process test for Proportionality:\n")
 prmatrix(round(res,digits=2))
 }
 
-out <- list(jumptimes=x$jumptimes,supUsim=sup,res=res,supU=obs,
+out <- list(jumptimes=object$jumptimes,supUsim=sup,res=res,supU=obs,
 	    pvals=simcox$pval,score=Ut,simUt=simcox$simUt,type="prop")
 class(out) <- "gof.phreg"
 return(out)
@@ -206,7 +206,7 @@ for (j in (i+1):(nstrata-1)) {
 }# }}}
 
 ##' @export
-plot.gof.phreg <-  function(x,col=3)
+plot.gof.phreg <-  function(x,col=3,...)
 {# {{{
 p <- ncol(x$score)
 for (i in 1:p)
@@ -223,16 +223,16 @@ lines(x$jumptimes,x$score[,i],lwd=1.5)
 }# }}}
 
 ##' @export
-summary.gof.phreg <-  function(x)
+summary.gof.phreg <-  function(object,...)
 {# {{{
-if (x$type=="prop")
+if (object$type=="prop")
      cat("Cumulative score process test for Proportionality:\n")
 else cat("Cumulative residuals versus modelmatrix :\n")
-print(x$res)
+print(object$res)
 } # }}}
 
 ##' @export
-print.gof.phreg <-  function(x)
+print.gof.phreg <-  function(x,...)
 {# {{{
 if (x$type=="prop")
      cat("Cumulative score process test for Proportionality:\n")

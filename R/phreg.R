@@ -699,7 +699,7 @@ baseplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,
          col.alpha<-0.1
          col.ci<-cols[j+1]
          col.trans <- sapply(col.ci, FUN=function(x) 
-                   do.call(rgb,as.list(c(col2rgb(x)/255,col.alpha))))
+                   do.call(grDevices::rgb,as.list(c(grDevices::col2rgb(x)/255,col.alpha))))
 	 polygon(tt,yy,lty=ltys[i,2],col=col.trans)
       }
     }
@@ -722,7 +722,7 @@ baseplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,
          col.alpha<-0.1
          col.ci<-cols[j+1]
          col.trans <- sapply(col.ci, FUN=function(x) 
-                   do.call(rgb,as.list(c(col2rgb(x)/255,col.alpha))))
+                   do.call(grDevices::rgb,as.list(c(grDevices::col2rgb(x)/255,col.alpha))))
 	 polygon(tt,yy,lty=ltys[1,2],col=col.trans)
       }
     }
@@ -730,7 +730,7 @@ baseplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,
     }
 
     if (legend)
-    legend("topleft",legend=stratnames,col=cols[,1],lty=ltys[,1])
+    graphics::legend("topleft",legend=stratnames,col=cols[,1],lty=ltys[,1])
 
 }# }}}
 
