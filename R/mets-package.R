@@ -11,7 +11,7 @@
 ##' @import stats splines timereg Rcpp
 ##' @importFrom lava iid estimate bootstrap compare score information twostage %++% %ni% addvar<- blockdiag cancel Col
 ##'                  confband constrain<- constraints covariance covariance<- coxWeibull.lvm devcoords distribution<-
-##'                  endogenous eventTime Expand getoutcome intercept<- Inverse kill<- latent latent<- lava.options lvm
+##'                  endogenous eventTime Expand getoutcome gof intercept<- Inverse kill<- latent latent<- lava.options lvm
 ##'                  Model multigroup parameter<- pars regression regression<- revdiag sim trim
 ##' @importFrom survival Surv is.Surv
 ##' @importFrom utils head tail getS3method glob2rx capture.output
