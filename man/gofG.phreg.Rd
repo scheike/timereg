@@ -4,24 +4,16 @@
 \alias{gofG.phreg}
 \title{Stratified baseline graphical GOF test for Cox covariates in PH regression}
 \usage{
-gofG.phreg(x, coefcox, sim = 1, silent = 1, ...)
+gofG.phreg(x, sim = 1, silent = 1, ...)
 }
 \arguments{
+\item{x}{phreg object}
+
+\item{sim}{to simulate som variation from cox model to put on graph}
+
 \item{silent}{to keep it absolutely silent}
 
 \item{...}{Additional arguments to lower level funtions}
-
-\item{formula}{formula for cox regression}
-
-\item{data}{data for model}
-
-\item{offset}{offset}
-
-\item{weights}{weights}
-
-\item{modelmatrix}{matrix for cumulating residuals}
-
-\item{n.sim}{number of simulations for bands on differences}
 }
 \description{
 Looks at stratified baseline in Cox model and plots all baselines versus each

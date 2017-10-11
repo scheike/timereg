@@ -11,7 +11,7 @@ using namespace Rcpp;
 
 // ApplyBy2
 NumericMatrix ApplyBy2(NumericMatrix idata, NumericVector icluster, SEXP F, Environment Env, std::string Argument, int Columnwise, int Reduce, double epsilon);
-RcppExport SEXP mets_ApplyBy2(SEXP idataSEXP, SEXP iclusterSEXP, SEXP FSEXP, SEXP EnvSEXP, SEXP ArgumentSEXP, SEXP ColumnwiseSEXP, SEXP ReduceSEXP, SEXP epsilonSEXP) {
+RcppExport SEXP _mets_ApplyBy2(SEXP idataSEXP, SEXP iclusterSEXP, SEXP FSEXP, SEXP EnvSEXP, SEXP ArgumentSEXP, SEXP ColumnwiseSEXP, SEXP ReduceSEXP, SEXP epsilonSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -29,7 +29,7 @@ END_RCPP
 }
 // ApplyBy
 NumericMatrix ApplyBy(NumericMatrix idata, IntegerVector icluster, Function f);
-RcppExport SEXP mets_ApplyBy(SEXP idataSEXP, SEXP iclusterSEXP, SEXP fSEXP) {
+RcppExport SEXP _mets_ApplyBy(SEXP idataSEXP, SEXP iclusterSEXP, SEXP fSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -42,7 +42,7 @@ END_RCPP
 }
 // loglikMVN
 arma::mat loglikMVN(arma::mat Yl, SEXP yu, SEXP status, arma::mat Mu, SEXP dmu, arma::mat S, SEXP ds, SEXP z, SEXP su, SEXP dsu, SEXP threshold, SEXP dthreshold, bool Score);
-static SEXP mets_loglikMVN_try(SEXP YlSEXP, SEXP yuSEXP, SEXP statusSEXP, SEXP MuSEXP, SEXP dmuSEXP, SEXP SSEXP, SEXP dsSEXP, SEXP zSEXP, SEXP suSEXP, SEXP dsuSEXP, SEXP thresholdSEXP, SEXP dthresholdSEXP, SEXP ScoreSEXP) {
+static SEXP _mets_loglikMVN_try(SEXP YlSEXP, SEXP yuSEXP, SEXP statusSEXP, SEXP MuSEXP, SEXP dmuSEXP, SEXP SSEXP, SEXP dsSEXP, SEXP zSEXP, SEXP suSEXP, SEXP dsuSEXP, SEXP thresholdSEXP, SEXP dthresholdSEXP, SEXP ScoreSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< arma::mat >::type Yl(YlSEXP);
@@ -62,11 +62,11 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP_RETURN_ERROR
 }
-RcppExport SEXP mets_loglikMVN(SEXP YlSEXP, SEXP yuSEXP, SEXP statusSEXP, SEXP MuSEXP, SEXP dmuSEXP, SEXP SSEXP, SEXP dsSEXP, SEXP zSEXP, SEXP suSEXP, SEXP dsuSEXP, SEXP thresholdSEXP, SEXP dthresholdSEXP, SEXP ScoreSEXP) {
+RcppExport SEXP _mets_loglikMVN(SEXP YlSEXP, SEXP yuSEXP, SEXP statusSEXP, SEXP MuSEXP, SEXP dmuSEXP, SEXP SSEXP, SEXP dsSEXP, SEXP zSEXP, SEXP suSEXP, SEXP dsuSEXP, SEXP thresholdSEXP, SEXP dthresholdSEXP, SEXP ScoreSEXP) {
     SEXP rcpp_result_gen;
     {
         Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(mets_loglikMVN_try(YlSEXP, yuSEXP, statusSEXP, MuSEXP, dmuSEXP, SSEXP, dsSEXP, zSEXP, suSEXP, dsuSEXP, thresholdSEXP, dthresholdSEXP, ScoreSEXP));
+        rcpp_result_gen = PROTECT(_mets_loglikMVN_try(YlSEXP, yuSEXP, statusSEXP, MuSEXP, dmuSEXP, SSEXP, dsSEXP, zSEXP, suSEXP, dsuSEXP, thresholdSEXP, dthresholdSEXP, ScoreSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
     if (rcpp_isInterrupt_gen) {
@@ -84,7 +84,7 @@ RcppExport SEXP mets_loglikMVN(SEXP YlSEXP, SEXP yuSEXP, SEXP statusSEXP, SEXP M
 }
 
 // validate (ensure exported C++ functions exist before calling them)
-static int mets_RcppExport_validate(const char* sig) { 
+static int _mets_RcppExport_validate(const char* sig) { 
     static std::set<std::string> signatures;
     if (signatures.empty()) {
         signatures.insert("arma::mat(*.loglikMVN)(arma::mat,SEXP,SEXP,arma::mat,SEXP,arma::mat,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,bool)");
@@ -93,8 +93,8 @@ static int mets_RcppExport_validate(const char* sig) {
 }
 
 // registerCCallable (register entry points for exported C++ functions)
-RcppExport SEXP mets_RcppExport_registerCCallable() { 
-    R_RegisterCCallable("mets", "mets_.loglikMVN", (DL_FUNC)mets_loglikMVN_try);
-    R_RegisterCCallable("mets", "mets_RcppExport_validate", (DL_FUNC)mets_RcppExport_validate);
+RcppExport SEXP _mets_RcppExport_registerCCallable() { 
+    R_RegisterCCallable("mets", "_mets_.loglikMVN", (DL_FUNC)_mets_loglikMVN_try);
+    R_RegisterCCallable("mets", "_mets_RcppExport_validate", (DL_FUNC)_mets_RcppExport_validate);
     return R_NilValue;
 }

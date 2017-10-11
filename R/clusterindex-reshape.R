@@ -73,6 +73,7 @@ familycluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=1)
   totpairs <- sum(clusters$cluster.size*(clusters$cluster.size-1)/2)
   clustud <- .Call("familypairindex",clusters$idclust,clusters$cluster.size,as.integer(2*totpairs))
   clustud$pairs <- matrix(clustud$familypairindex,ncol=2,byrow=TRUE)
+  clustud$clusters <- clusters$clusters[clustud$pairs[,2]]+1
 
   invisible(clustud)
 } ## }}}
@@ -112,8 +113,10 @@ familyclusterWithProbands.index <- function(clusters,probands,index.type=FALSE,n
     pairs[ipi1,2] <- pairs[ipi1,1]
     pairs[ipi1,1] <- gem2[ipi1]
     famc$pairs <- pairs
+    famc$clusters <-  famc$clusters[ipi1]
 
     famc$familypairindex <- c(t(pairs))
+
     invisible(famc)
 } ## }}}
 ###library(mets)

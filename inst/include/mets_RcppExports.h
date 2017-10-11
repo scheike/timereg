@@ -17,7 +17,7 @@ namespace mets {
             require("mets", Rcpp::Named("quietly") = true);
             typedef int(*Ptr_validate)(const char*);
             static Ptr_validate p_validate = (Ptr_validate)
-                R_GetCCallable("mets", "mets_RcppExport_validate");
+                R_GetCCallable("mets", "_mets_RcppExport_validate");
             if (!p_validate(sig)) {
                 throw Rcpp::function_not_exported(
                     "C++ function with signature '" + std::string(sig) + "' not found in mets");
@@ -30,12 +30,12 @@ namespace mets {
         static Ptr__loglikMVN p__loglikMVN = NULL;
         if (p__loglikMVN == NULL) {
             validateSignature("arma::mat(*_loglikMVN)(arma::mat,SEXP,SEXP,arma::mat,SEXP,arma::mat,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,bool)");
-            p__loglikMVN = (Ptr__loglikMVN)R_GetCCallable("mets", "mets__loglikMVN");
+            p__loglikMVN = (Ptr__loglikMVN)R_GetCCallable("mets", "_mets__loglikMVN");
         }
         RObject rcpp_result_gen;
         {
             RNGScope RCPP_rngScope_gen;
-            rcpp_result_gen = p__loglikMVN(Rcpp::wrap(Yl), Rcpp::wrap(yu), Rcpp::wrap(status), Rcpp::wrap(Mu), Rcpp::wrap(dmu), Rcpp::wrap(S), Rcpp::wrap(ds), Rcpp::wrap(z), Rcpp::wrap(su), Rcpp::wrap(dsu), Rcpp::wrap(threshold), Rcpp::wrap(dthreshold), Rcpp::wrap(Score));
+            rcpp_result_gen = p__loglikMVN(Shield<SEXP>(Rcpp::wrap(Yl)), Shield<SEXP>(Rcpp::wrap(yu)), Shield<SEXP>(Rcpp::wrap(status)), Shield<SEXP>(Rcpp::wrap(Mu)), Shield<SEXP>(Rcpp::wrap(dmu)), Shield<SEXP>(Rcpp::wrap(S)), Shield<SEXP>(Rcpp::wrap(ds)), Shield<SEXP>(Rcpp::wrap(z)), Shield<SEXP>(Rcpp::wrap(su)), Shield<SEXP>(Rcpp::wrap(dsu)), Shield<SEXP>(Rcpp::wrap(threshold)), Shield<SEXP>(Rcpp::wrap(dthreshold)), Shield<SEXP>(Rcpp::wrap(Score)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();

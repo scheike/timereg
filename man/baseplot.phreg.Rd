@@ -2,8 +2,6 @@
 % Please edit documentation in R/phreg.R
 \name{baseplot.phreg}
 \alias{baseplot.phreg}
-\alias{phreg}
-\alias{phreg.par}
 \title{Plotting the baslines of stratified Cox}
 \usage{
 baseplot.phreg(x, se = FALSE, time = NULL, add = FALSE, ylim = NULL,

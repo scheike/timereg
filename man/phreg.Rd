@@ -12,6 +12,8 @@ phreg(formula, data, offset = NULL, weights = NULL, ...)
 
 \item{data}{data frame}
 
+\item{offset}{offsets for cox model}
+
 \item{weights}{weights for Cox score equations}
 
 \item{...}{Additional arguments to lower level funtions}

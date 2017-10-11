@@ -4,14 +4,14 @@
 \alias{gof.phreg}
 \title{GOF for Cox PH regression}
 \usage{
-\method{gof}{phreg}(x, n.sim = 1000, silent = 1)
+\method{gof}{phreg}(x, n.sim = 1000, silent = 0, ...)
 }
 \arguments{
 \item{x}{is phreg object}
 
 \item{n.sim}{number of simulations for score processes}
 
-\item{silent}{to keep it absolutely silent, otherwise timing estimate will be prduced for longer jobs.}
+\item{silent}{to show timing estimate will be produced for longer jobs}
 
 \item{...}{Additional arguments to lower level funtions}
 }
