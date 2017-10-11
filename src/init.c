@@ -31,10 +31,10 @@ extern SEXP FastCoxPrepStrata(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP,SEXP,SEXP,SEXP,
 extern SEXP FastLong2(SEXP, SEXP, SEXP, SEXP);
 extern SEXP FastPattern(SEXP, SEXP, SEXP);
 extern SEXP MatxCube(SEXP, SEXP, SEXP);
-extern SEXP mets_ApplyBy(SEXP, SEXP, SEXP);
-extern SEXP mets_ApplyBy2(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP mets_loglikMVN(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP mets_RcppExport_registerCCallable();
+extern SEXP _mets_ApplyBy(SEXP, SEXP, SEXP);
+extern SEXP _mets_ApplyBy2(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _mets_loglikMVN(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _mets_RcppExport_registerCCallable();
 extern SEXP pBhat(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP pmvn0(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP Dpmvn(SEXP, SEXP, SEXP, SEXP, SEXP);
@@ -89,10 +89,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"FastLong2",                         (DL_FUNC) &FastLong2,                          4},
     {"FastPattern",                       (DL_FUNC) &FastPattern,                        3},
     {"MatxCube",                          (DL_FUNC) &MatxCube,                           3},
-    {"mets_ApplyBy",                      (DL_FUNC) &mets_ApplyBy,                       3},
-    {"mets_ApplyBy2",                     (DL_FUNC) &mets_ApplyBy2,                      8},
-    {"mets_loglikMVN",                    (DL_FUNC) &mets_loglikMVN,                    13},
-    {"mets_RcppExport_registerCCallable", (DL_FUNC) &mets_RcppExport_registerCCallable,  0},
+    {"_mets_ApplyBy",                      (DL_FUNC) &_mets_ApplyBy,                       3},
+    {"_mets_ApplyBy2",                     (DL_FUNC) &_mets_ApplyBy2,                      8},
+    {"_mets_loglikMVN",                    (DL_FUNC) &_mets_loglikMVN,                    13},
+    {"_mets_RcppExport_registerCCallable", (DL_FUNC) &_mets_RcppExport_registerCCallable,  0},
     {"pBhat",                             (DL_FUNC) &pBhat,                              6},
     {"PropTestCox",                       (DL_FUNC) &PropTestCox,                        4},
     {"ModelMatrixTestCox",                (DL_FUNC) &ModelMatrixTestCox,                 5},
