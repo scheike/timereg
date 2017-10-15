@@ -3,6 +3,7 @@
 \name{phreg}
 \alias{phreg}
 \alias{phreg.par}
+\alias{robust.phreg}
 \title{Fast Cox PH regression}
 \usage{
 phreg(formula, data, offset = NULL, weights = NULL, ...)
@@ -31,7 +32,6 @@ sout1 <- phreg(Surv(time,status==1)~vf+chf+strata(wmicat.4),data=tracesim)
 par(mfrow=c(1,2))
 baseplot.phreg(out1)
 baseplot.phreg(sout1)
-
 }
 \author{
 Klaus K. Holst, Thomas Scheike

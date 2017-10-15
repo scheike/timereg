@@ -50,6 +50,7 @@
 \alias{simbinClaytonOakes.twin.ace}
 \alias{simClaytonOakes.family.ace}
 \alias{simClaytonOakes.twin.ace}
+\alias{simFrailty.simple}
 \alias{simCompete.simple}
 \alias{simCompete.twin.ace}
 \alias{twin.polygen.design}
