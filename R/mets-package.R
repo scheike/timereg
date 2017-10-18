@@ -135,23 +135,22 @@ NULL
 ##' @keywords utilities
 ##' @export
 ##' @aliases plotcr npc nonparcuminc simnordic corsim.prostate
-##' alpha2kendall alpha2spear coefmat piecewise.twostage surv.boxarea
-##' faster.reshape piecewise.data
-##' simBinPlack simBinFam simBinFam2 simSurvFam corsim.prostate.random
-##' simnordic.random simCox sim pmvn pbvn
-##' loglikMVN scoreMVN grouptable jumptimes folds
+##'  alpha2kendall alpha2spear coefmat piecewise.twostage surv.boxarea
+##'  faster.reshape piecewise.data
+##'  simBinPlack simBinFam simBinFam2 simSurvFam corsim.prostate.random
+##'  simnordic.random simCox sim pmvn pbvn
+##'  loglikMVN scoreMVN grouptable jumptimes folds
 ##'  ace.family.design ascertained.pairs CCbinomial.twostage
-##'  coarse.clust      concordance.twin.ace concordance.twostage
-##'  fast.cluster      force.same.cens ilap
+##'  coarse.clust concordance.twin.ace concordance.twostage
+##'  fast.cluster force.same.cens ilap
 ##'  kendall.ClaytonOakes.twin.ace kendall.normal.twin.ace
 ##'  make.pairwise.design make.pairwise.design.competing
 ##'  matplot.mets.twostage object.defined p11.binomial.twostage.RV
 ##'  predictPairPlack simbinClaytonOakes.family.ace
 ##'  simbinClaytonOakes.pairs simbinClaytonOakes.twin.ace
-##'  simClaytonOakes.family.ace simClaytonOakes.twin.ace
+##'  simClaytonOakes.family.ace simClaytonOakes.twin.ace simFrailty.simple
 ##'  simCompete.simple simCompete.twin.ace twin.polygen.design
 ##'  twostage.fullse
 ##'  procform procform3
 NULL
-
 

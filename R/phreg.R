@@ -302,7 +302,6 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' par(mfrow=c(1,2))
 ##' baseplot.phreg(out1)
 ##' baseplot.phreg(sout1)
-##' 
 ##' @export
 phreg <- function(formula,data,offset=NULL,weights=NULL,...) {
   cl <- match.call()
@@ -419,7 +418,7 @@ iid.phreg  <- function(x,type="robust",all=FALSE,...) {# {{{
 } # }}}
 
 
-##' @export
+##' @export robust.phreg
 robust.phreg  <- function(x,...) {
  gamma.iid <- iid.phreg(x) 
  robvar <- crossprod(gamma.iid)
@@ -573,7 +572,17 @@ predictPhreg <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
     return(chaz)
 }
 
+##' Predictions from proportional hazards model
+##'
 ##' @export
+##' @param object phreg object
+##' @param data data.frame
+##' @param surv If TRUE predictions are provided on probability scale
+##' @param time Time variable
+##' @param X Design matrix
+##' @param strata Strata variable
+##' @param ... ADditional arguments to lower level functions
+##' @aliases predict.phreg revcumsumstrata cumsumstrata sumstrata
 predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,strata=object$strata,...) {
     if (object$p==0) X <- NULL
     if (!is.null(object$strata)) {
