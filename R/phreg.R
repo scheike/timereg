@@ -291,7 +291,7 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' @param weights weights for Cox score equations
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Klaus K. Holst, Thomas Scheike
-##' @aliases phreg phreg.par
+##' @aliases phreg phreg.par robust.phreg cumsumstrata revcumsumstrata sumstrata
 ##' @examples
 ##' data(TRACE)
 ##' dcut(TRACE) <- ~.

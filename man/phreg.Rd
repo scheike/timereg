@@ -3,6 +3,10 @@
 \name{phreg}
 \alias{phreg}
 \alias{phreg.par}
+\alias{robust.phreg}
+\alias{cumsumstrata}
+\alias{revcumsumstrata}
+\alias{sumstrata}
 \title{Fast Cox PH regression}
 \usage{
 phreg(formula, data, offset = NULL, weights = NULL, ...)

@@ -122,7 +122,11 @@ static const R_CallMethodDef CallEntries[] = {
 };
 
 void R_init_mets(DllInfo *dll)
-{
-    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
-    R_useDynamicSymbols(dll, FALSE);
+{ 
+    R_registerRoutines(dll,
+                       NULL,	       /* slot for .C */
+                       CallEntries,    /* slot for .Call */
+                       NULL,              /* slot for .Fortran */
+                       NULL);   	       /* slot for .External */
+    R_useDynamicSymbols(dll, TRUE);    /* visibility */
 }

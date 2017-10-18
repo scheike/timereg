@@ -183,8 +183,8 @@ for (j in (i+1):(nstrata-1)) {
 
       plot(cumhazj[,2],cumhazi[,2],type="s",lwd=2,
 	   xlab=stratnames[j+1],ylab=stratnames[i+1])
-      title(paste("Stratified baselines for",stratn))
-      legend("topleft",c("Nonparametric","lm","Stratified-Cox-Sim"),lty=1,col=1:3)
+      graphics::title(paste("Stratified baselines for",stratn))
+      graphics::legend("topleft",c("Nonparametric","lm","Stratified-Cox-Sim"),lty=1,col=1:3)
       ab <- lm(cumhazi[,2]~-1+cumhazj[,2])
       if (sim==1) {
              Pt <- DLambeta.t <- apply(x$E/c(x$S0),2,cumsumstrata,strata,nstrata)
