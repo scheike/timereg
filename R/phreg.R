@@ -291,7 +291,7 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' @param weights weights for Cox score equations
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Klaus K. Holst, Thomas Scheike
-##' @aliases phreg phreg.par robust.phreg cumsumstrata revcumsumstrata sumstrata
+##' @aliases phreg phreg.par robust.phreg
 ##' @examples
 ##' data(TRACE)
 ##' dcut(TRACE) <- ~.
@@ -480,7 +480,7 @@ print.summary.phreg  <- function(x,max.strata=5,...) {
 ##' @export
 sumstrata <- function(x,strata,nstrata)
 {# {{{
-res <- .Call("sumstrataR",x,strata,nstrata)$res
+res <- .Call("sumstrataR",x,strata,nstrata,PACKAGE="mets")$res
 return(res)
 }# }}}
 
@@ -488,33 +488,33 @@ return(res)
 ##' @export
 cumsumstrata <- function(x,strata,nstrata)
 {# {{{
-res <- .Call("cumsumstrataR",x,strata,nstrata)$res
+res <- .Call("cumsumstrataR",x,strata,nstrata,PACKAGE="mets")$res
 return(res)
 }# }}}
 
 ##' @export
 revcumsumstrata <- function(x,strata,nstrata)
 {# {{{
-res <- .Call("revcumsumstrataR",x,strata,nstrata)$res
+res <- .Call("revcumsumstrataR",x,strata,nstrata,PACKAGE="mets")$res
 return(res)
 }# }}}
 
 
 ###{{{ predict with se for baseline
 
-predictPhreg <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
-###    x <- x$jumptimes
-###    S0 <- x$S0
-###    II <- x$II ###  -solve(x$hessian)
-###    strata <- x$strata[x$jumps]
-###    nstrata <- x$nstrata
-
+predictPhreg <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,band=FALSE,...) {
+    strata <- x$strata[x$jumps]
+    nstrata <- x$nstrata
+    
     ## Brewslow estimator
     if (is.null(x$cumhaz)) {
-       chaz <- cbind(jumptimes,cumsumstrata(1/S0,strata,nstrata))
-       DLambeta.t <- apply(x$E/c(x$S0),2,cumsumstrata,strata,nstrata)
-       varbetat <- apply((DLambeta.t %*%  II)*DLambeta.t,1,sum)
-       se.chaz <- cbind(jumptimes,(cumsumstrata(1/S0^2,strata,nstrata)+varbetat)^.5)
+        ##II <- x$II
+        ##x$jumptimes
+        II <- -solve(x$hessian)
+        chaz <- cbind(jumptimes,cumsumstrata(1/S0,strata,nstrata))
+        DLambeta.t <- apply(x$E/c(x$S0),2,cumsumstrata,strata,nstrata)
+        varbetat <- apply((DLambeta.t %*%  II)*DLambeta.t,1,sum)
+        se.chaz <- cbind(jumptimes,(cumsumstrata(1/S0^2,strata,nstrata)+varbetat)^.5)
     } else {
         chaz <- x$cumhaz
         se.chaz <- x$se.cumhaz
@@ -535,8 +535,8 @@ predictPhreg <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,...) {
       cumhaz <-  x$cumhaz[,1,drop=FALSE]
       se.chaz <- x$se.cumhaz[,1]
       ###
-      rr <- c( exp(sum(c(Z) %*% x$coef)))
-      Pt      <- outer(cumhaz[,2],c(Z))
+      rr <- c( exp(sum(c(X) %*% x$coef)))
+      Pt      <- outer(cumhaz[,2],c(X))
       DLambeta.t <- apply(x$E/c(x$S0),2,cumsumstrata,strata,nstrata)
       Pt <- DLambeta.t  - Pt
       ### se of cumulaive hazard for this covariate , can use different versions of variance for beta
