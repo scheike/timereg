@@ -40,7 +40,7 @@ cluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=0,mat=NULL,r
     }
   } else { numnum <- 0; mednum <- 0; }
 
-  clustud <- .Call("clusterindexM",as.integer(clusters),as.integer(mednum), as.integer(numnum),mat,return.all)
+  clustud <- .Call("clusterindexM",as.integer(clusters),as.integer(mednum), as.integer(numnum),mat,return.all,PACKAGE="mets")
   if (!is.null(mat) && !return.all) return(clustud)
   
   if (Rindex==1) clustud$idclust <- clustud$idclustmat+1
@@ -71,7 +71,7 @@ familycluster.index <- function(clusters,index.type=FALSE,num=NULL,Rindex=1)
 { ## {{{
   clusters <- cluster.index(clusters,Rindex=Rindex)
   totpairs <- sum(clusters$cluster.size*(clusters$cluster.size-1)/2)
-  clustud <- .Call("familypairindex",clusters$idclust,clusters$cluster.size,as.integer(2*totpairs))
+  clustud <- .Call("familypairindex",clusters$idclust,clusters$cluster.size,as.integer(2*totpairs),PACKAGE="mets")
   clustud$pairs <- matrix(clustud$familypairindex,ncol=2,byrow=TRUE)
   clustud$clusters <- clusters$clusters[clustud$pairs[,2]]+1
 
@@ -170,7 +170,7 @@ faster.reshape <- function(data,clusters,index.type=FALSE,num=NULL,Rindex=1)
     else num <- as.integer(factor(num, labels = seq(length(unique(clusters))))) -1
   } else { num <- 0; mednum <- 0; }
 
-  clustud <- .Call("clusterindexdata",as.integer(clusters),as.integer(mednum), as.integer(num),iddata=data)
+  clustud <- .Call("clusterindexdata",as.integer(clusters),as.integer(mednum), as.integer(num),iddata=data,PACKAGE="mets")
 
   if (Rindex==1) clustud$idclust  <- clustud$idclust+1
 ###  if(Rindex==1) idclust[idclust==0] <- NA 

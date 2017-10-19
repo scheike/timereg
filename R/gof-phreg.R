@@ -107,7 +107,7 @@ jumptimes <- coxM$jumptimes
 U <- coxM$U
 Ubeta <- cox1$U
 ii <- -solve(cox1$hessian)
-EE <- .Call("vecMatMat",coxM$E,cox1$E)$vXZ; 
+EE <- .Call("vecMatMat",coxM$E,cox1$E,PACKAGE="mets")$vXZ; 
 Pt <- cox1$ZX - EE
 Pt <- apply(Pt,2,cumsum)
 betaiid <- t(ii %*% t(Ubeta))

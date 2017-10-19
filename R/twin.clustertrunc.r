@@ -120,9 +120,9 @@ for (i in 1:Nit)
   status2 <- dd[,paste(status,"2",sep="")]
   nn <- nrow(dd)
 
-  ppv1t2 <- .Call("claytonoakesR",dd$thetades1,rep(0,nn),status2,dd$delay1,dd$surv2,var.link)$like
+  ppv1t2 <- .Call("claytonoakesR",dd$thetades1,rep(0,nn),status2,dd$delay1,dd$surv2,var.link,PACKAGE="mets")$like
   ppv1t2[status2==0] <- ppv1t2[dd$status2==0]/dd$surv2[status2==0]
-  ppt1v2 <- .Call("claytonoakesR",dd$thetades1,dd$status1,rep(0,nn),dd$surv1,dd$delay2,var.link)$like
+  ppt1v2 <- .Call("claytonoakesR",dd$thetades1,dd$status1,rep(0,nn),dd$surv1,dd$delay2,var.link,PACKAGE="mets")$like
   ppt1v2[status1==0] <- ppt1v2[status1==0]/dd$surv1[status1==0]
   dd$weight1 <- c(ppt1v2)
   dd$weight2 <- c(ppv1t2)

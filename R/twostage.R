@@ -752,7 +752,8 @@ if (!is.null(margsurv))  {
 	      icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
 	      ivarlink=var.link,iid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
 	      itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
-	      irvdes=random.design,iags=additive.gamma.sum,iascertained=ascertained) ## }}}
+	      irvdes=random.design,iags=additive.gamma.sum,iascertained=ascertained,
+              PACKAGE="mets") ## }}}
       }
       else { ## pair-structure 
 	     ## twostage model,    case.control option,   profile out baseline 
@@ -770,12 +771,12 @@ if (!is.null(margsurv))  {
 
              if (ncol(Bit)==0) Bit <- Bit.ini
              Bitcase  <- Cpred(cbind(dtimesst,Bit),dtimesstcase)[,-1,drop=FALSE]
-             Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
+             Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase,PACKAGE="mets")$X
 
              for (j in 1:5) { ## {{{ profile via iteration 
                    cncc <- .Call("BhatAddGamCC",1,dBaalen,dcauses,dim(xjump),xjump,
 		                 c(partheta),dim(mtheta.des),mtheta.des,additive.gamma.sum,var.link, 
-				 dim(mrv.des),mrv.des,nrv.des,1,Bit,Bitcase,dcausescase)
+				 dim(mrv.des),mrv.des,nrv.des,1,Bit,Bitcase,dcausescase,PACKAGE="mets")
 		   d <- max(abs(Bit-cncc$B))
 		   if (detail>1) print(d)
 		   Bit <- cncc$B
@@ -790,7 +791,7 @@ if (!is.null(margsurv))  {
 			  if (shut.up==0) cat("Baseline profiler gives missing values\n");  
 		          Bit <- Bit.ini; cum1 <- cbind(dtimesst,Bit); convergence.bp <<- 0; break;
 		   }
-		   Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
+		   Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase,PACKAGE="mets")$X
 		   if (d<0.00001) break; 
            } ## }}} 
 
@@ -828,7 +829,7 @@ if (!is.null(margsurv))  {
           itrunkp=ptrunc,istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
           irvdes=random.design,
           idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs,iags=additive.gamma.sum, 
-	  iascertained=ascertained)
+	  iascertained=ascertained,PACKAGE="mets")
 	  ## }}} 
 
           if (fix.baseline==0)  { 
@@ -853,12 +854,12 @@ if (!is.null(margsurv))  {
              if (detail>1) matplot(dtimesst,Bit,type="l",main="Bit",ylim=c(0,2))
              if (ncol(Bit)==0) Bit <- Bit.ini
              Bitcase  <- Cpred(cbind(dtimesst,Bit),dtimesstcase)[,-1,drop=FALSE]
-             Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
+             Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase,PACKAGE="mets")$X
 
             for (j in 1:10) { ## {{{ profile via iteration 
                    profile.baseline <- .Call("BhatAddGamCC",0,dBaalen,dcauses,dim(xjump),xjump,
 	                               c(partheta), dim(mtheta.des),mtheta.des, additive.gamma.sum,var.link, 
-	                               dim(mrv.des),mrv.des,nrv.des,1,Bit,Bitcase,dcausescase)
+	                               dim(mrv.des),mrv.des,nrv.des,1,Bit,Bitcase,dcausescase,PACKAGE="mets")
                    d <- max(abs(Bit-profile.baseline$B))
 		   Bit <- profile.baseline$B
 		   cum1 <- cbind(dtimesst,Bit)
@@ -870,7 +871,7 @@ if (!is.null(margsurv))  {
 			  if (shut.up==0) cat("Baseline profiler gives missing values\n");  
 		          Bit <- Bit.ini; cum1 <- cbind(dtimesst,Bit); convergence.bp <<- 0; break;
 		   }
-		   Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase)$X
+		   Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase,PACKAGE="mets")$X
                    if (d<0.00001) break; 
            } ## }}} 
 
@@ -913,7 +914,7 @@ if (!is.null(margsurv))  {
           profile.baseline  <- .Call("BhatAddGam",recursive=1,
           dBaalen,dcauses,dim(xjump),xjump,c(partheta),
 	  dim(mtheta.des),mtheta.des, 
-	  additive.gamma.sum,0,dim(mrv.des),mrv.des,0,matrix(0,1,1))
+	  additive.gamma.sum,0,dim(mrv.des),mrv.des,0,matrix(0,1,1),PACKAGE="mets")
 
 ###	  print(summary(cbind(dtimesst,profile.baseline$B)))
 ###	  matplot(dtimesst,profile.baseline$B,type="l")
@@ -924,7 +925,7 @@ if (!is.null(margsurv))  {
 	  marg.model <- "no-cox"
           if (marg.model=="cox") {# {{{
 	      Bit <- profile.baseline$B
-              Bit <- .Call("MatxCube",Bit,dim(xjump),xjump)$X
+              Bit <- .Call("MatxCube",Bit,dim(xjump),xjump,PACKAGE="mets")$X
 	      caseweights <- profile.baseline$caseweights
 
 	      pp <- timereg.formula(as.formula(cr.models[[i]]))
@@ -974,8 +975,8 @@ if (!is.null(margsurv))  {
       itrunkp=as.matrix(ptrunc),istrata=as.numeric(strata),iseclusters=se.clusters,iantiid=antiid,
       irvdes=random.design,
       idimthetades=dim(theta.des),idimrvdes=dim(random.design),
-      irvs=pairs.rvs,iags=additive.gamma.sum,ientry.cause=entry.cause,iascertained=(ascertained+case.control>0)*1) 
-
+      irvs=pairs.rvs,iags=additive.gamma.sum,ientry.cause=entry.cause,iascertained=(ascertained+case.control>0)*1,
+      PACKAGE="mets")
 
       if (fix.baseline==0)  {
 	      outl$baseline <- cbind(dtimesst,profile.baseline$B); 

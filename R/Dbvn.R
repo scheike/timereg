@@ -23,7 +23,8 @@ Dbvn <- function(p,design=function(p,...) {
                         Y=cbind(0,0)) {
   mS <- design(p)
   U0 <- with(mS,.Call("biprobit0",
-                          mu,
-                          S,dS,Y,dmu,NULL,FALSE,FALSE));
+                     mu,
+                     S,dS,Y,dmu,NULL,FALSE,FALSE,
+                     PACKAGE="mets"));
   return(c(U0,mS))
 }

@@ -39,11 +39,12 @@ pmvn <- function(lower,upper,mu,sigma,cor=FALSE) {
     if (ncol(rbind(lower))!=p || ncol(rbind(upper))!=p)
         stop("Incompatible integration bounds")    
     arglist <- list("pmvn0",
-                    lower=rbind(lower),
-                    upper=rbind(upper),
-                    mu=rbind(mu),
-                    sigma=rbind(sigma),
-                    cor=as.logical(cor[1]))
+                   lower=rbind(lower),
+                   upper=rbind(upper),
+                   mu=rbind(mu),
+                   sigma=rbind(sigma),
+                   cor=as.logical(cor[1]),
+                   PACKAGE="mets")
     res <- do.call(".Call",arglist)
     return(as.vector(res))
 }

@@ -242,9 +242,10 @@ dep.cif<-function(cif,data,cause=NULL,model="OR",cif2=NULL,times=NULL,
 		 iKMtimes=Gctimes,isilent=silent,
                  icifmodel=cif.model,idepmodel=dep.model,
                  iestimator=estimator,ientryage=entry,icif1entry=cif1entry,
-                 icif2entry=cif2entry,itrunkp=trunkp,irvdes=random.design
-                 ### Biid,gamma.iid,time.pow, 
-                 ### B2iid,gamma2.iid,body(htheta),body(dhtheta),new.env(),
+                 icif2entry=cif2entry,itrunkp=trunkp,irvdes=random.design,
+                 ## Biid,gamma.iid,time.pow, 
+                 ## B2iid,gamma2.iid,body(htheta),body(dhtheta),new.env(),
+                 PACKAGE="mets"
 		 ) 
       ## }}}
 

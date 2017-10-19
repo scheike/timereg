@@ -255,7 +255,7 @@ fast.reshape <- function(data,varying,id,num,sep="",keep,
                                     idata=data,
                                     inclust=as.integer(nclust),
                                     as.integer(nfixed),
-                                    as.integer(nvarying)
+                                    as.integer(nvarying),PACKAGE="mets"
                                     ));
 
 

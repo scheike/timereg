@@ -2,7 +2,6 @@
 % Please edit documentation in R/sim.clayton.oakes.R
 \name{simClaytonOakes}
 \alias{simClaytonOakes}
-\alias{simFrailty.simple}
 \title{Simulate from the Clayton-Oakes frailty model}
 \usage{
 simClaytonOakes(K, n, eta, beta, stoptime, left = 0, pairleft = 0,

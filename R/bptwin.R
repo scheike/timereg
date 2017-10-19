@@ -380,7 +380,8 @@ bptwin <- function(x, data, id, zyg, DZ, group=NULL,
                                XX0[,midx1,drop=FALSE]%*%b00))
     U0 <- with(MyData0, .Call("biprobit0",
                              Mu0,
-                             S$Sigma0,dS0,Y0,XX0,W0,!is.null(W0),samecens))
+                             S$Sigma0,dS0,Y0,XX0,W0,!is.null(W0),samecens,
+                             PACKAGE="mets"))
 
     if (!is.null(MyData0$Y0_marg) &&!pairs.only) {
       mum <- with(MyData0, XX0_marg%*%b00)
@@ -388,7 +389,8 @@ bptwin <- function(x, data, id, zyg, DZ, group=NULL,
        U_marg <- with(MyData0, .Call("uniprobit",
                                    mum,XX0_marg,
                                    S$Sigma0[1,1],t(dSmarg),Y0_marg,
-                                   W0_marg,!is.null(W0_marg),TRUE))
+                                   W0_marg,!is.null(W0_marg),TRUE,
+                                   PACKAGE="mets"))
       U0$score <- rbind(U0$score,U_marg$score)
       U0$loglik <- c(U0$loglik,U_marg$loglik)
     }
@@ -398,14 +400,16 @@ bptwin <- function(x, data, id, zyg, DZ, group=NULL,
 
     U1 <- with(MyData1, .Call("biprobit0",
                              Mu1,
-                             S$Sigma1,dS1,Y0,XX0,W0,!is.null(W0),samecens))
+                             S$Sigma1,dS1,Y0,XX0,W0,!is.null(W0),samecens,
+                             PACKAGE="mets"))
     if (!is.null(MyData1$Y0_marg) &&!pairs.only) {
       mum <- with(MyData1, XX0_marg%*%b11)
       dSmarg <- dS1[,1,drop=FALSE]
       U_marg <- with(MyData1, .Call("uniprobit",
-                                    mum,XX0_marg,
-                                    S$Sigma1[1,1],t(dSmarg),Y0_marg,
-                                    W0_marg,!is.null(W0_marg),TRUE))
+                                   mum,XX0_marg,
+                                   S$Sigma1[1,1],t(dSmarg),Y0_marg,
+                                   W0_marg,!is.null(W0_marg),TRUE,
+                                   PACKAGE="mets"))
       U1$score <- rbind(U1$score,U_marg$score)
       U1$loglik <- c(U1$loglik,U_marg$loglik)
     }
@@ -415,15 +419,17 @@ bptwin <- function(x, data, id, zyg, DZ, group=NULL,
       Mu2 <- with(MyData2, cbind(XX0[,midx0,drop=FALSE]%*%b22,
                                  XX0[,midx1,drop=FALSE]%*%b22))
       U2 <- with(MyData2, .Call("biprobit0",
-                                Mu2,
-                                S$Sigma2,S$dS2,Y0,XX0,W0,!is.null(W0),samecens))
+                               Mu2,
+                               S$Sigma2,S$dS2,Y0,XX0,W0,!is.null(W0),samecens,
+                               PACKAGE="mets"))
       if (!is.null(MyData2$Y0_marg) &&!pairs.only) {
         mum <- with(MyData2, XX0_marg%*%b22)
         dSmarg <- S$dS2[,1,drop=FALSE]
         U_marg <- with(MyData2, .Call("uniprobit",
-                                      mum,XX0_marg,
-                                      S$Sigma2[1,1],t(dSmarg),Y0_marg,
-                                      W0_marg,!is.null(W0_marg),TRUE))
+                                     mum,XX0_marg,
+                                     S$Sigma2[1,1],t(dSmarg),Y0_marg,
+                                     W0_marg,!is.null(W0_marg),TRUE,
+                                     PACKAGE="mets"))
         U2$score <- rbind(U2$score,U_marg$score)
         U2$loglik <- c(U2$loglik,U_marg$loglik)
       }

@@ -21,7 +21,7 @@
 ##' @param ylab Label of Y-axis
 ##' @param add Add to existing device
 ##' @param ... Additional arguments to lower level arguments
-##' @author Thomas Scheike Klaus K. Holst
+##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
 ##' @examples
 ##' data = data.frame(id=c(1,1,1,2,2),start=c(0,1,2,3,4),slut=c(1,2,4,4,7),

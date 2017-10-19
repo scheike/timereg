@@ -145,8 +145,8 @@ ClaytonOakes <- function(formula,data=parent.frame(),cluster,var.formula=~1,cuts
     res <- .Call("claytonoakes",
            ds=mydata$status,ts=mydata$T,es=mydata$entry,
            allcs=mydata$cluster,cs=ucluster, cuts=cuts,
-                 hs=exp(p),mulths=multhaz,
-                 var=theta0)$logLik    
+           hs=exp(p),mulths=multhaz,
+           var=theta0,PACKAGE="mets")$logLik    
     return(-res)
   }
   opt <- tryCatch(nlminb(p0,obj,control=control),error=function(x) NULL)
