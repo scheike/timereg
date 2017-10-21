@@ -421,7 +421,8 @@ binomial.twostage <- function(margbin,data=sys.parent(),
             icluster=clusters,iclustsize=clustsize,iclusterindex=clusterindex,
             ivarlink=var.link,iiid=iid,iweights=weights,isilent=silent,idepmodel=dep.model,
             itrunkp=ptrunc,istrata=strata,iseclusters=se.clusters,iantiid=antiid, 
-            irvdes=random.design,iags=additive.gamma.sum,ibetaiid=Dbeta.iid,pa=pair.ascertained,twostage=twostage)
+            irvdes=random.design,iags=additive.gamma.sum,ibetaiid=Dbeta.iid,pa=pair.ascertained,twostage=twostage,
+            PACKAGE="mets")
             ## }}}
       else outl<-.Call("twostageloglikebinpairs", ## {{{
             icause=cause,ipmargsurv=ps, 
@@ -432,7 +433,8 @@ binomial.twostage <- function(margbin,data=sys.parent(),
             irvdes=random.design,
             idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs,
             iags=additive.gamma.sum,ibetaiid=Dbeta.iid,pa=pair.ascertained,twostage=twostage,
-	    icasecontrol=case.control)
+	    icasecontrol=case.control,
+            PACKAGE="mets")
              ## }}} 
 
       if (detail==3) print(c(par,outl$loglike))
@@ -683,7 +685,7 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 p11.binomial.twostage.RV <- function(theta,rv1,rv2,p1,p2,pardes,ags=NULL,link=0,i=1,j=1) { ## {{{ 
 	## computes p11 pij for additive gamma binary random effects model 
      if (is.null(ags)) ags <- matrix(1,dim(pardes))
-     out <- .Call("claytonoakesbinRV",theta,i,j,p1,p2,rv1,rv2,pardes,ags,link)$like
+     out <- .Call("claytonoakesbinRV",theta,i,j,p1,p2,rv1,rv2,pardes,ags,link,PACKAGE="mets")$like
  return(out)
 } ## }}} 
 

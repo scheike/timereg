@@ -1,3 +1,4 @@
+
 ##' Additive hazards model with (gamma) frailty
 ##'
 ##' Aalen frailty model
@@ -43,14 +44,16 @@ aalenfrailty <- function(time,status,X,id,theta,B=NULL,...) {
   ncluster <- length(cc$clusters)
   U <- function(theta,indiv=FALSE,Bhat=FALSE) {
     if (is.null(B)) {
-        BB <- .Call("Bhat",as.integer(status),X,theta,as.integer(cc$clusters),cc$idclust,as.integer(cc$cluster.size))$B2
+        BB <- .Call("Bhat",as.integer(status),X,theta,as.integer(cc$clusters),
+                   cc$idclust,as.integer(cc$cluster.size),PACKAGE="mets")$B2
     } else {
         BB <- B*time[dix]
     }
     Hij0 <- apply(X[dix,,drop=FALSE]*BB,1,sum)
     Hij <- Cpred(cbind(time[dix],Hij0),time)[,2,drop=FALSE]
 ##    if (is.na(Hij[1])) browser()
-    res <- .Call("Uhat",as.integer(status),Hij,theta,cc$idclust,as.integer(cc$cluster.size))
+    res <- .Call("Uhat",as.integer(status),Hij,theta,
+                cc$idclust,as.integer(cc$cluster.size),PACKAGE="mets")
     if (!indiv) res <- mean(res,na.rm=TRUE)
     if (Bhat) attributes(res)$B <- BB
     return(res)
