@@ -58,6 +58,7 @@ extern SEXP ModelMatrixTestCox(SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP simBandCumHazCox(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP revcumsumR(SEXP);
 extern SEXP revcumsumstrataR(SEXP,SEXP, SEXP);
+extern SEXP revcumsumstratasumR(SEXP,SEXP, SEXP);
 extern SEXP cumsumstrataR(SEXP,SEXP, SEXP);
 extern SEXP sumstrataR(SEXP,SEXP, SEXP);
 extern SEXP XBmindex(SEXP,SEXP, SEXP);
@@ -102,6 +103,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"pmvn0",                             (DL_FUNC) &pmvn0,                              5},
     {"revcumsumR",                        (DL_FUNC) &revcumsumR,                         1},
     {"revcumsumstrataR",                  (DL_FUNC) &revcumsumstrataR,                   3},
+    {"revcumsumstratasumR",               (DL_FUNC) &revcumsumstratasumR,                3},
     {"cumsumstrataR",                     (DL_FUNC) &cumsumstrataR,                      3},
     {"sumstrataR",                        (DL_FUNC) &sumstrataR,                      3},
     {"Dpmvn",                             (DL_FUNC) &Dpmvn,                              5},

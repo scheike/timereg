@@ -499,6 +499,14 @@ res <- .Call("revcumsumstrataR",x,strata,nstrata)$res
 return(res)
 }# }}}
 
+##' @export
+revcumsumstratasum <- function(x,strata,nstrata,square=1)
+{# {{{
+if (square==0) res <- .Call("revcumsumstratasumR",x,strata,nstrata)$sum
+else res <- .Call("revcumsumstratasumR",x,strata,nstrata)
+return(res)
+}# }}}
+
 
 ###{{{ predict with se for baseline
 
