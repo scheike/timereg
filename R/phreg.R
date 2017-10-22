@@ -590,7 +590,7 @@ predictPhreg <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,band=FA
 ##' @param X Design matrix
 ##' @param strata Strata variable
 ##' @param ... ADditional arguments to lower level functions
-##' @aliases predict.phreg revcumsumstrata cumsumstrata sumstrata
+##' @aliases predict.phreg revcumsumstrata revcumsumstratasum cumsumstrata sumstrata
 predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,strata=object$strata,...) {
     if (object$p==0) X <- NULL
     if (!is.null(object$strata)) {

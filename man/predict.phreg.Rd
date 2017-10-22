@@ -3,6 +3,7 @@
 \name{predict.phreg}
 \alias{predict.phreg}
 \alias{revcumsumstrata}
+\alias{revcumsumstratasum}
 \alias{cumsumstrata}
 \alias{sumstrata}
 \title{Predictions from proportional hazards model}
