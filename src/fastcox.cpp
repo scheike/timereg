@@ -281,7 +281,7 @@ RcppExport SEXP sumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   tmpsum.zeros(); 
   for (unsigned i=0; i<n; i++) {
     int ss=intstrata(i); 
-    if (ss< nstrata & ss>0) 
+    if (ss< nstrata & ss>=0) 
     tmpsum(ss) += a(i); 
   }  
 
