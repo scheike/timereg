@@ -24,7 +24,8 @@ dsort <- function(data,x,...,decreasing=FALSE,return.order=FALSE)
     if (missing(x)) return(data)
     if (inherits(x,"formula")) {
         xx <- lava::procformula(value=x)$res
-        decreasing <- unlist(lapply(xx,function(x) substr(trim(x),1,1)=="-"))
+        decr <- unlist(lapply(xx,function(x) substr(trim(x),1,1)=="-"))
+        if (any(decr)) decreasing <- decr
         x <- all.vars(x)
     }
     if (is.character(x) && length(x)<nrow(data)) x <- lapply(x,function(z) data[,z])
