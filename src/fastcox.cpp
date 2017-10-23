@@ -610,8 +610,8 @@ BEGIN_RCPP/*{{{*/
   mat grad = (X.rows(Jumps)-E);        // Score
   vec val =  (Xb.elem(Jumps)-log(S0)); // Partial log-likelihood
 
-  colvec iweightsJ=1/weightsJ; 
-  colvec S02 = iweightsJ%S0;            // S0 with weights to estimate baseline 
+//  colvec iweightsJ=1/weightsJ; 
+  colvec S02 = S0/weightsJ;            // S0 with weights to estimate baseline 
   mat grad2= vecmatrow(weightsJ,grad); // score  with weights
   vec val2 = weightsJ%val;             // Partial log-likelihood with weights
 

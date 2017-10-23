@@ -390,7 +390,7 @@ iid.phreg  <- function(x,type="robust",all=FALSE,...) {# {{{
   U[xx$jumps+1,] <- x$U
   cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
   EdLam0 <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
-  rr <- c(xx$sign*exp(Z %*% coef(x)))
+  rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
   ### Martingale  as a function of time and for all subjects to handle strata 
   MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-EdLam0)*rr*c(xx$weights)
   orig.order <- (1:nrow(xx$X))[xx$ord+1]
