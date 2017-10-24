@@ -300,8 +300,8 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' sout1 <- phreg(Surv(time,status==1)~vf+chf+strata(wmicat.4),data=tracesim)
 ##' 
 ##' par(mfrow=c(1,2))
-##' baseplot.phreg(out1)
-##' baseplot.phreg(sout1)
+##' basehazplot.phreg(out1)
+##' basehazplot.phreg(sout1)
 ##' @export
 phreg <- function(formula,data,offset=NULL,weights=NULL,...) {
   cl <- match.call()
@@ -418,11 +418,60 @@ iid.phreg  <- function(x,type="robust",all=FALSE,...) {# {{{
   structure(UU%*%invhess,invhess=invhess,ncluster=ncluster)
 } # }}}
 
+##' @export
+robust.sebase.phreg  <- function(x,type="robust",...) {# {{{
+  invhess <- -solve(x$hessian)
+  xx <- x$cox.prep
+  S0i2 <- S0i <- rep(0,length(xx$strata))
+  S0i[xx$jumps+1] <-  1/x$S0
+  S0i2[xx$jumps+1] <- 1/x$S0^2
+  Z <- xx$X
+  U <- E <- matrix(0,nrow(xx$X),x$p)
+  E[xx$jumps+1,] <- x$E
+  U[xx$jumps+1,] <- x$U
+  ###    
+  cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
+  cumS0i2 <-    cumsumstrata(S0i2,xx$strata,xx$nstrata)
+  Ht <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
+  rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
+  idd <-   xx$id
+  mmid <- max(idd)+1
+  ### also weights 
+  w <- c(xx$weights)
+  xxx <- w*(S0i-rr*c(cumS0i2))
+  ssf <- cumsumstratasum(xxx,idd,mmid)$sumsquare
+  ss <- c(revcumsumstratasum(w*rr,idd,mmid)$sumsquare)
+  ss <- c(ss[-1],0)*c(cumS0i2^2)
+  covv <- covfr(xxx,w*rr,idd,mmid)$covs*c(cumS0i2)
+  mm <- c(ssf+ss+2*covv)
+  betaiid <- iid(x)
+  vbeta <- crossprod(betaiid)
+  varbetat <-   rowSums((Ht %*% vbeta)*Ht)
+  ### writing each beta for all individuals 
+  betakt <- betaiid[idd+1,]
+  ###
+  covk1 <- apply(xxx*betakt,2,cumsumstratasum,id,mid,square=0)
+  covk2 <- apply(w*rr*betakt,2,revcumsumstratasum,id,mid,square=0)
+  covk2 <- c(covk2[-1],0)*c(cumS0i2)
+###
+  mm <- mm+varbetat-2*apply((covk1-covk2)*Ht,1,sum)
+  mm <- mm[x$jumps]
+
+  cumhaz <- x$cumhaz
+  se.cumhaz <- cbind(cumhaz[,1],mm^.5)
+  colnames(se.cumhaz) <- c("time","se.cumhaz")
+
+  
+  return(list(cumhaz=cumhaz,se.cumhaz=se.cumhaz))
+} # }}}
+
 
 ##' @export robust.phreg
 robust.phreg  <- function(x,...) {
  gamma.iid <- iid.phreg(x) 
  robvar <- crossprod(gamma.iid)
+ baseline <- robust.sebase.phreg(x); 
+ return(list(gamma.iid=gamma.iid,robvar=robvar,robse.cumhaz=baseline$se.cumhaz))
 }
 
 ###}}}
@@ -507,6 +556,22 @@ if (square==0) res <- .Call("revcumsumstratasumR",x,strata,nstrata)$sum
 else res <- .Call("revcumsumstratasumR",x,strata,nstrata)
 return(res)
 }# }}}
+
+##' @export
+cumsumstratasum <- function(x,strata,nstrata,square=1)
+{# {{{
+if (square==0) res <- .Call("cumsumstratasumR",x,strata,nstrata)$sum
+else res <- .Call("cumsumstratasumR",x,strata,nstrata)
+return(res)
+}# }}}
+
+##' @export
+covfr  <- function(x,y,strata,nstrata)
+{# {{{
+res <- .Call("covrfR",x,y,strata,nstrata)
+return(res)
+}# }}}
+
 
 
 ###{{{ predict with se for baseline
@@ -642,22 +707,24 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 ##' @param stratas wich strata to plot 
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Klaus K. Holst, Thomas Scheike
+##' @export
+##' @aliases basehazplot.phreg 
 ##' @examples
 ##' data(TRACE)
 ##' dcut(TRACE) <- ~.
 ##' out1 <- phreg(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
 ##' 
 ##' par(mfrow=c(2,2))
-##' baseplot.phreg(out1)
-##' baseplot.phreg(out1,stratas=c(0,3))
-##' baseplot.phreg(out1,stratas=c(0,3),col=2:3,lty=1:2,se=TRUE)
-##' baseplot.phreg(out1,stratas=c(0),col=2,lty=2,se=TRUE,polygon=FALSE)
-##' baseplot.phreg(out1,stratas=c(0),col=matrix(c(2,1,3),1,3),
-##'                                  lty=matrix(c(1,2,3),1,3),se=TRUE,polygon=FALSE)
+##' basehazplot.phreg(out1)
+##' basehazplot.phreg(out1,stratas=c(0,3))
+##' basehazplot.phreg(out1,stratas=c(0,3),col=2:3,lty=1:2,se=TRUE)
+##' basehazplot.phreg(out1,stratas=c(0),col=2,lty=2,se=TRUE,polygon=FALSE)
+##' basehazplot.phreg(out1,stratas=c(0),col=matrix(c(2,1,3),1,3),
+##'             lty=matrix(c(1,2,3),1,3),se=TRUE,polygon=FALSE)
 ##' @export
-baseplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,
-			    lty=NULL,col=NULL,legend=TRUE,
-			    ylab="Cumulative hazard",polygon=TRUE,level=0.95,stratas=NULL,...) {# {{{
+basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,
+    lty=NULL,col=NULL,legend=TRUE,ylab="Cumulative hazard",
+    polygon=TRUE,level=0.95,stratas=NULL,...) {# {{{
    level <- -qnorm((1-level)/2)
    rr <- range(x$cumhaz[,-1])
    strat <- x$strata[x$jumps]

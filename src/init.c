@@ -59,6 +59,8 @@ extern SEXP simBandCumHazCox(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP revcumsumR(SEXP);
 extern SEXP revcumsumstrataR(SEXP,SEXP, SEXP);
 extern SEXP revcumsumstratasumR(SEXP,SEXP, SEXP);
+extern SEXP cumsumstratasumR(SEXP,SEXP, SEXP);
+extern SEXP covrfR(SEXP,SEXP,SEXP, SEXP);
 extern SEXP cumsumstrataR(SEXP,SEXP, SEXP);
 extern SEXP sumstrataR(SEXP,SEXP, SEXP);
 extern SEXP XBmindex(SEXP,SEXP, SEXP);
@@ -104,6 +106,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"revcumsumR",                        (DL_FUNC) &revcumsumR,                         1},
     {"revcumsumstrataR",                  (DL_FUNC) &revcumsumstrataR,                   3},
     {"revcumsumstratasumR",               (DL_FUNC) &revcumsumstratasumR,                3},
+    {"cumsumstratasumR",                  (DL_FUNC) &cumsumstratasumR,                   3},
+    {"covrfR",                            (DL_FUNC) &covrfR,                             4},
     {"cumsumstrataR",                     (DL_FUNC) &cumsumstrataR,                      3},
     {"sumstrataR",                        (DL_FUNC) &sumstrataR,                      3},
     {"Dpmvn",                             (DL_FUNC) &Dpmvn,                              5},
