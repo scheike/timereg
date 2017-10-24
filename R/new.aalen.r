@@ -357,9 +357,9 @@ ylab ="Cumulative coefficients",score=FALSE,...)
         hw.ci=hw.ci, sim.ci=sim.ci, robust.ci=robust.ci, col=col, 
 	specific.comps=specific.comps,level=level, 
         start.time = start.time, stop.time = stop.time, add.to.plot=add.to.plot, 
-        mains=mains, xlab=xlab, ylab =ylab) 
+        mains=mains, xlab=xlab, ylab =ylab,...) 
   else plotScore(object, specific.comps=specific.comps, mains=mains,
-                  xlab=xlab,ylab =ylab); 
+                  xlab=xlab,ylab =ylab,...); 
 } ## }}}
 
 

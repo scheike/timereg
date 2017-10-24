@@ -253,7 +253,7 @@ cause.pchazard.sim<-function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.cum
 #' baseplot.phreg(cc,add=TRUE)
 #' @export
 #' @aliases sim.cox read.fit 
-sim.cox <- function(cox,n,data=NULL,cens=NULL,rrc=NULL,...)
+sim.cox <- function(cox,n,data=NULL,cens=NULL,rrc=NULL,entry=NULL,...)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
 ### cumh=cbind(breaks,cumhazard) if cumh=TRUE
@@ -261,7 +261,7 @@ des <- 	read.fit(cox,n,data=data,...)
 Z <- des$Z; cumhazard <- des$cum; rr <- des$rr; 
 
 if (class(cox)!="phreg") {
-	ptt <- pc.hazard(cumhazard,rr) 
+	ptt <- pc.hazard(cumhazard,rr,entry=entry) 
 	ptt <- cbind(ptt,Z)
 } else {
 	ptt <- data.frame()
@@ -269,13 +269,14 @@ if (class(cox)!="phreg") {
 	if (cox$nstrata>1) {
 		for (j in 0:(cox$nstrata-1)) {
                         cumhazardj <- rbind(c(0,0),cox$cumhaz[stratj==j,])
-	                pttj <- pc.hazard(cumhazardj,rr[des$strataid==j]) 
+			if (!is.null(entry)) entry <- entry[des$strataid==j]
+	                pttj <- pc.hazard(cumhazardj,rr[des$strataid==j],entry=entry) 
 			Zj <- Z[des$strataid==j,,drop=FALSE]
 			pttj <- cbind(pttj,Zj)
 			ptt  <-  rbind(ptt,pttj)
 		}
 	} else {
-		ptt <- pc.hazard(cumhazard,rr) 
+		ptt <- pc.hazard(cumhazard,rr,entry=entry) 
 		ptt <- cbind(ptt,Z)
 	}
 }
@@ -283,13 +284,14 @@ if (class(cox)!="phreg") {
    if (!is.null(cens))  {
       if (is.null(rrc)) rrc <- rep(1,n)
       if (is.matrix(cens)) {
-	   pct <- pc.hazard(cens,rrc,cum.hazard=TRUE)
+	   pct <- pc.hazard(cens,rrc,cum.hazard=TRUE,entry=entry)
 	   pct <- pct$time
       }
       else {
 	   if (is.numeric(cens)) pct<- rexp(n)/cens  else {
 	      chaz <-sum(ptt$status)/sum(ptt$time)  ## hazard averate T haz 
 	      pct<- rexp(n)/chaz 
+              if (!is.null(entry)) pct  <- entry + pct
            }
       }
       ptt$time <- pmin(ptt$time,pct)
