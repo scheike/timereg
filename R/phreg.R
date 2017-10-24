@@ -435,7 +435,7 @@ robust.sebase.phreg  <- function(x,type="robust",...) {# {{{
   Ht <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
   rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
   id <-   xx$id
-  mid <- max(idd)+1
+  mid <- max(id)+1
   ### also weights 
   w <- c(xx$weights)
   xxx <- w*(S0i-rr*c(cumS0i2))
@@ -448,7 +448,7 @@ robust.sebase.phreg  <- function(x,type="robust",...) {# {{{
   vbeta <- crossprod(betaiid)
   varbetat <-   rowSums((Ht %*% vbeta)*Ht)
   ### writing each beta for all individuals 
-  betakt <- betaiid[idd+1,]
+  betakt <- betaiid[id+1,]
   ###
   covk1 <- apply(xxx*betakt,2,cumsumstratasum,id,mid,square=0)
   covk2 <- apply(w*rr*betakt,2,revcumsumstratasum,id,mid,square=0)
