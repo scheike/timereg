@@ -434,15 +434,15 @@ robust.sebase.phreg  <- function(x,type="robust",...) {# {{{
   cumS0i2 <-    cumsumstrata(S0i2,xx$strata,xx$nstrata)
   Ht <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
   rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
-  idd <-   xx$id
-  mmid <- max(idd)+1
+  id <-   xx$id
+  mid <- max(idd)+1
   ### also weights 
   w <- c(xx$weights)
   xxx <- w*(S0i-rr*c(cumS0i2))
-  ssf <- cumsumstratasum(xxx,idd,mmid)$sumsquare
-  ss <- c(revcumsumstratasum(w*rr,idd,mmid)$sumsquare)
+  ssf <- cumsumstratasum(xxx,id,mid)$sumsquare
+  ss <- c(revcumsumstratasum(w*rr,id,mid)$sumsquare)
   ss <- c(ss[-1],0)*c(cumS0i2^2)
-  covv <- covfr(xxx,w*rr,idd,mmid)$covs*c(cumS0i2)
+  covv <- covfr(xxx,w*rr,id,mid)$covs*c(cumS0i2)
   mm <- c(ssf+ss+2*covv)
   betaiid <- iid(x)
   vbeta <- crossprod(betaiid)
@@ -460,7 +460,6 @@ robust.sebase.phreg  <- function(x,type="robust",...) {# {{{
   cumhaz <- x$cumhaz
   se.cumhaz <- cbind(cumhaz[,1],mm^.5)
   colnames(se.cumhaz) <- c("time","se.cumhaz")
-
   
   return(list(cumhaz=cumhaz,se.cumhaz=se.cumhaz))
 } # }}}
@@ -471,7 +470,8 @@ robust.phreg  <- function(x,...) {
  gamma.iid <- iid.phreg(x) 
  robvar <- crossprod(gamma.iid)
  baseline <- robust.sebase.phreg(x); 
- return(list(gamma.iid=gamma.iid,robvar=robvar,robse.cumhaz=baseline$se.cumhaz))
+ return(list(coef=x$coef,gamma.iid=gamma.iid,
+	    robvar=robvar, cumhaz=baseline$cumhaz, se.cumhaz=x$se.cumhaz,robse.cumhaz=baseline$se.cumhaz))
 }
 
 ###}}}
