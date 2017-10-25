@@ -285,6 +285,7 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' Fast Cox PH regression
 ##'
 ##' Fast Cox PH regression
+##' Robust variance is default variance with the summary. 
 ##' @param formula formula with 'Surv' outcome (see \code{coxph})
 ##' @param data data frame
 ##' @param offset offsets for cox model
@@ -302,6 +303,13 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' par(mfrow=c(1,2))
 ##' basehazplot.phreg(out1)
 ##' basehazplot.phreg(sout1)
+##' 
+##' ## computing robust variance for baseline
+##' rob <- roubst.phreg(out1)
+##' 
+##' ## making iid decomposition of regression parameters
+##' betaiiid <- iid(out1)
+##' 
 ##' @export
 phreg <- function(formula,data,offset=NULL,weights=NULL,...) {
   cl <- match.call()
@@ -419,7 +427,7 @@ iid.phreg  <- function(x,type="robust",all=FALSE,...) {# {{{
 } # }}}
 
 ##' @export
-robust.sebase.phreg  <- function(x,type="robust",...) {# {{{
+robust.basehaz.phreg  <- function(x,type="robust",...) {# {{{
   invhess <- -solve(x$hessian)
   xx <- x$cox.prep
   S0i2 <- S0i <- rep(0,length(xx$strata))
@@ -454,11 +462,11 @@ robust.sebase.phreg  <- function(x,type="robust",...) {# {{{
   covk2 <- apply(w*rr*betakt,2,revcumsumstratasum,id,mid,square=0)
   covk2 <- c(covk2[-1],0)*c(cumS0i2)
 ###
-  mm <- mm+varbetat-2*apply((covk1-covk2)*Ht,1,sum)
-  mm <- mm[x$jumps]
+  varA <- varA+varbetat-2*apply((covk1-covk2)*Ht,1,sum)
+  varA <- varA[x$jumps]
 
   cumhaz <- x$cumhaz
-  se.cumhaz <- cbind(cumhaz[,1],mm^.5)
+  se.cumhaz <- cbind(cumhaz[,1],varA^.5)
   colnames(se.cumhaz) <- c("time","se.cumhaz")
   
   return(list(cumhaz=cumhaz,se.cumhaz=se.cumhaz))
@@ -469,9 +477,11 @@ robust.sebase.phreg  <- function(x,type="robust",...) {# {{{
 robust.phreg  <- function(x,...) {
  gamma.iid <- iid.phreg(x) 
  robvar <- crossprod(gamma.iid)
- baseline <- robust.sebase.phreg(x); 
+ baseline <- robust.basehaz.phreg(x); 
  return(list(coef=x$coef,gamma.iid=gamma.iid,
-	    robvar=robvar, cumhaz=baseline$cumhaz, se.cumhaz=x$se.cumhaz,robse.cumhaz=baseline$se.cumhaz))
+	    robvar=robvar,
+	    cumhaz=baseline$cumhaz,
+	    se.cumhaz=x$se.cumhaz,robse.cumhaz=baseline$se.cumhaz))
 }
 
 ###}}}
