@@ -451,7 +451,7 @@ robust.basehaz.phreg  <- function(x,type="robust",...) {# {{{
   ss <- c(revcumsumstratasum(w*rr,id,mid)$sumsquare)
   ss <- c(ss[-1],0)*c(cumS0i2^2)
   covv <- covfr(xxx,w*rr,id,mid)$covs*c(cumS0i2)
-  mm <- c(ssf+ss+2*covv)
+  varA <- c(ssf+ss+2*covv)
   betaiid <- iid(x)
   vbeta <- crossprod(betaiid)
   varbetat <-   rowSums((Ht %*% vbeta)*Ht)

@@ -21,6 +21,7 @@ phreg(formula, data, offset = NULL, weights = NULL, ...)
 }
 \description{
 Fast Cox PH regression
+Robust variance is default variance with the summary.
 }
 \examples{
 data(TRACE)
@@ -32,6 +33,13 @@ sout1 <- phreg(Surv(time,status==1)~vf+chf+strata(wmicat.4),data=tracesim)
 par(mfrow=c(1,2))
 basehazplot.phreg(out1)
 basehazplot.phreg(sout1)
+
+## computing robust variance for baseline
+rob <- roubst.phreg(out1)
+
+## making iid decomposition of regression parameters
+betaiiid <- iid(out1)
+
 }
 \author{
 Klaus K. Holst, Thomas Scheike
