@@ -625,6 +625,7 @@ RcppExport SEXP revcumsumidstratasumR(SEXP ia,SEXP iid, SEXP inid, SEXP istrata,
   colvec tmpsqr(nstrata);  tmpsqr.zeros(); 
 //  colvec ressqu = a; colvec ressumu = a; 
   colvec ressum = a; 
+  colvec lagressum(n); 
   colvec ressqu = a; 
   colvec lagressqu(n); // lagressqu.zeros
   colvec cumsum(nstrata); cumsum.zeros(); 
@@ -635,14 +636,15 @@ RcppExport SEXP revcumsumidstratasumR(SEXP ia,SEXP iid, SEXP inid, SEXP istrata,
     // valid strata update 
 //    if ((first==1) & (i>=1)& (ss<nstrata) & (ss>=0))
     if ((first(ss)==1)) {
-       lagressqu(n-i-1)=tmpsqr(ss); // previous from  
+       lagressqu(n-i-1)=tmpsqr(ss);  // previous from  
+       lagressum(n-i-1)=cumsum(ss);  // previous sum from  
        ressqu(n-i-1)=tmpsqr(ss)+pow(a(n-i-1),2)+2*a(n-i-1)*tmpsum(ss,lid);
     }
     tmpsum(ss,lid) += a(n-i-1); 
     cumsum(ss)+=a(n-i-1); 
     // first 
     if (first(ss)<0.1) {ressqu(n-i-1)=pow(a(n-i-1),2); first(ss)=1;
-                        lagressqu(n-i-1)=0; }
+                        lagressqu(n-i-1)=0; lagressum(n-i-1)=0; }
 //    ressqu(n-i-1) = sum(tmpsum%tmpsum);
 //    tmpsum.print("pp"); 
     ressum(n-i-1)=cumsum(ss);
@@ -653,6 +655,7 @@ RcppExport SEXP revcumsumidstratasumR(SEXP ia,SEXP iid, SEXP inid, SEXP istrata,
   rres["sumsquare"]=ressqu; 
   rres["lagsumsquare"]=lagressqu; 
   rres["sum"]=ressum; 
+  rres["lagsum"]=lagressum; 
   return(rres);
 } /*}}}*/
 

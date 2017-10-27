@@ -427,7 +427,7 @@ iid.phreg  <- function(x,type="robust",all=FALSE,...) {# {{{
 } # }}}
 
 ##' @export
-robust.basehaz.phreg  <- function(x,type="robust",...) {# {{{
+robust.basehaz.phreg  <- function(x,type="robust",fixbeta=0,...) {# {{{
   invhess <- -solve(x$hessian)
   xx <- x$cox.prep
   S0i2 <- S0i <- rep(0,length(xx$strata))
@@ -453,24 +453,27 @@ robust.basehaz.phreg  <- function(x,type="robust",...) {# {{{
   covv <- covfridstrata(xxx,w*rr,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2)
   varA <- c(ssf+ss+2*covv)
 
-  betaiid <- iid(x)
-  vbeta <- crossprod(betaiid)
-  varbetat <-   rowSums((Ht %*% vbeta)*Ht)
-  ### writing each beta for all individuals 
-  betakt <- betaiid[id+1,]
-  ###
-  covk1 <- apply(xxx*betakt,2,cumsumstratasum,id,mid,xx$strata,xx$nstrata,square=0)
-  covk2 <- apply(w*rr*betakt,2,revcumsumstratasum,id,mid,xx$strata,xx$nstrata,square=0)
-  covk2 <- c(covk2[-1],0)*c(cumS0i2)
-###
-  varA <- varA+varbetat-2*apply((covk1-covk2)*Ht,1,sum)
+  if (fixbeta==0) {
+     betaiid <- iid(x)
+     vbeta <- crossprod(betaiid)
+     varbetat <-   rowSums((Ht %*% vbeta)*Ht)
+     ### writing each beta for all individuals 
+     betakt <- betaiid[id+1,,drop=FALSE]
+     ###
+     covk1 <- apply(xxx*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
+     covk2 <- apply(w*rr*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
+     covk2 <- c(covk2)*c(cumS0i2)
+     ###
+     varA <- varA+varbetat-2*apply((covk1-covk2)*Ht,1,sum)
+  }
   varA <- varA[x$jumps]
 
+  strata <- xx$strata[x$jumps]
   cumhaz <- x$cumhaz
   se.cumhaz <- cbind(cumhaz[,1],varA^.5)
   colnames(se.cumhaz) <- c("time","se.cumhaz")
   
-  return(list(cumhaz=cumhaz,se.cumhaz=se.cumhaz))
+  return(list(cumhaz=cumhaz,se.cumhaz=se.cumhaz,strata=strata))
 } # }}}
 
 
@@ -479,10 +482,9 @@ robust.phreg  <- function(x,...) {
  gamma.iid <- iid.phreg(x) 
  robvar <- crossprod(gamma.iid)
  baseline <- robust.basehaz.phreg(x); 
- return(list(coef=x$coef,gamma.iid=gamma.iid,
-	    robvar=robvar,
-	    cumhaz=baseline$cumhaz,
-	    se.cumhaz=x$se.cumhaz,robse.cumhaz=baseline$se.cumhaz))
+ return(list(coef=x$coef,gamma.iid=gamma.iid,robvar=robvar,
+	    cumhaz=baseline$cumhaz,se.cumhaz=x$se.cumhaz,robse.cumhaz=baseline$se.cumhaz,
+	    strata=baseline$strata))
 }
 
 ###}}}
@@ -561,18 +563,19 @@ return(res)
 }# }}}
 
 ##' @export
-revcumsumstratasum <- function(x,strata,nstrata,square=1)
+revcumsumstratasum <- function(x,strata,nstrata,type="all")
 {# {{{
-if (square==0) res <- .Call("revcumsumstratasumR",x,strata,nstrata)$sum
-else res <- .Call("revcumsumstratasumR",x,strata,nstrata)
+if (type=="sum")    res <- .Call("revcumsumstratasumR",x,strata,nstrata)$sum
+if (type=="lagsum") res <- .Call("revcumsumstratasumR",x,strata,nstrata)$lagsum
+if (type=="all")    res <- .Call("revcumsumstratasumR",x,strata,nstrata)
 return(res)
 }# }}}
 
 ##' @export
-cumsumstratasum <- function(x,strata,nstrata,square=1)
+cumsumstratasum <- function(x,strata,nstrata,type="all")
 {# {{{
-if (square==0) res <- .Call("cumsumstratasumR",x,strata,nstrata)$sum
-else res <- .Call("cumsumstratasumR",x,strata,nstrata)
+if (type=="sum")    res <- .Call("cumsumstratasumR",x,strata,nstrata)$sum
+if (type=="all")    res <- .Call("cumsumstratasumR",x,strata,nstrata)
 return(res)
 }# }}}
 
@@ -584,17 +587,19 @@ return(res)
 }# }}}
 
 ##' @export
-revcumsumidstratasum <- function(x,id,nid,strata,nstrata,square=1)
+revcumsumidstratasum <- function(x,id,nid,strata,nstrata,type="all")
 {# {{{
-if (square==0) res <- .Call("revcumsumidstratasumR",x,id,nid,strata,nstrata)$sum
-else res <- .Call("revcumsumidstratasumR",x,id,nid,strata,nstrata)
+if (type=="sum")    res <- .Call("revcumsumidstratasumR",x,id,nid,strata,nstrata)$sum
+if (type=="lagsum")    res <- .Call("revcumsumidstratasumR",x,id,nid,strata,nstrata)$lagsum
+if (type=="lagsumsquare") res <- .Call("revcumsumidstratasumR",x,id,nid,strata,nstrata)$lagsumsquare
+if (type=="all")    res <- .Call("revcumsumidstratasumR",x,id,nid,strata,nstrata)
 return(res)
 }# }}}
 
 ##' @export
-cumsumidstratasum <- function(x,id,nid,strata,nstrata,square=1)
+cumsumidstratasum <- function(x,id,nid,strata,nstrata,type="all")
 {# {{{
-if (square==0) res <- .Call("cumsumidstratasumR",x,id,nid,strata,nstrata)$sum
+if (type=="sum")   res <- .Call("cumsumidstratasumR",x,id,nid,strata,nstrata)$sum
 else res <- .Call("cumsumidstratasumR",x,id,nid,strata,nstrata)
 return(res)
 }# }}}
@@ -605,7 +610,6 @@ covfridstrata  <- function(x,y,id,nid,strata,nstrata)
 res <- .Call("covrfstrataR",x,y,id,nid,strata,nstrata)
 return(res)
 }# }}}
-
 
 
 ###{{{ predict with se for baseline
