@@ -60,7 +60,10 @@ extern SEXP revcumsumR(SEXP);
 extern SEXP revcumsumstrataR(SEXP,SEXP, SEXP);
 extern SEXP revcumsumstratasumR(SEXP,SEXP, SEXP);
 extern SEXP cumsumstratasumR(SEXP,SEXP, SEXP);
+extern SEXP cumsumidstratasumR(SEXP,SEXP, SEXP,SEXP, SEXP);
+extern SEXP revcumsumidstratasumR(SEXP,SEXP, SEXP,SEXP, SEXP);
 extern SEXP covrfR(SEXP,SEXP,SEXP, SEXP);
+extern SEXP covrfstrataR(SEXP,SEXP,SEXP,SEXP,SEXP, SEXP);
 extern SEXP cumsumstrataR(SEXP,SEXP, SEXP);
 extern SEXP sumstrataR(SEXP,SEXP, SEXP);
 extern SEXP XBmindex(SEXP,SEXP, SEXP);
@@ -94,10 +97,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"FastLong2",                         (DL_FUNC) &FastLong2,                          4},
     {"FastPattern",                       (DL_FUNC) &FastPattern,                        3},
     {"MatxCube",                          (DL_FUNC) &MatxCube,                           3},
-    {"_mets_ApplyBy",                      (DL_FUNC) &_mets_ApplyBy,                       3},
-    {"_mets_ApplyBy2",                     (DL_FUNC) &_mets_ApplyBy2,                      8},
-    {"_mets_loglikMVN",                    (DL_FUNC) &_mets_loglikMVN,                    13},
-    {"_mets_RcppExport_registerCCallable", (DL_FUNC) &_mets_RcppExport_registerCCallable,  0},
+    {"_mets_ApplyBy",                      (DL_FUNC) &_mets_ApplyBy,                     3},
+    {"_mets_ApplyBy2",                     (DL_FUNC) &_mets_ApplyBy2,                    8},
+    {"_mets_loglikMVN",                    (DL_FUNC) &_mets_loglikMVN,                   13},
+    {"_mets_RcppExport_registerCCallable", (DL_FUNC) &_mets_RcppExport_registerCCallable,0},
     {"pBhat",                             (DL_FUNC) &pBhat,                              6},
     {"PropTestCox",                       (DL_FUNC) &PropTestCox,                        4},
     {"PropTestCoxClust",                 (DL_FUNC) &PropTestCoxClust,                    6},
@@ -107,7 +110,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"revcumsumstrataR",                  (DL_FUNC) &revcumsumstrataR,                   3},
     {"revcumsumstratasumR",               (DL_FUNC) &revcumsumstratasumR,                3},
     {"cumsumstratasumR",                  (DL_FUNC) &cumsumstratasumR,                   3},
+    {"cumsumidstratasumR",                (DL_FUNC) &cumsumidstratasumR,                  5},
+    {"revcumsumidstratasumR",             (DL_FUNC) &revcumsumidstratasumR,               5},
     {"covrfR",                            (DL_FUNC) &covrfR,                             4},
+    {"covrfstrataR",                      (DL_FUNC) &covrfstrataR,                        6},
     {"cumsumstrataR",                     (DL_FUNC) &cumsumstrataR,                      3},
     {"sumstrataR",                        (DL_FUNC) &sumstrataR,                      3},
     {"Dpmvn",                             (DL_FUNC) &Dpmvn,                              5},
@@ -123,7 +129,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"Uhat",                              (DL_FUNC) &Uhat,                               5},
     {"uniprobit",                         (DL_FUNC) &uniprobit,                          8},
     {"vecMatMat",                         (DL_FUNC) &vecMatMat,                          2},
-    {"XBmindex",                          (DL_FUNC) &XBmindex,                               3},
+    {"XBmindex",                          (DL_FUNC) &XBmindex,                           3},
     {NULL, NULL, 0}
 };
 

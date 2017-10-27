@@ -447,19 +447,20 @@ robust.basehaz.phreg  <- function(x,type="robust",...) {# {{{
   ### also weights 
   w <- c(xx$weights)
   xxx <- w*(S0i-rr*c(cumS0i2))
-  ssf <- cumsumstratasum(xxx,id,mid)$sumsquare
-  ss <- c(revcumsumstratasum(w*rr,id,mid)$sumsquare)
-  ss <- c(ss[-1],0)*c(cumS0i2^2)
-  covv <- covfr(xxx,w*rr,id,mid)$covs*c(cumS0i2)
+
+  ssf <- cumsumidstratasum(xxx,id,mid,xx$strata,xx$nstrata)$sumsquare
+  ss <- c(revcumsumidstratasum(w*rr,id,mid,xx$strata,xx$nstrata)$lagsumsquare)*c(cumS0i2^2)
+  covv <- covfridstrata(xxx,w*rr,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2)
   varA <- c(ssf+ss+2*covv)
+
   betaiid <- iid(x)
   vbeta <- crossprod(betaiid)
   varbetat <-   rowSums((Ht %*% vbeta)*Ht)
   ### writing each beta for all individuals 
   betakt <- betaiid[id+1,]
   ###
-  covk1 <- apply(xxx*betakt,2,cumsumstratasum,id,mid,square=0)
-  covk2 <- apply(w*rr*betakt,2,revcumsumstratasum,id,mid,square=0)
+  covk1 <- apply(xxx*betakt,2,cumsumstratasum,id,mid,xx$strata,xx$nstrata,square=0)
+  covk2 <- apply(w*rr*betakt,2,revcumsumstratasum,id,mid,xx$strata,xx$nstrata,square=0)
   covk2 <- c(covk2[-1],0)*c(cumS0i2)
 ###
   varA <- varA+varbetat-2*apply((covk1-covk2)*Ht,1,sum)
@@ -579,6 +580,29 @@ return(res)
 covfr  <- function(x,y,strata,nstrata)
 {# {{{
 res <- .Call("covrfR",x,y,strata,nstrata)
+return(res)
+}# }}}
+
+##' @export
+revcumsumidstratasum <- function(x,id,nid,strata,nstrata,square=1)
+{# {{{
+if (square==0) res <- .Call("revcumsumidstratasumR",x,id,nid,strata,nstrata)$sum
+else res <- .Call("revcumsumidstratasumR",x,id,nid,strata,nstrata)
+return(res)
+}# }}}
+
+##' @export
+cumsumidstratasum <- function(x,id,nid,strata,nstrata,square=1)
+{# {{{
+if (square==0) res <- .Call("cumsumidstratasumR",x,id,nid,strata,nstrata)$sum
+else res <- .Call("cumsumidstratasumR",x,id,nid,strata,nstrata)
+return(res)
+}# }}}
+
+##' @export
+covfridstrata  <- function(x,y,id,nid,strata,nstrata)
+{# {{{
+res <- .Call("covrfstrataR",x,y,id,nid,strata,nstrata)
 return(res)
 }# }}}
 
