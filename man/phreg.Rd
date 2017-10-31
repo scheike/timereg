@@ -29,13 +29,16 @@ dcut(TRACE) <- ~.
 out1 <- phreg(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
 tracesim <- sim.cox(out1,1000)
 sout1 <- phreg(Surv(time,status==1)~vf+chf+strata(wmicat.4),data=tracesim)
+## robust standard errors default 
+summary(sout1)
 
 par(mfrow=c(1,2))
 basehazplot.phreg(out1)
 basehazplot.phreg(sout1)
 
 ## computing robust variance for baseline
-rob <- roubst.phreg(out1)
+rob1 <- robust.phreg(sout1)
+basehazplot.phreg(rob1,add=TRUE,robust=TRUE)
 
 ## making iid decomposition of regression parameters
 betaiiid <- iid(out1)
