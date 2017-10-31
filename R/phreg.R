@@ -299,13 +299,16 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' out1 <- phreg(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
 ##' tracesim <- sim.cox(out1,1000)
 ##' sout1 <- phreg(Surv(time,status==1)~vf+chf+strata(wmicat.4),data=tracesim)
+##' ## robust standard errors default 
+##' summary(sout1)
 ##' 
 ##' par(mfrow=c(1,2))
 ##' basehazplot.phreg(out1)
 ##' basehazplot.phreg(sout1)
 ##' 
 ##' ## computing robust variance for baseline
-##' rob <- roubst.phreg(out1)
+##' rob1 <- robust.phreg(sout1)
+##' basehazplot.phreg(rob1,add=TRUE,robust=TRUE)
 ##' 
 ##' ## making iid decomposition of regression parameters
 ##' betaiiid <- iid(out1)
@@ -482,9 +485,16 @@ robust.phreg  <- function(x,...) {
  gamma.iid <- iid.phreg(x) 
  robvar <- crossprod(gamma.iid)
  baseline <- robust.basehaz.phreg(x); 
+ ## pass arguments so that we can call basehazplot.phreg
  return(list(coef=x$coef,gamma.iid=gamma.iid,robvar=robvar,
-	    cumhaz=baseline$cumhaz,se.cumhaz=x$se.cumhaz,robse.cumhaz=baseline$se.cumhaz,
-	    strata=baseline$strata))
+	    cumhaz=baseline$cumhaz,
+	    se.cumhaz=x$se.cumhaz,
+	    robse.cumhaz=baseline$se.cumhaz,
+	    stratajumps=baseline$strata,
+	    nstrata=x$nstrata,
+	    strata=x$strata,jumps=x$jumps,
+	    strata.name=x$strata.name)
+ )
 }
 
 ###}}}
@@ -597,6 +607,25 @@ return(res)
 }# }}}
 
 ##' @export
+revcumsumidstratasumCov <- function(x,y,id,nid,strata,nstrata,type="all")
+{# {{{
+if (type=="sum")    res <- .Call("revcumsumidstratasumCovR",x,y,id,nid,strata,nstrata)$sum
+if (type=="lagsum")    res <- .Call("revcumsumidstratasumCovR",x,y,id,nid,strata,nstrata)$lagsum
+if (type=="lagsumsquare") res <- .Call("revcumsumidstratasumCovR",x,y,id,nid,strata,nstrata)$lagsumsquare
+if (type=="all")    res <- .Call("revcumsumidstratasumCovR",x,y,id,nid,strata,nstrata)
+return(res)
+}# }}}
+
+
+##' @export
+cumsumidstratasumCov <- function(x,y,id,nid,strata,nstrata,type="all")
+{# {{{
+if (type=="sum")   res <- .Call("cumsumidstratasumCovR",x,y,id,nid,strata,nstrata)$sum
+else res <- .Call("cumsumidstratasumCovR",x,y,id,nid,strata,nstrata)
+return(res)
+}# }}}
+
+##' @export
 cumsumidstratasum <- function(x,id,nid,strata,nstrata,type="all")
 {# {{{
 if (type=="sum")   res <- .Call("cumsumidstratasumR",x,id,nid,strata,nstrata)$sum
@@ -608,6 +637,13 @@ return(res)
 covfridstrata  <- function(x,y,id,nid,strata,nstrata)
 {# {{{
 res <- .Call("covrfstrataR",x,y,id,nid,strata,nstrata)
+return(res)
+}# }}}
+
+##' @export
+covfridstrataCov  <- function(x,y,x1,y1,id,nid,strata,nstrata)
+{# {{{
+res <- .Call("covrfstrataCovR",x,y,x1,y1,id,nid,strata,nstrata)
 return(res)
 }# }}}
 
@@ -761,14 +797,16 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 ##'             lty=matrix(c(1,2,3),1,3),se=TRUE,polygon=FALSE)
 ##' @export
 basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,
-    lty=NULL,col=NULL,legend=TRUE,ylab="Cumulative hazard",
-    polygon=TRUE,level=0.95,stratas=NULL,...) {# {{{
+    lty=NULL,col=NULL,legend=TRUE,ylab="Cumulative hazard",xlim=NULL,
+    polygon=TRUE,level=0.95,stratas=NULL,robust=FALSE,...) {# {{{
    level <- -qnorm((1-level)/2)
    rr <- range(x$cumhaz[,-1])
    strat <- x$strata[x$jumps]
    if (is.null(ylim)) ylim <- rr
+   if (is.null(xlim)) xlim <- range(x$cumhaz[,1])
    if (se==TRUE) {
-	   if (is.null(x$se.cumhaz)) stop("phreg must be with cumhazard=TRUE\n"); 
+	   if (is.null(x$se.cumhaz) & is.null(x$robse.cumhaz)) 
+		   stop("phreg must be with cumhazard=TRUE\n"); 
        rrse <- range(c(x$cumhaz[,-1]+level*x$se.cumhaz[,-1]))
        ylim <- rrse
    }
@@ -807,10 +845,11 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,
     if (add) {
         lines(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],...)
     } else {
-         plot(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],ylim=ylim,ylab=ylab,...)
+         plot(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],ylim=ylim,ylab=ylab,xlim=xlim,...)
     }
     if (se==TRUE) {
-      secumhazard <- x$se.cumhaz[strat==j,]
+	    if (robust==TRUE) secumhazard  <- x$robse.cumhaz[strat==j,]
+	    else secumhazard <- x$se.cumhaz[strat==j,]
       ul <-cbind(cumhazard[,1],cumhazard[,2]+level*secumhazard[,2])
       nl <-cbind(cumhazard[,1],cumhazard[,2]-level*secumhazard[,2])
       if (!polygon) {
@@ -833,7 +872,8 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,
         cumhazard <- x$cumhaz[strat==j,]
         lines(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1])   
         if (se==TRUE) {
-         secumhazard <- x$se.cumhaz[strat==j,]
+	    if (robust==TRUE) secumhazard  <- x$robse.cumhaz[strat==j,]
+	    else secumhazard <- x$se.cumhaz[strat==j,]
          ul <-cbind(cumhazard[,1],cumhazard[,2]+level*secumhazard[,2])
          nl <-cbind(cumhazard[,1],cumhazard[,2]-level*secumhazard[,2])
       if (!polygon) {
