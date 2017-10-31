@@ -892,7 +892,7 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,
     }
     }
 
-    if (legend)
+    if (legend & (!add))
     graphics::legend("topleft",legend=stratnames,col=cols[,1],lty=ltys[,1])
 
 }# }}}
