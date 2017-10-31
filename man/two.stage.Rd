@@ -154,8 +154,11 @@ summary(fit)
 
 }
 \references{
+Shih and Louis (1995) Inference on the association parameter in copula models for bivariate
+survival data, Biometrics, 1995
+
 Glidden (2000), A Two-Stage estimator of the dependence
-parameter for the Clayton Oakes model.
+parameter for the Clayton Oakes model, LIDA, 2000.
 
 Martinussen and Scheike, Dynamic Regression Models for Survival Data,
 Springer (2006).

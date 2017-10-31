@@ -5,7 +5,8 @@
 \alias{read.fit}
 \title{Simulation of output from Cox model.}
 \usage{
-\method{sim}{cox}(cox, n, data = NULL, cens = NULL, rrc = NULL, ...)
+\method{sim}{cox}(cox, n, data = NULL, cens = NULL, rrc = NULL,
+  entry = NULL, ...)
 }
 \arguments{
 \item{cox}{output form coxph or cox.aalen model fitting cox model.}
@@ -48,16 +49,16 @@ lines(cc$cum,type="s",col=2)
 cbind(cox$gamma,cc$gamma)
 
 library(mets)
-cox <-  phreg1(Surv(time, status==9)~vf+chf+wmi,data=TRACE)
+cox <-  phreg(Surv(time, status==9)~vf+chf+wmi,data=TRACE)
 sim3 <- sim.cox(cox,1000,data=TRACE)
-cc <-  phreg1(Surv(time, status)~vf+chf+wmi,data=sim3)
+cc <-  phreg(Surv(time, status)~vf+chf+wmi,data=sim3)
 cbind(cox$coef,cc$coef)
 baseplot.phreg(cox,se=TRUE)
 lines(cc$cumhaz,col=2)
 
-cox <-  phreg1(Surv(time,status==9)~strata(chf)+vf+wmi,data=TRACE)
+cox <-  phreg(Surv(time,status==9)~strata(chf)+vf+wmi,data=TRACE)
 sim3 <- sim.cox(cox,1000,data=TRACE)
-cc <-   phreg1(Surv(time, status)~strata(chf)+vf+wmi,data=sim3)
+cc <-   phreg(Surv(time, status)~strata(chf)+vf+wmi,data=sim3)
 cbind(cox$coef,cc$coef)
 baseplot.phreg(cox)
 baseplot.phreg(cc,add=TRUE)
