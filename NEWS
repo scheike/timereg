@@ -5,6 +5,7 @@
   - weights and offsets in phreg 
   - gof of phreg with fast cumulative residuals Lin, Wei, Ying 
   - graphical gof of phreg 
+  - recurrent events function for marginal mean 
 
 * Version 1.2.2 <2017-03-18 Sat>
   - Vignettes updated
