@@ -159,7 +159,7 @@ recurrent.marginal <- function(recurrent,death,fixbeta=1,...)
      covk2 <- apply(w*rr*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
      covk2 <- c(covk2)*c(cumS0i2)
      ###
-     varA2 <- varA2+varbetat-2*apply((covk1-covk2)*Ht,1,sum)
+     varA2 <- varA2+varbetat-2*apply((covk1-covk2)*Ht,1,sum)*mu^2
   }# }}}
 
 # }}}
@@ -242,15 +242,15 @@ recurrent.marginal <- function(recurrent,death,fixbeta=1,...)
 ### covariances between different terms  beta's 
 # {{{
  covbetaRD <- t(betaiiidR) %*% betaiidD
- DHt <- HtD-HtD1*mu
+ DHt <- HtD-HtD1
  covbeta1.23 <-   2*rowSums((HtR %*% covbetaRD)*DHt)
- covbetaD.23 <-   2*rowSums((HtD %*% covbetaD)*(HtD1*mu))
- ### R, vesus betaD
+ covbetaD.23 <-   2*rowSums((HtD %*% covbetaD)*(HtD1))
+ ### R, vesus betaD parts
  betakt <- betaiidD[id+1,,drop=FALSE]
  covk1 <-apply(xxxR*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
  covk2 <-apply(w*rrR*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
  covk2 <- c(covk2)*c(cumS0i2R)
- covR.23 <- -2*apply((covk1-covk2)*DHt,1,sum)
+ covR.23 <- 2*apply((covk1-covk2)*DHt,1,sum)
  ### D versus betaR 
  betakt <- betaiidR[id+1,,drop=FALSE]
  covk1<-apply(xxxD*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
@@ -261,7 +261,6 @@ recurrent.marginal <- function(recurrent,death,fixbeta=1,...)
  covk2<-apply(w*rrD1*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
  covk2 <- c(covk2)*c(cumS0i2D1)*mu
  covD.2 <- -2*apply((covk1-covk2)*HtD1,1,sum)
-
  varA <- varA+ covR.23 + covbeta1.23+covbetaD.23  + covD.1 + covD.2
 # }}}
  }
