@@ -73,6 +73,8 @@ export("aalen", ## {{{
        "pava",
        "qcut",
        "res.mean",
+       "recurrent.marginal.mean",
+       "recurrent.marginal.coxmean",
        "read.design",
        "read.surv",
        "read.fit",
