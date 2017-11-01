@@ -802,13 +802,14 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,
    level <- -qnorm((1-level)/2)
    rr <- range(x$cumhaz[,-1])
    strat <- x$strata[x$jumps]
+   ylimo <- ylim
    if (is.null(ylim)) ylim <- rr
    if (is.null(xlim)) xlim <- range(x$cumhaz[,1])
    if (se==TRUE) {
 	   if (is.null(x$se.cumhaz) & is.null(x$robse.cumhaz)) 
 		   stop("phreg must be with cumhazard=TRUE\n"); 
        rrse <- range(c(x$cumhaz[,-1]+level*x$se.cumhaz[,-1]))
-       ylim <- rrse
+       if (is.null(ylimo)) ylim <- rrse
    }
 
    ## all strata
