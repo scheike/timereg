@@ -241,10 +241,10 @@ recurrent.marginal <- function(recurrent,death,fixbeta=1,...)
  if (fixbeta==0) {
 ### covariances between different terms  beta's 
 # {{{
- covbetaRD <- t(betaiiidR) %*% betaiidD
+ covbetaRD <- t(betaiidR) %*% betaiidD
  DHt <- HtD-HtD1
  covbeta1.23 <-   2*rowSums((HtR %*% covbetaRD)*DHt)
- covbetaD.23 <-   2*rowSums((HtD %*% covbetaD)*(HtD1))
+ covbetaD.23 <-   2*rowSums((HtD %*% vbetaD)*(HtD1))
  ### R, vesus betaD parts
  betakt <- betaiidD[id+1,,drop=FALSE]
  covk1 <-apply(xxxR*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
