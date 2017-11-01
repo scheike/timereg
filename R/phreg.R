@@ -484,7 +484,7 @@ robust.basehaz.phreg  <- function(x,type="robust",fixbeta=0,...) {# {{{
 robust.phreg  <- function(x,...) {
  gamma.iid <- iid.phreg(x) 
  robvar <- crossprod(gamma.iid)
- baseline <- robust.basehaz.phreg(x); 
+ baseline <- robust.basehaz.phreg(x,...); 
  ## pass arguments so that we can call basehazplot.phreg
  return(list(coef=x$coef,gamma.iid=gamma.iid,robvar=robvar,
 	    cumhaz=baseline$cumhaz,
