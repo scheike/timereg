@@ -430,7 +430,12 @@ iid.phreg  <- function(x,type="robust",all=FALSE,...) {# {{{
 } # }}}
 
 ##' @export
-robust.basehaz.phreg  <- function(x,type="robust",fixbeta=0,...) {# {{{
+robust.basehaz.phreg  <- function(x,type="robust",fixbeta=NULL,...) {# {{{
+
+  ### sets fixbeta based on  wheter xr has been optimized in beta (so cox case)
+  if (is.null(fixbeta)) 
+  if (is.null(xr$opt)) fixbeta<- 1 else fixbeta <- 0
+
   invhess <- -solve(x$hessian)
   xx <- x$cox.prep
   S0i2 <- S0i <- rep(0,length(xx$strata))
@@ -457,7 +462,11 @@ robust.basehaz.phreg  <- function(x,type="robust",fixbeta=0,...) {# {{{
   varA <- c(ssf+ss+2*covv)
 
   if (fixbeta==0) {
-     betaiid <- iid(x)
+      MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-Ht)*rr*c(xx$weights)
+      UU <- apply(MGt,2,sumstrata,id,max(id)+1)
+      betaiid <- UU %*% invhess
+###
+###  betaiid <- iid(x)
      vbeta <- crossprod(betaiid)
      varbetat <-   rowSums((Ht %*% vbeta)*Ht)
      ### writing each beta for all individuals 

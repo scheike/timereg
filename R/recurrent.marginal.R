@@ -2,6 +2,13 @@
 ##'
 ##' Fast Marginal means of recurrent events. Using the Lin and Ghosh (2000) 
 ##' standard errors.  
+##' Fitting two models for death and recurent events these are
+##' combined to prducte the estimator 
+##' \deqn{ \int_0^t  S(u|x=0) dR(u|x=0) } the mean number of recurrent events, here
+##' \deqn{ S(u|x=0) }  is the probability of survival for the baseline group, and 
+##' \deqn{ dR(u|x=0) }  is the probability of an event among survivors for the baseline. 
+##' 
+##' 
 ##' @param recurrent phreg object with recurrent events
 ##' @param death     phreg object with deaths
 ##' @param ... Additional arguments to lower level funtions
@@ -15,6 +22,7 @@
 ##' r <-  readmission
 ##'
 ##' ## no.opt to fit non-parametric models with just a baseline 
+##' ## covariate just given to make cox call  possible 
 ##' xr <- phreg(Surv(t.start,t.stop,event)~charlson+cluster(id),data=r,no.opt=TRUE)
 ##' dr <- phreg(Surv(t.start,t.stop,death)~charlson+cluster(id),data=r,no.opt=TRUE)
 ##' par(mfrow=c(1,3))
@@ -39,6 +47,21 @@
 ##' title(main="death")
 ##' basehazplot.phreg(xr,se=TRUE,xlim=c(0,2000),ylim=c(0,3))
 ##' rxr <-   robust.phreg(xr,fixbeta=1)
+##' basehazplot.phreg(rxr,se=TRUE,xlim=c(0,2000),robust=TRUE,add=TRUE,col=1:2)
+##'
+##' out <- recurrent.marginal(xr,dr)
+##' basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=1:2,xlim=c(0,2000),ylim=c(0,3))
+##'
+##' ########################################################################
+##' ###   cox case        ##################################################
+##' ########################################################################
+##' xr <- phreg(Surv(t.start,t.stop,event)~strata(chemo)+charlson+cluster(id),data=r)
+##' dr <- phreg(Surv(t.start,t.stop,death)~strata(chemo)+charlson+cluster(id),data=r)
+##' par(mfrow=c(1,3))
+##' basehazplot.phreg(dr,se=TRUE)
+##' title(main="death")
+##' basehazplot.phreg(xr,se=TRUE,xlim=c(0,2000),ylim=c(0,3))
+##' rxr <-   robust.phreg(xr)
 ##' basehazplot.phreg(rxr,se=TRUE,xlim=c(0,2000),robust=TRUE,add=TRUE,col=1:2)
 ##'
 ##' out <- recurrent.marginal(xr,dr)
@@ -69,7 +92,7 @@ recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
   St      <- exp(-cumhazD[,2])
   ###
   x <- xr
-  xx <- x$cox.prep
+  
   S0i2 <- S0i <- rep(0,length(xx$strata))
   S0i[xx$jumps+1] <-  1/x$S0
   S0i2[xx$jumps+1] <- 1/x$S0^2
