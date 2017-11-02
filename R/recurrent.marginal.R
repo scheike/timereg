@@ -46,10 +46,14 @@
 ##' 
 ##' }
 ##' @export
-recurrent.marginal <- function(recurrent,death,fixbeta=1,...)
+recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
 {# {{{
   dr <- death 
   xr <- recurrent
+
+  ### sets fixbeta based on  wheter xr has been optimized in beta (so cox case)
+  if (is.null(fixbeta)) 
+  if (is.null(xr$opt)) fixbeta<- 1 else fixbeta <- 0
 
   ### marginal expected events  int_0^t G(s) \lambda_r(s) ds 
   # {{{
@@ -89,6 +93,7 @@ recurrent.marginal <- function(recurrent,death,fixbeta=1,...)
   ###    
   cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
   cumS0i2 <- cumsumstrata(St*S0i2,xx$strata,xx$nstrata)
+  EdLam0 <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
   Ht <- apply(St*E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
   rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
   id <-   xx$id
@@ -106,7 +111,11 @@ recurrent.marginal <- function(recurrent,death,fixbeta=1,...)
   HtR <- Ht
 
   if (fixbeta==0) {# {{{
-     betaiidR <- iid(x)
+      invhess <- -solve(x$hessian)
+      MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-EdLam0)*rr*c(xx$weights)
+      UU <- apply(MGt,2,sumstrata,id,max(id)+1)
+      betaiidR <- UU %*% invhess
+###     betaiidR <- iid(x)
      vbeta <- crossprod(betaiidR)
      varbetat <-   rowSums((Ht %*% vbeta)*Ht)
      ### writing each beta for all individuals 
@@ -149,7 +158,11 @@ recurrent.marginal <- function(recurrent,death,fixbeta=1,...)
   rrD1 <- rr
   HtD1 <- mu*Ht
   if (fixbeta==0) {# {{{
-     betaiidD1 <- iid(x)
+      invhess <- -solve(x$hessian)
+      MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-Ht)*rr*c(xx$weights)
+      UU <- apply(MGt,2,sumstrata,id,max(id)+1)
+      betaiidD1 <- UU %*% invhess
+###     betaiidD1 <- iid(x)
      vbeta <- crossprod(betaiidD1)
      varbetat <-   rowSums((HtD1 %*% vbeta)*HtD1)
      ### writing each beta for all individuals 
@@ -177,6 +190,7 @@ recurrent.marginal <- function(recurrent,death,fixbeta=1,...)
   ###    
   cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
   cumS0i2 <- cumsumstrata(mu*S0i2,xx$strata,xx$nstrata)
+  EdLam0 <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
   Ht <- apply(mu*E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
   rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
   id <-   xx$id
@@ -194,7 +208,12 @@ recurrent.marginal <- function(recurrent,death,fixbeta=1,...)
   HtD <- Ht
  
   if (fixbeta==0) {# {{{
-     betaiidD <- iid(x)
+      invhess <- -solve(x$hessian)
+      MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-Ht)*rr*c(xx$weights)
+      UU <- apply(MGt,2,sumstrata,id,max(id)+1)
+      betaiidD <- UU %*% invhess
+###
+###     betaiidD <- iid(x)
      vbetaD <- crossprod(betaiidD)
      varbetat <-   rowSums((Ht %*% vbetaD)*Ht)
      ### writing each beta for all individuals 
@@ -238,6 +257,8 @@ recurrent.marginal <- function(recurrent,death,fixbeta=1,...)
 ###
  varA <- varA+2*cov12A+2*cov23A+2*cov13A
 # }}}
+
+
  if (fixbeta==0) {
 ### covariances between different terms  beta's 
 # {{{
