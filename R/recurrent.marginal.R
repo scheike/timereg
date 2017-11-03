@@ -71,8 +71,8 @@
 ##' @export
 recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
 {# {{{
-  dr <- death 
   xr <- recurrent
+  dr <- death 
 
   ### sets fixbeta based on  wheter xr has been optimized in beta (so cox case)
   if (is.null(fixbeta)) 
@@ -92,10 +92,9 @@ recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
   St      <- exp(-cumhazD[,2])
   ###
   x <- xr
-  
   S0i2 <- S0i <- rep(0,length(xx$strata))
-  S0i[xx$jumps+1] <-  1/x$S0
-  S0i2[xx$jumps+1] <- 1/x$S0^2
+  S0i[xr$jumps+1] <-  1/x$S0
+  S0i2[xr$jumps+1] <- 1/x$S0^2
   cumhazR <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
   cumhazDR <- cbind(xx$time,cumsumstrata(St*S0i,xx$strata,xx$nstrata))
   mu <- cumhazDR[,2]

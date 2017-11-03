@@ -434,7 +434,7 @@ robust.basehaz.phreg  <- function(x,type="robust",fixbeta=NULL,...) {# {{{
 
   ### sets fixbeta based on  wheter xr has been optimized in beta (so cox case)
   if (is.null(fixbeta)) 
-  if (is.null(xr$opt)) fixbeta<- 1 else fixbeta <- 0
+  if (is.null(x$opt)) fixbeta<- 1 else fixbeta <- 0
 
   invhess <- -solve(x$hessian)
   xx <- x$cox.prep
