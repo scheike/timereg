@@ -313,7 +313,7 @@ recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
  varrs <- data.frame(mu=mu,cumhaz=mu,se.mu=varA^.5,time=xr$time,se.cumhaz=varA^.5,strata=xr$strata)
 ###		   varA0=varA0, varA1=varA1,varA2=varA2,varA3,
 ###                   cov12=cov12A, cov23=cov23A,cov13=cov13A,jumps=1:length(mu))
- varrs <- varrs[sort(c(xr$jumps,x$jumps)),]
+ varrs <- varrs[sort(c(xr$jumps+1,x$jumps+1)),]
  ### to use basehazplot.phreg
  ### making output such that basehazplot can work also
  out <- list(mu=varrs$mu,se.mu=varrs$se.mu,times=varrs$time,
