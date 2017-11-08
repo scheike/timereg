@@ -781,6 +781,7 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 ##' @param time to plot for specific time variables
 ##' @param add to add to previous plot 
 ##' @param ylim to give ylim 
+##' @param xlim to give xlim 
 ##' @param lty to specify lty of components
 ##' @param col to specify col of components
 ##' @param legend to specify col of components
@@ -788,6 +789,7 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 ##' @param polygon to get standard error in shaded form
 ##' @param level of standard errors
 ##' @param stratas wich strata to plot 
+##' @param robust to use robust standard errors if possible
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Klaus K. Holst, Thomas Scheike
 ##' @export
@@ -805,8 +807,8 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 ##' basehazplot.phreg(out1,stratas=c(0),col=matrix(c(2,1,3),1,3),
 ##'             lty=matrix(c(1,2,3),1,3),se=TRUE,polygon=FALSE)
 ##' @export
-basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,
-    lty=NULL,col=NULL,legend=TRUE,ylab="Cumulative hazard",xlim=NULL,
+basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NULL,
+    lty=NULL,col=NULL,legend=TRUE,ylab="Cumulative hazard",
     polygon=TRUE,level=0.95,stratas=NULL,robust=FALSE,...) {# {{{
    level <- -qnorm((1-level)/2)
    rr <- range(x$cumhaz[,-1])

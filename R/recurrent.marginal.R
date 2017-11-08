@@ -11,6 +11,7 @@
 ##' 
 ##' @param recurrent phreg object with recurrent events
 ##' @param death     phreg object with deaths
+##' @param fixbeta   to force the estimation of standard errors to think of regression coefficients as known/fixed
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Klaus K. Holst, Thomas Scheike
 ##' @aliases recurrent.marginal 
