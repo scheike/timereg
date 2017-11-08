@@ -409,9 +409,7 @@ RcppExport SEXP revcumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   int nstrata = Rcpp::as<int>(instrata);
   unsigned n = a.n_rows;
 
-  colvec tmpsum(nstrata); 
-  tmpsum.zeros(); 
-//  tmpsum=tmpsum*0; 
+  colvec tmpsum(nstrata); tmpsum.zeros(); 
   colvec res = a; 
   for (unsigned i=0; i<n; i++) {
     int ss=intstrata(n-i-1); 
@@ -428,9 +426,7 @@ RcppExport SEXP revcumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
 
 colvec revcumsumstrata(const colvec &a,IntegerVector strata,int nstrata) {/*{{{*/
   unsigned n = a.n_rows;
-  colvec tmpsum(nstrata); 
-  tmpsum.zeros(); 
-//  tmpsum=tmpsum*0; 
+  colvec tmpsum(nstrata); tmpsum.zeros(); 
   colvec res = a; 
 
   for (unsigned i=0; i<n; i++) {
@@ -469,9 +465,7 @@ RcppExport SEXP cumsumstratasumR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   int nstrata = Rcpp::as<int>(instrata);
   unsigned n = a.n_rows;
 
-  colvec tmpsum(nstrata); 
-  tmpsum.zeros(); 
-//  colvec ressqu = a; colvec ressumu = a; 
+  colvec tmpsum(nstrata); tmpsum.zeros(); 
   colvec ressum = a; 
   colvec ressqu = a; 
   double cumsum=0; 
@@ -479,16 +473,14 @@ RcppExport SEXP cumsumstratasumR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   for (unsigned i=0; i<n; i++) {
     ss=intstrata(i); 
     // valid strata update 
-    if ((first==1) & (i>=1)& (ss<nstrata) & (ss>=0))
+    if ((first>0.1) & (i>=1)& (ss<nstrata) & (ss>=0))
        ressqu(i)=ressqu(i-1)+pow(a(i),2)+2*a(i)*tmpsum(ss);
     if ((ss<nstrata) & (ss>=0))  {
        tmpsum(ss) += a(i); 
        cumsum+=a(i); 
-       if (first==0) ressqu(i) = pow(a(i),2); 
+       if (first<0.1) ressqu(i) = pow(a(i),2); 
        first=1; 
     }
-//    tmpsum.print("pp"); 
-//    ressqu(n-i-1) = sum(tmpsum%tmpsum);
     ressum(i) = cumsum;
   }  
 
@@ -500,7 +492,6 @@ RcppExport SEXP cumsumstratasumR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
 
 RcppExport SEXP revcumsumstratasumR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   colvec a = Rcpp::as<colvec>(ia);
-//  mat b = Rcpp::as<mat>(ib);
   IntegerVector intstrata(istrata); 
   int nstrata = Rcpp::as<int>(instrata);
   unsigned n = a.n_rows;
@@ -515,12 +506,12 @@ RcppExport SEXP revcumsumstratasumR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*
   for (unsigned i=0; i<n; i++) {
     ss=intstrata(n-i-1); 
     // valid strata update 
-    if ((first==1) & (i>=1)& (ss<nstrata) & (ss>=0))
+    if ((first>0.1) & (i>=1)& (ss<nstrata) & (ss>=0))
        ressqu(n-i-1)=ressqu(n-i)+pow(a(n-i-1),2)+2*a(n-i-1)*tmpsum(ss);
     if ((ss<nstrata) & (ss>=0))  {
        tmpsum(ss) += a(n-i-1); 
        cumsum+=a(n-i-1); 
-       if (first==0) ressqu(n-i-1) = pow(a(n-i-1),2); 
+       if (first<0.1) ressqu(n-i-1) = pow(a(n-i-1),2); 
        first=1; 
     }
 //    ressqu(n-i-1) = sum(tmpsum%tmpsum);
@@ -542,31 +533,27 @@ RcppExport SEXP covrfR(SEXP ia,SEXP ib, SEXP istrata, SEXP instrata) {/*{{{*/
   int nstrata = Rcpp::as<int>(instrata);
   unsigned n = a.n_rows;
 
-  colvec tmpsumrev(nstrata); 
-  tmpsumrev.zeros(); 
+  colvec tmpsumrev(nstrata); tmpsumrev.zeros(); 
   colvec ressqu = a; 
-  int first=0,ss; 
+  int ss; 
   for (unsigned i=0; i<n; i++) {
     ss=intstrata(n-i-1); 
-    if ((ss<nstrata) & (ss>=0))   tmpsumrev(ss) += b(n-i-1); 
+    if ((ss<nstrata) & (ss>=0)) tmpsumrev(ss) += b(n-i-1); 
   }  
 
-  colvec tmpsum(nstrata); 
-  tmpsum.zeros(); 
-  first=0; 
+  colvec tmpsum(nstrata); tmpsum.zeros(); 
+  colvec tmpsqr(nstrata);  tmpsqr.zeros(); 
+//  colvec first(nstrata);  first.zeros(); 
   for (unsigned i=0; i<n; i++) {
     ss=intstrata(i); 
     // valid strata update 
-    if ((first==1) & (ss<nstrata) & (ss>=0) )
-       ressqu(i)=ressqu(i-1)-a(i)*tmpsumrev(ss)+b(i)*tmpsum(ss)+a(i)*b(i);
-    if ((ss<nstrata) & (ss>=0))  {
+    if (((ss<nstrata) & (ss>=0))) {
+       ressqu(i)=tmpsqr(ss)-a(i)*tmpsumrev(ss)+b(i)*tmpsum(ss)+a(i)*b(i);
        tmpsumrev(ss) -= b(i); 
        tmpsum(ss)    += a(i); 
-       // covariance for the cum and revcumsum
-       if (first==0) ressqu(i) = -a(i)*tmpsumrev(ss); 
-       first=1; 
+       tmpsqr(ss)=ressqu(i); 
     }
-  }  
+    }
 
   List rres; rres["covs"]=ressqu; 
   return(rres);
@@ -598,18 +585,17 @@ RcppExport SEXP cumsumidstratasumCovR(SEXP ia,SEXP ib,SEXP iid,SEXP inid,SEXP is
 
   for (unsigned i=0; i<n; i++) {
     ss=intstrata(i); lid=id(i); 
-    // valid strata update if ((ss<nstrata) & (ss>=0)) 
-//    if ((first(ss)==1))
+    // valid strata update 
+    if ((ss<nstrata) & (ss>=0)) {
        ressqu(i)=tmpsqr(ss)+a(i)*b(i)+a(i)*tmpsumb(ss,lid)+b(i)*tmpsuma(ss,lid);
-    tmpsuma(ss,lid) += a(i); 
-    tmpsumb(ss,lid) += b(i); 
-    cumsuma(ss) += a(i); 
-    cumsumb(ss) += b(i); 
-    // first, sum1 * sum2, første gang 
-//    if (first(ss)<0.1) {ressqu(i)=tmpsuma(ss,lid)*tmpsumb(ss,lid); first(ss)=1;}
-    ressuma(i) = cumsum(ss);
-    ressumb(i) = cumsum(ss);
-    tmpsqr(ss)=ressqu(i); 
+       tmpsuma(ss,lid) += a(i); 
+       tmpsumb(ss,lid) += b(i); 
+       cumsuma(ss) += a(i); 
+       cumsumb(ss) += b(i); 
+       ressuma(i) = cumsum(ss);
+       ressumb(i) = cumsum(ss);
+       tmpsqr(ss)=ressqu(i); 
+    }
   }  
 
   List rres; 
@@ -640,15 +626,14 @@ RcppExport SEXP cumsumidstratasumR(SEXP ia,SEXP iid,SEXP inid,SEXP istrata, SEXP
 
   for (unsigned i=0; i<n; i++) {
     ss=intstrata(i); lid=id(i); 
-    // valid strata update if ((ss<nstrata) & (ss>=0)) 
-    if ((first(ss)==1))
-       ressqu(i)=tmpsqr(ss)+pow(a(i),2)+2*a(i)*tmpsum(ss,lid);
-    tmpsum(ss,lid) += a(i); 
-    cumsum(ss) += a(i); 
-    // first 
-    if (first(ss)<0.1) {ressqu(i)=pow(a(i),2); first(ss)=1;}
-    ressum(i) = cumsum(ss);
-    tmpsqr(ss)=ressqu(i); 
+    // valid strata update 
+    if ((ss<nstrata) & (ss>=0))  {
+	ressqu(i)=tmpsqr(ss)+pow(a(i),2)+2*a(i)*tmpsum(ss,lid);
+	tmpsum(ss,lid) += a(i); 
+	cumsum(ss) += a(i); 
+        ressum(i) = cumsum(ss);
+        tmpsqr(ss)=ressqu(i); 
+    }
   }  
 
   List rres; 
@@ -681,21 +666,19 @@ RcppExport SEXP revcumsumidstratasumR(SEXP ia,SEXP iid, SEXP inid, SEXP istrata,
   for (unsigned i=0; i<n; i++) {
     ss=intstrata(n-i-1); lid=id(n-i-1); 
     // valid strata update 
-//    if ((first==1) & (i>=1)& (ss<nstrata) & (ss>=0))
-    if ((first(ss)==1)) {
+    if ((ss<nstrata) & (ss>=0)) {
        lagressqu(n-i-1)=tmpsqr(ss);  // previous from  
        lagressum(n-i-1)=cumsum(ss);  // previous sum from  
        ressqu(n-i-1)=tmpsqr(ss)+pow(a(n-i-1),2)+2*a(n-i-1)*tmpsum(ss,lid);
-    }
-    tmpsum(ss,lid) += a(n-i-1); 
-    cumsum(ss)+=a(n-i-1); 
+       tmpsum(ss,lid) += a(n-i-1); 
+       cumsum(ss)+=a(n-i-1); 
     // first 
-    if (first(ss)<0.1) {ressqu(n-i-1)=pow(a(n-i-1),2); first(ss)=1;
-                        lagressqu(n-i-1)=0; lagressum(n-i-1)=0; }
+//    if (first(ss)<0.1) {ressqu(n-i-1)=pow(a(n-i-1),2); first(ss)=1; lagressqu(n-i-1)=0; lagressum(n-i-1)=0; }
 //    ressqu(n-i-1) = sum(tmpsum%tmpsum);
 //    tmpsum.print("pp"); 
-    ressum(n-i-1)=cumsum(ss);
-    tmpsqr(ss)=ressqu(n-i-1); 
+       ressum(n-i-1)=cumsum(ss);
+       tmpsqr(ss)=ressqu(n-i-1); 
+    }
   }  
 
   List rres; 
@@ -732,32 +715,29 @@ RcppExport SEXP revcumsumidstratasumCovR(SEXP ia,SEXP ib,SEXP iid, SEXP inid, SE
   for (unsigned i=0; i<n; i++) {
     ss=intstrata(n-i-1); lid=id(n-i-1); 
     // valid strata update 
-//      if ((first==1) & (i>=1)& (ss<nstrata) & (ss>=0))
-    if ((first(ss)==1)) {
+     if ((ss<nstrata) & (ss>=0)) {
+//    if ((first(ss)>0.1)) {
        lagressqu(n-i-1)=tmpsqr(ss);  // previous from  
        lagressum(n-i-1)=cumsum(ss);  // previous sum from  
-       ressqu(n-i-1)=tmpsqr(ss)+a(n-i-1)*b(n-i-1)+
-	       a(n-i-1)*tmpsumb(ss,lid)+b(n-i-1)*tmpsuma(ss,lid);
-    }
+       ressqu(n-i-1)=tmpsqr(ss)+a(n-i-1)*b(n-i-1)+a(n-i-1)*tmpsumb(ss,lid)+b(n-i-1)*tmpsuma(ss,lid);
+//    }
     tmpsuma(ss,lid) += a(n-i-1); 
     tmpsumb(ss,lid) += b(n-i-1); 
 //    cumsuma(ss)+=a(n-i-1); 
 //    cumsumb(ss)+=b(n-i-1); 
     // first 
-    if (first(ss)<0.1) {ressqu(n-i-1)=a(n-i-1)*b(n-i-1); first(ss)=1;
-                        lagressqu(n-i-1)=0; lagressum(n-i-1)=0; }
+//    if (first(ss)<0.1) {ressqu(n-i-1)=a(n-i-1)*b(n-i-1); first(ss)=1; lagressqu(n-i-1)=0; lagressum(n-i-1)=0; }
 //    ressqu(n-i-1) = sum(tmpsum%tmpsum);
 //    tmpsum.print("pp"); 
 //    ressuma(n-i-1)=cumsum(ss);
 //    ressumb(n-i-1)=cumsum(ss);
     tmpsqr(ss)=ressqu(n-i-1); 
+    }
   }  
 
   List rres; 
   rres["sumsquare"]=ressqu; 
   rres["lagsumsquare"]=lagressqu; 
-//  rres["sum"]=ressum; 
-//  rres["lagsum"]=lagressum; 
   return(rres);
 } /*}}}*/
 
@@ -788,13 +768,12 @@ RcppExport SEXP covrfstrataR(SEXP ia,SEXP ib, SEXP iid,SEXP inid, SEXP istrata, 
 
   for (unsigned i=0; i<n; i++) {
     ss=intstrata(i); lid=id(i); 
-//    if ((first(ss)==1))
+     if ((ss<nstrata) & (ss>=0)) {
        ressqu(i)=tmpsqr(ss)-a(i)*tmpsumrev(ss,lid)+b(i)*tmpsum(ss,lid)+a(i)*b(i);
        tmpsumrev(ss,lid) -= b(i); 
        tmpsum(ss,lid)    += a(i); 
-       // covariance for the cum and revcumsum
-//       if (first(ss)<0.1) {ressqu(i)= -a(i)*tmpsumrev(ss,lid); first(ss)=1;} 
        tmpsqr(ss)=ressqu(i); 
+     }
   }  
 
   List rres; rres["covs"]=ressqu; 
@@ -816,7 +795,9 @@ RcppExport SEXP covrfstrataCovR(SEXP ia,SEXP ib,SEXP ia2,SEXP ib2,SEXP iid,SEXP 
   int lid,ss; 
 
   mat tmpsumrev(nstrata,nid); tmpsumrev.zeros(); 
+  mat tmpsumrev2(nstrata,nid); tmpsumrev2.zeros(); 
   mat tmpsum(nstrata,nid); tmpsum.zeros(); 
+  mat tmpsum2(nstrata,nid); tmpsum2.zeros(); 
   colvec tmpsqr(nstrata);  tmpsqr.zeros(); 
 //  colvec ressqu = a; colvec ressumu = a; 
   colvec ressum = a; 
@@ -827,16 +808,15 @@ RcppExport SEXP covrfstrataCovR(SEXP ia,SEXP ib,SEXP ia2,SEXP ib2,SEXP iid,SEXP 
   for (unsigned i=0; i<n; i++) {
     ss=intstrata(n-i-1); lid=id(n-i-1); 
     tmpsumrev(ss,lid) += b(n-i-1); 
+    tmpsumrev2(ss,lid) += b2(n-i-1); 
   }
 
   for (unsigned i=0; i<n; i++) {
     ss=intstrata(i); lid=id(i); 
 //    if ((first(ss)==1))
-       ressqu(i)=tmpsqr(ss)-a(i)*tmpsumrev(ss,lid)+b(i)*tmpsum(ss,lid)+a(i)*b(i);
-       tmpsumrev(ss,lid) -= b(i); 
+       ressqu(i)=tmpsqr(ss)-a(i)*tmpsumrev2(ss,lid)+b2(i)*tmpsum(ss,lid)+a(i)*b2(i);
+       tmpsumrev2(ss,lid) -= b2(i); 
        tmpsum(ss,lid)    += a(i); 
-       // covariance for the cum and revcumsum
-//       if (first(ss)<0.1) {ressqu(i)= -a(i)*tmpsumrev(ss,lid); first(ss)=1;} 
        tmpsqr(ss)=ressqu(i); 
   }  
 
