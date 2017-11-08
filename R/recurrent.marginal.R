@@ -6,7 +6,7 @@
 ##' combined to prducte the estimator 
 ##' \deqn{ \int_0^t  S(u|x=0) dR(u|x=0) } the mean number of recurrent events, here
 ##' \deqn{ S(u|x=0) }  is the probability of survival for the baseline group, and 
-##' \deqn{ dR(u|x=0) }  is the probability of an event among survivors for the baseline. 
+##' \deqn{ dR(u|x=0) }  is the hazard rate of an event among survivors for the baseline. 
 ##' 
 ##' 
 ##' @param recurrent phreg object with recurrent events
@@ -15,6 +15,55 @@
 ##' @author Klaus K. Holst, Thomas Scheike
 ##' @aliases recurrent.marginal 
 ##' @examples
+##' 
+##' data(simrecurrent)
+##'
+##' ## no.opt to fit non-parametric models with just a baseline 
+##' ## covariate just given to make cox call  possible 
+##' xr <- phreg(Surv(start,stop,status)~x.V1+x.V2+cluster(id),data=simd,no.opt=TRUE)
+##' dr <- phreg(Surv(start,stop,death)~x.V1+x.V2+cluster(id),data=simd,no.opt=TRUE)
+##' par(mfrow=c(1,3))
+##' basehazplot.phreg(dr,se=TRUE)
+##' title(main="death")
+##' basehazplot.phreg(xr,se=TRUE)
+##' ### robust standard errors 
+##' rxr <-   robust.phreg(xr,fixbeta=1)
+##' basehazplot.phreg(rxr,se=TRUE,robust=TRUE,add=TRUE,col=4)
+##' 
+##' ## marginal mean of expected number of recurrent events 
+##' out <- recurrent.marginal(xr,dr)
+##' basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=2)
+##' 
+##' ########################################################################
+##' ###   with strata     ##################################################
+##' ########################################################################
+##' xr <- phreg(Surv(start,stop,status)~strata(x.V1)+x.V2+cluster(id),data=simd,no.opt=TRUE)
+##' dr <- phreg(Surv(start,stop,death)~strata(x.V1)+x.V2+cluster(id),data=simd,no.opt=TRUE)
+##' par(mfrow=c(1,3))
+##' basehazplot.phreg(dr,se=TRUE)
+##' title(main="death")
+##' basehazplot.phreg(xr,se=TRUE)
+##' rxr <-   robust.phreg(xr,fixbeta=1)
+##' basehazplot.phreg(rxr,se=TRUE,robust=TRUE,add=TRUE,col=1:2)
+##'
+##' out <- recurrent.marginal(xr,dr)
+##' basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=1:2)
+##'
+##' ########################################################################
+##' ###   cox case        ##################################################
+##' ########################################################################
+##' xr <- phreg(Surv(start,stop,status)~x.V1+x.V2+cluster(id),data=simd)
+##' dr <- phreg(Surv(start,stop,death)~x.V1+x.V2+cluster(id),data=simd)
+##' par(mfrow=c(1,3))
+##' basehazplot.phreg(dr,se=TRUE)
+##' title(main="death")
+##' basehazplot.phreg(xr,se=TRUE)
+##' rxr <-   robust.phreg(xr)
+##' basehazplot.phreg(rxr,se=TRUE,robust=TRUE,add=TRUE,col=1:2)
+##'
+##' out <- recurrent.marginal(xr,dr)
+##' basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=1:2)
+##' 
 ##' \donttest{
 ##' ### do not test to avoid dependence on frailtypack for data 
 ##' library(frailtypack)
@@ -55,8 +104,8 @@
 ##' ########################################################################
 ##' ###   cox case        ##################################################
 ##' ########################################################################
-##' xr <- phreg(Surv(t.start,t.stop,event)~strata(chemo)+charlson+cluster(id),data=r)
-##' dr <- phreg(Surv(t.start,t.stop,death)~strata(chemo)+charlson+cluster(id),data=r)
+##' xr <- phreg(Surv(t.start,t.stop,event)~chemo+charlson+cluster(id),data=r)
+##' dr <- phreg(Surv(t.start,t.stop,death)~charlson+dukes+cluster(id),data=r)
 ##' par(mfrow=c(1,3))
 ##' basehazplot.phreg(dr,se=TRUE)
 ##' title(main="death")
