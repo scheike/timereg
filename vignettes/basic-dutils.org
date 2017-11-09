@@ -26,7 +26,8 @@
    -  Making a factor from existing numeric variable and vice versa
 
 
-Here are some key data-manipulation moves on a data-frame which is how we typically organize our data in R. 
+Here are some key data-manipulation steps on a data-frame which is how we typically 
+organize our data in R. 
 After having read the data into R it will typically be a data-frame, if not we 
 can force it to be a data-frame.   The basic idea of the utility functions is 
 to get a simple and easy to type way of making simple data-manipulation on a 
@@ -47,7 +48,7 @@ Loading required package: timereg
 Loading required package: survival
 Loading required package: lava
 lava version 1.5
-mets version 1.2.2
+mets version 1.2.3.1
 
 Attaching package: ‘mets’
 
@@ -498,12 +499,50 @@ FALSE  TRUE
    11   194
 #+end_example
 
+* Sorting the data
+
+To sort the data 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+data(melanoma)
+mel= dsort(melanoma,~days)
+dsort(melanoma) <- ~days
+head(mel)
+#+END_SRC
+
+#+RESULTS:
+:    no status days ulc thick sex
+: 1 789      3   10   1   676   1
+: 2  13      3   30   0    65   1
+: 3  97      2   35   0   134   1
+: 4  16      3   99   0   290   0
+: 5  21      1  185   1  1208   1
+: 6 469      1  204   1   484   1
+
+and to sort after multiple variables increasing and decreasing 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+dsort(melanoma) <- ~days-status
+head(melanoma)
+#+END_SRC
+
+#+RESULTS:
+:    no status days ulc thick sex
+: 1 789      3   10   1   676   1
+: 2  13      3   30   0    65   1
+: 3  97      2   35   0   134   1
+: 4  16      3   99   0   290   0
+: 5  21      1  185   1  1208   1
+: 6 469      1  204   1   484   1
+
+
 
 * Making new variales for the analysis
 
 To define a bunch of new covariates within a data-frame
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+data(melanoma)
 melanoma= transform(melanoma, thick2=thick^2, lthick=log(thick) ) 
 dhead(melanoma)
 #+END_SRC
