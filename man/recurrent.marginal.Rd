@@ -22,12 +22,13 @@ Fitting two models for death and recurent events these are
 combined to prducte the estimator 
 \deqn{ \int_0^t  S(u|x=0) dR(u|x=0) } the mean number of recurrent events, here
 \deqn{ S(u|x=0) }  is the probability of survival for the baseline group, and 
-\deqn{ dR(u|x=0) }  is the hazard rate of an event among survivors for the baseline.
+\deqn{ dR(u|x=0) }  is the hazard rate of an event among survivors for the baseline. 
+Here \deqn{ S(u|x=0) }  is estimated by \deqn{ exp(-\Lambda_d(u|x=0) }  with 
+ \deqn{\Lambda_d(u|x=0) } being the cumulative baseline for death.
 }
 \examples{
 
 data(simrecurrent)
-
 ## no.opt to fit non-parametric models with just a baseline 
 ## covariate just given to make cox call  possible 
 xr <- phreg(Surv(start,stop,status)~x.V1+x.V2+cluster(id),data=simd,no.opt=TRUE)
@@ -127,6 +128,18 @@ out <- recurrent.marginal(xr,dr)
 basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=1:2,xlim=c(0,2000),ylim=c(0,3))
 
 }
+
+########################################################################
+###   CIF             ##################################################
+########################################################################
+### use of function to compute cumulative incidence (cif) with robust standard errors
+bmt$id <- 1:nrow(bmt)
+xr  <- phreg(Surv(time,cause==1)~age+cluster(id),data=bmt,no.opt=TRUE)
+dr  <- phreg(Surv(time,cause!=0)~age+cluster(id),data=bmt,no.opt=TRUE)
+
+out <- recurrent.marginal(xr,dr)
+basehazplot.phreg(out,se=TRUE,ylab="cumulative incidence")
+
 }
 \author{
 Klaus K. Holst, Thomas Scheike
