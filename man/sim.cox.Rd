@@ -22,6 +22,8 @@ given then takes average rate of in simulated data from cox model.}
 
 \item{rrc}{possible vector of relative risk for cox-type censoring.}
 
+\item{entry}{delayed entry variable for simulation.}
+
 \item{...}{arguments for pc.hazard, for example entry-time}
 }
 \description{

@@ -214,6 +214,7 @@ cause.pchazard.sim<-function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.cum
 #' hazard given, if "is.scalar" then uses rate for exponential, and if not
 #' given then takes average rate of in simulated data from cox model.
 #' @param rrc possible vector of relative risk for cox-type censoring.
+#' @param entry delayed entry variable for simulation.
 #' @param ... arguments for pc.hazard, for example entry-time
 #' @author Thomas Scheike
 #' @keywords survival
