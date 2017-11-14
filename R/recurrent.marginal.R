@@ -10,6 +10,7 @@
 ##' Here \deqn{ S(u|x=0) }  is estimated by \deqn{ exp(-\Lambda_d(u|x=0) }  with 
 ##'  \deqn{\Lambda_d(u|x=0) } being the cumulative baseline for death.
 ##' 
+##' Assumes no ties so break ties before running with for example strata. 
 ##' 
 ##' @param recurrent phreg object with recurrent events
 ##' @param death     phreg object with deaths

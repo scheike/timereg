@@ -200,27 +200,16 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 
 	 ## Brewslow estimator
 	 cumhaz <- cbind(jumptimes,cumsumstrata(1/val$S0,strata,nstrata))
-	 DLambeta.t <- apply(val$E/c(val$S0),2,cumsumstrata,strata,nstrata)
-	 varbetat <-   rowSums((DLambeta.t %*% II)*DLambeta.t)
+	 if (no.opt==FALSE) { 
+	     DLambeta.t <- apply(val$E/c(val$S0),2,cumsumstrata,strata,nstrata)
+	     varbetat <-   rowSums((DLambeta.t %*% II)*DLambeta.t)
 	 ### covv <-  apply(covv*DLambeta.t,1,sum) Covariance is "0" by construction
+	 } else varbetat <- 0
 	 var.cumhaz <- cumsumstrata(1/val$S0^2,strata,nstrata)+varbetat
 	 se.cumhaz <- cbind(jumptimes,(var.cumhaz)^.5)
 
 	 colnames(cumhaz)    <- c("time","cumhaz")
 	 colnames(se.cumhaz) <- c("time","se.cumhaz")
-
-###    if (nstrata>1) {
-###	 lcumhaz <- lse.cumhaz <- list()
-### 	 cumhaz    <- cbind(cumhaz,val$strata[val$jumps])
-###         se.cumhaz <- cbind(se.cumhaz,val$strata[val$jumps])
-###	 for (i in 0:(nstrata-1)) {
-###		 ii <- (val$strata[val$jumps]==i)
-###		 if (length(ii)>1) {
-###			 lcumhaz[[i+1]]  <-  cumhaz[ii,1:2]
-###			 lse.cumhaz[[i+1]]  <- se.cumhaz[ii,1:2]
-###		 }
-###	 }
-###    }
  } # }}} 
  else {cumhaz <- se.cumhaz <- lcumhaz <- lse.cumhaz <- NULL}
 
