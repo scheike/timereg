@@ -408,6 +408,40 @@ dsummary(melanoma,thick+status~+1|sex==1)
 :  Max.   :1466.0   Max.   :3.000
 
 
+or 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+dsummary(melanoma,~thick+status|sex==1)
+#+END_SRC
+
+#+RESULTS:
+:      thick            status     
+:  Min.   :  16.0   Min.   :1.000  
+:  1st Qu.: 105.0   1st Qu.:1.000  
+:  Median : 258.0   Median :2.000  
+:  Mean   : 361.1   Mean   :1.722  
+:  3rd Qu.: 484.0   3rd Qu.:2.000  
+:  Max.   :1466.0   Max.   :3.000
+
+
+To make more complex conditions need to use the I() 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+dsummary(melanoma,thick+days+status~sex|I(thick<97 & sex==1))
+#+END_SRC
+
+#+RESULTS:
+: sex: 1
+:      thick            days          status     
+:  Min.   :16.00   Min.   :  30   Min.   :1.000  
+:  1st Qu.:30.00   1st Qu.:1820   1st Qu.:2.000  
+:  Median :65.00   Median :2886   Median :2.000  
+:  Mean   :55.75   Mean   :2632   Mean   :1.875  
+:  3rd Qu.:81.00   3rd Qu.:3328   3rd Qu.:2.000  
+:  Max.   :81.00   Max.   :4207   Max.   :3.000
+
+
+
 Tables between variables
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
