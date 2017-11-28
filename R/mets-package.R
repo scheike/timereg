@@ -138,8 +138,8 @@ NULL
 ##'  alpha2kendall alpha2spear coefmat piecewise.twostage surv.boxarea
 ##'  faster.reshape piecewise.data
 ##'  simBinPlack simBinFam simBinFam2 simSurvFam corsim.prostate.random
-##'  simnordic.random simCox sim pmvn pbvn
-##'  loglikMVN scoreMVN grouptable jumptimes folds
+##'  simnordic.random simCox sim 
+##'  grouptable jumptimes folds
 ##'  ace.family.design ascertained.pairs CCbinomial.twostage
 ##'  coarse.clust concordance.twin.ace concordance.twostage
 ##'  fast.cluster force.same.cens ilap

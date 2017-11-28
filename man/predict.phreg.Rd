@@ -6,6 +6,15 @@
 \alias{revcumsumstratasum}
 \alias{cumsumstrata}
 \alias{sumstrata}
+\alias{covfr}
+\alias{covfridstrata}
+\alias{covfridstrataCov}
+\alias{cumsumidstratasum}
+\alias{cumsumidstratasumCov}
+\alias{cumsumstratasum}
+\alias{revcumsumidstratasum}
+\alias{revcumsumidstratasumCov}
+\alias{robust.basehaz.phreg}
 \title{Predictions from proportional hazards model}
 \usage{
 \method{predict}{phreg}(object, data, surv = FALSE, time = object$exit,

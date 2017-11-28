@@ -14,13 +14,18 @@ pbvn <- function(upper,rho,sigma) {
 }
 
 
-## lower <- rbind(c(0,-Inf),(-Inf,0))
-## upper <- rbind(c(Inf,0),(0,Inf))
-## mu <- rbind(c(1,1),c(-1,1))
-## sigma <- diag(2)+1
-## pmvn(lower=lower,upper=upper,mu=mu,sigma=sigma)
-
+##' Multivariate normal distribution function
+##'
+##' Multivariate normal distribution function
+##' @aliases pmvn pbvn loglikMVN scoreMVN
+##' @seealso dmvn rmvn
 ##' @export
+##' @examples
+##' lower <- rbind(c(0,-Inf),c(-Inf,0))
+##' upper <- rbind(c(Inf,0),c(0,Inf))
+##' mu <- rbind(c(1,1),c(-1,1))
+##' sigma <- diag(2)+1
+##' pmvn(lower=lower,upper=upper,mu=mu,sigma=sigma)
 pmvn <- function(lower,upper,mu,sigma,cor=FALSE) {
     if (missing(sigma)) stop("Specify variance matrix 'sigma'")
     if (missing(lower)) {

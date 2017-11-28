@@ -21,10 +21,6 @@
 \alias{simnordic.random}
 \alias{simCox}
 \alias{sim}
-\alias{pmvn}
-\alias{pbvn}
-\alias{loglikMVN}
-\alias{scoreMVN}
 \alias{grouptable}
 \alias{jumptimes}
 \alias{folds}
