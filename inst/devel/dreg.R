@@ -1,6 +1,4 @@
 
-library(mets)
-
 dreg <- function(data,y,x=NULL,z=NULL,...,x.oneatatime=TRUE,
 	 x.base.names=NULL,z.arg=c("clever","base","group","condition"),
          fun=lm,summ=TRUE,regex=FALSE,convert=NULL) {# {{{
@@ -192,6 +190,7 @@ summary.dreg <- function(x,sep="----------------------------\n",...) {# {{{
 
 stop()
 
+library(mets)
 data(iris)
 data=iris
 drename(iris) <- ~.
@@ -201,6 +200,7 @@ iris$time1 <- runif(nrow(iris))
 iris$status <- rbinom(nrow(iris),1,0.5)
 iris$S1 <- with(iris,Surv(time,status))
 iris$S2 <- with(iris,Surv(time1,status))
+iris$id <- 1:nrow(iris)
 
 mm <- dreg(iris,"*.length"~"*.width"|I(species=="setosa" & status==1))
 mm <- dreg(iris,"*.length"~"*.width"|species+status)
@@ -270,6 +270,12 @@ xs <- dreg(iris,y,fun=phreg,x.oneatatime=FALSE)
 
 y <- S1~"*.width"|factor(species)
 xs <- dreg(iris,y,z.arg="base",fun=phreg)
+
+
+y <- S1~"*.width"|cluster(id)+factor(species)
+xs <- dreg(iris,y,z.arg="base",fun=phreg)
+xs <- dreg(iris,y,z.arg="base",fun=coxph)
+
 
 ## under condition with groups  
 y <- S1~"*.width"|I(sepal.length>4)
