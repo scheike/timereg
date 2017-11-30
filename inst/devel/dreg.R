@@ -288,5 +288,17 @@ xs <- dreg(subset(iris,species=="setosa"),y,z.arg="group",fun=phreg)
 y <- S1~"*.width"+I(dcut(sepal.length))|I(sepal.length>4)
 xs <- dreg(subset(iris,species=="setosa"),y,z.arg="group",fun=phreg)
 
+ff <- function(formula,data,...) {
+   ss <- survfit(formula,data,...)
+   kmplot(ss,...)
+   return(ss)
+}
+
+dcut(iris) <- ~"*.width"
+y <- S1~"*.4"|I(sepal.length>4)
+par(mfrow=c(1,2))
+xs <- dreg(iris,y,fun=ff)
+
+
 #########################################
 
