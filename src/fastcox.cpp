@@ -424,6 +424,30 @@ RcppExport SEXP revcumsumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   return(rres);
 } /*}}}*/
 
+
+RcppExport SEXP riskstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
+  colvec a = Rcpp::as<colvec>(ia);
+  IntegerVector intstrata(istrata); 
+  int nstrata = Rcpp::as<int>(instrata);
+  unsigned n = a.n_rows;
+
+  colvec tmpsum(nstrata); tmpsum.zeros(); 
+//  colvec res = a; 
+  mat res(n,nstrata); res.zeros(); 
+  for (unsigned i=0; i<n; i++) {
+    int ss=intstrata(n-i-1); 
+    if ((ss<nstrata) & (ss>=0))  {
+       tmpsum(ss) += a(n-i-1); 
+       res(n-i-1,ss) = a(n-i-1);
+    }
+  }  
+
+  List rres; 
+  rres["risk"]=res; 
+  return(rres);
+} /*}}}*/
+
+
 colvec revcumsumstrata(const colvec &a,IntegerVector strata,int nstrata) {/*{{{*/
   unsigned n = a.n_rows;
   colvec tmpsum(nstrata); tmpsum.zeros(); 
