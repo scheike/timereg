@@ -111,7 +111,8 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
   p <- ncol(X)
   if (missing(beta)) beta <- rep(0,p)
   if (p==0) X <- cbind(rep(0,length(exit)))
-  if (is.null(strata)) { strata <- rep(0,length(exit)); nstrata <- 1} else {
+  if (is.null(strata)) { strata <- rep(0,length(exit)); nstrata <- 1; strata.level <- NULL; } else {
+	  strata.level <- levels(strata)
 	  ustrata <- sort(unique(strata))
 	  nstrata <- length(ustrata)
 	  strata.values <- ustrata
@@ -193,14 +194,14 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
   II <- NULL
   ### computes Breslow estimator 
   if (cumhaz==TRUE) { # {{{
-	 II <- -solve(val$hessian)
+	 if (no.opt==FALSE & p!=0) II <- -solve(val$hessian) else II <- matrix(0,p,p)
 	 strata <- val$strata[val$jumps]
 	 nstrata <- val$nstrata
 	 jumptimes <- val$jumptimes
 
 	 ## Brewslow estimator
 	 cumhaz <- cbind(jumptimes,cumsumstrata(1/val$S0,strata,nstrata))
-	 if (no.opt==FALSE) { 
+	 if (no.opt==FALSE & p!=0) { 
 	     DLambeta.t <- apply(val$E/c(val$S0),2,cumsumstrata,strata,nstrata)
 	     varbetat <-   rowSums((DLambeta.t %*% II)*DLambeta.t)
 	 ### covv <-  apply(covv*DLambeta.t,1,sum) Covariance is "0" by construction
@@ -215,7 +216,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 
   res <- c(val,
            list(cox.prep=dd,
-		strata.call=strata.call,
+		strata.call=strata.call, strata.level=strata.level,
                 entry=entry,
                 exit=exit,
                 status=status,                
@@ -491,7 +492,7 @@ robust.phreg  <- function(x,...) {
 	    stratajumps=baseline$strata,
 	    nstrata=x$nstrata,
 	    strata=x$strata,jumps=x$jumps,
-	    strata.name=x$strata.name)
+	    strata.name=x$strata.name,strata.level=x$strata.level)
  )
 }
 
@@ -818,10 +819,9 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
    ltys <- lty
    cols <- col
    if (length(stratas)>0 & x$nstrata>1) { ## with strata
-      ms <- match(x$strata.name,names(x$model.frame))
-      lstrata <- levels(x$model.frame[,ms])[(stratas+1)]
-      stratn <-  substring(x$strata.name,8,nchar(x$strata.name)-1)
-      stratnames <- paste(stratn,lstrata,sep=":")
+   lstrata <- x$strata.level[(stratas+1)]
+   stratn <-  substring(x$strata.name,8,nchar(x$strata.name)-1)
+   stratnames <- paste(stratn,lstrata,sep=":")
       if (!is.matrix(lty)) {
          if (is.null(lty)) ltys <- 1:length(stratas) else if (length(lty)!=length(stratas)) ltys <- rep(lty[1],length(stratas))
       } else ltys <- lty
