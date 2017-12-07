@@ -10,7 +10,7 @@
 ##' Here \deqn{ S(u|x=0) }  is estimated by \deqn{ exp(-\Lambda_d(u|x=0) }  with 
 ##'  \deqn{\Lambda_d(u|x=0) } being the cumulative baseline for death.
 ##' 
-##' Assumes no ties so break ties before running with for example strata. 
+##' Assumes no ties so break ties before running with for example strata, use tie.breaker function. 
 ##' 
 ##' @param recurrent phreg object with recurrent events
 ##' @param death     phreg object with deaths
@@ -21,10 +21,9 @@
 ##' @examples
 ##' 
 ##' data(simrecurrent)
-##' ## no.opt to fit non-parametric models with just a baseline 
-##' ## covariate just given to make cox call  possible 
-##' xr <- phreg(Surv(start,stop,status)~x.V1+x.V2+cluster(id),data=simd,no.opt=TRUE)
-##' dr <- phreg(Surv(start,stop,death)~x.V1+x.V2+cluster(id),data=simd,no.opt=TRUE)
+##' ##  to fit non-parametric models with just a baseline 
+##' xr <- phreg(Surv(start,stop,status)~cluster(id),data=simd)
+##' dr <- phreg(Surv(start,stop,death)~cluster(id),data=simd)
 ##' par(mfrow=c(1,3))
 ##' basehazplot.phreg(dr,se=TRUE)
 ##' title(main="death")
@@ -40,8 +39,8 @@
 ##' ########################################################################
 ##' ###   with strata     ##################################################
 ##' ########################################################################
-##' xr <- phreg(Surv(start,stop,status)~strata(x.V1)+x.V2+cluster(id),data=simd,no.opt=TRUE)
-##' dr <- phreg(Surv(start,stop,death)~strata(x.V1)+x.V2+cluster(id),data=simd,no.opt=TRUE)
+##' xr <- phreg(Surv(start,stop,status)~strata(x.V1)+cluster(id),data=simd)
+##' dr <- phreg(Surv(start,stop,death)~strata(x.V1)+cluster(id),data=simd)
 ##' par(mfrow=c(1,3))
 ##' basehazplot.phreg(dr,se=TRUE)
 ##' title(main="death")
@@ -72,37 +71,43 @@
 ##' library(frailtypack)
 ##' data(readmission)
 ##' r <-  readmission
+##' ### breaking ties with respect to both event types 
+##' r <-  transform(r,jump=(event==1) | (death==1))
+##' r <- tie.breaker(r,stop="t.stop",start="t.start",status="jump")
 ##'
-##' ## no.opt to fit non-parametric models with just a baseline 
-##' ## covariate just given to make cox call  possible 
-##' xr <- phreg(Surv(t.start,t.stop,event)~charlson+cluster(id),data=r,no.opt=TRUE)
-##' dr <- phreg(Surv(t.start,t.stop,death)~charlson+cluster(id),data=r,no.opt=TRUE)
+##' ## to fit non-parametric models with just a baseline 
+##' xr <- phreg(Surv(t.start,t.stop,event)~cluster(id),data=r)
+##' dr <- phreg(Surv(t.start,t.stop,death)~cluster(id),data=r)
 ##' par(mfrow=c(1,3))
 ##' basehazplot.phreg(dr,se=TRUE)
 ##' title(main="death")
 ##' basehazplot.phreg(xr,se=TRUE,xlim=c(0,2000))
 ##' ### robust standard errors 
-##' rxr <-   robust.phreg(xr,fixbeta=1)
+##' rxr <-   robust.phreg(xr)
 ##' basehazplot.phreg(rxr,se=TRUE,xlim=c(0,2000),robust=TRUE,add=TRUE,col=4)
+##' title(main="recurrent")
 ##' 
 ##' ## marginal mean of expected number of recurrent events 
 ##' out <- recurrent.marginal(xr,dr)
 ##' basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=2)
+##' title(main="marginal mean ")
 ##' 
 ##' ########################################################################
 ##' ###   with strata     ##################################################
 ##' ########################################################################
-##' xr <- phreg(Surv(t.start,t.stop,event)~strata(chemo)+charlson+cluster(id),data=r,no.opt=TRUE)
-##' dr <- phreg(Surv(t.start,t.stop,death)~strata(chemo)+charlson+cluster(id),data=r,no.opt=TRUE)
+##' xr <- phreg(Surv(t.start,t.stop,event)~strata(chemo)+cluster(id),data=r)
+##' dr <- phreg(Surv(t.start,t.stop,death)~strata(chemo)+cluster(id),data=r)
 ##' par(mfrow=c(1,3))
 ##' basehazplot.phreg(dr,se=TRUE)
 ##' title(main="death")
 ##' basehazplot.phreg(xr,se=TRUE,xlim=c(0,2000),ylim=c(0,3))
 ##' rxr <-   robust.phreg(xr,fixbeta=1)
 ##' basehazplot.phreg(rxr,se=TRUE,xlim=c(0,2000),robust=TRUE,add=TRUE,col=1:2)
+##' title(main="recurrent")
 ##'
 ##' out <- recurrent.marginal(xr,dr)
 ##' basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=1:2,xlim=c(0,2000),ylim=c(0,3))
+##' title(main="marginal mean ")
 ##'
 ##' ########################################################################
 ##' ###   cox case        ##################################################
@@ -115,9 +120,12 @@
 ##' basehazplot.phreg(xr,se=TRUE,xlim=c(0,2000),ylim=c(0,3))
 ##' rxr <-   robust.phreg(xr)
 ##' basehazplot.phreg(rxr,se=TRUE,xlim=c(0,2000),robust=TRUE,add=TRUE,col=1:2)
+##' title(main="recurrent")
 ##'
+##' ## for covariates equal to 0
 ##' out <- recurrent.marginal(xr,dr)
 ##' basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=1:2,xlim=c(0,2000),ylim=c(0,3))
+##' title(main="marginal mean ")
 ##' 
 ##' }
 ##' 
@@ -125,9 +133,10 @@
 ##' ###   CIF             ##################################################
 ##' ########################################################################
 ##' ### use of function to compute cumulative incidence (cif) with robust standard errors
+##' data(bmt)
 ##' bmt$id <- 1:nrow(bmt)
-##' xr  <- phreg(Surv(time,cause==1)~age+cluster(id),data=bmt,no.opt=TRUE)
-##' dr  <- phreg(Surv(time,cause!=0)~age+cluster(id),data=bmt,no.opt=TRUE)
+##' xr  <- phreg(Surv(time,cause==1)~cluster(id),data=bmt)
+##' dr  <- phreg(Surv(time,cause!=0)~cluster(id),data=bmt)
 ##' 
 ##' out <- recurrent.marginal(xr,dr)
 ##' basehazplot.phreg(out,se=TRUE,ylab="cumulative incidence")
@@ -140,7 +149,7 @@ recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
 
   ### sets fixbeta based on  wheter xr has been optimized in beta (so cox case)
   if (is.null(fixbeta)) 
-  if (is.null(xr$opt)) fixbeta<- 1 else fixbeta <- 0
+  if (is.null(xr$opt) | is.null(xr$coef)) fixbeta<- 1 else fixbeta <- 0
 
   ### marginal expected events  int_0^t G(s) \lambda_r(s) ds 
   # {{{
@@ -183,9 +192,13 @@ recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
   ###    
   cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
   cumS0i2 <- cumsumstrata(St*S0i2,xx$strata,xx$nstrata)
+  if (fixbeta==0) {
   EdLam0 <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
   Ht <- apply(St*E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
-  rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
+  HtR <- Ht
+  }
+  if (fixbeta==0) rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
+  else rr <- c(xx$sign*exp(xx$offset))
   id <-   xx$id
   mid <- max(id)+1
   ### also weights 
@@ -198,7 +211,6 @@ recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
   cumS0i2R <- cumS0i2 
   xxxR <- xxx
   rrR <- rr
-  HtR <- Ht
 
   if (fixbeta==0) {# {{{
       invhess <- -solve(x$hessian)
@@ -225,15 +237,18 @@ recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
   S0i2 <- S0i <- rep(0,length(xx$strata))
   S0i[xx$jumps+1] <-  1/x$S0
   S0i2[xx$jumps+1] <- 1/x$S0^2
-  Z <- xx$X
-  U <- E <- matrix(0,nrow(xx$X),x$p)
-  E[xx$jumps+1,] <- x$E
-  U[xx$jumps+1,] <- x$U
+  if (fixbeta==0) {
+	  Z <- xx$X
+	  U <- E <- matrix(0,nrow(xx$X),x$p)
+	  E[xx$jumps+1,] <- x$E
+	  U[xx$jumps+1,] <- x$U
+	  Ht <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
+  }
   ###    
   cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
   cumS0i2 <- cumsumstrata(S0i2,xx$strata,xx$nstrata)
-  Ht <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
-  rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
+  if (fixbeta==0) rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
+  else rr <- c(xx$sign*exp(xx$offset))
   id <-   xx$id
   mid <- max(id)+1
   ### also weights 
@@ -246,8 +261,8 @@ recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
   cumS0i2D1 <- cumS0i2 
   xxxD1 <- xxx1
   rrD1 <- rr
-  HtD1 <- mu*Ht
   if (fixbeta==0) {# {{{
+      HtD1 <- mu*Ht
       invhess <- -solve(x$hessian)
       MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-Ht)*rr*c(xx$weights)
       UU <- apply(MGt,2,sumstrata,id,max(id)+1)
@@ -273,9 +288,11 @@ recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
   S0i2 <- S0i <- rep(0,length(xx$strata))
   S0i[xx$jumps+1] <-  1/x$S0
   S0i2[xx$jumps+1] <- 1/x$S0^2
+  if (fixbeta==0) {
   Z <- xx$X
   U <- E <- matrix(0,nrow(xx$X),x$p)
   E[xx$jumps+1,] <- x$E
+  }
 ###  U[xx$jumps+1,] <- x$U
   xr$cox.prep$time  - xx$time
   xr$cox.prep$time[xr$cox.prep$jumps+1]
@@ -284,9 +301,13 @@ recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
   cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
   cumS0i2 <- cumsumstrata(mu*S0i2,xx$strata,xx$nstrata)
 
+  if (fixbeta==0) {
   EdLam0 <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
   Ht <- apply(mu*E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
-  rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
+  HtD <- Ht
+  }
+  if (fixbeta==0) rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
+  else rr <- c(xx$sign*exp(xx$offset))
   id <-   xx$id
   mid <- max(id)+1
   ### also weights 
@@ -299,7 +320,6 @@ recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
   cumS0i2D <- cumS0i2
   rrD <- rr
   xxxD <- xxx
-  HtD <- Ht
  
   if (fixbeta==0) {# {{{
      invhess <- -solve(x$hessian)
@@ -411,5 +431,41 @@ recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
 ###  vari=varrs[,c("varA1","varA2","varA3")],covs=varrs[,c("cov12","cov13","cov23")])
  return(out)
 }# }}}
+
+
+##' @export
+tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,ddt=NULL)
+ {# {{{
+	 if (!is.null(id)) id <- data[,id]
+   ord <- 1:nrow(data)
+   stat <- data[,status]
+   time <- data[,stop]
+   time1 <- data[stat==1,stop]
+   ties <- duplicated(c(time1))
+   nties <- sum(ties)
+   ordties <- ord[stat==1][ties]
+   if (is.null(ddt)) ddt <- min(abs(diff(data[,stop])))*0.5
+   time[ordties] <- time[ordties]+runif(nties)*ddt
+
+   data[ordties,stop] <- time[ordties]
+   ties <- (ord %in% ordties)
+   if (!is.null(id)) {
+   lagties <- dlag(ties)
+   ### also move next start time if id the same 
+   change.start <- lagties==TRUE & id==dlag(id)
+   change.start[is.na(change.start)] <- FALSE
+   ocs <- ord[change.start]
+   data[ocs,start] <- data[ocs-1,stop]
+   data[,"tiebreaker"] <- FALSE
+   data[ocs,"tiebreaker"] <- TRUE
+   }
+   
+   return(data)
+ } # }}}
+
+
+
+
+
 
 

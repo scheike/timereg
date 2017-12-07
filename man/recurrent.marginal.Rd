@@ -27,15 +27,14 @@ Here \deqn{ S(u|x=0) }  is estimated by \deqn{ exp(-\Lambda_d(u|x=0) }  with
  \deqn{\Lambda_d(u|x=0) } being the cumulative baseline for death.
 }
 \details{
-Assumes no ties so break ties before running with for example strata.
+Assumes no ties so break ties before running with for example strata, use tie.breaker function.
 }
 \examples{
 
 data(simrecurrent)
-## no.opt to fit non-parametric models with just a baseline 
-## covariate just given to make cox call  possible 
-xr <- phreg(Surv(start,stop,status)~x.V1+x.V2+cluster(id),data=simd,no.opt=TRUE)
-dr <- phreg(Surv(start,stop,death)~x.V1+x.V2+cluster(id),data=simd,no.opt=TRUE)
+##  to fit non-parametric models with just a baseline 
+xr <- phreg(Surv(start,stop,status)~cluster(id),data=simd)
+dr <- phreg(Surv(start,stop,death)~cluster(id),data=simd)
 par(mfrow=c(1,3))
 basehazplot.phreg(dr,se=TRUE)
 title(main="death")
@@ -51,8 +50,8 @@ basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=2)
 ########################################################################
 ###   with strata     ##################################################
 ########################################################################
-xr <- phreg(Surv(start,stop,status)~strata(x.V1)+x.V2+cluster(id),data=simd,no.opt=TRUE)
-dr <- phreg(Surv(start,stop,death)~strata(x.V1)+x.V2+cluster(id),data=simd,no.opt=TRUE)
+xr <- phreg(Surv(start,stop,status)~strata(x.V1)+cluster(id),data=simd)
+dr <- phreg(Surv(start,stop,death)~strata(x.V1)+cluster(id),data=simd)
 par(mfrow=c(1,3))
 basehazplot.phreg(dr,se=TRUE)
 title(main="death")
@@ -83,37 +82,43 @@ basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=1:2)
 library(frailtypack)
 data(readmission)
 r <-  readmission
+### breaking ties with respect to both event types 
+r <-  transform(r,jump=(event==1) | (death==1))
+r <- tie.breaker(r,stop="t.stop",start="t.start",status="jump")
 
-## no.opt to fit non-parametric models with just a baseline 
-## covariate just given to make cox call  possible 
-xr <- phreg(Surv(t.start,t.stop,event)~charlson+cluster(id),data=r,no.opt=TRUE)
-dr <- phreg(Surv(t.start,t.stop,death)~charlson+cluster(id),data=r,no.opt=TRUE)
+## to fit non-parametric models with just a baseline 
+xr <- phreg(Surv(t.start,t.stop,event)~cluster(id),data=r)
+dr <- phreg(Surv(t.start,t.stop,death)~cluster(id),data=r)
 par(mfrow=c(1,3))
 basehazplot.phreg(dr,se=TRUE)
 title(main="death")
 basehazplot.phreg(xr,se=TRUE,xlim=c(0,2000))
 ### robust standard errors 
-rxr <-   robust.phreg(xr,fixbeta=1)
+rxr <-   robust.phreg(xr)
 basehazplot.phreg(rxr,se=TRUE,xlim=c(0,2000),robust=TRUE,add=TRUE,col=4)
+title(main="recurrent")
 
 ## marginal mean of expected number of recurrent events 
 out <- recurrent.marginal(xr,dr)
 basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=2)
+title(main="marginal mean ")
 
 ########################################################################
 ###   with strata     ##################################################
 ########################################################################
-xr <- phreg(Surv(t.start,t.stop,event)~strata(chemo)+charlson+cluster(id),data=r,no.opt=TRUE)
-dr <- phreg(Surv(t.start,t.stop,death)~strata(chemo)+charlson+cluster(id),data=r,no.opt=TRUE)
+xr <- phreg(Surv(t.start,t.stop,event)~strata(chemo)+cluster(id),data=r)
+dr <- phreg(Surv(t.start,t.stop,death)~strata(chemo)+cluster(id),data=r)
 par(mfrow=c(1,3))
 basehazplot.phreg(dr,se=TRUE)
 title(main="death")
 basehazplot.phreg(xr,se=TRUE,xlim=c(0,2000),ylim=c(0,3))
 rxr <-   robust.phreg(xr,fixbeta=1)
 basehazplot.phreg(rxr,se=TRUE,xlim=c(0,2000),robust=TRUE,add=TRUE,col=1:2)
+title(main="recurrent")
 
 out <- recurrent.marginal(xr,dr)
 basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=1:2,xlim=c(0,2000),ylim=c(0,3))
+title(main="marginal mean ")
 
 ########################################################################
 ###   cox case        ##################################################
@@ -126,9 +131,12 @@ title(main="death")
 basehazplot.phreg(xr,se=TRUE,xlim=c(0,2000),ylim=c(0,3))
 rxr <-   robust.phreg(xr)
 basehazplot.phreg(rxr,se=TRUE,xlim=c(0,2000),robust=TRUE,add=TRUE,col=1:2)
+title(main="recurrent")
 
+## for covariates equal to 0
 out <- recurrent.marginal(xr,dr)
 basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=1:2,xlim=c(0,2000),ylim=c(0,3))
+title(main="marginal mean ")
 
 }
 
@@ -136,9 +144,10 @@ basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=1:2,xlim=c(0,2000),ylim=c
 ###   CIF             ##################################################
 ########################################################################
 ### use of function to compute cumulative incidence (cif) with robust standard errors
+data(bmt)
 bmt$id <- 1:nrow(bmt)
-xr  <- phreg(Surv(time,cause==1)~age+cluster(id),data=bmt,no.opt=TRUE)
-dr  <- phreg(Surv(time,cause!=0)~age+cluster(id),data=bmt,no.opt=TRUE)
+xr  <- phreg(Surv(time,cause==1)~cluster(id),data=bmt)
+dr  <- phreg(Surv(time,cause!=0)~cluster(id),data=bmt)
 
 out <- recurrent.marginal(xr,dr)
 basehazplot.phreg(out,se=TRUE,ylab="cumulative incidence")

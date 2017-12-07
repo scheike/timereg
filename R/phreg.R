@@ -424,22 +424,27 @@ robust.basehaz.phreg  <- function(x,type="robust",fixbeta=NULL,...) {# {{{
 
   ### sets fixbeta based on  wheter xr has been optimized in beta (so cox case)
   if (is.null(fixbeta)) 
-  if (is.null(x$opt)) fixbeta<- 1 else fixbeta <- 0
+  if (is.null(x$opt) | is.null(x$coef)) fixbeta<- 1 else fixbeta <- 0
 
+  if (fixbeta==0) 
   invhess <- -solve(x$hessian)
   xx <- x$cox.prep
   S0i2 <- S0i <- rep(0,length(xx$strata))
   S0i[xx$jumps+1] <-  1/x$S0
   S0i2[xx$jumps+1] <- 1/x$S0^2
+  if (fixbeta==0) {
   Z <- xx$X
   U <- E <- matrix(0,nrow(xx$X),x$p)
   E[xx$jumps+1,] <- x$E
   U[xx$jumps+1,] <- x$U
+  Ht <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
+  }
   ###    
   cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
   cumS0i2 <-    cumsumstrata(S0i2,xx$strata,xx$nstrata)
-  Ht <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
+  if (fixbeta==0) 
   rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
+  else rr <- c(xx$sign*exp( xx$offset))
   id <-   xx$id
   mid <- max(id)+1
   ### also weights 
@@ -480,10 +485,16 @@ robust.basehaz.phreg  <- function(x,type="robust",fixbeta=NULL,...) {# {{{
 
 
 ##' @export robust.phreg
-robust.phreg  <- function(x,...) {
- gamma.iid <- iid.phreg(x) 
- robvar <- crossprod(gamma.iid)
- baseline <- robust.basehaz.phreg(x,...); 
+robust.phreg  <- function(x,fixbeta=NULL,...) {
+
+  if (is.null(fixbeta)) 
+  if (is.null(x$opt) | is.null(x$coef)) fixbeta<- 1 else fixbeta <- 0
+
+ if (fixbeta==0)  {
+    gamma.iid <- iid.phreg(x) 
+    robvar <- crossprod(gamma.iid)
+ } else robvar <- gamma.iid <- NULL
+ baseline <- robust.basehaz.phreg(x,fixbeta=fixbeta,...); 
  ## pass arguments so that we can call basehazplot.phreg
  return(list(coef=x$coef,gamma.iid=gamma.iid,robvar=robvar,
 	    cumhaz=baseline$cumhaz,
