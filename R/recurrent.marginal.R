@@ -575,16 +575,16 @@ tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,d
 sim.recurrent <- function(n,cumhaz,death.cumhaz=NULL,cumhaz2=NULL,
 			    gap.time=FALSE,
 			    max.recurrent=100,dhaz=NULL,haz2=NULL,
-			    dependence=0,var.gamma=2,cor.mat=NULL,...) 
+			    dependence=0,var.z=0.4,cor.mat=NULL,...) 
   {# {{{
 
   if (dependence==0) { z1 <- z2 <- zd <- rep(1,n) } else if (dependence==1) {
 ###	      zz <- rgamma(n,1/var.gamma[1])*var.gamma[1]
-	      zz <- exp(rnorm(n,1)*var.gamma[1]^.5)
+	      zz <- exp(rnorm(n,1)*var.z[1]^.5)
 	      var(zz)
 	      z1 <- zz; z2 <- zz; zd <- zz
       } else if (dependence==2) {
-              stdevs <- var.gamma^.5
+              stdevs <- var.z^.5
               b <- stdevs %*% t(stdevs)  
               covv  <- b * cor.mat  
 	      z <- matrix(rnorm(2*n),n,2)
@@ -687,5 +687,236 @@ sim.recurrent <- function(n,cumhaz,death.cumhaz=NULL,cumhaz2=NULL,
 
   return(tall)
   }# }}}
+
+##' Simulation of recurrent events data based on cumulative hazards 
+##'
+##' Simulation of recurrent events data based on cumulative hazards 
+##'
+##' Must give hazard of death and two recurrent events.  Possible with two
+##' event types and their dependence can be specified but the two recurrent events need
+##' to share random effect. A bit slower than sim.recurrent
+##'
+##' @param cumhaz  cumulative hazard of recurrent events 
+##' @param cumhaz2  cumulative hazard of recurrent events  of type 2
+##' @param cumhaz.death cumulative hazard of death 
+##' @param gap.time if true simulates gap-times with specified cumulative hazard
+##' @param max.recurrent limits number recurrent events to 100
+##' @param dhaz rate for death hazard if it is extended to time-range of first event 
+##' @param haz2 rate of second cause  if it is extended to time-range of first event 
+##' @param dependence  =0 independence, =1 all share same random effect with variance var.z
+##'                    =2 random effect exp(normal) with correlation structure from cor.mat,
+##'                    first random effect is z1 and for N1
+##'                    second random effect is z2 and for N2
+##'                    third random effect is for death 
+##' @param var.z variance of random effects 
+##' @param cor.mat correlation matrix for var.z variance of random effects 
+##' @param ... Additional arguments to lower level funtions
+##' @author Thomas Scheike
+##' @examples
+##'
+##' ########################################
+##' ## getting some data to mimick 
+##' ########################################
+##'
+##'  data(simrecurrent)
+##'  xr <- phreg(Surv(start,stop,status)~cluster(id),data=simd)
+##'  dr <- phreg(Surv(start,stop,death)~cluster(id),data=simd)
+##'  par(mfrow=c(1,3))
+##'  basehazplot.phreg(dr,se=TRUE)
+##'  title(main="death")
+##'  basehazplot.phreg(xr,se=TRUE)
+##'  ### robust standard errors 
+##'  rxr <-   robust.phreg(xr,fixbeta=1)
+##'  basehazplot.phreg(rxr,se=TRUE,robust=TRUE,add=TRUE,col=4)
+##'  meanr <-   recurrent.marginal(xr,dr)
+##'  basehazplot.phreg(meanr,se=TRUE)
+##' 
+##'  var.gamma <- c(0.2,0.5,0.5)
+##'  cor.mat <- corM <- rbind(c(1.0, 0.6, 0.9), c(0.6, 1.0, 0.5), c(0.9, 0.5, 1.0))
+##' 
+##' ######################################################################
+##' ### simulating simple model that mimicks data 
+##' ### now with two event types and second type has same rate as death rate
+##' ######################################################################
+##'
+##'  rr <- sim.recurrentII(1000,xr$cumhaz,dr$cumhaz,death.cumhaz=dr$cumhaz)
+##'  dtable(rr,~death+status)
+##'  par(mfrow=c(2,2))
+##'  drr <- phreg(Surv(entry,time,death)~cluster(id),data=rr)
+##'  basehazplot.phreg(drr,se=TRUE)
+##'  basehazplot.phreg(dr,add=TRUE,col=2)
+##'  ###
+##'  xrr1 <- phreg(Surv(entry,time,status==1)~cluster(id),data=rr)
+##'  xrr2 <- phreg(Surv(entry,time,status==2)~cluster(id),data=rr)
+##'  basehazplot.phreg(xrr1,se=TRUE)
+##'  basehazplot.phreg(xr,add=TRUE,col=2)
+##'  basehazplot.phreg(xrr2)
+##'  basehazplot.phreg(dr,col=2,add=TRUE)
+##'  meanr1 <-   recurrent.marginal(xrr1,drr)
+##'  meanr2 <-   recurrent.marginal(xrr2,drr)
+##'  basehazplot.phreg(meanr1,se=TRUE)
+##'  basehazplot.phreg(meanr,se=TRUE,add=TRUE,col=2)
+##'  basehazplot.phreg(meanr2,se=TRUE,add=TRUE)
+##'
+##'
+##' @export
+sim.recurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
+			    gap.time=FALSE,max.recurrent=100,dhaz=NULL,haz2=NULL,
+			    dependence=0,var.z=0.4,cor.mat=NULL,...) 
+  {# {{{
+
+  if (dependence==0) { z1 <- z2 <- zd <- rep(1,n) } else if (dependence==1) {
+###	      zz <- rgamma(n,1/var.gamma[1])*var.gamma[1]
+	      zz <- exp(rnorm(n,1)*var.z[1]^.5)
+	      var(zz)
+	      z1 <- zz; z2 <- zz; zd <- zz
+      } else if (dependence==2) {
+              stdevs <- var.z^.5
+              b <- stdevs %*% t(stdevs)  
+              covv  <- b * cor.mat  
+	      z <- matrix(rnorm(3*n),n,3)
+	      z <- (z%*% chol(covv))
+	      z1 <- exp(z[,1]); z2 <- exp(z[,2]); zd <- exp(z[,3]); 
+	      apply(exp(z),2,mean); cov(exp(z))
+      }
+
+  cumhaz <- rbind(c(0,0),cumhaz)
+  ll <- nrow(cumhaz)
+  max.time <- tail(xr$cumhaz[,1],1)
+
+  ## extend cumulative for cause 2 to full range of cause 1
+  if (!is.null(cumhaz2)) {# {{{
+      cumhaz2 <- rbind(c(0,0),cumhaz2)
+	      if (is.null(haz2)) 
+		      haz2 <- tail(cumhaz2[,2],1)/tail(cumhaz2[,1],1)
+	      ### linear extrapolation of mortality using given dhaz or 
+      if (tail(cumhaz2[,1],1)<max.time) {
+	      cumhaz2 <- rbind(cumhaz2,c(max.time,haz2*max.time)) 
+       }
+  }# }}}
+
+  ## extend cumulative for death to full range  of cause 1
+  if (!is.null(death.cumhaz)) {# {{{
+     if (tail(death.cumhaz[,1],1)<max.time) {
+	      ### linear extrapolation of mortality using given dhaz or 
+	      if (is.null(dhaz)) 
+		      dhaz <- tail(death.cumhaz[,2],1)/tail(death.cumhaz[,1],1)
+	      death.cumhaz <- 
+              cumhazd <- rbind(c(0,0),death.cumhaz,c(max.time,dhaz*max.time)) 
+       }
+  }# }}}
+
+###  ## sum two cumulatives to get combined events 
+###  if (!is.null(cumhaz2)) {# {{{
+###	  times <- sort(unique(c(cumhaz[,1],cumhaz2[,1])))
+###          cumhaz1t <- approx(cumhaz[,1],cumhaz[,2],times,rule=2)$y
+###          cumhaz2t <- approx(cumhaz2[,1],cumhaz2[,2],times,rule=2)$y
+###	  cumhaz1 <- cumhaz
+###	  cumhaz <- cbind(times,cumhaz1t+cumhaz2t)
+###  }# }}}
+###
+
+### recurrent first time
+  tall1 <- pc.hazard(cumhaz,z1)
+  tall2 <- pc.hazard(cumhaz2,z2)
+  tall <- tall1 
+  tall$status <- ifelse(tall1$time<tall2$time,tall1$status,2*tall2$status)
+  tall$time <- ifelse(tall1$time<tall2$time,tall1$time,tall2$time)
+  tall$id <- 1:n
+  tall$rr2 <- tall2$rr
+### death time simulated
+  if (!is.null(death.cumhaz)) {
+	  cumhazd <- rbind(c(0,0),dr$cumhaz,c(max.time,(0.4/1577)*max.time))
+	  timed   <- pc.hazard(cumhazd,zd)
+	  tall$dtime <- timed$time
+	  tall$fdeath <- timed$status
+  } else { tall$dtime <- max.time; tall$fdeath <- 0; cumhazd <- NULL }
+
+### fixing the first time to event
+  tall$death <- 0
+  tall <- dtransform(tall,death=1,time>dtime)
+  tall <- dtransform(tall,status=0,time>dtime)
+  tall <- dtransform(tall,time=dtime,time>dtime)
+  tt <- tall
+  ### setting aside memory 
+  tt1 <- tt2 <- tt
+###  gemsim <- as.data.frame(matrix(0,max.recurrent*n,ncol(tall)))
+###  names(gemsim) <- names(tall)
+###  gemsim[1:n,] <- tall; nrr <- n
+  i <- 1; 
+  while (any(tt$time<tt$dtime) & i < max.recurrent) {
+	  i <- i+1
+	  still <- subset(tt,time<dtime)
+	  nn <- nrow(still)
+          tt1 <- pc.hazard(cumhaz,rr=z1[still$id],entry=still$time)
+          tt2 <- pc.hazard(cumhaz2,rr=z2[still$id],entry=still$time)
+	  tt <- tt1
+###          drename(tt1,paste(names(tt1),"1",sep="")) <- ~.
+###          drename(tt2,paste(names(tt2),"2",sep="")) <- ~.
+          tt$status <- ifelse(tt1$time<=tt2$time,tt1$status,2*tt2$status)
+          tt$time <-   ifelse(tt1$time<=tt2$time,tt1$time,tt2$time)
+	  tt$rr2 <- tt2$rr
+###
+	  tt <- cbind(tt,dkeep(still,~id+dtime+death+fdeath))
+	  tt <- dtransform(tt,death=1,time>dtime)
+	  tt <- dtransform(tt,status=0,time>dtime)
+	  tt <- dtransform(tt,time=dtime,time>dtime)
+	  nt <- nrow(tt)
+###	  gemsim[(nrr+1):(nrr+nt),] <- tt
+	  tall <- rbind(tall,tt[1:nn,])
+###	  nrr <- nrr+nt
+  }
+###  tall <- gemsim[1:nrr,]
+  dsort(tall) <- ~id+entry+time
+
+###  ### cause 2 is there then decide if jump is 1 or 2
+###  if (!is.null(cumhaz2)) {# {{{
+###      haz1 <- apply(cumhaz1,2,diff)
+###      haz1 <- haz1[,2]/haz1[,1]
+###      ## hazard2 at times 
+###      haz2 <- apply(cumhaz2,2,diff)
+###      haz2 <- haz2[,2]/haz2[,1]
+###      ll1 <- nrow(cumhaz1)
+###      ll2 <- nrow(cumhaz2)
+###      haz1t <- Cpred(cbind(cumhaz1[-ll1,1],haz1),tall$time)[,2]
+###      haz2t <- Cpred(cbind(cumhaz2[-ll2,1],haz2),tall$time)[,2]
+###      p2t <- haz2t/(haz1t+haz2t)
+###      tall$p2t <- p2t
+###      tall$status <- (1+rbinom(nrow(tall),1,p2t))*(tall$status>=1)
+###  }# }}}
+###
+
+  attr(tall,"death.cumhaz") <- cumhazd
+  attr(tall,"cumhaz") <- cumhaz
+  attr(tall,"cumhaz2") <- cumhaz2
+
+  return(tall)
+  }# }}}
+
+
+##' @export
+count.history <- function(data,status="status",id="id",types=1:12,names.count="Count")
+{# {{{
+stat <- data[,status]
+
+clusters <- data[,id]
+if (is.numeric(clusters)) {
+      clusters <- fast.approx(unique(clusters), clusters) - 1
+      max.clust <- max(clusters)
+}
+else {
+     max.clust <- length(unique(clusters))
+     clusters <- as.integer(factor(clusters, labels = seq(max.clust))) - 1
+}
+
+data[,"lbnr__id"] <- cumsumstrata(rep(1,nrow(data)),clusters,max.clust+1) 
+for (i in types)  {
+data[,paste(names.count,i,sep="")] <- 
+   cumsumidstratasum((stat==i),rep(0,nrow(data)),1,clusters,max.clust+1)$lagsum 
+}
+
+return(data)
+}# }}}
+
 
 
