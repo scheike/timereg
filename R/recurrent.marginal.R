@@ -595,7 +595,7 @@ sim.recurrent <- function(n,cumhaz,death.cumhaz=NULL,cumhaz2=NULL,
 
   cumhaz <- rbind(c(0,0),cumhaz)
   ll <- nrow(cumhaz)
-  max.time <- tail(xr$cumhaz[,1],1)
+  max.time <- tail(cumhaz[,1],1)
 
   ## extend cumulative for cause 2 to full range of cause 1
   if (!is.null(cumhaz2)) {# {{{
@@ -784,7 +784,7 @@ sim.recurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
 
   cumhaz <- rbind(c(0,0),cumhaz)
   ll <- nrow(cumhaz)
-  max.time <- tail(xr$cumhaz[,1],1)
+  max.time <- tail(cumhaz[,1],1)
 
   ## extend cumulative for cause 2 to full range of cause 1
   if (!is.null(cumhaz2)) {# {{{
