@@ -694,7 +694,9 @@ sim.recurrent <- function(n,cumhaz,death.cumhaz=NULL,cumhaz2=NULL,
 ##'
 ##' Must give hazard of death and two recurrent events.  Possible with two
 ##' event types and their dependence can be specified but the two recurrent events need
-##' to share random effect. A bit slower than sim.recurrent
+##' to share random effect. Based on drawing the from cumhaz and cumhaz2 and taking the first event rather
+##' the cumulative and then distributing it out. Key advantage of this is that there is 
+##' more flexibility wrt random effects 
 ##'
 ##' @param cumhaz  cumulative hazard of recurrent events 
 ##' @param cumhaz2  cumulative hazard of recurrent events  of type 2
@@ -892,7 +894,6 @@ sim.recurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
 
   return(tall)
   }# }}}
-
 
 ##' @export
 count.history <- function(data,status="status",id="id",types=1:12,names.count="Count")
