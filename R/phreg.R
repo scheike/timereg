@@ -563,6 +563,7 @@ print.summary.phreg  <- function(x,max.strata=5,...) {
 ##' @export
 sumstrata <- function(x,strata,nstrata)
 {# {{{
+if (any(strata<0) | any(strata>nstrata-1)) stop("strata index not ok\n"); 
 res <- .Call("sumstrataR",x,strata,nstrata,PACKAGE="mets")$res
 return(res)
 }# }}}
@@ -571,6 +572,7 @@ return(res)
 ##' @export
 cumsumstrata <- function(x,strata,nstrata)
 {# {{{
+if (any(strata<0) | any(strata>nstrata-1)) stop("strata index not ok\n"); 
 res <- .Call("cumsumstrataR",x,strata,nstrata,PACKAGE="mets")$res
 return(res)
 }# }}}
@@ -578,6 +580,7 @@ return(res)
 ##' @export
 revcumsumstrata <- function(x,strata,nstrata)
 {# {{{
+if (any(strata<0) | any(strata>nstrata-1)) stop("strata index not ok\n"); 
 res <- .Call("revcumsumstrataR",x,strata,nstrata,PACKAGE="mets")$res
 return(res)
 }# }}}
@@ -585,6 +588,7 @@ return(res)
 ##' @export
 revcumsumstratasum <- function(x,strata,nstrata,type="all")
 {# {{{
+if (any(strata<0) | any(strata>nstrata-1)) stop("strata index not ok\n"); 
 if (type=="sum")    res <- .Call("revcumsumstratasumR",x,strata,nstrata)$sum
 if (type=="lagsum") res <- .Call("revcumsumstratasumR",x,strata,nstrata)$lagsum
 if (type=="all")    res <- .Call("revcumsumstratasumR",x,strata,nstrata)
@@ -594,6 +598,7 @@ return(res)
 ##' @export
 cumsumstratasum <- function(x,strata,nstrata,type="all")
 {# {{{
+if (any(strata<0) | any(strata>nstrata-1)) stop("strata index not ok\n"); 
 if (type=="sum")    res <- .Call("cumsumstratasumR",x,strata,nstrata)$sum
 if (type=="all")    res <- .Call("cumsumstratasumR",x,strata,nstrata)
 return(res)
@@ -602,6 +607,7 @@ return(res)
 ##' @export
 covfr  <- function(x,y,strata,nstrata)
 {# {{{
+if (any(strata<0) | any(strata>nstrata-1)) stop("strata index not ok\n"); 
 res <- .Call("covrfR",x,y,strata,nstrata)
 return(res)
 }# }}}
@@ -609,6 +615,8 @@ return(res)
 ##' @export
 revcumsumidstratasum <- function(x,id,nid,strata,nstrata,type="all")
 {# {{{
+if (any(id<0) | any(id>nid-1)) stop("id index not ok\n"); 
+if (any(strata<0) | any(strata>nstrata-1)) stop("strata index not ok\n"); 
 if (type=="sum")    res <- .Call("revcumsumidstratasumR",x,id,nid,strata,nstrata)$sum
 if (type=="lagsum")    res <- .Call("revcumsumidstratasumR",x,id,nid,strata,nstrata)$lagsum
 if (type=="lagsumsquare") res <- .Call("revcumsumidstratasumR",x,id,nid,strata,nstrata)$lagsumsquare
@@ -619,6 +627,8 @@ return(res)
 ##' @export
 revcumsumidstratasumCov <- function(x,y,id,nid,strata,nstrata,type="all")
 {# {{{
+if (any(id<0) | any(id>nid-1)) stop("id index not ok\n"); 
+if (any(strata<0) | any(strata>nstrata-1)) stop("strata index not ok\n"); 
 if (type=="sum")    res <- .Call("revcumsumidstratasumCovR",x,y,id,nid,strata,nstrata)$sum
 if (type=="lagsum")    res <- .Call("revcumsumidstratasumCovR",x,y,id,nid,strata,nstrata)$lagsum
 if (type=="lagsumsquare") res <- .Call("revcumsumidstratasumCovR",x,y,id,nid,strata,nstrata)$lagsumsquare
@@ -630,6 +640,8 @@ return(res)
 ##' @export
 cumsumidstratasumCov <- function(x,y,id,nid,strata,nstrata,type="all")
 {# {{{
+if (any(id<0) | any(id>nid-1)) stop("id index not ok\n"); 
+if (any(strata<0) | any(strata>nstrata-1)) stop("strata index not ok\n"); 
 if (type=="sum")   res <- .Call("cumsumidstratasumCovR",x,y,id,nid,strata,nstrata)$sum
 else res <- .Call("cumsumidstratasumCovR",x,y,id,nid,strata,nstrata)
 return(res)
@@ -638,6 +650,8 @@ return(res)
 ##' @export
 cumsumidstratasum <- function(x,id,nid,strata,nstrata,type="all")
 {# {{{
+if (any(id<0) | any(id>nid-1)) stop("id index not ok\n"); 
+if (any(strata<0) | any(strata>nstrata-1)) stop("strata index not ok\n"); 
 if (type=="sum")   res <- .Call("cumsumidstratasumR",x,id,nid,strata,nstrata)$sum
 else res <- .Call("cumsumidstratasumR",x,id,nid,strata,nstrata)
 return(res)
@@ -646,6 +660,8 @@ return(res)
 ##' @export
 covfridstrata  <- function(x,y,id,nid,strata,nstrata)
 {# {{{
+if (any(id<0) | any(id>nid-1)) stop("id index not ok\n"); 
+if (any(strata<0) | any(strata>nstrata-1)) stop("strata index not ok\n"); 
 res <- .Call("covrfstrataR",x,y,id,nid,strata,nstrata)
 return(res)
 }# }}}
@@ -653,6 +669,8 @@ return(res)
 ##' @export
 covfridstrataCov  <- function(x,y,x1,y1,id,nid,strata,nstrata)
 {# {{{
+if (any(id<0) | any(id>nid-1)) stop("id index not ok\n"); 
+if (any(strata<0) | any(strata>nstrata-1)) stop("strata index not ok\n"); 
 res <- .Call("covrfstrataCovR",x,y,x1,y1,id,nid,strata,nstrata)
 return(res)
 }# }}}
