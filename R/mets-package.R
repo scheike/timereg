@@ -154,3 +154,28 @@ NULL
 ##'  procform procform3
 NULL
 
+##' death rate for HPN patients of Copenhagen 
+##'
+##' @name drcumhaz
+##' @docType data
+##' @keywords data
+##' @source Estimated data
+NULL
+
+##' rate of CRBSI for HPN patients of Copenhagen 
+##'
+##' @name base1cumhaz
+##' @docType data
+##' @keywords data
+##' @source Estimated data
+NULL
+
+##' rate of Mechanical complication for catheter of HPN patients of Copenhagen 
+##'
+##' @name base2cumhaz
+##' @docType data
+##' @keywords data
+##' @source Estimated data
+NULL
+
+

@@ -6,7 +6,7 @@
 \usage{
 \method{sim}{recurrentII}(n, cumhaz, cumhaz2, death.cumhaz = NULL,
   gap.time = FALSE, max.recurrent = 100, dhaz = NULL, haz2 = NULL,
-  dependence = 0, var.z = 0.4, cor.mat = NULL, ...)
+  dependence = 0, var.z = 0.22, cor.mat = NULL, ...)
 }
 \arguments{
 \item{cumhaz}{cumulative hazard of recurrent events}
