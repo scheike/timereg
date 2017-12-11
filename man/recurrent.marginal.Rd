@@ -154,5 +154,5 @@ basehazplot.phreg(out,se=TRUE,ylab="cumulative incidence")
 
 }
 \author{
-Klaus K. Holst, Thomas Scheike
+Thomas Scheike
 }
