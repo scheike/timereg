@@ -16,7 +16,7 @@
 ##' @param death     phreg object with deaths
 ##' @param fixbeta   to force the estimation of standard errors to think of regression coefficients as known/fixed
 ##' @param ... Additional arguments to lower level funtions
-##' @author Klaus K. Holst, Thomas Scheike
+##' @author Thomas Scheike
 ##' @aliases recurrent.marginal 
 ##' @examples
 ##' 
@@ -654,9 +654,10 @@ sim.recurrent <- function(n,cumhaz,death.cumhaz=NULL,cumhaz2=NULL,
 ##'
 ##' Must give hazard of death and two recurrent events.  Possible with two
 ##' event types and their dependence can be specified but the two recurrent events need
-##' to share random effect. Based on drawing the from cumhaz and cumhaz2 and taking the first event rather
-##' the cumulative and then distributing it out. Key advantage of this is that there is 
-##' more flexibility wrt random effects 
+##' to share random effect. Based on drawing the from cumhaz and cumhaz2 and 
+##' taking the first event rather
+##' the cumulative and then distributing it out. Key advantage of this is that 
+##' there is  more flexibility wrt random effects 
 ##'
 ##' @param cumhaz  cumulative hazard of recurrent events 
 ##' @param cumhaz2  cumulative hazard of recurrent events  of type 2

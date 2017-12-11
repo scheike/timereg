@@ -45,88 +45,48 @@ combined to prducte the estimator
 }
 \examples{
 
-########################################
-## getting some data to mimick 
+## getting some rates to mimick 
 ########################################
 
- data(simrecurrent)
- xr <- phreg(Surv(start,stop,status)~cluster(id),data=simd)
- dr <- phreg(Surv(start,stop,death)~cluster(id),data=simd)
- par(mfrow=c(1,3))
- basehazplot.phreg(dr,se=TRUE)
- title(main="death")
- basehazplot.phreg(xr,se=TRUE)
- ### robust standard errors 
- rxr <-   robust.phreg(xr,fixbeta=1)
- basehazplot.phreg(rxr,se=TRUE,robust=TRUE,add=TRUE,col=4)
- meanr <-   recurrent.marginal(xr,dr)
- basehazplot.phreg(meanr,se=TRUE)
+data(base1cumhaz)
+data(base4cumhaz)
+data(drcumhaz)
+dr <- drcumhaz
+base1 <- base1cumhaz
+base4 <- base4cumhaz
 
- var.gamma <- c(0.2,0.5,0.5)
  cor.mat <- corM <- rbind(c(1.0, 0.6, 0.9), c(0.6, 1.0, 0.5), c(0.9, 0.5, 1.0))
 
  ######################################################################
  ### simulating simple model that mimicks data 
  ######################################################################
- rr <- sim.recurrent(10,xr$cumhaz,death.cumhaz=dr$cumhaz)
+ rr <- sim.recurrent(10,base1,death.cumhaz=dr)
  dlist(rr,.~id,n=0)
 
- rr <- sim.recurrent(1000,xr$cumhaz,death.cumhaz=dr$cumhaz)
+ rr <- sim.recurrent(1000,base1,death.cumhaz=dr)
  par(mfrow=c(1,3))
- drr <- phreg(Surv(entry,time,death)~cluster(id),data=rr)
- basehazplot.phreg(drr)
- basehazplot.phreg(dr,add=TRUE,col=2)
-
- xrr <- phreg(Surv(entry,time,status==1)~cluster(id),data=rr)
- basehazplot.phreg(xrr)
- basehazplot.phreg(xr,add=TRUE,col=2)
- meanr1 <-   recurrent.marginal(xrr,drr)
- basehazplot.phreg(meanr1,se=TRUE)
- basehazplot.phreg(meanr,se=TRUE,add=TRUE,col=2)
+ showfitsim(causes=1)
 
 ######################################################################
 ### simulating simple model that mimicks data 
 ### now with two event types and second type has same rate as death rate
 ######################################################################
 
- rr <- sim.recurrent(1000,xr$cumhaz,death.cumhaz=dr$cumhaz,cumhaz2=dr$cumhaz)
+ rr <- sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
  dtable(rr,~death+status)
  par(mfrow=c(2,2))
- drr <- phreg(Surv(entry,time,death)~cluster(id),data=rr)
- basehazplot.phreg(drr,se=TRUE)
- basehazplot.phreg(dr,add=TRUE,col=2)
- ###
- xrr1 <- phreg(Surv(entry,time,status==1)~cluster(id),data=rr)
- xrr2 <- phreg(Surv(entry,time,status==2)~cluster(id),data=rr)
- basehazplot.phreg(xrr1,se=TRUE)
- basehazplot.phreg(xr,add=TRUE,col=2)
- basehazplot.phreg(xrr2)
- basehazplot.phreg(dr,col=2,add=TRUE)
- meanr1 <-   recurrent.marginal(xrr1,drr)
- meanr2 <-   recurrent.marginal(xrr2,drr)
- basehazplot.phreg(meanr1,se=TRUE)
- basehazplot.phreg(meanr,se=TRUE,add=TRUE,col=2)
- basehazplot.phreg(meanr2,se=TRUE,add=TRUE)
+ showfitsim(causes=2)
 
 ######################################################################
 ### simulating simple model 
 ### random effect for all causes (Z shared for death and recurrent) 
 ######################################################################
 
- rr <- sim.recurrent(1000,t(c(1,0.6)*t(xr$cumhaz)),
-        death.cumhaz=t(t(dr$cumhaz)/c(1,1.5)),dependence=1,var.gamma=0.4)
- ###
- par(mfrow=c(1,3))
- drr <- phreg(Surv(entry,time,death)~cluster(id),data=rr)
- basehazplot.phreg(drr)
- basehazplot.phreg(dr,add=TRUE,col=2)
- ###
- xrr <- phreg(Surv(entry,time,status==1)~cluster(id),data=rr)
- basehazplot.phreg(xrr)
- basehazplot.phreg(xr,add=TRUE,col=2)
- meanr1 <-   recurrent.marginal(xrr,drr)
- basehazplot.phreg(meanr1,se=TRUE)
- basehazplot.phreg(meanr,se=TRUE,add=TRUE,col=2)
+ rr <- sim.recurrent(1000,base1,
+        death.cumhaz=dr,dependence=1,var.gamma=0.4)
+ ### marginals do fit after input after integrating out
+ par(mfrow=c(2,2))
+ showfitsim(causes=1)
 
 }
 \author{
