@@ -807,7 +807,6 @@ sim.recurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
   return(tall)
   }# }}}
 
-
 ##' @export
 count.history <- function(data,status="status",id="id",types=1:2,names.count="Count")
 {# {{{
