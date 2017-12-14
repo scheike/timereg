@@ -39,27 +39,21 @@ dreg <- function(data,y,x=NULL,z=NULL,...,x.oneatatime=TRUE,
   }# }}}
 ### print(z.arg)
 
-###  ## some of the x covariates also baseline variables 
-###  if (!is.null(x.base.names)) {
-###          base.x <- xx[,x.base.names]
-###	  xx <- xx[,-base.names]
-###	  ### combined baseline, possibly also some in zz 
-###	  base <- cbind(base,base.x)
-###  } 
-###  if (!is.null(condition)) 
-###  {
-###      yy <- subset(yy,condition==TRUE)
-###      xx <- subset(xx,condition==TRUE)
-###      if (!is.null(base)) base <- subset(base,condition==TRUE)
-###  }
 
  basen <- NULL
  if (z.arg[1]=="base")
      basen <- yxzf$filter[[1]]
  if (z.arg[1]=="condition")
      data <- subset(data,eval(yxzf$filter.expression))
+ if (z.arg[1]=="group")
+     group <- interaction(zz) else group <- rep(1,nrow(data))
+ if (z.arg[1]=="group")  levell <- levels(group) else levell <-1 
+
+### print(head(group)); print(str(group))
 
  res <- sum <- list()
+ for (g in levell) {# {{{
+	 datal <- subset(data,group==g)
  for (y in yxzf$response) {# {{{
 	 if (x.oneatatime)  {
 		 for (x in yxzf$predictor) {
@@ -69,87 +63,40 @@ dreg <- function(data,y,x=NULL,z=NULL,...,x.oneatatime=TRUE,
 	             form <- as.formula(paste(y,"~",basel))
 ###		     val <- with(data,do.call(fun,c(list(formula=form),list(...))))
 	     capture.output(
-             val <- do.call(fun,c(list(formula=form),list(data=data),list(...))))
+             val <- do.call(fun,c(list(formula=form),list(data=datal),list(...))))
 	     val$call <- paste(y,"~",basel)
-                     val <- list(val)
-	             names(val) <- paste(y,"~",basel)
-                    res <- c(res, val)
-	   if (!is.null(summary)) {
-	       sval <- list(do.call(summary,list(val[[1]])))
-               names(sval) <- paste(y,"~",basel)
-	       sum <- c(sum, sval)
-	   }
-	}
+             val <- list(val)
+	     nn <- paste(y,"~",basel)
+	     if (z.arg[1]=="group") nn <- paste(nn,"|",g);  
+	     names(val) <- nn
+             res <- c(res, val)
+	     if (!is.null(summary)) {
+	        sval <- list(do.call(summary,list(val[[1]])))
+                names(sval) <- nn
+	        sum <- c(sum, sval)
+	    }
+	 }
 	 } else {
              basel <- paste(c(yxzf$predictor,basen),collapse="+")
              form <- as.formula(paste(y,"~",basel))
 	     capture.output(
-             val <- do.call(fun,c(list(formula=form),list(data=data),list(...))))
-	     val$call <- paste(y,"~",basel)
+             val <- do.call(fun,c(list(formula=form),list(data=datal),list(...))))
+	     nn <- paste(y,"~",basel)
+	     if (z.arg[1]=="group") nn <- paste(nn,"|",g);  
+	     val$call <- nn
              val <- list(val)
 	     names(val) <- paste(y,"~",basel)
              res <- c(res, val)
-	   if (!is.null(summary)) {
+	     if (!is.null(summary)) {
 	       sval <- list(do.call(summary,list(val[[1]])))
-	     names(sval) <- paste(y,"~",basel)
+	       names(sval) <- nn
 	       sum <- c(sum, sval)
-	   }
+	     }
 
 	 }
  }# }}}
+ }# }}}
 
-###  res <- sum <- list()
-###  for (resp in names(yy)) { ## {{{ 
-###     resp <- "S1"
-###     yr <- yy[,resp]
-###
-###      if (x.oneatatime & (length(x.names)>1)) { ## over arguments in X# {{{
-###        for (i in seq_len(ncol(xx))) {# {{{
-######	   xn <- x.names(x)
-######		   nn <- paste(ny,"~",nn,sep="")
-######		   y <- z[,1]
-###	   x <- xx[,i]
-###	   if (!is.null(base)) x <- cbind(x,base)
-######		   val <- do.call(funn,list(y~x,...))
-###	###	   names(attr(val,"dimnames")) <- nn
-######		   val <- lm(y~x,...)
-###           xs <- names(x)
-######           form <- as.formula(paste(resp,"~",paste(xs,collapse="+")))
-###	   nn <- names(x)
-######	   nn <- c(paste(resp,"~"),names(x))
-######	   val <- coxph(form,data=data)
-######	   x <- as.matrix(x)
-######	   if (!is.null(group)) val <- by(group,x,fun)
-###	   if (!is.null(group)) val <- by(data,group,function(x) coxph(yr~x))
-###	   else val <- coxph(yr~x)
-###	   val <- list(val)
-######	   names(val) <- nn
-###	   res <- c(res, val)
-###	   if (!is.null(summary)) {
-###	       sval <- list(do.call(summary,list(val[[1]])))
-######	       names(sval) <- nn
-###	       sum <- c(sum, sval)
-###	   }
-###       }# }}}
-###   }# }}}
-###   else { ## all x's at once 
-###        x <- xx
-###        if (!is.null(base)) x <- cbind(x,base)
-###	   nn <- paste(resp,"~",names(x))
-###           x <- as.matrix(x)
-###	   val <- coxph(yr~x)
-###	   val <- list(val)
-######	   names(val) <- nn
-###	   res <- c(res, val)
-###	   if (!is.null(summary)) {
-###	       sval <- list(do.call(summary,list(val[[1]])))
-######	       names(sval) <- nn
-###	       sum <- c(sum, sval)
-###	   }
-###   }
-###
-###  } ## }}}
-###
    res <- list(reg=res,summary=sum)
 ###       res <- list(setNames(res,funn),summary=sum,...)
    class(res) <- "dreg"
@@ -159,7 +106,9 @@ dreg <- function(data,y,x=NULL,z=NULL,...,x.oneatatime=TRUE,
 
 }# }}}
 
-print.dreg <- function(x,sep="----------------------------\n",...) {# {{{
+print.dreg <- function(x,sep="-",...) {# {{{
+    sep <- paste(rep(sep,50,sep=""),collapse="")
+    sep <-  paste(sep,"\n")
     nn <-  names(x$reg)
     for (i in seq_along(x$reg)) {
         cat(paste("Model=",nn[i],"\n"))
@@ -169,7 +118,9 @@ print.dreg <- function(x,sep="----------------------------\n",...) {# {{{
 
 }# }}}
 
-summary.dreg <- function(x,sep="----------------------------\n",...) {# {{{
+summary.dreg <- function(x,sep="-",...) {# {{{
+    sep <- paste(rep(sep,50,sep=""),collapse="")
+    sep <-  paste(sep,"\n")
 ###    cat(sep)
 ###    if (inherits(x$lm, c("lm"))) {
 ###        print(x$lm)
@@ -204,7 +155,19 @@ iris$id <- 1:nrow(iris)
 
 mm <- dreg(iris,"*.length"~"*.width"|I(species=="setosa" & status==1))
 mm <- dreg(iris,"*.length"~"*.width"|species+status)
-mm <- dreg(iris,"*.length"~"*.width")
+mm <- dreg(iris,"*.length"~"*.width"|species)
+mm <- dreg(iris,"*.length"~"*.width"|species+status,z.arg="group")
+
+zz <- dsubset(iris,~species+factor(status))
+zzf <- apply(zz,1,interaction)
+
+paste("ts","|","g")
+zz <- interaction(zz)
+levels(zz)
+
+###with(iris,split(iris,species,lm(sepal.length~sepal.width,data=x) )) 
+dmean(iris,"*.length"~species+status)
+
 
 x=NULL;z=NULL;level=1;
 base=NULL;
@@ -247,6 +210,9 @@ xs <- dreg(iris,y,fun=phreg)
 
 ## by group by species, not working 
 y <- S1~"*.width"|species
+ss <- split(iris,paste(iris$species,iris$status))
+
+
 xs <- dreg(iris,y,fun=phreg)
 
 ## species as base, species is factor so assumes that this is grouping 

@@ -488,6 +488,7 @@ tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,d
 ##' @author Thomas Scheike
 ##' @examples
 ##'
+##' ########################################
 ##' ## getting some rates to mimick 
 ##' ########################################
 ##'
