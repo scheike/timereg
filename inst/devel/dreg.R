@@ -1,7 +1,8 @@
 
 dreg <- function(data,y,x=NULL,z=NULL,...,x.oneatatime=TRUE,
 	 x.base.names=NULL,z.arg=c("clever","base","group","condition"),
-         fun=lm,summ=TRUE,regex=FALSE,convert=NULL) {# {{{
+         fun=lm,summ=TRUE,regex=FALSE,convert=NULL,
+	 special=NULL,equal=TRUE) {# {{{
 ### z.arg=clever,  if z is logical then condition
 ###                if z is factor  then group variable 
 ###                if z is numeric then baseline covariate 
@@ -22,12 +23,17 @@ dreg <- function(data,y,x=NULL,z=NULL,...,x.oneatatime=TRUE,
 
  yxzf <- mets:::procform(y,x=x,z=z,data=data,do.filter=FALSE,regex=regex)
  yxz <- mets:::procformdata(y,x=x,z=z,data=data,do.filter=FALSE,regex=regex)
-### print(yxzf)
+
+ ## remove blank, to able to use also 	+1 on right hand side
+ if (any(yxzf$predictor=="")) 
+    yxzf$predictor <- yxzf$predictor[-which(yxzf$predictor=="")]
+
 
  yy <- yxz$response
  xx <- yxz$predictor
  ### group is list, so zz is data.frame 
- if ((length(yxzf$filter[[1]])==1 & yxzf$filter[[1]][1]=="1")) zz <- NULL else   zz <- yxz$group[[1]]
+ if ((length(yxzf$filter))==0) zz <- NULL else if ((length(yxzf$filter[[1]])==1 & yxzf$filter[[1]][1]=="1")) 
+      zz <- NULL else   zz <- yxz$group[[1]]
 
  if (!is.null(zz)) {# {{{
  if (z.arg[1]=="clever")
@@ -49,11 +55,11 @@ dreg <- function(data,y,x=NULL,z=NULL,...,x.oneatatime=TRUE,
      group <- interaction(zz) else group <- rep(1,nrow(data))
  if (z.arg[1]=="group")  levell <- levels(group) else levell <-1 
 
-### print(head(group)); print(str(group))
 
  res <- sum <- list()
  for (g in levell) {# {{{
-	 datal <- subset(data,group==g)
+ if (equal==TRUE) datal <- subset(data,group==g)
+ else datal <- subset(data,group!=g)
  for (y in yxzf$response) {# {{{
 	 if (x.oneatatime)  {
 		 for (x in yxzf$predictor) {
@@ -61,13 +67,16 @@ dreg <- function(data,y,x=NULL,z=NULL,...,x.oneatatime=TRUE,
                      basel <- paste(c(x,basen),collapse="+")
 		     else basel <- c(x,basen)
 	             form <- as.formula(paste(y,"~",basel))
+		     if (!is.null(special)) form <- timereg:::timereg.formula(form,special=special)
 ###		     val <- with(data,do.call(fun,c(list(formula=form),list(...))))
 	     capture.output(
              val <- do.call(fun,c(list(formula=form),list(data=datal),list(...))))
 	     val$call <- paste(y,"~",basel)
              val <- list(val)
 	     nn <- paste(y,"~",basel)
-	     if (z.arg[1]=="group") nn <- paste(nn,"|",g);  
+	     if (z.arg[1]=="group") {
+		     if (equal==TRUE) nn <- paste(nn,"|",g)  else nn <- paste(nn,"| not",g);
+	     }
 	     names(val) <- nn
              res <- c(res, val)
 	     if (!is.null(summary)) {
@@ -79,10 +88,13 @@ dreg <- function(data,y,x=NULL,z=NULL,...,x.oneatatime=TRUE,
 	 } else {
              basel <- paste(c(yxzf$predictor,basen),collapse="+")
              form <- as.formula(paste(y,"~",basel))
+	     if (!is.null(special)) form <- timereg:::timereg.formula(form,special=special)
 	     capture.output(
              val <- do.call(fun,c(list(formula=form),list(data=datal),list(...))))
 	     nn <- paste(y,"~",basel)
-	     if (z.arg[1]=="group") nn <- paste(nn,"|",g);  
+	     if (z.arg[1]=="group") {
+		     if (equal==TRUE) nn <- paste(nn,"|",g)  else nn <- paste(nn,"| not",g);
+	     }
 	     val$call <- nn
              val <- list(val)
 	     names(val) <- paste(y,"~",basel)
@@ -137,6 +149,7 @@ summary.dreg <- function(x,sep="-",...) {# {{{
     }
 
 }# }}}
+
 
 
 stop()

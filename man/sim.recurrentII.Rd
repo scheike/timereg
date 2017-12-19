@@ -47,7 +47,6 @@ the cumulative and then distributing it out. Key advantage of this is that
 there is  more flexibility wrt random effects
 }
 \examples{
-
 ########################################
 ## getting some rates to mimick 
 ########################################

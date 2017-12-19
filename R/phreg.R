@@ -514,7 +514,7 @@ robust.phreg  <- function(x,fixbeta=NULL,...) {
 ##' @export
 summary.phreg <- function(object,type=c("robust","martingale"),...) {
   cc <- ncluster <- NULL
-  if (length(object$p)>0 && object$p>0) {
+  if (length(object$p)>0 & object$p>0 & !is.null(object$opt)) {
     I <- -solve(object$hessian)
     V <- vcov(object,type=type[1])
     cc <- cbind(coef(object),diag(V)^0.5,diag(I)^0.5)

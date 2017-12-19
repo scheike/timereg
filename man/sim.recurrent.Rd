@@ -45,6 +45,7 @@ combined to prducte the estimator
 }
 \examples{
 
+########################################
 ## getting some rates to mimick 
 ########################################
 
