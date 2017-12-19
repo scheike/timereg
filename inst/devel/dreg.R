@@ -1,7 +1,7 @@
 
 dreg <- function(data,y,x=NULL,z=NULL,...,x.oneatatime=TRUE,
 	 x.base.names=NULL,z.arg=c("clever","base","group","condition"),
-         fun=lm,summ=TRUE,regex=FALSE,convert=NULL,
+         fun=lm,summary=NULL,regex=FALSE,convert=NULL,
 	 special=NULL,equal=TRUE) {# {{{
 ### z.arg=clever,  if z is logical then condition
 ###                if z is factor  then group variable 
@@ -57,6 +57,7 @@ dreg <- function(data,y,x=NULL,z=NULL,...,x.oneatatime=TRUE,
 
 
  res <- sum <- list()
+ if (is.null(summary)) sum <- NULL
  for (g in levell) {# {{{
  if (equal==TRUE) datal <- subset(data,group==g)
  else datal <- subset(data,group!=g)
@@ -139,6 +140,7 @@ summary.dreg <- function(x,sep="-",...) {# {{{
 ###        if (!is.null(x$summary)) print(x$summary)
 ###        return(invisible(x))
 ###    }
+if (!is.null(x$summary)) {
     nn <-  names(x$summary)
     for (i in seq_along(x$summary)) {
         cat(paste("Model=",nn[i],"\n"))
@@ -147,6 +149,7 @@ summary.dreg <- function(x,sep="-",...) {# {{{
         else print(x$reg[[i]],...)
         cat(sep)
     }
+}
 
 }# }}}
 

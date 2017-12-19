@@ -522,7 +522,7 @@ summary.phreg <- function(object,type=c("robust","martingale"),...) {
     colnames(cc) <- c("Estimate","S.E.","dU^-1/2","P-value")
     if (!is.null(ncluster <- attributes(V)$ncluster))
     rownames(cc) <- names(coef(object))
-  }
+  } else V <- NULL
   Strata <- levels(object$strata)
   if (!is.null(Strata)) {
     n <- unlist(lapply(object$time,length))
