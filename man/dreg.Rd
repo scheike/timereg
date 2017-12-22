@@ -6,7 +6,7 @@
 \usage{
 dreg(data, y, x = NULL, z = NULL, x.oneatatime = TRUE,
   x.base.names = NULL, z.arg = c("clever", "base", "group", "condition"),
-  fun = lm, summary = NULL, regex = FALSE, convert = NULL,
+  fun = lm, summary = summary, regex = FALSE, convert = NULL,
   special = NULL, equal = TRUE, ...)
 }
 \arguments{
@@ -18,9 +18,23 @@ dreg(data, y, x = NULL, z = NULL, x.oneatatime = TRUE,
 
 \item{z}{name of variable, or fomula, or names of variables on data frame.}
 
-\item{x.oneatatime}{}
+\item{x.oneatatime}{x's one at a time}
 
-\item{summary}{}
+\item{x.base.names}{base covarirates}
+
+\item{z.arg}{what is Z}
+
+\item{fun}{function}
+
+\item{summary}{summary to use}
+
+\item{regex}{regex}
+
+\item{convert}{convert}
+
+\item{special}{special's}
+
+\item{equal}{to do pairwise stuff}
 
 \item{...}{Additional arguments for fun}
 }
@@ -28,7 +42,7 @@ dreg(data, y, x = NULL, z = NULL, x.oneatatime = TRUE,
 Regression for data frames with dutility call
 }
 \examples{
-library(mets)
+
 data(iris)
 data=iris
 drename(iris) <- ~.
