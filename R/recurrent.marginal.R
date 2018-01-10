@@ -465,7 +465,6 @@ recmarg <- function(recurrent,death,...)
 # }}}
 
 
-
  varrs <- data.frame(mu=mu,time=xr$time,strata=xr$strata,St=St)
 ###     varA1=varA1,varA2=varA2,varA3=varA3,cov12=2*cov12A+cov12aa,cov13=2*cov13A+cov13aa, 
 ###     cov23=2*cov23A+cov23aa); 
@@ -1055,7 +1054,6 @@ sshed1   <- list(cumhaz=cbind(cc$time,ssshed1),
 	      strata.name=paste("prob",type1,sep=""),
 	      strata.level=base2.1$strata.level)
 ###
-cc <- base2.1$cox.prep
 riskstrata <- .Call("riskstrataR",cc$sign,cc$strata,cc$nstrata)$risk
 nrisk <- apply(riskstrata,2,revcumsumstrata,rep(0,nrow(riskstrata)),1)
 ntot <- apply(nrisk,1,sum)
@@ -1091,8 +1089,9 @@ mu2 <-Cpred(rbind(c(0,0),marginal.mean2$cumhaz),cc$time)[,2]
 
 out <- list(based=dr,base1=base1,base2=base2,
 	    base1.2=base1.2,base2.1=base2.1,
-	    marginal.mean1=marginal.mean1, marginal.mean2=marginal.mean2,
-	    prob1=sshed1,prob2=sshed2,mean1risk=mean1risk, mean2risk=mean2risk)
+	    marginal.mean1=marginal.mean1,marginal.mean2=marginal.mean2,
+	    prob1=sshed1,prob2=sshed2,
+	    mean1risk=mean1risk,mean2risk=mean2risk)
 
 ### marginal sum_k int_0^t G(s) k P(N1(t-)==k|D>t) \lambda_{2,N1=k}(s) ds 
 ### strata og count skal passe sammen
@@ -1112,9 +1111,8 @@ out <- list(based=dr,base1=base1,base2=base2,
   lss <- length(xx$strata)
   S0i2 <- S0i <- rep(0,lss)
   S0i[xx$jumps+1] <-  1/x$S0
-  ### assuming strata is counts !!!!!!!!!!!!!!!!
   xstrata <- xx$strata
-  cumhazDR <- cbind(xx$time,cumsumstrata(xstrata*St*ssshed2*S0i,rep(0,lss),1))
+  cumhazDR <- cbind(xx$time,cumsumstrata(vals2[xstrata+1]*St*ssshed2*S0i,rep(0,lss),1))
   x <- base1
   xx <- x$cox.prep
   lss <- length(xx$strata)
@@ -1129,7 +1127,7 @@ out <- list(based=dr,base1=base1,base2=base2,
   lss <- length(xx$strata)
   S0i2 <- S0i <- rep(0,lss)
   S0i[xx$jumps+1] <-  1/x$S0
-  cumhazDR <- cbind(xx$time,cumsumstrata(xx$strata*St*ssshed1*S0i,rep(0,lss),1))
+  cumhazDR <- cbind(xx$time,cumsumstrata(vals1[xx$strata+1]*St*ssshed1*S0i,rep(0,lss),1))
 ###
   x <- base2
   xx <- x$cox.prep
@@ -1189,9 +1187,9 @@ Bootcovariancerecurrence <- function(data,type1,type2,status="status",death="dea
   {
      rrb <- blocksample(data,size=n,as.formula(paste("~",id)))
      rrb[,"combined__"] <- (rrb[,status]>0) | (rrb[,death]==1)
-     rrb <-  tie.breaker(rrb,status="combined__",id=id)
+     rrb <-  tie.breaker(rrb,start=entry,stop=time,status="combined__",id=id)
      errb <- covariance.recurrent(rrb,type1,type2,status=status,death=death,
- 	 entry=entry,time=time,id=id,names.count=names.count)
+ 	                          entry=entry,time=time,id=id,names.count=names.count)
      all <- Cpred(cbind(errb$time,errb$EIN1N2,errb$EN1N2,errb$EN1EN2,
 			errb$mu1.2,errb$mu2.1,
 			errb$mu1.i,errb$mu2.i),times)
