@@ -1013,7 +1013,6 @@ return(list(time=times,times=times,prob=probs,se.prob=se.probs,meanN=meanN,
 	    se.lower=se.lower,se.upper=se.upper,meanN2=meanN2,varN=meanN2-meanN^2))
 }# }}}
 
-
 #####' @export
 covariance.recurrent <- function(data,type1,type2,status="status",death="death",
                    	 entry="entry",time="time",id="id",names.count="Count")
