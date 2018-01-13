@@ -457,13 +457,12 @@ recmarg <- function(recurrent,death,...)
   S0i2 <- S0i <- rep(0,length(xx$strata))
   S0i[xx$jumps+1] <-  1/x$S0
   S0i2[xx$jumps+1] <- 1/x$S0^2
-  cumhazR <-  cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
+###  cumhazR <-  cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
   cumhazDR <- cbind(xx$time,cumsumstrata(St*S0i,xx$strata,xx$nstrata))
 ###  mm <- cbind(cumhazR,cumhazDR,St,xx$time,x$cox.prep$time)
 ###  head(cbind(cumhazR,cumhazDR,St,xx$time,x$cox.prep$time),500)
   mu <- cumhazDR[,2]
 # }}}
-
 
  varrs <- data.frame(mu=mu,time=xr$time,strata=xr$strata,St=St)
 ###     varA1=varA1,varA2=varA2,varA3=varA3,cov12=2*cov12A+cov12aa,cov13=2*cov13A+cov13aa, 
@@ -472,8 +471,7 @@ recmarg <- function(recurrent,death,...)
 
  ### to use basehazplot.phreg
  ### making output such that basehazplot can work also
- out <- list(mu=varrs$mu,times=varrs$time,
-     St=varrs$St,cumhaz=cbind(varrs$time,varrs$mu),
+ out <- list(mu=varrs$mu,times=varrs$time,St=varrs$St,cumhaz=cbind(varrs$time,varrs$mu),
      strata=varrs$strata,nstrata=xr$nstrata,jumps=1:nrow(varrs),strata.name=xr$strata.name)
  return(out)
 }# }}}
@@ -481,6 +479,7 @@ recmarg <- function(recurrent,death,...)
 ##' @export
 tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,ddt=NULL)
  {# {{{
+
    if (!is.null(id)) id <- data[,id]
    ord <- 1:nrow(data)
    stat <- data[,status]
@@ -489,7 +488,11 @@ tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,d
    ties <- duplicated(c(time1))
    nties <- sum(ties)
    ordties <- ord[stat==1][ties]
-   if (is.null(ddt)) ddt <- min(abs(diff(data[,stop])))*0.5
+   if (is.null(ddt)) {
+	   abd <- abs(diff(data[,stop]))
+	   abd <- min(abd[abd>0])
+	   ddt <- abd*0.5
+   }
    time[ordties] <- time[ordties]+runif(nties)*ddt
 
    data[ordties,stop] <- time[ordties]
@@ -1166,6 +1169,7 @@ with(x,      { plot(time,EN1N2,type="l",lwd=2)
   legend("topleft",c("E(N1N2)", "E(N1) E(N2) ", "E_I(N1 N2)-independence"),lty=1,col=1:3)
 title(main=main)
 } # }}}
+
 
 ##' @export
 Bootcovariancerecurrence <- function(data,type1,type2,status="status",death="death",
