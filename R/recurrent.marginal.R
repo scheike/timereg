@@ -982,7 +982,6 @@ for (n1 in exceed[-1]) {# {{{
 	statN <- rep(0,nrow(datt))
 	statN[cc==n1] <- 1
 	statN[datt[,death]==1] <- 2
-###	pN1 <-  comp.risk(form,datt,cause=1,times=times)
 	pN1 <-  prodlim(form,datt)
 
 	if (sum(statN)==0) {
