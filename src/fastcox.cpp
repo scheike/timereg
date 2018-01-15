@@ -458,11 +458,11 @@ RcppExport SEXP riskidstrataR(SEXP ia,SEXP iid, SEXP inid, SEXP istrata, SEXP in
 
   mat tmpsuma(nstrata,nid); tmpsuma.zeros(); 
 //  colvec res = a; 
-  mat res(n,nstrata); res.zeros(); 
+  mat res(n,nid); res.zeros(); 
   for (unsigned i=0; i<n; i++) {
-       ss=intstrata(i); lid=id(i); 
+       ss=intstrata(n-i-1); lid=id(n-i-1); 
        tmpsuma(ss,lid) += a(n-i-1); 
-       res(n-i-1,ss) = tmpsuma(ss,lid); 
+       res(n-i-1,lid) = tmpsuma(ss,lid); 
   }
 
   List rres; 
