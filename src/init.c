@@ -51,6 +51,7 @@ extern SEXP uniprobit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP CubeVec(SEXP, SEXP);
 extern SEXP vecMatMat(SEXP, SEXP);
 extern SEXP MatxCube(SEXP, SEXP, SEXP);
+extern SEXP Matdoubleindex(SEXP, SEXP, SEXP,SEXP);
 extern SEXP CubeMat(SEXP, SEXP);
 extern SEXP PropTestCox(SEXP, SEXP,SEXP,SEXP);
 extern SEXP PropTestCoxClust(SEXP, SEXP, SEXP, SEXP,SEXP,SEXP);
@@ -63,7 +64,6 @@ extern SEXP revcumsumidstratasumR(SEXP,SEXP, SEXP,SEXP, SEXP);
 extern SEXP revcumsumidstratasumCovR(SEXP,SEXP,SEXP, SEXP,SEXP, SEXP);
 extern SEXP cumsumstrataR(SEXP,SEXP, SEXP);
 extern SEXP riskstrataR(SEXP,SEXP,SEXP);
-extern SEXP riskidstrataR(SEXP,SEXP,SEXP,SEXP, SEXP);
 extern SEXP cumsumstratasumR(SEXP,SEXP, SEXP);
 extern SEXP cumsumidstratasumR(SEXP,SEXP, SEXP,SEXP, SEXP);
 extern SEXP cumsumidstratasumCovR(SEXP, SEXP,SEXP, SEXP,SEXP, SEXP);
@@ -102,6 +102,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"FastLong2",                         (DL_FUNC) &FastLong2,                          4},
     {"FastPattern",                       (DL_FUNC) &FastPattern,                        3},
     {"MatxCube",                          (DL_FUNC) &MatxCube,                           3},
+    {"Matdoubleindex",                    (DL_FUNC) &Matdoubleindex,                     4},
     {"_mets_ApplyBy",                      (DL_FUNC) &_mets_ApplyBy,                     3},
     {"_mets_ApplyBy2",                     (DL_FUNC) &_mets_ApplyBy2,                    8},
     {"_mets_loglikMVN",                    (DL_FUNC) &_mets_loglikMVN,                   13},
@@ -114,7 +115,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"revcumsumR",                        (DL_FUNC) &revcumsumR,                         1},
     {"revcumsumstrataR",                  (DL_FUNC) &revcumsumstrataR,                   3},
     {"riskstrataR",                       (DL_FUNC) &riskstrataR,                        3},
-    {"riskidstrataR",                     (DL_FUNC) &riskidstrataR,                      5},
     {"revcumsumstratasumR",               (DL_FUNC) &revcumsumstratasumR,                3},
     {"cumsumstratasumR",                  (DL_FUNC) &cumsumstratasumR,                   3},
     {"cumsumidstratasumR",                (DL_FUNC) &cumsumidstratasumR,                  5},

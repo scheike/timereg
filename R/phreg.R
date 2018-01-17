@@ -605,6 +605,17 @@ return(res)
 }# }}}
 
 ##' @export
+matdoubleindex <- function(x,rows,cols)
+{# {{{
+ncols <- ncol(x)
+nrows <- nrow(x)
+if (any(rows>nrows) | any(cols>ncols)) stop("indeces out of matrix \n"); 
+if (length(cols)!=length(rows)) stop("rows and cols different lengths\n"); 
+res <- .Call("Matdoubleindex",x,rows-1,cols-1,length(cols))$mat
+return(res)
+}# }}}
+
+##' @export
 covfr  <- function(x,y,strata,nstrata)
 {# {{{
 if (any(strata<0) | any(strata>nstrata-1)) stop("strata index not ok\n"); 
@@ -926,6 +937,7 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
     graphics::legend("topleft",legend=stratnames,col=cols[,1],lty=ltys[,1])
 
 }# }}}
+
 
 ##' @export
 lines.phreg <- function(x,...,add=TRUE) plot(x,...,add=add)
