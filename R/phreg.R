@@ -938,6 +938,37 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
 
 }# }}}
 
+##' @export
+basecumhaz <- function(x,type="matrix",robust=FALSE,...) {# {{{
+   ## all strata
+   strat <- x$strata[x$jumps]
+   stratas <- 0:(x$nstrata-1) 
+
+###   se.cum <- cum <- x$cumhaz
+   se.cum <- cum <- c()
+   strata <- rep(0,nrow(x$cumhaz))
+   if (type=="matrix") { se.cum <- cum <- x$cumhazard }
+   if (robust==TRUE) secum <- x$robse.cumhaz else secum  <- x$se.cumhaz
+   if (is.null(secum)) nose <- TRUE else nose <- FALSE
+
+   start <- 1
+   for (i in stratas) {
+	   cumhazard <- x$cumhaz[strat==i,]
+	   nr <- nrow(cumhazard)
+	   slut <- start-1+nr
+###	   cum[start:slut,] <- cumhazard
+	   cum <- rbind(cum,cumhazard)
+###	   if (!nose) se.cum[start:slut,] <- secum[strat==i,]
+	   if (!nose) se.cum <- rbind(se.cum,secum[strat==i,])
+	   strata[start:slut] <- i
+	   start <- slut+1
+   }
+
+   list(cumhaz=cum,se.cumhaz=se.cum,strata=strata)
+}# }}}
+
+
+
 
 ##' @export
 lines.phreg <- function(x,...,add=TRUE) plot(x,...,add=add)
