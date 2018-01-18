@@ -64,6 +64,7 @@ extern SEXP revcumsumidstratasumR(SEXP,SEXP, SEXP,SEXP, SEXP);
 extern SEXP revcumsumidstratasumCovR(SEXP,SEXP,SEXP, SEXP,SEXP, SEXP);
 extern SEXP cumsumstrataR(SEXP,SEXP, SEXP);
 extern SEXP riskstrataR(SEXP,SEXP,SEXP);
+extern SEXP meanriskR(SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP cumsumstratasumR(SEXP,SEXP, SEXP);
 extern SEXP cumsumidstratasumR(SEXP,SEXP, SEXP,SEXP, SEXP);
 extern SEXP cumsumidstratasumCovR(SEXP, SEXP,SEXP, SEXP,SEXP, SEXP);
@@ -102,6 +103,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"FastLong2",                         (DL_FUNC) &FastLong2,                          4},
     {"FastPattern",                       (DL_FUNC) &FastPattern,                        3},
     {"MatxCube",                          (DL_FUNC) &MatxCube,                           3},
+    {"meanriskR",                        (DL_FUNC) &meanriskR,                           5},
     {"Matdoubleindex",                    (DL_FUNC) &Matdoubleindex,                     4},
     {"_mets_ApplyBy",                      (DL_FUNC) &_mets_ApplyBy,                     3},
     {"_mets_ApplyBy2",                     (DL_FUNC) &_mets_ApplyBy2,                    8},

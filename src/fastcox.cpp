@@ -706,6 +706,43 @@ RcppExport SEXP cumsumidstratasumR(SEXP ia,SEXP iid,SEXP inid,SEXP istrata, SEXP
   return(rres);
 } /*}}}*/
 
+colvec  whichi(IntegerVector a,int n, int j) {/*{{{*/
+  colvec res(n); 
+  for (int i=0; i<n; i++) {
+	  res(i)=(a(i)==j); 
+  }  
+  return(res);
+} /*}}}*/
+
+
+RcppExport SEXP meanriskR(SEXP ia, SEXP iid,SEXP inid,SEXP istrata, SEXP instrata) {/*{{{*/
+  colvec a = Rcpp::as<colvec>(ia);
+//  IntegerVector a = Rcpp::as<colvec>(ia);
+//  IntegerVector a(ia); 
+//  int n = a1.n_rows;
+  int n = a.n_rows;
+  IntegerVector id(iid); 
+  int nid = Rcpp::as<int>(inid);
+  IntegerVector strata(istrata); 
+  int nstrata = Rcpp::as<int>(instrata);
+
+  colvec res=a;  
+  colvec mean(n); mean.zeros(); 
+  colvec tot(n);  tot.zeros();  
+
+  for (int i=0; i<nid; i++) {
+   res=revcumsumstrata(a%whichi(id,n,i),strata,nstrata);
+   if (i>0) mean=mean+i*res; 
+   tot=tot+res; 
+  }  
+  mean=mean/tot; 
+
+  List rres; 
+  rres["meanrisk"]=mean; 
+  rres["risk"]=tot; 
+  return(rres);
+} /*}}}*/
+
 
 RcppExport SEXP revcumsumidstratasumR(SEXP ia,SEXP iid, SEXP inid, SEXP istrata, SEXP instrata) {/*{{{*/
   colvec a = Rcpp::as<colvec>(ia);

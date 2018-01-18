@@ -1074,7 +1074,6 @@ sim.recurrent.gamma <- function(n,haz=0.5,death.haz=0.1,haz2=0.1,max.recurrent=1
   return(tall)
 }# }}}
 
-
 ##' Simulation of recurrent events data based on cumulative hazards 
 ##'
 ##' Simulation of recurrent events data based on cumulative hazards 
