@@ -65,7 +65,7 @@ base4 <- base4cumhaz
 ### now with two event types and second type has same rate as death rate
 ######################################################################
 
-rr <- sim.recurrentII(1000,base1,dr,death.cumhaz=base4)
+rr <- mets:::sim.recurrentII(1000,base1,dr,death.cumhaz=base4)
 dtable(rr,~death+status)
 par(mfrow=c(2,2))
 showfitsim(causes=2)

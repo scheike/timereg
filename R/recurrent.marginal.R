@@ -873,10 +873,10 @@ tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,d
 ##'  ######################################################################
 ##'  ### simulating simple model that mimicks data 
 ##'  ######################################################################
-##'  rr <- sim.recurrent(10,base1,death.cumhaz=dr)
+##'  rr <- mets:::sim.recurrent(10,base1,death.cumhaz=dr)
 ##'  dlist(rr,.~id,n=0)
 ##'
-##'  rr <- sim.recurrent(1000,base1,death.cumhaz=dr)
+##'  rr <- mets:::sim.recurrent(1000,base1,death.cumhaz=dr)
 ##'  par(mfrow=c(1,3))
 ##'  showfitsim(causes=1)
 ##'
@@ -885,7 +885,7 @@ tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,d
 ##' ### now with two event types and second type has same rate as death rate
 ##' ######################################################################
 ##'
-##'  rr <- sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
+##'  rr <-mets:::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
 ##'  dtable(rr,~death+status)
 ##'  par(mfrow=c(2,2))
 ##'  showfitsim(causes=2)
@@ -895,7 +895,7 @@ tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,d
 ##' ### random effect for all causes (Z shared for death and recurrent) 
 ##' ######################################################################
 ##'
-##'  rr <- sim.recurrent(1000,base1,
+##'  rr <- mets:::sim.recurrent(1000,base1,
 ##'         death.cumhaz=dr,dependence=1,var.gamma=0.4)
 ##'  ### marginals do fit after input after integrating out
 ##'  par(mfrow=c(2,2))
@@ -1119,7 +1119,7 @@ sim.recurrent.gamma <- function(n,haz=0.5,death.haz=0.1,haz2=0.1,max.recurrent=1
 ##' ### now with two event types and second type has same rate as death rate
 ##' ######################################################################
 ##'
-##' rr <- sim.recurrentII(1000,base1,dr,death.cumhaz=base4)
+##' rr <- mets:::sim.recurrentII(1000,base1,dr,death.cumhaz=base4)
 ##' dtable(rr,~death+status)
 ##' par(mfrow=c(2,2))
 ##' showfitsim(causes=2)
@@ -1292,7 +1292,7 @@ showfitsim <- function(causes=2)
 ##' @param death  name of death indicator 
 ##' @param start start stop call of Hist() of prodlim 
 ##' @param stop start stop call of Hist() of prodlim 
-##' @param id 
+##' @param id  id 
 ##' @param times time at which to get probabilites P(N1(t) >= n)
 ##' @param exceed n's for which which to compute probabilites P(N1(t) >= n)
 ##' @param max.recurrent limits number recurrent events to 100
@@ -1302,8 +1302,23 @@ showfitsim <- function(causes=2)
 ##' \donttest{
 ##' ### do not test to avoid dependence on prodlim 
 ##' library(prodlim)
+##'
+##' ########################################
+##' ## getting some rates to mimick 
+##' ########################################
+##'
+##' data(base1cumhaz)
+##' data(base4cumhaz)
+##' data(drcumhaz)
+##' dr <- drcumhaz
+##' base1 <- base1cumhaz
+##' base4 <- base4cumhaz
+##'
+##' cor.mat <- corM <- rbind(c(1.0, 0.6, 0.9), c(0.6, 1.0, 0.5), c(0.9, 0.5, 1.0))
+##' rr <- mets:::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
+##' dtable(rr,~death+status)
 ##' 
-##' pp <- prob.exceed.recurrent(r,1,status="event",death="death",start="t.start",stop="t.stop",id="id")
+##' pp <- prob.exceed.recurrent(rr,1,status="status",death="death",start="entry",stop="time",id="id")
 ##' with(pp, matplot(times,prob,type="s"))
 ##' ###
 ##' with(pp, matlines(times,se.lower,type="s"))

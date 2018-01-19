@@ -21,7 +21,7 @@ prob.exceed.recurrent(data, type, status = "status", death = "death",
 
 \item{stop}{start stop call of Hist() of prodlim}
 
-\item{id}{}
+\item{id}{id}
 
 \item{times}{time at which to get probabilites P(N1(t) >= n)}
 
@@ -40,7 +40,22 @@ where there is terminal event
 ### do not test to avoid dependence on prodlim 
 library(prodlim)
 
-pp <- prob.exceed.recurrent(r,1,status="event",death="death",start="t.start",stop="t.stop",id="id")
+########################################
+## getting some rates to mimick 
+########################################
+
+data(base1cumhaz)
+data(base4cumhaz)
+data(drcumhaz)
+dr <- drcumhaz
+base1 <- base1cumhaz
+base4 <- base4cumhaz
+
+cor.mat <- corM <- rbind(c(1.0, 0.6, 0.9), c(0.6, 1.0, 0.5), c(0.9, 0.5, 1.0))
+rr <- mets:::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
+dtable(rr,~death+status)
+
+pp <- prob.exceed.recurrent(rr,1,status="status",death="death",start="entry",stop="time",id="id")
 with(pp, matplot(times,prob,type="s"))
 ###
 with(pp, matlines(times,se.lower,type="s"))
