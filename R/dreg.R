@@ -14,6 +14,7 @@
 ##' @param convert convert
 ##' @param special special's 
 ##' @param equal to do pairwise stuff
+##' @param test development argument
 ##' @param ... Additional arguments for fun
 ##' @author Klaus K. Holst, Thomas Scheike
 ##' @examples
@@ -116,7 +117,7 @@
 dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 	 x.base.names=NULL,z.arg=c("clever","base","group","condition"),
          fun=lm,summary=summary,regex=FALSE,convert=NULL,
-	 special=NULL,equal=TRUE,...) {# {{{
+	 special=NULL,equal=TRUE,test=0,...) {# {{{
 ### z.arg=clever,  if z is logical then condition
 ###                if z is factor  then group variable 
 ###                if z is numeric then baseline covariate 
@@ -171,6 +172,7 @@ dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 
 
  res <- sum <- list()
+ if (test==1) {
  if (is.null(summary)) sum <- NULL
  for (g in levell) {# {{{
  if (equal==TRUE) datal <- subset(data,group==g)
@@ -223,6 +225,7 @@ dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 	 }
  }# }}}
  }# }}}
+ }
 
    res <- list(reg=res,summary=sum)
 ###       res <- list(setNames(res,funn),summary=sum,...)

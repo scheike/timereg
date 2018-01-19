@@ -154,7 +154,7 @@ NULL
 ##'  procform procform3
 NULL
 
-##' death rate for HPN patients of Copenhagen 
+##' Rate for leaving HPN program for patients of Copenhagen 
 ##'
 ##' @name drcumhaz
 ##' @docType data
@@ -170,12 +170,19 @@ NULL
 ##' @source Estimated data
 NULL
 
-##' rate of Mechanical complication for catheter of HPN patients of Copenhagen 
+##' rate of Mechanical (hole/defect) complication for catheter of HPN patients of Copenhagen 
 ##'
-##' @name base2cumhaz
+##' @name base4cumhaz
 ##' @docType data
 ##' @keywords data
 ##' @source Estimated data
 NULL
 
+##' rate of Occlusion/Thrombosis complication for catheter of HPN patients of Copenhagen 
+##'
+##' @name base44cumhaz
+##' @docType data
+##' @keywords data
+##' @source Estimated data
+NULL
 
