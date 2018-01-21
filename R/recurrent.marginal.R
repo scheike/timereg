@@ -840,6 +840,7 @@ tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,d
 ##' to share random effect.
 ##' combined to prducte the estimator 
 ##'
+##' @param n number of id's 
 ##' @param cumhaz  cumulative hazard of recurrent events 
 ##' @param cumhaz.death cumulative hazard of death 
 ##' @param cumhaz2  cumulative hazard of recurrent events  of type 2
@@ -873,10 +874,10 @@ tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,d
 ##'  ######################################################################
 ##'  ### simulating simple model that mimicks data 
 ##'  ######################################################################
-##'  rr <- mets:::sim.recurrent(10,base1,death.cumhaz=dr)
+##'  rr <- mets::sim.recurrent(10,base1,death.cumhaz=dr)
 ##'  dlist(rr,.~id,n=0)
 ##'
-##'  rr <- mets:::sim.recurrent(1000,base1,death.cumhaz=dr)
+##'  rr <- mets::sim.recurrent(1000,base1,death.cumhaz=dr)
 ##'  par(mfrow=c(1,3))
 ##'  showfitsim(causes=1)
 ##'
@@ -885,7 +886,7 @@ tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,d
 ##' ### now with two event types and second type has same rate as death rate
 ##' ######################################################################
 ##'
-##'  rr <-mets:::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
+##'  rr <-mets::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
 ##'  dtable(rr,~death+status)
 ##'  par(mfrow=c(2,2))
 ##'  showfitsim(causes=2)
@@ -895,7 +896,7 @@ tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,d
 ##' ### random effect for all causes (Z shared for death and recurrent) 
 ##' ######################################################################
 ##'
-##'  rr <- mets:::sim.recurrent(1000,base1,
+##'  rr <- mets::sim.recurrent(1000,base1,
 ##'         death.cumhaz=dr,dependence=1,var.gamma=0.4)
 ##'  ### marginals do fit after input after integrating out
 ##'  par(mfrow=c(2,2))
@@ -1084,6 +1085,7 @@ sim.recurrent.gamma <- function(n,haz=0.5,death.haz=0.1,haz2=0.1,max.recurrent=1
 ##' the cumulative and then distributing it out. Key advantage of this is that 
 ##' there is  more flexibility wrt random effects 
 ##'
+##' @param n number of id's 
 ##' @param cumhaz  cumulative hazard of recurrent events 
 ##' @param cumhaz2  cumulative hazard of recurrent events  of type 2
 ##' @param cumhaz.death cumulative hazard of death 
@@ -1119,7 +1121,7 @@ sim.recurrent.gamma <- function(n,haz=0.5,death.haz=0.1,haz2=0.1,max.recurrent=1
 ##' ### now with two event types and second type has same rate as death rate
 ##' ######################################################################
 ##'
-##' rr <- mets:::sim.recurrentII(1000,base1,dr,death.cumhaz=base4)
+##' rr <- mets::sim.recurrentII(1000,base1,dr,death.cumhaz=base4)
 ##' dtable(rr,~death+status)
 ##' par(mfrow=c(2,2))
 ##' showfitsim(causes=2)
@@ -1284,7 +1286,7 @@ showfitsim <- function(causes=2)
 ##' Estimation of probability of more that k events for recurrent events process
 ##'
 ##' Estimation of probability of more that k events for recurrent events process
-##' where there is terminal event 
+##' where there is terminal event, based on this also estimate of variance of recurrent events. 
 ##'
 ##' @param data data-frame
 ##' @param type type of evnent (code) related to status
@@ -1315,7 +1317,7 @@ showfitsim <- function(causes=2)
 ##' base4 <- base4cumhaz
 ##'
 ##' cor.mat <- corM <- rbind(c(1.0, 0.6, 0.9), c(0.6, 1.0, 0.5), c(0.9, 0.5, 1.0))
-##' rr <- mets:::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
+##' rr <- mets::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
 ##' dtable(rr,~death+status)
 ##' 
 ##' pp <- prob.exceed.recurrent(rr,1,status="status",death="death",start="entry",stop="time",id="id")
@@ -1405,7 +1407,46 @@ return(list(time=times,times=times,prob=probs,se.prob=se.probs,meanN=meanN,
 	    se.lower=se.lower,se.upper=se.upper,meanN2=meanN2,varN=meanN2-meanN^2))
 }# }}}
 
-#####' @export
+##' Estimation of covariance for bivariate recurrent events with terminal event
+##'
+##' Estimation of probability of more that k events for recurrent events process
+##' where there is terminal event 
+##'
+##' @param data data-frame
+##' @param type type of evnent (code) related to status
+##' @param status name of status 
+##' @param death  name of death indicator 
+##' @param start start stop call of Hist() of prodlim 
+##' @param stop start stop call of Hist() of prodlim 
+##' @param id  id 
+##' @param times time at which to get probabilites P(N1(t) >= n)
+##' @param exceed n's for which which to compute probabilites P(N1(t) >= n)
+##' @param max.recurrent limits number recurrent events to 100
+##' @param ... Additional arguments to lower level funtions
+##' @author Thomas Scheike
+##' @examples
+##'
+##' ########################################
+##' ## getting some data to work on 
+##' ########################################
+##'
+##' data(base1cumhaz)
+##' data(base4cumhaz)
+##' data(drcumhaz)
+##' dr <- drcumhaz
+##' base1 <- base1cumhaz
+##' base4 <- base4cumhaz
+##'
+##' rr <- mets::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
+##' rr$strata <- 1
+##' dtable(rr,~death+status)
+##' 
+##' covrp <- mets::covariance.recurrent(rr,1,status="status",death="death",start="entry",stop="time",id="id")
+##' mets::plot.covariance.recurrent(covrp)
+##' 
+##' covrpS <- mets::covariance.recurrentS(rr,1,status="status",death="death",start="entry",stop="time",id="id",strata="strata")
+##' 
+##' @export
 covariance.recurrent <- function(data,type1,type2,status="status",death="death",
                    	 entry="entry",time="time",id="id",names.count="Count")
 {# {{{
@@ -1562,10 +1603,6 @@ title(main=main)
 ##' @export
 mean.risk <- function(base1,base1.2)
 {# {{{
-###cc <- base1$cox.prep
-###S0 <- rep(0,length(cc$strata))
-###risk <- revcumsumstrata(cc$sign,cc$strata,cc$nstrata)
-###
 cc <- base1.2$cox.prep
 S0 <- rep(0,length(cc$strata))
 mid <- max(cc$id)+1
@@ -1770,7 +1807,7 @@ BootcovariancerecurrenceS <- function(data,type1,type2,status="status",death="de
   rrb$jump <- (rrb$status==1) | (rrb$death==1)
   rrb <- tie.breaker(rrb,status="jump",start="entry",stop="time",id="id")
 
-   mm <- covariance.recurrentS(rrb,type1,type2,status=status,death=death,
+  mm <- covariance.recurrentS(rrb,type1,type2,status=status,death=death,
  	               entry=entry,time=time,id=id,names.count=names.count,
 		       strata="strata",times=times)
 
@@ -1794,12 +1831,16 @@ Bootcovariancerecurrence <- function(data,type1,type2,status="status",death="dea
   mu1mu2 <- matrix(0,length(times),K)
   n <- length(unique(data[,id]))
 
+  formid <- as.formula(paste("~",id))
+  rrb <- blocksample(data, size = n*K, formid)
+  rrb$strata <- floor((rrb$id-0.01)/n)
+  rrb$jump <- (rrb$status==1) | (rrb$death==1)
+  rrb <- tie.breaker(rrb,status="jump",start="entry",stop="time",id="id")
+
   for (i in 1:K)
   {
-     rrb <- blocksample(data,size=n,as.formula(paste("~",id)))
-     rrb[,"combined__"] <- (rrb[,status]>0) | (rrb[,death]==1)
-     rrb <-  tie.breaker(rrb,start=entry,stop=time,status="combined__",id=id)
-     errb <- covariance.recurrent(rrb,type1,type2,status=status,death=death,
+     rrbs <- subset(rrb,strata==i-1)
+     errb <- mets::covariance.recurrent(rrbs,type1,type2,status=status,death=death,
  	                          entry=entry,time=time,id=id,names.count=names.count)
      all <- Cpred(cbind(errb$time,errb$EIN1N2,errb$EN1N2,errb$EN1EN2,
 			errb$mu1.2,errb$mu2.1,
