@@ -1804,7 +1804,7 @@ BootcovariancerecurrenceS <- function(data,type1,type2,status="status",death="de
   formid <- as.formula(paste("~",id))
   rrb <- blocksample(data, size = n*K, formid)
   rrb$strata <- floor((rrb$id-0.01)/n)
-  rrb$jump <- (rrb$status==1) | (rrb$death==1)
+  rrb$jump <- (rrb$status!=0) | (rrb$death==1)
   rrb <- tie.breaker(rrb,status="jump",start="entry",stop="time",id="id")
 
   mm <- covariance.recurrentS(rrb,type1,type2,status=status,death=death,

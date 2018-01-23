@@ -136,8 +136,8 @@ dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 ###        fun <- function(x, ...) fun_(convert(x, ...))
 ###    }
 
- yxzf <- mets:::procform(y,x=x,z=z,data=data,do.filter=FALSE,regex=regex)
- yxz <- mets:::procformdata(y,x=x,z=z,data=data,do.filter=FALSE,regex=regex)
+ yxzf <- mets::procform(y,x=x,z=z,data=data,do.filter=FALSE,regex=regex)
+ yxz <- mets::procformdata(y,x=x,z=z,data=data,do.filter=FALSE,regex=regex)
 
  ## remove blank, to able to use also 	+1 on right hand side
  if (any(yxzf$predictor=="")) 
@@ -184,7 +184,7 @@ dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
                      basel <- paste(c(x,basen),collapse="+")
 		     else basel <- c(x,basen)
 	             form <- as.formula(paste(y,"~",basel))
-		     if (!is.null(special)) form <- timereg:::timereg.formula(form,special=special)
+		     if (!is.null(special)) form <- timereg::timereg.formula(form,special=special)
 ###		     val <- with(data,do.call(fun,c(list(formula=form),list(...))))
 	     capture.output(
              val <- do.call(fun,c(list(formula=form),list(data=datal),list(...))))
@@ -205,7 +205,7 @@ dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 	 } else {
              basel <- paste(c(yxzf$predictor,basen),collapse="+")
              form <- as.formula(paste(y,"~",basel))
-	     if (!is.null(special)) form <- timereg:::timereg.formula(form,special=special)
+	     if (!is.null(special)) form <- timereg::timereg.formula(form,special=special)
 	     capture.output(
              val <- do.call(fun,c(list(formula=form),list(data=datal),list(...))))
 	     nn <- paste(y,"~",basel)
