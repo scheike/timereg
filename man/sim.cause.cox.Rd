@@ -63,8 +63,8 @@ scox2 <- phreg(Surv(time,status==2)~tcell+platelet,data=dd)
 cbind(cox1$coef,scox1$coef)
 cbind(cox2$coef,scox2$coef)
 par(mfrow=c(1,2))
-baseplot.phreg(cox1); baseplot.phreg(scox1,add=TRUE); 
-baseplot.phreg(cox2); baseplot.phreg(scox2,add=TRUE); 
+basehazplot.phreg(cox1); basehazplot.phreg(scox1,add=TRUE); 
+basehazplot.phreg(cox2); basehazplot.phreg(scox2,add=TRUE); 
 
 cox1 <- phreg(Surv(time,cause==1)~strata(tcell)+platelet,data=bmt)
 cox2 <- phreg(Surv(time,cause==2)~strata(tcell)+platelet,data=bmt)
@@ -75,8 +75,8 @@ scox2 <- phreg(Surv(time,status==2)~strata(tcell)+platelet,data=dd)
 cbind(cox1$coef,scox1$coef)
 cbind(cox2$coef,scox2$coef)
 par(mfrow=c(1,2))
-baseplot.phreg(cox1); baseplot.phreg(scox1,add=TRUE); 
-baseplot.phreg(cox2); baseplot.phreg(scox2,add=TRUE); 
+basehazplot.phreg(cox1); basehazplot.phreg(scox1,add=TRUE); 
+basehazplot.phreg(cox2); basehazplot.phreg(scox2,add=TRUE); 
 
 # coxph          
 cox1 <- coxph(Surv(time,cause==1)~tcell+platelet,data=bmt)

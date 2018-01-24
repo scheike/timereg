@@ -245,15 +245,15 @@ cause.pchazard.sim<-function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.cum
 #' sim3 <- sim.cox(cox,1000,data=TRACE)
 #' cc <-  phreg(Surv(time, status)~vf+chf+wmi,data=sim3)
 #' cbind(cox$coef,cc$coef)
-#' baseplot.phreg(cox,se=TRUE)
+#' basehazplot.phreg(cox,se=TRUE)
 #' lines(cc$cumhaz,col=2)
 #' 
 #' cox <-  phreg(Surv(time,status==9)~strata(chf)+vf+wmi,data=TRACE)
 #' sim3 <- sim.cox(cox,1000,data=TRACE)
 #' cc <-   phreg(Surv(time, status)~strata(chf)+vf+wmi,data=sim3)
 #' cbind(cox$coef,cc$coef)
-#' baseplot.phreg(cox)
-#' baseplot.phreg(cc,add=TRUE)
+#' basehazplot.phreg(cox)
+#' basehazplot.phreg(cc,add=TRUE)
 #' @export
 #' @aliases sim.cox read.fit 
 sim.cox <- function(cox,n,data=NULL,cens=NULL,rrc=NULL,entry=NULL,...)
@@ -358,8 +358,8 @@ if (class(cox)!="phreg") {
 #' cbind(cox1$coef,scox1$coef)
 #' cbind(cox2$coef,scox2$coef)
 #' par(mfrow=c(1,2))
-#' baseplot.phreg(cox1); baseplot.phreg(scox1,add=TRUE); 
-#' baseplot.phreg(cox2); baseplot.phreg(scox2,add=TRUE); 
+#' basehazplot.phreg(cox1); basehazplot.phreg(scox1,add=TRUE); 
+#' basehazplot.phreg(cox2); basehazplot.phreg(scox2,add=TRUE); 
 #'
 #' cox1 <- phreg(Surv(time,cause==1)~strata(tcell)+platelet,data=bmt)
 #' cox2 <- phreg(Surv(time,cause==2)~strata(tcell)+platelet,data=bmt)
@@ -370,8 +370,8 @@ if (class(cox)!="phreg") {
 #' cbind(cox1$coef,scox1$coef)
 #' cbind(cox2$coef,scox2$coef)
 #' par(mfrow=c(1,2))
-#' baseplot.phreg(cox1); baseplot.phreg(scox1,add=TRUE); 
-#' baseplot.phreg(cox2); baseplot.phreg(scox2,add=TRUE); 
+#' basehazplot.phreg(cox1); basehazplot.phreg(scox1,add=TRUE); 
+#' basehazplot.phreg(cox2); basehazplot.phreg(scox2,add=TRUE); 
 #' 
 #' # coxph          
 #' cox1 <- coxph(Surv(time,cause==1)~tcell+platelet,data=bmt)
@@ -772,7 +772,7 @@ subdist <- function(F1,times)
 #' #' cif <-  prop.odds.subdist(Event(time,status)~vf+chf+wmi,data=TRACE,cause=9)
 #' cif <-  comp.risk(Event(time,status)~const(vf)+const(chf)+const(wmi),
 #'                   data=TRACE,cause=9,model="logistic2")
-#' sim1 <- sim.cif(cif,1000,data=TRACE)
+#' sim1 <- sim.cif(cif,500,data=TRACE)
 #' #' cc <-  prop.odds.subdist(Event(time,status)~vf+chf+wmi,data=sim1,cause=1)
 #' cc <-  comp.risk(Event(time,status)~const(vf)+const(chf)+const(wmi),
 #'                   data=sim1,cause=1,model="logistic2")
@@ -786,7 +786,7 @@ subdist <- function(F1,times)
 #' #################################################################
 #' cif <-  comp.risk(Event(time,status)~const(vf)+const(chf)+const(wmi),
 #'                   data=TRACE,cause=9)
-#' sim1 <- sim.cif(cif,1000,data=TRACE)
+#' sim1 <- sim.cif(cif,500,data=TRACE)
 #' #' cc <-  crr 
 #' cc <-  comp.risk(Event(time,status)~const(vf)+const(chf)+const(wmi),
 #'                   data=sim1,cause=1)
@@ -819,7 +819,7 @@ subdist <- function(F1,times)
 #' lines(cifs[[2]]$cum,col=2)
 #' legend("topleft",c("cause1","cause2"),lty=1,col=1:2)
 #' 
-#'  n <- 1000
+#'  n <- 500
 #'  sim1 <- sim.cif(cifs[[1]],n,data=bmt)
 #'  Z <- sim1[,c("tcell","age")]
 #'  sim2 <- sim.cif(cifs[[2]],n,data=bmt,Z=Z,drawZ=FALSE)
@@ -844,7 +844,7 @@ subdist <- function(F1,times)
 #'  lines(cifs[[2]]$cum,col=2,lty=2)
 #'
 #' #  Everyhing wraped in a call assuming covariates work in the same way for two models
-#' dd <- sim.cifs(list(cif1,cif2),5000,data=bmt)
+#' dd <- sim.cifs(list(cif1,cif2),2000,data=bmt)
 #' scif1 <-  comp.risk(Event(time,cause)~const(tcell)+const(age),
 #'                   data=dd,cause=1,model="logistic2")
 #' scif2 <-  comp.risk(Event(time,cause)~const(tcell)+const(age),

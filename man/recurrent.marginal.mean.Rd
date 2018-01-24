@@ -25,13 +25,14 @@ version should give the same when there are no ties.
 }
 \examples{
 \donttest{
-### do not test to avoid dependence on frailtypack 
-library(frailtypack)
-data(readmission)
-r <-  readmission
-ar <- aalen(Surv(t.start,t.stop,event)~+1+cluster(id),data=r,resample.iid=1
+### do not test because iid slow 
+library(mets)
+data(simrecurrent)
+simd <- subset(simd,id<500)
+
+ar <- aalen(Surv(start,stop,status)~+1+cluster(id),data=simd,resample.iid=1
                                                      ,max.clust=NULL)
-ad <- aalen(Surv(t.start,t.stop,death)~+1+cluster(id),data=r,resample.iid=1,
+ad <- aalen(Surv(start,stop,death)~+1+cluster(id),data=simd,resample.iid=1,
                                                      ,max.clust=NULL)
 mm <- recurrent.marginal.mean(ar,ad)
 with(mm,plot(times,mu,type="s"))

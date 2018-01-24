@@ -29,14 +29,17 @@ version should give the same when there are now ties.
 }
 \examples{
 \donttest{
-### do not test to avoid dependence on frailtypack 
-library(frailtypaccoxk)
-data(readmission)
-r <-  readmission
-ar <- cox.aalen(Surv(t.start,t.stop,event)~+1+prop(charlson)+cluster(id),data=r,resample.iid=1
-                                                     ,max.clust=NULL,max.timepoint.sim=NULL)
-ad <- cox.aalen(Surv(t.start,t.stop,death)~+1+prop(charlson)+cluster(id),data=r,resample.iid=1,
-                                                     ,max.clust=NULL,max.timepoint.sim=NULL)
+### do not test because iid slow 
+library(mets)
+data(simrecurrent)
+dim(simd) 
+simd <- subset(simd,id<500)
+
+ar <- cox.aalen(Surv(start,stop,status)~+1+prop(x.V1)+cluster(id),data=simd,
+                   resample.iid=1,,max.clust=NULL,max.timepoint.sim=NULL)
+
+ad <- cox.aalen(Surv(start,stop,death)~+1+prop(x.V1)+cluster(id),data=simd,
+                   resample.iid=1,,max.clust=NULL,max.timepoint.sim=NULL)
 mm <- recurrent.marginal.coxmean(ar,ad)
 with(mm,plot(times,mu,type="s"))
 with(mm,lines(times,mu+1.96*se.mu,type="s",lty=2))

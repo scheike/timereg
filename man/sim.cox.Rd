@@ -55,15 +55,15 @@ cox <-  phreg(Surv(time, status==9)~vf+chf+wmi,data=TRACE)
 sim3 <- sim.cox(cox,1000,data=TRACE)
 cc <-  phreg(Surv(time, status)~vf+chf+wmi,data=sim3)
 cbind(cox$coef,cc$coef)
-baseplot.phreg(cox,se=TRUE)
+basehazplot.phreg(cox,se=TRUE)
 lines(cc$cumhaz,col=2)
 
 cox <-  phreg(Surv(time,status==9)~strata(chf)+vf+wmi,data=TRACE)
 sim3 <- sim.cox(cox,1000,data=TRACE)
 cc <-   phreg(Surv(time, status)~strata(chf)+vf+wmi,data=sim3)
 cbind(cox$coef,cc$coef)
-baseplot.phreg(cox)
-baseplot.phreg(cc,add=TRUE)
+basehazplot.phreg(cox)
+basehazplot.phreg(cc,add=TRUE)
 }
 \author{
 Thomas Scheike
