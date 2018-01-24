@@ -10,7 +10,7 @@
 #' quick version of this for large data mets:::recurrent.marginal, these two 
 #' version should give the same when there are no ties. 
 #' 
-#' @param reccurent aalen model for recurrent events
+#' @param recurrent aalen model for recurrent events
 #' @param death     aalen model for recurrent events
 #' @author Thomas Scheike
 #' @references 
@@ -100,7 +100,7 @@ recurrent.marginal.mean <- function(recurrent,death)
 #' quick version of this for large data mets:::recurrent.marginal, these two 
 #' version should give the same when there are now ties. 
 #' 
-#' @param reccurent cox.aalen (cox) model for recurrent events
+#' @param recurrent aalen model for recurrent events
 #' @param death     cox.aalen (cox) model for death events
 #' @author Thomas Scheike
 #' @references 

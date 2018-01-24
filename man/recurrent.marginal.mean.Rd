@@ -7,9 +7,9 @@
 recurrent.marginal.mean(recurrent, death)
 }
 \arguments{
-\item{death}{aalen model for recurrent events}
+\item{recurrent}{aalen model for recurrent events}
 
-\item{reccurent}{aalen model for recurrent events}
+\item{death}{aalen model for recurrent events}
 }
 \description{
 Fitting two aalen models for death and recurent events these are

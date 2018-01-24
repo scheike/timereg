@@ -7,9 +7,9 @@
 recurrent.marginal.coxmean(recurrent, death)
 }
 \arguments{
-\item{death}{cox.aalen (cox) model for death events}
+\item{recurrent}{aalen model for recurrent events}
 
-\item{reccurent}{cox.aalen (cox) model for recurrent events}
+\item{death}{cox.aalen (cox) model for death events}
 }
 \description{
 Fitting two aalen models for death and recurent events these are
