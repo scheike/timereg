@@ -240,6 +240,8 @@ cause.pchazard.sim<-function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.cum
 #' lines(cc$cum,type="s",col=2)
 #' cbind(cox$gamma,cc$gamma)
 #' 
+#' \donttest{
+#' ### do not test to avoid dependence on mets
 #' library(mets)
 #' cox <-  phreg(Surv(time, status==9)~vf+chf+wmi,data=TRACE)
 #' sim3 <- sim.cox(cox,1000,data=TRACE)
@@ -254,6 +256,7 @@ cause.pchazard.sim<-function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.cum
 #' cbind(cox$coef,cc$coef)
 #' basehazplot.phreg(cox)
 #' basehazplot.phreg(cc,add=TRUE)
+#' }
 #' @export
 #' @aliases sim.cox read.fit 
 sim.cox <- function(cox,n,data=NULL,cens=NULL,rrc=NULL,entry=NULL,...)
@@ -346,7 +349,8 @@ if (class(cox)!="phreg") {
 #' lines(scox2$cum,col=2)
 #'           
 #'           
-#' # phreg of mets          
+#' \donttest{
+#' ### do not test to avoid dependence on mets
 #' library(mets)          
 #' data(bmt)
 #' cox1 <- phreg(Surv(time,cause==1)~tcell+platelet,data=bmt)
@@ -382,7 +386,7 @@ if (class(cox)!="phreg") {
 #' scox2 <- coxph(Surv(time,status==2)~tcell+platelet,data=dd)
 #' cbind(cox1$coef,scox1$coef)
 #' cbind(cox2$coef,scox2$coef)
-#'  
+#' }  
 #' @export
 sim.cause.cox <- function(coxs,n,data=NULL,cens=NULL,rrc=NULL,...)
 {# {{{

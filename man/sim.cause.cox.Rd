@@ -51,7 +51,8 @@ plot(cox2$cum,type="l");
 lines(scox2$cum,col=2)
           
           
-# phreg of mets          
+\donttest{
+### do not test to avoid dependence on mets
 library(mets)          
 data(bmt)
 cox1 <- phreg(Surv(time,cause==1)~tcell+platelet,data=bmt)
@@ -87,7 +88,7 @@ scox1 <- coxph(Surv(time,status==1)~tcell+platelet,data=dd)
 scox2 <- coxph(Surv(time,status==2)~tcell+platelet,data=dd)
 cbind(cox1$coef,scox1$coef)
 cbind(cox2$coef,scox2$coef)
- 
+}  
 }
 \author{
 Thomas Scheike

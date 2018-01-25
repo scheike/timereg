@@ -110,13 +110,6 @@ summary(out)
 par(mfrow=c(2,3))
 plot(out,sim.ci=2); plot(out,score=1) 
 
-# Fits Proportional odds model with baseline on additive form
-# thus giving odds-ratio of dyings for vf and diabetes
-out<-Gprop.odds(Surv(time,status==9)~vf+diabetes+prop(age.c)+prop(chf)+
-		prop(sex),data=sTRACE,max.time=7,n.sim=50)
-summary(out) 
-par(mfrow=c(2,3))
-plot(out,sim.ci=2); plot(out,score=1) 
 }
 
 }

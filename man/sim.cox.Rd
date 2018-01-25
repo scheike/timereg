@@ -50,6 +50,8 @@ plot(cox)
 lines(cc$cum,type="s",col=2)
 cbind(cox$gamma,cc$gamma)
 
+\donttest{
+### do not test to avoid dependence on mets
 library(mets)
 cox <-  phreg(Surv(time, status==9)~vf+chf+wmi,data=TRACE)
 sim3 <- sim.cox(cox,1000,data=TRACE)
@@ -64,6 +66,7 @@ cc <-   phreg(Surv(time, status)~strata(chf)+vf+wmi,data=sim3)
 cbind(cox$coef,cc$coef)
 basehazplot.phreg(cox)
 basehazplot.phreg(cc,add=TRUE)
+}
 }
 \author{
 Thomas Scheike

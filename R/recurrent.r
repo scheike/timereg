@@ -19,7 +19,7 @@
 #' @keywords survival
 #' @examples
 #' \donttest{
-#' ### do not test because iid slow 
+#' ### do not test because iid slow  and to avoid dependence on mets
 #' library(mets)
 #' data(simrecurrent)
 #' simd <- subset(simd,id<500)
