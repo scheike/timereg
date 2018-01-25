@@ -52,7 +52,7 @@ cbind(cox$gamma,cc$gamma)
 
 \donttest{
 ### do not test to avoid dependence on mets
-library(mets)
+require(mets)
 cox <-  phreg(Surv(time, status==9)~vf+chf+wmi,data=TRACE)
 sim3 <- sim.cox(cox,1000,data=TRACE)
 cc <-  phreg(Surv(time, status)~vf+chf+wmi,data=sim3)

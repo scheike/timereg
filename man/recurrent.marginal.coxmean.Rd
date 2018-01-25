@@ -29,8 +29,8 @@ version should give the same when there are now ties.
 }
 \examples{
 \donttest{
-### do not test because iid slow 
-library(mets)
+### do not test because iid slow  and uses data from mets
+require(mets)
 data(simrecurrent)
 dim(simd) 
 simd <- subset(simd,id<500)

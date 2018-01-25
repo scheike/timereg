@@ -53,7 +53,7 @@ lines(scox2$cum,col=2)
           
 \donttest{
 ### do not test to avoid dependence on mets
-library(mets)          
+require(mets)          
 data(bmt)
 cox1 <- phreg(Surv(time,cause==1)~tcell+platelet,data=bmt)
 cox2 <- phreg(Surv(time,cause==2)~tcell+platelet,data=bmt)
