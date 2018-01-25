@@ -17,10 +17,15 @@
 ##' @param fixbeta   to force the estimation of standard errors to think of regression coefficients as known/fixed
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Thomas Scheike
+##' 
+##' @references 
+##'             Ghosh and Lin (2002) Nonparametric Analysis of Recurrent events and death, 
+##'             Biometrics, 554--562.
 ##' @aliases recurrent.marginal 
 ##' @examples
 ##' 
 ##' data(simrecurrent)
+##' simd <- subset(simd,id<500)
 ##' ##  to fit non-parametric models with just a baseline 
 ##' xr <- phreg(Surv(start,stop,status)~cluster(id),data=simd)
 ##' dr <- phreg(Surv(start,stop,death)~cluster(id),data=simd)

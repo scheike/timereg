@@ -250,7 +250,6 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 ###} # }}}
 
 
-
 ###{{{ simcox
 
 ##' @export
@@ -939,6 +938,9 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
 }# }}}
 
 ##' @export
+bplot <- function(x,...) basehazplot.phreg(x,...)
+
+##' @export
 basecumhaz <- function(x,type="matrix",robust=FALSE,...) {# {{{
    ## all strata
    strat <- x$strata[x$jumps]
@@ -966,8 +968,6 @@ basecumhaz <- function(x,type="matrix",robust=FALSE,...) {# {{{
 
    list(cumhaz=cum,se.cumhaz=se.cum,strata=strata)
 }# }}}
-
-
 
 
 ##' @export
