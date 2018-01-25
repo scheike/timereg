@@ -380,24 +380,24 @@ coef.phreg  <- function(object,...) {
 iid.phreg  <- function(x,type="robust",all=FALSE,...) {# {{{
   invhess <- -solve(x$hessian)
   if (type=="robust") {	
-  xx <- x$cox.prep
-  ii <- invhess 
-  S0i <- rep(0,length(xx$strata))
-  S0i[xx$jumps+1] <- 1/x$S0
-  Z <- xx$X
-  U <- E <- matrix(0,nrow(xx$X),x$p)
-  E[xx$jumps+1,] <- x$E
-  U[xx$jumps+1,] <- x$U
-  cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
-  EdLam0 <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
-  rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
-  ### Martingale  as a function of time and for all subjects to handle strata 
-  MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-EdLam0)*rr*c(xx$weights)
-  orig.order <- (1:nrow(xx$X))[xx$ord+1]
-  ooo <- order(orig.order)
-  ### back to order of data-set
-  MGt <- MGt[ooo,,drop=FALSE]
-  id <- xx$id[ooo]
+	  xx <- x$cox.prep
+	  ii <- invhess 
+	  S0i <- rep(0,length(xx$strata))
+	  S0i[xx$jumps+1] <- 1/x$S0
+	  Z <- xx$X
+	  U <- E <- matrix(0,nrow(xx$X),x$p)
+	  E[xx$jumps+1,] <- x$E
+	  U[xx$jumps+1,] <- x$U
+	  cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
+	  EdLam0 <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
+	  rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
+	  ### Martingale  as a function of time and for all subjects to handle strata 
+	  MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-EdLam0)*rr*c(xx$weights)
+	  orig.order <- (1:nrow(xx$X))[xx$ord+1]
+	  ooo <- order(orig.order)
+	  ### back to order of data-set
+	  MGt <- MGt[ooo,,drop=FALSE]
+	  id <- xx$id[ooo]
   } else  { 
      MGt <- x$U; MG.base <- 1/x$S0; 
   }

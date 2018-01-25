@@ -166,7 +166,6 @@ recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
   S0i2 <- S0i <- rep(0,length(xx$strata))
   S0i[xx$jumps+1] <-  1/x$S0
   S0i2[xx$jumps+1] <- 1/x$S0^2
-  xx$time[xx$jumps+1]
   cumhazD <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
   St      <- exp(-cumhazD[,2])
   ###
@@ -294,9 +293,9 @@ recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
   S0i[xx$jumps+1] <-  1/x$S0
   S0i2[xx$jumps+1] <- 1/x$S0^2
   if (fixbeta==0) {
-  Z <- xx$X
-  U <- E <- matrix(0,nrow(xx$X),x$p)
-  E[xx$jumps+1,] <- x$E
+	  Z <- xx$X
+	  U <- E <- matrix(0,nrow(xx$X),x$p)
+	  E[xx$jumps+1,] <- x$E
   }
 ###  U[xx$jumps+1,] <- x$U
   xr$cox.prep$time  - xx$time
@@ -307,9 +306,9 @@ recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
   cumS0i2 <- cumsumstrata(mu*S0i2,xx$strata,xx$nstrata)
 
   if (fixbeta==0) {
-  EdLam0 <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
-  Ht <- apply(mu*E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
-  HtD <- Ht
+	  EdLam0 <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
+	  Ht <- apply(mu*E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
+	  HtD <- Ht
   }
   if (fixbeta==0) rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
   else rr <- c(xx$sign*exp(xx$offset))
@@ -366,58 +365,58 @@ recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
 
  cov12aa <- cov13aa <- cov23aa <- 0
  if (fixbeta==0) {
-### covariances between different terms and  beta's 
-# {{{
- covbetaRD <- t(betaiidR) %*% betaiidD
- DHt <- HtD1-HtD
-### covbeta1.23 <-   -2*rowSums((HtR %*% covbetaRD)*DHt)
- covbeta1.12 <-   -2*rowSums((HtR %*% covbetaRD)*HtD1)
- covbeta1.13 <-   2*rowSums((HtR %*% covbetaRD)*HtD)
- covbetaD.23 <-   -2*rowSums((HtD %*% vbetaD)*(HtD1))
+ ### covariances between different terms and  beta's 
+	# {{{
+	 covbetaRD <- t(betaiidR) %*% betaiidD
+	 DHt <- HtD1-HtD
+	### covbeta1.23 <-   -2*rowSums((HtR %*% covbetaRD)*DHt)
+	 covbeta1.12 <-   -2*rowSums((HtR %*% covbetaRD)*HtD1)
+	 covbeta1.13 <-   2*rowSums((HtR %*% covbetaRD)*HtD)
+	 covbetaD.23 <-   -2*rowSums((HtD %*% vbetaD)*(HtD1))
 
- ### D versus betaD from two terms  cov23 wrt beta 
- betakt <- betaiidD[id+1,,drop=FALSE]
- covk1 <-apply(xxxD1*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
- covk2 <-apply(w*rrD1*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
- covk2 <- c(covk2)*c(cumS0i2D1)
- covD1.D <- 2*apply((covk1-covk2)*mu*HtD,1,sum)
- ###
- covk1 <-apply(xxxD*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
- covk2 <-apply(w*rrD*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
- covk2 <- c(covk2)*c(cumS0i2D)
- covD.D1 <- 2*apply((covk1-covk2)*HtD1,1,sum)
- cov23aa <- covbetaD.23  + covD1.D + covD.D1
+	 ### D versus betaD from two terms  cov23 wrt beta 
+	 betakt <- betaiidD[id+1,,drop=FALSE]
+	 covk1 <-apply(xxxD1*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
+	 covk2 <-apply(w*rrD1*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
+	 covk2 <- c(covk2)*c(cumS0i2D1)
+	 covD1.D <- 2*apply((covk1-covk2)*mu*HtD,1,sum)
+	 ###
+	 covk1 <-apply(xxxD*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
+	 covk2 <-apply(w*rrD*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
+	 covk2 <- c(covk2)*c(cumS0i2D)
+	 covD.D1 <- 2*apply((covk1-covk2)*HtD1,1,sum)
+	 cov23aa <- covbetaD.23  + covD1.D + covD.D1
 
- ### cov12 wrt betaD and betaR
- betakt <- betaiidD[id+1,,drop=FALSE]
- covk1 <-apply(xxxR*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
- covk2 <-apply(w*rrR*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
- covk2 <- c(covk2)*c(cumS0i2R)
- covRD12 <- 2*apply((covk1-covk2)*HtD1,1,sum)
-###
- betakt <- betaiidR[id+1,,drop=FALSE]
- covk1 <-apply(xxxD1*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
- covk2 <-apply(w*rrD1*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
- covk2 <- c(covk2)*c(cumS0i2D1)
- covRD21 <- 2*apply((covk1-covk2)*mu*HtR,1,sum)
- cov12aa <- covbeta1.12 + covRD12+covRD21
+	 ### cov12 wrt betaD and betaR
+	 betakt <- betaiidD[id+1,,drop=FALSE]
+	 covk1 <-apply(xxxR*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
+	 covk2 <-apply(w*rrR*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
+	 covk2 <- c(covk2)*c(cumS0i2R)
+	 covRD12 <- 2*apply((covk1-covk2)*HtD1,1,sum)
+	###
+	 betakt <- betaiidR[id+1,,drop=FALSE]
+	 covk1 <-apply(xxxD1*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
+	 covk2 <-apply(w*rrD1*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
+	 covk2 <- c(covk2)*c(cumS0i2D1)
+	 covRD21 <- 2*apply((covk1-covk2)*mu*HtR,1,sum)
+	 cov12aa <- covbeta1.12 + covRD12+covRD21
 
 
- ### cov13 wrt betaD and betaR
- betakt <- betaiidD[id+1,,drop=FALSE]
- covk1 <-apply(xxxR*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
- covk2 <-apply(w*rrR*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
- covk2 <- c(covk2)*c(cumS0i2R)
- covRD13 <- -2*apply((covk1-covk2)*HtD,1,sum)
-###
- betakt <- betaiidR[id+1,,drop=FALSE]
- covk1 <-apply(xxxD*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
- covk2 <-apply(w*rrD*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
- covk2 <- c(covk2)*c(cumS0i2D)
- covRD31 <- -2*apply((covk1-covk2)*HtR,1,sum)
- cov13aa <- covbeta1.13 + covRD13+covRD31
+	 ### cov13 wrt betaD and betaR
+	 betakt <- betaiidD[id+1,,drop=FALSE]
+	 covk1 <-apply(xxxR*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
+	 covk2 <-apply(w*rrR*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
+	 covk2 <- c(covk2)*c(cumS0i2R)
+	 covRD13 <- -2*apply((covk1-covk2)*HtD,1,sum)
+	###
+	 betakt <- betaiidR[id+1,,drop=FALSE]
+	 covk1 <-apply(xxxD*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
+	 covk2 <-apply(w*rrD*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
+	 covk2 <- c(covk2)*c(cumS0i2D)
+	 covRD31 <- -2*apply((covk1-covk2)*HtR,1,sum)
+	 cov13aa <- covbeta1.13 + covRD13+covRD31
 
- varA <-varA+ cov23aa+cov13aa+cov12aa
+	 varA <-varA+ cov23aa+cov13aa+cov12aa
 # }}}
  }
 
@@ -744,7 +743,6 @@ recmarg <- function(recurrent,death,...)
   S0i2 <- S0i <- rep(0,length(xx$strata))
   S0i[xx$jumps+1] <-  1/x$S0
   S0i2[xx$jumps+1] <- 1/x$S0^2
-  xx$time[xx$jumps+1]
   cumhazD <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
   St      <- exp(-cumhazD[,2])
   ###
@@ -772,45 +770,20 @@ recmarg <- function(recurrent,death,...)
  return(out)
 }# }}}
 
-#####' @export
-###recmarg2 <- function(recurrent,death,...)
-###{# {{{
-###  xr <- recurrent
-###  dr <- death 
-###
-###  ### marginal expected events  int_0^t G(s) \lambda_r(s) ds 
-###  # {{{
-###  x <- dr
-###  xx <- x$cox.prep
-###  S0i <- rep(0,length(xx$strata))
-###  S0i[xx$jumps+1] <-  1/x$S0
-###  cumhazD <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
-###  St      <- exp(-cumhazD[,2])
-###  ###
-###  x <- xr
-###  xx <- x$cox.prep
-###  S0i <-  1/x$S0
-###  jumps <- xx$jumps+1
-###  cumhazDR <- cbind(xx$time[jumps],cumsumstrata(St[jumps]*S0i,xx$strata[jumps],xx$nstrata))
-###  mu <- cumhazDR[,2]
-#### }}}
-###
-### varrs <- data.frame(mu=mu,time=cumhazDR[,1],strata=xr$strata[jumps],St=St[jumps])
-### out <- list(mu=varrs$mu,times=varrs$time,St=varrs$St,cumhaz=cumhazDR,
-###     strata=varrs$strata,nstrata=xr$nstrata,jumps=1:nrow(varrs),strata.name=xr$strata.name)
-### return(out)
-###}# }}}
-
 ##' @export
-tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,ddt=NULL)
+tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,ddt=NULL,exit.unique=TRUE)
  {# {{{
 
    if (!is.null(id)) id <- data[,id]
    ord <- 1:nrow(data)
    stat <- data[,status]
    time <- data[,stop]
+   dupexit <- duplicated(time)
    time1 <- data[stat==1,stop]
-   ties <- duplicated(c(time1))
+   time0 <- data[stat!=1,stop]
+   lt0 <- length(time0)
+   ddp <- duplicated(c(time0,time1))
+   if (exit.unique) ties <-ddp[(lt0+1):nrow(data)] else ties <- duplicated(c(time1))
    nties <- sum(ties)
    ordties <- ord[stat==1][ties]
    if (is.null(ddt)) {
