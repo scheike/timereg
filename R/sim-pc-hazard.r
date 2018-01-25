@@ -242,7 +242,7 @@ cause.pchazard.sim<-function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.cum
 #' 
 #' \donttest{
 #' ### do not test to avoid dependence on mets
-#' require(mets)
+#' library(mets)
 #' cox <-  phreg(Surv(time, status==9)~vf+chf+wmi,data=TRACE)
 #' sim3 <- sim.cox(cox,1000,data=TRACE)
 #' cc <-  phreg(Surv(time, status)~vf+chf+wmi,data=sim3)
@@ -351,7 +351,7 @@ if (class(cox)!="phreg") {
 #'           
 #' \donttest{
 #' ### do not test to avoid dependence on mets
-#' require(mets)          
+#' library(mets)          
 #' data(bmt)
 #' cox1 <- phreg(Surv(time,cause==1)~tcell+platelet,data=bmt)
 #' cox2 <- phreg(Surv(time,cause==2)~tcell+platelet,data=bmt)

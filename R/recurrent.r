@@ -20,7 +20,7 @@
 #' @examples
 #' \donttest{
 #' ### do not test because iid slow  and to avoid dependence on mets
-#' require(mets)
+#' library(mets)
 #' data(simrecurrent)
 #' simd <- subset(simd,id<500)
 #' 
@@ -110,7 +110,7 @@ recurrent.marginal.mean <- function(recurrent,death)
 #' @examples
 #' \donttest{
 #' ### do not test because iid slow  and uses data from mets
-#' require(mets)
+#' library(mets)
 #' data(simrecurrent)
 #' dim(simd) 
 #' simd <- subset(simd,id<500)
