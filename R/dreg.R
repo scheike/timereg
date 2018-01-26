@@ -116,14 +116,14 @@
 ##' @export
 dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 	 x.base.names=NULL,z.arg=c("clever","base","group","condition"),
-         fun=lm,summary=summary,regex=FALSE,convert=NULL,
-	 special=NULL,equal=TRUE,test=0,...) {# {{{
+         fun.=lm,summary.=summary,regex=FALSE,convert=NULL,
+	 special=NULL,equal=TRUE,test=1,...) {# {{{
 ### z.arg=clever,  if z is logical then condition
 ###                if z is factor  then group variable 
 ###                if z is numeric then baseline covariate 
 ### ... further arguments to fun 
 
-### funn <- as.character(substitute(fun))
+###  fun <- as.character(substitute(fun))
 ###    if (is.character(fun))
 ###        fun <- get(fun)
 ###    if (!is.null(convert) && is.logical(convert)) {
@@ -136,8 +136,12 @@ dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 ###        fun <- function(x, ...) fun_(convert(x, ...))
 ###    }
 
- yxzf <- mets::procform(y,x=x,z=z,data=data,do.filter=FALSE,regex=regex)
- yxz <- mets::procformdata(y,x=x,z=z,data=data,do.filter=FALSE,regex=regex)
+###    print(fun)
+###    print(str(fun))
+
+
+ yxzf <- mets:::procform(y,x=x,z=z,data=data,do.filter=FALSE,regex=regex)
+ yxz <- mets:::procformdata(y,x=x,z=z,data=data,do.filter=FALSE,regex=regex)
 
  ## remove blank, to able to use also 	+1 on right hand side
  if (any(yxzf$predictor=="")) 
@@ -187,7 +191,7 @@ dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 		     if (!is.null(special)) form <- timereg::timereg.formula(form,special=special)
 ###		     val <- with(data,do.call(fun,c(list(formula=form),list(...))))
 	     capture.output(
-             val <- do.call(fun,c(list(formula=form),list(data=datal),list(...))))
+             val <- do.call(fun.,c(list(formula=form),list(data=datal),list(...))))
 	     val$call <- paste(y,"~",basel)
              val <- list(val)
 	     nn <- paste(y,"~",basel)
@@ -197,7 +201,7 @@ dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 	     names(val) <- nn
              res <- c(res, val)
 	     if (!is.null(summary)) {
-	        sval <- list(do.call(summary,list(val[[1]])))
+	        sval <- list(do.call(summary.,list(val[[1]])))
                 names(sval) <- nn
 	        sum <- c(sum, sval)
 	    }
@@ -207,7 +211,7 @@ dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
              form <- as.formula(paste(y,"~",basel))
 	     if (!is.null(special)) form <- timereg::timereg.formula(form,special=special)
 	     capture.output(
-             val <- do.call(fun,c(list(formula=form),list(data=datal),list(...))))
+             val <- do.call(fun.,c(list(formula=form),list(data=datal),list(...))))
 	     nn <- paste(y,"~",basel)
 	     if (z.arg[1]=="group") {
 		     if (equal==TRUE) nn <- paste(nn,"|",g)  else nn <- paste(nn,"| not",g);
@@ -217,7 +221,7 @@ dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 	     names(val) <- paste(y,"~",basel)
              res <- c(res, val)
 	     if (!is.null(summary)) {
-	       sval <- list(do.call(summary,list(val[[1]])))
+	       sval <- list(do.call(summary.,list(val[[1]])))
 	       names(sval) <- nn
 	       sum <- c(sum, sval)
 	     }
