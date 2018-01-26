@@ -5,7 +5,7 @@
 \title{Estimation of covariance for bivariate recurrent events with terminal event}
 \usage{
 \method{covariance}{recurrent}(data, type1, type2, status = "status",
-  death = "death", entry = "entry", time = "time", id = "id",
+  death = "death", start = "start", stop = "stop", id = "id",
   names.count = "Count")
 }
 \arguments{
@@ -15,13 +15,13 @@
 
 \item{death}{name of death indicator}
 
-\item{id}{id}
-
-\item{type}{type of evnent (code) related to status}
-
 \item{start}{start stop call of Hist() of prodlim}
 
 \item{stop}{start stop call of Hist() of prodlim}
+
+\item{id}{id}
+
+\item{type}{type of evnent (code) related to status}
 
 \item{times}{time at which to get probabilites P(N1(t) >= n)}
 
@@ -48,14 +48,15 @@ dr <- drcumhaz
 base1 <- base1cumhaz
 base4 <- base4cumhaz
 
-rr <- mets::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
+rr <- mets:::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
+rr <- count.history(rr)
 rr$strata <- 1
 dtable(rr,~death+status)
 
-covrp <- mets::covariance.recurrent(rr,1,status="status",death="death",start="entry",stop="time",id="id")
+covrp <- mets:::covariance.recurrent(rr,1,2,status="status",death="death",start="entry",stop="time",id="id",names.count="Count")
 mets::plot.covariance.recurrent(covrp)
 
-covrpS <- mets::covariance.recurrentS(rr,1,status="status",death="death",start="entry",stop="time",id="id",strata="strata")
+covrpS <- mets:::covariance.recurrentS(rr,1,2,status="status",death="death",start="entry",stop="time",id="id",strata="strata")
 
 }
 \author{

@@ -822,7 +822,7 @@ tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,d
 ##'
 ##' @param n number of id's 
 ##' @param cumhaz  cumulative hazard of recurrent events 
-##' @param cumhaz.death cumulative hazard of death 
+##' @param death.cumhaz cumulative hazard of death 
 ##' @param cumhaz2  cumulative hazard of recurrent events  of type 2
 ##' @param gap.time if true simulates gap-times with specified cumulative hazard
 ##' @param max.recurrent limits number recurrent events to 100
@@ -854,10 +854,10 @@ tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,d
 ##'  ######################################################################
 ##'  ### simulating simple model that mimicks data 
 ##'  ######################################################################
-##'  rr <- mets::sim.recurrent(10,base1,death.cumhaz=dr)
+##'  rr <- mets:::sim.recurrent(10,base1,death.cumhaz=dr)
 ##'  dlist(rr,.~id,n=0)
 ##'
-##'  rr <- mets::sim.recurrent(1000,base1,death.cumhaz=dr)
+##'  rr <- mets:::sim.recurrent(1000,base1,death.cumhaz=dr)
 ##'  par(mfrow=c(1,3))
 ##'  showfitsim(causes=1)
 ##'
@@ -866,7 +866,7 @@ tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,d
 ##' ### now with two event types and second type has same rate as death rate
 ##' ######################################################################
 ##'
-##'  rr <-mets::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
+##'  rr <-mets:::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
 ##'  dtable(rr,~death+status)
 ##'  par(mfrow=c(2,2))
 ##'  showfitsim(causes=2)
@@ -876,7 +876,7 @@ tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,d
 ##' ### random effect for all causes (Z shared for death and recurrent) 
 ##' ######################################################################
 ##'
-##'  rr <- mets::sim.recurrent(1000,base1,
+##'  rr <- mets:::sim.recurrent(1000,base1,
 ##'         death.cumhaz=dr,dependence=1,var.gamma=0.4)
 ##'  ### marginals do fit after input after integrating out
 ##'  par(mfrow=c(2,2))
@@ -1068,7 +1068,7 @@ sim.recurrent.gamma <- function(n,haz=0.5,death.haz=0.1,haz2=0.1,max.recurrent=1
 ##' @param n number of id's 
 ##' @param cumhaz  cumulative hazard of recurrent events 
 ##' @param cumhaz2  cumulative hazard of recurrent events  of type 2
-##' @param cumhaz.death cumulative hazard of death 
+##' @param death.cumhaz cumulative hazard of death 
 ##' @param gap.time if true simulates gap-times with specified cumulative hazard
 ##' @param max.recurrent limits number recurrent events to 100
 ##' @param dhaz rate for death hazard if it is extended to time-range of first event 
@@ -1101,7 +1101,7 @@ sim.recurrent.gamma <- function(n,haz=0.5,death.haz=0.1,haz2=0.1,max.recurrent=1
 ##' ### now with two event types and second type has same rate as death rate
 ##' ######################################################################
 ##'
-##' rr <- mets::sim.recurrentII(1000,base1,dr,death.cumhaz=base4)
+##' rr <- mets:::sim.recurrentII(1000,base1,dr,death.cumhaz=base4)
 ##' dtable(rr,~death+status)
 ##' par(mfrow=c(2,2))
 ##' showfitsim(causes=2)
@@ -1297,7 +1297,7 @@ showfitsim <- function(causes=2)
 ##' base4 <- base4cumhaz
 ##'
 ##' cor.mat <- corM <- rbind(c(1.0, 0.6, 0.9), c(0.6, 1.0, 0.5), c(0.9, 0.5, 1.0))
-##' rr <- mets::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
+##' rr <- mets:::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
 ##' dtable(rr,~death+status)
 ##' 
 ##' pp <- prob.exceed.recurrent(rr,1,status="status",death="death",start="entry",stop="time",id="id")
@@ -1417,26 +1417,27 @@ return(list(time=times,times=times,prob=probs,se.prob=se.probs,meanN=meanN,
 ##' base1 <- base1cumhaz
 ##' base4 <- base4cumhaz
 ##'
-##' rr <- mets::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
+##' rr <- mets:::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
+##' rr <- count.history(rr)
 ##' rr$strata <- 1
 ##' dtable(rr,~death+status)
 ##' 
-##' covrp <- mets::covariance.recurrent(rr,1,status="status",death="death",start="entry",stop="time",id="id")
+##' covrp <- mets:::covariance.recurrent(rr,1,2,status="status",death="death",start="entry",stop="time",id="id",names.count="Count")
 ##' mets::plot.covariance.recurrent(covrp)
 ##' 
-##' covrpS <- mets::covariance.recurrentS(rr,1,status="status",death="death",start="entry",stop="time",id="id",strata="strata")
+##' covrpS <- mets:::covariance.recurrentS(rr,1,2,status="status",death="death",start="entry",stop="time",id="id",strata="strata")
 ##' 
 ##' @export
 covariance.recurrent <- function(data,type1,type2,status="status",death="death",
-                   	 entry="entry",time="time",id="id",names.count="Count")
+                   	 start="start",stop="stop",id="id",names.count="Count")
 {# {{{
 
-formdr <- as.formula(paste("Surv(",entry,",",time,",",death,")~ cluster(",id,")",sep=""))
-form1 <- as.formula(paste("Surv(",entry,",",time,",",status,"==",type1,")~cluster(",id,")",sep=""))
-form2 <- as.formula(paste("Surv(",entry,",",time,",",status,"==",type2,")~cluster(",id,")",sep=""))
+formdr <- as.formula(paste("Surv(",start,",",stop,",",death,")~ cluster(",id,")",sep=""))
+form1 <- as.formula(paste("Surv(",start,",",stop,",",status,"==",type1,")~cluster(",id,")",sep=""))
+form2 <- as.formula(paste("Surv(",start,",",stop,",",status,"==",type2,")~cluster(",id,")",sep=""))
 ###
-form1C <- as.formula(paste("Surv(",entry,",",time,",",status,"==",type1,")~strata(",names.count,type2,")+cluster(",id,")",sep=""))
-form2C <- as.formula(paste("Surv(",entry,",",time,",",status,"==",type2,")~strata(",names.count,type1,")+cluster(",id,")",sep=""))
+form1C <- as.formula(paste("Surv(",start,",",stop,",",status,"==",type1,")~strata(",names.count,type2,")+cluster(",id,")",sep=""))
+form2C <- as.formula(paste("Surv(",start,",",stop,",",status,"==",type2,")~strata(",names.count,type1,")+cluster(",id,")",sep=""))
 
 dr <- phreg(formdr,data=data)
 ###basehazplot.phreg(dr)

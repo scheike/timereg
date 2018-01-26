@@ -13,6 +13,8 @@
 
 \item{cumhaz}{cumulative hazard of recurrent events}
 
+\item{death.cumhaz}{cumulative hazard of death}
+
 \item{cumhaz2}{cumulative hazard of recurrent events  of type 2}
 
 \item{gap.time}{if true simulates gap-times with specified cumulative hazard}
@@ -33,8 +35,6 @@ second random effect is for death}
 \item{cor.mat}{correlation matrix for var.z variance of random effects}
 
 \item{...}{Additional arguments to lower level funtions}
-
-\item{cumhaz.death}{cumulative hazard of death}
 }
 \description{
 Simulation of recurrent events data based on cumulative hazards
@@ -63,10 +63,10 @@ base4 <- base4cumhaz
  ######################################################################
  ### simulating simple model that mimicks data 
  ######################################################################
- rr <- mets::sim.recurrent(10,base1,death.cumhaz=dr)
+ rr <- mets:::sim.recurrent(10,base1,death.cumhaz=dr)
  dlist(rr,.~id,n=0)
 
- rr <- mets::sim.recurrent(1000,base1,death.cumhaz=dr)
+ rr <- mets:::sim.recurrent(1000,base1,death.cumhaz=dr)
  par(mfrow=c(1,3))
  showfitsim(causes=1)
 
@@ -75,7 +75,7 @@ base4 <- base4cumhaz
 ### now with two event types and second type has same rate as death rate
 ######################################################################
 
- rr <-mets::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
+ rr <-mets:::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
  dtable(rr,~death+status)
  par(mfrow=c(2,2))
  showfitsim(causes=2)
@@ -85,7 +85,7 @@ base4 <- base4cumhaz
 ### random effect for all causes (Z shared for death and recurrent) 
 ######################################################################
 
- rr <- mets::sim.recurrent(1000,base1,
+ rr <- mets:::sim.recurrent(1000,base1,
         death.cumhaz=dr,dependence=1,var.gamma=0.4)
  ### marginals do fit after input after integrating out
  par(mfrow=c(2,2))

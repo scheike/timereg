@@ -6,8 +6,8 @@
 \usage{
 dreg(data, y, x = NULL, z = NULL, x.oneatatime = TRUE,
   x.base.names = NULL, z.arg = c("clever", "base", "group", "condition"),
-  fun = lm, summary = summary, regex = FALSE, convert = NULL,
-  special = NULL, equal = TRUE, test = 0, ...)
+  fun. = lm, summary. = summary, regex = FALSE, convert = NULL,
+  special = NULL, equal = TRUE, test = 1, ...)
 }
 \arguments{
 \item{data}{data frame}
@@ -24,10 +24,6 @@ dreg(data, y, x = NULL, z = NULL, x.oneatatime = TRUE,
 
 \item{z.arg}{what is Z}
 
-\item{fun}{function}
-
-\item{summary}{summary to use}
-
 \item{regex}{regex}
 
 \item{convert}{convert}
@@ -39,6 +35,10 @@ dreg(data, y, x = NULL, z = NULL, x.oneatatime = TRUE,
 \item{test}{development argument}
 
 \item{...}{Additional arguments for fun}
+
+\item{fun}{function}
+
+\item{summary}{summary to use}
 }
 \description{
 Regression for data frames with dutility call

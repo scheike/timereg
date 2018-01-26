@@ -15,6 +15,8 @@
 
 \item{cumhaz2}{cumulative hazard of recurrent events  of type 2}
 
+\item{death.cumhaz}{cumulative hazard of death}
+
 \item{gap.time}{if true simulates gap-times with specified cumulative hazard}
 
 \item{max.recurrent}{limits number recurrent events to 100}
@@ -34,8 +36,6 @@ third random effect is for death}
 \item{cor.mat}{correlation matrix for var.z variance of random effects}
 
 \item{...}{Additional arguments to lower level funtions}
-
-\item{cumhaz.death}{cumulative hazard of death}
 }
 \description{
 Simulation of recurrent events data based on cumulative hazards
@@ -67,7 +67,7 @@ base4 <- base4cumhaz
 ### now with two event types and second type has same rate as death rate
 ######################################################################
 
-rr <- mets::sim.recurrentII(1000,base1,dr,death.cumhaz=base4)
+rr <- mets:::sim.recurrentII(1000,base1,dr,death.cumhaz=base4)
 dtable(rr,~death+status)
 par(mfrow=c(2,2))
 showfitsim(causes=2)

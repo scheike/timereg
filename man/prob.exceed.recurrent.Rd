@@ -52,7 +52,7 @@ base1 <- base1cumhaz
 base4 <- base4cumhaz
 
 cor.mat <- corM <- rbind(c(1.0, 0.6, 0.9), c(0.6, 1.0, 0.5), c(0.9, 0.5, 1.0))
-rr <- mets::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
+rr <- mets:::sim.recurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
 dtable(rr,~death+status)
 
 pp <- prob.exceed.recurrent(rr,1,status="status",death="death",start="entry",stop="time",id="id")

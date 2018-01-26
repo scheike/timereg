@@ -27,7 +27,7 @@ Here \deqn{ S(u|x=0) }  is estimated by \deqn{ exp(-\Lambda_d(u|x=0) }  with
  \deqn{\Lambda_d(u|x=0) } being the cumulative baseline for death.
 }
 \details{
-Assumes no ties so break ties before running with for example strata, use tie.breaker function.
+Assumes no ties in the sense that jump times needs to be unique, this is particularly so for the stratified version.
 }
 \examples{
 
