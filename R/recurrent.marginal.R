@@ -10,7 +10,7 @@
 ##' Here \deqn{ S(u|x=0) }  is estimated by \deqn{ exp(-\Lambda_d(u|x=0) }  with 
 ##'  \deqn{\Lambda_d(u|x=0) } being the cumulative baseline for death.
 ##' 
-##' Assumes no ties so break ties before running with for example strata, use tie.breaker function. 
+##' Assumes no ties in the sense that jump times needs to be unique, this is particularly so for the stratified version.
 ##' 
 ##' @param recurrent phreg object with recurrent events
 ##' @param death     phreg object with deaths
@@ -431,7 +431,8 @@ recurrent.marginal <- function(recurrent,death,fixbeta=NULL,...)
  out <- list(mu=varrs$mu,se.mu=varrs$se.mu,times=varrs$time,
      St=varrs$St,
      cumhaz=cbind(varrs$time,varrs$mu),se.cumhaz=cbind(varrs$time,varrs$se.mu),
-     strata=varrs$strata,nstrata=xr$nstrata,jumps=1:nrow(varrs),strata.name=xr$strata.name)
+     strata=varrs$strata,nstrata=xr$nstrata,jumps=1:nrow(varrs),strata.name=xr$strata.name,
+     strata.level=recurrent$strata.level)
 ###  vari=varrs[,c("varA1","varA2","varA3")],covs=varrs[,c("cov12","cov13","cov23")])
  return(out)
 }# }}}
@@ -766,7 +767,8 @@ recmarg <- function(recurrent,death,...)
  ### to use basehazplot.phreg
  ### making output such that basehazplot can work also
  out <- list(mu=varrs$mu,times=varrs$time,St=varrs$St,cumhaz=cbind(varrs$time,varrs$mu),
-     strata=varrs$strata,nstrata=xr$nstrata,jumps=1:nrow(varrs),strata.name=xr$strata.name)
+     strata=varrs$strata,nstrata=xr$nstrata,jumps=1:nrow(varrs),strata.name=xr$strata.name,
+     strata.level=recurrent$strata.level)
  return(out)
 }# }}}
 
