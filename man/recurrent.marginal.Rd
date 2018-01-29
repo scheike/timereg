@@ -33,6 +33,7 @@ Assumes no ties in the sense that jump times needs to be unique, this is particu
 
 data(simrecurrent)
 simd <- subset(simd,id<500)
+
 ##  to fit non-parametric models with just a baseline 
 xr <- phreg(Surv(start,stop,status)~cluster(id),data=simd)
 dr <- phreg(Surv(start,stop,death)~cluster(id),data=simd)

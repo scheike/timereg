@@ -154,6 +154,15 @@ NULL
 ##'  procform procform3
 NULL
 
+
+##' Simulated data of recurrent events 
+##'
+##' @name simd
+##' @docType data
+##' @keywords data
+##' @source Simulated data
+NULL
+
 ##' Rate for leaving HPN program for patients of Copenhagen 
 ##'
 ##' @name drcumhaz
