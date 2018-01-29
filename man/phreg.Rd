@@ -27,7 +27,7 @@ Robust variance is default variance with the summary.
 data(TRACE)
 dcut(TRACE) <- ~.
 out1 <- phreg(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
-tracesim <- sim.cox(out1,1000)
+tracesim <- timereg::sim.cox(out1,1000)
 sout1 <- phreg(Surv(time,status==1)~vf+chf+strata(wmicat.4),data=tracesim)
 ## robust standard errors default 
 summary(sout1)
