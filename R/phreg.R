@@ -286,7 +286,7 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' data(TRACE)
 ##' dcut(TRACE) <- ~.
 ##' out1 <- phreg(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
-##' tracesim <- sim.cox(out1,1000)
+##' tracesim <- timereg::sim.cox(out1,1000)
 ##' sout1 <- phreg(Surv(time,status==1)~vf+chf+strata(wmicat.4),data=tracesim)
 ##' ## robust standard errors default 
 ##' summary(sout1)
