@@ -855,7 +855,7 @@ tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,d
 ##'  ######################################################################
 ##'  ### simulating simple model that mimicks data 
 ##'  ######################################################################
-##'  rr <- simRecurrent(10,base1,death.cumhaz=dr)
+##'  rr <- simRecurrent(5,base1,death.cumhaz=dr)
 ##'  dlist(rr,.~id,n=0)
 ##'
 ##'  rr <- simRecurrent(1000,base1,death.cumhaz=dr)
@@ -867,7 +867,7 @@ tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,d
 ##' ### now with two event types and second type has same rate as death rate
 ##' ######################################################################
 ##'
-##'  rr <- simRecurrent(1000,base1,death.cumhaz=dr)
+##'  rr <- simRecurrent(1000,base1,death.cumhaz=dr,cumhaz2=base4)
 ##'  dtable(rr,~death+status)
 ##'  par(mfrow=c(2,2))
 ##'  showfitsim(causes=2)
@@ -1776,7 +1776,7 @@ out=c(list(EN1N2=mu1.2+mu2.1, EIN1N2=mu1.i+mu2.i, EN1EN2=mu1mu2,
 
 ##' @export
 BootcovariancerecurrenceS <- function(data,type1,type2,status="status",death="death",
-	 start="start",stop="stop",id="id",strata="strata",names.count="Count",times=NULL,K=100)
+	 start="start",stop="stop",id="id",names.count="Count",times=NULL,K=100)
 {# {{{
 
   if (is.null(times)) times <- seq(0,max(data[,stop]),length=100)
@@ -1792,12 +1792,12 @@ BootcovariancerecurrenceS <- function(data,type1,type2,status="status",death="de
   formid <- as.formula(paste("~",id))
   rrb <- blocksample(data, size = n*K, formid)
   rrb$strata <- floor((rrb$id-0.01)/n)
-  rrb$jump <- (rrb$status!=0) | (rrb$death==1)
+  rrb$jump <- (rrb[,status]!=0) | (rrb[,death]==1)
   rrb <- tie.breaker(rrb,status="jump",start=start,stop=stop,id=id)
 
   mm <- covarianceRecurrentS(rrb,type1,type2,status=status,death=death,
  	               start=start,stop=stop,id=id,names.count=names.count,
-		       strata=strata,times=times)
+		       strata="strata",times=times)
 
   mm <- c(mm,list(se.mui=apply(mm$EIN1N2,1,sd),se.mug=apply(mm$EN1N2,1,sd)))
   return(mm)
@@ -1822,7 +1822,7 @@ Bootcovariancerecurrence <- function(data,type1,type2,status="status",death="dea
   formid <- as.formula(paste("~",id))
   rrb <- blocksample(data, size = n*K, formid)
   rrb$strata <- floor((rrb$id-0.01)/n)
-  rrb$jump <- (rrb$status==1) | (rrb$death==1)
+  rrb$jump <- (rrb[,status]!=0) | (rrb[,death]==1)
   rrb <- tie.breaker(rrb,status="jump",start=start,stop=stop,id=id)
 
   for (i in 1:K)
