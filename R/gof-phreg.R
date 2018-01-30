@@ -20,7 +20,7 @@
 ##' m1 <- phreg(Surv(time,status==9)~strata(vf)+chf+diabetes,data=TRACE) 
 ##' gg <- gof(m1)
 ##' @export
-gof.phreg  <- function(object,n.sim=1000,silent=0,...)
+gof.phreg  <- function(object,n.sim=1000,silent=1,...)
 {# {{{
 
 ### test for proportionality 
@@ -49,7 +49,7 @@ res <- cbind(obs,simcox$pval)
 colnames(res) <- c("Sup|U(t)|","pval")
 rownames(res) <- nnames 
 
-if (silent==0) {
+if (silent==1) {
 cat("Cumulative score process test for Proportionality:\n")
 prmatrix(round(res,digits=2))
 }
