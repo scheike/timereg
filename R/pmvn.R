@@ -26,6 +26,11 @@ pbvn <- function(upper,rho,sigma) {
 ##' mu <- rbind(c(1,1),c(-1,1))
 ##' sigma <- diag(2)+1
 ##' pmvn(lower=lower,upper=upper,mu=mu,sigma=sigma)
+##' @param lower lower limits
+##' @param upper upper limits
+##' @param mu mean vector
+##' @param sigma variance matrix or vector of correlation coefficients
+##' @param cor if TRUE sigma is treated as standardized (correlation matrix)
 pmvn <- function(lower,upper,mu,sigma,cor=FALSE) {
     if (missing(sigma)) stop("Specify variance matrix 'sigma'")
     if (missing(lower)) {

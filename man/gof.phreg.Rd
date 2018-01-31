@@ -4,7 +4,7 @@
 \alias{gof.phreg}
 \title{GOF for Cox PH regression}
 \usage{
-\method{gof}{phreg}(object, n.sim = 1000, silent = 0, ...)
+\method{gof}{phreg}(object, n.sim = 1000, silent = 1, ...)
 }
 \arguments{
 \item{object}{is phreg object}

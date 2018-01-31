@@ -9,6 +9,17 @@
 \usage{
 pmvn(lower, upper, mu, sigma, cor = FALSE)
 }
+\arguments{
+\item{lower}{lower limits}
+
+\item{upper}{upper limits}
+
+\item{mu}{mean vector}
+
+\item{sigma}{variance matrix or vector of correlation coefficients}
+
+\item{cor}{if TRUE sigma is treated as standardized (correlation matrix)}
+}
 \description{
 Multivariate normal distribution function
 }
