@@ -67,7 +67,7 @@ by2mat <- function(x,nam,...) {
 ##' @param silent suppress messages
 ##' @param na.action How model.frame deals with 'NA's
 ##' @param convert if TRUE try to coerce result into matrix. Can also be a user-defined function
-##' @aliases daggr
+##' @aliases daggr 
 daggregate <- function(data,y=NULL,x=NULL,subset,...,fun="summary",regex=mets.options()$regex, missing=FALSE, remove.empty=FALSE, matrix=FALSE, silent=FALSE, na.action=na.pass, convert=NULL)
 {# {{{
     if (is.vector(data)) data <- data.frame(data)

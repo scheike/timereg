@@ -245,7 +245,6 @@ procform3 <- function(y,x=NULL,z=NULL,...) {# {{{
 }# }}}
 
 
-
 ## Specials <- function(f,spec,split2="+",...) {
 ##   tt <- terms(f,spec)
 ##   pos <- attributes(tt)$specials[[spec]]

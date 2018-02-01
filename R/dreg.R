@@ -140,8 +140,8 @@ dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 ###    print(str(fun))
 
 
- yxzf <- mets::procform(y,x=x,z=z,data=data,do.filter=FALSE,regex=regex)
- yxz <- mets::procformdata(y,x=x,z=z,data=data,do.filter=FALSE,regex=regex)
+ yxzf <- procform(y,x=x,z=z,data=data,do.filter=FALSE,regex=regex)
+ yxz <- procformdata(y,x=x,z=z,data=data,do.filter=FALSE,regex=regex)
 
  ## remove blank, to able to use also 	+1 on right hand side
  if (any(yxzf$predictor=="")) 

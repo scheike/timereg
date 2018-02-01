@@ -53,6 +53,7 @@
 \alias{twostage.fullse}
 \alias{procform}
 \alias{procform3}
+\alias{procformdata}
 \title{For internal use}
 \description{
 For internal use

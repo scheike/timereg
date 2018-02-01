@@ -2,6 +2,8 @@
 % Please edit documentation in R/phreg.R
 \name{basehazplot.phreg}
 \alias{basehazplot.phreg}
+\alias{bplot}
+\alias{basecumhaz}
 \title{Plotting the baslines of stratified Cox}
 \usage{
 basehazplot.phreg(x, se = FALSE, time = NULL, add = FALSE, ylim = NULL,

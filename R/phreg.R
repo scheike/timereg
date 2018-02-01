@@ -768,7 +768,7 @@ predictPhreg <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,band=FA
 ##' @param X Design matrix
 ##' @param strata Strata variable
 ##' @param ... ADditional arguments to lower level functions
-##' @aliases predict.phreg revcumsumstrata revcumsumstratasum cumsumstrata sumstrata covfr covfridstrata covfridstrataCov cumsumidstratasum cumsumidstratasumCov cumsumstratasum revcumsumidstratasum revcumsumidstratasumCov robust.basehaz.phreg
+##' @aliases predict.phreg revcumsumstrata revcumsumstratasum cumsumstrata sumstrata covfr covfridstrata covfridstrataCov cumsumidstratasum cumsumidstratasumCov cumsumstratasum revcumsumidstratasum revcumsumidstratasumCov robust.basehaz.phreg matdoubleindex
 predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,strata=object$strata,...) {
     if (object$p==0) X <- NULL
     if (!is.null(object$strata)) {
@@ -822,7 +822,7 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Klaus K. Holst, Thomas Scheike
 ##' @export
-##' @aliases basehazplot.phreg 
+##' @aliases basehazplot.phreg  bplot  basecumhaz
 ##' @examples
 ##' data(TRACE)
 ##' dcut(TRACE) <- ~.
