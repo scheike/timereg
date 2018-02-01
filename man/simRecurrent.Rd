@@ -2,6 +2,8 @@
 % Please edit documentation in R/recurrent.marginal.R
 \name{simRecurrent}
 \alias{simRecurrent}
+\alias{showfitsim}
+\alias{simRecurrentGamma}
 \title{Simulation of recurrent events data based on cumulative hazards}
 \usage{
 simRecurrent(n, cumhaz, death.cumhaz = NULL, cumhaz2 = NULL,
@@ -68,7 +70,7 @@ base4 <- base4cumhaz
 
  rr <- simRecurrent(1000,base1,death.cumhaz=dr)
  par(mfrow=c(1,3))
- showfitsim(causes=1)
+ showfitsim(causes=1,rr,dr,base1,base1)
 
 ######################################################################
 ### simulating simple model that mimicks data 
@@ -78,7 +80,7 @@ base4 <- base4cumhaz
  rr <- simRecurrent(1000,base1,death.cumhaz=dr,cumhaz2=base4)
  dtable(rr,~death+status)
  par(mfrow=c(2,2))
- showfitsim(causes=2)
+ showfitsim(causes=2,rr,dr,base1,base4)
 
 ######################################################################
 ### simulating simple model 
@@ -89,7 +91,7 @@ base4 <- base4cumhaz
         death.cumhaz=dr,dependence=1,var.gamma=0.4)
  ### marginals do fit after input after integrating out
  par(mfrow=c(2,2))
- showfitsim(causes=1)
+ showfitsim(causes=1,rr,dr,base1,base1)
 
 }
 \author{
