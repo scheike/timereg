@@ -98,6 +98,7 @@ lifecourse <- function(formula,data,id="id",group=NULL,
 
 	X <- c(c(t1),c(t2))
 	Y <- rep(x,each=2)
+	status <- tstat
 
 # }}}
     } else {# {{{
@@ -118,12 +119,13 @@ lifecourse <- function(formula,data,id="id",group=NULL,
 	}
 
         x <- data[ccm,x] 
-	status <- tstat
 
 	X <- c(c(t1),c(t2))
 	Y <- rep(x,each=2)
+	status <- tstat
 
     }# }}}
+
 	 plot(X,Y,xlab=xlab,ylab=ylab,...,type="n")        
 
        if (!is.null(status.legend)) {# {{{

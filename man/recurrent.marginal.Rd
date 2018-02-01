@@ -27,11 +27,13 @@ Here \deqn{ S(u|x=0) }  is estimated by \deqn{ exp(-\Lambda_d(u|x=0) }  with
  \deqn{\Lambda_d(u|x=0) } being the cumulative baseline for death.
 }
 \details{
-Assumes no ties so break ties before running with for example strata, use tie.breaker function.
+Assumes no ties in the sense that jump times needs to be unique, this is particularly so for the stratified version.
 }
 \examples{
 
 data(simrecurrent)
+simd <- subset(simd,id<500)
+
 ##  to fit non-parametric models with just a baseline 
 xr <- phreg(Surv(start,stop,status)~cluster(id),data=simd)
 dr <- phreg(Surv(start,stop,death)~cluster(id),data=simd)
@@ -152,6 +154,10 @@ dr  <- phreg(Surv(time,cause!=0)~cluster(id),data=bmt)
 out <- recurrent.marginal(xr,dr)
 basehazplot.phreg(out,se=TRUE,ylab="cumulative incidence")
 
+}
+\references{
+Ghosh and Lin (2002) Nonparametric Analysis of Recurrent events and death, 
+            Biometrics, 554--562.
 }
 \author{
 Thomas Scheike

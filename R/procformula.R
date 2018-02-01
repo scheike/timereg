@@ -168,6 +168,7 @@ procform <- function(formula=NULL, sep="\\|", nsep=1, return.formula=FALSE, data
     return(res)
 }
 
+##' @export
 procformdata <- function(formula,data,sep="\\|", na.action=na.pass, do.filter=TRUE, ...) {
     res <- procform(formula,sep=sep,data=data,return.formula=TRUE,...)
     if (inherits(res,"formula")) {

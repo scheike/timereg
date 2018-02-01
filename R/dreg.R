@@ -8,12 +8,13 @@
 ##' @param x.oneatatime x's one at a time
 ##' @param x.base.names base covarirates 
 ##' @param z.arg what is Z
-##' @param fun function 
-##' @param summary summary to use 
+##' @param fun. function 
+##' @param summary. summary to use 
 ##' @param regex regex
 ##' @param convert convert
 ##' @param special special's 
 ##' @param equal to do pairwise stuff
+##' @param test development argument
 ##' @param ... Additional arguments for fun
 ##' @author Klaus K. Holst, Thomas Scheike
 ##' @examples
@@ -36,70 +37,70 @@
 ##' 
 ##' 
 ##' y <- "S*"~"*.width"
-##' xs <- dreg(iris,y,fun=phreg)
-##' xs <- dreg(iris,y,fun=survdiff)
+##' xs <- dreg(iris,y,fun.=phreg)
+##' xs <- dreg(iris,y,fun.=survdiff)
 ##' 
 ##' ### testing forskellige calls
 ##' y <- "S*"~"*.width"
-##' xs <- dreg(iris,y,x.oneatatime=FALSE,fun=phreg)
+##' xs <- dreg(iris,y,x.oneatatime=FALSE,fun.=phreg)
 ##' 
 ##' ## under condition 
 ##' y <- S1~"*.width"|I(species=="setosa" & sepal.width>3)
-##' xs <- dreg(iris,y,z.arg="condition",fun=phreg)
-##' xs <- dreg(iris,y,fun=phreg)
+##' xs <- dreg(iris,y,z.arg="condition",fun.=phreg)
+##' xs <- dreg(iris,y,fun.=phreg)
 ##' 
 ##' ## under condition 
 ##' y <- S1~"*.width"|species=="setosa"
-##' xs <- dreg(iris,y,z.arg="condition",fun=phreg)
-##' xs <- dreg(iris,y,fun=phreg)
+##' xs <- dreg(iris,y,z.arg="condition",fun.=phreg)
+##' xs <- dreg(iris,y,fun.=phreg)
 ##' 
 ##' ## with baseline  after | 
 ##' y <- S1~"*.width"|sepal.length
-##' xs <- dreg(iris,y,fun=phreg)
+##' xs <- dreg(iris,y,fun.=phreg)
 ##' 
 ##' ## by group by species, not working 
 ##' y <- S1~"*.width"|species
 ##' ss <- split(iris,paste(iris$species,iris$status))
 ##' 
 ##' 
-##' xs <- dreg(iris,y,fun=phreg)
+##' xs <- dreg(iris,y,fun.=phreg)
 ##' 
 ##' ## species as base, species is factor so assumes that this is grouping 
 ##' y <- S1~"*.width"|species
-##' xs <- dreg(iris,y,z.arg="base",fun=phreg)
+##' xs <- dreg(iris,y,z.arg="base",fun.=phreg)
 ##' 
 ##' ##  background var after | and then one of x's at at time 
 ##' y <- S1~"*.width"|status+"sepal*"
-##' xs <- dreg(iris,y,fun=phreg)
+##' xs <- dreg(iris,y,fun.=phreg)
 ##' 
 ##' ##  background var after | and then one of x's at at time 
 ##' y <- S1~"*.width"|status+"sepal*"
-##' xs <- dreg(iris,y,x.oneatatime=FALSE,fun=phreg)
-##' xs <- dreg(iris,y,fun=phreg)
+##' xs <- dreg(iris,y,x.oneatatime=FALSE,fun.=phreg)
+##' xs <- dreg(iris,y,fun.=phreg)
 ##' 
 ##' ##  background var after | and then one of x's at at time 
 ##' y <- S1~"*.width"+factor(species)
-##' xs <- dreg(iris,y,fun=phreg)
-##' xs <- dreg(iris,y,fun=phreg,x.oneatatime=FALSE)
+##' xs <- dreg(iris,y,fun.=phreg)
+##' xs <- dreg(iris,y,fun.=phreg,x.oneatatime=FALSE)
 ##' 
 ##' y <- S1~"*.width"|factor(species)
-##' xs <- dreg(iris,y,z.arg="base",fun=phreg)
+##' xs <- dreg(iris,y,z.arg="base",fun.=phreg)
 ##' 
 ##' 
 ##' y <- S1~"*.width"|cluster(id)+factor(species)
-##' xs <- dreg(iris,y,z.arg="base",fun=phreg)
-##' xs <- dreg(iris,y,z.arg="base",fun=coxph)
+##' xs <- dreg(iris,y,z.arg="base",fun.=phreg)
+##' xs <- dreg(iris,y,z.arg="base",fun.=coxph)
 ##' 
 ##' ## under condition with groups  
 ##' y <- S1~"*.width"|I(sepal.length>4)
-##' xs <- dreg(subset(iris,species=="setosa"),y,z.arg="group",fun=phreg)
+##' xs <- dreg(subset(iris,species=="setosa"),y,z.arg="group",fun.=phreg)
 ##' 
 ##' ## under condition with groups  
 ##' y <- S1~"*.width"+I(log(sepal.length))|I(sepal.length>4)
-##' xs <- dreg(subset(iris,species=="setosa"),y,z.arg="group",fun=phreg)
+##' xs <- dreg(subset(iris,species=="setosa"),y,z.arg="group",fun.=phreg)
 ##' 
 ##' y <- S1~"*.width"+I(dcut(sepal.length))|I(sepal.length>4)
-##' xs <- dreg(subset(iris,species=="setosa"),y,z.arg="group",fun=phreg)
+##' xs <- dreg(subset(iris,species=="setosa"),y,z.arg="group",fun.=phreg)
 ##' 
 ##' ff <- function(formula,data,...) {
 ##'  ss <- survfit(formula,data,...)
@@ -110,19 +111,19 @@
 ##' dcut(iris) <- ~"*.width"
 ##' y <- S1~"*.4"|I(sepal.length>4)
 ##' par(mfrow=c(1,2))
-##' xs <- dreg(iris,y,fun=ff)
+##' xs <- dreg(iris,y,fun.=ff)
 ##' 
 ##' @export
 dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 	 x.base.names=NULL,z.arg=c("clever","base","group","condition"),
-         fun=lm,summary=summary,regex=FALSE,convert=NULL,
-	 special=NULL,equal=TRUE,...) {# {{{
+         fun.=lm,summary.=summary,regex=FALSE,convert=NULL,
+	 special=NULL,equal=TRUE,test=1,...) {# {{{
 ### z.arg=clever,  if z is logical then condition
 ###                if z is factor  then group variable 
 ###                if z is numeric then baseline covariate 
 ### ... further arguments to fun 
 
-### funn <- as.character(substitute(fun))
+###  fun <- as.character(substitute(fun))
 ###    if (is.character(fun))
 ###        fun <- get(fun)
 ###    if (!is.null(convert) && is.logical(convert)) {
@@ -135,8 +136,12 @@ dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 ###        fun <- function(x, ...) fun_(convert(x, ...))
 ###    }
 
- yxzf <- mets:::procform(y,x=x,z=z,data=data,do.filter=FALSE,regex=regex)
- yxz <- mets:::procformdata(y,x=x,z=z,data=data,do.filter=FALSE,regex=regex)
+###    print(fun)
+###    print(str(fun))
+
+
+ yxzf <- mets::procform(y,x=x,z=z,data=data,do.filter=FALSE,regex=regex)
+ yxz <- mets::procformdata(y,x=x,z=z,data=data,do.filter=FALSE,regex=regex)
 
  ## remove blank, to able to use also 	+1 on right hand side
  if (any(yxzf$predictor=="")) 
@@ -171,6 +176,7 @@ dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 
 
  res <- sum <- list()
+ if (test==1) {
  if (is.null(summary)) sum <- NULL
  for (g in levell) {# {{{
  if (equal==TRUE) datal <- subset(data,group==g)
@@ -182,10 +188,10 @@ dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
                      basel <- paste(c(x,basen),collapse="+")
 		     else basel <- c(x,basen)
 	             form <- as.formula(paste(y,"~",basel))
-		     if (!is.null(special)) form <- timereg:::timereg.formula(form,special=special)
+		     if (!is.null(special)) form <- timereg::timereg.formula(form,special=special)
 ###		     val <- with(data,do.call(fun,c(list(formula=form),list(...))))
 	     capture.output(
-             val <- do.call(fun,c(list(formula=form),list(data=datal),list(...))))
+             val <- do.call(fun.,c(list(formula=form),list(data=datal),list(...))))
 	     val$call <- paste(y,"~",basel)
              val <- list(val)
 	     nn <- paste(y,"~",basel)
@@ -195,7 +201,7 @@ dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 	     names(val) <- nn
              res <- c(res, val)
 	     if (!is.null(summary)) {
-	        sval <- list(do.call(summary,list(val[[1]])))
+	        sval <- list(do.call(summary.,list(val[[1]])))
                 names(sval) <- nn
 	        sum <- c(sum, sval)
 	    }
@@ -203,9 +209,9 @@ dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 	 } else {
              basel <- paste(c(yxzf$predictor,basen),collapse="+")
              form <- as.formula(paste(y,"~",basel))
-	     if (!is.null(special)) form <- timereg:::timereg.formula(form,special=special)
+	     if (!is.null(special)) form <- timereg::timereg.formula(form,special=special)
 	     capture.output(
-             val <- do.call(fun,c(list(formula=form),list(data=datal),list(...))))
+             val <- do.call(fun.,c(list(formula=form),list(data=datal),list(...))))
 	     nn <- paste(y,"~",basel)
 	     if (z.arg[1]=="group") {
 		     if (equal==TRUE) nn <- paste(nn,"|",g)  else nn <- paste(nn,"| not",g);
@@ -215,7 +221,7 @@ dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 	     names(val) <- paste(y,"~",basel)
              res <- c(res, val)
 	     if (!is.null(summary)) {
-	       sval <- list(do.call(summary,list(val[[1]])))
+	       sval <- list(do.call(summary.,list(val[[1]])))
 	       names(sval) <- nn
 	       sum <- c(sum, sval)
 	     }
@@ -223,13 +229,13 @@ dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 	 }
  }# }}}
  }# }}}
+ }
 
    res <- list(reg=res,summary=sum)
 ###       res <- list(setNames(res,funn),summary=sum,...)
    class(res) <- "dreg"
-   res
 ###   structure(res,ngrouvar=0,class="dreg")
-###   return(res)
+   return(res)
 
 }# }}}
 
@@ -247,7 +253,8 @@ print.dreg <- function(x,sep="-",...) {# {{{
 }# }}}
 
 ##' @export
-summary.dreg <- function(x,sep="-",...) {# {{{
+summary.dreg <- function(object,sep="-",...) {# {{{
+    x <- object
     sep <- paste(rep(sep,50,sep=""),collapse="")
     sep <-  paste(sep,"\n")
 ###    cat(sep)

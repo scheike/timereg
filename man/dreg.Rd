@@ -6,8 +6,8 @@
 \usage{
 dreg(data, y, x = NULL, z = NULL, x.oneatatime = TRUE,
   x.base.names = NULL, z.arg = c("clever", "base", "group", "condition"),
-  fun = lm, summary = summary, regex = FALSE, convert = NULL,
-  special = NULL, equal = TRUE, ...)
+  fun. = lm, summary. = summary, regex = FALSE, convert = NULL,
+  special = NULL, equal = TRUE, test = 1, ...)
 }
 \arguments{
 \item{data}{data frame}
@@ -24,9 +24,9 @@ dreg(data, y, x = NULL, z = NULL, x.oneatatime = TRUE,
 
 \item{z.arg}{what is Z}
 
-\item{fun}{function}
+\item{fun.}{function}
 
-\item{summary}{summary to use}
+\item{summary.}{summary to use}
 
 \item{regex}{regex}
 
@@ -35,6 +35,8 @@ dreg(data, y, x = NULL, z = NULL, x.oneatatime = TRUE,
 \item{special}{special's}
 
 \item{equal}{to do pairwise stuff}
+
+\item{test}{development argument}
 
 \item{...}{Additional arguments for fun}
 }
@@ -61,70 +63,70 @@ mm <- dreg(iris,"*.length"~"*.width"|species+status,z.arg="group")
 
 
 y <- "S*"~"*.width"
-xs <- dreg(iris,y,fun=phreg)
-xs <- dreg(iris,y,fun=survdiff)
+xs <- dreg(iris,y,fun.=phreg)
+xs <- dreg(iris,y,fun.=survdiff)
 
 ### testing forskellige calls
 y <- "S*"~"*.width"
-xs <- dreg(iris,y,x.oneatatime=FALSE,fun=phreg)
+xs <- dreg(iris,y,x.oneatatime=FALSE,fun.=phreg)
 
 ## under condition 
 y <- S1~"*.width"|I(species=="setosa" & sepal.width>3)
-xs <- dreg(iris,y,z.arg="condition",fun=phreg)
-xs <- dreg(iris,y,fun=phreg)
+xs <- dreg(iris,y,z.arg="condition",fun.=phreg)
+xs <- dreg(iris,y,fun.=phreg)
 
 ## under condition 
 y <- S1~"*.width"|species=="setosa"
-xs <- dreg(iris,y,z.arg="condition",fun=phreg)
-xs <- dreg(iris,y,fun=phreg)
+xs <- dreg(iris,y,z.arg="condition",fun.=phreg)
+xs <- dreg(iris,y,fun.=phreg)
 
 ## with baseline  after | 
 y <- S1~"*.width"|sepal.length
-xs <- dreg(iris,y,fun=phreg)
+xs <- dreg(iris,y,fun.=phreg)
 
 ## by group by species, not working 
 y <- S1~"*.width"|species
 ss <- split(iris,paste(iris$species,iris$status))
 
 
-xs <- dreg(iris,y,fun=phreg)
+xs <- dreg(iris,y,fun.=phreg)
 
 ## species as base, species is factor so assumes that this is grouping 
 y <- S1~"*.width"|species
-xs <- dreg(iris,y,z.arg="base",fun=phreg)
+xs <- dreg(iris,y,z.arg="base",fun.=phreg)
 
 ##  background var after | and then one of x's at at time 
 y <- S1~"*.width"|status+"sepal*"
-xs <- dreg(iris,y,fun=phreg)
+xs <- dreg(iris,y,fun.=phreg)
 
 ##  background var after | and then one of x's at at time 
 y <- S1~"*.width"|status+"sepal*"
-xs <- dreg(iris,y,x.oneatatime=FALSE,fun=phreg)
-xs <- dreg(iris,y,fun=phreg)
+xs <- dreg(iris,y,x.oneatatime=FALSE,fun.=phreg)
+xs <- dreg(iris,y,fun.=phreg)
 
 ##  background var after | and then one of x's at at time 
 y <- S1~"*.width"+factor(species)
-xs <- dreg(iris,y,fun=phreg)
-xs <- dreg(iris,y,fun=phreg,x.oneatatime=FALSE)
+xs <- dreg(iris,y,fun.=phreg)
+xs <- dreg(iris,y,fun.=phreg,x.oneatatime=FALSE)
 
 y <- S1~"*.width"|factor(species)
-xs <- dreg(iris,y,z.arg="base",fun=phreg)
+xs <- dreg(iris,y,z.arg="base",fun.=phreg)
 
 
 y <- S1~"*.width"|cluster(id)+factor(species)
-xs <- dreg(iris,y,z.arg="base",fun=phreg)
-xs <- dreg(iris,y,z.arg="base",fun=coxph)
+xs <- dreg(iris,y,z.arg="base",fun.=phreg)
+xs <- dreg(iris,y,z.arg="base",fun.=coxph)
 
 ## under condition with groups  
 y <- S1~"*.width"|I(sepal.length>4)
-xs <- dreg(subset(iris,species=="setosa"),y,z.arg="group",fun=phreg)
+xs <- dreg(subset(iris,species=="setosa"),y,z.arg="group",fun.=phreg)
 
 ## under condition with groups  
 y <- S1~"*.width"+I(log(sepal.length))|I(sepal.length>4)
-xs <- dreg(subset(iris,species=="setosa"),y,z.arg="group",fun=phreg)
+xs <- dreg(subset(iris,species=="setosa"),y,z.arg="group",fun.=phreg)
 
 y <- S1~"*.width"+I(dcut(sepal.length))|I(sepal.length>4)
-xs <- dreg(subset(iris,species=="setosa"),y,z.arg="group",fun=phreg)
+xs <- dreg(subset(iris,species=="setosa"),y,z.arg="group",fun.=phreg)
 
 ff <- function(formula,data,...) {
  ss <- survfit(formula,data,...)
@@ -135,7 +137,7 @@ ff <- function(formula,data,...) {
 dcut(iris) <- ~"*.width"
 y <- S1~"*.4"|I(sepal.length>4)
 par(mfrow=c(1,2))
-xs <- dreg(iris,y,fun=ff)
+xs <- dreg(iris,y,fun.=ff)
 
 }
 \author{

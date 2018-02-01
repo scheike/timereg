@@ -269,7 +269,6 @@ return(rres);
 }/*}}}*/
 
 
-
 RcppExport SEXP sumstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   colvec a = Rcpp::as<colvec>(ia);
   IntegerVector intstrata(istrata); 
@@ -436,14 +435,49 @@ RcppExport SEXP riskstrataR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   mat res(n,nstrata); res.zeros(); 
   for (unsigned i=0; i<n; i++) {
     int ss=intstrata(n-i-1); 
-    if ((ss<nstrata) & (ss>=0))  {
        tmpsum(ss) += a(n-i-1); 
        res(n-i-1,ss) = a(n-i-1);
-    }
   }  
 
   List rres; 
   rres["risk"]=res; 
+  return(rres);
+} /*}}}*/
+
+//
+//RcppExport SEXP riskidstrataR(SEXP ia,SEXP iid, SEXP inid, SEXP istrata, SEXP instrata) {/*{{{*/
+//  colvec a = Rcpp::as<colvec>(ia);
+//  IntegerVector intstrata(istrata); 
+//  int nstrata = Rcpp::as<int>(instrata);
+//  unsigned n = a.n_rows;
+//  int nid = Rcpp::as<int>(inid);
+//  IntegerVector id(iid); 
+//  int ss,lid; 
+//
+//  mat tmpsuma(nstrata,nid); tmpsuma.zeros(); 
+////  colvec res = a; 
+//  mat res(n,nid); res.zeros(); 
+//  for (unsigned i=0; i<n; i++) {
+//       ss=intstrata(n-i-1); lid=id(n-i-1); 
+//       tmpsuma(ss,lid) += a(n-i-1); 
+//       res(n-i-1,lid) = a(n-i-1); 
+//  }
+//
+//  List rres; 
+//  rres["risk"]=res; 
+//  return(rres);
+//} /*}}}*/
+//
+
+RcppExport SEXP Matdoubleindex(SEXP im,SEXP irow,SEXP icols,SEXP ilength) {/*{{{*/
+  mat m = Rcpp::as<mat>(im);
+  IntegerVector rows(irow); 
+  IntegerVector cols(icols); 
+  unsigned l = Rcpp::as<int>(ilength);
+  vec res(l); 
+  for (unsigned i=0; i<l; i++) res(i)=m(rows(i),cols(i)); 
+  List rres; 
+  rres["mat"]=res; 
   return(rres);
 } /*}}}*/
 
@@ -644,6 +678,7 @@ RcppExport SEXP cumsumidstratasumR(SEXP ia,SEXP iid,SEXP inid,SEXP istrata, SEXP
   colvec tmpsqr(nstrata);  tmpsqr.zeros(); 
 //  colvec ressqu = a; colvec ressumu = a; 
   colvec ressum = a; 
+  colvec ressumid = a; 
   colvec lagressum = a; 
   colvec ressqu = a; 
   colvec cumsum(nstrata); cumsum.zeros(); 
@@ -658,6 +693,7 @@ RcppExport SEXP cumsumidstratasumR(SEXP ia,SEXP iid,SEXP inid,SEXP istrata, SEXP
 	lagressum(i)=cumsum(ss); 
 	cumsum(ss) += a(i); 
         ressum(i) = cumsum(ss);
+        ressumid(i) = tmpsum(ss,lid);
         tmpsqr(ss)=ressqu(i); 
     }
   }  
@@ -665,7 +701,45 @@ RcppExport SEXP cumsumidstratasumR(SEXP ia,SEXP iid,SEXP inid,SEXP istrata, SEXP
   List rres; 
   rres["sumsquare"]=ressqu; 
   rres["sum"]=ressum; 
+  rres["sumidstrata"]=ressumid; 
   rres["lagsum"]=lagressum; 
+  return(rres);
+} /*}}}*/
+
+colvec  whichi(IntegerVector a,int n, int j) {/*{{{*/
+  colvec res(n); 
+  for (int i=0; i<n; i++) {
+	  res(i)=(a(i)==j); 
+  }  
+  return(res);
+} /*}}}*/
+
+
+RcppExport SEXP meanriskR(SEXP ia, SEXP iid,SEXP inid,SEXP istrata, SEXP instrata) {/*{{{*/
+  colvec a = Rcpp::as<colvec>(ia);
+//  IntegerVector a = Rcpp::as<colvec>(ia);
+//  IntegerVector a(ia); 
+//  int n = a1.n_rows;
+  int n = a.n_rows;
+  IntegerVector id(iid); 
+  int nid = Rcpp::as<int>(inid);
+  IntegerVector strata(istrata); 
+  int nstrata = Rcpp::as<int>(instrata);
+
+  colvec res=a;  
+  colvec mean(n); mean.zeros(); 
+  colvec tot(n);  tot.zeros();  
+
+  for (int i=0; i<nid; i++) {
+   res=revcumsumstrata(a%whichi(id,n,i),strata,nstrata);
+   if (i>0) mean=mean+i*res; 
+   tot=tot+res; 
+  }  
+  mean=mean/tot; 
+
+  List rres; 
+  rres["meanrisk"]=mean; 
+  rres["risk"]=tot; 
   return(rres);
 } /*}}}*/
 
@@ -684,6 +758,7 @@ RcppExport SEXP revcumsumidstratasumR(SEXP ia,SEXP iid, SEXP inid, SEXP istrata,
   colvec tmpsqr(nstrata);  tmpsqr.zeros(); 
 //  colvec ressqu = a; colvec ressumu = a; 
   colvec ressum = a; 
+  colvec ressumid = a; 
   colvec lagressum(n); 
   colvec ressqu = a; 
   colvec lagressqu(n); // lagressqu.zeros
@@ -693,7 +768,6 @@ RcppExport SEXP revcumsumidstratasumR(SEXP ia,SEXP iid, SEXP inid, SEXP istrata,
   for (unsigned i=0; i<n; i++) {
     ss=intstrata(n-i-1); lid=id(n-i-1); 
     // valid strata update 
-    if ((ss<nstrata) & (ss>=0)) {
        lagressqu(n-i-1)=tmpsqr(ss);  // previous from  
        lagressum(n-i-1)=cumsum(ss);  // previous sum from  
        ressqu(n-i-1)=tmpsqr(ss)+pow(a(n-i-1),2)+2*a(n-i-1)*tmpsum(ss,lid);
@@ -704,14 +778,15 @@ RcppExport SEXP revcumsumidstratasumR(SEXP ia,SEXP iid, SEXP inid, SEXP istrata,
 //    ressqu(n-i-1) = sum(tmpsum%tmpsum);
 //    tmpsum.print("pp"); 
        ressum(n-i-1)=cumsum(ss);
+       ressumid(n-i-1)=tmpsum(ss,lid); 
        tmpsqr(ss)=ressqu(n-i-1); 
-    }
   }  
 
   List rres; 
   rres["sumsquare"]=ressqu; 
   rres["lagsumsquare"]=lagressqu; 
   rres["sum"]=ressum; 
+  rres["sumidstrata"]=ressumid; 
   rres["lagsum"]=lagressum; 
   return(rres);
 } /*}}}*/

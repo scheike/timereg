@@ -5,11 +5,12 @@
 ##' 
 ##' @title Life table
 ##' @param x time formula (Surv) or matrix/data.frame with columns time,status or entry,exit,status
-##' @param strata Strata
+##' @param strata strata
 ##' @param data data.frame
-##' @param breaks Time intervals
-##' @param confint If TRUE 95\% confidence limits are calculated
-##' @param ... Additional arguments to lower level functions
+##' @param breaks time intervals
+##' @param weights weights variable
+##' @param confint if TRUE 95\% confidence limits are calculated
+##' @param ... additional arguments to lower level functions
 ##' @author Klaus K. Holst
 ##' @aliases lifetable lifetable.matrix lifetable.formula
 ##' @usage
@@ -40,7 +41,7 @@ lifetable.matrix <- function(x,strata=list(),breaks=c(),confint=FALSE,...) {
 }
 
 ##' @export
-lifetable.formula <- function(x,data=parent.frame(),breaks=c(),confint=FALSE,...) {
+lifetable.formula <- function(x,data=parent.frame(),breaks=c(),weights=NULL,confint=FALSE,...) {
     cl <- match.call()
     mf <- model.frame(x,data)
     Y <- model.extract(mf, "response")
@@ -106,7 +107,7 @@ lifetable.formula <- function(x,data=parent.frame(),breaks=c(),confint=FALSE,...
 ## }
 
 
-LifeTable <- function(time,status,entry=NULL,strata=list(),breaks=c(),confint=FALSE,interval=TRUE,mesg=FALSE) {    
+LifeTable <- function(time,status,entry=NULL,strata=list(),breaks=c(),weights=NULL,confint=FALSE,interval=TRUE,mesg=FALSE) {    
     if (is.null(entry)) entry <- rep(0,NROW(time))
     if (mesg) message(dim(time))
     if ((is.matrix(time) || is.data.frame(time)) && ncol(time)>1) {

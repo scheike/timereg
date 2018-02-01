@@ -142,7 +142,6 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 		     entry,exit,status,X, id, ### as.integer(seq_along(entry)),
 		     trunc,strata,weights,offset,Zcall,PACKAGE="mets"))
    dd$nstrata <- nstrata
-
 	obj <- function(pp,U=FALSE,all=FALSE) {# {{{
 		if (is.null(propodds) & is.null(AddGam)) 
 	  val <- with(dd,
@@ -250,7 +249,6 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 ###} # }}}
 
 
-
 ###{{{ simcox
 
 ##' @export
@@ -287,17 +285,17 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' data(TRACE)
 ##' dcut(TRACE) <- ~.
 ##' out1 <- phreg(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
-##' tracesim <- sim.cox(out1,1000)
-##' sout1 <- phreg(Surv(time,status==1)~vf+chf+strata(wmicat.4),data=tracesim)
+##' ## tracesim <- timereg::sim.cox(out1,1000)
+##' ## sout1 <- phreg(Surv(time,status==1)~vf+chf+strata(wmicat.4),data=tracesim)
 ##' ## robust standard errors default 
-##' summary(sout1)
+##' summary(out1)
 ##' 
 ##' par(mfrow=c(1,3))
 ##' basehazplot.phreg(out1)
-##' basehazplot.phreg(sout1,se=TRUE)
+##' ## basehazplot.phreg(sout1,se=TRUE)
 ##' 
 ##' ## computing robust variance for baseline
-##' rob1 <- robust.phreg(sout1)
+##' rob1 <- robust.phreg(out1)
 ##' basehazplot.phreg(rob1,se=TRUE,robust=TRUE)
 ##' 
 ##' ## making iid decomposition of regression parameters
@@ -381,24 +379,24 @@ coef.phreg  <- function(object,...) {
 iid.phreg  <- function(x,type="robust",all=FALSE,...) {# {{{
   invhess <- -solve(x$hessian)
   if (type=="robust") {	
-  xx <- x$cox.prep
-  ii <- invhess 
-  S0i <- rep(0,length(xx$strata))
-  S0i[xx$jumps+1] <- 1/x$S0
-  Z <- xx$X
-  U <- E <- matrix(0,nrow(xx$X),x$p)
-  E[xx$jumps+1,] <- x$E
-  U[xx$jumps+1,] <- x$U
-  cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
-  EdLam0 <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
-  rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
-  ### Martingale  as a function of time and for all subjects to handle strata 
-  MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-EdLam0)*rr*c(xx$weights)
-  orig.order <- (1:nrow(xx$X))[xx$ord+1]
-  ooo <- order(orig.order)
-  ### back to order of data-set
-  MGt <- MGt[ooo,,drop=FALSE]
-  id <- xx$id[ooo]
+	  xx <- x$cox.prep
+	  ii <- invhess 
+	  S0i <- rep(0,length(xx$strata))
+	  S0i[xx$jumps+1] <- 1/x$S0
+	  Z <- xx$X
+	  U <- E <- matrix(0,nrow(xx$X),x$p)
+	  E[xx$jumps+1,] <- x$E
+	  U[xx$jumps+1,] <- x$U
+	  cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
+	  EdLam0 <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
+	  rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
+	  ### Martingale  as a function of time and for all subjects to handle strata 
+	  MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-EdLam0)*rr*c(xx$weights)
+	  orig.order <- (1:nrow(xx$X))[xx$ord+1]
+	  ooo <- order(orig.order)
+	  ### back to order of data-set
+	  MGt <- MGt[ooo,,drop=FALSE]
+	  id <- xx$id[ooo]
   } else  { 
      MGt <- x$U; MG.base <- 1/x$S0; 
   }
@@ -513,7 +511,7 @@ robust.phreg  <- function(x,fixbeta=NULL,...) {
 
 ##' @export
 summary.phreg <- function(object,type=c("robust","martingale"),...) {
-  cc <- ncluster <- NULL
+  cc <- ncluster <- V <- NULL
   if (length(object$p)>0 & object$p>0 & !is.null(object$opt)) {
     I <- -solve(object$hessian)
     V <- vcov(object,type=type[1])
@@ -522,7 +520,7 @@ summary.phreg <- function(object,type=c("robust","martingale"),...) {
     colnames(cc) <- c("Estimate","S.E.","dU^-1/2","P-value")
     if (!is.null(ncluster <- attributes(V)$ncluster))
     rownames(cc) <- names(coef(object))
-  } else V <- NULL
+  } 
   Strata <- levels(object$strata)
   if (!is.null(Strata)) {
     n <- unlist(lapply(object$time,length))
@@ -601,6 +599,17 @@ cumsumstratasum <- function(x,strata,nstrata,type="all")
 if (any(strata<0) | any(strata>nstrata-1)) stop("strata index not ok\n"); 
 if (type=="sum")    res <- .Call("cumsumstratasumR",x,strata,nstrata)$sum
 if (type=="all")    res <- .Call("cumsumstratasumR",x,strata,nstrata)
+return(res)
+}# }}}
+
+##' @export
+matdoubleindex <- function(x,rows,cols)
+{# {{{
+ncols <- ncol(x)
+nrows <- nrow(x)
+if (any(rows>nrows) | any(cols>ncols)) stop("indeces out of matrix \n"); 
+if (length(cols)!=length(rows)) stop("rows and cols different lengths\n"); 
+res <- .Call("Matdoubleindex",x,rows-1,cols-1,length(cols))$mat
 return(res)
 }# }}}
 
@@ -926,6 +935,39 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
     graphics::legend("topleft",legend=stratnames,col=cols[,1],lty=ltys[,1])
 
 }# }}}
+
+##' @export
+bplot <- function(x,...) basehazplot.phreg(x,...)
+
+##' @export
+basecumhaz <- function(x,type="matrix",robust=FALSE,...) {# {{{
+   ## all strata
+   strat <- x$strata[x$jumps]
+   stratas <- 0:(x$nstrata-1) 
+
+###   se.cum <- cum <- x$cumhaz
+   se.cum <- cum <- c()
+   strata <- rep(0,nrow(x$cumhaz))
+   if (type=="matrix") { se.cum <- cum <- x$cumhazard }
+   if (robust==TRUE) secum <- x$robse.cumhaz else secum  <- x$se.cumhaz
+   if (is.null(secum)) nose <- TRUE else nose <- FALSE
+
+   start <- 1
+   for (i in stratas) {
+	   cumhazard <- x$cumhaz[strat==i,]
+	   nr <- nrow(cumhazard)
+	   slut <- start-1+nr
+###	   cum[start:slut,] <- cumhazard
+	   cum <- rbind(cum,cumhazard)
+###	   if (!nose) se.cum[start:slut,] <- secum[strat==i,]
+	   if (!nose) se.cum <- rbind(se.cum,secum[strat==i,])
+	   strata[start:slut] <- i
+	   start <- slut+1
+   }
+
+   list(cumhaz=cum,se.cumhaz=se.cum,strata=strata)
+}# }}}
+
 
 ##' @export
 lines.phreg <- function(x,...,add=TRUE) plot(x,...,add=add)
