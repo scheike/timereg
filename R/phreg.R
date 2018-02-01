@@ -142,7 +142,6 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 		     entry,exit,status,X, id, ### as.integer(seq_along(entry)),
 		     trunc,strata,weights,offset,Zcall,PACKAGE="mets"))
    dd$nstrata <- nstrata
-
 	obj <- function(pp,U=FALSE,all=FALSE) {# {{{
 		if (is.null(propodds) & is.null(AddGam)) 
 	  val <- with(dd,
@@ -512,7 +511,7 @@ robust.phreg  <- function(x,fixbeta=NULL,...) {
 
 ##' @export
 summary.phreg <- function(object,type=c("robust","martingale"),...) {
-  cc <- ncluster <- NULL
+  cc <- ncluster <- V <- NULL
   if (length(object$p)>0 & object$p>0 & !is.null(object$opt)) {
     I <- -solve(object$hessian)
     V <- vcov(object,type=type[1])
@@ -521,7 +520,7 @@ summary.phreg <- function(object,type=c("robust","martingale"),...) {
     colnames(cc) <- c("Estimate","S.E.","dU^-1/2","P-value")
     if (!is.null(ncluster <- attributes(V)$ncluster))
     rownames(cc) <- names(coef(object))
-  } else V <- NULL
+  } 
   Strata <- levels(object$strata)
   if (!is.null(Strata)) {
     n <- unlist(lapply(object$time,length))
