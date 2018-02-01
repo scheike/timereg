@@ -70,7 +70,7 @@ base4 <- base4cumhaz
 rr <- simRecurrentII(1000,base1,dr,death.cumhaz=base4)
 dtable(rr,~death+status)
 par(mfrow=c(2,2))
-showfitsim(causes=2)
+showfitsim(causes=2,rr,dr,base1,base4)
 
 }
 \author{

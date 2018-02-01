@@ -2,6 +2,10 @@
 % Please edit documentation in R/recurrent.marginal.R
 \name{covarianceRecurrent}
 \alias{covarianceRecurrent}
+\alias{plot.covariace.recurrent}
+\alias{covarianceRecurrentS}
+\alias{Bootcovariancerecurrence}
+\alias{BootcovariancerecurrenceS}
 \title{Estimation of covariance for bivariate recurrent events with terminal event}
 \usage{
 covarianceRecurrent(data, type1, type2, status = "status", death = "death",

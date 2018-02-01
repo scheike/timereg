@@ -13,10 +13,12 @@ r_binary_packages:
  - numDeriv
  - lava
  - testthat
+ - frailtypack
+ - covr
 
-r_github_packages:
- - jimhester/covr
- - mangothecat/visualTest
+#r_github_packages:
+# - jimhester/covr
+# - mangothecat/visualTest
 
 after_success:
   - Rscript -e 'library("covr");codecov(type="all")'

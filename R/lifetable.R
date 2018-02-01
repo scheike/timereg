@@ -42,8 +42,15 @@ lifetable.matrix <- function(x,strata=list(),breaks=c(),confint=FALSE,...) {
 
 ##' @export
 lifetable.formula <- function(x,data=parent.frame(),breaks=c(),weights=NULL,confint=FALSE,...) {
-    cl <- match.call()
-    mf <- model.frame(x,data)
+    mf <- match.call(expand.dots = FALSE)
+    m <- match(c("x", "data", "weights"), names(mf), 0L)
+    mf <- mf[c(1L, m)]
+    mf$drop.unused.levels <- TRUE
+    mf[[1L]] <- quote(stats::model.frame)
+    names(mf)[which(names(mf)=="x")] <- "formula"    
+    mf <- eval(mf, parent.frame())
+    weights <- as.vector(model.weights(mf))    
+    ##mf <- model.frame(x,data)
     Y <- model.extract(mf, "response")
     Terms <- terms(x, data = data)
     if (!is.Surv(Y)) stop("Expected a 'Surv'-object")
@@ -63,7 +70,8 @@ lifetable.formula <- function(x,data=parent.frame(),breaks=c(),weights=NULL,conf
     if (ncol(X)>0) {
         strata <- as.list(model.frame(Terms,data)[,-1,drop=FALSE])
     }
-    LifeTable(exit,status,entry,strata,breaks,confint,...)       
+    LifeTable(exit,status,entry,strata,
+              breaks=breaks,weights=weights,confint=confint,...)       
 }
 
 ## lifetable.data.table <- function(x,entry,exit,status,strata,breaks,...) {
@@ -155,18 +163,22 @@ LifeTable <- function(time,status,entry=NULL,strata=list(),breaks=c(),weights=NU
                   ncol=length(breaks)-1)
     dur <- ex-en
     dur[dur<=0] <- NA
-    enter <- colSums(!is.na(dur))
-    atrisk <- colSums(dur,na.rm=TRUE)
-    ##eventcens <- dur<endur
-    ##endur <- rbind(c(breaks,Inf))%x%cbind(rep(1,nrow(en)))-en
-    ##endur <- rbind(breaks[-1])%x%cbind(rep(1,nrow(en)))-en
-    ##eventcens <- rbind(apply(dur<endur,2,function(x) x*(status+1)))
     eventcens <- dur; eventcens[!is.na(dur)] <- 0
     lastobs <- apply(eventcens,1,function(x) tail(which(!is.na(x)),1))
     eventcens[cbind(seq(nrow(eventcens)),lastobs)] <- status+1
-    
-    lost <- colSums(eventcens==1,na.rm=TRUE)
-    events <- colSums(eventcens==2,na.rm=TRUE)
+    if (!is.null(weights)) {
+        weights <- weights %x% rbind(rep(1,ncol(dur)))
+        weights[is.na(dur)] <- NA
+        enter <- colSums(weights,na.rm=TRUE)
+        atrisk <- colSums(dur*weights,na.rm=TRUE)
+        lost <- colSums(weights[which(eventcens==1,arr.ind=TRUE),,drop=FALSE],na.rm=TRUE)
+        events <- colSums(weights[which(eventcens==2,arr.ind=TRUE),,drop=FALSE],na.rm=TRUE)
+    } else {
+        enter <- colSums(!is.na(dur))
+        atrisk <- colSums(dur,na.rm=TRUE)
+        lost <- colSums(eventcens==1,na.rm=TRUE)
+        events <- colSums(eventcens==2,na.rm=TRUE)
+    }
     rate <- events/atrisk; rate[is.nan(rate)] <- 0
     res <- subset(data.frame(enter=enter,
                              atrisk=atrisk,
