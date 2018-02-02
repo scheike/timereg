@@ -7,6 +7,7 @@
   - graphical gof of phreg 
   - recurrent events function for marginal mean with standard errors
   - simulating recurrent events with possibly two recurrent events  and death 
+  - covariance calculation for recurrent events data and related bootstrap 
 
 * Version 1.2.2 <2017-03-18 Sat>
   - Vignettes updated
