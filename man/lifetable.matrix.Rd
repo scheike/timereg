@@ -19,13 +19,13 @@
 
 \item{breaks}{time intervals}
 
+\item{weights}{weights variable}
+
 \item{confint}{if TRUE 95\% confidence limits are calculated}
 
 \item{...}{additional arguments to lower level functions}
 
 \item{data}{data.frame}
-
-\item{weights}{weights variable}
 }
 \description{
 Create simple life table
