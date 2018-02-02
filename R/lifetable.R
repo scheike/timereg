@@ -15,10 +15,10 @@
 ##' @aliases lifetable lifetable.matrix lifetable.formula
 ##' @usage
 ##'  \method{lifetable}{matrix}(x, strata = list(), breaks = c(),
-##'    confint = FALSE, ...)
+##'    weights=NULL, confint = FALSE, ...)
 ##'
 ##'  \method{lifetable}{formula}(x, data=parent.frame(), breaks = c(),
-##'    confint = FALSE, ...)
+##'    weights=NULL, confint = FALSE, ...)
 ##' @examples
 ##' library(timereg)
 ##' data(TRACE)
@@ -27,7 +27,7 @@
 ##' summary(glm(events ~ offset(log(atrisk))+factor(int.end)*vf + sex*vf,
 ##'             data=d,poisson))
 ##' @export
-lifetable.matrix <- function(x,strata=list(),breaks=c(),confint=FALSE,...) {
+lifetable.matrix <- function(x,strata=list(),breaks=c(),weights=NULL,confint=FALSE,...) {
     if (ncol(x)==3) {
         status <- x[,3]
         entry <- x[,1]
@@ -37,7 +37,7 @@ lifetable.matrix <- function(x,strata=list(),breaks=c(),confint=FALSE,...) {
         time <- x[,1]
         entry <- rep(0,length(time))
     }
-    LifeTable(time,status,entry,strata,breaks,confint,...)
+    LifeTable(time,status,entry,strata=strata,breaks=breaks,weights=weights,confint,...)
 }
 
 ##' @export
@@ -70,8 +70,8 @@ lifetable.formula <- function(x,data=parent.frame(),breaks=c(),weights=NULL,conf
     if (ncol(X)>0) {
         strata <- as.list(model.frame(Terms,data)[,-1,drop=FALSE])
     }
-    LifeTable(exit,status,entry,strata,
-              breaks=breaks,weights=weights,confint=confint,...)       
+    LifeTable(exit,status,entry,
+              strata=strata,breaks=breaks,weights=weights,confint=confint,...)       
 }
 
 ## lifetable.data.table <- function(x,entry,exit,status,strata,breaks,...) {
@@ -115,8 +115,23 @@ lifetable.formula <- function(x,data=parent.frame(),breaks=c(),weights=NULL,conf
 ## }
 
 
-LifeTable <- function(time,status,entry=NULL,strata=list(),breaks=c(),weights=NULL,confint=FALSE,interval=TRUE,mesg=FALSE) {    
+
+LifeTable <- function(time,status,entry=NULL,weights=NULL,strata=list(),breaks=c(),confint=FALSE,interval=TRUE,mesg=FALSE) {
     if (is.null(entry)) entry <- rep(0,NROW(time))
+    if (mesg) message(dim(time))
+    if ((is.matrix(time) || is.data.frame(time)) && ncol(time)>1) {
+        if (ncol(time)>=3L) {
+            if (ncol(time)==4L) weights <- time[,4]
+            status <- time[,3]
+            entry <- time[,1]
+            time <- time[,2]            
+        } else {
+            status <- time[,2]
+            time <- time[,1]
+            entry <- rep(0,length(time))
+        }
+    }
+
     if (mesg) message(dim(time))
     if ((is.matrix(time) || is.data.frame(time)) && ncol(time)>1) {
         if (ncol(time)==3) {
@@ -130,7 +145,7 @@ LifeTable <- function(time,status,entry=NULL,strata=list(),breaks=c(),weights=NU
         }
     }
     if (length(strata)>0) {
-        a <- by(cbind(entry,time,status), strata,
+        a <- by(cbind(entry,time,status,weights), strata,
                 FUN=LifeTable, breaks=breaks, confint=confint)
         cl <- lapply(strata,class)
         nulls <- which(unlist(lapply(a,is.null)))
@@ -167,12 +182,13 @@ LifeTable <- function(time,status,entry=NULL,strata=list(),breaks=c(),weights=NU
     lastobs <- apply(eventcens,1,function(x) tail(which(!is.na(x)),1))
     eventcens[cbind(seq(nrow(eventcens)),lastobs)] <- status+1
     if (!is.null(weights)) {
-        weights <- weights %x% rbind(rep(1,ncol(dur)))
-        weights[is.na(dur)] <- NA
-        enter <- colSums(weights,na.rm=TRUE)
-        atrisk <- colSums(dur*weights,na.rm=TRUE)
-        lost <- colSums(weights[which(eventcens==1,arr.ind=TRUE),,drop=FALSE],na.rm=TRUE)
-        events <- colSums(weights[which(eventcens==2,arr.ind=TRUE),,drop=FALSE],na.rm=TRUE)
+        W <- weights %x% rbind(rep(1,ncol(dur)))
+        W[is.na(dur)] <- NA
+        enter <- colSums(W,na.rm=TRUE)
+        atrisk <- colSums(dur*W,na.rm=TRUE)
+        Sum <- function(x) { res <- sum(x,na.rm=TRUE); ifelse(length(res)>0L, res, 0L) } 
+        lost <- apply(eventcens, 2, function(x) res <- Sum(weights[which(x==1)]))
+        events <- apply(eventcens, 2, function(x) res <- Sum(weights[which(x==2)]))
     } else {
         enter <- colSums(!is.na(dur))
         atrisk <- colSums(dur,na.rm=TRUE)

@@ -7,10 +7,10 @@
 \title{Life table}
 \usage{
 \method{lifetable}{matrix}(x, strata = list(), breaks = c(),
-   confint = FALSE, ...)
+   weights=NULL, confint = FALSE, ...)
 
  \method{lifetable}{formula}(x, data=parent.frame(), breaks = c(),
-   confint = FALSE, ...)
+   weights=NULL, confint = FALSE, ...)
 }
 \arguments{
 \item{x}{time formula (Surv) or matrix/data.frame with columns time,status or entry,exit,status}
@@ -19,13 +19,13 @@
 
 \item{breaks}{time intervals}
 
+\item{weights}{weights variable}
+
 \item{confint}{if TRUE 95\% confidence limits are calculated}
 
 \item{...}{additional arguments to lower level functions}
 
 \item{data}{data.frame}
-
-\item{weights}{weights variable}
 }
 \description{
 Create simple life table
