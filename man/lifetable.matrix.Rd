@@ -7,10 +7,10 @@
 \title{Life table}
 \usage{
 \method{lifetable}{matrix}(x, strata = list(), breaks = c(),
-   confint = FALSE, ...)
+   weights=NULL, confint = FALSE, ...)
 
  \method{lifetable}{formula}(x, data=parent.frame(), breaks = c(),
-   confint = FALSE, ...)
+   weights=NULL, confint = FALSE, ...)
 }
 \arguments{
 \item{x}{time formula (Surv) or matrix/data.frame with columns time,status or entry,exit,status}
