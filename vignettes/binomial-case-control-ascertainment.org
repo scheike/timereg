@@ -125,11 +125,11 @@ easier to get for the pairs. Again using the pairwise structure will   lead
 to loss of efficiency compared to using the full likelihood of the ascertained
 families. 
 
-In addition we note that when looking at one pair that has been ascertained the information about then
+In addition we note that when looking at one pair that has been ascertained then
 \begin{align*}
 P(Y_i=o_1,Y_j=o_2 | Y_i+Y_j \geq 1) & = \sum_{k=1}^2 P(Y_i=o_1,Y_j=o_2 | Y_i+Y_j = k )  P(  Y_i + Y_j =k | Y_i + Y_j \geq 1 ).
 \end{align*}
-where \( o_1+ o_2  \geq 1 \).  Now the dependence is present in the how the dependence parameter leads to the probabilities 
+where \( o_1+ o_2  \geq 1 \).  Note that the dependence will affect the probabilities
 \( P(Y_i+Y_j=2)/( P(Y_i+Y_j=2)+ P(Y_i+Y_j=1)) \)  and \( P(Y_i+Y_j=1)/( P(Y_i+Y_j=2)+ P(Y_i+Y_j=1)) \).  
 
 When considering the pairs with different responses we learn "only" (up to model specification) about covariate effects. 
