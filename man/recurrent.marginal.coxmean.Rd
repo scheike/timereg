@@ -30,7 +30,7 @@ version should give the same when there are now ties.
 \examples{
 \donttest{
 ### do not test because iid slow  and uses data from mets
-require(mets)
+library(mets)
 data(simrecurrent)
 dim(simd) 
 simd <- subset(simd,id<500)

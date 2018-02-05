@@ -173,6 +173,7 @@ pchazard.sim <- function(cumhazard,rr,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE,..
 #' plot(cox1); lines(sc1$cum,col=2)
 #' plot(cox2$cum,type="l");
 #' lines(sc2$cum,col=2)
+#' 
 #' @export 
 cause.pchazard.sim<-function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE,...)
 {#'# {{{
@@ -257,6 +258,7 @@ cause.pchazard.sim<-function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.cum
 #' basehazplot.phreg(cox)
 #' basehazplot.phreg(cc,add=TRUE)
 #' }
+#' 
 #' @export
 #' @aliases sim.cox read.fit 
 sim.cox <- function(cox,n,data=NULL,cens=NULL,rrc=NULL,entry=NULL,...)

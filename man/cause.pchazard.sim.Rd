@@ -58,6 +58,7 @@ par(mfrow=c(1,2))
 plot(cox1); lines(sc1$cum,col=2)
 plot(cox2$cum,type="l");
 lines(sc2$cum,col=2)
+
 }
 \author{
 Thomas Scheike
