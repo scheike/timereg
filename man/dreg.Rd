@@ -61,7 +61,7 @@ mm <- dreg(iris,"*.length"~"*.width"|species+status)
 mm <- dreg(iris,"*.length"~"*.width"|species)
 mm <- dreg(iris,"*.length"~"*.width"|species+status,z.arg="group")
 
-
+\donttest{ ## Reduce Ex.Timings
 y <- "S*"~"*.width"
 xs <- dreg(iris,y,fun.=phreg)
 xs <- dreg(iris,y,fun.=survdiff)
@@ -138,7 +138,7 @@ dcut(iris) <- ~"*.width"
 y <- S1~"*.4"|I(sepal.length>4)
 par(mfrow=c(1,2))
 xs <- dreg(iris,y,fun.=ff)
-
+}
 }
 \author{
 Klaus K. Holst, Thomas Scheike

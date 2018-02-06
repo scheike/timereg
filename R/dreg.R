@@ -35,7 +35,7 @@
 ##' mm <- dreg(iris,"*.length"~"*.width"|species)
 ##' mm <- dreg(iris,"*.length"~"*.width"|species+status,z.arg="group")
 ##' 
-##' 
+##' \donttest{ ## Reduce Ex.Timings
 ##' y <- "S*"~"*.width"
 ##' xs <- dreg(iris,y,fun.=phreg)
 ##' xs <- dreg(iris,y,fun.=survdiff)
@@ -112,7 +112,7 @@
 ##' y <- S1~"*.4"|I(sepal.length>4)
 ##' par(mfrow=c(1,2))
 ##' xs <- dreg(iris,y,fun.=ff)
-##' 
+##' }
 ##' @export
 dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 	 x.base.names=NULL,z.arg=c("clever","base","group","condition"),
