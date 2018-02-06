@@ -52,6 +52,7 @@ dtable <- function(data,y=NULL,x=NULL,...,level=-1,response=NULL,flat=TRUE,total
                        for (i in seq_len(ncol(z))) {
                            nn <- colnames(z)[i]
                            val <- table(z[,i],...)
+			   if (prop[1]>0) val <- prop.table(val)
                            names(attr(val,"dimnames")) <- nn
                            val <- list(val)
                            names(val) <- nn
