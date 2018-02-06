@@ -64,11 +64,11 @@ observed as \( (j) \).
 
 
 We note that if the marginal is known, or possibly estimated from the full 
-cohort. Then we can estimate dependence paramters using just the terms
+cohort. Then we can estimate dependence parameters using just the terms
 \( P(i,j) \) for the pairs. We can thus ignore the special sampling for
 models with marginal specification.  If the marginal can not be obtained 
 from other sources we need to maximize the full-pairwise-likelihood in all
-paramters, that is both dependence and marginal parameters. 
+parameters, that is both dependence and marginal parameters. 
 
 Similary, one can select a whole family based on having selected a proband, that is 
 selected a representative member of  either cases or controls.  In this case we 
@@ -91,7 +91,7 @@ written as
 the probailty of seeing \( (i,j) \) for the pair, given that it is sampled. 
 
 If the marginal can estimated from a full sample we can then estimate the
-dependence paramter using the ascertainment likelihood.
+dependence parameter using the ascertainment likelihood.
 
 Generally, when whole families are ascertained the computation of the
 true truncation probability can be hard to the fact that families are
@@ -125,7 +125,20 @@ easier to get for the pairs. Again using the pairwise structure will   lead
 to loss of efficiency compared to using the full likelihood of the ascertained
 families. 
 
+In addition we note that when looking at one pair that has been ascertained then
+\begin{align*}
+P(Y_i=o_1,Y_j=o_2 | Y_i+Y_j \geq 1) & = \sum_{k=1}^2 P(Y_i=o_1,Y_j=o_2 | Y_i+Y_j = k )  P(  Y_i + Y_j =k | Y_i + Y_j \geq 1 ).
+\end{align*}
+where \( o_1+ o_2  \geq 1 \).  Note that the dependence will affect the probabilities
+\( P(Y_i+Y_j=2)/( P(Y_i+Y_j=2)+ P(Y_i+Y_j=1)) \)  and \( P(Y_i+Y_j=1)/( P(Y_i+Y_j=2)+ P(Y_i+Y_j=1)) \).  
 
+When considering the pairs with different responses we learn "only" (up to model specification) about covariate effects. 
+For example when 
+\( \mbox{logit}(P(Y_i=1 | \alpha_k )) = \alpha_{k} + \beta X_i \)  for \( i=1,2 \) 
+with \( \alpha_k \) a pair (cluster) specific  effect and subject specific covariates
+$X_i$ for \( i=1,2 \), then \( P(Y_i=1,Y_j=0)/P(Y_i+Y_j=1) = \mbox{expit}((X_i - X_j) \beta) \), 
+and  with the standard definitions
+\( \mbox{logit}(p) = \log(p/(1-p)) \) and \( \mbox{expit}(x) = \exp(x)/(1+\exp(x))  \). 
 
 * The twin-stutter data
 
@@ -341,26 +354,10 @@ bina <- binomial.twostage(margbin,data=twina,var.link=1,
 summary(bina)
 #+END_SRC  
 
-#+RESULTS[f3318d5681b780d4438c0320fb02087b04f9fadf]:
-#+begin_example
-Dependence parameter for Odds-Ratio (Plackett) model 
-With log-link 
-$estimates
-                  theta        se
-factor(zyg)dz 0.4874213 0.2472523
-factor(zyg)mz 3.4753766 0.1985974
-
-$or
-              Estimate Std.Err   2.5% 97.5%  P-value
-factor(zyg)dz     1.63   0.403  0.839  2.42 5.24e-05
-factor(zyg)mz    32.31   6.417 19.734 44.89 4.77e-07
-
-$type
-[1] "plackett"
-
-attr(,"class")
-[1] "summary.mets.twostage"
-#+end_example
+#+RESULTS[<2018-02-05 11:48:56> a426c94a6fcc7a60b969a4c6d2dc827c33dab896]:
+: Error in terms.formula(object, data = data) : object 'twina' not found
+:  Error: could not find function "binomial.twostage"
+: Error in summary(bina) : object 'bina' not found
 
 
 ** Additive gamma modelling 
@@ -482,7 +479,7 @@ attr(,"class")
 
 
 In fact for this model we can also do a full-MLE fitting jointly the 
-dependence paramters and the marginal model. This is based on the
+dependence parameters and the marginal model. This is based on the
 twostage option (twostage=0 is MLE). Here the starting value is given at
 the marginal model for the ascertained model. This gives quite similar
 results to the previous analyses with a genetic variance around 1. 
@@ -578,20 +575,33 @@ out$random.des[,,1]
 out$theta.des[,,1]
 #+END_SRC  
 
-#+RESULTS[e1d7096ecb3cb7555111fba243ea5435a1dfbd02]:
+#+RESULTS[<2018-02-05 11:48:56> e69b5afab8cd0908953ec4ac15f5413ed8bb2c47]:
 #+begin_example
-     [,1] [,2]
-[1,]    6    5
-[2,]   22   21
-[3,]   24   23
-[4,]   44   43
-[5,]   48   47
-[6,]   52   51
-[1] "random.design" "theta.des"     "ant.rvs"
-     [,1] [,2] [,3]
-[1,]    1    1    0
-[2,]    1    0    1
-[1] 0.5 0.5 0.5
+Error: could not find function "dby"
+Error in subset(twinstut, n == 2) : object 'twinstut' not found
+Error: could not find function "dtransform"
+Error: could not find function "dby"
+Error: could not find function "dby2"
+Error in which(twinstut$binstut == 1) : object 'twinstut' not found
+Error in which(twinstut$binstut == 0) : object 'twinstut' not found
+Error in with(twinstut, nnrow[cases]) : object 'twinstut' not found
+Error in with(twinstut, nnrow[controls]) : object 'twinstut' not found
+Error: object 'rowsca' not found
+Error in with(twinstut, pairnr.nnrow[rpairs]) : 
+  object 'twinstut' not found
+Error in unique(c(cc.pairs)) : object 'cc.pairs' not found
+Error: object 'cc.pairs' not found
+Error in matrix(fast.approx(ids, pairsids), ncol = 2) : 
+  could not find function "fast.approx"
+Error in head(pair.new) : object 'pair.new' not found
+Error: could not find function "dsort"
+Error: could not find function "dtransform"
+Error: could not find function "dtransform"
+Error: object 'dataid' not found
+Error: could not find function "make.pairwise.design"
+Error: object 'out' not found
+Error: object 'out' not found
+Error: object 'out' not found
 #+end_example
 
 
@@ -612,31 +622,9 @@ cc  <- binomial.twostage(margbin,data=dataid,
 summary(cc)
 #+END_SRC  
 
-#+RESULTS[62fb48d46a4ab954ee6af6d69c67194bd49cc40f]:
-#+begin_example
-Dependence parameter for Clayton-Oakes model
-Variance of Gamma distributed random effects 
-$estimates
-                theta         se
-dependence1 0.8572081 0.09509316
-
-$type
-[1] "clayton.oakes"
-
-$h
-            Estimate Std.Err 2.5% 97.5% P-value
-dependence1        1       0    1     1       0
-
-$vare
-NULL
-
-$vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.857  0.0951 0.671  1.04 1.98e-19
-
-attr(,"class")
-[1] "summary.mets.twostage"
-#+end_example
+#+RESULTS[<2018-02-05 11:48:56> 2cce573eaa77bb858bffc082a56747ba1fa962fb]:
+:  Error: could not find function "binomial.twostage"
+: Error in summary(cc) : object 'cc' not found
 
 
 We now do the same analysis specifying the case-control sampling. This 
@@ -653,31 +641,9 @@ cc3 <- binomial.twostage(margbin,data=dataid,
 summary(cc3)
 #+END_SRC  
 
-#+RESULTS[8d60869115499564dea360fca115d41ea5608bb9]:
-#+begin_example
-Dependence parameter for Clayton-Oakes model
-Variance of Gamma distributed random effects 
-$estimates
-                theta         se
-dependence1 0.8572081 0.09509316
-
-$type
-[1] "clayton.oakes"
-
-$h
-            Estimate Std.Err 2.5% 97.5% P-value
-dependence1        1       0    1     1       0
-
-$vare
-NULL
-
-$vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.857  0.0951 0.671  1.04 1.98e-19
-
-attr(,"class")
-[1] "summary.mets.twostage"
-#+end_example
+#+RESULTS[<2018-02-05 11:48:56> d9aed82aa1d6bf7ad52c62a4d34cfbdd5f589c7a]:
+:  Error: could not find function "binomial.twostage"
+: Error in summary(cc3) : object 'cc3' not found
 
 This model can  also be fitted using a full likelhood of both dependence 
 parameters and marginal parameters. Here there is no need to have a 
