@@ -15,7 +15,6 @@
 \usepackage{xcolor}
 \usepackage{natbib}
 \usepackage{amsmath,amssymb,textcomp}
-\usepackage{units}
 \usepackage{bm}
 \usepackage{graphicx}
 \usepackage{wrapfig}
@@ -113,17 +112,17 @@
  pdftitle={Analysis of multivariate binomial data: case control or ascertainment sampling},
  pdfkeywords={},
  pdfsubject={},
- pdfcreator={Emacs 25.1.1 (Org mode 9.0.5)}, 
+ pdfcreator={Emacs 25.3.1 (Org mode 9.1.6)}, 
  pdflang={English}}
 \begin{document}
 
 \maketitle
-\rule{\linewidth}{0.5pt}
+\noindent\rule{\textwidth}{0.5pt}
 
 
 
 \section*{Overview}
-\label{sec:org7239130}
+\label{sec:org4c146a5}
 
 When looking at multivariate binomial data with the aim of learning about the 
 dependence that is present, possibly after correcting for some covariates many
@@ -157,7 +156,7 @@ on specifying which pairs one wants to use for the composite score.
 The models are described in futher details in the binomial-twin vignette. 
 
 \subsection*{Case-Control Sampling}
-\label{sec:org697563f}
+\label{sec:org8586749}
 
 Sometimes, pairs are recruited after a case-proband is selected. This 
 proband, can be either  a 
@@ -183,11 +182,11 @@ observed as \((j)\).
 
 
 We note that if the marginal is known, or possibly estimated from the full 
-cohort. Then we can estimate dependence paramters using just the terms
+cohort. Then we can estimate dependence parameters using just the terms
 \(P(i,j)\) for the pairs. We can thus ignore the special sampling for
 models with marginal specification.  If the marginal can not be obtained 
 from other sources we need to maximize the full-pairwise-likelihood in all
-paramters, that is both dependence and marginal parameters. 
+parameters, that is both dependence and marginal parameters. 
 
 Similary, one can select a whole family based on having selected a proband, that is 
 selected a representative member of  either cases or controls.  In this case we 
@@ -197,7 +196,7 @@ compared to looking at the full likelihood of the family given the proband.
 
 
 \subsection*{Ascertainment Sampling}
-\label{sec:orgaf2e29f}
+\label{sec:orgc29066c}
 
 Similarly, in the setting of pairs we can select all pairs where there is at 
 least one event of interest.  
@@ -211,7 +210,7 @@ written as
 the probailty of seeing \((i,j)\) for the pair, given that it is sampled. 
 
 If the marginal can estimated from a full sample we can then estimate the
-dependence paramter using the ascertainment likelihood.
+dependence parameter using the ascertainment likelihood.
 
 Generally, when whole families are ascertained the computation of the
 true truncation probability can be hard to the fact that families are
@@ -245,10 +244,23 @@ easier to get for the pairs. Again using the pairwise structure will   lead
 to loss of efficiency compared to using the full likelihood of the ascertained
 families. 
 
+In addition we note that when looking at one pair that has been ascertained then
+\begin{align*}
+P(Y_i=o_1,Y_j=o_2 | Y_i+Y_j \geq 1) & = \sum_{k=1}^2 P(Y_i=o_1,Y_j=o_2 | Y_i+Y_j = k )  P(  Y_i + Y_j =k | Y_i + Y_j \geq 1 ).
+\end{align*}
+where \(o_1+ o_2  \geq 1\).  Note that the dependence will affect the probabilities
+\(P(Y_i+Y_j=2)/( P(Y_i+Y_j=2)+ P(Y_i+Y_j=1))\)  and \(P(Y_i+Y_j=1)/( P(Y_i+Y_j=2)+ P(Y_i+Y_j=1))\).  
 
+When considering the pairs with different responses we learn "only" (up to model specification) about covariate effects. 
+For example when 
+\(\mbox{logit}(P(Y_i=1 | \alpha_k )) = \alpha_{k} + \beta X_i\)  for \(i=1,2\) 
+with \(\alpha_k\) a pair (cluster) specific  effect and subject specific covariates
+\(X_i\) for \(i=1,2\), then \(P(Y_i=1,Y_j=0)/P(Y_i+Y_j=1) = \mbox{expit}((X_i - X_j) \beta)\), 
+and  with the standard definitions
+\(\mbox{logit}(p) = \log(p/(1-p))\) and \(\mbox{expit}(x) = \exp(x)/(1+\exp(x))\). 
 
 \section*{The twin-stutter data}
-\label{sec:orge1ded61}
+\label{sec:org40051f9}
 
 We consider the twin-stutter where for pairs of twins that are 
 either dizygotic or monozygotic we have recorded whether the twins
@@ -288,7 +300,7 @@ of the methods.
 
 
 \section*{Ascertaiment Sampling}
-\label{sec:org463904e}
+\label{sec:orgffd8100}
 
 Selecting the ascertained pairs 
 
@@ -342,7 +354,7 @@ binstut1
 Now doing the analyses 
 
 \subsection*{Biprobit model}
-\label{sec:org06cd928}
+\label{sec:org7bdf657}
 
 Looking at the full data for comparison. We estimate an unstructured
 probit model with different correlations for MZ and DZ twins. 
@@ -354,6 +366,7 @@ summary(b1)
 \end{lstlisting}
 
 \begin{verbatim}
+
               Estimate    Std.Err          Z p-value
 (Intercept)  -1.794821   0.023289 -77.066826  0.0000
 sexmale       0.401430   0.030179  13.301756  0.0000
@@ -383,7 +396,7 @@ complete ascertainment, i.e., when we consider a random sample of
 affected twins (at least on of the twins must have the event).
 
 \subsection*{Odd-Ratio modelling}
-\label{sec:org2a48669}
+\label{sec:orga93bf70}
 
 First looking at the marginal model based on the full data we find the 
 overall level of stuttering and also that males have a much higher 
@@ -396,6 +409,7 @@ summary(margbin)
 \end{lstlisting}
 
 \begin{verbatim}
+
 Call:
 glm(formula = binstut ~ factor(sex), family = binomial(), data = twinstut)
 
@@ -467,28 +481,14 @@ summary(bina)
 \end{lstlisting}
 
 \begin{verbatim}
-Dependence parameter for Odds-Ratio (Plackett) model 
-With log-link 
-$estimates
-                  theta        se
-factor(zyg)dz 0.4874213 0.2472523
-factor(zyg)mz 3.4753766 0.1985974
-
-$or
-              Estimate Std.Err   2.5% 97.5%  P-value
-factor(zyg)dz     1.63   0.403  0.839  2.42 5.24e-05
-factor(zyg)mz    32.31   6.417 19.734 44.89 4.77e-07
-
-$type
-[1] "plackett"
-
-attr(,"class")
-[1] "summary.mets.twostage"
+Error in terms.formula(object, data = data) : object 'twina' not found
+ Error: could not find function "binomial.twostage"
+Error in summary(bina) : object 'bina' not found
 \end{verbatim}
 
 
 \subsection*{Additive gamma modelling}
-\label{sec:org003e4e1}
+\label{sec:org4110a6f}
 
 First, again for comparision fitting the full data for the AE model. We get 
 the size of the genetic variance in this model. 
@@ -543,6 +543,7 @@ summary(marga)
 \end{lstlisting}
 
 \begin{verbatim}
+
 Call:
 glm(formula = binstut ~ sex, family = binomial(), data = twina)
 
@@ -606,7 +607,7 @@ attr(,"class")
 
 
 In fact for this model we can also do a full-MLE fitting jointly the 
-dependence paramters and the marginal model. This is based on the
+dependence parameters and the marginal model. This is based on the
 twostage option (twostage=0 is MLE). Here the starting value is given at
 the marginal model for the ascertained model. This gives quite similar
 results to the previous analyses with a genetic variance around 1. 
@@ -658,7 +659,7 @@ attr(,"class")
 
 
 \section*{Case Control Sampling}
-\label{sec:org0110b26}
+\label{sec:orgfb573b0}
 
 First, taking out all cases and one control for each case, we establish the
 pairs of these probands. This is based on keeping track of the twin related 
@@ -673,6 +674,7 @@ be the probands.
 
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
+
 twinstut  <-   dby(twinstut,binstut~tvparnr,stuttot=sum,nn=seq_along,n=length)
 twinstut <-    subset(twinstut,n==2)
 twinstut  <-   dtransform(twinstut,nnrow=1:nrow(twinstut))
@@ -704,18 +706,31 @@ out$theta.des[,,1]
 \end{lstlisting}
 
 \begin{verbatim}
-     [,1] [,2]
-[1,]    6    5
-[2,]   22   21
-[3,]   24   23
-[4,]   44   43
-[5,]   48   47
-[6,]   52   51
-[1] "random.design" "theta.des"     "ant.rvs"
-     [,1] [,2] [,3]
-[1,]    1    1    0
-[2,]    1    0    1
-[1] 0.5 0.5 0.5
+Error: could not find function "dby"
+Error in subset(twinstut, n == 2) : object 'twinstut' not found
+Error: could not find function "dtransform"
+Error: could not find function "dby"
+Error: could not find function "dby2"
+Error in which(twinstut$binstut == 1) : object 'twinstut' not found
+Error in which(twinstut$binstut == 0) : object 'twinstut' not found
+Error in with(twinstut, nnrow[cases]) : object 'twinstut' not found
+Error in with(twinstut, nnrow[controls]) : object 'twinstut' not found
+Error: object 'rowsca' not found
+Error in with(twinstut, pairnr.nnrow[rpairs]) : 
+  object 'twinstut' not found
+Error in unique(c(cc.pairs)) : object 'cc.pairs' not found
+Error: object 'cc.pairs' not found
+Error in matrix(fast.approx(ids, pairsids), ncol = 2) : 
+  could not find function "fast.approx"
+Error in head(pair.new) : object 'pair.new' not found
+Error: could not find function "dsort"
+Error: could not find function "dtransform"
+Error: could not find function "dtransform"
+Error: object 'dataid' not found
+Error: could not find function "make.pairwise.design"
+Error: object 'out' not found
+Error: object 'out' not found
+Error: object 'out' not found
 \end{verbatim}
 
 
@@ -738,28 +753,8 @@ summary(cc)
 \end{lstlisting}
 
 \begin{verbatim}
-Dependence parameter for Clayton-Oakes model
-Variance of Gamma distributed random effects 
-$estimates
-                theta         se
-dependence1 0.8572081 0.09509316
-
-$type
-[1] "clayton.oakes"
-
-$h
-            Estimate Std.Err 2.5% 97.5% P-value
-dependence1        1       0    1     1       0
-
-$vare
-NULL
-
-$vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.857  0.0951 0.671  1.04 1.98e-19
-
-attr(,"class")
-[1] "summary.mets.twostage"
+ Error: could not find function "binomial.twostage"
+Error in summary(cc) : object 'cc' not found
 \end{verbatim}
 
 
@@ -779,28 +774,8 @@ summary(cc3)
 \end{lstlisting}
 
 \begin{verbatim}
-Dependence parameter for Clayton-Oakes model
-Variance of Gamma distributed random effects 
-$estimates
-                theta         se
-dependence1 0.8572081 0.09509316
-
-$type
-[1] "clayton.oakes"
-
-$h
-            Estimate Std.Err 2.5% 97.5% P-value
-dependence1        1       0    1     1       0
-
-$vare
-NULL
-
-$vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.857  0.0951 0.671  1.04 1.98e-19
-
-attr(,"class")
-[1] "summary.mets.twostage"
+ Error: could not find function "binomial.twostage"
+Error in summary(cc3) : object 'cc3' not found
 \end{verbatim}
 
 This model can  also be fitted using a full likelhood of both dependence 
@@ -862,7 +837,7 @@ standard errors. In this case, however, this will be same as the
 clusters since these also are identical across pairs.
 
 \section*{Combining Case Control and Ascertainment Sampling}
-\label{sec:org735b923}
+\label{sec:orgb02574f}
 
 When specifying such models based on the pairs, it is in fact possible to
 combine ascertained pairs with case-control sampling by specifing vectors
