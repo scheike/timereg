@@ -1,0 +1,49 @@
+author1 <- "Klaus K. Holst and Thomas H. Scheike and Jacob B. Hjelmborg"
+year1 <- 2016
+journal1 <- "Computational Statistics and Data Analysis"
+title1 <- "The Liability Threshold Model for Censored Twin Data"
+doi1 <- "10.1016/j.csda.2015.01.014"
+volume1 <- 93
+pages1 <- "324-335"
+textver1 <- paste(author1, " (", year1, "). ",
+                title1, ". ", journal1, " ",
+                volume1, ", pp. ",
+                pages1, ". doi: ", doi1, sep="")
+
+author2 <- "Thomas H. Scheike and Klaus K. Holst and Jacob B. Hjelmborg"
+year2 <- 2014
+journal2 <- "Lifetime Data Analysis"
+title2 <- "Estimating heritability for cause specific mortality based on twin studies"
+doi2 <- "10.1007/s10985-013-9244-x"
+volume2 <- 20
+number2 <- 2
+pages2 <- "210-233"
+textver2 <- paste(author2, " (", year2, "). ",
+                title2, ". ", journal2, " ",
+                volume2, " (", number2 ,"), pp. ",
+                pages2, ". doi: ", doi2, sep="")
+
+citHeader("To cite 'mets' in publications use:")
+
+citEntry(entry="Article",
+         title = title1,
+         author = author1,
+         year = year1,
+         volume = volume1,
+         pages = pages1,
+ 	 journal = journal1,
+	 doi = doi1,
+         textVersion = textver1)
+
+citEntry(entry="Article",
+         title = title2,
+         author = author2,
+         year = year2,
+         volume = volume2,
+         number = number2,
+         pages = pages2,
+ 	 journal = journal2,
+	 doi = doi2,
+         textVersion = textver2)
+
+
