@@ -150,7 +150,7 @@ We here consider MZ and same sex DZ twins.
 
 Looking at the data 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 library(mets)
 data(twinstut)
 twinstut$binstut <- 1*(twinstut$stutter=="yes")
@@ -159,13 +159,26 @@ head(twinstut)
 #+END_SRC
 
 #+RESULTS[4c41ab99466bf4a108ce410bed6469f1a5a75e08]:
-:    tvparnr zyg stutter    sex age nr binstut
-: 1  2001005  mz      no female  71  1       0
-: 2  2001005  mz      no female  71  2       0
-: 3  2001006  dz      no female  71  1       0
-: 8  2001012  mz      no female  71  1       0
-: 9  2001012  mz      no female  71  2       0
-: 11 2001015  dz      no   male  71  1       0
+#+begin_example
+Loading required package: timereg
+Loading required package: survival
+Loading required package: lava
+lava version 1.6
+mets version 1.2.3
+
+Attaching package: ‘mets’
+
+The following object is masked _by_ ‘.GlobalEnv’:
+
+    object.defined
+   tvparnr zyg stutter    sex age nr binstut
+1        1  mz      no female  71  1       0
+2        1  mz      no female  71  2       0
+3        2  dz      no female  71  1       0
+8        5  mz      no female  71  1       0
+9        5  mz      no female  71  2       0
+11       7  dz      no   male  71  1       0
+#+end_example
 
 
 - First,  we select an ascertaiment sample of the data, thus selecting
@@ -179,7 +192,7 @@ head(twinstut)
 
 Selecting the ascertained pairs 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 library(mets)
 data(twinstut)
 twinstut$binstut <- 1*(twinstut$stutter=="yes")
@@ -199,7 +212,7 @@ Selecting on the pairs where there is stuttering at taking a look at the
 tables of discordance and concordance for the twins. 
 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 twinda <- fast.reshape(twina,id="tvparnr")
 twind <- fast.reshape(twinstut,id="tvparnr")
 dtable(twind,"binst*"~I(stuttot1>=1))
@@ -235,7 +248,7 @@ Now doing the analyses
 Looking at the full data for comparison. We estimate an unstructured
 probit model with different correlations for MZ and DZ twins. 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 b1 <- biprobit(binstut~sex,~-1+binzyg,data=twinstut,id="tvparnr")
 summary(b1)
 #+END_SRC  
@@ -277,7 +290,7 @@ affected twins (at least on of the twins must have the event).
    overall level of stuttering and also that males have a much higher 
    stuttering risk.
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 margbin <- glm(binstut~factor(sex),data=twinstut,family=binomial())
 summary(margbin)
 #+END_SRC  
@@ -313,7 +326,7 @@ First, fitting the OR model for MZ and DZ for the full data, we find
 that MZ have a much higher dependence than DZ twins. 
 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 theta.des <- model.matrix( ~-1+factor(zyg),data=twinstut)
 bin <- binomial.twostage(margbin,data=twinstut,var.link=1,
                           clusters=twinstut$tvparnr,theta.des=theta.des)
@@ -330,9 +343,9 @@ factor(zyg)dz 0.5238541 0.2400861
 factor(zyg)mz 3.4930902 0.1865567
 
 $or
-              Estimate Std.Err   2.5% 97.5%  P-value
-factor(zyg)dz     1.69   0.405  0.894  2.48 3.11e-05
-factor(zyg)mz    32.89   6.135 20.862 44.91 8.31e-08
+              Estimate Std.Err   2.5%  97.5%   P-value
+factor(zyg)dz    1.689  0.4054  0.894  2.483 3.111e-05
+factor(zyg)mz   32.887  6.1354 20.862 44.913 8.308e-08
 
 $type
 [1] "plackett"
@@ -346,7 +359,7 @@ find very similar results on the ascertained sample. Note, that the marginals
 are crucial for this analysis to give  useful results.
 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 theta.des <- model.matrix( ~-1+factor(zyg),data=twina)
 bina <- binomial.twostage(margbin,data=twina,var.link=1,
              clusters=twina$tvparnr,theta.des=theta.des,
@@ -355,9 +368,25 @@ summary(bina)
 #+END_SRC  
 
 #+RESULTS[<2018-02-05 11:48:56> a426c94a6fcc7a60b969a4c6d2dc827c33dab896]:
-: Error in terms.formula(object, data = data) : object 'twina' not found
-:  Error: could not find function "binomial.twostage"
-: Error in summary(bina) : object 'bina' not found
+#+begin_example
+Dependence parameter for Odds-Ratio (Plackett) model 
+With log-link 
+$estimates
+                  theta        se
+factor(zyg)dz 0.4874213 0.2472523
+factor(zyg)mz 3.4753766 0.1985974
+
+$or
+              Estimate Std.Err    2.5%  97.5%   P-value
+factor(zyg)dz    1.628  0.4026  0.8391  2.417 5.245e-05
+factor(zyg)mz   32.310  6.4167 19.7335 44.886 4.771e-07
+
+$type
+[1] "plackett"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+#+end_example
 
 
 ** Additive gamma modelling 
@@ -365,7 +394,7 @@ summary(bina)
    First, again for comparision fitting the full data for the AE model. We get 
    the size of the genetic variance in this model. 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 out <- twin.polygen.design(twinstut,id="tvparnr",zygname="zyg",zyg="dz",type="ae")
 bintwin <- binomial.twostage(margbin,data=twinstut,
      clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
@@ -392,8 +421,8 @@ $vare
 NULL
 
 $vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.909  0.0954 0.723   1.1 1.47e-21
+   Estimate Std.Err   2.5% 97.5%   P-value
+p1   0.9095 0.09536 0.7226 1.096 1.469e-21
 
 attr(,"class")
 [1] "summary.mets.twostage"
@@ -407,7 +436,7 @@ the
 
 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 outa <- twin.polygen.design(twina,id="tvparnr",zygname="zyg",zyg="dz",type="ae")
 marga <- glm(binstut~sex,data=twina,family=binomial())
 summary(marga)
@@ -444,7 +473,7 @@ Now, using the overall marginal model we look at the adjusted likelihood and
 find very similar results on the ascertained sample. Note, that the marginals 
 are crucial for this analysis to give  useful results.
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 abintwin1 <- binomial.twostage(margbin,data=twina,
                clusters=twina$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
                random.design=outa$des.rv,theta.des=outa$pardes,pair.ascertained=1)
@@ -470,8 +499,8 @@ $vare
 NULL
 
 $vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.892  0.0973 0.701  1.08 4.95e-20
+   Estimate Std.Err   2.5% 97.5%   P-value
+p1    0.892 0.09733 0.7013 1.083 4.946e-20
 
 attr(,"class")
 [1] "summary.mets.twostage"
@@ -485,7 +514,7 @@ the marginal model for the ascertained model. This gives quite similar
 results to the previous analyses with a genetic variance around 1. 
 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 aabintwin1 <- binomial.twostage(marga,data=twina,
                 clusters=twina$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,
                 random.design=outa$des.rv,theta.des=outa$pardes,pair.ascertained=1,twostage=0)
@@ -513,13 +542,8 @@ $vare
 NULL
 
 $vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1     1.01   0.105 0.809  1.22 2.97e-22
-
-$marginal
-             Coef.      SE Robust SE     z P-val lower2.5% upper97.5%
-dependence2 -4.350 0.08560   0.08560 -50.8     0    -4.520     -4.180
-dependence3  0.551 0.00606   0.00606  90.8     0     0.539      0.563
+   Estimate Std.Err   2.5% 97.5%   P-value
+p1    1.014  0.1046 0.8095 1.219 2.967e-22
 
 attr(,"class")
 [1] "summary.mets.twostage"
@@ -543,7 +567,14 @@ attr(,"class")
   be the probands. 
 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+library(mets)
+data(twinstut)
+twinstut$binstut <- 1*(twinstut$stutter=="yes")
+twinstut <- subset(twinstut,zyg%in%c("mz","dz"))
+dnumeric(twinstut) <- ~.
+dfactor(twinstut,labels=c("DZ","MZ")) <- binzyg~zyg.n
+ddrop(twinstut) <- ~"*.n"
 
 twinstut  <-   dby(twinstut,binstut~tvparnr,stuttot=sum,nn=seq_along,n=length)
 twinstut <-    subset(twinstut,n==2)
@@ -575,33 +606,20 @@ out$random.des[,,1]
 out$theta.des[,,1]
 #+END_SRC  
 
-#+RESULTS[<2018-02-05 11:48:56> e69b5afab8cd0908953ec4ac15f5413ed8bb2c47]:
+#+RESULTS[<2018-02-20 13:45:29> c4f8b836d16b386e597249418622af02fada445c]:
 #+begin_example
-Error: could not find function "dby"
-Error in subset(twinstut, n == 2) : object 'twinstut' not found
-Error: could not find function "dtransform"
-Error: could not find function "dby"
-Error: could not find function "dby2"
-Error in which(twinstut$binstut == 1) : object 'twinstut' not found
-Error in which(twinstut$binstut == 0) : object 'twinstut' not found
-Error in with(twinstut, nnrow[cases]) : object 'twinstut' not found
-Error in with(twinstut, nnrow[controls]) : object 'twinstut' not found
-Error: object 'rowsca' not found
-Error in with(twinstut, pairnr.nnrow[rpairs]) : 
-  object 'twinstut' not found
-Error in unique(c(cc.pairs)) : object 'cc.pairs' not found
-Error: object 'cc.pairs' not found
-Error in matrix(fast.approx(ids, pairsids), ncol = 2) : 
-  could not find function "fast.approx"
-Error in head(pair.new) : object 'pair.new' not found
-Error: could not find function "dsort"
-Error: could not find function "dtransform"
-Error: could not find function "dtransform"
-Error: object 'dataid' not found
-Error: could not find function "make.pairwise.design"
-Error: object 'out' not found
-Error: object 'out' not found
-Error: object 'out' not found
+     [,1] [,2]
+[1,]    4    3
+[2,]   16   15
+[3,]   18   17
+[4,]   32   31
+[5,]   38   37
+[6,]   44   43
+[1] "random.design" "theta.des"     "ant.rvs"
+     [,1] [,2] [,3]
+[1,]    1    1    0
+[2,]    1    0    1
+[1] 0.5 0.5 0.5
 #+end_example
 
 
@@ -611,26 +629,44 @@ parameters we do not need to specify that this is case-control sampling.
 Having a correct is crucial for this to work, but this is certainly often 
 possible in register based studies where a full cohort is also available. 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
-cc  <- binomial.twostage(margbin,data=dataid,
-			    clusters=dataid$tvparnr,
-	         pairs=pair.new,
-	         random.design=out$random.design,
-             theta.des=out$theta.des,
-	         pairs.rvs=out$ant.rvs,
-             case.control=0,twostage=1)
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+cc  <- binomial.twostage(margbin,data=dataid,clusters=dataid$tvparnr,pairs=pair.new,
+	    random.design=out$random.design,theta.des=out$theta.des,
+	         pairs.rvs=out$ant.rvs,case.control=0,twostage=1)
 summary(cc)
 #+END_SRC  
 
-#+RESULTS[<2018-02-05 11:48:56> 2cce573eaa77bb858bffc082a56747ba1fa962fb]:
-:  Error: could not find function "binomial.twostage"
-: Error in summary(cc) : object 'cc' not found
+#+RESULTS[<2018-02-20 13:51:39> 40511f7b24b7d6f42175d24ffd37ba9025cb10b4]:
+#+begin_example
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                theta         se
+dependence1 0.8791843 0.09707036
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err 2.5% 97.5% P-value
+dependence1        1       0    1     1       0
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err   2.5% 97.5%   P-value
+p1   0.8792 0.09707 0.6889 1.069 1.339e-19
+
+attr(,"class")
+[1] "summary.mets.twostage"
+#+end_example
 
 
 We now do the same analysis specifying the case-control sampling. This 
 should result in the same dependence parameters as is also the case.
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 cc3 <- binomial.twostage(margbin,data=dataid,
 			    clusters=dataid$tvparnr,
                  pairs=pair.new,
@@ -642,8 +678,30 @@ summary(cc3)
 #+END_SRC  
 
 #+RESULTS[<2018-02-05 11:48:56> d9aed82aa1d6bf7ad52c62a4d34cfbdd5f589c7a]:
-:  Error: could not find function "binomial.twostage"
-: Error in summary(cc3) : object 'cc3' not found
+#+begin_example
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                theta         se
+dependence1 0.8791843 0.09707036
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err 2.5% 97.5% P-value
+dependence1        1       0    1     1       0
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err   2.5% 97.5%   P-value
+p1   0.8792 0.09707 0.6889 1.069 1.339e-19
+
+attr(,"class")
+[1] "summary.mets.twostage"
+#+end_example
 
 This model can  also be fitted using a full likelhood of both dependence 
 parameters and marginal parameters. Here there is no need to have a 
@@ -652,7 +710,7 @@ case-control data as as starting values.  Again we find a genetic variance
 around 1. The marginal parameters are also consistent with the results from 
 the full analyses for the marginal parameters. 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 marga <- glm(binstut~sex,data=dataid,family=binomial())
 cc3 <- binomial.twostage(marga,data=dataid,
              clusters=dataid$tvparnr,
@@ -670,7 +728,7 @@ Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
                 theta         se
-dependence1 0.8701439 0.09457095
+dependence1 0.9222504 0.09729347
 
 $type
 [1] "clayton.oakes"
@@ -683,13 +741,8 @@ $vare
 NULL
 
 $vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1     0.87  0.0946 0.685  1.06 3.55e-20
-
-$marginal
-            Coef.      SE Robust SE      z P-val lower2.5% upper97.5%
-dependence2 -3.60 0.00903   0.00903 -399.0     0     -3.62      -3.58
-dependence3  1.05 0.01960   0.01960   53.4     0      1.01       1.09
+   Estimate Std.Err   2.5% 97.5%   P-value
+p1   0.9223 0.09729 0.7316 1.113 2.566e-21
 
 attr(,"class")
 [1] "summary.mets.twostage"
