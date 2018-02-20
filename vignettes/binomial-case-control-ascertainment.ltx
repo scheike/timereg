@@ -706,31 +706,18 @@ out$theta.des[,,1]
 \end{lstlisting}
 
 \begin{verbatim}
-Error: could not find function "dby"
-Error in subset(twinstut, n == 2) : object 'twinstut' not found
-Error: could not find function "dtransform"
-Error: could not find function "dby"
-Error: could not find function "dby2"
-Error in which(twinstut$binstut == 1) : object 'twinstut' not found
-Error in which(twinstut$binstut == 0) : object 'twinstut' not found
-Error in with(twinstut, nnrow[cases]) : object 'twinstut' not found
-Error in with(twinstut, nnrow[controls]) : object 'twinstut' not found
-Error: object 'rowsca' not found
-Error in with(twinstut, pairnr.nnrow[rpairs]) : 
-  object 'twinstut' not found
-Error in unique(c(cc.pairs)) : object 'cc.pairs' not found
-Error: object 'cc.pairs' not found
-Error in matrix(fast.approx(ids, pairsids), ncol = 2) : 
-  could not find function "fast.approx"
-Error in head(pair.new) : object 'pair.new' not found
-Error: could not find function "dsort"
-Error: could not find function "dtransform"
-Error: could not find function "dtransform"
-Error: object 'dataid' not found
-Error: could not find function "make.pairwise.design"
-Error: object 'out' not found
-Error: object 'out' not found
-Error: object 'out' not found
+     [,1] [,2]
+[1,]    4    3
+[2,]   16   15
+[3,]   18   17
+[4,]   32   31
+[5,]   38   37
+[6,]   44   43
+[1] "random.design" "theta.des"     "ant.rvs"
+     [,1] [,2] [,3]
+[1,]    1    1    0
+[2,]    1    0    1
+[1] 0.5 0.5 0.5
 \end{verbatim}
 
 
@@ -753,8 +740,28 @@ summary(cc)
 \end{lstlisting}
 
 \begin{verbatim}
- Error: could not find function "binomial.twostage"
-Error in summary(cc) : object 'cc' not found
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                theta         se
+dependence1 0.8791843 0.09707036
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err 2.5% 97.5% P-value
+dependence1        1       0    1     1       0
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err   2.5% 97.5%   P-value
+p1   0.8792 0.09707 0.6889 1.069 1.339e-19
+
+attr(,"class")
+[1] "summary.mets.twostage"
 \end{verbatim}
 
 
@@ -774,8 +781,29 @@ summary(cc3)
 \end{lstlisting}
 
 \begin{verbatim}
- Error: could not find function "binomial.twostage"
-Error in summary(cc3) : object 'cc3' not found
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                theta         se
+dependence1 0.8791843 0.09707036
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err 2.5% 97.5% P-value
+dependence1        1       0    1     1       0
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err   2.5% 97.5%   P-value
+p1   0.8792 0.09707 0.6889 1.069 1.339e-19
+
+attr(,"class")
+[1] "summary.mets.twostage"
+
 \end{verbatim}
 
 This model can  also be fitted using a full likelhood of both dependence 
