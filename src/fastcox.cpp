@@ -1523,6 +1523,7 @@ BEGIN_RCPP/*{{{*/
   mat Uti(n,mp); 
   mat betati(n,p); 
   mat sup(nsim,mp); 
+  mat last(nsim,mp); 
   mat simUti(n,50*mp); 
 
   GetRNGstate();  /* to use R random normals */
@@ -1539,6 +1540,7 @@ BEGIN_RCPP/*{{{*/
      Uthati=Uti-Uthati; //     if(j==0) Uthati.print("one sim"); 
 
      for (unsigned k=0;k<mp;k++)  {
+        last(j,k)=Uthati(n-1,k); 
         sup(j,k)=max(abs(Uthati.col(k))); 
         if ((sup(j,k)>=osup(k))) {pval(k)++;}
         if (j<50) { simUti.col(j*mp+k)=Uthati.col(k); }
@@ -1549,6 +1551,7 @@ BEGIN_RCPP/*{{{*/
   PutRNGstate();  /* to use R random normals */
 
   return(Rcpp::List::create(Rcpp::Named("supUsim")=sup,
+			    Rcpp::Named("last")=last,
 			    Rcpp::Named("simUt")=simUti,
 			    Rcpp::Named("pval")=pval)); 
 END_RCPP

@@ -93,7 +93,12 @@ return(out)
 ##' m1 <- gofM.phreg(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE,
 ##' 		  modelmatrix=mm,silent=0)
 ##' summary(m1)
-##' @aliases cumContr
+##' 
+##' ## cumulative sums in covariates, via design matrix mm 
+##' m1 <- gofZ.phreg(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE,vars="wmi")
+##' summary(m1)
+##' 
+##' @aliases cumContr gofZ.phreg
 ##' @export
 gofM.phreg  <- function(formula,data,offset=NULL,weights=NULL,modelmatrix=NULL,
 			n.sim=1000,silent=1,...)
@@ -123,7 +128,7 @@ simcox <-  .Call("ModelMatrixTestCox",U,Pt,betaiid,n.sim,obs,PACKAGE="mets")
 
 sup <-  simcox$supUsim
 res <- cbind(obs,simcox$pval)
-colnames(res) <- c("Sup|U(t)|","pval")
+colnames(res) <- c("Sup_t |U(t)|","pval")
 rownames(res) <- nnames 
 
 if (silent==0) {
@@ -131,12 +136,71 @@ if (silent==0) {
    prmatrix(round(res,digits=2))
 }
 
+ ## pvals efter z i model.matrix sup_z | M(z,tau) | 
+ Utlast <- max(abs(tail(Ut,1)))
+ maxlast <- apply(abs(simcox$last),1,max)
+ pval.last <- mean(maxlast>=Utlast)
+ res.last <- matrix(c(Utlast,pval.last),1,2)
+ colnames(res.last) <- c("Sup_z |U(tau,z)|","pval")
+ rownames(res.last) <- "matrixZ"
+
 out <- list(jumptimes=jumptimes,supUsim=simcox$supUsim,res=res,supU=obs,
-	    pvals=simcox$pval,score=Ut,simUt=simcox$simUt,type="modelmatrix")
+	    pvals=simcox$pval,score=Ut,simUt=simcox$simUt,
+	    simUtlast=simcox$last,Utlast=Utlast,pval.last=pval.last,
+	    res.last=res.last, type="modelmatrix")
 class(out) <- "gof.phreg"
 
 return(out)
 }# }}}
+
+##' @export
+gofZ.phreg  <- function(formula,data,vars,offset=NULL,weights=NULL,breaks=10,equi=TRUE,
+			n.sim=1000,silent=1,...)
+{# {{{
+
+ res <- matrix(0,length(vars),2)
+ colnames(res) <- c("Sup_z |U(tau,z)|","pval")
+ rownames(res) <- vars
+
+ i <- 1
+for (vv in vars) {
+ modelmatrix <- cumContr(data[,vv],breaks=10,equi=equi)
+
+cox1 <- phreg(formula,data,offset=NULL,weights=NULL,Z=modelmatrix,cumhaz=FALSE,...) 
+offsets <- as.matrix(cox1$model.frame[,names(cox1$coef)]) %*% cox1$coef
+if (!is.null(offset)) offsets <- offsets*offset
+
+if (!is.null(cox1$strata)) 
+     coxM <- phreg(cox1$model.frame[,1]~modelmatrix+strata(cox1$strata),data,offset=offsets,weights=weights,no.opt=TRUE,cumhaz=FALSE,...)
+else coxM <- phreg(cox1$model.frame[,1]~modelmatrix,data,offset=offsets,weights=weights,no.opt=TRUE,cumhaz=FALSE,...)
+nnames <- colnames(modelmatrix)
+
+Ut <- apply(coxM$U,2,cumsum)
+jumptimes <- coxM$jumptimes
+U <- coxM$U
+Ubeta <- cox1$U
+ii <- -solve(cox1$hessian)
+EE <- .Call("vecMatMat",coxM$E,cox1$E,PACKAGE="mets")$vXZ; 
+Pt <- cox1$ZX - EE
+Pt <- apply(Pt,2,cumsum)
+betaiid <- t(ii %*% t(Ubeta))
+obs <- apply(abs(Ut),2,max)
+simcox <-  .Call("ModelMatrixTestCox",U,Pt,betaiid,n.sim,obs,PACKAGE="mets")
+
+ ## pvals efter z i model.matrix sup_z | M(z,tau) | 
+ Utlast <- max(abs(tail(Ut,1)))
+ maxlast <- apply(abs(simcox$last),1,max)
+ pval.last <- mean(maxlast>=Utlast)
+ res[i,] <- c(Utlast,pval.last)
+ i <- i+1
+}
+
+out <- list(res=res, type="modelmatrix")
+class(out) <- "gof.phreg"
+
+return(out)
+}# }}}
+
 
 ##' @export
 cumContr <- function(data, breaks = 4, probs = NULL,equi = FALSE,na.rm=TRUE,...)
@@ -284,6 +348,14 @@ if (object$type=="prop")
      cat("Cumulative score process test for Proportionality:\n")
 else cat("Cumulative residuals versus modelmatrix :\n")
 print(object$res)
+
+if (!is.null(object$res.last)) {
+   cat("\n")
+   cat("Cumulative score process versus covariates (discrete z via model.matrix):\n")
+   print(object$res.last)
+}
+
+
 } # }}}
 
 ##' @export
@@ -293,5 +365,12 @@ if (x$type=="prop")
      cat("Cumulative score process test for Proportionality:\n")
 else cat("Cumulative residuals versus modelmatrix :\n")
 print(x$res)
+
+if (!is.null(x$res.last)) {
+   cat("\n")
+   cat("Cumulative score process versus covariates (discrete z via model.matrix):\n")
+   print(x$res.last)
+}
+
 } # }}}
 
