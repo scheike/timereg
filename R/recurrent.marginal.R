@@ -1025,6 +1025,11 @@ simRecurrentGamma <- function(n,haz=0.5,death.haz=0.1,haz2=0.1,max.recurrent=100
 ##' @param haz2 rate of second cause  if it is extended to time-range of first event 
 ##' @param dependence  =0 independence, =1 all share same random effect with variance var.z
 ##'                    =2 random effect exp(normal) with correlation structure from cor.mat,
+##'                    =3 random effect gamma distributed 
+##'                       z1= (z11+ z12)/2 such that mean is 1 
+##'                       z2= (z11^cor.mat[1,2]+ z13)/2
+##'                       z3= (z12^{cor.mat[2,3]+z13^cor.mat[1,3])/2
+##'                       with z11 z12 z13 are gamma with mean and variance 1 
 ##'                    first random effect is z1 and for N1
 ##'                    second random effect is z2 and for N2
 ##'                    third random effect is for death 
@@ -1060,7 +1065,7 @@ simRecurrentGamma <- function(n,haz=0.5,death.haz=0.1,haz2=0.1,max.recurrent=100
 simRecurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
 		    gap.time=FALSE,max.recurrent=100,dhaz=NULL,haz2=NULL,
 		    dependence=0,var.z=0.22,cor.mat=NULL,...) 
-  {# {{{
+  {# {{{{{{
 
   dtime <- NULL # to avoid R-check 
 
@@ -1075,8 +1080,34 @@ simRecurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
               covv  <- b * cor.mat  
 	      z <- matrix(rnorm(3*n),n,3)
 	      z <- exp(z%*% chol(covv))
+	      print(summary(z))
+	      print(cor(z))
+	      z1 <- z[,1]; z2 <- z[,2]; zd <- z[,3]; 
+      } else if (dependence==3) {
+              stdevs <- var.z^.5
+              b <- stdevs %*% t(stdevs)  
+              covv  <- b * cor.mat  
+	      z <- matrix(rgamma(3*n,1),n,3)
+              z1 <- (z[,1]+z[,2])/2
+              z2 <- (z[,1]^cor.mat[1,2]+z[,3])/2
+              zd <- z3 <- (z[,2]^cor.mat[1,3]+z[,3]^cor.mat[2,3])/2
+	      z <- cbind(z1,z2,zd)
+	      print(summary(z))
+	      print(cor(z))
+      } else if (dependence>3) {
+              stdevs <- var.z^.5
+              b <- stdevs %*% t(stdevs)  
+              covv  <- b * cor.mat  
+	      z <- matrix(rnorm(3*n),n,3)
+	      print(chol(covv))
+	      z <- (z%*% chol(covv)+dependence)/(dependence+0*matrix(rnorm(n*3),n,3))
+	      print(summary(z))
+	      print(cor(z))
+	      if (any(z<0)) warning("some z < 0 , increase dependence");
+	      apply(z,2,function(x) {  x[x<0] <- 0.01; return(x)})
 	      z1 <- z[,1]; z2 <- z[,2]; zd <- z[,3]; 
       }
+
 
   cumhaz <- rbind(c(0,0),cumhaz)
   ll <- nrow(cumhaz)
@@ -1164,7 +1195,7 @@ simRecurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
   attr(tall,"z") <- z
 
   return(tall)
-  }# }}}
+  }# }}}}}}
 
 ##' @export
 showfitsim <- function(causes=2,rr,dr,base1,base4) 

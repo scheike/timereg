@@ -2,6 +2,7 @@
 % Please edit documentation in R/gof-phreg.R
 \name{gofM.phreg}
 \alias{gofM.phreg}
+\alias{cumContr}
 \title{GOF for Cox covariates in  PH regression}
 \usage{
 gofM.phreg(formula, data, offset = NULL, weights = NULL,
@@ -39,6 +40,12 @@ par(mfrow=c(2,2))
 plot(m1)
 
 m1 <- gofM.phreg(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE,modelmatrix=mm) 
+summary(m1)
+
+## cumulative sums in covariates, via design matrix mm 
+mm <- cum.contr(TRACE$wmi,breaks=10,equi=TRUE)
+m1 <- gofM.phreg(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE,
+		  modelmatrix=mm,silent=0)
 summary(m1)
 }
 \author{

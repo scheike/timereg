@@ -49,7 +49,7 @@ res <- cbind(obs,simcox$pval)
 colnames(res) <- c("Sup|U(t)|","pval")
 rownames(res) <- nnames 
 
-if (silent==1) {
+if (silent==0) {
 cat("Cumulative score process test for Proportionality:\n")
 prmatrix(round(res,digits=2))
 }
@@ -87,6 +87,13 @@ return(out)
 ##' 
 ##' m1 <- gofM.phreg(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE,modelmatrix=mm) 
 ##' summary(m1)
+##' 
+##' ## cumulative sums in covariates, via design matrix mm 
+##' mm <- cum.contr(TRACE$wmi,breaks=10,equi=TRUE)
+##' m1 <- gofM.phreg(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE,
+##' 		  modelmatrix=mm,silent=0)
+##' summary(m1)
+##' @aliases cumContr
 ##' @export
 gofM.phreg  <- function(formula,data,offset=NULL,weights=NULL,modelmatrix=NULL,
 			n.sim=1000,silent=1,...)
@@ -130,6 +137,54 @@ class(out) <- "gof.phreg"
 
 return(out)
 }# }}}
+
+##' @export
+cumContr <- function(data, breaks = 4, probs = NULL,equi = FALSE,na.rm=TRUE,...)
+ {# {{{
+ if (is.vector(data)) {
+        if (is.list(breaks))
+            breaks <- unlist(breaks)
+        if (length(breaks) == 1) {
+            if (!is.null(probs)) {
+                breaks <- quantile(data, probs, na.rm = na.rm,...)
+	        breaks <- breaks[-1]
+            }
+            else {
+                if (!equi) {
+                  probs <- seq(0, 1, length.out = breaks + 1)
+                  breaks <- quantile(data, probs, na.rm = na.rm, ...)
+	          breaks <- breaks[-1]
+                }
+                if (equi) {
+                  rr <- range(data, na.rm = na.rm)
+                  breaks <- seq(rr[1], rr[2], length.out = breaks + 1)
+	          breaks <- breaks[-1]
+                }
+            }
+        }
+        if (sum(duplicated(breaks)) == 0) {
+		i <- 0; 
+		gm <- matrix(0,length(data),length(breaks))
+            for (bb in breaks)  {
+		    i <- i+1 
+		    gm[,i] <- (data <= bb)*1
+	    }
+	} else {
+            wd <- which(duplicated(breaks))
+            mb <- min(diff(breaks[-wd]))
+            breaks[wd] <- breaks[wd] + (mb/2) * seq(length(wd))/length(wd)
+            i <- 0; gm <- matrix(0,length(data),length(breaks))
+            for (bb in breaks)  {
+		    i <- i+1 
+		    gm[,i] <- (vec <= bb)*1
+	    }
+            warning(paste("breaks duplicated"))
+        }
+        colnames(gm) <- paste("<=",breaks,sep="")
+	attr(gm,"breaks") <- breaks
+        return(gm)
+    }
+ }# }}}
 
 ##' Stratified baseline graphical GOF test for Cox covariates in PH regression
 ##'
