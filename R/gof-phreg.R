@@ -126,7 +126,7 @@ res <- cbind(obs,simcox$pval)
 colnames(res) <- c("Sup|U(t)|","pval")
 rownames(res) <- nnames 
 
-if (silent==1) {
+if (silent==0) {
    cat("Cumulative score process test for modelmatrix:\n")
    prmatrix(round(res,digits=2))
 }
