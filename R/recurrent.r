@@ -19,14 +19,22 @@
 #' @keywords survival
 #' @examples
 #' \donttest{
-#' ### do not test because iid slow  and to avoid dependence on mets
+#' ### get some data using mets simulaitons 
 #' library(mets)
-#' data(simrecurrent)
-#' simd <- subset(simd,id<500)
+#' data(base1cumhaz)
+#' data(base4cumhaz)
+#' data(drcumhaz)
+#' dr <- drcumhaz
+#' base1 <- base1cumhaz
+#' base4 <- base4cumhaz
+#' rr <- simRecurrent(1000,base1,death.cumhaz=dr)
+#' rr$x <- rnorm(nrow(rr)) 
+#' rr$strata <- floor((rr$id-0.01)/500)
+#' drename(rr) <- start+stop~entry+time
 #' 
-#' ar <- aalen(Surv(start,stop,status)~+1+cluster(id),data=simd,resample.iid=1
+#' ar <- aalen(Surv(start,stop,status)~+1+cluster(id),data=rr,resample.iid=1
 #'                                                      ,max.clust=NULL)
-#' ad <- aalen(Surv(start,stop,death)~+1+cluster(id),data=simd,resample.iid=1,
+#' ad <- aalen(Surv(start,stop,death)~+1+cluster(id),data=rr,resample.iid=1,
 #'                                                      ,max.clust=NULL)
 #' mm <- recurrent.marginal.mean(ar,ad)
 #' with(mm,plot(times,mu,type="s"))
@@ -111,14 +119,20 @@ recurrent.marginal.mean <- function(recurrent,death)
 #' \donttest{
 #' ### do not test because iid slow  and uses data from mets
 #' library(mets)
-#' data(simrecurrent)
-#' dim(simd) 
-#' simd <- subset(simd,id<500)
-#' 
-#' ar <- cox.aalen(Surv(start,stop,status)~+1+prop(x.V1)+cluster(id),data=simd,
+#' data(base1cumhaz)
+#' data(base4cumhaz)
+#' data(drcumhaz)
+#' dr <- drcumhaz
+#' base1 <- base1cumhaz
+#' base4 <- base4cumhaz
+#' rr <- simRecurrent(1000,base1,death.cumhaz=dr)
+#' rr$x <- rnorm(nrow(rr)) 
+#' rr$strata <- floor((rr$id-0.01)/500)
+#' drename(rr) <- start+stop~entry+time
+#'
+#' ar <- cox.aalen(Surv(start,stop,status)~+1+prop(x)+cluster(id),data=rr,
 #'                    resample.iid=1,,max.clust=NULL,max.timepoint.sim=NULL)
-#' 
-#' ad <- cox.aalen(Surv(start,stop,death)~+1+prop(x.V1)+cluster(id),data=simd,
+#' ad <- cox.aalen(Surv(start,stop,death)~+1+prop(x)+cluster(id),data=rr,
 #'                    resample.iid=1,,max.clust=NULL,max.timepoint.sim=NULL)
 #' mm <- recurrent.marginal.coxmean(ar,ad)
 #' with(mm,plot(times,mu,type="s"))

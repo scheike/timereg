@@ -25,14 +25,22 @@ version should give the same when there are no ties.
 }
 \examples{
 \donttest{
-### do not test because iid slow  and to avoid dependence on mets
+### get some data using mets simulaitons 
 library(mets)
-data(simrecurrent)
-simd <- subset(simd,id<500)
+data(base1cumhaz)
+data(base4cumhaz)
+data(drcumhaz)
+dr <- drcumhaz
+base1 <- base1cumhaz
+base4 <- base4cumhaz
+rr <- simRecurrent(1000,base1,death.cumhaz=dr)
+rr$x <- rnorm(nrow(rr)) 
+rr$strata <- floor((rr$id-0.01)/500)
+drename(rr) <- start+stop~entry+time
 
-ar <- aalen(Surv(start,stop,status)~+1+cluster(id),data=simd,resample.iid=1
+ar <- aalen(Surv(start,stop,status)~+1+cluster(id),data=rr,resample.iid=1
                                                      ,max.clust=NULL)
-ad <- aalen(Surv(start,stop,death)~+1+cluster(id),data=simd,resample.iid=1,
+ad <- aalen(Surv(start,stop,death)~+1+cluster(id),data=rr,resample.iid=1,
                                                      ,max.clust=NULL)
 mm <- recurrent.marginal.mean(ar,ad)
 with(mm,plot(times,mu,type="s"))
