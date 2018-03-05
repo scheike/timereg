@@ -89,7 +89,7 @@ return(out)
 ##' summary(m1)
 ##' 
 ##' ## cumulative sums in covariates, via design matrix mm 
-##' mm <- cum.contr(TRACE$wmi,breaks=10,equi=TRUE)
+##' mm <- cumContr(TRACE$wmi,breaks=10,equi=TRUE)
 ##' m1 <- gofM.phreg(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE,
 ##' 		  modelmatrix=mm,silent=0)
 ##' summary(m1)
@@ -164,7 +164,7 @@ gofZ.phreg  <- function(formula,data,vars,offset=NULL,weights=NULL,breaks=10,equ
 
  i <- 1
 for (vv in vars) {
- modelmatrix <- cumContr(data[,vv],breaks=10,equi=equi)
+ modelmatrix <- cumContr(data[,vv],breaks=breaks,equi=equi)
 
 cox1 <- phreg(formula,data,offset=NULL,weights=NULL,Z=modelmatrix,cumhaz=FALSE,...) 
 offsets <- as.matrix(cox1$model.frame[,names(cox1$coef)]) %*% cox1$coef
@@ -201,9 +201,8 @@ class(out) <- "gof.phreg"
 return(out)
 }# }}}
 
-
 ##' @export
-cumContr <- function(data, breaks = 4, probs = NULL,equi = FALSE,na.rm=TRUE,...)
+cumContr <- function(data, breaks = 4, probs = NULL,equi = TRUE,na.rm=TRUE,...)
  {# {{{
  if (is.vector(data)) {
         if (is.list(breaks))
@@ -240,7 +239,7 @@ cumContr <- function(data, breaks = 4, probs = NULL,equi = FALSE,na.rm=TRUE,...)
             i <- 0; gm <- matrix(0,length(data),length(breaks))
             for (bb in breaks)  {
 		    i <- i+1 
-		    gm[,i] <- (vec <= bb)*1
+		    gm[,i] <- (data <= bb)*1
 	    }
             warning(paste("breaks duplicated"))
         }
