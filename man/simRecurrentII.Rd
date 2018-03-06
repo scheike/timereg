@@ -25,7 +25,7 @@ simRecurrentII(n, cumhaz, cumhaz2, death.cumhaz = NULL, gap.time = FALSE,
 
 \item{haz2}{rate of second cause  if it is extended to time-range of first event}
 
-\item{dependence}{0:independence; 1:all share same random effect with variance var.z; 2:random effect exp(normal) with correlation structure from cor.mat; 3:additive gamma distributed random effects, z1= (z11+ z12)/2 such that mean is 1 , z2= (z11^cor.mat(1,2)+ z13)/2, z3= (z12^(cor.mat(2,3)+z13^cor.mat(1,3))/2, with z11 z12 z13 are gamma with mean and variance 1 , first random effect is z1 and for N1 second random effect is z2 and for N2 third random effect is for death}
+\item{dependence}{0:independence;\n 1:all share same random effect with variance var.z;\n 2:random effect exp(normal) with correlation structure from cor.mat; 3:additive gamma distributed random effects, z1= (z11+ z12)/2 such that mean is 1 , z2= (z11^cor.mat(1,2)+ z13)/2, z3= (z12^(cor.mat(2,3)+z13^cor.mat(1,3))/2, with z11 z12 z13 are gamma with mean and variance 1 , first random effect is z1 and for N1 second random effect is z2 and for N2 third random effect is for death}
 
 \item{var.z}{variance of random effects}
 

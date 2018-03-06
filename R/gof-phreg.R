@@ -271,7 +271,7 @@ cumContr <- function(data, breaks = 4, probs = NULL,equi = TRUE,na.rm=TRUE,...)
 ##' gofG.phreg(m2)
 ##' 
 ##' @export
-gofG.phreg  <- function(x,sim=1,silent=1,...)
+gofG.phreg  <- function(x,sim=0,silent=1,...)
 {# {{{
 
 p <- length(x$coef)
@@ -290,6 +290,8 @@ if (is.null(cumhaz)) stop("Must run phreg with cumhaz=TRUE (default)");
 if (nstrata==1) stop("Stratified Cox to look at baselines");
 ###
 
+if (is.null(x$opt) | is.null(x$coef)) fixbeta<- 1 else fixbeta <- 0
+
 for (i in 0:(nstrata-2))
 for (j in (i+1):(nstrata-1)) { 
       iij <- which(strata %in% c(i,j))
@@ -302,9 +304,12 @@ for (j in (i+1):(nstrata-1)) {
       plot(cumhazj[,2],cumhazi[,2],type="s",lwd=2,
 	   xlab=stratnames[j+1],ylab=stratnames[i+1])
       graphics::title(paste("Stratified baselines for",stratn))
+      if (fixbeta==0 | sim==0) 
+      graphics::legend("topleft",c("Nonparametric","lm"),lty=1,col=1:2)
+      else 
       graphics::legend("topleft",c("Nonparametric","lm","Stratified-Cox-Sim"),lty=1,col=1:3)
       ab <- lm(cumhazi[,2]~-1+cumhazj[,2])
-      if (sim==1) {
+      if (sim==1 & fixbeta==0) {
              Pt <- DLambeta.t <- apply(x$E/c(x$S0),2,cumsumstrata,strata,nstrata)
              II <- -solve(x$hessian)
              betaiid <- t(II %*% t(x$U))
@@ -335,7 +340,7 @@ rsU <- max(rsU,abs(x$score[,i]))
 plot(x$jumptimes,x$score[,i],type="s",ylim=c(-rsU,rsU),xlab="",ylab="")
 title(main=rownames(x$res)[i])
 matlines(x$jumptimes,simU,type="s",lwd=0.3,col=col)
-lines(x$jumptimes,x$score[,i],lwd=1.5)
+lines(x$jumptimes,x$score[,i],type="s",lwd=1.5)
 }
 
 }# }}}
