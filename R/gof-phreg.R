@@ -271,7 +271,7 @@ cumContr <- function(data, breaks = 4, probs = NULL,equi = TRUE,na.rm=TRUE,...)
 ##' gofG.phreg(m2)
 ##' 
 ##' @export
-gofG.phreg  <- function(x,sim=0,silent=1,...)
+gofG.phreg  <- function(x,sim=0,silent=1,lm=FALSE,...)
 {# {{{
 
 p <- length(x$coef)
@@ -301,13 +301,11 @@ for (j in (i+1):(nstrata-1)) {
       cumhazi <- Cpred(cumhaz[ii,],dijjumps,strict=FALSE)
       cumhazj <- Cpred(cumhaz[ij,],dijjumps,strict=FALSE)
 
-      plot(cumhazj[,2],cumhazi[,2],type="s",lwd=2,
-	   xlab=stratnames[j+1],ylab=stratnames[i+1])
+      plot(cumhazj[,2],cumhazi[,2],type="s",lwd=2,xlab=stratnames[j+1],ylab=stratnames[i+1])
       graphics::title(paste("Stratified baselines for",stratn))
-      if (fixbeta==0 | sim==0) 
+      if ((fixbeta==0 | sim==0) & lm ) 
       graphics::legend("topleft",c("Nonparametric","lm"),lty=1,col=1:2)
-      else 
-      graphics::legend("topleft",c("Nonparametric","lm","Stratified-Cox-Sim"),lty=1,col=1:3)
+###      graphics::legend("topleft",c("Nonparametric","Stratified-Cox-Sim"),lty=1,col=1:3)
       ab <- lm(cumhazi[,2]~-1+cumhazj[,2])
       if (sim==1 & fixbeta==0) {
              Pt <- DLambeta.t <- apply(x$E/c(x$S0),2,cumsumstrata,strata,nstrata)
@@ -323,7 +321,7 @@ for (j in (i+1):(nstrata-1)) {
 	     }
       }
       lines(cumhazj[,2],cumhazi[,2],type="s",lwd=2,col=1)
-      abline(c(0,coef(ab)),col=2,lwd=2)
+      if (lm==TRUE) abline(c(0,coef(ab)),col=2,lwd=2)
 }
 
 }# }}}

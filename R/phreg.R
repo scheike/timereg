@@ -839,7 +839,8 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
     lty=NULL,col=NULL,legend=TRUE,ylab="Cumulative hazard",
     polygon=TRUE,level=0.95,stratas=NULL,robust=FALSE,...) {# {{{
    level <- -qnorm((1-level)/2)
-   rr <- range(x$cumhaz[,-1])
+###   if (log==FALSE) 
+   rr <- range(x$cumhaz[,-1]) ### else rr <- range(log(x$cumhaz[,-1]),na.rm=TRUE)
    strat <- x$strata[x$jumps]
    ylimo <- ylim
    if (is.null(ylim)) ylim <- rr
@@ -847,7 +848,8 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
    if (se==TRUE) {
 	   if (is.null(x$se.cumhaz) & is.null(x$robse.cumhaz)) 
 		   stop("phreg must be with cumhazard=TRUE\n"); 
-       rrse <- range(c(x$cumhaz[,-1]+level*x$se.cumhaz[,-1]))
+       rrse <- range(c(x$cumhaz[,-1]+level*x$se.cumhaz[,-1])) 
+###       else rrse <- range(log(c(x$cumhaz[,-1]+level*x$se.cumhaz[,-1])),na.rm=TRUE)
        if (is.null(ylimo)) ylim <- rrse
    }
 
@@ -882,7 +884,7 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
    j <- stratas[i]
    cumhazard <- x$cumhaz[strat==j,]
     if (add) {
-        lines(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],...)
+         lines(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],...)
     } else {
          plot(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],ylim=ylim,ylab=ylab,xlim=xlim,...)
     }

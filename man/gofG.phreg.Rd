@@ -4,7 +4,7 @@
 \alias{gofG.phreg}
 \title{Stratified baseline graphical GOF test for Cox covariates in PH regression}
 \usage{
-gofG.phreg(x, sim = 0, silent = 1, ...)
+gofG.phreg(x, sim = 0, silent = 1, lm = FALSE, ...)
 }
 \arguments{
 \item{x}{phreg object}
