@@ -76,10 +76,9 @@ coefcox <- function(object, digits=3, d2logl=0,ci=1,alpha=0.05) { ## {{{
 wald.test <- function(object=NULL,coef=NULL,Sigma=NULL,contrast,coef.null=NULL,null=NULL,print.coef=TRUE,alpha=0.05)
 { ## {{{
 
-  if (class(object)=="coxph")  {coef <-  matrix(coef(object),ncol=1); 
-                              Sigma=object$var;}
+  if (class(object)=="coxph")  {coef <-  matrix(coef(object),ncol=1); Sigma=object$var;}
+  if (class(object)=="phreg")  {coef <-  matrix(c(coef(object)),ncol=1); Sigma=vcov(object);}
   if (class(object)=="cox.aalen")  {coef <- object$gamma; Sigma=object$var.gamma;}
-
   if (is.null(Sigma)) {
      if (class(object)=="cor" || class(object)=="twostage") Sigma <- object$var.theta else Sigma <- object$var.gamma;
   }
