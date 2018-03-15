@@ -15,6 +15,7 @@
 ##' @param recurrent phreg object with recurrent events
 ##' @param death     phreg object with deaths
 ##' @param fixbeta   to force the estimation of standard errors to think of regression coefficients as known/fixed
+##' @param km  if true then uses Kaplan-Meier for death, otherwise exp(- Nelson-Aalen ) 
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Thomas Scheike
 ##' 
@@ -92,7 +93,7 @@
 ##' 
 ##' @export
 ##' @aliases recurrentMarginal tie.breaker  recmarg
-recurrentMarginal <- function(recurrent,death,fixbeta=NULL,...)
+recurrentMarginal <- function(recurrent,death,fixbeta=NULL,km=FALSE,...)
 {# {{{
   xr <- recurrent
   dr <- death 
@@ -104,15 +105,16 @@ recurrentMarginal <- function(recurrent,death,fixbeta=NULL,...)
   ### marginal expected events  int_0^t G(s) \lambda_r(s) ds 
   # {{{
   strat <- dr$strata[dr$jumps]
-  Gt <- exp(-dr$cumhaz[,2])
   ###
   x <- dr
   xx <- x$cox.prep
   S0i2 <- S0i <- rep(0,length(xx$strata))
   S0i[xx$jumps+1] <-  1/x$S0
   S0i2[xx$jumps+1] <- 1/x$S0^2
-  cumhazD <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
-  St      <- exp(-cumhazD[,2])
+  if (!km) { 
+     cumhazD <- c(cumsumstrata(S0i,xx$strata,xx$nstrata))
+     St      <- exp(-cumhazD)
+  } else St <- exp(cumsumstrata(log(1-S0i),xx$strata,xx$nstrata))
   ###
   x <- xr
   xx <- x$cox.prep
@@ -674,7 +676,7 @@ recurrentMarginal <- function(recurrent,death,fixbeta=NULL,...)
 ###}# }}}
 
 ##' @export
-recmarg <- function(recurrent,death,...)
+recmarg <- function(recurrent,death,km=FALSE,...)
 {# {{{
   xr <- recurrent
   dr <- death 
@@ -682,31 +684,26 @@ recmarg <- function(recurrent,death,...)
   ### marginal expected events  int_0^t G(s) \lambda_r(s) ds 
   # {{{
   strat <- dr$strata[dr$jumps]
-  Gt <- exp(-dr$cumhaz[,2])
-  ###
   x <- dr
   xx <- x$cox.prep
   S0i2 <- S0i <- rep(0,length(xx$strata))
   S0i[xx$jumps+1] <-  1/x$S0
   S0i2[xx$jumps+1] <- 1/x$S0^2
-  cumhazD <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
-  St      <- exp(-cumhazD[,2])
+  if (!km) { 
+     cumhazD <- c(cumsumstrata(S0i,xx$strata,xx$nstrata))
+     St      <- exp(-cumhazD)
+  } else St <- exp(cumsumstrata(log(1-S0i),xx$strata,xx$nstrata))
   ###
   x <- xr
   xx <- x$cox.prep
   S0i2 <- S0i <- rep(0,length(xx$strata))
   S0i[xx$jumps+1] <-  1/x$S0
   S0i2[xx$jumps+1] <- 1/x$S0^2
-###  cumhazR <-  cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
   cumhazDR <- cbind(xx$time,cumsumstrata(St*S0i,xx$strata,xx$nstrata))
-###  mm <- cbind(cumhazR,cumhazDR,St,xx$time,x$cox.prep$time)
-###  head(cbind(cumhazR,cumhazDR,St,xx$time,x$cox.prep$time),500)
   mu <- cumhazDR[,2]
 # }}}
 
  varrs <- data.frame(mu=mu,time=xr$time,strata=xr$strata,St=St)
-###     varA1=varA1,varA2=varA2,varA3=varA3,cov12=2*cov12A+cov12aa,cov13=2*cov13A+cov13aa, 
-###     cov23=2*cov23A+cov23aa); 
  varrs  <-  varrs[c(xr$cox.prep$jumps)+1,]
 
  ### to use basehazplot.phreg
@@ -836,7 +833,7 @@ simRecurrent <- function(n,cumhaz,death.cumhaz=NULL,cumhaz2=NULL,
   {# {{{
   dtime <- NULL ## to avoid R-check 
 
-  if (dependence==0) { z1 <- z2 <- zd <- rep(1,n) } else if (dependence==1) {
+  if (dependence==0) { z1 <- z2 <- zd <- rep(1,n) } else if (dependence==1) {# {{{
 ###	      zz <- rgamma(n,1/var.gamma[1])*var.gamma[1]
 	      zz <- exp(rnorm(n,1)*var.z[1]^.5)
 	      var(zz)
@@ -845,11 +842,11 @@ simRecurrent <- function(n,cumhaz,death.cumhaz=NULL,cumhaz2=NULL,
               stdevs <- var.z^.5
               b <- stdevs %*% t(stdevs)  
               covv  <- b * cor.mat  
-	      z <- matrix(rnorm(2*n),n,2)
+	      z <- matrix(rnorm(3*n),n,3)
 	      z <- (z%*% chol(covv))
 	      z1 <- exp(z[,1]); zd <- exp(z[,3])
 	      apply(exp(z),2,mean); cov(exp(z))
-      }
+      } # }}}
 
   cumhaz <- rbind(c(0,0),cumhaz)
   ll <- nrow(cumhaz)
@@ -886,6 +883,8 @@ simRecurrent <- function(n,cumhaz,death.cumhaz=NULL,cumhaz2=NULL,
 	  cumhaz <- cbind(times,cumhaz1t+cumhaz2t)
   }# }}}
 
+
+
 ### recurrent first time
   tall <- timereg::pc.hazard(cumhaz,z1)
   tall$id <- 1:n
@@ -904,20 +903,23 @@ simRecurrent <- function(n,cumhaz,death.cumhaz=NULL,cumhaz2=NULL,
   tt <- tall
 ###  gemsim <- as.data.frame(matrix(0,max.recurrent*n,ncol(tall)))
 ###  names(gemsim) <- names(tall)
-###  gemsim[1:n,] <- tall; nrr <- n
+###  gemsim[1:n,] <- tall; 
+  nrr <- n
   i <- 1; 
   while (any(tt$time<tt$dtime) & i < max.recurrent) {
 	  i <- i+1
 	  still <- subset(tt,time<dtime)
-          tt <- timereg::pc.hazard(cumhaz,rr=z1[still$id],entry=still$time)
-	  tt <- cbind(tt,dkeep(still,~id+dtime+death+fdeath))
+          tt <- timereg::pc.hazard(cumhaz,z1[still$id],entry=still$time)
+	  tt <- cbind(tt,dkeep(still,~id+dtime+death+fdeath),row.names=NULL)
 	  tt <- dtransform(tt,death=1,time>dtime)
 	  tt <- dtransform(tt,status=0,time>dtime)
 	  tt <- dtransform(tt,time=dtime,time>dtime)
 	  nt <- nrow(tt)
+###	  rownames(tt) <- c((nrr+1):(nrr+nt))
 ###	  gemsim[(nrr+1):(nrr+nt),] <- tt
-	  tall <- rbind(tall,tt)
-###	  nrr <- nrr+nt
+###	  print(rownames(tall)); print(rownames(tt))
+	  tall <- rbind(tall,tt,row.names=NULL)
+	  nrr <- nrr+nt
   }
 ###  tall <- gemsim[1:nrr,]
   dsort(tall) <- ~id+entry+time
@@ -979,13 +981,13 @@ simRecurrentGamma <- function(n,haz=0.5,death.haz=0.1,haz2=0.1,max.recurrent=100
   while (any(tt$time<tt$dtime) & i < max.recurrent) {
 	  i <- i+1
 	  still <- subset(tt,time<dtime)
-          tt <- timereg::pc.hazard(cumhaz,rr=z[still$id],entry=still$time)
-	  tt <- cbind(tt,dkeep(still,~id+dtime+death+fdeath))
+          tt <- timereg::pc.hazard(cumhaz,z[still$id],entry=still$time)
+	  tt <- cbind(tt,dkeep(still,~id+dtime+death+fdeath),row.names=NULL)
 	  tt <- dtransform(tt,death=1,time>dtime)
 	  tt <- dtransform(tt,status=0,time>dtime)
 	  tt <- dtransform(tt,time=dtime,time>dtime)
 	  nt <- nrow(tt)
-	  tall <- rbind(tall,tt)
+	  tall <- rbind(tall,tt,row.names=NULL)
   }
   dsort(tall) <- ~id+entry+time
 
@@ -1004,7 +1006,7 @@ simRecurrentGamma <- function(n,haz=0.5,death.haz=0.1,haz2=0.1,max.recurrent=100
   return(tall)
 }# }}}
 
-##' Simulation of recurrent events data based on cumulative hazards 
+##' Simulation of recurrent events data based on cumulative hazards II 
 ##'
 ##' Simulation of recurrent events data based on cumulative hazards 
 ##'
@@ -1055,24 +1057,25 @@ simRecurrentGamma <- function(n,haz=0.5,death.haz=0.1,haz2=0.1,max.recurrent=100
 ##' @export
 simRecurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
 		    gap.time=FALSE,max.recurrent=100,dhaz=NULL,haz2=NULL,
-		    dependence=0,var.z=0.22,cor.mat=NULL,...) 
+		    dependence=0,var.z=0.22,cor.mat=NULL,cens=NULL,...) 
   {# {{{{{{
 
   dtime <- NULL # to avoid R-check 
 
-  if (dependence==0) { z <- z1 <- z2 <- zd <- rep(1,n) 
+  if (dependence==0) { z <- z1 <- z2 <- zd <- rep(1,n) # {{{
      } else if (dependence==1) {
-###	      zz <- rgamma(n,1/var.gamma[1])*var.gamma[1]
-	      z <- exp(rnorm(n,1)*var.z[1]^.5)
+	      z <- rgamma(n,var.z[1])*var.z[1]^{-.5}
+###	      z <- exp(rnorm(n,1)*var.z[1]^.5)
 	      z1 <- z; z2 <- z; zd <- z
+	      if (!is.null(cor.mat)) { zd <- rep(1,n); }
       } else if (dependence==2) {
               stdevs <- var.z^.5
               b <- stdevs %*% t(stdevs)  
               covv  <- b * cor.mat  
 	      z <- matrix(rnorm(3*n),n,3)
 	      z <- exp(z%*% chol(covv))
-	      print(summary(z))
-	      print(cor(z))
+###	      print(summary(z))
+###	      print(cor(z))
 	      z1 <- z[,1]; z2 <- z[,2]; zd <- z[,3]; 
       } else if (dependence==3) {
               stdevs <- var.z^.5
@@ -1083,8 +1086,8 @@ simRecurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
               z2 <- (z[,1]^cor.mat[1,2]+z[,3])/2
               zd <- z3 <- (z[,2]^cor.mat[1,3]+z[,3]^cor.mat[2,3])/2
 	      z <- cbind(z1,z2,zd)
-	      print(summary(z))
-	      print(cor(z))
+###	      print(summary(z))
+###	      print(cor(z))
       } else if (dependence>3) {
               stdevs <- var.z^.5
               b <- stdevs %*% t(stdevs)  
@@ -1097,8 +1100,7 @@ simRecurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
 	      if (any(z<0)) warning("some z < 0 , increase dependence");
 	      apply(z,2,function(x) {  x[x<0] <- 0.01; return(x)})
 	      z1 <- z[,1]; z2 <- z[,2]; zd <- z[,3]; 
-      }
-
+      }# }}}
 
   cumhaz <- rbind(c(0,0),cumhaz)
   ll <- nrow(cumhaz)
@@ -1114,7 +1116,6 @@ simRecurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
 	      cumhaz2 <- rbind(cumhaz2,c(max.time,haz2*max.time)) 
        }
   }# }}}
-
 
   ## extend cumulative for death to full range  of cause 1
   if (!is.null(death.cumhaz)) {# {{{
@@ -1141,11 +1142,25 @@ simRecurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
 	  timed   <- timereg::pc.hazard(cumhazd,zd)
 	  tall$dtime <- timed$time
 	  tall$fdeath <- timed$status
-  } else { tall$dtime <- max.time; tall$fdeath <- 0; cumhazd <- NULL }
+	  if (!is.null(cens)) { 
+             ctime <- rexp(n)/cens
+	     tall$fdeath[tall$dtime>ctime] <- 0; 
+	     tall$dtime[tall$dtime>ctime] <- ctime[tall$dtime>ctime] 
+	  }
+  } else { 
+	  tall$dtime <- max.time; 
+	  tall$fdeath <- 0; 
+	  cumhazd <- NULL 
+	  if (!is.null(cens)) { 
+             ctime <- rexp(n)/cens
+	     tall$fdeath[tall$dtime>ctime] <- 0; 
+	     tall$dtime[tall$dtime>ctime] <- ctime[tall$dtime>ctime] 
+	  }
+  }
 
 ### fixing the first time to event
   tall$death <- 0
-  tall <- dtransform(tall,death=1,time>dtime)
+  tall <- dtransform(tall,death=fdeath,time>dtime)
   tall <- dtransform(tall,status=0,time>dtime)
   tall <- dtransform(tall,time=dtime,time>dtime)
   tt <- tall
@@ -1159,8 +1174,8 @@ simRecurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
 	  i <- i+1
 	  still <- subset(tt,time<dtime)
 	  nn <- nrow(still)
-          tt1 <- timereg::pc.hazard(cumhaz,rr=z1[still$id],entry=still$time)
-          tt2 <- timereg::pc.hazard(cumhaz2,rr=z2[still$id],entry=still$time)
+          tt1 <- timereg::pc.hazard(cumhaz,z1[still$id],entry=still$time)
+          tt2 <- timereg::pc.hazard(cumhaz2,z2[still$id],entry=still$time)
 	  tt <- tt1
 ###          drename(tt1,paste(names(tt1),"1",sep="")) <- ~.
 ###          drename(tt2,paste(names(tt2),"2",sep="")) <- ~.
@@ -1168,13 +1183,13 @@ simRecurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
           tt$time <-   ifelse(tt1$time<=tt2$time,tt1$time,tt2$time)
 	  tt$rr2 <- tt2$rr
 ###
-	  tt <- cbind(tt,dkeep(still,~id+dtime+death+fdeath))
-	  tt <- dtransform(tt,death=1,time>dtime)
+	  tt <- cbind(tt,dkeep(still,~id+dtime+death+fdeath),row.names=NULL)
+	  tt <- dtransform(tt,death=fdeath,time>dtime)
 	  tt <- dtransform(tt,status=0,time>dtime)
 	  tt <- dtransform(tt,time=dtime,time>dtime)
 	  nt <- nrow(tt)
 ###	  gemsim[(nrr+1):(nrr+nt),] <- tt
-	  tall <- rbind(tall,tt[1:nn,])
+	  tall <- rbind(tall,tt[1:nn,],row.names=NULL)
 ###	  nrr <- nrr+nt
   }
 ###  tall <- gemsim[1:nrr,]
@@ -1222,6 +1237,7 @@ showfitsim <- function(causes=2,rr,dr,base1,base4)
 ##' @param id  id 
 ##' @param types types of the events (code) related to status
 ##' @param names.count name of Counts, for example Count1 Count2 when types=c(1,2)
+##' @param lag if true counts previously observed, and if lag=FALSE counts up to know
 ##' @author Thomas Scheike
 ##' @examples
 ##' ########################################
@@ -1245,7 +1261,7 @@ showfitsim <- function(causes=2,rr,dr,base1,base4)
 ##' dtable(rr,~"Count*"+status,level=1)
 ##'
 ##' @export
-count.history <- function(data,status="status",id="id",types=1:2,names.count="Count")
+count.history <- function(data,status="status",id="id",types=1:2,names.count="Count",lag=TRUE)
 {# {{{
 stat <- data[,status]
 
@@ -1261,8 +1277,12 @@ else {
 
 data[,"lbnr__id"] <- cumsumstrata(rep(1,nrow(data)),clusters,max.clust+1) 
 for (i in types)  {
+if (lag==TRUE)
 data[,paste(names.count,i,sep="")] <- 
    cumsumidstratasum((stat==i),rep(0,nrow(data)),1,clusters,max.clust+1)$lagsum 
+   else 
+data[,paste(names.count,i,sep="")] <- 
+   cumsumidstratasum((stat==i),rep(0,nrow(data)),1,clusters,max.clust+1)$sum 
 }
 
 return(data)
@@ -1798,7 +1818,7 @@ BootcovariancerecurrenceS <- function(data,type1,type2,status="status",death="de
   formid <- as.formula(paste("~",id))
   rrb <- blocksample(data, size = n*K, formid)
   rrb$strata <- floor((rrb$id-0.01)/n)
-  rrb$jump <- (rrb[,status]!=0) | (rrb[,death]==1)
+  rrb$jump <- (rrb[,status] %in% c(type1,type2)) | (rrb[,death]==1)
   rrb <- tie.breaker(rrb,status="jump",start=start,stop=stop,id=id)
 
   mm <- covarianceRecurrentS(rrb,type1,type2,status=status,death=death,
@@ -1830,7 +1850,8 @@ Bootcovariancerecurrence <- function(data,type1,type2,status="status",death="dea
   formid <- as.formula(paste("~",id))
   rrb <- blocksample(data, size = n*K, formid)
   rrb$strata <- floor((rrb$id-0.01)/n)
-  rrb$jump <- (rrb[,status]!=0) | (rrb[,death]==1)
+## rrb$jump <- (rrb[,status]!=0) | (rrb[,death]==1)
+  rrb$jump <- (rrb[,status] %in% c(type1,type2)) | (rrb[,death]==1)
   rrb <- tie.breaker(rrb,status="jump",start=start,stop=stop,id=id)
 
   for (i in 1:K)

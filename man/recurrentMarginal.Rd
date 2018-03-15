@@ -6,7 +6,7 @@
 \alias{recmarg}
 \title{Fast recurrent marginal mean when death is possible}
 \usage{
-recurrentMarginal(recurrent, death, fixbeta = NULL, ...)
+recurrentMarginal(recurrent, death, fixbeta = NULL, km = TRUE, ...)
 }
 \arguments{
 \item{recurrent}{phreg object with recurrent events}
@@ -14,6 +14,8 @@ recurrentMarginal(recurrent, death, fixbeta = NULL, ...)
 \item{death}{phreg object with deaths}
 
 \item{fixbeta}{to force the estimation of standard errors to think of regression coefficients as known/fixed}
+
+\item{km}{if true then uses Kaplan-Meier for death, otherwise exp(- Nelson-Aalen )}
 
 \item{...}{Additional arguments to lower level funtions}
 }

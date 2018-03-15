@@ -5,7 +5,7 @@
 \title{Counts the number of previous events of two types for recurrent events processes}
 \usage{
 count.history(data, status = "status", id = "id", types = 1:2,
-  names.count = "Count")
+  names.count = "Count", lag = TRUE)
 }
 \arguments{
 \item{data}{data-frame}
@@ -17,6 +17,8 @@ count.history(data, status = "status", id = "id", types = 1:2,
 \item{types}{types of the events (code) related to status}
 
 \item{names.count}{name of Counts, for example Count1 Count2 when types=c(1,2)}
+
+\item{lag}{if true counts previously observed, and if lag=FALSE counts up to know}
 }
 \description{
 Counts the number of previous events of two types for recurrent events processes

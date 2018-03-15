@@ -270,6 +270,8 @@ cumContr <- function(data, breaks = 4, probs = NULL,equi = TRUE,na.rm=TRUE,...)
 ##' gofG.phreg(m1)
 ##' gofG.phreg(m2)
 ##' 
+##' bplot(m1,log="y")
+##' bplot(m2,log="y")
 ##' @export
 gofG.phreg  <- function(x,sim=0,silent=1,lm=FALSE,...)
 {# {{{

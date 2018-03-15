@@ -29,6 +29,8 @@ par(mfrow=c(2,2))
 gofG.phreg(m1)
 gofG.phreg(m2)
 
+bplot(m1,log="y")
+bplot(m2,log="y")
 }
 \author{
 THomas Scheike and Klaus K. Holst
