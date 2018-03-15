@@ -1028,6 +1028,7 @@ simRecurrentGamma <- function(n,haz=0.5,death.haz=0.1,haz2=0.1,max.recurrent=100
 ##' @param dependence 0:independence; 1:all share same random effect with variance var.z; 2:random effect exp(normal) with correlation structure from cor.mat; 3:additive gamma distributed random effects, z1= (z11+ z12)/2 such that mean is 1 , z2= (z11^cor.mat(1,2)+ z13)/2, z3= (z12^(cor.mat(2,3)+z13^cor.mat(1,3))/2, with z11 z12 z13 are gamma with mean and variance 1 , first random effect is z1 and for N1 second random effect is z2 and for N2 third random effect is for death  
 ##' @param var.z variance of random effects 
 ##' @param cor.mat correlation matrix for var.z variance of random effects 
+##' @param cens rate of censoring exponential distribution
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Thomas Scheike
 ##' @examples
@@ -1593,20 +1594,20 @@ plot.covariance.recurrent <- function(x,main="Covariance",...)
 
 legend <- NULL # to avoid R-check 
 
-with(x, { plot(time,mu1.2,type="l",...) 
-              lines(time,mu1.i,col=2) })
-legend("topleft",c("N1givN2","independence"),lty=1,col=1:2)
+with(x, { plot(time,mu1.2,type="l",ylim=range(c(mu1.2,mu1.i)),...) 
+          lines(time,mu1.i,col=2) })
+legend("topleft",c(expression(integral(N[2](s)*dN[1](s),0,t)),"independence"),lty=1,col=1:2) 
 title(main=main)
 ###
-with(x, { plot(time,mu2.1,type="l",...) 
-              lines(time,mu2.i,col=2) 
+with(x, { plot(time,mu2.1,type="l",ylim=range(c(mu2.1,mu2.i)),...) 
+          lines(time,mu2.i,col=2) 
 	      })
-legend("topleft",c("N2givN1","independence"),lty=1,col=1:2)
+legend("topleft",c(expression(integral(N[1](s)*dN[2](s),0,t)),"independence"),lty=1,col=1:2) 
 title(main=main)
 ###
-with(x,  { plot(time,EN1N2,type="l",lwd=2,...) 
-          lines(time,EN1EN2,col=2,lwd=2) 
-          lines(time,EIN1N2,col=3,lwd=2) })
+with(x,  { plot(time,EN1N2,type="l",lwd=2,ylim=range(c(EN1N2,EN1EN2,EIN1N2)),...) 
+           lines(time,EN1EN2,col=2,lwd=2) 
+           lines(time,EIN1N2,col=3,lwd=2) })
 legend("topleft",c("E(N1N2)", "E(N1) E(N2) ", "E_I(N1 N2)-independence"),lty=1,col=1:3)
 title(main=main)
 } # }}}

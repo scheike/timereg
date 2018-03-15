@@ -258,6 +258,7 @@ cumContr <- function(data, breaks = 4, probs = NULL,equi = TRUE,na.rm=TRUE,...)
 ##' @param x phreg object
 ##' @param sim to simulate som variation from cox model to put on graph
 ##' @param silent to keep it absolutely silent 
+##' @param lm addd line to plot, regressing the cumulatives on each other  
 ##' @param ... Additional arguments to lower level funtions
 ##' @author THomas Scheike and Klaus K. Holst
 ##' @export
@@ -273,7 +274,7 @@ cumContr <- function(data, breaks = 4, probs = NULL,equi = TRUE,na.rm=TRUE,...)
 ##' bplot(m1,log="y")
 ##' bplot(m2,log="y")
 ##' @export
-gofG.phreg  <- function(x,sim=0,silent=1,lm=FALSE,...)
+gofG.phreg  <- function(x,sim=0,silent=1,lm=TRUE,...)
 {# {{{
 
 p <- length(x$coef)
