@@ -2,8 +2,6 @@
 % Please edit documentation in R/dutils.R
 \name{LinSpline}
 \alias{LinSpline}
-\alias{dspline}
-\alias{dspline<-}
 \title{Simple linear spline}
 \usage{
 LinSpline(x, knots, num = TRUE, name = "Spline")
