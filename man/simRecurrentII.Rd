@@ -31,6 +31,8 @@ simRecurrentII(n, cumhaz, cumhaz2, death.cumhaz = NULL, gap.time = FALSE,
 
 \item{cor.mat}{correlation matrix for var.z variance of random effects}
 
+\item{cens}{rate of censoring exponential distribution}
+
 \item{...}{Additional arguments to lower level funtions}
 }
 \description{

@@ -180,9 +180,19 @@ BEGIN_RCPP/*{{{*/
     Status = Status%(1+Sign);
   }
   //Rcout << "Status=" << Status << std::endl;
-  arma::uvec idx0 = sort_index(Status,"descend"); 
+  
+  // also sorting after id to use multiple phregs together
+  // ts 20/3-2018
+  arma::uvec idx00 = sort_index(Id,"ascend"); 
+  arma::uvec idx0 = stable_sort_index(Status.elem(idx00),"descend"); 
+  idx0 = idx00.elem(idx0);
   arma::uvec idx = stable_sort_index(Exit.elem(idx0),"ascend");
   idx = idx0.elem(idx);
+
+//  arma::uvec idx0 = sort_index(Status,"descend"); 
+//  arma::uvec idx = stable_sort_index(Exit.elem(idx0),"ascend");
+//  idx = idx0.elem(idx);
+
   //Rcout << "idx=" << idx << std::endl;
   if (Truncation) {
     Sign = Sign.elem(idx);  

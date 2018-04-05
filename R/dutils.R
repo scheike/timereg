@@ -886,3 +886,183 @@ dlag <- function(data,x,k=1,combine=TRUE,simplify=TRUE,names,...) {
     dlag(data,value,k=k,combine=combine,...)
 }
 
+
+##' @export
+dspline <- function(data,y=NULL,x=NULL,breaks=4,probs=NULL,equi=FALSE,regex=mets.options()$regex,sep=NULL,na.rm=TRUE,labels=NULL,all=FALSE,...)
+{# {{{
+    if (is.vector(data)) {# {{{
+	if (is.list(breaks)) breaks <- unlist(breaks)
+
+        if (length(breaks)==1) { 
+             if (!is.null(probs))
+	     {
+                breaks <- quantile(data, probs, na.rm=na.rm, ...)
+	        breaks <- breaks[-c(1,length(breaks))]
+	     } else {
+	   	if (!equi) { 
+			probs <- seq(0, 1, length.out = breaks + 1)
+			breaks <- quantile(data, probs,na.rm=na.rm, ...)
+	                breaks <- breaks[-c(1,length(breaks))]
+		} 
+		if (equi) { 
+			rr <- range(data,na.rm=na.rm)
+			breaks <-  seq(rr[1],rr[2],length.out=breaks+1)
+	                breaks <- breaks[-c(1,length(breaks))]
+		}
+	     }
+	}
+
+        if (sum(duplicated(breaks))==0) {
+             gx <- LinSpline(data, breaks, ...)
+	     attr(gx,"breaks") <- breaks
+	} else {
+	      wd <- which(duplicated(breaks))
+              mb <- min(diff(breaks[-wd]))
+	      breaks[wd] <- breaks[wd] +  (mb/2)*seq(length(wd))/length(wd)
+              gx <- LinSpline(data, breaks,...)
+	      attr(gx,"breaks") <- breaks
+              warning(paste("breaks duplicated"))
+        }
+        return(gx)
+    }# }}}
+
+if (is.data.frame(data)) {# {{{
+
+ if (is.null(sep)) sep <- "."
+
+ usernames <- FALSE# {{{
+
+     vars <-mets::procform3(y,x,data=data,regex=regex,...)
+     x <-  xnames <- vars$x
+
+     if (!is.null(vars$y)) {
+         usernames<-TRUE
+         newnames <- vars$y
+	 if (length(vars$y)!=length(vars$x)) { 
+	   warning("length of new names not consistent with length of cut variables, uses default naming\n"); 
+	   usernames <- FALSE
+      }
+     }
+# }}}
+
+  if (is.character(x) && length(x)<nrow(data)) x <- lapply(xnames,function(z) data[,z])
+  dots <- list()
+  args <- lapply(dots, function(x) { if (length(x)==1 && is.character(x)) x <- data[,x]; x })
+
+  if (!is.list(x)) x <- list(x)
+  ll <- length(x)
+  if (ll==1 & !is.list(breaks) & length(breaks)>1) breaks <- list(breaks)
+
+  break.points <- FALSE
+  if (is.list(breaks)) {
+     break.points <- TRUE
+     if (length(x)!=length(breaks) & length(breaks)!=1) 
+	     warning("length of variables not consistent with list of breaks"); 
+     if (length(breaks)!=ll) breaks <- rep(list(breaks[[1]]),ll)
+  }
+
+  if (!break.points) {
+     if (length(x)!=length(breaks) & length(breaks)!=1) 
+	     warning("length of variables not consistent with breaks"); 
+     if (length(breaks)!=ll) breaks<- rep(breaks[1],ll)
+  }
+
+  if (ll==1 & !is.list(labels)) labels <- list(labels)
+  if (!is.list(labels)) labels <- list(labels); 
+  if (length(labels)!=ll ) labels <- rep(list(labels[[1]]),ll)
+  if (!is.list(labels)) stop("labels should be given as list"); 
+
+
+for (k in 1:ll)
+{
+  xx <- x[[k]]
+  if (is.numeric(xx)) {
+
+      if (!is.list(breaks))
+      {
+          if (!is.null(probs))
+	  {
+                bb <- quantile(xx, probs,na.rm=na.rm, ...)
+	        bb <- bb[-c(1,length(bb))]
+	  } else {
+	   	if (!equi) { 
+			probs <- seq(0, 1, length.out = breaks[k] + 1)
+			bb <- quantile(xx, probs, na.rm=na.rm,...)
+	                bb <- bb[-c(1,length(bb))]
+		} 
+		if (equi) { 
+			rr <- range(xx,na.rm=na.rm)
+			bb <-  seq(rr[1],rr[2],length.out=breaks[k]+1)
+	                bb <- bb[-c(1,length(bb))]
+		}
+	     }
+###          name<-paste(xnames[k],breaks[k],sep=sep)
+          name<-xnames[k]
+      } else { bb <- breaks[[k]]; 
+###               name<-paste(xnames[k],breaks[[k]][1],sep=sep) 
+          name<-xnames[k]
+      }
+
+      if (usernames) name <- newnames[k]
+
+      if (sum(duplicated(bb))==0) {
+	attr(data,paste(name,"spline.breaks",sep="")) <- bb
+	for (i in seq_along(c(bb)))
+	{
+           namei <- paste(name,".spline",i,sep="")
+	   data[,namei] <-  (xx-bb[i])*(xx>bb[i])
+	}
+      }
+      else { 
+	   if (all==TRUE) {
+	      wd <- which(duplicated(bb))
+              mb <- min(diff(bb[-wd]))
+	      bb[wd] <- bb[wd] +  (mb/2)*seq(length(wd))/length(wd)
+	      attr(data,paste(name,"spline.breaks",sep="")) <- bb
+              for (i in seq_along(c(breaks)))
+              {
+		     namei <- paste(name,".spline",i,sep="")
+		     data[,namei] <-  (xx-bb[i])*(xx>bb[i])
+	      }
+             warning(paste("breaks duplicated for=",xnames[k]))
+	   }
+      }
+   }
+}
+
+return(data)
+}# }}}
+
+}# }}}
+
+##' @export
+"dspline<-" <- function(data,...,value) dspline(data,y=value,...)
+
+
+##' Simple linear spline 
+##' 
+##' Simple linear spline 
+##' 
+##' @param x variable to make into spline
+##' @param knots cut points 
+##' @param num to give names x1 x2 and so forth
+##' @param name name of spline expansion name.1 name.2 and so forth
+##' @author Thomas Scheike
+##' @keywords survival
+##' @export
+##' @aliases dspline dspline<-
+LinSpline <- function(x,knots,num=TRUE,name="Spline")
+{# {{{
+
+lspline <- matrix(0,length(c(x)),length(c(knots)))
+for (i in seq_along(c(knots)))
+{
+    lspline[,i] <- (x-knots[i])*(x>knots[i])
+}
+
+lspline <- as.data.frame(lspline)
+if (num==TRUE) names(lspline) <- paste(name,seq_along(c(knots)),sep="")
+else if (!is.nulll(signif)) names(lspline) <- paste(name,round(c(knots),signif),sep="")
+
+return(lspline)
+}# }}}

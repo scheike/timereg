@@ -270,6 +270,7 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 
 
 ###{{{ phreg
+
 ##' Fast Cox PH regression
 ##'
 ##' Fast Cox PH regression
@@ -302,6 +303,7 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' betaiiid <- iid(out1)
 ##' 
 ##' @export
+##' @aliases KM phreg
 phreg <- function(formula,data,offset=NULL,weights=NULL,...) {
   cl <- match.call()
   m <- match.call(expand.dots = TRUE)[1:3]
@@ -431,11 +433,11 @@ robust.basehaz.phreg  <- function(x,type="robust",fixbeta=NULL,...) {# {{{
   S0i[xx$jumps+1] <-  1/x$S0
   S0i2[xx$jumps+1] <- 1/x$S0^2
   if (fixbeta==0) {
-  Z <- xx$X
-  U <- E <- matrix(0,nrow(xx$X),x$p)
-  E[xx$jumps+1,] <- x$E
-  U[xx$jumps+1,] <- x$U
-  Ht <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
+	  Z <- xx$X
+	  U <- E <- matrix(0,nrow(xx$X),x$p)
+	  E[xx$jumps+1,] <- x$E
+	  U[xx$jumps+1,] <- x$U
+	  Ht <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
   }
   ###    
   cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
@@ -458,8 +460,6 @@ robust.basehaz.phreg  <- function(x,type="robust",fixbeta=NULL,...) {# {{{
       MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-Ht)*rr*c(xx$weights)
       UU <- apply(MGt,2,sumstrata,id,max(id)+1)
       betaiid <- UU %*% invhess
-###
-###  betaiid <- iid(x)
      vbeta <- crossprod(betaiid)
      varbetat <-   rowSums((Ht %*% vbeta)*Ht)
      ### writing each beta for all individuals 
@@ -499,9 +499,8 @@ robust.phreg  <- function(x,fixbeta=NULL,...) {
 	    se.cumhaz=x$se.cumhaz,
 	    robse.cumhaz=baseline$se.cumhaz,
 	    stratajumps=baseline$strata,
-	    nstrata=x$nstrata,
-	    strata=x$strata,jumps=x$jumps,
-	    strata.name=x$strata.name,strata.level=x$strata.level)
+	    nstrata=x$nstrata, strata=x$strata,
+	    jumps=x$jumps, strata.name=x$strata.name,strata.level=x$strata.level)
  )
 }
 
@@ -684,6 +683,58 @@ res <- .Call("covrfstrataCovR",x,y,x1,y1,id,nid,strata,nstrata)
 return(res)
 }# }}}
 
+##' @export
+KM <- function(formula,data=data,conf.type="log",conf.int=0.95)
+{# {{{
+ coxo <- phreg(formula,data=data)
+ chaz <-     coxo$cumhaz[,2]
+ time <-     coxo$cumhaz[,1]
+ std.err <-  coxo$se.cumhaz[,2]
+ strat <-    coxo$strata[coxo$jumps]
+
+ S0i  <-  1/coxo$S0
+ kmt <- exp(cumsumstrata(log(1-S0i),strat,coxo$nstrata))
+ temp <- list(surv=kmt)
+
+ zval <- qnorm(1 - (1 - conf.int)/2, 0, 1)
+
+ if (conf.type == "plain") {
+    temp1 <- temp$surv + zval * std.err * temp$surv
+    temp2 <- temp$surv - zval * std.err * temp$surv
+    temp <- c(temp, list(upper = pmin(temp1, 1), lower = pmax(temp2,
+	0), conf.type = "plain", conf.int = conf.int))
+ }
+ if (conf.type == "log") {
+    xx <- ifelse(temp$surv == 0, 1, temp$surv)
+    temp1 <- ifelse(temp$surv == 0, NA, exp(log(xx) +
+	zval * std.err))
+    temp2 <- ifelse(temp$surv == 0, NA, exp(log(xx) -
+	zval * std.err))
+    temp <- c(temp, list(upper = pmin(temp1, 1), lower = temp2,
+	conf.type = "log", conf.int = conf.int))
+ }
+ if (conf.type == "log-log") {
+    who <- (temp$surv == 0 | temp$surv == 1)
+    temp3 <- ifelse(temp$surv == 0, NA, 1)
+    xx <- ifelse(who, 0.1, temp$surv)
+    temp1 <- exp(-exp(log(-log(xx)) + zval * std.err/log(xx)))
+    temp1 <- ifelse(who, temp3, temp1)
+    temp2 <- exp(-exp(log(-log(xx)) - zval * std.err/log(xx)))
+    temp2 <- ifelse(who, temp3, temp2)
+    temp <- c(temp, list(upper = temp1, lower = temp2,
+	conf.type = "log-log", conf.int = conf.int))
+ }
+
+ ### to use basehazplot.phreg
+ temp <- c(temp,
+   list(cumhaz=cbind(time,kmt),se.cumhaz=cbind(time,kmt*std.err),
+	strata=strat,nstrata=coxo$nstrata,
+	    jumps=1:length(kmt),
+	    strata.name=coxo$strata.name,
+	    strata.level=coxo$strata.level))
+ class(temp) <- c("km","phreg")
+ return(temp)
+}# }}}
 
 ###{{{ predict with se for baseline
 
@@ -836,8 +887,10 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 ##'             lty=matrix(c(1,2,3),1,3),se=TRUE,polygon=FALSE)
 ##' @export
 basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NULL,
-    lty=NULL,col=NULL,legend=TRUE,ylab="Cumulative hazard",
+    lty=NULL,col=NULL,legend=TRUE,ylab=NULL,
     polygon=TRUE,level=0.95,stratas=NULL,robust=FALSE,...) {# {{{
+	if (class(x)[1]=="phreg" & is.null(ylab)) ylab <- "Cumulative hazard"
+	if (class(x)[1]=="km" & is.null(ylab)) ylab <- "Survival probability"
    level <- -qnorm((1-level)/2)
 ###   if (log==FALSE) 
    rr <- range(x$cumhaz[,-1]) ### else rr <- range(log(x$cumhaz[,-1]),na.rm=TRUE)
@@ -846,9 +899,10 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
    if (is.null(ylim)) ylim <- rr
    if (is.null(xlim)) xlim <- range(x$cumhaz[,1])
    if (se==TRUE) {
-	   if (is.null(x$se.cumhaz) & is.null(x$robse.cumhaz)) 
+	   if (is.null(x$se.cumhaz) & is.null(x$robse.cumhaz) ) 
 		   stop("phreg must be with cumhazard=TRUE\n"); 
        rrse <- range(c(x$cumhaz[,-1]+level*x$se.cumhaz[,-1])) 
+       if (class(x)[1]=="km") rrse <- c(min(x$lower),1)
 ###       else rrse <- range(log(c(x$cumhaz[,-1]+level*x$se.cumhaz[,-1])),na.rm=TRUE)
        if (is.null(ylimo)) ylim <- rrse
    }
@@ -858,6 +912,7 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
 
    ltys <- lty
    cols <- col
+
    if (length(stratas)>0 & x$nstrata>1) { ## with strata
    lstrata <- x$strata.level[(stratas+1)]
    stratn <-  substring(x$strata.name,8,nchar(x$strata.name)-1)
@@ -893,6 +948,9 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
 	    else secumhazard <- x$se.cumhaz[strat==j,]
       ul <-cbind(cumhazard[,1],cumhazard[,2]+level*secumhazard[,2])
       nl <-cbind(cumhazard[,1],cumhazard[,2]-level*secumhazard[,2])
+      if (class(x)[1]=="km") { ul[,2] <- x$upper[x$strata==j]; 
+                               nl[,2] <- x$lower[x$strata==j];
+      }
       if (!polygon) {
       lines(nl,type="s",lty=ltys[i,2],col=cols[i,2])
       lines(ul,type="s",lty=ltys[i,3],col=cols[i,3])
@@ -917,6 +975,9 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
 	    else secumhazard <- x$se.cumhaz[strat==j,]
          ul <-cbind(cumhazard[,1],cumhazard[,2]+level*secumhazard[,2])
          nl <-cbind(cumhazard[,1],cumhazard[,2]-level*secumhazard[,2])
+      if (class(x)[1]=="km") { ul[,2] <- x$upper[x$strata==j]; 
+                               nl[,2] <- x$lower[x$strata==j];
+      }
       if (!polygon) {
       lines(nl,type="s",lty=ltys[i,2],col=cols[i,2])
       lines(ul,type="s",lty=ltys[i,3],col=cols[i,3])
