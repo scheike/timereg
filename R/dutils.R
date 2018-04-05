@@ -841,7 +841,7 @@ dnames <- function(data,...) drename(data,...)
 ##' @param names optional new column names
 ##' @param ... additional arguments to lower level functions
 ##' @aliases dlag dlag<-
-dlag <- function(data,x,k=1,combine=TRUE,simplify=TRUE,names,...) {
+dlag <- function(data,x,k=1,combine=TRUE,simplify=TRUE,names,...) {# {{{
     isvec <- FALSE
     if (!is.data.frame(data)) {
         isvec <- is.vector(data)
@@ -879,15 +879,44 @@ dlag <- function(data,x,k=1,combine=TRUE,simplify=TRUE,names,...) {
     if (length(k)==1 && simplify && isvec) return(as.vector(val[[1]]))
     names(dval) <- base::make.unique(base::names(dval))
     return(as.matrix(dval))
-}
+}# }}}
 
 ##' @export
 "dlag<-" <- function(data,k=1,combine=TRUE,...,value) {
     dlag(data,value,k=k,combine=combine,...)
 }
 
-
+##' Simple linear spline 
+##' 
+##' Constructs simple linear spline  on a data frame using the formula syntax of dutils
+##' 
+##' @param data if x is formula or names for data frame then data frame is needed.
+##' @param y name of variable, or fomula, or names of variables on data frame.
+##' @param x name of variable, or fomula, or names of variables on data frame.
+##' @param probs groups defined from quantiles
+##' @param breaks  number of breaks, for variables or vector of break points,
+##' @param equi for equi-spaced breaks  
+##' @param regex for regular expressions.
+##' @param sep seperator for naming of cut names.
+##' @param na.rm to remove NA for grouping variables.
+##' @param labels to use for cut groups 
+##' @param all to do all variables, even when breaks are not unique 
+##' @param ... Optional additional arguments
+##' @author Thomas Scheike
+##' @examples
+##' data(TRACE)
+##' TRACE <- dspline(TRACE,~wmi,breaks=c(1,1.3,1.7))
+##' cca <- coxph(Surv(time,status==9)~age+vf+chf+wmi,data=TRACE)
+##' cca2 <- coxph(Surv(time,status==9)~age+wmi+vf+chf+wmi.spline1+wmi.spline2+wmi.spline3,data=TRACE)
+##' anova(cca,cca2)
+##' 
+##' nd=data.frame(age=50,vf=0,chf=0,wmi=seq(0.4,3,by=0.01))
+##' nd <- dspline(nd,~wmi,breaks=c(1,1.3,1.7))
+##' pl <- predict(cca2,newdata=nd)
+##' plot(nd$wmi,pl,type="l")
+##'
 ##' @export
+##' @aliases dspline<-
 dspline <- function(data,y=NULL,x=NULL,breaks=4,probs=NULL,equi=FALSE,regex=mets.options()$regex,sep=NULL,na.rm=TRUE,labels=NULL,all=FALSE,...)
 {# {{{
     if (is.vector(data)) {# {{{
@@ -1038,7 +1067,6 @@ return(data)
 ##' @export
 "dspline<-" <- function(data,...,value) dspline(data,y=value,...)
 
-
 ##' Simple linear spline 
 ##' 
 ##' Simple linear spline 
@@ -1050,7 +1078,6 @@ return(data)
 ##' @author Thomas Scheike
 ##' @keywords survival
 ##' @export
-##' @aliases dspline dspline<-
 LinSpline <- function(x,knots,num=TRUE,name="Spline")
 {# {{{
 
@@ -1066,3 +1093,4 @@ else if (!is.nulll(signif)) names(lspline) <- paste(name,round(c(knots),signif),
 
 return(lspline)
 }# }}}
+
