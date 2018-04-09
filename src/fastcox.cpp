@@ -114,6 +114,7 @@ BEGIN_RCPP/*{{{*/
   arma::mat  Z     = Rcpp::as<arma::mat>(ZSEXP);
   arma::Col<int> strata= Rcpp::as<arma::Col<int> >(strataSEXP);
   arma::Col<int> Id= Rcpp::as<arma::Col<int> >(IdSEXP);
+//  arma::uvec idx = Rcpp::as<arma::Col<int> >(sortid);
 //  try {
 //    arma::Col<unsigned> Id    = Rcpp::as<arma::Col<unsigned> >(IdSEXP);
 //  }
@@ -189,9 +190,15 @@ BEGIN_RCPP/*{{{*/
   arma::uvec idx = stable_sort_index(Exit.elem(idx0),"ascend");
   idx = idx0.elem(idx);
 
+//  arma::uvec idx0 = stable_sort_index(Status.elem(idx00),"descend"); 
+
 //  arma::uvec idx0 = sort_index(Status,"descend"); 
 //  arma::uvec idx = stable_sort_index(Exit.elem(idx0),"ascend");
 //  idx = idx0.elem(idx);
+
+//  arma::uvec idx00 = stable_sort_index(Id.elem(idx),"ascend"); 
+//  idx = idx00.elem(idx);
+
 
   //Rcout << "idx=" << idx << std::endl;
   if (Truncation) {

@@ -706,10 +706,8 @@ KM <- function(formula,data=data,conf.type="log",conf.int=0.95)
  }
  if (conf.type == "log") {
     xx <- ifelse(temp$surv == 0, 1, temp$surv)
-    temp1 <- ifelse(temp$surv == 0, NA, exp(log(xx) +
-	zval * std.err))
-    temp2 <- ifelse(temp$surv == 0, NA, exp(log(xx) -
-	zval * std.err))
+    temp1 <- ifelse(temp$surv == 0, NA, exp(log(xx) + zval * std.err))
+    temp2 <- ifelse(temp$surv == 0, NA, exp(log(xx) - zval * std.err))
     temp <- c(temp, list(upper = pmin(temp1, 1), lower = temp2,
 	conf.type = "log", conf.int = conf.int))
  }
