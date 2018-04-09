@@ -94,7 +94,7 @@ recurrent.marginal.mean <- function(recurrent,death)
 
 #' Estimates marginal mean of recurrent events  based on two cox models 
 #' 
-#' Fitting two aalen models for death and recurent events these are
+#' Fitting two Cox models for death and recurent events these are
 #' combined to prducte the estimator 
 #' \deqn{ \int_0^t  S(u|x=0) dR(u|x=0) } the mean number of recurrent events, here
 #' \deqn{ S(u|x=0) }  is the probability of survival, and 

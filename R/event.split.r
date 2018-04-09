@@ -102,7 +102,7 @@ event.split <- function(data,
 
     if (time.group) {
       group.time <- paste("before",cutname,sep=".")
-      data[,group.time] <- data[,name.start]>=data[,cutname] ## sc(rep(1,n),rep(0,length(splits)))
+      data[,group.time] <- 1*(data[,name.start]<data[,cutname]) ## sc(rep(1,n),rep(0,length(splits)))
     } 
 
     if (order.id) data <- data[order(idl,new.start),] 

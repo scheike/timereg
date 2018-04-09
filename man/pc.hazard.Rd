@@ -5,13 +5,16 @@
 \alias{pchazard.sim}
 \title{Simulation of Piecewise constant hazard model (Cox).}
 \usage{
-pc.hazard(cumhazard, rr, entry = NULL, cum.hazard = TRUE, cause = 1)
+pc.hazard(cumhazard, rr, n = NULL, entry = NULL, cum.hazard = TRUE,
+  cause = 1)
 }
 \arguments{
 \item{cumhazard}{cumulative hazard, or piece-constant rates for periods
 defined by first column of input.}
 
 \item{rr}{number of simulations or vector of relative risk for simuations.}
+
+\item{n}{number of simulations given as "n"}
 
 \item{entry}{delayed entry time for simuations.}
 
@@ -35,7 +38,7 @@ rrcox <- exp(X * beta)
 cumhaz <- cumsum(c(0,diff(breaks)*rates[-1]))
 cumhaz <- cbind(breaks,cumhaz)
 
-pctime <- pc.hazard(haz,1000,cum.hazard=FALSE)
+pctime <- pc.hazard(haz,n=1000,cum.hazard=FALSE)
 
 par(mfrow=c(1,2))
 ss <- aalen(Surv(time,status)~+1,data=pctime,robust=0)

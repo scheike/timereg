@@ -6,6 +6,7 @@
 #' @param cumhazard cumulative hazard, or piece-constant rates for periods
 #' defined by first column of input.
 #' @param rr number of simulations or vector of relative risk for simuations.
+#' @param n number of simulations given as "n" 
 #' @param entry delayed entry time for simuations.
 #' @param cum.hazard specifies wheter input is cumulative hazard or rates.
 #' @param cause name of cause 
@@ -23,7 +24,7 @@
 #' cumhaz <- cumsum(c(0,diff(breaks)*rates[-1]))
 #' cumhaz <- cbind(breaks,cumhaz)
 #' 
-#' pctime <- pc.hazard(haz,1000,cum.hazard=FALSE)
+#' pctime <- pc.hazard(haz,n=1000,cum.hazard=FALSE)
 #' 
 #' par(mfrow=c(1,2))
 #' ss <- aalen(Surv(time,status)~+1,data=pctime,robust=0)
@@ -59,11 +60,12 @@
 #' 
 #' @export
 #' @aliases pchazard.sim 
-pc.hazard <- function(cumhazard,rr,entry=NULL,cum.hazard=TRUE,cause=1)
+pc.hazard <- function(cumhazard,rr,n=NULL,entry=NULL,cum.hazard=TRUE,cause=1)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
 ### cumh=cbind(breaks,cumhazard) if cumh=TRUE
-  if (length(rr)==1) rr<-rep(1,rr)
+  if (!is.null(rr)) n <- length(rr); 
+  if (!is.null(n)) rr <- rep(1,n)
   breaks <- cumhazard[,1]
   rates <- cumhazard[,2][-1]
   mm <- tail(breaks,1)
