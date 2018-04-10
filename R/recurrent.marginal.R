@@ -111,10 +111,11 @@ recurrentMarginal <- function(recurrent,death,fixbeta=NULL,km=FALSE,...)
   S0i2 <- S0i <- rep(0,length(xx$strata))
   S0i[xx$jumps+1] <-  1/x$S0
   S0i2[xx$jumps+1] <- 1/x$S0^2
+  ## survival at t- to also work in competing risks situation
   if (!km) { 
-     cumhazD <- c(cumsumstrata(S0i,xx$strata,xx$nstrata))
-     St      <- exp(-cumhazD)
-  } else St <- c(exp(cumsumstrata(log(1-S0i),xx$strata,xx$nstrata)))
+    cumhazD <- c(cumsumstratasum(S0i,xx$strata,xx$nstrata)$lagsum)
+    St      <- exp(-cumhazD)
+  } else St <- c(exp(cumsumstratasum(log(1-S0i),xx$strata,xx$nstrata)$lagsum))
   x <- xr
   xx <- x$cox.prep
   S0i2 <- S0i <- rep(0,length(xx$strata))
@@ -122,8 +123,6 @@ recurrentMarginal <- function(recurrent,death,fixbeta=NULL,km=FALSE,...)
   S0i2[xx$jumps+1] <- 1/x$S0^2
   cumhazR <-  cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
   cumhazDR <- cbind(xx$time,cumsumstrata(St*S0i,xx$strata,xx$nstrata))
-###  mm <- cbind(cumhazR,cumhazDR,St,xx$time,x$cox.prep$time)
-###  head(cbind(cumhazR,cumhazDR,St,xx$time,x$cox.prep$time),500)
   mu <- cumhazDR[,2]
 # }}}
 
@@ -505,10 +504,11 @@ recurrentMarginalgam <- function(recurrent,death,fixbeta=NULL,km=FALSE,...)
   S0i2 <- S0i <- rep(0,length(xx$strata))
   S0i[xx$jumps+1] <-  1/x$S0
   S0i2[xx$jumps+1] <- 1/x$S0^2
+  ## survival at t- to also work in competing risks situation
   if (!km) { 
-     cumhazD <- c(cumsumstrata(S0i,xx$strata,xx$nstrata))
-     St      <- exp(-cumhazD)
-  } else St <- c(exp(cumsumstrata(log(1-S0i),xx$strata,xx$nstrata)))
+    cumhazD <- c(cumsumstratasum(S0i,xx$strata,xx$nstrata)$lagsum)
+    St      <- exp(-cumhazD)
+  } else St <- c(exp(cumsumstratasum(log(1-S0i),xx$strata,xx$nstrata)$lagsum))
   x <- xr
   xx <- x$cox.prep
   S0i2 <- S0i <- rep(0,length(xx$strata))
@@ -516,10 +516,9 @@ recurrentMarginalgam <- function(recurrent,death,fixbeta=NULL,km=FALSE,...)
   S0i2[xx$jumps+1] <- 1/x$S0^2
   cumhazR <-  cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
   cumhazDR <- cbind(xx$time,cumsumstrata(St*S0i,xx$strata,xx$nstrata))
-###  mm <- cbind(cumhazR,cumhazDR,St,xx$time,x$cox.prep$time)
-###  head(cbind(cumhazR,cumhazDR,St,xx$time,x$cox.prep$time),500)
   mu <- cumhazDR[,2]
 # }}}
+
   ### robust standard errors 
   ### 1. sum_k ( int_0^t S(s)/S_0^r(s) dM_k.^r(s) )^2
 # {{{
@@ -812,9 +811,9 @@ recmarg <- function(recurrent,death,km=FALSE,...)
   S0i[xx$jumps+1] <-  1/x$S0
   S0i2[xx$jumps+1] <- 1/x$S0^2
   if (!km) { 
-     cumhazD <- c(cumsumstrata(S0i,xx$strata,xx$nstrata))
+     cumhazD <- c(cumsumstratasum(S0i,xx$strata,xx$nstrata)$lagsum)
      St      <- exp(-cumhazD)
-  } else St <- c(exp(cumsumstrata(log(1-S0i),xx$strata,xx$nstrata)))
+  } else St <- c(exp(cumsumstratasum(log(1-S0i),xx$strata,xx$nstrata)$lagsum))
   ###
   x <- xr
   xx <- x$cox.prep

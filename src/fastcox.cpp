@@ -542,6 +542,7 @@ RcppExport SEXP cumsumstratasumR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
 
   colvec tmpsum(nstrata); tmpsum.zeros(); 
   colvec ressum = a; 
+  colvec lagressum = a; 
   colvec ressqu = a; 
   double cumsum=0; 
   int first=0,ss; 
@@ -551,6 +552,7 @@ RcppExport SEXP cumsumstratasumR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
     if ((first>0.1) & (i>=1)& (ss<nstrata) & (ss>=0))
        ressqu(i)=ressqu(i-1)+pow(a(i),2)+2*a(i)*tmpsum(ss);
     if ((ss<nstrata) & (ss>=0))  {
+       lagressum(i)=tmpsum(ss); 
        tmpsum(ss) += a(i); 
        cumsum+=a(i); 
        if (first<0.1) ressqu(i) = pow(a(i),2); 
@@ -562,6 +564,7 @@ RcppExport SEXP cumsumstratasumR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*/
   List rres; 
   rres["sumsquare"]=ressqu; 
   rres["sum"]=ressum; 
+  rres["lagsum"]=lagressum; 
   return(rres);
 } /*}}}*/
 
@@ -575,6 +578,7 @@ RcppExport SEXP revcumsumstratasumR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*
   tmpsum.zeros(); 
 //  colvec ressqu = a; colvec ressumu = a; 
   colvec ressum = a; 
+  colvec lagressum = a; 
   colvec ressqu = a; 
   double cumsum=0; 
   int first=0,ss; 
@@ -584,6 +588,7 @@ RcppExport SEXP revcumsumstratasumR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*
     if ((first>0.1) & (i>=1)& (ss<nstrata) & (ss>=0))
        ressqu(n-i-1)=ressqu(n-i)+pow(a(n-i-1),2)+2*a(n-i-1)*tmpsum(ss);
     if ((ss<nstrata) & (ss>=0))  {
+       lagressum(ss)=tmpsum(ss); 
        tmpsum(ss) += a(n-i-1); 
        cumsum+=a(n-i-1); 
        if (first<0.1) ressqu(n-i-1) = pow(a(n-i-1),2); 
@@ -597,6 +602,7 @@ RcppExport SEXP revcumsumstratasumR(SEXP ia,SEXP istrata, SEXP instrata) {/*{{{*
   List rres; 
   rres["sumsquare"]=ressqu; 
   rres["sum"]=ressum; 
+  rres["sum"]=lagressum; 
   return(rres);
 } /*}}}*/
 

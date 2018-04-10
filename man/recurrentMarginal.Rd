@@ -35,7 +35,6 @@ Assumes no ties in the sense that jump times needs to be unique, this is particu
 }
 \examples{
 
-library(mets)
 data(base1cumhaz)
 data(base4cumhaz)
 data(drcumhaz)
@@ -72,35 +71,9 @@ title(main="death")
 basehazplot.phreg(xr,se=TRUE)
 rxr <-   robust.phreg(xr,fixbeta=1)
 basehazplot.phreg(rxr,se=TRUE,robust=TRUE,add=TRUE,col=1:2)
-###
-out <- recurrentMarginalgam(xr,dr)
+
 out <- recurrentMarginal(xr,dr)
 basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=1:2)
-
-bplot(out,ylab="marginal mean",col=1:2)
-bplot(out0,add=TRUE)
-bplot(out1,add=TRUE)
-
-xrc <- xr$cox.prep
-did <- xr$cox.prep$id- dr$cox.prep$id
-cbind(xrc$time,xr$cox.prep$id, dr$cox.prep$id,did)
-
-
-
-
-rr0 <- subset(rr,strata==0)
-xr0 <- phreg(Surv(entry,time,status)~cluster(id),data=rr0)
-dr0 <- phreg(Surv(entry,time,death)~cluster(id),data=rr0)
-out0 <- recurrentMarginalgam(xr0,dr0)
-bplot(out0,se=TRUE)
-
-rr1 <- subset(rr,strata==1)
-xr1 <- phreg(Surv(entry,time,status)~cluster(id),data=rr1)
-dr1 <- phreg(Surv(entry,time,death)~cluster(id),data=rr1)
-out1 <- recurrentMarginalgam(xr1,dr1)
-bplot(out1,se=TRUE)
-
-
 
 ########################################################################
 ###   cox case        ##################################################

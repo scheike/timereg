@@ -597,6 +597,7 @@ cumsumstratasum <- function(x,strata,nstrata,type="all")
 {# {{{
 if (any(strata<0) | any(strata>nstrata-1)) stop("strata index not ok\n"); 
 if (type=="sum")    res <- .Call("cumsumstratasumR",x,strata,nstrata)$sum
+if (type=="lagsum") res <- .Call("cumsumstratasumR",x,strata,nstrata)$lagsum
 if (type=="all")    res <- .Call("cumsumstratasumR",x,strata,nstrata)
 return(res)
 }# }}}
@@ -726,10 +727,9 @@ KM <- function(formula,data=data,conf.type="log",conf.int=0.95)
  ### to use basehazplot.phreg
  temp <- c(temp,
    list(cumhaz=cbind(time,kmt),se.cumhaz=cbind(time,kmt*std.err),
+	time=time,
 	strata=strat,nstrata=coxo$nstrata,
-	    jumps=1:length(kmt),
-	    strata.name=coxo$strata.name,
-	    strata.level=coxo$strata.level))
+        jumps=1:length(kmt), strata.name=coxo$strata.name, strata.level=coxo$strata.level))
  class(temp) <- c("km","phreg")
  return(temp)
 }# }}}
