@@ -493,15 +493,9 @@ robust.phreg  <- function(x,fixbeta=NULL,...) {
     robvar <- crossprod(gamma.iid)
  } else robvar <- gamma.iid <- NULL
  baseline <- robust.basehaz.phreg(x,fixbeta=fixbeta,...); 
- ## pass arguments so that we can call basehazplot.phreg
- return(list(coef=x$coef,gamma.iid=gamma.iid,robvar=robvar,
-	    cumhaz=baseline$cumhaz,
-	    se.cumhaz=x$se.cumhaz,
-	    robse.cumhaz=baseline$se.cumhaz,
-	    stratajumps=baseline$strata,
-	    nstrata=x$nstrata, strata=x$strata,
-	    jumps=x$jumps, strata.name=x$strata.name,strata.level=x$strata.level)
- )
+ ## add arguments so that we can call basehazplot.phreg
+ return(c(x,list(gamma.iid=gamma.iid,robvar=robvar,
+		 robse.cumhaz=baseline$se.cumhaz)))
 }
 
 ###}}}
@@ -685,12 +679,15 @@ return(res)
 }# }}}
 
 ##' @export
-KM <- function(formula,data=data,conf.type="log",conf.int=0.95)
+KM <- function(formula,data=data,conf.type="log",conf.int=0.95,robust=TRUE)
 {# {{{
  coxo <- phreg(formula,data=data)
+ coxo <- robust.phreg(coxo)
+
  chaz <-     coxo$cumhaz[,2]
  time <-     coxo$cumhaz[,1]
- std.err <-  coxo$se.cumhaz[,2]
+ if (robust) std.err <-  coxo$robse.cumhaz[,2]
+ else std.err <-  coxo$se.cumhaz[,2]
  strat <-    coxo$strata[coxo$jumps]
 
  S0i  <-  1/coxo$S0
@@ -986,14 +983,16 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
          col.ci<-cols[j+1]
          col.trans <- sapply(col.ci, FUN=function(x) 
                    do.call(grDevices::rgb,as.list(c(grDevices::col2rgb(x)/255,col.alpha))))
-	 polygon(tt,yy,lty=ltys[1,2],col=col.trans)
+	 polygon(tt,yy,lty=ltys[i,2],col=col.trans)
       }
     }
     }
     }
 
-    if (legend & (!add))
-    graphics::legend("topleft",legend=stratnames,col=cols[,1],lty=ltys[,1])
+    where <- "topleft"; 
+    if (class(x)[1]=="km") where <-  "topright"
+    if (legend & (!add)) 
+    graphics::legend(where,legend=stratnames,col=cols[,1],lty=ltys[,1])
 
 }# }}}
 

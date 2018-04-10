@@ -35,6 +35,7 @@ Assumes no ties in the sense that jump times needs to be unique, this is particu
 }
 \examples{
 
+library(mets)
 data(base1cumhaz)
 data(base4cumhaz)
 data(drcumhaz)
@@ -71,9 +72,35 @@ title(main="death")
 basehazplot.phreg(xr,se=TRUE)
 rxr <-   robust.phreg(xr,fixbeta=1)
 basehazplot.phreg(rxr,se=TRUE,robust=TRUE,add=TRUE,col=1:2)
-
+###
+out <- recurrentMarginalgam(xr,dr)
 out <- recurrentMarginal(xr,dr)
 basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=1:2)
+
+bplot(out,ylab="marginal mean",col=1:2)
+bplot(out0,add=TRUE)
+bplot(out1,add=TRUE)
+
+xrc <- xr$cox.prep
+did <- xr$cox.prep$id- dr$cox.prep$id
+cbind(xrc$time,xr$cox.prep$id, dr$cox.prep$id,did)
+
+
+
+
+rr0 <- subset(rr,strata==0)
+xr0 <- phreg(Surv(entry,time,status)~cluster(id),data=rr0)
+dr0 <- phreg(Surv(entry,time,death)~cluster(id),data=rr0)
+out0 <- recurrentMarginalgam(xr0,dr0)
+bplot(out0,se=TRUE)
+
+rr1 <- subset(rr,strata==1)
+xr1 <- phreg(Surv(entry,time,status)~cluster(id),data=rr1)
+dr1 <- phreg(Surv(entry,time,death)~cluster(id),data=rr1)
+out1 <- recurrentMarginalgam(xr1,dr1)
+bplot(out1,se=TRUE)
+
+
 
 ########################################################################
 ###   cox case        ##################################################
@@ -94,13 +121,70 @@ basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=1:2)
 ###   CIF  #############################################################
 ########################################################################
 ### use of function to compute cumulative incidence (cif) with robust standard errors
+library(mets)
+library(prodlim)
 data(bmt)
+bmt$entry <- 0
+bmt$jump <- bmt$cause!=0
+bmt <- tie.breaker(bmt,status="jump")
 bmt$id <- 1:nrow(bmt)
+
+source("../R/phreg.R")
+source("../R/recurrent.marginal.R")
 xr  <- phreg(Surv(time,cause==1)~cluster(id),data=bmt)
 dr  <- phreg(Surv(time,cause!=0)~cluster(id),data=bmt)
+dr$cumhaz
 
-out <- recurrentMarginal(xr,dr)
+rdr <- robust.basehaz.phreg(dr)
+
+dr <-  robust.phreg(dr)
+bplot(dr,se=TRUE,robust=TRUE)
+bplot(dr,se=TRUE,add=TRUE,col=2)
+cbind(dr$se.cumhaz,dr$robse.cumhaz)
+
+km1 <- KM(Surv(time,cause!=0)~strata(tcell,platelet)+cluster(id),data=bmt)
+
+bplot(km1,se=TRUE,ylim=c(0,1))
+km1$se.cumhaz
+
+basehazplot.phreg
+phreg
+ ## computing robust variance for baseline
+  rob1 <- robust.phreg(km1)
+     basehazplot.phreg(rob1,se=TRUE,robust=TRUE)
+     
+
+pkm1 <- prodlim(Surv(time,cause!=0)~tcell+platelet+cluster(id),data=bmt)
+plot(pkm1)
+prodlim:::plot.prodlim
+
+pkm1 <- prodlim(Surv(time,cause!=0)~cluster(id),data=bmt)
+pkm1$se.surv
+
+
+tpk <- summary(pkm1,cause="1",time=km1$time)$table[,8]
+summary(tpk-km1$surv)
+
+
+
+
+pkm1 <- prodlim(Hist(time,cause)~+1,data=bmt)
+tpk <- summary(pkm1,cause="1",time=out$time)$table$"1"
+
+outr <- recmarg(xr,dr,km=TRUE)
+head(outr$cumhaz)
+
+out <- recurrentMarginal(xr,dr,km=TRUE)
+head(out$cumhaz)
+out <- rec(xr,dr,km=TRUE)
+summary(dr$cox.prep$id- xr$cox.prep$id)
+
+
+head(out$cumhaz)
+
 basehazplot.phreg(out,se=TRUE,ylab="cumulative incidence")
+
+
 
 }
 \references{
