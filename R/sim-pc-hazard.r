@@ -64,8 +64,8 @@ pc.hazard <- function(cumhazard,rr,n=NULL,entry=NULL,cum.hazard=TRUE,cause=1)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
 ### cumh=cbind(breaks,cumhazard) if cumh=TRUE
-  if (!is.null(rr)) n <- length(rr); 
   if (!is.null(n)) rr <- rep(1,n)
+
   breaks <- cumhazard[,1]
   rates <- cumhazard[,2][-1]
   mm <- tail(breaks,1)
@@ -76,9 +76,9 @@ pc.hazard <- function(cumhazard,rr,n=NULL,entry=NULL,cum.hazard=TRUE,cause=1)
    n <- length(rr)
    ttt <- rexp(n)/rr
    if (cumhazard[1,2]>0)  {
-   warning("Safest to start with cumulative hazard 0 to avoid problems\n"); 
-   cumhazard <- rbind(c(0,0),cumhazard)
-   cumh <- c(0,cumh)
+	   warning("Safest to start with cumulative hazard 0 to avoid problems\n"); 
+	   cumhazard <- rbind(c(0,0),cumhazard)
+	   cumh <- c(0,cumh)
    }
    ###
    if (!is.null(entry)) {
