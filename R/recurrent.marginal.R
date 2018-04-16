@@ -295,7 +295,7 @@ recurrentMarginal <- function(recurrent,death,fixbeta=NULL,km=FALSE,...)
  resIM3 <-  squareintHdM(dr,ft=mu,fixbeta=fixbeta,...)
  varA <-  resIM1$varInt+mu^2*resIM2$varInt+resIM3$varInt 
 
- if (test==1) {
+ if (test==1) {# {{{
 	 print("=====var ================="); 
 	 print(summary(varA1))
 	 print(summary(varA2)); 
@@ -305,7 +305,7 @@ recurrentMarginal <- function(recurrent,death,fixbeta=NULL,km=FALSE,...)
 	 print(summary(mu^2*resIM2$varInt))
 	 print(summary(resIM3$varInt))
 	 print("======================"); 
- }
+ }# }}}
 
  ### covariances between different terms  13 23  12 12
  if (test==1) {
@@ -371,7 +371,7 @@ cM2M3 <- covIntH1dM1IntH2dM2(resIM2,resIM3,fixbeta=fixbeta,mu=mu)
 ###print("____________________________")
 
 
- if (test==1) {
+ if (test==1) {# {{{
 	 print("=======cov AAA==============="); 
 	 print(summary(cov13A))
 	 print(summary(cov12A))
@@ -381,15 +381,15 @@ cM2M3 <- covIntH1dM1IntH2dM2(resIM2,resIM3,fixbeta=fixbeta,mu=mu)
 	 print(summary(-1*cM1M2$cov12A))
 	 print(summary(-1*cM2M3$cov12A))
 	 print("======================"); 
- }
+ }# }}}
  varA <- varA+2*cM1M3$cov12A-2*cM1M2$cov12A-2*cM2M3$cov12A 
 
- if (test==1) {
+ if (test==1) {# {{{
  print(" var Ag"); 
  print(summary(varAg)); 
  print(" var A"); 
  print(summary(varA)); 
- }
+ }# }}}
 
  cov12aa <- cov13aa <- cov23aa <- 0
  if (fixbeta==0 & test==1 ) {
