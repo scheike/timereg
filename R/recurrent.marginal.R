@@ -38,16 +38,16 @@
 ##' xr <- phreg(Surv(entry,time,status)~cluster(id),data=rr)
 ##' dr <- phreg(Surv(entry,time,death)~cluster(id),data=rr)
 ##' par(mfrow=c(1,3))
-##' basehazplot.phreg(dr,se=TRUE)
+##' bplot(dr,se=TRUE)
 ##' title(main="death")
-##' basehazplot.phreg(xr,se=TRUE)
+##' bplot(xr,se=TRUE)
 ##' ### robust standard errors 
 ##' rxr <-   robust.phreg(xr,fixbeta=1)
-##' basehazplot.phreg(rxr,se=TRUE,robust=TRUE,add=TRUE,col=4)
+##' bplot(rxr,se=TRUE,robust=TRUE,add=TRUE,col=4)
 ##' 
 ##' ## marginal mean of expected number of recurrent events 
 ##' out <- recurrentMarginal(xr,dr)
-##' basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=2)
+##' bplot(out,se=TRUE,ylab="marginal mean",col=2)
 ##' 
 ##' ########################################################################
 ##' ###   with strata     ##################################################
@@ -55,14 +55,14 @@
 ##' xr <- phreg(Surv(entry,time,status)~strata(strata)+cluster(id),data=rr)
 ##' dr <- phreg(Surv(entry,time,death)~strata(strata)+cluster(id),data=rr)
 ##' par(mfrow=c(1,3))
-##' basehazplot.phreg(dr,se=TRUE)
+##' bplot(dr,se=TRUE)
 ##' title(main="death")
-##' basehazplot.phreg(xr,se=TRUE)
+##' bplot(xr,se=TRUE)
 ##' rxr <-   robust.phreg(xr,fixbeta=1)
-##' basehazplot.phreg(rxr,se=TRUE,robust=TRUE,add=TRUE,col=1:2)
+##' bplot(rxr,se=TRUE,robust=TRUE,add=TRUE,col=1:2)
 ##'
 ##' out <- recurrentMarginal(xr,dr)
-##' basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=1:2)
+##' bplot(out,se=TRUE,ylab="marginal mean",col=1:2)
 ##'
 ##' ########################################################################
 ##' ###   cox case        ##################################################
@@ -70,14 +70,14 @@
 ##' xr <- phreg(Surv(entry,time,status)~x+cluster(id),data=rr)
 ##' dr <- phreg(Surv(entry,time,death)~x+cluster(id),data=rr)
 ##' par(mfrow=c(1,3))
-##' basehazplot.phreg(dr,se=TRUE)
+##' bplot(dr,se=TRUE)
 ##' title(main="death")
-##' basehazplot.phreg(xr,se=TRUE)
+##' bplot(xr,se=TRUE)
 ##' rxr <-   robust.phreg(xr)
-##' basehazplot.phreg(rxr,se=TRUE,robust=TRUE,add=TRUE,col=1:2)
+##' bplot(rxr,se=TRUE,robust=TRUE,add=TRUE,col=1:2)
 ##'
 ##' out <- recurrentMarginal(xr,dr)
-##' basehazplot.phreg(out,se=TRUE,ylab="marginal mean",col=1:2)
+##' bplot(out,se=TRUE,ylab="marginal mean",col=1:2)
 ##' 
 ##' ########################################################################
 ##' ###   CIF  #############################################################
@@ -89,7 +89,7 @@
 ##' dr  <- phreg(Surv(time,cause!=0)~cluster(id),data=bmt)
 ##' 
 ##' out <- recurrentMarginal(xr,dr)
-##' basehazplot.phreg(out,se=TRUE,ylab="cumulative incidence")
+##' bplot(out,se=TRUE,ylab="cumulative incidence")
 ##' 
 ##' @export
 ##' @aliases recurrentMarginal tie.breaker  recmarg
@@ -481,7 +481,8 @@ cM2M3 <- covIntH1dM1IntH2dM2(resIM2,resIM3,fixbeta=fixbeta,mu=mu)
  out <- list(mu=varrs$mu,se.mu=varrs$se.mu,times=varrs$time,
      St=varrs$St,
      cumhaz=cbind(varrs$time,varrs$mu),se.cumhaz=cbind(varrs$time,varrs$se.mu),
-     strata=varrs$strata,nstrata=xr$nstrata,jumps=1:nrow(varrs),strata.name=xr$strata.name,strata.level=recurrent$strata.level)
+     strata=varrs$strata,nstrata=xr$nstrata,jumps=1:nrow(varrs),
+     strata.name=xr$strata.name,strata.level=recurrent$strata.level)
  return(out)
 }# }}}
 
@@ -829,7 +830,8 @@ recmarg <- function(recurrent,death,km=FALSE,...)
 
  ### to use basehazplot.phreg
  ### making output such that basehazplot can work also
- out <- list(mu=varrs$mu,times=varrs$time,St=varrs$St,cumhaz=cbind(varrs$time,varrs$mu),
+ out <- list(mu=varrs$mu,time=varrs$time,
+	     St=varrs$St,cumhaz=cbind(varrs$time,varrs$mu),
      strata=varrs$strata,nstrata=xr$nstrata,jumps=1:nrow(varrs),strata.name=xr$strata.name,
      strata.level=recurrent$strata.level)
  return(out)
@@ -1553,7 +1555,9 @@ return(data)
 ##' Estimation of probability of more that k events for recurrent events process
 ##'
 ##' Estimation of probability of more that k events for recurrent events process
-##' where there is terminal event, based on this also estimate of variance of recurrent events. 
+##' where there is terminal event, based on this also estimate of variance of recurrent events. The estimator is based on cumulative incidence of exceeding "k" events.
+##' In contrast the probability of exceeding k events can also be computed as a 
+##' counting process integral, and this is implemented in prob.exceedRecurrent
 ##'
 ##' @param data data-frame
 ##' @param type type of evnent (code) related to status
@@ -1567,9 +1571,6 @@ return(data)
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Thomas Scheike
 ##' @examples
-##' \donttest{
-##' ### do not test to avoid dependence on prodlim 
-##' library(prodlim)
 ##'
 ##' ########################################
 ##' ## getting some rates to mimick 
@@ -1586,6 +1587,18 @@ return(data)
 ##' rr <- simRecurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
 ##' dtable(rr,~death+status)
 ##' 
+##' oo <- prob.exceedRecurrent(r,1)
+##' bplot(oo)
+##' 
+##' par(mfrow=c(1,2))
+##' with(oo,plotl(time,mu,col=2))
+##' ###
+##' with(oo,plotl(time,varN))
+##' 
+##' \donttest{
+##' ### do not test to avoid dependence on prodlim 
+##' ### now estimation based on cumualative incidence, but do not test to avoid dependence on prodlim 
+##' library(prodlim)
 ##' pp <- prob.exceed.recurrent(rr,1,status="status",death="death",start="entry",stop="time",id="id")
 ##' with(pp, matplot(times,prob,type="s"))
 ##' ###
@@ -1593,6 +1606,7 @@ return(data)
 ##' with(pp, matlines(times,se.upper,type="s"))
 ##' }
 ##' @export
+##' @aliases prob.exceedRecurrent
 prob.exceed.recurrent <- function(data,type,status="status",death="death",
  start="start",stop="stop",id="id",times=NULL,exceed=NULL)
 {# {{{
@@ -1672,6 +1686,82 @@ colnames(se.probs) <- c(paste("N=",exceed[1],sep=""),paste("exceed>=",exceed[-1]
 return(list(time=times,times=times,prob=probs,se.prob=se.probs,meanN=meanN,
 	    se.lower=se.lower,se.upper=se.upper,meanN2=meanN2,varN=meanN2-meanN^2))
 }# }}}
+
+##' @export
+prob.exceedRecurrent <- function(data,type1,km=FALSE,status="status",death="death",
+                   	 start="start",stop="stop",id="id",names.count="Count")
+{# {{{
+
+formdr <- as.formula(paste("Surv(",start,",",stop,",",death,")~ cluster(",id,")",sep=""))
+form1 <- as.formula(paste("Surv(",start,",",stop,",",status,"==",type1,")~cluster(",id,")",sep=""))
+###
+form1C <- as.formula(paste("Surv(",start,",",stop,",",status,"==",type1,")~strata(",names.count,type1,")+cluster(",id,")",sep=""))
+
+dr <- phreg(formdr,data=data)
+base1   <- phreg(form1,data=data)
+base1.2 <- phreg(form1C,data=data)
+
+###mmean <- recmarg(base1,dr)
+###mu <- mmean$mu
+###print(summary(mu))
+
+cc <- base1$cox.prep
+risk <- revcumsumstrata(cc$sign,cc$strata,cc$nstrata)
+###### risk stratified after count 1
+cc <- base1.2$cox.prep
+risk1 <- revcumsumstrata(cc$sign,cc$strata,cc$nstrata)
+pstrata <- risk1/risk
+pstrata[1] <- 0
+
+### marginal int_0^t G(s) P(N1(t-)==k|D>t) \lambda_{1,N1=k}(s) ds 
+### strata og count skal passe sammen
+  # {{{
+  strat <- dr$strata[dr$jumps]
+  Gt <- exp(-dr$cumhaz[,2])
+  ###
+  x <- dr
+  xx <- x$cox.prep
+  S0i2 <- S0i <- rep(0,length(xx$strata))
+  S0i[xx$jumps+1] <-  1/x$S0
+  if (!km) { 
+     cumhazD <- c(cumsumstratasum(S0i,xx$strata,xx$nstrata)$lagsum)
+     St      <- exp(-cumhazD)
+  } else St <- c(exp(cumsumstratasum(log(1-S0i),xx$strata,xx$nstrata)$lagsum))
+  x <- base1
+  xx <- x$cox.prep
+  lss <- length(xx$strata)
+  S0i2 <- S0i <- rep(0,lss)
+  S0i[xx$jumps+1] <-  1/x$S0
+  mu <- c(cumsumstrata(St*S0i,rep(0,lss),1))
+###
+  x <- base1.2
+  xx <- x$cox.prep
+  lss <- length(xx$strata)
+  S0i2 <- S0i <- rep(0,lss)
+  S0i[xx$jumps+1] <-  1/x$S0
+  xstrata <- xx$strata
+  vals1 <- sort(unique(data[,paste("Count",type1,sep="")]))
+  valjumps <- vals1[xx$strata+1]
+  fk <- (valjumps+1)^2-valjumps^2
+  EN2 <- c(cumsumstrata(fk*St*pstrata*S0i,rep(0,lss),1))
+###  pstrata <- matdoubleindex(nrisk,1:nrow(nrisk),xstrata+1)
+  pcumhaz <- cbind(xx$time,
+              cumsumstrata(pstrata*St*S0i,xx$strata,xx$nstrata))
+# }}}
+
+  EN2 <- EN2[xx$jumps+1]
+  cumhaz <- pcumhaz[xx$jumps+1,]
+  mu <- mu[xx$jumps+1]
+
+  out=list(cumhaz=cumhaz,time=cumhaz[,1],
+	varN=EN2-mu^2,mu=mu,
+	nstrata=base1.2$nstrata,strata=base1.2$strata[xx$jumps+1],
+	jumps=1:nrow(cumhaz),
+        strata.name=base1.2$strata.name,strata.level=base1.2$strata.level)
+
+  return(out)
+}# }}}
+
 
 ##' Estimation of covariance for bivariate recurrent events with terminal event
 ##'

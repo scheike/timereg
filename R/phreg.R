@@ -291,13 +291,13 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' ## robust standard errors default 
 ##' summary(out1)
 ##' 
-##' par(mfrow=c(1,3))
-##' basehazplot.phreg(out1)
-##' ## basehazplot.phreg(sout1,se=TRUE)
+##' par(mfrow=c(1,2))
+##' bplot(out1)
+##' ## bplot(sout1,se=TRUE)
 ##' 
 ##' ## computing robust variance for baseline
 ##' rob1 <- robust.phreg(out1)
-##' basehazplot.phreg(rob1,se=TRUE,robust=TRUE)
+##' bplot(rob1,se=TRUE,robust=TRUE)
 ##' 
 ##' ## making iid decomposition of regression parameters
 ##' betaiiid <- iid(out1)
@@ -874,11 +874,11 @@ predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,st
 ##' out1 <- phreg(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
 ##' 
 ##' par(mfrow=c(2,2))
-##' basehazplot.phreg(out1)
-##' basehazplot.phreg(out1,stratas=c(0,3))
-##' basehazplot.phreg(out1,stratas=c(0,3),col=2:3,lty=1:2,se=TRUE)
-##' basehazplot.phreg(out1,stratas=c(0),col=2,lty=2,se=TRUE,polygon=FALSE)
-##' basehazplot.phreg(out1,stratas=c(0),col=matrix(c(2,1,3),1,3),
+##' bplot(out1)
+##' bplot(out1,stratas=c(0,3))
+##' bplot(out1,stratas=c(0,3),col=2:3,lty=1:2,se=TRUE)
+##' bplot(out1,stratas=c(0),col=2,lty=2,se=TRUE,polygon=FALSE)
+##' bplot(out1,stratas=c(0),col=matrix(c(2,1,3),1,3),
 ##'             lty=matrix(c(1,2,3),1,3),se=TRUE,polygon=FALSE)
 ##' @export
 basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NULL,
@@ -932,15 +932,18 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
 
    i <- 1
    j <- stratas[i]
-   cumhazard <- x$cumhaz[strat==j,]
+        cumhazard <- x$cumhaz[strat==j,,drop=FALSE]
+
+   if (!is.null(cumhazard)) {
+   if (nrow(cumhazard)>1) {
     if (add) {
          lines(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],...)
     } else {
          plot(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],ylim=ylim,ylab=ylab,xlim=xlim,...)
     }
     if (se==TRUE) {
-	    if (robust==TRUE) secumhazard  <- x$robse.cumhaz[strat==j,]
-	    else secumhazard <- x$se.cumhaz[strat==j,]
+	    if (robust==TRUE) secumhazard  <- x$robse.cumhaz[strat==j,,drop=FALSE]
+	    else secumhazard <- x$se.cumhaz[strat==j,,drop=FALSE]
       ul <-cbind(cumhazard[,1],cumhazard[,2]+level*secumhazard[,2])
       nl <-cbind(cumhazard[,1],cumhazard[,2]-level*secumhazard[,2])
       if (class(x)[1]=="km") { ul[,2] <- x$upper[x$strata==j]; 
@@ -959,33 +962,39 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
 	 polygon(tt,yy,lty=ltys[i,2],col=col.trans)
       }
     }
+   }
+   }
 
     if (length(stratas)>1)  {
     for (i in 2:length(stratas)) {
 	j <- stratas[i]
-        cumhazard <- x$cumhaz[strat==j,]
+        cumhazard <- x$cumhaz[strat==j,,drop=FALSE]
+        if (!is.null(cumhazard)) {
+	if (nrow(cumhazard)>1) {
         lines(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1])   
         if (se==TRUE) {
-	    if (robust==TRUE) secumhazard  <- x$robse.cumhaz[strat==j,]
-	    else secumhazard <- x$se.cumhaz[strat==j,]
-         ul <-cbind(cumhazard[,1],cumhazard[,2]+level*secumhazard[,2])
-         nl <-cbind(cumhazard[,1],cumhazard[,2]-level*secumhazard[,2])
-      if (class(x)[1]=="km") { ul[,2] <- x$upper[x$strata==j]; 
-                               nl[,2] <- x$lower[x$strata==j];
-      }
-      if (!polygon) {
-      lines(nl,type="s",lty=ltys[i,2],col=cols[i,2])
-      lines(ul,type="s",lty=ltys[i,3],col=cols[i,3])
-      } else {
-         tt <- c(nl[,1],rev(ul[,1]))
-         yy <- c(nl[,2],rev(ul[,2]))
-         col.alpha<-0.1
-         col.ci<-cols[j+1]
-         col.trans <- sapply(col.ci, FUN=function(x) 
-                   do.call(grDevices::rgb,as.list(c(grDevices::col2rgb(x)/255,col.alpha))))
-	 polygon(tt,yy,lty=ltys[i,2],col=col.trans)
-      }
-    }
+	    if (robust==TRUE) secumhazard  <- x$robse.cumhaz[strat==j,,drop=FALSE]
+	    else secumhazard <- x$se.cumhaz[strat==j,,drop=FALSE]
+		 ul <-cbind(cumhazard[,1],cumhazard[,2]+level*secumhazard[,2])
+		 nl <-cbind(cumhazard[,1],cumhazard[,2]-level*secumhazard[,2])
+		      if (class(x)[1]=="km") { ul[,2] <- x$upper[x$strata==j]; 
+					       nl[,2] <- x$lower[x$strata==j];
+		      }
+	      if (!polygon) {
+	      lines(nl,type="s",lty=ltys[i,2],col=cols[i,2])
+	      lines(ul,type="s",lty=ltys[i,3],col=cols[i,3])
+	      } else {
+		 tt <- c(nl[,1],rev(ul[,1]))
+		 yy <- c(nl[,2],rev(ul[,2]))
+		 col.alpha<-0.1
+		 col.ci<-cols[j+1]
+		 col.trans <- sapply(col.ci, FUN=function(x) 
+			   do.call(grDevices::rgb,as.list(c(grDevices::col2rgb(x)/255,col.alpha))))
+		 polygon(tt,yy,lty=ltys[i,2],col=col.trans)
+	      }
+        }
+        }
+        }
     }
     }
 
