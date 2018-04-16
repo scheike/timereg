@@ -832,8 +832,8 @@ recmarg <- function(recurrent,death,km=FALSE,...)
  ### making output such that basehazplot can work also
  out <- list(mu=varrs$mu,time=varrs$time,
 	     St=varrs$St,cumhaz=cbind(varrs$time,varrs$mu),
-     strata=varrs$strata,nstrata=xr$nstrata,jumps=1:nrow(varrs),strata.name=xr$strata.name,
-     strata.level=recurrent$strata.level)
+             strata=varrs$strata,nstrata=xr$nstrata,jumps=1:nrow(varrs),strata.name=xr$strata.name,
+             strata.level=recurrent$strata.level)
  return(out)
 }# }}}
 
@@ -1321,7 +1321,7 @@ simRecurrentGamma <- function(n,haz=0.5,death.haz=0.1,haz2=0.1,max.recurrent=100
 simRecurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
 		    gap.time=FALSE,max.recurrent=100,dhaz=NULL,haz2=NULL,
 		    dependence=0,var.z=0.22,cor.mat=NULL,cens=NULL,...) 
-  {# {{{{{{
+  {# {{{
 
   fdeath <- dtime <- NULL # to avoid R-check 
 
@@ -1345,9 +1345,9 @@ simRecurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
               b <- stdevs %*% t(stdevs)  
               covv  <- b * cor.mat  
 	      z <- matrix(rgamma(3*n,1),n,3)
-              z1 <- (z[,1]+z[,2])/2
-              z2 <- (z[,1]^cor.mat[1,2]+z[,3])/2
-              zd <- z3 <- (z[,2]^cor.mat[1,3]+z[,3]^cor.mat[2,3])/2
+              z1 <- (z[,1]^cor.mat[1,1]+z[,2]^cor.mat[1,2]+z[,3]^cor.mat[1,3])
+              z2 <- (z[,1]^cor.mat[2,1]+z[,2]^cor.mat[2,2]+z[,3]^cor.mat[2,3])
+              zd <- (z[,1]^cor.mat[3,1]+z[,2]^cor.mat[3,2]+z[,3]^cor.mat[3,3])
 	      z <- cbind(z1,z2,zd)
 ###	      print(summary(z))
 ###	      print(cor(z))
@@ -1464,7 +1464,7 @@ simRecurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
   attr(tall,"z") <- z
 
   return(tall)
-  }# }}}}}}
+  }# }}}
 
 ##' @export
 showfitsim <- function(causes=2,rr,dr,base1,base4) 
