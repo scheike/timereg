@@ -7,9 +7,8 @@
 \title{Plotting the baslines of stratified Cox}
 \usage{
 basehazplot.phreg(x, se = FALSE, time = NULL, add = FALSE, ylim = NULL,
-  xlim = NULL, lty = NULL, col = NULL, legend = TRUE,
-  ylab = "Cumulative hazard", polygon = TRUE, level = 0.95,
-  stratas = NULL, robust = FALSE, ...)
+  xlim = NULL, lty = NULL, col = NULL, legend = TRUE, ylab = NULL,
+  polygon = TRUE, level = 0.95, stratas = NULL, robust = FALSE, ...)
 }
 \arguments{
 \item{x}{phreg object}
@@ -51,11 +50,11 @@ dcut(TRACE) <- ~.
 out1 <- phreg(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
 
 par(mfrow=c(2,2))
-basehazplot.phreg(out1)
-basehazplot.phreg(out1,stratas=c(0,3))
-basehazplot.phreg(out1,stratas=c(0,3),col=2:3,lty=1:2,se=TRUE)
-basehazplot.phreg(out1,stratas=c(0),col=2,lty=2,se=TRUE,polygon=FALSE)
-basehazplot.phreg(out1,stratas=c(0),col=matrix(c(2,1,3),1,3),
+bplot(out1)
+bplot(out1,stratas=c(0,3))
+bplot(out1,stratas=c(0,3),col=2:3,lty=1:2,se=TRUE)
+bplot(out1,stratas=c(0),col=2,lty=2,se=TRUE,polygon=FALSE)
+bplot(out1,stratas=c(0),col=matrix(c(2,1,3),1,3),
             lty=matrix(c(1,2,3),1,3),se=TRUE,polygon=FALSE)
 }
 \author{

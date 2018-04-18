@@ -32,13 +32,13 @@ out1 <- phreg(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
 ## robust standard errors default 
 summary(out1)
 
-par(mfrow=c(1,3))
-basehazplot.phreg(out1)
-## basehazplot.phreg(sout1,se=TRUE)
+par(mfrow=c(1,2))
+bplot(out1)
+## bplot(sout1,se=TRUE)
 
 ## computing robust variance for baseline
 rob1 <- robust.phreg(out1)
-basehazplot.phreg(rob1,se=TRUE,robust=TRUE)
+bplot(rob1,se=TRUE,robust=TRUE)
 
 ## making iid decomposition of regression parameters
 betaiiid <- iid(out1)

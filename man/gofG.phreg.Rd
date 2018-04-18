@@ -4,7 +4,7 @@
 \alias{gofG.phreg}
 \title{Stratified baseline graphical GOF test for Cox covariates in PH regression}
 \usage{
-gofG.phreg(x, sim = 0, silent = 1, lm = FALSE, ...)
+gofG.phreg(x, sim = 0, silent = 1, lm = TRUE, ...)
 }
 \arguments{
 \item{x}{phreg object}
@@ -12,6 +12,8 @@ gofG.phreg(x, sim = 0, silent = 1, lm = FALSE, ...)
 \item{sim}{to simulate som variation from cox model to put on graph}
 
 \item{silent}{to keep it absolutely silent}
+
+\item{lm}{addd line to plot, regressing the cumulatives on each other}
 
 \item{...}{Additional arguments to lower level funtions}
 }

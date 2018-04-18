@@ -131,6 +131,8 @@ P(Y_i=o_1,Y_j=o_2 | Y_i+Y_j \geq 1) & = \sum_{k=1}^2 P(Y_i=o_1,Y_j=o_2 | Y_i+Y_j
 \end{align*}
 where \( o_1+ o_2  \geq 1 \).  Note that the dependence will affect the probabilities
 \( P(Y_i+Y_j=2)/( P(Y_i+Y_j=2)+ P(Y_i+Y_j=1)) \)  and \( P(Y_i+Y_j=1)/( P(Y_i+Y_j=2)+ P(Y_i+Y_j=1)) \).  
+In particular when the marginal parameters are known the dependence parameters can be estimated using the proportion of
+concordant pairs compared to the non-concordant pairs with respect to the outcome. 
 
 When considering the pairs with different responses we learn "only" (up to model specification) about covariate effects. 
 For example when 
