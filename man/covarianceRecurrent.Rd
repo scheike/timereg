@@ -51,14 +51,19 @@ rr$strata <- 1
 dtable(rr,~death+status)
 
 covrp <- covarianceRecurrent(rr,1,2,status="status",death="death",
-                             start="entry",stop="time",id="id",names.count="Count")
+                        start="entry",stop="time",id="id",names.count="Count")
 par(mfrow=c(1,3)) 
 plot(covrp)
 
 ### with strata, each strata in matrix column, provides basis for fast Bootstrap
 covrpS <- covarianceRecurrentS(rr,1,2,status="status",death="death",
-                start="entry",stop="time",strata="strata",id="id",names.count="Count")
+        start="entry",stop="time",strata="strata",id="id",names.count="Count")
 
+}
+\references{
+Scheike, Eriksson, Tribler (2018) 
+            The mean, variance and correlation for bivariate recurrent events
+            with a terminal event,  work in progress
 }
 \author{
 Thomas Scheike
