@@ -223,13 +223,16 @@ twinlm <- function(formula, data, id, zyg, DZ, group=NULL,
   }
   
   newkeep <- unlist(sapply(keep, function(x) paste(x, 1:2, sep = ".")))
-  if (!is.null(estimator) && (inherits(estimator,c("numeric","logical")) && !estimator)) return(multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep,type=2))
+    if (!is.null(estimator) && (inherits(estimator,c("numeric","logical")) && !estimator)) return(multigroup(mm, dd, missing=TRUE,fix=FALSE,keep=newkeep,type=2))
+  optim <- list()
+  if (is.null(control$start)) {
     optim <- list(start=rep(0.1,length(coef(mm[[1]]))*length(mm)))
 ##    optim <- list(method="nlminb2",refit=FALSE,gamma=1,start=rep(0.1,length(coef(mm[[1]]))*length(mm)))
 
     optim$start <- twinlmStart(formula,na.omit(mf),type,hasIntercept,
                               surv=inherits(data[,yvar],"Surv"),ordinal=ordinal,
                               model=mm, group=levgrp, group.equal=group.equal)
+  }
   if (length(control)>0) {
     optim[names(control)] <- control
   }
@@ -540,8 +543,8 @@ twinlmStart <- function(formula,mf,type,hasIntercept,surv=FALSE,ordinal=0,model,
         start <- c(beta[intidx],start)
         start <- c(start,beta[-intidx])
     } else start <- c(start,beta)
+    varp <- 0.5
     if (type=="sat") {
-        varp <- c(0.5)
         if (!ordinal) varp <- c(rep(log(sigma^2),2),varp)
         start <- c()
         if (hasIntercept) {
@@ -551,7 +554,6 @@ twinlmStart <- function(formula,mf,type,hasIntercept,surv=FALSE,ordinal=0,model,
         start <- c(start,rep(c(rep(beta,2),varp),2))
     }
     if (type=="flex") {
-        varp <- c(0.5)
         if (!ordinal) varp <- c(log(sigma^2),varp)
         start <- c()
         if (hasIntercept) {
@@ -561,8 +563,8 @@ twinlmStart <- function(formula,mf,type,hasIntercept,surv=FALSE,ordinal=0,model,
         start <- c(start,rep(c(beta,varp),2))
     }
     if (type=="u") {
-        start <- c(0.5,0.5)
-        if (!ordinal) varp <- c(log(sigma^2),varp)
+        start <- c(varp,varp)
+        if (!ordinal) start <- c(log(sigma^2),start)
         start <- c(beta,start)
     }
     names(start) <- NULL
