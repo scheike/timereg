@@ -1221,7 +1221,6 @@ return(data)
 LinSpline <- function(x,knots,num=TRUE,name="Spline")
 {# {{{
 
-<<<<<<< HEAD
 lspline <- matrix(0,length(c(x)),length(c(knots)))
 for (i in seq_along(c(knots)))
 {
@@ -1232,19 +1231,6 @@ lspline <- as.data.frame(lspline)
 if (num==TRUE) names(lspline) <- paste(name,seq_along(c(knots)),sep="")
 else if (!is.nulll(signif)) names(lspline) <- paste(name,round(c(knots),signif),sep="")
 
-return(lspline)
-=======
-    lspline <- matrix(0,length(c(x)),length(c(knots)))
-    for (i in seq_along(c(knots)))
-    {
-        lspline[,i] <- (x-knots[i])*(x>knots[i])
-    }
-
-    lspline <- as.data.frame(lspline)
-    if (num==TRUE) names(lspline) <- paste(name,seq_along(c(knots)),sep="")
-    else if (!is.null(signif)) names(lspline) <- paste(name,round(c(knots),signif),sep="")
-
     return(lspline)
->>>>>>> ec9163a0b8599f268e3cd760ae36919a58986187
 }# }}}
 

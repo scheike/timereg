@@ -1588,7 +1588,6 @@ return(data)
 ##' ###
 ##' with(oo,plotl(time,varN))
 ##' 
-<<<<<<< HEAD
 ##' 
 ##' ### Bivariate probbility of exceeding 
 ##' oo <- prob.exceedBiRecurrent(r,1,2,exceed1=c(1,5,10),exceed2=c(1,2,3))
@@ -1597,8 +1596,6 @@ return(data)
 ##' legend("topleft",legend=colnames(oo$pe1e2),lty=1:nc,col=1:nc)
 ##' 
 ##' 
-=======
->>>>>>> ec9163a0b8599f268e3cd760ae36919a58986187
 ##' \donttest{
 ##' ### do not test to avoid dependence on prodlim 
 ##' ### now estimation based on cumualative incidence, but do not test to avoid dependence on prodlim 
@@ -1610,11 +1607,7 @@ return(data)
 ##' with(pp, matlines(times,se.upper,type="s"))
 ##' }
 ##' @export
-<<<<<<< HEAD
 ##' @aliases prob.exceedRecurrent prob.exceedBiRecurrent
-=======
-##' @aliases prob.exceedRecurrent
->>>>>>> ec9163a0b8599f268e3cd760ae36919a58986187
 prob.exceed.recurrent <- function(data,type,status="status",death="death",
  start="start",stop="stop",id="id",times=NULL,exceed=NULL)
 {# {{{
@@ -1770,7 +1763,6 @@ pstrata[1] <- 0
   return(out)
 }# }}}
 
-<<<<<<< HEAD
 ##' @export
 prob.exceedBiRecurrent <- function(data,type1,type2,km=FALSE,status="status",death="death",
       start="start",stop="stop",id="id",names.count="Count",exceed1=NULL,exceed2=NULL)
@@ -1899,9 +1891,6 @@ pstrata2[1] <- 0
 
   return(out)
 }# }}}
-
-=======
->>>>>>> ec9163a0b8599f268e3cd760ae36919a58986187
 
 ##' Estimation of covariance for bivariate recurrent events with terminal event
 ##'
