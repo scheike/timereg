@@ -1351,19 +1351,7 @@ simRecurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
 	      z <- cbind(z1,z2,zd)
 ###	      print(summary(z))
 ###	      print(cor(z))
-      } else if (dependence>3) {
-              stdevs <- var.z^.5
-              b <- stdevs %*% t(stdevs)  
-              covv  <- b * cor.mat  
-	      z <- matrix(rnorm(3*n),n,3)
-	      print(chol(covv))
-	      z <- (z%*% chol(covv)+dependence)/(dependence+0*matrix(rnorm(n*3),n,3))
-	      print(summary(z))
-	      print(cor(z))
-	      if (any(z<0)) warning("some z < 0 , increase dependence");
-	      apply(z,2,function(x) {  x[x<0] <- 0.01; return(x)})
-	      z1 <- z[,1]; z2 <- z[,2]; zd <- z[,3]; 
-      }# }}}
+      } else stop("dependence 0-3"); # }}}
 
   cumhaz <- rbind(c(0,0),cumhaz)
   ll <- nrow(cumhaz)
@@ -1600,6 +1588,14 @@ return(data)
 ##' ###
 ##' with(oo,plotl(time,varN))
 ##' 
+##' 
+##' ### Bivariate probbility of exceeding 
+##' oo <- prob.exceedBiRecurrent(r,1,2,exceed1=c(1,5,10),exceed2=c(1,2,3))
+##' with(oo, matplot(time,pe1e2,type="s"))
+##' nc <- ncol(oo$pe1e2)
+##' legend("topleft",legend=colnames(oo$pe1e2),lty=1:nc,col=1:nc)
+##' 
+##' 
 ##' \donttest{
 ##' ### do not test to avoid dependence on prodlim 
 ##' ### now estimation based on cumualative incidence, but do not test to avoid dependence on prodlim 
@@ -1611,7 +1607,7 @@ return(data)
 ##' with(pp, matlines(times,se.upper,type="s"))
 ##' }
 ##' @export
-##' @aliases prob.exceedRecurrent
+##' @aliases prob.exceedRecurrent prob.exceedBiRecurrent
 prob.exceed.recurrent <- function(data,type,status="status",death="death",
  start="start",stop="stop",id="id",times=NULL,exceed=NULL)
 {# {{{
@@ -1763,6 +1759,135 @@ pstrata[1] <- 0
 	nstrata=base1.2$nstrata,strata=base1.2$strata[xx$jumps+1],
 	jumps=1:nrow(cumhaz),
         strata.name=base1.2$strata.name,strata.level=base1.2$strata.level)
+
+  return(out)
+}# }}}
+
+##' @export
+prob.exceedBiRecurrent <- function(data,type1,type2,km=FALSE,status="status",death="death",
+      start="start",stop="stop",id="id",names.count="Count",exceed1=NULL,exceed2=NULL)
+{# {{{
+
+formdr <- as.formula(paste("Surv(",start,",",stop,",",death,")~ cluster(",id,")",sep=""))
+
+form1 <- as.formula(paste("Surv(",start,",",stop,",",status,"==",type1,")~cluster(",id,")",sep=""))
+form2 <- as.formula(paste("Surv(",start,",",stop,",",status,"==",type2,")~cluster(",id,")",sep=""))
+###
+###form1C <- as.formula(paste("Surv(",start,",",stop,",",status,"==",type1,")~strata(",names.count,type1,",",names.count,type2,")+cluster(",id,")",sep=""))
+###form2C <- as.formula(paste("Surv(",start,",",stop,",",status,"==",type2,")~
+###  strata(",names.count,type1,",",names.count,type2,")+cluster(",id,")",sep=""))
+
+form2Ccc <- as.formula(paste("Surv(",start,",",stop,",",status,"==",type2,")~
+  ",names.count,type1,"+",names.count,type2,"+","
+  strata(",names.count,type1,",",names.count,type2,")+cluster(",id,")",sep=""))
+form1Ccc <- as.formula(paste("Surv(",start,",",stop,",",status,"==",type1,")~
+  ",names.count,type1,"+",names.count,type2,"+","
+  strata(",names.count,type1,",",names.count,type2,")+cluster(",id,")",sep=""))
+
+
+### stratified and with counts in covariate matrix 
+bb2.12 <- phreg(form2Ccc,data=data,no.opt=TRUE)
+bb1.12 <- phreg(form1Ccc,data=data,no.opt=TRUE)
+
+dr <- phreg(formdr,data=data)
+base1   <- phreg(form1,data=data)
+base2   <- phreg(form2,data=data)
+
+cc <- base1$cox.prep
+risk1 <- revcumsumstrata(cc$sign,cc$strata,cc$nstrata)
+###### risk stratified after count 1 og count2
+cc <- bb1.12$cox.prep
+risk1.12 <- revcumsumstrata(cc$sign,cc$strata,cc$nstrata)
+pstrata1 <- risk1.12/risk1
+pstrata1[1] <- 0
+
+cc <- base2$cox.prep
+risk2 <- revcumsumstrata(cc$sign,cc$strata,cc$nstrata)
+###### risk stratified after count 1 og count2
+cc <- bb2.12$cox.prep
+risk2.12 <- revcumsumstrata(cc$sign,cc$strata,cc$nstrata)
+pstrata2 <- risk2.12/risk2
+pstrata2[1] <- 0
+
+### marginal int_0^t G(s) P(N1(t-)==k|D>t) \lambda_{1,N1=k}(s) ds 
+### strata og count skal passe sammen
+
+  # {{{
+  strat <- dr$strata[dr$jumps]
+  Gt <- exp(-dr$cumhaz[,2])
+  ###
+  x <- dr
+  xx <- x$cox.prep
+  S0i2 <- S0i <- rep(0,length(xx$strata))
+  S0i[xx$jumps+1] <-  1/x$S0
+  if (!km) { 
+     cumhazD <- c(cumsumstratasum(S0i,xx$strata,xx$nstrata)$lagsum)
+     St      <- exp(-cumhazD)
+  } else St <- c(exp(cumsumstratasum(log(1-S0i),xx$strata,xx$nstrata)$lagsum))
+  x <- base1
+  xx <- x$cox.prep
+  lss <- length(xx$strata)
+  S0i2 <- S0i <- rep(0,lss)
+  S0i[xx$jumps+1] <-  1/x$S0
+  mu <- c(cumsumstrata(St*S0i,rep(0,lss),1))
+###
+
+  x <- bb1.12
+  xx1 <- x$cox.prep
+  lss <- length(xx$strata)
+  S0i2 <- S0i <- rep(0,lss)
+  S0i[xx1$jumps+1] <-  1/x$S0
+  dcumhaz1 <- cbind(xx1$time,pstrata1*St*S0i)
+###              cumsumstrata(pstrata1*St*S0i,xx1$strata,xx1$nstrata))
+  x <- bb2.12
+  xx2 <- x$cox.prep
+  lss <- length(xx2$strata)
+  S0i2 <- S0i <- rep(0,lss)
+  S0i[xx2$jumps+1] <-  1/x$S0
+  dcumhaz2 <- cbind(xx2$time,pstrata2*St*S0i)
+###   cumsumstrata(pstrata2*St*S0i,xx2$strata,xx2$nstrata))
+
+  n1 <- length(xx1$jumps)
+  n2 <- length(xx2$jumps)
+  ojumps <- order(c(xx1$jumps,xx2$jumps))
+  jumps <- sort(c(xx1$jumps,xx2$jumps))
+  times <- xx1$time[jumps+1]
+
+  dcumhaz1 <-  dcumhaz1[jumps+1,] 
+  dcumhaz2 <-  dcumhaz2[jumps+1,] 
+  x1 <- xx1$X[jumps+1,]
+  x2 <- xx2$X[jumps+1,]
+
+###  dcumhaz1 <- dcumhaz1[xx1$jumps+1,]
+###  dcumhaz2 <- dcumhaz2[xx2$jumps+1,]
+###  x1 <- xx1$X[xx1$jumps+1,]
+###  x2 <- xx2$X[xx2$jumps+1,]
+# }}}
+
+  if (is.null(exceed1)) exceed1 <- 1:max(x1[,1])
+  if (is.null(exceed2)) exceed2 <- 1:max(x1[,2])
+
+  pe1e2 <- matrix(0,n1+n2,length(exceed1)*length(exceed2))
+  m <- 0; nn <- c()
+  for (i in exceed1) 
+  for (j in exceed2)  {
+	  m <- m+1
+	  strat1 <- (x1[,2]>=j)*(x1[,1]==(i-1))
+	  strat2 <- (x2[,1]>=i)*(x2[,2]==(j-1))
+	  pe1e2[,m] <- cumsum(strat1*dcumhaz1[,2]) + cumsum(strat2*dcumhaz2[,2])
+	  nn <- c(nn,paste("N_1(t)>=",i,",N_2(t)>=",j,sep="")) 
+  }
+
+  colnames(pe1e2) <- nn
+
+  out=list(time=times,pe1e2=pe1e2,
+        pcumhaz1=pcumhaz1,pcumhaz2=pcumhaz2,x1=x1,x2=x2)
+
+###	jumps1=1:nrow(pcumhaz1),
+###	nstrata=bb1.12$nstrata,
+###	strata1=bb1.12$strata[xx1$jumps+1],
+###        strata.name1=bb1.12$strata.name,
+###	strata.level1=bb1.12$strata.level)
 
   return(out)
 }# }}}

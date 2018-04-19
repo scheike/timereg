@@ -72,6 +72,11 @@ with(pp, matlines(times,se.lower,type="s"))
 with(pp, matlines(times,se.upper,type="s"))
 }
 }
+\references{
+Scheike, Eriksson, Tribler (2018) 
+            The mean, variance and correlation for bivariate recurrent events
+            with a terminal event,  work in progress
+}
 \author{
 Thomas Scheike
 }
