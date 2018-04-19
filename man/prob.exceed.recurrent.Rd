@@ -3,6 +3,7 @@
 \name{prob.exceed.recurrent}
 \alias{prob.exceed.recurrent}
 \alias{prob.exceedRecurrent}
+\alias{prob.exceedBiRecurrent}
 \title{Estimation of probability of more that k events for recurrent events process}
 \usage{
 prob.exceed.recurrent(data, type, status = "status", death = "death",
@@ -60,6 +61,14 @@ par(mfrow=c(1,2))
 with(oo,plotl(time,mu,col=2))
 ###
 with(oo,plotl(time,varN))
+
+
+### Bivariate probbility of exceeding 
+oo <- prob.exceedBiRecurrent(r,1,2,exceed1=c(1,5,10),exceed2=c(1,2,3))
+with(oo, matplot(time,pe1e2,type="s"))
+nc <- ncol(oo$pe1e2)
+legend("topleft",legend=colnames(oo$pe1e2),lty=1:nc,col=1:nc)
+
 
 \donttest{
 ### do not test to avoid dependence on prodlim 
