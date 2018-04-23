@@ -2,7 +2,8 @@
 
 * Version 1.2.3.1 <2018-04-18 Wed>
   - starting values updated for twinlm method
-  - ...
+  - computation of probability of exceeding "k" events for recurrents processs
+  - computation of probability of exceeding "k1" and "k2" events for bivariate recurrents processseses
 
 * Version 1.2.3 <2018-02-02 Mon>
   - twinlm now supports ordinal outcomes

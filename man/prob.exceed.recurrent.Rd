@@ -63,7 +63,7 @@ with(oo,plotl(time,mu,col=2))
 with(oo,plotl(time,varN))
 
 
-### Bivariate probbility of exceeding 
+### Bivariate probability of exceeding 
 oo <- prob.exceedBiRecurrent(r,1,2,exceed1=c(1,5,10),exceed2=c(1,2,3))
 with(oo, matplot(time,pe1e2,type="s"))
 nc <- ncol(oo$pe1e2)

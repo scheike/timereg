@@ -1589,7 +1589,7 @@ return(data)
 ##' with(oo,plotl(time,varN))
 ##' 
 ##' 
-##' ### Bivariate probbility of exceeding 
+##' ### Bivariate probability of exceeding 
 ##' oo <- prob.exceedBiRecurrent(r,1,2,exceed1=c(1,5,10),exceed2=c(1,2,3))
 ##' with(oo, matplot(time,pe1e2,type="s"))
 ##' nc <- ncol(oo$pe1e2)
@@ -1881,7 +1881,8 @@ pstrata2[1] <- 0
   colnames(pe1e2) <- nn
 
   out=list(time=times,pe1e2=pe1e2,
-        pcumhaz1=pcumhaz1,pcumhaz2=pcumhaz2,x1=x1,x2=x2)
+###        pcumhaz1=pcumhaz1,pcumhaz2=pcumhaz2,
+	x1=x1,x2=x2)
 
 ###	jumps1=1:nrow(pcumhaz1),
 ###	nstrata=bb1.12$nstrata,
