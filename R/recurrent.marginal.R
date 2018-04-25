@@ -126,350 +126,36 @@ recurrentMarginal <- function(recurrent,death,fixbeta=NULL,km=FALSE,...)
   mu <- cumhazDR[,2]
 # }}}
 
-  test <- 0
   ### robust standard errors 
   ### 1. sum_k ( int_0^t S(s)/S_0^r(s) dM_k.^r(s) )^2
- if (test==1) {
-# {{{
-  x <- xr
-  xx <- x$cox.prep
-  S0i2 <- S0i <- rep(0,length(xx$strata))
-  S0i[xx$jumps+1] <-  1/x$S0
-  S0i2[xx$jumps+1] <- 1/x$S0^2
-  Z <- xx$X
-  U <- E <- matrix(0,nrow(xx$X),x$p)
-  E[xx$jumps+1,] <- x$E
-  U[xx$jumps+1,] <- x$U
-  ###    
-  cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
-  cumS0i2 <- cumsumstrata(St*S0i2,xx$strata,xx$nstrata)
-  if (fixbeta==0) {
-	  EdLam0 <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
-	  Ht <- apply(St*E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
-	  HtR <- Ht
-  }
-  if (fixbeta==0) rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
-  else rr <- c(xx$sign*exp(xx$offset))
-  id <-   xx$id
-  mid <- max(id)+1
-  ### also weights 
-  w <- c(xx$weights)
-  xxx <- w*(St*S0i-rr*c(cumS0i2))
-  ssf <- cumsumidstratasum(xxx,id,mid,xx$strata,xx$nstrata)$sumsquare
-  ss <- c(revcumsumidstratasum(w*rr,id,mid,xx$strata,xx$nstrata)$lagsumsquare)*c(cumS0i2^2)
-  covv <- covfridstrata(xxx,w*rr,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2)
-  varA1 <- c(ssf+ss+2*covv)
-  cumS0i2R <- cumS0i2; xxxR <- xxx; rrR <- rr
-
-  if (fixbeta==0) {# {{{
-      invhess <- -solve(x$hessian)
-      MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-EdLam0)*rr*c(xx$weights)
-      UU <- apply(MGt,2,sumstrata,id,max(id)+1)
-      betaiidR <- UU %*% invhess
-###     betaiidR <- iid(x)
-     vbeta <- crossprod(betaiidR)
-     varbetat <-   rowSums((Ht %*% vbeta)*Ht)
-     ### writing each beta for all individuals 
-     betakt <- betaiidR[id+1,,drop=FALSE]
-     ###
-     covk1 <- apply(xxx*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
-     covk2 <- apply(w*rr*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
-     covk2 <- c(covk2)*c(cumS0i2)
-     ###
-     varA1 <- varA1+varbetat-2*apply((covk1-covk2)*Ht,1,sum)
-  }# }}}
-# }}}
- }
- resIM1 <-  squareintHdM(xr,ft=St,fixbeta=fixbeta,...)
+ resIM1 <-  squareintHdM(xr,ft=St,fixbeta=fixbeta)
 
  ### 2. mu(t)^2 * sum_k ( int_0^t 1/S_0^d(s) dM_k.^d(s) )^2
- resIM2 <-  squareintHdM(dr,ft=NULL,fixbeta=fixbeta,...)
-
- if (test==1) {
-# {{{
-  x <- dr
-  xx <- x$cox.prep
-  S0i2 <- S0i <- rep(0,length(xx$strata))
-  S0i[xx$jumps+1] <-  1/x$S0
-  S0i2[xx$jumps+1] <- 1/x$S0^2
-  if (fixbeta==0) {
-	  Z <- xx$X
-	  U <- E <- matrix(0,nrow(xx$X),x$p)
-	  E[xx$jumps+1,] <- x$E
-	  U[xx$jumps+1,] <- x$U
-	  Ht <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
-  }
-  ###    
-  cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
-  cumS0i2 <- cumsumstrata(S0i2,xx$strata,xx$nstrata)
-  if (fixbeta==0) rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
-  else rr <- c(xx$sign*exp(xx$offset))
-  id <-   xx$id
-  mid <- max(id)+1
-  ### also weights 
-  w <- c(xx$weights)
-  xxx1 <- w*(S0i-rr*c(cumS0i2))
-  ssf <- cumsumidstratasum(xxx1,id,mid,xx$strata,xx$nstrata)$sumsquare
-  ss <- c(revcumsumidstratasum(w*rr,id,mid,xx$strata,xx$nstrata)$lagsumsquare)*c(cumS0i2^2)
-  covv <- covfridstrata(xxx1,w*rr,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2)
-  varA2 <- mu^2*c(ssf+ss+2*covv)
-  cumS0i2D1 <- cumS0i2 
-  xxxD1 <- xxx1
-  rrD1 <- rr
-  if (fixbeta==0) {# {{{
-      HtD1 <- mu*Ht
-      invhess <- -solve(x$hessian)
-      MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-Ht)*rr*c(xx$weights)
-      UU <- apply(MGt,2,sumstrata,id,max(id)+1)
-      betaiidD <- UU %*% invhess
-###     betaiidD1 <- iid(x)
-     vbetaD <- crossprod(betaiidD)
-     varbetat <-   rowSums((HtD1 %*% vbetaD)*HtD1)
-     ### writing each beta for all individuals 
-     betakt <- betaiidD[id+1,,drop=FALSE]
-     ###
-     covk1 <- apply(xxx1*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
-     covk2 <- apply(w*rr*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
-     covk2 <- c(covk2)*c(cumS0i2D1)
-     ###
-     varA2 <- varA2+varbetat-2*apply((covk1-covk2)*HtD1*mu,1,sum)
-  }# }}}
-
-# }}}
- }
+ resIM2 <-  squareintHdM(dr,ft=NULL,fixbeta=fixbeta)
 
   ### 3. sum_k( int_0^t mu(s) /S_0^d(s) dM_k.^d(s))^2
- if (test==1) {
-# {{{
-  x <- dr
-  xx <- x$cox.prep
-  S0i2 <- S0i <- rep(0,length(xx$strata))
-  S0i[xx$jumps+1] <-  1/x$S0
-  S0i2[xx$jumps+1] <- 1/x$S0^2
-  if (fixbeta==0) {
-	  Z <- xx$X
-	  U <- E <- matrix(0,nrow(xx$X),x$p)
-	  E[xx$jumps+1,] <- x$E
-  }
-###  U[xx$jumps+1,] <- x$U
-  xr$cox.prep$time  - xx$time
-  xr$cox.prep$time[xr$cox.prep$jumps+1]
-  xr$cox.prep$time[dr$cox.prep$jumps+1]
-  ###    
-  cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
-  cumS0i2 <- cumsumstrata(mu*S0i2,xx$strata,xx$nstrata)
+ resIM3 <-  squareintHdM(dr,ft=mu,fixbeta=fixbeta)
 
-  if (fixbeta==0) {
-	  EdLam0 <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
-	  Ht <- apply(mu*E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
-	  HtD <- Ht
-  }
-  if (fixbeta==0) rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
-  else rr <- c(xx$sign*exp(xx$offset))
-  id <-   xx$id
-  mid <- max(id)+1
-  ### also weights 
-  w <- c(xx$weights)
-  xxx <- w*(mu*S0i-rr*c(cumS0i2))
-  ssf <- cumsumidstratasum(xxx,id,mid,xx$strata,xx$nstrata)$sumsquare
-  ss <- c(revcumsumidstratasum(w*rr,id,mid,xx$strata,xx$nstrata)$lagsumsquare)*c(cumS0i2^2)
-  covv <- covfridstrata(xxx,w*rr,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2)
-  varA3 <- c(ssf+ss+2*covv)
-  cumS0i2D <- cumS0i2
-  rrD <- rr
-  xxxD <- xxx
- 
-  if (fixbeta==0) {# {{{
-     invhess <- -solve(x$hessian)
-     varbetat <-   rowSums((Ht %*% vbetaD)*Ht)
-     ### writing each beta for all individuals 
-     covk1 <- apply(xxx*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
-     covk2 <- apply(w*rr*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
-     covk2 <- c(covk2)*c(cumS0i2)
-     ###
-     varA3 <- varA3+varbetat-2*apply((covk1-covk2)*Ht,1,sum)
-  }# }}}
-  varA <-  varA1+varA2+varA3 
-# }}}
- }
- resIM3 <-  squareintHdM(dr,ft=mu,fixbeta=fixbeta,...)
  varA <-  resIM1$varInt+mu^2*resIM2$varInt+resIM3$varInt 
 
- if (test==1) {# {{{
-	 print("=====var ================="); 
-	 print(summary(varA1))
-	 print(summary(varA2)); 
-	 print(summary(varA3)); 
-	 print("--------------------------"); 
-	 print(summary(resIM1$varInt))
-	 print(summary(mu^2*resIM2$varInt))
-	 print(summary(resIM3$varInt))
-	 print("======================"); 
- }# }}}
 
  ### covariances between different terms  13 23  12 12
- if (test==1) {
- # {{{
- cov23<-c(cumsumidstratasumCov(xxxD,xxxD1,id,mid,xx$strata,xx$nstrata)$sumsquare)
- cov232<-c(revcumsumidstratasum(w*rrD,id,mid,xx$strata,xx$nstrata)$lagsumsquare)*c(cumS0i2D*cumS0i2D1)
-### cov232<-c(revcumsumidstratasumCov(w*rrD,w*w*rrD,id,mid,xx$strata,xx$nstrata)$lagsumsquare)*c(cumS0i2D*cumS0i2D1)
- cov233 <- covfridstrata(xxxD,w*rrD1,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2D1)
-### cov233 <- covfridstrataCov(xxxD,w*rrD1,xxxD1,w*rrD1,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2D1)
- cov234 <- covfridstrata(xxxD1,w*rrD1,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2D)
-### cov234 <- covfridstrataCov(xxxD1,w*rrD1,xxxD,w*rrD,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2D)
- cov23A <- -c(cov23+(cov232+cov233+cov234))*mu
-### print(summary(cov23))
-### print(summary(cov232))
-### print(summary(cov233))
-### print(summary(cov234))
-### print(" ====================== 23 slut ")
-###
-
- cov12 <-  c(cumsumidstratasumCov(xxxR,xxxD1,id,mid,xx$strata,xx$nstrata)$sumsquare)
- cov122 <- c(revcumsumidstratasumCov(w*rrR,w*rrD1,id,mid,xx$strata,xx$nstrata)$lagsumsquare)*c(cumS0i2R*cumS0i2D1)
- cov123 <- covfridstrataCov(xxxR,w*rrR,xxxD1,w*rrD1,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2D1)
- cov124 <- covfridstrataCov(xxxD1,w*rrD1,xxxR,w*rrR,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2R)
- cov12A <- -c(cov12+cov122+cov123+cov124)*mu
- print("________________12____________________"); 
- print(summary(c(xxxR))); print(summary(c(xxxD1))); 
- print(summary(c(rrD1))); print(summary(c(rrR)))
- print(summary(c(cumS0i2R))); print(summary(c(cumS0i2D1)))
- print(summary(cov12)); 
- print(summary(cov122)); 
- print(summary(c(cov123))); 
- print(summary(c(cov124))); 
- print("______________________________________"); 
-
-###
- cov13 <-  c(cumsumidstratasumCov(xxxR,xxxD,id,mid,xx$strata,xx$nstrata)$sumsquare)
- cov132 <- c(revcumsumidstratasumCov(w*rrR,w*rrD,id,mid,xx$strata,xx$nstrata)$lagsumsquare)*c(cumS0i2R*cumS0i2D)
- cov133 <- covfridstrataCov(xxxR,w*rrR,xxxD,w*rrD,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2D)
- cov134 <- covfridstrataCov(xxxD,w*rrD,xxxR,w*rrR,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2R)
-###
- cov13A <- c(cov13+(cov132+cov133+cov134))
- varAg <- varA+2*cov12A+2*cov23A+2*cov13A
-# }}}
+## to allow different strata for xr and dr, but stille nested strata
+ if ((xr$nstrata>1 & dr$nstrata==1)) {
+    cM1M3 <- covIntH1dM1IntH2dM2(resIM1,resIM3,fixbeta=fixbeta,mu=NULL)
+    cM1M2 <- covIntH1dM1IntH2dM2(resIM1,resIM2,fixbeta=fixbeta,mu=mu)
+ } else  {
+    cM1M3 <- covIntH1dM1IntH2dM2(resIM3,resIM1,fixbeta=fixbeta,mu=NULL)
+    cM1M2 <- covIntH1dM1IntH2dM2(resIM2,resIM1,fixbeta=fixbeta,mu=NULL)
  }
+ cM2M3 <- covIntH1dM1IntH2dM2(resIM2,resIM3,fixbeta=fixbeta,mu=mu)
 
-
-cM1M3 <- covIntH1dM1IntH2dM2(resIM3,resIM1,fixbeta=fixbeta,mu=NULL)
-cM1M2 <- covIntH1dM1IntH2dM2(resIM2,resIM1,fixbeta=fixbeta,mu=mu)
-cM2M3 <- covIntH1dM1IntH2dM2(resIM2,resIM3,fixbeta=fixbeta,mu=mu)
-
-###print(lapply(cM1M3,summary))
-###cM1M3 <- covIntH1dM1IntH2dM2(resIM1,resIM3,fixbeta=fixbeta,mu=NULL)
-###print(lapply(cM1M3,summary))
-###print("____________________________")
-###print(lapply(cM1M2,summary))
-###cM1M2 <- covIntH1dM1IntH2dM2(resIM1,resIM2,fixbeta=fixbeta,mu=mu)
-###print(lapply(cM1M2,summary))
-###print("____________________________")
-###
-###print(lapply(cM2M3,summary))
-###cM2M3 <- covIntH1dM1IntH2dM2(resIM2,resIM3,fixbeta=fixbeta,mu=mu)
-###print(lapply(cM2M3,summary))
-###print("____________________________")
-
-
- if (test==1) {# {{{
-	 print("=======cov AAA==============="); 
-	 print(summary(cov13A))
-	 print(summary(cov12A))
-	 print(summary(cov23A))
-	 print("_______________________________"); 
-	 print(summary(cM1M3$cov12A))
-	 print(summary(-1*cM1M2$cov12A))
-	 print(summary(-1*cM2M3$cov12A))
-	 print("======================"); 
- }# }}}
  varA <- varA+2*cM1M3$cov12A-2*cM1M2$cov12A-2*cM2M3$cov12A 
 
- if (test==1) {# {{{
- print(" var Ag"); 
- print(summary(varAg)); 
- print(" var A"); 
- print(summary(varA)); 
- }# }}}
-
  cov12aa <- cov13aa <- cov23aa <- 0
- if (fixbeta==0 & test==1 ) {
- ### covariances between different terms and  beta's 
-	# {{{
-	 covbetaRD <- t(betaiidR) %*% betaiidD
-	 DHt <- HtD1-HtD
-	### covbeta1.23 <-   -2*rowSums((HtR %*% covbetaRD)*DHt)
-	 covbeta1.12 <-   -2*rowSums((HtR %*% covbetaRD)*HtD1)
-	 covbeta1.13 <-   2*rowSums((HtR %*% covbetaRD)*HtD)
-	 covbetaD.23 <-   -2*rowSums((HtD %*% vbetaD)*(HtD1))
-
-	 ### D versus betaD from two terms  cov23 wrt beta 
-	 betakt <- betaiidD[id+1,,drop=FALSE]
-	 covk1 <-apply(xxxD1*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
-	 covk2 <-apply(w*rrD1*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
-	 covk2 <- c(covk2)*c(cumS0i2D1)
-	 covD1.D <- 2*apply((covk1-covk2)*mu*HtD,1,sum)
-	 ###
-	 covk1 <-apply(xxxD*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
-	 covk2 <-apply(w*rrD*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
-	 covk2 <- c(covk2)*c(cumS0i2D)
-	 covD.D1 <- 2*apply((covk1-covk2)*HtD1,1,sum)
-	 cov23aa <- covbetaD.23  + covD1.D + covD.D1
-
-	 ### cov12 wrt betaD and betaR
-	 betakt <- betaiidD[id+1,,drop=FALSE]
-	 covk1 <-apply(xxxR*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
-	 covk2 <-apply(w*rrR*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
-	 covk2 <- c(covk2)*c(cumS0i2R)
-	 covRD12 <- 2*apply((covk1-covk2)*HtD1,1,sum)
-	###
-	 betakt <- betaiidR[id+1,,drop=FALSE]
-	 covk1 <-apply(xxxD1*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
-	 covk2 <-apply(w*rrD1*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
-	 covk2 <- c(covk2)*c(cumS0i2D1)
-	 covRD21 <- 2*apply((covk1-covk2)*mu*HtR,1,sum)
-	 cov12aa <- covbeta1.12 + covRD12+covRD21
-###         print("--------12------")
-###	 print(summary(covbeta1.12))
-###	 print(summary(covRD12))
-###	 print(summary(covRD21))
-###	 print("--------------")
-
-
-	 ### cov13 wrt betaD and betaR
-	 betakt <- betaiidD[id+1,,drop=FALSE]
-	 covk1 <-apply(xxxR*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
-	 covk2 <-apply(w*rrR*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
-	 covk2 <- c(covk2)*c(cumS0i2R)
-	 covRD13 <- -2*apply((covk1-covk2)*HtD,1,sum)
-	###
-	 betakt <- betaiidR[id+1,,drop=FALSE]
-	 covk1 <-apply(xxxD*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
-	 covk2 <-apply(w*rrD*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
-	 covk2 <- c(covk2)*c(cumS0i2D)
-	 covRD31 <- -2*apply((covk1-covk2)*HtR,1,sum)
-	 cov13aa <- covbeta1.13 + covRD13+covRD31
- 	 varAg <-varA+ cov23aa+cov13aa+cov12aa
-# }}}
- }
-
- if (test==1) {
- print("=========cov beta============"); 
-	 print(summary(cov13aa))
-	 print(summary(cov12aa))
-	 print(summary(cov23aa))
- print("_______________________________"); 
- print(summary(-1*cM1M3$covbeta)); 
- print(summary(cM1M2$covbeta))
- print(summary(cM2M3$covbeta));
- print("======================"); 
- }
 
  if (fixbeta==0) {
     varA <-varA+ cM2M3$covbeta - cM1M3$covbeta + cM1M2$covbeta 
- if (test==1) {
- print(summary(varAg))
- print(summary(varA))
- }
  }
 
  varrs <- data.frame(mu=mu,cumhaz=mu,se.mu=varA^.5,time=xr$time,
@@ -485,6 +171,400 @@ cM2M3 <- covIntH1dM1IntH2dM2(resIM2,resIM3,fixbeta=fixbeta,mu=mu)
      strata.name=xr$strata.name,strata.level=recurrent$strata.level)
  return(out)
 }# }}}
+
+###recurrentMarginal <- function(recurrent,death,fixbeta=NULL,km=FALSE,...)
+###{# {{{
+###  xr <- recurrent
+###  dr <- death 
+###
+###  ### sets fixbeta based on  wheter xr has been optimized in beta (so cox case)
+###  if (is.null(fixbeta)) 
+###  if (is.null(xr$opt) | is.null(xr$coef)) fixbeta<- 1 else fixbeta <- 0
+###
+###  ### marginal expected events  int_0^t G(s) \lambda_r(s) ds 
+###  # {{{
+###  strat <- dr$strata[dr$jumps]
+###  ###
+###  x <- dr
+###  xx <- x$cox.prep
+###  S0i2 <- S0i <- rep(0,length(xx$strata))
+###  S0i[xx$jumps+1] <-  1/x$S0
+###  S0i2[xx$jumps+1] <- 1/x$S0^2
+###  ## survival at t- to also work in competing risks situation
+###  if (!km) { 
+###    cumhazD <- c(cumsumstratasum(S0i,xx$strata,xx$nstrata)$lagsum)
+###    St      <- exp(-cumhazD)
+###  } else St <- c(exp(cumsumstratasum(log(1-S0i),xx$strata,xx$nstrata)$lagsum))
+###  x <- xr
+###  xx <- x$cox.prep
+###  S0i2 <- S0i <- rep(0,length(xx$strata))
+###  S0i[xx$jumps+1] <-  1/x$S0
+###  S0i2[xx$jumps+1] <- 1/x$S0^2
+###  cumhazR <-  cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
+###  cumhazDR <- cbind(xx$time,cumsumstrata(St*S0i,xx$strata,xx$nstrata))
+###  mu <- cumhazDR[,2]
+#### }}}
+###
+###  test <- 0
+###  ### robust standard errors 
+###  ### 1. sum_k ( int_0^t S(s)/S_0^r(s) dM_k.^r(s) )^2
+### if (test==1) {
+#### {{{
+###  x <- xr
+###  xx <- x$cox.prep
+###  S0i2 <- S0i <- rep(0,length(xx$strata))
+###  S0i[xx$jumps+1] <-  1/x$S0
+###  S0i2[xx$jumps+1] <- 1/x$S0^2
+###  Z <- xx$X
+###  U <- E <- matrix(0,nrow(xx$X),x$p)
+###  E[xx$jumps+1,] <- x$E
+###  U[xx$jumps+1,] <- x$U
+###  ###    
+###  cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
+###  cumS0i2 <- cumsumstrata(St*S0i2,xx$strata,xx$nstrata)
+###  if (fixbeta==0) {
+###	  EdLam0 <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
+###	  Ht <- apply(St*E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
+###	  HtR <- Ht
+###  }
+###  if (fixbeta==0) rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
+###  else rr <- c(xx$sign*exp(xx$offset))
+###  id <-   xx$id
+###  mid <- max(id)+1
+###  ### also weights 
+###  w <- c(xx$weights)
+###  xxx <- w*(St*S0i-rr*c(cumS0i2))
+###  ssf <- cumsumidstratasum(xxx,id,mid,xx$strata,xx$nstrata)$sumsquare
+###  ss <- c(revcumsumidstratasum(w*rr,id,mid,xx$strata,xx$nstrata)$lagsumsquare)*c(cumS0i2^2)
+###  covv <- covfridstrata(xxx,w*rr,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2)
+###  varA1 <- c(ssf+ss+2*covv)
+###  cumS0i2R <- cumS0i2; xxxR <- xxx; rrR <- rr
+###
+###  if (fixbeta==0) {# {{{
+###      invhess <- -solve(x$hessian)
+###      MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-EdLam0)*rr*c(xx$weights)
+###      UU <- apply(MGt,2,sumstrata,id,max(id)+1)
+###      betaiidR <- UU %*% invhess
+######     betaiidR <- iid(x)
+###     vbeta <- crossprod(betaiidR)
+###     varbetat <-   rowSums((Ht %*% vbeta)*Ht)
+###     ### writing each beta for all individuals 
+###     betakt <- betaiidR[id+1,,drop=FALSE]
+###     ###
+###     covk1 <- apply(xxx*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
+###     covk2 <- apply(w*rr*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
+###     covk2 <- c(covk2)*c(cumS0i2)
+###     ###
+###     varA1 <- varA1+varbetat-2*apply((covk1-covk2)*Ht,1,sum)
+###  }# }}}
+#### }}}
+### }
+### resIM1 <-  squareintHdM(xr,ft=St,fixbeta=fixbeta,...)
+###
+###
+### ### 2. mu(t)^2 * sum_k ( int_0^t 1/S_0^d(s) dM_k.^d(s) )^2
+### resIM2 <-  squareintHdM(dr,ft=NULL,fixbeta=fixbeta,...)
+###
+### if (test==1) {
+#### {{{
+###  x <- dr
+###  xx <- x$cox.prep
+###  S0i2 <- S0i <- rep(0,length(xx$strata))
+###  S0i[xx$jumps+1] <-  1/x$S0
+###  S0i2[xx$jumps+1] <- 1/x$S0^2
+###  if (fixbeta==0) {
+###	  Z <- xx$X
+###	  U <- E <- matrix(0,nrow(xx$X),x$p)
+###	  E[xx$jumps+1,] <- x$E
+###	  U[xx$jumps+1,] <- x$U
+###	  Ht <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
+###  }
+###  ###    
+###  cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
+###  cumS0i2 <- cumsumstrata(S0i2,xx$strata,xx$nstrata)
+###  if (fixbeta==0) rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
+###  else rr <- c(xx$sign*exp(xx$offset))
+###  id <-   xx$id
+###  mid <- max(id)+1
+###  ### also weights 
+###  w <- c(xx$weights)
+###  xxx1 <- w*(S0i-rr*c(cumS0i2))
+###  ssf <- cumsumidstratasum(xxx1,id,mid,xx$strata,xx$nstrata)$sumsquare
+###  ss <- c(revcumsumidstratasum(w*rr,id,mid,xx$strata,xx$nstrata)$lagsumsquare)*c(cumS0i2^2)
+###  covv <- covfridstrata(xxx1,w*rr,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2)
+###  varA2 <- mu^2*c(ssf+ss+2*covv)
+###  cumS0i2D1 <- cumS0i2 
+###  xxxD1 <- xxx1
+###  rrD1 <- rr
+###  if (fixbeta==0) {# {{{
+###      HtD1 <- mu*Ht
+###      invhess <- -solve(x$hessian)
+###      MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-Ht)*rr*c(xx$weights)
+###      UU <- apply(MGt,2,sumstrata,id,max(id)+1)
+###      betaiidD <- UU %*% invhess
+######     betaiidD1 <- iid(x)
+###     vbetaD <- crossprod(betaiidD)
+###     varbetat <-   rowSums((HtD1 %*% vbetaD)*HtD1)
+###     ### writing each beta for all individuals 
+###     betakt <- betaiidD[id+1,,drop=FALSE]
+###     ###
+###     covk1 <- apply(xxx1*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
+###     covk2 <- apply(w*rr*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
+###     covk2 <- c(covk2)*c(cumS0i2D1)
+###     ###
+###     varA2 <- varA2+varbetat-2*apply((covk1-covk2)*HtD1*mu,1,sum)
+###  }# }}}
+###
+#### }}}
+### }
+###
+###  ### 3. sum_k( int_0^t mu(s) /S_0^d(s) dM_k.^d(s))^2
+### if (test==1) {
+#### {{{
+###  x <- dr
+###  xx <- x$cox.prep
+###  S0i2 <- S0i <- rep(0,length(xx$strata))
+###  S0i[xx$jumps+1] <-  1/x$S0
+###  S0i2[xx$jumps+1] <- 1/x$S0^2
+###  if (fixbeta==0) {
+###	  Z <- xx$X
+###	  U <- E <- matrix(0,nrow(xx$X),x$p)
+###	  E[xx$jumps+1,] <- x$E
+###  }
+######  U[xx$jumps+1,] <- x$U
+###  xr$cox.prep$time  - xx$time
+###  xr$cox.prep$time[xr$cox.prep$jumps+1]
+###  xr$cox.prep$time[dr$cox.prep$jumps+1]
+###  ###    
+###  cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
+###  cumS0i2 <- cumsumstrata(mu*S0i2,xx$strata,xx$nstrata)
+###
+###  if (fixbeta==0) {
+###	  EdLam0 <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
+###	  Ht <- apply(mu*E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
+###	  HtD <- Ht
+###  }
+###  if (fixbeta==0) rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
+###  else rr <- c(xx$sign*exp(xx$offset))
+###  id <-   xx$id
+###  mid <- max(id)+1
+###  ### also weights 
+###  w <- c(xx$weights)
+###  xxx <- w*(mu*S0i-rr*c(cumS0i2))
+###  ssf <- cumsumidstratasum(xxx,id,mid,xx$strata,xx$nstrata)$sumsquare
+###  ss <- c(revcumsumidstratasum(w*rr,id,mid,xx$strata,xx$nstrata)$lagsumsquare)*c(cumS0i2^2)
+###  covv <- covfridstrata(xxx,w*rr,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2)
+###  varA3 <- c(ssf+ss+2*covv)
+###  cumS0i2D <- cumS0i2
+###  rrD <- rr
+###  xxxD <- xxx
+### 
+###  if (fixbeta==0) {# {{{
+###     invhess <- -solve(x$hessian)
+###     varbetat <-   rowSums((Ht %*% vbetaD)*Ht)
+###     ### writing each beta for all individuals 
+###     covk1 <- apply(xxx*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
+###     covk2 <- apply(w*rr*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
+###     covk2 <- c(covk2)*c(cumS0i2)
+###     ###
+###     varA3 <- varA3+varbetat-2*apply((covk1-covk2)*Ht,1,sum)
+###  }# }}}
+###  varA <-  varA1+varA2+varA3 
+#### }}}
+### }
+### resIM3 <-  squareintHdM(dr,ft=mu,fixbeta=fixbeta,...)
+### varA <-  resIM1$varInt+mu^2*resIM2$varInt+resIM3$varInt 
+###
+### if (test==1) {# {{{
+###	 print("=====var ================="); 
+###	 print(summary(varA1))
+###	 print(summary(varA2)); 
+###	 print(summary(varA3)); 
+###	 print("--------------------------"); 
+###	 print(summary(resIM1$varInt))
+###	 print(summary(mu^2*resIM2$varInt))
+###	 print(summary(resIM3$varInt))
+###	 print("======================"); 
+### }# }}}
+###
+### ### covariances between different terms  13 23  12 12
+### if (test==1) {
+### # {{{
+### cov23<-c(cumsumidstratasumCov(xxxD,xxxD1,id,mid,xx$strata,xx$nstrata)$sumsquare)
+### cov232<-c(revcumsumidstratasum(w*rrD,id,mid,xx$strata,xx$nstrata)$lagsumsquare)*c(cumS0i2D*cumS0i2D1)
+###### cov232<-c(revcumsumidstratasumCov(w*rrD,w*w*rrD,id,mid,xx$strata,xx$nstrata)$lagsumsquare)*c(cumS0i2D*cumS0i2D1)
+### cov233 <- covfridstrata(xxxD,w*rrD1,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2D1)
+###### cov233 <- covfridstrataCov(xxxD,w*rrD1,xxxD1,w*rrD1,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2D1)
+### cov234 <- covfridstrata(xxxD1,w*rrD1,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2D)
+###### cov234 <- covfridstrataCov(xxxD1,w*rrD1,xxxD,w*rrD,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2D)
+### cov23A <- -c(cov23+(cov232+cov233+cov234))*mu
+###### print(summary(cov23))
+###### print(summary(cov232))
+###### print(summary(cov233))
+###### print(summary(cov234))
+###### print(" ====================== 23 slut ")
+######
+###
+### cov12 <-  c(cumsumidstratasumCov(xxxR,xxxD1,id,mid,xx$strata,xx$nstrata)$sumsquare)
+### cov122 <- c(revcumsumidstratasumCov(w*rrR,w*rrD1,id,mid,xx$strata,xx$nstrata)$lagsumsquare)*c(cumS0i2R*cumS0i2D1)
+### cov123 <- covfridstrataCov(xxxR,w*rrR,xxxD1,w*rrD1,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2D1)
+### cov124 <- covfridstrataCov(xxxD1,w*rrD1,xxxR,w*rrR,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2R)
+### cov12A <- -c(cov12+cov122+cov123+cov124)*mu
+### print("________________12____________________"); 
+### print(summary(c(xxxR))); print(summary(c(xxxD1))); 
+### print(summary(c(rrD1))); print(summary(c(rrR)))
+### print(summary(c(cumS0i2R))); print(summary(c(cumS0i2D1)))
+### print(summary(cov12)); 
+### print(summary(cov122)); 
+### print(summary(c(cov123))); 
+### print(summary(c(cov124))); 
+### print("______________________________________"); 
+###
+######
+### cov13 <-  c(cumsumidstratasumCov(xxxR,xxxD,id,mid,xx$strata,xx$nstrata)$sumsquare)
+### cov132 <- c(revcumsumidstratasumCov(w*rrR,w*rrD,id,mid,xx$strata,xx$nstrata)$lagsumsquare)*c(cumS0i2R*cumS0i2D)
+### cov133 <- covfridstrataCov(xxxR,w*rrR,xxxD,w*rrD,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2D)
+### cov134 <- covfridstrataCov(xxxD,w*rrD,xxxR,w*rrR,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2R)
+######
+### cov13A <- c(cov13+(cov132+cov133+cov134))
+### varAg <- varA+2*cov12A+2*cov23A+2*cov13A
+#### }}}
+### }
+###
+###
+###cM1M3 <- covIntH1dM1IntH2dM2(resIM3,resIM1,fixbeta=fixbeta,mu=NULL)
+###cM1M2 <- covIntH1dM1IntH2dM2(resIM2,resIM1,fixbeta=fixbeta,mu=mu)
+###cM2M3 <- covIntH1dM1IntH2dM2(resIM2,resIM3,fixbeta=fixbeta,mu=mu)
+###
+######print(lapply(cM1M3,summary))
+######cM1M3 <- covIntH1dM1IntH2dM2(resIM1,resIM3,fixbeta=fixbeta,mu=NULL)
+######print(lapply(cM1M3,summary))
+######print("____________________________")
+######print(lapply(cM1M2,summary))
+######cM1M2 <- covIntH1dM1IntH2dM2(resIM1,resIM2,fixbeta=fixbeta,mu=mu)
+######print(lapply(cM1M2,summary))
+######print("____________________________")
+######
+######print(lapply(cM2M3,summary))
+######cM2M3 <- covIntH1dM1IntH2dM2(resIM2,resIM3,fixbeta=fixbeta,mu=mu)
+######print(lapply(cM2M3,summary))
+######print("____________________________")
+###
+###
+### if (test==1) {# {{{
+###	 print("=======cov AAA==============="); 
+###	 print(summary(cov13A))
+###	 print(summary(cov12A))
+###	 print(summary(cov23A))
+###	 print("_______________________________"); 
+###	 print(summary(cM1M3$cov12A))
+###	 print(summary(-1*cM1M2$cov12A))
+###	 print(summary(-1*cM2M3$cov12A))
+###	 print("======================"); 
+### }# }}}
+### varA <- varA+2*cM1M3$cov12A-2*cM1M2$cov12A-2*cM2M3$cov12A 
+###
+### if (test==1) {# {{{
+### print(" var Ag"); 
+### print(summary(varAg)); 
+### print(" var A"); 
+### print(summary(varA)); 
+### }# }}}
+###
+### cov12aa <- cov13aa <- cov23aa <- 0
+### if (fixbeta==0 & test==1 ) {
+### ### covariances between different terms and  beta's 
+###	# {{{
+###	 covbetaRD <- t(betaiidR) %*% betaiidD
+###	 DHt <- HtD1-HtD
+###	### covbeta1.23 <-   -2*rowSums((HtR %*% covbetaRD)*DHt)
+###	 covbeta1.12 <-   -2*rowSums((HtR %*% covbetaRD)*HtD1)
+###	 covbeta1.13 <-   2*rowSums((HtR %*% covbetaRD)*HtD)
+###	 covbetaD.23 <-   -2*rowSums((HtD %*% vbetaD)*(HtD1))
+###
+###	 ### D versus betaD from two terms  cov23 wrt beta 
+###	 betakt <- betaiidD[id+1,,drop=FALSE]
+###	 covk1 <-apply(xxxD1*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
+###	 covk2 <-apply(w*rrD1*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
+###	 covk2 <- c(covk2)*c(cumS0i2D1)
+###	 covD1.D <- 2*apply((covk1-covk2)*mu*HtD,1,sum)
+###	 ###
+###	 covk1 <-apply(xxxD*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
+###	 covk2 <-apply(w*rrD*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
+###	 covk2 <- c(covk2)*c(cumS0i2D)
+###	 covD.D1 <- 2*apply((covk1-covk2)*HtD1,1,sum)
+###	 cov23aa <- covbetaD.23  + covD1.D + covD.D1
+###
+###	 ### cov12 wrt betaD and betaR
+###	 betakt <- betaiidD[id+1,,drop=FALSE]
+###	 covk1 <-apply(xxxR*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
+###	 covk2 <-apply(w*rrR*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
+###	 covk2 <- c(covk2)*c(cumS0i2R)
+###	 covRD12 <- 2*apply((covk1-covk2)*HtD1,1,sum)
+###	###
+###	 betakt <- betaiidR[id+1,,drop=FALSE]
+###	 covk1 <-apply(xxxD1*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
+###	 covk2 <-apply(w*rrD1*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
+###	 covk2 <- c(covk2)*c(cumS0i2D1)
+###	 covRD21 <- 2*apply((covk1-covk2)*mu*HtR,1,sum)
+###	 cov12aa <- covbeta1.12 + covRD12+covRD21
+######         print("--------12------")
+######	 print(summary(covbeta1.12))
+######	 print(summary(covRD12))
+######	 print(summary(covRD21))
+######	 print("--------------")
+###
+###
+###	 ### cov13 wrt betaD and betaR
+###	 betakt <- betaiidD[id+1,,drop=FALSE]
+###	 covk1 <-apply(xxxR*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
+###	 covk2 <-apply(w*rrR*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
+###	 covk2 <- c(covk2)*c(cumS0i2R)
+###	 covRD13 <- -2*apply((covk1-covk2)*HtD,1,sum)
+###	###
+###	 betakt <- betaiidR[id+1,,drop=FALSE]
+###	 covk1 <-apply(xxxD*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
+###	 covk2 <-apply(w*rrD*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
+###	 covk2 <- c(covk2)*c(cumS0i2D)
+###	 covRD31 <- -2*apply((covk1-covk2)*HtR,1,sum)
+###	 cov13aa <- covbeta1.13 + covRD13+covRD31
+### 	 varAg <-varA+ cov23aa+cov13aa+cov12aa
+#### }}}
+### }
+###
+### if (test==1) {
+### print("=========cov beta============"); 
+###	 print(summary(cov13aa))
+###	 print(summary(cov12aa))
+###	 print(summary(cov23aa))
+### print("_______________________________"); 
+### print(summary(-1*cM1M3$covbeta)); 
+### print(summary(cM1M2$covbeta))
+### print(summary(cM2M3$covbeta));
+### print("======================"); 
+### }
+###
+### if (fixbeta==0) {
+###    varA <-varA+ cM2M3$covbeta - cM1M3$covbeta + cM1M2$covbeta 
+### if (test==1) {
+### print(summary(varAg))
+### print(summary(varA))
+### }
+### }
+###
+### varrs <- data.frame(mu=mu,cumhaz=mu,se.mu=varA^.5,time=xr$time,
+###		     se.cumhaz=varA^.5,strata=xr$strata,St=St)
+### varrs <- varrs[c(xr$cox.prep$jumps)+1,]
+###
+### ### to use basehazplot.phreg
+### ### making output such that basehazplot can work also
+### out <- list(mu=varrs$mu,se.mu=varrs$se.mu,times=varrs$time,
+###     St=varrs$St,
+###     cumhaz=cbind(varrs$time,varrs$mu),se.cumhaz=cbind(varrs$time,varrs$se.mu),
+###     strata=varrs$strata,nstrata=xr$nstrata,jumps=1:nrow(varrs),
+###     strata.name=xr$strata.name,strata.level=recurrent$strata.level)
+### return(out)
+###}# }}}
 
 ##' @export
 recurrentMarginalgam <- function(recurrent,death,fixbeta=NULL,km=FALSE,...)
@@ -1202,6 +1282,9 @@ simRecurrent <- function(n,cumhaz,death.cumhaz=NULL,cumhaz2=NULL,
       tall$status <- (1+rbinom(nrow(tall),1,p2t))*(tall$status>=1)
   }# }}}
 
+  tall$start <- tall$entry
+  tall$stop  <- tall$time
+
   attr(tall,"death.cumhaz") <- cumhazd
   attr(tall,"cumhaz") <- cumhaz
   attr(tall,"cumhaz2") <- cumhaz2
@@ -1260,6 +1343,8 @@ simRecurrentGamma <- function(n,haz=0.5,death.haz=0.1,haz2=0.1,max.recurrent=100
       tall$status <- (1+rbinom(nrow(tall),1,p2t))*(tall$status>=1)
   }# }}}
 
+  tall$start <- tall$entry
+  tall$stop  <- tall$time
   attr(tall,"death.cumhaz") <- cumhazd
   attr(tall,"cumhaz") <- cumhaz
   attr(tall,"cumhaz2") <- cumhaz2
@@ -1445,6 +1530,8 @@ simRecurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
   }
 ###  tall <- gemsim[1:nrr,]
   dsort(tall) <- ~id+entry+time
+  tall$start <- tall$entry
+  tall$stop  <- tall$time
 
   attr(tall,"death.cumhaz") <- cumhazd
   attr(tall,"cumhaz") <- cumhaz
@@ -1688,9 +1775,10 @@ return(list(time=times,times=times,prob=probs,se.prob=se.probs,meanN=meanN,
 	    se.lower=se.lower,se.upper=se.upper,meanN2=meanN2,varN=meanN2-meanN^2))
 }# }}}
 
+
 ##' @export
 prob.exceedRecurrent <- function(data,type1,km=FALSE,status="status",death="death",
-                   	 start="start",stop="stop",id="id",names.count="Count")
+                start="start",stop="stop",id="id",names.count="Count",...)
 {# {{{
 
 formdr <- as.formula(paste("Surv(",start,",",stop,",",death,")~ cluster(",id,")",sep=""))
@@ -1701,10 +1789,6 @@ form1C <- as.formula(paste("Surv(",start,",",stop,",",status,"==",type1,")~strat
 dr <- phreg(formdr,data=data)
 base1   <- phreg(form1,data=data)
 base1.2 <- phreg(form1C,data=data)
-
-###mmean <- recmarg(base1,dr)
-###mu <- mmean$mu
-###print(summary(mu))
 
 cc <- base1$cox.prep
 risk <- revcumsumstrata(cc$sign,cc$strata,cc$nstrata)
@@ -1749,16 +1833,30 @@ pstrata[1] <- 0
   pcumhaz <- cbind(xx$time,
               cumsumstrata(pstrata*St*S0i,xx$strata,xx$nstrata))
 # }}}
-
-  EN2 <- EN2[xx$jumps+1]
+  EN2     <- EN2[xx$jumps+1]
   cumhaz <- pcumhaz[xx$jumps+1,]
-  mu <- mu[xx$jumps+1]
+  mu     <- mu[xx$jumps+1]
 
-  out=list(cumhaz=cumhaz,time=cumhaz[,1],
-	varN=EN2-mu^2,mu=mu,
-	nstrata=base1.2$nstrata,strata=base1.2$strata[xx$jumps+1],
-	jumps=1:nrow(cumhaz),
-        strata.name=base1.2$strata.name,strata.level=base1.2$strata.level)
+###  out=list(cumhaz=cumhaz,time=cumhaz[,1],
+###	varN=EN2-mu^2,mu=mu,
+###	nstrata=base1.2$nstrata,strata=base1.2$strata[xx$jumps+1],
+###	jumps=1:nrow(cumhaz),
+###        strata.name=base1.2$strata.name,strata.level=base1.2$strata.level)
+
+### use recurrentMarginal estimator til dette via strata i base1 
+### strata og count skal passe sammen
+### se beregning via recurrent marginal function
+
+  base1$cox.prep$strata <- base1.2$cox.prep$strata
+  base1$cox.prep$nstrata <- base1.2$cox.prep$nstrata
+  base1$nstrata <- base1.2$cox.prep$nstrata
+  base1$strata <- base1.2$strata
+  base1$strata.name <- base1.2$strata.name
+  base1$strata.level <- base1.2$strata.level
+
+  mm <- recurrentMarginal(base1,dr,km=km,...)
+
+  out=c(mm,list(varN=EN2-mu^2))
 
   return(out)
 }# }}}
