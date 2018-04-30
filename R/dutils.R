@@ -1089,7 +1089,7 @@ for (i in seq_along(c(knots)))
 
 lspline <- as.data.frame(lspline)
 if (num==TRUE) names(lspline) <- paste(name,seq_along(c(knots)),sep="")
-else if (!is.nulll(signif)) names(lspline) <- paste(name,round(c(knots),signif),sep="")
+else if (!is.null(signif)) names(lspline) <- paste(name,round(c(knots),signif),sep="")
 
     return(lspline)
 }# }}}
