@@ -54,7 +54,7 @@ cor.mat <- corM <- rbind(c(1.0, 0.6, 0.9), c(0.6, 1.0, 0.5), c(0.9, 0.5, 1.0))
 rr <- simRecurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
 dtable(rr,~death+status)
 
-oo <- prob.exceedRecurrent(r,1)
+oo <- prob.exceedRecurrent(rr,1)
 bplot(oo)
 
 par(mfrow=c(1,2))

@@ -1667,7 +1667,7 @@ return(data)
 ##' rr <- simRecurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
 ##' dtable(rr,~death+status)
 ##' 
-##' oo <- prob.exceedRecurrent(r,1)
+##' oo <- prob.exceedRecurrent(rr,1)
 ##' bplot(oo)
 ##' 
 ##' par(mfrow=c(1,2))
