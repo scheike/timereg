@@ -1024,15 +1024,19 @@ basecumhaz <- function(x,type="matrix",robust=FALSE,...) {# {{{
 
    start <- 1
    for (i in stratas) {
-	   cumhazard <- x$cumhaz[strat==i,]
-	   nr <- nrow(cumhazard)
-	   slut <- start-1+nr
-###	   cum[start:slut,] <- cumhazard
-	   cum <- rbind(cum,cumhazard)
-###	   if (!nose) se.cum[start:slut,] <- secum[strat==i,]
-	   if (!nose) se.cum <- rbind(se.cum,secum[strat==i,])
-	   strata[start:slut] <- i
-	   start <- slut+1
+	   cumhazard <- x$cumhaz[strat==i,,drop=FALSE]
+	   if (!is.null(cumhazard)) {
+		   nr <- nrow(cumhazard)
+		   if (nr>=1) {
+		   slut <- start-1+nr
+	###	   cum[start:slut,] <- cumhazard
+		   cum <- rbind(cum,cumhazard)
+	###	   if (!nose) se.cum[start:slut,] <- secum[strat==i,]
+		   if (!nose) se.cum <- rbind(se.cum,secum[strat==i,])
+		   strata[start:slut] <- i
+		   start <- slut+1
+	      }
+	   }
    }
 
    list(cumhaz=cum,se.cumhaz=se.cum,strata=strata)

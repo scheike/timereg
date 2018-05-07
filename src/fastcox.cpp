@@ -120,6 +120,8 @@ BEGIN_RCPP/*{{{*/
 //  }
 //  catch(...) {}
 
+  if (X.isNotNull()) printf(" hej \n"); 
+
   colvec weights = Rcpp::as<colvec>(weightsSEXP);
   colvec offsets = Rcpp::as<colvec>(offsetsSEXP);
   //bool haveId = Rcpp::as<bool>(haveIdSEXP);
