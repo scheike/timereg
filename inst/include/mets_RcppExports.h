@@ -40,7 +40,45 @@ namespace mets {
         if (rcpp_result_gen.inherits("interrupted-error"))
             throw Rcpp::internal::InterruptedException();
         if (rcpp_result_gen.inherits("try-error"))
-            throw Rcpp::exception(as<std::string>(rcpp_result_gen).c_str());
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<arma::mat >(rcpp_result_gen);
+    }
+
+    inline NumericVector _dmvn(arma::mat u, arma::mat mu, arma::mat rho) {
+        typedef SEXP(*Ptr__dmvn)(SEXP,SEXP,SEXP);
+        static Ptr__dmvn p__dmvn = NULL;
+        if (p__dmvn == NULL) {
+            validateSignature("NumericVector(*_dmvn)(arma::mat,arma::mat,arma::mat)");
+            p__dmvn = (Ptr__dmvn)R_GetCCallable("mets", "_mets__dmvn");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p__dmvn(Shield<SEXP>(Rcpp::wrap(u)), Shield<SEXP>(Rcpp::wrap(mu)), Shield<SEXP>(Rcpp::wrap(rho)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
+        return Rcpp::as<NumericVector >(rcpp_result_gen);
+    }
+
+    inline arma::mat _rmvn(unsigned n, arma::mat mu, arma::mat rho) {
+        typedef SEXP(*Ptr__rmvn)(SEXP,SEXP,SEXP);
+        static Ptr__rmvn p__rmvn = NULL;
+        if (p__rmvn == NULL) {
+            validateSignature("arma::mat(*_rmvn)(unsigned,arma::mat,arma::mat)");
+            p__rmvn = (Ptr__rmvn)R_GetCCallable("mets", "_mets__rmvn");
+        }
+        RObject rcpp_result_gen;
+        {
+            RNGScope RCPP_rngScope_gen;
+            rcpp_result_gen = p__rmvn(Shield<SEXP>(Rcpp::wrap(n)), Shield<SEXP>(Rcpp::wrap(mu)), Shield<SEXP>(Rcpp::wrap(rho)));
+        }
+        if (rcpp_result_gen.inherits("interrupted-error"))
+            throw Rcpp::internal::InterruptedException();
+        if (rcpp_result_gen.inherits("try-error"))
+            throw Rcpp::exception(Rcpp::as<std::string>(rcpp_result_gen).c_str());
         return Rcpp::as<arma::mat >(rcpp_result_gen);
     }
 

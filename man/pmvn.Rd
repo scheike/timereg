@@ -5,6 +5,8 @@
 \alias{pbvn}
 \alias{loglikMVN}
 \alias{scoreMVN}
+\alias{dmvn}
+\alias{rmvn}
 \title{Multivariate normal distribution function}
 \usage{
 pmvn(lower, upper, mu, sigma, cor = FALSE)
@@ -29,7 +31,4 @@ upper <- rbind(c(Inf,0),c(0,Inf))
 mu <- rbind(c(1,1),c(-1,1))
 sigma <- diag(2)+1
 pmvn(lower=lower,upper=upper,mu=mu,sigma=sigma)
-}
-\seealso{
-dmvn rmvn
 }

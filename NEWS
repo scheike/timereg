@@ -1,10 +1,14 @@
 # -*- mode: org -*-
 
-* Version 1.2.3.1 <2018-04-18 Wed>
-  - starting values updated for twinlm method
+* Version 1.2.4 <2018-05-18 Wed>
   - computation of probability of exceeding "k" events for recurrents processs
   - computation of probability of exceeding "k1" and "k2" events for bivariate recurrents processseses
   - dspline simple spline decomposition on a data frame 
+  - rmvn, dmvn: RNG and density for multivariate normal distribution
+    with varying correlation coefficients.
+
+* Version 1.2.3.1 <2018-04-18 Wed>
+  - starting values updated for twinlm method
 
 * Version 1.2.3 <2018-02-02 Mon>
   - twinlm now supports ordinal outcomes

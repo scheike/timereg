@@ -282,7 +282,7 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' @param weights weights for Cox score equations
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Klaus K. Holst, Thomas Scheike
-##' @aliases phreg phreg.par robust.phreg
+##' @aliases phreg phreg.par robust.phreg KM 
 ##' @examples
 ##' data(TRACE)
 ##' dcut(TRACE) <- ~.
@@ -304,7 +304,6 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' betaiiid <- iid(out1)
 ##' 
 ##' @export
-##' @aliases KM phreg
 phreg <- function(formula,data,offset=NULL,weights=NULL,...) {
   cl <- match.call()
   m <- match.call(expand.dots = TRUE)[1:3]

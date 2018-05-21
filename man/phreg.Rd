@@ -4,6 +4,7 @@
 \alias{phreg}
 \alias{phreg.par}
 \alias{robust.phreg}
+\alias{KM}
 \title{Fast Cox PH regression}
 \usage{
 phreg(formula, data, offset = NULL, weights = NULL, ...)

@@ -736,3 +736,77 @@ double Sbvn(double &l1, double &l2,double &r) {
 }
 
 
+////////////////////////////////////////////////// 
+// Density with varying correlation structure
+//////////////////////////////////////////////////
+
+// [[Rcpp::export(name = ".dmvn")]]
+NumericVector dmvn(arma::mat u, arma::mat mu, arma::mat rho) {
+  unsigned n = u.n_rows;
+  unsigned p = u.n_cols;
+  NumericVector res(n);
+  arma::mat R = arma::eye(p,p);  
+  double logdetR = 0;
+  arma::mat invR = R;
+  arma::rowvec mu_i(p);
+  
+  for (unsigned i=0; i<n; i++) {
+    if (i % 10000 == 0) Rcpp::checkUserInterrupt();
+    if (i<mu.n_rows) {
+      mu_i = mu.row(i);
+    }
+    arma::rowvec ui = u.row(i)-mu_i;
+    if (i<rho.n_rows) {
+      unsigned pos=0;
+      for (unsigned r=0; r<p; r++)
+	for (unsigned c=r+1; c<p; c++) {	
+	  R(r,c) = rho(i,pos);
+	  R(c,r) = rho(i,pos);	
+	  pos++;
+	}
+      logdetR = log(fabs(arma::det(R)));
+      invR = inv(R);
+    }
+    
+    res[i] = -0.5*(logdetR + p*log2pi +
+		   arma::as_scalar(ui*(invR)*ui.t()));
+  }
+  return res;
+}
+
+////////////////////////////////////////////////// 
+// RNG with varying correlation structure
+//////////////////////////////////////////////////
+
+// [[Rcpp::export(name = ".rmvn")]]
+arma::mat rmvn(unsigned n, arma::mat mu, arma::mat rho) {
+  unsigned p = mu.n_cols;
+  arma::mat res(n,p);
+  std::generate( res.begin(), res.end(), ::norm_rand ) ;
+  arma::mat R = arma::eye(p,p);
+  arma::mat L = R;
+  arma::rowvec mu_i(p);
+  arma::rowvec U(p);
+  for (unsigned i=0; i<n; i++) {
+    if (i % 10000 == 0) Rcpp::checkUserInterrupt();        
+    if (i<rho.n_rows) {
+      unsigned pos=0;
+      for (unsigned r=0; r<p; r++)
+	for (unsigned c=r+1; c<p; c++) {	
+	  R(r,c) = rho(i,pos);
+	  R(c,r) = rho(i,pos);	
+	  pos++;
+	}
+      L = chol(R);
+    }
+    if (i<mu.n_rows) {
+      mu_i = mu.row(i);
+    }
+    res.row(i) =  res.row(i)*L;
+    res.row(i) += mu_i;
+  }
+  return res;
+}
+
+
+

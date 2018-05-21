@@ -1,8 +1,3 @@
-rmvn <- function(n,sigma) {
-  Sh <- with(svd(sigma), v%*%diag(sqrt(d))%*%t(u))
-  matrix(rnorm(ncol(sigma)*n),ncol=ncol(sigma))%*%Sh
-}
-
 ##' Simulate twin data from a linear normal ACE/ADE/AE model.
 ##'
 ##' @title Simulate twin data
