@@ -6,7 +6,7 @@
 \alias{recmarg}
 \title{Fast recurrent marginal mean when death is possible}
 \usage{
-recurrentMarginal(recurrent, death, fixbeta = NULL, km = FALSE, ...)
+recurrentMarginal(recurrent, death, fixbeta = NULL, km = TRUTRUEE...)
 }
 \arguments{
 \item{recurrent}{phreg object with recurrent events}
@@ -99,7 +99,7 @@ bmt$id <- 1:nrow(bmt)
 xr  <- phreg(Surv(time,cause==1)~cluster(id),data=bmt)
 dr  <- phreg(Surv(time,cause!=0)~cluster(id),data=bmt)
 
-out <- recurrentMarginal(xr,dr)
+out <- recurrentMarginal(xr,dr,km=TRUE)
 bplot(out,se=TRUE,ylab="cumulative incidence")
 
 }

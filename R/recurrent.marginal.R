@@ -88,12 +88,12 @@
 ##' xr  <- phreg(Surv(time,cause==1)~cluster(id),data=bmt)
 ##' dr  <- phreg(Surv(time,cause!=0)~cluster(id),data=bmt)
 ##' 
-##' out <- recurrentMarginal(xr,dr)
+##' out <- recurrentMarginal(xr,dr,km=TRUE)
 ##' bplot(out,se=TRUE,ylab="cumulative incidence")
 ##' 
 ##' @export
 ##' @aliases recurrentMarginal tie.breaker  recmarg
-recurrentMarginal <- function(recurrent,death,fixbeta=NULL,km=FALSE,...)
+recurrentMarginal <- function(recurrent,death,fixbeta=NULL,km=TRUTRUEE...)
 {# {{{
   xr <- recurrent
   dr <- death 
@@ -567,7 +567,7 @@ recurrentMarginal <- function(recurrent,death,fixbeta=NULL,km=FALSE,...)
 ###}# }}}
 
 ##' @export
-recurrentMarginalgam <- function(recurrent,death,fixbeta=NULL,km=FALSE,...)
+recurrentMarginalgam <- function(recurrent,death,fixbeta=NULL,km=TRUTRUEE,...)
 {# {{{
   xr <- recurrent
   dr <- death 
@@ -878,7 +878,7 @@ recurrentMarginalgam <- function(recurrent,death,fixbeta=NULL,km=FALSE,...)
 }# }}}
 
 ##' @export
-recmarg <- function(recurrent,death,km=FALSE,...)
+recmarg <- function(recurrent,death,km=TRUE,...)
 {# {{{
   xr <- recurrent
   dr <- death 
@@ -1717,6 +1717,7 @@ else {
 }
 
  count <- cumsumstrata((stat==type),clusters,max.clust+1)
+### count  <- cumsumidstratasum((stat==type),rep(0,nrow(data)),1,clusters,max.clust+1)$lagsum 
  mc <- max(count)+1
  idcount <- clusters*mc + count
  idcount <- cumsumstrata(rep(1,length(idcount)),idcount,mc*(max.clust+1))
@@ -1765,7 +1766,7 @@ for (n1 in exceed[-1]) {# {{{
 }# }}}
 
 dp <- -t(apply(cbind(probs[,-1],0),1,diff))
-meanN <- apply(probs[,-1],1,sum)
+meanN <- apply(probs[,-1,drop=FALSE],1,sum)
 meanN2 <- apply(t(exceed[-1]^2 * t(dp)),1,sum)
  
 colnames(probs) <- c(paste("N=",exceed[1],sep=""),paste("exceed>=",exceed[-1],sep=""))
@@ -1775,9 +1776,8 @@ return(list(time=times,times=times,prob=probs,se.prob=se.probs,meanN=meanN,
 	    se.lower=se.lower,se.upper=se.upper,meanN2=meanN2,varN=meanN2-meanN^2))
 }# }}}
 
-
 ##' @export
-prob.exceedRecurrent <- function(data,type1,km=FALSE,status="status",death="death",
+prob.exceedRecurrent <- function(data,type1,km=TRUE,status="status",death="death",
                 start="start",stop="stop",id="id",names.count="Count",...)
 {# {{{
 
@@ -1862,7 +1862,7 @@ pstrata[1] <- 0
 }# }}}
 
 ##' @export
-prob.exceedBiRecurrent <- function(data,type1,type2,km=FALSE,status="status",death="death",
+prob.exceedBiRecurrent <- function(data,type1,type2,km=TRUE,status="status",death="death",
       start="start",stop="stop",id="id",names.count="Count",exceed1=NULL,exceed2=NULL)
 {# {{{
 
