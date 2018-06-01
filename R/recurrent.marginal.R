@@ -93,7 +93,7 @@
 ##' 
 ##' @export
 ##' @aliases recurrentMarginal tie.breaker  recmarg
-recurrentMarginal <- function(recurrent,death,fixbeta=NULL,km=TRUTRUEE...)
+recurrentMarginal <- function(recurrent,death,fixbeta=NULL,km=TRUE,...)
 {# {{{
   xr <- recurrent
   dr <- death 
@@ -567,7 +567,7 @@ recurrentMarginal <- function(recurrent,death,fixbeta=NULL,km=TRUTRUEE...)
 ###}# }}}
 
 ##' @export
-recurrentMarginalgam <- function(recurrent,death,fixbeta=NULL,km=TRUTRUEE,...)
+recurrentMarginalgam <- function(recurrent,death,fixbeta=NULL,km=TRUE,...)
 {# {{{
   xr <- recurrent
   dr <- death 
@@ -1412,7 +1412,7 @@ simRecurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
 
   if (dependence==0) { z <- z1 <- z2 <- zd <- rep(1,n) # {{{
      } else if (dependence==1) {
-	      z <- rgamma(n,var.z[1])*var.z[1]^{-.5}
+	      z <- rgamma(n,1/var.z[1])*var.z[1]
 ###	      z <- exp(rnorm(n,1)*var.z[1]^.5)
 	      z1 <- z; z2 <- z; zd <- z
 	      if (!is.null(cor.mat)) { zd <- rep(1,n); }
@@ -1736,14 +1736,23 @@ for (n1 in exceed[-1]) {# {{{
 	i <- i+1
 	### first time that get to n1
 	keep <- (count<n1 ) | (count==n1 & idcount==1)
-	cc <- count[keep]
-	st <- stat[keep]
-	datt <- subset(data,keep)
+###	cc <- count[keep]
+###	st <- stat[keep]
+###	datt <- subset(data,keep)
 	### status, censoring, get to n1, or die
-	statN <- rep(0,nrow(datt))
-	statN[cc==n1] <- 1
-	statN[datt[,death]==1] <- 2
-	pN1 <-  prodlim::prodlim(form,datt)
+        statN <- rep(0,nrow(data))
+	statN[count==n1] <- 1
+	statN[dd==1] <- 2
+###	print(table(statN))
+###	data$statN <- statN
+###	statN <- statN[keep]
+###	print(length(statN))
+###	print(dim(data[keep,]))
+###	print(form)
+###	print(head(data))
+###	print(head(statN))
+	statN <- statN[keep]
+	pN1 <-  prodlim::prodlim(form,data=data[keep,])
 
 	if (sum(statN)==0) {
 		se.lower[,i] <- se.upper[,i] <- se.probs[,i] <- probs[,i] <- rep(0,length(times)) } else  {
@@ -1796,14 +1805,12 @@ risk <- revcumsumstrata(cc$sign,cc$strata,cc$nstrata)
 cc <- base1.2$cox.prep
 risk1 <- revcumsumstrata(cc$sign,cc$strata,cc$nstrata)
 pstrata <- risk1/risk
-pstrata[1] <- 0
+pstrata[risk1==0] <- 0
 
 ### marginal int_0^t G(s) P(N1(t-)==k|D>t) \lambda_{1,N1=k}(s) ds 
 ### strata og count skal passe sammen
   # {{{
   strat <- dr$strata[dr$jumps]
-  Gt <- exp(-dr$cumhaz[,2])
-  ###
   x <- dr
   xx <- x$cox.prep
   S0i2 <- S0i <- rep(0,length(xx$strata))
@@ -1817,7 +1824,7 @@ pstrata[1] <- 0
   lss <- length(xx$strata)
   S0i2 <- S0i <- rep(0,lss)
   S0i[xx$jumps+1] <-  1/x$S0
-  mu <- c(cumsumstrata(St*S0i,rep(0,lss),1))
+  mu <- c(cumsumstrata(St*S0i,xx$strata,xx$nstrata))
 ###
   x <- base1.2
   xx <- x$cox.prep
@@ -1847,15 +1854,14 @@ pstrata[1] <- 0
 ### strata og count skal passe sammen
 ### se beregning via recurrent marginal function
 
-  base1$cox.prep$strata <- base1.2$cox.prep$strata
-  base1$cox.prep$nstrata <- base1.2$cox.prep$nstrata
-  base1$nstrata <- base1.2$cox.prep$nstrata
-  base1$strata <- base1.2$strata
-  base1$strata.name <- base1.2$strata.name
-  base1$strata.level <- base1.2$strata.level
+###  base1$cox.prep$strata <- base1.2$cox.prep$strata
+###  base1$cox.prep$nstrata <- base1.2$cox.prep$nstrata
+###  base1$nstrata <- base1.2$cox.prep$nstrata
+###  base1$strata <- base1.2$strata
+###  base1$strata.name <- base1.2$strata.name
+###  base1$strata.level <- base1.2$strata.level
 
   mm <- recurrentMarginal(base1,dr,km=km,...)
-
   out=c(mm,list(varN=EN2-mu^2))
 
   return(out)

@@ -6,7 +6,7 @@
 \alias{recmarg}
 \title{Fast recurrent marginal mean when death is possible}
 \usage{
-recurrentMarginal(recurrent, death, fixbeta = NULL, km = TRUTRUEE...)
+recurrentMarginal(recurrent, death, fixbeta = NULL, km = TRUE, ...)
 }
 \arguments{
 \item{recurrent}{phreg object with recurrent events}
