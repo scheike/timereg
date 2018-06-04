@@ -1728,7 +1728,7 @@ if (is.null(exceed)) exceed <- sort(unique(count))
 ###form <- as.formula(paste("Event(entry=",start,",",stop,",statN)~+1",sep=""))
 form <- as.formula(paste("Hist(entry=",start,",",stop,",statN)~+1",sep=""))
 
-se.probs <- probs <- matrix(0,length(times),length(exceed))
+probs.orig <- se.probs <- probs <- matrix(0,length(times),length(exceed))
 se.lower <-  matrix(0,length(times),length(exceed))
 se.upper <-  matrix(0,length(times),length(exceed))
 i <- 1
@@ -1736,35 +1736,25 @@ for (n1 in exceed[-1]) {# {{{
 	i <- i+1
 	### first time that get to n1
 	keep <- (count<n1 ) | (count==n1 & idcount==1)
-###	cc <- count[keep]
-###	st <- stat[keep]
-###	datt <- subset(data,keep)
 	### status, censoring, get to n1, or die
         statN <- rep(0,nrow(data))
 	statN[count==n1] <- 1
 	statN[dd==1] <- 2
-###	print(table(statN))
-###	data$statN <- statN
-###	statN <- statN[keep]
-###	print(length(statN))
-###	print(dim(data[keep,]))
-###	print(form)
-###	print(head(data))
-###	print(head(statN))
 	statN <- statN[keep]
-	pN1 <-  prodlim::prodlim(form,data=data[keep,])
+	pN1 <-  suppressWarnings(prodlim::prodlim(form,data=data[keep,]))
 
 	if (sum(statN)==0) {
 		se.lower[,i] <- se.upper[,i] <- se.probs[,i] <- probs[,i] <- rep(0,length(times)) } else  {
-		ps  <- summary(pN1,times=times,cause=1)$table$"1"[,5]
+		mps  <- suppressWarnings(summary(pN1,times=times,cause=1)$table$"1")
+		probs.orig[,i] <- ps <- mps[,5]
 		mm <- which.max(ps)
 		probs[,i] <- ps
 		probs[is.na(ps),i] <- ps[mm]
-		se.probs[,i] <- summary(pN1,times=times,cause=1)$table$"1"[,6]
+		se.probs[,i] <- mps[,6]
 		se.probs[is.na(ps),i] <- se.probs[mm,i]
-		se.lower[,i] <- summary(pN1,times=times,cause=1)$table$"1"[,7]
+		se.lower[,i] <- mps[,7] 
 		se.lower[is.na(ps),i] <- se.lower[mm,i]
-		se.upper[,i] <- summary(pN1,times=times,cause=1)$table$"1"[,8]
+		se.upper[,i] <- mps[,8]
 		se.upper[is.na(ps),i] <- se.upper[mm,i]
 	}
 	if (i==2) { probs[,1]    <- 1-probs[,2]; 
@@ -1781,7 +1771,7 @@ meanN2 <- apply(t(exceed[-1]^2 * t(dp)),1,sum)
 colnames(probs) <- c(paste("N=",exceed[1],sep=""),paste("exceed>=",exceed[-1],sep=""))
 colnames(se.probs) <- c(paste("N=",exceed[1],sep=""),paste("exceed>=",exceed[-1],sep=""))
 
-return(list(time=times,times=times,prob=probs,se.prob=se.probs,meanN=meanN,
+return(list(time=times,times=times,prob=probs,se.prob=se.probs,meanN=meanN,probs.orig=probs.orig[,-1],
 	    se.lower=se.lower,se.upper=se.upper,meanN2=meanN2,varN=meanN2-meanN^2))
 }# }}}
 
@@ -1844,11 +1834,11 @@ pstrata[risk1==0] <- 0
   cumhaz <- pcumhaz[xx$jumps+1,]
   mu     <- mu[xx$jumps+1]
 
-###  out=list(cumhaz=cumhaz,time=cumhaz[,1],
-###	varN=EN2-mu^2,mu=mu,
-###	nstrata=base1.2$nstrata,strata=base1.2$strata[xx$jumps+1],
-###	jumps=1:nrow(cumhaz),
-###        strata.name=base1.2$strata.name,strata.level=base1.2$strata.level)
+  out=list(cumhaz=cumhaz,time=cumhaz[,1],
+	varN=EN2-mu^2,mu=mu,
+	nstrata=base1.2$nstrata,strata=base1.2$strata[xx$jumps+1],
+	jumps=1:nrow(cumhaz),
+        strata.name=base1.2$strata.name,strata.level=base1.2$strata.level)
 
 ### use recurrentMarginal estimator til dette via strata i base1 
 ### strata og count skal passe sammen
@@ -1861,8 +1851,8 @@ pstrata[risk1==0] <- 0
 ###  base1$strata.name <- base1.2$strata.name
 ###  base1$strata.level <- base1.2$strata.level
 
-  mm <- recurrentMarginal(base1,dr,km=km,...)
-  out=c(mm,list(varN=EN2-mu^2))
+###  mm <- recurrentMarginal(base1,dr,km=km,...)
+###  out=c(mm,list(varN=EN2-mu^2))
 
   return(out)
 }# }}}
