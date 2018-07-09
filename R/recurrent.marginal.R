@@ -1665,6 +1665,7 @@ return(data)
 ##'
 ##' cor.mat <- corM <- rbind(c(1.0, 0.6, 0.9), c(0.6, 1.0, 0.5), c(0.9, 0.5, 1.0))
 ##' rr <- simRecurrent(1000,base1,cumhaz2=base4,death.cumhaz=dr)
+##' rr <-  count.history(rr)
 ##' dtable(rr,~death+status)
 ##' 
 ##' oo <- prob.exceedRecurrent(rr,1)
@@ -1677,7 +1678,7 @@ return(data)
 ##' 
 ##' 
 ##' ### Bivariate probability of exceeding 
-##' oo <- prob.exceedBiRecurrent(r,1,2,exceed1=c(1,5,10),exceed2=c(1,2,3))
+##' oo <- prob.exceedBiRecurrent(rr,1,2,exceed1=c(1,5,10),exceed2=c(1,2,3))
 ##' with(oo, matplot(time,pe1e2,type="s"))
 ##' nc <- ncol(oo$pe1e2)
 ##' legend("topleft",legend=colnames(oo$pe1e2),lty=1:nc,col=1:nc)
@@ -2336,7 +2337,7 @@ basehazplot.phreg(pm2$meanrisk)
 iN2dN1 <-  intN2dN1(dr,base1,base1.2,pm2)
 iN1dN2 <-  intN2dN1(dr,base2,base2.1,pm1)
 
-print("hej")
+###print("hej")
 if (plot==1) {
 par(mfrow=c(2,2))
 basehazplot.phreg(iN2dN1)
