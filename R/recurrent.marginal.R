@@ -83,13 +83,13 @@
 ##' ###   CIF  #############################################################
 ##' ########################################################################
 ##' ### use of function to compute cumulative incidence (cif) with robust standard errors
-##' data(bmt)
-##' bmt$id <- 1:nrow(bmt)
-##' xr  <- phreg(Surv(time,cause==1)~cluster(id),data=bmt)
-##' dr  <- phreg(Surv(time,cause!=0)~cluster(id),data=bmt)
+##' ## data(bmt)
+##' ## bmt$id <- 1:nrow(bmt)
+##' ## xr  <- phreg(Surv(time,cause==1)~cluster(id),data=bmt)
+##' ## dr  <- phreg(Surv(time,cause!=0)~cluster(id),data=bmt)
 ##' 
-##' out <- recurrentMarginal(xr,dr,km=TRUE)
-##' bplot(out,se=TRUE,ylab="cumulative incidence")
+##' ## out <- recurrentMarginal(xr,dr,km=TRUE)
+##' ## bplot(out,se=TRUE,ylab="cumulative incidence")
 ##' 
 ##' @export
 ##' @aliases recurrentMarginal tie.breaker  recmarg
@@ -139,8 +139,8 @@ recurrentMarginal <- function(recurrent,death,fixbeta=NULL,km=TRUE,...)
  varA <-  resIM1$varInt+mu^2*resIM2$varInt+resIM3$varInt 
 
 
- ### covariances between different terms  13 23  12 12
-## to allow different strata for xr and dr, but stille nested strata
+## covariances between different terms  13 23  12 12
+## to allow different strata for xr and dr, but still nested strata
  if ((xr$nstrata>1 & dr$nstrata==1)) {
     cM1M3 <- covIntH1dM1IntH2dM2(resIM1,resIM3,fixbeta=fixbeta,mu=NULL)
     cM1M2 <- covIntH1dM1IntH2dM2(resIM1,resIM2,fixbeta=fixbeta,mu=mu)
@@ -151,11 +151,12 @@ recurrentMarginal <- function(recurrent,death,fixbeta=NULL,km=TRUE,...)
  cM2M3 <- covIntH1dM1IntH2dM2(resIM2,resIM3,fixbeta=fixbeta,mu=mu)
 
  varA <- varA+2*cM1M3$cov12A-2*cM1M2$cov12A-2*cM2M3$cov12A 
+### varA <- varA-2*cM1M3$cov12A+2*cM1M2$cov12A+2*cM2M3$cov12A 
 
  cov12aa <- cov13aa <- cov23aa <- 0
 
  if (fixbeta==0) {
-    varA <-varA+ cM2M3$covbeta - cM1M3$covbeta + cM1M2$covbeta 
+    varA <-varA - cM2M3$covbeta + cM1M3$covbeta - cM1M2$covbeta 
  }
 
  varrs <- data.frame(mu=mu,cumhaz=mu,se.mu=varA^.5,time=xr$time,
@@ -1672,9 +1673,9 @@ return(data)
 ##' bplot(oo)
 ##' 
 ##' par(mfrow=c(1,2))
-##' with(oo,plotl(time,mu,col=2))
+##' with(oo,plot(time,mu,col=2,type="l"))
 ##' ###
-##' with(oo,plotl(time,varN))
+##' with(oo,plot(time,varN,type="l"))
 ##' 
 ##' 
 ##' ### Bivariate probability of exceeding 

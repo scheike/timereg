@@ -59,9 +59,9 @@ oo <- prob.exceedRecurrent(rr,1)
 bplot(oo)
 
 par(mfrow=c(1,2))
-with(oo,plotl(time,mu,col=2))
+with(oo,plot(time,mu,col=2,type="l"))
 ###
-with(oo,plotl(time,varN))
+with(oo,plot(time,varN,type="l"))
 
 
 ### Bivariate probability of exceeding 
