@@ -83,13 +83,13 @@
 ##' ###   CIF  #############################################################
 ##' ########################################################################
 ##' ### use of function to compute cumulative incidence (cif) with robust standard errors
-##' ## data(bmt)
-##' ## bmt$id <- 1:nrow(bmt)
-##' ## xr  <- phreg(Surv(time,cause==1)~cluster(id),data=bmt)
-##' ## dr  <- phreg(Surv(time,cause!=0)~cluster(id),data=bmt)
+##'  data(bmt)
+##'  bmt$id <- 1:nrow(bmt)
+##'  xr  <- phreg(Surv(time,cause==1)~cluster(id),data=bmt)
+##'  dr  <- phreg(Surv(time,cause!=0)~cluster(id),data=bmt)
 ##' 
-##' ## out <- recurrentMarginal(xr,dr,km=TRUE)
-##' ## bplot(out,se=TRUE,ylab="cumulative incidence")
+##'  out <- recurrentMarginal(xr,dr,km=TRUE)
+##'  bplot(out,se=TRUE,ylab="cumulative incidence")
 ##' 
 ##' @export
 ##' @aliases recurrentMarginal tie.breaker  recmarg
@@ -129,15 +129,12 @@ recurrentMarginal <- function(recurrent,death,fixbeta=NULL,km=TRUE,...)
   ### robust standard errors 
   ### 1. sum_k ( int_0^t S(s)/S_0^r(s) dM_k.^r(s) )^2
  resIM1 <-  squareintHdM(xr,ft=St,fixbeta=fixbeta)
-
  ### 2. mu(t)^2 * sum_k ( int_0^t 1/S_0^d(s) dM_k.^d(s) )^2
  resIM2 <-  squareintHdM(dr,ft=NULL,fixbeta=fixbeta)
-
   ### 3. sum_k( int_0^t mu(s) /S_0^d(s) dM_k.^d(s))^2
  resIM3 <-  squareintHdM(dr,ft=mu,fixbeta=fixbeta)
 
  varA <-  resIM1$varInt+mu^2*resIM2$varInt+resIM3$varInt 
-
 
 ## covariances between different terms  13 23  12 12
 ## to allow different strata for xr and dr, but still nested strata
@@ -156,7 +153,7 @@ recurrentMarginal <- function(recurrent,death,fixbeta=NULL,km=TRUE,...)
  cov12aa <- cov13aa <- cov23aa <- 0
 
  if (fixbeta==0) {
-    varA <-varA - cM2M3$covbeta + cM1M3$covbeta - cM1M2$covbeta 
+    varA <-varA + cM2M3$covbeta - cM1M3$covbeta + cM1M2$covbeta 
  }
 
  varrs <- data.frame(mu=mu,cumhaz=mu,se.mu=varA^.5,time=xr$time,
