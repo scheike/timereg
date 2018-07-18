@@ -94,13 +94,13 @@ bplot(out,se=TRUE,ylab="marginal mean",col=1:2)
 ###   CIF  #############################################################
 ########################################################################
 ### use of function to compute cumulative incidence (cif) with robust standard errors
-## data(bmt)
-## bmt$id <- 1:nrow(bmt)
-## xr  <- phreg(Surv(time,cause==1)~cluster(id),data=bmt)
-## dr  <- phreg(Surv(time,cause!=0)~cluster(id),data=bmt)
+ data(bmt)
+ bmt$id <- 1:nrow(bmt)
+ xr  <- phreg(Surv(time,cause==1)~cluster(id),data=bmt)
+ dr  <- phreg(Surv(time,cause!=0)~cluster(id),data=bmt)
 
-## out <- recurrentMarginal(xr,dr,km=TRUE)
-## bplot(out,se=TRUE,ylab="cumulative incidence")
+ out <- recurrentMarginal(xr,dr,km=TRUE)
+ bplot(out,se=TRUE,ylab="cumulative incidence")
 
 }
 \references{
