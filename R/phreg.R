@@ -456,7 +456,7 @@ robust.basehaz.phreg  <- function(x,type="robust",fixbeta=NULL,...) {# {{{
   covv <- covfridstrata(xxx,w*rr,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2)
   varA <- c(ssf+ss+2*covv)
 
-  if (fixbeta==0) {
+  if (fixbeta==0) {# {{{
       MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-Ht)*rr*c(xx$weights)
       UU <- apply(MGt,2,sumstrata,id,max(id)+1)
       betaiid <- UU %*% invhess
@@ -470,7 +470,7 @@ robust.basehaz.phreg  <- function(x,type="robust",fixbeta=NULL,...) {# {{{
      covk2 <- c(covk2)*c(cumS0i2)
      ###
      varA <- varA+varbetat-2*apply((covk1-covk2)*Ht,1,sum)
-  }
+  }# }}}
   varA <- varA[x$jumps]
 
   strata <- xx$strata[x$jumps]
@@ -639,7 +639,6 @@ if (type=="all")    res <- .Call("revcumsumidstratasumCovR",x,y,id,nid,strata,ns
 return(res)
 }# }}}
 
-
 ##' @export
 cumsumidstratasumCov <- function(x,y,id,nid,strata,nstrata,type="all")
 {# {{{
@@ -678,6 +677,28 @@ res <- .Call("covrfstrataCovR",x,y,x1,y1,id,nid,strata,nstrata)
 return(res)
 }# }}}
 
+
+##' Kaplan-Meier with robust standard errors 
+##'
+##' Kaplan-Meier with robust standard errors 
+##' Robust variance is default variance with the summary. 
+##' @param formula formula with 'Surv' outcome (see \code{coxph})
+##' @param data data frame
+##' @param conf.type transformation 
+##' @param conf.int level of confidence intervals 
+##' @param robust for robust standard errors based on martingales 
+##' @param ... Additional arguments to lower level funtions
+##' @author Thomas Scheike
+##' @aliases KM  
+##' @examples
+##' data(TRACE)
+##' TRACE$cluster <- sample(1:100,1878,replace=TRUE)
+##' out1 <- KM(Surv(time,status==9)~strata(vf,chf),data=TRACE)
+##' out2 <- KM(Surv(time,status==9)~strata(vf,chf)+cluster(cluster),data=TRACE)
+##' 
+##' par(mfrow=c(1,2))
+##' bplot(out1,se=TRUE)
+##' bplot(out2,se=TRUE)
 ##' @export
 KM <- function(formula,data=data,conf.type="log",conf.int=0.95,robust=TRUE)
 {# {{{
@@ -730,6 +751,104 @@ KM <- function(formula,data=data,conf.type="log",conf.int=0.95,robust=TRUE)
  class(temp) <- c("km","phreg")
  return(temp)
 }# }}}
+
+##' Cumulative incidence with robust standard errors 
+##'
+##' Cumulative incidence with robust standard errors 
+##' Robust variance is default variance with the summary. 
+##' @param formula formula with 'Surv' outcome (see \code{coxph})
+##' @param data data frame
+##' @param cause NULL looks at all, otherwise specify which cause to consider
+##' @param cens.code censoring code "0" is default
+##' @param ... Additional arguments to lower level funtions
+##' @author Thomas Scheike
+##' @aliases cif  
+##' @examples
+##' data(TRACE)
+##' TRACE$cluster <- sample(1:100,1878,replace=TRUE)
+##' out1 <- cif(Event(time,status)~strata(vf,chf),data=TRACE)
+##' out2 <- cif(Event(time,status)~strata(vf,chf)+cluster(cluster),data=TRACE)
+##' 
+##' par(mfrow=c(1,2))
+##' bplot(out1,se=TRUE)
+##' bplot(out2,se=TRUE)
+##' @export
+cif <- function(formula,data=data,cause=1,cens.code=0,...)
+{# {{{
+
+  cl <- match.call()
+  m <- match.call(expand.dots = TRUE)[1:3]
+  special <- c("strata", "cluster","offset")
+  Terms <- terms(formula, special, data = data)
+  m$formula <- Terms
+  m[[1]] <- as.name("model.frame")
+  m <- eval(m, parent.frame())
+  Y <- model.extract(m, "response")
+  if (class(Y)!="Event") stop("Expected a 'Event'-object")
+  if (ncol(Y)==2) {
+    exit <- Y[,1]
+    entry <- NULL ## rep(0,nrow(Y))
+    status <- Y[,2]
+  } else {
+    entry <- Y[,1]
+    exit <- Y[,2]
+    status <- Y[,3]
+  }
+  id <- strata <- NULL
+  if (!is.null(attributes(Terms)$specials$cluster)) {
+    ts <- survival::untangle.specials(Terms, "cluster")
+    Terms  <- Terms[-ts$terms]
+    id <- m[[ts$vars]]
+  }
+  if (!is.null(stratapos <- attributes(Terms)$specials$strata)) {
+    ts <- survival::untangle.specials(Terms, "strata")
+    Terms  <- Terms[-ts$terms]
+    strata <- m[[ts$vars]]
+    strata.name <- ts$vars
+  }  else strata.name <- NULL
+  if (!is.null(offsetpos <- attributes(Terms)$specials$offset)) {
+    ts <- survival::untangle.specials(Terms, "offset")
+    Terms  <- Terms[-ts$terms]
+    offset <- m[[ts$vars]]
+  }  
+  X <- model.matrix(Terms, m)
+  if (!is.null(intpos  <- attributes(Terms)$intercept))
+    X <- X[,-intpos,drop=FALSE]
+  if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
+
+  id.orig <- id; 
+  if (!is.null(id)) {
+	  ids <- sort(unique(id))
+	  nid <- length(ids)
+      if (is.numeric(id)) id <-  fast.approx(ids,id)-1 else  {
+      id <- as.integer(factor(id,labels=seq(nid)))-1
+     }
+   } else id <- as.integer(seq_along(exit))-1; 
+
+
+  statusE <- 1*(status==cause)
+  statusD <- 1*(status!=cens.code)
+  if (ncol(Y)==3) {
+  formE <- as.formula(paste("Surv(entry=entry,exit,statusE)~strata(strata)+cluster(id__)",sep=""))
+  formD <- as.formula(paste("Surv(entry=entry,exit,statusD)~strata(strata)+cluster(id__)",sep=""))
+  } else {
+  formE <- as.formula(paste("Surv(exit,statusE)~strata(strata)+cluster(id__)",sep=""))
+  formD <- as.formula(paste("Surv(exit,statusD)~strata(strata)+cluster(id__)",sep=""))
+  }
+
+  data$id__ <- id
+
+ coxE <- phreg(formE,data=data,...)
+ coxS <- phreg(formD,data=data,...)
+
+ ### cif 
+ cifo <- recurrentMarginal(coxE,coxS)
+
+ ### to use basehazplot.phreg
+ class(cifo) <- c("cif","phreg")
+ return(cifo)
+}# }}}
+
 
 ###{{{ predict with se for baseline
 
