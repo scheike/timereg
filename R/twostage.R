@@ -344,15 +344,11 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") { ## {{{
 
          if (is.null(clusters) && is.null(mclusters)) stop("No cluster variabel specified in marginal or twostage call\n"); 
          if (is.null(clusters)) clusters <- mclusters 
-###	 else if (sum(abs(clusters-mclusters))>0) 
-###         cat("Warning: Clusters for marginal model different than those specified for two.stage\n"); 
-
-###         if (!is.null(attr(margsurv,"max.clust")))
-###         if ((attr(margsurv,"max.clust")< attr(margsurv,"orig.max.clust")) && (!is.null(mclusters))) 
-###		  cat("Warning: Probably want to estimate marginal model with max.clust=NULL\n"); 
-
 	 if (nrow(X)!=length(clusters)) stop("Length of Marginal survival data not consistent with cluster length\n"); 
 ## }}}
+	 } else if (class(margsurv)=="phreg") { ## {{{
+	         antpers <- length(margsurv$id)
+		start.time <- margsurv$entry
 } else { ### coxph ## {{{
 	  notaylor <- 1
 	  antpers <- margsurv$n
@@ -416,8 +412,25 @@ if (!is.null(margsurv))  {
 	}
   }
   else if (class(margsurv)=="phreg") {  ## {{{
+	xx <- margsurv$cox.prep
+	S0i2 <- S0i <- rep(0,length(xx$strata))
+	S0i[xx$jumps+1] <-  1/margsurv$S0
+	if (!is.null(margsurv$coef)) 
+		rr <- c(exp(xx$X  %*% margsurv$coef))
+        else rr <- rep(1,antpers) 
+###	### back to original order
+	cumhazt <- cumsumstratasum(S0i,xx$strata,xx$nstrata)$lagsum
+	orig.o <- (1:nrow(xx$X))[xx$ord+1]
+	bto <- order(orig.o)
+	cumhazt <- cumhazt[bto]
+	psurvmarg <- c(exp(-cumhazt*rr))
+        ptrunc <- rep(1,length(psurvmarg)); 
+	start.time <- c(margsurv$entry)
+	status <- c(margsurv$status)
   } ## }}} 
-}
+} ## }}}
+
+###     print(head(cbind(psurvmarg,status)))
 
   antpers <- nrow(data); ## mydim(marginal.survival)[1]
   RR <-  rep(1,antpers); 
@@ -827,7 +840,7 @@ if (!is.null(margsurv))  {
 
 ###      browser()
 ###      print(dim(random.design))
-
+###      print(summary(status)) print(summary(psurvmarg)) print(summary(clusters)) print(summary(random.design))
 
           outl<-.Call("twostageloglikeRVpairs", ## {{{
           icause=status,ipmargsurv=psurvmarg, 
@@ -839,6 +852,7 @@ if (!is.null(margsurv))  {
           idimthetades=dim(theta.des),idimrvdes=dim(random.design),irvs=pairs.rvs,iags=additive.gamma.sum, 
 	  iascertained=ascertained,PACKAGE="mets")
 	  ## }}} 
+
 
           if (fix.baseline==0)  { 
               outl$baseline <- cum1; 
@@ -1095,7 +1109,51 @@ if (!is.null(margsurv))  {
 ###                    hess <- numDeriv::jacobian(loglike,p,method="simple")
 ###		    oout <- 2
 ###	    }
-            if (iid==1) theta.iid <- out$theta.iid
+           if (iid==1) {  ## {{{
+		theta.iid <- out$theta.iid
+                if (class(margsurv)=="phreg") {  ## {{{
+		       ## order after time
+###		       D1dltheta1 <- out$D1dltheta1[xx$ord+1,]
+###		       D2dltheta1 <- out$D1dltheta1[xx$ord+1,]
+
+			print(dim(out$D1dthetal))
+			print(summary(xx$ord+1))
+
+		       Dtheta <- out$D1dthetal[xx$ord+1,] + out$D2dthetal[xx$ord+1,]
+		       print(dim(Dtheta))
+		       Dtheta <- apply(Dtheta * psurvmarg * (-rr),2,revcumsumstrata,xx$strata,xx$nstrata)
+
+		       print("hej")
+
+		       ### baseline iid 
+		       xx <- margsurv$cox.prep
+
+                        S0i2 <- S0i <- rep(0,length(xx$strata))
+			S0i[xx$jumps+1] <- 1/margsurv$S0
+	                S0i2[xx$jumps+1] <-  1/margsurv$S0^2
+			Z <- xx$X
+			U <- E <- matrix(0,nrow(xx$X),ncol(Dtheta))
+			U[xx$jumps+1,] <- Dtheta[xx$jumps+1,]
+
+		       print("hej")
+
+             		cumhaz <- cumsumstrata(Dtheta*S0i,xx$strata,xx$nstrata)
+			EdLam0 <- apply(Dtheta*S0i^2,2,cumsumstrata,xx$strata,xx$nstrata)
+			rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
+			### Martingale  as a function of time and for all subjects to handle strata 
+			MGt <- U[,drop=FALSE]-(cumhaz[,2]-EdLam0)*rr*c(xx$weights)
+			### back to order of data-set
+			MGt <- MGt[bto,,drop=FALSE]
+			id <- xx$id[bto]
+		 
+   		        UU <- apply(MGt,2,sumstrata,id,max(id)+1)
+			print(dim(UU))
+			print(dim(theta.iid))
+
+	        } ## }}}
+	   } ## }}} 
+
+
             if (detail==1 && iid==1) cat("finished iid decomposition\n"); 
 	    ### for profile solutions update second derivative at final 
 	    if (numDeriv==2 || ((fix.baseline==0))) {
@@ -2037,7 +2095,23 @@ if (!is.null(margsurv))  {
 ###                    hess <- numDeriv::jacobian(loglike,p,method="simple")
 ###		    oout <- 2
 ###	    }
-            if (iid==1) theta.iid <- out$theta.iid
+            if (iid==1) { theta.iid <- out$theta.iid
+                if (class(margsurv)=="phreg") {  ## {{{
+		       browser()
+		       ## order after time
+		       D1dltheta1 <- out$D1dltheta1[xx$order+1,]
+		       D2dltheta1 <- out$D1dltheta1[xx$order+1,]
+
+		       ### baseline iid 
+			xx <- margsurv$cox.prep
+			S0i2 <- S0i <- rep(0,length(xx$strata))
+			S0i[xx$jumps+1] <-  1/margsurv$S0
+			rr <- exp(ca2$cox.prep$X  %*% ca2$coef)
+			cumhazt <- cumsumstratasum(S0i,xx$strata,xx$nstrata)$lagsum
+			psurvmarg <- exp(-cumhazt*rr)
+	        } ## }}}
+	   }
+
             if (detail==1 && iid==1) cat("finished iid decomposition\n"); 
 	    ### for profile solutions update second derivative at final 
 	    if (numDeriv==2 || ((fix.baseline==0))) {

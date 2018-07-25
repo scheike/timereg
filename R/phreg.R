@@ -577,6 +577,14 @@ return(res)
 }# }}}
 
 ##' @export
+revcumsum <- function(x)
+{# {{{
+res <- .Call("revcumsumR",x,PACKAGE="mets")$res
+return(res)
+}# }}}
+
+
+##' @export
 revcumsumstratasum <- function(x,strata,nstrata,type="all")
 {# {{{
 if (any(strata<0) | any(strata>nstrata-1)) stop("strata index not ok\n"); 
@@ -829,24 +837,35 @@ cif <- function(formula,data=data,cause=1,cens.code=0,...)
   statusE <- 1*(status==cause)
   statusD <- 1*(status!=cens.code)
   if (ncol(Y)==3) {
-  formE <- as.formula(paste("Surv(entry=entry,exit,statusE)~strata(strata)+cluster(id__)",sep=""))
-  formD <- as.formula(paste("Surv(entry=entry,exit,statusD)~strata(strata)+cluster(id__)",sep=""))
+	  if (!is.null(strata)) {
+  formE <- as.formula(paste("Surv(entry=entry,exit,statusE)~strata(strata)+cluster(id_æø_)",sep=""))
+  formD <- as.formula(paste("Surv(entry=entry,exit,statusD)~strata(strata)+cluster(id_æø_)",sep=""))
+	  } else {
+  formE <- as.formula(paste("Surv(entry=entry,exit,statusE)~1+cluster(id_æø_)",sep=""))
+  formD <- as.formula(paste("Surv(entry=entry,exit,statusD)~1+cluster(id_æø_)",sep=""))
+
+	  }
   } else {
-  formE <- as.formula(paste("Surv(exit,statusE)~strata(strata)+cluster(id__)",sep=""))
-  formD <- as.formula(paste("Surv(exit,statusD)~strata(strata)+cluster(id__)",sep=""))
+	  if (!is.null(strata)) {
+  formE <- as.formula(paste("Surv(exit,statusE)~strata(strata)+cluster(id_æø_)",sep=""))
+  formD <- as.formula(paste("Surv(exit,statusD)~strata(strata)+cluster(id_æø_)",sep=""))
+	  } else {
+  formE <- as.formula(paste("Surv(exit,statusE)~cluster(id_æø_)",sep=""))
+  formD <- as.formula(paste("Surv(exit,statusD)~cluster(id_æø_)",sep=""))
+	  } 
   }
 
-  data$id__ <- id
+  data$id_æø_ <- id
 
- coxE <- phreg(formE,data=data,...)
- coxS <- phreg(formD,data=data,...)
+  coxE <- phreg(formE,data=data,...)
+  coxS <- phreg(formD,data=data,...)
 
- ### cif 
- cifo <- recurrentMarginal(coxE,coxS)
+  ### cif 
+  cifo <- recurrentMarginal(coxE,coxS)
 
- ### to use basehazplot.phreg
- class(cifo) <- c("cif","phreg")
- return(cifo)
+  ### to use basehazplot.phreg
+  class(cifo) <- c("cif","phreg")
+  return(cifo)
 }# }}}
 
 
