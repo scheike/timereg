@@ -860,6 +860,8 @@ cif <- function(formula,data=data,cause=1,cens.code=0,...)
 
   data$id_æø_ <- id
 
+  if (sum(statusE)==0) warning("No events of type 1\n"); 
+
   coxE <- phreg(formE,data=data,...)
   coxS <- phreg(formD,data=data,...)
 
