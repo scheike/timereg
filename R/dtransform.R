@@ -69,3 +69,35 @@ return(data)
 ##' @export
 dtrans <- function(data,...) dtransform(data,...)
 
+##' @export
+`dtrans<-` <- function(data,...,value) {
+    dtransform(data,...) <- value
+    return(data)
+}
+
+
+##' @export
+`dtransform<-` <- function(data,...,value) {
+    cl <- match.call()
+    cl[[1L]] <- substitute(dtransform)
+    a <- substitute(value)
+    if (inherits(value,"function")) {
+        cl["value"] <- NULL
+        names(cl)[names(cl)=="INPUT"] <- ""
+        cl[["INPUT"]] <- value
+    } else {
+        if (is.list(value)) {
+            cl[which(names(cl)=="value")] <- NULL
+            start <- length(cl)
+            for (i in seq_along(value)) {
+                cl[start+i] <- value[i]
+            }
+            if (length(names(value))>0)
+                names(cl)[start+seq_along(value)] <- names(value)
+        } else {
+            names(cl)[which(names(cl)=="value")] <- ""
+        }
+    }
+    eval.parent(cl)
+
+}
