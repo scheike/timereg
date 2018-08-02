@@ -12,6 +12,7 @@
 \alias{cumsumidstratasum}
 \alias{cumsumidstratasumCov}
 \alias{cumsumstratasum}
+\alias{revcumsum}
 \alias{revcumsumidstratasum}
 \alias{revcumsumidstratasumCov}
 \alias{robust.basehaz.phreg}

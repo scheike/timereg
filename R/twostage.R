@@ -291,7 +291,7 @@
 ##' or time of control proband.
 ##' @param shut.up to make the program more silent in the context of iterative procedures for case-control
 ##' and ascertained sampling
-##' @aliases survival.twostage survival.twostage.fullse twostage.aalen twostage.cox.aalen twostage.coxph twostage.phreg
+##' @aliases survival.twostage survival.twostage.fullse twostage.aalen twostage.cox.aalen twostage.coxph twostage.phreg survival.iterative
 ##' @usage
 ##' survival.twostage(margsurv,data=sys.parent(),score.method="fisher.scoring",
 ##'                   Nit=60,detail=0,clusters=NULL,
@@ -854,7 +854,7 @@ if (!is.null(margsurv))  {
 	  ## }}} 
 
 
-          if (fix.baseline==0)  { 
+          if (fix.baseline==0)  {
               outl$baseline <- cum1; 
 	      outl$marginal.surv <- psurvmarg; 
 	      outl$marginal.trunc <- ptrunc
@@ -1840,7 +1840,7 @@ if (!is.null(margsurv))  {
 	  iascertained=ascertained,PACKAGE="mets")
 	  ## }}} 
 
-          if (fix.baseline==0)  { e
+          if (fix.baseline==0)  {
               outl$baseline <- cum1; 
 	      outl$marginal.surv <- psurvmarg; 
 	      outl$marginal.trunc <- ptrunc

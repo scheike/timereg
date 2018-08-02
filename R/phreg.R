@@ -282,7 +282,7 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 ##' @param weights weights for Cox score equations
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Klaus K. Holst, Thomas Scheike
-##' @aliases phreg phreg.par robust.phreg KM 
+##' @aliases phreg phreg.par robust.phreg 
 ##' @examples
 ##' data(TRACE)
 ##' dcut(TRACE) <- ~.
@@ -956,7 +956,7 @@ predictPhreg <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,band=FA
 ##' @param X Design matrix
 ##' @param strata Strata variable
 ##' @param ... ADditional arguments to lower level functions
-##' @aliases predict.phreg revcumsumstrata revcumsumstratasum cumsumstrata sumstrata covfr covfridstrata covfridstrataCov cumsumidstratasum cumsumidstratasumCov cumsumstratasum revcumsumidstratasum revcumsumidstratasumCov robust.basehaz.phreg matdoubleindex
+##' @aliases predict.phreg revcumsumstrata revcumsumstratasum cumsumstrata sumstrata covfr covfridstrata covfridstrataCov cumsumidstratasum cumsumidstratasumCov cumsumstratasum revcumsum revcumsumidstratasum revcumsumidstratasumCov robust.basehaz.phreg matdoubleindex
 predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,strata=object$strata,...) {
     if (object$p==0) X <- NULL
     if (!is.null(object$strata)) {
