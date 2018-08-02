@@ -1139,7 +1139,7 @@ if (!is.null(margsurv))  {
 
              		cumhaz <- cumsumstrata(Dtheta*S0i,xx$strata,xx$nstrata)
 			EdLam0 <- apply(Dtheta*S0i^2,2,cumsumstrata,xx$strata,xx$nstrata)
-			rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
+			rr <- c(xx$sign*exp(Z %*% coef(xx) + xx$offset))
 			### Martingale  as a function of time and for all subjects to handle strata 
 			MGt <- U[,drop=FALSE]-(cumhaz[,2]-EdLam0)*rr*c(xx$weights)
 			### back to order of data-set
@@ -1799,7 +1799,7 @@ if (!is.null(margsurv))  {
 			  if (shut.up==0) cat("Baseline profiler gives missing values\n");  
 		          Bit <- Bit.ini; cum1 <- cbind(dtimesst,Bit); convergence.bp <<- 0; break;
 		   }
-		   Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase,PACKAGE="mets")$X
+		   Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase,PACKaAGE="mets")$X
 		   if (d<0.00001) break; 
            } ## }}} 
 
@@ -1840,7 +1840,7 @@ if (!is.null(margsurv))  {
 	  iascertained=ascertained,PACKAGE="mets")
 	  ## }}} 
 
-          if (fix.baseline==0)  { 
+          if (fix.baseline==0)  { e
               outl$baseline <- cum1; 
 	      outl$marginal.surv <- psurvmarg; 
 	      outl$marginal.trunc <- ptrunc
@@ -2106,7 +2106,7 @@ if (!is.null(margsurv))  {
 			xx <- margsurv$cox.prep
 			S0i2 <- S0i <- rep(0,length(xx$strata))
 			S0i[xx$jumps+1] <-  1/margsurv$S0
-			rr <- exp(ca2$cox.prep$X  %*% ca2$coef)
+			rr <- exp(margsurv$cox.prep$X  %*% margsurv$coef)
 			cumhazt <- cumsumstratasum(S0i,xx$strata,xx$nstrata)$lagsum
 			psurvmarg <- exp(-cumhazt*rr)
 	        } ## }}}
