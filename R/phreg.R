@@ -4,7 +4,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
   p <- ncol(X)
   if (missing(beta)) beta <- rep(0,p)
   if (p==0) X <- cbind(rep(0,length(exit)))
-  if (!is.null(strata)) {# {{{
+  if (!is.null(strata)) { # {{{
     stratalev <- levels(strata)
     strataidx <- lapply(stratalev,function(x) which(strata==x))
     if (!all(unlist(lapply(strataidx,function(x) length(x)>0))))
@@ -44,7 +44,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
       }
       structure(-ploglik,gradient=-gradient,hessian=-hessian)
     }# }}}
-  } else {# {{{
+  } else { # {{{
       trunc <- !is.null(entry)
       if (!trunc) entry <- rep(0,length(exit))
       system.time(dd <- .Call("FastCoxPrep",
@@ -66,7 +66,7 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
               val$nevent <- length(val$S0)
               return(val)
           }
-          with(val, structure(-ploglik,gradient=-gradient,hessian=-hessian))
+          with(val, structure(-ploglik, gradient=-gradient, hessian=-hessian))
       }
   }# }}}
   opt <- NULL
@@ -106,8 +106,8 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
 ###{{{ phreg01
 
 phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=NULL,
-		    strata.name=NULL,cumhaz=TRUE,
-  beta,stderr=TRUE,method="NR",no.opt=FALSE,Z=NULL,propodds=NULL,AddGam=NULL,...) {
+             strata.name=NULL,cumhaz=TRUE,
+             beta,stderr=TRUE,method="NR",no.opt=FALSE,Z=NULL,propodds=NULL,AddGam=NULL,...) {
   p <- ncol(X)
   if (missing(beta)) beta <- rep(0,p)
   if (p==0) X <- cbind(rep(0,length(exit)))
@@ -841,24 +841,24 @@ cif <- function(formula,data=data,cause=1,cens.code=0,...)
   statusD <- 1*(status!=cens.code)
   if (ncol(Y)==3) {
 	  if (!is.null(strata)) {
-  formE <- as.formula(paste("Surv(entry=entry,exit,statusE)~strata(strata)+cluster(id_æø_)",sep=""))
-  formD <- as.formula(paste("Surv(entry=entry,exit,statusD)~strata(strata)+cluster(id_æø_)",sep=""))
+  formE <- as.formula(paste("Surv(entry=entry,exit,statusE)~strata(strata)+cluster(id_1_)",sep=""))
+  formD <- as.formula(paste("Surv(entry=entry,exit,statusD)~strata(strata)+cluster(id_1_)",sep=""))
 	  } else {
-  formE <- as.formula(paste("Surv(entry=entry,exit,statusE)~1+cluster(id_æø_)",sep=""))
-  formD <- as.formula(paste("Surv(entry=entry,exit,statusD)~1+cluster(id_æø_)",sep=""))
+  formE <- as.formula(paste("Surv(entry=entry,exit,statusE)~1+cluster(id_1_)",sep=""))
+  formD <- as.formula(paste("Surv(entry=entry,exit,statusD)~1+cluster(id_1_)",sep=""))
 
 	  }
   } else {
 	  if (!is.null(strata)) {
-  formE <- as.formula(paste("Surv(exit,statusE)~strata(strata)+cluster(id_æø_)",sep=""))
-  formD <- as.formula(paste("Surv(exit,statusD)~strata(strata)+cluster(id_æø_)",sep=""))
+  formE <- as.formula(paste("Surv(exit,statusE)~strata(strata)+cluster(id_1_)",sep=""))
+  formD <- as.formula(paste("Surv(exit,statusD)~strata(strata)+cluster(id_1_)",sep=""))
 	  } else {
-  formE <- as.formula(paste("Surv(exit,statusE)~cluster(id_æø_)",sep=""))
-  formD <- as.formula(paste("Surv(exit,statusD)~cluster(id_æø_)",sep=""))
+  formE <- as.formula(paste("Surv(exit,statusE)~cluster(id_1_)",sep=""))
+  formD <- as.formula(paste("Surv(exit,statusD)~cluster(id_1_)",sep=""))
 	  } 
   }
 
-  data$id_æø_ <- id
+  data$id_1_ <- id
 
   if (sum(statusE)==0) warning("No events of type 1\n"); 
 
