@@ -416,7 +416,7 @@ if (!is.null(margsurv))  {
 	S0i2 <- S0i <- rep(0,length(xx$strata))
 	S0i[xx$jumps+1] <-  1/margsurv$S0
 	if (!is.null(margsurv$coef)) 
-		rr <- c(exp(xx$X  %*% margsurv$coef))
+		rr <- c(exp(margsurv$X  %*% margsurv$coef))
         else rr <- rep(1,antpers) 
 ###	### back to original order
 	cumhazt <- cumsumstratasum(S0i,xx$strata,xx$nstrata)$lagsum
@@ -840,7 +840,9 @@ if (!is.null(margsurv))  {
 
 ###      browser()
 ###      print(dim(random.design))
-###      print(summary(status)) print(summary(psurvmarg)) print(summary(clusters)) print(summary(random.design))
+###      print(summary(status)); print(summary(psurvmarg)); print(summary(clusters)); print(summary(random.design));
+###      print(random.design)
+###      print(theta.des)
 
           outl<-.Call("twostageloglikeRVpairs", ## {{{
           icause=status,ipmargsurv=psurvmarg, 
@@ -1041,7 +1043,15 @@ if (!is.null(margsurv))  {
 ###	    print(dim(mm))
        outl$score <-  t(mm) %*% outl$score
        outl$Dscore <- t(mm) %*% outl$Dscore %*% mm
-       if (iid==1) outl$theta.iid <- t(t(mm) %*% t(outl$theta.iid))
+       if (iid==1) { 
+	       outl$theta.iid <- t(t(mm) %*% t(outl$theta.iid))
+	       print(mm)
+               if (class(margsurv)=="phreg") {  
+		       print(mm)
+	          outl$D1dthetal  <- t(t(mm) %*% t(outl$D1dthetal))
+	          outl$D2dthetal  <- t(t(mm) %*% t(outl$D2dthetal))
+	       }
+       }
 
 ###       print(crossprod(outl$theta.iid)); print(outl$Dscore)
 ###       print(c(outl$score))
@@ -1110,20 +1120,24 @@ if (!is.null(margsurv))  {
 ###		    oout <- 2
 ###	    }
            if (iid==1) {  ## {{{
+		out$theta.iid.naive <- theta.iid
 		theta.iid <- out$theta.iid
                 if (class(margsurv)=="phreg") {  ## {{{
 		       ## order after time
 ###		       D1dltheta1 <- out$D1dltheta1[xx$ord+1,]
 ###		       D2dltheta1 <- out$D1dltheta1[xx$ord+1,]
 
-			print(dim(out$D1dthetal))
-			print(summary(xx$ord+1))
+###		print(summary(out$D1dltheta1))
+###		print(summary(out$D2dltheta1))
+			### order of time-ordered observations to compute MG 
+                       Dtheta <- out$D1dthetal[xx$ord+1,,drop=FALSE] + out$D2dthetal[xx$ord+1,,drop=FALSE]
+		print(summary(Dtheta))
+###		browser()
 
-		       Dtheta <- out$D1dthetal[xx$ord+1,] + out$D2dthetal[xx$ord+1,]
-		       print(dim(Dtheta))
+		       if (ncol(Dtheta)==1) 
+		       Dtheta <- revcumsumstrata(Dtheta * psurvmarg * (-rr),xx$strata,xx$nstrata)
+	               else 
 		       Dtheta <- apply(Dtheta * psurvmarg * (-rr),2,revcumsumstrata,xx$strata,xx$nstrata)
-
-		       print("hej")
 
 		       ### baseline iid 
 		       xx <- margsurv$cox.prep
@@ -1133,6 +1147,17 @@ if (!is.null(margsurv))  {
 	                S0i2[xx$jumps+1] <-  1/margsurv$S0^2
 			Z <- xx$X
 			U <- E <- matrix(0,nrow(xx$X),ncol(Dtheta))
+		        U[xx$jumps+1,] <- Dtheta[xx$jumps+1,]
+
+		       EdLam0 <- apply(Dtheta*S0i^2,2,cumsumstrata,xx$strata,xx$nstrata)
+
+		       if (!is.null(margsurv$coef))
+		       rr <- c(xx$sign*exp(Z %*% coef(margsurv) + xx$offset)) else rr <- rep(1,length(xx$weights))
+      ### Martingale  as a function of time and for all subjects to handle strata 
+		MGt <- Dtheta*S0i-EdLam0*rr*c(xx$weights)
+		### back to order of data-set
+           	MGt <- MGt[bto,,drop=FALSE]
+		id <- xx$id[bto]
 			U[xx$jumps+1,] <- Dtheta[xx$jumps+1,]
 
 		       print("hej")
@@ -1146,9 +1171,10 @@ if (!is.null(margsurv))  {
 			MGt <- MGt[bto,,drop=FALSE]
 			id <- xx$id[bto]
 		 
-   		        UU <- apply(MGt,2,sumstrata,id,max(id)+1)
-			print(dim(UU))
-			print(dim(theta.iid))
+   	        UU <- apply(MGt,2,sumstrata,id,max(id)+1)
+		print(summary(UU))
+		print(summary(theta.iid))
+		out$theta.iid <- theta.iid+ UU
 
 	        } ## }}}
 	   } ## }}} 
