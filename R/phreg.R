@@ -141,6 +141,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
    system.time(dd <- .Call("FastCoxPrepStrata",
 		     entry,exit,status,X, id, ### as.integer(seq_along(entry)),
 		     trunc,strata,weights,offset,Zcall,PACKAGE="mets"))
+
    dd$nstrata <- nstrata
 	obj <- function(pp,U=FALSE,all=FALSE) {# {{{
 		if (is.null(propodds) & is.null(AddGam)) 
@@ -697,17 +698,18 @@ return(res)
 ##' @param robust for robust standard errors based on martingales 
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Thomas Scheike
+##' @aliases km 
 ##' @examples
 ##' data(TRACE)
 ##' TRACE$cluster <- sample(1:100,1878,replace=TRUE)
-##' out1 <- KM(Surv(time,status==9)~strata(vf,chf),data=TRACE)
-##' out2 <- KM(Surv(time,status==9)~strata(vf,chf)+cluster(cluster),data=TRACE)
+##' out1 <- km(Surv(time,status==9)~strata(vf,chf),data=TRACE)
+##' out2 <- km(Surv(time,status==9)~strata(vf,chf)+cluster(cluster),data=TRACE)
 ##' 
 ##' par(mfrow=c(1,2))
 ##' bplot(out1,se=TRUE)
 ##' bplot(out2,se=TRUE)
 ##' @export
-KM <- function(formula,data=data,conf.type="log",conf.int=0.95,robust=TRUE)
+km <- function(formula,data=data,conf.type="log",conf.int=0.95,robust=TRUE)
 {# {{{
  coxo <- phreg(formula,data=data)
  coxo <- robust.phreg(coxo)
