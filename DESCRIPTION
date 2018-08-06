@@ -19,7 +19,7 @@ BugReports: https://github.com/kkholst/mets/issues
 Depends:
     R (>= 3.3),
     timereg (>= 1.9.2),
-    lava (>= 1.6.2)
+    lava (>= 1.6.1)
 Imports:
     numDeriv,
     compiler,

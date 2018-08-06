@@ -142,8 +142,6 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 		     entry,exit,status,X, id, ### as.integer(seq_along(entry)),
 		     trunc,strata,weights,offset,Zcall,PACKAGE="mets"))
 
-	 print("prep her"); 
-
    dd$nstrata <- nstrata
 	obj <- function(pp,U=FALSE,all=FALSE) {# {{{
 		if (is.null(propodds) & is.null(AddGam)) 
