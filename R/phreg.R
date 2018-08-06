@@ -700,10 +700,7 @@ return(res)
 ##' @param robust for robust standard errors based on martingales 
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Thomas Scheike
-<<<<<<< HEAD
 ##' @aliases km 
-=======
->>>>>>> 700d8c20a72fa6f2b2de2a231a6b2388d235e66a
 ##' @examples
 ##' data(TRACE)
 ##' TRACE$cluster <- sample(1:100,1878,replace=TRUE)
