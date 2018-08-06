@@ -291,7 +291,7 @@
 ##' or time of control proband.
 ##' @param shut.up to make the program more silent in the context of iterative procedures for case-control
 ##' and ascertained sampling
-##' @aliases survival.twostage survival.twostage.fullse twostage.aalen twostage.cox.aalen twostage.coxph twostage.phreg
+##' @aliases survival.twostage survival.twostage.fullse twostage.aalen twostage.cox.aalen twostage.coxph twostage.phreg survival.iterative
 ##' @usage
 ##' survival.twostage(margsurv,data=sys.parent(),score.method="fisher.scoring",
 ##'                   Nit=60,detail=0,clusters=NULL,
@@ -856,7 +856,7 @@ if (!is.null(margsurv))  {
 	  ## }}} 
 
 
-          if (fix.baseline==0)  { 
+          if (fix.baseline==0)  {
               outl$baseline <- cum1; 
 	      outl$marginal.surv <- psurvmarg; 
 	      outl$marginal.trunc <- ptrunc
@@ -1147,6 +1147,7 @@ if (!is.null(margsurv))  {
 	                S0i2[xx$jumps+1] <-  1/margsurv$S0^2
 			Z <- xx$X
 			U <- E <- matrix(0,nrow(xx$X),ncol(Dtheta))
+<<<<<<< HEAD
 		        U[xx$jumps+1,] <- Dtheta[xx$jumps+1,]
 
 		       EdLam0 <- apply(Dtheta*S0i^2,2,cumsumstrata,xx$strata,xx$nstrata)
@@ -1158,6 +1159,20 @@ if (!is.null(margsurv))  {
 		### back to order of data-set
            	MGt <- MGt[bto,,drop=FALSE]
 		id <- xx$id[bto]
+=======
+			U[xx$jumps+1,] <- Dtheta[xx$jumps+1,]
+
+		       print("hej")
+
+             		cumhaz <- cumsumstrata(Dtheta*S0i,xx$strata,xx$nstrata)
+			EdLam0 <- apply(Dtheta*S0i^2,2,cumsumstrata,xx$strata,xx$nstrata)
+			rr <- c(xx$sign*exp(Z %*% coef(xx) + xx$offset))
+			### Martingale  as a function of time and for all subjects to handle strata 
+			MGt <- U[,drop=FALSE]-(cumhaz[,2]-EdLam0)*rr*c(xx$weights)
+			### back to order of data-set
+			MGt <- MGt[bto,,drop=FALSE]
+			id <- xx$id[bto]
+>>>>>>> 700d8c20a72fa6f2b2de2a231a6b2388d235e66a
 		 
    	        UU <- apply(MGt,2,sumstrata,id,max(id)+1)
 		print(summary(UU))
@@ -1854,7 +1869,7 @@ if (!is.null(margsurv))  {
 	  iascertained=ascertained,PACKAGE="mets")
 	  ## }}} 
 
-          if (fix.baseline==0)  { 
+          if (fix.baseline==0)  {
               outl$baseline <- cum1; 
 	      outl$marginal.surv <- psurvmarg; 
 	      outl$marginal.trunc <- ptrunc
@@ -2120,7 +2135,7 @@ if (!is.null(margsurv))  {
 			xx <- margsurv$cox.prep
 			S0i2 <- S0i <- rep(0,length(xx$strata))
 			S0i[xx$jumps+1] <-  1/margsurv$S0
-			rr <- exp(ca2$cox.prep$X  %*% ca2$coef)
+			rr <- exp(margsurv$cox.prep$X  %*% margsurv$coef)
 			cumhazt <- cumsumstratasum(S0i,xx$strata,xx$nstrata)$lagsum
 			psurvmarg <- exp(-cumhazt*rr)
 	        } ## }}}

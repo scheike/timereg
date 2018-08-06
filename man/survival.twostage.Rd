@@ -7,6 +7,7 @@
 \alias{twostage.cox.aalen}
 \alias{twostage.coxph}
 \alias{twostage.phreg}
+\alias{survival.iterative}
 \title{Twostage survival model for multivariate survival data}
 \usage{
 survival.twostage(margsurv,data=sys.parent(),score.method="fisher.scoring",

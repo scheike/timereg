@@ -2557,7 +2557,7 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
 
   int ci,ck,i,j,s=0,k,c1; 
   double dl1,dl2,ll1,ll2,ll=1,Li,Lk,sdj=0,diff=0,loglikecont=0;
-  double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0; 
+  double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0,dddl=0.00000000000000001; 
 //  double plack(); 
  
   vec dplack(pt); dplack.fill(0);
@@ -2716,14 +2716,17 @@ for (j=0;j<antclust;j++) {
 		   loglikecont=log(ll);
 	           vthetascore=dplackt/ll; 
 		   if (iid==1) { // approx parital derivatives for iid 
-			   ll1=claytonoakesRVC(etheta,thetadesv,ags,ci,ck,Li-0.00000000001,Lk,rv1,rv2,dplackt1,wwc);
-			   ll2=claytonoakesRVC(etheta,thetadesv,ags,ci,ck,Li,Lk-0.00000000001,rv1,rv2,dplackt2,wwc);
-			   dplackt1=(dplackt-dplackt1)/0.00000000001; 
-			   dplackt2=(dplackt-dplackt2)/0.00000000001; 
-			   dl1=(ll-ll1)/0.00000000001;
-			   dl2=(ll-ll2)/0.00000000001;
+			   ll1=claytonoakesRVC(etheta,thetadesv,ags,ci,ck,Li-dddl,Lk,rv1,rv2,dplackt1,wwc);
+			   ll2=claytonoakesRVC(etheta,thetadesv,ags,ci,ck,Li,Lk-dddl,rv1,rv2,dplackt2,wwc);
+			   dplackt1=(dplackt-dplackt1)/dddl; 
+			   dplackt2=(dplackt-dplackt2)/dddl; 
+			   dl1=(ll-ll1)/dddl;
+			   dl2=(ll-ll2)/dddl;
 			   dp1.row(i)+=weights(i)*(ll*dplackt1.t()-dl1*dplackt.t())/(ll*ll); 
 			   dp2.row(k)+=weights(k)*(ll*dplackt2.t()-dl2*dplackt.t())/(ll*ll); 
+//			   printf(" %d %d %lf \n",j,k,weights(k)); 
+//			   dp2.row(k)+=weights(k); 
+//			   dp2.row(k).print();
 		   }
 	   } 
 	   // }}} 
