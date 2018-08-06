@@ -1799,7 +1799,7 @@ if (!is.null(margsurv))  {
 			  if (shut.up==0) cat("Baseline profiler gives missing values\n");  
 		          Bit <- Bit.ini; cum1 <- cbind(dtimesst,Bit); convergence.bp <<- 0; break;
 		   }
-		   Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase,PACKaAGE="mets")$X
+		   Bitcase <- .Call("MatxCube",Bitcase,dim(xjumpcase),xjumpcase,PACKAGE="mets")$X
 		   if (d<0.00001) break; 
            } ## }}} 
 
