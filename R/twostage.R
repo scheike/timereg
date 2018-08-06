@@ -1147,7 +1147,6 @@ if (!is.null(margsurv))  {
 	                S0i2[xx$jumps+1] <-  1/margsurv$S0^2
 			Z <- xx$X
 			U <- E <- matrix(0,nrow(xx$X),ncol(Dtheta))
-<<<<<<< HEAD
 		        U[xx$jumps+1,] <- Dtheta[xx$jumps+1,]
 
 		       EdLam0 <- apply(Dtheta*S0i^2,2,cumsumstrata,xx$strata,xx$nstrata)
@@ -1159,7 +1158,6 @@ if (!is.null(margsurv))  {
 		### back to order of data-set
            	MGt <- MGt[bto,,drop=FALSE]
 		id <- xx$id[bto]
-=======
 			U[xx$jumps+1,] <- Dtheta[xx$jumps+1,]
 
 		       print("hej")
@@ -1172,7 +1170,6 @@ if (!is.null(margsurv))  {
 			### back to order of data-set
 			MGt <- MGt[bto,,drop=FALSE]
 			id <- xx$id[bto]
->>>>>>> 700d8c20a72fa6f2b2de2a231a6b2388d235e66a
 		 
    	        UU <- apply(MGt,2,sumstrata,id,max(id)+1)
 		print(summary(UU))

@@ -1,11 +1,8 @@
 # -*- mode: org -*-
 
-<<<<<<< HEAD
 * Version 1.2.4 <2018-05-18 Wed>
-  - functions KM (Kaplan-Meier) and cif (cumulative incidence probability) with robust standard errors. 
-=======
+  - functions km (Kaplan-Meier) and cif (cumulative incidence probability) with robust standard errors. 
 * Version 1.2.4 <2018-08-03 Fri>
->>>>>>> 700d8c20a72fa6f2b2de2a231a6b2388d235e66a
   - computation of probability of exceeding "k" events for recurrents processs
   - computation of probability of exceeding "k1" and "k2" events for bivariate recurrents processseses
   - dspline simple spline decomposition on a data frame 
