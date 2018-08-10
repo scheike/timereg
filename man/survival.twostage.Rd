@@ -7,7 +7,6 @@
 \alias{twostage.cox.aalen}
 \alias{twostage.coxph}
 \alias{twostage.phreg}
-\alias{survival.iterative}
 \title{Twostage survival model for multivariate survival data}
 \usage{
 survival.twostage(margsurv,data=sys.parent(),score.method="fisher.scoring",
@@ -15,11 +14,9 @@ survival.twostage(margsurv,data=sys.parent(),score.method="fisher.scoring",
                   silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,
                   var.link=1,iid=1,step=0.5,notaylor=0,model="clayton.oakes",
                   marginal.trunc=NULL,marginal.survival=NULL,marginal.status=NULL,
-                  strata=NULL,
-                  se.clusters=NULL,max.clust=NULL,numDeriv=0,random.design=NULL,
-                  pairs=NULL,pairs.rvs=NULL,
-                  numDeriv.method="simple",
-                  additive.gamma.sum=NULL,var.par=1,two.stage=1,cr.models=NULL,
+                  strata=NULL,se.clusters=NULL,max.clust=NULL,numDeriv=0,random.design=NULL,
+                  pairs=NULL,pairs.rvs=NULL,numDeriv.method="simple",
+                  additive.gamma.sum=NULL,var.par=1,cr.models=NULL,
                   case.control=0, ascertained=0, shut.up=0)
 }
 \arguments{
@@ -88,8 +85,6 @@ of theta parameters), when null then sums all parameters.}
 \item{var.par}{is 1 for the default parametrization with the variances of the random effects,
 var.par=0 specifies that the \eqn{\lambda_j}'s are used as parameters.}
 
-\item{two.stage}{to fit two-stage model, if 0 then will fit hazard model with additive gamma structure (WIP)}
-
 \item{cr.models}{competing risks models for two.stage=0, should be given as a list with models for each cause}
 
 \item{case.control}{assumes case control structure for "pairs" with second column being the probands,
@@ -112,17 +107,6 @@ modelled via
 \item  Regression design on dependence parameter. 
 \item  Random effects, additive gamma model. 
 }
-
-Can also fit standard frailty model with the two.stage=0  that considers
-the frailty model with additive hazard condtional on the random
-effects
-\deqn{
-\lambda_{ij} = (V_{ij}^T Z) (X_{ij}^T \alpha(t))
-}
-The baseline \eqn{\alpha(t)} is profiled out using
-marginal modelling adjusted for the random effects structure as in Eriksson and Scheike (2015).
-One advantage of the standard frailty model is that one can deal with competing risks 
-for this model. 
 
 For all models the 
 standard errors do not reflect this uncertainty of the baseline estimates, and might therefore be a bit to small.
