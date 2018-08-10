@@ -1042,14 +1042,11 @@ if (!is.null(margsurv))  {
     if (dep.model==3) {# {{{
 ###	    print(dim(mm))
        outl$score <-  t(mm) %*% outl$score
-       outl$Dscore <- t(mm) %*% outl$Dscore %*% mm
-       if (iid==1) { 
-	       outl$theta.iid <- t(t(mm) %*% t(outl$theta.iid))
-	       print(mm)
+       outl$Dscore <- t(mm) %*% outl$Dscore %*% mm 
+       if (iid==1) { outl$theta.iid <- t(t(mm) %*% t(outl$theta.iid))
                if (class(margsurv)=="phreg") {  
-		       print(mm)
-	          outl$D1dthetal  <- t(t(mm) %*% t(outl$D1dthetal))
-	          outl$D2dthetal  <- t(t(mm) %*% t(outl$D2dthetal))
+###	          outl$D1dthetal  <- t(t(mm) %*% t(outl$D1dthetal))
+###	          outl$D2dthetal  <- t(t(mm) %*% t(outl$D2dthetal))
 	       }
        }
 
@@ -1127,20 +1124,14 @@ if (!is.null(margsurv))  {
 ###		       D1dltheta1 <- out$D1dltheta1[xx$ord+1,]
 ###		       D2dltheta1 <- out$D1dltheta1[xx$ord+1,]
 
-###		print(summary(out$D1dltheta1))
-###		print(summary(out$D2dltheta1))
 			### order of time-ordered observations to compute MG 
-                       Dtheta <- out$D1dthetal[xx$ord+1,,drop=FALSE] + out$D2dthetal[xx$ord+1,,drop=FALSE]
-		print(summary(Dtheta))
-###		browser()
+                       Dtheta <- apply(out$D1lD2l[xx$ord+1,,drop=FALSE],1,sum) 
+		       xx <- margsurv$cox.prep
 
-		       if (ncol(Dtheta)==1) 
-		       Dtheta <- revcumsumstrata(Dtheta * psurvmarg * (-rr),xx$strata,xx$nstrata)
-	               else 
-		       Dtheta <- apply(Dtheta * psurvmarg * (-rr),2,revcumsumstrata,xx$strata,xx$nstrata)
+		       if (!is.null(margsurv$coef)) { ## no covariates only baseline 
+		           Dtheta * psurvmarg* (-rr)* xx$X %*% out$theta.iid
 
 		       ### baseline iid 
-		       xx <- margsurv$cox.prep
 
                         S0i2 <- S0i <- rep(0,length(xx$strata))
 			S0i[xx$jumps+1] <- 1/margsurv$S0

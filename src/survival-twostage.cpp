@@ -2564,8 +2564,8 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
   vec dplackt(pt); dplackt.fill(0);
   vec dplackt1(pt); dplackt1.fill(0);
   vec dplackt2(pt); dplackt2.fill(0);
-  mat dp1(pmargsurv.n_rows,pt);  dp1.fill(0); 
-  mat dp2(pmargsurv.n_rows,pt);  dp2.fill(0); 
+  mat dp1(pmargsurv.n_rows,2);  dp1.fill(0); 
+//  mat dp2(pmargsurv.n_rows,pt);  dp2.fill(0); 
 
 //  vec ckij(pt),dckij(4),ckijvv(4),dckijvv(4),ckijtv(4),dckijtv(4),ckijvt(4),dckijvt(4);
   i=silent+1; 
@@ -2722,8 +2722,10 @@ for (j=0;j<antclust;j++) {
 			   dplackt2=(dplackt-dplackt2)/dddl; 
 			   dl1=(ll-ll1)/dddl;
 			   dl2=(ll-ll2)/dddl;
-			   dp1.row(i)+=weights(i)*(ll*dplackt1.t()-dl1*dplackt.t())/(ll*ll); 
-			   dp2.row(k)+=weights(k)*(ll*dplackt2.t()-dl2*dplackt.t())/(ll*ll); 
+			   dp1(i,0)=dl1; 
+			   dp1(i,0)=dl2; 
+//			   dp1.row(i)+=weights(i)*(ll*dplackt1.t()-dl1*dplackt.t())/(ll*ll); 
+//			   dp2.row(k)+=weights(k)*(ll*dplackt2.t()-dl2*dplackt.t())/(ll*ll); 
 //			   printf(" %d %d %lf \n",j,k,weights(k)); 
 //			   dp2.row(k)+=weights(k); 
 //			   dp2.row(k).print();
@@ -2785,8 +2787,7 @@ if (iid==1) { res["theta.iid"]   =thetiid;
 	      res["loglikeiid"]  =loglikeiid; 
               res["likepairs"]   =likepairs; 
               res["trunclikeiid"]=trunclikeiid; 
-	      res["D1dthetal"]  = dp1; 
-              res["D2dthetal"]  = dp2; 
+	      res["D1lD2l"]  = dp1; 
             }
 
 return(res); 
