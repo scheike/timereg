@@ -1242,12 +1242,12 @@ weights=NULL,...)
   if (max.clust==1) stop("No clusters !, maxclust size=1\n"); 
   theta.iid <- matrix(0,max.clust,ptheta)
 
+  xx <- margsurv$cox.prep
   nn <- length(xx$strata)
 
   if (is.null(weights)) weights <-  rep(1,nn)
   if (length(weights)!=nn) stop("Weights do not have right length")
 
-  xx <- margsurv$cox.prep
   statusxx <- rep(0,length(xx$strata))
   statusxx[xx$jumps+1] <- 1
   xx$status <- statusxx
