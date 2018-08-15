@@ -2718,12 +2718,12 @@ for (j=0;j<antclust;j++) {
 		   if (iid==1) { // approx parital derivatives for iid 
 			   ll1=claytonoakesRVC(etheta,thetadesv,ags,ci,ck,Li-dddl,Lk,rv1,rv2,dplackt1,wwc);
 			   ll2=claytonoakesRVC(etheta,thetadesv,ags,ci,ck,Li,Lk-dddl,rv1,rv2,dplackt2,wwc);
-			   dplackt1=(dplackt-dplackt1)/dddl; 
-			   dplackt2=(dplackt-dplackt2)/dddl; 
+//			   dplackt1=(dplackt-dplackt1)/dddl; 
+//			   dplackt2=(dplackt-dplackt2)/dddl; 
 			   dl1=(ll-ll1)/dddl;
 			   dl2=(ll-ll2)/dddl;
 			   dp1(i,0)=dl1; 
-			   dp1(i,0)=dl2; 
+			   dp1(i,1)=dl2; 
 //			   dp1.row(i)+=weights(i)*(ll*dplackt1.t()-dl1*dplackt.t())/(ll*ll); 
 //			   dp2.row(k)+=weights(k)*(ll*dplackt2.t()-dl2*dplackt.t())/(ll*ll); 
 //			   printf(" %d %d %lf \n",j,k,weights(k)); 

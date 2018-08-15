@@ -1408,9 +1408,9 @@ Ft <- ((1/(thetav*R[id]))*exp(thetav*H) -(1/thetav+Ni.tau[id])*(1+thetav*H)*exp(
           UUbeta <- apply(MGt,2,sumstrata,id-1,max(id))
 	  UUbeta <- UUbeta %*% invhess
 	  GbaseEdLam0 <- t(Gbase) %*% (E*S0i) 
-	  Fbeta   <-  Fbeta +  GbaseEdLam0
-  }
+	  Fbeta   <-  Fbeta -  GbaseEdLam0
   Fbetaiid <- UUbeta %*% t(Fbeta)
+  }
 
   ###  \int_0^\tau (GBase(s) / S_0(s)) dN_i(s) - dLamba_i(s)
   xx <- margsurv$cox.prep
@@ -1425,7 +1425,9 @@ Ft <- ((1/(thetav*R[id]))*exp(thetav*H) -(1/thetav+Ni.tau[id])*(1+thetav*H)*exp(
   MGt <- (GbasedN[,drop=FALSE]-GbasedLam0*rr)*c(xx$weights)
   MGti <- apply(MGt,2,sumstrata,id-1,max(id))
 
-  theta.iid <-  val$score.iid + MGti+  Fbetaiid
+
+  theta.iid <-  val$score.iid + MGti
+  if (fixbeta==0) theta.iid  <-  theta.iid + Fbetaiid
   theta.iid  <-  theta.iid %*% hessianI 
   val$theta.iid <- theta.iid
 # }}}
