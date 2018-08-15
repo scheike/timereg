@@ -482,7 +482,6 @@ robust.basehaz.phreg  <- function(x,type="robust",fixbeta=NULL,...) {# {{{
   return(list(cumhaz=cumhaz,se.cumhaz=se.cumhaz,strata=strata))
 } # }}}
 
-
 ##' @export robust.phreg
 robust.phreg  <- function(x,fixbeta=NULL,...) {
 

@@ -1,4 +1,10 @@
 # -*- mode: org -*-
+#
+* Version 1.2.5 <2018-05-18 Wed>
+  - twostageMLE for fast twostage fitting for clustered survival data
+    with robust standard errors. 
+
+
 
 * Version 1.2.4 <2018-05-18 Wed>
   - functions km (Kaplan-Meier) and cif (cumulative incidence
