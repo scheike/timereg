@@ -110,7 +110,7 @@ For all models the
 standard errors do not reflect this uncertainty of the baseline estimates, and might therefore be a bit to small.
 To remedy this one can do bootstrapping or use survival.twostage.fullse function when possible.
 
-If clusters contain more than two times, the algoritm uses a composite likelihood
+If clusters contain more than two times, we use a composite likelihood
 based on the pairwise bivariate models. Can also fit a additive gamma random
 effects model described in detail below.
 
@@ -156,9 +156,8 @@ with the function
 Given the random effects the survival distributions with a cluster are independent and
 on the form 
 \deqn{
-P(T > t| x,z) = exp( -Z \cdot Laplace^{-1}(lamtot,lamtot,S(t|x)) )  
+P(T > t| x,z) = exp( -Z  A(t) \exp( Z^t beta))
 }
-with the inverse laplace of the gamma distribution with mean 1 and variance lamtot.
 
 The parameters \eqn{(\lambda_1,...,\lambda_d)}
 are related to the parameters of the model

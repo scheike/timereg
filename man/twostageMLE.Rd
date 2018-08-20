@@ -29,8 +29,8 @@ twostageMLE(margsurv, data = sys.parent(), theta = NULL, theta.des = NULL,
 }
 \description{
 Fits Clayton-Oakes clustered  survival data 
-using marginals that are on Cox form using the likelihood with plugged in marginals as in
-Glidden (2000). The dependence can be modelled via 
+using marginals that are on Cox form in the likelihood for the dependence parameter 
+as in Glidden (2000). The dependence can be modelled via  a 
 \enumerate{
 \item  Regression design on dependence parameter. 
 }

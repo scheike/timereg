@@ -467,7 +467,7 @@ if (!is.null(margsurv))  {
   }       
 
   if (length(theta)!=ptheta) {
-	 warning("dimensions of theta.des and theta do not match\n"); 
+###	 warning("dimensions of theta.des and theta do not match\n"); 
          theta<-rep(theta[1],ptheta); 
   }
   theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
@@ -940,7 +940,7 @@ if (!is.null(margsurv))  {
 	  if (fixbeta==1) uxid <- unique(margsurv$id)
 	  rownames(MGti) <- uxid
 
-          if (fixbeta==0) print(cbind(theta.iid,MGti,Fbetaiid)) else print(cbind(theta.iid,MGti))
+###          if (fixbeta==0) print(cbind(theta.iid,MGti,Fbetaiid)) else print(cbind(theta.iid,MGti))
 
 	  ## add id's after rownames that may not be exactly the same in marginal model and in pairs for fitting 
 	  if (all.equal(uxid,ucc)==TRUE) {
