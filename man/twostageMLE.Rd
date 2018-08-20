@@ -4,9 +4,8 @@
 \alias{twostageMLE}
 \title{Twostage survival model fitted by pseudo MLE}
 \usage{
-twostageMLE(margsurv, data = sys.parent(), Nit = 60, theta = NULL,
-  theta.des = NULL, var.link = 0, se.clusters = NULL, method = "NR",
-  no.opt = FALSE, weights = NULL, ...)
+twostageMLE(margsurv, data = sys.parent(), theta = NULL, theta.des = NULL,
+  var.link = 0, method = "NR", no.opt = FALSE, weights = NULL, ...)
 }
 \arguments{
 \item{margsurv}{Marginal model from phreg}
@@ -19,8 +18,6 @@ twostageMLE(margsurv, data = sys.parent(), Nit = 60, theta = NULL,
 (pairs) x (numer of parameters)  x (max number random effects) matrix}
 
 \item{var.link}{Link function for variance  if 1 then uses exp link}
-
-\item{se.clusters}{for clusters for se calculation of iid, could be coarser than clusters from phreg}
 
 \item{method}{type of opitmizer, default is Newton-Raphson "NR"}
 
@@ -49,7 +46,7 @@ where \eqn{z} is specified by theta.des . The link function can be the exp when 
 data(diabetes)
 dd <- phreg(Surv(time,status==1)~treat+cluster(id),diabetes)
 oo <- twostageMLE(dd,data=diabetes)
-sumary(oo)
+summary(oo)
 
 theta.des <- model.matrix(~-1+factor(adult),diabetes)
 

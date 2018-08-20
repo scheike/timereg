@@ -131,7 +131,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 
   id.orig <- id; 
   if (!is.null(id)) {
-	  ids <- sort(unique(id))
+	  ids <- unique(id)
 	  nid <- length(ids)
       if (is.numeric(id)) id <-  fast.approx(ids,id)-1 else  {
       id <- as.integer(factor(id,labels=seq(nid)))-1
@@ -395,11 +395,12 @@ iid.phreg  <- function(x,type="robust",all=FALSE,...) {# {{{
 	  rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
 	  ### Martingale  as a function of time and for all subjects to handle strata 
 	  MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-EdLam0)*rr*c(xx$weights)
-	  orig.order <- (1:nrow(xx$X))[xx$ord+1]
-	  ooo <- order(orig.order)
-	  ### back to order of data-set
-	  MGt <- MGt[ooo,,drop=FALSE]
-	  id <- xx$id[ooo]
+###	  orig.order <- (1:nrow(xx$X))[xx$ord+1]
+###	  ooo <- order(orig.order)
+###	  ### back to order of data-set
+###	  MGt <- MGt[ooo,,drop=FALSE]
+###	  id <- xx$id[ooo]
+	  id <-  xx$id
   } else  { 
      MGt <- x$U; MG.base <- 1/x$S0; 
   }
@@ -409,9 +410,8 @@ iid.phreg  <- function(x,type="robust",all=FALSE,...) {# {{{
     if (type=="martingale") id <- x$id[x$jumps]
     ###  ii <- mets::cluster.index(id)
     UU <- apply(MGt,2,sumstrata,id,max(id)+1)
-###    for (i in seq(ii$uniqueclust)) {
-###      UU[i,] <- colSums(MGt[ii$idclustmat[i,seq(ii$cluster.size[i])]+1,,drop=FALSE])
-###    }
+    ### names of clusters given in call 
+    if (!is.null(x$id)) rownames(UU) <- unique(x$id) 
     ncluster <- nrow(UU)
   } else {
      UU <- MGt

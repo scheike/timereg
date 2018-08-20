@@ -75,8 +75,7 @@ The reported standard errors are based on the estimated information from the
 likelihood assuming that the marginals are known.
 }
 \examples{
-library("timereg")
-library("survival")
+library(mets)
 data("prt",package="mets")
 margp <- coxph(Surv(time,status==1)~factor(country),data=prt)
 fitco <- survival.twostage(margp,data=prt,clusters=prt$id)
@@ -98,9 +97,11 @@ c(pp,pc,cc)
 } 
 
 marg <- coxph(Surv(time,status)~factor(num),data=dfam)
-out3 <- easy.survival.twostage(marg,data=dfam,time="time",status="status",id="id",deshelp=0,
-                      score.method="fisher.scoring",theta.formula=desfs,
-                      desnames=c("parent-parent","parent-child","child-cild"))
+out3 <- easy.survival.twostage(marg,data=dfam,time="time",status="status",id="id",
+             deshelp=0,
+             score.method="fisher.scoring",theta.formula=desfs,
+             model="plackett",
+             desnames=c("parent-parent","parent-child","child-cild"),iid=1)
 summary(out3)
 
 }

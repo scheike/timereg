@@ -311,9 +311,9 @@ resv(i) = lapsf(par(i),lamtot1,iisum);
 //resv(i) = pow(lamtot1,par(i))/pow((iisum + lamtot1),par(i));
 like=like*resv(i); 
 res0    = Dlapsf( par(i),lamtot1,iisum);
-  D1(i)   = res0(0); D2(i)   = res0(1); D3(i)   = res0(2);
+D1(i)   = res0(0); D2(i)   = res0(1); D3(i)   = res0(2);
 res     = D2lapsf(par(i),lamtot1,iisum);
- D13(i)  =  res(0); D23(i)  =  res(1); D33(i)  =  res(2);
+D13(i)  =  res(0); D23(i)  =  res(1); D33(i)  =  res(2);
 D133(i)  =  res(3); D233(i) =  res(4); D333(i) =  res(5);
 }
 
@@ -377,6 +377,7 @@ for (i=0;i<nn;i++)
 { // {{{ 
 mdesi=trans(thetades.row(i)); //mdesi.print("mdesi");
 msum=trans(ags.row(i)); 
+msum=x1; // trans(ags.row(i)); 
 lamtot1= sumtheta(i); 
 iisum = x1f1(i)+x2f2(i);
 //
@@ -1285,55 +1286,43 @@ return(ressl);
 
 
 double claytonoakesRVC(vec theta,mat thetades,mat ags,
-		       int status1,int status2,double cif1,double cif2,vec x1, vec x2, vec &dp,vec &ccw) 
+int status1,int status2,double cif1,double cif2,vec x1,vec x2,vec &dp,vec &ccw) 
 { // {{{
   double valr=1;
-  //double cifs=cif1+cif2; 
-  //double S=1+(cifs*(theta-1)); 
+  colvec dL=theta; dL.fill(0); 
+  double f1,f2;
+  f1=cif1; f2=cif2; 
 
-// colvec theta = Rcpp::as<colvec>(itheta);
-// mat thetades = Rcpp::as<mat>(ithetades);
-// colvec x1= Rcpp::as<colvec>(irv1);
-// colvec x2= Rcpp::as<colvec>(irv2);
-// vec x1= irv1; vec x2= irv2;
-// double cif1 = Rcpp::as<double>(icif1);
-// double cif2 = Rcpp::as<double>(icif2);
-// int status1 = Rcpp::as<int>(istatus1);
-// int status2 = Rcpp::as<int>(istatus2);
-// double cif1 = *icif1; double cif2 = *icif2;
-// int status1 = *istatus1; int status2 = *istatus2;
-
-
- colvec dL=theta; dL.fill(0); 
- double f1,f2;
- //double cifs=cif1+cif2; 
- //double S=1+(cifs*(theta-1)); 
- f1=cif1; f2=cif2; 
-
- colvec par = thetades * theta; 
-
-int nn=thetades.n_rows; 
-int lpar=thetades.n_cols; 
+  colvec par = thetades * theta; 
+  int nn=thetades.n_rows; 
+  int lpar=thetades.n_cols; 
 
  // {{{ first basic laplace derivatives
-double lamtot1=  sum(x1 % par);
-double ii1 = ilapsf(lamtot1,lamtot1,f1);
-double ii2 = ilapsf(lamtot1,lamtot1,f2);
+ //double lamtot1=  trans(ags.row(0)) * par;  // changed to the below 17-08-2018
+ double lamtot1=  sum(x1 % par); // lamtot same within cluster 
+ double ii1 = ilapsf(lamtot1,lamtot1,f1);
+ double ii2 = ilapsf(lamtot1,lamtot1,f2);
 
-vec resv(nn); resv.fill(0); 
-vec iresv(nn); iresv.fill(0); 
+// printf(" lamtot %lf ",lamtot1); 
+ vec part = trans( x1.t() * thetades); 
+// part.print("pp"); 
+// ags.row(0)=part.t(); 
+// ags.row(1)=part.t(); 
+ 
+  vec resv(nn); resv.fill(0); 
+  vec iresv(nn); iresv.fill(0); 
 
-double like=1,iisum; 
-int i; 
-for (i=0;i<nn;i++) 
-{
-iisum = x1(i)*ii1+x2(i)*ii2;
-resv(i) = lapsf(par(i),lamtot1,iisum);
-//printf("%lf %lf %lf %lf \n",par(i),lamtot1,iisum,resv(i)); 
-iresv(i) = iisum;
-like=like*resv(i); 
-//printf("===%d  %lf %lf %lf %lf %lf \n",i,x1(i),ii1,x2(i),ii2,like); 
-}
+  double like=1,iisum; 
+  int i; 
+  for (i=0;i<nn;i++) 
+  {
+  iisum = x1(i)*ii1+x2(i)*ii2;
+  resv(i) = lapsf(par(i),lamtot1,iisum);
+  //printf("%lf %lf %lf %lf \n",par(i),lamtot1,iisum,resv(i)); 
+  iresv(i) = iisum;
+  like=like*resv(i); 
+  //printf("===%d  %lf %lf %lf %lf %lf \n",i,x1(i),ii1,x2(i),ii2,like); 
+  }
 
 //resv.print("resv"); 
 //iresv.print("iresv"); 
@@ -1345,7 +1334,7 @@ vec res(6),res0(6);
 for (i=0;i<nn;i++) 
 { // {{{ 
 iisum   = x1(i)*ii1+x2(i)*ii2;
-lamtot1= sum( trans(ags.row(i)) % theta); 
+//lamtot1= sum( trans(ags.row(i)) % theta); 
 res     = D2lapsf(par(i),lamtot1,iisum);
 res0    = Dlapsf( par(i),lamtot1,iisum);
 //printf(" %lf %lf %lf %lf \n",x1(i),ii1,x2(i),ii2); 
@@ -1415,30 +1404,18 @@ vec mdesi(lpar);
 //ddd1 <- ddd2 <- ddd3 <- matrix(0,npar,length(msum))
 //dtheta <- dtt <- dts <- dt <- ds <- dsdt <- dtdtds <- 0
 vec indtheta0(lpar),indtheta0t(lpar),indtheta0s(lpar),indtheta0ts(lpar);
-vec dthetaj(lpar);
+vec dthetaj(lpar),dtheta(lpar),dtt(lpar),dts(lpar),dtdtds(lpar); dtheta.fill(0); dtt.fill(0); dts.fill(0); dtdtds.fill(0); 
 //,dtj(lpar),dsj(lpar);
-double dtj,dsj;
+double dtj,dsj,dt=0,ds=0,dsdt=0,dsdtj,numdsdtj ;
+vec dthetad3(lpar), dilapthetad3t(lpar), dilapthetad3s(lpar), dthetadtj(lpar), dthetadsj(lpar), dthetad33(lpar), 
+    dthetadtdsj(lpar), led3(lpar), led2(lpar), dilapthetad3(lpar); 
 
-vec dtheta(lpar),dtt(lpar), dts(lpar), dtdtds(lpar); 
-//    dt(lpar), ds(lpar),dsdt(lpar),
-double dt=0,ds=0,dsdt=0;
-
-
-dtheta.fill(0); dtt.fill(0); dts.fill(0); 
-//dt.fill(0); ds.fill(0); dsdt.fill(0); 
-dtdtds.fill(0); 
-vec dthetad3(lpar), 
-    dilapthetad3t(lpar), 
-    dilapthetad3s(lpar), 
-dthetadtj(lpar), dthetadsj(lpar), dthetad33(lpar), 
-dthetadtdsj(lpar), led3(lpar), led2(lpar), dilapthetad3(lpar); 
-
-
-double dsdtj, numdsdtj ;
 
 for (i=0;i<nn;i++) 
 {
-msum=trans(ags.row(i)); 
+// how parameters enters in lamtot 
+//msum=trans(ags.row(1)); 
+msum=part; 
 indtheta0  =msum*x1(i)*(Di1t+Di2t)+ msum*x2(i)*(Di1s+Di2s);
 indtheta0t =msum*x1(i)*(Di13t+Di23t);
 indtheta0s =msum*x2(i)*(Di13s+Di23s);
@@ -1542,17 +1519,11 @@ if (varlink==1) theta=exp(theta);
 
  colvec dL=theta; dL.fill(0); 
  double f1,f2;
- //double cifs=cif1+cif2; 
- //double S=1+(cifs*(theta-1)); 
  f1=cif1; f2=cif2; 
-
  colvec par = thetades * theta; 
-
 //int nn=thetades.n_rows; 
 int lpar=thetades.n_cols; 
-
 vec dp(lpar); dp.fill(0); 
-
 vec DbetaDtheta(2*lpar); 
 
 
@@ -1842,9 +1813,7 @@ RcppExport SEXP claytonoakesbinRV(SEXP itheta,SEXP istatus1,SEXP istatus2,SEXP i
   return R_NilValue; // -Wall
 
 
-
 } // }}}
-
 
 RcppExport SEXP twostageloglike( 
 		SEXP icause, SEXP ipmargsurv, 
@@ -1945,12 +1914,23 @@ RcppExport SEXP twostageloglike(
   } // }}}
 
   int ci,ck,i,j,c,s=0,k,v,c1; 
-  double ll=1,Li,Lk,sdj=0,diff=0,loglikecont=0;
-  double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0; 
+//    double asign=-1; if (ascertained==2) asign=1; 
+//  double ll=1,Li,Lk,sdj=0,diff=0,loglikecont=0;
+//  double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0; 
+  double dl1,dl2,ll1,ll2,ll=1,Li,Lk,sdj=0,diff=0,loglikecont=0;
+  double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0,dddl=0.00001; 
+  double d2,asign=-1; 
 //  double plack(); 
   int pt=theta.n_rows; 
   vec dplack(pt); dplack.fill(pt);
   vec dplackt(pt); dplackt.fill(pt);
+  vec dplackt1(pt); dplackt1.fill(0);
+  vec dplackt2(pt); dplackt2.fill(0);
+//  mat dp1(pmargsurv.n_rows,2);  dp1.fill(0); 
+  mat dp1(pmargsurv.n_rows,pt);  dp1.fill(0); 
+  mat dp2(pmargsurv.n_rows,pt);  dp2.fill(0); 
+
+
 //  vec ckij(pt),dckij(pt),ckijvv(pt),dckijvv(pt),ckijtv(pt),dckijtv(pt),ckijvt(pt),dckijvt(pt);
   i=silent+1; 
 
@@ -2010,44 +1990,104 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
   if (depmodel==2){ if (varlink==1) deppar=exp(thetak); else deppar=thetak; }
 
 	if (depmodel==1) { // clayton-oakes  // {{{
+           if (varlink==1) d2=-pow(deppar,1);  
+           if (varlink==0) d2=-1*pow(deppar,2); 
 
-           if (trunkp(i)<1 || trunkp(k)<1) {	
+           if (trunkp(i)<1 || trunkp(k)<1) {	/*{{{*/
 		   Lit=trunkp(i); Lkt=trunkp(k); 
 		   llt=claytonoakes(deppar,0,0,Lit,Lkt,dplackt);
 		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
 		   ssf+=weights(i)*(log(ll)-log(llt));
 		   loglikecont=(log(ll)-log(llt));
 	           diff=dplack(0)/ll-dplackt(0)/llt; 
+		   if (iid==1) { // approx parital derivatives for iid {{{
+   		           ll1=claytonoakes(deppar,ci,ck,Li-dddl,Lk,dplackt1);
+			   ll2=claytonoakes(deppar,ci,ck,Li,Lk-dddl,dplackt2);
+			   dplackt1=(dplack(0)-dplackt1(0))/dddl; 
+			   dplackt2=(dplack(0)-dplackt2(0))/dddl; 
+			   dl1=(ll-ll1)/dddl;
+			   dl2=(ll-ll2)/dddl;
+			   dp1.row(i)+=vthetascore.t()*d2*weights(i)*(ll*dplackt1(0)-dl1*dplack(0))/(ll*ll); 
+			   dp2.row(k)+=vthetascore.t()*d2*weights(k)*(ll*dplackt2(0)-dl2*dplack(0))/(ll*ll); 
+		
+			   ll1=claytonoakes(deppar,ci,ck,Lit-dddl,Lkt,dplackt1);
+			   ll2=claytonoakes(deppar,ci,ck,Lit,Lkt-dddl,dplackt2);
+			   dplackt1=(dplackt(0)-dplackt1(0))/dddl; 
+			   dplackt2=(dplackt(0)-dplackt2(0))/dddl; 
+			   dl1=(llt-ll1)/dddl;
+			   dl2=(llt-ll2)/dddl;
+			   dp1.row(i)+=vthetascore.t()*d2*asign*weights(i)*(llt*dplackt1(0)-dl1*dplackt(0))/(llt*llt); 
+			   dp2.row(k)+=vthetascore.t()*d2*asign*weights(k)*(llt*dplackt2(0)-dl2*dplackt(0))/(llt*llt); 
+		   }/*}}}*//*}}}*/
 	   } else {
 		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
 		   ssf+=weights(i)*log(ll); 
 		   loglikecont=log(ll);
 	           diff=dplack(0)/ll; 
-//	printf(" %d %d %d %d %d  \n",j,c,v,i,k); 
-//	printf(" %d %d %d %d %d %d %d %lf %lf %lf %lf %lf %lf \n",j,c,v,i,k,ci,ck,thetak,Li,Lk,weights(i),ll,log(ll)); 
+		   if (iid==1) { // approx parital derivatives for iid {{{
+			   ll1=claytonoakes(deppar,ci,ck,Li-dddl,Lk,dplackt1);
+			   ll2=claytonoakes(deppar,ci,ck,Li,Lk-dddl,dplackt2);
+			   dplackt1(0)=(dplack(0)-dplackt1(0))/dddl; 
+			   dplackt2(0)=(dplack(0)-dplackt2(0))/dddl; 
+			   dl1=(ll-ll1)/dddl;
+			   dl2=(ll-ll2)/dddl;
+			   dp1.row(i)+=vthetascore.t()*weights(i)*d2*(ll*dplackt1(0)-dl1*dplack(0))/(ll*ll); 
+			   dp2.row(k)+=vthetascore.t()*weights(k)*d2*(ll*dplackt2(0)-dl2*dplack(0))/(ll*ll); 
+		   }/*}}}*/
 	   } 
-	   if (varlink==1) diff=-pow(deppar,1)*diff;  
-	   if (varlink==0) diff=-1*pow(deppar,2)*diff; 
+	   diff=d2*diff;  
 	   sdj=pow(diff,2); 
 	   // }}}
 	} else if (depmodel==2) { // plackett model  // {{{
-        if (trunkp(i)<1 || trunkp(k)<1) {	
+
+	if (varlink==1) d2=deppar;  if (varlink==0) d2=1; 
+
+        if (trunkp(i)<1 || trunkp(k)<1) {	/*{{{*/
            Lit=trunkp(i); Lkt=trunkp(k); 
            llt=placklike(deppar,0,0,Lit,Lkt,dplackt);
            ll=placklike(deppar,ci,ck,Li,Lk,dplack);
 	   ssf+=weights(i)*(log(ll)-log(llt));
 	   loglikecont=(log(ll)-log(llt));
 	   diff=dplack(0)/ll-dplackt(0)/llt; 
-	   sdj=pow(diff,2); 
+	   if (iid==1) { // approx parital derivatives for iid {{{
+   	           ll1=placklike(deppar,ci,ck,Li-dddl,Lk,dplackt1);
+		   ll2=placklike(deppar,ci,ck,Li,Lk-dddl,dplackt2);
+		   dplackt1(0)=(dplack(0)-dplackt1(0))/dddl; 
+		   dplackt2(0)=(dplack(0)-dplackt2(0))/dddl; 
+		   dl1=(ll-ll1)/dddl;
+		   dl2=(ll-ll2)/dddl;
+		   dp1.row(i)+=vthetascore.t()*weights(i)*d2*(ll*dplackt1(0)-dl1*dplack(0))/(ll*ll); 
+		   dp2.row(k)+=vthetascore.t()*weights(k)*d2*(ll*dplackt2(0)-dl2*dplack(0))/(ll*ll); 
+		
+		   ll1=placklike(deppar,ci,ck,Lit-dddl,Lkt,dplackt1);
+		   ll2=placklike(deppar,ci,ck,Lit,Lkt-dddl,dplackt2);
+		   dplackt1(0)=(dplackt(0)-dplackt1(0))/dddl; 
+		   dplackt2(0)=(dplackt(0)-dplackt2(0))/dddl; 
+		   dl1=(llt-ll1)/dddl;
+		   dl2=(llt-ll2)/dddl;
+		   dp1.row(i)+=vthetascore.t()*asign*weights(i)*d2*(llt*dplackt1(0)-dl1*dplackt(0))/(llt*llt); 
+		   dp2.row(k)+=vthetascore.t()*asign*weights(k)*d2*(llt*dplackt2(0)-dl2*dplackt(0))/(llt*llt); 
+		   }/*}}}*/
+	   sdj=pow(diff,2); /*}}}*/
 	} else {
            ll=placklike(deppar,ci,ck,Li,Lk,dplack);
 	   ssf+=weights(i)*log(ll); 
 	   loglikecont=log(ll);
+	   diff=dplack(0)/ll; 
+	   if (iid==1) { // approx parital derivatives for iid {{{
+		   ll1=placklike(deppar,ci,ck,Li-dddl,Lk,dplackt1);
+		   ll2=placklike(deppar,ci,ck,Li,Lk-dddl,dplackt2);
+		   dplackt1=(dplack(0)-dplackt1(0))/dddl; 
+		   dplackt2=(dplack(0)-dplackt2(0))/dddl; 
+		   dl1=(ll-ll1)/dddl;
+		   dl2=(ll-ll2)/dddl;
+		   dp1.row(i)+=vthetascore.t()*weights(i)*d2*(ll*dplackt1(0)-dl1*dplack(0))/(ll*ll); 
+		   dp2.row(k)+=vthetascore.t()*weights(k)*d2*(ll*dplackt2(0)-dl2*dplack(0))/(ll*ll); 
+	   }/*}}}*/
 //	printf(" %d %d %d %lf %lf %lf %lf %lf %lf %lf %lf \n",j,ci,ck,thetak,deppar,Li,Lk,weights(i),ll,log(ll),diff); 
 //	printf(" %d %lf \n",j,ll); 
 	}
-	   if (varlink==1) diff=deppar*dplack(0)/ll; 
-	   if (varlink==0) diff=dplack(0)/ll; 
+	   diff=d2*diff;
 	   sdj=pow(diff,2); 
 	} // }}}
 
@@ -2055,8 +2095,9 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
      vthetascore=weights(i)*diff*vthetascore; 
      Utheta+=vthetascore; 
 
-     if (iid==1) { for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)+=vthetascore(c1); 
-	           loglikeiid(secluster(i))+=loglikecont; 
+     if (iid==1) { 
+	 for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)+=vthetascore(c1); 
+	 loglikeiid(secluster(i))+=loglikecont; 
      }
      } // }}} strata(i)==strata(k) indenfor strata
 
@@ -2071,6 +2112,8 @@ res["score"]=Utheta;
 res["Dscore"]=DUtheta; 
 if (iid==1) { res["theta.iid"]=thetiid; 
 	      res["loglikeiid"]=loglikeiid; 
+	      res["D1thetal"]  = dp1; 
+	      res["D2thetal"]  = dp2; 
             }
 
 return(res); 
@@ -2187,13 +2230,22 @@ RcppExport SEXP twostageloglikeRV(
   } // }}}
 
   int ci,ck,i,j,c,s=0,k,v,c1; 
-  double ll=1,Li,Lk,diff=0,loglikecont=0,sdj=0;
-  double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0; 
+//  double ll=1,Li,Lk,diff=0,loglikecont=0,sdj=0;
+  double dl1,dl2,ll1,ll2,ll=1,Li,Lk,sdj=0,diff=0,loglikecont=0;
+  double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0,dddl=0.00001; 
 //  double plack(); 
  
   int pt=theta.n_rows; 
+  double d2,asign=-1; if (ascertained==2) asign=1; 
   vec dplack(pt); dplack.fill(0);
   vec dplackt(pt); dplackt.fill(0);
+  vec dplackt1(pt); dplackt1.fill(0);
+  vec dplackt2(pt); dplackt2.fill(0);
+//  mat dp1(pmargsurv.n_rows,2);  dp1.fill(0); 
+  mat dp1(pmargsurv.n_rows,pt);  dp1.fill(0); 
+  mat dp2(pmargsurv.n_rows,pt);  dp2.fill(0); 
+
+
 //  vec ckij(pt),dckij(4),ckijvv(4),dckijvv(4),ckijtv(4),dckijtv(4),ckijvt(4),dckijvt(4);
   i=silent+1; 
 
@@ -2250,8 +2302,10 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 //  if (depmodel==3){ if (varlink==1) etheta=exp(theta); else etheta=theta; }
 
 	if (depmodel==1) { // clayton-oakes  // {{{
+	   if (varlink==1) d2=-pow(deppar,1);  
+	   if (varlink==0) d2=-1*pow(deppar,2); 
 
-           if (trunkp(i)<1 || trunkp(k)<1) {	
+              if (trunkp(i)<1 || trunkp(k)<1) {	/*{{{*/
 		   Lit=trunkp(i); Lkt=trunkp(k); 
 		   if ((ascertained==0) || (ascertained==2)) llt=claytonoakes(deppar,0,0,Lit,Lkt,dplackt);
                    if (ascertained==2) llt=1-llt;  // 1-p00, no censoring case
@@ -2259,19 +2313,44 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
 		   ssf+=weights(i)*(log(ll)-log(llt));
 		   loglikecont=(log(ll)-log(llt));
+		   if (iid==1) { // approx parital derivatives for iid {{{
+   		           ll1=claytonoakes(deppar,ci,ck,Li-dddl,Lk,dplackt1);
+			   ll2=claytonoakes(deppar,ci,ck,Li,Lk-dddl,dplackt1);
+			   dplackt1=(dplack-dplackt1)/dddl; 
+			   dplackt2=(dplack-dplackt2)/dddl; 
+			   dl1=(ll-ll1)/dddl;
+			   dl2=(ll-ll2)/dddl;
+			   dp1.row(i)+=vthetascore.t()*weights(i)*(ll*dplackt1.t()-dl1*dplack.t())/(ll*ll); 
+			   dp2.row(k)+=vthetascore.t()*weights(k)*(ll*dplackt2.t()-dl2*dplack.t())/(ll*ll); 
+		
+			   ll1=claytonoakes(deppar,ci,ck,Lit-dddl,Lkt,dplackt1);
+			   ll2=claytonoakes(deppar,ci,ck,Lit,Lkt-dddl,dplackt2);
+			   dplackt1=(dplackt-dplackt1)/dddl; 
+			   dplackt2=(dplackt-dplackt2)/dddl; 
+			   dl1=(llt-ll1)/dddl;
+			   dl2=(llt-ll2)/dddl;
+			   dp1.row(i)+=vthetascore.t()*asign*weights(i)*(llt*dplackt1.t()-dl1*dplackt.t())/(llt*llt); 
+			   dp2.row(k)+=vthetascore.t()*asign*weights(k)*(llt*dplackt2.t()-dl2*dplackt.t())/(llt*llt); 
+		   }/*}}}*/
 	           if (ascertained==2) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; 
-	   } else {
+	   } else {/*}}}*/
 		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
 		   ssf+=weights(i)*log(ll); 
 		   loglikecont=log(ll);
 	           diff=dplack(0)/ll; 
-//	printf(" %d %d %d %d %d  \n",j,c,v,i,k); 
-//	printf(" %d %d %d %d %d %d %d %lf %lf %lf %lf %lf %lf \n",j,c,v,i,k,ci,ck,thetak,Li,Lk,weights(i),ll,log(ll)); 
-//	dplack.print("dp"); 
-//	printf("%lf %d %d %d %d %d %lf %lf %lf %lf %lf %lf \n",deppar,j,i,k,ci,ck,thetak,Li,Lk,weights(i),ll,log(ll)); 
+		   if (iid==1) { // approx parital derivatives for iid {{{
+			   ll1=claytonoakes(deppar,ci,ck,Li-dddl,Lk,dplackt1);
+			   ll2=claytonoakes(deppar,ci,ck,Li,Lk-dddl,dplackt2);
+			   dplackt1(0)=(dplack(0)-dplackt1(0))/dddl; 
+			   dplackt2(0)=(dplack(0)-dplackt2(0))/dddl; 
+			   dl1=(ll-ll1)/dddl;
+			   dl2=(ll-ll2)/dddl;
+			   dp1.row(i)+=vthetascore.t()*weights(i)*d2*(ll*dplackt1(0)-dl1*dplack(0))/(ll*ll); 
+			   dp2.row(k)+=vthetascore.t()*weights(k)*d2*(ll*dplackt2(0)-dl2*dplack(0))/(ll*ll); 
+//	printf(" %d %d %d %d  \n",j,i,k,dl1,dl2,dplackt(0),); 
+		   }/*}}}*/
 	   } 
-	   if (varlink==1) diff=-pow(deppar,1)*diff;  
-	   if (varlink==0) diff=-1*pow(deppar,2)*diff; 
+	   diff=d2*diff;  
 	   sdj=pow(diff,2); 
 	   // }}}
 	} else if (depmodel==3) { //  additive random gamma clayton-oakes  // {{{
@@ -2279,7 +2358,8 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 	   rv1=trans(rvdes.row(i)); rv2=trans(rvdes.row(k)); 
 //	   printf(" %d %d %d %d %d \n",j,i,k,ci,ck);
 //         rv1.print("rv1");    rv2.print("rv2"); 
-//	   thetades.print("thet"); 
+//	 thetades.print("thet"); 
+//	 ags.print("ags"); 
 
            if (trunkp(i)<1 || trunkp(k)<1) { // {{{ 
 		   Lit=trunkp(i); Lkt=trunkp(k); 
@@ -2292,23 +2372,49 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 		   ll=claytonoakesRVC(etheta,thetades,ags,ci,ck,Li,Lk,rv1,rv2,dplack,wwc);
 		   ssf+=weights(i)*(log(ll)-log(llt));
 		   loglikecont=(log(ll)-log(llt));
-
                    if (ascertained==2) vthetascore=dplack/ll+dplackt/llt; else  vthetascore=dplack/ll-dplackt/llt; 
+		   if (iid==1) { // approx parital derivatives for iid {{{
+			   ll1=claytonoakesRVC(etheta,thetades,ags,ci,ck,Li-dddl,Lk,rv1,rv2,dplackt1,wwc);
+			   ll2=claytonoakesRVC(etheta,thetades,ags,ci,ck,Li,Lk-dddl,rv1,rv2,dplackt2,wwc);
+			   dplackt1=(dplack-dplackt1)/dddl; 
+			   dplackt2=(dplack-dplackt2)/dddl; 
+			   dl1=(ll-ll1)/dddl;
+			   dl2=(ll-ll2)/dddl;
+			   dp1.row(i)+=weights(i)*(ll*dplackt1.t()-dl1*dplackt.t())/(ll*ll); 
+			   dp2.row(k)+=weights(k)*(ll*dplackt2.t()-dl2*dplackt.t())/(ll*ll); 
+
+                           ll1=claytonoakesRVC(etheta,thetades,ags,ci,ck,Lit-dddl,Lkt,rv1,rv2,dplackt1,wwc);
+			   ll2=claytonoakesRVC(etheta,thetades,ags,ci,ck,Lit,Lkt-dddl,rv1,rv2,dplackt2,wwc);
+			   dplackt1=(dplack-dplackt1)/dddl; 
+			   dplackt2=(dplack-dplackt2)/dddl; 
+			   dl1=(llt-ll1)/dddl;
+			   dl2=(llt-ll2)/dddl;
+			   dp1.row(i)+=asign*weights(i)*(llt*dplackt1.t()-dl1*dplackt.t())/(llt*llt); 
+			   dp2.row(k)+=asign*weights(k)*(llt*dplackt2.t()-dl2*dplackt.t())/(llt*llt); 
+		   }/*}}}*/
 		   // }}}
 	   } else {
-		   ll=claytonoakesRVC(etheta,thetades,ags,ci,ck,Li,Lk,rv1,rv2,dplackt,wwc);
-//	printf(" %d %d %d %d %d %d %d %lf %lf %lf %lf %lf %lf \n",j,c,v,i,k,ci,ck,thetak,Li,Lk,weights(i),ll,log(ll)); 
-//	dplackt.print("dp"); 
-          	   ssf+=weights(i)*log(ll); 
-		   loglikecont=log(ll);
-//	           if (varlink==1) dplackt=dplackt % etheta;  
-	           vthetascore=dplackt/ll; 
+      ll=claytonoakesRVC(etheta,thetades,ags,ci,ck,Li,Lk,rv1,rv2,dplackt,wwc);
+                ssf+=weights(i)*log(ll); 
+	        loglikecont=log(ll);
+	        vthetascore=dplackt/ll; 
+	        if (iid==1) { // approx parital derivatives for iid {{{
+			   ll1=claytonoakesRVC(etheta,thetades,ags,ci,ck,Li-dddl,Lk,rv1,rv2,dplackt1,wwc);
+			   ll2=claytonoakesRVC(etheta,thetades,ags,ci,ck,Li,Lk-dddl,rv1,rv2,dplackt2,wwc);
+			   dplackt1=(dplackt-dplackt1)/dddl; 
+			   dplackt2=(dplackt-dplackt2)/dddl; 
+			   dl1=(ll-ll1)/dddl;
+			   dl2=(ll-ll2)/dddl;
+			   dp1.row(i)+=weights(i)*(ll*dplackt1.t()-dl1*dplackt.t())/(ll*ll); 
+			   dp2.row(k)+=weights(k)*(ll*dplackt2.t()-dl2*dplackt.t())/(ll*ll); 
+		   }/*}}}*/
 	   } 
-//	   if (varlink==0) diff=-1*pow(deppar,2)*diff; 
-//	   sdj=pow(diff,2); 
 	   // }}}
 	} else if (depmodel==2) { // plackett model  // {{{
-        if (trunkp(i)<1 || trunkp(k)<1) {	
+
+	if (varlink==1) d2=deppar;  if (varlink==0) d2=1; 
+
+        if (trunkp(i)<1 || trunkp(k)<1) {	/*{{{*/
            Lit=trunkp(i); Lkt=trunkp(k); 
 	   if ((ascertained==0) || (ascertained==2)) llt=placklike(deppar,0,0,Lit,Lkt,dplackt);
            if (ascertained==2) llt=1-llt;  // 1-p00, no censoring case
@@ -2317,17 +2423,45 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
            ll=placklike(deppar,ci,ck,Li,Lk,dplack);
 	   ssf+=weights(i)*(log(ll)-log(llt));
 	   loglikecont=(log(ll)-log(llt));
-	   if (ascertained==2) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; 
-	   sdj=pow(diff,2); 
-	} else {
+	   if (iid==1) { // approx parital derivatives for iid {{{
+   	           ll1=placklike(deppar,ci,ck,Li-dddl,Lk,dplackt1);
+		   ll2=placklike(deppar,ci,ck,Li,Lk-dddl,dplackt2);
+		   dplackt1(0)=(dplack(0)-dplackt1(0))/dddl; 
+		   dplackt2(0)=(dplack(0)-dplackt2(0))/dddl; 
+		   dl1=(ll-ll1)/dddl;
+		   dl2=(ll-ll2)/dddl;
+		   dp1.row(i)+=vthetascore.t()*weights(i)*d2*(ll*dplackt1(0)-dl1*dplack(0))/(ll*ll); 
+		   dp2.row(k)+=vthetascore.t()*weights(k)*d2*(ll*dplackt2(0)-dl2*dplack(0))/(ll*ll); 
+		
+		   ll1=placklike(deppar,ci,ck,Lit-dddl,Lkt,dplackt1);
+		   ll2=placklike(deppar,ci,ck,Lit,Lkt-dddl,dplackt2);
+		   dplackt1(0)=(dplackt(0)-dplackt1(0))/dddl; 
+		   dplackt2(0)=(dplackt(0)-dplackt2(0))/dddl; 
+		   dl1=(llt-ll1)/dddl;
+		   dl2=(llt-ll2)/dddl;
+		   dp1.row(i)+=vthetascore.t()*asign*weights(i)*d2*(llt*dplackt1(0)-dl1*dplackt(0))/(llt*llt); 
+		   dp2.row(k)+=vthetascore.t()*asign*weights(k)*d2*(llt*dplackt2(0)-dl2*dplackt(0))/(llt*llt); 
+		   }/*}}}*/
+	   if (ascertained==2) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; /*}}}*/
+	} else {/*{{{*/
            ll=placklike(deppar,ci,ck,Li,Lk,dplack);
 	   ssf+=weights(i)*log(ll); 
 	   loglikecont=log(ll);
+	   diff=dplack(0)/ll; 
+	   if (iid==1) { // approx parital derivatives for iid {{{
+		   ll1=placklike(deppar,ci,ck,Li-dddl,Lk,dplackt1);
+		   ll2=placklike(deppar,ci,ck,Li,Lk-dddl,dplackt2);
+		   dplackt1=(dplack(0)-dplackt1(0))/dddl; 
+		   dplackt2=(dplack(0)-dplackt2(0))/dddl; 
+		   dl1=(ll-ll1)/dddl;
+		   dl2=(ll-ll2)/dddl;
+		   dp1.row(i)+=vthetascore.t()*weights(i)*d2*(ll*dplackt1(0)-dl1*dplack(0))/(ll*ll); 
+		   dp2.row(k)+=vthetascore.t()*weights(k)*d2*(ll*dplackt2(0)-dl2*dplack(0))/(ll*ll); 
+	   }/*}}}*/
 //	printf(" %d %d %d %lf %lf %lf %lf %lf %lf %lf %lf \n",j,ci,ck,thetak,deppar,Li,Lk,weights(i),ll,log(ll),diff); 
 //	printf(" %d %lf \n",j,ll); 
-	}
-	   if (varlink==1) diff=deppar*dplack(0)/ll; 
-	   if (varlink==0) diff=dplack(0)/ll; 
+	}/*}}}*/
+	   diff=d2*diff;
 	   sdj=pow(diff,2); 
 	} // }}}
 
@@ -2346,11 +2480,11 @@ for (j=0;j<antclust;j++) if (clustsize(j)>=2) {
 //		vthetascore.print("vvv 2"); 
 	}
 
-     if (iid==1) { for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)-=vthetascore(c1); 
-	           loglikeiid(j)+=loglikecont; 
-	           trunclikeiid(j)+=llt; 
+     if (iid==1) { 
+	 for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)-=vthetascore(c1); 
+	 loglikeiid(j)+=loglikecont; 
+	 trunclikeiid(j)+=llt; 
      }
-
 
      } // }}} strata(i)==strata(k) indenfor strata
 
@@ -2367,6 +2501,8 @@ res["Dscore"]=DUtheta;
 if (iid==1) { res["theta.iid"]=thetiid; 
 	      res["loglikeiid"]=loglikeiid; 
 	      res["trunclikeiid"]=trunclikeiid; 
+	      res["D1thetal"]  = dp1; 
+	      res["D2thetal"]  = dp2; 
             }
 
 return(res); 
@@ -2407,8 +2543,8 @@ RcppExport SEXP twostageloglikeRVpairs(
 		SEXP idimthetades, SEXP idimrvdes, SEXP inrvs, SEXP iags, 
 	        SEXP iascertained	
 )  
-{ // {{{ 
-  try {
+{ 
+try {
 // {{{ 
 //  setting matrices and vectors, and exporting to armadillo matrices
 //  // {{{
@@ -2483,9 +2619,7 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
 // } else  mat rvdes(arrayDims2[1],arrayDims2[2]); 
 // printf(" not !\n"); 
 
-
 //  thetades.fill(0); 
-
 
  int varlink= Rcpp::as<int>(ivarlink);
  int silent = Rcpp::as<int>(isilent);
@@ -2494,82 +2628,19 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
 
  mat Xtheta = Rcpp::as<mat>(iXtheta);
 
-  int udtest=0; 
-  if (udtest==1) { // {{{
-//  Rprintf(" %d %d %d %d %d %d %d \n",samecens,inverse,semi,semi2,flexfunc,stabcens,silent); 
-//  Rprintf(" %d %d %d %d %d %d %d \n",cifmodel,CA1,CA2,sym,depmodel,estimator,iid); 
-//        est.print("est"); 
-//	est2.print("est2"); 
-//        z.print("z"); 
-//	zsem.print("zsemi"); 
-//	z2.print("z2"); 
-//        thetades.print("theta.des"); 
-        clusterindex.print("clusterindex"); 
-//        rvdes.print("rvdes"); 
-	theta.print("theta"); 
-	Xtheta.print("Xtheta"); 
-//	  y.print("y-times"); 
-	  clustsize.print("clustsize"); 
-	  pmargsurv.print("margsurv"); 
-	  cause.print("cause"); 
-	  cluster.print("cluster"); 
-//	  Zgamma.print("zgam"); 
-//	  Z2gamma2.print("zgam2"); 
-//	  KMtimes.print("KMtimes"); 
-//	  KMc.print("KMc"); 
-	  weights.print("weights"); 
-//	  entryage.print("entryage"); 
-//	  cif1entry.print("cif1entry"); 
-//	  cif2entry.print("cif2entry"); 
-	  trunkp.print("trunkp"); 
-  } else if (udtest==2) 
-  {
-//  Rprintf(" %d %d %d %d %d %d %d \n",samecens,inverse,semi,semi2,flexfunc,stabcens,silent); 
-//     Rprintf(" %d %d %d %d %d %d %d \n",cifmodel,CA1,CA2,sym,depmodel,estimator,iid); 
-//      Rprintf("est %lf \n",mean(mean(est))); 
-//      Rprintf("est2 %lf \n",mean(mean(est2))); 
-//      Rprintf("z %lf \n",mean(mean(z))); 
-//      Rprintf("zsem %lf \n",mean(mean(zsem))); 
-//      Rprintf("z2 %lf \n",mean(mean(z2))); 
-//      mat mt=mean(thetades); 
-//      mt.print("meancol thetades"); 
-//      Rprintf("theatdes %lf \n",mean(mean(thetades))); 
-      Rprintf("ci %lf \n",mean(mean(clusterindex))); 
-//      Rprintf("rvdes %lf \n",mean(mean(rvdes))); 
-      Rprintf("theta %lf \n",mean(theta)); 
-      Rprintf("Xtheta %lf \n",mean(mean(Xtheta))); 
-//      Rprintf("y %lf \n",mean(y)); 
-      Rprintf("ci %lf \n",mean(clustsize)); 
-//      Rprintf("times %lf \n",mean(times)); 
-      Rprintf("cause %lf \n",mean(cause)); 
-      Rprintf("cluster %lf \n",mean(cluster)); 
-//      Rprintf("Zgamma %lf \n",mean(Zgamma)); 
-//      Rprintf("Z2gamma2 %lf \n",mean(Z2gamma2)); 
-//      Rprintf("KMtimes %lf \n",mean(KMtimes)); 
-//      Rprintf("KMc %lf \n",mean(KMc)); 
-      Rprintf("weights %lf \n",mean(weights)); 
-//      Rprintf("entry %lf \n",mean(entryage)); 
-//      Rprintf("cif1entry %lf \n",mean(cif1entry)); 
-//      Rprintf("cif2entry %lf \n",mean(cif2entry)); 
-      Rprintf("trunkp %lf \n",mean(trunkp)); 
-  }   // }}}
-
-
   int ci,ck,i,j,s=0,k,c1; 
   double dl1,dl2,ll1,ll2,ll=1,Li,Lk,sdj=0,diff=0,loglikecont=0;
-  double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0,dddl=0.00000000000000001; 
+  double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0,dddl=0.00001; 
+  double d2,asign=-1; if (ascertained==2) asign=1; 
 //  double plack(); 
  
   vec dplack(pt); dplack.fill(0);
   vec dplackt(pt); dplackt.fill(0);
   vec dplackt1(pt); dplackt1.fill(0);
   vec dplackt2(pt); dplackt2.fill(0);
-  mat dp1(pmargsurv.n_rows,2);  dp1.fill(0); 
-//  mat dp2(pmargsurv.n_rows,pt);  dp2.fill(0); 
-
-//  vec ckij(pt),dckij(4),ckijvv(4),dckijvv(4),ckijtv(4),dckijtv(4),ckijvt(4),dckijvt(4);
+  mat dp1(pmargsurv.n_rows,pt);  dp1.fill(0); 
+  mat dp2(pmargsurv.n_rows,pt);  dp2.fill(0); 
   i=silent+1; 
-
   mat thetiid(antiid,pt); 
   colvec loglikeiid(antclust); 
   colvec trunclikeiid(antclust); 
@@ -2578,8 +2649,6 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
 	        trunclikeiid.fill(0); 
   }
   colvec p11tvec(antclust); 
-//  p11tvec=0; 
-//  Rprintf(" %d \n",pt); 
   colvec Utheta(pt); 
   colvec vthetascore(pt); 
   colvec pthetavec(pt); 
@@ -2590,20 +2659,9 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
 //  if (!Utheta.is_finite()) {  Rprintf(" NA's i def U\n"); Utheta.print("U"); }
 //  if (!DUtheta.is_finite()) { Rprintf(" NA's i def DU\n"); DUtheta.print("DU"); }
 
-//  rowvec bhatt2 = est.row(est2.n_cols); 
-//  colvec pbhat2(z.n_rows); 
-// depmodel=5 
-//  rvdes.print("rvdes"); 
-//  thetades.print("ttt"); 
-//    int nr=rvdes.n_cols; 
-//    printf("--------------------- %d \n",nr); 
-    int nr=1; 
-    if  (depmodel==3) nr=arrayDD[2]; 
-    vec rv2(nr),rv1(nr);
-//  vec  rvvec2(nr); 
-//  rv1.print("rv1"); 
-//  rv2.print("rv2"); 
-
+  int nr=1; 
+  if  (depmodel==3) nr=arrayDD[2]; 
+  vec rv2(nr),rv1(nr);
   vec etheta=theta; 
   vec wwc(2); 
   // 
@@ -2627,12 +2685,9 @@ for (j=0;j<antclust;j++) {
      int flexfunc=0; 
       if (flexfunc==0) {
 	  if (depmodel!=3) {
-//  printf("pthetavec"); 
              thetak=Xtheta(i,0);  
 	     pthetavec= trans(thetades.row(i)); 
 	     vthetascore=1*pthetavec; 
-//  printf("1 pthetavec \n"); 
-//	     pthetavec= thetadesi.subcube(span(j),span(i),span::all); 
 	  }
       } else { 
 	  thetak=Xtheta(i,s); 
@@ -2641,11 +2696,12 @@ for (j=0;j<antclust;j++) {
 
   if (depmodel==1){ if (varlink==1) deppar=1/exp(thetak); else deppar=1/thetak;}
   if (depmodel==2){ if (varlink==1) deppar=exp(thetak); else deppar=thetak; }
-//  if (depmodel==3){ if (varlink==1) etheta=exp(theta); else etheta=theta; }
 
 	if (depmodel==1) { // clayton-oakes  // {{{ 
+	   if (varlink==1) d2=-pow(deppar,1);  
+	   if (varlink==0) d2=-1*pow(deppar,2); 
 
-           if (trunkp(i)<1 || trunkp(k)<1) {	
+           if (trunkp(i)<1 || trunkp(k)<1) {	/*{{{*/
 		   Lit=trunkp(i); Lkt=trunkp(k); 
 		   if ((ascertained==0) || (ascertained==2)) llt=claytonoakes(deppar,0,0,Lit,Lkt,dplackt);
                    if (ascertained==2) llt=1-llt;  // 1-p00, no censoring case
@@ -2653,19 +2709,46 @@ for (j=0;j<antclust;j++) {
 		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
 		   ssf+=weights(i)*(log(ll)-log(llt));
 		   loglikecont=(log(ll)-log(llt));
-	           if (ascertained==2) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; 
-	   } else {
+		   if (iid==1) { // approx parital derivatives for iid {{{
+   		           ll1=claytonoakes(deppar,ci,ck,Li-dddl,Lk,dplackt1);
+			   ll2=claytonoakes(deppar,ci,ck,Li,Lk-dddl,dplackt2);
+			   dplackt1=(dplack(0)-dplackt1(0))/dddl; 
+			   dplackt2=(dplack(0)-dplackt2(0))/dddl; 
+			   dl1=(ll-ll1)/dddl;
+			   dl2=(ll-ll2)/dddl;
+			   dp1.row(i)+=vthetascore.t()*d2*weights(i)*(ll*dplackt1(0)-dl1*dplack(0))/(ll*ll); 
+			   dp2.row(k)+=vthetascore.t()*d2*weights(k)*(ll*dplackt2(0)-dl2*dplack(0))/(ll*ll); 
+		
+			   ll1=claytonoakes(deppar,ci,ck,Lit-dddl,Lkt,dplackt1);
+			   ll2=claytonoakes(deppar,ci,ck,Lit,Lkt-dddl,dplackt2);
+			   dplackt1=(dplackt(0)-dplackt1(0))/dddl; 
+			   dplackt2=(dplackt(0)-dplackt2(0))/dddl; 
+			   dl1=(llt-ll1)/dddl;
+			   dl2=(llt-ll2)/dddl;
+			   dp1.row(i)+=vthetascore.t()*d2*asign*weights(i)*(llt*dplackt1(0)-dl1*dplackt(0))/(llt*llt); 
+			   dp2.row(k)+=vthetascore.t()*d2*asign*weights(k)*(llt*dplackt2(0)-dl2*dplackt(0))/(llt*llt); 
+		   }/*}}}*/
+	           if (ascertained==2) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; /*}}}*/
+	   } else {/*{{{*/
 		   ll=claytonoakes(deppar,ci,ck,Li,Lk,dplack);
 		   ssf+=weights(i)*log(ll); 
 		   loglikecont=log(ll);
 	           diff=dplack(0)/ll; 
-//	printf(" %d %d %d %d %d  \n",j,c,v,i,k); 
-//	printf("%lf %d %d %d %d %d %d %lf %lf %lf %lf %lf %lf \n",deppar,j,(int) secluster(i),i,k,ci,ck,thetak,Li,Lk,weights(i),ll,log(ll)); 
+		   if (iid==1) { // approx parital derivatives for iid {{{
+			   ll1=claytonoakes(deppar,ci,ck,Li-dddl,Lk,dplackt1);
+			   ll2=claytonoakes(deppar,ci,ck,Li,Lk-dddl,dplackt2);
+			   dplackt1(0)=(dplack(0)-dplackt1(0))/dddl; 
+			   dplackt2(0)=(dplack(0)-dplackt2(0))/dddl; 
+			   dl1=(ll-ll1)/dddl;
+			   dl2=(ll-ll2)/dddl;
+			   dp1.row(i)+=vthetascore.t()*weights(i)*d2*(ll*dplackt1(0)-dl1*dplack(0))/(ll*ll); 
+			   dp2.row(k)+=vthetascore.t()*weights(k)*d2*(ll*dplackt2(0)-dl2*dplack(0))/(ll*ll); 
+//	printf(" %d %d %d %d  \n",j,i,k,dl1,dl2,dplackt(0),); 
+		   }/*}}}*/
 	  } 
-	   if (varlink==1) diff=-pow(deppar,1)*diff;  
-	   if (varlink==0) diff=-1*pow(deppar,2)*diff; 
+	   diff=d2*diff;  
 	   sdj=pow(diff,2); 
-	   // // }}} 
+	   // // }}} /*}}}*/
 	} else if (depmodel==3) { //  additive random gamma clayton-oakes  // {{{ 
 
 	// takes random effects specification for each pair
@@ -2683,7 +2766,6 @@ for (j=0;j<antclust;j++) {
 	// 3-dimensional array pairs*(random effects* pars )
 	mat thetadesvv=thetadesi.slice(j); 
 	mat thetadesv=thetadesvv.rows(0,lnrv); 
-
 
 	if (j< -10)  {
 	   Rprintf("%d %d %d %d %d %lf %lf \n",j,i,k,ci,ck,Li,Lk); 
@@ -2706,6 +2788,25 @@ for (j=0;j<antclust;j++) {
 		   ssf+=weights(i)*(log(ll)-log(llt));
 		   loglikecont=(log(ll)-log(llt));
                    if (ascertained==2) vthetascore=dplack/ll+dplackt/llt; else  vthetascore=dplack/ll-dplackt/llt; 
+		   if (iid==1) { // approx parital derivatives for iid {{{
+			   ll1=claytonoakesRVC(etheta,thetadesv,ags,ci,ck,Li-dddl,Lk,rv1,rv2,dplackt1,wwc);
+			   ll2=claytonoakesRVC(etheta,thetadesv,ags,ci,ck,Li,Lk-dddl,rv1,rv2,dplackt2,wwc);
+			   dplackt1=(dplack-dplackt1)/dddl; 
+			   dplackt2=(dplack-dplackt2)/dddl; 
+			   dl1=(ll-ll1)/dddl;
+			   dl2=(ll-ll2)/dddl;
+			   dp1.row(i)+=weights(i)*(ll*dplackt1.t()-dl1*dplackt.t())/(ll*ll); 
+			   dp2.row(k)+=weights(k)*(ll*dplackt2.t()-dl2*dplackt.t())/(ll*ll); 
+
+                           ll1=claytonoakesRVC(etheta,thetadesv,ags,ci,ck,Lit-dddl,Lkt,rv1,rv2,dplackt1,wwc);
+			   ll2=claytonoakesRVC(etheta,thetadesv,ags,ci,ck,Lit,Lkt-dddl,rv1,rv2,dplackt2,wwc);
+			   dplackt1=(dplack-dplackt1)/dddl; 
+			   dplackt2=(dplack-dplackt2)/dddl; 
+			   dl1=(llt-ll1)/dddl;
+			   dl2=(llt-ll2)/dddl;
+			   dp1.row(i)+=asign*weights(i)*(ll*dplackt1.t()-dl1*dplackt.t())/(llt*llt); 
+			   dp2.row(k)+=asign*weights(k)*(ll*dplackt2.t()-dl2*dplackt.t())/(llt*llt); 
+		   }/*}}}*/
 //		   vthetascore.print("vtheta-score"); 
 	   } else {
 		   ll=claytonoakesRVC(etheta,thetadesv,ags,ci,ck,Li,Lk,rv1,rv2,dplackt,wwc);
@@ -2715,25 +2816,23 @@ for (j=0;j<antclust;j++) {
 		   ssf+=weights(i)*log(ll); 
 		   loglikecont=log(ll);
 	           vthetascore=dplackt/ll; 
-		   if (iid==1) { // approx parital derivatives for iid 
+		   if (iid==1) { // approx parital derivatives for iid {{{
 			   ll1=claytonoakesRVC(etheta,thetadesv,ags,ci,ck,Li-dddl,Lk,rv1,rv2,dplackt1,wwc);
 			   ll2=claytonoakesRVC(etheta,thetadesv,ags,ci,ck,Li,Lk-dddl,rv1,rv2,dplackt2,wwc);
-//			   dplackt1=(dplackt-dplackt1)/dddl; 
-//			   dplackt2=(dplackt-dplackt2)/dddl; 
+			   dplackt1=(dplackt-dplackt1)/dddl; 
+			   dplackt2=(dplackt-dplackt2)/dddl; 
 			   dl1=(ll-ll1)/dddl;
 			   dl2=(ll-ll2)/dddl;
-			   dp1(i,0)=dl1; 
-			   dp1(i,1)=dl2; 
-//			   dp1.row(i)+=weights(i)*(ll*dplackt1.t()-dl1*dplackt.t())/(ll*ll); 
-//			   dp2.row(k)+=weights(k)*(ll*dplackt2.t()-dl2*dplackt.t())/(ll*ll); 
-//			   printf(" %d %d %lf \n",j,k,weights(k)); 
-//			   dp2.row(k)+=weights(k); 
-//			   dp2.row(k).print();
-		   }
+			   dp1.row(i)+=weights(i)*(ll*dplackt1.t()-dl1*dplackt.t())/(ll*ll); 
+			   dp2.row(k)+=weights(k)*(ll*dplackt2.t()-dl2*dplackt.t())/(ll*ll); 
+		   }/*}}}*/
 	   } 
 	   // }}} 
 	} else if (depmodel==2) { // plackett model  //  // {{{ 
-        if (trunkp(i)<1 || trunkp(k)<1) {	
+
+	if (varlink==1) d2=deppar;  if (varlink==0) d2=1; 
+
+        if (trunkp(i)<1 || trunkp(k)<1) {	/*{{{*/
            Lit=trunkp(i); Lkt=trunkp(k); 
 	   if ((ascertained==0) || (ascertained==2)) llt=placklike(deppar,0,0,Lit,Lkt,dplackt);
            if (ascertained==2) llt=1-llt;  // 1-p00, no censoring case
@@ -2742,17 +2841,46 @@ for (j=0;j<antclust;j++) {
 	   ssf+=weights(j)*(log(ll)-log(llt));
 	   loglikecont=(log(ll)-log(llt));
 //	   diff=dplack(0)/ll-dplackt(0)/llt; 
-	   if (ascertained==2) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; 
-	   sdj=pow(diff,2); 
-	} else {
+	   if (iid==1) { // approx parital derivatives for iid {{{
+   	           ll1=placklike(deppar,ci,ck,Li-dddl,Lk,dplackt1);
+		   ll2=placklike(deppar,ci,ck,Li,Lk-dddl,dplackt2);
+		   dplackt1(0)=(dplack(0)-dplackt1(0))/dddl; 
+		   dplackt2(0)=(dplack(0)-dplackt2(0))/dddl; 
+		   dl1=(ll-ll1)/dddl;
+		   dl2=(ll-ll2)/dddl;
+		   dp1.row(i)+=vthetascore.t()*weights(i)*d2*(ll*dplackt1(0)-dl1*dplack(0))/(ll*ll); 
+		   dp2.row(k)+=vthetascore.t()*weights(k)*d2*(ll*dplackt2(0)-dl2*dplack(0))/(ll*ll); 
+		
+		   ll1=placklike(deppar,ci,ck,Lit-dddl,Lkt,dplackt1);
+		   ll2=placklike(deppar,ci,ck,Lit,Lkt-dddl,dplackt2);
+		   dplackt1(0)=(dplackt(0)-dplackt1(0))/dddl; 
+		   dplackt2(0)=(dplackt(0)-dplackt2(0))/dddl; 
+		   dl1=(llt-ll1)/dddl;
+		   dl2=(llt-ll2)/dddl;
+		   dp1.row(i)+=vthetascore.t()*asign*weights(i)*d2*(llt*dplackt1(0)-dl1*dplackt(0))/(llt*llt); 
+		   dp2.row(k)+=vthetascore.t()*asign*weights(k)*d2*(llt*dplackt2(0)-dl2*dplackt(0))/(llt*llt); 
+		   }/*}}}*/
+	   if (ascertained==2) diff=dplack(0)/ll+dplackt(0)/llt; else diff=dplack(0)/ll-dplackt(0)/llt; /*}}}*/
+	} else {/*{{{*/
+
            ll=placklike(deppar,ci,ck,Li,Lk,dplack);
 	   ssf+=weights(i)*log(ll); 
 	   loglikecont=log(ll);
+	   diff=dplack(0)/ll; 
 //	printf(" %d %d %d %lf %lf %lf %lf %lf %lf %lf %lf \n",j,ci,ck,thetak,deppar,Li,Lk,weights(i),ll,log(ll),diff); 
-	   if (varlink==1) diff=deppar*dplack(0)/ll; 
-	   if (varlink==0) diff=dplack(0)/ll; 
+	   if (iid==1) { // approx parital derivatives for iid {{{
+		   ll1=placklike(deppar,ci,ck,Li-dddl,Lk,dplackt1);
+		   ll2=placklike(deppar,ci,ck,Li,Lk-dddl,dplackt2);
+		   dplackt1=(dplack(0)-dplackt1(0))/dddl; 
+		   dplackt2=(dplack(0)-dplackt2(0))/dddl; 
+		   dl1=(ll-ll1)/dddl;
+		   dl2=(ll-ll2)/dddl;
+		   dp1.row(i)+=vthetascore.t()*weights(i)*d2*(ll*dplackt1(0)-dl1*dplack(0))/(ll*ll); 
+		   dp2.row(k)+=vthetascore.t()*weights(k)*d2*(ll*dplackt2(0)-dl2*dplack(0))/(ll*ll); 
+	   }/*}}}*/
+	} // }}}
+	   diff=d2*diff;
 	   sdj=pow(diff,2); 
-	} // // }}} 
 	} // }}}
 
         if (depmodel!=3) {
@@ -2767,9 +2895,10 @@ for (j=0;j<antclust;j++) {
 //		vthetascore.print("vvv 2"); 
 	}
 
-     if (iid==1) { for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)+=vthetascore(c1); 
-	           loglikeiid(j)+=loglikecont; 
-		   trunclikeiid(j)+=llt; 
+     if (iid==1) { 
+        for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)+=vthetascore(c1); 
+        loglikeiid(j)+=loglikecont; 
+        trunclikeiid(j)+=llt; 
      }
      } //  strata(i)==strata(k) indenfor strata
 
@@ -2787,7 +2916,8 @@ if (iid==1) { res["theta.iid"]   =thetiid;
 	      res["loglikeiid"]  =loglikeiid; 
               res["likepairs"]   =likepairs; 
               res["trunclikeiid"]=trunclikeiid; 
-	      res["D1lD2l"]  = dp1; 
+	      res["D1thetal"]  = dp1; 
+	      res["D2thetal"]  = dp2; 
             }
 
 return(res); 
@@ -2799,6 +2929,7 @@ return(res);
   return R_NilValue; // -Wall
 
 } // }}}  
+
 
 
 // here consider (V^T Z) hazard(t,X)
