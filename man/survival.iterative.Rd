@@ -8,7 +8,7 @@ survival.iterative(margsurv, data = sys.parent(),
   score.method = "fisher.scoring", Nit = 60, detail = 0,
   clusters = NULL, silent = 1, weights = NULL, control = list(),
   theta = NULL, theta.des = NULL, var.link = 1, iid = 1, step = 0.5,
-  notaylor = 0, model = "clayton.oakes", marginal.trunc = NULL,
+  model = "clayton.oakes", marginal.trunc = NULL,
   marginal.survival = NULL, marginal.status = NULL, strata = NULL,
   se.clusters = NULL, max.clust = NULL, numDeriv = 0,
   random.design = NULL, pairs = NULL, pairs.rvs = NULL,
@@ -44,8 +44,6 @@ survival.iterative(margsurv, data = sys.parent(),
 \item{iid}{Calculate i.i.d. decomposition}
 
 \item{step}{Step size}
-
-\item{notaylor}{Taylor expansion}
 
 \item{model}{model}
 

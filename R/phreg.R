@@ -458,9 +458,9 @@ robust.basehaz.phreg  <- function(x,type="robust",fixbeta=NULL,...) {# {{{
   varA <- c(ssf+ss+2*covv)
 
   if (fixbeta==0) {# {{{
-      MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-Ht)*rr*c(xx$weights)
-      UU <- apply(MGt,2,sumstrata,id,max(id)+1)
-      betaiid <- UU %*% invhess
+     MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-Ht)*rr*c(xx$weights)
+     UU <- apply(MGt,2,sumstrata,id,max(id)+1)
+     betaiid <- UU %*% invhess
      vbeta <- crossprod(betaiid)
      varbetat <-   rowSums((Ht %*% vbeta)*Ht)
      ### writing each beta for all individuals 

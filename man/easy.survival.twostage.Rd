@@ -10,7 +10,7 @@ easy.survival.twostage(margsurv = NULL, data = sys.parent(),
   weights = NULL, control = list(), theta = NULL, theta.formula = NULL,
   desnames = NULL, deshelp = 0, var.link = 1, iid = 1, step = 0.5,
   model = "plackett", marginal.surv = NULL, strata = NULL,
-  max.clust = NULL, se.clusters = NULL)
+  se.clusters = NULL)
 }
 \arguments{
 \item{margsurv}{model}
@@ -56,8 +56,6 @@ easy.survival.twostage(margsurv = NULL, data = sys.parent(),
 \item{marginal.surv}{vector of marginal survival probabilities}
 
 \item{strata}{strata for fitting}
-
-\item{max.clust}{max clusters}
 
 \item{se.clusters}{clusters for iid decomposition for roubst standard errors}
 }

@@ -268,8 +268,8 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     }                                                         
 # }}}
 
-    ratesim<-rate.sim; 
     if (is.null(beta)==TRUE & twostage==0) beta <- coef(margbin) else beta <- 0
+    ## }}}
 
    if (!is.null(random.design)) { ### different parameters for Additive random effects # {{{
      dep.model <- 3
@@ -363,20 +363,8 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     if (is.null(Dbeta.iid)) Dbeta.iid <- matrix(0,length(cause),1); 
     ptrunc <- rep(1,antpers); 
 # }}}
-
-    ## }}}
-
     if (dep.model==3) model <- "clayton.oakes"
 
-###  print(dep.model)
-###  print(summary(case.control))
-###  print(length(case.control))
-###  print(summary(pair.ascertained))
-###  print(length(pair.ascertained))
-###  print(dim(random.design)); print(dim(theta.des)); 
-###  print(dim(additive.gamma.sum))
-###  print(head(pairs.rvs))
-###  print(antpairs)
 
     loglike <- function(par) 
     { ## {{{

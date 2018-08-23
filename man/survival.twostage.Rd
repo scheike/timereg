@@ -13,12 +13,12 @@ survival.twostage(margsurv, data = sys.parent(),
   score.method = "fisher.scoring", Nit = 60, detail = 0,
   clusters = NULL, silent = 1, weights = NULL, control = list(),
   theta = NULL, theta.des = NULL, var.link = 1, iid = 1, step = 0.5,
-  notaylor = 0, model = "clayton.oakes", marginal.trunc = NULL,
+  model = "clayton.oakes", marginal.trunc = NULL,
   marginal.survival = NULL, marginal.status = NULL, strata = NULL,
-  se.clusters = NULL, max.clust = NULL, numDeriv = 0,
-  random.design = NULL, pairs = NULL, pairs.rvs = NULL,
-  numDeriv.method = "simple", additive.gamma.sum = NULL, var.par = 1,
-  cr.models = NULL, case.control = 0, ascertained = 0, shut.up = 0)
+  se.clusters = NULL, numDeriv = 0, random.design = NULL, pairs = NULL,
+  pairs.rvs = NULL, numDeriv.method = "simple", additive.gamma.sum = NULL,
+  var.par = 1, cr.models = NULL, case.control = 0, ascertained = 0,
+  shut.up = 0)
 }
 \arguments{
 \item{margsurv}{Marginal model}
@@ -50,8 +50,6 @@ survival.twostage(margsurv, data = sys.parent(),
 
 \item{step}{Step size}
 
-\item{notaylor}{Taylor expansion}
-
 \item{model}{model}
 
 \item{marginal.trunc}{marginal left truncation probabilities}
@@ -63,8 +61,6 @@ survival.twostage(margsurv, data = sys.parent(),
 \item{strata}{strata for fitting, see example}
 
 \item{se.clusters}{for clusters for se calculation with iid}
-
-\item{max.clust}{max se.clusters for se calculation with iid}
 
 \item{numDeriv}{to get numDeriv version of second derivative, otherwise uses sum of squared score}
 
