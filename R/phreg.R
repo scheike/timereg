@@ -270,7 +270,6 @@ simCox <- function(n=1000, seed=1, beta=c(1,1), entry=TRUE) {
 
 ###}}} simcox
 
-
 ###{{{ phreg
 
 ##' Fast Cox PH regression
@@ -353,7 +352,6 @@ phreg <- function(formula,data,offset=NULL,weights=NULL,...) {
 }
 ###}}} phreg
 
-
 ###{{{ vcov
 
 ##' @export
@@ -379,7 +377,7 @@ coef.phreg  <- function(object,...) {
 ###{{{ iid & Robust variances 
 
 ##' @export
-iid.phreg  <- function(x,type="robust",all=FALSE,...) {# {{{
+iid.phreg  <- function(x,type="robust",all=FALSE,orig.order=FALSE,...) {# {{{
   invhess <- -solve(x$hessian)
   if (type=="robust") {	
 	  xx <- x$cox.prep
@@ -395,12 +393,13 @@ iid.phreg  <- function(x,type="robust",all=FALSE,...) {# {{{
 	  rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
 	  ### Martingale  as a function of time and for all subjects to handle strata 
 	  MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-EdLam0)*rr*c(xx$weights)
-###	  orig.order <- (1:nrow(xx$X))[xx$ord+1]
-###	  ooo <- order(orig.order)
-###	  ### back to order of data-set
-###	  MGt <- MGt[ooo,,drop=FALSE]
-###	  id <- xx$id[ooo]
-	  id <-  xx$id
+	  if (orig.order) {
+	     oo <- (1:nrow(xx$X))[xx$ord+1]
+	     oo <- order(oo)
+	     ### back to order of data-set
+	     MGt <- MGt[oo,,drop=FALSE]
+	     id <- xx$id[oo]
+	  } else id <-  xx$id
   } else  { 
      MGt <- x$U; MG.base <- 1/x$S0; 
   }
@@ -423,58 +422,10 @@ iid.phreg  <- function(x,type="robust",all=FALSE,...) {# {{{
 ##' @export
 robust.basehaz.phreg  <- function(x,type="robust",fixbeta=NULL,...) {# {{{
 
-  ### sets fixbeta based on  wheter xr has been optimized in beta (so cox case)
-  if (is.null(fixbeta)) 
-  if (is.null(x$opt) | is.null(x$coef)) fixbeta<- 1 else fixbeta <- 0
-
-  if (fixbeta==0) 
-  invhess <- -solve(x$hessian)
-  xx <- x$cox.prep
-  S0i2 <- S0i <- rep(0,length(xx$strata))
-  S0i[xx$jumps+1] <-  1/x$S0
-  S0i2[xx$jumps+1] <- 1/x$S0^2
-  if (fixbeta==0) {
-	  Z <- xx$X
-	  U <- E <- matrix(0,nrow(xx$X),x$p)
-	  E[xx$jumps+1,] <- x$E
-	  U[xx$jumps+1,] <- x$U
-	  Ht <- apply(E*S0i,2,cumsumstrata,xx$strata,xx$nstrata)
-  }
-  ###    
-  cumhaz <- cbind(xx$time,cumsumstrata(S0i,xx$strata,xx$nstrata))
-  cumS0i2 <-    cumsumstrata(S0i2,xx$strata,xx$nstrata)
-  if (fixbeta==0) 
-  rr <- c(xx$sign*exp(Z %*% coef(x) + xx$offset))
-  else rr <- c(xx$sign*exp( xx$offset))
-  id <-   xx$id
-  mid <- max(id)+1
-  ### also weights 
-  w <- c(xx$weights)
-  xxx <- w*(S0i-rr*c(cumS0i2))
-
-  ssf <- cumsumidstratasum(xxx,id,mid,xx$strata,xx$nstrata)$sumsquare
-  ss <- c(revcumsumidstratasum(w*rr,id,mid,xx$strata,xx$nstrata)$lagsumsquare)*c(cumS0i2^2)
-  covv <- covfridstrata(xxx,w*rr,id,mid,xx$strata,xx$nstrata)$covs*c(cumS0i2)
-  varA <- c(ssf+ss+2*covv)
-
-  if (fixbeta==0) {# {{{
-     MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-Ht)*rr*c(xx$weights)
-     UU <- apply(MGt,2,sumstrata,id,max(id)+1)
-     betaiid <- UU %*% invhess
-     vbeta <- crossprod(betaiid)
-     varbetat <-   rowSums((Ht %*% vbeta)*Ht)
-     ### writing each beta for all individuals 
-     betakt <- betaiid[id+1,,drop=FALSE]
-     ###
-     covk1 <- apply(xxx*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
-     covk2 <- apply(w*rr*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
-     covk2 <- c(covk2)*c(cumS0i2)
-     ###
-     varA <- varA+varbetat-2*apply((covk1-covk2)*Ht,1,sum)
-  }# }}}
-  varA <- varA[x$jumps]
-
-  strata <- xx$strata[x$jumps]
+  IsdM <- squareintHdM(x,ft=NULL,fixbeta=fixbeta,...)
+  ###
+  varA <-   IsdM$varInt[x$jumps]
+  strata <- x$strata[x$jumps]
   cumhaz <- x$cumhaz
   se.cumhaz <- cbind(cumhaz[,1],varA^.5)
   colnames(se.cumhaz) <- c("time","se.cumhaz")
@@ -494,8 +445,9 @@ robust.phreg  <- function(x,fixbeta=NULL,...) {
  } else robvar <- gamma.iid <- NULL
  baseline <- robust.basehaz.phreg(x,fixbeta=fixbeta,...); 
  ## add arguments so that we can call basehazplot.phreg
- return(c(x,list(gamma.iid=gamma.iid,robvar=robvar,
-		 robse.cumhaz=baseline$se.cumhaz)))
+ res <- c(x,list(gamma.iid=gamma.iid,robvar=robvar,robse.cumhaz=baseline$se.cumhaz))
+ class(res) <- "phreg"
+ return(res)
 }
 
 ###}}}
@@ -559,7 +511,6 @@ res <- .Call("sumstrataR",x,strata,nstrata,PACKAGE="mets")$res
 return(res)
 }# }}}
 
-
 ##' @export
 cumsumstrata <- function(x,strata,nstrata)
 {# {{{
@@ -582,7 +533,6 @@ revcumsum <- function(x)
 res <- .Call("revcumsumR",x,PACKAGE="mets")$res
 return(res)
 }# }}}
-
 
 ##' @export
 revcumsumstratasum <- function(x,strata,nstrata,type="all")
@@ -607,13 +557,19 @@ return(res)
 ##' @export
 matdoubleindex <- function(x,rows,cols)
 {# {{{
-ncols <- ncol(x)
-nrows <- nrow(x)
+if (!is.matrix(x)) stop("x must be matrix")
+ncols <- ncol(x); nrows <- nrow(x)
 if (any(rows>nrows) | any(cols>ncols)) stop("indeces out of matrix \n"); 
+if (any(rows<=0) | any(cols<=0)) stop("indeces out of matrix \n"); 
+if (length(rows)==1) rows <- rep(rows,length(cols))
+if (length(cols)==1) cols <- rep(cols,length(rows))
 if (length(cols)!=length(rows)) stop("rows and cols different lengths\n"); 
 res <- .Call("Matdoubleindex",x,rows-1,cols-1,length(cols))$mat
 return(res)
 }# }}}
+
+##' @export
+mdi <- function(x,...) matdoubleindex(x,...)
 
 ##' @export
 covfr  <- function(x,y,strata,nstrata)
@@ -956,7 +912,7 @@ predictPhreg <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,band=FA
 ##' @param X Design matrix
 ##' @param strata Strata variable
 ##' @param ... ADditional arguments to lower level functions
-##' @aliases predict.phreg revcumsumstrata revcumsumstratasum cumsumstrata sumstrata covfr covfridstrata covfridstrataCov cumsumidstratasum cumsumidstratasumCov cumsumstratasum revcumsum revcumsumidstratasum revcumsumidstratasumCov robust.basehaz.phreg matdoubleindex
+##' @aliases predict.phreg revcumsumstrata revcumsumstratasum cumsumstrata sumstrata covfr covfridstrata covfridstrataCov cumsumidstratasum cumsumidstratasumCov cumsumstratasum revcumsum revcumsumidstratasum revcumsumidstratasumCov robust.basehaz.phreg matdoubleindex mdi
 predict.phreg  <- function(object,data,surv=FALSE,time=object$exit,X=object$X,strata=object$strata,...) {
     if (object$p==0) X <- NULL
     if (!is.null(object$strata)) {

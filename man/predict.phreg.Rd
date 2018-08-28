@@ -17,6 +17,7 @@
 \alias{revcumsumidstratasumCov}
 \alias{robust.basehaz.phreg}
 \alias{matdoubleindex}
+\alias{mdi}
 \title{Predictions from proportional hazards model}
 \usage{
 \method{predict}{phreg}(object, data, surv = FALSE, time = object$exit,

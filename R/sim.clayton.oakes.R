@@ -79,7 +79,7 @@ if (left>0) {
 simClaytonOakesWei <- function(K,n,eta,beta,stoptime,weiscale=1,
 			       weishape=2,left=0,pairleft=0)
 { ## {{{ 
-cat(" not quite \n"); 
+###cat(" not quite \n"); 
 ## K antal clustre, n=antal i clustre
 ### K=10; n=2; eta=1; beta=0.3; stoptime=3; lam=0.5; 
 ### weigamma=2; left=0; pairleft=0

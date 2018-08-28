@@ -910,8 +910,8 @@ recmarg <- function(recurrent,death,km=TRUE,...)
  ### making output such that basehazplot can work also
  out <- list(mu=varrs$mu,time=varrs$time,
 	     St=varrs$St,cumhaz=cbind(varrs$time,varrs$mu),
-             strata=varrs$strata,nstrata=xr$nstrata,jumps=1:nrow(varrs),strata.name=xr$strata.name,
-             strata.level=recurrent$strata.level)
+             strata=varrs$strata,nstrata=xr$nstrata,jumps=1:nrow(varrs),
+	     strata.name=xr$strata.name,strata.level=recurrent$strata.level)
  return(out)
 }# }}}
 
@@ -953,13 +953,13 @@ squareintHdM <- function(phreg,ft=NULL,fixbeta=NULL,...)
   ssf <- cumsumidstratasum(xxx,id,mid,xx$strata,xx$nstrata)$sumsquare
   ss <-  revcumsumidstratasum(w*rr,id,mid,xx$strata,xx$nstrata)$lagsumsquare*cumS0i2^2
   covv <- covfridstrata(xxx,w*rr,id,mid,xx$strata,xx$nstrata)$covs*cumS0i2
-  varA1 <- c(ssf+ss+2*covv)
+  varA1 <- c(ssf+ss-2*covv)
 
   vbeta <- betaiidR <- NULL
   if (fixbeta==0) {# {{{
      invhess <- -solve(x$hessian)
      MGt <- U[,drop=FALSE]-(Z*cumhaz[,2]-EdLam0)*rr*c(xx$weights)
-     UU <- apply(MGt,2,sumstrata,id,max(id)+1)
+     UU <- apply(MGt,2,sumstrata,id,mid)
      betaiidR <- UU %*% invhess
      vbeta <- crossprod(betaiidR)
      varbetat <-   rowSums((Ht %*% vbeta)*Ht)
@@ -1056,7 +1056,7 @@ covIntH1dM1IntH2dM2 <- function(square1,square2,fixbeta=1,mu=NULL)
 
 ##' @export
 tie.breaker <- function(data,stop="time",start="entry",status="status",id=NULL,ddt=NULL,exit.unique=TRUE)
- {# {{{
+{# {{{
 
    if (!is.null(id)) id <- data[,id]
    ord <- 1:nrow(data)
