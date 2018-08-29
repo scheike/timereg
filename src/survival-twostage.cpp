@@ -1918,7 +1918,7 @@ RcppExport SEXP twostageloglike(
 //  double ll=1,Li,Lk,sdj=0,diff=0,loglikecont=0;
 //  double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0; 
   double dl1,dl2,ll1,ll2,ll=1,Li,Lk,sdj=0,diff=0,loglikecont=0;
-  double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0,dddl=0.00001; 
+  double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0,dddl=0.000001; 
   double d2,asign=-1; 
 //  double plack(); 
   int pt=theta.n_rows; 
@@ -2232,7 +2232,7 @@ RcppExport SEXP twostageloglikeRV(
   int ci,ck,i,j,c,s=0,k,v,c1; 
 //  double ll=1,Li,Lk,diff=0,loglikecont=0,sdj=0;
   double dl1,dl2,ll1,ll2,ll=1,Li,Lk,sdj=0,diff=0,loglikecont=0;
-  double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0,dddl=0.00001; 
+  double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0,dddl=0.000001; 
 //  double plack(); 
  
   int pt=theta.n_rows; 
@@ -2630,7 +2630,7 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
 
   int ci,ck,i,j,s=0,k,c1; 
   double dl1,dl2,ll1,ll2,ll=1,Li,Lk,sdj=0,diff=0,loglikecont=0;
-  double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0,dddl=0.00001; 
+  double Lit=1,Lkt=1,llt=1,deppar=1,ssf=0,thetak=0,dddl=0.000001; 
   double d2,asign=-1; if (ascertained==2) asign=1; 
 //  double plack(); 
  

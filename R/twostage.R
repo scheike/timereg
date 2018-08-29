@@ -2297,7 +2297,6 @@ Ft <- ((1/(thetav*R[id]))*exp(thetav*H)-(1/thetav+Ni.tau[id])*(1+thetav*H)*exp(t
   return(val)  
 }# }}}
 
-
 ##' @title Survival model for multivariate survival data 
 ##'
 ##' @description 
