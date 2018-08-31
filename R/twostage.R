@@ -2,7 +2,7 @@
 ##'
 ##' @description 
 ##' Fits Clayton-Oakes or bivariate Plackett models for bivariate survival data 
-##' using marginals that are on Cox or addtive form. The dependence can be 
+##' using marginals that are on Cox form. The dependence can be 
 ##' modelled via 
 ##' \enumerate{
 ##' \item  Regression design on dependence parameter. 
@@ -10,13 +10,13 @@
 ##' }
 ##'
 ##' If clusters contain more than two subjects, we use a composite likelihood
-##' based on the pairwise bivariate models. 
+##' based on the pairwise bivariate models, for MLE see twostageMLE. 
 ##'
 ##' The two-stage model is constructed such that 
 ##' given the gamma distributed random effects it is assumed that the survival functions 
-##' are indpendent, and that the marginal survival functions are on additive form (or Cox form)
+##' are indpendent, and that the marginal survival functions are on Cox form (or additive form)
 ##' \deqn{
-##' P(T > t| x) = S(t|x)= exp( -x^T A(t) )
+##' P(T > t| x) = S(t|x)= exp( -exp(x^T \beta) A_0(t) )
 ##' }
 ##'
 ##' One possibility is to model the variance within clusters via a regression design, and
@@ -100,9 +100,9 @@
 ##' data(diabetes)
 ##' 
 ##' # Marginal Cox model  with treat as covariate
-##' margph <- coxph(Surv(time,status)~treat,data=diabetes)
-##' ### Clayton-Oakes, from timereg
-##' fitco1<-two.stage(margph,data=diabetes,theta=1.0,detail=0,Nit=40,clusters=diabetes$id)
+##' margph <- phreg(Surv(time,status)~treat+cluster(id),data=diabetes)
+##' ### Clayton-Oakes, MLE 
+##' fitco1<-twostageMLE(margph,data=diabetes,theta=1.0)
 ##' summary(fitco1)
 ##' 
 ##' ### Plackett model
@@ -119,7 +119,7 @@
 ##'                  clusters=diabetes$id,var.link=0,model="clayton.oakes")
 ##' summary(fitco3)
 ##'
-##' ### without covariates using Aalen for marginals
+##' ### without covariates but with stratafied 
 ##' marg <- phreg(Surv(time,status)~+strata(treat)+cluster(id),data=diabetes)
 ##' fitpa <- survival.twostage(marg,data=diabetes,theta=1.0,
 ##'                 clusters=diabetes$id,score.method="optimize")
@@ -182,7 +182,7 @@
 ##' 
 ##' ### structured random effects model additive gamma ACE 
 ##' ### simulate structured two-stage additive gamma ACE model
-##' data <- simClaytonOakes.twin.ace(2000,2,1,0,3)
+##' data <- simClaytonOakes.twin.ace(2000,2/9,1/9,0,3)
 ##' out <- twin.polygen.design(data,id="cluster")
 ##' pardes <- out$pardes
 ##' pardes 
@@ -190,7 +190,7 @@
 ##' head(des.rv)
 ##' aa <- phreg(Surv(time,status)~x+cluster(cluster),data=data,robust=0)
 ##' ts <- survival.twostage(aa,data=data,clusters=data$cluster,detail=0,
-##' 	       theta=c(2,1)/10,var.link=0,step=0.5,
+##' 	       theta=c(2,1),var.link=0,step=0.5,
 ##' 	       random.design=des.rv,theta.des=pardes)
 ##' summary(ts)
 ##' 
@@ -218,7 +218,7 @@
 ##' cr.models <- list(Surv(time,status)~+1)
 ##' 
 ##' tscce <- survival.twostage(NULL,data=datacc,clusters=datacc$cluster,
-##'            detail=0,theta=c(2,1)/10,var.link=0,step=1.0,
+##'            detail=0,theta=c(2,1),var.link=0,step=1.0,
 ##'	       pairs=pairs,
 ##'	       random.design=dout$random.design,theta.des=dout$theta.des,
 ##'	       pairs.rvs=dout$ant.rvs,

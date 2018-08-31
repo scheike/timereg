@@ -124,6 +124,7 @@ simClaytonOakes.twin.ace <- function(K,varg,varc,beta,stoptime,Cvar=0,left=0,pai
 {
   ## K antal clustre, n=antal i clustre
   n <- 2 # twins with ace structure
+###  varg <- varg/sum(varg+varc)^2; varc <- varc/sum(varg+varc)^2
   x<-array(c(runif(n*K),rep(0,n*K),rbinom(n*K,1,0.5)),dim=c(K,n,3))
   if (Cvar==0) C<-matrix(stoptime,K,n) else C<-matrix(Cvar*runif(K*n)*stoptime,K,n) 
   ### total variance of gene and env. 
