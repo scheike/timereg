@@ -132,8 +132,8 @@
 ##' head(out$des.rv)
 ##' 
 ##' bints <- binomial.twostage(margbin,data=data,
-##'      clusters=data$cluster,detail=0,var.par=0,
-##'      theta=c(2,1)/9,var.link=0,
+##'      clusters=data$cluster,detail=0,var.par=1,
+##'      theta=c(2,1),var.link=0,
 ##'      random.design=out$des.rv,theta.des=out$pardes)
 ##' summary(bints)
 ##' 
@@ -144,9 +144,8 @@
 ##' margbin <- glm(ybin~x,data=data,family=binomial())
 ##' 
 ##' bintwin <- binomial.twostage(margbin,data=data,
-##'      clusters=data$cluster,detail=1,var.par=0,
-##'      theta=c(2,1),
-##'      random.design=out$des.rv,theta.des=out$pardes)
+##'      clusters=data$cluster,detail=1,var.par=1,
+##'      theta=c(2,1),random.design=out$des.rv,theta.des=out$pardes)
 ##' summary(bintwin)
 ##' concordance.twin.ace(bintwin)
 ##' }
@@ -270,100 +269,126 @@ binomial.twostage <- function(margbin,data=sys.parent(),
 
     if (is.null(beta)==TRUE & twostage==0) beta <- coef(margbin) else beta <- 0
     ## }}}
+  dimbeta <- length(beta); 
 
-   if (!is.null(random.design)) { ### different parameters for Additive random effects # {{{
-     dep.model <- 3
-###     if (is.null(random.design)) random.design <- matrix(1,antpers,1); 
-     dim.rv <- ncol(random.design); 
-     if (is.null(theta.des)) theta.des<-diag(dim.rv);
-###     ptheta <- dimpar <- ncol(theta.des); 
- 
-###   if (dim(theta.des)[2]!=ncol(random.design)) 
-###   stop("nrow(theta.des)!= ncol(random.design),\nspecifies restrictions on paramters, if theta.des not given =diag (free)\n"); 
- } else { random.design <- matrix(0,1,1);  dim.rv <- 1; }
+###
+###   if (!is.null(random.design)) { ### different parameters for Additive random effects # {{{
+###     dep.model <- 3
+######     if (is.null(random.design)) random.design <- matrix(1,antpers,1); 
+###     dim.rv <- ncol(random.design); 
+###     if (is.null(theta.des)) theta.des<-diag(dim.rv);
+######     ptheta <- dimpar <- ncol(theta.des); 
+### 
+######   if (dim(theta.des)[2]!=ncol(random.design)) 
+######   stop("nrow(theta.des)!= ncol(random.design),\nspecifies restrictions on paramters, if theta.des not given =diag (free)\n"); 
+### } else { random.design <- matrix(0,1,1);  dim.rv <- 1; }
+###
+###    if (is.null(theta.des)==TRUE) ptheta<-1; 
+###    if (is.null(theta.des)==TRUE) theta.des<-matrix(1,antpers,ptheta) ###    else theta.des<-as.matrix(theta.des); 
+######    ptheta<-ncol(theta.des); 
+######    if (nrow(theta.des)!=antpers) stop("Theta design does not have correct dim");
+###
+###  if (!is.null(pairs)) { pair.structure <- 1; } else  pair.structure <- 0;  
+###  if (length(dim(theta.des))==3) ptheta<-dim(theta.des)[2] else if (length(dim(theta.des))==2) ptheta<-ncol(theta.des)
+###  if  (nrow(theta.des)!=antpers & dep.model!=3 & pair.structure==0 ) stop("Theta design does not have correct dim");
+###  if  (nrow(theta.des)!=nn      & dep.model!=3 & pair.structure==1 ) stop("Theta design does not have correct dim");
+###
+###   if (length(dim(theta.des))!=3) theta.des <- as.matrix(theta.des)
+######   theta.des <- as.matrix(theta.des)
+###
+###    dimbeta <- length(beta); 
+###    if (is.null(theta)==TRUE) {
+###        if (var.link==1) theta<- rep(-0.7,ptheta);  
+###        if (var.link==0) theta<- rep(exp(-0.7),ptheta);   
+###    }       
+###    if (length(theta)!=ptheta) theta<-rep(theta[1],ptheta); 
+###    theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
+###
+###    if (maxclust==1) stop("No clusters, maxclust size=1\n"); 
+###
+###    antpairs <- 1; ### to define 
+###    if (is.null(additive.gamma.sum)) additive.gamma.sum <- matrix(1,dim.rv,ptheta)
+###
+###
+###  if (pair.structure==1 & dep.model==3) { ## {{{ 
+###### something with dimensions of rv.des 
+###### theta.des
+###       antpairs <- nrow(pairs); 
+###       if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))==3) )
+###       {
+###          Ptheta.des <- array(0,c(nrow(theta.des),ncol(theta.des),antpairs))
+###          for (i in 1:antpairs) Ptheta.des[,,i] <- theta.des
+###       theta.des <- Ptheta.des
+###       }
+###       if ( (length(dim(theta.des))==3)  & (length(dim(random.design))!=3) )
+###       {
+###           rv.des <- array(0,c(2,ncol(random.design),antpairs))
+###           for (i in 1:antpairs) {
+###		   rv.des[1,,i] <- random.design[pairs[i,1],]
+###		   rv.des[2,,i] <- random.design[pairs[i,2],]
+###	   }
+###       random.design <- rv.des
+###       }
+###       if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))!=3) )
+###       {
+###          Ptheta.des <- array(0,c(nrow(theta.des),ncol(theta.des),antpairs))
+###          rv.des <- array(0,c(2,ncol(random.design),antpairs))
+###          for (i in 1:antpairs) {
+###		   rv.des[1,,i] <- random.design[pairs[i,1],]
+###		   rv.des[2,,i] <- random.design[pairs[i,2],]
+###                   Ptheta.des[,,i] <- theta.des
+###	   }
+###       theta.des <- Ptheta.des
+###       random.design <- rv.des
+###       }
+###
+###       if (max(pairs)>antpers) stop("Indices of pairs should refer to given data \n"); 
+###       if (is.null(pairs.rvs)) pairs.rvs <- rep(dim(random.design)[2],antpairs)
+######       if (max(pairs.rvs)> dim(random.design)[3] | max(pairs.rvs)>ncol(theta.des[1,,])) 
+######	       stop("random variables for each cluster higher than  possible, pair.rvs not consistent with random.design or theta.des\n"); 
+###       clusterindex <- pairs-1; 
+###  } ## }}} 
+###
+###    if (pair.structure==1 & dep.model!=3) {
+###        clusterindex <- pairs-1; 
+###        antpairs <- nrow(pairs); 
+###        pairs.rvs <- 1
+###     }
+###
+###    if (pair.structure==1) {
+###	    if (length(case.control)!=antpairs)         case.control <- rep(case.control[1],antpairs)
+###	    if (length(pair.ascertained)!=antpairs) pair.ascertained <- rep(pair.ascertained[1],antpairs)
+###	    if (any(case.control+pair.ascertained==2))  stop("Each pair is either case.control pair or pair.ascertained \n"); 
+###    }
+###
+###    if (is.null(Dbeta.iid)) Dbeta.iid <- matrix(0,length(cause),1); 
+###    ptrunc <- rep(1,antpers); 
+#### }}}
+###
 
-    if (is.null(theta.des)==TRUE) ptheta<-1; 
-    if (is.null(theta.des)==TRUE) theta.des<-matrix(1,antpers,ptheta) ###    else theta.des<-as.matrix(theta.des); 
-###    ptheta<-ncol(theta.des); 
-###    if (nrow(theta.des)!=antpers) stop("Theta design does not have correct dim");
+  ### setting design for random variables, in particular with pairs are given
+  ddd <- randomDes(dep.model,random.design,theta.des,theta,antpers,additive.gamma.sum,pairs,pairs.rvs,var.link,clusterindex)
+  random.design=ddd$random.design;clusterindex=ddd$clusterindex;
+  antpairs=ddd$antpairs; pairs.rvs=ddd$pairs.rvs;
+  theta=ddd$theta;ptheta=ddd$ptheta;theta.des=ddd$theta.des
+  pair.structure=ddd$pair.structure; dep.model=ddd$dep.model
+  dim.rv <- ddd$dim.rv; additive.gamma.sum=ddd$additive.gamma.sum
 
-  if (!is.null(pairs)) { pair.structure <- 1; } else  pair.structure <- 0;  
-  if (length(dim(theta.des))==3) ptheta<-dim(theta.des)[2] else if (length(dim(theta.des))==2) ptheta<-ncol(theta.des)
-  if  (nrow(theta.des)!=antpers & dep.model!=3 & pair.structure==0 ) stop("Theta design does not have correct dim");
-  if  (nrow(theta.des)!=nn      & dep.model!=3 & pair.structure==1 ) stop("Theta design does not have correct dim");
+###  print(dep.model); print(theta); print(head(theta.des)); 
 
-   if (length(dim(theta.des))!=3) theta.des <- as.matrix(theta.des)
-###   theta.des <- as.matrix(theta.des)
+  if (dep.model==3) model <- "clayton.oakes"
 
-    dimbeta <- length(beta); 
-    if (is.null(theta)==TRUE) {
-        if (var.link==1) theta<- rep(-0.7,ptheta);  
-        if (var.link==0) theta<- rep(exp(-0.7),ptheta);   
-    }       
-    if (length(theta)!=ptheta) theta<-rep(theta[1],ptheta); 
-    theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
-
-    if (maxclust==1) stop("No clusters, maxclust size=1\n"); 
-
-    antpairs <- 1; ### to define 
-    if (is.null(additive.gamma.sum)) additive.gamma.sum <- matrix(1,dim.rv,ptheta)
-
-
-  if (pair.structure==1 & dep.model==3) { ## {{{ 
-### something with dimensions of rv.des 
-### theta.des
-       antpairs <- nrow(pairs); 
-       if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))==3) )
-       {
-          Ptheta.des <- array(0,c(nrow(theta.des),ncol(theta.des),antpairs))
-          for (i in 1:antpairs) Ptheta.des[,,i] <- theta.des
-       theta.des <- Ptheta.des
-       }
-       if ( (length(dim(theta.des))==3)  & (length(dim(random.design))!=3) )
-       {
-           rv.des <- array(0,c(2,ncol(random.design),antpairs))
-           for (i in 1:antpairs) {
-		   rv.des[1,,i] <- random.design[pairs[i,1],]
-		   rv.des[2,,i] <- random.design[pairs[i,2],]
-	   }
-       random.design <- rv.des
-       }
-       if ( (length(dim(theta.des))!=3)  & (length(dim(random.design))!=3) )
-       {
-          Ptheta.des <- array(0,c(nrow(theta.des),ncol(theta.des),antpairs))
-          rv.des <- array(0,c(2,ncol(random.design),antpairs))
-          for (i in 1:antpairs) {
-		   rv.des[1,,i] <- random.design[pairs[i,1],]
-		   rv.des[2,,i] <- random.design[pairs[i,2],]
-                   Ptheta.des[,,i] <- theta.des
-	   }
-       theta.des <- Ptheta.des
-       random.design <- rv.des
-       }
-
-       if (max(pairs)>antpers) stop("Indices of pairs should refer to given data \n"); 
-       if (is.null(pairs.rvs)) pairs.rvs <- rep(dim(random.design)[2],antpairs)
-###       if (max(pairs.rvs)> dim(random.design)[3] | max(pairs.rvs)>ncol(theta.des[1,,])) 
-###	       stop("random variables for each cluster higher than  possible, pair.rvs not consistent with random.design or theta.des\n"); 
-       clusterindex <- pairs-1; 
-  } ## }}} 
-
-    if (pair.structure==1 & dep.model!=3) {
-        clusterindex <- pairs-1; 
-        antpairs <- nrow(pairs); 
-        pairs.rvs <- 1
-     }
-
-    if (pair.structure==1) {
-	    if (length(case.control)!=antpairs)         case.control <- rep(case.control[1],antpairs)
-	    if (length(pair.ascertained)!=antpairs) pair.ascertained <- rep(pair.ascertained[1],antpairs)
-	    if (any(case.control+pair.ascertained==2))  stop("Each pair is either case.control pair or pair.ascertained \n"); 
+if (pair.structure==1) {
+    if (length(case.control)!=antpairs)         case.control <- rep(case.control[1],antpairs)
+    if (length(pair.ascertained)!=antpairs) pair.ascertained <- rep(pair.ascertained[1],antpairs)
+    if (any(case.control+pair.ascertained==2))  stop("Each pair is either case.control pair or pair.ascertained \n"); 
     }
 
     if (is.null(Dbeta.iid)) Dbeta.iid <- matrix(0,length(cause),1); 
     ptrunc <- rep(1,antpers); 
-# }}}
-    if (dep.model==3) model <- "clayton.oakes"
+
+    theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
+
 
 
     loglike <- function(par) 
@@ -658,10 +683,10 @@ binomial.twostage <- function(margbin,data=sys.parent(),
     if (dep.model==3 & pair.structure==1) attr(ud, "likepairs") <- c(out$likepairs)
     if (dep.model==3 & pair.structure==0) attr(ud, "pardes") <- theta.des
     if (dep.model==3 & pair.structure==0) attr(ud, "theta.des") <- theta.des
-    if (dep.model==3 & pair.structure==1) attr(ud, "pardes") <-    theta.des[,,1,drop=FALSE]
-    if (dep.model==3 & pair.structure==1) attr(ud, "theta.des") <- theta.des[,,1,drop=FALSE]
+    if (dep.model==3 & pair.structure==1) attr(ud, "pardes") <-    theta.des[,,1]
+    if (dep.model==3 & pair.structure==1) attr(ud, "theta.des") <- theta.des[,,1]
     if (dep.model==3 & pair.structure==0) attr(ud, "rv1") <-    random.design[1,,drop=FALSE]
-    if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <-    random.design[1,,1,drop=FALSE]
+    if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <-    random.design[,,1]
  
     attr(ud, "response") <- "binomial"
     return(ud);
@@ -1173,6 +1198,9 @@ simbinClaytonOakes.family.ace <- function(K,varg,varc,beta=NULL,alpha=NULL)  ## 
   ## K antal clustre (families), n=antal i clustre
 ###  K <- 10000
   n <- 4 # family members with ace structure
+  sumpar <- sum(varg+varc)
+  varg <- varg/sumpar^2; 
+  varc <- varc/sumpar^2
   ## total variance 1/(varg+varc)
   ## {{{  random effects 
   ###  means varg/(varg+varc) and variances varg/(varg+varc)^2
@@ -1188,7 +1216,7 @@ simbinClaytonOakes.family.ace <- function(K,varg,varc,beta=NULL,alpha=NULL)  ## 
   child2 <- apply(cbind(mother.g[,c(1,3)],father.g[,c(1,3)]),1,sum) + env
   Gam1 <- cbind(mother,father,child1,child2)
   ## }}} 
-  apply(Gam1,2,mean); apply(Gam1,2,var); cor(Gam1)
+###  apply(Gam1,2,mean); apply(Gam1,2,var); cor(Gam1)
 
   ## {{{ marginals p's and conditional p's given random effects 
   ### marginals p's for mother, father, children
@@ -1229,6 +1257,9 @@ simbinClaytonOakes.twin.ace <- function(K,varg,varc,beta=NULL,alpha=NULL)  ## {{
 ###  K <- 10000
   n <- 2 # twins with ace structure
   ## total variance 1/(varg+varc)
+  sumpar <- sum(varg+varc)
+  varg <- varg/sumpar^2; 
+  varc <- varc/sumpar^2
   ## {{{  random effects 
   ###  means varg/(varg+varc) and variances varg/(varg+varc)^2
   eta <- varc+varg
@@ -1242,6 +1273,7 @@ simbinClaytonOakes.twin.ace <- function(K,varg,varc,beta=NULL,alpha=NULL)  ## {{
   dz1 <- apply(dz.g[,c(1,2)],1,sum) + env2
   dz2 <- apply(dz.g[,c(1,3)],1,sum) + env2
   Gam1 <- rbind(cbind(mz,mz),cbind(dz1,dz2))
+###  print(apply(Gam1,2,mean)); print(apply(Gam1,2,var))
   ## }}} 
 
   ## {{{ marginals p's and conditional p's given random effects 

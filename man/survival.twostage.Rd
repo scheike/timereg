@@ -7,6 +7,7 @@
 \alias{twostage.cox.aalen}
 \alias{twostage.coxph}
 \alias{twostage.phreg}
+\alias{randomDes}
 \title{Twostage survival model for multivariate survival data}
 \usage{
 survival.twostage(margsurv, data = sys.parent(),
@@ -259,7 +260,7 @@ summary(fitp4)
 
 ### structured random effects model additive gamma ACE 
 ### simulate structured two-stage additive gamma ACE model
-data <- simClaytonOakes.twin.ace(2000,2/9,1/9,0,3)
+data <- simClaytonOakes.twin.ace(2000,2,1,0,3)
 out <- twin.polygen.design(data,id="cluster")
 pardes <- out$pardes
 pardes 

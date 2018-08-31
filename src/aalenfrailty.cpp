@@ -526,7 +526,6 @@ try {
   return R_NilValue; // -Wall
 } // }}}
 
-
 //RcppExport SEXP backfitEaEt(SEXP iYt,SEXP iage0, SEXP iagenull, SEXP iage, 
 //		SEXP itime0, SEXP itime, SEXP iajumps, SEXP itjumps,SEXP ia0)  
 //{ // {{{ 

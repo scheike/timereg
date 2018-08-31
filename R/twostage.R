@@ -182,7 +182,7 @@
 ##' 
 ##' ### structured random effects model additive gamma ACE 
 ##' ### simulate structured two-stage additive gamma ACE model
-##' data <- simClaytonOakes.twin.ace(2000,2/9,1/9,0,3)
+##' data <- simClaytonOakes.twin.ace(2000,2,1,0,3)
 ##' out <- twin.polygen.design(data,id="cluster")
 ##' pardes <- out$pardes
 ##' pardes 
@@ -272,7 +272,7 @@
 ##' or time of control proband.
 ##' @param shut.up to make the program more silent in the context of iterative procedures for case-control
 ##' and ascertained sampling
-##' @aliases survival.twostage survival.twostage.fullse twostage.aalen twostage.cox.aalen twostage.coxph twostage.phreg 
+##' @aliases survival.twostage survival.twostage.fullse twostage.aalen twostage.cox.aalen twostage.coxph twostage.phreg randomDes
 ##' @export survival.twostage
 survival.twostage <- function(margsurv,data=sys.parent(),
     score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
@@ -579,13 +579,10 @@ fix.baseline <- 0; convergence.bp <- 1;  ### to control if baseline profiler con
 	      ptrunc[pairs[,1]]     <- exp(-apply(X*    pba.case,1,sum)*lstatuscase) ## delayed entry at time of ascertainment proband 
  	      ptrunc[pairs[,2]]     <- exp(-apply(Xcase*pba.case,1,sum)*lstatuscase)
 	   }
-###	   print(head(cbind(psurvmarg,ptrunc)))
-###	   print(summary(psurvmarg))
-###	   print(summary(ptrunc))
-###	   print(dim(pbases)); 
 
           } ## }}} 
           }
+
 
           outl<-.Call("twostageloglikeRVpairs", ## {{{
           icause=status,ipmargsurv=psurvmarg, 
@@ -599,7 +596,6 @@ fix.baseline <- 0; convergence.bp <- 1;  ### to control if baseline profiler con
 	  iags=additive.gamma.sum, 
 	  iascertained=ascertained,PACKAGE="mets")
 	  ## }}} 
-
 
           if (fix.baseline==0)  {
               outl$baseline <- cum1; 
@@ -929,7 +925,7 @@ fix.baseline <- 0; convergence.bp <- 1;  ### to control if baseline profiler con
   if (dep.model==3 & pair.structure==0) attr(ud, "theta.des") <- theta.des
   if (dep.model==3 & pair.structure==1) attr(ud, "pardes") <-    theta.des[,,1]
   if (dep.model==3 & pair.structure==1) attr(ud, "theta.des") <- theta.des[,,1]
-  if (dep.model==3 & pair.structure==0) attr(ud, "rv1") <- random.design[1,]
+  if (dep.model==3 & pair.structure==0) attr(ud, "rv1") <- random.design[1,,drop=FALSE]
   if (dep.model==3 & pair.structure==1) attr(ud, "rv1") <- random.design[,,1]
   return(ud);
   ## }}}
@@ -937,6 +933,7 @@ fix.baseline <- 0; convergence.bp <- 1;  ### to control if baseline profiler con
 } ## }}}
 
 
+##' @export
 randomDes <- function(dep.model,random.design,theta.des,theta,antpers,ags,pairs,pairs.rvs,var.link,clusterindex)
 {# {{{
    additive.gamma.sum <- ags
@@ -953,7 +950,7 @@ randomDes <- function(dep.model,random.design,theta.des,theta,antpers,ags,pairs,
   if (is.null(theta.des)) theta.des<-matrix(1,antpers,ptheta); ###  else theta.des<-as.matrix(theta.des); 
 
   if (length(dim(theta.des))==3) ptheta<-dim(theta.des)[2] else if (length(dim(theta.des))==2) ptheta<-ncol(theta.des)
-  if (nrow(theta.des)!=antpers & dep.model!=3 ) stop("Theta design does not have correct dim");
+###  if (nrow(theta.des)!=antpers & dep.model!=3 ) stop("Theta design does not have correct dim");
 
   if (length(dim(theta.des))!=3) theta.des <- as.matrix(theta.des)
 
@@ -3410,7 +3407,8 @@ summary.mets.twostage <- function(object,digits = 3,silent=0,...)
   }
   theta <- object$theta
   if (is.null(rownames(theta)))  rownames(theta) <- paste("dependence",1:nrow(theta),sep="")
-  print(theta)
+
+###  print(theta)
 
   coefs <- coef.mets.twostage(object,response=response,...);
 
@@ -3418,6 +3416,7 @@ summary.mets.twostage <- function(object,digits = 3,silent=0,...)
       var.link <- attr(object,"var.link"); 
       var.par  <- attr(object,"var.par"); 
       rv1      <- attr(object,"rv1"); 
+      if (is.matrix(rv1)) rv1 <- rv1[1,]
       theta.des <- attr(object,"pardes"); 
       ags <- attr(object,"additive.gamma.sum"); 
       ptheta <- attr(object,"ptheta")
@@ -3436,26 +3435,24 @@ summary.mets.twostage <- function(object,digits = 3,silent=0,...)
 ###	 marginal <- coefBase(obj.marginal)
       }
 
-      if (var.par==0) 
-      if (var.link==1) { ## {{{ 
-	     fp <- function(p,d,t){  res <- exp(p*t)/(sum(rv1* c(theta.des %*% matrix(exp(p),ncol=1))))^d; 
-                                     if (t==0) res <- res[1]; return(res); }
-             e      <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,1),labels=rownames(theta))
+      if (var.par==0) { ## {{{ 
+	      if (var.link==1) { 
+		     fp <- function(p,d,t){  res <- exp(p*t)/(sum(rv1* c(theta.des %*% matrix(exp(p),ncol=1))))^d; 
+					     if (t==0) res <- res[1]; return(res); }
              pare <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) exp(p),labels=rownames(theta))
+	      } else {
+		      fp <- function(p,d,t) {  res <- (p^t)/(sum(rv1* c(theta.des %*% matrix(p,ncol=1))))^d;
+					     if (t==0) res <- res[1]; return(res); }
+	      pare <- NULL
+	      }
+
+             e      <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,1),labels=rownames(theta))
              vare <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,2,1),labels=rownames(theta))
              vartot <- lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,0))
-###	     names(e) <- names(vare) <- names(pare) <- colnames(coefs)
-      } else {
-              fp <- function(p,d,t) {  res <- (p^t)/(sum(rv1* c(theta.des %*% matrix(p,ncol=1))))^d;
-                                     if (t==0) res <- res[1]; return(res); }
-              e <-      lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,1),labels=rownames(theta))
-              vare <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,2,1),labels=rownames(theta))
-              vartot <- lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,0))
-	      pare <- NULL
       } ## }}} 
+      if (var.par==1) { ## {{{ 
 
-      if (var.par==1) 
-      if (var.link==1) { ## {{{ 
+	   if (var.link==1) { ## {{{ 
 	     fp <- function(p,d,t){  res <- exp(p*t)/(sum(rv1* c(theta.des %*% matrix(exp(p),ncol=1))))^d; 
                                      if (t==0) res <- res[1]; return(res); }
              e      <-   lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) fp(p,1,1),labels=rownames(theta))
@@ -3470,6 +3467,7 @@ summary.mets.twostage <- function(object,digits = 3,silent=0,...)
               vartot <- lava::estimate(coef=theta,vcov=robvar.theta,f=function(p) sum(p))
 	      vare <- NULL
 ###	      names(e) <- names(pare) <- colnames(coefs)
+	       } ## }}} 
       } ## }}} 
       res <- list(estimates=coefs, type=attr(object,"Type"),h=e,vare=vare,vartot=vartot)
 

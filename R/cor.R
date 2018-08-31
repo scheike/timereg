@@ -205,7 +205,7 @@ dep.cif<-function(cif,data,cause=NULL,model="OR",cif2=NULL,times=NULL,
 ###  if (dep.model==4 & !is.null(cif2) ) dep.model <- 6 ## two cause random cif
 ###  if (dep.model==6) stop("Different causes  under development \n"); 
 
-
+  
   obj <- function(par) 
     { ## {{{
 
@@ -589,6 +589,7 @@ cor.cif<-function(cif,data,cause=NULL,times=NULL,
   fit$call <- match.call()
   fit
 } ## }}}
+
 ##' @export
 rr.cif<-function(cif,data,cause=NULL,cif2=NULL,times=NULL,
                  cause1=1,cause2=1,cens.code=NULL,cens.model="KM",Nit=40,detail=0,

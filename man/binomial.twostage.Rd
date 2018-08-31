@@ -213,8 +213,8 @@ out$pardes
 head(out$des.rv)
 
 bints <- binomial.twostage(margbin,data=data,
-     clusters=data$cluster,detail=0,var.par=0,
-     theta=c(2,1)/9,var.link=0,
+     clusters=data$cluster,detail=0,var.par=1,
+     theta=c(2,1),var.link=0,
      random.design=out$des.rv,theta.des=out$pardes)
 summary(bints)
 
@@ -225,9 +225,8 @@ head(out$des.rv)
 margbin <- glm(ybin~x,data=data,family=binomial())
 
 bintwin <- binomial.twostage(margbin,data=data,
-     clusters=data$cluster,detail=1,var.par=0,
-     theta=c(2,1),
-     random.design=out$des.rv,theta.des=out$pardes)
+     clusters=data$cluster,detail=1,var.par=1,
+     theta=c(2,1),random.design=out$des.rv,theta.des=out$pardes)
 summary(bintwin)
 concordance.twin.ace(bintwin)
 }

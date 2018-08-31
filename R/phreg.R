@@ -829,7 +829,6 @@ cif <- function(formula,data=data,cause=1,cens.code=0,...)
   return(cifo)
 }# }}}
 
-
 ###{{{ predict with se for baseline
 
 predictPhreg <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,band=FALSE,...) {

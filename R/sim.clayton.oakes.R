@@ -4,9 +4,10 @@
 ##' @title Simulate from the Clayton-Oakes frailty model
 ##' @param K Number of clusters
 ##' @param n Number of observations in each cluster
-##' @param eta 1/variance
+##' @param eta variance
 ##' @param beta Effect (log hazard ratio) of covariate
 ##' @param stoptime Stopping time
+##' @param lam constant hazard 
 ##' @param left Left truncation
 ##' @param pairleft pairwise (1) left truncation or individual (0)
 ##' @param trunc.prob Truncation probability 
@@ -14,14 +15,16 @@
 ##' @author Thomas Scheike and Klaus K. Holst
 ##' @aliases simClaytonOakes
 ##' @export
-simClaytonOakes <- function(K,n,eta,beta,stoptime,left=0,pairleft=0,trunc.prob=0.5,same=0)  ## {{{ 
+simClaytonOakes <- function(K,n,eta,beta,stoptime,lam=1,left=0,pairleft=0,trunc.prob=0.5,same=0)  ## {{{ 
 {
   ## K antal clustre, n=antal i clustre
-  ###	K <- 100; n=2; stoptime=2; eta=1/2; beta=0; left=0.5; trunc.prob=0.5; pairleft=0; same=0
+  ###	K <- 100; n=2; stoptime=2; eta=1/2; beta=0; lam=0.5;left=0.5; trunc.prob=0.5; pairleft=0; same=0
+  ### change such that eta is variance 
+  eta <- 1/eta
   x<-array(c(runif(n*K),rep(0,n*K),rbinom(n*K,1,0.5)),dim=c(K,n,3))
   C<-matrix(stoptime,K,n);
   Gam1 <-matrix(rgamma(K,eta)/eta,K,n)
-  temp<-eta*log(-log(1-x[,,1])/(eta*Gam1)+1)*exp(-beta*x[,,3])
+  temp<-eta*log(-log(1-x[,,1])/(eta*Gam1*lam)+1)*exp(-beta*x[,,3])
   x[,,2]<-ifelse(temp<=C,1,0);
   x[,,1]<-pmin(temp,C)
   minstime <- apply(x[,,1],1,min)  
@@ -76,8 +79,7 @@ if (left>0) {
 ##' @param pairleft pairwise (1) left truncation or individual (0)
 ##' @author Klaus K. Holst 
 ##' @export
-simClaytonOakesWei <- function(K,n,eta,beta,stoptime,weiscale=1,
-			       weishape=2,left=0,pairleft=0)
+simClaytonOakesWei <- function(K,n,eta,beta,stoptime,weiscale=1,weishape=2,left=0,pairleft=0)
 { ## {{{ 
 ###cat(" not quite \n"); 
 ## K antal clustre, n=antal i clustre
@@ -124,7 +126,10 @@ simClaytonOakes.twin.ace <- function(K,varg,varc,beta,stoptime,Cvar=0,left=0,pai
 {
   ## K antal clustre, n=antal i clustre
   n <- 2 # twins with ace structure
-###  varg <- varg/sum(varg+varc)^2; varc <- varc/sum(varg+varc)^2
+  #change parametrization 
+  sumpar <- sum(varg+varc)
+  varg <- varg/sumpar^2; 
+  varc <- varc/sumpar^2
   x<-array(c(runif(n*K),rep(0,n*K),rbinom(n*K,1,0.5)),dim=c(K,n,3))
   if (Cvar==0) C<-matrix(stoptime,K,n) else C<-matrix(Cvar*runif(K*n)*stoptime,K,n) 
   ### total variance of gene and env. 
@@ -182,6 +187,9 @@ simClaytonOakes.family.ace <- function(K,varg,varc,beta,stoptime,lam0=0.5,Cvar=0
   n <- 4 # twins with ace structure
   x<- array(c(runif(n*K),rep(0,n*K),rbinom(n*K,1,0.5)),dim=c(K,n,3))
   if (Cvar==0) C<-matrix(stoptime,K,n) else C<-matrix(Cvar*runif(K*n)*stoptime,K,n) 
+  sumpar <- sum(varg+varc)
+  varg <- varg/sumpar^2; 
+  varc <- varc/sumpar^2
   ### total variance of gene and env. 
   ###  random effects with 
   ###  means varg/(varg+varc) and variances varg/(varg+varc)^2
@@ -195,16 +203,8 @@ simClaytonOakes.family.ace <- function(K,varg,varc,beta,stoptime,lam0=0.5,Cvar=0
   father <- apply(father.g,1,sum)+env
   child1 <- apply(cbind(mother.g[,c(1,2)],father.g[,c(1,2)]),1,sum) + env
   child2 <- apply(cbind(mother.g[,c(1,3)],father.g[,c(1,3)]),1,sum) + env
-###  Gams1 <-cbind(
-###       rgamma(K,varg*0.25)/eta, rgamma(K,varg*0.25)/eta, rgamma(K,varg*0.25)/eta, rgamma(K,varg*0.25)/eta,
-###       rgamma(K,varg*0.5)/eta, rgamma(K,varg*0.5)/eta, rgamma(K,varg*0.5)/eta,
-###       rgamma(K,varc)/eta )
-###  mz <- c(rep(1,K/2),rep(0,K/2)); dz <- 1-mz;
-###  mzrv <-  Gams1[,1]+Gams1[,5]           ### shared gene + env 
-###  dzrv1 <- Gams1[,2]+Gams1[,3]+Gams1[,5] ### 0.5 shared gene + 0.5 non-shared + env 
-###  dzrv2 <- Gams1[,2]+Gams1[,4]+Gams1[,5] ### 0.5 shared gene + 0.5 non-shared + env 
-###  Gam1 <- cbind(mz*mzrv+dz*dzrv1,mz*mzrv+dz*dzrv2)
   Gam1 <- cbind(mother,father,child1,child2)
+###  print(apply(Gam1,2,mean)); print(apply(Gam1,2,var))
   temp<-eta*log(-log(1-x[,,1])/(eta*Gam1)+1)*exp(-beta*x[,,3])/lam0
   x[,,2]<-ifelse(temp<=C,1,0);
   x[,,1]<-pmin(temp,C)
@@ -241,6 +241,9 @@ simCompete.twin.ace <- function(K,varg,varc,beta,stoptime,lam0=c(0.2,0.3),
 {
   ## K antal clustre, n=antal i clustre
   n=2 # twins with ace structure
+  sumpar <- sum(varg+varc)
+  varg <- varg/sumpar^2; 
+  varc <- varc/sumpar^2
   ## length(lam0) competing risk with constant hazards lam0
   x<-array(c(runif(n*K),rep(0,n*K),rbinom(n*K,1,0.5)),dim=c(K,n,3))
   if (Cvar==0) C<-matrix(stoptime,K,n) else C<-matrix(Cvar*runif(K*n)*stoptime,K,n) 
@@ -527,7 +530,6 @@ names(ud)<-c("time","status","x","cluster","zyg","mintime","lefttime","truncated
 return(ud)
 } ## }}} 
 
-
 ##' @export
 kendall.ClaytonOakes.twin.ace <- function(parg,parc,K=10000)  ## {{{ 
 { 
@@ -536,6 +538,9 @@ kendall.ClaytonOakes.twin.ace <- function(parg,parc,K=10000)  ## {{{
   ###  K <- 10; varg <- 1; varc <- 1; 
   ###  random effects with 
   ###  means varg/(varg+varc) and variances varg/(varg+varc)^2
+  sumpar <- sum(parg+parc)
+  parg <- parg/sumpar^2; 
+  parc <- parc/sumpar^2
   K <- K*2
   eta <- parc+parg
   Gams1 <-cbind( rgamma(K,parg)/eta, rgamma(K,parg*0.5)/eta, 

@@ -1410,12 +1410,12 @@ double dtj,dsj,dt=0,ds=0,dsdt=0,dsdtj,numdsdtj ;
 vec dthetad3(lpar), dilapthetad3t(lpar), dilapthetad3s(lpar), dthetadtj(lpar), dthetadsj(lpar), dthetad33(lpar), 
     dthetadtdsj(lpar), led3(lpar), led2(lpar), dilapthetad3(lpar); 
 
+msum=part; 
 
 for (i=0;i<nn;i++) 
 {
 // how parameters enters in lamtot 
 //msum=trans(ags.row(1)); 
-msum=part; 
 indtheta0  =msum*x1(i)*(Di1t+Di2t)+ msum*x2(i)*(Di1s+Di2s);
 indtheta0t =msum*x1(i)*(Di13t+Di23t);
 indtheta0s =msum*x2(i)*(Di13s+Di23s);
@@ -1578,6 +1578,8 @@ double claytonoakesbinRVC(vec theta,mat thetades,mat ags,int status1,int status2
 	double ii1 = ilapsf(lamtot1,lamtot1,f1);
 	double ii2 = ilapsf(lamtot1,lamtot1,f2);
 
+        vec part = trans( x1.t() * thetades); 
+
 	vec resv(nn); resv.fill(0); 
 	vec iresv(nn); iresv.fill(0); 
 
@@ -1585,9 +1587,6 @@ double claytonoakesbinRVC(vec theta,mat thetades,mat ags,int status1,int status2
 	int i; 
 	for (i=0;i<nn;i++) 
 	{
-//              lamtot1=sum(trans(ags.row(i)) % theta); 
-//	        ii1 = ilapsf(lamtot1,lamtot1,f1);
-//	        ii2 = ilapsf(lamtot1,lamtot1,f2);
 		iisum = x1(i)*ii1+x2(i)*ii2;
 		resv(i) = lapsf(par(i),lamtot1,iisum);
 		iresv(i) = iisum;
@@ -1681,10 +1680,11 @@ double claytonoakesbinRVC(vec theta,mat thetades,mat ags,int status1,int status2
 
 	//double dsdtj, numdsdtj ;
 
+        msum=part; 
+
 	for (i=0;i<nn;i++) 
 	{
 		mdesi=trans(thetades.row(i)); //mdesi.print("mdesi");
-//                msum=trans(ags.row(i)); 
 		indtheta0  =msum*x1(i)*(Di1t+Di2t)+ msum*x2(i)*(Di1s+Di2s);
 		indtheta0t =msum*x1(i)*(Di13t+Di23t);
 		indtheta0s =msum*x2(i)*(Di13s+Di23s);
@@ -2670,12 +2670,14 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
 colvec likepairs(antclust); 
 
 for (j=0;j<antclust;j++) { 
+//  printf("cci ss %d %d %d %d \n",j,i,k,iid); 
+   i=clusterindex(j,0); k=clusterindex(j,1); 
 
    R_CheckUserInterrupt(); diff=0; sdj=0; 
 
 // index of subject's in pair "j"
    i=clusterindex(j,0); k=clusterindex(j,1); 
-//	  printf("cci 2 %d %d \n",i,k); 
+//	  printf("cci 2 %d %d %d \n",i,k,iid); 
      if (strata(i)==strata(k)) { // 
 
      // basic survival status 
@@ -2773,7 +2775,7 @@ for (j=0;j<antclust;j++) {
 	   etheta.print("e-theta");    ags.print("ags"); 
 	}
 
-           if (trunkp(i)<1 || trunkp(k)<1) { 
+           if (trunkp(i)<1 || trunkp(k)<1) { /*{{{*/
 		   
 		   Lit=trunkp(i); Lkt=trunkp(k); 
 //		   llt=claytonoakesRV(theta,thetades,0,0,Lit,Lkt,rv1,rv2,dplackt);
@@ -2807,7 +2809,7 @@ for (j=0;j<antclust;j++) {
 			   dp1.row(i)+=asign*weights(i)*(ll*dplackt1.t()-dl1*dplackt.t())/(llt*llt); 
 			   dp2.row(k)+=asign*weights(k)*(ll*dplackt2.t()-dl2*dplackt.t())/(llt*llt); 
 		   }/*}}}*/
-//		   vthetascore.print("vtheta-score"); 
+//		   vthetascore.print("vtheta-score"); }}}
 	   } else {
 		   ll=claytonoakesRVC(etheta,thetadesv,ags,ci,ck,Li,Lk,rv1,rv2,dplackt,wwc);
 //		   printf(" %lf %lf %lf %d %d \n",ll,Li,Lk,i,k); 
@@ -2817,6 +2819,7 @@ for (j=0;j<antclust;j++) {
 		   loglikecont=log(ll);
 	           vthetascore=dplackt/ll; 
 		   if (iid==1) { // approx parital derivatives for iid {{{
+//		   printf(" iid ======================\n"); 
 			   ll1=claytonoakesRVC(etheta,thetadesv,ags,ci,ck,Li-dddl,Lk,rv1,rv2,dplackt1,wwc);
 			   ll2=claytonoakesRVC(etheta,thetadesv,ags,ci,ck,Li,Lk-dddl,rv1,rv2,dplackt2,wwc);
 			   dplackt1=(dplackt-dplackt1)/dddl; 
@@ -2825,6 +2828,7 @@ for (j=0;j<antclust;j++) {
 			   dl2=(ll-ll2)/dddl;
 			   dp1.row(i)+=weights(i)*(ll*dplackt1.t()-dl1*dplackt.t())/(ll*ll); 
 			   dp2.row(k)+=weights(k)*(ll*dplackt2.t()-dl2*dplackt.t())/(ll*ll); 
+//		   printf(" ======================\n"); 
 		   }/*}}}*/
 	   } 
 	   // }}} 
@@ -2888,7 +2892,9 @@ for (j=0;j<antclust;j++) {
 	     vthetascore=weights(i)*diff*vthetascore; 
 	     Utheta-=vthetascore; 
 	} else  { // additive gamma structure 
-//		vthetascore.print("vvv"); 
+//             vthetascore.print("vvv"); 
+//	     printf(" er det  her %d %d %d \n",i,j,(int) secluster(i)); 
+//	     printf(" %lf \n",weights(i)); 
 	     DUtheta+=weights(i)*vthetascore*trans(vthetascore);
 	     vthetascore=weights(i)*vthetascore; 
 	     Utheta-=vthetascore; 
@@ -2896,6 +2902,7 @@ for (j=0;j<antclust;j++) {
 	}
 
      if (iid==1) { 
+//	     printf("iid er det  her %d %d %d \n",i,j,(int) secluster(i)); 
         for (c1=0;c1<pt;c1++) thetiid((int) secluster(i),c1)+=vthetascore(c1); 
         loglikeiid(j)+=loglikecont; 
         trunclikeiid(j)+=llt; 
@@ -2904,14 +2911,16 @@ for (j=0;j<antclust;j++) {
 
 if (iid==1)  likepairs(j)=ll; 
 
+//printf("j Sum of squares %d %lf \n",j,ssf); theta.print("theta"); Utheta.print("Utheta"); DUtheta.print("DUtheta"); 
 } /* j in antpairs */ 
 
-//printf("Sum of squares %lf \n",ssf); theta.print("theta"); Utheta.print("Utheta"); DUtheta.print("DUtheta"); 
+//printf("=== Sum of squares %lf \n",ssf); theta.print("theta"); Utheta.print("Utheta"); DUtheta.print("DUtheta"); 
 
 List res; 
 res["loglike"]=ssf; 
 res["score"]=Utheta; 
 res["Dscore"]=DUtheta; 
+
 if (iid==1) { res["theta.iid"]   =thetiid; 
 	      res["loglikeiid"]  =loglikeiid; 
               res["likepairs"]   =likepairs; 

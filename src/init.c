@@ -73,7 +73,7 @@ extern SEXP covrfR(                SEXP,SEXP,SEXP, SEXP);
 extern SEXP covrfstrataR(             SEXP,SEXP,SEXP,SEXP,SEXP, SEXP);
 extern SEXP covrfstrataCovR(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP, SEXP);
 extern SEXP sumstrataR(SEXP,SEXP, SEXP);
-//extern SEXP XBmindex(SEXP,SEXP, SEXP);
+extern SEXP XBmindex(SEXP,SEXP, SEXP);
 //extern SEXP backfitEaEt(SEXP,SEXP, SEXP,SEXP,SEXP, SEXP, SEXP, SEXP,SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
@@ -143,7 +143,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"Uhat",                              (DL_FUNC) &Uhat,                               5},
     {"uniprobit",                         (DL_FUNC) &uniprobit,                          8},
     {"vecMatMat",                         (DL_FUNC) &vecMatMat,                          2},
-//    {"XBmindex",                          (DL_FUNC) &XBmindex,                           3},
+    {"XBmindex",                          (DL_FUNC) &XBmindex,                           3},
     {NULL, NULL, 0}
 };
 

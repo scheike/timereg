@@ -499,8 +499,6 @@ colvec revcumsumstrata(const colvec &a,IntegerVector strata,int nstrata) {/*{{{*
   return(res);
 }// }}}
 
-
-
 colvec revcumsumstrata1(const colvec &a,const  colvec &v1,const  colvec &v2, IntegerVector strata,int nstrata) {
   return(revcumsumstrata(a%v1,strata,nstrata)/v2);
 }
