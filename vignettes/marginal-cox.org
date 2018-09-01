@@ -1,0 +1,51 @@
+#+TITLE: Analysis of clustered survival data using marginal models 
+#+AUTHOR: Klaus Holst & Thomas Scheike
+#+PROPERTY: header-args:R  :session *R* :cache no :width 550 :height 450
+#+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
+#+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
+#+INCLUDE: header.org
+#+OPTIONS: toc:nil timestamp:nil
+
+#+BEGIN_SRC emacs-lisp :results silent :exports results :eval
+(setq org-latex-listings t)
+(setq org-latex-compiler-file-string 
+"%%\\VignetteIndexEntry{Marginal Cox}\n%%\\VignetteEngine{R.rsp::tex}\n%%\\VignetteKeyword{R}\n%%\\VignetteKeyword{package}\n%%\\VignetteKeyword{vignette}\n%%\\VignetteKeyword{LaTeX}\n")
+#+END_SRC
+
+----- 
+# +LaTeX: \clearpage
+
+* Overview 
+
+When looking at multivariate survival data with the aim of learning about the 
+dependence that is present, possibly after correcting for some covariates 
+different approaches are available in the mets package  
+
+
+A basic component for our modelling is that all these models are build around
+marginals that on Cox form. The marginal Cox model can be fitted efficiently
+in the mets package. 
+
+The basic models assumes that each subject has a marginal on Cox-form
+\[ 
+\lambda_0(t) \exp( X_{ki}^T \beta).
+\] 
+
+
+We here discuss the 
+  - robust standard errors of 
+    - regression parameters
+    - baseline 
+  - cumulative residuals score test 
+
+and computational aspects of these computations. 
+
+
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+library(mets)
+
+#+END_SRC
+
+
+ 
