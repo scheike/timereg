@@ -1170,10 +1170,6 @@ BEGIN_RCPP/*{{{*/
   colvec S0 = revcumsumstrata(eXb,strata,nstrata);
   mat E=revcumsumstrataMatCols(X,eXb,S0,strata,nstrata); 
 
-//  for (unsigned j=0; j<p; j++) {
-//    E.col(j) = revcumsumstrata1(X.col(j),eXb,S0,strata,nstrata);
-//  }
-
   E = E.rows(Jumps);
   mat E2(E.n_rows, E.n_cols*E.n_cols); // Calculate E' E at each time-point
   for (unsigned i=0; i<E.n_rows; i++) {
@@ -1182,10 +1178,6 @@ BEGIN_RCPP/*{{{*/
   }
 
   mat XX2=revcumsumstrataMatCols(XX,eXb,S0,strata,nstrata); 
-//  mat XX2 = XX;
-//  for (unsigned j=0; j<XX2.n_cols; j++) { // int S2/S0(s)
-//    XX2.col(j) = revcumsumstrata1(XX2.col(j),eXb,S0,strata,nstrata);
-//  }
 
   mat ZX2 = ZX;
   if (ZX.n_rows==X.n_rows) {

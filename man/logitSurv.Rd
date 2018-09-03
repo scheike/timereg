@@ -2,7 +2,7 @@
 % Please edit documentation in R/phreg.R
 \name{logitSurv}
 \alias{logitSurv}
-\title{Fast Proportional odds model}
+\title{Proportional odds survival model}
 \usage{
 logitSurv(formula, data, offset = NULL, weights = NULL, ...)
 }
@@ -11,25 +11,34 @@ logitSurv(formula, data, offset = NULL, weights = NULL, ...)
 
 \item{data}{data frame}
 
-\item{offset}{offsets for cox model}
+\item{offset}{offsets for exp(x beta) terms}
 
-\item{weights}{weights for Cox score equations}
+\item{weights}{weights for score equations}
 
 \item{...}{Additional arguments to lower level funtions}
 }
 \description{
-Fast Proportional odds model, that has the advantage that 
+Semiparametric Proportional odds model, that has the advantage that 
 \deqn{
-logit(S(t|x)) = \Lambda(t) + x \beta
+logit(S(t|x)) = \log(\Lambda(t)) + x \beta
 }
+so covariate effects give OR of survival.
+}
+\details{
+This is equivalent to using a hazards model 
+\deqn{
+  Z \lambda(t) \exp(x \beta)
+}
+where Z is gamma distributed with mean and variance 1.
 }
 \examples{
 data(TRACE)
 dcut(TRACE) <- ~.
 out1 <- logitSurv(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
 summary(out1)
-
+gof(out1)
 bplot(out1)
+
 }
 \author{
 Klaus K. Holst, Thomas Scheike

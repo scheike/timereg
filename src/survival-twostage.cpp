@@ -975,7 +975,9 @@ double survivalRVCmarg(vec theta,mat thetades,mat ags,int cause1,vec cif1,mat x1
 
 int nn=thetades.n_rows; 
 int lpar=thetades.n_cols; 
-vec sumtheta=ags * theta; 
+//vec sumtheta=ags * theta; 
+
+lamtot1=  sum(x1.row(0) % par); // lamtot same within cluster 
 
 vec resv(nn); // resv.fill(0); 
 
@@ -999,9 +1001,11 @@ dtheta.fill(0); dtt.fill(0);  // dtdt.fill(0);
 double like=1,iisum; 
 int i; 
 
+msum=trans( x1.t() * thetades); 
+
 for (i=0;i<nn;i++) 
 { // {{{ 
-lamtot1= sumtheta(i); 
+//lamtot1= sumtheta(i); 
 iisum = x1f1(i);
 resv(i) = lapsf(par(i),lamtot1,iisum);
 like=like*resv(i); 
@@ -1025,7 +1029,8 @@ res0    = Dlapsf( par(i),lamtot1,iisum);
 //Dcif.fill(0); D2Dtcif1.fill(0); ddcif2.fill(0); 
 
 mdesi=trans(thetades.row(i)); //mdesi.print("mdesi");
-msum=trans(ags.row(i)); 
+//msum=trans(ags.row(i)); 
+
 dtj = D3(i)*x1(icause1-1,i);
 dt  = dt+dtj/resv(i);
 

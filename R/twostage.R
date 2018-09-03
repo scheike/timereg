@@ -349,50 +349,13 @@ fix.baseline <- 0; convergence.bp <- 1;  ### to control if baseline profiler con
   dim.rv <- ddd$dim.rv; additive.gamma.sum=ddd$additive.gamma.sum
 
   theta.score<-rep(0,ptheta);Stheta<-var.theta<-matrix(0,ptheta,ptheta); 
+  ## }}}
 
 ###  setting up arguments for Aalen baseline profile estimates
  if (fix.baseline==0)  { ## {{{  when baseline is estimated 
  if (is.null(cr.models)) stop("give hazard models for different causes, ex cr.models=list(Surv(time,status==1)~+1,Surv(time,status==2)~+1) \n")
 
       if (case.control==0 & ascertained==0) { ## {{{ 
-## {{{ setting up random effects and covariates for marginal modelling
-        timestatus <- all.vars(cr.models[[1]])
-	times <- data[,timestatus[1]]
-	if (is.null(status)) status <- data[,timestatus[2]]
-	lstatus <- data[,timestatus[2]]
-	### organize increments according to overall jump-times 
-	jumps <- lstatus!=0
-	dtimes <- times[jumps]
-	st <- order(dtimes)
-	dtimesst <- dtimes[st]
-	dcauses <- lstatus[jumps][st]
-	ids <- (1:nrow(data))[jumps][st]
-
-        nc <- 0
-	for (i in 1:length(cr.models)) {
-              a2 <- aalen.des(as.formula(cr.models[[i]]),data=data)
-	      X <- a2$X
-	      nc <- nc+ncol(X)
-	}
-	dBaalen <- matrix(0,length(dtimes),nc)
-	xjump <- array(0,c(length(cr.models),nc,length(ids)))
-
-	## first compute marginal aalen models for all causes
-	a <- list(); da <- list(); 
-	for (i in 1:length(cr.models)) {
-	      a[[i]] <-  aalen(as.formula(cr.models[[i]]),data=data,robust=0,weights=weights)
-              a2 <- aalen.des(as.formula(cr.models[[i]]),data=data)
-	      X <- a2$X
-	      da[[i]] <- apply(a[[i]]$cum[,-1,drop=FALSE],2,diff)
-	      jumpsi <- (1:length(dtimes))[dcauses==i]
-	      if (i==1) fp <- 1 
-	      indexc <- fp:(fp+ncol(X)-1)
-	      dBaalen[jumpsi,indexc] <- da[[i]]
-              xjump[i,indexc,] <- t(X[ids,])
-	      fp <- ncol(X)+1
-        }
-
-	## }}} 
 
        	#### organize subject specific random variables and design
         ###  for additive gamma model
