@@ -457,6 +457,9 @@ robust.phreg  <- function(x,fixbeta=NULL,...) {
 ##' @export
 summary.phreg <- function(object,type=c("robust","martingale"),...) {
   cc <- ncluster <- V <- NULL
+
+  if (!is.null(object$propodds)) cat("Proportional odds model, log-OR regression \n"); 
+
   if (length(object$p)>0 & object$p>0 & !is.null(object$opt)) {
     I <- -solve(object$hessian)
     V <- vcov(object,type=type[1])
@@ -828,6 +831,33 @@ cif <- function(formula,data=data,cause=1,cens.code=0,...)
   class(cifo) <- c("cif","phreg")
   return(cifo)
 }# }}}
+
+##' Fast Proportional odds model
+##'
+##' Fast Proportional odds model, that has the advantage that 
+##' \deqn{
+##' logit(S(t|x)) = \Lambda(t) + x \beta
+##' }
+##' @param formula formula with 'Surv' outcome (see \code{coxph})
+##' @param data data frame
+##' @param offset offsets for cox model
+##' @param weights weights for Cox score equations
+##' @param ... Additional arguments to lower level funtions
+##' @author Klaus K. Holst, Thomas Scheike
+##' @examples
+##' data(TRACE)
+##' dcut(TRACE) <- ~.
+##' out1 <- logitSurv(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
+##' summary(out1)
+##' 
+##' bplot(out1)
+##' @export
+logitSurv <- function(formula,data,offset=NULL,weights=NULL,...)
+{# {{{
+   out <- phreg(formula,data,offset=offset,weights=weights,propodds=TRUE,...)
+   return(out)
+}# }}}
+
 
 ###{{{ predict with se for baseline
 

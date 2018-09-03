@@ -1,12 +1,12 @@
 # -*- mode: org -*-
 #
 * Version 1.2.5 <2018-05-18 Wed>
+  - logitSurv for fitting proportional odds model 
   - twostageMLE for fast twostage fitting for clustered survival data
     with robust standard errors. 
   - standard errors for twostage models now also with uncertainty from Cox 
     baseline
   - cumulative score process test gof now also for marginal Cox models 
-
 
 * Version 1.2.4 <2018-05-18 Wed>
   - functions km (Kaplan-Meier) and cif (cumulative incidence
