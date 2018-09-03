@@ -458,7 +458,9 @@ robust.phreg  <- function(x,fixbeta=NULL,...) {
 summary.phreg <- function(object,type=c("robust","martingale"),...) {
   cc <- ncluster <- V <- NULL
 
-  if (!is.null(object$propodds)) cat("Proportional odds model, log-OR regression \n"); 
+  if (!is.null(object$propodds)) { 
+       cat("Proportional odds model, log-OR regression \n"); 
+     }
 
   if (length(object$p)>0 & object$p>0 & !is.null(object$opt)) {
     I <- -solve(object$hessian)
@@ -832,16 +834,24 @@ cif <- function(formula,data=data,cause=1,cens.code=0,...)
   return(cifo)
 }# }}}
 
-##' Fast Proportional odds model
+##' Proportional odds survival model
 ##'
-##' Fast Proportional odds model, that has the advantage that 
+##' Semiparametric Proportional odds model, that has the advantage that 
 ##' \deqn{
-##' logit(S(t|x)) = \Lambda(t) + x \beta
+##' logit(S(t|x)) = \log(\Lambda(t)) + x \beta
 ##' }
+##' so covariate effects give OR of survival. 
+##'
+##' This is equivalent to using a hazards model 
+##' \deqn{
+##'   Z \lambda(t) \exp(x \beta)
+##' }
+##' where Z is gamma distributed with mean and variance 1.
+##'
 ##' @param formula formula with 'Surv' outcome (see \code{coxph})
 ##' @param data data frame
-##' @param offset offsets for cox model
-##' @param weights weights for Cox score equations
+##' @param offset offsets for exp(x beta) terms 
+##' @param weights weights for score equations
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Klaus K. Holst, Thomas Scheike
 ##' @examples
@@ -849,12 +859,13 @@ cif <- function(formula,data=data,cause=1,cens.code=0,...)
 ##' dcut(TRACE) <- ~.
 ##' out1 <- logitSurv(Surv(time,status==9)~vf+chf+strata(wmicat.4),data=TRACE)
 ##' summary(out1)
-##' 
+##' gof(out1)
 ##' bplot(out1)
+##' 
 ##' @export
 logitSurv <- function(formula,data,offset=NULL,weights=NULL,...)
 {# {{{
-   out <- phreg(formula,data,offset=offset,weights=weights,propodds=TRUE,...)
+   out <- phreg(formula,data,offset=offset,weights=weights,propodds=1,...)
    return(out)
 }# }}}
 

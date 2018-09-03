@@ -378,6 +378,30 @@ colvec  cumsumstrataPO(colvec a,IntegerVector strata,int nstrata,double propodds
   return(pow);
 } /*}}}*/
 
+
+mat DLambeta(colvec weights,colvec S0,mat E,mat Xi,IntegerVector strata,int nstrata,double propodds,colvec exb) {/*{{{*/
+  unsigned n = S0.n_rows;
+  unsigned p = E.n_cols;
+  colvec tmpsum(nstrata); tmpsum.zeros(); 
+  mat dLbetatminus(nstrata,p); dLbetatminus.zeros(); 
+  colvec res = S0; 
+  colvec pow = S0; 
+  mat dLbeta(n,p); dLbeta.zeros(); 
+
+  for (unsigned i=0; i<n; i++) {
+    int ss=strata(i); 
+//    if (propodds>0)  
+    pow(i)=(1+propodds*exb(i)*tmpsum(ss)); 
+    dLbeta.row(i) = dLbetatminus.row(ss)+weights(i)*
+   ( (dLbetatminus.row(ss)*exb(i)+Xi.row(i)*(pow(i)-1))/S0(i)-E.row(i)*pow(i)/S0(i));
+    tmpsum(ss) += weights(i)*pow(i)/S0(i); 
+    res(i) = tmpsum(ss);
+    dLbetatminus.row(ss) = dLbeta.row(i); 
+  }  
+
+  return(dLbeta);
+} /*}}}*/
+
 colvec  cumsumstrataAddGam(colvec a,IntegerVector strata,int nstrata,
 		colvec exb,colvec etheta,cube thetades,cube rv,mat ags,
 		uvec Jumps) {/*{{{*/
@@ -1171,15 +1195,15 @@ BEGIN_RCPP/*{{{*/
   XX2 = XX2.rows(Jumps);
   colvec weightsJ=weights.elem(Jumps);  
   S0 = S0.elem(Jumps);
-
-
   IntegerVector strataJ = seq_len(Jumps.n_rows);  
   for (unsigned i=0; i<Jumps.n_rows; i++) {
 	  strataJ(i)=strata(Jumps(i)); 
-//	  printf("%d %d %d \n",Jumps.n_rows,strataJ(i),Jumps(i)); 
+//  printf("%d %d %d \n",Jumps.n_rows,strataJ(i),Jumps(i)); 
   }
-//  strataJ.print("kan man"); 
-  colvec pow=cumsumstrataPO(S0,strataJ,nstrata,propodds,eXb.elem(Jumps)); 
+
+  colvec pow=cumsumstrataPO(S0/weightsJ,strataJ,nstrata,propodds,eXb.elem(Jumps)); 
+  mat DLam =DLambeta(weightsJ,S0,E,X.rows(Jumps),strataJ,nstrata,propodds,eXb.elem(Jumps)); 
+//  DLam.print(" er den der"); 
 
   mat grad = (X.rows(Jumps)-E);        // Score
   vec val =  (Xb.elem(Jumps)-log(S0)); // Partial log-likelihood
@@ -1188,8 +1212,19 @@ BEGIN_RCPP/*{{{*/
   mat grad2  = vecmatrow(pow%weightsJ,grad); // score  with weights
   vec val2   = pow%weightsJ%val;             // Partial log-likelihood with weights
 
+  // derivative adjustment for PO model 
+  mat gradAdjt(Jumps.n_rows,p*p); 
+  vec eXBj= eXb.elem(Jumps); 
+  mat XI= X.rows(Jumps); 
+  for (unsigned i=0; i<Jumps.n_rows; i++) {
+    rowvec Xi = grad.row(i);
+    gradAdjt.row(i)= vectorise((DLam.row(i)*eXBj(i)+(pow(i)-1)*XI.row(i)).t()*Xi,1); 
+  }
+
   mat hesst = -(XX2-E2);               // hessian contributions in jump times 
-  mat hess  = reshape(sum(hesst),p,p);
+  hesst = vecmatrow(pow,hesst); 
+  hesst = hesst+ gradAdjt; 
+//  mat hess  = reshape(sum(hesst),p,p);
   if (ZX.n_rows==X.n_rows) {
      ZX2 = ZX2.rows(Jumps);
   }
@@ -1197,12 +1232,6 @@ BEGIN_RCPP/*{{{*/
 //  mat hesst2 = vecmatrow(pow%weightsJ,hesst); // hessian over time with weights 
   mat hesst2 = vecmatrow(weightsJ,hesst); // hessian over time with weights 
   mat hess2 = reshape(sum(hesst2),p,p);  // hessian with weights 
-
-//  if (hess.has_nan()) {
-//	printf("============================ \n"); 
-//	S0.print("S0"); exb.print("exb"); grad.print("grad"); e.print("e"); xx2.print("xx"); X.print("X"); 
-//	printf("============================ \n"); 
-//	}
 
   return(Rcpp::List::create(Rcpp::Named("jumps")=Jumps,
 			    Rcpp::Named("ploglik")=sum(val2),
@@ -1214,7 +1243,9 @@ BEGIN_RCPP/*{{{*/
 			    Rcpp::Named("E")=E,
 			    Rcpp::Named("S0")=S02,
 			    Rcpp::Named("ZXeXb")=ZX2,
-			    Rcpp::Named("weights")=weightsJ
+			    Rcpp::Named("weights")=weightsJ,
+			    Rcpp::Named("propoddsW")=pow,
+			    Rcpp::Named("DLam")=DLam 
 			    ));
 END_RCPP
   }/*}}}*/
