@@ -1,7 +1,9 @@
-# -*- mode: org -*-
+#-*- mode: org -*-
 #
 * Version 1.2.5 <2018-05-18 Wed>
-  - logitSurv for fitting proportional odds model 
+  - logitSurv for fitting semiparametric proportional odds model 
+    - gof 
+    - robust standard errors for clustered case 
   - twostageMLE for fast twostage fitting for clustered survival data
     with robust standard errors. 
   - standard errors for twostage models now also with uncertainty from Cox 
