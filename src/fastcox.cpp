@@ -359,18 +359,18 @@ colvec  cumsumstrata(colvec a,IntegerVector strata,int nstrata) {/*{{{*/
   return(res);
 } /*}}}*/
 
-colvec  cumsumstrataPO(colvec a,IntegerVector strata,int nstrata,double propodds,colvec exb) {/*{{{*/
-  unsigned n = a.n_rows;
+colvec  cumsumstrataPO(colvec w,colvec S0,IntegerVector strata,int nstrata,double propodds,colvec exb) {/*{{{*/
+  unsigned n = S0.n_rows;
   colvec tmpsum(nstrata); 
   tmpsum.zeros(); 
-  colvec res = a; 
-  colvec pow = a; 
+  colvec res = S0; 
+  colvec pow = S0; 
 
   for (unsigned i=0; i<n; i++) {
     int ss=strata(i); 
     if ((ss<nstrata) & (ss>=0))  {
     if (propodds>0)  pow(i)=(1+propodds*exb(i)*tmpsum(ss)); 
-    tmpsum(ss) += pow(i)/a(i); 
+    tmpsum(ss) += pow(i)*w(i)/S0(i); 
     res(i) = tmpsum(ss);
     }
   }  
@@ -1162,6 +1162,7 @@ BEGIN_RCPP/*{{{*/
   colvec offsets = Rcpp::as<colvec>(offsetsSEXP);
 
   colvec Xb = X*beta+offsets;
+  colvec eXbnow = exp(Xb);
   colvec eXb = exp(Xb)%weights;
   if (Sign.n_rows==eXb.n_rows) { // Truncation
     eXb = Sign%eXb;
@@ -1193,8 +1194,8 @@ BEGIN_RCPP/*{{{*/
 //  printf("%d %d %d \n",Jumps.n_rows,strataJ(i),Jumps(i)); 
   }
 
-  colvec pow=cumsumstrataPO(S0/weightsJ,strataJ,nstrata,propodds,eXb.elem(Jumps)); 
-  mat DLam =DLambeta(weightsJ,S0,E,X.rows(Jumps),strataJ,nstrata,propodds,eXb.elem(Jumps)); 
+  colvec pow=cumsumstrataPO(weightsJ,S0,strataJ,nstrata,propodds,eXbnow.elem(Jumps)); 
+  mat DLam =DLambeta(weightsJ,S0,E,X.rows(Jumps),strataJ,nstrata,propodds,eXbnow.elem(Jumps)); 
 //  DLam.print(" er den der"); 
 
   mat grad = (X.rows(Jumps)-E);        // Score
@@ -1206,7 +1207,7 @@ BEGIN_RCPP/*{{{*/
 
   // derivative adjustment for PO model 
   mat gradAdjt(Jumps.n_rows,p*p); 
-  vec eXBj= eXb.elem(Jumps); 
+  vec eXBj= eXbnow.elem(Jumps); 
   mat XI= X.rows(Jumps); 
   for (unsigned i=0; i<Jumps.n_rows; i++) {
     rowvec Xi = grad.row(i);
