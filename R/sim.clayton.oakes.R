@@ -137,15 +137,14 @@ simClaytonOakes.twin.ace <- function(K,varg,varc,beta,stoptime,Cvar=0,left=0,pai
   ###  means varg/(varg+varc) and variances varg/(varg+varc)^2
   etao <- eta <- varc+varg
   if (etao==0) eta <- 1
-  Gams1 <-cbind(
-       rgamma(K,varg)/eta,
-       rgamma(K,varg*0.5)/eta, rgamma(K,varg*0.5)/eta, rgamma(K,varg*0.5)/eta,
-       rgamma(K,varc)/eta )
+  Gams1 <-cbind( rgamma(K,varg)/eta, rgamma(K,varg*0.5)/eta, rgamma(K,varg*0.5)/eta, rgamma(K,varg*0.5)/eta, rgamma(K,varc)/eta )
+###  print(apply(Gams1,2,mean)); print(apply(Gams1,2,var))
   mz <- c(rep(1,K/2),rep(0,K/2)); dz <- 1-mz;
   mzrv <-  Gams1[,1]+Gams1[,5]           ### shared gene + env 
   dzrv1 <- Gams1[,2]+Gams1[,3]+Gams1[,5] ### 0.5 shared gene + 0.5 non-shared + env 
   dzrv2 <- Gams1[,2]+Gams1[,4]+Gams1[,5] ### 0.5 shared gene + 0.5 non-shared + env 
   Gam1 <- cbind(mz*mzrv+dz*dzrv1,mz*mzrv+dz*dzrv2)
+###  print(apply(Gam1,2,mean)); print(apply(Gam1,2,var))
   Gam1[Gam1==0] <- 1 ## to work also under independence 
 ###  print(mean(mzrv)); print(mean(dzrv1)); print(mean(dzrv2)); 
 ###  print(var(mzrv));  print(var(dzrv1));  print(var(dzrv2)); 
@@ -234,6 +233,7 @@ if (left>0) { ## {{{
 names(ud)<-c("time","status","x","cluster","type","mintime","lefttime","truncated")
 return(ud)
 } ## }}} 
+
 
 ##' @export
 simCompete.twin.ace <- function(K,varg,varc,beta,stoptime,lam0=c(0.2,0.3),

@@ -1,4 +1,4 @@
-#+TITLE: Analysis of clustered survival data using marginal models 
+#+TITLE: Marginal modelling of clustered survival data 
 #+AUTHOR: Klaus Holst & Thomas Scheike
 #+PROPERTY: header-args:R  :session *R* :cache no :width 550 :height 450
 #+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
@@ -17,19 +17,15 @@
 
 * Overview 
 
-When looking at multivariate survival data with the aim of learning about the 
-dependence that is present, possibly after correcting for some covariates 
-different approaches are available in the mets package  
-
-
 A basic component for our modelling is that all these models are build around
 marginals that on Cox form. The marginal Cox model can be fitted efficiently
 in the mets package. 
 
 The basic models assumes that each subject has a marginal on Cox-form
 \[ 
-\lambda_0(t) \exp( X_{ki}^T \beta).
+\lambda_{s(k,i)}0(t) \exp( X_{ki}^T \beta).
 \] 
+where \( s(k,i) \) gives the strata for the subject. 
 
 
 We here discuss the 
@@ -38,14 +34,201 @@ We here discuss the
     - baseline 
   - cumulative residuals score test 
 
-and computational aspects of these computations. 
 
-
-
+First we generate some data from the Clayton-Oakes model, with \( 5 \) members
+in each cluster and a variance parameter at \( 2 \) 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 library(mets)
-
+ n <- 1000
+ k <- 5
+ theta <- 2
+ data <- simClaytonOakes(n,k,theta,0.3,3)
+ head(data)
 #+END_SRC
 
+#+RESULTS[<2018-09-10 14:18:32> e57449b569f9ce4837f0ba822c48463182fa33ac]:
+#+begin_example
+Loading required package: timereg
+Loading required package: survival
+Loading required package: lava
+lava version 1.6.3
+mets version 1.2.4
 
+Attaching package: ‘mets’
+
+The following object is masked _by_ ‘.GlobalEnv’:
+
+    object.defined
+       time status x cluster   mintime lefttime truncated
+1 1.6988903      1 0       1 0.7568612        0         0
+2 1.4915873      1 0       1 0.7568612        0         0
+3 0.8691975      1 1       1 0.7568612        0         0
+4 0.7568612      1 1       1 0.7568612        0         0
+5 0.8707570      1 0       1 0.7568612        0         0
+6 0.6826326      1 0       2 0.1791969        0         0
+#+end_example
+
+Now fitting the and producing robust standard errors for both 
+regression parameters and baseline.
+
+Note that 
+\begin{align}
+\hat A_s(t) - A_s(t)  & = \sum_k \sum_i \int_0^t 1/S_{s} dM_{ki}^s  - P^s(t) \beta_k 
+\end{align}
+and 
+\begin{align}
+\hat \beta  - \beta  & = \sum_k \sum_i \int_0^\tau (Z_{ik} - E_{s}) dM_{ik}^s
+\end{align}
+with 
+\begin{align}
+ M_{ki}(t) &  = N_{ki}(t) - \int_0^t Y_{ki}(s) \exp( Z_{ki} \beta) d \Lambda_{s(ki)}(t)
+\end{align}
+the basic 0-mean processes, that are martingales in the iid setting. 
+       
+
+The variance of baseline in strata s  clusters i with members k
+\begin{align}
+\sum_{k} ( \sum_i \int_0^t 1/S_{0s(ki)} d\hat M_{ki}^s )^2
+\end{align}
+similar to the above using the particular structure 
+\begin{align}
+d \hat M_{ik}(t) & =  dN_{ik}(t) -  1/S_{0s(i,k)} \exp(Z_{ik} beta) dN_{s.}(t) 
+\end{align}
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+   out <- phreg(Surv(time,status)~x+cluster(cluster),data=data)
+   summary(out)
+   ## robust standard errors attached to output
+   rob <- robust.phreg(out)
+     
+   ## making iid decomposition of regression parameters
+   betaiid <- iid(out)
+   head(betaiid)
+   ## robust standard errors
+   crossprod(betaiid)^.5
+   ### same as 
+#+END_SRC
+
+#+RESULTS[<2018-09-10 14:32:08> 68b9dea2171106e9be0a3b396f0061f6e3d50238]:
+: Error: could not find function "phreg"
+: Error in summary(out) : object 'out' not found
+: Error: could not find function "robust.phreg"
+: Error: could not find function "iid"
+: Error in head(betaiid) : object 'betaiid' not found
+: Error in crossprod(betaiid) : object 'betaiid' not found
+
+Looking at the plot  with robust standard errors 
+
+#+NAME: robcox1
+#+BEGIN_SRC R :exports both :results output graphics :file robcox1.jpg :ravel fig=TRUE,include=FALSE 
+  bplot(rob,se=TRUE,robust=TRUE)
+#+END_SRC
+
+#+RESULTS: robcox1
+[[file:robcox1.jpg]]
+
+#+BEGIN_marginfigure
+# +CAPTION: Robust standard errors for Cox model label:fig:robcox1
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: rob1
+[[file:robcox1.jpg]]
+
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<robcox1>>
+#+END_SRC
+
+#+RESULTS:
+: Error: unexpected input in "<<"
+
+
+#+LATEX: \captionof{figure}{Scatter plot of logarithmic BMI measurements in MZ twins.}
+label:fig:robcox1
+#+END_marginfigure
+
+Just to check that we can recover the model we also estimate the dependence parameter 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+tt <- twostageMLE(out,data=data)
+summary(tt)
+#+END_SRC
+
+#+RESULTS[<2018-09-10 14:18:33> cdb331054808b11985b02b84f953da8bfc6afbd9]:
+#+begin_example
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+               Coef.        SE        z P-val Kendall tau         SE
+dependence1 2.374835 0.1083253 21.92319     0   0.5428399 0.01131974
+
+$type
+NULL
+
+attr(,"class")
+[1] "summary.mets.twostage"
+#+end_example
+
+
+*** Goodness of fit 
  
+
+The observed score process is given by 
+\begin{align}
+U(t,\hat \beta) & = \sum_i \sum_k g_i \int_0^t (Z_{ik} - \hat E_s ) d \hat M_{ik}^s 
+\end{align}
+where $s$ is strata, this has as iid decomposition as 
+\begin{align}
+\hat U(t) = \sum_i \sum_k  \int_0^t (Z_{ik} - E_s) dM_{ik}^s  - \sum_i  I_t \beta_i 
+\end{align}
+where $\beta_i$ is the iid decomposition of the score process for true 
+$ \beta $
+\begin{align}
+\beta_i  & =  \sum_k g_i \int_0^t (Z_{ik} - E_s ) d  M_{ik}^s 
+\end{align}
+and $I_i$ is the derivative of the total score with respect to $\beta$. 
+
+This observed score can be resampled given it is on iid form. 
+
+
+Now using the cumulative score process for checking proportional 
+hazards 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+gout <- gof(out)
+gout
+#+END_SRC
+
+#+RESULTS[<2018-09-10 14:32:08> 8bde76b6fea8c56142541f6eeb247699c5236c44]:
+: Error: could not find function "gof"
+: Error: object 'gout' not found
+
+
+The p-value reflects wheter the observed score process is consistent with
+the model. 
+
+#+NAME: robgofcox1
+#+BEGIN_SRC R :exports both :results output graphics :file robgofcox1.jpg :ravel fig=TRUE,include=FALSE 
+  plot(gout)
+#+END_SRC
+
+#+RESULTS: robgofcox1
+[[file:robgofcox1.jpg]]
+
+#+BEGIN_marginfigure
+# +CAPTION: Goodness of fit for clustered Cox model label:fig:robgofcox1
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: rob1
+[[file:robgofcox1.jpg]]
+
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<robgofcox1>>
+#+END_SRC
+
+#+RESULTS:
+: Error: unexpected input in "<<"
+
+#+LATEX: \captionof{figure}{Goodness of fit for clustered Cox model.}
+label:fig:robcgofox1
+#+END_marginfigure
+
+
