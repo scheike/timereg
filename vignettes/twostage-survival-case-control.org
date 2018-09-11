@@ -118,32 +118,32 @@ The following object is masked _by_ ‘.GlobalEnv’:
     object.defined
        status2
 status1     0     1
-      0  4800  4735
-      1  4612 15853
+      0 16121 15661
+      1 15828 52390
 kinship
  0.5    1 
-3018 2982
+5963 6037
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
-               Coef.        SE         z P-val Kendall tau         SE
-dependence1 1.327835 0.1532760  8.663033     0   0.3990087 0.02768092
-dependence2 1.678475 0.1397158 12.013493     0   0.4562964 0.02065095
+               Coef.         SE        z P-val Kendall tau         SE
+dependence1 1.006966 0.08370828 12.02947     0   0.3348778 0.01851575
+dependence2 1.838534 0.08963533 20.51127     0   0.4789678 0.01216686
 
 $type
 [1] "clayton.oakes"
 
 $h
-            Estimate Std.Err   2.5%  97.5%   P-value
-dependence1   0.4417 0.04565 0.3522 0.5312 3.851e-22
-dependence2   0.5583 0.04565 0.4688 0.6478 2.153e-34
+            Estimate Std.Err   2.5%  97.5%    P-value
+dependence1   0.3539 0.02812 0.2988 0.4090  2.496e-36
+dependence2   0.6461 0.02812 0.5910 0.7012 7.193e-117
 
 $vare
 NULL
 
 $vartot
-   Estimate Std.Err  2.5% 97.5%    P-value
-p1    3.006  0.1085 2.794 3.219 5.438e-169
+   Estimate Std.Err  2.5% 97.5% P-value
+p1    2.846 0.06515 2.718 2.973       0
 
 attr(,"class")
 [1] "summary.mets.twostage"
@@ -169,24 +169,24 @@ summary(ts)
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
-               Coef.         SE         z P-val Kendall tau         SE
-dependence1 1.110906 0.11357920  9.780893     0   0.3571005 0.02347227
-dependence2 1.820752 0.09571394 19.022846     0   0.4765428 0.01311317
+               Coef.         SE        z P-val Kendall tau          SE
+dependence1 1.032045 0.07944442 12.99078     0   0.3403792 0.017283117
+dependence2 1.897001 0.06795064 27.91734     0   0.4867849 0.008948751
 
 $type
 [1] "clayton.oakes"
 
 $h
-            Estimate Std.Err   2.5%  97.5%   P-value
-dependence1   0.3789 0.03151 0.3172 0.4407 2.640e-33
-dependence2   0.6211 0.03151 0.5593 0.6828 1.842e-86
+            Estimate Std.Err   2.5%  97.5%    P-value
+dependence1   0.3523 0.02247 0.3083 0.3964  2.030e-55
+dependence2   0.6477 0.02247 0.6036 0.6917 1.079e-182
 
 $vare
 NULL
 
 $vartot
-   Estimate Std.Err  2.5% 97.5%    P-value
-p1    2.932  0.1119 2.712 3.151 3.155e-151
+   Estimate Std.Err  2.5% 97.5% P-value
+p1    2.929 0.07785 2.776 3.082       0
 
 attr(,"class")
 [1] "summary.mets.twostage"
