@@ -842,9 +842,9 @@ fix.baseline <- 0; convergence.bp <- 1;  ### to control if baseline profiler con
 	  all.likepairs <- out$all.likepairs
 	  colnames(all.likepairs) <- c("surv","dt","ds","dtds","cause1","cause2")
   }# }}}
-###  print(crossprod(out$theta.iid) %*% hessi)
      theta.iid <- out$theta.iid %*% hessi
-     if (is.null(call.secluster)) rownames(theta.iid) <- unique(cluster.call) else rownames(theta.iid) <- unique(se.clusters)
+### rownames not set to make more robust 
+###     if (is.null(call.secluster)) rownames(theta.iid) <- unique(cluster.call) else rownames(theta.iid) <- unique(se.clusters)
      robvar.theta  <- crossprod(theta.iid) 
      loglikeiid <- out$loglikeiid
     } else { all.likepairs <- NULL}

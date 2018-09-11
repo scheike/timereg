@@ -20,7 +20,7 @@ simClaytonOakes <- function(K,n,eta,beta,stoptime,lam=1,left=0,pairleft=0,trunc.
   ## K antal clustre, n=antal i clustre
   ###	K <- 100; n=2; stoptime=2; eta=1/2; beta=0; lam=0.5;left=0.5; trunc.prob=0.5; pairleft=0; same=0
   ### change such that eta is variance 
-  eta <- 1/eta
+###  eta <- 1/eta
   x<-array(c(runif(n*K),rep(0,n*K),rbinom(n*K,1,0.5)),dim=c(K,n,3))
   C<-matrix(stoptime,K,n);
   Gam1 <-matrix(rgamma(K,eta)/eta,K,n)

@@ -23,10 +23,9 @@ in the mets package.
 
 The basic models assumes that each subject has a marginal on Cox-form
 \[ 
-\lambda_{s(k,i)}0(t) \exp( X_{ki}^T \beta).
+\lambda_{s(k,i)}(t) \exp( X_{ki}^T \beta).
 \] 
 where \( s(k,i) \) gives the strata for the subject. 
-
 
 We here discuss the 
   - robust standard errors of 
@@ -34,11 +33,11 @@ We here discuss the
     - baseline 
   - cumulative residuals score test 
 
-
 First we generate some data from the Clayton-Oakes model, with \( 5 \) members
 in each cluster and a variance parameter at \( 2 \) 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 library(mets)
+set.seed(1000) ## to control output in simulatins for p-values below.
  n <- 1000
  k <- 5
  theta <- 2
@@ -59,13 +58,13 @@ Attaching package: ‘mets’
 The following object is masked _by_ ‘.GlobalEnv’:
 
     object.defined
-       time status x cluster   mintime lefttime truncated
-1 1.6988903      1 0       1 0.7568612        0         0
-2 1.4915873      1 0       1 0.7568612        0         0
-3 0.8691975      1 1       1 0.7568612        0         0
-4 0.7568612      1 1       1 0.7568612        0         0
-5 0.8707570      1 0       1 0.7568612        0         0
-6 0.6826326      1 0       2 0.1791969        0         0
+        time status x cluster    mintime lefttime truncated
+1 0.05422931      1 0       1 0.05422931        0         0
+2 0.17039438      1 0       1 0.05422931        0         0
+3 0.38195839      1 0       1 0.05422931        0         0
+4 0.07796585      1 1       1 0.05422931        0         0
+5 0.24558798      1 0       1 0.05422931        0         0
+6 2.04113774      1 0       2 0.64696210        0         0
 #+end_example
 
 Now fitting the and producing robust standard errors for both 
@@ -75,9 +74,9 @@ Note that
 \begin{align}
 \hat A_s(t) - A_s(t)  & = \sum_k \sum_i \int_0^t 1/S_{s} dM_{ki}^s  - P^s(t) \beta_k 
 \end{align}
-and 
+with $P^s(t)$ a derivative wrt to $\beta$, and 
 \begin{align}
-\hat \beta  - \beta  & = \sum_k \sum_i \int_0^\tau (Z_{ik} - E_{s}) dM_{ik}^s
+\hat \beta  - \beta  & = \sum_k ( \sum_i \int_0^\tau (Z_{ik} - E_{s}) dM_{ik}^s )
 \end{align}
 with 
 \begin{align}
@@ -85,17 +84,18 @@ with
 \end{align}
 the basic 0-mean processes, that are martingales in the iid setting. 
        
-
-The variance of baseline in strata s  clusters i with members k
+The variance of the baseline of strata s  is
 \begin{align}
 \sum_{k} ( \sum_i \int_0^t 1/S_{0s(ki)} d\hat M_{ki}^s )^2
 \end{align}
-similar to the above using the particular structure 
+that can be computed using the particular structure 
 \begin{align}
-d \hat M_{ik}(t) & =  dN_{ik}(t) -  1/S_{0s(i,k)} \exp(Z_{ik} beta) dN_{s.}(t) 
+d \hat M_{ik}(t) & =  dN_{ik}(t) -  1/S_{0s(i,k)} \exp(Z_{ik} \beta) dN_{s.}(t) 
 \end{align}
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+This robust variance of the baseline and the iid decomposition for $\beta$ is
+computed in mets as: 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
    out <- phreg(Surv(time,status)~x+cluster(cluster),data=data)
    summary(out)
    ## robust standard errors attached to output
@@ -110,12 +110,25 @@ d \hat M_{ik}(t) & =  dN_{ik}(t) -  1/S_{0s(i,k)} \exp(Z_{ik} beta) dN_{s.}(t)
 #+END_SRC
 
 #+RESULTS[<2018-09-10 14:32:08> 68b9dea2171106e9be0a3b396f0061f6e3d50238]:
-: Error: could not find function "phreg"
-: Error in summary(out) : object 'out' not found
-: Error: could not find function "robust.phreg"
-: Error: could not find function "iid"
-: Error in head(betaiid) : object 'betaiid' not found
-: Error in crossprod(betaiid) : object 'betaiid' not found
+#+begin_example
+
+    n events
+ 5000   4825
+
+ 1000 clusters
+
+  Estimate     S.E.  dU^-1/2 P-value
+x 0.330092 0.030987 0.029039       0
+           [,1]
+1 -1.185501e-03
+2 -7.393353e-05
+3 -2.224964e-04
+4 -4.183305e-04
+5  1.948619e-04
+6  1.007386e-03
+           [,1]
+[1,] 0.03098668
+#+end_example
 
 Looking at the plot  with robust standard errors 
 
@@ -148,7 +161,7 @@ label:fig:robcox1
 
 Just to check that we can recover the model we also estimate the dependence parameter 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 tt <- twostageMLE(out,data=data)
 summary(tt)
 #+END_SRC
@@ -158,8 +171,8 @@ summary(tt)
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
-               Coef.        SE        z P-val Kendall tau         SE
-dependence1 2.374835 0.1083253 21.92319     0   0.5428399 0.01131974
+               Coef.         SE        z P-val Kendall tau         SE
+dependence1 2.013446 0.09105704 22.11192     0   0.5016752 0.01130599
 
 $type
 NULL
@@ -174,32 +187,32 @@ attr(,"class")
 
 The observed score process is given by 
 \begin{align}
-U(t,\hat \beta) & = \sum_i \sum_k g_i \int_0^t (Z_{ik} - \hat E_s ) d \hat M_{ik}^s 
+U(t,\hat \beta) & = \sum_k \sum_i \int_0^t (Z_{ki} - \hat E_s ) d \hat M_{ki}^s 
 \end{align}
 where $s$ is strata, this has as iid decomposition as 
 \begin{align}
-\hat U(t) = \sum_i \sum_k  \int_0^t (Z_{ik} - E_s) dM_{ik}^s  - \sum_i  I_t \beta_i 
+\hat U(t) = \sum_k \sum_i  \int_0^t (Z_{ki} - E_s) dM_{ki}^s  - \sum_k  I_t \beta_k 
 \end{align}
-where $\beta_i$ is the iid decomposition of the score process for true 
-$ \beta $
+where $\beta_k$ is the iid decomposition of the score process for the true $\beta$
 \begin{align}
-\beta_i  & =  \sum_k g_i \int_0^t (Z_{ik} - E_s ) d  M_{ik}^s 
+\beta_k  & =  \sum_i \int_0^t (Z_{ki} - E_s ) d  M_{ki}^s 
 \end{align}
-and $I_i$ is the derivative of the total score with respect to $\beta$. 
+and $I_t$ is the derivative of the total score with respect to $\beta$. 
 
-This observed score can be resampled given it is on iid form. 
-
+This observed score can be resampled given it is on iid form in terms of 
+clusters. 
 
 Now using the cumulative score process for checking proportional 
 hazards 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 gout <- gof(out)
 gout
 #+END_SRC
 
 #+RESULTS[<2018-09-10 14:32:08> 8bde76b6fea8c56142541f6eeb247699c5236c44]:
-: Error: could not find function "gof"
-: Error: object 'gout' not found
+: Cumulative score process test for Proportionality:
+:   Sup|U(t)|  pval
+: x  25.51776 0.638
 
 
 The p-value reflects wheter the observed score process is consistent with
@@ -238,7 +251,9 @@ For  clustered data it is possible to estimate the regression coefficient
 within clusters by using Cox's partial likelihood stratified on clusters.
 
 Note, here that the data is generated with a different subject specific structure, 
-so we will not recover the \( \beta \) at 0.3. 
+so we will not recover the \( \beta \) at 0.3 and the model will not be
+a proportional Cox model, we we would also expect to reject "proportionality" with
+the gof-test. 
 
 The model can be thought of as 
 \[ 
@@ -250,17 +265,31 @@ where \( \lambda_k(t) \) is some cluster specific baseline.
 The regression coefficient \( \beta \) can be estimated by using the 
 partial likelihood for clusters. 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
  out <- phreg(Surv(time,status)~x+strata(cluster),data=data)
  summary(out)
 #+END_SRC
 
+#+RESULTS[<2018-09-11 09:16:22> ca332c824091210c9d8c97177e43d7db5326a8ae]:
+: 
+:     n events
+:  5000   4825
+: 
+:   Estimate     S.E.  dU^-1/2 P-value
+: x 0.763506 0.034985 0.041116       0
+
 The cumulative score processes can still be used to validate the model 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 gg <- gof (out) 
 summary(gg)
 #+END_SRC
+
+#+RESULTS[<2018-09-11 09:16:22> 6815b9399a490044f01367d6c2ebbab00700d2fb]:
+: Cumulative score process test for Proportionality:
+:   Sup|U(t)| pval
+: x  83.32009    0
+
  
 
 
