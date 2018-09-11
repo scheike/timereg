@@ -232,3 +232,36 @@ label:fig:robcgofox1
 #+END_marginfigure
 
 
+**  Cluster stratified Cox models
+
+For  clustered data it is possible to estimate the regression coefficient
+within clusters by using Cox's partial likelihood stratified on clusters.
+
+Note, here that the data is generated with a different subject specific structure, 
+so we will not recover the \( \beta \) at 0.3. 
+
+The model can be thought of as 
+\[ 
+\lambda_k(t) \exp( X_{ki}^T \beta)
+\] 
+where \( \lambda_k(t) \) is some cluster specific baseline. 
+
+
+The regression coefficient \( \beta \) can be estimated by using the 
+partial likelihood for clusters. 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+ out <- phreg(Surv(time,status)~x+strata(cluster),data=data)
+ summary(out)
+#+END_SRC
+
+The cumulative score processes can still be used to validate the model 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
+gg <- gof (out) 
+summary(gg)
+#+END_SRC
+ 
+
+
+
