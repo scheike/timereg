@@ -686,7 +686,8 @@ km <- function(formula,data=data,conf.type="log",conf.int=0.95,robust=TRUE)
 
  zval <- qnorm(1 - (1 - conf.int)/2, 0, 1)
 
- if (conf.type == "plain") {
+### different conf-types
+ if (conf.type == "plain") {# {{{
     temp1 <- temp$surv + zval * std.err * temp$surv
     temp2 <- temp$surv - zval * std.err * temp$surv
     temp <- c(temp, list(upper = pmin(temp1, 1), lower = pmax(temp2,
@@ -709,14 +710,13 @@ km <- function(formula,data=data,conf.type="log",conf.int=0.95,robust=TRUE)
     temp2 <- ifelse(who, temp3, temp2)
     temp <- c(temp, list(upper = temp1, lower = temp2,
 	conf.type = "log-log", conf.int = conf.int))
- }
+ }# }}}
 
  ### to use basehazplot.phreg
  temp <- c(temp,
-   list(cumhaz=cbind(time,kmt),se.cumhaz=cbind(time,kmt*std.err),
-	time=time,
+ list(cumhaz=cbind(time,kmt),se.cumhaz=cbind(time,kmt*std.err),time=time,
 	strata=strat,nstrata=coxo$nstrata,
-        jumps=1:length(kmt), strata.name=coxo$strata.name, strata.level=coxo$strata.level))
+        jumps=1:length(kmt),strata.name=coxo$strata.name,strata.level=coxo$strata.level))
  class(temp) <- c("km","phreg")
  return(temp)
 }# }}}
