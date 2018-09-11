@@ -258,9 +258,10 @@ fitp4 <- survival.twostage(marg2,data=ud,clusters=ud$cluster,se.cluster=ud$clust
 summary(fitp4)
 }
 
+\donttest{ ## Reduce Ex.Timings
 ### structured random effects model additive gamma ACE 
 ### simulate structured two-stage additive gamma ACE model
-data <- simClaytonOakes.twin.ace(2000,2,1,0,3)
+data <- simClaytonOakes.twin.ace(4000,2,1,0,3)
 out <- twin.polygen.design(data,id="cluster")
 pardes <- out$pardes
 pardes 
@@ -271,38 +272,7 @@ ts <- survival.twostage(aa,data=data,clusters=data$cluster,detail=0,
 	       theta=c(2,1),var.link=0,step=0.5,
 	       random.design=des.rv,theta.des=pardes)
 summary(ts)
-
-### case control sampling of data, call via pairs
-
-data2 <- fast.reshape(data,id="cluster")
-ncase <- 400; ncont <- 100
-controls <- which(data2$status2==0)
-cases <-    which(data2$status2==1)
-controls<-sort(sample(controls,min(ncont,length(controls))))
-cases <- sort( sample(cases,   min(ncase,length(cases))))
-clustco <- data2$cluster[controls]
-clustca <- data2$cluster[cases]
-ss <- data$cluster \%in\% c(clustco,clustca)
-datacc <- data[ss,]
-
-mm <- familycluster.index(datacc$cluster)
-pairs <- mm$pairs
-head(pairs)
-## second column of pairs represent probands 
-kinship <- rep(1,nrow(pairs))
-kinship[datacc$zyg[pairs[,1]]=="DZ"] <- 0.5
-dout <- make.pairwise.design(pairs,kinship,type="ace")
-## additive model specified via formula-list
-cr.models <- list(Surv(time,status)~+1)
-
-tscce <- survival.twostage(NULL,data=datacc,clusters=datacc$cluster,
-           detail=0,theta=c(2,1),var.link=0,step=1.0,
-       pairs=pairs,
-       random.design=dout$random.design,theta.des=dout$theta.des,
-       pairs.rvs=dout$ant.rvs,
-       case.control=1, marginal.status=datacc$status,
-       cr.models=cr.models)
-summary(tscce)
+}
 
 }
 \references{

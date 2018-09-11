@@ -155,7 +155,7 @@ Looking at the plot  with robust standard errors
 : Error: unexpected input in "<<"
 
 
-#+LATEX: \captionof{figure}{Scatter plot of logarithmic BMI measurements in MZ twins.}
+#+LATEX: \captionof{figure}{Baseline with robust standard errors.}
 label:fig:robcox1
 #+END_marginfigure
 
