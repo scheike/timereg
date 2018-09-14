@@ -21,21 +21,19 @@
 \title{Predictions from proportional hazards model}
 \usage{
 \method{predict}{phreg}(object, newdata, times = NULL,
-  individual.time = FALSE, tminus = FALSE, sort.time = TRUE, se = FALSE,
-  robust = FALSE, conf.type = "log", conf.int = 0.95, ...)
+  individual.time = FALSE, tminus = FALSE, se = FALSE, robust = FALSE,
+  conf.type = "log", conf.int = 0.95, ...)
 }
 \arguments{
 \item{object}{phreg object}
 
 \item{newdata}{data.frame}
 
-\item{times}{Time where to predict variable}
+\item{times}{Time where to predict variable, default is all time-points from the object sorted}
 
 \item{individual.time}{when TRUE then newdata and times have same length and makes only predictions for these individual times.}
 
 \item{tminus}{to make predictions in T- that is just before, useful for IPCW techniques}
-
-\item{sort.time}{sort the time argument}
 
 \item{se}{with standard errors and upper and lower confidence intervals.}
 
@@ -45,7 +43,7 @@
 
 \item{conf.int}{significance level}
 
-\item{...}{Additional arguments to lower level functions}
+\item{...}{Additional arguments to plot functions}
 }
 \description{
 Predictions from proportional hazards model

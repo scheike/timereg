@@ -970,13 +970,17 @@ predict.phreg <- function(object,newdata,
    if (!robust) { 
 	   se.chaz <- object$se.cumhaz[,2] 
 	   varbeta <- object$II 
-   } else {
-	   se.chaz <- object$robse.cumhaz[,2]
-	   varbeta <- object$robvar
-   } 
-   if (se) {
 	   Pt <- apply(object$E/c(object$S0),2,cumsumstrata,strata,nstrata)
-   }
+   } else {
+          if (is.null(x$opt) | is.null(x$coef)) fixbeta<- 1 else fixbeta <- 0
+          IsdM <- squareintHdM(x,ft=NULL,fixbeta=fixbeta,...)
+          ###
+          varA <-   IsdM$varInt[object$jumps]
+	  se.chaz <- varA[x$jumps]^.5
+	  covv <- IsdM$covv[object$jumps]
+	  varbeta <- IsdM$vbeta
+          Pt <- apply(object$E/c(object$S0),2,cumsumstrata,strata,nstrata)
+   } 
    
      if (missing(newdata)) { 
          X <- object$X
@@ -1044,8 +1048,7 @@ predict.phreg <- function(object,newdata,
 	        else se.cumhaz[strataNew==j,]  <- 
 	            RR* ( se.hazt^2 + c(varXbeta)*hazt^2 - 2* cov1* hazt)^.5
 	    } else {
-	       if (!individual.time) se.cumhaz[strataNew==j,]  <- 
-		       RR %o% (se.hazt)
+	       if (!individual.time) se.cumhaz[strataNew==j,]  <- RR %o% (se.hazt)
 	        else se.cumhaz[strataNew==j,]  <- RR* se.hazt  
 	    }
 	   }

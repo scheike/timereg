@@ -969,12 +969,14 @@ squareintHdM <- function(phreg,ft=NULL,fixbeta=NULL,...)
      covk1 <- apply(xxx*betakt,2,cumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="sum")
      covk2 <- apply(w*rr*betakt,2,revcumsumidstratasum,id,mid,xx$strata,xx$nstrata,type="lagsum")
      covk2 <- c(covk2)*cumS0i2
+     covv <- covk1-covk2
      ###
-     varA1 <- varA1+varbetat-2*apply((covk1-covk2)*Ht,1,sum)
+     varA1 <- varA1+varbetat-2*apply(covv*Ht,1,sum)
   }# }}}
 
   return(list(xx=xx,Ht=Ht,varInt=varA1,xxx=xxx,rr=rr,
-	      cumS0i2=cumS0i2,mid=mid,id=id,betaiid=betaiidR,vbeta=vbeta))
+	      cumhaz=cumhaz,cumS0i2=cumS0i2,mid=mid,id=id,
+	      betaiid=betaiidR,vbeta=vbeta,covv=covv))
 } # }}}
 
 ##' @export
