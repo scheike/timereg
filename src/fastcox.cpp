@@ -1473,12 +1473,12 @@ BEGIN_RCPP
 //  unsigned p1=X.n_cols; 
 //  unsigned p2=Z.n_cols; 
   mat res=vecmatmat(X,Z); 
- return(Rcpp::List::create(Rcpp::Named("vxz")=res)); 
+ return(Rcpp::List::create(Rcpp::Named("vXZ")=res)); 
 END_RCPP
 } /*}}}*/
 
 RcppExport SEXP OutCov(SEXP XSEXP, SEXP ZSEXP)
-		  {
+{/*{{{*/
 BEGIN_RCPP
   mat X = Rcpp::as<mat>(XSEXP);
   mat Z = Rcpp::as<mat>(ZSEXP);
@@ -1494,9 +1494,7 @@ BEGIN_RCPP
 
   return(Rcpp::List::create(Rcpp::Named("XoZ")=XoZ));
 END_RCPP
-}
-
-
+}/*}}}*/
 
 
 RcppExport SEXP PropTestCox(SEXP iU, SEXP idUt, SEXP insim, SEXP iobssup) {

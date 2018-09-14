@@ -960,7 +960,7 @@ predictPhreg <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,band=FA
 predict.phreg <- function(object,newdata,
 		      times=NULL,individual.time=FALSE,tminus=FALSE,
 		      se=FALSE,robust=FALSE,conf.type="log",conf.int=0.95,...) 
-{# {{{, default is all time-points from the object
+{# {{{ default is all time-points from the object
 
    ### take baseline and strata from object
    strata <- object$strata[object$jumps]
@@ -1051,7 +1051,7 @@ predict.phreg <- function(object,newdata,
 	       if (!individual.time) se.cumhaz[strataNew==j,]  <- 
 		     ((RR %o% se.hazt)^2  + (c(RR*seXbeta) %o% hazt)^2 - 2 * cov1)^.5
 	        else se.cumhaz[strataNew==j,]  <- 
-	            RR* ( se.hazt^2 + c(varXbeta)*hazt^2 - 2* cov1 )^.5
+	            RR* ( se.hazt^2 + (c(seXbeta)*hazt)^2 - 2* cov1 )^.5
 	    } else {
 	       if (!individual.time) se.cumhaz[strataNew==j,]  <- RR %o% (se.hazt)
 	        else se.cumhaz[strataNew==j,]  <- RR* se.hazt  

@@ -142,6 +142,7 @@ gofM.phreg  <- function(formula,data,offset=NULL,weights=NULL,modelmatrix=NULL,
 
 if (is.null(modelmatrix)) stop(" must give matrix for cumulating residuals\n"); 
 
+
 cox1 <- phreg(formula,data,offset=NULL,weights=NULL,Z=modelmatrix,cumhaz=FALSE,...) 
 offsets <- as.matrix(cox1$model.frame[,names(cox1$coef)]) %*% cox1$coef
 if (!is.null(offset)) offsets <- offsets*offset
@@ -156,6 +157,8 @@ U <- coxM$U
 Ubeta <- cox1$U
 ii <- -solve(cox1$hessian)
 EE <- .Call("vecMatMat",coxM$E,cox1$E,PACKAGE="mets")$vXZ; 
+print(dim(EE))
+print(cox1$ZX)
 Pt <- cox1$ZX - EE
 Pt <- apply(Pt,2,cumsum)
 betaiid <- t(ii %*% t(Ubeta))
