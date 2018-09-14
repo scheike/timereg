@@ -975,8 +975,7 @@ predict.phreg <- function(object,newdata,
           if (is.null(object$opt) | is.null(object$coef)) fixbeta<- 1 else fixbeta <- 0
           IsdM <- squareintHdM(object,ft=NULL,fixbeta=fixbeta,...)
           ###
-          varA <-   IsdM$varInt[object$jumps]
-	  se.chaz <- varA[object$jumps]^.5
+          se.chaz <-   IsdM$varInt[object$jumps]^.5
 	  covv <- IsdM$covv[object$jumps,,drop=FALSE]
 	  varbeta <- IsdM$vbeta
           Pt <- apply(object$E/c(object$S0),2,cumsumstrata,strata,nstrata)
