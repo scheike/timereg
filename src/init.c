@@ -50,6 +50,7 @@ extern SEXP Uhat(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP uniprobit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP CubeVec(SEXP, SEXP);
 extern SEXP vecMatMat(SEXP, SEXP);
+extern SEXP OutCov(SEXP, SEXP);
 extern SEXP MatxCube(SEXP, SEXP, SEXP);
 extern SEXP Matdoubleindex(SEXP, SEXP, SEXP,SEXP);
 extern SEXP CubeMat(SEXP, SEXP);
@@ -143,6 +144,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"Uhat",                              (DL_FUNC) &Uhat,                               5},
     {"uniprobit",                         (DL_FUNC) &uniprobit,                          8},
     {"vecMatMat",                         (DL_FUNC) &vecMatMat,                          2},
+    {"OutCov",                            (DL_FUNC) &OutCov,                          2},
     {"XBmindex",                          (DL_FUNC) &XBmindex,                           3},
     {NULL, NULL, 0}
 };

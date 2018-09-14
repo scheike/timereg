@@ -1429,7 +1429,7 @@ END_RCPP
 
 RcppExport SEXP CubeMat(SEXP XXSEXP,SEXP XSEXP)
 		  {
-BEGIN_RCPP/*{{{*/
+BEGIN_RCPP /*{{{*/
   mat XX = Rcpp::as<mat>(XXSEXP);
   mat X  = Rcpp::as<mat>(XSEXP);
   unsigned p = X.n_cols;
@@ -1462,18 +1462,42 @@ mat  vecmatmat(mat a,mat b)
 } /*}}}*/
 
 RcppExport SEXP  vecMatMat(SEXP iX,SEXP iZ) {
-BEGIN_RCPP/*{{{*/
-  arma::mat X = Rcpp::as<arma::mat>(iX);
-  arma::mat Z = Rcpp::as<arma::mat>(iZ);
+BEGIN_RCPP
+
+  mat X = Rcpp::as<mat>(iX);
+  mat Z = Rcpp::as<mat>(iZ);
+//  arma::mat x = rcpp::as<arma::mat>(ix);
+//  arma::mat z = rcpp::as<arma::mat>(iz);
 
 //  unsigned n =Z.n_rows; 
 //  unsigned p1=X.n_cols; 
 //  unsigned p2=Z.n_cols; 
-
   mat res=vecmatmat(X,Z); 
- return(Rcpp::List::create(Rcpp::Named("vXZ")=res)); 
+ return(Rcpp::List::create(Rcpp::Named("vxz")=res)); 
 END_RCPP
 } /*}}}*/
+
+RcppExport SEXP OutCov(SEXP XSEXP, SEXP ZSEXP)
+		  {
+BEGIN_RCPP
+  mat X = Rcpp::as<mat>(XSEXP);
+  mat Z = Rcpp::as<mat>(ZSEXP);
+//  unsigned px = X.n_cols;
+//  unsigned pz = Z.n_cols;
+  unsigned nx = X.n_rows;
+  unsigned nz = Z.n_rows;
+
+  mat XoZ(nx,nz);
+  for (unsigned j=0; j<nx; j++)  {
+     XoZ.row(j)=  X.row(j) * Z.t(); 
+  }
+
+  return(Rcpp::List::create(Rcpp::Named("XoZ")=XoZ));
+END_RCPP
+}
+
+
+
 
 RcppExport SEXP PropTestCox(SEXP iU, SEXP idUt, SEXP insim, SEXP iobssup) {
 BEGIN_RCPP/*{{{*/
