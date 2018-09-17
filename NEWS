@@ -3,6 +3,7 @@
 * Version 1.2.5 <2018-05-18 Wed>
   - Updated predict function for phreg 
     - with plotting functionality 
+    - with robust standard errors 
   - New vignettes started 
     - phreg robust se's for marginal Cox model
     - twostage survival  model 
