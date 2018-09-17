@@ -962,7 +962,7 @@ predict.phreg <- function(object,newdata,
 		      se=FALSE,robust=FALSE,conf.type="log",conf.int=0.95,...) 
 {# {{{ default is all time-points from the object
 
-   ### take baseline and strata from object
+   ### take baseline and strata from object# {{{
    strata <- object$strata[object$jumps]
    nstrata <- object$nstrata
    jumptimes <- object$cumhaz[,1]
@@ -978,10 +978,13 @@ predict.phreg <- function(object,newdata,
           se.chaz <-   IsdM$varInt[object$jumps]^.5
 	  covv <- IsdM$covv[object$jumps,,drop=FALSE]
 	  varbeta <- IsdM$vbeta
-          Pt <- apply(object$E/c(object$S0),2,cumsumstrata,strata,nstrata)
-   } 
+	  Pt <- IsdM$Ht[object$jumps,]
+###       Pt <- apply(object$E/c(object$S0),2,cumsumstrata,strata,nstrata)
+###	  print(Pt)
+   } # }}}
    
-     if (missing(newdata)) { 
+   ### setting up newdata with factors and strata 
+     if (missing(newdata)) { # {{{
          X <- object$X
          strataNew <- object$strata
      } else { ## make design for newdata
@@ -995,12 +998,12 @@ predict.phreg <- function(object,newdata,
 	       strataNew <- as.numeric(X[,object$strata.pos])
 	       X <- X[,-object$strata.pos]
        } else strataNew <- rep(0,nrow(X))
-     }
+     }# }}}
+
 ###    print(dim(X)); print(head(X)); print(strataNew)
 ###    print(dim(X)); print(head(X)); print(table(strataNew))
 
-    if (is.null(times)) 
-	    times <- c(sort(unique(object$exit))) 
+    if (is.null(times)) times <- c(sort(unique(object$exit))) 
 
     se.cumhaz <- NULL
     if (!individual.time) {
@@ -1027,30 +1030,30 @@ predict.phreg <- function(object,newdata,
 ##  print(Xs); print(varbeta); print(dim(Ps)); print((Xs %*% varbeta))
 			Xbeta <- Xs %*% varbeta
 			seXbeta <- rowSums(Xbeta*Xs)^.5
-			cov1 <- .Call("OutCov",RR^2 * Xbeta,Ps*hazt)$XoZ
+###			cov1 <- .Call("OutCov",Xbeta,Ps*hazt)$XoZ
+			cov1 <- Xbeta %*% t(Ps*hazt)
 		        if (robust)	{
-				covvs <- covv[strata==j,,drop=FALSE]
-				covvs <- rbind(0,covvs)[where,,drop=FALSE]
-		  	  covv1 <- .Call("OutCov",RR^2 * Xbeta,covvs*hazt)$XoZ
-			  cov1 <- cov1-covv1 
+			   covvs <- covv[strata==j,,drop=FALSE]
+			   covvs <- rbind(0,covvs)[where,,drop=FALSE]
+###                        covv1 <- .Call("OutCov",Xbeta,covvs*hazt)$XoZ
+                           covv1 <- Xbeta %*% t(covvs*hazt)
+			   cov1 <- cov1-covv1 
 			}
-		}
-###		print(summary(seXbeta))
-###		print(summary(cov1))
+		} else cov1 <- 0 
+###		print(summary(seXbeta)); print(summary(cov1))
 	}# }}}
 	if (is.null(object$propodds)) {
-	if (!individual.time) surv[strataNew==j,]  <- exp( - RR %o% hazt )
-        else surv[strataNew==j,]  <- exp( - RR * hazt )
+	   if (!individual.time) surv[strataNew==j,]  <- exp(- RR%o%hazt)
+           else surv[strataNew==j,]  <- exp(-RR*hazt)
 	} else {
-	  if (!individual.time) surv[strataNew==j,]  <- 1/(1+ RR %o% hazt)
-          else surv[strataNew==j,]  <- 1/(1+ RR * hazt)
+	  if (!individual.time) surv[strataNew==j,]  <- 1/(1+RR%o%hazt)
+          else surv[strataNew==j,]  <- 1/(1+RR*hazt)
 	}
 	if (se) {# {{{
 	    if (object$p>0)  {
 	       if (!individual.time) se.cumhaz[strataNew==j,]  <- 
-		     ((RR %o% se.hazt)^2  + (c(RR*seXbeta) %o% hazt)^2 - 2 * cov1)^.5
-	        else se.cumhaz[strataNew==j,]  <- 
-	            RR* ( se.hazt^2 + (c(seXbeta)*hazt)^2 - 2* cov1 )^.5
+		     ((RR %o% se.hazt)^2+(c(RR*seXbeta) %o% hazt)^2-2*RR^2*cov1)^.5
+	        else se.cumhaz[strataNew==j,]  <- RR* (se.hazt^2+(c(seXbeta)*hazt)^2-2*cov1)^.5
 	    } else {
 	       if (!individual.time) se.cumhaz[strataNew==j,]  <- RR %o% (se.hazt)
 	        else se.cumhaz[strataNew==j,]  <- RR* se.hazt  
