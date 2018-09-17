@@ -945,18 +945,18 @@ predictPhreg <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,band=FA
 
 ##' Predictions from proportional hazards model
 ##'
-##' @export
 ##' @param object phreg object
 ##' @param newdata data.frame
 ##' @param times Time where to predict variable, default is all time-points from the object sorted
 ##' @param individual.time when TRUE then newdata and times have same length and makes only predictions for these individual times.
 ##' @param tminus to make predictions in T- that is just before, useful for IPCW techniques
 ##' @param se with standard errors and upper and lower confidence intervals.
-##' @param robust to get robust se's not working yes.
+##' @param robust to get robust se's. 
 ##' @param conf.type transformation for suvival estimates, default is log
 ##' @param conf.int significance level
 ##' @param ... Additional arguments to plot functions
 ##' @aliases predict.phreg revcumsumstrata revcumsumstratasum cumsumstrata sumstrata covfr covfridstrata covfridstrataCov cumsumidstratasum cumsumidstratasumCov cumsumstratasum revcumsum revcumsumidstratasum revcumsumidstratasumCov robust.basehaz.phreg matdoubleindex mdi
+##' @export
 predict.phreg <- function(object,newdata,
 		      times=NULL,individual.time=FALSE,tminus=FALSE,
 		      se=FALSE,robust=FALSE,conf.type="log",conf.int=0.95,...) 
@@ -967,6 +967,7 @@ predict.phreg <- function(object,newdata,
    nstrata <- object$nstrata
    jumptimes <- object$cumhaz[,1]
    chaz <- object$cumhaz[,2]
+   if (se) {
    if (!robust) { 
 	   se.chaz <- object$se.cumhaz[,2] 
 	   varbeta <- object$II 
@@ -981,6 +982,7 @@ predict.phreg <- function(object,newdata,
 	  Pt <- IsdM$Ht[object$jumps,]
 ###       Pt <- apply(object$E/c(object$S0),2,cumsumstrata,strata,nstrata)
 ###	  print(Pt)
+   }
    } # }}}
    
    ### setting up newdata with factors and strata 
@@ -1018,7 +1020,7 @@ predict.phreg <- function(object,newdata,
     for (j in unique(strataNew)) {
         where <- sindex.prodlim(c(0,jumptimes[strata==j]),times,strict=tminus)
 	hazt <- c(0,chaz[strata==j])[where]
-	se.hazt <- c(0,se.chaz[strata==j])[where]
+	if (se) se.hazt <- c(0,se.chaz[strata==j])[where]
 ###	print((cbind(jumptimes,se.chaz))); print(head(se.hazt,5))
 	Xs <- X[strataNew==j,,drop=FALSE]
 ###	offs <- object$offsets[object$strata==j]
@@ -1181,8 +1183,12 @@ plot.predictphreg  <- function(x,se=FALSE,add=FALSE,ylim=NULL,xlim=NULL,
       lines(x$times,nl,type="s",lty=ltys[i,2],col=cols[i,2])
       lines(x$times,ul,type="s",lty=ltys[i,3],col=cols[i,3])
       } else {
+	 ll <- length(x$times)
          tt <- c(x$times,rev(x$times))
          yy <- c(nl,rev(ul))
+         ttp <- c(x$times[1],rep(x$times[-c(1,ll)],each=2),x$times[ll])
+         tt <- c(ttp,rev(ttp))
+         yy <- c(rep(nl[-ll],each=rep(2)),rep(rev(ul[-ll]),each=2))
          col.alpha<-0.1
          col.ci<-cols[i]
          col.trans <- sapply(col.ci, FUN=function(x) 

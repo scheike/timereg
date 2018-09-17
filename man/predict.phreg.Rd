@@ -37,7 +37,7 @@
 
 \item{se}{with standard errors and upper and lower confidence intervals.}
 
-\item{robust}{to get robust se's not working yes.}
+\item{robust}{to get robust se's.}
 
 \item{conf.type}{transformation for suvival estimates, default is log}
 
