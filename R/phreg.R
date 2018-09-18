@@ -270,7 +270,7 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 ##' betaiiid <- iid(out1)
 ##' 
 ##' @export
-phreg <- function(formula,data,offset=NULL,weights=NULL,...) {
+phreg <- function(formula,data,offset=NULL,weights=NULL,...) {# {{{
   cl <- match.call()
   m <- match.call(expand.dots = TRUE)[1:3]
   special <- c("strata", "cluster","offset")
@@ -292,32 +292,94 @@ phreg <- function(formula,data,offset=NULL,weights=NULL,...) {
   id <- strata <- NULL
   if (!is.null(attributes(Terms)$specials$cluster)) {
     ts <- survival::untangle.specials(Terms, "cluster")
+    pos.cluster <- ts$terms
     Terms  <- Terms[-ts$terms]
     id <- m[[ts$vars]]
-  }
-  if (!is.null(stratapos <- attributes(Terms)$specials$strata)) {
+  } else pos.cluster <- NULL
+  if (!is.null(attributes(Terms)$specials$strata)) {
     ts <- survival::untangle.specials(Terms, "strata")
     pos.strata <- ts$terms
     Terms  <- Terms[-ts$terms]
     strata <- m[[ts$vars]]
     strata.name <- ts$vars
   }  else { strata.name <- NULL; pos.strata <- NULL}
-  if (!is.null(offsetpos <- attributes(Terms)$specials$offset)) {
-    ts <- survival::untangle.specials(Terms, "offset")
-    Terms  <- Terms[-ts$terms]
-    offset <- m[[ts$vars]]
-  }  
+###  if (!is.null(attributes(Terms)$specials$offset)) {
+###    ts <- survival::untangle.specials(Terms, "offset")
+###    pos.offset <- ts$terms
+###    Terms  <- Terms[-ts$terms]
+###    offset <- m[[ts$vars]]
+###  }  else pos.offset <- NULL
   X <- model.matrix(Terms, m)
   if (!is.null(intpos  <- attributes(Terms)$intercept))
     X <- X[,-intpos,drop=FALSE]
   if (ncol(X)==0) X <- matrix(nrow=0,ncol=0)
 
   res <- c(phreg01(X,entry,exit,status,id,strata,offset,weights,strata.name,...),
-	   list(call=cl,model.frame=m,formula=formula,strata.pos=pos.strata))
+	   list(call=cl,model.frame=m,formula=formula,
+           strata.pos=pos.strata,cluster.pos=pos.cluster))
   class(res) <- "phreg"
   
   res
+}# }}}
+
+##' @export
+readPhreg <- function (object, newdata, nr=TRUE, ...)
+{
+     exit <- entry <- status  <- clusters <- NULL
+     if (missing(newdata)) { # {{{
+         X <- object$X
+         strataNew <- object$strata
+	 if (!nr) { 
+	 exit <- object$exit; entry <- object$entry; status <- object$status; 
+	 clusters <- object$id
+	 }
+     } else { ## make design for newdata
+       xlev <- lapply(object$model.frame,levels)
+       ff <- unlist(lapply(object$model.frame,is.factor))
+       upf <- update(object$formula,~.)
+       tt <- terms(upf)
+       if (nr) tt <- delete.response(tt)
+       X <- model.matrix(tt,data=newdata,xlev=xlev)[,-1,drop=FALSE]
+       if (!nr) {
+         allvar <- all.vars(tt)
+	 pr <- length(allvar)-ncol(object$model.frame)+1
+	 if (pr==2) { 
+	    exit <- newdata[,allvar[1]]
+	    status <- newdata[,allvar[2]]
+	 } else {
+	    entry <- newdata[,allvar[1]]
+	    exit <- newdata[,allvar[2]]
+	    status <- newdata[,allvar[3]]
+	 }
+       }
+       clusterTerm<- grep("^cluster[(][A-z0-9._:]*",colnames(X),perl=TRUE)
+       ## remove clusterTerm from design
+       if (length(clusterTerm)==1) { 
+	       clusters <- X[,clusterTerm]
+	       X <- X[,-clusterTerm,drop=FALSE]
+	       id <- clusters
+               id.orig <- id; 
+               if (!is.null(id)) {
+	          ids <- unique(id)
+	          nid <- length(ids)
+                  if (is.numeric(id)) id <-  fast.approx(ids,id)-1 else  {
+                        id <- as.integer(factor(id,labels=seq(nid)))-1
+                  }
+		  clusters <- id
+           } else clusters <- (1:nrow(newdata))-1
+       } 
+       strataTerm<- grep("^strata[(][A-z0-9._:]*",colnames(X),perl=TRUE)
+       ## remove clusterTerm from design
+       if (length(strataTerm)==1) { 
+	       strataNew <- as.numeric(X[,strataTerm])
+	       X <- X[,-strataTerm,drop=FALSE]
+       } else strataNew <- rep(0,nrow(X))
+###       print(X)
+     }# }}}
+return(list(X=X,strata=strataNew,entry=entry,exit=exit,status=status,
+	    clusters=clusters))
 }
+
 ###}}} phreg
 
 #####' @export
@@ -980,27 +1042,13 @@ predict.phreg <- function(object,newdata,
 	  covv <- IsdM$covv[object$jumps,,drop=FALSE]
 	  varbeta <- IsdM$vbeta
 	  Pt <- IsdM$Ht[object$jumps,]
-###       Pt <- apply(object$E/c(object$S0),2,cumsumstrata,strata,nstrata)
-###	  print(Pt)
    }
    } # }}}
    
-   ### setting up newdata with factors and strata 
-     if (missing(newdata)) { # {{{
-         X <- object$X
-         strataNew <- object$strata
-     } else { ## make design for newdata
-       xlev <- lapply(object$model.frame,levels)
-       ff <- unlist(lapply(object$model.frame,is.factor))
-       upf <- update(object$formula,~.)
-       tt <- terms(upf)
-       tt <- delete.response(tt)
-       X <- model.matrix(tt,data=newdata,xlev=xlev)[,-1,drop=FALSE]
-       if (!is.null(object$strata.pos)) { 
-	       strataNew <- as.numeric(X[,object$strata.pos])
-	       X <- X[,-object$strata.pos]
-       } else strataNew <- rep(0,nrow(X))
-     }# }}}
+######   ### setting up newdata with factors and strata 
+   desX <- readPhreg(object,newdata) 
+   X <- desX$X
+   strataNew <- desX$strata
 
 ###    print(dim(X)); print(head(X)); print(strataNew)
 ###    print(dim(X)); print(head(X)); print(table(strataNew))
@@ -1021,7 +1069,6 @@ predict.phreg <- function(object,newdata,
         where <- sindex.prodlim(c(0,jumptimes[strata==j]),times,strict=tminus)
 	hazt <- c(0,chaz[strata==j])[where]
 	if (se) se.hazt <- c(0,se.chaz[strata==j])[where]
-###	print((cbind(jumptimes,se.chaz))); print(head(se.hazt,5))
 	Xs <- X[strataNew==j,,drop=FALSE]
 ###	offs <- object$offsets[object$strata==j]
         if (object$p==0) RR <- rep(1,nrow(Xs)) else RR <- c(exp( Xs %*% coef(object)))
@@ -1032,7 +1079,6 @@ predict.phreg <- function(object,newdata,
 ##  print(Xs); print(varbeta); print(dim(Ps)); print((Xs %*% varbeta))
 			Xbeta <- Xs %*% varbeta
 			seXbeta <- rowSums(Xbeta*Xs)^.5
-###			cov1 <- .Call("OutCov",Xbeta,Ps*hazt)$XoZ
 			cov1 <- Xbeta %*% t(Ps*hazt)
 		        if (robust)	{
 			   covvs <- covv[strata==j,,drop=FALSE]
@@ -1042,14 +1088,13 @@ predict.phreg <- function(object,newdata,
 			   cov1 <- cov1-covv1 
 			}
 		} else cov1 <- 0 
-###		print(summary(seXbeta)); print(summary(cov1))
 	}# }}}
 	if (is.null(object$propodds)) {
 	   if (!individual.time) surv[strataNew==j,]  <- exp(- RR%o%hazt)
-           else surv[strataNew==j,]  <- exp(-RR*hazt)
+           else surv[strataNew==j,]  <- exp(-RR*hazt[strataNew==j])
 	} else {
 	  if (!individual.time) surv[strataNew==j,]  <- 1/(1+RR%o%hazt)
-          else surv[strataNew==j,]  <- 1/(1+RR*hazt)
+          else surv[strataNew==j,]  <- 1/(1+RR*hazt[strataNew==j])
 	}
 	if (se) {# {{{
 	    if (object$p>0)  {
@@ -1058,7 +1103,7 @@ predict.phreg <- function(object,newdata,
 	        else se.cumhaz[strataNew==j,]  <- RR* (se.hazt^2+(c(seXbeta)*hazt)^2-2*cov1)^.5
 	    } else {
 	       if (!individual.time) se.cumhaz[strataNew==j,]  <- RR %o% (se.hazt)
-	        else se.cumhaz[strataNew==j,]  <- RR* se.hazt  
+	        else se.cumhaz[strataNew==j,]  <- RR* se.hazt[strataNew==j]  
 	    }
 	}# }}}
     }
@@ -1097,9 +1142,11 @@ predict.phreg <- function(object,newdata,
  }# }}}
  }# }}}
 
+ if (object$p>0) RR <-  exp(X %*% coef(object)) else RR <- rep(1,nrow(X))
+
  out <- list(surv=surv,times=times,
 	      surv.upper=cisurv$upper,surv.lower=cisurv$lower,
-	      cumhaz=-log(surv),se.cumhaz=se.cumhaz, X=Xs)
+	      cumhaz=-log(surv),se.cumhaz=se.cumhaz, X=Xs, RR=RR) 
  class(out) <- "predictphreg"
  return(out)
 
@@ -1346,8 +1393,13 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
       lines(nl,type="s",lty=ltys[i,2],col=cols[i,2])
       lines(ul,type="s",lty=ltys[i,3],col=cols[i,3])
       } else {
-         tt <- c(nl[,1],rev(ul[,1]))
-         yy <- c(nl[,2],rev(ul[,2]))
+	 ll <- length(nl[,1])
+         timess <- nl[,1]
+         ttp <- c(timess[1],rep(timess[-c(1,ll)],each=2),timess[ll])
+         tt <- c(ttp,rev(ttp))
+         yy <- c(rep(nl[-ll,2],each=rep(2)),rep(rev(ul[-ll,2]),each=2))
+###         tt <- c(nl[,1],rev(nl[,1]))
+###         yy <- c(nl[,2],rev(ul[,2]))
          col.alpha<-0.1
          col.ci<-cols[i]
          col.trans <- sapply(col.ci, FUN=function(x) 

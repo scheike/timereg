@@ -460,7 +460,7 @@ fix.baseline <- 0; convergence.bp <- 1;  ### to control if baseline profiler con
 	      irvdes=random.design,iags=additive.gamma.sum,iascertained=ascertained,
               PACKAGE="mets") ## }}}
       }# }}}
-      else { ## pair-structure 
+      else { ## {{{ pair-structure 
 	     ## twostage model,    case.control option,   profile out baseline 
 	     ## conditional model, case.control option,   profile out baseline 
          if (fix.baseline==0) ## if baseline is not given 
@@ -642,8 +642,8 @@ fix.baseline <- 0; convergence.bp <- 1;  ### to control if baseline profiler con
                   if (is.null(margsurv$opt) | is.null(margsurv$coef)) fixbeta<- 1 else fixbeta <- 0
 		  xx <- margsurv$cox.prep
                   id  <-  xx$id+1
-		  cumhazt <- rrr$cum
-		  rr <- rrr$RR
+		  cumhazt <- c(rrr$cum)
+		  rr <- c(rrr$RR)
 
 		  ## these refers to id given in cluster.call 
 		  xx <- margsurv$cox.prep
@@ -955,7 +955,8 @@ randomDes <- function(dep.model,random.design,theta.des,theta,antpers,ags,pairs,
 readmargsurv <- function(margsurv,data,clusters)
 {# {{{
 start.time <- 0
-if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") {
+
+if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") {# {{{
 	 formula<-attr(margsurv,"Formula");
 	 beta.fixed <- attr(margsurv,"beta.fixed")
 	 if (is.null(beta.fixed)) beta.fixed <- 1; 
@@ -976,11 +977,20 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") {
 
          if (is.null(clusters) && is.null(mclusters)) stop("No cluster variabel specified in marginal or twostage call\n"); 
          if (is.null(clusters)) clusters <- mclusters 
-	 if (nrow(X)!=length(clusters)) stop("Length of Marginal survival data not consistent with cluster length\n"); 
-	 } else if (class(margsurv)=="phreg") { 
-         antpers <- length(margsurv$id)
-	start.time <- margsurv$entry 
-} else { ### coxph 
+	 if (nrow(X)!=length(clusters)) stop("Length of Marginal survival data not consistent with cluster length\n"); # }}}
+	 } else if (class(margsurv)=="phreg") { # {{{
+            ### setting up newdata with factors and strata 
+                antpers <- nrow(data)
+		 rr <- readPhreg(margsurv,data,nr=FALSE)
+		 time2 <- rr$exit
+		 if (!is.null(rr$entry)) start.time <- rr$entry
+		 else start.time <- rep(0,antpers);
+		 status <- rr$status
+	         if (is.null(clusters)) clusters <- rr$clusters
+###		 clusters <- rr$clusters
+###		 print(lapply(rr,summary))
+	# }}}
+} else { ### coxph {{{
 	  antpers <- margsurv$n
 	  id <- 0:(antpers-1)
 	  mt <- model.frame(margsurv)
@@ -1005,23 +1015,21 @@ if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen") {
 	   start <- rep(0,antpers);
 	   beta.fixed <- 0
 	   semi <- 1
-}
+}# }}}
 
-  if (any(abs(start.time)>0)) lefttrunk <- 1 else lefttrunk <- 0
   if (!is.null(start.time)) {
       if (any(abs(start.time)>0)) lefttrunk <- 1  else lefttrunk <- 0;  
   } else lefttrunk <- 0
 
 if (!is.null(margsurv))  {
-  if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen")  { 
+  if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen")  { # {{{
          resi <- residualsTimereg(margsurv,data=data) 
          RR  <- resi$RR
 	 cum <- resi$cumhaz/RR
 	 psurvmarg <- exp(-resi$cumhaz); 
          ptrunc <- rep(1,length(psurvmarg)); 
-	 if (lefttrunk==1) ptrunc <- exp(-resi$cumhazleft); 
-  } 
-  else if (class(margsurv)=="coxph") {  
+	 if (lefttrunk==1) ptrunc <- exp(-resi$cumhazleft); # }}}
+  } else if (class(margsurv)=="coxph") {  # {{{
     ### some problems here when data is different from data used in margsurv
        residuals <- residuals(margsurv)
        cum <- cumhaz <- status-residuals
@@ -1036,26 +1044,19 @@ if (!is.null(margsurv))  {
          cumt <- cbind(baseout$time,baseout$hazard)
 	 cumt <- Cpred(cumt,start.time)[,2]
 	 ptrunc <- exp(-cumt * RR)
-	}
+	}# }}}
   } else if (class(margsurv)=="phreg") {  
-	xx <- margsurv$cox.prep
-	S0i2 <- S0i <- rep(0,length(xx$strata))
-	S0i[xx$jumps+1] <-  1/margsurv$S0
-	if (!is.null(margsurv$coef)) 
-		RR <- c(exp(margsurv$X  %*% margsurv$coef))
-        else RR <- rep(1,antpers) 
-	cumhazt <- cumsumstratasum(S0i,xx$strata,xx$nstrata)$lagsum
-###	cumhazt <- cumsumstratasum(S0i,xx$strata,xx$nstrata)$lagsum
-	### back to original order
-	orig.o <- (1:nrow(xx$X))[xx$ord+1]
-	bto <- order(orig.o)
-	cum <- cumhazt <- cumhazt[bto]
-###	cumhazt <- Cpred(cum,margsurv$exit)[,2]
-	psurvmarg <- c(exp(-cumhazt*RR))
+
+	ppsurvmarg <- predict(margsurv,data,tminus=TRUE,times=time2,individual.time=TRUE)
+        psurvmarg <- ppsurvmarg$surv
+        cum <- ppsurvmarg$cumhaz
+	RR <- ppsurvmarg$RR
         ptrunc <- rep(1,length(psurvmarg)); 
-	start.time <- c(margsurv$entry)
-	status <- c(margsurv$status)
-	time2 <- margsurv$exit
+        if ((lefttrunk==1)) { 
+	  print("pl")
+	  ptrunc <- predict(margsurv,data,tminus=TRUE,times=start.time,individual.time=TRUE)$surv
+	  print("pl")
+	}
   } 
 } 
 
@@ -1065,7 +1066,6 @@ return(list(psurvmarg=psurvmarg,ptrunc=ptrunc,entry=start.time,exit=time2,
 	    status=status,clusters=clusters,cum=cum,RR=RR))
 
 } ## }}}
-
 
 survival.twostageG <- function(margsurv,data=sys.parent(),score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,
              silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,
