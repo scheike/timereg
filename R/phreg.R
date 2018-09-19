@@ -1041,7 +1041,7 @@ predict.phreg <- function(object,newdata,
           se.chaz <-   IsdM$varInt[object$jumps]^.5
 	  covv <- IsdM$covv[object$jumps,,drop=FALSE]
 	  varbeta <- IsdM$vbeta
-	  Pt <- IsdM$Ht[object$jumps,]
+	  Pt <- IsdM$Ht[object$jumps,,drop=FALSE]
    }
    } # }}}
    
@@ -1079,13 +1079,13 @@ predict.phreg <- function(object,newdata,
 ##  print(Xs); print(varbeta); print(dim(Ps)); print((Xs %*% varbeta))
 			Xbeta <- Xs %*% varbeta
 			seXbeta <- rowSums(Xbeta*Xs)^.5
-			cov1 <- Xbeta %*% t(Ps*hazt)
+			cov2 <- cov1 <- Xbeta %*% t(Ps*hazt)
 		        if (robust)	{
 			   covvs <- covv[strata==j,,drop=FALSE]
 			   covvs <- rbind(0,covvs)[where,,drop=FALSE]
-###                        covv1 <- .Call("OutCov",Xbeta,covvs*hazt)$XoZ
-                           covv1 <- Xbeta %*% t(covvs*hazt)
-			   cov1 <- cov1-covv1 
+###                        covv1 <- .Call("OutCov",Xs,covvs*hazt)$XoZ
+                           covv1 <- Xs %*% t((covvs*hazt))
+			   cov1 <- cov1-covv1
 			}
 		} else cov1 <- 0 
 	}# }}}
