@@ -324,7 +324,7 @@ phreg <- function(formula,data,offset=NULL,weights=NULL,...) {# {{{
 
 ##' @export
 readPhreg <- function (object, newdata, nr=TRUE, ...)
-{
+{# {{{
      exit <- entry <- status  <- clusters <- NULL
      if (missing(newdata)) { # {{{
          X <- object$X
@@ -352,6 +352,7 @@ readPhreg <- function (object, newdata, nr=TRUE, ...)
 	    status <- newdata[,allvar[3]]
 	 }
        }
+       print(head(X))
        clusterTerm<- grep("^cluster[(][A-z0-9._:]*",colnames(X),perl=TRUE)
        ## remove clusterTerm from design
        if (length(clusterTerm)==1) { 
@@ -378,7 +379,7 @@ readPhreg <- function (object, newdata, nr=TRUE, ...)
      }# }}}
 return(list(X=X,strata=strataNew,entry=entry,exit=exit,status=status,
 	    clusters=clusters))
-}
+}# }}}
 
 ###}}} phreg
 
