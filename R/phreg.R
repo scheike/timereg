@@ -1210,8 +1210,10 @@ plot.predictphreg  <- function(x,se=FALSE,add=FALSE,ylim=NULL,xlim=NULL,
   j <- whichx[i]
 
   if (type[1]=="surv") xx <- x$surv else xx <- x$cumhaz
-  if (type[1]=="surv") upper <- x$surv.upper else upper <- cumhaz.upper
-  if (type[1]=="surv") lower <- x$surv.lower else lower <- cumhaz.lower
+  if (se) {
+     if (type[1]=="surv") upper <- x$surv.upper else upper <- cumhaz.upper
+     if (type[1]=="surv") lower <- x$surv.lower else lower <- cumhaz.lower
+  }
 
   if (!add) 
   plot(x$times,xx[j,],type="s",
