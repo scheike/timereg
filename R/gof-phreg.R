@@ -142,9 +142,8 @@ gofM.phreg  <- function(formula,data,offset=NULL,weights=NULL,modelmatrix=NULL,
 
 if (is.null(modelmatrix)) stop(" must give matrix for cumulating residuals\n"); 
 
-
 cox1 <- phreg(formula,data,offset=NULL,weights=NULL,Z=modelmatrix,cumhaz=FALSE,...) 
-offsets <- as.matrix(cox1$model.frame[,names(cox1$coef)]) %*% cox1$coef
+offsets <- cox1$X %*% cox1$coef
 if (!is.null(offset)) offsets <- offsets*offset
 if (!is.null(cox1$strata)) 
      coxM <- phreg(cox1$model.frame[,1]~modelmatrix+strata(cox1$strata),data,offset=offsets,weights=weights,no.opt=TRUE,cumhaz=FALSE,...)
@@ -196,6 +195,33 @@ return(out)
 gofZ.phreg  <- function(formula,data,vars,offset=NULL,weights=NULL,breaks=10,equi=TRUE,
 			n.sim=1000,silent=1,...)
 {# {{{
+ gres <- list()
+ res <- matrix(0,length(vars),2)
+ colnames(res) <- c("Sup_z |U(tau,z)|","pval")
+ rownames(res) <- vars
+
+ i <- 1
+for (vv in vars) {
+ modelmatrix <- cumContr(data[,vv],breaks=breaks,equi=equi)
+ lres <- gofM.phreg(formula,data,modelmatrix=modelmatrix) 
+
+ res[i,] <- c(lres$Utlast,lres$pval.last)
+ i <- i+1
+
+ lres <- list(lres)
+ names(lres) <- vv
+ gres <- c(gres,lres)
+}
+
+out <- list(res=res,Zres=gres,type="modelmatrix")
+class(out) <- "gof.phreg"
+
+return(out)
+}# }}}
+
+gofZ.phregGam  <- function(formula,data,vars,offset=NULL,weights=NULL,breaks=10,equi=TRUE,
+			n.sim=1000,silent=1,...)
+{# {{{
 
  res <- matrix(0,length(vars),2)
  colnames(res) <- c("Sup_z |U(tau,z)|","pval")
@@ -206,7 +232,7 @@ for (vv in vars) {
  modelmatrix <- cumContr(data[,vv],breaks=breaks,equi=equi)
 
 cox1 <- phreg(formula,data,offset=NULL,weights=NULL,Z=modelmatrix,cumhaz=FALSE,...) 
-offsets <- as.matrix(cox1$model.frame[,names(cox1$coef)]) %*% cox1$coef
+offsets <- cox1$X %*% cox1$coe
 if (!is.null(offset)) offsets <- offsets*offset
 
 if (!is.null(cox1$strata)) 
