@@ -1243,9 +1243,6 @@ simRecurrent <- function(n,cumhaz,death.cumhaz=NULL,cumhaz2=NULL,
   tall <- dtransform(tall,status=0,time>dtime)
   tall <- dtransform(tall,time=dtime,time>dtime)
   tt <- tall
-###  gemsim <- as.data.frame(matrix(0,max.recurrent*n,ncol(tall)))
-###  names(gemsim) <- names(tall)
-###  gemsim[1:n,] <- tall; 
   nrr <- n
   i <- 1; 
   while (any(tt$time<tt$dtime) & i < max.recurrent) {
@@ -1257,13 +1254,9 @@ simRecurrent <- function(n,cumhaz,death.cumhaz=NULL,cumhaz2=NULL,
 	  tt <- dtransform(tt,status=0,time>dtime)
 	  tt <- dtransform(tt,time=dtime,time>dtime)
 	  nt <- nrow(tt)
-###	  rownames(tt) <- c((nrr+1):(nrr+nt))
-###	  gemsim[(nrr+1):(nrr+nt),] <- tt
-###	  print(rownames(tall)); print(rownames(tt))
 	  tall <- rbind(tall,tt,row.names=NULL)
 	  nrr <- nrr+nt
   }
-###  tall <- gemsim[1:nrr,]
   dsort(tall) <- ~id+entry+time
 
   ### cause 2 is there then decide if jump is 1 or 2

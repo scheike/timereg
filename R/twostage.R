@@ -1047,15 +1047,13 @@ if (!is.null(margsurv))  {
 	}# }}}
   } else if (class(margsurv)=="phreg") {  
 
-	ppsurvmarg <- predict(margsurv,data,tminus=TRUE,times=time2,individual.time=TRUE)
+	ppsurvmarg <- predict(margsurv,data,tminus=TRUE,times=time2,individual.time=TRUE,se=FALSE)
         psurvmarg <- ppsurvmarg$surv
         cum <- ppsurvmarg$cumhaz
 	RR <- ppsurvmarg$RR
         ptrunc <- rep(1,length(psurvmarg)); 
         if ((lefttrunk==1)) { 
-	  print("pl")
-	  ptrunc <- predict(margsurv,data,tminus=TRUE,times=start.time,individual.time=TRUE)$surv
-	  print("pl")
+	  ptrunc <- predict(margsurv,data,tminus=TRUE,times=start.time,individual.time=TRUE,se=FALSE)$surv
 	}
   } 
 } 

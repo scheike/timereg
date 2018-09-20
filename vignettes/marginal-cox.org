@@ -58,13 +58,13 @@ Attaching package: ‘mets’
 The following object is masked _by_ ‘.GlobalEnv’:
 
     object.defined
-        time status x cluster    mintime lefttime truncated
-1 0.05422931      1 0       1 0.05422931        0         0
-2 0.17039438      1 0       1 0.05422931        0         0
-3 0.38195839      1 0       1 0.05422931        0         0
-4 0.07796585      1 1       1 0.05422931        0         0
-5 0.24558798      1 0       1 0.05422931        0         0
-6 2.04113774      1 0       2 0.64696210        0         0
+       time status x cluster   mintime lefttime truncated
+1 0.1406317      1 0       1 0.1406317        0         0
+2 0.4593768      1 0       1 0.1406317        0         0
+3 1.0952678      1 0       1 0.1406317        0         0
+4 0.2057554      1 1       1 0.1406317        0         0
+5 0.6776620      1 0       1 0.1406317        0         0
+6 1.6093755      1 0       2 0.1092390        0         0
 #+end_example
 
 Now fitting the and producing robust standard errors for both 
@@ -113,21 +113,21 @@ computed in mets as:
 #+begin_example
 
     n events
- 5000   4825
+ 5000   4854
 
  1000 clusters
 
   Estimate     S.E.  dU^-1/2 P-value
-x 0.330092 0.030987 0.029039       0
+x 0.287859 0.028177 0.028897       0
            [,1]
-1 -1.185501e-03
-2 -7.393353e-05
-3 -2.224964e-04
-4 -4.183305e-04
-5  1.948619e-04
-6  1.007386e-03
+1 -3.461601e-04
+2 -1.449189e-03
+3 -3.898156e-05
+4  4.215605e-04
+5  3.425390e-04
+6 -7.706668e-05
            [,1]
-[1,] 0.03098668
+[1,] 0.02817714
 #+end_example
 
 Looking at the plot  with robust standard errors 
@@ -154,12 +154,51 @@ Looking at the plot  with robust standard errors
 #+RESULTS:
 : Error: unexpected input in "<<"
 
-
 #+LATEX: \captionof{figure}{Baseline with robust standard errors.}
 label:fig:robcox1
 #+END_marginfigure
 
-Just to check that we can recover the model we also estimate the dependence parameter 
+
+One can also make survival prediction with robust standard errors using the phreg.
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+   pp <-  predict(out,data[1:20,],se=TRUE,robust=TRUE)
+#+END_SRC
+
+#+RESULTS:
+
+#+NAME: robcox2
+#+BEGIN_SRC R :exports both :results output graphics :file robcox2.jpg :ravel fig=TRUE,include=FALSE 
+  plot(pp,se=TRUE,whichx=1:10)
+#+END_SRC
+
+#+RESULTS: robcox2
+[[file:robcox2.jpg]]
+
+#+RESULTS: robcox1
+[[file:robcox2.jpg]]
+
+#+BEGIN_marginfigure
+# +CAPTION: Survival predictions with robust standard errors for Cox model label:fig:robcox2
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: rob2
+[[file:robcox2.jpg]]
+
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<robcox2>>
+#+END_SRC
+
+#+RESULTS:
+: Error: unexpected input in "<<"
+
+
+#+LATEX: \captionof{figure}{Survival predictions with robust standard errors for Cox model}
+label:fig:robcox2
+#+END_marginfigure
+
+
+Finally, just to check that we can recover the model we also estimate the dependence parameter 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 tt <- twostageMLE(out,data=data)
@@ -171,8 +210,8 @@ summary(tt)
 Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
-               Coef.         SE        z P-val Kendall tau         SE
-dependence1 2.013446 0.09105704 22.11192     0   0.5016752 0.01130599
+                Coef.         SE        z P-val Kendall tau        SE
+dependence1 0.5316753 0.03497789 15.20032     0   0.2100093 0.0109146
 
 $type
 NULL
@@ -180,6 +219,9 @@ NULL
 attr(,"class")
 [1] "summary.mets.twostage"
 #+end_example
+
+
+
 
 
 *** Goodness of fit 
@@ -212,7 +254,7 @@ gout
 #+RESULTS[<2018-09-10 14:32:08> 8bde76b6fea8c56142541f6eeb247699c5236c44]:
 : Cumulative score process test for Proportionality:
 :   Sup|U(t)|  pval
-: x  25.51776 0.638
+: x  30.24353 0.401
 
 
 The p-value reflects wheter the observed score process is consistent with
@@ -273,10 +315,10 @@ partial likelihood for clusters.
 #+RESULTS[<2018-09-11 09:16:22> ca332c824091210c9d8c97177e43d7db5326a8ae]:
 : 
 :     n events
-:  5000   4825
+:  5000   4854
 : 
 :   Estimate     S.E.  dU^-1/2 P-value
-: x 0.763506 0.034985 0.041116       0
+: x 0.406307 0.032925 0.039226       0
 
 The cumulative score processes can still be used to validate the model 
 
@@ -287,8 +329,8 @@ summary(gg)
 
 #+RESULTS[<2018-09-11 09:16:22> 6815b9399a490044f01367d6c2ebbab00700d2fb]:
 : Cumulative score process test for Proportionality:
-:   Sup|U(t)| pval
-: x  83.32009    0
+:   Sup|U(t)|  pval
+: x  27.55616 0.195
 
  
 

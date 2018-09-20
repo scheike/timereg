@@ -352,7 +352,6 @@ readPhreg <- function (object, newdata, nr=TRUE, ...)
 	    status <- newdata[,allvar[3]]
 	 }
        }
-       print(head(X))
        clusterTerm<- grep("^cluster[(][A-z0-9._:]*",colnames(X),perl=TRUE)
        ## remove clusterTerm from design
        if (length(clusterTerm)==1) { 
@@ -1022,7 +1021,7 @@ predictPhreg <- function(x,jumptimes,S0,beta,time=NULL,X=NULL,surv=FALSE,band=FA
 ##' @export
 predict.phreg <- function(object,newdata,
 		      times=NULL,individual.time=FALSE,tminus=FALSE,
-		      se=FALSE,robust=FALSE,conf.type="log",conf.int=0.95,...) 
+		      se=TRUE,robust=FALSE,conf.type="log",conf.int=0.95,...) 
 {# {{{ default is all time-points from the object
 
    ### take baseline and strata from object# {{{
@@ -1077,14 +1076,13 @@ predict.phreg <- function(object,newdata,
 		if (object$p>0) {
 			Ps <- Pt[strata==j,,drop=FALSE]
 			Ps <- rbind(0,Ps)[where,,drop=FALSE]
-##  print(Xs); print(varbeta); print(dim(Ps)); print((Xs %*% varbeta))
+                        ##  print(Xs); print(varbeta); print(dim(Ps)); print((Xs %*% varbeta))
 			Xbeta <- Xs %*% varbeta
 			seXbeta <- rowSums(Xbeta*Xs)^.5
 			cov2 <- cov1 <- Xbeta %*% t(Ps*hazt)
 		        if (robust)	{
 			   covvs <- covv[strata==j,,drop=FALSE]
 			   covvs <- rbind(0,covvs)[where,,drop=FALSE]
-###                        covv1 <- .Call("OutCov",Xs,covvs*hazt)$XoZ
                            covv1 <- Xs %*% t((covvs*hazt))
 			   cov1 <- cov1-covv1
 			}

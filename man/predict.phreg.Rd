@@ -21,7 +21,7 @@
 \title{Predictions from proportional hazards model}
 \usage{
 \method{predict}{phreg}(object, newdata, times = NULL,
-  individual.time = FALSE, tminus = FALSE, se = FALSE, robust = FALSE,
+  individual.time = FALSE, tminus = FALSE, se = TRUE, robust = FALSE,
   conf.type = "log", conf.int = 0.95, ...)
 }
 \arguments{
