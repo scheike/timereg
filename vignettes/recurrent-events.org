@@ -1,0 +1,536 @@
+#+TITLE: Recurrent Events 
+#+AUTHOR: Klaus Holst & Thomas Scheike
+#+PROPERTY: header-args:R  :session *R* :cache no :width 550 :height 450
+#+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
+#+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
+#+INCLUDE: header.org
+#+OPTIONS: toc:nil timestamp:nil
+
+#+BEGIN_SRC emacs-lisp :results silent :exports results :eval
+(setq org-latex-listings t)
+(setq org-latex-compiler-file-string 
+"%%\\VignetteIndexEntry{Recurrent Events}\n%%\\VignetteEngine{R.rsp::tex}\n%%\\VignetteKeyword{R}\n%%\\VignetteKeyword{package}\n%%\\VignetteKeyword{vignette}\n%%\\VignetteKeyword{LaTeX}\n")
+#+END_SRC
+
+----- 
+# +LaTeX: \clearpage
+
+* Overview 
+
+For recurrent events data it is often of interest to compute basis descriptive
+quantities as a first go at getting some basic understanding of the phenonmenon
+studied. We here demonstrate how one can compute 
+
+ - the marginal mean 
+ - the variance 
+ - the probability of exceeding k events
+
+
+In addition several tools can be used for simulating recurrent events and
+bivariate recurrent events data, in the case with a possible terminating event. 
+
+We start by simulating some recurrent events data with two type of events with
+cumulative hazards 
+
+ - $\Lambda_1(t)$
+ - $\Lambda_4(t)$
+ - $\Lambda_D(t)$
+
+ where we consider types 1 and 4 and with a rate of the terminal event given by 
+ $\Lambda_D(t)$. We let the events be independent, but could also specify a random effects
+ structure to generate dependence. 
+
+
+** Marginal Mean 
+
+ We start by estimating the marginal mean $E(N_1(t \wedge D))$ where $D$ is the timing of the terminal event. 
+
+ This is based on a  rate model  for 
+
+ - the type 1 events 
+ - the terminal event 
+
+and is defined as $\mu_1(t)=E(N_1^*(t))$ 
+\begin{align}
+   \int_0^t S(u) d R_1(u)	
+\end{align}
+where $S(t)=P(D \geq t)$ and $dR_1(t) = E(dN_1^*(t) | D \geq t)$ 
+
+and can therefore be estimated by a 
+
+ - Kaplan-Meier estimator, $\hat S(u)$ 
+ - Nelson-Aalen estimator for $R_1(t)$
+
+\begin{align}
+  \hat R_1(t) & =   \sum_i \int_0^t  \frac{1}{Y_\bullet (s)}  dN_{1i}(s)
+\end{align}
+where $Y_{\bullet}(t)= \sum_i Y_i(t)$ such that the estimator is 
+\begin{align}
+  \hat \mu_1(t) & =    \int_0^t \hat S(u) d\hat R_1(u).
+\end{align}
+
+Cook & Lawless (1997), and developed further in Gosh & Lin (2000). 
+
+The variance can be estimated based on the asymptotic expansion 
+of $\hat \mu_1(t) - \mu_1(t)$
+\begin{align*}
+  & \sum_i \int_0^t \frac{S(s)}{\pi(s)} dM_{i1}  - \mu_1(t) \int_0^t  \frac{1}{\pi(s)} dM_i^d +  \int_0^t \frac{\mu_1(s) }{\pi(s)} dM_i^d,
+\end{align*}
+
+with mean-zero processes 
+
+ - $M_i^d(t) = N_i^D(t)- \int_0^t Y_i(s) d \Lambda^D(s)$, 
+ - $M_{i1}(t) = N_{i1}(t) - \int_0^t Y_{i}(s) dR_1(s)$. 
+
+as in Gosh & Lin (2000)
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+library(mets)
+set.seed(1000) ## to control output in simulatins for p-values below.
+
+data(base1cumhaz)
+data(base4cumhaz)
+data(drcumhaz)
+ddr <- drcumhaz
+base1 <- base1cumhaz
+base4 <- base4cumhaz
+rr <- simRecurrent(1000,base1,death.cumhaz=ddr)
+rr$x <- rnorm(nrow(rr)) 
+rr$strata <- floor((rr$id-0.01)/500)
+dlist(rr,.~id| id %in% c(1,7,9))
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Loading required package: timereg
+Loading required package: survival
+Loading required package: lava
+lava version 1.6.3
+mets version 1.2.4
+
+Attaching package: ‘mets’
+
+The following object is masked _by_ ‘.GlobalEnv’:
+
+    object.defined
+id: 1
+  entry time  status rr dtime fdeath death start stop  x     strata
+1 0     133.1 0      1  133.1 1      1     0     133.1 1.185 0     
+------------------------------------------------------------ 
+id: 7
+     entry  time   status rr dtime fdeath death start  stop   x       strata
+7       0.0  813.3 1      1  1729  1      0        0.0  813.3  1.5495 0     
+1004  813.3 1288.4 1      1  1729  1      0      813.3 1288.4  1.0535 0     
+1658 1288.4 1315.4 1      1  1729  1      0     1288.4 1315.4  1.5330 0     
+2150 1315.4 1449.4 1      1  1729  1      0     1315.4 1449.4  0.8944 0     
+2539 1449.4 1726.1 1      1  1729  1      0     1449.4 1726.1 -0.1931 0     
+2851 1726.1 1729.4 0      1  1729  1      1     1726.1 1729.4  0.4081 0     
+------------------------------------------------------------ 
+id: 9
+     entry  time   status rr dtime fdeath death start  stop   x       strata
+9       0.0  433.5 1      1  5110  0      0        0.0  433.5 -0.4660 0     
+1006  433.5 2451.1 1      1  5110  0      0      433.5 2451.1  1.0647 0     
+1659 2451.1 3629.7 1      1  5110  0      0     2451.1 3629.7 -0.2506 0     
+2151 3629.7 3644.7 1      1  5110  0      0     3629.7 3644.7 -0.6748 0     
+2540 3644.7 3695.8 1      1  5110  0      0     3644.7 3695.8  0.6510 0     
+2852 3695.8 3890.7 1      1  5110  0      0     3695.8 3890.7 -0.2033 0     
+3112 3890.7 5110.0 0      1  5110  0      0     3890.7 5110.0 -1.6981 0
+#+end_example
+
+The status variable keeps track of the recurrent evnts and their type, and death the timing of 
+death.
+
+
+#+NAME: rec1
+#+BEGIN_SRC R :exports both :results output graphics :file rec1.jpg :ravel fig=TRUE,include=FALSE 
+##  to fit non-parametric models with just a baseline 
+xr <- phreg(Surv(entry,time,status)~cluster(id),data=rr)
+dr <- phreg(Surv(entry,time,death)~cluster(id),data=rr)
+par(mfrow=c(1,3))
+bplot(dr,se=TRUE)
+title(main="death")
+bplot(xr,se=TRUE)
+### robust standard errors 
+rxr <-   robust.phreg(xr,fixbeta=1)
+bplot(rxr,se=TRUE,robust=TRUE,add=TRUE,col=4)
+
+## marginal mean of expected number of recurrent events 
+out <- recurrentMarginal(xr,dr)
+bplot(out,se=TRUE,ylab="marginal mean",col=2)
+#+END_SRC
+
+#+RESULTS: rec1
+[[file:rec1.jpg]]
+
+#+BEGIN_marginfigure
+# +CAPTION: Marginal mean for number of type 1 events, rate for death (panel (a)), rate for type 1 among survivors (panel (b)), and marginal mean (panel (c)) label:fig:rec1
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: rec1
+[[file:rec1.jpg]]
+
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<rec1>>
+#+END_SRC
+
+#+RESULTS:
+: Error: unexpected input in "<<"
+
+#+LATEX: \captionof{figure}{Marginal mean for number of type 1 events, rate for death (panel (a)), rate for type 1 among survivors (panel (b)), and marginal mean (panel (c)).}
+label:fig:rec
+#+END_marginfigure
+
+We can do the same with strata 
+
+#+NAME: rec2
+#+BEGIN_SRC R :exports both :results output graphics :file rec2.jpg :ravel fig=TRUE,include=FALSE 
+xr <- phreg(Surv(entry,time,status)~strata(strata)+cluster(id),data=rr)
+dr <- phreg(Surv(entry,time,death)~strata(strata)+cluster(id),data=rr)
+par(mfrow=c(1,3))
+bplot(dr,se=TRUE)
+title(main="death")
+bplot(xr,se=TRUE)
+rxr <-   robust.phreg(xr,fixbeta=1)
+bplot(rxr,se=TRUE,robust=TRUE,add=TRUE,col=1:2)
+
+out <- recurrentMarginal(xr,dr)
+bplot(out,se=TRUE,ylab="marginal mean",col=1:2)
+#+END_SRC
+
+#+RESULTS: rec2
+[[file:rec2.jpg]]
+
+#+BEGIN_marginfigure
+# +CAPTION: Recurrent events label:fig:rec2
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: rec2
+[[file:rec2.jpg]]
+
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<rec2>>
+#+END_SRC
+
+#+RESULTS:
+: Error: unexpected input in "<<"
+
+
+#+LATEX: \captionof{figure}{Recurrent events}
+label:fig:rec2
+#+END_marginfigure
+
+
+Furhter, if we adjust for covariates for the two rates we can still do
+predictions of marginal mean, what can be plotted is the baseline marginal mean, 
+that is for the covariates equal to 0 for both models.
+
+#+NAME: rec3
+#+BEGIN_SRC R :exports both :results output graphics :file rec3.jpg :ravel fig=TRUE,include=FALSE 
+########################################################################
+###   cox case        ##################################################
+########################################################################
+xr <- phreg(Surv(entry,time,status)~x+cluster(id),data=rr)
+dr <- phreg(Surv(entry,time,death)~x+cluster(id),data=rr)
+par(mfrow=c(1,3))
+bplot(dr,se=TRUE)
+title(main="death")
+bplot(xr,se=TRUE)
+rxr <- robust.phreg(xr)
+bplot(rxr,se=TRUE,robust=TRUE,add=TRUE,col=1:2)
+
+out <- recurrentMarginal(xr,dr)
+bplot(out,se=TRUE,ylab="marginal mean",col=1:2)
+#+END_SRC
+
+#+RESULTS: rec3
+[[file:rec3.jpg]]
+
+#+BEGIN_marginfigure
+# +CAPTION: Recurrent events label:fig:rec3
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: rec3
+[[file:rec3.jpg]]
+
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<rec3>>
+#+END_SRC
+
+#+RESULTS:
+: Error: unexpected input in "<<"
+
+#+LATEX: \captionof{figure}{Recurrent events with cox models for rates.}
+label:fig:rec3
+#+END_marginfigure
+
+
+** Other marginal properties 
+
+
+
+ - $P(N_1^*(t) \ge k)$ 
+   - cumulative incidence of $T_{k} = \inf \{ t: N_1^*(t)=k \}$ with competing $D$. 
+
+We note also that $N_1^*(t)^2$ can be written as
+\begin{align*}
+   \sum_{k=0}^K  \int_0^t I(D > s) I(N_1^*(s-)=k) f(k) dN_1^*(s)
+\end{align*}
+with $f(k)=(k+1)^2 - k^2$, such that its mean can be written as 
+\begin{align*}
+	\sum_{k=0}^K \int_0^t S(s) f(k) P(N_1^*(s-)= k  | D  \geq s) E( dN_1^*(s)  | N_1^*(s-)=k, D> s) 
+\end{align*}
+and estimated by
+\begin{align*}
+\hat \mu_{1,2}(t) & = 
+	\sum_{k=0}^K \int_0^t \hat S(s) f(k) 
+	\frac{Y_{1\bullet}^k(s)}{Y_\bullet (s)} \frac{1}{Y_{1\bullet}^k(s)} d N_{1\bullet}^k(s)= \sum_{i=1}^n \int_0^t \hat S(s) f(N_{i1}(s-)) \frac{1}{Y_\bullet (s)} d N_{i1}(s),
+\end{align*}
+Compared to "product-limit" estimator for $E( (N_1^*(t))^2 )$ 
+\begin{align}
+  \hat \mu_{1,2}(t) & =    \sum_{k=0}^K k^2 ( \hat F_{k}(t) - \hat F_{k+1}(t) ).
+\end{align}
+
+
+Probabilty  of exceeding "k"
+
+Note also that  $I(N_1^*(t) \geq k)$ is 
+\begin{align*}
+	\int_0^t I(D > s) I(N_1^*(s-)=k-1) dN_1^*(s),
+\end{align*}
+suggesting that its mean can be computed as
+\begin{align*}
+\int_0^t S(s) P(N_1^*(s-)= k-1  | D  \geq s) E( dN_1^*(s)  | N_1^*(s-)=k-1, D> s) 
+\end{align*}
+and estimated by 
+\begin{align*}
+\tilde F_k(t) = \int_0^t \hat S(s)  \frac{Y_{1\bullet}^{k-1}(s)}{Y_\bullet (s)} 
+          	\frac{1}{Y_{1\bullet}^{k-1}(s)} d N_{1\bullet}^{k-1}(s).
+\end{align*}
+
+
+#+NAME: rec4
+#+BEGIN_SRC R :exports both :results output graphics :file rec4.jpg :ravel fig=TRUE,include=FALSE 
+cor.mat <- corM <- rbind(c(1.0, 0.6, 0.9), c(0.6, 1.0, 0.5), c(0.9, 0.5, 1.0))
+rr <- simRecurrent(1000,base1,cumhaz2=base4,death.cumhaz=ddr)
+rr <-  count.history(rr)
+dtable(rr,~death+status)
+
+oo <- prob.exceedRecurrent(rr,1)
+bplot(oo)
+#+END_SRC
+
+#+RESULTS: rec4
+[[file:rec4.jpg]]
+
+#+BEGIN_marginfigure
+# +CAPTION: Recurrent events label:fig:rec4
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: rec4
+[[file:rec4.jpg]]
+
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<rec4>>
+#+END_SRC
+
+#+RESULTS:
+: Error: unexpected input in "<<"
+
+
+#+LATEX: \captionof{figure}{Recurrent events: probability of exceeding k events}
+label:fig:rec4
+#+END_marginfigure
+
+
+Mean and variance of number of recurrent events 
+#+NAME: rec4MV
+#+BEGIN_SRC R :exports both :results output graphics :file rec4MV.jpg :ravel fig=TRUE,include=FALSE 
+par(mfrow=c(1,2))
+with(oo,plot(time,mu,col=2,type="l"))
+###
+with(oo,plot(time,varN,type="l"))
+#+END_SRC
+
+#+RESULTS: rec4MV
+[[file:rec4MV.jpg]]
+
+#+BEGIN_marginfigure
+# +CAPTION: Recurrent events label:fig:rec4MV
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: rec4MV
+[[file:rec4MV.jpg]]
+
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<rec4MV>>
+#+END_SRC
+
+#+RESULTS:
+: Error: unexpected input in "<<"
+
+
+#+LATEX: \captionof{figure}{Recurrent events: probability of exceeding k events}
+label:fig:rec4MV
+#+END_marginfigure
+
+
+
+
+#+NAME: rec4Bi
+#+BEGIN_SRC R :exports both :results output graphics :file rec4Bi.jpg :ravel fig=TRUE,include=FALSE 
+### Bivariate probability of exceeding 
+oo <- prob.exceedBiRecurrent(rr,1,2,exceed1=c(1,5,10),exceed2=c(1,2,3))
+with(oo, matplot(time,pe1e2,type="s"))
+nc <- ncol(oo$pe1e2)
+legend("topleft",legend=colnames(oo$pe1e2),lty=1:nc,col=1:nc)
+#+END_SRC
+
+
+#+RESULTS: rec4Bi
+[[file:rec4Bi.jpg]]
+
+#+BEGIN_marginfigure
+# +CAPTION: Recurrent events label:fig:rec4Bi
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: rec4Bi
+[[file:rec4Bi.jpg]]
+
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<rec4Bi>>
+#+END_SRC
+
+#+RESULTS:
+: Error: unexpected input in "<<"
+
+
+#+LATEX: \captionof{figure}{Recurrent events: probability of exceeding k events}
+label:fig:rec4Bi
+#+END_marginfigure
+
+
+
+
+** Dependence between events: Covariance 
+
+Covariance among two types of events 
+\begin{align}
+\rho(t) &  = \frac{ E(N_1^*(t) N_2^*(t) )  - \mu_1(t) \mu_2(t) }{ \mbox{sd}(N_1^*(t)) \mbox{sd}(N_2^*(t)) }
+\end{align}
+where  
+ - $E(N_1^*(t) N_2^*(t))$. 
+
+\begin{align*}
+  E(N_1^*(t) N_2^*(t)) &   = E( \int_0^t N_1^*(s-) dN_2^*(s) ) + E( \int_0^t N_2^*(s-) dN_1^*(s) ) 
+\end{align*}
+
+Recall that $N_1^*(t \wedge D)$  and $N_2^*(t \wedge D)$. 
+
+
+\begin{align*}
+E(\int_0^t N_1^*(s-) dN_2^*(s) ) & = \sum_k E( \int_0^t k I(N_1^*(s-)=k) I(D \geq s)  dN_2^*(s) ) 
+\end{align*}
+\begin{align*}
+= \sum_k \int_0^t S(s) k P(N_1^*(s-)= k  | D  \geq s) E( dN_2^*(s)  | N_1^*(s-)=k, D \geq s) 
+\end{align*}
+estimated by 
+\begin{align*}
+  & \sum_k \int_0^t \hat S(s) k \frac{Y_1^k(s)}{Y_\bullet (s)} \frac{1}{Y_1^k(s)} d \tilde N_{2,k}(s),
+\end{align*}
+ - $Y_j^k(t) = \sum Y_i(t) I( N_{ji}^*(s-)=k)$ for $j=1,2$, 
+ - $\tilde N_{j,k}(t) = \sum_i \int_0^t I(N_{ij^o}(s-)=k) dN_{ij}(s)$ 
+
+ Estimate of $ E(N_1^*(t) N_2^*(t))$ 
+\begin{align*}
+  \sum_k \int_0^t \hat S(s) k \frac{Y_1^k(s)}{Y_\bullet (s)} \frac{1}{Y_1^k(s)} d \tilde N_{2,k}(s) +
+   \sum_k \int_0^t \hat S(s) k \frac{Y_2^k(s)}{Y_\bullet (s)} \frac{1}{Y_2^k(s)} d \tilde N_{1,k}(s).
+\end{align*}
+
+
+ - Without terminating event covariance is useful nonpar measure
+ - With terminating event dependence generated by terminating event.
+ - In reality what is of interest would be
+   independence among survivors 
+   - if $N_1$ not predicitive for $N_2$
+   \begin{align}
+      E( dN_2^*(t)  | N_1^*(t-)=k, D \geq t) =  E( dN_2^*(t)  | D \geq t) 
+   \end{align}
+   - if $N_2$ not predicitive for $N_1$
+   \begin{align}
+      E( dN_1^*(t)  | N_2^*(t-)=k, D \geq t) =  E( dN_1^*(t)  | D \geq t) 
+   \end{align}
+
+
+If the two processes are independent among survivors then 
+\begin{align}
+ E( dN_2^*(t)  | N_1^*(t-)=k, D \geq t) =  E( dN_2^*(t)  | D \geq t) 
+\end{align}
+so 
+\begin{align*}
+  E( \int_0^t N_1^*(s-) dN_2^*(s) )  & =  \int_0^t S(s) E(N_1^*(s-) | D  \geq s) E( dN_2^*(s)  | D \geq s) 
+\end{align*}
+and 
+\begin{align*}
+  \int_0^t \hat S(s) \{  \sum_k k \frac{Y_1^k(s)}{Y_\bullet (s)} \} \frac{1}{Y_\bullet (s)} dN_{2\bullet}(s),
+\end{align*}
+where $N_{j\bullet}(t) = \sum_i \int_0^t dN_{j,i}(s)$.
+
+Under the independence $E(N_1^*(t) N_2^*(t))$  is estimated 
+\begin{align*}
+  \int_0^t \hat S(s) \{  \sum_k k \frac{Y_1^k(s)}{Y_\bullet (s)} \} \frac{1}{Y_\bullet (s)} dN_{2\bullet}(s) 
+    + \int_0^t \hat S(s) \{  \sum_k k \frac{Y_2^k(s)}{Y_\bullet (s)} \} \frac{1}{Y_\bullet (s)} dN_{1\bullet}(s).
+\end{align*}
+
+
+Both estimators, $\hat E(N_1^*(t) N_2^*(t))$ and $\hat E_I(N_1^*(t) N_2^*(t))$,  as well as 
+$\hat E(N_1^*(t))$ and $\hat E(N_2^*(t))$, 
+have asymptotic expansions that can be written as a sum of iid processes, similarly to the arguments 
+of Ghosh & Lin 2000, $\sum_i \Psi_i(t)$.  
+
+We can thus estimate the standard errors and of the estimators and their difference  
+$\hat E(N_1^*(t) N_2^*(t))- \hat E_I(N_1^*(t) N_2^*(t))$. 
+
+Terms for 
+ - N1 -> N2 : $E( \int_0^t N_1^*(s-) dN_2^*(s) )$
+ - N2 -> N1 : $E( \int_0^t N_2^*(s-) dN_1^*(s) )$
+
+
+#+NAME: rec5
+#+BEGIN_SRC R :exports both :results output graphics :file rec5.jpg :ravel fig=TRUE,include=FALSE 
+rr$strata <- 1
+dtable(rr,~death+status)
+
+covrp <- covarianceRecurrent(rr,1,2,status="status",death="death",
+                        start="entry",stop="time",id="id",names.count="Count")
+par(mfrow=c(1,3)) 
+plot(covrp)
+
+### with strata, each strata in matrix column, provides basis for fast Bootstrap
+covrpS <- covarianceRecurrentS(rr,1,2,status="status",death="death",
+        start="entry",stop="time",strata="strata",id="id",names.count="Count")
+#+END_SRC
+
+#+RESULTS: rec5
+[[file:rec5.jpg]]
+
+#+BEGIN_marginfigure
+# +CAPTION: Recurrent events label:fig:rec5
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: rec5
+[[file:rec5.jpg]]
+
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<rec5>>
+#+END_SRC
+
+#+RESULTS:
+: Error: unexpected input in "<<"
+
+
+#+LATEX: \captionof{figure}{Covariance between events
+label:fig:rec5
+#+END_marginfigure
+
+
+

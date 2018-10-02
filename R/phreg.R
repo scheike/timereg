@@ -788,7 +788,6 @@ km <- function(formula,data=data,conf.type="log",conf.int=0.95,robust=TRUE)
 ##' Cumulative incidence with robust standard errors 
 ##'
 ##' Cumulative incidence with robust standard errors 
-##' Robust variance is default variance with the summary. 
 ##' @param formula formula with 'Surv' outcome (see \code{coxph})
 ##' @param data data frame
 ##' @param cause NULL looks at all, otherwise specify which cause to consider

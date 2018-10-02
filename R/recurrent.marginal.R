@@ -949,7 +949,7 @@ squareintHdM <- function(phreg,ft=NULL,fixbeta=NULL,...)
   mid <- max(id)+1
   ### also weights 
   w <- c(xx$weights)
-  xxx <- w*(ft*S0i-rr*cumS0i2)
+  xxx <- (ft*S0i-rr*cumS0i2)
   ssf <- cumsumidstratasum(xxx,id,mid,xx$strata,xx$nstrata)$sumsquare
   ss <-  revcumsumidstratasum(w*rr,id,mid,xx$strata,xx$nstrata)$lagsumsquare*cumS0i2^2
   covv <- covfridstrata(xxx,w*rr,id,mid,xx$strata,xx$nstrata)$covs*cumS0i2

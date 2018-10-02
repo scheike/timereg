@@ -42,7 +42,7 @@ counting process integral, and this is implemented in prob.exceedRecurrent
 ########################################
 ## getting some rates to mimick 
 ########################################
-
+library(mets)
 data(base1cumhaz)
 data(base4cumhaz)
 data(drcumhaz)
