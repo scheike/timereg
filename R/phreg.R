@@ -107,7 +107,8 @@ phreg0 <- function(X,entry,exit,status,id=NULL,strata=NULL,beta,stderr=TRUE,meth
 
 phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=NULL,
              strata.name=NULL,cumhaz=TRUE,
-             beta,stderr=TRUE,method="NR",no.opt=FALSE,Z=NULL,propodds=NULL,AddGam=NULL,...) {
+             beta,stderr=TRUE,method="NR",no.opt=FALSE,Z=NULL,propodds=NULL,AddGam=NULL,
+	     case.weights=NULL,...) {
   p <- ncol(X)
   if (missing(beta)) beta <- rep(0,p)
   if (p==0) X <- cbind(rep(0,length(exit)))
@@ -126,6 +127,9 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
   Zcall <- matrix(1,1,1) ## to not use for ZX products when Z is not given 
   if (!is.null(Z)) Zcall <- Z
 
+  ## possible casewights to use for bootstrapping and other things
+  if (is.null(case.weights)) case.weights <- rep(1,length(exit)) 
+
   trunc <- (!is.null(entry))
   if (!trunc) entry <- rep(0,length(exit))
 
@@ -140,14 +144,14 @@ phreg01 <- function(X,entry,exit,status,id=NULL,strata=NULL,offset=NULL,weights=
 
    system.time(dd <- .Call("FastCoxPrepStrata",
 		     entry,exit,status,X, id, ### as.integer(seq_along(entry)),
-		     trunc,strata,weights,offset,Zcall,PACKAGE="mets"))
+		     trunc,strata,weights,offset,Zcall,case.weights,PACKAGE="mets"))
 
    dd$nstrata <- nstrata
 	obj <- function(pp,U=FALSE,all=FALSE) {# {{{
 		if (is.null(propodds) & is.null(AddGam)) 
 	  val <- with(dd,
 		   .Call("FastCoxPLstrata",pp,X,XX,sign,jumps,
-		    strata,nstrata,weights,offset,ZX,PACKAGE="mets"))
+		    strata,nstrata,weights,offset,ZX,caseweights,PACKAGE="mets"))
          else if (is.null(AddGam)) 
 		 val <- with(dd,
 		   .Call("FastCoxPLstrataPO",pp,X,XX,sign,jumps,

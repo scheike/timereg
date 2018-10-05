@@ -103,7 +103,8 @@ RcppExport SEXP FastCoxPrepStrata(SEXP EntrySEXP,
 			    SEXP strataSEXP,
                		    SEXP weightsSEXP,
 			    SEXP offsetsSEXP, 
-			    SEXP ZSEXP
+			    SEXP ZSEXP,
+			    SEXP caseweightsSEXP
 			    ) {
 BEGIN_RCPP/*{{{*/
   arma::vec Entry = Rcpp::as<arma::vec>(EntrySEXP);
@@ -122,6 +123,7 @@ BEGIN_RCPP/*{{{*/
 
   colvec weights = Rcpp::as<colvec>(weightsSEXP);
   colvec offsets = Rcpp::as<colvec>(offsetsSEXP);
+  colvec caseweights = Rcpp::as<arma::vec>(caseweightsSEXP);
   //bool haveId = Rcpp::as<bool>(haveIdSEXP);
   bool Truncation = Rcpp::as<bool>(TruncationSEXP);
   // vec Exit = Rcpp::as<vec>(exit);  
@@ -176,6 +178,7 @@ BEGIN_RCPP/*{{{*/
     Id.insert_rows(0,Id);
     strata.insert_rows(0,strata);
     weights.insert_rows(0,weights);
+    caseweights.insert_rows(0,caseweights);
     offsets.insert_rows(0,offsets);
     for (unsigned i=0; i<(n/2); i++) Sign(i) = -1;
     Status = Status%(1+Sign);
@@ -213,6 +216,7 @@ BEGIN_RCPP/*{{{*/
   }
   Exit = Exit.elem(idx); 
   weights = weights.elem(idx); 
+  caseweights = caseweights.elem(idx); 
   offsets = offsets.elem(idx); 
   Status = Status.elem(idx);
   Id = Id.elem(idx); 
@@ -236,6 +240,7 @@ BEGIN_RCPP/*{{{*/
 				       Rcpp::Named("time")=Exit,
 				       Rcpp::Named("id")=Id,				       
 				       Rcpp::Named("weights")=weights,
+				       Rcpp::Named("caseweights")=caseweights,
 				       Rcpp::Named("offset")=offsets,				       
 				       Rcpp::Named("strata")=strata,				       
 				       Rcpp::Named("ZX")=ZX				       
@@ -1047,7 +1052,8 @@ RcppExport SEXP FastCoxPLstrata(SEXP betaSEXP,
 				SEXP nstrataSEXP,
 				SEXP weightsSEXP,
 				SEXP offsetsSEXP,
-				SEXP ZXSEXP) {
+				SEXP ZXSEXP,
+				SEXP caseweightsSEXP) {
 BEGIN_RCPP/*{{{*/
   colvec beta = Rcpp::as<colvec>(betaSEXP);
   mat X = Rcpp::as<mat>(XSEXP);
@@ -1061,6 +1067,7 @@ BEGIN_RCPP/*{{{*/
   unsigned p = X.n_cols;
   colvec weights = Rcpp::as<colvec>(weightsSEXP);
   colvec offsets = Rcpp::as<colvec>(offsetsSEXP);
+  colvec caseweights = Rcpp::as<colvec>(caseweightsSEXP);
 
   colvec Xb = X*beta+offsets;
   colvec eXb = exp(Xb)%weights;
@@ -1095,14 +1102,15 @@ BEGIN_RCPP/*{{{*/
 
   XX2 = XX2.rows(Jumps);
   colvec weightsJ=weights.elem(Jumps);  
+  colvec caseweightsJ=caseweights.elem(Jumps);  
   S0 = S0.elem(Jumps);
   mat grad = (X.rows(Jumps)-E);        // Score
   vec val =  (Xb.elem(Jumps)-log(S0)); // Partial log-likelihood
 
 //  colvec iweightsJ=1/weightsJ; 
-  colvec S02 = S0/weightsJ;            // S0 with weights to estimate baseline 
-  mat grad2= vecmatrow(weightsJ,grad); // score  with weights
-  vec val2 = weightsJ%val;             // Partial log-likelihood with weights
+  colvec S02 = S0/(caseweightsJ%weightsJ);            // S0 with weights to estimate baseline 
+  mat grad2= vecmatrow(caseweightsJ%weightsJ,grad); // score  with weights
+  vec val2 = caseweightsJ%weightsJ%val;             // Partial log-likelihood with weights
 
   mat hesst = -(XX2-E2);               // hessian contributions in jump times 
   mat hess  = reshape(sum(hesst),p,p);
@@ -1110,7 +1118,7 @@ BEGIN_RCPP/*{{{*/
      ZX2 = ZX2.rows(Jumps);
   }
 
-  mat hesst2 = vecmatrow(weightsJ,hesst); // hessian over time with weights 
+  mat hesst2 = vecmatrow(caseweightsJ%weightsJ,hesst); // hessian over time with weights 
   mat hess2 = reshape(sum(hesst2),p,p);  // hessian with weights 
 
 //  hesst2.print("hessiantime"); hess2.print("hessian");
@@ -1130,7 +1138,8 @@ BEGIN_RCPP/*{{{*/
 			    Rcpp::Named("E")=E,
 			    Rcpp::Named("S0")=S02,
 			    Rcpp::Named("ZXeXb")=ZX2,
-			    Rcpp::Named("weights")=weightsJ
+			    Rcpp::Named("weights")=weightsJ,
+			    Rcpp::Named("caseweights")=caseweightsJ
 			    ));
 END_RCPP
   }/*}}}*/

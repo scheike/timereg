@@ -156,8 +156,8 @@ U <- coxM$U
 Ubeta <- cox1$U
 ii <- -solve(cox1$hessian)
 EE <- .Call("vecMatMat",coxM$E,cox1$E,PACKAGE="mets")$vXZ; 
-print(dim(EE))
-print(cox1$ZX)
+###print(dim(EE))
+###print(cox1$ZX)
 Pt <- cox1$ZX - EE
 Pt <- apply(Pt,2,cumsum)
 betaiid <- t(ii %*% t(Ubeta))
