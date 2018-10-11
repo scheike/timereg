@@ -213,13 +213,13 @@ for (vv in vars) {
  gres <- c(gres,lres)
 }
 
-out <- list(res=res,Zres=gres,type="modelmatrix")
+out <- list(res=res,Zres=gres,type="Zmodelmatrix")
 class(out) <- "gof.phreg"
 
 return(out)
 }# }}}
 
-gofZ.phregGam  <- function(formula,data,vars,offset=NULL,weights=NULL,breaks=10,equi=TRUE,
+gofZ.phregGam  <- function(formula,data,vars,offset=NULL,weights=NULL,breaks=40,equi=TRUE,
 			n.sim=1000,silent=1,...)
 {# {{{
 
@@ -396,8 +396,10 @@ for (j in (i+1):(nstrata-1)) {
 }# }}}
 
 ##' @export
-plot.gof.phreg <-  function(x,col=3,...)
+plot.gof.phreg <-  function(x,col=3,type="time",...)
 {# {{{
+
+if (type=="time") {
 p <- ncol(x$score)
 for (i in 1:p)
 {
@@ -408,6 +410,25 @@ plot(x$jumptimes,x$score[,i],type="s",ylim=c(-rsU,rsU),xlab="",ylab="")
 title(main=rownames(x$res)[i])
 matlines(x$jumptimes,simU,type="s",lwd=0.3,col=col)
 lines(x$jumptimes,x$score[,i],type="s",lwd=1.5)
+}
+} else {
+	if (x$type=="modelmatrix") {
+		obsz <- c(tail(x$score,1))
+		times <- 1:length(obsz)
+		rsU <- max(max(abs(obsz)),max(abs(x$simUtlast[1:50,])))
+		plot(times,obsz,type="l",ylim=c(-rsU,rsU),xlab="",ylab="")
+		matlines(times,t(x$simUtlast[1:50,]),type="l",lwd=0.3,col=col)
+	} else {
+	   for (i in 1:length(x$Zres))
+	   {
+	    xr <- x$Zres[[i]]
+	    obsz <- c(tail(xr$score,1))
+	    times <- 1:length(obsz)
+	    rsU <- max(max(abs(obsz)),max(abs(xr$simUtlast[1:50,])))
+	    plot(times,obsz,type="l",ylim=c(-rsU,rsU),xlab="",ylab="")
+	    matlines(times,t(xr$simUtlast[1:50,]),type="l",lwd=0.3,col=col)
+           }
+	}
 }
 
 }# }}}
