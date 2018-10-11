@@ -112,6 +112,7 @@ return(out)
 ##' @author THomas Scheike and Klaus K. Holst
 ##' @export
 ##' @examples
+##' library(mets)
 ##' data(TRACE)
 ##' 
 ##' dcut(TRACE)  <- ~. 
@@ -131,8 +132,10 @@ return(out)
 ##' summary(m1)
 ##' 
 ##' ## cumulative sums in covariates, via design matrix mm 
-##' m1 <- gofZ.phreg(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE,vars="wmi")
+##' m1 <- gofZ.phreg(Surv(time,status==9)~strata(vf)+chf+wmi+age,data=TRACE,
+##'                  vars=c("wmi","age"))
 ##' summary(m1)
+##' plot(m1,type="z")
 ##' 
 ##' @aliases cumContr gofZ.phreg
 ##' @export
@@ -192,7 +195,7 @@ return(out)
 }# }}}
 
 ##' @export
-gofZ.phreg  <- function(formula,data,vars,offset=NULL,weights=NULL,breaks=10,equi=TRUE,
+gofZ.phreg  <- function(formula,data,vars,offset=NULL,weights=NULL,breaks=20,equi=TRUE,
 			n.sim=1000,silent=1,...)
 {# {{{
  gres <- list()
