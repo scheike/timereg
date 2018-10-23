@@ -473,7 +473,7 @@ dep.cif<-function(cif,data,cause=NULL,model="OR",cif2=NULL,times=NULL,
 ##' @author Thomas Scheike
 ##' @references
 ##' Cross odds ratio Modelling of dependence for
-##' Multivariate Competing Risks Data, Scheike and Sun (2010), work in progress.
+##' Multivariate Competing Risks Data, Scheike and Sun (2012), Biostatistics. 
 ##' 
 ##' A Semiparametric Random Effects Model for Multivariate Competing Risks Data,
 ##' Scheike, Zhang, Sun, Jensen (2010), Biometrika. 
@@ -897,6 +897,18 @@ print.summary.cor <- function(x,digits=3,...)
 ##' models of the type cor.cif, rr.cif or or.cif for the given cumulative incidences and the different dependence
 ##' measures in the object.
 ##'
+##' The concordance is the probability that both twins have experienced the 
+##' event of interest and is defined as 
+##' \deqn{
+##'  cor(t) = P(T_1 \leq t, \epsilon_1 =1 , T_2 \leq t, \epsilon_2=1) 
+##  }
+##'
+##' Similarly, the casewise concordance is 
+##' \deqn{
+##'  casewise(t) = \frac{ cor(t)}{P(T_1 \leq t, \epsilon_1=1) }
+##  }
+##' that is the probability that twin "2" has the event given that twins "1" has. 
+##'
 ##' @title Summary for dependence models for competing risks
 ##' @param object object from cor.cif rr.cif or or.cif for dependence between competing risks data for two causes.
 ##' @param marg.cif a number that gives the cumulative incidence in one time point for which concordance and 
@@ -1064,6 +1076,15 @@ print.cor<-function(x,digits=3,...)
 ##' @param coefs Specfifies  dependence parameters if object is not given.
 ##' @param ...  Extra arguments, not used.
 ##' @author Thomas Scheike
+##' @references
+##' Estimating twin concordance for bivariate competing risks twin data
+##' Thomas H. Scheike, a Klaus K. Holst a * † and Jacob B. Hjelmborg b, 
+##' Statistics in Medicine 2014, 1193-1204
+##' 
+##' Estimating Twin Pair Concordance for Age of Onset.
+##' Thomas H. Scheike, Jacob V B Hjelmborg, Klaus K. Holst, 2015 
+##' in Behavior genetics DOI:10.1007/s10519-015-9729-3
+##' 
 ##' @export
 concordance <- function(object,cif1,cif2=NULL,messages=TRUE,model=NULL,coefs=NULL,...)
 { ## {{{
