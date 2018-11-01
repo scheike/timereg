@@ -2,6 +2,7 @@
 % Please edit documentation in R/recurrent.marginal.R
 \name{simRecurrentII}
 \alias{simRecurrentII}
+\alias{simRecurrentIII}
 \title{Simulation of recurrent events data based on cumulative hazards II}
 \usage{
 simRecurrentII(n, cumhaz, cumhaz2, death.cumhaz = NULL, gap.time = FALSE,
@@ -65,7 +66,7 @@ base4 <- base4cumhaz
 ### now with two event types and second type has same rate as death rate
 ######################################################################
 
-rr <- simRecurrentII(1000,base1,dr,death.cumhaz=base4)
+rr <- simRecurrentII(1000,base1,base4,death.cumhaz=dr)
 dtable(rr,~death+status)
 par(mfrow=c(2,2))
 showfitsim(causes=2,rr,dr,base1,base4)
