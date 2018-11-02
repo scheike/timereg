@@ -372,12 +372,14 @@ readPhreg <- function (object, newdata, nr=TRUE, ...)
            } else clusters <- (1:nrow(newdata))-1
        } 
        strataTerm<- grep("^strata[(][A-z0-9._:]*",colnames(X),perl=TRUE)
-       ## remove clusterTerm from design
-       if (length(strataTerm)==1) { 
-	       strataNew <- as.numeric(X[,strataTerm])
+       ## remove strataTerm from design, and construct numeric version of strata
+       if (length(strataTerm)>=1) { 
+	       strataNew <- X[,strataTerm,drop=FALSE]
+	       if (length(strataTerm)>=1) { ## construct strata levels numeric
+                 strataNew <- c(strataNew %*% seq(1,length(strataTerm)))
+               }
 	       X <- X[,-strataTerm,drop=FALSE]
        } else strataNew <- rep(0,nrow(X))
-###       print(X)
      }# }}}
 return(list(X=X,strata=strataNew,entry=entry,exit=exit,status=status,
 	    clusters=clusters))

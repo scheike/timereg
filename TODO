@@ -3,5 +3,5 @@
 - dreg kunne forbedres
 - cif call kan forbedres med formel set up
 - predict for Cox models in recurrent 
-
+- predict for Cox model phreg optimize handling of strata
 
