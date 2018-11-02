@@ -708,7 +708,7 @@ label:fig:rec6
 #+END_marginfigure
 
 
-** Looking at other simualtions with dependence 
+** Looking at other simulations with dependence 
 
 
 Using the normally distributed random effects we plot 4 different settings. We have variance $0.5$ for all
