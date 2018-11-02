@@ -63,10 +63,10 @@ cumulative hazards
 
 *** Utility functions 
 
-We here mention to utility functions 
+We here mention two utility functions 
+
  - tie.breaker for breaking ties among jump-times which is expected in the functions below.
- - count.history that counts the number of jumps previous for each subject that is 
-   $N_1(t-)$ and $N_2(t-)$. 
+ - count.history that counts the number of jumps previous for each subject that is $N_1(t-)$ and $N_2(t-)$. 
 
  
 ** Marginal Mean 
