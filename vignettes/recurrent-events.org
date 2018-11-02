@@ -32,7 +32,7 @@ We start by simulating some recurrent events data with two type of events with
 cumulative hazards 
 
  - $\Lambda_1(t)$
- - $\Lambda_4(t)$
+ - $\Lambda_2(t)$
  - $\Lambda_D(t)$
 
  where we consider types 1 and 4 and with a rate of the terminal event given by 
@@ -60,6 +60,15 @@ cumulative hazards
 
  We return to how to run the different set-ups later and start by simulating independent processes. 
 
+
+*** Utility functions 
+
+We here mention to utility functions 
+ - tie.breaker for breaking ties among jump-times which is expected in the functions below.
+ - count.history that counts the number of jumps previous for each subject that is 
+   $N_1(t-)$ and $N_2(t-)$. 
+
+ 
 ** Marginal Mean 
 
  We start by estimating the marginal mean $E(N_1(t \wedge D))$ where $D$ is the timing of the terminal event. 
