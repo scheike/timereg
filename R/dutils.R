@@ -889,6 +889,8 @@ dlag <- function(data,x,k=1,combine=TRUE,simplify=TRUE,names,...) {# {{{
 ##' Simple linear spline 
 ##' 
 ##' Constructs simple linear spline  on a data frame using the formula syntax of dutils
+##' that is adds (x-cuti)* (x>cuti) to the data-set for each knot of the spline. 
+##' The full spline is thus given by x and spline variables added to the data-set. 
 ##' 
 ##' @param data if x is formula or names for data frame then data frame is needed.
 ##' @param y name of variable, or fomula, or names of variables on data frame.
