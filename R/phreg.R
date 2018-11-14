@@ -1375,77 +1375,48 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
   if (!is.matrix(ltys))  ltys <- cbind(ltys,ltys,ltys)
   if (!is.matrix(cols))  cols <- cbind(cols,cols,cols)
 
-   i <- 1
-   j <- stratas[i]
-   cumhazard <- x$cumhaz[strat==j,,drop=FALSE]
-
-   if (!is.null(cumhazard)) {
-   if (nrow(cumhazard)>1) {
-    if (add) {
-         lines(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],...)
-    } else {
-         plot(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],ylim=ylim,ylab=ylab,xlim=xlim,...)
-    }
-    if (se==TRUE) {
-	    if (robust==TRUE) secumhazard  <- x$robse.cumhaz[strat==j,,drop=FALSE]
-	    else secumhazard <- x$se.cumhaz[strat==j,,drop=FALSE]
-      ul <-cbind(cumhazard[,1],cumhazard[,2]+level*secumhazard[,2])
-      nl <-cbind(cumhazard[,1],cumhazard[,2]-level*secumhazard[,2])
-      if (class(x)[1]=="km") { ul[,2] <- x$upper[x$strata==j]; 
-                               nl[,2] <- x$lower[x$strata==j];
-      }
-      if (!polygon) {
-      lines(nl,type="s",lty=ltys[i,2],col=cols[i,2])
-      lines(ul,type="s",lty=ltys[i,3],col=cols[i,3])
-      } else {
-	 ll <- length(nl[,1])
-         timess <- nl[,1]
-         ttp <- c(timess[1],rep(timess[-c(1,ll)],each=2),timess[ll])
-         tt <- c(ttp,rev(ttp))
-         yy <- c(rep(nl[-ll,2],each=rep(2)),rep(rev(ul[-ll,2]),each=2))
-###         tt <- c(nl[,1],rev(nl[,1]))
-###         yy <- c(nl[,2],rev(ul[,2]))
-         col.alpha<-0.1
-         col.ci<-cols[i]
-         col.trans <- sapply(col.ci, FUN=function(x) 
-           do.call(grDevices::rgb,as.list(c(grDevices::col2rgb(x)/255,col.alpha))))
-	 polygon(tt,yy,lty=0,col=col.trans)
-      }
-    }
-   }
-   }
-
-    if (length(stratas)>1)  {
-    for (i in 2:length(stratas)) {
-	j <- stratas[i]
+  first <- 0
+  for (i in seq(stratas)) {
+      j <- stratas[i]
         cumhazard <- x$cumhaz[strat==j,,drop=FALSE]
         if (!is.null(cumhazard)) {
 	if (nrow(cumhazard)>1) {
+        if (add | first==1) 
         lines(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1])   
-        if (se==TRUE) {
+       else {
+	  first <- 1
+          plot(cumhazard,type="s",lty=ltys[i,1],col=cols[i,1],ylim=ylim,ylab=ylab,
+	    xlim=xlim,...)
+       }
+       if (se==TRUE) {
 	    if (robust==TRUE) secumhazard  <- x$robse.cumhaz[strat==j,,drop=FALSE]
 	    else secumhazard <- x$se.cumhaz[strat==j,,drop=FALSE]
 		 ul <-cbind(cumhazard[,1],cumhazard[,2]+level*secumhazard[,2])
 		 nl <-cbind(cumhazard[,1],cumhazard[,2]-level*secumhazard[,2])
-		      if (class(x)[1]=="km") { ul[,2] <- x$upper[x$strata==j]; 
-					       nl[,2] <- x$lower[x$strata==j];
-		      }
+		 if (class(x)[1]=="km") { ul[,2] <- x$upper[x$strata==j]; 
+		                          nl[,2] <- x$lower[x$strata==j];
+		 }
 	      if (!polygon) {
-	      lines(nl,type="s",lty=ltys[i,2],col=cols[i,2])
-	      lines(ul,type="s",lty=ltys[i,3],col=cols[i,3])
+		  lines(nl,type="s",lty=ltys[i,2],col=cols[i,2])
+		  lines(ul,type="s",lty=ltys[i,3],col=cols[i,3])
 	      } else {
-		 tt <- c(nl[,1],rev(ul[,1]))
-		 yy <- c(nl[,2],rev(ul[,2]))
+                 ## type="s" confidence regions
+		 ll <- length(nl[,1])
+		 timess <- nl[,1]
+		 ttp <- c(timess[1],rep(timess[-c(1,ll)],each=2),timess[ll])
+		 tt <- c(ttp,rev(ttp))
+		 yy <- c(rep(nl[-ll,2],each=rep(2)),rep(rev(ul[-ll,2]),each=2))
+###		 tt <- c(nl[,1],rev(ul[,1]))
+###		 yy <- c(nl[,2],rev(ul[,2]))
 		 col.alpha<-0.1
 		 col.ci<-cols[j+1]
 		 col.trans <- sapply(col.ci, FUN=function(x) 
 			   do.call(grDevices::rgb,as.list(c(grDevices::col2rgb(x)/255,col.alpha))))
-		 polygon(tt,yy,lty=ltys[i,2],col=col.trans)
+		 polygon(tt,yy,lty=0,col=col.trans)
 	      }
         }
-        }
-        }
-    }
+     }
+     }
     }
 
     where <- "topleft"; 
@@ -1456,7 +1427,7 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
 }# }}}
 
 ##' @export
-plot.conf.region <- function(x,band,add=TRUE,polygon=TRUE,cols=1,...)
+plot.onf.region <- function(x,band,add=TRUE,polygon=TRUE,cols=1,...)
 {# {{{
 nl <- cbind(x,band[,1])
 ul <- cbind(x,band[,2])

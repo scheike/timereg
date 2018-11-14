@@ -93,6 +93,11 @@ lines(ipwc$cum[,1],p11wmz,col=3)
 lines(ipwc$cum[,1],p11wdz,col=3)
 
 }
+\references{
+Scheike, T. H.; Holst, K. K. & Hjelmborg, J. B.
+Estimating twin concordance for bivariate competing risks twin data 
+Statistics in Medicine, Wiley Online Library, 2014 , 33 , 1193-204
+}
 \author{
 Thomas Scheike, Klaus K. Holst
 }

@@ -85,7 +85,7 @@
 ##' Scheike, Holst, Hjelmborg (2015), LIDA  
 ##' 
 ##' Twostage modelling of additive gamma frailty models for survival data. 
-##' Scheike and Holst, working paper 
+##' Scheike, working paper 
 ##' 
 ##' Additive Gamma frailty models for competing risks data, Biometrics (2015)
 ##' Eriksson and Scheike (2015), 

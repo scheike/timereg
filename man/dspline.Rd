@@ -36,6 +36,8 @@ dspline(data, y = NULL, x = NULL, breaks = 4, probs = NULL,
 }
 \description{
 Constructs simple linear spline  on a data frame using the formula syntax of dutils
+that is adds (x-cuti)* (x>cuti) to the data-set for each knot of the spline. 
+The full spline is thus given by x and spline variables added to the data-set.
 }
 \examples{
 data(TRACE)

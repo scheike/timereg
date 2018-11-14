@@ -1290,8 +1290,8 @@ addCums <- function(cumB,cumA,max=5)
 {# {{{
  times <- sort(unique(c(cumB[,1],cumA[,1])))
  times <- times[times<max]
- cumBjx <- timereg:::lin.approx(times,cumB,x=1)
- cumAjx <- timereg:::lin.approx(times,cumA,x=1)
+ cumBjx <- timereg::lin.approx(times,cumB,x=1)
+ cumAjx <- timereg::lin.approx(times,cumA,x=1)
  cumBA <- cumBjx+cumAjx
  return(cbind(times,cumBA))
 }# }}}
