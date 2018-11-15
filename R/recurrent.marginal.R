@@ -876,10 +876,13 @@ recurrentMarginalgam <- function(recurrent,death,fixbeta=NULL,km=TRUE,...)
 }# }}}
 
 ##' @export
-recmarg <- function(recurrent,death,km=TRUE,...)
+recmarg <- function(recurrent,death,Xr=NULL,Xd=NULL,km=TRUE,...)
 {# {{{
   xr <- recurrent
   dr <- death 
+
+  if (!is.null(Xr)) rr <- exp(sum(xr$coef * Xr)) else rr <- 1
+  if (!is.null(Xd)) rrd <- exp(sum(dr$coef * Xd)) else rrd <- 1
 
   ### marginal expected events  int_0^t G(s) \lambda_r(s) ds 
   # {{{
@@ -891,8 +894,8 @@ recmarg <- function(recurrent,death,km=TRUE,...)
   S0i2[xx$jumps+1] <- 1/x$S0^2
   if (!km) { 
      cumhazD <- c(cumsumstratasum(S0i,xx$strata,xx$nstrata)$lagsum)
-     St      <- exp(-cumhazD)
-  } else St <- c(exp(cumsumstratasum(log(1-S0i),xx$strata,xx$nstrata)$lagsum))
+     St      <- exp(-cumhazD*rrd)
+  } else St <- exp(rrd*c(cumsumstratasum(log(1-S0i),xx$strata,xx$nstrata)$lagsum))
   ###
   x <- xr
   xx <- x$cox.prep
@@ -900,7 +903,7 @@ recmarg <- function(recurrent,death,km=TRUE,...)
   S0i[xx$jumps+1] <-  1/x$S0
   S0i2[xx$jumps+1] <- 1/x$S0^2
   cumhazDR <- cbind(xx$time,cumsumstrata(St*S0i,xx$strata,xx$nstrata))
-  mu <- cumhazDR[,2]
+  mu <- rr*cumhazDR[,2]
 # }}}
 
  varrs <- data.frame(mu=mu,time=xr$time,strata=xr$strata,St=St)
