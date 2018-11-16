@@ -37,7 +37,7 @@ First we generate some data from the Clayton-Oakes model, with \( 5 \) members
 in each cluster and a variance parameter at \( 2 \) 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 library(mets)
-set.seed(1000) ## to control output in simulatins for p-values below.
+set.seed(1000) # to control output in simulatins for p-values below.
  n <- 1000
  k <- 5
  theta <- 2
@@ -98,15 +98,15 @@ computed in mets as:
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
    out <- phreg(Surv(time,status)~x+cluster(cluster),data=data)
    summary(out)
-   ## robust standard errors attached to output
+   # robust standard errors attached to output
    rob <- robust.phreg(out)
      
-   ## making iid decomposition of regression parameters
+   # making iid decomposition of regression parameters
    betaiid <- iid(out)
    head(betaiid)
-   ## robust standard errors
+   # robust standard errors
    crossprod(betaiid)^.5
-   ### same as 
+   # same as 
 #+END_SRC
 
 #+RESULTS[<2018-09-10 14:32:08> 68b9dea2171106e9be0a3b396f0061f6e3d50238]:
@@ -224,7 +224,7 @@ attr(,"class")
 
 
 
-*** Goodness of fit 
+** Goodness of fit 
  
 
 The observed score process is given by 
@@ -269,7 +269,7 @@ the model.
 [[file:robgofcox1.jpg]]
 
 #+BEGIN_marginfigure
-# +CAPTION: Goodness of fit for clustered Cox model label:fig:robgofcox1
+#+CAPTION: Goodness of fit for clustered Cox model label:fig:robgofcox1
 #+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: rob1
 [[file:robgofcox1.jpg]]

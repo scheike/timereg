@@ -122,7 +122,7 @@
 \noindent\rule{\textwidth}{0.5pt}
 
 \section*{Overview}
-\label{sec:orgf3fa751}
+\label{sec:orgae8c7e0}
 
 A basic component for our modelling is that all these models are build around
 marginals that on Cox form. The marginal Cox model can be fitted efficiently
@@ -149,7 +149,7 @@ in each cluster and a variance parameter at \(2\)
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
 library(mets)
-set.seed(1000) ## to control output in simulatins for p-values below.
+set.seed(1000) # to control output in simulatins for p-values below.
  n <- 1000
  k <- 5
  theta <- 2
@@ -210,15 +210,15 @@ computed in mets as:
 \begin{lstlisting}
 out <- phreg(Surv(time,status)~x+cluster(cluster),data=data)
 summary(out)
-## robust standard errors attached to output
+# robust standard errors attached to output
 rob <- robust.phreg(out)
 
-## making iid decomposition of regression parameters
+# making iid decomposition of regression parameters
 betaiid <- iid(out)
 head(betaiid)
-## robust standard errors
+# robust standard errors
 crossprod(betaiid)^.5
-### same as 
+# same as 
 \end{lstlisting}
 
 \begin{verbatim}
@@ -321,8 +321,8 @@ attr(,"class")
 
 
 
-\subsubsection*{Goodness of fit}
-\label{sec:org35bcfc1}
+\subsection*{Goodness of fit}
+\label{sec:org9aacb35}
 
 
 The observed score process is given by 
@@ -370,6 +370,7 @@ plot(gout)
 \begin{marginfigure}
 \begin{center}
 \includegraphics[width=\textwidth]{robgofcox1.jpg}
+\captionof{figure}{Goodness of fit for clustered Cox model \label{fig:robgofcox1}}
 \end{center}
 
 \begin{verbatim}
@@ -382,7 +383,7 @@ Error: unexpected input in "<<"
 
 
 \subsection*{Cluster stratified Cox models}
-\label{sec:orgfa18bab}
+\label{sec:org5665418}
 
 For  clustered data it is possible to estimate the regression coefficient
 within clusters by using Cox's partial likelihood stratified on clusters.

@@ -122,7 +122,7 @@
 \noindent\rule{\textwidth}{0.5pt}
 
 \section*{Overview}
-\label{sec:orga60f62d}
+\label{sec:org77c0558}
 
 When looking at multivariate survival data with the aim of learning about the 
 dependence that is present, possibly after correcting for some covariates 
@@ -165,7 +165,7 @@ where \(s(k,i)\) is a strata variable.
 
 
 \subsection*{Gamma distributed frailties}
-\label{sec:org7d4c507}
+\label{sec:org8e978af}
 
 The focus of this vignette is describe how to work on bivariate survival data using the
 addtive gamma-random effects models. We present two different ways of specifying 
@@ -212,7 +212,7 @@ with \(\Psi\) the laplace of the gamma distribution with mean 1 and variance \(1
 
 
 \subsection*{Additive Gamma frailties}
-\label{sec:org6e7f89a}
+\label{sec:orgaed1acf}
 
 For the multivariate models we are given a multivarite random effect each cluster
 \(Z=(Z_1,...,Z_d)\) with d random effects. 
@@ -297,7 +297,7 @@ frailty terms, and the random effects thus have the same interpretation in terms
 
 
 \subsection*{Univariate gamma (clayton-oakes) model twostage models}
-\label{sec:org26175fc}
+\label{sec:orge512511}
 
 We start by fitting simple Clayton-Oakes models for the data, that is
 with an overall random effect that is Gamma distrubuted with variance
@@ -316,11 +316,11 @@ data(diabetes)
 
 # Marginal Cox model  with treat as covariate
 margph <- phreg(Surv(time,status)~treat+cluster(id),data=diabetes)
-### Clayton-Oakes, MLE 
+# Clayton-Oakes, MLE 
 fitco1<-twostageMLE(margph,data=diabetes,theta=1.0)
 summary(fitco1)
 
-### Clayton-Oakes
+# Clayton-Oakes
 fitco2 <- survival.twostage(margph,data=diabetes,theta=0.0,detail=0,
 		 clusters=diabetes$id,var.link=1,model="clayton.oakes")
 summary(fitco2)
@@ -387,7 +387,7 @@ before.
 
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
-### without covariates but marginal model stratified 
+# without covariates but marginal model stratified 
 marg <- phreg(Surv(time,status)~+strata(treat)+cluster(id),data=diabetes)
 fitcoa <- survival.twostage(marg,data=diabetes,theta=1.0,clusters=diabetes$id,
 		 model="clayton.oakes")
@@ -415,7 +415,7 @@ attr(,"class")
 
 
 \subsubsection*{Piecewise constant Clayton-Oakes model}
-\label{sec:org3b97143}
+\label{sec:orgbac8cff}
 
 Let the cross-hazard ratio (CHR) be defined as 
 \begin{align}
@@ -456,7 +456,7 @@ And fit the related model.
 \begin{lstlisting}
 d <- simClaytonOakes(2000,2,0.5,0,3)
  margph <- phreg(Surv(time,status)~x+cluster(cluster),data=d)
-### Clayton-Oakes, MLE 
+# Clayton-Oakes, MLE 
 fitco1<-twostageMLE(margph,data=d)
 summary(fitco1)
 \end{lstlisting}
@@ -516,7 +516,7 @@ Kendall's tau (SE)
 
 
 \subsection*{Multivariate gamma twostage models}
-\label{sec:org0f1d68a}
+\label{sec:org2f50b98}
 
 To illustrate how the multivariate models can be used, we first set 
 up some twin data with ACE structure. That is two shared random effects,
@@ -567,9 +567,9 @@ environmental random effect.
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
 des.rv <- out$des.rv
-## MZ
+# MZ
 head(des.rv,2)
-## DZ 
+# DZ 
 tail(des.rv,2)
 \end{lstlisting}
 
@@ -648,7 +648,7 @@ $dz.kendall
 
 
 \subsubsection*{Family data}
-\label{sec:org544fb87}
+\label{sec:orgf2af305}
 
 For family data, things are quite similar since we use only the pairwise structure. 
 We show  how the designs are specified. 
@@ -719,7 +719,7 @@ Then we fit the model
 pa <- phreg(Surv(time,status)~+1+cluster(cluster),data=data)
 aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
 
-### make ace random effects design
+# make ace random effects design
 ts <- twostage(pa,data=data,clusters=data$cluster,
 	var.par=1,var.link=0,theta=c(2,1),
 	random.design=out$des.rv,theta.des=out$pardes)
@@ -767,8 +767,8 @@ is written out here.
 
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
-### now specify fitting via specific pairs 
-### first all pairs 
+# now specify fitting via specific pairs 
+# first all pairs 
 mm <- familycluster.index(data$cluster)
 head(mm$familypairindex,n=10)
 pairs <- matrix(mm$familypairindex,ncol=2,byrow=TRUE)
@@ -881,13 +881,13 @@ the cohort.
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
 ids <- sort(unique(c(pairs[ssid,])))
-###
+
 pairsids <- c(pairs[ssid,])
 pair.new <- matrix(fast.approx(ids,c(pairs[ssid,])),ncol=2)
 head(pair.new)
 
-## this requires that pair.new refers to id's in dataid (survival, status and so forth)
-## random.design and theta.des are constructed to be the array 3 dims via individual specfication from ace.family.design
+# this requires that pair.new refers to id's in dataid (survival, status and so forth)
+# random.design and theta.des are constructed to be the array 3 dims via individual specfication from ace.family.design
 dataid <- dsort(data[ids,],"cluster")
 outid <- ace.family.design(dataid,member="type",id="cluster")
 outid$pardes
@@ -980,23 +980,23 @@ pair.types <-  matrix(dataid[c(t(pair.new)),"type"],byrow=T,ncol=2)
 head(pair.new)
 head(pair.types)
 
-### here makes pairwise design , simpler random.design og pardes, parameters
-### stil varg, varc 
-### mother, child, share half rvm=c(1,1,0) rvc=c(1,0,1),
-### thetadesmcf=rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
-###
-### father, child, share half rvf=c(1,1,0) rvc=c(1,0,1), 
-### thetadescf=rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
-###
-### child, child,  share half rvc=c(1,1,0) rvc=c(1,0,1),
-### thetadesmf=rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
-###
-### mother, father, share 0 rvm=c(1,0) rvf=c(0,1), 
-### thetadesmf=rbind(c(1,0),c(1,0),c(0,1))
+# here makes pairwise design , simpler random.design og pardes, parameters
+# stil varg, varc 
+# mother, child, share half rvm=c(1,1,0) rvc=c(1,0,1),
+# thetadesmcf=rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
+#
+# father, child, share half rvf=c(1,1,0) rvc=c(1,0,1), 
+# thetadescf=rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
+#
+# child, child,  share half rvc=c(1,1,0) rvc=c(1,0,1),
+# thetadesmf=rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
+#
+# mother, father, share 0 rvm=c(1,0) rvf=c(0,1), 
+# thetadesmf=rbind(c(1,0),c(1,0),c(0,1))
 
 theta.des  <- array(0,c(4,2,nrow(pair.new)))
 random.des <- array(0,c(2,4,nrow(pair.new)))
-### random variables in each pair 
+# random variables in each pair 
 rvs <- c()
 for (i in 1:nrow(pair.new))
 {
@@ -1011,10 +1011,10 @@ for (i in 1:nrow(pair.new))
 	rvs <- c(rvs,4)
 	}
 }
-### 3 rvs here 
+# 3 rvs here 
 random.des[,,7]
 theta.des[,,7]
-### 4 rvs here 
+# 4 rvs here 
 random.des[,,1]
 theta.des[,,1]
 head(rvs)
@@ -1109,7 +1109,7 @@ Finally the same model structure can be setup based on a Kinship coefficient.
 
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
-### simpler specification via kinship coefficient for each pair
+# simpler specification via kinship coefficient for each pair
 kinship  <- c()
 for (i in 1:nrow(pair.new))
 {
@@ -1120,7 +1120,7 @@ head(kinship,n=10)
 
 out <- make.pairwise.design(pair.new,kinship,type="ace") 
 names(out)
-### 4 rvs here , here independence since shared component has variance 0 !
+# 4 rvs here , here independence since shared component has variance 0 !
 out$random.des[,,9]
 out$theta.des[,,9]
 \end{lstlisting}
@@ -1182,7 +1182,7 @@ dependence2 1.054030 0.1277271 8.252205 2.220446e-16   0.3451275 0.02738838
 
 
 \subsection*{Univariate plackett model twostage models}
-\label{sec:org8b710c1}
+\label{sec:orgf965fef}
 
 The copula known as the Plackett distribution, see \cite{plackett1965,anderson1992time,ghosh2006sjs}, is on the form
 \begin{align}
@@ -1221,17 +1221,17 @@ data(diabetes)
 
 # Marginal Cox model  with treat as covariate
 margph <- phreg(Surv(time,status)~treat+cluster(id),data=diabetes)
-### Clayton-Oakes, MLE 
+# Clayton-Oakes, MLE 
 fitco1<-twostageMLE(margph,data=diabetes,theta=1.0)
 summary(fitco1)
 
-### Plackett model
+# Plackett model
 mph <- phreg(Surv(time,status)~treat+cluster(id),data=diabetes)
 fitp <- survival.twostage(mph,data=diabetes,theta=3.0,Nit=40,
 	       clusters=diabetes$id,var.link=1,model="plackett")
 summary(fitp)
 
-### without covariates but with stratafied 
+# without covariates but with stratafied 
 marg <- phreg(Surv(time,status)~+strata(treat)+cluster(id),data=diabetes)
 fitpa <- survival.twostage(marg,data=diabetes,theta=1.0,
 		clusters=diabetes$id,score.method="optimize")
@@ -1341,8 +1341,7 @@ attr(,"class")
 
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
-### Piecewise constant cross hazards ratio modelling
-########################################################
+# Piecewise constant cross hazards ratio modelling
 
 d <- subset(simClaytonOakes(2000,2,0.5,0,stoptime=2,left=0),!truncated)
 udp <- piecewise.twostage(c(0,0.5,2),data=d,score.method="optimize",
