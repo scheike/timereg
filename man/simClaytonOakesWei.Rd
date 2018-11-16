@@ -4,8 +4,8 @@
 \alias{simClaytonOakesWei}
 \title{Simulate from the Clayton-Oakes frailty model}
 \usage{
-simClaytonOakesWei(K, n, eta, beta, stoptime, weiscale = 1, weishape = 2,
-  left = 0, pairleft = 0)
+simClaytonOakesWei(K, n, eta, beta, stoptime, weiscale = 1,
+  weishape = 2, left = 0, pairleft = 0)
 }
 \arguments{
 \item{K}{Number of clusters}

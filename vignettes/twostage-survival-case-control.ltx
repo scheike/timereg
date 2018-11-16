@@ -1,0 +1,333 @@
+%\VignetteIndexEntry{Analysis of multivariate survival data based on Case Control Data}
+%\VignetteEngine{R.rsp::tex}
+%\VignetteKeyword{R}
+%\VignetteKeyword{package}
+%\VignetteKeyword{vignette}
+%\VignetteKeyword{LaTeX}
+\PassOptionsToPackage{usenames}{xcolor}
+\PassOptionsToPackage{hidelinks,colorlinks,linkcolor={blue!50!black},urlcolor={blue!50!black},citecolor={blue!50!black}}{hyperref}
+\documentclass[a4paper]{tufte-handout}
+\usepackage{etex}
+\usepackage{etoolbox}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{mathtools}
+\usepackage[strict=true]{csquotes}
+\usepackage{xcolor}
+\usepackage{natbib}
+\usepackage{amsmath,amssymb,textcomp}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage{capt-of}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{longtable}
+\usepackage{zlmtt}
+\usepackage{float}
+\usepackage{fancyvrb}
+\usepackage{verbatim}
+\usepackage[english]{babel}
+\usepackage{hyperref}
+\usepackage{environ}
+\NewEnviron{mnote}{\marginnote{\BODY}}
+\NewEnviron{snote}{\sidenote{\BODY}}
+\usepackage{xspace}
+\usepackage{url}
+\usepackage{amsthm}
+\newtheorem{thm}{Theorem.}
+\newtheorem{prop}{Proposition.}
+\theoremstyle{definition}
+\newtheorem{defn}[thm]{Definition.}
+\newtheorem{exa}[thm]{Example}
+\newcommand{\R}{\ensuremath{\mathbb{R}}} 
+\newcommand{\Real}{\ensuremath{\mathbb{R}}} 
+\newcommand{\Complex}{\ensuremath{\mathbb{C}}} 
+\newcommand{\Z}{\ensuremath{\mathbb{Z}}} 
+\newcommand{\N}{\ensuremath{\mathbb{N}}} 
+\newcommand{\norm}[1]{\ensuremath{\left\Vert#1\right\Vert}} 
+\newcommand{\var}{\ensuremath{\mathbb{V}\text{ar}}} 
+\newcommand{\cov}{\ensuremath{\mathbb{C}\text{ov}}} 
+\newcommand{\cor}{\ensuremath{\mathbb{C}\text{or}}} 
+\newcommand{\E}{\ensuremath{\mathbb{E}}} 
+\newcommand{\pr}{\ensuremath{\mathbb{P}}} 
+\newcommand{\from}{\leftarrow} 
+\newcommand{\To}[2]{\ensuremath{#1\!\to\!#2}}
+\newcommand{\From}[2]{\ensuremath{#1\!\from\!#2}}
+\newcommand{\chain}[3]{\ensuremath{#1\!\to\!#2\to\!#3}}
+\newcommand{\ichain}[3]{\ensuremath{#1\!\from\!#2\from\!#3}}
+\newcommand{\fork}[3]{\ensuremath{#1\!\from\!#2\to\!#3}}
+\newcommand{\ifork}[3]{\ensuremath{#1\!\to\!#2\from\!#3}}
+\newcommand{\pa}{\text{pa}}
+\newcommand{\abs}[1]{\ensuremath{\left\vert#1\right\vert}} 
+\newcommand{\ipr}[1]{\langle#1\rangle} 
+\newcommand{\set}[1]{\left{#1\right}} 
+\newcommand{\seq}[1]{\left<#1\right>} 
+\renewcommand{\subset}{\subseteq}  
+\renewcommand{\supset}{\supseteq} 
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\mvec}{vec}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\bias}{bias}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\logit}{logit}
+\DeclareMathOperator{\expit}{expit}
+\makeatletter
+ \def\mathcolor#1#{\@mathcolor{#1}}
+ \def\@mathcolor#1#2#3{%
+   \protect\leavevmode
+   \begingroup
+     \color#1{#2}#3%
+  \endgroup
+ }
+\newcommand{\Dto}{\overset{\mathcal{D}}{\longrightarrow}}
+\newcommand{\Pto}{\overset{P}{\longrightarrow}}
+\newcommand{\Wto}{\overset{W}{\longrightarrow}}
+\newcommand{\VV}{\bm{\Omega}_\theta}
+\newcommand{\independenT}[2]{\mathrel{\setbox0\hbox{$#1#2$}\copy0\kern-\wd0\mkern4mu\box0}} 
+\newcommand{\indep}{\protect\mathpalette{\protect\independenT}{\perp}}
+\DefineVerbatimEnvironment{verbatim}{Verbatim}{xleftmargin=0.5em,xrightmargin=0em,numbers=none,frame=none,fontsize=\footnotesize,formatcom={\color[rgb]{0.2,0.2,0.2}}}
+\setlength{\parindent}{0pt} % Kills annoying indents. 
+\let\iint\relax 
+\let\iiint\relax
+
+\lstset{basicstyle=\ttfamily\small,keywordstyle=\color{black},commentstyle=\color{gray}\ttfamily\itshape,stringstyle=\color[rgb]{0,0,0.5},columns=fullflexible,alsoletter=.,texcl=true,escapeinside={*@}{@*)},escapebegin=\lst@commentstyle\,,breaklines=true,breakatwhitespace=false,numbers=left,numberstyle=\ttfamily\tiny\color{gray},stepnumber=1,numbersep=10pt,backgroundcolor=\color{white},tabsize=4,showspaces=false,showstringspaces=false,xleftmargin=.23in,frame=lines
+,rulesepcolor=\color[rgb]{0.85,0.85,0.85},basewidth={0.5em,0.42em},language=r,label=
+,caption= ,captionpos=b}
+\lstset{basicstyle=\ttfamily\small,keywordstyle=\color{black},commentstyle=\color{gray}\ttfamily\itshape,stringstyle=\color[rgb]{0,0,0.5},columns=fullflexible,alsoletter=.,texcl=true,escapeinside={*@}{@*)},escapebegin=\lst@commentstyle\,,breaklines=true,breakatwhitespace=false,numbers=left,numberstyle=\ttfamily\tiny\color{gray},stepnumber=1,numbersep=10pt,backgroundcolor=\color{white},tabsize=4,showspaces=false,showstringspaces=false,xleftmargin=.23in,frame=lines
+,rulesepcolor=\color[rgb]{0.85,0.85,0.85},basewidth={0.5em,0.42em},language=python,label=
+,caption= ,captionpos=b}
+
+\setlength{\parindent}{0pt} % Kills annoying indents.
+\newcommand{\n}{}
+\author{Klaus Holst \& Thomas Scheike}
+\date{\today}
+\title{Analysis of multivariate survival data based on Case Control Data}
+\hypersetup{
+ pdfauthor={Klaus Holst \& Thomas Scheike},
+ pdftitle={Analysis of multivariate survival data based on Case Control Data},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 26.1 (Org mode 9.1.14)}, 
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+\noindent\rule{\textwidth}{0.5pt}
+
+\section*{Overview}
+\label{sec:org05466b0}
+
+When looking at multivariate survival data with the aim of learning about the 
+dependence that is present, possibly after correcting for some covariates 
+different approaches are available in the mets package  
+
+\begin{itemize}
+\item Binary models and adjust for censoring with inverse probabilty of  censoring weighting
+\begin{itemize}
+\item biprobit  model
+\end{itemize}
+\item Bivariate surival models of Clayton-Oakes type
+\begin{itemize}
+\item With regression structure on dependence parameter
+\item With additive gamma distributed random effects
+\item Special functionality for polygenic random effects modelling 
+such as ACE, ADE ,AE and so forth.
+\end{itemize}
+\item Plackett OR model model 
+\begin{itemize}
+\item With regression structure on OR dependence parameter
+\end{itemize}
+\item Cluster stratified Cox
+\end{itemize}
+
+
+We have discussed how to fit such models in the vignette about twostage survival modelling. Here
+we show what can be done if one has data available from case-control sampling. 
+
+First we set up some case-control data 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+library(mets)
+set.seed(100)
+ncases <- 2000
+ncontrols <- ncases*5
+data <- simClaytonOakes.twin.ace(100000,1,2,0,3,Cvar=1)
+theta <- c(1,2)
+cens.prob <- mean(data$status==0)
+###
+data2 <- fast.reshape(data,id="cluster")
+with(data2,table(status1,status2))
+###table(data2$status2)
+controls <- which(data2$status2==0)
+cases <-    which(data2$status2==1)
+cases <- sample(cases,min(ncases,length(cases)))
+controls <- sample(controls,min(ncontrols,length(controls)))
+nccc <- c(length(cases),length(controls))
+clustco <- data2$cluster[controls]
+clustca <- data2$cluster[cases]
+###
+med <- data$cluster %in% c(clustco,clustca)
+datacc <- data[med,]
+datacc2 <- fast.reshape(datacc,id="cluster")
+dd <- with(datacc2,table(status1,status2))
+###
+###
+out <- twin.polygen.design(data,id="cluster")
+pardes <- out$pardes
+des.rv <- out$des.rv
+###tail(des.rv)
+###
+aa <- phreg(Surv(time,status)~+cluster(cluster),data=data)
+
+###print(table(datacc$zyg))
+out <- twin.polygen.design(datacc,id="cluster")
+pardes <- out$pardes
+des.rv <- out$des.rv
+###
+###
+## needs to use pair structure to profile out
+## baseline 
+mm <- familycluster.index(datacc$cluster)
+pairs <- matrix(mm$familypairindex,ncol=2,byrow=TRUE)
+# 
+kinship <- rep(1,nrow(pairs))
+kinship[datacc$zyg[pairs[,1]]=="DZ"] <- 0.5
+table(kinship)
+###
+###dout <- make.pairwise.design(pairs,kinship,type="ace")
+dout <- make.pairwise.design(pairs,kinship,type="ace")
+des.rv <- dout$random.design
+pardes <- dout$theta.des
+###
+cr.models <- list(Surv(time,status)~+1)
+tscce <- survival.twostage(NULL,data=datacc,
+	       clusters=datacc$cluster,
+	       theta=theta,var.link=0,step=1.0,
+	       random.design=des.rv,theta.des=pardes,
+	       pairs.rvs=dout$ant.rvs,var.par=1, pairs=pairs,
+	       case.control=1,marginal.status=datacc$status,
+	       cr.models=cr.models)
+summary(tscce)
+\end{lstlisting}
+
+\begin{verbatim}
+Loading required package: timereg
+Loading required package: survival
+Loading required package: lava
+lava version 1.6.3
+mets version 1.2.4
+
+Attaching package: ‘mets’
+
+The following object is masked _by_ ‘.GlobalEnv’:
+
+    object.defined
+       status2
+status1     0     1
+      0 16121 15661
+      1 15828 52390
+kinship
+ 0.5    1 
+5963 6037
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+               Coef.         SE        z P-val Kendall tau         SE
+dependence1 1.006966 0.08370828 12.02947     0   0.3348778 0.01851575
+dependence2 1.838534 0.08963533 20.51127     0   0.4789678 0.01216686
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err   2.5%  97.5%    P-value
+dependence1   0.3539 0.02812 0.2988 0.4090  2.496e-36
+dependence2   0.6461 0.02812 0.5910 0.7012 7.193e-117
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5% P-value
+p1    2.846 0.06515 2.718 2.973       0
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+## known baseline from cohort
+aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
+ts <- survival.twostage(aa,data=datacc,
+	       clusters=datacc$cluster,
+	       theta=theta,var.link=0,step=1.0,
+	       random.design=des.rv,theta.des=pardes,
+	       pairs.rvs=dout$ant.rvs,var.par=1, pairs=pairs,
+	       case.control=1,
+	       marginal.status=datacc$status,
+	       cr.models=cr.models)
+summary(ts)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+               Coef.         SE        z P-val Kendall tau          SE
+dependence1 1.032045 0.07944442 12.99078     0   0.3403792 0.017283117
+dependence2 1.897001 0.06795064 27.91734     0   0.4867849 0.008948751
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err   2.5%  97.5%    P-value
+dependence1   0.3523 0.02247 0.3083 0.3964  2.030e-55
+dependence2   0.6477 0.02247 0.6036 0.6917 1.079e-182
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5% P-value
+p1    2.929 0.07785 2.776 3.082       0
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+Figure \ref{fig:surv-cc-base} shows the baseline 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label=surv-cc-base,caption= ,captionpos=b}
+\begin{lstlisting}
+plot(aa)
+lines(tscce$baseline,col=2)
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{surv-cc-base.jpg}
+
+\begin{marginfigure}
+\begin{center}
+\includegraphics[width=\textwidth]{surv-cc-base.jpg}
+\captionof{figure}{Baseline based on profiling out baseline from case-control data \label{fig:surv-cc-base}}
+\end{center}
+
+\begin{verbatim}
+Error: unexpected input in "<<"
+\end{verbatim}
+
+
+\captionof{figure}{Baseline with robust standard errors. Black based on cohort data, red based on profiling for case-control data.}
+\label{fig:robcox1}
+\end{marginfigure}
+\end{document}

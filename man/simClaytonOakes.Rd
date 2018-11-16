@@ -4,19 +4,21 @@
 \alias{simClaytonOakes}
 \title{Simulate from the Clayton-Oakes frailty model}
 \usage{
-simClaytonOakes(K, n, eta, beta, stoptime, left = 0, pairleft = 0,
-  trunc.prob = 0.5, same = 0)
+simClaytonOakes(K, n, eta, beta, stoptime, lam = 1, left = 0,
+  pairleft = 0, trunc.prob = 0.5, same = 0)
 }
 \arguments{
 \item{K}{Number of clusters}
 
 \item{n}{Number of observations in each cluster}
 
-\item{eta}{1/variance}
+\item{eta}{variance}
 
 \item{beta}{Effect (log hazard ratio) of covariate}
 
 \item{stoptime}{Stopping time}
+
+\item{lam}{constant hazard}
 
 \item{left}{Left truncation}
 

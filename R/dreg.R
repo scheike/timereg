@@ -7,8 +7,8 @@
 ##' @param z name of variable, or fomula, or names of variables on data frame.
 ##' @param x.oneatatime x's one at a time
 ##' @param x.base.names base covarirates 
-##' @param z.arg what is Z
-##' @param fun. function 
+##' @param z.arg what is Z, c("clever","base","group","condition"), clever decides based on type of Z, base means that Z is used as fixed baseline covaraites for all X, group means the analyses is done based on groups of Z, and condition means that Z specifies a condition on the data
+##' @param fun. function  lm is default
 ##' @param summary. summary to use 
 ##' @param regex regex
 ##' @param convert convert

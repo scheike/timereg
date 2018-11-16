@@ -1,0 +1,338 @@
+#+TITLE: Marginal modelling of clustered survival data 
+#+AUTHOR: Klaus Holst & Thomas Scheike
+#+PROPERTY: header-args:R  :session *R* :cache no :width 550 :height 450
+#+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
+#+PROPERTY: header-args:R+ :colnames yes :rownames no :hlines yes
+#+INCLUDE: header.org
+#+OPTIONS: toc:nil timestamp:nil
+
+#+BEGIN_SRC emacs-lisp :results silent :exports results :eval
+(setq org-latex-listings t)
+(setq org-latex-compiler-file-string 
+"%%\\VignetteIndexEntry{Marginal Cox}\n%%\\VignetteEngine{R.rsp::tex}\n%%\\VignetteKeyword{R}\n%%\\VignetteKeyword{package}\n%%\\VignetteKeyword{vignette}\n%%\\VignetteKeyword{LaTeX}\n")
+#+END_SRC
+
+----- 
+# +LaTeX: \clearpage
+
+* Overview 
+
+A basic component for our modelling is that all these models are build around
+marginals that on Cox form. The marginal Cox model can be fitted efficiently
+in the mets package. 
+
+The basic models assumes that each subject has a marginal on Cox-form
+\[ 
+\lambda_{s(k,i)}(t) \exp( X_{ki}^T \beta).
+\] 
+where \( s(k,i) \) gives the strata for the subject. 
+
+We here discuss the 
+  - robust standard errors of 
+    - regression parameters
+    - baseline 
+  - cumulative residuals score test 
+
+First we generate some data from the Clayton-Oakes model, with \( 5 \) members
+in each cluster and a variance parameter at \( 2 \) 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+library(mets)
+set.seed(1000) ## to control output in simulatins for p-values below.
+ n <- 1000
+ k <- 5
+ theta <- 2
+ data <- simClaytonOakes(n,k,theta,0.3,3)
+ head(data)
+#+END_SRC
+
+#+RESULTS[<2018-09-10 14:18:32> e57449b569f9ce4837f0ba822c48463182fa33ac]:
+#+begin_example
+Loading required package: timereg
+Loading required package: survival
+Loading required package: lava
+lava version 1.6.3
+mets version 1.2.4
+
+Attaching package: ‘mets’
+
+The following object is masked _by_ ‘.GlobalEnv’:
+
+    object.defined
+       time status x cluster   mintime lefttime truncated
+1 0.1406317      1 0       1 0.1406317        0         0
+2 0.4593768      1 0       1 0.1406317        0         0
+3 1.0952678      1 0       1 0.1406317        0         0
+4 0.2057554      1 1       1 0.1406317        0         0
+5 0.6776620      1 0       1 0.1406317        0         0
+6 1.6093755      1 0       2 0.1092390        0         0
+#+end_example
+
+Now fitting the and producing robust standard errors for both 
+regression parameters and baseline.
+
+Note that 
+\begin{align}
+\hat A_s(t) - A_s(t)  & = \sum_k \sum_i \int_0^t 1/S_{s} dM_{ki}^s  - P^s(t) \beta_k 
+\end{align}
+with $P^s(t)$ a derivative wrt to $\beta$, and 
+\begin{align}
+\hat \beta  - \beta  & = \sum_k ( \sum_i \int_0^\tau (Z_{ik} - E_{s}) dM_{ik}^s )
+\end{align}
+with 
+\begin{align}
+ M_{ki}(t) &  = N_{ki}(t) - \int_0^t Y_{ki}(s) \exp( Z_{ki} \beta) d \Lambda_{s(ki)}(t)
+\end{align}
+the basic 0-mean processes, that are martingales in the iid setting. 
+       
+The variance of the baseline of strata s  is
+\begin{align}
+\sum_{k} ( \sum_i \int_0^t 1/S_{0s(ki)} d\hat M_{ki}^s )^2
+\end{align}
+that can be computed using the particular structure 
+\begin{align}
+d \hat M_{ik}(t) & =  dN_{ik}(t) -  1/S_{0s(i,k)} \exp(Z_{ik} \beta) dN_{s.}(t) 
+\end{align}
+
+This robust variance of the baseline and the iid decomposition for $\beta$ is
+computed in mets as: 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+   out <- phreg(Surv(time,status)~x+cluster(cluster),data=data)
+   summary(out)
+   ## robust standard errors attached to output
+   rob <- robust.phreg(out)
+     
+   ## making iid decomposition of regression parameters
+   betaiid <- iid(out)
+   head(betaiid)
+   ## robust standard errors
+   crossprod(betaiid)^.5
+   ### same as 
+#+END_SRC
+
+#+RESULTS[<2018-09-10 14:32:08> 68b9dea2171106e9be0a3b396f0061f6e3d50238]:
+#+begin_example
+
+    n events
+ 5000   4854
+
+ 1000 clusters
+
+  Estimate     S.E.  dU^-1/2 P-value
+x 0.287859 0.028177 0.028897       0
+           [,1]
+1 -3.461601e-04
+2 -1.449189e-03
+3 -3.898156e-05
+4  4.215605e-04
+5  3.425390e-04
+6 -7.706668e-05
+           [,1]
+[1,] 0.02817714
+#+end_example
+
+Looking at the plot  with robust standard errors 
+
+#+NAME: robcox1
+#+BEGIN_SRC R :exports both :results output graphics :file robcox1.jpg :ravel fig=TRUE,include=FALSE 
+  bplot(rob,se=TRUE,robust=TRUE)
+#+END_SRC
+
+#+RESULTS: robcox1
+[[file:robcox1.jpg]]
+
+#+BEGIN_marginfigure
+# +CAPTION: Robust standard errors for Cox model label:fig:robcox1
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: rob1
+[[file:robcox1.jpg]]
+
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<robcox1>>
+#+END_SRC
+
+#+RESULTS:
+: Error: unexpected input in "<<"
+
+#+LATEX: \captionof{figure}{Baseline with robust standard errors.}
+label:fig:robcox1
+#+END_marginfigure
+
+
+One can also make survival prediction with robust standard errors using the phreg.
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+   pp <-  predict(out,data[1:20,],se=TRUE,robust=TRUE)
+#+END_SRC
+
+#+RESULTS:
+
+#+NAME: robcox2
+#+BEGIN_SRC R :exports both :results output graphics :file robcox2.jpg :ravel fig=TRUE,include=FALSE 
+  plot(pp,se=TRUE,whichx=1:10)
+#+END_SRC
+
+#+RESULTS: robcox2
+[[file:robcox2.jpg]]
+
+#+RESULTS: robcox1
+[[file:robcox2.jpg]]
+
+#+BEGIN_marginfigure
+# +CAPTION: Survival predictions with robust standard errors for Cox model label:fig:robcox2
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: rob2
+[[file:robcox2.jpg]]
+
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<robcox2>>
+#+END_SRC
+
+#+RESULTS:
+: Error: unexpected input in "<<"
+
+
+#+LATEX: \captionof{figure}{Survival predictions with robust standard errors for Cox model}
+label:fig:robcox2
+#+END_marginfigure
+
+
+Finally, just to check that we can recover the model we also estimate the dependence parameter 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+tt <- twostageMLE(out,data=data)
+summary(tt)
+#+END_SRC
+
+#+RESULTS[<2018-09-10 14:18:33> cdb331054808b11985b02b84f953da8bfc6afbd9]:
+#+begin_example
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                Coef.         SE        z P-val Kendall tau        SE
+dependence1 0.5316753 0.03497789 15.20032     0   0.2100093 0.0109146
+
+$type
+NULL
+
+attr(,"class")
+[1] "summary.mets.twostage"
+#+end_example
+
+
+
+
+
+*** Goodness of fit 
+ 
+
+The observed score process is given by 
+\begin{align}
+U(t,\hat \beta) & = \sum_k \sum_i \int_0^t (Z_{ki} - \hat E_s ) d \hat M_{ki}^s 
+\end{align}
+where $s$ is strata, this has as iid decomposition as 
+\begin{align}
+\hat U(t) = \sum_k \sum_i  \int_0^t (Z_{ki} - E_s) dM_{ki}^s  - \sum_k  I_t \beta_k 
+\end{align}
+where $\beta_k$ is the iid decomposition of the score process for the true $\beta$
+\begin{align}
+\beta_k  & =  \sum_i \int_0^t (Z_{ki} - E_s ) d  M_{ki}^s 
+\end{align}
+and $I_t$ is the derivative of the total score with respect to $\beta$. 
+
+This observed score can be resampled given it is on iid form in terms of 
+clusters. 
+
+Now using the cumulative score process for checking proportional 
+hazards 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+gout <- gof(out)
+gout
+#+END_SRC
+
+#+RESULTS[<2018-09-10 14:32:08> 8bde76b6fea8c56142541f6eeb247699c5236c44]:
+: Cumulative score process test for Proportionality:
+:   Sup|U(t)|  pval
+: x  30.24353 0.401
+
+
+The p-value reflects wheter the observed score process is consistent with
+the model. 
+
+#+NAME: robgofcox1
+#+BEGIN_SRC R :exports both :results output graphics :file robgofcox1.jpg :ravel fig=TRUE,include=FALSE 
+  plot(gout)
+#+END_SRC
+
+#+RESULTS: robgofcox1
+[[file:robgofcox1.jpg]]
+
+#+BEGIN_marginfigure
+# +CAPTION: Goodness of fit for clustered Cox model label:fig:robgofcox1
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: rob1
+[[file:robgofcox1.jpg]]
+
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<robgofcox1>>
+#+END_SRC
+
+#+RESULTS:
+: Error: unexpected input in "<<"
+
+#+LATEX: \captionof{figure}{Goodness of fit for clustered Cox model.}
+label:fig:robcgofox1
+#+END_marginfigure
+
+
+**  Cluster stratified Cox models
+
+For  clustered data it is possible to estimate the regression coefficient
+within clusters by using Cox's partial likelihood stratified on clusters.
+
+Note, here that the data is generated with a different subject specific structure, 
+so we will not recover the \( \beta \) at 0.3 and the model will not be
+a proportional Cox model, we we would also expect to reject "proportionality" with
+the gof-test. 
+
+The model can be thought of as 
+\[ 
+\lambda_k(t) \exp( X_{ki}^T \beta)
+\] 
+where \( \lambda_k(t) \) is some cluster specific baseline. 
+
+
+The regression coefficient \( \beta \) can be estimated by using the 
+partial likelihood for clusters. 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+ out <- phreg(Surv(time,status)~x+strata(cluster),data=data)
+ summary(out)
+#+END_SRC
+
+#+RESULTS[<2018-09-11 09:16:22> ca332c824091210c9d8c97177e43d7db5326a8ae]:
+: 
+:     n events
+:  5000   4854
+: 
+:   Estimate     S.E.  dU^-1/2 P-value
+: x 0.406307 0.032925 0.039226       0
+
+The cumulative score processes can still be used to validate the model 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+gg <- gof (out) 
+summary(gg)
+#+END_SRC
+
+#+RESULTS[<2018-09-11 09:16:22> 6815b9399a490044f01367d6c2ebbab00700d2fb]:
+: Cumulative score process test for Proportionality:
+:   Sup|U(t)|  pval
+: x  27.55616 0.195
+
+ 
+
+
+

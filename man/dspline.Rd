@@ -6,8 +6,8 @@
 \title{Simple linear spline}
 \usage{
 dspline(data, y = NULL, x = NULL, breaks = 4, probs = NULL,
-  equi = FALSE, regex = mets.options()$regex, sep = NULL, na.rm = TRUE,
-  labels = NULL, all = FALSE, ...)
+  equi = FALSE, regex = mets.options()$regex, sep = NULL,
+  na.rm = TRUE, labels = NULL, all = FALSE, ...)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}
@@ -36,6 +36,8 @@ dspline(data, y = NULL, x = NULL, breaks = 4, probs = NULL,
 }
 \description{
 Constructs simple linear spline  on a data frame using the formula syntax of dutils
+that is adds (x-cuti)* (x>cuti) to the data-set for each knot of the spline. 
+The full spline is thus given by x and spline variables added to the data-set.
 }
 \examples{
 data(TRACE)

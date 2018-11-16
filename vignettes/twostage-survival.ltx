@@ -1,0 +1,1378 @@
+%\VignetteIndexEntry{Analysis of multivariate survival data}
+%\VignetteEngine{R.rsp::tex}
+%\VignetteKeyword{R}
+%\VignetteKeyword{package}
+%\VignetteKeyword{vignette}
+%\VignetteKeyword{LaTeX}
+\PassOptionsToPackage{usenames}{xcolor}
+\PassOptionsToPackage{hidelinks,colorlinks,linkcolor={blue!50!black},urlcolor={blue!50!black},citecolor={blue!50!black}}{hyperref}
+\documentclass[a4paper]{tufte-handout}
+\usepackage{etex}
+\usepackage{etoolbox}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{mathtools}
+\usepackage[strict=true]{csquotes}
+\usepackage{xcolor}
+\usepackage{natbib}
+\usepackage{amsmath,amssymb,textcomp}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage{capt-of}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{longtable}
+\usepackage{zlmtt}
+\usepackage{float}
+\usepackage{fancyvrb}
+\usepackage{verbatim}
+\usepackage[english]{babel}
+\usepackage{hyperref}
+\usepackage{environ}
+\NewEnviron{mnote}{\marginnote{\BODY}}
+\NewEnviron{snote}{\sidenote{\BODY}}
+\usepackage{xspace}
+\usepackage{url}
+\usepackage{amsthm}
+\newtheorem{thm}{Theorem.}
+\newtheorem{prop}{Proposition.}
+\theoremstyle{definition}
+\newtheorem{defn}[thm]{Definition.}
+\newtheorem{exa}[thm]{Example}
+\newcommand{\R}{\ensuremath{\mathbb{R}}} 
+\newcommand{\Real}{\ensuremath{\mathbb{R}}} 
+\newcommand{\Complex}{\ensuremath{\mathbb{C}}} 
+\newcommand{\Z}{\ensuremath{\mathbb{Z}}} 
+\newcommand{\N}{\ensuremath{\mathbb{N}}} 
+\newcommand{\norm}[1]{\ensuremath{\left\Vert#1\right\Vert}} 
+\newcommand{\var}{\ensuremath{\mathbb{V}\text{ar}}} 
+\newcommand{\cov}{\ensuremath{\mathbb{C}\text{ov}}} 
+\newcommand{\cor}{\ensuremath{\mathbb{C}\text{or}}} 
+\newcommand{\E}{\ensuremath{\mathbb{E}}} 
+\newcommand{\pr}{\ensuremath{\mathbb{P}}} 
+\newcommand{\from}{\leftarrow} 
+\newcommand{\To}[2]{\ensuremath{#1\!\to\!#2}}
+\newcommand{\From}[2]{\ensuremath{#1\!\from\!#2}}
+\newcommand{\chain}[3]{\ensuremath{#1\!\to\!#2\to\!#3}}
+\newcommand{\ichain}[3]{\ensuremath{#1\!\from\!#2\from\!#3}}
+\newcommand{\fork}[3]{\ensuremath{#1\!\from\!#2\to\!#3}}
+\newcommand{\ifork}[3]{\ensuremath{#1\!\to\!#2\from\!#3}}
+\newcommand{\pa}{\text{pa}}
+\newcommand{\abs}[1]{\ensuremath{\left\vert#1\right\vert}} 
+\newcommand{\ipr}[1]{\langle#1\rangle} 
+\newcommand{\set}[1]{\left{#1\right}} 
+\newcommand{\seq}[1]{\left<#1\right>} 
+\renewcommand{\subset}{\subseteq}  
+\renewcommand{\supset}{\supseteq} 
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\mvec}{vec}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\bias}{bias}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\logit}{logit}
+\DeclareMathOperator{\expit}{expit}
+\makeatletter
+ \def\mathcolor#1#{\@mathcolor{#1}}
+ \def\@mathcolor#1#2#3{%
+   \protect\leavevmode
+   \begingroup
+     \color#1{#2}#3%
+  \endgroup
+ }
+\newcommand{\Dto}{\overset{\mathcal{D}}{\longrightarrow}}
+\newcommand{\Pto}{\overset{P}{\longrightarrow}}
+\newcommand{\Wto}{\overset{W}{\longrightarrow}}
+\newcommand{\VV}{\bm{\Omega}_\theta}
+\newcommand{\independenT}[2]{\mathrel{\setbox0\hbox{$#1#2$}\copy0\kern-\wd0\mkern4mu\box0}} 
+\newcommand{\indep}{\protect\mathpalette{\protect\independenT}{\perp}}
+\DefineVerbatimEnvironment{verbatim}{Verbatim}{xleftmargin=0.5em,xrightmargin=0em,numbers=none,frame=none,fontsize=\footnotesize,formatcom={\color[rgb]{0.2,0.2,0.2}}}
+\setlength{\parindent}{0pt} % Kills annoying indents. 
+\let\iint\relax 
+\let\iiint\relax
+
+\lstset{basicstyle=\ttfamily\small,keywordstyle=\color{black},commentstyle=\color{gray}\ttfamily\itshape,stringstyle=\color[rgb]{0,0,0.5},columns=fullflexible,alsoletter=.,texcl=true,escapeinside={*@}{@*)},escapebegin=\lst@commentstyle\,,breaklines=true,breakatwhitespace=false,numbers=left,numberstyle=\ttfamily\tiny\color{gray},stepnumber=1,numbersep=10pt,backgroundcolor=\color{white},tabsize=4,showspaces=false,showstringspaces=false,xleftmargin=.23in,frame=lines
+,rulesepcolor=\color[rgb]{0.85,0.85,0.85},basewidth={0.5em,0.42em},language=r,label=
+,caption= ,captionpos=b}
+\lstset{basicstyle=\ttfamily\small,keywordstyle=\color{black},commentstyle=\color{gray}\ttfamily\itshape,stringstyle=\color[rgb]{0,0,0.5},columns=fullflexible,alsoletter=.,texcl=true,escapeinside={*@}{@*)},escapebegin=\lst@commentstyle\,,breaklines=true,breakatwhitespace=false,numbers=left,numberstyle=\ttfamily\tiny\color{gray},stepnumber=1,numbersep=10pt,backgroundcolor=\color{white},tabsize=4,showspaces=false,showstringspaces=false,xleftmargin=.23in,frame=lines
+,rulesepcolor=\color[rgb]{0.85,0.85,0.85},basewidth={0.5em,0.42em},language=python,label=
+,caption= ,captionpos=b}
+
+\setlength{\parindent}{0pt} % Kills annoying indents.
+\newcommand{\n}{}
+\author{Klaus Holst \& Thomas Scheike}
+\date{\today}
+\title{Analysis of multivariate survival data}
+\hypersetup{
+ pdfauthor={Klaus Holst \& Thomas Scheike},
+ pdftitle={Analysis of multivariate survival data},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 26.1 (Org mode 9.1.14)}, 
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+\noindent\rule{\textwidth}{0.5pt}
+
+\section*{Overview}
+\label{sec:orga60f62d}
+
+When looking at multivariate survival data with the aim of learning about the 
+dependence that is present, possibly after correcting for some covariates 
+different approaches are available in the mets package  
+
+\begin{itemize}
+\item Binary models and adjust for censoring with inverse probabilty of  censoring weighting
+\begin{itemize}
+\item biprobit  model
+\end{itemize}
+\item Bivariate surival models of Clayton-Oakes type
+\begin{itemize}
+\item With regression structure on dependence parameter
+\item With additive gamma distributed random effects
+\item Special functionality for polygenic random effects modelling 
+such as ACE, ADE ,AE and so forth.
+\end{itemize}
+\item Plackett OR model model 
+\begin{itemize}
+\item With regression structure on OR dependence parameter
+\end{itemize}
+\item Cluster stratified Cox
+\end{itemize}
+
+
+Typically it can be hard or impossible to specify random effects models with special 
+structure among the parameters of the random effects. This is possible for 
+our specification of the random effects models.
+
+To be concrete about the model structure assume that we have paired binomial 
+data \(T_1, \delta_1, T_2, \delta_2,  X_1, X_2\) where the censored 
+survival responses are \(T_1, \delta_1, T_2, \delta_2\) and we
+have covariates \(X_1, X_2\).
+
+The basic models assumes that each subject has a marginal on Cox-form
+\[ 
+\lambda_{s(k,i)}(t) \exp( X_{ki}^T \beta)
+\] 
+where \(s(k,i)\) is a strata variable. 
+
+
+\subsection*{Gamma distributed frailties}
+\label{sec:org7d4c507}
+
+The focus of this vignette is describe how to work on bivariate survival data using the
+addtive gamma-random effects models. We present two different ways of specifying 
+different dependence structures. 
+
+\begin{itemize}
+\item Univariate models with a single random effect for each cluster and with 
+a regression design on the variance.
+\item Multivariate models with multiple random effects for each cluster.
+\end{itemize}
+
+The univariate models are 
+then given a given cluster random effects \(Z_k\) with
+parameter \(\theta\) the joint survival function is given by the Clayton copula 
+and on the form
+\[ \psi(\theta, \psi^{-1}(\theta,S_1(t,X_{k1}) ) + \psi^{-1}(\theta, S_1(t,X_{k1}) ) 
+\]
+where \(\psi\) is the Laplace transform of a gamma distributed random
+variable with mean 1 and variance \(\theta\).
+
+We then model the variance within clusters by a cluster specific 
+regression design  such that 
+\[
+  \theta = z_j^T \alpha
+\] 
+where \(z\) is the regression design (specified by theta.des  in the software). 
+
+This model  can be fitted using a pairwise likelihood or the pseudo-likelihood
+using either
+
+\begin{itemize}
+\item twostage
+\item twostageMLE
+\end{itemize}
+
+ To make the twostage approach possible we need a model with specific structure for the
+ marginals.  Therefore given the 
+random effect of the clusters the survival distributions within a cluster 
+are independent and on the form 
+\[
+ P(T_j > t| X_j,Z) = exp( -Z \cdot \Psi^{-1}(\nu^{-1},S(t|X_j)) )  
+\] 
+with \(\Psi\) the laplace of the gamma distribution with mean 1 and variance \(1/\nu\).
+
+
+\subsection*{Additive Gamma frailties}
+\label{sec:org6e7f89a}
+
+For the multivariate models we are given a multivarite random effect each cluster
+\(Z=(Z_1,...,Z_d)\) with d random effects. 
+The total random effect for each subject \(j\) in  a cluster is then specified using a 
+regression design on these random effects, with a regression vector
+\(V_j\) such that the total random effect is 
+  \(V_j^T (Z_1,...,Z_d)\).  The elements of \(V_J\) are 1/0. 
+The 
+random effects \((Z_1,...,Z_d)\) has associated parameters \((\lambda_1,...,\lambda_d)\)  
+and  \(Z_j\) is Gamma distributed with 
+\begin{itemize}
+\item mean \(\lambda_j/V_1^T \lambda\)
+\item variance \(\lambda_j/(V_1^T \lambda)^2\)
+\end{itemize}
+
+The key assumption to make the two-stage fitting possible is that
+\[
+   \nu =V_j^T \lambda
+\]
+is constant within clusters.  The consequence of this is that 
+the total random effect for each subject within a cluster, 
+\(V_j^T (Z_1,...,Z_d)\) , is gamma distributed with variance \(1/\nu\). 
+
+The DEFAULT parametrization (var.par=1) uses the variances of the random effecs 
+\[
+ \theta_j  = \lambda_j/\nu^2
+\] 
+ For alternative parametrizations one can specify that the parameters are  \(\theta_j=\lambda_j\) with the argument var.par=0.
+
+Finally the parameters \((\theta_1,...,\theta_d)\) are related to the parameters 
+of the model by a regression construction \(M\) (d x k), that links the \(d\)
+\(\theta\)  parameters
+with the \(k\) underlying \(\alpha\) parameters 
+\[
+ \theta = M  \alpha. 
+\] 
+The default is a diagonal matrix for \(M\). 
+This can be used to make structural assumptions about the variances of the random-effects 
+as is needed for the ACE model for example. In the software \(M\) is called theta.des
+
+Assume that the marginal survival distribution for subject \(i\) within cluster \(k\) is given
+by \(S_{X_{k,i}}(t)\) given covariates \(X_{k,i}\). 
+
+Now given the random effects of the cluster \(Z_k\) and the covariates\(X_{k,i}\) \(i=1,\dots,n_k\) 
+we assume that subjects within the cluster are independent with survival distributions 
+\begin{align*}
+  \exp(-  ( V_{k,i} Z_k)  \Psi^{-1} (\nu,S_{X_{k,i}}(t)) ).
+\end{align*}
+
+A consequence of this is that the hazards given the covariates \(X_{k,i}\) and the random effects \(Z_k\)
+are given by
+\begin{align}
+  \lambda_{k,i}(t;X_{k,i},Z_{k,i}) = ( V_{k,i} V_k) D_3 \Psi^{-1} (\nu,S_{X_{k,i}}(t))  D_t S_{X_{k,i}}(t) 
+  \label{eq-cond-haz}
+\end{align}
+where \(D_t\) and \(D_3\) denotes the partial derivatives with respect to \(t\) and the third argument, respectively. 
+
+Further, we can express the multivariate survival distribution as 
+\begin{align}
+  S(t_1,\dots,t_m) & =  \exp( -\sum_{i=1}^m (V_i Z) \Psi^{-1}(\eta_l,\nu_l,S_{X_{k,i}}(t_i)) )  \nonumber \\
+  & =  \prod_{l=1}^p  \Psi(\eta_l,\eta , \sum_{i=1}^m Q_{k,i} \Psi^{-1}(\eta,\eta,S_{X_{k,i}}(t_i))).
+  \label{eq-multivariate-surv}
+\end{align}
+In the case of considering just pairs, we write this function as \(C(S_{k,i}(t),S_{k,j}(t))\).
+
+In addition to survival times from this model, we assume that we independent right censoring present 
+\(U_{k,i}\) such that the given \(V_k\) and the covariates\(X_{k,i}\) \(i=1,\dots,n_k\) \((U_{k,1},\dots,U_{k,n_k})\)
+of \((T_{k,1},\dots,T_{k,n_k})\), and the conditional censoring distribution do not depend on \(V_k\).
+
+
+One consequence of the model strucure is that the Kendall's can be computed for 
+two-subjects \((i,j)\) across two clusters ``1'' and ``2'' as
+\begin{align}
+E( \frac{( V_{1i} Z_1-  V_{1j}Z_2)( V_{2i}Z_1 -  V_{2j}Z_2 )}{( V_{1i}Z_1 + V_{2i}Z_2 ) ( V_{1j}Z_1 + V_{2j}Z_2 )} ) 
+\end{align}
+under the assumption that that we compare pairs with equivalent marginals, 
+\(S_{X_{1,i}}(t)= S_{X_{2,i}}(t)\) and \(S_{X_{1,j}}(t)= S_{X_{2,j}}(t)\), 
+and that \(S_{X_{1,i}}(\infty)= S_{X_{1,j}}(\infty)=0\). 
+Here we also use that \(\eta\) is the same across clusters.
+The Kendall's tau would be the same for \eqref{frailty-model} due to the same additive structure for the 
+frailty terms, and the random effects thus have the same interpretation in terms of Kendall's tau.  
+
+
+\subsection*{Univariate gamma (clayton-oakes) model twostage models}
+\label{sec:org26175fc}
+
+We start by fitting simple Clayton-Oakes models for the data, that is
+with an overall random effect that is Gamma distrubuted with variance
+\(\theta\). We can fit the model by a pseudo-MLE (twostageMLE)
+and a pairwise composite likelihood approach (twostage). 
+
+The pseudo-liklihood and the composite pairwise likelhood gives
+quite similar results in this case. In addition the 
+log-parametrization is illustrated with the var.link=1 option. 
+In addition it is specified that we want a "clayton.oakes" model. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+library(mets)
+data(diabetes)
+
+# Marginal Cox model  with treat as covariate
+margph <- phreg(Surv(time,status)~treat+cluster(id),data=diabetes)
+### Clayton-Oakes, MLE 
+fitco1<-twostageMLE(margph,data=diabetes,theta=1.0)
+summary(fitco1)
+
+### Clayton-Oakes
+fitco2 <- survival.twostage(margph,data=diabetes,theta=0.0,detail=0,
+		 clusters=diabetes$id,var.link=1,model="clayton.oakes")
+summary(fitco2)
+fitco3 <- survival.twostage(margph,data=diabetes,theta=1.0,detail=0,
+		 clusters=diabetes$id,var.link=0,model="clayton.oakes")
+summary(fitco3)
+\end{lstlisting}
+
+\begin{verbatim}
+Loading required package: timereg
+Loading required package: survival
+Loading required package: lava
+lava version 1.6.3
+mets version 1.2.4
+
+Attaching package: ‘mets’
+
+The following object is masked _by_ ‘.GlobalEnv’:
+
+    object.defined
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                Coef.        SE       z       P-val Kendall tau         SE
+dependence1 0.9526614 0.3543033 2.68883 0.007170289    0.322645 0.08127892
+
+$type
+NULL
+
+attr(,"class")
+[1] "summary.mets.twostage"
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+With log-link 
+$estimates
+              log-Coef.        SE         z     P-val Kendall tau         SE
+dependence1 -0.04849523 0.3300971 -0.146912 0.8832015   0.3226451 0.07214115
+
+$vargam
+            Estimate Std.Err   2.5% 97.5% P-value
+dependence1   0.9527  0.3145 0.3363 1.569 0.00245
+
+$type
+[1] "clayton.oakes"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                Coef.        SE        z       P-val Kendall tau         SE
+dependence1 0.9526619 0.3144709 3.029412 0.002450304   0.3226451 0.07214115
+
+$type
+[1] "clayton.oakes"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+The marginal models can be either structured Cox model or as here 
+with a baseline for each strata. This gives quite similar results to those
+before. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+### without covariates but marginal model stratified 
+marg <- phreg(Surv(time,status)~+strata(treat)+cluster(id),data=diabetes)
+fitcoa <- survival.twostage(marg,data=diabetes,theta=1.0,clusters=diabetes$id,
+		 model="clayton.oakes")
+summary(fitcoa)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+With log-link 
+$estimates
+              log-Coef.        SE         z     P-val Kendall tau         SE
+dependence1 -0.05683996 0.3322322 -0.171085 0.8641569   0.3208241 0.07239207
+
+$vargam
+            Estimate Std.Err   2.5% 97.5%  P-value
+dependence1   0.9447  0.3139 0.3296  1.56 0.002613
+
+$type
+[1] "clayton.oakes"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+
+\subsubsection*{Piecewise constant Clayton-Oakes model}
+\label{sec:org3b97143}
+
+Let the cross-hazard ratio (CHR) be defined as 
+\begin{align}
+  \eta(t_1,t_2) =  \frac{ \lambda_1(t_1| T_2=t_2)}{ \lambda_1(t_1| T_2 \ge t_2)}
+  =  \frac{ \lambda_2(t_2| T_1=t_1)}{ \lambda_2(t_2| T_1 \ge t_1)}
+\end{align}
+where \(\lambda_1\) and \(\lambda_2\) are the conditional hazard functions
+of \(T_1\) and \(T_2\) given covariates.  For the Clayton-Oakes model this
+ratio is \(\eta(t_1,t_2) = 1+\theta\), and as a consequence we see that
+if the co-twin is dead at any time we would increase our risk
+assessment on the hazard scale with the constant \(\eta(t_1,t_2)\). The
+Clayton-Oakes model also has the nice property that Kendall's tau is
+linked directly to the dependence parameter \(\theta\) and is \(1/(1+2/\theta)\).
+
+A very useful extension of the model the constant 
+cross-hazard ratio (CHR) model is the 
+piecewise constant cross-hazard ratio (CHR) for bivariate survival
+data \cite{nan2006piecewise}, and this model was extended to competing
+risks in \cite{shih2010modeling}. 
+
+In the survival setting we let the CHR 
+\begin{align}
+  \eta(t_1,t_2) & = \sum \eta_{i,j} I(t_1 \in I_i, t_2 \in I_j)
+\end{align}
+
+The model lets the CHR by constant in different part of the plane. This can be thought of also 
+as having a separate
+Clayton-Oakes model for each of the regions specified in the plane here by
+the cut-points \(c(0,0.5,2)\) thus defining 9 regions. 
+
+This provides a constructive goodness of fit test for the whether the Clayton-Oakes model
+is valid. Indeed if valid the parameter should be the same in all regions. 
+
+First we generate some data from the Clayton-Oakes model with variance \(0.5\) and 2000 pairs.
+And fit the related model. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+d <- simClaytonOakes(2000,2,0.5,0,3)
+ margph <- phreg(Surv(time,status)~x+cluster(cluster),data=d)
+### Clayton-Oakes, MLE 
+fitco1<-twostageMLE(margph,data=d)
+summary(fitco1)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                Coef.         SE        z P-val Kendall tau         SE
+dependence1 0.4876193 0.03973549 12.27163     0   0.1960185 0.01284224
+
+$type
+NULL
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+
+ Now we cut the region at the cut-points 
+\(c(0,0.5,2)\) thus defining 9 regions and fit a separate model for each region.  
+We see that the parameter is indeed rather constant over the 9 regions. A formal 
+test can be constructed. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+udp <- piecewise.twostage(c(0,0.5,2),data=d,score.method="optimize",
+			  id="cluster",timevar="time",
+			  status="status",model="clayton.oakes",silent=0)
+summary(udp)
+\end{lstlisting}
+
+\begin{verbatim}
+ Data-set  1 out of  4 
+  Number of joint events: 389 of  2000
+
+Data-set  2 out of  4 
+  Number of joint events: 366 of  1199
+
+Data-set  3 out of  4 
+  Number of joint events: 352 of  1212
+
+Data-set  4 out of  4 
+  Number of joint events: 444 of  800
+[1] 1
+Dependence parameter for Clayton-Oakes model 
+log-coefficient for dependence parameter (SE) 
+         0 - 0.5        0.5 - 2      
+0 - 0.5 -0.807 (0.168) -0.38  (0.137)
+0.5 - 2 -0.78  (0.169) -0.813 (0.164)
+
+Kendall's tau (SE) 
+         0 - 0.5        0.5 - 2      
+0 - 0.5  0.182 (0.025)  0.255 (0.026)
+0.5 - 2  0.186 (0.026)  0.182 (0.024)
+\end{verbatim}
+
+
+\subsection*{Multivariate gamma twostage models}
+\label{sec:org0f1d68a}
+
+To illustrate how the multivariate models can be used, we first set 
+up some twin data with ACE structure. That is two shared random effects,
+one being the genes \(\sigma_g^2\) and one the environmental effect
+\(\sigma_e^2\). Monozygotic twins share all genes whereas the dizygotic 
+twins only share half the genes. This can be expressed via 5 random effect for
+each twin pair (for example). We start by setting this up. 
+
+
+ The pardes matrix tells how the the parameters of the 5 random effects are 
+ related, and the matrix her first has one random effect with parameter
+ \(\theta_1\) (here the \(\sigma_g^2\)), then the next 3 random effects have
+ parameters \(0.5 \theta_1\) (here \(0.5 \sigma_g^2\)), and the last 
+random effect that is given by its own parameter \(\theta_2\) (here 
+\(\sigma_e^2\)).
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+data <- simClaytonOakes.twin.ace(2000,2,1,0,3)
+
+out <- twin.polygen.design(data,id="cluster")
+pardes <- out$pardes
+pardes 
+\end{lstlisting}
+
+\begin{verbatim}
+     [,1] [,2]
+[1,]  1.0    0
+[2,]  0.5    0
+[3,]  0.5    0
+[4,]  0.5    0
+[5,]  0.0    1
+\end{verbatim}
+
+
+The last part of the model structure is to decide how the random effects
+are shared for the different pairs (MZ and DZ), this is specfied by
+the random effects design (\(V_1\) and \(V_2\)) for each pair. 
+This is here specified by an overall designmatrix for each subject 
+(since they enter all pairs with the same random effects design).
+
+For an MZ pair the two share the full gene random effect and the full
+environmental random effect. In contrast the DZ pairs share the 
+2nd random effect with half the gene-variance and have both a non-shared
+gene-random effect with half the variance, and finally a fully shared 
+environmental random effect. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+des.rv <- out$des.rv
+## MZ
+head(des.rv,2)
+## DZ 
+tail(des.rv,2)
+\end{lstlisting}
+
+\begin{verbatim}
+  MZ DZ DZns1 DZns2 env
+1  1  0     0     0   1
+2  1  0     0     0   1
+     MZ DZ DZns1 DZns2 env
+3999  0  1     1     0   1
+4000  0  1     0     1   1
+\end{verbatim}
+
+
+Now we call the twostage function. We see that we essentially recover the true values, and
+note that the output also compares the sizes of the genetic and environmental random effect. 
+This number is sometimes called the heritability.  In addition the total variance for each
+subject is also computed and is here around \(3\), as we indeed constructed.
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+aa <- phreg(Surv(time,status)~x+cluster(cluster),data=data)
+ts <- twostage(aa,data=data,clusters=data$cluster,detail=0,
+	      theta=c(2,1),var.link=0,step=0.5,
+	      random.design=des.rv,theta.des=pardes)
+summary(ts)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+               Coef.        SE        z        P-val Kendall tau         SE
+dependence1 1.799259 0.1932219 9.311881 0.000000e+00   0.4735816 0.02677247
+dependence2 1.111500 0.1614311 6.885292 5.766942e-12   0.3572233 0.03334859
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err   2.5%  97.5%   P-value
+dependence1   0.6181 0.05547 0.5094 0.7269 7.616e-29
+dependence2   0.3819 0.05547 0.2731 0.4906 5.796e-12
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%    P-value
+p1    2.911   0.135 2.646 3.175 3.733e-103
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+The estimates can be transformed into Kendall's tau estimates for MZ and DZ twins. The Kendall's tau
+in the above output reflects how  a gamma distributed random effect in the normal Clayton-Oakes model
+is related to the Kendall's tau. In this setting the Kendall's of MZ and DZ, however, should reflect 
+both random effects. 
+
+We do this based on simulations. The Kendall's tau of the MZ is around 0.60, and for 
+DZ around 0.33. Both are quite high and this is due to a large shared environmental 
+effect and large genetic effect. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+kendall.ClaytonOakes.twin.ace(ts$theta[1],ts$theta[2],K=10000) 
+\end{lstlisting}
+
+\begin{verbatim}
+$mz.kendall
+[1] 0.5905978
+
+$dz.kendall
+[1] 0.3404067
+\end{verbatim}
+
+
+\subsubsection*{Family data}
+\label{sec:org544fb87}
+
+For family data, things are quite similar since we use only the pairwise structure. 
+We show  how the designs are specified. 
+
+First we simulate data from an ACE model.  2000 families with two-parents that share
+only the environment, and two-children that share genes with their parents. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+library(mets)
+set.seed(1000)
+data <- simClaytonOakes.family.ace(2000,2,1,0,3)
+head(data)
+data$number <- c(1,2,3,4)
+data$child <- 1*(data$number==3)
+\end{lstlisting}
+
+\begin{verbatim}
+        time status x cluster   type    mintime lefttime truncated
+1 0.26343780      1 1       1 mother 0.26343780        0         0
+2 1.14490828      1 1       1 father 0.26343780        0         0
+3 0.86649229      1 1       1  child 0.26343780        0         0
+4 0.30843425      1 0       1  child 0.26343780        0         0
+5 3.00000000      0 0       2 mother 0.07739746        0         0
+6 0.07739746      1 0       2 father 0.07739746        0         0
+\end{verbatim}
+
+To set up the random effects some functions can be used. We here set up the ACE model
+that has 9 random effects with one shared environmental effect (the last random effect) and
+4 genetic random effects for each parent, with variance \(\sigma_g^2/4\). 
+
+The random effect is again set-up with an overall designmatrix because it is again the same for
+each subject for all comparisons across family members.  We below demonstrate how the model can 
+be specified in various other ways. 
+
+Each child share 2 genetic random effects with each parent, and also share 2 genetic random effects
+with his/her sibling.
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+out <- ace.family.design(data,member="type",id="cluster")
+out$pardes
+head(out$des.rv,4)
+\end{lstlisting}
+
+\begin{verbatim}
+      [,1] [,2]
+ [1,] 0.25    0
+ [2,] 0.25    0
+ [3,] 0.25    0
+ [4,] 0.25    0
+ [5,] 0.25    0
+ [6,] 0.25    0
+ [7,] 0.25    0
+ [8,] 0.25    0
+ [9,] 0.00    1
+     m1 m2 m3 m4 f1 f2 f3 f4 env
+[1,]  1  1  1  1  0  0  0  0   1
+[2,]  0  0  0  0  1  1  1  1   1
+[3,]  1  1  0  0  1  1  0  0   1
+[4,]  1  0  1  0  1  0  1  0   1
+\end{verbatim}
+
+
+Then we fit the model 
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+pa <- phreg(Surv(time,status)~+1+cluster(cluster),data=data)
+aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
+
+### make ace random effects design
+ts <- twostage(pa,data=data,clusters=data$cluster,
+	var.par=1,var.link=0,theta=c(2,1),
+	random.design=out$des.rv,theta.des=out$pardes)
+summary(ts)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+               Coef.         SE        z P-val Kendall tau         SE
+dependence1 2.185967 0.19164670 11.40623     0   0.5222132 0.02187458
+dependence2 0.947110 0.07648339 12.38321     0   0.3213691 0.01761183
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err   2.5%  97.5%    P-value
+dependence1   0.6977 0.02997 0.6390 0.7564 7.182e-120
+dependence2   0.3023 0.02997 0.2436 0.3610  6.359e-24
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%   P-value
+p1    3.133  0.1737 2.793 3.474 1.074e-72
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+
+The model can also be fitted by specifying the pairs that 
+one wants for the pairwise likelhood. This is done by
+specifying the pairs argument. 
+We start by considering all pairs as we also did before. 
+
+All pairs can be written up by calling the familycluster.index
+function. 
+
+There are 12000 pairs to consider and the last 12 pairs for the last family 
+is written out here. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+### now specify fitting via specific pairs 
+### first all pairs 
+mm <- familycluster.index(data$cluster)
+head(mm$familypairindex,n=10)
+pairs <- matrix(mm$familypairindex,ncol=2,byrow=TRUE)
+tail(pairs,n=12)
+\end{lstlisting}
+
+\begin{verbatim}
+ [1] 1 2 1 3 1 4 2 3 2 4
+         [,1] [,2]
+[11989,] 7993 7994
+[11990,] 7993 7995
+[11991,] 7993 7996
+[11992,] 7994 7995
+[11993,] 7994 7996
+[11994,] 7995 7996
+[11995,] 7997 7998
+[11996,] 7997 7999
+[11997,] 7997 8000
+[11998,] 7998 7999
+[11999,] 7998 8000
+[12000,] 7999 8000
+\end{verbatim}
+
+Then fitting the model using only specified pairs
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+ts <- twostage(pa,data=data,clusters=data$cluster,
+	       theta=c(2,1),var.link=0,step=1.0,
+	       random.design=out$des.rv,
+	       theta.des=out$pardes,pairs=pairs)
+summary(ts)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+               Coef.         SE        z P-val Kendall tau         SE
+dependence1 2.185967 0.18986604 11.51321     0   0.5222132 0.02167133
+dependence2 0.947110 0.07929082 11.94476     0   0.3213691 0.01825829
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err   2.5%  97.5%    P-value
+dependence1   0.6977 0.03044 0.6381 0.7574 2.659e-116
+dependence2   0.3023 0.03044 0.2426 0.3619  3.010e-23
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%   P-value
+p1    3.133  0.1713 2.797 3.469 1.057e-74
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+Now we only use a random sample of the pairs by sampling these.  The pairs
+picked still refers to the data given in the data argument, and clusters (families)
+are also specified as before. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+ssid <- sort(sample(1:12000,2000))
+tsd <- twostage(aa,data=data,clusters=data$cluster,
+	       theta=c(2,1)/10,var.link=0,step=1.0,
+	       random.design=out$des.rv,iid=1,
+	      theta.des=out$pardes,pairs=pairs[ssid,])
+summary(tsd)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+               Coef.        SE        z        P-val Kendall tau         SE
+dependence1 2.001187 0.3400847 5.884378 3.995533e-09   0.5001483 0.04248537
+dependence2 1.054030 0.1277271 8.252205 2.220446e-16   0.3451275 0.02738838
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err   2.5%  97.5%   P-value
+dependence1    0.655 0.05345 0.5502 0.7598 1.606e-34
+dependence2    0.345 0.05345 0.2402 0.4498 1.089e-10
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%   P-value
+p1    3.055  0.3253 2.418 3.693 5.923e-21
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+
+Sometimes one only has the data from the pairs in addition to for example 
+a cohort estimate of the marginal surival models. We now demonstrate how this 
+is dealt with. Everything is essentially as before but need to organize the 
+design differently compared to before we specified the design  for everybody in 
+the cohort. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+ids <- sort(unique(c(pairs[ssid,])))
+###
+pairsids <- c(pairs[ssid,])
+pair.new <- matrix(fast.approx(ids,c(pairs[ssid,])),ncol=2)
+head(pair.new)
+
+## this requires that pair.new refers to id's in dataid (survival, status and so forth)
+## random.design and theta.des are constructed to be the array 3 dims via individual specfication from ace.family.design
+dataid <- dsort(data[ids,],"cluster")
+outid <- ace.family.design(dataid,member="type",id="cluster")
+outid$pardes
+head(outid$des.rv)
+\end{lstlisting}
+
+\begin{verbatim}
+     [,1] [,2]
+[1,]    1    2
+[2,]    3    4
+[3,]    3    5
+[4,]    4    6
+[5,]    7    8
+[6,]    9   10
+      [,1] [,2]
+ [1,] 0.25    0
+ [2,] 0.25    0
+ [3,] 0.25    0
+ [4,] 0.25    0
+ [5,] 0.25    0
+ [6,] 0.25    0
+ [7,] 0.25    0
+ [8,] 0.25    0
+ [9,] 0.00    1
+     m1 m2 m3 m4 f1 f2 f3 f4 env
+[1,]  1  1  1  1  0  0  0  0   1
+[2,]  0  0  0  0  1  1  1  1   1
+[3,]  1  1  1  1  0  0  0  0   1
+[4,]  0  0  0  0  1  1  1  1   1
+[5,]  1  1  0  0  1  1  0  0   1
+[6,]  1  0  1  0  1  0  1  0   1
+\end{verbatim}
+
+Now fitting the model using only the pair data. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+tsdid <- twostage(aa,data=dataid,clusters=dataid$cluster,
+	       theta=c(2,1)/10,var.link=0,step=1.0,
+	       random.design=outid$des.rv,iid=1,
+	       theta.des=outid$pardes,pairs=pair.new)
+summary(tsdid)
+coef(tsdid)
+coef(tsd)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+               Coef.        SE        z        P-val Kendall tau         SE
+dependence1 2.001187 0.3400847 5.884378 3.995533e-09   0.5001483 0.04248537
+dependence2 1.054030 0.1277271 8.252205 2.220446e-16   0.3451275 0.02738838
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err   2.5%  97.5%   P-value
+dependence1    0.655 0.05345 0.5502 0.7598 1.606e-34
+dependence2    0.345 0.05345 0.2402 0.4498 1.089e-10
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%   P-value
+p1    3.055  0.3253 2.418 3.693 5.923e-21
+
+attr(,"class")
+[1] "summary.mets.twostage"
+               Coef.        SE        z        P-val Kendall tau         SE
+dependence1 2.001187 0.3400847 5.884378 3.995533e-09   0.5001483 0.04248537
+dependence2 1.054030 0.1277271 8.252205 2.220446e-16   0.3451275 0.02738838
+               Coef.        SE        z        P-val Kendall tau         SE
+dependence1 2.001187 0.3400847 5.884378 3.995533e-09   0.5001483 0.04248537
+dependence2 1.054030 0.1277271 8.252205 2.220446e-16   0.3451275 0.02738838
+\end{verbatim}
+
+
+Now we illustrate how one can also 
+directly specify the  random.design and theta.design 
+for each pair, 
+rather than taking the rows of the des.rv for the relevant pairs.
+This can be much simpler in some situations. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+pair.types <-  matrix(dataid[c(t(pair.new)),"type"],byrow=T,ncol=2)
+head(pair.new)
+head(pair.types)
+
+### here makes pairwise design , simpler random.design og pardes, parameters
+### stil varg, varc 
+### mother, child, share half rvm=c(1,1,0) rvc=c(1,0,1),
+### thetadesmcf=rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
+###
+### father, child, share half rvf=c(1,1,0) rvc=c(1,0,1), 
+### thetadescf=rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
+###
+### child, child,  share half rvc=c(1,1,0) rvc=c(1,0,1),
+### thetadesmf=rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
+###
+### mother, father, share 0 rvm=c(1,0) rvf=c(0,1), 
+### thetadesmf=rbind(c(1,0),c(1,0),c(0,1))
+
+theta.des  <- array(0,c(4,2,nrow(pair.new)))
+random.des <- array(0,c(2,4,nrow(pair.new)))
+### random variables in each pair 
+rvs <- c()
+for (i in 1:nrow(pair.new))
+{
+	if (pair.types[i,1]=="mother" & pair.types[i,2]=="father")
+	{
+	theta.des[,,i] <- rbind(c(1,0),c(1,0),c(0,1),c(0,0))
+	random.des[,,i] <- rbind(c(1,0,1,0),c(0,1,1,0))
+	rvs <- c(rvs,3)
+	} else {
+	theta.des[,,i] <- rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
+	random.des[,,i] <- rbind(c(1,1,0,1),c(1,0,1,1))
+	rvs <- c(rvs,4)
+	}
+}
+### 3 rvs here 
+random.des[,,7]
+theta.des[,,7]
+### 4 rvs here 
+random.des[,,1]
+theta.des[,,1]
+head(rvs)
+\end{lstlisting}
+
+\begin{verbatim}
+     [,1] [,2]
+[1,]    1    2
+[2,]    3    4
+[3,]    3    5
+[4,]    4    6
+[5,]    7    8
+[6,]    9   10
+     [,1]     [,2]    
+[1,] "mother" "father"
+[2,] "mother" "father"
+[3,] "mother" "child" 
+[4,] "father" "child" 
+[5,] "child"  "child" 
+[6,] "child"  "child"
+     [,1] [,2] [,3] [,4]
+[1,]    1    1    0    1
+[2,]    1    0    1    1
+     [,1] [,2]
+[1,]  0.5    0
+[2,]  0.5    0
+[3,]  0.5    0
+[4,]  0.0    1
+     [,1] [,2] [,3] [,4]
+[1,]    1    0    1    0
+[2,]    0    1    1    0
+     [,1] [,2]
+[1,]    1    0
+[2,]    1    0
+[3,]    0    1
+[4,]    0    0
+[1] 3 3 4 4 4 4
+\end{verbatim}
+
+
+And fitting again the same model as before 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+tsdid2 <- twostage(aa,data=dataid,clusters=dataid$cluster,
+	       theta=c(2,1)/10,var.link=0,step=1.0,
+	       random.design=random.des,
+	       theta.des=theta.des,pairs=pair.new,pairs.rvs=rvs)
+summary(tsdid2)
+tsd$theta
+tsdid2$theta
+tsdid$theta
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+               Coef.        SE        z        P-val Kendall tau         SE
+dependence1 2.001187 0.3400847 5.884378 3.995533e-09   0.5001483 0.04248537
+dependence2 1.054030 0.1277271 8.252205 2.220446e-16   0.3451275 0.02738838
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err   2.5%  97.5%   P-value
+dependence1    0.655 0.05345 0.5502 0.7598 1.606e-34
+dependence2    0.345 0.05345 0.2402 0.4498 1.089e-10
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%   P-value
+p1    3.055  0.3253 2.418 3.693 5.923e-21
+
+attr(,"class")
+[1] "summary.mets.twostage"
+                [,1]
+dependence1 2.001187
+dependence2 1.054030
+                [,1]
+dependence1 2.001187
+dependence2 1.054030
+                [,1]
+dependence1 2.001187
+dependence2 1.054030
+\end{verbatim}
+
+Finally the same model structure can be setup based on a Kinship coefficient. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+### simpler specification via kinship coefficient for each pair
+kinship  <- c()
+for (i in 1:nrow(pair.new))
+{
+if (pair.types[i,1]=="mother" & pair.types[i,2]=="father") pk1 <- 0 else pk1 <- 0.5
+kinship <- c(kinship,pk1)
+}
+head(kinship,n=10)
+
+out <- make.pairwise.design(pair.new,kinship,type="ace") 
+names(out)
+### 4 rvs here , here independence since shared component has variance 0 !
+out$random.des[,,9]
+out$theta.des[,,9]
+\end{lstlisting}
+
+\begin{verbatim}
+ [1] 0.0 0.0 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5
+[1] "random.design" "theta.des"     "ant.rvs"
+     [,1] [,2] [,3] [,4]
+[1,]    1    1    0    1
+[2,]    1    0    1    1
+     [,1] [,2]
+[1,]  0.5    0
+[2,]  0.5    0
+[3,]  0.5    0
+[4,]  0.0    1
+\end{verbatim}
+
+Same same 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+tsdid3 <- twostage(aa,data=dataid,clusters=dataid$cluster,
+	       theta=c(2,1)/10,var.link=0,step=1.0,
+	       random.design=out$random.design,
+	       theta.des=out$theta.des,pairs=pair.new,pairs.rvs=out$ant.rvs)
+summary(tsdid3)
+coef(tsdid3)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+               Coef.        SE        z        P-val Kendall tau         SE
+dependence1 2.001187 0.3400847 5.884378 3.995533e-09   0.5001483 0.04248537
+dependence2 1.054030 0.1277271 8.252205 2.220446e-16   0.3451275 0.02738838
+
+$type
+[1] "clayton.oakes"
+
+$h
+            Estimate Std.Err   2.5%  97.5%   P-value
+dependence1    0.655 0.05345 0.5502 0.7598 1.606e-34
+dependence2    0.345 0.05345 0.2402 0.4498 1.089e-10
+
+$vare
+NULL
+
+$vartot
+   Estimate Std.Err  2.5% 97.5%   P-value
+p1    3.055  0.3253 2.418 3.693 5.923e-21
+
+attr(,"class")
+[1] "summary.mets.twostage"
+               Coef.        SE        z        P-val Kendall tau         SE
+dependence1 2.001187 0.3400847 5.884378 3.995533e-09   0.5001483 0.04248537
+dependence2 1.054030 0.1277271 8.252205 2.220446e-16   0.3451275 0.02738838
+\end{verbatim}
+
+
+\subsection*{Univariate plackett model twostage models}
+\label{sec:org8b710c1}
+
+The copula known as the Plackett distribution, see \cite{plackett1965,anderson1992time,ghosh2006sjs}, is on the form
+\begin{align}
+  C(u,v; \theta) =
+  \begin{cases}
+    \frac{ S - (S^2 - 4 u v \theta (\theta-a))}{2 (\theta -1)} & \mbox{ if } \theta \ne 1 \\
+    u v & \mbox{ if } \theta = 1
+  \end{cases}
+\end{align}
+with \(S=1+(\theta-1) (u + v)\).  With marginals \(S_i\) we now define the
+bivariate survival function as \(C(u_1,u_2)=H(S_1(t_1),S_2(t_2))\) with
+\(u_i=S_i(t_i)\).
+
+The dependence parameter \(\theta\) has the nice interpretation that the
+it is equivalent to the odds-ratio of all \(2 \times 2\) tables for
+surviving past any cut of the plane \((t_1,t_2)\), that is
+$$
+\theta = \frac{ P(T_1 > t_1 | T_2 >t_2) P(T_1 \leq t_1 | T_2>t_2) }{P(T_1 > t_1 | T_2 \leq t_2) P(T_1 \leq t_1 | T_2 \leq t_2 ) }.
+$$
+
+One additional nice feature of the odds-ratio measure it that it is
+directly linked to the Spearman correlation, \(\rho\), that can be
+computed as
+\begin{align}
+  \frac{\theta+1}{\theta -1} - \frac{2 \theta}{(\theta-1)^2} \log(\theta)
+\end{align}
+when \(\theta \ne 1\), if \(\theta=1\) then \(\rho=0\).
+
+
+This model has a more free parameter than the Clayton-Oakes model. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+library(mets)
+data(diabetes)
+
+# Marginal Cox model  with treat as covariate
+margph <- phreg(Surv(time,status)~treat+cluster(id),data=diabetes)
+### Clayton-Oakes, MLE 
+fitco1<-twostageMLE(margph,data=diabetes,theta=1.0)
+summary(fitco1)
+
+### Plackett model
+mph <- phreg(Surv(time,status)~treat+cluster(id),data=diabetes)
+fitp <- survival.twostage(mph,data=diabetes,theta=3.0,Nit=40,
+	       clusters=diabetes$id,var.link=1,model="plackett")
+summary(fitp)
+
+### without covariates but with stratafied 
+marg <- phreg(Surv(time,status)~+strata(treat)+cluster(id),data=diabetes)
+fitpa <- survival.twostage(marg,data=diabetes,theta=1.0,
+		clusters=diabetes$id,score.method="optimize")
+summary(fitpa)
+
+fitcoa <- survival.twostage(marg,data=diabetes,theta=1.0,clusters=diabetes$id,
+		 model="clayton.oakes")
+summary(fitcoa)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                Coef.        SE       z       P-val Kendall tau         SE
+dependence1 0.9526614 0.3543033 2.68883 0.007170289    0.322645 0.08127892
+
+$type
+NULL
+
+attr(,"class")
+[1] "summary.mets.twostage"
+Dependence parameter for Odds-Ratio (Plackett) model 
+With log-link 
+$estimates
+            log-Coef.        SE        z        P-val Spearman Corr.        SE
+dependence1   1.14188 0.2788083 4.095574 4.211229e-05      0.3648217 0.0817044
+
+$or
+            Estimate Std.Err  2.5% 97.5%   P-value
+dependence1    3.133  0.8734 1.421 4.845 0.0003349
+
+$type
+[1] "plackett"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+With log-link 
+$estimates
+              log-Coef.        SE          z     P-val Kendall tau         SE
+dependence1 -0.05683487 0.3239422 -0.1754476 0.8607279   0.3208252 0.07058583
+
+$vargam
+            Estimate Std.Err   2.5% 97.5%  P-value
+dependence1   0.9448   0.306 0.3449 1.545 0.002022
+
+$type
+[1] "clayton.oakes"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+With log-link 
+$estimates
+              log-Coef.        SE         z     P-val Kendall tau         SE
+dependence1 -0.05683996 0.3322322 -0.171085 0.8641569   0.3208241 0.07239207
+
+$vargam
+            Estimate Std.Err   2.5% 97.5%  P-value
+dependence1   0.9447  0.3139 0.3296  1.56 0.002613
+
+$type
+[1] "clayton.oakes"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+
+With a regression design 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+mm <- model.matrix(~-1+factor(adult),diabetes)
+fitp <- survival.twostage(mph,data=diabetes,theta=3.0,Nit=40,
+	       clusters=diabetes$id,var.link=1,model="plackett",
+	       theta.des=mm)
+summary(fitp)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Odds-Ratio (Plackett) model 
+With log-link 
+$estimates
+               log-Coef.        SE        z       P-val Spearman Corr.
+factor(adult)1  1.098333 0.3494607 3.142936 0.001672625      0.3519988
+factor(adult)2  1.231962 0.5011284 2.458377 0.013956676      0.3909505
+                      SE
+factor(adult)1 0.1033896
+factor(adult)2 0.1438278
+
+$or
+               Estimate Std.Err    2.5% 97.5%  P-value
+factor(adult)1    2.999   1.048 0.94494 5.053 0.004216
+factor(adult)2    3.428   1.718 0.06104 6.795 0.045989
+
+$type
+[1] "plackett"
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+### Piecewise constant cross hazards ratio modelling
+########################################################
+
+d <- subset(simClaytonOakes(2000,2,0.5,0,stoptime=2,left=0),!truncated)
+udp <- piecewise.twostage(c(0,0.5,2),data=d,score.method="optimize",
+			  id="cluster",timevar="time",
+			  status="status",model="plackett",silent=0)
+summary(udp)
+\end{lstlisting}
+
+\begin{verbatim}
+ Data-set  1 out of  4 
+  Number of joint events: 392 of  2000
+
+Data-set  2 out of  4 
+  Number of joint events: 345 of  1211
+
+Data-set  3 out of  4 
+  Number of joint events: 354 of  1212
+
+Data-set  4 out of  4 
+  Number of joint events: 489 of  815
+[1] 1
+Dependence parameter for Plackett model 
+log-coefficient for dependence parameter (SE) 
+         0 - 0.5        0.5 - 2      
+0 - 0.5  0.637 (0.084)  0.622 (0.105)
+0.5 - 2  0.79  (0.107)  0.749 (0.103)
+
+Spearman Correlation (SE) 
+         0 - 0.5        0.5 - 2      
+0 - 0.5  0.21  (0.027)  0.205 (0.034)
+0.5 - 2  0.258 (0.034)  0.245 (0.033)
+\end{verbatim}
+\end{document}

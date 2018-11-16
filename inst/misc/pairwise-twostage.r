@@ -7,23 +7,33 @@ head(data)
 data$number <- c(1,2,3,4)
 data$child <- 1*(data$number==3)
 out <- ace.family.design(data,member="type",id="cluster")
+### 8 random effects with 1/4 * var.gene, and one shared environment  1 * var.env
 out$pardes
 head(out$des.rv)
 ###
-aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
+aa <- phreg(Surv(time,status)~+cluster(cluster),data=data)
 
 ## {{{ additive gamma models with and without pair call 
 ### make ace random effects design
 
 ### simple random effects call 
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
+ts0 <- survival.twostage(aa,data=data,clusters=data$cluster,
 	detail=0,var.par=0,var.link=0,
         theta=c(2,1),
         random.design=out$des.rv,theta.des=out$pardes)
 summary(ts0)
 
+### simple random effects call 
+ts1 <- survival.twostage(aa,data=data,clusters=data$cluster,
+	detail=0,var.par=1,var.link=0,
+        theta=c(2,1),
+        random.design=out$des.rv,theta.des=out$pardes)
+summary(ts1)
+### parameters c(2,1)/(2+1)^2
+
 checkderiv=1
 if (checkderiv==1) {# {{{
+
 ts0 <- twostage(aa,data=data,clusters=data$cluster,
 	detail=1,numDeriv=1,Nit=0,var.par=1,
         theta=log(c(2,1)/9),var.link=1,step=1.0,
@@ -57,8 +67,7 @@ ts0$score1
 
 
 ### now specify fitting via specific pairs 
-
-### first all pairs 
+### first construct all pairs 
 mm <- familycluster.index(data$cluster)
 head(mm$familypairindex,n=10)
 pairs <- matrix(mm$familypairindex,ncol=2,byrow=TRUE)
@@ -72,7 +81,7 @@ ts <- twostage(aa,data=data,clusters=data$cluster,
 summary(ts)
 
 ### random sample of pairs 
-ssid <- sort(sample(1:48000,20000))
+ssid <- sort(sample(1:32000,20000))
 ###
 ### take some of all 
 tsd <- twostage(aa,data=data,clusters=data$cluster,
@@ -80,6 +89,10 @@ tsd <- twostage(aa,data=data,clusters=data$cluster,
                random.design=out$des.rv,iid=1,
 	      theta.des=out$pardes,pairs=pairs[ssid,])
 summary(tsd)
+
+str(aa)
+aa$id
+
 
 ### same analyses but now gives only data that is used in the relevant pairs 
 ids <- sort(unique(c(pairs[ssid,])))
@@ -95,7 +108,7 @@ outid <- ace.family.design(dataid,member="type",id="cluster")
 outid$pardes
 head(outid$des.rv)
 ###
-tsdid <- twostage(aa,data=dataid,clusters=dataid$cluster,
+tsid <- twostage(aa,data=dataid,clusters=dataid$cluster,
                theta=c(2,1)/10,var.link=0,step=1.0,
                random.design=outid$des.rv,iid=1,
                theta.des=outid$pardes,pairs=pair.new)
@@ -193,7 +206,7 @@ coef(tsdid3)
 ##### simple models, test for pairs structure ## {{{ 
 
 library(mets)
-###source("../R/twostage.R")
+source("../R/twostage.R")
 ts0 <- twostage(aa,data=data,clusters=data$cluster,
 	detail=0,numDeriv=1,Nit=10,
         theta=c(0.17),var.link=0,step=1.0)
@@ -295,8 +308,6 @@ summary(ts0)
 
 
 ## }}} 
-
-
 
 
 

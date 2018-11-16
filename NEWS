@@ -1,4 +1,21 @@
-# -*- mode: org -*-
+#-*- mode: org -*-
+#
+* Version 1.2.5 <2018-05-18 Wed>
+  - Updated predict function for phreg 
+    - with plotting functionality 
+    - with robust standard errors 
+  - New vignettes started 
+    - phreg robust se's for marginal Cox model
+    - twostage survival  model 
+    - multivariate competing risks 
+  - logitSurv for fitting semiparametric proportional odds model 
+    - gof 
+    - robust standard errors for clustered case 
+  - twostageMLE for fast twostage fitting for clustered survival data
+    with robust standard errors. 
+  - standard errors for twostage models now also with uncertainty from Cox 
+    baseline
+  - cumulative score process test gof now also for marginal Cox models 
 
 * Version 1.2.4 <2018-05-18 Wed>
   - functions km (Kaplan-Meier) and cif (cumulative incidence

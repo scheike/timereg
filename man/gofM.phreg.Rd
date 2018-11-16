@@ -31,6 +31,7 @@ Cumulative residuals after model matrix for Cox PH regression
 p-values based on Lin, Wei, Ying resampling.
 }
 \examples{
+library(mets)
 data(TRACE)
 
 dcut(TRACE)  <- ~. 
@@ -50,8 +51,10 @@ m1 <- gofM.phreg(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE,
 summary(m1)
 
 ## cumulative sums in covariates, via design matrix mm 
-m1 <- gofZ.phreg(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE,vars="wmi")
+m1 <- gofZ.phreg(Surv(time,status==9)~strata(vf)+chf+wmi+age,data=TRACE,
+                 vars=c("wmi","age"))
 summary(m1)
+plot(m1,type="z")
 
 }
 \author{

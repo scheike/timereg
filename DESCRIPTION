@@ -2,7 +2,7 @@ Package: mets
 Type: Package
 Title: Analysis of Multivariate Event Times
 Version: 1.2.4
-Date: 2018-08-03
+Date: 2018-08-12
 Author: Klaus K. Holst and Thomas Scheike
 Maintainer: Klaus K. Holst <klaus@holst.it>
 Description: Implementation of various statistical models for multivariate
@@ -19,7 +19,7 @@ BugReports: https://github.com/kkholst/mets/issues
 Depends:
     R (>= 3.3),
     timereg (>= 1.9.2),
-    lava (>= 1.6.1)
+    lava (>= 1.6.3)
 Imports:
     numDeriv,
     compiler,
@@ -36,4 +36,4 @@ VignetteBuilder: R.rsp
 ByteCompile: yes
 LinkingTo: Rcpp, RcppArmadillo
 Roxygen: list(wrap = FALSE)
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0

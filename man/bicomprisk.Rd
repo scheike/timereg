@@ -6,9 +6,9 @@
 \usage{
 bicomprisk(formula, data, cause = c(1, 1), cens = 0, causes, indiv,
   strata = NULL, id, num, max.clust = 1000, marg = NULL,
-  se.clusters = NULL, wname = NULL, prodlim = FALSE, messages = TRUE,
-  model, return.data = 0, uniform = 0, conservative = 1,
-  resample.iid = 1, ...)
+  se.clusters = NULL, wname = NULL, prodlim = FALSE,
+  messages = TRUE, model, return.data = 0, uniform = 0,
+  conservative = 1, resample.iid = 1, ...)
 }
 \arguments{
 \item{formula}{Formula with left-hand-side being a \code{Event} object (see example below) and the left-hand-side specying the covariate structure}
@@ -92,6 +92,11 @@ p11wdz <- ipwc$cum[,3]
 lines(ipwc$cum[,1],p11wmz,col=3)
 lines(ipwc$cum[,1],p11wdz,col=3)
 
+}
+\references{
+Scheike, T. H.; Holst, K. K. & Hjelmborg, J. B.
+Estimating twin concordance for bivariate competing risks twin data 
+Statistics in Medicine, Wiley Online Library, 2014 , 33 , 1193-204
 }
 \author{
 Thomas Scheike, Klaus K. Holst

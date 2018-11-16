@@ -21,13 +21,13 @@ extern SEXP familypairindex(SEXP, SEXP, SEXP);
 extern SEXP FastApprox(SEXP, SEXP, SEXP, SEXP);
 extern SEXP FastCluster(SEXP);
 extern SEXP FastCoxPL(SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP FastCoxPLstrata(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP,SEXP,SEXP,SEXP);
+extern SEXP FastCoxPLstrata(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP FastCoxPLstrataPO(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP,SEXP,SEXP,SEXP,SEXP); 
 extern SEXP FastCoxPLstrataAddGam(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP,SEXP,SEXP,
 		SEXP, SEXP, SEXP, SEXP,
 		SEXP, SEXP, SEXP, SEXP, SEXP );
 extern SEXP FastCoxPrep(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
-extern SEXP FastCoxPrepStrata(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP,SEXP,SEXP,SEXP,SEXP);
+extern SEXP FastCoxPrepStrata(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP FastLong2(SEXP, SEXP, SEXP, SEXP);
 extern SEXP FastPattern(SEXP, SEXP, SEXP);
 extern SEXP MatxCube(SEXP, SEXP, SEXP);
@@ -50,13 +50,14 @@ extern SEXP Uhat(SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP uniprobit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP CubeVec(SEXP, SEXP);
 extern SEXP vecMatMat(SEXP, SEXP);
+extern SEXP OutCov(SEXP, SEXP);
 extern SEXP MatxCube(SEXP, SEXP, SEXP);
 extern SEXP Matdoubleindex(SEXP, SEXP, SEXP,SEXP);
 extern SEXP CubeMat(SEXP, SEXP);
 extern SEXP PropTestCox(SEXP, SEXP,SEXP,SEXP);
-extern SEXP PropTestCoxClust(SEXP, SEXP, SEXP, SEXP,SEXP,SEXP);
+extern SEXP PropTestCoxClust(SEXP, SEXP, SEXP, SEXP,SEXP,SEXP, SEXP, SEXP, SEXP, SEXP,SEXP,SEXP, SEXP);
 extern SEXP ModelMatrixTestCox(SEXP,SEXP,SEXP,SEXP,SEXP);
-extern SEXP simBandCumHazCox(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+//extern SEXP simBandCumHazCox(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP revcumsumR(SEXP);
 extern SEXP revcumsumstrataR(SEXP,SEXP, SEXP);
 extern SEXP revcumsumstratasumR(SEXP,SEXP, SEXP);
@@ -67,6 +68,7 @@ extern SEXP riskstrataR(SEXP,SEXP,SEXP);
 extern SEXP meanriskR(SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP cumsumstratasumR(SEXP,SEXP, SEXP);
 extern SEXP cumsumidstratasumR(SEXP,SEXP, SEXP,SEXP, SEXP);
+extern SEXP cumsumASR(SEXP,SEXP, SEXP);
 extern SEXP cumsumidstratasumCovR(SEXP, SEXP,SEXP, SEXP,SEXP, SEXP);
 extern SEXP covrfR(                SEXP,SEXP,SEXP, SEXP);
 extern SEXP covrfstrataR(             SEXP,SEXP,SEXP,SEXP,SEXP, SEXP);
@@ -79,7 +81,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"Bhat",                              (DL_FUNC) &Bhat,                               6},
     {"BhatAddGam",                        (DL_FUNC) &BhatAddGam,                        14},
     {"BhatAddGamCC",                      (DL_FUNC) &BhatAddGamCC,                      17},
-//    {"backfitEaEt",                       (DL_FUNC) &backfitEaEtt,                       9},
+//  {"backfitEaEt",                       (DL_FUNC) &backfitEaEtt,                       9},
     {"biprobit0",                         (DL_FUNC) &biprobit0,                          8},
     {"biprobit2",                         (DL_FUNC) &biprobit2,                         10},
     {"bvncdf",                            (DL_FUNC) &bvncdf,                             3},
@@ -95,11 +97,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"FastApprox",                        (DL_FUNC) &FastApprox,                         4},
     {"FastCluster",                       (DL_FUNC) &FastCluster,                        1},
     {"FastCoxPL",                         (DL_FUNC) &FastCoxPL,                          5},
-    {"FastCoxPLstrata",                  (DL_FUNC) &FastCoxPLstrata,                     10},
+    {"FastCoxPLstrata",                  (DL_FUNC) &FastCoxPLstrata,                     11},
     {"FastCoxPLstrataPO",                (DL_FUNC) &FastCoxPLstrataPO,                   11},
     {"FastCoxPLstrataAddGam",            (DL_FUNC) &FastCoxPLstrataAddGam,               18},
     {"FastCoxPrep",                       (DL_FUNC) &FastCoxPrep,                        6},
-    {"FastCoxPrepStrata",                 (DL_FUNC) &FastCoxPrepStrata,                  10},
+    {"FastCoxPrepStrata",                 (DL_FUNC) &FastCoxPrepStrata,                  11},
     {"FastLong2",                         (DL_FUNC) &FastLong2,                          4},
     {"FastPattern",                       (DL_FUNC) &FastPattern,                        3},
     {"MatxCube",                          (DL_FUNC) &MatxCube,                           3},
@@ -111,7 +113,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_mets_RcppExport_registerCCallable", (DL_FUNC) &_mets_RcppExport_registerCCallable,0},
     {"pBhat",                             (DL_FUNC) &pBhat,                              6},
     {"PropTestCox",                       (DL_FUNC) &PropTestCox,                        4},
-    {"PropTestCoxClust",                 (DL_FUNC) &PropTestCoxClust,                    6},
+    {"PropTestCoxClust",                  (DL_FUNC) &PropTestCoxClust,                  13},
     {"ModelMatrixTestCox",                (DL_FUNC) &ModelMatrixTestCox,                 5},
     {"pmvn0",                             (DL_FUNC) &pmvn0,                              5},
     {"revcumsumR",                        (DL_FUNC) &revcumsumR,                         1},
@@ -119,17 +121,18 @@ static const R_CallMethodDef CallEntries[] = {
     {"riskstrataR",                       (DL_FUNC) &riskstrataR,                        3},
     {"revcumsumstratasumR",               (DL_FUNC) &revcumsumstratasumR,                3},
     {"cumsumstratasumR",                  (DL_FUNC) &cumsumstratasumR,                   3},
-    {"cumsumidstratasumR",                (DL_FUNC) &cumsumidstratasumR,                  5},
-    {"cumsumidstratasumCovR",             (DL_FUNC) &cumsumidstratasumCovR,               6},
-    {"revcumsumidstratasumR",             (DL_FUNC) &revcumsumidstratasumR,               5},
-    {"revcumsumidstratasumCovR",          (DL_FUNC) &revcumsumidstratasumCovR,            6},
+    {"cumsumidstratasumR",                (DL_FUNC) &cumsumidstratasumR,                 5},
+    {"cumsumASR",                         (DL_FUNC) &cumsumidstratasumR,                 3},
+    {"cumsumidstratasumCovR",             (DL_FUNC) &cumsumidstratasumCovR,              6},
+    {"revcumsumidstratasumR",             (DL_FUNC) &revcumsumidstratasumR,              5},
+    {"revcumsumidstratasumCovR",          (DL_FUNC) &revcumsumidstratasumCovR,           6},
     {"covrfR",                            (DL_FUNC) &covrfR,                             4},
-    {"covrfstrataR",                      (DL_FUNC) &covrfstrataR,                        6},
-    {"covrfstrataCovR",                   (DL_FUNC) &covrfstrataCovR,                     8},
+    {"covrfstrataR",                      (DL_FUNC) &covrfstrataR,                       6},
+    {"covrfstrataCovR",                   (DL_FUNC) &covrfstrataCovR,                    8},
     {"cumsumstrataR",                     (DL_FUNC) &cumsumstrataR,                      3},
-    {"sumstrataR",                        (DL_FUNC) &sumstrataR,                      3},
+    {"sumstrataR",                        (DL_FUNC) &sumstrataR,                         3},
     {"Dpmvn",                             (DL_FUNC) &Dpmvn,                              5},
-    {"simBandCumHazCox",                  (DL_FUNC) &simBandCumHazCox,                   5},
+//    {"simBandCumHazCox",                  (DL_FUNC) &simBandCumHazCox,                   5},
     {"RsurvivalRVCmarg",                  (DL_FUNC) &RsurvivalRVCmarg,                   8},
     {"survivalRV",                        (DL_FUNC) &survivalRV,                        10},
     {"survivalRV2",                       (DL_FUNC) &survivalRV2,                       10},
@@ -141,6 +144,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"Uhat",                              (DL_FUNC) &Uhat,                               5},
     {"uniprobit",                         (DL_FUNC) &uniprobit,                          8},
     {"vecMatMat",                         (DL_FUNC) &vecMatMat,                          2},
+    {"OutCov",                            (DL_FUNC) &OutCov,                          2},
     {"XBmindex",                          (DL_FUNC) &XBmindex,                           3},
     {NULL, NULL, 0}
 };

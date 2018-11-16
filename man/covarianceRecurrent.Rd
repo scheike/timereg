@@ -8,8 +8,9 @@
 \alias{BootcovariancerecurrenceS}
 \title{Estimation of covariance for bivariate recurrent events with terminal event}
 \usage{
-covarianceRecurrent(data, type1, type2, status = "status", death = "death",
-  start = "start", stop = "stop", id = "id", names.count = "Count")
+covarianceRecurrent(data, type1, type2, status = "status",
+  death = "death", start = "start", stop = "stop", id = "id",
+  names.count = "Count")
 }
 \arguments{
 \item{data}{data-frame}

@@ -6,12 +6,13 @@
 \alias{bptwin.time}
 \title{Liability model for twin data}
 \usage{
-bptwin(x, data, id, zyg, DZ, group = NULL, num = NULL, weights = NULL,
-  biweight = function(x) 1/min(x), strata = NULL, messages = 1,
-  control = list(trace = 0), type = "ace", eqmean = TRUE,
-  pairs.only = FALSE, samecens = TRUE, allmarg = samecens &
-  !is.null(weights), stderr = TRUE, robustvar = TRUE, p, indiv = FALSE,
-  constrain, bound = FALSE, varlink, ...)
+bptwin(x, data, id, zyg, DZ, group = NULL, num = NULL,
+  weights = NULL, biweight = function(x) 1/min(x), strata = NULL,
+  messages = 1, control = list(trace = 0), type = "ace",
+  eqmean = TRUE, pairs.only = FALSE, samecens = TRUE,
+  allmarg = samecens & !is.null(weights), stderr = TRUE,
+  robustvar = TRUE, p, indiv = FALSE, constrain, bound = FALSE,
+  varlink, ...)
 }
 \arguments{
 \item{x}{Formula specifying effects of covariates on the response.}

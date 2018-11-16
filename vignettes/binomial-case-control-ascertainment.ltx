@@ -8,6 +8,7 @@
 \PassOptionsToPackage{hidelinks,colorlinks,linkcolor={blue!50!black},urlcolor={blue!50!black},citecolor={blue!50!black}}{hyperref}
 \documentclass[a4paper]{tufte-handout}
 \usepackage{etex}
+\usepackage{etoolbox}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{mathtools}
@@ -66,16 +67,17 @@
 \newcommand{\seq}[1]{\left<#1\right>} 
 \renewcommand{\subset}{\subseteq}  
 \renewcommand{\supset}{\supseteq} 
-\newcommand{\argmax}{\operatorname{arg\,\max}} 
-\newcommand{\argmin}{\operatorname{arg\,\min}} 
-\newcommand{\sgn}{\operatorname{sgn}} 
-\newcommand{\mvec}{\operatorname{vec}} 
-\newcommand{\logit}{\operatorname{logit}} 
-\newcommand{\tr}{\operatorname{tr}} 
-\newcommand{\im}{\operatorname{im}}
-\newcommand{\diag}{\operatorname{diag}} 
-\newcommand{\bias}{\operatorname{bias}} 
-\newcommand{\rank}{\operatorname{rank}} 
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\mvec}{vec}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\bias}{bias}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\logit}{logit}
+\DeclareMathOperator{\expit}{expit}
 \makeatletter
  \def\mathcolor#1#{\@mathcolor{#1}}
  \def\@mathcolor#1#2#3{%
@@ -112,7 +114,7 @@
  pdftitle={Analysis of multivariate binomial data: case control or ascertainment sampling},
  pdfkeywords={},
  pdfsubject={},
- pdfcreator={Emacs 25.3.1 (Org mode 9.1.6)}, 
+ pdfcreator={Emacs 26.1 (Org mode 9.1.14)}, 
  pdflang={English}}
 \begin{document}
 
@@ -122,7 +124,7 @@
 
 
 \section*{Overview}
-\label{sec:org4c146a5}
+\label{sec:orgad14f2c}
 
 When looking at multivariate binomial data with the aim of learning about the 
 dependence that is present, possibly after correcting for some covariates many
@@ -156,7 +158,7 @@ on specifying which pairs one wants to use for the composite score.
 The models are described in futher details in the binomial-twin vignette. 
 
 \subsection*{Case-Control Sampling}
-\label{sec:org8586749}
+\label{sec:org93e2d83}
 
 Sometimes, pairs are recruited after a case-proband is selected. This 
 proband, can be either  a 
@@ -196,7 +198,7 @@ compared to looking at the full likelihood of the family given the proband.
 
 
 \subsection*{Ascertainment Sampling}
-\label{sec:orgc29066c}
+\label{sec:org6773872}
 
 Similarly, in the setting of pairs we can select all pairs where there is at 
 least one event of interest.  
@@ -250,6 +252,8 @@ P(Y_i=o_1,Y_j=o_2 | Y_i+Y_j \geq 1) & = \sum_{k=1}^2 P(Y_i=o_1,Y_j=o_2 | Y_i+Y_j
 \end{align*}
 where \(o_1+ o_2  \geq 1\).  Note that the dependence will affect the probabilities
 \(P(Y_i+Y_j=2)/( P(Y_i+Y_j=2)+ P(Y_i+Y_j=1))\)  and \(P(Y_i+Y_j=1)/( P(Y_i+Y_j=2)+ P(Y_i+Y_j=1))\).  
+In particular when the marginal parameters are known the dependence parameters can be estimated using the proportion of
+concordant pairs compared to the non-concordant pairs with respect to the outcome. 
 
 When considering the pairs with different responses we learn "only" (up to model specification) about covariate effects. 
 For example when 
@@ -260,7 +264,7 @@ and  with the standard definitions
 \(\mbox{logit}(p) = \log(p/(1-p))\) and \(\mbox{expit}(x) = \exp(x)/(1+\exp(x))\). 
 
 \section*{The twin-stutter data}
-\label{sec:org40051f9}
+\label{sec:org51abefd}
 
 We consider the twin-stutter where for pairs of twins that are 
 either dizygotic or monozygotic we have recorded whether the twins
@@ -280,13 +284,24 @@ head(twinstut)
 \end{lstlisting}
 
 \begin{verbatim}
+Loading required package: timereg
+Loading required package: survival
+Loading required package: lava
+lava version 1.6
+mets version 1.2.3
+
+Attaching package: ‘mets’
+
+The following object is masked _by_ ‘.GlobalEnv’:
+
+    object.defined
    tvparnr zyg stutter    sex age nr binstut
-1  2001005  mz      no female  71  1       0
-2  2001005  mz      no female  71  2       0
-3  2001006  dz      no female  71  1       0
-8  2001012  mz      no female  71  1       0
-9  2001012  mz      no female  71  2       0
-11 2001015  dz      no   male  71  1       0
+1        1  mz      no female  71  1       0
+2        1  mz      no female  71  2       0
+3        2  dz      no female  71  1       0
+8        5  mz      no female  71  1       0
+9        5  mz      no female  71  2       0
+11       7  dz      no   male  71  1       0
 \end{verbatim}
 
 
@@ -300,7 +315,7 @@ of the methods.
 
 
 \section*{Ascertaiment Sampling}
-\label{sec:orgffd8100}
+\label{sec:orgaa08da8}
 
 Selecting the ascertained pairs 
 
@@ -354,7 +369,7 @@ binstut1
 Now doing the analyses 
 
 \subsection*{Biprobit model}
-\label{sec:org7bdf657}
+\label{sec:orgb7a66bb}
 
 Looking at the full data for comparison. We estimate an unstructured
 probit model with different correlations for MZ and DZ twins. 
@@ -396,7 +411,7 @@ complete ascertainment, i.e., when we consider a random sample of
 affected twins (at least on of the twins must have the event).
 
 \subsection*{Odd-Ratio modelling}
-\label{sec:orga93bf70}
+\label{sec:org1c452c4}
 
 First looking at the marginal model based on the full data we find the 
 overall level of stuttering and also that males have a much higher 
@@ -455,9 +470,9 @@ factor(zyg)dz 0.5238541 0.2400861
 factor(zyg)mz 3.4930902 0.1865567
 
 $or
-              Estimate Std.Err   2.5% 97.5%  P-value
-factor(zyg)dz     1.69   0.405  0.894  2.48 3.11e-05
-factor(zyg)mz    32.89   6.135 20.862 44.91 8.31e-08
+              Estimate Std.Err   2.5%  97.5%   P-value
+factor(zyg)dz    1.689  0.4054  0.894  2.483 3.111e-05
+factor(zyg)mz   32.887  6.1354 20.862 44.913 8.308e-08
 
 $type
 [1] "plackett"
@@ -481,14 +496,28 @@ summary(bina)
 \end{lstlisting}
 
 \begin{verbatim}
-Error in terms.formula(object, data = data) : object 'twina' not found
- Error: could not find function "binomial.twostage"
-Error in summary(bina) : object 'bina' not found
+Dependence parameter for Odds-Ratio (Plackett) model 
+With log-link 
+$estimates
+                  theta        se
+factor(zyg)dz 0.4874213 0.2472523
+factor(zyg)mz 3.4753766 0.1985974
+
+$or
+              Estimate Std.Err    2.5%  97.5%   P-value
+factor(zyg)dz    1.628  0.4026  0.8391  2.417 5.245e-05
+factor(zyg)mz   32.310  6.4167 19.7335 44.886 4.771e-07
+
+$type
+[1] "plackett"
+
+attr(,"class")
+[1] "summary.mets.twostage"
 \end{verbatim}
 
 
 \subsection*{Additive gamma modelling}
-\label{sec:org4110a6f}
+\label{sec:org524055f}
 
 First, again for comparision fitting the full data for the AE model. We get 
 the size of the genetic variance in this model. 
@@ -520,8 +549,8 @@ $vare
 NULL
 
 $vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.909  0.0954 0.723   1.1 1.47e-21
+   Estimate Std.Err   2.5% 97.5%   P-value
+p1   0.9095 0.09536 0.7226 1.096 1.469e-21
 
 attr(,"class")
 [1] "summary.mets.twostage"
@@ -598,8 +627,8 @@ $vare
 NULL
 
 $vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1    0.892  0.0973 0.701  1.08 4.95e-20
+   Estimate Std.Err   2.5% 97.5%   P-value
+p1    0.892 0.09733 0.7013 1.083 4.946e-20
 
 attr(,"class")
 [1] "summary.mets.twostage"
@@ -641,13 +670,8 @@ $vare
 NULL
 
 $vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1     1.01   0.105 0.809  1.22 2.97e-22
-
-$marginal
-             Coef.      SE Robust SE     z P-val lower2.5% upper97.5%
-dependence2 -4.350 0.08560   0.08560 -50.8     0    -4.520     -4.180
-dependence3  0.551 0.00606   0.00606  90.8     0     0.539      0.563
+   Estimate Std.Err   2.5% 97.5%   P-value
+p1    1.014  0.1046 0.8095 1.219 2.967e-22
 
 attr(,"class")
 [1] "summary.mets.twostage"
@@ -659,7 +683,7 @@ attr(,"class")
 
 
 \section*{Case Control Sampling}
-\label{sec:orgfb573b0}
+\label{sec:org56e8f5e}
 
 First, taking out all cases and one control for each case, we establish the
 pairs of these probands. This is based on keeping track of the twin related 
@@ -674,6 +698,13 @@ be the probands.
 
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
+library(mets)
+data(twinstut)
+twinstut$binstut <- 1*(twinstut$stutter=="yes")
+twinstut <- subset(twinstut,zyg%in%c("mz","dz"))
+dnumeric(twinstut) <- ~.
+dfactor(twinstut,labels=c("DZ","MZ")) <- binzyg~zyg.n
+ddrop(twinstut) <- ~"*.n"
 
 twinstut  <-   dby(twinstut,binstut~tvparnr,stuttot=sum,nn=seq_along,n=length)
 twinstut <-    subset(twinstut,n==2)
@@ -729,13 +760,9 @@ possible in register based studies where a full cohort is also available.
 
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
-cc  <- binomial.twostage(margbin,data=dataid,
-			    clusters=dataid$tvparnr,
-		 pairs=pair.new,
-		 random.design=out$random.design,
-	     theta.des=out$theta.des,
-		 pairs.rvs=out$ant.rvs,
-	     case.control=0,twostage=1)
+cc  <- binomial.twostage(margbin,data=dataid,clusters=dataid$tvparnr,pairs=pair.new,
+	    random.design=out$random.design,theta.des=out$theta.des,
+		 pairs.rvs=out$ant.rvs,case.control=0,twostage=1)
 summary(cc)
 \end{lstlisting}
 
@@ -803,7 +830,6 @@ p1   0.8792 0.09707 0.6889 1.069 1.339e-19
 
 attr(,"class")
 [1] "summary.mets.twostage"
-
 \end{verbatim}
 
 This model can  also be fitted using a full likelhood of both dependence 
@@ -831,7 +857,7 @@ Dependence parameter for Clayton-Oakes model
 Variance of Gamma distributed random effects 
 $estimates
                 theta         se
-dependence1 0.8701439 0.09457095
+dependence1 0.9222504 0.09729347
 
 $type
 [1] "clayton.oakes"
@@ -844,13 +870,8 @@ $vare
 NULL
 
 $vartot
-   Estimate Std.Err  2.5% 97.5%  P-value
-p1     0.87  0.0946 0.685  1.06 3.55e-20
-
-$marginal
-            Coef.      SE Robust SE      z P-val lower2.5% upper97.5%
-dependence2 -3.60 0.00903   0.00903 -399.0     0     -3.62      -3.58
-dependence3  1.05 0.01960   0.01960   53.4     0      1.01       1.09
+   Estimate Std.Err   2.5% 97.5%   P-value
+p1   0.9223 0.09729 0.7316 1.113 2.566e-21
 
 attr(,"class")
 [1] "summary.mets.twostage"
@@ -865,7 +886,7 @@ standard errors. In this case, however, this will be same as the
 clusters since these also are identical across pairs.
 
 \section*{Combining Case Control and Ascertainment Sampling}
-\label{sec:orgb02574f}
+\label{sec:orgff68ee7}
 
 When specifying such models based on the pairs, it is in fact possible to
 combine ascertained pairs with case-control sampling by specifing vectors

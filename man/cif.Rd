@@ -18,8 +18,7 @@ cif(formula, data = data, cause = 1, cens.code = 0, ...)
 \item{...}{Additional arguments to lower level funtions}
 }
 \description{
-Cumulative incidence with robust standard errors 
-Robust variance is default variance with the summary.
+Cumulative incidence with robust standard errors
 }
 \examples{
 data(TRACE)

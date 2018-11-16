@@ -17,25 +17,33 @@
 \alias{revcumsumidstratasumCov}
 \alias{robust.basehaz.phreg}
 \alias{matdoubleindex}
+\alias{mdi}
 \title{Predictions from proportional hazards model}
 \usage{
-\method{predict}{phreg}(object, data, surv = FALSE, time = object$exit,
-  X = object$X, strata = object$strata, ...)
+\method{predict}{phreg}(object, newdata, times = NULL,
+  individual.time = FALSE, tminus = FALSE, se = TRUE,
+  robust = FALSE, conf.type = "log", conf.int = 0.95, ...)
 }
 \arguments{
 \item{object}{phreg object}
 
-\item{data}{data.frame}
+\item{newdata}{data.frame}
 
-\item{surv}{If TRUE predictions are provided on probability scale}
+\item{times}{Time where to predict variable, default is all time-points from the object sorted}
 
-\item{time}{Time variable}
+\item{individual.time}{when TRUE then newdata and times have same length and makes only predictions for these individual times.}
 
-\item{X}{Design matrix}
+\item{tminus}{to make predictions in T- that is just before, useful for IPCW techniques}
 
-\item{strata}{Strata variable}
+\item{se}{with standard errors and upper and lower confidence intervals.}
 
-\item{...}{ADditional arguments to lower level functions}
+\item{robust}{to get robust se's.}
+
+\item{conf.type}{transformation for suvival estimates, default is log}
+
+\item{conf.int}{significance level}
+
+\item{...}{Additional arguments to plot functions}
 }
 \description{
 Predictions from proportional hazards model

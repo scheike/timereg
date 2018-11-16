@@ -8,6 +8,7 @@
 \PassOptionsToPackage{hidelinks,colorlinks,linkcolor={blue!50!black},urlcolor={blue!50!black},citecolor={blue!50!black}}{hyperref}
 \documentclass[a4paper]{tufte-handout}
 \usepackage{etex}
+\usepackage{etoolbox}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{mathtools}
@@ -15,7 +16,6 @@
 \usepackage{xcolor}
 \usepackage{natbib}
 \usepackage{amsmath,amssymb,textcomp}
-\usepackage{units}
 \usepackage{bm}
 \usepackage{graphicx}
 \usepackage{wrapfig}
@@ -67,16 +67,17 @@
 \newcommand{\seq}[1]{\left<#1\right>} 
 \renewcommand{\subset}{\subseteq}  
 \renewcommand{\supset}{\supseteq} 
-\newcommand{\argmax}{\operatorname{arg\,\max}} 
-\newcommand{\argmin}{\operatorname{arg\,\min}} 
-\newcommand{\sgn}{\operatorname{sgn}} 
-\newcommand{\mvec}{\operatorname{vec}} 
-\newcommand{\logit}{\operatorname{logit}} 
-\newcommand{\tr}{\operatorname{tr}} 
-\newcommand{\im}{\operatorname{im}}
-\newcommand{\diag}{\operatorname{diag}} 
-\newcommand{\bias}{\operatorname{bias}} 
-\newcommand{\rank}{\operatorname{rank}} 
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\mvec}{vec}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\bias}{bias}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\logit}{logit}
+\DeclareMathOperator{\expit}{expit}
 \makeatletter
  \def\mathcolor#1#{\@mathcolor{#1}}
  \def\@mathcolor#1#2#3{%
@@ -113,16 +114,16 @@
  pdftitle={Analysis of bivariate binomial data: Twin analysis},
  pdfkeywords={},
  pdfsubject={},
- pdfcreator={Emacs 25.1.1 (Org mode 9.0.5)}, 
+ pdfcreator={Emacs 26.1 (Org mode 9.1.14)}, 
  pdflang={English}}
 \begin{document}
 
 \maketitle
-\rule{\linewidth}{0.5pt}
+\noindent\rule{\textwidth}{0.5pt}
 
 
 \section*{Overview}
-\label{sec:orgd9a8025}
+\label{sec:org52f7a6e}
 
 When looking at bivariate binomial data with the aim of learning about the 
 dependence that is present, possibly after correcting for some covariates many
@@ -184,7 +185,7 @@ model.
 
 
 \subsection*{Biprobit with random effects}
-\label{sec:orgd9bb284}
+\label{sec:org2d438ab}
 
 For these model we assume that given random effects \(Z\) and a covariate vector 
 \(V_{12}\)
@@ -214,7 +215,7 @@ fit the model.
 
 
 \subsection*{Pairwise odds ratio model}
-\label{sec:org64b1a94}
+\label{sec:orgda035f5}
 
 Now the pairwise odds ratio model the specifies that given \(X_1, X_2\)
 the marginal models are 
@@ -260,7 +261,7 @@ effects model.
 
 
 \subsection*{Additive gamma model}
-\label{sec:orgad3301d}
+\label{sec:org5e46adf}
 
 Again we operate under  marginal logistic regression models are 
 \[
@@ -340,7 +341,7 @@ needed.
 
 
 \section*{The twin-stutter data}
-\label{sec:org5a3d132}
+\label{sec:org86a6521}
 
 We consider the twin-stutter where for pairs of twins that are 
 either dizygotic or monozygotic we have recorded whether the twins
@@ -386,7 +387,7 @@ failed to assign RegisteredNativeSymbol for cor to cor since cor is already defi
 
 
 \section*{Pairwise odds ratio model}
-\label{sec:org7f642d7}
+\label{sec:orgc386b0d}
 
 We start by fitting an overall dependence OR for both MZ and DZ even though 
 the dependence is expected to be different across zygosity.
@@ -402,6 +403,7 @@ summary(margbin)
 \end{lstlisting}
 
 \begin{verbatim}
+
 Call:
 glm(formula = binstut ~ factor(sex) + age, family = binomial(), 
     data = twinstut)
@@ -531,7 +533,7 @@ attr(,"class")
 
 
 \subsection*{Alternative syntax}
-\label{sec:orgdf7c501}
+\label{sec:org1b42957}
 
 We now demonstrate how the models can fitted jointly and with anohter
 syntax, that ofcourse just fits the marginal model and subsequently fits
@@ -615,7 +617,7 @@ attr(,"class")
 
 
 \section*{Bivariate Probit model}
-\label{sec:org55f9fab}
+\label{sec:orgcadbf82}
 
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
@@ -649,6 +651,7 @@ summary(b1)
 \end{lstlisting}
 
 \begin{verbatim}
+
                 Estimate    Std.Err          Z p-value
 (Intercept)    -1.794823   0.023289 -77.066728  0.0000
 sexmale         0.401432   0.030179  13.301813  0.0000
@@ -683,7 +686,7 @@ Broad-sense heritability   1      NaN  NaN
 
 
 \subsection*{Polygenic modelling}
-\label{sec:org08cff20}
+\label{sec:org5c0ec2f}
 
 We now turn attention to specific polygenic modelling where special random 
 effects are used to specify ACE, AE, ADE models and so forth. This is very
@@ -700,6 +703,7 @@ summary(b1)
 \end{lstlisting}
 
 \begin{verbatim}
+
              Estimate   Std.Err         Z p-value
 (Intercept)  -3.70371   0.24449 -15.14855       0
 sexmale       0.83310   0.08255  10.09201       0
@@ -738,11 +742,13 @@ Broad-sense heritability 0.76545  0.70500 0.82590
 
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
+
 b0 <- bptwin(binstut~sex,data=twinstut,id="tvparnr",zyg="zyg",DZ="dz",type="ae")
 summary(b0)
 \end{lstlisting}
 
 \begin{verbatim}
+
              Estimate   Std.Err         Z p-value
 (Intercept)  -3.70371   0.24449 -15.14855       0
 sexmale       0.83310   0.08255  10.09201       0
@@ -779,7 +785,7 @@ Broad-sense heritability 0.76545  0.70500 0.82590
 
 
 \section*{Additive gamma random effects}
-\label{sec:org4d4f8d9}
+\label{sec:org1b8a9e2}
 
 Fitting first a model with different size random effects for MZ and DZ. We 
 note that as before in the OR and biprobit model the dependence is much
@@ -846,7 +852,7 @@ attr(,"class")
 
 
 \subsection*{Polygenic modelling}
-\label{sec:org59a97cc}
+\label{sec:org122582d}
 
    First setting up the random effects design for the random effects and 
    the the relationship between variance parameters.
@@ -890,6 +896,7 @@ automatically use the gamma fralty model.
 
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
+
 margbin <- glm(binstut~sex,data=twinstut,family=binomial())
 bintwin1 <- binomial.twostage(margbin,data=twinstut,
      clusters=twinstut$tvparnr,detail=0,theta=c(0.1)/1,var.link=0,

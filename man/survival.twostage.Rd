@@ -7,20 +7,19 @@
 \alias{twostage.cox.aalen}
 \alias{twostage.coxph}
 \alias{twostage.phreg}
-\alias{survival.iterative}
+\alias{randomDes}
 \title{Twostage survival model for multivariate survival data}
 \usage{
-survival.twostage(margsurv,data=sys.parent(),score.method="fisher.scoring",
-                  Nit=60,detail=0,clusters=NULL,
-                  silent=1,weights=NULL, control=list(),theta=NULL,theta.des=NULL,
-                  var.link=1,iid=1,step=0.5,notaylor=0,model="clayton.oakes",
-                  marginal.trunc=NULL,marginal.survival=NULL,marginal.status=NULL,
-                  strata=NULL,
-                  se.clusters=NULL,max.clust=NULL,numDeriv=0,random.design=NULL,
-                  pairs=NULL,pairs.rvs=NULL,
-                  numDeriv.method="simple",
-                  additive.gamma.sum=NULL,var.par=1,two.stage=1,cr.models=NULL,
-                  case.control=0, ascertained=0, shut.up=0)
+survival.twostage(margsurv, data = sys.parent(),
+  score.method = "fisher.scoring", Nit = 60, detail = 0,
+  clusters = NULL, silent = 1, weights = NULL, control = list(),
+  theta = NULL, theta.des = NULL, var.link = 1, iid = 1,
+  step = 0.5, model = "clayton.oakes", marginal.trunc = NULL,
+  marginal.survival = NULL, marginal.status = NULL, strata = NULL,
+  se.clusters = NULL, numDeriv = 0, random.design = NULL,
+  pairs = NULL, pairs.rvs = NULL, numDeriv.method = "simple",
+  additive.gamma.sum = NULL, var.par = 1, cr.models = NULL,
+  case.control = 0, ascertained = 0, shut.up = 0)
 }
 \arguments{
 \item{margsurv}{Marginal model}
@@ -52,8 +51,6 @@ survival.twostage(margsurv,data=sys.parent(),score.method="fisher.scoring",
 
 \item{step}{Step size}
 
-\item{notaylor}{Taylor expansion}
-
 \item{model}{model}
 
 \item{marginal.trunc}{marginal left truncation probabilities}
@@ -65,8 +62,6 @@ survival.twostage(margsurv,data=sys.parent(),score.method="fisher.scoring",
 \item{strata}{strata for fitting, see example}
 
 \item{se.clusters}{for clusters for se calculation with iid}
-
-\item{max.clust}{max se.clusters for se calculation with iid}
 
 \item{numDeriv}{to get numDeriv version of second derivative, otherwise uses sum of squared score}
 
@@ -88,8 +83,6 @@ of theta parameters), when null then sums all parameters.}
 \item{var.par}{is 1 for the default parametrization with the variances of the random effects,
 var.par=0 specifies that the \eqn{\lambda_j}'s are used as parameters.}
 
-\item{two.stage}{to fit two-stage model, if 0 then will fit hazard model with additive gamma structure (WIP)}
-
 \item{cr.models}{competing risks models for two.stage=0, should be given as a list with models for each cause}
 
 \item{case.control}{assumes case control structure for "pairs" with second column being the probands,
@@ -106,34 +99,26 @@ and ascertained sampling}
 }
 \description{
 Fits Clayton-Oakes or bivariate Plackett models for bivariate survival data 
-using marginals that are on Cox or addtive form. The dependence can be 
+using marginals that are on Cox form. The dependence can be 
 modelled via 
 \enumerate{
 \item  Regression design on dependence parameter. 
 \item  Random effects, additive gamma model. 
 }
 
-Can also fit standard frailty model with the two.stage=0  that considers
-the frailty model with additive hazard condtional on the random
-effects
+If clusters contain more than two subjects, we use a composite likelihood
+based on the pairwise bivariate models, for MLE see twostageMLE. 
+
+The two-stage model is constructed such that 
+given the gamma distributed random effects it is assumed that the survival functions 
+are indpendent, and that the marginal survival functions are on Cox form (or additive form)
 \deqn{
-\lambda_{ij} = (V_{ij}^T Z) (X_{ij}^T \alpha(t))
+P(T > t| x) = S(t|x)= exp( -exp(x^T \beta) A_0(t) )
 }
-The baseline \eqn{\alpha(t)} is profiled out using
-marginal modelling adjusted for the random effects structure as in Eriksson and Scheike (2015).
-One advantage of the standard frailty model is that one can deal with competing risks 
-for this model. 
 
-For all models the 
-standard errors do not reflect this uncertainty of the baseline estimates, and might therefore be a bit to small.
-To remedy this one can do bootstrapping or use survival.twostage.fullse function when possible.
-
-If clusters contain more than two times, the algoritm uses a composite likelihood
-based on the pairwise bivariate models. Can also fit a additive gamma random
-effects model described in detail below.
-
-We allow a regression structure for the indenpendent gamma distributed 
-random effects  and their variances that may depend on cluster covariates. So
+One possibility is to model the variance within clusters via a regression design, and
+then one can specify a regression structure for the indenpendent gamma distributed 
+random effect for each cluster, such that the variance is given by 
 \deqn{
  \theta = z_j^T \alpha
 }
@@ -142,15 +127,8 @@ The reported standard errors are based on the estimated information from the
 likelihood assuming that the marginals are known. 
 
 Can also fit a structured additive gamma random effects model, such
-as the ACE, ADE model for survival data. 
-
-Given the gamma distributed random effects it is assumed that the survival functions 
-are indpendent, and that the marginal survival functions are on additive form (or Cox form)
-\deqn{
-P(T > t| x) = S(t|x)= exp( -x^T A(t) )
-}
-
-Now random.design specificies the random effects for each subject within a cluster. This is
+as the ACE, ADE model for survival data.  In this case the 
+random.design specificies the random effects for each subject within a cluster. This is
 a matrix of 1's and 0's with dimension n x d.  With d random effects. 
 For a cluster with two subjects, we let the random.design rows be 
  \eqn{v_1} and \eqn{v_2}. 
@@ -161,31 +139,28 @@ By construction subjects 1's random effect are Gamma distributed with
 mean \eqn{\lambda_j/v_1^T \lambda}
 and variance \eqn{\lambda_j/(v_1^T \lambda)^2}. Note that the random effect 
 \eqn{v_1^T (Z_1,...,Z_d)} has mean 1 and variance \eqn{1/(v_1^T \lambda)}.
-It is here asssumed that  \eqn{lamtot=v_1^T \lambda} is fixed over all clusters
+It is here asssumed that  \eqn{lamtot=v_1^T \lambda} is fixed within clusters 
 as it would be for the ACE model below.
-The lamtot parameter may be specified separately for some sets of the parameter
-is the additive.gamma.sum (ags) matrix is specified and then lamtot for the 
-j'th random effect is \eqn{ags_j^T \lambda}.
 
 Based on these parameters the relative contribution (the heritability, h) is 
-equivalent to  the expected values of the random effects  \eqn{\lambda_j/v_1^T \lambda}
+equivalent to  the expected values of the random effects: \eqn{\lambda_j/v_1^T \lambda}
 
-The DEFAULT parametrization uses the variances of the random effecs 
+The DEFAULT parametrization (var.par=1) uses the variances of the random effecs 
 \deqn{
 \theta_j  = \lambda_j/(v_1^T \lambda)^2
 }
 For alternative parametrizations one can specify how the parameters relate to \eqn{\lambda_j}
-with the function 
+with the argument var.par=0.
 
-Given the random effects the survival distributions with a cluster are independent and
-on the form 
+For both types of models the basic model assumptions are that 
+given the random effects of the clusters the survival distributions within a cluster 
+are independent and ' on the form 
 \deqn{
 P(T > t| x,z) = exp( -Z \cdot Laplace^{-1}(lamtot,lamtot,S(t|x)) )  
 }
-with the inverse laplace of the gamma distribution with mean 1 and variance lamtot.
+with the inverse laplace of the gamma distribution with mean 1 and variance 1/lamtot.
 
-The parameters \eqn{(\lambda_1,...,\lambda_d)}
-are related to the parameters of the model
+The parameters \eqn{(\lambda_1,...,\lambda_d)} are related to the parameters of the model
 by a regression construction \eqn{pard} (d x k), that links the \eqn{d} 
 \eqn{\lambda} parameters
 with the (k) underlying \eqn{\theta} parameters 
@@ -193,41 +168,43 @@ with the (k) underlying \eqn{\theta} parameters
 \lambda = theta.des  \theta 
 }
 here using theta.des to specify these low-dimension association. Default is a diagonal matrix. 
+This can be used to make structural assumptions about the variances of the random-effects 
+as is needed for the ACE model for example. 
 
 The case.control option that can be used with the pair specification of the pairwise parts
-of the estimating equations. Here it is assumed that the second subject of each pair is the
-proband.
+of the estimating equations. Here it is assumed that the second subject of each pair is the proband.
 }
 \examples{
-library("timereg")
-library("survival")
 data(diabetes)
 
 # Marginal Cox model  with treat as covariate
-margph <- coxph(Surv(time,status)~treat,data=diabetes)
-### Clayton-Oakes, from timereg
-fitco1<-two.stage(margph,data=diabetes,theta=1.0,detail=0,Nit=40,clusters=diabetes$id)
+margph <- phreg(Surv(time,status)~treat+cluster(id),data=diabetes)
+### Clayton-Oakes, MLE 
+fitco1<-twostageMLE(margph,data=diabetes,theta=1.0)
 summary(fitco1)
+
 ### Plackett model
-fitp <- survival.twostage(margph,data=diabetes,theta=3.0,Nit=40,
+mph <- phreg(Surv(time,status)~treat+cluster(id),data=diabetes)
+fitp <- survival.twostage(mph,data=diabetes,theta=3.0,Nit=40,
                clusters=diabetes$id,var.link=1,model="plackett")
 summary(fitp)
+
 ### Clayton-Oakes
-fitco2 <- survival.twostage(margph,data=diabetes,theta=0.0,detail=0,
+fitco2 <- survival.twostage(mph,data=diabetes,theta=0.0,detail=0,
                  clusters=diabetes$id,var.link=1,model="clayton.oakes")
 summary(fitco2)
 fitco3 <- survival.twostage(margph,data=diabetes,theta=1.0,detail=0,
                  clusters=diabetes$id,var.link=0,model="clayton.oakes")
 summary(fitco3)
 
-### without covariates using Aalen for marginals
-marg <- aalen(Surv(time,status)~+1,data=diabetes,n.sim=0,max.clust=NULL,robust=0)
-fitpa <- survival.twostage(marg,data=diabetes,theta=1.0,detail=0,Nit=40,
+### without covariates but with stratafied 
+marg <- phreg(Surv(time,status)~+strata(treat)+cluster(id),data=diabetes)
+fitpa <- survival.twostage(marg,data=diabetes,theta=1.0,
                 clusters=diabetes$id,score.method="optimize")
 summary(fitpa)
 
-fitcoa <- survival.twostage(marg,data=diabetes,theta=1.0,detail=0,Nit=40,clusters=diabetes$id,
-                 var.link=1,model="clayton.oakes")
+fitcoa <- survival.twostage(marg,data=diabetes,theta=1.0,clusters=diabetes$id,
+                 model="clayton.oakes")
 summary(fitcoa)
 
 ### Piecewise constant cross hazards ratio modelling
@@ -281,52 +258,22 @@ fitp4 <- survival.twostage(marg2,data=ud,clusters=ud$cluster,se.cluster=ud$clust
 summary(fitp4)
 }
 
+\donttest{ ## Reduce Ex.Timings
 ### structured random effects model additive gamma ACE 
 ### simulate structured two-stage additive gamma ACE model
-data <- simClaytonOakes.twin.ace(2000,2,1,0,3)
+data <- simClaytonOakes.twin.ace(4000,2,1,0,3)
 out <- twin.polygen.design(data,id="cluster")
 pardes <- out$pardes
+pardes 
 des.rv <- out$des.rv
-aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
+head(des.rv)
+aa <- phreg(Surv(time,status)~x+cluster(cluster),data=data,robust=0)
 ts <- survival.twostage(aa,data=data,clusters=data$cluster,detail=0,
-	       theta=c(2,1)/10,var.link=0,step=0.5,
+	       theta=c(2,1),var.link=0,step=0.5,
 	       random.design=des.rv,theta.des=pardes)
 summary(ts)
+}
 
-### case control sampling of data, call via pairs
-
-data2 <- fast.reshape(data,id="cluster")
-ncase <- 400; ncont <- 100
-controls <- which(data2$status2==0)
-cases <-    which(data2$status2==1)
-controls<-sort(sample(controls,min(ncont,length(controls))))
-cases <- sort( sample(cases,   min(ncase,length(cases))))
-clustco <- data2$cluster[controls]
-clustca <- data2$cluster[cases]
-ss <- data$cluster \%in\% c(clustco,clustca)
-datacc <- data[ss,]
-
-mm <- familycluster.index(datacc$cluster)
-pairs <- mm$pairs
-head(pairs)
-## second column of pairs represent probands 
-kinship <- rep(1,nrow(pairs))
-kinship[datacc$zyg[pairs[,1]]=="DZ"] <- 0.5
-dout <- make.pairwise.design(pairs,kinship,type="ace")
-## additive model specified via formula-list
-cr.models <- list(Surv(time,status)~+1)
-
-tscce <- survival.twostage(NULL,data=datacc,clusters=datacc$cluster,
-           detail=0,theta=c(2,1)/10,var.link=0,step=1.0,
-       pairs=pairs,
-       random.design=dout$random.design,theta.des=dout$theta.des,
-       pairs.rvs=dout$ant.rvs,
-       case.control=1, marginal.status=datacc$status,
-       cr.models=cr.models)
-summary(tscce)
-
-### see also pairwise*.r demos under inst for frailty, competing risks and
-### case control sampling 
 }
 \references{
 Estimating heritability for cause specific mortality based on twins studies
@@ -336,7 +283,7 @@ Measuring early or late dependence for bivariate twin data
 Scheike, Holst, Hjelmborg (2015), LIDA  
 
 Twostage modelling of additive gamma frailty models for survival data. 
-Scheike and Holst, working paper 
+Scheike, working paper 
 
 Additive Gamma frailty models for competing risks data, Biometrics (2015)
 Eriksson and Scheike (2015), 

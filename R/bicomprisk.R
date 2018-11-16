@@ -24,6 +24,11 @@
 ##' @param ... Additional arguments to comp.risk function 
 ##' @author Thomas Scheike, Klaus K. Holst
 ##' @export
+##' @references 
+##' Scheike, T. H.; Holst, K. K. & Hjelmborg, J. B.
+##' Estimating twin concordance for bivariate competing risks twin data 
+##' Statistics in Medicine, Wiley Online Library, 2014 , 33 , 1193-204
+##' 
 ##' @examples
 ##' library("timereg")
 ##' 

@@ -5,9 +5,9 @@
 \title{Regression for data frames with dutility call}
 \usage{
 dreg(data, y, x = NULL, z = NULL, x.oneatatime = TRUE,
-  x.base.names = NULL, z.arg = c("clever", "base", "group", "condition"),
-  fun. = lm, summary. = summary, regex = FALSE, convert = NULL,
-  special = NULL, equal = TRUE, test = 1, ...)
+  x.base.names = NULL, z.arg = c("clever", "base", "group",
+  "condition"), fun. = lm, summary. = summary, regex = FALSE,
+  convert = NULL, special = NULL, equal = TRUE, test = 1, ...)
 }
 \arguments{
 \item{data}{data frame}
@@ -22,9 +22,9 @@ dreg(data, y, x = NULL, z = NULL, x.oneatatime = TRUE,
 
 \item{x.base.names}{base covarirates}
 
-\item{z.arg}{what is Z}
+\item{z.arg}{what is Z, c("clever","base","group","condition"), clever decides based on type of Z, base means that Z is used as fixed baseline covaraites for all X, group means the analyses is done based on groups of Z, and condition means that Z specifies a condition on the data}
 
-\item{fun.}{function}
+\item{fun.}{function  lm is default}
 
 \item{summary.}{summary to use}
 

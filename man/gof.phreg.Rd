@@ -4,7 +4,8 @@
 \alias{gof.phreg}
 \title{GOF for Cox PH regression}
 \usage{
-\method{gof}{phreg}(object, n.sim = 1000, silent = 1, ...)
+\method{gof}{phreg}(object, n.sim = 1000, silent = 1, robust = NULL,
+  ...)
 }
 \arguments{
 \item{object}{is phreg object}
@@ -12,6 +13,8 @@
 \item{n.sim}{number of simulations for score processes}
 
 \item{silent}{to show timing estimate will be produced for longer jobs}
+
+\item{robust}{to control wether robust dM_i(t) or dN_i  are used for simulations}
 
 \item{...}{Additional arguments to lower level funtions}
 }
@@ -28,7 +31,13 @@ par(mfrow=c(1,3))
 plot(gg)
 
 m1 <- phreg(Surv(time,status==9)~strata(vf)+chf+diabetes,data=TRACE) 
+## to get Martingale ~ dN based simulations
 gg <- gof(m1)
+
+## to get Martingale robust simulations, specify cluster in  call 
+m1 <- phreg(Surv(time,status==9)~chf+diabetes+cluster(id),data=TRACE) 
+gg <- gof(m1)
+
 }
 \author{
 THomas Scheike and Klaus K. Holst
