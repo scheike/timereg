@@ -79,7 +79,7 @@ regression design  such that
 \[
   \theta = z_j^T \alpha
 \]
- where \eqn{z} is the regression design (specified by theta.des  in the software). 
+ where \(z\) is the regression design (specified by theta.des  in the software). 
 
 This model  can be fitted using a pairwise likelihood or the pseudo-likelihood
 using either
@@ -112,7 +112,7 @@ the random effecs
 \[
  \theta_j  = \lambda_j/(v_1^T \lambda)^2
 \]
- For alternative parametrizations one can specify how the parameters relate to \eqn{\lambda_j} with the argument var.par=0.
+ For alternative parametrizations one can specify how the parameters relate to \(\lambda_j\) with the argument var.par=0.
 
  For both types of models the basic model assumptions are that 
  given the random effects of the clusters the survival distributions within a cluster 

@@ -1087,7 +1087,7 @@ print.cor<-function(x,digits=3,...)
 ##' Thomas H. Scheike, Jacob V B Hjelmborg, Klaus K. Holst, 2015 
 ##' in Behavior genetics DOI:10.1007/s10519-015-9729-3
 ##' 
-##' @export
+##' @export concordance
 concordance <- function(object,cif1,cif2=NULL,messages=TRUE,model=NULL,coefs=NULL,...)
 { ## {{{
 

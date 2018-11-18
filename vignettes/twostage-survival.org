@@ -307,7 +307,7 @@ attr(,"class")
 #+end_example
 
 
-*** Piecewise constant Clayton-Oakes model 
+** Piecewise constant Clayton-Oakes model 
 
 Let the cross-hazard ratio (CHR) be defined as 
 \begin{align}
@@ -532,7 +532,7 @@ kendall.ClaytonOakes.twin.ace(ts$theta[1],ts$theta[2],K=10000)
 : [1] 0.3404067
 
 
-*** Family data 
+** Family data 
 
 For family data, things are quite similar since we use only the pairwise structure. 
 We show  how the designs are specified. 

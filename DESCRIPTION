@@ -2,7 +2,7 @@ Package: mets
 Type: Package
 Title: Analysis of Multivariate Event Times
 Version: 1.2.4
-Date: 2018-08-12
+Date: 2018-11-16
 Author: Klaus K. Holst and Thomas Scheike
 Maintainer: Klaus K. Holst <klaus@holst.it>
 Description: Implementation of various statistical models for multivariate
@@ -25,7 +25,7 @@ Imports:
     compiler,
     Rcpp,
     splines,
-    survival
+    survival (>= 2.43-1),
 Suggests:
     lava.tobit (>= 0.4-7),
     prodlim,
@@ -35,5 +35,6 @@ Suggests:
 VignetteBuilder: R.rsp
 ByteCompile: yes
 LinkingTo: Rcpp, RcppArmadillo
+Encoding: UTF-8
 Roxygen: list(wrap = FALSE)
 RoxygenNote: 6.1.0

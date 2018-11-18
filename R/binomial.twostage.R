@@ -185,7 +185,7 @@
 ##' @param pair.ascertained if pairs are sampled only when there are events in the pair i.e. Y1+Y2>=1. 
 ##' @param case.control if data is case control data for pair call, and here 2nd column of pairs are probands (cases or controls)
 ##' @param twostage default twostage=1, to fit MLE use twostage=0
-##' @param beta is starting value for beta for MLE version 
+##' @param beta is starting value for beta for MLE version
 binomial.twostage <- function(margbin,data=sys.parent(),
      score.method="fisher.scoring",Nit=60,detail=0,clusters=NULL,silent=1,weights=NULL,
      control=list(),theta=NULL,theta.des=NULL,var.link=0,var.par=1,var.func=NULL,
@@ -702,8 +702,8 @@ p11.binomial.twostage.RV <- function(theta,rv1,rv2,p1,p2,pardes,ags=NULL,link=0,
  return(out)
 } ## }}} 
 
-##' @export
-concordance.twostage<- function(theta,p,rv1,rv2,theta.des,additive.gamma.sum=NULL,link=0,var.par=0)
+##' @export concordance.twostage
+concordance.twostage<- function(theta,p,rv1,rv2,theta.des,additive.gamma.sum=NULL,link=0,var.par=0,...)
 {# {{{
 
    ### takes dependence paramter from output
@@ -738,8 +738,8 @@ concordance.twostage<- function(theta,p,rv1,rv2,theta.des,additive.gamma.sum=NUL
    return(tabs)
 }	# }}}
 
-##' @export
-concordance.twin.ace<- function(object,rv1=NULL,rv2=NULL,xmarg=NULL,type="ace")
+##' @export concordance.twin.ace
+concordance.twin.ace<- function(object,rv1=NULL,rv2=NULL,xmarg=NULL,type="ace",...)
 {# {{{
 
 if (type=="ace" | type=="ade") {
