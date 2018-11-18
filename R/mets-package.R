@@ -141,7 +141,7 @@ NULL
 ##'  simnordic.random simCox sim 
 ##'  grouptable jumptimes folds
 ##'  ace.family.design ascertained.pairs CCbinomial.twostage
-##'  coarse.clust concordance.twin.ace concordance.twostage
+##'  coarse.clust concordanceTwinACE concordanceTwostage
 ##'  fast.cluster force.same.cens ilap
 ##'  kendall.ClaytonOakes.twin.ace kendall.normal.twin.ace
 ##'  make.pairwise.design make.pairwise.design.competing

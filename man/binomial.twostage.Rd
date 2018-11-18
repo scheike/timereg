@@ -229,7 +229,7 @@ bintwin <- binomial.twostage(margbin,data=data,
      clusters=data$cluster,detail=1,var.par=1,
      theta=c(2,1),random.design=out$des.rv,theta.des=out$pardes)
 summary(bintwin)
-concordance.twin.ace(bintwin)
+concordanceTwinACE(bintwin)
 }
 
 }

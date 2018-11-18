@@ -803,7 +803,7 @@ For this model we estimate the concordance and casewise concordance as well
 as the marginal rates of stuttering for females. 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
-concordance.twin.ace(bintwin1,type="ace")
+concordanceTwinACE(bintwin1,type="ace")
 #+END_SRC
 
 #+RESULTS[c5cf06fe6ea4f093a95f84bf09f5bdec22e4659c]:
@@ -864,7 +864,7 @@ attr(,"class")
 Again, the concordance can be computed: 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
-concordance.twin.ace(bintwin,type="ae")
+concordanceTwinACE(bintwin,type="ae")
 #+END_SRC
 
 #+RESULTS[4ccb3ed37a1358c4f7a471e7bed08804648d6178]:

@@ -123,7 +123,7 @@
 
 
 \section*{Overview}
-\label{sec:org52f7a6e}
+\label{sec:orgc699b56}
 
 When looking at bivariate binomial data with the aim of learning about the 
 dependence that is present, possibly after correcting for some covariates many
@@ -185,7 +185,7 @@ model.
 
 
 \subsection*{Biprobit with random effects}
-\label{sec:org2d438ab}
+\label{sec:org86402a4}
 
 For these model we assume that given random effects \(Z\) and a covariate vector 
 \(V_{12}\)
@@ -215,7 +215,7 @@ fit the model.
 
 
 \subsection*{Pairwise odds ratio model}
-\label{sec:orgda035f5}
+\label{sec:orgf29d361}
 
 Now the pairwise odds ratio model the specifies that given \(X_1, X_2\)
 the marginal models are 
@@ -261,7 +261,7 @@ effects model.
 
 
 \subsection*{Additive gamma model}
-\label{sec:org5e46adf}
+\label{sec:orgdb54e35}
 
 Again we operate under  marginal logistic regression models are 
 \[
@@ -341,7 +341,7 @@ needed.
 
 
 \section*{The twin-stutter data}
-\label{sec:org86a6521}
+\label{sec:orgf3a7afd}
 
 We consider the twin-stutter where for pairs of twins that are 
 either dizygotic or monozygotic we have recorded whether the twins
@@ -387,7 +387,7 @@ failed to assign RegisteredNativeSymbol for cor to cor since cor is already defi
 
 
 \section*{Pairwise odds ratio model}
-\label{sec:orgc386b0d}
+\label{sec:orgbf74e81}
 
 We start by fitting an overall dependence OR for both MZ and DZ even though 
 the dependence is expected to be different across zygosity.
@@ -533,7 +533,7 @@ attr(,"class")
 
 
 \subsection*{Alternative syntax}
-\label{sec:org1b42957}
+\label{sec:org3f01206}
 
 We now demonstrate how the models can fitted jointly and with anohter
 syntax, that ofcourse just fits the marginal model and subsequently fits
@@ -617,7 +617,7 @@ attr(,"class")
 
 
 \section*{Bivariate Probit model}
-\label{sec:orgcadbf82}
+\label{sec:org1b646d8}
 
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
@@ -686,7 +686,7 @@ Broad-sense heritability   1      NaN  NaN
 
 
 \subsection*{Polygenic modelling}
-\label{sec:org5c0ec2f}
+\label{sec:org8788a7d}
 
 We now turn attention to specific polygenic modelling where special random 
 effects are used to specify ACE, AE, ADE models and so forth. This is very
@@ -785,7 +785,7 @@ Broad-sense heritability 0.76545  0.70500 0.82590
 
 
 \section*{Additive gamma random effects}
-\label{sec:org1b8a9e2}
+\label{sec:orgff761d3}
 
 Fitting first a model with different size random effects for MZ and DZ. We 
 note that as before in the OR and biprobit model the dependence is much
@@ -852,7 +852,7 @@ attr(,"class")
 
 
 \subsection*{Polygenic modelling}
-\label{sec:org122582d}
+\label{sec:orgc97abc0}
 
    First setting up the random effects design for the random effects and 
    the the relationship between variance parameters.
@@ -937,7 +937,7 @@ as the marginal rates of stuttering for females.
 
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
-concordance.twin.ace(bintwin1,type="ace")
+concordanceTwinACE(bintwin1,type="ace")
 \end{lstlisting}
 
 \begin{verbatim}
@@ -998,7 +998,7 @@ Again, the concordance can be computed:
 
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
-concordance.twin.ace(bintwin,type="ae")
+concordanceTwinACE(bintwin,type="ae")
 \end{lstlisting}
 
 \begin{verbatim}

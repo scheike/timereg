@@ -1055,6 +1055,11 @@ print.cor<-function(x,digits=3,...)
   print(summary(x)); 
 } ## }}}
 
+##' @export
+concordance.cor <- function(object,...) {
+    concordanceCor(object,...)
+}
+
 ##' Concordance for Twins
 ##'
 ##' The concordance is the probability that both twins have experienced the 
@@ -1078,6 +1083,7 @@ print.cor<-function(x,digits=3,...)
 ##' @param coefs Specfifies  dependence parameters if object is not given.
 ##' @param ...  Extra arguments, not used.
 ##' @author Thomas Scheike
+##' @aliases concordanceCor concordance.cor 
 ##' @references
 ##' Estimating twin concordance for bivariate competing risks twin data
 ##' Thomas H. Scheike, Klaus K. Holst and Jacob B. Hjelmborg, 
@@ -1087,8 +1093,8 @@ print.cor<-function(x,digits=3,...)
 ##' Thomas H. Scheike, Jacob V B Hjelmborg, Klaus K. Holst, 2015 
 ##' in Behavior genetics DOI:10.1007/s10519-015-9729-3
 ##' 
-##' @export concordance
-concordance <- function(object,cif1,cif2=NULL,messages=TRUE,model=NULL,coefs=NULL,...)
+##' @export 
+concordanceCor <- function(object,cif1,cif2=NULL,messages=TRUE,model=NULL,coefs=NULL,...)
 { ## {{{
 
   if (is.null(model)) { 

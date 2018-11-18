@@ -147,7 +147,7 @@
 ##'      clusters=data$cluster,detail=1,var.par=1,
 ##'      theta=c(2,1),random.design=out$des.rv,theta.des=out$pardes)
 ##' summary(bintwin)
-##' concordance.twin.ace(bintwin)
+##' concordanceTwinACE(bintwin)
 ##' }
 ##' 
 ##' @keywords binomial regression 
@@ -702,8 +702,8 @@ p11.binomial.twostage.RV <- function(theta,rv1,rv2,p1,p2,pardes,ags=NULL,link=0,
  return(out)
 } ## }}} 
 
-##' @export concordance.twostage
-concordance.twostage<- function(theta,p,rv1,rv2,theta.des,additive.gamma.sum=NULL,link=0,var.par=0,...)
+##' @export
+concordanceTwostage<- function(theta,p,rv1,rv2,theta.des,additive.gamma.sum=NULL,link=0,var.par=0,...)
 {# {{{
 
    ### takes dependence paramter from output
@@ -738,8 +738,8 @@ concordance.twostage<- function(theta,p,rv1,rv2,theta.des,additive.gamma.sum=NUL
    return(tabs)
 }	# }}}
 
-##' @export concordance.twin.ace
-concordance.twin.ace<- function(object,rv1=NULL,rv2=NULL,xmarg=NULL,type="ace",...)
+##' @export
+concordanceTwinACE<- function(object,rv1=NULL,rv2=NULL,xmarg=NULL,type="ace",...)
 {# {{{
 
 if (type=="ace" | type=="ade") {
