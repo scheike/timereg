@@ -40,7 +40,6 @@
 ##' xs <- dreg(iris,y,fun.=phreg)
 ##' xs <- dreg(iris,y,fun.=survdiff)
 ##' 
-##' ### testing forskellige calls
 ##' y <- "S*"~"*.width"
 ##' xs <- dreg(iris,y,x.oneatatime=FALSE,fun.=phreg)
 ##' 
@@ -73,18 +72,17 @@
 ##' xs <- dreg(iris,y,fun.=phreg)
 ##' 
 ##' ##  background var after | and then one of x's at at time
-##' y <- S1~"*.width"|status+"sepal*"
-##' xs <- dreg(iris,y,x.oneatatime=FALSE,fun.=phreg)
-##' xs <- dreg(iris,y,fun.=phreg)
+##' ##y <- S1~"*.width"|status+"sepal*"
+##' ##xs <- dreg(iris,y,x.oneatatime=FALSE,fun.=phreg)
+##' ##xs <- dreg(iris,y,fun.=phreg)
 ##' 
 ##' ##  background var after | and then one of x's at at time
-##' y <- S1~"*.width"+factor(species)
-##' xs <- dreg(iris,y,fun.=phreg)
-##' xs <- dreg(iris,y,fun.=phreg,x.oneatatime=FALSE)
+##' ##y <- S1~"*.width"+factor(species)
+##' ##xs <- dreg(iris,y,fun.=phreg)
+##' ##xs <- dreg(iris,y,fun.=phreg,x.oneatatime=FALSE)
 ##' 
 ##' y <- S1~"*.width"|factor(species)
 ##' xs <- dreg(iris,y,z.arg="base",fun.=phreg)
-##' 
 ##' 
 ##' y <- S1~"*.width"|cluster(id)+factor(species)
 ##' xs <- dreg(iris,y,z.arg="base",fun.=phreg)
@@ -106,12 +104,15 @@
 ##'  kmplot(ss,...)
 ##'  return(ss)
 ##' }
-##' 
+##'
+##' if (interactive()) {
 ##' dcut(iris) <- ~"*.width"
 ##' y <- S1~"*.4"|I(sepal.length>4)
 ##' par(mfrow=c(1,2))
 ##' xs <- dreg(iris,y,fun.=ff)
 ##' }
+##' }
+##' 
 ##' @export
 dreg <- function(data,y,x=NULL,z=NULL,x.oneatatime=TRUE,
 	 x.base.names=NULL,z.arg=c("clever","base","group","condition"),
