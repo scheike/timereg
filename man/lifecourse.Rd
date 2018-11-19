@@ -4,12 +4,11 @@
 \alias{lifecourse}
 \title{Life-course plot}
 \usage{
-lifecourse(formula, data, id = "id", group = NULL, type = "l",
-  lty = 1, col = 1:10, alpha = 0.3, lwd = 1,
-  recurrent.col = NULL, recurrent.lty = NULL, legend = NULL,
-  pchlegend = NULL, by = NULL, status.legend = NULL,
-  place.sl = "bottomright", xlab = "Time", ylab = "", add = FALSE,
-  ...)
+lifecourse(formula, data, id = "id", group = NULL, type = "l", lty = 1,
+  col = 1:10, alpha = 0.3, lwd = 1, recurrent.col = NULL,
+  recurrent.lty = NULL, legend = NULL, pchlegend = NULL, by = NULL,
+  status.legend = NULL, place.sl = "bottomright", xlab = "Time",
+  ylab = "", add = FALSE, ...)
 }
 \arguments{
 \item{formula}{Formula (Event(start,slut,status) ~ ...)}
