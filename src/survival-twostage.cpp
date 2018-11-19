@@ -3070,7 +3070,7 @@ mat rvdes=mat(rvdesvec.begin(),arrayDims2[0],arrayDims2[1]*arrayDD[2],false);
  mat Xtheta = Rcpp::as<mat>(iXtheta);
  int ci,ck,i,j,s=0,k,c1; 
  double ll=1,loglikecont=0;
- double llt=1,ssf=0,thetak=0; 
+ double llt=1,ssf=0,thetak; 
  
  vec dplack(pt); dplack.fill(0);
  vec dplackt(pt); dplackt.fill(0);

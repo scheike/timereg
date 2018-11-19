@@ -14,10 +14,11 @@ binomial.twostage(margbin, data = sys.parent(),
   theta = NULL, theta.des = NULL, var.link = 0, var.par = 1,
   var.func = NULL, iid = 1, step = 1, notaylor = 1,
   model = "plackett", marginal.p = NULL, beta.iid = NULL,
-  Dbeta.iid = NULL, strata = NULL, max.clust = NULL, se.clusters = NULL,
-  numDeriv = 0, random.design = NULL, pairs = NULL, pairs.rvs = NULL,
-  additive.gamma.sum = NULL, pair.ascertained = 0, case.control = 0,
-  twostage = 1, beta = NULL)
+  Dbeta.iid = NULL, strata = NULL, max.clust = NULL,
+  se.clusters = NULL, numDeriv = 0, random.design = NULL,
+  pairs = NULL, pairs.rvs = NULL, additive.gamma.sum = NULL,
+  pair.ascertained = 0, case.control = 0, twostage = 1,
+  beta = NULL)
 }
 \arguments{
 \item{margbin}{Marginal binomial model}
@@ -228,7 +229,7 @@ bintwin <- binomial.twostage(margbin,data=data,
      clusters=data$cluster,detail=1,var.par=1,
      theta=c(2,1),random.design=out$des.rv,theta.des=out$pardes)
 summary(bintwin)
-concordance.twin.ace(bintwin)
+concordanceTwinACE(bintwin)
 }
 
 }

@@ -61,7 +61,7 @@ cumulative hazards
  We return to how to run the different set-ups later and start by simulating independent processes. 
 
 
-*** Utility functions 
+** Utility functions 
 
 We here mention two utility functions 
 
@@ -114,7 +114,7 @@ as in Gosh & Lin (2000)
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 library(mets)
-set.seed(1000) ## to control output in simulatins for p-values below.
+set.seed(1000) # to control output in simulatins for p-values below.
 
 data(base1cumhaz)
 data(base4cumhaz)
@@ -175,18 +175,18 @@ death.
 
 #+NAME: rec1
 #+BEGIN_SRC R :exports both :results output graphics :file rec1.jpg :ravel fig=TRUE,include=FALSE 
-##  to fit non-parametric models with just a baseline 
+#  to fit non-parametric models with just a baseline 
 xr <- phreg(Surv(entry,time,status)~cluster(id),data=rr)
 dr <- phreg(Surv(entry,time,death)~cluster(id),data=rr)
 par(mfrow=c(1,3))
 bplot(dr,se=TRUE)
 title(main="death")
 bplot(xr,se=TRUE)
-### robust standard errors 
+# robust standard errors 
 rxr <-   robust.phreg(xr,fixbeta=1)
 bplot(rxr,se=TRUE,robust=TRUE,add=TRUE,col=4)
 
-## marginal mean of expected number of recurrent events 
+# marginal mean of expected number of recurrent events 
 out <- recurrentMarginal(xr,dr)
 bplot(out,se=TRUE,ylab="marginal mean",col=2)
 #+END_SRC
@@ -252,9 +252,7 @@ that is for the covariates equal to 0 for both models.
 
 #+NAME: rec3
 #+BEGIN_SRC R :exports both :results output graphics :file rec3.jpg :ravel fig=TRUE,include=FALSE 
-########################################################################
-###   cox case        ##################################################
-########################################################################
+# cox case
 xr <- phreg(Surv(entry,time,status)~x+cluster(id),data=rr)
 dr <- phreg(Surv(entry,time,death)~x+cluster(id),data=rr)
 par(mfrow=c(1,3))
@@ -267,7 +265,7 @@ bplot(rxr,se=TRUE,robust=TRUE,add=TRUE,col=1:2)
 out <- recurrentMarginal(xr,dr)
 bplot(out,se=TRUE,ylab="marginal mean",col=1:2)
 
-## predictions witout se's 
+# predictions witout se's 
 outX <- recmarg(xr,dr,Xr=1,Xd=1)
 bplot(outX,add=TRUE,col=3)
 
@@ -284,8 +282,7 @@ bplot(outX,add=TRUE,col=3)
 <<rec3>>
 #+END_SRC
 
-#+RESULTS:
-: Error: unexpected input in "<<"
+
 
 #+LATEX: \captionof{figure}{Recurrent events with cox models for rates.}
 label:fig:rec3
@@ -376,7 +373,7 @@ Mean and variance of number of recurrent events
 #+BEGIN_SRC R :exports both :results output graphics :file rec4MV.jpg :ravel fig=TRUE,include=FALSE 
 par(mfrow=c(1,2))
 with(oo,plot(time,mu,col=2,type="l"))
-###
+#
 with(oo,plot(time,varN,type="l"))
 #+END_SRC
 
@@ -404,7 +401,7 @@ label:fig:rec4MV
 
 #+NAME: rec4Bi
 #+BEGIN_SRC R :exports both :results output graphics :file rec4Bi.jpg :ravel fig=TRUE,include=FALSE 
-### Bivariate probability of exceeding 
+# Bivariate probability of exceeding 
 oo <- prob.exceedBiRecurrent(rr,1,2,exceed1=c(1,5,10),exceed2=c(1,2,3))
 with(oo, matplot(time,pe1e2,type="s"))
 nc <- ncol(oo$pe1e2)
@@ -526,7 +523,7 @@ covrp <- covarianceRecurrent(rr,1,2,status="status",death="death",
 par(mfrow=c(1,3)) 
 plot(covrp)
 
-### with strata, each strata in matrix column, provides basis for fast Bootstrap
+# with strata, each strata in matrix column, provides basis for fast Bootstrap
 covrpS <- covarianceRecurrentS(rr,1,2,status="status",death="death",
         start="entry",stop="time",strata="strata",id="id",names.count="Count")
 #+END_SRC
@@ -546,7 +543,7 @@ covrpS <- covarianceRecurrentS(rr,1,2,status="status",death="death",
 : Error: unexpected input in "<<"
 
 
-#+LATEX: \captionof{figure}{Covariance between events
+#+LATEX: \captionof{figure}{Covariance between events}
 label:fig:rec5
 #+END_marginfigure
 
@@ -560,7 +557,7 @@ computing them for some specific time-points
 times <- seq(500,5000,500)
 
 coo1 <- covarianceRecurrent(rr,1,2,status="status",start="entry",stop="time")
-###
+#
 mug <- Cpred(cbind(coo1$time,coo1$EN1N2),times)[,2]
 mui <- Cpred(cbind(coo1$time,coo1$EIN1N2),times)[,2]
 mu2.1 <- Cpred(cbind(coo1$time,coo1$mu2.1),times)[,2]
@@ -603,7 +600,7 @@ and slow function that goes through the loops in R Bootcovariancerecurrence.
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
 bt1 <- BootcovariancerecurrenceS(rr,1,2,status="status",start="entry",stop="time",K=100,times=times)
-###bt1 <- BootcovariancerecurrenceS(rr,1,2,status="status",start="entry",stop="time",K=K,times=times)
+#bt1 <- BootcovariancerecurrenceS(rr,1,2,status="status",start="entry",stop="time",K=K,times=times)
 
 output <- list(bt1=bt1,mug=mug,mui=mui,
 bse.mug=bt1$se.mug,bse.mui=bt1$se.mui,
@@ -723,7 +720,7 @@ in a vector $\rho=(\rho_{12},\rho_{13},\rho_{23})$.
   base4 <- base4cumhaz
 
   var.z <- c(0.5,0.5,0.5)
-  ### death related to  both causes in same way 
+  # death related to  both causes in same way 
   cor.mat <- corM <- rbind(c(1.0, 0.0, 0.0), 
 			   c(0.0, 1.0, 0.0), 
 			   c(0.0, 0.0, 1.0))
@@ -742,7 +739,7 @@ in a vector $\rho=(\rho_{12},\rho_{13},\rho_{23})$.
 
 
   var.z <- c(0.5,0.5,0.5)
-  ### death related to  both causes in same way 
+  # death related to  both causes in same way 
   cor.mat <- corM <- rbind(c(1.0, 0.0, 0.5), 
 			   c(0.0, 1.0, 0.5), 
 			   c(0.5, 0.5, 1.0))
@@ -759,7 +756,7 @@ in a vector $\rho=(\rho_{12},\rho_{13},\rho_{23})$.
     title(main ="Scenario II")
 
   var.z <- c(0.5,0.5,0.5)
-  ### positive dependence for N1 and N2 all related in same way
+  # positive dependence for N1 and N2 all related in same way
   cor.mat <- corM <- rbind(c(1.0, 0.5, 0.5), 
 			   c(0.5, 1.0, 0.5), 
 			   c(0.5, 0.5, 1.0))
@@ -777,7 +774,7 @@ in a vector $\rho=(\rho_{12},\rho_{13},\rho_{23})$.
 
 
   var.z <- c(0.5,0.5,0.5)
-  ### negative dependence for N1 and N2 all related in same way
+  # negative dependence for N1 and N2 all related in same way
   cor.mat <- corM <- rbind(c(1.0, -0.4, 0.5), 
 			   c(-0.4, 1.0, 0.5), 
 			   c(0.5, 0.5, 1.0))

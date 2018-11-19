@@ -1288,13 +1288,26 @@ simRecurrent <- function(n,cumhaz,death.cumhaz=NULL,cumhaz2=NULL,
   return(tall)
   }# }}}
 
+
+lin.approx <- function(x2,xfx,x=1) {# {{{
+   ### x=1   gives  f(x2) 
+   ### x=-1  gives  f^-1(x2) 
+   breaks <- xfx[,x]
+   fx     <- xfx[,-x]
+   ri <- sindex.prodlim(breaks,x2)
+   rrr <- (x2-breaks[ri])/(breaks[ri+1]-breaks[ri])
+   res <- rrr*(fx[ri+1]-fx[ri])+fx[ri]
+   res[is.na(res)] <- tail(fx,1)
+   return(res)
+}#
+
 ##' @export
 addCums <- function(cumB,cumA,max=5)
 {# {{{
  times <- sort(unique(c(cumB[,1],cumA[,1])))
  times <- times[times<max]
- cumBjx <- timereg::lin.approx(times,cumB,x=1)
- cumAjx <- timereg::lin.approx(times,cumA,x=1)
+ cumBjx <- lin.approx(times,cumB,x=1)
+ cumAjx <- lin.approx(times,cumA,x=1)
  cumBA <- cumBjx+cumAjx
  return(cbind(times,cumBA))
 }# }}}

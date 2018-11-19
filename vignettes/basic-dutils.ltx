@@ -8,6 +8,7 @@
 \PassOptionsToPackage{hidelinks,colorlinks,linkcolor={blue!50!black},urlcolor={blue!50!black},citecolor={blue!50!black}}{hyperref}
 \documentclass[a4paper]{tufte-handout}
 \usepackage{etex}
+\usepackage{etoolbox}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{mathtools}
@@ -15,7 +16,6 @@
 \usepackage{xcolor}
 \usepackage{natbib}
 \usepackage{amsmath,amssymb,textcomp}
-\usepackage{units}
 \usepackage{bm}
 \usepackage{graphicx}
 \usepackage{wrapfig}
@@ -67,16 +67,17 @@
 \newcommand{\seq}[1]{\left<#1\right>} 
 \renewcommand{\subset}{\subseteq}  
 \renewcommand{\supset}{\supseteq} 
-\newcommand{\argmax}{\operatorname{arg\,\max}} 
-\newcommand{\argmin}{\operatorname{arg\,\min}} 
-\newcommand{\sgn}{\operatorname{sgn}} 
-\newcommand{\mvec}{\operatorname{vec}} 
-\newcommand{\logit}{\operatorname{logit}} 
-\newcommand{\tr}{\operatorname{tr}} 
-\newcommand{\im}{\operatorname{im}}
-\newcommand{\diag}{\operatorname{diag}} 
-\newcommand{\bias}{\operatorname{bias}} 
-\newcommand{\rank}{\operatorname{rank}} 
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\mvec}{vec}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\bias}{bias}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\logit}{logit}
+\DeclareMathOperator{\expit}{expit}
 \makeatletter
  \def\mathcolor#1#{\@mathcolor{#1}}
  \def\@mathcolor#1#2#3{%
@@ -113,16 +114,16 @@
  pdftitle={Manipulation of data-frame data with dutility functions},
  pdfkeywords={},
  pdfsubject={},
- pdfcreator={Emacs 25.1.1 (Org mode 9.0.5)}, 
+ pdfcreator={Emacs 26.1 (Org mode 9.1.14)}, 
  pdflang={English}}
 \begin{document}
 
 \maketitle
-\rule{\linewidth}{0.5pt}
+\noindent\rule{\textwidth}{0.5pt}
 
 
 \section*{Simple data manipulation for data-frames}
-\label{sec:org2d25589}
+\label{sec:orge9cc1d9}
 
 \begin{itemize}
 \item Renaming variables, Deleting variables
@@ -134,7 +135,8 @@
 \end{itemize}
 
 
-Here are some key data-manipulation moves on a data-frame which is how we typically organize our data in R. 
+Here are some key data-manipulation steps on a data-frame which is how we typically 
+organize our data in R. 
 After having read the data into R it will typically be a data-frame, if not we 
 can force it to be a data-frame.   The basic idea of the utility functions is 
 to get a simple and easy to type way of making simple data-manipulation on a 
@@ -165,7 +167,7 @@ a data-frame.
 
 
 \section*{dUtility functions}
-\label{sec:org774b376}
+\label{sec:org995ef5a}
 
 The structure for all functions 
 is  
@@ -177,7 +179,29 @@ is
 to use the function on y in a dataframe grouped by x if 
 condition ifcond is valid. The basic functions are 
 
-\ldots{}
+Data processing
+\begin{itemize}
+\item dsort
+\item dreshape
+\item dcut
+\item drm, drename, ddrop, dkeep, dsubset
+\item drelevel
+\item dlag
+\item dfactor, dnumeric
+\end{itemize}
+Data aggregation
+\begin{itemize}
+\item dby, dby2
+\item dscalar, deval, daggregate
+\item dmean, dsd, dsum, dquantile, dcor
+\item dtable, dcount
+\end{itemize}
+Data summaries
+\begin{itemize}
+\item dhead, dtail,
+\item dsummary,
+\item dprint, dlist, dlevels, dunique
+\end{itemize}
 
 
 A generic function daggregate, daggr,  can be called with a function as the 
@@ -261,7 +285,7 @@ dmean(melanoma,"s*"+"*a*"~sex|I(days>500))
 
 
 \section*{Renaming, deleting, keeping, dropping  variables}
-\label{sec:orgc586ebd}
+\label{sec:orgb2de04c}
 
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
@@ -314,8 +338,22 @@ names(melanoma)
 \end{verbatim}
 
 
+This can also be done with direct asignment 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+data(melanoma)
+ddrop(melanoma) <- ~thick+sex
+names(melanoma)
+\end{lstlisting}
+
+\begin{verbatim}
+[1] "no"     "status" "days"   "ulc"
+\end{verbatim}
+
+
 \section*{Looking at the data}
-\label{sec:org26f988e}
+\label{sec:orgae42906}
 
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
@@ -508,6 +546,44 @@ Max.   :1466.0   Max.   :3.000
 \end{verbatim}
 
 
+or 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+dsummary(melanoma,~thick+status|sex==1)
+\end{lstlisting}
+
+\begin{verbatim}
+    thick            status     
+Min.   :  16.0   Min.   :1.000  
+1st Qu.: 105.0   1st Qu.:1.000  
+Median : 258.0   Median :2.000  
+Mean   : 361.1   Mean   :1.722  
+3rd Qu.: 484.0   3rd Qu.:2.000  
+Max.   :1466.0   Max.   :3.000
+\end{verbatim}
+
+
+To make more complex conditions need to use the I() 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+dsummary(melanoma,thick+days+status~sex|I(thick<97 & sex==1))
+\end{lstlisting}
+
+\begin{verbatim}
+sex: 1
+     thick            days          status     
+ Min.   :16.00   Min.   :  30   Min.   :1.000  
+ 1st Qu.:30.00   1st Qu.:1820   1st Qu.:2.000  
+ Median :65.00   Median :2886   Median :2.000  
+ Mean   :55.75   Mean   :2632   Mean   :1.875  
+ 3rd Qu.:81.00   3rd Qu.:3328   3rd Qu.:2.000  
+ Max.   :81.00   Max.   :4207   Max.   :3.000
+\end{verbatim}
+
+
+
 Tables between variables
 
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
@@ -532,6 +608,7 @@ dtable(melanoma,~status+sex+ulc,level=2)
 \end{lstlisting}
 
 \begin{verbatim}
+
    status
 sex  1  2  3
   0 28 91  7
@@ -556,6 +633,7 @@ dtable(melanoma,~status+sex+ulc,level=1)
 \end{lstlisting}
 
 \begin{verbatim}
+
 status
   1   2   3 
  57 134  14 
@@ -569,16 +647,88 @@ ulc
 115  90
 \end{verbatim}
 
+and with new variables 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+dtable(melanoma,~status+sex+ulc+dcut(days)+I(days>300),level=1)
+\end{lstlisting}
+
+\begin{verbatim}
+
+status
+  1   2   3 
+ 57 134  14 
+
+sex
+  0   1 
+126  79 
+
+ulc
+  0   1 
+115  90 
+
+dcut(days)
+      [10,1.52e+03]    (1.52e+03,2e+03]    (2e+03,3.04e+03] (3.04e+03,5.56e+03] 
+                 52                  51                  51                  51 
+
+I(days > 300)
+FALSE  TRUE 
+   11   194
+\end{verbatim}
+
+\section*{Sorting the data}
+\label{sec:org4adbc9e}
+
+To sort the data 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+data(melanoma)
+mel= dsort(melanoma,~days)
+dsort(melanoma) <- ~days
+head(mel)
+\end{lstlisting}
+
+\begin{verbatim}
+   no status days ulc thick sex
+1 789      3   10   1   676   1
+2  13      3   30   0    65   1
+3  97      2   35   0   134   1
+4  16      3   99   0   290   0
+5  21      1  185   1  1208   1
+6 469      1  204   1   484   1
+\end{verbatim}
+
+and to sort after multiple variables increasing and decreasing 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+dsort(melanoma) <- ~days-status
+head(melanoma)
+\end{lstlisting}
+
+\begin{verbatim}
+   no status days ulc thick sex
+1 789      3   10   1   676   1
+2  13      3   30   0    65   1
+3  97      2   35   0   134   1
+4  16      3   99   0   290   0
+5  21      1  185   1  1208   1
+6 469      1  204   1   484   1
+\end{verbatim}
+
+
+
 \section*{Making new variales for the analysis}
-\label{sec:orge844530}
+\label{sec:orgb492e14}
 
 To define a bunch of new covariates within a data-frame
 
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
 \begin{lstlisting}
-melanoma= transform(melanoma, 
-	   thick2=thick^2, 
-	   lthick=log(thick) ) 
+data(melanoma)
+melanoma= transform(melanoma, thick2=thick^2, lthick=log(thick) ) 
 dhead(melanoma)
 \end{lstlisting}
 
@@ -613,10 +763,8 @@ dmean(melanoma,ll~sex+ulc)
 
 
 
-
-
 \section*{Making factors (groupings)}
-\label{sec:org9ac535b}
+\label{sec:orgca893e7}
 
 On the melanoma data the variable thick gives the thickness of the melanom tumour. For some analyses we would like to make a factor depending on the thickness. This can be done in several different ways
 
@@ -754,7 +902,7 @@ melanoma$gthick = cut(melanoma$thick,breaks=quantile(melanoma$thick),include.low
 
 
 \section*{Working with factors}
-\label{sec:orge2879ea}
+\label{sec:orgb002bf7}
 
 To see levels of covariates in data-frame
 
@@ -762,7 +910,7 @@ To see levels of covariates in data-frame
 \begin{lstlisting}
 data(melanoma)
 dcut(melanoma,breaks=4) <- thickcat4~thick
-dlevels(melanoma)
+dlevels(melanoma) 
 \end{lstlisting}
 
 \begin{verbatim}
@@ -781,6 +929,7 @@ dlevels(melanoma)
 \end{lstlisting}
 
 \begin{verbatim}
+
 thickcat4
        [10,97]       (97,194]      (194,356] (356,1.74e+03] 
             56             53             45             51
@@ -904,7 +1053,7 @@ gthick3 #levels=:2
 
 
 \section*{Making a factor from existing numeric variable and vice versa}
-\label{sec:orga5382c4}
+\label{sec:orgdcd4633}
 
 A numeric variable "status" with values 1,2,3 into a factor by
 

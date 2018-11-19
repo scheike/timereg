@@ -76,10 +76,10 @@ variable with mean 1 and variance $\theta$.
 
 We then model the variance within clusters by a cluster specific 
 regression design  such that 
- \deqn{
+\[
   \theta = z_j^T \alpha
- }
- where \eqn{z} is the regression design (specified by theta.des  in the software). 
+\]
+ where \(z\) is the regression design (specified by theta.des  in the software). 
 
 This model  can be fitted using a pairwise likelihood or the pseudo-likelihood
 using either
@@ -109,17 +109,17 @@ with clusters.
 
 The DEFAULT parametrization (var.par=1) uses the variances of 
 the random effecs 
- \deqn{
+\[
  \theta_j  = \lambda_j/(v_1^T \lambda)^2
- }
- For alternative parametrizations one can specify how the parameters relate to \eqn{\lambda_j} with the argument var.par=0.
+\]
+ For alternative parametrizations one can specify how the parameters relate to \(\lambda_j\) with the argument var.par=0.
 
  For both types of models the basic model assumptions are that 
  given the random effects of the clusters the survival distributions within a cluster 
  are independent and ' on the form 
- \deqn{
+\[
  P(T > t| x,z) = exp( -Z \cdot Laplace^{-1}(lamtot^{-1},S(t|x)) )  
- }
+\]
  with the inverse laplace of the gamma distribution with 
  mean 1 and variance 1/lamtot.
 
@@ -129,9 +129,9 @@ the random effecs
  by a regression construction \( M \) (d x k), that links the \( d  \)
  \( \lambda \)  parameters
  with the \( k \) underlying \( \alpha  \) parameters 
- \deqn{
+\[
  \lambda = M  \alpha 
- }
+\]
  here using theta.des to specify these low-dimension association. Default is a diagonal matrix. 
  This can be used to make structural assumptions about the variances of the random-effects 
  as is needed for the ACE model for example. In software \( M \) is called
@@ -239,17 +239,17 @@ library(mets)
  
  # Marginal Cox model  with treat as covariate
  margph <- phreg(Surv(time,status)~treat+cluster(id),data=diabetes)
- ### Clayton-Oakes, MLE 
+ # Clayton-Oakes, MLE 
  fitco1<-twostageMLE(margph,data=diabetes,theta=1.0)
  summary(fitco1)
  
- ### Plackett model
+ # Plackett model
  mph <- phreg(Surv(time,status)~treat+cluster(id),data=diabetes)
  fitp <- survival.twostage(mph,data=diabetes,theta=3.0,Nit=40,
                 clusters=diabetes$id,var.link=1,model="plackett")
  summary(fitp)
  
- ### Clayton-Oakes
+ # Clayton-Oakes
  fitco2 <- survival.twostage(mph,data=diabetes,theta=0.0,detail=0,
                   clusters=diabetes$id,var.link=1,model="clayton.oakes")
  summary(fitco2)
@@ -257,7 +257,7 @@ library(mets)
                   clusters=diabetes$id,var.link=0,model="clayton.oakes")
  summary(fitco3)
 
- ### without covariates but with stratafied 
+ # without covariates but with stratafied 
  marg <- phreg(Surv(time,status)~+strata(treat)+cluster(id),data=diabetes)
  fitpa <- survival.twostage(marg,data=diabetes,theta=1.0,
                  clusters=diabetes$id,score.method="optimize")
@@ -268,9 +268,7 @@ library(mets)
  summary(fitcoa)
  
 
- ### Piecewise constant cross hazards ratio modelling
- ########################################################
- 
+ # Piecewise constant cross hazards ratio modelling 
  d <- subset(simClaytonOakes(2000,2,0.5,0,stoptime=2,left=0),!truncated)
  udp <- piecewise.twostage(c(0,0.5,2),data=d,score.method="optimize",
                            id="cluster",timevar="time",
@@ -292,17 +290,17 @@ library(mets)
  
  # Marginal Cox model  with treat as covariate
  margph <- phreg(Surv(time,status)~treat+cluster(id),data=diabetes)
- ### Clayton-Oakes, MLE 
+ # Clayton-Oakes, MLE 
  fitco1<-twostageMLE(margph,data=diabetes,theta=1.0)
  summary(fitco1)
  
- ### Plackett model
+ # Plackett model
  mph <- phreg(Surv(time,status)~treat+cluster(id),data=diabetes)
  fitp <- survival.twostage(mph,data=diabetes,theta=3.0,Nit=40,
                 clusters=diabetes$id,var.link=1,model="plackett")
  summary(fitp)
  
- ### Clayton-Oakes
+ # Clayton-Oakes
  fitco2 <- survival.twostage(mph,data=diabetes,theta=0.0,detail=0,
                   clusters=diabetes$id,var.link=1,model="clayton.oakes")
  summary(fitco2)
@@ -310,7 +308,7 @@ library(mets)
                   clusters=diabetes$id,var.link=0,model="clayton.oakes")
  summary(fitco3)
 
- ### without covariates but with stratafied 
+ # without covariates but with stratafied 
  marg <- phreg(Surv(time,status)~+strata(treat)+cluster(id),data=diabetes)
  fitpa <- survival.twostage(marg,data=diabetes,theta=1.0,
                  clusters=diabetes$id,score.method="optimize")
@@ -321,9 +319,7 @@ library(mets)
  summary(fitcoa)
  
 
- ### Piecewise constant cross hazards ratio modelling
- ########################################################
- 
+ # Piecewise constant cross hazards ratio modelling
  d <- subset(simClaytonOakes(2000,2,0.5,0,stoptime=2,left=0),!truncated)
  udp <- piecewise.twostage(c(0,0.5,2),data=d,score.method="optimize",
                            id="cluster",timevar="time",
@@ -339,8 +335,8 @@ library(mets)
 #+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
 library(mets)
 
- ### structured random effects model additive gamma ACE 
- ### simulate structured two-stage additive gamma ACE model
+ # structured random effects model additive gamma ACE 
+ # simulate structured two-stage additive gamma ACE model
  data <- simClaytonOakes.twin.ace(2000,2,1,0,3)
  out <- twin.polygen.design(data,id="cluster")
  pardes <- out$pardes
@@ -356,318 +352,309 @@ library(mets)
 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache yes 
-library(mets)
-###
-set.seed(1000)
-source("mets/R/sim.clayton.oakes.R")
-data <- simClaytonOakes.family.ace(8000,2,1,0,3)
-head(data)
-data$number <- c(1,2,3,4)
-data$child <- 1*(data$number==3)
-out <- ace.family.design(data,member="type",id="cluster")
-out$pardes
-head(out$des.rv)
-###
-aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
-pa <- phreg(Surv(time,status)~+1+cluster(cluster),data=data)
+  library(mets)
 
-## {{{ additive gamma models with and without pair call 
-### make ace random effects design
+  set.seed(1000)
+  source("mets/R/sim.clayton.oakes.R")
+  data <- simClaytonOakes.family.ace(8000,2,1,0,3)
+  head(data)
+  data$number <- c(1,2,3,4)
+  data$child <- 1*(data$number==3)
+  out <- ace.family.design(data,member="type",id="cluster")
+  out$pardes
+  head(out$des.rv)
 
-### simple random effects call 
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	detail=1,var.par=1,var.link=0,
-        theta=c(2,1),
-        random.design=out$des.rv,theta.des=out$pardes)
-summary(ts0)
+  aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
+  pa <- phreg(Surv(time,status)~+1+cluster(cluster),data=data)
 
-ts00 <- twostage(pa,data=data,clusters=data$cluster,
-	detail=1,var.par=1,var.link=0,
-        theta=c(2,1),
-        random.design=out$des.rv,theta.des=out$pardes)
-summary(ts00)
+  # additive gamma models with and without pair call 
+  # make ace random effects design
 
+  # simple random effects call 
+  ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	  detail=1,var.par=1,var.link=0,
+	  theta=c(2,1),
+	  random.design=out$des.rv,theta.des=out$pardes)
+  summary(ts0)
 
-checkderiv=0
-if (checkderiv==1) {# {{{
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	detail=1,numDeriv=1,Nit=0,var.par=1,
-        theta=log(c(2,1)/9),var.link=1,step=1.0,
-        random.design=out$des.rv,theta.des=out$pardes)
-ts0$score
-ts0$score1
-
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	detail=1,numDeriv=1,Nit=0,var.par=1,
-        theta=c(2,1)/9,var.link=0,step=1.0,
-        random.design=out$des.rv,theta.des=out$pardes)
-ts0$score
-ts0$score1
+  ts00 <- twostage(pa,data=data,clusters=data$cluster,
+	  detail=1,var.par=1,var.link=0,
+	  theta=c(2,1),
+	  random.design=out$des.rv,theta.des=out$pardes)
+  summary(ts00)
 
 
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	detail=1,numDeriv=1,Nit=0,var.par=0,
-        theta=log(c(2,1)),var.link=1,step=1.0,
-        random.design=out$des.rv,theta.des=out$pardes)
-ts0$score
-ts0$score1
+  checkderiv=0
+  if (checkderiv==1) {
+  ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	  detail=1,numDeriv=1,Nit=0,var.par=1,
+	  theta=log(c(2,1)/9),var.link=1,step=1.0,
+	  random.design=out$des.rv,theta.des=out$pardes)
+  ts0$score
+  ts0$score1
 
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	detail=1,numDeriv=1,Nit=0,var.par=0,
-        theta=c(2,1),var.link=0,step=1.0,
-        random.design=out$des.rv,theta.des=out$pardes)
-ts0$score
-ts0$score1
-
-}# }}}
-
-
-### now specify fitting via specific pairs 
-
-### first all pairs 
-mm <- familycluster.index(data$cluster)
-head(mm$familypairindex,n=10)
-pairs <- matrix(mm$familypairindex,ncol=2,byrow=TRUE)
-tail(pairs,n=12)
-## make all pairs and pair specific design and pardes 
-## same as ts0 but pairs specified 
-ts <- twostage(aa,data=data,clusters=data$cluster,
-               theta=c(2,1),var.link=0,step=1.0,
-               random.design=out$des.rv,
-               theta.des=out$pardes,pairs=pairs)
-summary(ts)
-
-ts <- twostage(pa,data=data,clusters=data$cluster,
-               theta=c(2,1),var.link=0,step=1.0,
-               random.design=out$des.rv,
-               theta.des=out$pardes,pairs=pairs)
-summary(ts)
+  ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	  detail=1,numDeriv=1,Nit=0,var.par=1,
+	  theta=c(2,1)/9,var.link=0,step=1.0,
+	  random.design=out$des.rv,theta.des=out$pardes)
+  ts0$score
+  ts0$score1
 
 
-### random sample of pairs 
-ssid <- sort(sample(1:48000,20000))
-###
-### take some of all 
-tsd <- twostage(aa,data=data,clusters=data$cluster,
-               theta=c(2,1)/10,var.link=0,step=1.0,
-               random.design=out$des.rv,iid=1,
-	      theta.des=out$pardes,pairs=pairs[ssid,])
-summary(tsd)
+  ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	  detail=1,numDeriv=1,Nit=0,var.par=0,
+	  theta=log(c(2,1)),var.link=1,step=1.0,
+	  random.design=out$des.rv,theta.des=out$pardes)
+  ts0$score
+  ts0$score1
 
-### same analyses but now gives only data that is used in the relevant pairs 
-ids <- sort(unique(c(pairs[ssid,])))
-###
-pairsids <- c(pairs[ssid,])
-pair.new <- matrix(fast.approx(ids,c(pairs[ssid,])),ncol=2)
-head(pair.new)
+  ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	  detail=1,numDeriv=1,Nit=0,var.par=0,
+	  theta=c(2,1),var.link=0,step=1.0,
+	  random.design=out$des.rv,theta.des=out$pardes)
+  ts0$score
+  ts0$score1
 
-## this requires that pair.new refers to id's in dataid (survival, status and so forth)
-## random.design and theta.des are constructed to be the array 3 dims via individual specfication from ace.family.design
-dataid <- dsort(data[ids,],"cluster")
-outid <- ace.family.design(dataid,member="type",id="cluster")
-outid$pardes
-head(outid$des.rv)
-###
-tsdid <- twostage(aa,data=dataid,clusters=dataid$cluster,
-               theta=c(2,1)/10,var.link=0,step=1.0,
-               random.design=outid$des.rv,iid=1,
-               theta.des=outid$pardes,pairs=pair.new)
-summary(tsdid)
-coef(tsdid)
-coef(tsd)
-### same as tsd 
+  }
 
 
-### now direct specification of random.design and theta.design 
-### rather than taking the rows of the des.rv for the relevant pairs
-### can make a pair specific specification of random effects 
+  # now specify fitting via specific pairs 
 
-pair.types <-  matrix(dataid[c(t(pair.new)),"type"],byrow=T,ncol=2)
-head(pair.new)
-head(pair.types)
+  # first all pairs 
+  mm <- familycluster.index(data$cluster)
+  head(mm$familypairindex,n=10)
+  pairs <- matrix(mm$familypairindex,ncol=2,byrow=TRUE)
+  tail(pairs,n=12)
+  # make all pairs and pair specific design and pardes 
+  # same as ts0 but pairs specified 
+  ts <- twostage(aa,data=data,clusters=data$cluster,
+		 theta=c(2,1),var.link=0,step=1.0,
+		 random.design=out$des.rv,
+		 theta.des=out$pardes,pairs=pairs)
+  summary(ts)
 
-### here makes pairwise design , simpler random.design og pardes, parameters
-### stil varg, varc 
-### mother, child, share half rvm=c(1,1,0) rvc=c(1,0,1),
-### thetadesmcf=rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
-###
-### father, child, share half rvf=c(1,1,0) rvc=c(1,0,1), 
-### thetadescf=rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
-###
-### child, child,  share half rvc=c(1,1,0) rvc=c(1,0,1),
-### thetadesmf=rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
-###
-### mother, father, share 0 rvm=c(1,0) rvf=c(0,1), 
-### thetadesmf=rbind(c(1,0),c(1,0),c(0,1))
-
-theta.des  <- array(0,c(4,2,nrow(pair.new)))
-random.des <- array(0,c(2,4,nrow(pair.new)))
-### random variables in each pair 
-rvs <- c()
-for (i in 1:nrow(pair.new))
-{
-	if (pair.types[i,1]=="mother" & pair.types[i,2]=="father")
-	{
-	theta.des[,,i] <- rbind(c(1,0),c(1,0),c(0,1),c(0,0))
-       	random.des[,,i] <- rbind(c(1,0,1,0),c(0,1,1,0))
-	rvs <- c(rvs,3)
-	} else {
-  	theta.des[,,i] <- rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
-	random.des[,,i] <- rbind(c(1,1,0,1),c(1,0,1,1))
-	rvs <- c(rvs,4)
-	}
-}
-### 3 rvs here 
-random.des[,,7]
-theta.des[,,7]
-### 4 rvs here 
-random.des[,,1]
-theta.des[,,1]
-head(rvs)
-
-tsdid2 <- twostage(aa,data=dataid,clusters=dataid$cluster,
-               theta=c(2,1)/10,var.link=0,step=1.0,
-               random.design=random.des,
-               theta.des=theta.des,pairs=pair.new,pairs.rvs=rvs)
-summary(tsdid2)
-tsd$theta
-tsdid2$theta
-tsdid$theta
+  ts <- twostage(pa,data=data,clusters=data$cluster,
+		 theta=c(2,1),var.link=0,step=1.0,
+		 random.design=out$des.rv,
+		 theta.des=out$pardes,pairs=pairs)
+  summary(ts)
 
 
-### simpler specification via kinship coefficient for each pair
+  # random sample of pairs 
+  ssid <- sort(sample(1:48000,20000))
 
-kinship  <- c()
-for (i in 1:nrow(pair.new))
-{
-if (pair.types[i,1]=="mother" & pair.types[i,2]=="father") pk1 <- 0 else pk1 <- 0.5
-kinship <- c(kinship,pk1)
-}
-head(kinship,n=10)
+  # take some of all 
+  tsd <- twostage(aa,data=data,clusters=data$cluster,
+		 theta=c(2,1)/10,var.link=0,step=1.0,
+		 random.design=out$des.rv,iid=1,
+		theta.des=out$pardes,pairs=pairs[ssid,])
+  summary(tsd)
 
-out <- make.pairwise.design(pair.new,kinship,type="ace") 
-names(out)
-### 4 rvs here , here independence since shared component has variance 0 !
-out$random.des[,,9]
-out$theta.des[,,9]
+  # same analyses but now gives only data that is used in the relevant pairs 
+  ids <- sort(unique(c(pairs[ssid,])))
 
+  pairsids <- c(pairs[ssid,])
+  pair.new <- matrix(fast.approx(ids,c(pairs[ssid,])),ncol=2)
+  head(pair.new)
 
-tsdid3 <- twostage(aa,data=dataid,clusters=dataid$cluster,
-               theta=c(2,1)/10,var.link=0,step=1.0,
-               random.design=out$random.design,
-               theta.des=out$theta.des,pairs=pair.new,pairs.rvs=out$ant.rvs)
-summary(tsdid3)
-coef(tsdid3)
+  # this requires that pair.new refers to id's in dataid (survival, status and so forth)
+  # random.design and theta.des are constructed to be the array 3 dims via individual specfication from ace.family.design
+  dataid <- dsort(data[ids,],"cluster")
+  outid <- ace.family.design(dataid,member="type",id="cluster")
+  outid$pardes
+  head(outid$des.rv)
 
-### same as above  tsdid2
-
-## }}} 
-
-##### simple models, test for pairs structure ## {{{ 
-
-library(mets)
-###source("../R/twostage.R")
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	detail=0,numDeriv=1,Nit=10,
-        theta=c(0.17),var.link=0,step=1.0)
-summary(ts0)
-ts0$score; ts0$score1
-ts0$Dscore; ts0$hess
-
-mm <- familycluster.index(data$cluster)
-head(mm$familypairindex,n=10)
-pairs <- matrix(mm$familypairindex,ncol=2,byrow=TRUE)
-head(pairs,n=12)
-tail(pairs,n=12)
-dim(pairs)
-#
-cc <- cluster.index(data$cluster)
-###
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-        detail=1,Nit=0,
-        theta=ts0$theta,var.link=0,pairs=pairs)
-summary(ts0)
+  tsdid <- twostage(aa,data=dataid,clusters=dataid$cluster,
+		 theta=c(2,1)/10,var.link=0,step=1.0,
+		 random.design=outid$des.rv,iid=1,
+		 theta.des=outid$pardes,pairs=pair.new)
+  summary(tsdid)
+  coef(tsdid)
+  coef(tsd)
+  # same as tsd 
 
 
-## {{{  simple models with pair call 
+  # now direct specification of random.design and theta.design 
+  # rather than taking the rows of the des.rv for the relevant pairs
+  # can make a pair specific specification of random effects 
 
-library(mets)
+  pair.types <-  matrix(dataid[c(t(pair.new)),"type"],byrow=T,ncol=2)
+  head(pair.new)
+  head(pair.types)
 
-set.seed(100)
-data <- simClaytonOakes.family.ace(8000,2,1,0,3)
-head(data)
-data$number <- c(1,2,3,4)
-data$child <- 1*(data$number==3)
+  # here makes pairwise design , simpler random.design og pardes, parameters
+  # stil varg, varc 
+  # mother, child, share half rvm=c(1,1,0) rvc=c(1,0,1),
+  # thetadesmcf=rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
+  #
+  # father, child, share half rvf=c(1,1,0) rvc=c(1,0,1), 
+  # thetadescf=rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
+  #
+  # child, child,  share half rvc=c(1,1,0) rvc=c(1,0,1),
+  # thetadesmf=rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
+  #
+  # mother, father, share 0 rvm=c(1,0) rvf=c(0,1), 
+  # thetadesmf=rbind(c(1,0),c(1,0),c(0,1))
 
-### make ace random effects design
-out <- ace.family.design(data,member="type",id="cluster")
-out$pardes
-head(out$des.rv)
+ theta.des  <- array(0,c(4,2,nrow(pair.new)))
+  random.des <- array(0,c(2,4,nrow(pair.new)))
+  # random variables in each pair 
+  rvs <- c()
+  for (i in 1:nrow(pair.new))
+  {
+	  if (pair.types[i,1]=="mother" & pair.types[i,2]=="father")
+	  {
+	  theta.des[,,i] <- rbind(c(1,0),c(1,0),c(0,1),c(0,0))
+	  random.des[,,i] <- rbind(c(1,0,1,0),c(0,1,1,0))
+	  rvs <- c(rvs,3)
+	  } else {
+	  theta.des[,,i] <- rbind(c(0.5,0),c(0.5,0),c(0.5,0),c(0,1))
+	  random.des[,,i] <- rbind(c(1,1,0,1),c(1,0,1,1))
+	  rvs <- c(rvs,4)
+	  }
+  }
+  # 3 rvs here 
+  random.des[,,7]
+  theta.des[,,7]
+  # 4 rvs here 
+  random.des[,,1]
+  theta.des[,,1]
+  head(rvs)
 
-### makes marginal model (same for all) 
-aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
+  tsdid2 <- twostage(aa,data=dataid,clusters=dataid$cluster,
+		 theta=c(2,1)/10,var.link=0,step=1.0,
+		 random.design=random.des,
+		 theta.des=theta.des,pairs=pair.new,pairs.rvs=rvs)
+  summary(tsdid2)
+  tsd$theta
+  tsdid2$theta
+  tsdid$theta
 
 
-mm <- familycluster.index(data$cluster)
-head(mm$familypairindex,n=10)
-pairs <- matrix(mm$familypairindex,ncol=2,byrow=TRUE)
-head(pairs,n=12)
-tail(pairs,n=12)
-dim(pairs)
-#
+  # simpler specification via kinship coefficient for each pair
 
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=1,Nit=10,
-        theta=c(0.2),var.link=0,step=1.0)
-summary(ts0)
+  kinship  <- c()
+  for (i in 1:nrow(pair.new))
+  {
+  if (pair.types[i,1]=="mother" & pair.types[i,2]=="father") pk1 <- 0 else pk1 <- 0.5
+  kinship <- c(kinship,pk1)
+  }
+  head(kinship,n=10)
 
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=1,Nit=10,numDeriv=1,
-        theta=c(0.2),var.link=0,step=1.0,pairs=pairs)
-summary(ts0)
-ts0$score
-ts0$score1
+  out <- make.pairwise.design(pair.new,kinship,type="ace") 
+  names(out)
+  # 4 rvs here , here independence since shared component has variance 0 !
+  out$random.des[,,9]
+  out$theta.des[,,9]
 
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=1,Nit=10,
-        theta=c(0.2),var.link=0,step=1.0,model="plackett")
-summary(ts0)
 
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=1,Nit=10,
-        theta=c(0.2),var.link=0,step=1.0,model="plackett",pairs=pairs)
-summary(ts0)
+  tsdid3 <- twostage(aa,data=dataid,clusters=dataid$cluster,
+		 theta=c(2,1)/10,var.link=0,step=1.0,
+		 random.design=out$random.design,
+		 theta.des=out$theta.des,pairs=pair.new,pairs.rvs=out$ant.rvs)
+  summary(tsdid3)
+  coef(tsdid3)
+
+  # same as above  tsdid2
+
+
+  # simple models, test for pairs structure 
+
+  library(mets)
+
+  ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	  detail=0,numDeriv=1,Nit=10,
+	  theta=c(0.17),var.link=0,step=1.0)
+  summary(ts0)
+  ts0$score; ts0$score1
+  ts0$Dscore; ts0$hess
+
+  mm <- familycluster.index(data$cluster)
+  head(mm$familypairindex,n=10)
+  pairs <- matrix(mm$familypairindex,ncol=2,byrow=TRUE)
+  head(pairs,n=12)
+  tail(pairs,n=12)
+  dim(pairs)
+
+  cc <- cluster.index(data$cluster)
+
+  ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	  detail=1,Nit=0,
+	  theta=ts0$theta,var.link=0,pairs=pairs)
+  summary(ts0)
 
 
 
-theta.des <- model.matrix(~x1,data=data)
+  library(mets)
 
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=1,Nit=10,theta.des=theta.des,
-        theta=c(0.2),var.link=0,step=1.0)
-summary(ts0)
+  set.seed(100)
+  data <- simClaytonOakes.family.ace(8000,2,1,0,3)
+  head(data)
+  data$number <- c(1,2,3,4)
+  data$child <- 1*(data$number==3)
 
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=1,Nit=10,theta.des=theta.des,
-        theta=c(0.2),var.link=0,step=1.0,pairs=pairs)
-summary(ts0)
+  # make ace random effects design
+  out <- ace.family.design(data,member="type",id="cluster")
+  out$pardes
+  head(out$des.rv)
 
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=1,Nit=10,theta.des=theta.des,
-        theta=c(0.2),var.link=0,step=1.0,model="plackett")
-summary(ts0)
-
-ts0 <- twostage(aa,data=data,clusters=data$cluster,
-	 detail=1,Nit=10,theta.des=theta.des,
-        theta=c(0.2),var.link=0,step=1.0,model="plackett",pairs=pairs)
-summary(ts0)
+  # makes marginal model (same for all) 
+  aa <- aalen(Surv(time,status)~+1,data=data,robust=0)
 
 
+  mm <- familycluster.index(data$cluster)
+  head(mm$familypairindex,n=10)
+  pairs <- matrix(mm$familypairindex,ncol=2,byrow=TRUE)
+  head(pairs,n=12)
+  tail(pairs,n=12)
+  dim(pairs)
+  #
 
-## }}} 
+  ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	   detail=1,Nit=10,
+	  theta=c(0.2),var.link=0,step=1.0)
+  summary(ts0)
+
+  ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	   detail=1,Nit=10,numDeriv=1,
+	  theta=c(0.2),var.link=0,step=1.0,pairs=pairs)
+  summary(ts0)
+  ts0$score
+  ts0$score1
+
+  ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	   detail=1,Nit=10,
+	  theta=c(0.2),var.link=0,step=1.0,model="plackett")
+  summary(ts0)
+
+  ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	   detail=1,Nit=10,
+	  theta=c(0.2),var.link=0,step=1.0,model="plackett",pairs=pairs)
+  summary(ts0)
 
 
-## }}} 
+
+  theta.des <- model.matrix(~x1,data=data)
+
+  ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	   detail=1,Nit=10,theta.des=theta.des,
+	  theta=c(0.2),var.link=0,step=1.0)
+  summary(ts0)
+
+  ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	   detail=1,Nit=10,theta.des=theta.des,
+	  theta=c(0.2),var.link=0,step=1.0,pairs=pairs)
+  summary(ts0)
+
+  ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	   detail=1,Nit=10,theta.des=theta.des,
+	  theta=c(0.2),var.link=0,step=1.0,model="plackett")
+  summary(ts0)
+
+  ts0 <- twostage(aa,data=data,clusters=data$cluster,
+	   detail=1,Nit=10,theta.des=theta.des,
+	  theta=c(0.2),var.link=0,step=1.0,model="plackett",pairs=pairs)
+  summary(ts0)
 
 #+END_SRC
 

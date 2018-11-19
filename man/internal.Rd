@@ -28,8 +28,8 @@
 \alias{ascertained.pairs}
 \alias{CCbinomial.twostage}
 \alias{coarse.clust}
-\alias{concordance.twin.ace}
-\alias{concordance.twostage}
+\alias{concordanceTwinACE}
+\alias{concordanceTwostage}
 \alias{fast.cluster}
 \alias{force.same.cens}
 \alias{ilap}

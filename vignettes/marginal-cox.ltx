@@ -1,0 +1,434 @@
+%\VignetteIndexEntry{Marginal Cox}
+%\VignetteEngine{R.rsp::tex}
+%\VignetteKeyword{R}
+%\VignetteKeyword{package}
+%\VignetteKeyword{vignette}
+%\VignetteKeyword{LaTeX}
+\PassOptionsToPackage{usenames}{xcolor}
+\PassOptionsToPackage{hidelinks,colorlinks,linkcolor={blue!50!black},urlcolor={blue!50!black},citecolor={blue!50!black}}{hyperref}
+\documentclass[a4paper]{tufte-handout}
+\usepackage{etex}
+\usepackage{etoolbox}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{mathtools}
+\usepackage[strict=true]{csquotes}
+\usepackage{xcolor}
+\usepackage{natbib}
+\usepackage{amsmath,amssymb,textcomp}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage{capt-of}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{longtable}
+\usepackage{zlmtt}
+\usepackage{float}
+\usepackage{fancyvrb}
+\usepackage{verbatim}
+\usepackage[english]{babel}
+\usepackage{hyperref}
+\usepackage{environ}
+\NewEnviron{mnote}{\marginnote{\BODY}}
+\NewEnviron{snote}{\sidenote{\BODY}}
+\usepackage{xspace}
+\usepackage{url}
+\usepackage{amsthm}
+\newtheorem{thm}{Theorem.}
+\newtheorem{prop}{Proposition.}
+\theoremstyle{definition}
+\newtheorem{defn}[thm]{Definition.}
+\newtheorem{exa}[thm]{Example}
+\newcommand{\R}{\ensuremath{\mathbb{R}}} 
+\newcommand{\Real}{\ensuremath{\mathbb{R}}} 
+\newcommand{\Complex}{\ensuremath{\mathbb{C}}} 
+\newcommand{\Z}{\ensuremath{\mathbb{Z}}} 
+\newcommand{\N}{\ensuremath{\mathbb{N}}} 
+\newcommand{\norm}[1]{\ensuremath{\left\Vert#1\right\Vert}} 
+\newcommand{\var}{\ensuremath{\mathbb{V}\text{ar}}} 
+\newcommand{\cov}{\ensuremath{\mathbb{C}\text{ov}}} 
+\newcommand{\cor}{\ensuremath{\mathbb{C}\text{or}}} 
+\newcommand{\E}{\ensuremath{\mathbb{E}}} 
+\newcommand{\pr}{\ensuremath{\mathbb{P}}} 
+\newcommand{\from}{\leftarrow} 
+\newcommand{\To}[2]{\ensuremath{#1\!\to\!#2}}
+\newcommand{\From}[2]{\ensuremath{#1\!\from\!#2}}
+\newcommand{\chain}[3]{\ensuremath{#1\!\to\!#2\to\!#3}}
+\newcommand{\ichain}[3]{\ensuremath{#1\!\from\!#2\from\!#3}}
+\newcommand{\fork}[3]{\ensuremath{#1\!\from\!#2\to\!#3}}
+\newcommand{\ifork}[3]{\ensuremath{#1\!\to\!#2\from\!#3}}
+\newcommand{\pa}{\text{pa}}
+\newcommand{\abs}[1]{\ensuremath{\left\vert#1\right\vert}} 
+\newcommand{\ipr}[1]{\langle#1\rangle} 
+\newcommand{\set}[1]{\left{#1\right}} 
+\newcommand{\seq}[1]{\left<#1\right>} 
+\renewcommand{\subset}{\subseteq}  
+\renewcommand{\supset}{\supseteq} 
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\mvec}{vec}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\bias}{bias}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\logit}{logit}
+\DeclareMathOperator{\expit}{expit}
+\makeatletter
+ \def\mathcolor#1#{\@mathcolor{#1}}
+ \def\@mathcolor#1#2#3{%
+   \protect\leavevmode
+   \begingroup
+     \color#1{#2}#3%
+  \endgroup
+ }
+\newcommand{\Dto}{\overset{\mathcal{D}}{\longrightarrow}}
+\newcommand{\Pto}{\overset{P}{\longrightarrow}}
+\newcommand{\Wto}{\overset{W}{\longrightarrow}}
+\newcommand{\VV}{\bm{\Omega}_\theta}
+\newcommand{\independenT}[2]{\mathrel{\setbox0\hbox{$#1#2$}\copy0\kern-\wd0\mkern4mu\box0}} 
+\newcommand{\indep}{\protect\mathpalette{\protect\independenT}{\perp}}
+\DefineVerbatimEnvironment{verbatim}{Verbatim}{xleftmargin=0.5em,xrightmargin=0em,numbers=none,frame=none,fontsize=\footnotesize,formatcom={\color[rgb]{0.2,0.2,0.2}}}
+\setlength{\parindent}{0pt} % Kills annoying indents. 
+\let\iint\relax 
+\let\iiint\relax
+
+\lstset{basicstyle=\ttfamily\small,keywordstyle=\color{black},commentstyle=\color{gray}\ttfamily\itshape,stringstyle=\color[rgb]{0,0,0.5},columns=fullflexible,alsoletter=.,texcl=true,escapeinside={*@}{@*)},escapebegin=\lst@commentstyle\,,breaklines=true,breakatwhitespace=false,numbers=left,numberstyle=\ttfamily\tiny\color{gray},stepnumber=1,numbersep=10pt,backgroundcolor=\color{white},tabsize=4,showspaces=false,showstringspaces=false,xleftmargin=.23in,frame=lines
+,rulesepcolor=\color[rgb]{0.85,0.85,0.85},basewidth={0.5em,0.42em},language=r,label=
+,caption= ,captionpos=b}
+\lstset{basicstyle=\ttfamily\small,keywordstyle=\color{black},commentstyle=\color{gray}\ttfamily\itshape,stringstyle=\color[rgb]{0,0,0.5},columns=fullflexible,alsoletter=.,texcl=true,escapeinside={*@}{@*)},escapebegin=\lst@commentstyle\,,breaklines=true,breakatwhitespace=false,numbers=left,numberstyle=\ttfamily\tiny\color{gray},stepnumber=1,numbersep=10pt,backgroundcolor=\color{white},tabsize=4,showspaces=false,showstringspaces=false,xleftmargin=.23in,frame=lines
+,rulesepcolor=\color[rgb]{0.85,0.85,0.85},basewidth={0.5em,0.42em},language=python,label=
+,caption= ,captionpos=b}
+
+\setlength{\parindent}{0pt} % Kills annoying indents.
+\newcommand{\n}{}
+\author{Klaus Holst \& Thomas Scheike}
+\date{\today}
+\title{Marginal modelling of clustered survival data}
+\hypersetup{
+ pdfauthor={Klaus Holst \& Thomas Scheike},
+ pdftitle={Marginal modelling of clustered survival data},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 26.1 (Org mode 9.1.14)}, 
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+\noindent\rule{\textwidth}{0.5pt}
+
+\section*{Overview}
+\label{sec:orgae8c7e0}
+
+A basic component for our modelling is that all these models are build around
+marginals that on Cox form. The marginal Cox model can be fitted efficiently
+in the mets package. 
+
+The basic models assumes that each subject has a marginal on Cox-form
+\[ 
+\lambda_{s(k,i)}(t) \exp( X_{ki}^T \beta).
+\] 
+where \(s(k,i)\) gives the strata for the subject. 
+
+We here discuss the 
+\begin{itemize}
+\item robust standard errors of 
+\begin{itemize}
+\item regression parameters
+\item baseline
+\end{itemize}
+\item cumulative residuals score test
+\end{itemize}
+
+First we generate some data from the Clayton-Oakes model, with \(5\) members
+in each cluster and a variance parameter at \(2\) 
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+library(mets)
+set.seed(1000) # to control output in simulatins for p-values below.
+ n <- 1000
+ k <- 5
+ theta <- 2
+ data <- simClaytonOakes(n,k,theta,0.3,3)
+ head(data)
+\end{lstlisting}
+
+\begin{verbatim}
+Loading required package: timereg
+Loading required package: survival
+Loading required package: lava
+lava version 1.6.3
+mets version 1.2.4
+
+Attaching package: ‘mets’
+
+The following object is masked _by_ ‘.GlobalEnv’:
+
+    object.defined
+       time status x cluster   mintime lefttime truncated
+1 0.1406317      1 0       1 0.1406317        0         0
+2 0.4593768      1 0       1 0.1406317        0         0
+3 1.0952678      1 0       1 0.1406317        0         0
+4 0.2057554      1 1       1 0.1406317        0         0
+5 0.6776620      1 0       1 0.1406317        0         0
+6 1.6093755      1 0       2 0.1092390        0         0
+\end{verbatim}
+
+Now fitting the and producing robust standard errors for both 
+regression parameters and baseline.
+
+Note that 
+\begin{align}
+\hat A_s(t) - A_s(t)  & = \sum_k \sum_i \int_0^t 1/S_{s} dM_{ki}^s  - P^s(t) \beta_k 
+\end{align}
+with \(P^s(t)\) a derivative wrt to \(\beta\), and 
+\begin{align}
+\hat \beta  - \beta  & = \sum_k ( \sum_i \int_0^\tau (Z_{ik} - E_{s}) dM_{ik}^s )
+\end{align}
+with 
+\begin{align}
+ M_{ki}(t) &  = N_{ki}(t) - \int_0^t Y_{ki}(s) \exp( Z_{ki} \beta) d \Lambda_{s(ki)}(t)
+\end{align}
+the basic 0-mean processes, that are martingales in the iid setting. 
+
+The variance of the baseline of strata s  is
+\begin{align}
+\sum_{k} ( \sum_i \int_0^t 1/S_{0s(ki)} d\hat M_{ki}^s )^2
+\end{align}
+that can be computed using the particular structure 
+\begin{align}
+d \hat M_{ik}(t) & =  dN_{ik}(t) -  1/S_{0s(i,k)} \exp(Z_{ik} \beta) dN_{s.}(t) 
+\end{align}
+
+This robust variance of the baseline and the iid decomposition for \(\beta\) is
+computed in mets as: 
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+out <- phreg(Surv(time,status)~x+cluster(cluster),data=data)
+summary(out)
+# robust standard errors attached to output
+rob <- robust.phreg(out)
+
+# making iid decomposition of regression parameters
+betaiid <- iid(out)
+head(betaiid)
+# robust standard errors
+crossprod(betaiid)^.5
+# same as 
+\end{lstlisting}
+
+\begin{verbatim}
+
+    n events
+ 5000   4854
+
+ 1000 clusters
+
+  Estimate     S.E.  dU^-1/2 P-value
+x 0.287859 0.028177 0.028897       0
+           [,1]
+1 -3.461601e-04
+2 -1.449189e-03
+3 -3.898156e-05
+4  4.215605e-04
+5  3.425390e-04
+6 -7.706668e-05
+           [,1]
+[1,] 0.02817714
+\end{verbatim}
+
+Looking at the plot  with robust standard errors 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label=robcox1,caption= ,captionpos=b}
+\begin{lstlisting}
+bplot(rob,se=TRUE,robust=TRUE)
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{robcox1.jpg}
+
+\begin{marginfigure}
+\begin{center}
+\includegraphics[width=\textwidth]{robcox1.jpg}
+\end{center}
+
+\begin{verbatim}
+Error: unexpected input in "<<"
+\end{verbatim}
+
+\captionof{figure}{Baseline with robust standard errors.}
+\label{fig:robcox1}
+\end{marginfigure}
+
+
+One can also make survival prediction with robust standard errors using the phreg.
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+pp <-  predict(out,data[1:20,],se=TRUE,robust=TRUE)
+\end{lstlisting}
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label=robcox2,caption= ,captionpos=b}
+\begin{lstlisting}
+plot(pp,se=TRUE,whichx=1:10)
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{robcox2.jpg}
+
+\includegraphics[width=.9\linewidth]{robcox2.jpg}
+
+\begin{marginfigure}
+\begin{center}
+\includegraphics[width=\textwidth]{robcox2.jpg}
+\end{center}
+
+\begin{verbatim}
+Error: unexpected input in "<<"
+\end{verbatim}
+
+
+\captionof{figure}{Survival predictions with robust standard errors for Cox model}
+\label{fig:robcox2}
+\end{marginfigure}
+
+
+Finally, just to check that we can recover the model we also estimate the dependence parameter 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+tt <- twostageMLE(out,data=data)
+summary(tt)
+\end{lstlisting}
+
+\begin{verbatim}
+Dependence parameter for Clayton-Oakes model
+Variance of Gamma distributed random effects 
+$estimates
+                Coef.         SE        z P-val Kendall tau        SE
+dependence1 0.5316753 0.03497789 15.20032     0   0.2100093 0.0109146
+
+$type
+NULL
+
+attr(,"class")
+[1] "summary.mets.twostage"
+\end{verbatim}
+
+
+
+
+
+\subsection*{Goodness of fit}
+\label{sec:org9aacb35}
+
+
+The observed score process is given by 
+\begin{align}
+U(t,\hat \beta) & = \sum_k \sum_i \int_0^t (Z_{ki} - \hat E_s ) d \hat M_{ki}^s 
+\end{align}
+where \(s\) is strata, this has as iid decomposition as 
+\begin{align}
+\hat U(t) = \sum_k \sum_i  \int_0^t (Z_{ki} - E_s) dM_{ki}^s  - \sum_k  I_t \beta_k 
+\end{align}
+where \(\beta_k\) is the iid decomposition of the score process for the true \(\beta\)
+\begin{align}
+\beta_k  & =  \sum_i \int_0^t (Z_{ki} - E_s ) d  M_{ki}^s 
+\end{align}
+and \(I_t\) is the derivative of the total score with respect to \(\beta\). 
+
+This observed score can be resampled given it is on iid form in terms of 
+clusters. 
+
+Now using the cumulative score process for checking proportional 
+hazards 
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+gout <- gof(out)
+gout
+\end{lstlisting}
+
+\begin{verbatim}
+Cumulative score process test for Proportionality:
+  Sup|U(t)|  pval
+x  30.24353 0.401
+\end{verbatim}
+
+
+The p-value reflects wheter the observed score process is consistent with
+the model. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label=robgofcox1,caption= ,captionpos=b}
+\begin{lstlisting}
+plot(gout)
+\end{lstlisting}
+
+\includegraphics[width=.9\linewidth]{robgofcox1.jpg}
+
+\begin{marginfigure}
+\begin{center}
+\includegraphics[width=\textwidth]{robgofcox1.jpg}
+\captionof{figure}{Goodness of fit for clustered Cox model \label{fig:robgofcox1}}
+\end{center}
+
+\begin{verbatim}
+Error: unexpected input in "<<"
+\end{verbatim}
+
+\captionof{figure}{Goodness of fit for clustered Cox model.}
+\label{fig:robcgofox1}
+\end{marginfigure}
+
+
+\subsection*{Cluster stratified Cox models}
+\label{sec:org5665418}
+
+For  clustered data it is possible to estimate the regression coefficient
+within clusters by using Cox's partial likelihood stratified on clusters.
+
+Note, here that the data is generated with a different subject specific structure, 
+so we will not recover the \(\beta\) at 0.3 and the model will not be
+a proportional Cox model, we we would also expect to reject "proportionality" with
+the gof-test. 
+
+The model can be thought of as 
+\[ 
+\lambda_k(t) \exp( X_{ki}^T \beta)
+\] 
+where \(\lambda_k(t)\) is some cluster specific baseline. 
+
+
+The regression coefficient \(\beta\) can be estimated by using the 
+partial likelihood for clusters. 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+out <- phreg(Surv(time,status)~x+strata(cluster),data=data)
+summary(out)
+\end{lstlisting}
+
+\begin{verbatim}
+
+    n events
+ 5000   4854
+
+  Estimate     S.E.  dU^-1/2 P-value
+x 0.406307 0.032925 0.039226       0
+\end{verbatim}
+
+The cumulative score processes can still be used to validate the model 
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label= ,caption= ,captionpos=b}
+\begin{lstlisting}
+gg <- gof (out) 
+summary(gg)
+\end{lstlisting}
+
+\begin{verbatim}
+Cumulative score process test for Proportionality:
+  Sup|U(t)|  pval
+x  27.55616 0.195
+\end{verbatim}
+\end{document}

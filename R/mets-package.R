@@ -13,7 +13,7 @@
 ##'                  confband constrain<- constraints covariance covariance<- coxWeibull.lvm devcoords distribution<-
 ##'                  endogenous eventTime Expand getoutcome gof intercept<- Inverse kill<- latent latent<- lava.options lvm
 ##'                  Model multigroup parameter<- pars regression regression<- revdiag sim trim
-##' @importFrom survival Surv is.Surv
+##' @importFrom survival Surv is.Surv concordance
 ##' @importFrom utils head tail getS3method glob2rx capture.output
 ##' @importFrom graphics matplot lines plot polygon par points abline
 ##'     title matlines
@@ -141,7 +141,7 @@ NULL
 ##'  simnordic.random simCox sim 
 ##'  grouptable jumptimes folds
 ##'  ace.family.design ascertained.pairs CCbinomial.twostage
-##'  coarse.clust concordance.twin.ace concordance.twostage
+##'  coarse.clust concordanceTwinACE concordanceTwostage
 ##'  fast.cluster force.same.cens ilap
 ##'  kendall.ClaytonOakes.twin.ace kendall.normal.twin.ace
 ##'  make.pairwise.design make.pairwise.design.competing
