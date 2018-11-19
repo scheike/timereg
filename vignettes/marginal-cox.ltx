@@ -122,7 +122,7 @@
 \noindent\rule{\textwidth}{0.5pt}
 
 \section*{Overview}
-\label{sec:orgae8c7e0}
+\label{sec:org4291342}
 
 A basic component for our modelling is that all these models are build around
 marginals that on Cox form. The marginal Cox model can be fitted efficiently
@@ -243,25 +243,19 @@ x 0.287859 0.028177 0.028897       0
 
 Looking at the plot  with robust standard errors 
 
-\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label=robcox1,caption= ,captionpos=b}
-\begin{lstlisting}
-bplot(rob,se=TRUE,robust=TRUE)
-\end{lstlisting}
-
-\includegraphics[width=.9\linewidth]{robcox1.jpg}
-
 \begin{marginfigure}
 \begin{center}
 \includegraphics[width=\textwidth]{robcox1.jpg}
 \end{center}
 
-\begin{verbatim}
-Error: unexpected input in "<<"
-\end{verbatim}
-
 \captionof{figure}{Baseline with robust standard errors.}
 \label{fig:robcox1}
 \end{marginfigure}
+
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label=robcox1,caption= ,captionpos=b}
+\begin{lstlisting}
+bplot(rob,se=TRUE,robust=TRUE)
+\end{lstlisting}
 
 
 One can also make survival prediction with robust standard errors using the phreg.
@@ -276,19 +270,11 @@ pp <-  predict(out,data[1:20,],se=TRUE,robust=TRUE)
 plot(pp,se=TRUE,whichx=1:10)
 \end{lstlisting}
 
-\includegraphics[width=.9\linewidth]{robcox2.jpg}
-
-\includegraphics[width=.9\linewidth]{robcox2.jpg}
 
 \begin{marginfigure}
 \begin{center}
 \includegraphics[width=\textwidth]{robcox2.jpg}
 \end{center}
-
-\begin{verbatim}
-Error: unexpected input in "<<"
-\end{verbatim}
-
 
 \captionof{figure}{Survival predictions with robust standard errors for Cox model}
 \label{fig:robcox2}
@@ -322,7 +308,7 @@ attr(,"class")
 
 
 \subsection*{Goodness of fit}
-\label{sec:org9aacb35}
+\label{sec:orgb08000a}
 
 
 The observed score process is given by 
@@ -360,30 +346,24 @@ x  30.24353 0.401
 The p-value reflects wheter the observed score process is consistent with
 the model. 
 
-\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label=robgofcox1,caption= ,captionpos=b}
-\begin{lstlisting}
-plot(gout)
-\end{lstlisting}
-
-\includegraphics[width=.9\linewidth]{robgofcox1.jpg}
-
 \begin{marginfigure}
 \begin{center}
 \includegraphics[width=\textwidth]{robgofcox1.jpg}
-\captionof{figure}{Goodness of fit for clustered Cox model \label{fig:robgofcox1}}
 \end{center}
-
-\begin{verbatim}
-Error: unexpected input in "<<"
-\end{verbatim}
 
 \captionof{figure}{Goodness of fit for clustered Cox model.}
 \label{fig:robcgofox1}
 \end{marginfigure}
 
+\lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label=robgofcox1,caption= ,captionpos=b}
+\begin{lstlisting}
+plot(gout)
+\end{lstlisting}
+
+
 
 \subsection*{Cluster stratified Cox models}
-\label{sec:org5665418}
+\label{sec:orgf70f1c5}
 
 For  clustered data it is possible to estimate the regression coefficient
 within clusters by using Cox's partial likelihood stratified on clusters.

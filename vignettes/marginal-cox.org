@@ -132,18 +132,9 @@ x 0.287859 0.028177 0.028897       0
 
 Looking at the plot  with robust standard errors 
 
-#+NAME: robcox1
-#+BEGIN_SRC R :exports both :results output graphics :file robcox1.jpg :ravel fig=TRUE,include=FALSE 
-  bplot(rob,se=TRUE,robust=TRUE)
-#+END_SRC
-
-#+RESULTS: robcox1
-[[file:robcox1.jpg]]
-
 #+BEGIN_marginfigure
-# +CAPTION: Robust standard errors for Cox model label:fig:robcox1
 #+ATTR_LATEX: :width \textwidth :float nil :center t
-#+RESULTS: rob1
+#+RESULTS: robcox1
 [[file:robcox1.jpg]]
 
 #+ATTR_RAVEL: echo=FALSE,fig=TRUE
@@ -151,12 +142,14 @@ Looking at the plot  with robust standard errors
 <<robcox1>>
 #+END_SRC
 
-#+RESULTS:
-: Error: unexpected input in "<<"
-
 #+LATEX: \captionof{figure}{Baseline with robust standard errors.}
 label:fig:robcox1
 #+END_marginfigure
+
+#+NAME: robcox1
+#+BEGIN_SRC R :exports both :results output graphics :file robcox1.jpg :ravel fig=TRUE,include=FALSE 
+  bplot(rob,se=TRUE,robust=TRUE)
+#+END_SRC
 
 
 One can also make survival prediction with robust standard errors using the phreg.
@@ -172,25 +165,17 @@ One can also make survival prediction with robust standard errors using the phre
   plot(pp,se=TRUE,whichx=1:10)
 #+END_SRC
 
-#+RESULTS: robcox2
-[[file:robcox2.jpg]]
-
-#+RESULTS: robcox1
-[[file:robcox2.jpg]]
 
 #+BEGIN_marginfigure
 # +CAPTION: Survival predictions with robust standard errors for Cox model label:fig:robcox2
 #+ATTR_LATEX: :width \textwidth :float nil :center t
-#+RESULTS: rob2
+#+RESULTS: robcox2
 [[file:robcox2.jpg]]
 
 #+ATTR_RAVEL: echo=FALSE,fig=TRUE
 #+BEGIN_SRC R :exports results
 <<robcox2>>
 #+END_SRC
-
-#+RESULTS:
-: Error: unexpected input in "<<"
 
 
 #+LATEX: \captionof{figure}{Survival predictions with robust standard errors for Cox model}
@@ -260,16 +245,8 @@ gout
 The p-value reflects wheter the observed score process is consistent with
 the model. 
 
-#+NAME: robgofcox1
-#+BEGIN_SRC R :exports both :results output graphics :file robgofcox1.jpg :ravel fig=TRUE,include=FALSE 
-  plot(gout)
-#+END_SRC
-
-#+RESULTS: robgofcox1
-[[file:robgofcox1.jpg]]
-
 #+BEGIN_marginfigure
-#+CAPTION: Goodness of fit for clustered Cox model label:fig:robgofcox1
+# +CAPTION: Goodness of fit for clustered Cox model label:fig:robgofcox1
 #+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: rob1
 [[file:robgofcox1.jpg]]
@@ -279,12 +256,15 @@ the model.
 <<robgofcox1>>
 #+END_SRC
 
-#+RESULTS:
-: Error: unexpected input in "<<"
-
 #+LATEX: \captionof{figure}{Goodness of fit for clustered Cox model.}
 label:fig:robcgofox1
 #+END_marginfigure
+
+#+NAME: robgofcox1
+#+BEGIN_SRC R :exports both :results output graphics :file robgofcox1.jpg :ravel fig=TRUE,include=FALSE 
+  plot(gout)
+#+END_SRC
+
 
 
 **  Cluster stratified Cox models

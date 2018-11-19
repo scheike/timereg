@@ -97,8 +97,8 @@ regression design on these random effects, with a regression vector
   Each random effect
  has an associated parameter \( (\lambda_1,...,\lambda_d) \)  and  \( Z_j \)
   is Gamma distributed with 
-  - mean \( lambda_j/v_1^T \lambda \)
-  - variance \( \lambda_j/(v_1^T \lambda)^2}. 
+  - mean \( \lambda_j/v_1^T \lambda \)
+  - variance \( \lambda_j/(v_1^T \lambda)^2\). 
 	       
 The key assumption to make the two-stage fitting possible is that
 \[

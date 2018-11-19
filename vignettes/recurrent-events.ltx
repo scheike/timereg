@@ -122,7 +122,7 @@
 \noindent\rule{\textwidth}{0.5pt}
 
 \section*{Overview}
-\label{sec:org4ac9669}
+\label{sec:orga5b05ca}
 
 For recurrent events data it is often of interest to compute basis descriptive
 quantities as a first go at getting some basic understanding of the phenonmenon
@@ -181,7 +181,7 @@ We return to how to run the different set-ups later and start by simulating inde
 
 
 \subsection*{Utility functions}
-\label{sec:orgfcc4016}
+\label{sec:org579a0bd}
 
 We here mention two utility functions 
 
@@ -192,7 +192,7 @@ We here mention two utility functions
 
 
 \subsection*{Marginal Mean}
-\label{sec:orgdc3182f}
+\label{sec:org43bb847}
 
 We start by estimating the marginal mean \(E(N_1(t \wedge D))\) where \(D\) is the timing of the terminal event. 
 
@@ -316,16 +316,10 @@ out <- recurrentMarginal(xr,dr)
 bplot(out,se=TRUE,ylab="marginal mean",col=2)
 \end{lstlisting}
 
-\includegraphics[width=.9\linewidth]{rec1.jpg}
-
 \begin{marginfigure}
 \begin{center}
 \includegraphics[width=\textwidth]{rec1.jpg}
 \end{center}
-
-\begin{verbatim}
-Error: unexpected input in "<<"
-\end{verbatim}
 
 \captionof{figure}{Marginal mean for number of type 1 events, rate for death (panel (a)), rate for type 1 among survivors (panel (b)), and marginal mean (panel (c)).}
 \label{fig:rec}
@@ -348,17 +342,11 @@ out <- recurrentMarginal(xr,dr)
 bplot(out,se=TRUE,ylab="marginal mean",col=1:2)
 \end{lstlisting}
 
-\includegraphics[width=.9\linewidth]{rec2.jpg}
 
 \begin{marginfigure}
 \begin{center}
 \includegraphics[width=\textwidth]{rec2.jpg}
 \end{center}
-
-\begin{verbatim}
-Error: unexpected input in "<<"
-\end{verbatim}
-
 
 \captionof{figure}{Recurrent events}
 \label{fig:rec2}
@@ -390,8 +378,6 @@ bplot(outX,add=TRUE,col=3)
 
 \end{lstlisting}
 
-\includegraphics[width=.9\linewidth]{rec3.jpg}
-
 \begin{marginfigure}
 \begin{center}
 \includegraphics[width=\textwidth]{rec3.jpg}
@@ -407,7 +393,7 @@ bplot(outX,add=TRUE,col=3)
 
 
 \subsection*{Other marginal properties}
-\label{sec:org3cdea96}
+\label{sec:org0426959}
 
 
 
@@ -454,6 +440,15 @@ and estimated by
           	\frac{1}{Y_{1\bullet}^{k-1}(s)} d N_{1\bullet}^{k-1}(s).
 \end{align*}
 
+\begin{marginfigure}
+\begin{center}
+\includegraphics[width=\textwidth]{rec4.jpg}
+\end{center}
+
+\captionof{figure}{Recurrent events: probability of exceeding k events}
+\label{fig:rec4}
+\end{marginfigure}
+
 
 \lstset{numbers=left,numberstyle=\ttfamily\tiny\color{gray},language=r,label=rec4,caption= ,captionpos=b}
 \begin{lstlisting}
@@ -466,20 +461,14 @@ oo <- prob.exceedRecurrent(rr,1)
 bplot(oo)
 \end{lstlisting}
 
-\includegraphics[width=.9\linewidth]{rec4.jpg}
 
 \begin{marginfigure}
 \begin{center}
-\includegraphics[width=\textwidth]{rec4.jpg}
+\includegraphics[width=\textwidth]{rec4MV.jpg}
 \end{center}
 
-\begin{verbatim}
-Error: unexpected input in "<<"
-\end{verbatim}
-
-
 \captionof{figure}{Recurrent events: probability of exceeding k events}
-\label{fig:rec4}
+\label{fig:rec4MV}
 \end{marginfigure}
 
 
@@ -491,22 +480,6 @@ with(oo,plot(time,mu,col=2,type="l"))
 #
 with(oo,plot(time,varN,type="l"))
 \end{lstlisting}
-
-\includegraphics[width=.9\linewidth]{rec4MV.jpg}
-
-\begin{marginfigure}
-\begin{center}
-\includegraphics[width=\textwidth]{rec4MV.jpg}
-\end{center}
-
-\begin{verbatim}
-Error: unexpected input in "<<"
-\end{verbatim}
-
-
-\captionof{figure}{Recurrent events: probability of exceeding k events}
-\label{fig:rec4MV}
-\end{marginfigure}
 
 
 
@@ -521,17 +494,10 @@ legend("topleft",legend=colnames(oo$pe1e2),lty=1:nc,col=1:nc)
 \end{lstlisting}
 
 
-\includegraphics[width=.9\linewidth]{rec4Bi.jpg}
-
 \begin{marginfigure}
 \begin{center}
 \includegraphics[width=\textwidth]{rec4Bi.jpg}
 \end{center}
-
-\begin{verbatim}
-Error: unexpected input in "<<"
-\end{verbatim}
-
 
 \captionof{figure}{Recurrent events: probability of exceeding k events}
 \label{fig:rec4Bi}
@@ -539,7 +505,7 @@ Error: unexpected input in "<<"
 
 
 \subsection*{Dependence between events: Covariance}
-\label{sec:orgdc37bcd}
+\label{sec:org89daab7}
 
 Covariance among two types of events 
 \begin{align}
@@ -650,17 +616,11 @@ covrpS <- covarianceRecurrentS(rr,1,2,status="status",death="death",
 	start="entry",stop="time",strata="strata",id="id",names.count="Count")
 \end{lstlisting}
 
-\includegraphics[width=.9\linewidth]{rec5.jpg}
 
 \begin{marginfigure}
 \begin{center}
 \includegraphics[width=\textwidth]{rec5.jpg}
 \end{center}
-
-\begin{verbatim}
-Error: unexpected input in "<<"
-\end{verbatim}
-
 
 \captionof{figure}{Covariance between events}
 \label{fig:rec5}
@@ -668,7 +628,7 @@ Error: unexpected input in "<<"
 
 
 \subsection*{Bootstrap standard errors for terms}
-\label{sec:orgd766be9}
+\label{sec:orgc92335c}
 
 First fitting the model again to get our estimates of interst, and then 
 computing them for some specific time-points  
@@ -793,17 +753,10 @@ matplot(bt1$time,bt1$EN1N2,type="l",lwd=0.3)
 matplot(bt1$time,bt1$EIN1N2,type="l",lwd=0.3)
 \end{lstlisting}
 
-\includegraphics[width=.9\linewidth]{rec6.jpg}
-
 \begin{marginfigure}
 \begin{center}
 \includegraphics[width=\textwidth]{rec6.jpg}
 \end{center}
-
-\begin{verbatim}
-Error: unexpected input in "<<"
-\end{verbatim}
-
 
 \captionof{figure}{Bootstrap samples}
 \label{fig:rec6}
@@ -811,7 +764,7 @@ Error: unexpected input in "<<"
 
 
 \subsection*{Looking at other simulations with dependence}
-\label{sec:orgab45775}
+\label{sec:org6cd199e}
 
 
 Using the normally distributed random effects we plot 4 different settings. We have variance \(0.5\) for all
@@ -911,19 +864,12 @@ title(main ="Scenario IV")
 
 \end{lstlisting}
 
-\includegraphics[width=.9\linewidth]{rec7.jpg}
-
-\begin{marginfigure}
+\begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{rec7.jpg}
 \end{center}
 
-\begin{verbatim}
-Error: unexpected input in "<<"
-\end{verbatim}
-
-
 \captionof{figure}{Bootstrap samples}
 \label{fig:rec7}
-\end{marginfigure}
+\end{figure}
 \end{document}

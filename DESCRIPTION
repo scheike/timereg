@@ -27,7 +27,6 @@ Imports:
     splines,
     survival (>= 2.43-1),
 Suggests:
-    lava.tobit (>= 0.4-7),
     prodlim,
     testthat (>= 0.11),
     ucminf,

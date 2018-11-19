@@ -187,9 +187,6 @@ out <- recurrentMarginal(xr,dr)
 bplot(out,se=TRUE,ylab="marginal mean",col=2)
 #+END_SRC
 
-#+RESULTS: rec1
-[[file:rec1.jpg]]
-
 #+BEGIN_marginfigure
 # +CAPTION: Marginal mean for number of type 1 events, rate for death (panel (a)), rate for type 1 among survivors (panel (b)), and marginal mean (panel (c)) label:fig:rec1
 #+ATTR_LATEX: :width \textwidth :float nil :center t
@@ -200,9 +197,6 @@ bplot(out,se=TRUE,ylab="marginal mean",col=2)
 #+BEGIN_SRC R :exports results
 <<rec1>>
 #+END_SRC
-
-#+RESULTS:
-: Error: unexpected input in "<<"
 
 #+LATEX: \captionof{figure}{Marginal mean for number of type 1 events, rate for death (panel (a)), rate for type 1 among survivors (panel (b)), and marginal mean (panel (c)).}
 label:fig:rec
@@ -225,8 +219,6 @@ out <- recurrentMarginal(xr,dr)
 bplot(out,se=TRUE,ylab="marginal mean",col=1:2)
 #+END_SRC
 
-#+RESULTS: rec2
-[[file:rec2.jpg]]
 
 #+BEGIN_marginfigure
 # +CAPTION: Recurrent events label:fig:rec2
@@ -238,10 +230,6 @@ bplot(out,se=TRUE,ylab="marginal mean",col=1:2)
 #+BEGIN_SRC R :exports results
 <<rec2>>
 #+END_SRC
-
-#+RESULTS:
-: Error: unexpected input in "<<"
-
 
 #+LATEX: \captionof{figure}{Recurrent events}
 label:fig:rec2
@@ -273,9 +261,6 @@ bplot(outX,add=TRUE,col=3)
 
 #+END_SRC
 
-#+RESULTS: rec3
-[[file:rec3.jpg]]
-
 #+BEGIN_marginfigure
 # +CAPTION: Recurrent events label:fig:rec3
 #+ATTR_LATEX: :width \textwidth :float nil :center t
@@ -286,8 +271,6 @@ bplot(outX,add=TRUE,col=3)
 #+BEGIN_SRC R :exports results
 <<rec3>>
 #+END_SRC
-
-
 
 #+LATEX: \captionof{figure}{Recurrent events with cox models for rates.}
 label:fig:rec3
@@ -341,6 +324,21 @@ and estimated by
           	\frac{1}{Y_{1\bullet}^{k-1}(s)} d N_{1\bullet}^{k-1}(s).
 \end{align*}
 
+#+BEGIN_marginfigure
+# +CAPTION: Recurrent events label:fig:rec4
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: rec4
+[[file:rec4.jpg]]
+
+#+ATTR_RAVEL: echo=FALSE,fig=TRUE
+#+BEGIN_SRC R :exports results
+<<rec4>>
+#+END_SRC
+
+#+LATEX: \captionof{figure}{Recurrent events: probability of exceeding k events}
+label:fig:rec4
+#+END_marginfigure
+
 
 #+NAME: rec4
 #+BEGIN_SRC R :exports both :results output graphics :file rec4.jpg :ravel fig=TRUE,include=FALSE 
@@ -353,40 +351,6 @@ oo <- prob.exceedRecurrent(rr,1)
 bplot(oo)
 #+END_SRC
 
-#+RESULTS: rec4
-[[file:rec4.jpg]]
-
-#+BEGIN_marginfigure
-# +CAPTION: Recurrent events label:fig:rec4
-#+ATTR_LATEX: :width \textwidth :float nil :center t
-#+RESULTS: rec4
-[[file:rec4.jpg]]
-
-#+ATTR_RAVEL: echo=FALSE,fig=TRUE
-#+BEGIN_SRC R :exports results
-<<rec4>>
-#+END_SRC
-
-#+RESULTS:
-: Error: unexpected input in "<<"
-
-
-#+LATEX: \captionof{figure}{Recurrent events: probability of exceeding k events}
-label:fig:rec4
-#+END_marginfigure
-
-
-Mean and variance of number of recurrent events 
-#+NAME: rec4MV
-#+BEGIN_SRC R :exports both :results output graphics :file rec4MV.jpg :ravel fig=TRUE,include=FALSE 
-par(mfrow=c(1,2))
-with(oo,plot(time,mu,col=2,type="l"))
-#
-with(oo,plot(time,varN,type="l"))
-#+END_SRC
-
-#+RESULTS: rec4MV
-[[file:rec4MV.jpg]]
 
 #+BEGIN_marginfigure
 # +CAPTION: Recurrent events label:fig:rec4MV
@@ -399,13 +363,19 @@ with(oo,plot(time,varN,type="l"))
 <<rec4MV>>
 #+END_SRC
 
-#+RESULTS:
-: Error: unexpected input in "<<"
-
-
 #+LATEX: \captionof{figure}{Recurrent events: probability of exceeding k events}
 label:fig:rec4MV
 #+END_marginfigure
+
+
+Mean and variance of number of recurrent events 
+#+NAME: rec4MV
+#+BEGIN_SRC R :exports both :results output graphics :file rec4MV.jpg :ravel fig=TRUE,include=FALSE 
+par(mfrow=c(1,2))
+with(oo,plot(time,mu,col=2,type="l"))
+#
+with(oo,plot(time,varN,type="l"))
+#+END_SRC
 
 
 
@@ -420,9 +390,6 @@ legend("topleft",legend=colnames(oo$pe1e2),lty=1:nc,col=1:nc)
 #+END_SRC
 
 
-#+RESULTS: rec4Bi
-[[file:rec4Bi.jpg]]
-
 #+BEGIN_marginfigure
 # +CAPTION: Recurrent events label:fig:rec4Bi
 #+ATTR_LATEX: :width \textwidth :float nil :center t
@@ -433,9 +400,6 @@ legend("topleft",legend=colnames(oo$pe1e2),lty=1:nc,col=1:nc)
 #+BEGIN_SRC R :exports results
 <<rec4Bi>>
 #+END_SRC
-
-#+RESULTS:
-: Error: unexpected input in "<<"
 
 
 #+LATEX: \captionof{figure}{Recurrent events: probability of exceeding k events}
@@ -542,8 +506,6 @@ covrpS <- covarianceRecurrentS(rr,1,2,status="status",death="death",
         start="entry",stop="time",strata="strata",id="id",names.count="Count")
 #+END_SRC
 
-#+RESULTS: rec5
-[[file:rec5.jpg]]
 
 #+BEGIN_marginfigure
 # +CAPTION: Recurrent events label:fig:rec5
@@ -555,9 +517,6 @@ covrpS <- covarianceRecurrentS(rr,1,2,status="status",death="death",
 #+BEGIN_SRC R :exports results
 <<rec5>>
 #+END_SRC
-
-#+RESULTS:
-: Error: unexpected input in "<<"
 
 
 #+LATEX: \captionof{figure}{Covariance between events}
@@ -691,9 +650,6 @@ matplot(bt1$time,bt1$EN1N2,type="l",lwd=0.3)
 matplot(bt1$time,bt1$EIN1N2,type="l",lwd=0.3)
 #+END_SRC
 
-#+RESULTS: rec6
-[[file:rec6.jpg]]
-
 #+BEGIN_marginfigure
 # +CAPTION: Recurrent events label:fig:rec6
 #+ATTR_LATEX: :width \textwidth :float nil :center t
@@ -704,10 +660,6 @@ matplot(bt1$time,bt1$EIN1N2,type="l",lwd=0.3)
 #+BEGIN_SRC R :exports results
 <<rec6>>
 #+END_SRC
-
-#+RESULTS:
-: Error: unexpected input in "<<"
-
 
 #+LATEX: \captionof{figure}{Bootstrap samples} 
 label:fig:rec6
@@ -811,11 +763,8 @@ in a vector $\rho=(\rho_{12},\rho_{13},\rho_{23})$.
   title(main ="Scenario IV")
 
 #+END_SRC
-
-#+RESULTS: rec7
-[[file:rec7.jpg]]
-
-#+BEGIN_marginfigure
+ 
+#+BEGIN_figure
 # +CAPTION: Recurrent events label:fig:rec7
 #+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: rec7
@@ -826,13 +775,9 @@ in a vector $\rho=(\rho_{12},\rho_{13},\rho_{23})$.
 <<rec7>>
 #+END_SRC
 
-#+RESULTS:
-: Error: unexpected input in "<<"
-
-
 #+LATEX: \captionof{figure}{Bootstrap samples} 
 label:fig:rec7
-#+END_marginfigure
+#+END_figure
 
 
 
