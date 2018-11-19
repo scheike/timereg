@@ -141,6 +141,10 @@ Attaching package: ‘mets’
 The following object is masked _by_ ‘.GlobalEnv’:
 
     object.defined
+
+The following object is masked from ‘package:survival’:
+
+    concordance
 id: 1
   entry time  status rr dtime fdeath death start stop  x     strata
 1 0     133.1 0      1  133.1 1      1     0     133.1 1.185 0     
@@ -187,9 +191,6 @@ out <- recurrentMarginal(xr,dr)
 bplot(out,se=TRUE,ylab="marginal mean",col=2)
 #+END_SRC
 
-#+RESULTS: rec1
-[[file:rec1.jpg]]
-
 #+BEGIN_marginfigure
 # +CAPTION: Marginal mean for number of type 1 events, rate for death (panel (a)), rate for type 1 among survivors (panel (b)), and marginal mean (panel (c)) label:fig:rec1
 #+ATTR_LATEX: :width \textwidth :float nil :center t
@@ -224,9 +225,6 @@ bplot(rxr,se=TRUE,robust=TRUE,add=TRUE,col=1:2)
 out <- recurrentMarginal(xr,dr)
 bplot(out,se=TRUE,ylab="marginal mean",col=1:2)
 #+END_SRC
-
-#+RESULTS: rec2
-[[file:rec2.jpg]]
 
 #+BEGIN_marginfigure
 # +CAPTION: Recurrent events label:fig:rec2
@@ -274,9 +272,6 @@ outX <- recmarg(xr,dr,Xr=1,Xd=1)
 bplot(outX,add=TRUE,col=3)
 
 #+END_SRC
-
-#+RESULTS: rec3
-[[file:rec3.jpg]]
 
 #+BEGIN_marginfigure
 # +CAPTION: Recurrent events label:fig:rec3
@@ -356,9 +351,6 @@ oo <- prob.exceedRecurrent(rr,1)
 bplot(oo)
 #+END_SRC
 
-#+RESULTS: rec4
-[[file:rec4.jpg]]
-
 #+BEGIN_marginfigure
 # +CAPTION: Recurrent events label:fig:rec4
 #+ATTR_LATEX: :width \textwidth :float nil :center t
@@ -387,9 +379,6 @@ with(oo,plot(time,mu,col=2,type="l"))
 ###
 with(oo,plot(time,varN,type="l"))
 #+END_SRC
-
-#+RESULTS: rec4MV
-[[file:rec4MV.jpg]]
 
 #+BEGIN_marginfigure
 # +CAPTION: Recurrent events label:fig:rec4MV
@@ -422,9 +411,6 @@ nc <- ncol(oo$pe1e2)
 legend("topleft",legend=colnames(oo$pe1e2),lty=1:nc,col=1:nc)
 #+END_SRC
 
-
-#+RESULTS: rec4Bi
-[[file:rec4Bi.jpg]]
 
 #+BEGIN_marginfigure
 # +CAPTION: Recurrent events label:fig:rec4Bi
@@ -544,9 +530,6 @@ plot(covrp)
 covrpS <- covarianceRecurrentS(rr,1,2,status="status",death="death",
         start="entry",stop="time",strata="strata",id="id",names.count="Count")
 #+END_SRC
-
-#+RESULTS: rec5
-[[file:rec5.jpg]]
 
 #+BEGIN_marginfigure
 # +CAPTION: Recurrent events label:fig:rec5
@@ -694,9 +677,6 @@ matplot(bt1$time,bt1$EN1N2,type="l",lwd=0.3)
 matplot(bt1$time,bt1$EIN1N2,type="l",lwd=0.3)
 #+END_SRC
 
-#+RESULTS: rec6
-[[file:rec6.jpg]]
-
 #+BEGIN_marginfigure
 # +CAPTION: Recurrent events label:fig:rec6
 #+ATTR_LATEX: :width \textwidth :float nil :center t
@@ -814,9 +794,6 @@ in a vector $\rho=(\rho_{12},\rho_{13},\rho_{23})$.
   title(main ="Scenario IV")
 
 #+END_SRC
-
-#+RESULTS: rec7
-[[file:rec7.jpg]]
 
 #+BEGIN_marginfigure
 # +CAPTION: Recurrent events label:fig:rec7
