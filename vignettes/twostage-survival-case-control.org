@@ -198,23 +198,12 @@ plot(aa)
 lines(tscce$baseline,col=2)
 #+END_SRC
 
-#+RESULTS: surv-cc-base
-[[file:surv-cc-base.jpg]]
 
 #+BEGIN_marginfigure
-#+CAPTION: Baseline based on profiling out baseline from case-control data label:fig:surv-cc-base
+# +CAPTION: Baseline based on profiling out baseline from case-control data label:fig:surv-cc-base
 #+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: surv-cc-base
 [[file:surv-cc-base.jpg]]
-
-#+ATTR_RAVEL: echo=FALSE,fig=TRUE
-#+BEGIN_SRC R :exports results
-<<surv-cc-base>>
-#+END_SRC
-
-#+RESULTS:
-
-
 
 #+LATEX: \captionof{figure}{Baseline with robust standard errors. Black based on cohort data, red based on profiling for case-control data.}
 label:fig:robcox1

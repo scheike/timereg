@@ -137,11 +137,6 @@ Looking at the plot  with robust standard errors
 #+RESULTS: robcox1
 [[file:robcox1.jpg]]
 
-#+ATTR_RAVEL: echo=FALSE,fig=TRUE
-#+BEGIN_SRC R :exports results
-<<robcox1>>
-#+END_SRC
-
 #+LATEX: \captionof{figure}{Baseline with robust standard errors.}
 label:fig:robcox1
 #+END_marginfigure
@@ -171,12 +166,6 @@ One can also make survival prediction with robust standard errors using the phre
 #+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: robcox2
 [[file:robcox2.jpg]]
-
-#+ATTR_RAVEL: echo=FALSE,fig=TRUE
-#+BEGIN_SRC R :exports results
-<<robcox2>>
-#+END_SRC
-
 
 #+LATEX: \captionof{figure}{Survival predictions with robust standard errors for Cox model}
 label:fig:robcox2
@@ -250,11 +239,6 @@ the model.
 #+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: rob1
 [[file:robgofcox1.jpg]]
-
-#+ATTR_RAVEL: echo=FALSE,fig=TRUE
-#+BEGIN_SRC R :exports results
-<<robgofcox1>>
-#+END_SRC
 
 #+LATEX: \captionof{figure}{Goodness of fit for clustered Cox model.}
 label:fig:robcgofox1
