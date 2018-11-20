@@ -75,13 +75,15 @@ likelihood assuming that the marginals are known.
 \examples{
 library(mets)
 data("prt",package="mets")
-margp <- coxph(Surv(time,status==1)~factor(country),data=prt)
-fitco <- survival.twostage(margp,data=prt,clusters=prt$id)
+prtsam <- blocksample(prt,idvar="id",1e3,replace=FALSE)
+margp <- coxph(Surv(time,status==1)~factor(country),data=prtsam)
+fitco <- survival.twostage(margp,data=prtsam,clusters=prtsam$id)
 summary(fitco)
 
-des <- model.matrix(~-1+factor(zyg),data=prt); 
-fitco <- survival.twostage(margp,data=prt,theta.des=des,clusters=prt$id)
+des <- model.matrix(~-1+factor(zyg),data=prtsam); 
+fitco <- survival.twostage(margp,data=prtsam,theta.des=des,clusters=prtsam$id)
 summary(fitco)
+rm(prtsam)
 
 dfam <- simSurvFam(1000)
 dfam <- fast.reshape(dfam,var=c("x","time","status"))

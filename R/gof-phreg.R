@@ -114,29 +114,34 @@ return(out)
 ##' @examples
 ##' library(mets)
 ##' data(TRACE)
+##' set.seed(1)
+##' TRACEsam <- blocksample(TRACE,idvar="id",replace=FALSE,100)
 ##' 
-##' dcut(TRACE)  <- ~. 
-##' mm <- model.matrix(~-1+factor(wmicat.4),data=TRACE)
-##' m1 <- gofM.phreg(Surv(time,status==9)~vf+chf+wmi,data=TRACE,modelmatrix=mm) 
+##' dcut(TRACEsam)  <- ~. 
+##' mm <- model.matrix(~-1+factor(wmicat.4),data=TRACEsam)
+##' m1 <- gofM.phreg(Surv(time,status==9)~vf+chf+wmi,data=TRACEsam,modelmatrix=mm)
 ##' summary(m1)
+##' if (interactive()) {
 ##' par(mfrow=c(2,2))
 ##' plot(m1)
+##' }
 ##' 
-##' m1 <- gofM.phreg(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE,modelmatrix=mm) 
+##' m1 <- gofM.phreg(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACEsam,modelmatrix=mm) 
 ##' summary(m1)
 ##' 
 ##' ## cumulative sums in covariates, via design matrix mm 
-##' mm <- cumContr(TRACE$wmi,breaks=10,equi=TRUE)
-##' m1 <- gofM.phreg(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACE,
+##' mm <- cumContr(TRACEsam$wmi,breaks=10,equi=TRUE)
+##' m1 <- gofM.phreg(Surv(time,status==9)~strata(vf)+chf+wmi,data=TRACEsam,
 ##' 		  modelmatrix=mm,silent=0)
 ##' summary(m1)
 ##' 
-##' ## cumulative sums in covariates, via design matrix mm 
-##' m1 <- gofZ.phreg(Surv(time,status==9)~strata(vf)+chf+wmi+age,data=TRACE,
+##' ## cumulative sums in covariates, via design matrix mm
+##' \donttest{ ## Reduce Ex.Timings
+##' m1 <- gofZ.phreg(Surv(time,status==9)~strata(vf)+chf+wmi+age,data=TRACEsam,
 ##'                  vars=c("wmi","age"))
-##' summary(m1)
+##' summary(m1) 
 ##' plot(m1,type="z")
-##' 
+##' }
 ##' @aliases cumContr gofZ.phreg
 ##' @export
 gofM.phreg  <- function(formula,data,offset=NULL,weights=NULL,modelmatrix=NULL,
