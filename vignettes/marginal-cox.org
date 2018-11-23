@@ -17,35 +17,37 @@
 
 * Overview 
 
-A basic component for our modelling is that all these models are build around
-marginals that on Cox form. The marginal Cox model can be fitted efficiently
+A basic component for our modelling of multivariate survival data is that many models are 
+build around marginals that on Cox form. The marginal Cox model can be fitted efficiently
 in the mets package. 
 
 The basic models assumes that each subject has a marginal on Cox-form
 \[ 
-\lambda_{s(k,i)}(t) \exp( X_{ki}^T \beta).
+\lambda_{g(k,i)}(t) \exp( X_{ki}^T \beta).
 \] 
-where \( s(k,i) \) gives the strata for the subject. 
+where \( g(k,i) \) gives the strata for the subject. 
 
-We here discuss the 
-  - robust standard errors of 
-    - regression parameters
-    - baseline 
+We here discuss and show how to get 
+  - robust standard errors of  
+    - the regression parameters
+    - the baseline 
+and how to do goodness of fit test using 
   - cumulative residuals score test 
 
 First we generate some data from the Clayton-Oakes model, with \( 5 \) members
 in each cluster and a variance parameter at \( 2 \) 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
-library(mets)
-set.seed(1000) # to control output in simulatins for p-values below.
+
+#+BEGIN_SRC R :exports code :ravel echo=FALSE
+ library(mets)
+ options(warn=-1)
+ set.seed(1000) # to control output in simulatins for p-values below.
  n <- 1000
  k <- 5
  theta <- 2
  data <- simClaytonOakes(n,k,theta,0.3,3)
- head(data)
 #+END_SRC
 
-#+RESULTS[<2018-09-10 14:18:32> e57449b569f9ce4837f0ba822c48463182fa33ac]:
+#+RESULTS:
 #+begin_example
 Loading required package: timereg
 Loading required package: survival
@@ -58,39 +60,55 @@ Attaching package: ‘mets’
 The following object is masked _by_ ‘.GlobalEnv’:
 
     object.defined
-       time status x cluster   mintime lefttime truncated
-1 0.1406317      1 0       1 0.1406317        0         0
-2 0.4593768      1 0       1 0.1406317        0         0
-3 1.0952678      1 0       1 0.1406317        0         0
-4 0.2057554      1 1       1 0.1406317        0         0
-5 0.6776620      1 0       1 0.1406317        0         0
-6 1.6093755      1 0       2 0.1092390        0         0
 #+end_example
 
-Now fitting the and producing robust standard errors for both 
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+ head(data)
+#+END_SRC
+
+#+RESULTS:
+:        time status x cluster   mintime lefttime truncated
+: 1 0.1406317      1 0       1 0.1406317        0         0
+: 2 0.4593768      1 0       1 0.1406317        0         0
+: 3 1.0952678      1 0       1 0.1406317        0         0
+: 4 0.2057554      1 1       1 0.1406317        0         0
+: 5 0.6776620      1 0       1 0.1406317        0         0
+: 6 1.6093755      1 0       2 0.1092390        0         0
+
+The data is on has one subject per row.
+#+BEGIN_mnote
++ *=time=* :: time of event 
++ *=status=* :: 1 for event and 0 for censoring 
++ *=x=* :: x is a binary covariate 
++ *=cluster=* :: cluster 
+#+END_mnote
+
+
+Now we fit the model and produce robust standard errors for both 
 regression parameters and baseline.
 
-Note that 
+First, recall that the baseline for strata $g$ is asymptotically equivalent to
 \begin{align}
-\hat A_s(t) - A_s(t)  & = \sum_k \sum_i \int_0^t 1/S_{s} dM_{ki}^s  - P^s(t) \beta_k 
+\hat A_g(t) - A_g(t)  & = \sum_k \sum_i \int_0^t \frac{1}{S_{0,g}} dM_{ki}^g  - P^g(t) \beta_k 
 \end{align}
-with $P^s(t)$ a derivative wrt to $\beta$, and 
+with $P^g(t)$ a derivative wrt to $\beta$, and 
 \begin{align}
-\hat \beta  - \beta  & = \sum_k ( \sum_i \int_0^\tau (Z_{ik} - E_{s}) dM_{ik}^s )
+\hat \beta  - \beta  & = \sum_k ( \sum_i \int_0^\tau (Z_{ik} - E_{g}) dM_{ik}^g )
 \end{align}
 with 
 \begin{align}
- M_{ki}(t) &  = N_{ki}(t) - \int_0^t Y_{ki}(s) \exp( Z_{ki} \beta) d \Lambda_{s(ki)}(t)
+ M_{ki}^g(t) &  = N_{ki}(t) - \int_0^t Y_{ki}(s) \exp( Z_{ki} \beta) d \Lambda_{g(k,i)}(t),
 \end{align}
 the basic 0-mean processes, that are martingales in the iid setting. 
        
-The variance of the baseline of strata s  is
+The variance of the baseline of strata g  is estimated by 
 \begin{align}
-\sum_{k} ( \sum_i \int_0^t 1/S_{0s(ki)} d\hat M_{ki}^s )^2
+\sum_{k} ( \sum_i \int_0^t \frac{1}{S_{0,g(k,i)}} d\hat M_{ki}^g )^2
 \end{align}
 that can be computed using the particular structure 
 \begin{align}
-d \hat M_{ik}(t) & =  dN_{ik}(t) -  1/S_{0s(i,k)} \exp(Z_{ik} \beta) dN_{s.}(t) 
+d \hat M_{ik}^g(t) & =  dN_{ik}(t) -  \frac{1}{S_{0,g(i,k)}} \exp(Z_{ik} \beta) dN_{g.}(t) 
 \end{align}
 
 This robust variance of the baseline and the iid decomposition for $\beta$ is
@@ -100,7 +118,20 @@ computed in mets as:
    summary(out)
    # robust standard errors attached to output
    rob <- robust.phreg(out)
-     
+#+END_SRC
+
+#+RESULTS:
+: 
+:     n events
+:  5000   4854
+: 
+:  1000 clusters
+: 
+:   Estimate     S.E.  dU^-1/2 P-value
+: x 0.287859 0.028177 0.028897       0
+
+We can get the iid decomposition of the $\hat \beta - \beta$ by 
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
    # making iid decomposition of regression parameters
    betaiid <- iid(out)
    head(betaiid)
@@ -109,28 +140,19 @@ computed in mets as:
    # same as 
 #+END_SRC
 
-#+RESULTS[<2018-09-10 14:32:08> 68b9dea2171106e9be0a3b396f0061f6e3d50238]:
-#+begin_example
+#+RESULTS:
+:            [,1]
+: 1 -3.461601e-04
+: 2 -1.449189e-03
+: 3 -3.898156e-05
+: 4  4.215605e-04
+: 5  3.425390e-04
+: 6 -7.706668e-05
+:            [,1]
+: [1,] 0.02817714
 
-    n events
- 5000   4854
 
- 1000 clusters
-
-  Estimate     S.E.  dU^-1/2 P-value
-x 0.287859 0.028177 0.028897       0
-           [,1]
-1 -3.461601e-04
-2 -1.449189e-03
-3 -3.898156e-05
-4  4.215605e-04
-5  3.425390e-04
-6 -7.706668e-05
-           [,1]
-[1,] 0.02817714
-#+end_example
-
-Looking at the plot  with robust standard errors 
+We now look at the plot  with robust standard errors 
 
 #+BEGIN_marginfigure
 #+ATTR_LATEX: :width \textwidth :float nil :center t
@@ -143,20 +165,15 @@ label:fig:robcox1
 
 #+NAME: robcox1
 #+BEGIN_SRC R :exports both :results output graphics :file robcox1.jpg :ravel fig=TRUE,include=FALSE 
-  bplot(rob,se=TRUE,robust=TRUE)
+  bplot(rob,se=TRUE,robust=TRUE,col=3)
 #+END_SRC
 
 
-One can also make survival prediction with robust standard errors using the phreg.
-
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
-   pp <-  predict(out,data[1:20,],se=TRUE,robust=TRUE)
-#+END_SRC
-
-#+RESULTS:
+We can also make survival prediction with robust standard errors using the phreg.
 
 #+NAME: robcox2
 #+BEGIN_SRC R :exports both :results output graphics :file robcox2.jpg :ravel fig=TRUE,include=FALSE 
+  pp <-  predict(out,data[1:20,],se=TRUE,robust=TRUE)
   plot(pp,se=TRUE,whichx=1:10)
 #+END_SRC
 
@@ -196,24 +213,22 @@ attr(,"class")
 
 
 
-
-
 ** Goodness of fit 
- 
 
 The observed score process is given by 
 \begin{align}
-U(t,\hat \beta) & = \sum_k \sum_i \int_0^t (Z_{ki} - \hat E_s ) d \hat M_{ki}^s 
+U(t,\hat \beta) & = \sum_k \sum_i \int_0^t (Z_{ki} - \hat E_g ) d \hat M_{ki}^g 
 \end{align}
-where $s$ is strata, this has as iid decomposition as 
+where $g$ is strata $g(k,i)$. The observed score has the iid decomposition 
 \begin{align}
-\hat U(t) = \sum_k \sum_i  \int_0^t (Z_{ki} - E_s) dM_{ki}^s  - \sum_k  I_t \beta_k 
+\hat U(t) = \sum_k \sum_i  \int_0^t (Z_{ki} - E_g) dM_{ki}^g  - \sum_k  I(t) \beta_k 
 \end{align}
 where $\beta_k$ is the iid decomposition of the score process for the true $\beta$
 \begin{align}
-\beta_k  & =  \sum_i \int_0^t (Z_{ki} - E_s ) d  M_{ki}^s 
+\beta_k  & =  \sum_i \int_0^\tau (Z_{ki} - E_g ) d  M_{ki}^g 
 \end{align}
-and $I_t$ is the derivative of the total score with respect to $\beta$. 
+and $I(t)$ is the derivative of the total score, $\hat U(t,\beta))$, 
+with respect to $\beta$ evaluated at time $t$. 
 
 This observed score can be resampled given it is on iid form in terms of 
 clusters. 
@@ -235,9 +250,8 @@ The p-value reflects wheter the observed score process is consistent with
 the model. 
 
 #+BEGIN_marginfigure
-# +CAPTION: Goodness of fit for clustered Cox model label:fig:robgofcox1
 #+ATTR_LATEX: :width \textwidth :float nil :center t
-#+RESULTS: rob1
+#+RESULTS: robgofcox1
 [[file:robgofcox1.jpg]]
 
 #+LATEX: \captionof{figure}{Goodness of fit for clustered Cox model.}
@@ -248,7 +262,6 @@ label:fig:robcgofox1
 #+BEGIN_SRC R :exports both :results output graphics :file robgofcox1.jpg :ravel fig=TRUE,include=FALSE 
   plot(gout)
 #+END_SRC
-
 
 
 **  Cluster stratified Cox models
@@ -266,7 +279,6 @@ The model can be thought of as
 \lambda_k(t) \exp( X_{ki}^T \beta)
 \] 
 where \( \lambda_k(t) \) is some cluster specific baseline. 
-
 
 The regression coefficient \( \beta \) can be estimated by using the 
 partial likelihood for clusters. 
@@ -295,8 +307,5 @@ summary(gg)
 : Cumulative score process test for Proportionality:
 :   Sup|U(t)|  pval
 : x  27.55616 0.195
-
- 
-
 
 

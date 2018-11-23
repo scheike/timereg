@@ -1427,7 +1427,7 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
 }# }}}
 
 ##' @export
-plot.onf.region <- function(x,band,add=TRUE,polygon=TRUE,cols=1,...)
+plot.conf.region <- function(x,band,add=TRUE,polygon=TRUE,cols=1,...)
 {# {{{
 nl <- cbind(x,band[,1])
 ul <- cbind(x,band[,2])
