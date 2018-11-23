@@ -1930,7 +1930,7 @@ colnames(probs) <- c(paste("N=",exceed[1],sep=""),paste("exceed>=",exceed[-1],se
 colnames(se.probs) <- c(paste("N=",exceed[1],sep=""),paste("exceed>=",exceed[-1],sep=""))
 
 return(list(time=times,times=times,prob=probs,se.prob=se.probs,meanN=meanN,probs.orig=probs.orig[,-1],
-	    se.lower=se.lower,se.upper=se.upper,meanN2=meanN2,varN=meanN2-meanN^2))
+	    se.lower=se.lower,se.upper=se.upper,meanN2=meanN2,varN=meanN2-meanN^2,exceed=exceed[-1]))
 }# }}}
 
 ##' @export
@@ -1992,11 +1992,15 @@ pstrata[risk1==0] <- 0
   cumhaz <- pcumhaz[xx$jumps+1,]
   mu     <- mu[xx$jumps+1]
 
+  exceed.name <- paste("Exceed>=",vals1+1,sep="")
+
   out=list(cumhaz=cumhaz,time=cumhaz[,1],
 	varN=EN2-mu^2,mu=mu,
 	nstrata=base1.2$nstrata,strata=base1.2$strata[xx$jumps+1],
 	jumps=1:nrow(cumhaz),
-        strata.name=base1.2$strata.name,strata.level=base1.2$strata.level)
+	strat.cox.name=base1.2$strata.name,
+	strat.cox.level=base1.2$strata.level,exceed=vals1+1,
+        strata.name=exceed.name,strata.level=exceed.name)
 
 ### use recurrentMarginal estimator til dette via strata i base1 
 ### strata og count skal passe sammen

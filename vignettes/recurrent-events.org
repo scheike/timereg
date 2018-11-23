@@ -149,13 +149,16 @@ Loading required package: timereg
 Loading required package: survival
 Loading required package: lava
 lava version 1.6.3
-mets version 1.2.4
+mets version 1.2.5
 
 Attaching package: ‘mets’
 
 The following object is masked _by_ ‘.GlobalEnv’:
 
     object.defined
+
+Warning message:
+S3 method ‘plot.onf.region’ was declared in NAMESPACE but not found
 id: 1
   entry time  status rr dtime fdeath death start stop  x     strata
 1 0     133.1 0      1  133.1 1      1     0     133.1 1.185 0     
