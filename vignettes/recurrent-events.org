@@ -1,4 +1,4 @@
-#+TITLE: Recurrent Events 
+#+TITLE: Recurrent Events
 #+AUTHOR: Klaus Holst & Thomas Scheike
 #+PROPERTY: header-args:R  :session *R* :cache no :width 550 :height 450
 #+PROPERTY: header-args  :eval never-export :exports both :results output :tangle yes :comments yes 
@@ -15,7 +15,7 @@
 ----- 
 # +LaTeX: \clearpage
 
-* Overview 
+* Overview
 
 For recurrent events data it is often of interest to compute basis descriptive
 quantities as a first go at getting some basic understanding of the phenonmenon
@@ -127,20 +127,9 @@ as in Gosh & Lin (2000)
 
 We start by generating some data to illustrate the computation of the marginal mean 
 
-#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+#+BEGIN_SRC R :exports code :ravel echo=FALSE
 library(mets)
 set.seed(1000) # to control output in simulatins for p-values below.
-
-data(base1cumhaz)
-data(base4cumhaz)
-data(drcumhaz)
-ddr <- drcumhaz
-base1 <- base1cumhaz
-base4 <- base4cumhaz
-rr <- simRecurrent(1000,base1,death.cumhaz=ddr)
-rr$x <- rnorm(nrow(rr)) 
-rr$strata <- floor((rr$id-0.01)/500)
-dlist(rr,.~id| id %in% c(1,7,9))
 #+END_SRC
 
 #+RESULTS:
@@ -156,9 +145,24 @@ Attaching package: ‘mets’
 The following object is masked _by_ ‘.GlobalEnv’:
 
     object.defined
+#+end_example
 
-Warning message:
-S3 method ‘plot.onf.region’ was declared in NAMESPACE but not found
+
+#+BEGIN_SRC R :results output :exports both :session *R* :cache no 
+data(base1cumhaz)
+data(base4cumhaz)
+data(drcumhaz)
+ddr <- drcumhaz
+base1 <- base1cumhaz
+base4 <- base4cumhaz
+rr <- simRecurrent(1000,base1,death.cumhaz=ddr)
+rr$x <- rnorm(nrow(rr)) 
+rr$strata <- floor((rr$id-0.01)/500)
+dlist(rr,.~id| id %in% c(1,7,9))
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
 id: 1
   entry time  status rr dtime fdeath death start stop  x     strata
 1 0     133.1 0      1  133.1 1      1     0     133.1 1.185 0     
@@ -384,15 +388,13 @@ label:fig:rec4MV
 
 ** Multiple events 
 
-We now generate recurrent events with two types of events. Here we generate data
-where the survivors have dependent number of events of type "1" and "2"
+We now generate recurrent events with two types of events. We start by
+generating data as before where all events are independent. 
 
 #+BEGIN_SRC R :results output :exports both :session *R* :cache no 
-cor.mat <- corM <- rbind(c(1.0, 0.6, 0.9), c(0.6, 1.0, 0.5), c(0.9, 0.5, 1.0))
 rr <- simRecurrent(1000,base1,cumhaz2=base4,death.cumhaz=ddr)
 rr <-  count.history(rr)
 dtable(rr,~death+status)
-
 #+END_SRC
 
 #+RESULTS:

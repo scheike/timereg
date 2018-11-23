@@ -53,7 +53,7 @@ Loading required package: timereg
 Loading required package: survival
 Loading required package: lava
 lava version 1.6.3
-mets version 1.2.4
+mets version 1.2.5
 
 Attaching package: ‘mets’
 
