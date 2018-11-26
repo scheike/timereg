@@ -5,7 +5,8 @@
 \title{Estimation of twostage model with cluster truncation in bivariate situation}
 \usage{
 twin.clustertrunc(survformula, data = sys.parent(), theta.des = NULL,
-  clusters = NULL, var.link = 1, Nit = 10, final.fitting = FALSE, ...)
+  clusters = NULL, var.link = 1, Nit = 10, final.fitting = FALSE,
+  ...)
 }
 \arguments{
 \item{survformula}{Formula with survival model aalen or cox.aalen, some limitiation on model specification due to call of fast.reshape (so for example interactions and * and : do not work here, expand prior to call)}

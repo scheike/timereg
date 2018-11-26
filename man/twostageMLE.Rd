@@ -4,8 +4,9 @@
 \alias{twostageMLE}
 \title{Twostage survival model fitted by pseudo MLE}
 \usage{
-twostageMLE(margsurv, data = sys.parent(), theta = NULL, theta.des = NULL,
-  var.link = 0, method = "NR", no.opt = FALSE, weights = NULL, ...)
+twostageMLE(margsurv, data = sys.parent(), theta = NULL,
+  theta.des = NULL, var.link = 0, method = "NR", no.opt = FALSE,
+  weights = NULL, ...)
 }
 \arguments{
 \item{margsurv}{Marginal model from phreg}

@@ -6,8 +6,8 @@
 \title{Simple linear spline}
 \usage{
 dspline(data, y = NULL, x = NULL, breaks = 4, probs = NULL,
-  equi = FALSE, regex = mets.options()$regex, sep = NULL, na.rm = TRUE,
-  labels = NULL, all = FALSE, ...)
+  equi = FALSE, regex = mets.options()$regex, sep = NULL,
+  na.rm = TRUE, labels = NULL, all = FALSE, ...)
 }
 \arguments{
 \item{data}{if x is formula or names for data frame then data frame is needed.}

@@ -4,11 +4,11 @@
 \alias{random.cif}
 \title{Random effects model for competing risks data}
 \usage{
-random.cif(cif, data, cause = NULL, cif2 = NULL, cause1 = 1, cause2 = 1,
-  cens.code = NULL, cens.model = "KM", Nit = 40, detail = 0,
-  clusters = NULL, theta = NULL, theta.des = NULL, sym = 1, step = 1,
-  same.cens = FALSE, var.link = 0, score.method = "fisher.scoring",
-  entry = NULL, trunkp = 1, ...)
+random.cif(cif, data, cause = NULL, cif2 = NULL, cause1 = 1,
+  cause2 = 1, cens.code = NULL, cens.model = "KM", Nit = 40,
+  detail = 0, clusters = NULL, theta = NULL, theta.des = NULL,
+  sym = 1, step = 1, same.cens = FALSE, var.link = 0,
+  score.method = "fisher.scoring", entry = NULL, trunkp = 1, ...)
 }
 \arguments{
 \item{cif}{a model object from the comp.risk function with the 

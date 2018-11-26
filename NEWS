@@ -1,5 +1,10 @@
 #-*- mode: org -*-
 
+* Version 1.2.6    <2018-11-18 Sun>
+  - Prototype of wildbootstrap for Cox regression with 
+    - confidenence bands for baseline
+    - with confidenence bands cumulative incidence for two cox's 
+
 * Version 1.2.5    <2018-11-18 Sun>
   - Updated predict function for phreg 
     - with plotting functionality 
