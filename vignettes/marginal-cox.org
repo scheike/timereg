@@ -94,19 +94,20 @@ First, recall that the baseline for strata $g$ is asymptotically equivalent to
 \end{align}
 with $P^g(t)$ a derivative wrt to $\beta$, and 
 \begin{align}
-\hat \beta  - \beta  & = \sum_k ( \sum_i \int_0^\tau (Z_{ik} - E_{g}) dM_{ik}^g )
+\hat \beta  - \beta  & = \sum_k ( \sum_i \int_0^\tau (Z_{ik} - E_{g}) dM_{ik}^g ) = \sum_k \beta_{k} 
 \end{align}
 with 
 \begin{align}
  M_{ki}^g(t) &  = N_{ki}(t) - \int_0^t Y_{ki}(s) \exp( Z_{ki} \beta) d \Lambda_{g(k,i)}(t),
+ \beta_{k} & =  \sum_i \int_0^\tau (Z_{ik} - E_{g}) dM_{ik}^g 
 \end{align}
 the basic 0-mean processes, that are martingales in the iid setting. 
        
 The variance of the baseline of strata g  is estimated by 
 \begin{align}
-\sum_{k} ( \sum_i \int_0^t \frac{1}{S_{0,g(k,i)}} d\hat M_{ki}^g )^2
+\sum_{k} ( \sum_i \int_0^t \frac{1}{S_{0,g(k,i)}} d\hat M_{ki}^g - P^g(t) \beta_k )^2
 \end{align}
-that can be computed using the particular structure 
+that can be computed using the particular structure of 
 \begin{align}
 d \hat M_{ik}^g(t) & =  dN_{ik}(t) -  \frac{1}{S_{0,g(i,k)}} \exp(Z_{ik} \beta) dN_{g.}(t) 
 \end{align}

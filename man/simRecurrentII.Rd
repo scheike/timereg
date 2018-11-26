@@ -5,9 +5,9 @@
 \alias{simRecurrentIII}
 \title{Simulation of recurrent events data based on cumulative hazards II}
 \usage{
-simRecurrentII(n, cumhaz, cumhaz2, death.cumhaz = NULL,
-  gap.time = FALSE, max.recurrent = 100, dhaz = NULL, haz2 = NULL,
-  dependence = 0, var.z = 0.22, cor.mat = NULL, cens = NULL, ...)
+simRecurrentII(n, cumhaz, cumhaz2, death.cumhaz = NULL, gap.time = FALSE,
+  max.recurrent = 100, dhaz = NULL, haz2 = NULL, dependence = 0,
+  var.z = 0.22, cor.mat = NULL, cens = NULL, ...)
 }
 \arguments{
 \item{n}{number of id's}

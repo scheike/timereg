@@ -6,12 +6,12 @@
 \alias{rr.cif}
 \title{Cross-odds-ratio, OR or RR risk regression for competing risks}
 \usage{
-cor.cif(cif, data, cause = NULL, times = NULL, cause1 = 1,
-  cause2 = 1, cens.code = NULL, cens.model = "KM", Nit = 40,
-  detail = 0, clusters = NULL, theta = NULL, theta.des = NULL,
-  step = 1, sym = 0, weights = NULL, par.func = NULL,
-  dpar.func = NULL, dimpar = NULL, score.method = "nlminb",
-  same.cens = FALSE, censoring.weights = NULL, silent = 1, ...)
+cor.cif(cif, data, cause = NULL, times = NULL, cause1 = 1, cause2 = 1,
+  cens.code = NULL, cens.model = "KM", Nit = 40, detail = 0,
+  clusters = NULL, theta = NULL, theta.des = NULL, step = 1, sym = 0,
+  weights = NULL, par.func = NULL, dpar.func = NULL, dimpar = NULL,
+  score.method = "nlminb", same.cens = FALSE, censoring.weights = NULL,
+  silent = 1, ...)
 }
 \arguments{
 \item{cif}{a model object from the comp.risk function with the 

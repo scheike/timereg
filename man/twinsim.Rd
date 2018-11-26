@@ -5,8 +5,8 @@
 \title{Simulate twin data}
 \usage{
 twinsim(nMZ = 100, nDZ = nMZ, b1 = c(), b2 = c(), mu = 0,
-  acde = c(1, 1, 0, 1), randomslope = NULL, threshold = 0,
-  cens = FALSE, wide = FALSE, ...)
+  acde = c(1, 1, 0, 1), randomslope = NULL, threshold = 0, cens = FALSE,
+  wide = FALSE, ...)
 }
 \arguments{
 \item{nMZ}{Number of monozygotic twin pairs}

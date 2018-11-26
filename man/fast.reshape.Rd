@@ -6,9 +6,8 @@
 \title{Fast reshape}
 \usage{
 fast.reshape(data, varying, id, num, sep = "", keep, idname = "id",
-  numname = "num", factor = FALSE, idcombine = TRUE,
-  labelnum = FALSE, labels, regex = mets.options()$regex,
-  dropid = FALSE, ...)
+  numname = "num", factor = FALSE, idcombine = TRUE, labelnum = FALSE,
+  labels, regex = mets.options()$regex, dropid = FALSE, ...)
 }
 \arguments{
 \item{data}{data.frame or matrix}

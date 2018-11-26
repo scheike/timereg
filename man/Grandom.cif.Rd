@@ -8,10 +8,9 @@ Grandom.cif(cif, data, cause = NULL, cif2 = NULL, times = NULL,
   cause1 = 1, cause2 = 1, cens.code = NULL, cens.model = "KM",
   Nit = 40, detail = 0, clusters = NULL, theta = NULL,
   theta.des = NULL, weights = NULL, step = 1, sym = 0,
-  same.cens = FALSE, censoring.weights = NULL, silent = 1,
-  var.link = 0, score.method = "fisher.scoring", entry = NULL,
-  estimator = 1, trunkp = 1, admin.cens = NULL,
-  random.design = NULL, ...)
+  same.cens = FALSE, censoring.weights = NULL, silent = 1, var.link = 0,
+  score.method = "fisher.scoring", entry = NULL, estimator = 1,
+  trunkp = 1, admin.cens = NULL, random.design = NULL, ...)
 }
 \arguments{
 \item{cif}{a model object from the comp.risk function with the 
