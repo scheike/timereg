@@ -40,6 +40,11 @@
 ##'  with(out,mets:::plot.conf.region(time,band.EE.log,col=3))
 ##'  with(out,mets:::plot.conf.region(time,band.EE.log.o,col=2))
 ##' 
+##' @references
+##' 
+##' Wild bootstrap based confidence intervals for multiplicative hazards models, 
+##' Dobler, Pauly, and Scheike (2018), 
+##' 
 ##' @aliases pred.cif.boot 
 ##' @export
 Bootphreg <- function(formula,data,offset=NULL,weights=NULL,B=1000,type=c("exp","poisson","normal"),...) {# {{{
