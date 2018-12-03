@@ -1045,13 +1045,13 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
    }
 
    if ("weights" %in% names(data)) {
-       warning("Weights in variable 'weights_' \n")
+       warning("Weights in variable names 'weights_' \n")
        wname<- "weights_"
        data[,wname] <- weights
    } else data[,"weights"] <- weights
 ###
    if ("cw" %in% names(data)) {
-     warning("cw weights in variable 'cw_' \n")
+     warning("cw weights in variable names 'cw_' \n")
      cwname<- "cw_"
      data[,cwname] <- 1
    } else data[,"cw"] <- 1
@@ -1059,6 +1059,9 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
    if (nocens.out) {
      med <- ((data[,time]>mtt & data[,cause]==cens.code)) | (data[,cause]!=cens.code)
      data <- data[med,]
+   } else { 
+        med <- ((data[,time]>mtt & data[,cause]==cens.code)) | (data[,cause]!=cens.code)
+        data[!med,"weights"] <- 0; data[!med,"cw"] <- 0
    } 
 
    attr(data,"trunc.model") <- trunc.model
@@ -1066,6 +1069,8 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
 ## }}} 
    return(data)
 } ## }}} 
+
+
 
 ##' @export
 pred.stratKM <- function(data,entrytime=NULL,time="time",cause="cause",strata="strata",event.code=0)

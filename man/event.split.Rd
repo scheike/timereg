@@ -5,8 +5,8 @@
 \title{EventSplit (SurvSplit).}
 \usage{
 event.split(data, time = "time", status = "status", cuts = "cuts",
-  name.id = "id", name.start = "start", cens.code = 0, order.id = TRUE,
-  time.group = TRUE)
+  name.id = "id", name.start = "start", cens.code = 0,
+  order.id = TRUE, time.group = TRUE)
 }
 \arguments{
 \item{data}{data to be split}

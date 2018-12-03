@@ -58,6 +58,7 @@ export("aalen", ## {{{
        "pava.pred",
        "pe.sasieni",
        "percen",
+       "plotConfregion",
        "pred.cum",
        "pred.des",
        "predictpropodds",
@@ -259,5 +260,8 @@ importFrom("utils", "head","tail")
 importFrom("stats", "rexp")
 importFrom("stats", "rbinom")
 importFrom("stats", "get_all_vars")
+
+importFrom("stats", "vcov")
+
 
 

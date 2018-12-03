@@ -33,9 +33,9 @@ data(drcumhaz)
 dr <- drcumhaz
 base1 <- base1cumhaz
 base4 <- base4cumhaz
-rr <- simRecurrent(1000,base1,death.cumhaz=dr)
+rr <- simRecurrent(100,base1,death.cumhaz=dr)
 rr$x <- rnorm(nrow(rr)) 
-rr$strata <- floor((rr$id-0.01)/500)
+rr$strata <- floor((rr$id-0.01)/50)
 drename(rr) <- start+stop~entry+time
 
 ar <- aalen(Surv(start,stop,status)~+1+cluster(id),data=rr,resample.iid=1

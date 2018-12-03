@@ -80,6 +80,7 @@
 \alias{dynregBase}
 \alias{prop.excessBase}
 \alias{prop.odds.gam}
+\alias{plotConfregion}
 \alias{semicox}
 \alias{timecoxBase}
 \alias{timereg.formula}

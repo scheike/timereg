@@ -9,7 +9,8 @@ res.mean(formula, data = sys.parent(), cause = 1, restricted = NULL,
   weighted = 0, model = "additive", detail = 0, interval = 0.01,
   resample.iid = 1, cens.model = "KM", cens.formula = NULL,
   time.pow = NULL, time.pow.test = NULL, silent = 1, conv = 1e-06,
-  estimator = 1, cens.weights = NULL, conservative = 1, weights = NULL)
+  estimator = 1, cens.weights = NULL, conservative = 1,
+  weights = NULL)
 }
 \arguments{
 \item{formula}{a formula object, with the response on the left of a '~'

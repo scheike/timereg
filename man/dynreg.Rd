@@ -4,9 +4,9 @@
 \alias{dynreg}
 \title{Fit time-varying regression model}
 \usage{
-dynreg(formula, data = sys.parent(), aalenmod, bandwidth = 0.5, id = NULL,
-  bhat = NULL, start.time = 0, max.time = NULL, n.sim = 500,
-  meansub = 1, weighted.test = 0, resample = 0)
+dynreg(formula, data = sys.parent(), aalenmod, bandwidth = 0.5,
+  id = NULL, bhat = NULL, start.time = 0, max.time = NULL,
+  n.sim = 500, meansub = 1, weighted.test = 0, resample = 0)
 }
 \arguments{
 \item{formula}{a formula object with the response on the left of a '~'

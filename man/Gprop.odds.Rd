@@ -5,8 +5,9 @@
 \title{Fit Generalized Semiparametric Proportional 0dds Model}
 \usage{
 Gprop.odds(formula = formula(data), data = sys.parent(), beta = 0,
-  Nit = 50, detail = 0, start.time = 0, max.time = NULL, id = NULL,
-  n.sim = 500, weighted.test = 0, sym = 0, mle.start = 0)
+  Nit = 50, detail = 0, start.time = 0, max.time = NULL,
+  id = NULL, n.sim = 500, weighted.test = 0, sym = 0,
+  mle.start = 0)
 }
 \arguments{
 \item{formula}{a formula object, with the response on the left of a '~'

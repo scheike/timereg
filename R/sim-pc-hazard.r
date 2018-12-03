@@ -149,11 +149,31 @@ lin.approx <- function(x2,xfx,x=1)
    breaks <- xfx[,x]
    fx     <- xfx[,-x]
    ri <- sindex.prodlim(breaks,x2)
-   rrr <- (x2-breaks[ri])/(breaks[ri+1]-breaks[ri])
-   res <- rrr*(fx[ri+1]-fx[ri])+fx[ri]
+   maxindex <- which(ri==length(breaks))
+   rip1 <- ri+1
+   rip1[maxindex] <- length(breaks)
+   rrr <- (x2-breaks[ri])/(breaks[rip1]-breaks[ri])
+   rrr[maxindex] <- 0
+   res <- rrr*(fx[rip1]-fx[ri])+fx[ri]
    res[is.na(res)] <- tail(fx,1)
    return(res)
 }# }}}
+
+
+###lin.approx <- function(x2,xfx,x=1)
+###{# {{{
+###   ### x=1   gives  f(x2) 
+###   ### x=-1  gives  f^-1(x2) 
+###   breaks <- xfx[,x]
+###   fx     <- xfx[,-x]
+###   ri <- sindex.prodlim(breaks,x2)
+###   rrr <- (x2-breaks[ri])/(breaks[ri+1]-breaks[ri])
+###   res <- rrr*(fx[ri+1]-fx[ri])+fx[ri]
+###   res[is.na(res)] <- tail(fx,1)
+###   return(res)
+###}# }}}
+###
+
 
 #' @export
 pchazard.sim <- function(cumhazard,rr,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE,...)

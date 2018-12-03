@@ -7,9 +7,9 @@
 \alias{predict.cox.aalen}
 \title{Predictions for Survival and Competings Risks Regression for timereg}
 \usage{
-\method{predict}{timereg}(object, newdata = NULL, X = NULL, times = NULL,
-  Z = NULL, n.sim = 500, uniform = TRUE, se = TRUE, alpha = 0.05,
-  resample.iid = 0, ...)
+\method{predict}{timereg}(object, newdata = NULL, X = NULL,
+  times = NULL, Z = NULL, n.sim = 500, uniform = TRUE, se = TRUE,
+  alpha = 0.05, resample.iid = 0, ...)
 }
 \arguments{
 \item{object}{an object belonging to one of the following classes: comprisk,

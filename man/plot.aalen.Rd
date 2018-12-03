@@ -10,7 +10,8 @@
 \method{plot}{aalen}(x, pointwise.ci = 1, hw.ci = 0, sim.ci = 0,
   robust.ci = 0, col = NULL, specific.comps = FALSE, level = 0.05,
   start.time = 0, stop.time = 0, add.to.plot = FALSE, mains = TRUE,
-  xlab = "Time", ylab = "Cumulative coefficients", score = FALSE, ...)
+  xlab = "Time", ylab = "Cumulative coefficients", score = FALSE,
+  ...)
 }
 \arguments{
 \item{x}{the output from the "aalen" function.}
