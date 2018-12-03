@@ -1585,14 +1585,13 @@ showfitsim <- function(causes=2,rr,dr,base1,base4)
 ##'
 ##' Simulation of recurrent events data based on cumulative hazards 
 ##'
-##' Model is constructed such that marginals are on specified form 
+##' Model is constructed such that marginals are on specified form  by linear approximations
+##' of cumulative hazards that are on a specific form to make them equivalent to marginals
+##' after integrating out. 
 ##'
 ##' Must give hazard of death and two recurrent events.  Possible with two
 ##' event types and their dependence can be specified but the two recurrent events need
-##' to share random effect. Based on drawing the from cumhaz and cumhaz2 and 
-##' taking the first event rather
-##' the cumulative and then distributing it out. Key advantage of this is that 
-##' there is  more flexibility wrt random effects 
+##' to share random effect. 
 ##' 
 ##' random effect to death Z.death=(Zd1+Zd2), Z1=(Zd1^nu1) Z12,  Z2=(Zd2^nu2) Z12^nu3
 ##' \deqn{Z.death=Zd1+Zd2}  gamma distributions 
@@ -1606,11 +1605,10 @@ showfitsim <- function(causes=2,rr,dr,base1,base4)
 ##' @param death.cumhaz cumulative hazard of death 
 ##' @param gap.time if true simulates gap-times with specified cumulative hazard
 ##' @param max.recurrent limits number recurrent events to 100
-##' @param nu powers of random effects 
+##' @param nu powers of random effects where nu > -1/shape 
 ##' @param share1 how random effect for death splits into two parts 
 ##' @param vargamD variance of random effect  for death 
 ##' @param vargam12 shared random effect for N1 and N2 
-##' @param cor.mat correlation matrix for var.z variance of random effects 
 ##' @param cens rate of censoring exponential distribution
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Thomas Scheike
@@ -1806,6 +1804,9 @@ zs <- cbind(z1,z2,zd)
   attr(tall,"cumhaz") <- cumhaz
   attr(tall,"cumhaz2") <- cumhaz2
   attr(tall,"zs") <- zs
+
+  attr(tall,"gamma.death") <- c(agam1,agam2,betagam,vargamD)
+  attr(tall,"gamma.N12") <-   c(agam12,betagam12,vargam12)
 
   return(tall)
   }# }}}
