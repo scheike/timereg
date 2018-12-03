@@ -40,7 +40,7 @@ base4 <- base4cumhaz
 ### now with two event types and second type has same rate as death rate
 ######################################################################
 
-rr <- simRecurrentII(1000,base1,dr,death.cumhaz=base4)
+rr <- simRecurrentII(1000,base1,base4,death.cumhaz=dr)
 rr <-  count.history(rr)
 dtable(rr,~"Count*"+status,level=1)
 

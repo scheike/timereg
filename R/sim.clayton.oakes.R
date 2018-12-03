@@ -13,7 +13,7 @@
 ##' @param trunc.prob Truncation probability 
 ##' @param same if 1 then left-truncation is same also for univariate truncation
 ##' @author Thomas Scheike and Klaus K. Holst
-##' @aliases simClaytonOakes
+##' @aliases simClaytonOakes simClaytonOakesLam
 ##' @export
 simClaytonOakes <- function(K,n,eta,beta,stoptime,lam=1,left=0,pairleft=0,trunc.prob=0.5,same=0)  ## {{{ 
 {
@@ -62,6 +62,24 @@ if (left>0) {
 ###  ud <- cbind(ud,rep(minstime,each=n),rep(lefttime,each=n),rep(trunk,each=n))
   names(ud)<-c("time","status","x","cluster","mintime","lefttime","truncated")
   return(ud)
+} ## }}} 
+
+##' @export
+simClaytonOakesLam <- function(n,k,cumhaz,vargam,entry=NULL)  
+{ ## {{{ 
+base1 <- cumhaz
+dtt <- diff(c(0,base1[,1]))
+lams <- (diff(c(0,base1[,2]))/dtt)*exp(vargam*base1[,2])
+Lams <- cbind(base1[,1],cumsum(dtt*lams))
+
+if (is.null(entry)) entry <- rep(0,n*k)
+gamma <- rep(rgamma(n,1/vargam)*vargam,each=k)
+ddd <- pc.hazard(rbind(c(0,0),Lams),rr=gamma,entry=entry)
+ddd$cluster <- rep(1:n,each=k)
+ddd$gamma <- gamma
+
+attr(ddd,"cumhaz") <- Lams
+return(ddd)
 } ## }}} 
 
 ##' Simulate observations from the Clayton-Oakes copula model with
@@ -233,7 +251,6 @@ if (left>0) { ## {{{
 names(ud)<-c("time","status","x","cluster","type","mintime","lefttime","truncated")
 return(ud)
 } ## }}} 
-
 
 ##' @export
 simCompete.twin.ace <- function(K,varg,varc,beta,stoptime,lam0=c(0.2,0.3),

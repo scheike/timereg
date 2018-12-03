@@ -60,6 +60,10 @@ wild bootstrap for uniform bands for Cox models
  with(out,mets:::plot.conf.region(time,band.EE.log.o,col=2))
 
 }
+\references{
+Wild bootstrap based confidence intervals for multiplicative hazards models, 
+Dobler, Pauly, and Scheike (2018),
+}
 \author{
 Klaus K. Holst, Thomas Scheike
 }
