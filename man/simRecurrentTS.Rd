@@ -17,7 +17,7 @@ simRecurrentTS(n, cumhaz, cumhaz2, death.cumhaz = NULL, nu = rep(1, 3),
 
 \item{death.cumhaz}{cumulative hazard of death}
 
-\item{nu}{powers of random effects}
+\item{nu}{powers of random effects where nu > -1/shape}
 
 \item{share1}{how random effect for death splits into two parts}
 
@@ -32,21 +32,18 @@ simRecurrentTS(n, cumhaz, cumhaz2, death.cumhaz = NULL, nu = rep(1, 3),
 \item{cens}{rate of censoring exponential distribution}
 
 \item{...}{Additional arguments to lower level funtions}
-
-\item{cor.mat}{correlation matrix for var.z variance of random effects}
 }
 \description{
 Simulation of recurrent events data based on cumulative hazards
 }
 \details{
-Model is constructed such that marginals are on specified form
+Model is constructed such that marginals are on specified form  by linear approximations
+of cumulative hazards that are on a specific form to make them equivalent to marginals
+after integrating out.
 
 Must give hazard of death and two recurrent events.  Possible with two
 event types and their dependence can be specified but the two recurrent events need
-to share random effect. Based on drawing the from cumhaz and cumhaz2 and 
-taking the first event rather
-the cumulative and then distributing it out. Key advantage of this is that 
-there is  more flexibility wrt random effects
+to share random effect.
 
 random effect to death Z.death=(Zd1+Zd2), Z1=(Zd1^nu1) Z12,  Z2=(Zd2^nu2) Z12^nu3
 \deqn{Z.death=Zd1+Zd2}  gamma distributions 

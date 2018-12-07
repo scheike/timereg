@@ -1422,7 +1422,7 @@ basehazplot.phreg  <- function(x,se=FALSE,time=NULL,add=FALSE,ylim=NULL,xlim=NUL
     where <- "topleft"; 
     if (class(x)[1]=="km") where <-  "topright"
     if (legend & (!add)) 
-    graphics::legend(where,legend=stratnames,col=cols[,1],lty=ltys[,1])
+    graphics::legend(where,legend=stratnames[stratas+1],col=cols[,1],lty=ltys[,1])
 
 }# }}}
 

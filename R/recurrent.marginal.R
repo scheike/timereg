@@ -1557,12 +1557,15 @@ simRecurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
   }# }}}
 
 ##' @export
-showfitsim <- function(causes=2,rr,dr,base1,base4) 
+showfitsim <- function(causes=2,rr,dr,base1,base4,which=1:3) 
 {# {{{
+if (1 %in% which) {
   drr <- phreg(Surv(entry,time,death)~cluster(id),data=rr)
   basehazplot.phreg(drr,ylim=c(0,8))
   lines(dr,col=2)
+}
 ###
+if (2 %in% which) {
   xrr <- phreg(Surv(entry,time,status==1)~cluster(id),data=rr)
   basehazplot.phreg(xrr,add=TRUE)
 ###  basehazplot.phreg(xrr)
@@ -1572,12 +1575,15 @@ showfitsim <- function(causes=2,rr,dr,base1,base4)
 	  basehazplot.phreg(xrr2,add=TRUE)
 	  lines(base4,col=2)
   }
+  }
+if (3 %in% which) {
   meanr1 <-   recurrentMarginal(xrr,drr)
   basehazplot.phreg(meanr1,se=TRUE)
   if (causes>=2) {
 	  meanr2 <-   recurrentMarginal(xrr2,drr)
 	  basehazplot.phreg(meanr2,se=TRUE,add=TRUE,col=2)
   }
+}
 }# }}}
 
 
@@ -2420,27 +2426,33 @@ out <- list(based=dr,base1=base1,base2=base2,
 }# }}}
 
 ##' @export
-plot.covariance.recurrent <- function(x,main="Covariance",...) 
+plot.covariance.recurrent <- function(x,main="Covariance",these=1:3,...) 
 {# {{{
 
 legend <- NULL # to avoid R-check 
 
+if ( 1 %in% these) {
 with(x, { plot(time,mu1.2,type="l",ylim=range(c(mu1.2,mu1.i)),...) 
           lines(time,mu1.i,col=2) })
 legend("topleft",c(expression(integral(N[2](s)*dN[1](s),0,t)),"independence"),lty=1,col=1:2) 
 title(main=main)
+}
 ###
+if (2 %in% these) {
 with(x, { plot(time,mu2.1,type="l",ylim=range(c(mu2.1,mu2.i)),...) 
           lines(time,mu2.i,col=2) 
 	      })
 legend("topleft",c(expression(integral(N[1](s)*dN[2](s),0,t)),"independence"),lty=1,col=1:2) 
 title(main=main)
+}
 ###
+if (3 %in% these) {
 with(x,  { plot(time,EN1N2,type="l",lwd=2,ylim=range(c(EN1N2,EN1EN2,EIN1N2)),...) 
            lines(time,EN1EN2,col=2,lwd=2) 
            lines(time,EIN1N2,col=3,lwd=2) })
 legend("topleft",c("E(N1N2)", "E(N1) E(N2) ", "E_I(N1 N2)-independence"),lty=1,col=1:3)
 title(main=main)
+}
 } # }}}
 
 meanRisk <- function(base1,base1.2)
