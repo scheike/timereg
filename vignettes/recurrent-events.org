@@ -15,7 +15,7 @@
 ----- 
 # +LaTeX: \clearpage
 
-* Overview
+** Overview
 
 For recurrent events data it is often of interest to compute basis descriptive
 quantities as a first go at getting some basic understanding of the phenonmenon
@@ -36,7 +36,7 @@ dependence such as
  - the bivariate probability of exceeding $(k_1,k_2)$ events
  
 
-** Simulation of recurrents events 
+** Simulation of recurrents events
 
 
 We start by simulating some recurrent events data with two type of events with
@@ -219,7 +219,6 @@ bplot(out,se=TRUE,ylab="marginal mean",col=2)
 #+RESULTS: rec1
 [[file:rec1.jpg]]
 
-
 #+LATEX: \captionof{figure}{Marginal mean for number of type 1 events, rate for death (panel (a)), rate for type 1 among survivors (panel (b)), and marginal mean (panel (c)).}
 label:fig:rec
 #+END_marginfigure
@@ -284,7 +283,6 @@ bplot(outX,add=TRUE,col=3)
 #+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: rec3
 [[file:rec3.jpg]]
-
 
 #+LATEX: \captionof{figure}{Recurrent events with cox models for rates.}
 label:fig:rec3
@@ -694,14 +692,8 @@ associated between $N_j$ and $D$ the terminal event be denoted as $\rho_{j3}$, a
 in a vector $\rho=(\rho_{12},\rho_{13},\rho_{23})$.
 
  - Scenario I $\rho=(0,0.0,0.0)$ Independence among all efects.
- - Scenario II $\rho=(0,0.5,0.5)$ Independence among survivors but dependence on terminal event 
- - Scenario III $\rho=(0.5,0.5,0.5)$ Positive dependence among survivors and dependence on terminal event 
- - Scenario IV $\rho=(-0.4,0.5,0.5)$ Negative dependence among survivors and positive dependence on terminal event 
-
 #+NAME: rec7
 #+BEGIN_SRC R :exports both :results output graphics :file rec7.jpg :ravel fig=TRUE,include=FALSE 
-  par(mfrow=c(2,2))
-
   data(base1cumhaz)
   data(base4cumhaz)
   data(drcumhaz)
@@ -709,88 +701,98 @@ in a vector $\rho=(\rho_{12},\rho_{13},\rho_{23})$.
   base1 <- base1cumhaz
   base4 <- base4cumhaz
 
+  par(mfrow=c(1,3))
   var.z <- c(0.5,0.5,0.5)
   # death related to  both causes in same way 
-  cor.mat <- corM <- rbind(c(1.0, 0.0, 0.0), 
-			   c(0.0, 1.0, 0.0), 
-			   c(0.0, 0.0, 1.0))
+  cor.mat <- corM <- rbind(c(1.0, 0.0, 0.0), c(0.0, 1.0, 0.0), c(0.0, 0.0, 1.0))
   rr <- simRecurrentII(3000,base1,base4,death.cumhaz=dr,var.z=var.z,cor.mat=cor.mat,dependence=2)
   rr <- count.history(rr,types=1:2)
   cor(attr(rr,"z"))
   coo <- covarianceRecurrent(rr,1,2,status="status",start="entry",stop="time")
-  par(mfrow=c(2,2))
-  with(coo, {
-        plot(time, EN1N2, type = "l", lwd = 2,lty=1,ylab="",xlab="time (a)")
-        lines(time, EN1EN2, col = 2, lwd = 2,lty=2)
-        lines(time, EIN1N2, col = 3, lwd = 2,lty=3)
-    })
-    legend("topleft", c("E(N1N2)", "E(N1) E(N2) ", "E_I(N1 N2)-independence"),lty = 1:3, col = 1:3)
-    title(main ="Scenario I")
-
-
-  var.z <- c(0.5,0.5,0.5)
-  # death related to  both causes in same way 
-  cor.mat <- corM <- rbind(c(1.0, 0.0, 0.5), 
-			   c(0.0, 1.0, 0.5), 
-			   c(0.5, 0.5, 1.0))
-  rr <- simRecurrentII(3000,base1,base4,death.cumhaz=dr,
-			var.z=var.z,cor.mat=cor.mat,dependence=2)
-  rr <- count.history(rr,types=1:2)
-  coo <- covarianceRecurrent(rr,1,2,status="status",start="entry",stop="time")
-  with(coo, {
-        plot(time, EN1N2, type = "l", lwd = 2,lty=1,ylab="",xlab="time (b)")
-        lines(time, EN1EN2, col = 2, lwd = 2,lty=2)
-        lines(time, EIN1N2, col = 3, lwd = 2,lty=3)
-    })
-    legend("topleft", c("E(N1N2)", "E(N1) E(N2) ", "E_I(N1 N2)-independence"),lty = 1:3, col = 1:3)
-    title(main ="Scenario II")
-
-  var.z <- c(0.5,0.5,0.5)
-  # positive dependence for N1 and N2 all related in same way
-  cor.mat <- corM <- rbind(c(1.0, 0.5, 0.5), 
-			   c(0.5, 1.0, 0.5), 
-			   c(0.5, 0.5, 1.0))
-  rr <- simRecurrentII(3000,base1,base4,death.cumhaz=dr,
-			var.z=var.z,cor.mat=cor.mat,dependence=2)
-  rr <- count.history(rr,types=1:2)
-  coo <- covarianceRecurrent(rr,1,2,status="status",start="entry",stop="time")
-  with(coo, {
-        plot(time, EN1N2, type = "l", lwd = 2,lty=1,ylab="",xlab="time (d)")
-        lines(time, EN1EN2, col = 2, lwd = 2,lty=2)
-        lines(time, EIN1N2, col = 3, lwd = 2,lty=3)
-    })
-    legend("topleft", c("E(N1N2)", "E(N1) E(N2) ", "E_I(N1 N2)-independence"),lty = 1:3, col = 1:3)
-    title(main ="Scenario III")
-
-
-  var.z <- c(0.5,0.5,0.5)
-  # negative dependence for N1 and N2 all related in same way
-  cor.mat <- corM <- rbind(c(1.0, -0.4, 0.5), 
-			   c(-0.4, 1.0, 0.5), 
-			   c(0.5, 0.5, 1.0))
-  rr <- simRecurrentII(3000,base1,base4,death.cumhaz=dr,
-			var.z=var.z,cor.mat=cor.mat,dependence=2)
-  rr <- count.history(rr,types=1:2)
-  coo <- covarianceRecurrent(rr,1,2,status="status",start="entry",stop="time")
-  with(coo, {
-        plot(time, EN1N2, type = "l", lwd = 2,lty=1,ylab="",xlab="time (d)")
-        lines(time, EN1EN2, col = 2, lwd = 2,lty=2)
-        lines(time, EIN1N2, col = 3, lwd = 2,lty=3)
-  })
-  legend("topleft", c("E(N1N2)", "E(N1) E(N2) ", "E_I(N1 N2)-independence"),lty = 1:3, col = 1:3)
-  title(main ="Scenario IV")
+  plot(coo,main ="Scenario I")
 #+END_SRC
 
-#+BEGIN_figure
-# +CAPTION: Recurrent events label:fig:rec7
+#+BEGIN_marginfigure
+# +CAPTION: Covariance: Scenario I label:fig:rec7
 #+ATTR_LATEX: :width \textwidth :float nil :center t
 #+RESULTS: rec7
 [[file:rec7.jpg]]
 
-#+LATEX: \captionof{figure}{Bootstrap samples} 
+#+LATEX: \captionof{figure}{Covariance: Scenario I} 
 label:fig:rec7
-#+END_figure
+#+END_marginfigure
+
+ - Scenario II $\rho=(0,0.5,0.5)$ Independence among survivors but dependence on terminal event 
+
+#+NAME: rec8
+#+BEGIN_SRC R :exports both :results output graphics :file rec8.jpg :ravel fig=TRUE,include=FALSE 
+  var.z <- c(0.5,0.5,0.5)
+  # death related to  both causes in same way 
+  cor.mat <- corM <- rbind(c(1.0, 0.0, 0.5), c(0.0, 1.0, 0.5), c(0.5, 0.5, 1.0))
+  rr <- simRecurrentII(3000,base1,base4,death.cumhaz=dr,var.z=var.z,cor.mat=cor.mat,dependence=2)
+  rr <- count.history(rr,types=1:2)
+  coo <- covarianceRecurrent(rr,1,2,status="status",start="entry",stop="time")
+  par(mfrow=c(1,3))
+  plot(coo,main ="Scenario II")
+#+END_SRC
+
+#+BEGIN_marginfigure
+# +CAPTION: Covariance: Scenario II label:fig:rec8
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: rec8
+[[file:rec8.jpg]]
+
+#+LATEX: \captionof{figure}{Covariance: Scenario II} 
+label:fig:rec8
+#+END_marginfigure
+
+ - Scenario III $\rho=(0.5,0.5,0.5)$ Positive dependence among survivors and dependence on terminal event 
+
+#+NAME: rec9
+#+BEGIN_SRC R :exports both :results output graphics :file rec9.jpg :ravel fig=TRUE,include=FALSE 
+  var.z <- c(0.5,0.5,0.5)
+  # positive dependence for N1 and N2 all related in same way
+  cor.mat <- corM <- rbind(c(1.0, 0.5, 0.5), c(0.5, 1.0, 0.5), c(0.5, 0.5, 1.0))
+  rr <- simRecurrentII(3000,base1,base4,death.cumhaz=dr,var.z=var.z,cor.mat=cor.mat,dependence=2)
+  rr <- count.history(rr,types=1:2)
+  coo <- covarianceRecurrent(rr,1,2,status="status",start="entry",stop="time")
+  par(mfrow=c(1,3))
+  plot(coo,main="Scenario III")
+#+END_SRC
+
+#+BEGIN_marginfigure
+# +CAPTION: Covariance: Scenario III label:fig:rec9
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: rec9
+[[file:rec9.jpg]]
+
+#+LATEX: \captionof{figure}{Covariance: Scenario III} 
+label:fig:rec9
+#+END_marginfigure
 
 
+ - Scenario IV $\rho=(-0.4,0.5,0.5)$ Negative dependence among survivors and positive dependence on terminal event 
+
+#+NAME: rec10
+#+BEGIN_SRC R :exports both :results output graphics :file rec10.jpg :ravel fig=TRUE,include=FALSE 
+  var.z <- c(0.5,0.5,0.5)
+  # negative dependence for N1 and N2 all related in same way
+  cor.mat <- corM <- rbind(c(1.0, -0.4, 0.5), c(-0.4, 1.0, 0.5), c(0.5, 0.5, 1.0))
+  rr <- simRecurrentII(3000,base1,base4,death.cumhaz=dr,var.z=var.z,cor.mat=cor.mat,dependence=2)
+  rr <- count.history(rr,types=1:2)
+  coo <- covarianceRecurrent(rr,1,2,status="status",start="entry",stop="time")
+  par(mfrow=c(1,3))
+  plot(coo,main="Scenario IV")
+#+END_SRC
+
+#+BEGIN_marginfigure
+# +CAPTION: Covariance: Scenario IV label:fig:rec10
+#+ATTR_LATEX: :width \textwidth :float nil :center t
+#+RESULTS: rec10
+[[file:rec10.jpg]]
+
+#+LATEX: \captionof{figure}{Covariance: Scenario IV} 
+label:fig:rec10
+#+END_marginfigure
 
 
