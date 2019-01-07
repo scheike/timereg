@@ -260,8 +260,8 @@ importFrom("utils", "head","tail")
 importFrom("stats", "rexp")
 importFrom("stats", "rbinom")
 importFrom("stats", "get_all_vars")
-
 importFrom("stats", "vcov")
+importFrom("methods", "hasArg")
 
 
 

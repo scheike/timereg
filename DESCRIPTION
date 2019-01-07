@@ -22,7 +22,8 @@ Imports:
     stats,
     graphics,
     grDevices,
-    utils
+    utils,
+    methods
 Suggests:
     mets, 
 License: GPL (>= 2)

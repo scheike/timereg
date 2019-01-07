@@ -226,7 +226,7 @@ pchazard.sim <- function(cumhazard,rr,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE,..
 #'             data=TRACE,robust=0)
 #'
 #' X1 <- TRACE[,c("vf","chf","wmi")]
-#' n <- 100000
+#' n <- 1000
 #' xid <- sample(1:nrow(X1),n,replace=TRUE)
 #' Z1 <- X1[xid,]
 #' Z2 <- X1[xid,]

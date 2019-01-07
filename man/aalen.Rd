@@ -111,7 +111,7 @@ The modelling formula uses the standard survival modelling given in the
 
 The data for a subject is presented as multiple rows or 'observations', each
 of which applies to an interval of observation (start, stop].  For counting
-process data with the )start,stop] notation is used the 'id' variable is
+process data with the )start,stop] notation is used, the 'id' variable is
 needed to identify the records for each subject. The program assumes that
 there are no ties, and if such are present random noise is added to break
 the ties.
