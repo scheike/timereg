@@ -59,7 +59,7 @@
 #' lines(sss$cum,col=3,lwd=3)
 #' 
 #' @export
-#' @aliases pchazard.sim 
+#' @aliases pchazard.sim addCums
 pc.hazard <- function(cumhazard,rr,n=NULL,entry=NULL,cum.hazard=TRUE,cause=1)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
@@ -160,19 +160,18 @@ lin.approx <- function(x2,xfx,x=1)
 }# }}}
 
 
-###lin.approx <- function(x2,xfx,x=1)
-###{# {{{
-###   ### x=1   gives  f(x2) 
-###   ### x=-1  gives  f^-1(x2) 
-###   breaks <- xfx[,x]
-###   fx     <- xfx[,-x]
-###   ri <- sindex.prodlim(breaks,x2)
-###   rrr <- (x2-breaks[ri])/(breaks[ri+1]-breaks[ri])
-###   res <- rrr*(fx[ri+1]-fx[ri])+fx[ri]
-###   res[is.na(res)] <- tail(fx,1)
-###   return(res)
-###}# }}}
-###
+#' @export
+addCums <- function(cumB,cumA,max=NULL)
+{# {{{
+ ## take times
+ times <- sort(unique(c(cumB[,1],cumA[,1])))
+ if (!is.null(max)) times <- times[times<max]
+ cumBjx <- lin.approx(times,cumB,x=1)
+ cumAjx <- lin.approx(times,cumA,x=1)
+ cumBA <- cumBjx+cumAjx
+ return(cbind(times,cumBA))
+}# }}}
+
 
 
 #' @export
@@ -939,7 +938,7 @@ subdist <- function(F1,times)
 #' lines(cifs[[2]]$cum,col=2,lty=2)
 #'
 #' @export
-#' @aliases sim.cif sim.cifs subdist pre.cifs
+#' @aliases sim.cif sim.cifs subdist pre.cifs 
 sim.cif <- function(cif,n,data=NULL,Z=NULL,drawZ=TRUE,cens=NULL,rrc=NULL,
 		    cumstart=c(0,0),...)
 {# {{{
@@ -1225,4 +1224,5 @@ if (class(cox)=="phreg")
 return(out)
 
 }# }}}
+
 
