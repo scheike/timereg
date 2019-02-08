@@ -1,8 +1,11 @@
 #-*- mode: org -*-
 
-* Version 1.2.6    <2018-11-18 Sun>
+* Version 1.2.6    <2019-02-01 Sun>
+  - Cumulative incidence regression cifreg function
+    - Fine-Gray model with cloglog link of (1-F_1(t,x))
+    - Logit link 
   - Prototype of wildbootstrap for Cox regression with 
-    - confidenence bands for baseline
+    - confidence bands for baseline
     - with confidenence bands cumulative incidence for two cox's 
 
 * Version 1.2.5    <2018-11-18 Sun>

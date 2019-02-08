@@ -1419,7 +1419,6 @@ simRecurrentGamma <- function(n,haz=0.5,death.haz=0.1,haz2=0.1,max.recurrent=100
 ##' par(mfrow=c(2,2))
 ##' showfitsim(causes=2,rr,dr,base1,base4)
 ##'
-##' @aliases simRecurrentTS 
 ##' @export
 simRecurrentII <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
 		    gap.time=FALSE,max.recurrent=100,dhaz=NULL,haz2=NULL,
@@ -1640,6 +1639,7 @@ simRecurrentTS <- function(n,cumhaz,cumhaz2,death.cumhaz=NULL,
 		    gap.time=FALSE,max.recurrent=100,cens=NULL,...) 
 {# {{{
 
+k <- 1
 nu1 <- nu[1]; nu2 <- nu[2]; nu3 <- nu[3]
 ###nu1 <- 1; nu2 <- 1; nu3 <- 0.4
 share2 <- (1-share1)
@@ -1664,32 +1664,6 @@ egamma12nu3 <- (gamma(agam12+nu3)/gamma(agam12))*1/(betagam12)^nu3
 zs <- cbind(z1,z2,zd)
 
   fdeath <- dtime <- NULL # to avoid R-check 
-###
-###  if (dependence==0) { z <- z1 <- z2 <- zd <- rep(1,n) # {{{
-###     } else if (dependence==1) {
-###	      z <- rgamma(n,1/var.z[1])*var.z[1]
-######	      z <- exp(rnorm(n,1)*var.z[1]^.5)
-###	      z1 <- z; z2 <- z; zd <- z
-###	      if (!is.null(cor.mat)) { zd <- rep(1,n); }
-###      } else if (dependence==2) {
-###              stdevs <- var.z^.5
-###              b <- stdevs %*% t(stdevs)  
-###              covv  <- b * cor.mat  
-###	      z <- matrix(rnorm(3*n),n,3)
-###	      z <- exp(z%*% chol(covv))
-######	      print(summary(z))
-######	      print(cor(z))
-###	      z1 <- z[,1]; z2 <- z[,2]; zd <- z[,3]; 
-###      } else if (dependence==3) {
-###	      z <- matrix(rgamma(3*n,1),n,3)
-###              z1 <- (z[,1]^cor.mat[1,1]+z[,2]^cor.mat[1,2]+z[,3]^cor.mat[1,3])
-###              z2 <- (z[,1]^cor.mat[2,1]+z[,2]^cor.mat[2,2]+z[,3]^cor.mat[2,3])
-###              zd <- (z[,1]^cor.mat[3,1]+z[,2]^cor.mat[3,2]+z[,3]^cor.mat[3,3])
-###	      z <- cbind(z1,z2,zd)
-######	      print(summary(z))
-######	      print(cor(z))
-###      } else stop("dependence 0-3"); # }}}
-###
 
 ###  cumhaz <- rbind(c(0,0),cumhaz)
  ll <- nrow(cumhaz)

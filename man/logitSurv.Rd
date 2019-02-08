@@ -41,5 +41,5 @@ bplot(out1)
 
 }
 \author{
-Klaus K. Holst, Thomas Scheike
+Thomas Scheike
 }

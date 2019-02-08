@@ -9,7 +9,6 @@
 ##' @param type distribution for multiplier
 ##' @param ... Additional arguments to lower level funtions
 ##' @author Klaus K. Holst, Thomas Scheike
-##' @aliases phreg phreg.par robust.phreg readPhreg 
 ##' @examples
 ##' 
 ##'  n <- 100
@@ -23,9 +22,8 @@
 ##'  status <- ifelse(time < cc,status,0)
 ##'  time  <- ifelse(time < cc,time,cc)
 ##'  data <- data.frame(time=time,status=status,x=x)
-##'  out <- pred.cif.boot(b1,b2,c1,c2,gplot=0)
 ##' 
-##'  b1 <- Bootphreg(Surv(time,status==1)~x,data,B=0)
+##'  b1 <- Bootphreg(Surv(time,status==1)~x,data,B=1000)
 ##'  b2 <- Bootphreg(Surv(time,status==2)~x,data,B=1000)
 ##'  c1 <- phreg(Surv(time,status==1)~x,data)
 ##'  c2 <- phreg(Surv(time,status==2)~x,data)
@@ -34,8 +32,8 @@
 ##'  out <- pred.cif.boot(b1,b2,c1,c2,gplot=0)
 ##' 
 ##'  cif.true <- (1-exp(-out$time))*.5
-##'  with(out,plotl(time,cif,ylim=c(0,1)))
-##'  lines(out$time,cif.true)
+##'  with(out,plot(time,cif,ylim=c(0,1),type="l"))
+##'  lines(out$time,cif.true,col=3)
 ##'  with(out,mets:::plot.conf.region(time,band.EE,col=1))
 ##'  with(out,mets:::plot.conf.region(time,band.EE.log,col=3))
 ##'  with(out,mets:::plot.conf.region(time,band.EE.log.o,col=2))

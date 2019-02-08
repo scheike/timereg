@@ -2,7 +2,6 @@
 % Please edit documentation in R/recurrent.marginal.R
 \name{simRecurrentII}
 \alias{simRecurrentII}
-\alias{simRecurrentTS}
 \title{Simulation of recurrent events data based on cumulative hazards II}
 \usage{
 simRecurrentII(n, cumhaz, cumhaz2, death.cumhaz = NULL,

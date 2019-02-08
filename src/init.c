@@ -64,7 +64,9 @@ extern SEXP revcumsumstratasumR(SEXP,SEXP, SEXP);
 extern SEXP revcumsumidstratasumR(SEXP,SEXP, SEXP,SEXP, SEXP);
 extern SEXP revcumsumidstratasumCovR(SEXP,SEXP,SEXP, SEXP,SEXP, SEXP);
 extern SEXP cumsumstrataR(SEXP,SEXP, SEXP);
-extern SEXP riskstrataR(SEXP,SEXP,SEXP);
+extern SEXP cumsumstrataPOR(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+extern SEXP DLambetaR(SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP,SEXP);
+extern SEXP riskstrataR(SEXP,SEXP,SEXP); 
 extern SEXP meanriskR(SEXP,SEXP,SEXP,SEXP,SEXP);
 extern SEXP cumsumstratasumR(SEXP,SEXP, SEXP);
 extern SEXP cumsumidstratasumR(SEXP,SEXP, SEXP,SEXP, SEXP);
@@ -121,6 +123,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"riskstrataR",                       (DL_FUNC) &riskstrataR,                        3},
     {"revcumsumstratasumR",               (DL_FUNC) &revcumsumstratasumR,                3},
     {"cumsumstratasumR",                  (DL_FUNC) &cumsumstratasumR,                   3},
+    {"cumsumstrataPOR",                   (DL_FUNC) &cumsumstrataPOR,                    6},
+    {"DLambetaR",                         (DL_FUNC) &DLambetaR,                          8},
     {"cumsumidstratasumR",                (DL_FUNC) &cumsumidstratasumR,                 5},
     {"cumsumASR",                         (DL_FUNC) &cumsumidstratasumR,                 3},
     {"cumsumidstratasumCovR",             (DL_FUNC) &cumsumidstratasumCovR,              6},

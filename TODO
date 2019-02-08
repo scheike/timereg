@@ -1,5 +1,5 @@
 
-- dreg kunne forbedres
+- dreg kunne forbedres (hvad med "X*" * "Y*" to construct all interactions) 
 - cif call kan forbedres med formel set up
 - predict for Cox models in recurrent 
 - predict for Cox model phreg optimize handling of strata
