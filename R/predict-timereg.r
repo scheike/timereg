@@ -254,7 +254,7 @@ predict.timereg <-function(object,newdata=NULL,X=NULL,times=NULL,
     xcol<-ncol(object$cum)-1
     if (!is.null(X)) X <- matrix(X,ncol=xcol)
     else {
-	    X <-   matrix(0,xcol,1)
+	    X <-   matrix(0,nrow(Z),xcol)
 	    X[,1] <- 1
     }
     if (semi & is.null(Z)) Z <- matrix(0,nrow=nrow(X),ncol=zcol); 
