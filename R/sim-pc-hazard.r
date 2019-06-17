@@ -10,6 +10,7 @@
 #' @param entry delayed entry time for simuations.
 #' @param cum.hazard specifies wheter input is cumulative hazard or rates.
 #' @param cause name of cause 
+#' @param extend  to extend piecewise constant with constant rate. Default is average rate over time from cumulative.
 #' @author Thomas Scheike
 #' @keywords survival
 #' @examples
@@ -45,7 +46,7 @@
 #' par(mfrow=c(1,2))
 #' plot(ss)
 #' ###
-#' pctime <- pc.hazard(ss$cum,1000)
+#' pctime <- pc.hazard(ss$cum,n=1000)
 #' ###
 #' sss <- aalen(Surv(time,status)~+1,data=pctime,robust=0)
 #' lines(sss$cum,col=2,lwd=2)
@@ -60,7 +61,7 @@
 #' 
 #' @export
 #' @aliases pchazard.sim addCums
-pc.hazard <- function(cumhazard,rr,n=NULL,entry=NULL,cum.hazard=TRUE,cause=1)
+pc.hazard <- function(cumhazard,rr,n=NULL,entry=NULL,cum.hazard=TRUE,cause=1,extend=FALSE)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
 ### cumh=cbind(breaks,cumhazard) if cumh=TRUE
@@ -91,9 +92,24 @@ pc.hazard <- function(cumhazard,rr,n=NULL,entry=NULL,cum.hazard=TRUE,cause=1)
    rrx <- ifelse(rrx>mm,mm,rrx)
    status <- rep(0,n)
    status <- ifelse(rrx<mm,cause,status)
+   tcum <- tail(cumhazard,1)
+   extend.rate <- NULL
+   if (is.logical(extend))
+	   if (extend) extend.rate <- tcum[2]/tcum[1]
+   if (is.numeric(extend)) { extend.rate <- extend; extend <- TRUE;}
+   if (extend) {
+	   whoe <- which(status==0)
+	   nn <- length(whoe)
+	   if (nn>0) {
+	     textend <- rexp(nn)/(rr[whoe]*extend.rate)
+	     rrx[whoe] <- mm+textend
+	     status[whoe] <- 1
+	   }
+   }
    dt <- data.frame(entry=entry,time=rrx,status=status,rr=rr)
    colnames(dt) <- c("entry","time","status","rr"); 
    attr(dt,"cumhaz") <- cumhazard
+   attr(dt,"extend.rate") <- extend.rate
    return(dt)
 }# }}}
 

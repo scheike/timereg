@@ -226,6 +226,9 @@ ldata<-list(start=survs$start,stop=survs$stop,antpers=survs$antpers,antclust=sur
 
 ## }}}
 
+if (npar==FALSE & residuals==1)  ## warning for residuals 
+   cat("Residuals only computed for non-parametric aalen model\n");
+
   if (npar== TRUE) { ## {{{ Aalen model 
    ud <- aalenBase(times, ldata, X, status, id, clusters, robust = robust, 
    sim = sim, retur = residuals, antsim = n.sim,
