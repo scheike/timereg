@@ -10,7 +10,7 @@
 #' @param entry delayed entry time for simuations.
 #' @param cum.hazard specifies wheter input is cumulative hazard or rates.
 #' @param cause name of cause 
-#' @param extend  to extend piecewise constant with constant rate. Default is average rate over time from cumulative.
+#' @param extend  to extend piecewise constant with constant rate. Default is average rate over time from cumulative (when TRUE), if numeric then uses given rate.
 #' @author Thomas Scheike
 #' @keywords survival
 #' @examples

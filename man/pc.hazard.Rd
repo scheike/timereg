@@ -3,10 +3,11 @@
 \name{pc.hazard}
 \alias{pc.hazard}
 \alias{pchazard.sim}
+\alias{addCums}
 \title{Simulation of Piecewise constant hazard model (Cox).}
 \usage{
 pc.hazard(cumhazard, rr, n = NULL, entry = NULL, cum.hazard = TRUE,
-  cause = 1)
+  cause = 1, extend = FALSE)
 }
 \arguments{
 \item{cumhazard}{cumulative hazard, or piece-constant rates for periods
@@ -21,6 +22,8 @@ defined by first column of input.}
 \item{cum.hazard}{specifies wheter input is cumulative hazard or rates.}
 
 \item{cause}{name of cause}
+
+\item{extend}{to extend piecewise constant with constant rate. Default is average rate over time from cumulative (when TRUE), if numeric then uses given rate.}
 }
 \description{
 Simulates data from piecwise constant baseline hazard that can also be of
@@ -59,7 +62,7 @@ ss <- cox.aalen(Surv(time,status==9)~+prop(vf),data=TRACE,robust=0)
 par(mfrow=c(1,2))
 plot(ss)
 ###
-pctime <- pc.hazard(ss$cum,1000)
+pctime <- pc.hazard(ss$cum,n=1000)
 ###
 sss <- aalen(Surv(time,status)~+1,data=pctime,robust=0)
 lines(sss$cum,col=2,lwd=2)
