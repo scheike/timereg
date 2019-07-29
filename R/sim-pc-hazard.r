@@ -144,7 +144,7 @@ addCums <- function(cumB,cumA,max=NULL)
 }# }}}
 
 #' @export
-pchazard.sim <- function(cumhazard,rr,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE,...)
+pchazard.sim <- function(cumhazard,rr,cens=NULL,rrc=NULL,...)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
 ### cumh=cbind(breaks,cumhazard) if cumh=TRUE
@@ -156,7 +156,7 @@ pchazard.sim <- function(cumhazard,rr,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE,..
 	   if (length(rr)==1) rrc<-rr else rrc <- length(rr)
    }
    if (is.matrix(cens)) {
-	   pct <- pc.hazard(cumhazard,rr,cum.hazard=cens.cum.hazard,...)
+	   pct <- pc.hazard(cens,rrc,...)
 	   pct <- pct$time
    }
    else {
@@ -179,9 +179,8 @@ pchazard.sim <- function(cumhazard,rr,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE,..
 #' @param cumhaz2 cumulative hazard of cause 1
 #' @param rr1 number of simulations or vector of relative risk for simuations.
 #' @param rr2 number of simulations or vector of relative risk for simuations.
-#' @param cens to censor further 
+#' @param cens to censor further , rate or cumumlative hazard
 #' @param rrc retlativ risk for censoring.
-#' @param cens.cum.hazard possible cumulative hazard for censoring.
 #' @param ... arguments for pc.hazard 
 #' @author Thomas Scheike
 #' @keywords survival
@@ -217,22 +216,22 @@ pchazard.sim <- function(cumhazard,rr,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE,..
 #' lines(sc2$cum,col=2)
 #' 
 #' @export 
-cause.pchazard.sim<-function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.cum.hazard=TRUE,...)
+cause.pchazard.sim<-function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,...)
 {#'# {{{
 ##'## cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
 ##'## cumh=cbind(breaks,cumhazard) if cumh=TRUE
  
    if (length(rr1)==1) n<-rr1 else n <- length(rr1)
-   if (missing(rr2)) rr2 <- n
+   if (missing(rr2)) rr2 <-rep(1,n)
  
    ptt1 <- pc.hazard(cumhaz1,rr1,cum.hazard=TRUE,...)
    ptt2 <- pc.hazard(cumhaz2,rr2,cum.hazard=TRUE,...)
-   ptt <- data.frame(time=pmin(ptt1$time,ptt2$time),status=ifelse(ptt1$time<=ptt2$time,ptt1$status,ptt2$status*2))
+   ptt <- data.frame(time=pmin(ptt1$time,ptt2$time),status=ifelse(ptt1$time<=ptt2$time,ptt1$status,ptt2$status*2),entry=ptt1$entry)
  
    if (!is.null(cens)) {
-      if (is.null(rrc)) rrc <- n 
+      if (is.null(rrc)) rrc <- rep(1,n)
            if (is.matrix(cens)) {
-        	   pct <- pc.hazard(cens,rrc,cum.hazard=cens.cum.hazard,...)
+        	   pct <- pc.hazard(cens,rrc,...)
         	   pct <- pct$time
            } else {
         	   if (is.numeric(cens)) pct<- rexp(n)/cens  else {
@@ -240,7 +239,7 @@ cause.pchazard.sim<-function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,cens.cum
         	      pct<- rexp(n)/chaz 
         	   }
 	   }
-	   ptt <- data.frame(time=pmin(ptt$time,pct), status=ifelse(ptt$time<pct,ptt$status,0))
+	   ptt <- data.frame(time=pmin(ptt$time,pct),status=ifelse(ptt$time<pct,ptt$status,0),entry=ptt$entry)
    }
 
    return(ptt)
@@ -336,7 +335,7 @@ if (class(cox)!="phreg") {
    if (!is.null(cens))  {
       if (is.null(rrc)) rrc <- rep(1,n)
       if (is.matrix(cens)) {
-	   pct <- pc.hazard(cens,rrc,cum.hazard=TRUE,entry=entry)
+	   pct <- pc.hazard(cens,rrc,entry=entry)
 	   pct <- pct$time
       }
       else {
@@ -461,7 +460,7 @@ if (!is.list(coxs)) stop("Cox models in list form\n");
 
    if (!is.null(cens)) {
    if (is.matrix(cens)) {
-	   pct <- pc.hazard(cens,rrc,cum.hazard=TRUE)
+	   pct <- pc.hazard(cens,rrc)
 	   pct <- pct$time
    }
    else {
@@ -471,8 +470,7 @@ if (!is.list(coxs)) stop("Cox models in list form\n");
 	   }
    }
 
-   dt <- cbind(data.frame(time=pmin(ptt$time,pct),
-			  status=ifelse(ptt$time<pct,ptt$status,0)),simcovs)
+   dt <- cbind(data.frame(time=pmin(ptt$time,pct),status=ifelse(ptt$time<pct,ptt$status,0)),simcovs)
    }
 
    return(dt)
@@ -907,8 +905,7 @@ subdist <- function(F1,times)
 #'
 #' @export
 #' @aliases sim.cif sim.cifs subdist pre.cifs 
-sim.cif <- function(cif,n,data=NULL,Z=NULL,drawZ=TRUE,cens=NULL,rrc=NULL,
-		    cumstart=c(0,0),...)
+sim.cif <- function(cif,n,data=NULL,Z=NULL,drawZ=TRUE,cens=NULL,rrc=NULL,cumstart=c(0,0),...)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
 ### cumh=cbind(breaks,cumhazard) if cumh=TRUE
