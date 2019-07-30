@@ -24,7 +24,7 @@ if "is.matrix" then uses cumulative.
 
 \item{rrc}{possible vector of relative risk for cox-type censoring.}
 
-\item{...}{arguments for pc.hazard, for example entry-time}
+\item{...}{arguments for rchaz, for example entry-time}
 }
 \description{
 Simulates data that looks like fit from cause specific Cox models. 

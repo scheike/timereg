@@ -25,14 +25,14 @@
 #' cumhaz <- cumsum(c(0,diff(breaks)*rates[-1]))
 #' cumhaz <- cbind(breaks,cumhaz)
 #' 
-#' pctime <- pc.hazard(haz,n=1000,cum.hazard=FALSE)
+#' pctime <- rchaz(haz,n=1000,cum.hazard=FALSE)
 #' 
 #' par(mfrow=c(1,2))
 #' ss <- aalen(Surv(time,status)~+1,data=pctime,robust=0)
 #' plot(ss)
 #' lines(cumhaz,col=2,lwd=2)
 #' 
-#' pctimecox <- pc.hazard(cumhaz,rrcox)
+#' pctimecox <- rchaz(cumhaz,rrcox)
 #' pctime <- cbind(pctime,X)
 #' ssx <- cox.aalen(Surv(time,status)~+prop(X),data=pctimecox,robust=0)
 #' plot(ssx)
@@ -46,12 +46,12 @@
 #' par(mfrow=c(1,2))
 #' plot(ss)
 #' ###
-#' pctime <- pc.hazard(ss$cum,n=1000)
+#' pctime <- rchaz(ss$cum,n=1000)
 #' ###
 #' sss <- aalen(Surv(time,status)~+1,data=pctime,robust=0)
 #' lines(sss$cum,col=2,lwd=2)
 #' 
-#' pctime <- pc.hazard(ss$cum,rrcox)
+#' pctime <- rchaz(ss$cum,rrcox)
 #' pctime <- cbind(pctime,X)
 #' ###
 #' sss <- cox.aalen(Surv(time,status)~+prop(X),data=pctime,robust=0)
@@ -59,9 +59,9 @@
 #' plot(ss)
 #' lines(sss$cum,col=3,lwd=3)
 #' 
-#' @export
-#' @aliases pchazard.sim addCums
-pc.hazard <- function(cumhazard,rr,n=NULL,entry=NULL,cum.hazard=TRUE,cause=1,extend=FALSE)
+#' @export 
+#' @aliases pc.hazard simrchaz addCums
+rchaz <- function(cumhazard,rr,n=NULL,entry=NULL,cum.hazard=TRUE,cause=1,extend=FALSE)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
 ### cumh=cbind(breaks,cumhazard) if cumh=TRUE
@@ -113,6 +113,11 @@ pc.hazard <- function(cumhazard,rr,n=NULL,entry=NULL,cum.hazard=TRUE,cause=1,ext
    return(dt)
 }# }}}
 
+pc.hazard <- function(cumhazard,rr,...)
+{# {{{
+rchaz(cumhazard,rr,...)
+}# }}}
+
 #' @export
 lin.approx <- function(x2,xfx,x=1)
 {# {{{
@@ -144,19 +149,19 @@ addCums <- function(cumB,cumA,max=NULL)
 }# }}}
 
 #' @export
-pchazard.sim <- function(cumhazard,rr,cens=NULL,rrc=NULL,...)
+simrchaz <- function(cumhazard,rr,cens=NULL,rrc=NULL,...)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
 ### cumh=cbind(breaks,cumhazard) if cumh=TRUE
 
-   ptt <- pc.hazard(cumhazard,rr,cum.hazard=TRUE,...)
+   ptt <- rchaz(cumhazard,rr,cum.hazard=TRUE,...)
 
    if (length(rr)==1) n<-rr else n <- length(rr)
    if (is.null(rrc)) {
 	   if (length(rr)==1) rrc<-rr else rrc <- length(rr)
    }
    if (is.matrix(cens)) {
-	   pct <- pc.hazard(cens,rrc,...)
+	   pct <- rchaz(cens,rrc,...)
 	   pct <- pct$time
    }
    else {
@@ -181,7 +186,7 @@ pchazard.sim <- function(cumhazard,rr,cens=NULL,rrc=NULL,...)
 #' @param rr2 number of simulations or vector of relative risk for simuations.
 #' @param cens to censor further , rate or cumumlative hazard
 #' @param rrc retlativ risk for censoring.
-#' @param ... arguments for pc.hazard 
+#' @param ... arguments for rchaz 
 #' @author Thomas Scheike
 #' @keywords survival
 #' @examples
@@ -202,7 +207,7 @@ pchazard.sim <- function(cumhazard,rr,cens=NULL,rrc=NULL,...)
 #'
 #' cumhaz1 <- cox1$cum
 #' cumhaz2 <- cox2$cum
-#' d <-  cause.pchazard.sim(cox1$cum,cox2$cum,rr1,rr2)
+#' d <-  rcrisk(cox1$cum,cox2$cum,rr1,rr2)
 #' dd <- cbind(d,Z1)
 #' sc1 <-   cox.aalen(Surv(time,status==1)~prop(vf)+prop(chf)+prop(wmi),
 #'                   data=dd,robust=0)
@@ -216,7 +221,8 @@ pchazard.sim <- function(cumhazard,rr,cens=NULL,rrc=NULL,...)
 #' lines(sc2$cum,col=2)
 #' 
 #' @export 
-cause.pchazard.sim<-function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,...)
+#' @aliases cause.pchazard.sim 
+rcrisk <-function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,...)
 {#'# {{{
 ##'## cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
 ##'## cumh=cbind(breaks,cumhazard) if cumh=TRUE
@@ -224,14 +230,14 @@ cause.pchazard.sim<-function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,...)
    if (length(rr1)==1) n<-rr1 else n <- length(rr1)
    if (missing(rr2)) rr2 <-rep(1,n)
  
-   ptt1 <- pc.hazard(cumhaz1,rr1,cum.hazard=TRUE,...)
-   ptt2 <- pc.hazard(cumhaz2,rr2,cum.hazard=TRUE,...)
+   ptt1 <- rchaz(cumhaz1,rr1,cum.hazard=TRUE,...)
+   ptt2 <- rchaz(cumhaz2,rr2,cum.hazard=TRUE,...)
    ptt <- data.frame(time=pmin(ptt1$time,ptt2$time),status=ifelse(ptt1$time<=ptt2$time,ptt1$status,ptt2$status*2),entry=ptt1$entry)
  
    if (!is.null(cens)) {
       if (is.null(rrc)) rrc <- rep(1,n)
            if (is.matrix(cens)) {
-        	   pct <- pc.hazard(cens,rrc,...)
+        	   pct <- rchaz(cens,rrc,...)
         	   pct <- pct$time
            } else {
         	   if (is.numeric(cens)) pct<- rexp(n)/cens  else {
@@ -244,6 +250,12 @@ cause.pchazard.sim<-function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,...)
 
    return(ptt)
 }# }}}
+
+#' @export 
+cause.pchazard.sim<-function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,...)
+{
+    rcrisk(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,...)
+}
 
 #' Simulation of output from Cox model.
 #' 
@@ -259,7 +271,7 @@ cause.pchazard.sim<-function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,...)
 #' given then takes average rate of in simulated data from cox model.
 #' @param rrc possible vector of relative risk for cox-type censoring.
 #' @param entry delayed entry variable for simulation.
-#' @param ... arguments for pc.hazard, for example entry-time
+#' @param ... arguments for rchaz, for example entry-time
 #' @author Thomas Scheike
 #' @keywords survival
 #' @examples
@@ -311,7 +323,7 @@ Z <- des$Z; cumhazard <- des$cum; rr <- des$rr;
 
 if (class(cox)!="phreg") {
         if (cumhazard[1,2]>0) cumhazard <- rbind(c(0,0),cumhazard)
-	ptt <- pc.hazard(cumhazard,rr,entry=entry) 
+	ptt <- rchaz(cumhazard,rr,entry=entry) 
 	ptt <- cbind(ptt,Z)
 } else {
 	ptt <- data.frame()
@@ -320,14 +332,14 @@ if (class(cox)!="phreg") {
 		for (j in 0:(cox$nstrata-1)) {
                         cumhazardj <- rbind(c(0,0),cox$cumhaz[stratj==j,])
 			if (!is.null(entry)) entry <- entry[des$strataid==j]
-	                pttj <- pc.hazard(cumhazardj,rr[des$strataid==j],entry=entry) 
+	                pttj <- rchaz(cumhazardj,rr[des$strataid==j],entry=entry) 
 			Zj <- Z[des$strataid==j,,drop=FALSE]
 			pttj <- cbind(pttj,Zj)
 			ptt  <-  rbind(ptt,pttj)
 		}
 	} else {
             if (cumhazard[1,2]>0) cumhazard <- rbind(c(0,0),cumhazard)
-		ptt <- pc.hazard(cumhazard,rr,entry=entry) 
+		ptt <- rchaz(cumhazard,rr,entry=entry) 
 		ptt <- cbind(ptt,Z)
 	}
 }
@@ -335,7 +347,7 @@ if (class(cox)!="phreg") {
    if (!is.null(cens))  {
       if (is.null(rrc)) rrc <- rep(1,n)
       if (is.matrix(cens)) {
-	   pct <- pc.hazard(cens,rrc,entry=entry)
+	   pct <- rchaz(cens,rrc,entry=entry)
 	   pct <- pct$time
       }
       else {
@@ -372,7 +384,7 @@ if (class(cox)!="phreg") {
 #'             given then takes average rate of in simulated data from cox model.
 #'             But censoring can also be given as a cause.
 #' @param rrc possible vector of relative risk for cox-type censoring.
-#' @param ... arguments for pc.hazard, for example entry-time
+#' @param ... arguments for rchaz, for example entry-time
 #' @author Thomas Scheike
 #' @keywords survival
 #' @examples
@@ -460,7 +472,7 @@ if (!is.list(coxs)) stop("Cox models in list form\n");
 
    if (!is.null(cens)) {
    if (is.matrix(cens)) {
-	   pct <- pc.hazard(cens,rrc)
+	   pct <- rchaz(cens,rrc)
 	   pct <- pct$time
    }
    else {

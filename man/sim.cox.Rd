@@ -24,7 +24,7 @@ given then takes average rate of in simulated data from cox model.}
 
 \item{entry}{delayed entry variable for simulation.}
 
-\item{...}{arguments for pc.hazard, for example entry-time}
+\item{...}{arguments for rchaz, for example entry-time}
 }
 \description{
 Simulates data that looks like fit from Cox model. Censor data automatically
