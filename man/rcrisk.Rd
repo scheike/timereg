@@ -15,7 +15,8 @@
 \alias{cumh=TRUE}
 \title{Simulation of Piecewise constant hazard models with two causes (Cox).}
 \usage{
-rcrisk(cumhaz1, cumhaz2, rr1, rr2, cens = NULL, rrc = NULL, ...)
+rcrisk(cumhaz1, cumhaz2, rr1, rr2, n = NULL, cens = NULL, rrc = NULL,
+  ...)
 }
 \arguments{
 \item{cumhaz1}{cumulative hazard of cause 1}
@@ -26,6 +27,8 @@ rcrisk(cumhaz1, cumhaz2, rr1, rr2, cens = NULL, rrc = NULL, ...)
 
 \item{rr2}{number of simulations or vector of relative risk for simuations.}
 
+\item{n}{number of simulation if rr not given}
+
 \item{cens}{to censor further , rate or cumumlative hazard}
 
 \item{rrc}{retlativ risk for censoring.}
@@ -34,7 +37,8 @@ rcrisk(cumhaz1, cumhaz2, rr1, rr2, cens = NULL, rrc = NULL, ...)
 }
 \description{
 Simulates data from piecwise constant baseline hazard that can also be of
-Cox type. Censor data at highest value of the break points.
+Cox type. Censor data at highest value of the break points for either of the
+cumulatives.
 }
 \examples{
 data(TRACE)

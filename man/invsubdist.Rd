@@ -13,8 +13,7 @@ invsubdist(F1, u, entry = NULL, cond = 1, ptrunc = NULL)
 
 \item{entry}{possible delayed entry points}
 
-\item{cond}{1 indcates that we draw given that this subdistribution is used, so scales mass to 1 to get conditional 
-distribution function}
+\item{cond}{1 indcates that we draw given that this subdistribution is used, so draws from F1(t)/F1(tau)}
 
 \item{ptrunc}{possible trunction weigth for delayed entry, if NULL then uses ptrunc=1-F1(entry)}
 }
@@ -36,36 +35,6 @@ Ficond <- invsubdist(F1cond,u,cond=0)
 points(Ficond$time,u,pch="-")
 Fiu <- invsubdist(F1,u,cond=1)
 points(Fiu$time,u,pch="x")
-
-entry <- 4
-###
-F1entry <- subdist(F1,entry)[,2]
-ptrunc <- 1-F1entry
-###
-F1entry5 <- F1
-F1entry5[,1] <- F1entry5[,1]-entry
-F1entry5[,2] <- (F1entry5[,2]-F1entry)/ptrunc
-pos <- F1entry5[,1]>=0
-F1entry5 <- rbind(c(0,0),F1entry5[pos,])
-###
-plot(F1entry5,ylim=c(0,1),type="l")
-u <- runif(100)
-Fiu <- invsubdist(F1entry5,u,cond=0)
-points(Fiu$time,u,pch="-")
-###
-Fiu2 <- invsubdist(F1,u,cond=0,entry=entry)
-points(Fiu2$time-entry,u,pch="x")
-sum(Fiu2$time-entry-Fiu$time)
-
-F1ce <- F1entry5
-F1ce[,2] <- F1ce[,2]/tail(F1entry5[,2],1)
-plot(F1ce,type="l")
-u <- runif(100)
-Fi1ce <- invsubdist(F1ce,u,cond=0)
-points(Fi1ce$time,u,pch="-")
-Fice <- invsubdist(F1,u,cond=1,entry=entry)
-points(Fice$time-entry,u,pch="x")
-sum(Fice$time-entry-Fi1ce$time)
 
 
 ## simulation of distribution with delayed entry starting at 3

@@ -4,13 +4,15 @@
 \alias{simsubdist}
 \title{Simulation from subdistribution function assuming piecwise linearity}
 \usage{
-simsubdist(cumhazard, rr, entry = NULL, type = "cloglog",
+simsubdist(cumhazard, rr, n = NULL, entry = NULL, type = "cloglog",
   startcum = c(0, 0), ...)
 }
 \arguments{
 \item{cumhazard}{matrix that specified times and values of some cumulative hazard.}
 
 \item{rr}{"relative risk" terms}
+
+\item{n}{number of simulation if rr not given}
 
 \item{entry}{not implemented yet}
 
@@ -30,7 +32,7 @@ cif <- comp.risk(Event(time,status)~const(vf),data=sTRACE,cause=9,model="logisti
 cumhaz <- cif$cum
 
 ## 1000 logistic without covariates with baseline from model fit  
-sim1 <- simsubdist(cumhaz,1000,type="logistic")
+sim1 <- simsubdist(cumhaz,n=1000,type="logistic")
 ###
 cifs <- comp.risk(Event(time,status)~+1,data=sim1,cause=1,model="logistic2")
 ###
