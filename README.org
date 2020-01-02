@@ -1,0 +1,75 @@
+* Timereg for Event Times (=timereg=)
+      Additive survival model, semiparametric proportional odds model, 
+      cumulative residuals, excess risk models and more. 
+
+      Flexible competing risks regression including GOF-tests. 
+
+      Two-stage frailty modelling.  PLS for the additive risk model. 
+
+      Additive hazard Lasso in the 'ahaz' package for high-dimensional data.
+
+      mets package has a collection of tools for multivariate data. 
+
+  Programs for Martinussen and Scheike (2006), `Dynamic Regression
+      Models for Survival Data', Springer Verlag. 
+
+
+** Installation
+#+BEGIN_SRC R :exports both :eval never
+install.packages("timereg",dependencies=TRUE)
+#+END_SRC
+
+The development version may be installed directly from github
+(requires [[http://cran.r-project.org/bin/windows/Rtools/][Rtools]] on windows
+and [[http://cran.r-project.org/bin/macosx/tools/][development tools]] (+Xcode) for Mac OS X):
+#+BEGIN_SRC R :exports both :eval never
+devtools::install_github("scheike/timereg")
+#+END_SRC
+or download the source 
+#+BEGIN_EXAMPLE
+git@github.com:scheike/timereg.git
+#+END_EXAMPLE
+
+** Citation
+
+To cite the =timereg= package please use one of the following references
+
+#+BEGIN_QUOTE
+Thomas H. Scheike, Torben Martinussen (2006),
+Dynamic Regression models for survival data.
+Springer, New-York
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+"Thomas H. Scheike, Mei-Jie Zhang (2011)."
+"Analyzing Competing Risk Data Using the R timereg Package."
+"Journal of Statistical Software, 38(2), 1-15."
+"URL http://www.jstatsoft.org/v38/i02/."
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+
+#+END_QUOTE
+
+BibTeX:
+#+BEGIN_EXAMPLE
+
+#+END_EXAMPLE
+       
+** Examples
+
+#+BEGIN_SRC R :exports both :file timereg1.png :cache yes
+  library(timereg)
+  
+  example(aalen)
+  example(cox.aalen)
+  example(comp.risk)
+  example(two.stage)
+  example(restricted.residual.mean)
+
+#+END_SRC
+
+:RESULTS:
+[[file:inst/timereg1.png]]
+:END:
+
