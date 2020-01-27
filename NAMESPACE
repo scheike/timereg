@@ -96,6 +96,7 @@ export("aalen", ## {{{
        "simrchaz",
        "sim.cif",
        "sim.cifs",
+       "sim.cifsRestrict",
        "sim.cox",
        "sim.cause.cox",
        "timecox",
