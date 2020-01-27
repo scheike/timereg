@@ -5,6 +5,7 @@
 \alias{sim.cifs}
 \alias{subdist}
 \alias{pre.cifs}
+\alias{sim.cifsRestrict}
 \title{Simulation of output from Cumulative incidence regression model}
 \usage{
 \method{sim}{cif}(cif, n, data = NULL, Z = NULL, drawZ = TRUE,
@@ -125,6 +126,10 @@ legend("topleft",c("cause1","cause2"),lty=1:2,col=1:1)
 lines(cifs[[1]]$cum,col=2)
 lines(cifs[[2]]$cum,col=2,lty=2)
 
+# Everyhing wrapped in call assuming covariates work in the same way for two models
+# but now draws cif1 to be of correct model, but model 2 is adapted (if needed) to make constraints satisfied F1+F2 <=1
+# and drawns as "if not cause1" then distribute according to cause 2
+# dd <- sim.cifsRestrict(list(cif1,cif2),2000,data=bmt)
 # faster with mets package 
 # dd <- sim.cifs(list(cif1,cif2),1000,data=bmt)
 # scif1 <-  cifreg(Event(time,cause)~tcell+age,data=dd,cause=1)

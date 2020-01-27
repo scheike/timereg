@@ -88,38 +88,45 @@ for (s=0;s<*Ntimes;s++)
       if (*trans==1) { // {{{
 	VE(pbhat,j)=1-exp(-VE(bhat,j));
 	varp=VE(pbhat,j)*(1-VE(pbhat,j)); 
+//        if (*monotone==1)  scl_vec_mult(1,xi,dp1); else  
 	scl_vec_mult(1-VE(pbhat,j),xi,dp);
       }
       if (*trans==2) {
 	VE(pbhat,j)=1-exp(-exp(VE(bhat,j))); 
 	varp=VE(pbhat,j)*(1-VE(pbhat,j)); 
+//        if (*monotone==1)  scl_vec_mult(1,xi,dp1); else  
 	scl_vec_mult((1-VE(pbhat,j))*exp(VE(bhat,j)),xi,dp); 
       }
       if (*trans==6) {
 	VE(pbhat,j)=1-exp(-VE(bhat,j)); 
 	varp=VE(pbhat,j)*(1-VE(pbhat,j)); 
+//        if (*monotone==1)  scl_vec_mult(1,xi,dp1); else  
 	scl_vec_mult((1-VE(pbhat,j)),xi,dp); 
       }
       if (*trans==3) {
 	    VE(pbhat,j)=exp(VE(bhat,j))/(1+exp(VE(bhat,j))); 
 	varp=VE(pbhat,j)*(1-VE(pbhat,j)); 
+//        if (*monotone==1)  scl_vec_mult(1,xi,dp1); else  
 	scl_vec_mult(exp(VE(bhat,j))/pow((1+exp(VE(bhat,j))),2),xi,dp);
       }
       if (*trans==7) {
 	    VE(pbhat,j)=VE(bhat,j)/(1+VE(bhat,j)); 
+//        if (*monotone==1)  scl_vec_mult(1,xi,dp1); else  
 	scl_vec_mult(1/pow((1+VE(bhat,j)),2),xi,dp);
       }
       if (*trans==4) {
          VE(pbhat,j)=exp(VE(bhat,j)); 
 	varp=VE(pbhat,j)*(1-VE(pbhat,j)); 
+//        if (*monotone==1)  scl_vec_mult(1,xi,dp1); else  
 	 scl_vec_mult(exp(VE(bhat,j)),xi,dp);
       }
       if (*trans==5) {
          VE(pbhat,j)=VE(bhat,j); 
-	varp=VE(pbhat,j)*(1-VE(pbhat,j)); 
+	 varp=VE(pbhat,j)*(1-VE(pbhat,j)); 
 	 scl_vec_mult(1,xi,dp);
       } // }}} 
-      scl_vec_mult(1,dp,dp1); 
+
+//      scl_vec_mult(1,dp,dp1); 
 
       if (*estimator<=2) scl_vec_mult(pow(weights[j],0.5),dp,dp); 
       else scl_vec_mult(pow(weights[j],0.5)*(time<KMc[j])*(time>entry[j]),dp,dp); 

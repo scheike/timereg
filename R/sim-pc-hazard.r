@@ -881,6 +881,11 @@ subdist <- function(F1,times)
 #' lines(cifs[[1]]$cum,col=2)
 #' lines(cifs[[2]]$cum,col=2,lty=2)
 #'
+#' # Everyhing wrapped in call assuming covariates work in the same way for two models
+#' # but now draws cif1 to be of correct model, but model 2 is adapted (if needed) to make constraints satisfied F1+F2 <=1
+#' # and drawns as "if not cause1" then distribute according to cause 2
+#' # dd <- sim.cifsRestrict(list(cif1,cif2),2000,data=bmt)
+#
 #' # faster with mets package 
 #' # dd <- sim.cifs(list(cif1,cif2),1000,data=bmt)
 #' # scif1 <-  cifreg(Event(time,cause)~tcell+age,data=dd,cause=1)
@@ -892,7 +897,7 @@ subdist <- function(F1,times)
 #' # lines(cifs[[2]]$cum,col=2,lty=2)
 #' # 
 #' @export
-#' @aliases sim.cif sim.cifs subdist pre.cifs 
+#' @aliases sim.cif sim.cifs subdist pre.cifs sim.cifsRestrict
 sim.cif <- function(cif,n,data=NULL,Z=NULL,drawZ=TRUE,cens=NULL,rrc=NULL,cumstart=c(0,0),...)
 {# {{{
 ### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
@@ -969,6 +974,56 @@ if (!is.list(cifs)) stop("Cif models in list form\n");
   sim2 <- sim.cif(cifs[[2]],n,data=data,Z=Z2,drawZ=FALSE)
 
   ptot <- sim1$F1tau+sim2$F1tau
+  ###
+  rt <- rbinom(n,1,pmin(ptot,1))
+  rb <- rbinom(n,1,sim1$F1tau/ptot)
+  cause=ifelse(rb==1,1,2)
+  time=ifelse(cause==causes[1],sim1$timecause,sim2$timecause)
+  cause <- rt*cause
+  time[cause==0] <- tau
+
+  ptt <- data.frame(time=time,status=cause,cause=cause,ptot=ptot)
+  ptt <- cbind(ptt,Z)
+  samecovs <-  match(names(Z2),names(Z)) 
+  Ze <- Z2[,-samecovs]
+  ptt <- cbind(ptt,Ze)
+
+   if (!is.null(cens))  {# {{{
+      if (is.null(rrc)) rrc <- rep(1,n)
+      if (is.matrix(cens)) {
+	   pct <- pc.hazard(cens,rrc,cum.hazard=TRUE,...)
+	   pct <- pct$time
+      }
+      else {
+	   if (is.numeric(cens)) pct<- rexp(n)/cens  else {
+	      chaz <-sum(ptt$status)/sum(ptt$time)  ## hazard averate T haz 
+	      pct<- rexp(n)/chaz 
+           }
+      }
+      ptt$time <- pmin(ptt$time,pct)
+      ptt$status <- ifelse(ptt$time<pct,ptt$status,0)
+   } # }}}
+
+   return(ptt)
+}# }}}
+
+#' @export
+sim.cifsRestrict <- function(cifs,n,data=NULL,Z=NULL,cens=NULL,rrc=NULL,max.times=NULL,causes=c(1,2),...)
+{# {{{
+
+if (!is.list(cifs)) stop("Cif models in list form\n"); 
+
+  ## must consider all models out to last observation times or max.times
+  cifs <- pre.cifs(cifs,max.times=max.times)
+
+  tau <- tail(cifs[[1]]$cum[,1],1)
+  sim1 <- sim.cif(cifs[[1]],n,data=data,Z=Z)
+  Z <- sim1[,attr(sim1,"znames")]
+  sim2p <- read.fit(cifs[[2]],1,data=data,Z=NULL)
+  Z2 <- data[attr(sim1,"id"),names(sim2p$Z)]
+  sim2 <- sim.cif(cifs[[2]],n,data=data,Z=Z2,drawZ=FALSE)
+
+  ptot <- sim1$F1tau+sim2$F1tau*(1-sim1$F1tau)
   ###
   rt <- rbinom(n,1,pmin(ptot,1))
   rb <- rbinom(n,1,sim1$F1tau/ptot)

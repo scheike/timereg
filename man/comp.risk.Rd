@@ -12,7 +12,7 @@ comp.risk(formula, data = sys.parent(), cause, times = NULL,
   silent = 1, conv = 1e-06, weights = NULL, max.clust = 1000,
   n.times = 50, first.time.p = 0.05, estimator = 1, trunc.p = NULL,
   cens.weights = NULL, admin.cens = NULL, conservative = 1,
-  monotone = 0, step = NULL)
+  monotone = 1, step = NULL)
 }
 \arguments{
 \item{formula}{a formula object, with the response on the left of a '~'
