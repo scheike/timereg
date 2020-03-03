@@ -1073,7 +1073,7 @@ maxtimes <- rep(0,length(cifs))
 	cifs[[i]]$cum <- rbind(c(0,0),cbind(cifs[[i]]$uftime,cumsum(cifs[[i]]$bfitj)))
         maxtimes[i] <- max(cifs[[i]]$uftime)
      } else if (class(cifs[[i]])[1]=="phreg") {
-	cifs[[i]]$cum <- cifs[[i]]$cumhaz
+	cifs[[i]]$cumhaz <- cifs[[i]]$cumhaz
         maxtimes[i] <- max(cifs[[i]]$cumhaz[,1])
      } else {
         maxtimes[i] <- max(cifs[[i]]$cum[,1])
@@ -1095,6 +1095,7 @@ maxtimes <- rep(0,length(cifs))
 	cums <- cums[keep,,drop=FALSE]
 	cums <- rbind(cums,Fmm)
 	cifs[[i]]$cum <- cums
+	cifs[[i]]$cumhaz <- cums
 	if (pprint) {
 	print(head(cums))
 	print(tail(cums))
