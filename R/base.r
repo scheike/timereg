@@ -46,6 +46,7 @@ coefcox <- function(object, digits=3, d2logl=0,ci=1,alpha=0.05) { ## {{{
 #' @param object timereg object
 #' @param coef estimates from some model
 #' @param Sigma variance of estimates
+#' @param vcov same as Sigma but more standard in other functions
 #' @param contrast contrast matrix for testing
 #' @param coef.null which indeces to test to 0
 #' @param null mean of null, 0 by default
@@ -76,6 +77,7 @@ coefcox <- function(object, digits=3, d2logl=0,ci=1,alpha=0.05) { ## {{{
 wald.test <- function(object=NULL,coef=NULL,Sigma=NULL,vcov=NULL,contrast,coef.null=NULL,null=NULL,print.coef=TRUE,alpha=0.05)
 { ## {{{
 
+  coefs <- NULL
   if (class(object)[1]=="coxph")  {coef <-  matrix(coef(object),ncol=1); Sigma=object$var;}
   if (class(object)[1]=="phreg")  {coef <-  matrix(c(coef(object)),ncol=1); Sigma=vcov(object);}
   if (class(object)[1]=="cox.aalen")  {coef <- object$gamma; Sigma=object$var.gamma;}
