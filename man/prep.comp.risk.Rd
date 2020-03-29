@@ -4,10 +4,21 @@
 \alias{prep.comp.risk}
 \title{Set up weights for delayed-entry competing risks data for comp.risk function}
 \usage{
-prep.comp.risk(data, times = NULL, entrytime = NULL, time = "time",
-  cause = "cause", cname = "cweight", tname = "tweight",
-  strata = NULL, nocens.out = TRUE, cens.formula = NULL,
-  cens.code = 0, prec.factor = 100, trunc.mintau = FALSE)
+prep.comp.risk(
+  data,
+  times = NULL,
+  entrytime = NULL,
+  time = "time",
+  cause = "cause",
+  cname = "cweight",
+  tname = "tweight",
+  strata = NULL,
+  nocens.out = TRUE,
+  cens.formula = NULL,
+  cens.code = 0,
+  prec.factor = 100,
+  trunc.mintau = FALSE
+)
 }
 \arguments{
 \item{data}{data frame for comp.risk.}

@@ -4,11 +4,24 @@
 \alias{prop.odds}
 \title{Fit Semiparametric Proportional 0dds Model}
 \usage{
-prop.odds(formula, data = sys.parent(), beta = NULL, Nit = 20,
-  detail = 0, start.time = 0, max.time = NULL, id = NULL,
-  n.sim = 500, weighted.test = 0, profile = 1, sym = 0,
-  baselinevar = 1, clusters = NULL, max.clust = 1000,
-  weights = NULL)
+prop.odds(
+  formula,
+  data = sys.parent(),
+  beta = NULL,
+  Nit = 20,
+  detail = 0,
+  start.time = 0,
+  max.time = NULL,
+  id = NULL,
+  n.sim = 500,
+  weighted.test = 0,
+  profile = 1,
+  sym = 0,
+  baselinevar = 1,
+  clusters = NULL,
+  max.clust = 1000,
+  weights = NULL
+)
 }
 \arguments{
 \item{formula}{a formula object, with the response on the left of a '~'

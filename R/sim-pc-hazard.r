@@ -3,12 +3,12 @@
 #' Simulates data from piecwise constant baseline hazard that can also be of
 #' Cox type. Censor data at highest value of the break points.
 #' 
-#' For a piecewise linear cumulative hazard the inverse is easy to compute and 
-#' delayed entry x we compute 
-#' \deqn{\Lambda^{-1}(\Lamda(x) + E/RR)}, 
+#' For a piecewise linear cumulative hazard the inverse is easy to compute with 
+#' and delayed entry x we compute 
+#' \deqn{\Lambda^{-1}(\Lambda(x) + E/RR)}, 
 #' where RR are the relative risks and E is exponential with mean 1.
 #' This quantity has survival function 
-#' \deqn{P(T > t | T>x) = exp(-RR (\Lambda(t) - \Lamda(x)))}. 
+#' \deqn{P(T > t | T>x) = exp(-RR (\Lambda(t) - \Lambda(x)))}. 
 #' 
 #' @param cumhazard cumulative hazard, or piece-constant rates for periods defined by first column of input.
 #' @param rr relative risk for simulations, alternatively when rr=1 specify n 
@@ -882,7 +882,9 @@ subdist <- function(F1,times)
 #' lines(cifs[[2]]$cum,col=2,lty=2)
 #'
 #' # Everyhing wrapped in call assuming covariates work in the same way for two models
-#' # but now draws cif1 to be of correct model, but model 2 is adapted (if needed) to make constraints satisfied F1+F2 <=1
+#' # but now draws cif1 to be of correct model, but model 2 is adapted 
+#' #(if needed) to make constraints satisfied F1+F2 <=1
+#' # see doubleFG of mets package for paramtrization
 #' # and drawns as "if not cause1" then distribute according to cause 2
 #' # dd <- sim.cifsRestrict(list(cif1,cif2),2000,data=bmt)
 #

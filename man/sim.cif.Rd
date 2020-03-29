@@ -8,8 +8,17 @@
 \alias{sim.cifsRestrict}
 \title{Simulation of output from Cumulative incidence regression model}
 \usage{
-\method{sim}{cif}(cif, n, data = NULL, Z = NULL, drawZ = TRUE,
-  cens = NULL, rrc = NULL, cumstart = c(0, 0), ...)
+\method{sim}{cif}(
+  cif,
+  n,
+  data = NULL,
+  Z = NULL,
+  drawZ = TRUE,
+  cens = NULL,
+  rrc = NULL,
+  cumstart = c(0, 0),
+  ...
+)
 }
 \arguments{
 \item{cif}{output form prop.odds.subdist or ccr (cmprsk), can also call invsubdist with
@@ -127,7 +136,9 @@ lines(cifs[[1]]$cum,col=2)
 lines(cifs[[2]]$cum,col=2,lty=2)
 
 # Everyhing wrapped in call assuming covariates work in the same way for two models
-# but now draws cif1 to be of correct model, but model 2 is adapted (if needed) to make constraints satisfied F1+F2 <=1
+# but now draws cif1 to be of correct model, but model 2 is adapted 
+#(if needed) to make constraints satisfied F1+F2 <=1
+# see doubleFG of mets package for paramtrization
 # and drawns as "if not cause1" then distribute according to cause 2
 # dd <- sim.cifsRestrict(list(cif1,cif2),2000,data=bmt)
 # faster with mets package 

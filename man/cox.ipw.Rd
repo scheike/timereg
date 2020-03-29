@@ -7,8 +7,14 @@
 \alias{coef.cox.ipw}
 \title{Missing data IPW Cox}
 \usage{
-cox.ipw(survformula, glmformula, d = sys.parent(), max.clust = NULL,
-  ipw.se = FALSE, tie.seed = 100)
+cox.ipw(
+  survformula,
+  glmformula,
+  d = sys.parent(),
+  max.clust = NULL,
+  ipw.se = FALSE,
+  tie.seed = 100
+)
 }
 \arguments{
 \item{survformula}{a formula object with the response on the left of a '~'

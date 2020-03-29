@@ -5,12 +5,28 @@
 \title{Fit Semiparametric Proportional 0dds Model for the competing risks
 subdistribution}
 \usage{
-prop.odds.subdist(formula, data = sys.parent(), cause = 1,
-  beta = NULL, Nit = 10, detail = 0, start.time = 0,
-  max.time = NULL, id = NULL, n.sim = 500, weighted.test = 0,
-  profile = 1, sym = 0, cens.model = "KM", cens.formula = NULL,
-  clusters = NULL, max.clust = 1000, baselinevar = 1,
-  weights = NULL, cens.weights = NULL)
+prop.odds.subdist(
+  formula,
+  data = sys.parent(),
+  cause = 1,
+  beta = NULL,
+  Nit = 10,
+  detail = 0,
+  start.time = 0,
+  max.time = NULL,
+  id = NULL,
+  n.sim = 500,
+  weighted.test = 0,
+  profile = 1,
+  sym = 0,
+  cens.model = "KM",
+  cens.formula = NULL,
+  clusters = NULL,
+  max.clust = 1000,
+  baselinevar = 1,
+  weights = NULL,
+  cens.weights = NULL
+)
 }
 \arguments{
 \item{formula}{a formula object, with the response on the left of a '~'

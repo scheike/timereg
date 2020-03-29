@@ -7,8 +7,15 @@
 \alias{addCums}
 \title{Simulation of Piecewise constant hazard model (Cox).}
 \usage{
-rchaz(cumhazard, rr, n = NULL, entry = NULL, cum.hazard = TRUE,
-  cause = 1, extend = FALSE)
+rchaz(
+  cumhazard,
+  rr,
+  n = NULL,
+  entry = NULL,
+  cum.hazard = TRUE,
+  cause = 1,
+  extend = FALSE
+)
 }
 \arguments{
 \item{cumhazard}{cumulative hazard, or piece-constant rates for periods defined by first column of input.}
@@ -30,12 +37,12 @@ Simulates data from piecwise constant baseline hazard that can also be of
 Cox type. Censor data at highest value of the break points.
 }
 \details{
-For a piecewise linear cumulative hazard the inverse is easy to compute and 
-delayed entry x we compute 
-\deqn{\Lambda^{-1}(\Lamda(x) + E/RR)}, 
+For a piecewise linear cumulative hazard the inverse is easy to compute with 
+and delayed entry x we compute 
+\deqn{\Lambda^{-1}(\Lambda(x) + E/RR)}, 
 where RR are the relative risks and E is exponential with mean 1.
 This quantity has survival function 
-\deqn{P(T > t | T>x) = exp(-RR (\Lambda(t) - \Lamda(x)))}.
+\deqn{P(T > t | T>x) = exp(-RR (\Lambda(t) - \Lambda(x)))}.
 }
 \examples{
 

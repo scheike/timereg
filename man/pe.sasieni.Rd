@@ -5,9 +5,17 @@
 \alias{summary.pe-sasieni}
 \title{Fits Proportional excess hazards model with fixed offsets}
 \usage{
-pe.sasieni(formula = formula(data), data = sys.parent(), id = NULL,
-  start.time = 0, max.time = NULL, offsets = 0, Nit = 50,
-  detail = 0, n.sim = 500)
+pe.sasieni(
+  formula = formula(data),
+  data = sys.parent(),
+  id = NULL,
+  start.time = 0,
+  max.time = NULL,
+  offsets = 0,
+  Nit = 50,
+  detail = 0,
+  n.sim = 500
+)
 }
 \arguments{
 \item{formula}{a formula object, with the response on the left of a `~'

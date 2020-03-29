@@ -4,11 +4,27 @@
 \alias{aalen}
 \title{Fit additive hazards model}
 \usage{
-aalen(formula = formula(data), data = sys.parent(), start.time = 0,
-  max.time = NULL, robust = 1, id = NULL, clusters = NULL,
-  residuals = 0, n.sim = 1000, weighted.test = 0, covariance = 0,
-  resample.iid = 0, deltaweight = 1, silent = 1, weights = NULL,
-  max.clust = 1000, gamma = NULL, offsets = 0, caseweight = NULL)
+aalen(
+  formula = formula(data),
+  data = sys.parent(),
+  start.time = 0,
+  max.time = NULL,
+  robust = 1,
+  id = NULL,
+  clusters = NULL,
+  residuals = 0,
+  n.sim = 1000,
+  weighted.test = 0,
+  covariance = 0,
+  resample.iid = 0,
+  deltaweight = 1,
+  silent = 1,
+  weights = NULL,
+  max.clust = 1000,
+  gamma = NULL,
+  offsets = 0,
+  caseweight = NULL
+)
 }
 \arguments{
 \item{formula}{a formula object with the response on the left of a '~'
