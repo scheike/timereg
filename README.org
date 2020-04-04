@@ -53,9 +53,25 @@ Springer, New-York
 
 BibTeX:
 #+BEGIN_EXAMPLE
+@Book{ms06,
+  title         = {Dynamic Regression Models for Survival Data},
+  publisher     = {Springer-Verlag New York},
+  year          = {2006},
+  author        = {T. Martinussen and T.H. Scheike},
+}
+
+
+@Article{ts-mz-jss-2010,
+  author        = {Scheike, T. H. and Mei-Jie Zhang},
+  title         = {Modelling competing risks data using the {R}-timereg package},
+  journal       = {Journal of Statistical Software},
+  year          = {2011},
+  volume        = {38},
+  pages         = {1-15},
+}
 
 #+END_EXAMPLE
-       
+
 ** Examples
 
 #+BEGIN_SRC R :exports both :file timereg1.png :cache yes
