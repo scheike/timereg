@@ -100,11 +100,11 @@
 #' plot(out)
 #' 
 ##' @export
-timecox<-function(formula=formula(data),data=sys.parent(),
-start.time=0,max.time=NULL,id=NULL,clusters=NULL,
-n.sim=1000,residuals=0,robust=1,Nit=20,bandwidth=0.5,
-method="basic",weighted.test=0,degree=1,covariance=0)
-{
+timecox<-function(formula=formula(data),data, weights, subset, na.action,
+                  start.time=0,max.time=NULL,id=NULL,clusters=NULL,
+                  n.sim=1000,residuals=0,robust=1,Nit=20,bandwidth=0.5,
+                  method="basic",weighted.test=0,degree=1,covariance=0)
+  {
   sim2<-0; if (n.sim==0) sim<-0 else sim<-1;
   if (method!="basic") stop("Only runs the default method at the moment\n"); 
 
@@ -126,22 +126,28 @@ method="basic",weighted.test=0,degree=1,covariance=0)
   if (n.sim>0 & n.sim<50) {n.sim<-50 ; cat("Minimum 50 simulations\n");}
 
   call <- match.call()
-  m <- match.call(expand.dots=FALSE)
-  m$robust<-m$start.time<-m$degree<-m$weighted.test<-
-    m$method<-m$Nit<-m$bandwidth<-m$max.time<-m$pers<-
-      m$residuals<-m$n.sim<-m$id<-m$covariance<-NULL
 
+  # New code
+  indx <- match(c("formula", "data", "weights", "subset", "na.action",
+                   "id"), names(call), nomatch=0)
+  if (indx[1] ==0) stop ("a formula argument is required")
+  temp <- call[c(1, indx)]  # only keep the arguments we want
+  temp[[1L]] <- quote(stats::model.frame)  # change the function called
   special <- c("const","cluster")
-  Terms <- if(missing(data)) terms(formula, special)
+  temp$formula <- if(missing(data)) terms(formula, special)
   else              terms(formula, special, data=data)
-  m$formula <- Terms
-  m[[1]] <- as.name("model.frame")
-  m <- eval(m, sys.parent())
+
+  m <- eval(temp, parent.frame())
   mt <- attr(m, "terms")
   intercept<-attr(mt, "intercept")
-  Y <- model.extract(m, "response")
+  Y <- model.response(m,)
   if (!inherits(Y, "Surv")) 
     stop("Response must be a survival object")
+  id <- model.extract(m, "(id)")
+  weights <- model.weights(m)
+  if (!is.null(weights)) stop("timecox does not support case weights")
+  Terms <- terms(m)
+  # end new code
 
   des<-read.design(m,Terms)
   X<-des$X; Z<-des$Z; npar<-des$npar; px<-des$px; pz<-des$pz;
