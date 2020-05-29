@@ -6,6 +6,7 @@
 \alias{subdist}
 \alias{pre.cifs}
 \alias{sim.cifsRestrict}
+\alias{setup.cif}
 \title{Simulation of output from Cumulative incidence regression model}
 \usage{
 \method{sim}{cif}(
@@ -75,14 +76,14 @@ cbind(cif$gamma,cc$gamma)
 plot(cif) 
 lines(cc$cum)
 
- # faster/better with  mets package 
- # library(mets)
- # scif <-  cifreg(Event(time,status)~vf+chf+wmi,data=sim1,cause=1,prop=NULL)
- #   
- # plot(scif$cum,type="l")
- # lines(cif$cum,col=2)
- # cbind(cif$gamma,scif$coef)
- # 
+# faster/better with  mets package 
+# library(mets)
+# scif <-  cifreg(Event(time,status)~vf+chf+wmi,data=sim1,cause=1,prop=NULL)
+#   
+# plot(scif$cum,type="l")
+# lines(cif$cum,col=2)
+# cbind(cif$gamma,scif$coef)
+# 
 ################################################################
 #  simulating several causes with specific cumulatives 
 ################################################################

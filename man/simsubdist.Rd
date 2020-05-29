@@ -67,7 +67,7 @@ F1logit<-function(t,lam0=0.2,beta=0.3,x=0)
 F1p<-function(t,lam0=0.4,beta=0.3,x=0) # proportional version 
 { return( 1 - exp(-(t*lam0)*exp(x*beta))) }
 
-n=10000
+n=1000
 tt=seq(0,3,by=.01)
 tt=seq(0,3,by=.01)
 t1 <- invsubdist(cbind(tt,F1p(tt)),runif(n))

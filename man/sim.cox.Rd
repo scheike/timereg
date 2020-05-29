@@ -32,7 +32,6 @@ for highest value of the event times by using cumulative hazard.
 \examples{
 
 data(TRACE)
-
 cox <-  coxph(Surv(time,status==9)~vf+chf+wmi,data=TRACE)
 sim1 <- sim.cox(cox,1000,data=TRACE)
 cc <- coxph(Surv(time,status)~vf+chf+wmi,data=sim1)
@@ -40,14 +39,6 @@ cbind(cox$coef,cc$coef)
 
 cor(sim1[,c("vf","chf","wmi")])
 cor(TRACE[,c("vf","chf","wmi")])
-
-cox <-  cox.aalen(Surv(time, status==9) ~ prop(vf)+prop(chf)+prop(wmi),TRACE,robust=0)
-sim2 <- sim.cox(cox,1000,data=TRACE)
-cc <-  cox.aalen(Surv(time, status)~prop(vf)+prop(chf)+prop(wmi),data=sim2,robust=0)
-###
-plot(cox)
-lines(cc$cum,type="s",col=2)
-cbind(cox$gamma,cc$gamma)
 
 \donttest{
 ### do not test to avoid dependence on mets

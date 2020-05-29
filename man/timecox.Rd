@@ -6,7 +6,10 @@
 \usage{
 timecox(
   formula = formula(data),
-  data = sys.parent(),
+  data,
+  weights,
+  subset,
+  na.action,
   start.time = 0,
   max.time = NULL,
   id = NULL,
@@ -30,6 +33,12 @@ regressors are specified by the wrapper const(), and cluster variables (for
 computing robust variances) by the wrapper cluster().}
 
 \item{data}{a data.frame with the variables.}
+
+\item{weights}{for analysis}
+
+\item{subset}{to subset}
+
+\item{na.action}{to have na.action}
 
 \item{start.time}{start of observation period where estimates are computed.}
 

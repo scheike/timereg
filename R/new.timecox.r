@@ -24,6 +24,9 @@
 #' regressors are specified by the wrapper const(), and cluster variables (for
 #' computing robust variances) by the wrapper cluster().
 #' @param data a data.frame with the variables.
+#' @param weights for analysis 
+#' @param subset to subset
+#' @param na.action to have na.action 
 #' @param start.time start of observation period where estimates are computed.
 #' @param max.time end of observation period where estimates are computed.
 #' Estimates thus computed from [start.time, max.time]. Default is max of data.
