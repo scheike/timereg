@@ -4,15 +4,8 @@
 \alias{simsubdist}
 \title{Simulation from subdistribution function assuming piecwise linearity}
 \usage{
-simsubdist(
-  cumhazard,
-  rr,
-  n = NULL,
-  entry = NULL,
-  type = "cloglog",
-  startcum = c(0, 0),
-  ...
-)
+simsubdist(cumhazard, rr, n = NULL, entry = NULL, type = "cloglog",
+  startcum = c(0, 0), ...)
 }
 \arguments{
 \item{cumhazard}{matrix that specified times and values of some cumulative hazard.}

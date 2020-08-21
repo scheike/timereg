@@ -1102,18 +1102,6 @@ maxtimes <- rep(0,length(cifs))
   return(cifs)
 }# }}}
 
-#' @export 
-setup.cif  <- function(cumhazard,coef,Znames=NULL,type="logistic")
-{# {{{
-cif <- list()
-cif$cumhaz <- cumhazard
-cif$coef <- coef
-cif$model <- type
-class(cif) <- "defined"
-attr(cif,"znames") <- Znames
-return(cif)
-}# }}}
-
 
 ## reads a coxph, cox.aalen, phreg, crr, comprisk, prop.odds.subdist object
 ## and returns cumulative hazard, linear predictor of a resample of size

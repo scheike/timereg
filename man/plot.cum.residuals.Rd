@@ -4,26 +4,11 @@
 \alias{plot.cum.residuals}
 \title{Plots cumulative residuals}
 \usage{
-\method{plot}{cum.residuals}(
-  x,
-  pointwise.ci = 1,
-  hw.ci = 0,
-  sim.ci = 0,
-  robust = 1,
-  specific.comps = FALSE,
-  level = 0.05,
-  start.time = 0,
-  stop.time = 0,
-  add.to.plot = FALSE,
-  mains = TRUE,
-  main = NULL,
-  xlab = NULL,
-  ylab = "Cumulative MG-residuals",
-  ylim = NULL,
-  score = 0,
-  conf.band = FALSE,
-  ...
-)
+\method{plot}{cum.residuals}(x, pointwise.ci = 1, hw.ci = 0,
+  sim.ci = 0, robust = 1, specific.comps = FALSE, level = 0.05,
+  start.time = 0, stop.time = 0, add.to.plot = FALSE, mains = TRUE,
+  main = NULL, xlab = NULL, ylab = "Cumulative MG-residuals",
+  ylim = NULL, score = 0, conf.band = FALSE, ...)
 }
 \arguments{
 \item{x}{the output from the "cum.residuals" function.}

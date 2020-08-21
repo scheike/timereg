@@ -4,8 +4,6 @@ import(survival)
 import(numDeriv)
 import(lava)
 
-
-
 export("aalen", ## {{{ 
        "aalen.des",
        "aalen.des2",
@@ -90,6 +88,7 @@ export("aalen", ## {{{
        "semiregBase",
        "sindex.prodlim",
        "simsubdist",
+###    "setup.cif",
 ###    "pls.surv.cv",
        "pc.hazard",
 ###    "pchazard.sim",
@@ -266,5 +265,6 @@ importFrom("stats", "get_all_vars")
 importFrom("stats", "vcov")
 importFrom("methods", "hasArg")
 
+importFrom("stats", "model.response", "model.weights")
 
 

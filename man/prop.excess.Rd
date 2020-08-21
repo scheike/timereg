@@ -4,16 +4,9 @@
 \alias{prop.excess}
 \title{Fits Proportional excess hazards model}
 \usage{
-prop.excess(
-  formula = formula(data),
-  data = sys.parent(),
-  excess = 1,
-  tol = 1e-04,
-  max.time = NULL,
-  n.sim = 1000,
-  alpha = 1,
-  frac = 1
-)
+prop.excess(formula = formula(data), data = sys.parent(), excess = 1,
+  tol = 1e-04, max.time = NULL, n.sim = 1000, alpha = 1,
+  frac = 1)
 }
 \arguments{
 \item{formula}{a formula object, with the response on the left of a `~'

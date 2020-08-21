@@ -5,7 +5,8 @@
 \alias{cause.pchazard.sim}
 \title{Simulation of Piecewise constant hazard models with two causes (Cox).}
 \usage{
-rcrisk(cumhaz1, cumhaz2, rr1, rr2, n = NULL, cens = NULL, rrc = NULL, ...)
+rcrisk(cumhaz1, cumhaz2, rr1, rr2, n = NULL, cens = NULL, rrc = NULL,
+  ...)
 }
 \arguments{
 \item{cumhaz1}{cumulative hazard of cause 1}

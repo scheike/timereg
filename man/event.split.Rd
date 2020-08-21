@@ -4,17 +4,9 @@
 \alias{event.split}
 \title{EventSplit (SurvSplit).}
 \usage{
-event.split(
-  data,
-  time = "time",
-  status = "status",
-  cuts = "cuts",
-  name.id = "id",
-  name.start = "start",
-  cens.code = 0,
-  order.id = TRUE,
-  time.group = TRUE
-)
+event.split(data, time = "time", status = "status", cuts = "cuts",
+  name.id = "id", name.start = "start", cens.code = 0,
+  order.id = TRUE, time.group = TRUE)
 }
 \arguments{
 \item{data}{data to be split}

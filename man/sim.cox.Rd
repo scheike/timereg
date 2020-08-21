@@ -5,7 +5,8 @@
 \alias{read.fit}
 \title{Simulation of output from Cox model.}
 \usage{
-\method{sim}{cox}(cox, n, data = NULL, cens = NULL, rrc = NULL, entry = NULL, ...)
+\method{sim}{cox}(cox, n, data = NULL, cens = NULL, rrc = NULL,
+  entry = NULL, ...)
 }
 \arguments{
 \item{cox}{output form coxph or cox.aalen model fitting cox model.}
