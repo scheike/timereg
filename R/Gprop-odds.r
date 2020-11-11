@@ -95,7 +95,7 @@
 #' }
 #' 
 #' @export
-Gprop.odds<-function(formula=formula(data),data=sys.parent(),beta=0,Nit=50,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,sym=0,mle.start=0)
+Gprop.odds<-function(formula=formula(data),data=parent.frame(),beta=0,Nit=50,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,sym=0,mle.start=0)
 {
 id.call<-id; call<-match.call(); residuals<-0;  
 robust<-0; ratesim<-0; profile<-0; exppar<-0; 
@@ -109,7 +109,7 @@ antsim<-n.sim;
            else              terms(formula, special, data=data)
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
-  m <- eval(m, sys.parent())
+  m <- eval(m, parent.frame())
   mt <- attr(m, "terms")
   intercept<-attr(mt, "intercept")
   Y <- model.extract(m, "response")

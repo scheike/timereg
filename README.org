@@ -27,7 +27,7 @@ devtools::install_github("scheike/timereg")
 #+END_SRC
 or download the source 
 #+BEGIN_EXAMPLE
-git@github.com:scheike/timereg.git
+git@github.com:scheike/timereg
 #+END_EXAMPLE
 
 ** Citation

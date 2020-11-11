@@ -199,7 +199,7 @@ namematrix<-function(mat,names)
 nameestimate<-function(mat,names)
 { colnames(mat)<-"estimate"; rownames(mat)<-names; return(mat); }
 
-aalen.des<-function(formula=formula(data),data=sys.parent(),model="aalen")
+aalen.des<-function(formula=formula(data),data=parent.frame(),model="aalen")
 { ## {{{
   call <- match.call(); 
   m <- match.call(expand.dots=FALSE); 
@@ -208,7 +208,7 @@ aalen.des<-function(formula=formula(data),data=sys.parent(),model="aalen")
   Terms <- if(missing(data)) terms(formula,special) else terms(formula, special, data=data)
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
-  m <- eval(m, sys.parent())
+  m <- eval(m, parent.frame())
   mt <- attr(m, "terms")
   intercept<-attr(mt, "intercept")
   Y <- model.extract(m,"response")

@@ -5,7 +5,7 @@ retur<-y[index]; return(retur); }
 pred.cum<-function(x,time,cum) {ud<-sapply(x,slaaop,time,cum); 
  return(ud)}
 
-pred.des<-function(formula,data=sys.parent())
+pred.des<-function(formula,data=parent.frame())
 { ## {{{
   call <- match.call();
   m <- match.call(expand.dots=FALSE);
@@ -40,7 +40,7 @@ pred.des<-function(formula,data=sys.parent())
   return(list(covarX=X,covarZ=Z))
 } ## }}}
 
-aalen.des2 <-  function(formula,data=sys.parent(),model=NULL,...){ ## {{{
+aalen.des2 <-  function(formula,data=parent.frame(),model=NULL,...){ ## {{{
   call <- match.call()
   m <- match.call(expand.dots=FALSE)
   m$model <- NULL
@@ -48,7 +48,7 @@ aalen.des2 <-  function(formula,data=sys.parent(),model=NULL,...){ ## {{{
   else              terms(formula, data=data)
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
-  m <- eval(m, sys.parent())
+  m <- eval(m, parent.frame())
   mt <- attr(m, "terms")
  intercept<-attr(mt, "intercept")
   Y <- model.extract(m, "response")

@@ -4,11 +4,24 @@
 \alias{plot.dynreg}
 \title{Plots estimates and test-processes}
 \usage{
-\method{plot}{dynreg}(x, type = "eff.smooth", pointwise.ci = 1,
-  hw.ci = 0, sim.ci = 0, robust = 0, specific.comps = FALSE,
-  level = 0.05, start.time = 0, stop.time = 0, add.to.plot = FALSE,
-  mains = TRUE, xlab = "Time", ylab = "Cumulative coefficients",
-  score = FALSE, ...)
+\method{plot}{dynreg}(
+  x,
+  type = "eff.smooth",
+  pointwise.ci = 1,
+  hw.ci = 0,
+  sim.ci = 0,
+  robust = 0,
+  specific.comps = FALSE,
+  level = 0.05,
+  start.time = 0,
+  stop.time = 0,
+  add.to.plot = FALSE,
+  mains = TRUE,
+  xlab = "Time",
+  ylab = "Cumulative coefficients",
+  score = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{the output from the "dynreg" function.}

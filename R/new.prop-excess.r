@@ -73,7 +73,7 @@ cox<-function(x) x
 #' ###plot(fit)
 #' 
 #' @export
-prop.excess<-function(formula=formula(data),data=sys.parent(),excess=1,
+prop.excess<-function(formula=formula(data),data=parent.frame(),excess=1,
 tol=0.0001,max.time=NULL,n.sim=1000,alpha=1,frac=1)
   {
     id<-NULL;detail<-0
@@ -89,7 +89,7 @@ tol=0.0001,max.time=NULL,n.sim=1000,alpha=1,frac=1)
     else              terms(formula, special, data=data)
     m$formula <- Terms
     m[[1]] <- as.name("model.frame")
-    m <- eval(m, sys.parent())
+    m <- eval(m, parent.frame())
     mt <- attr(m, "terms")
     intercept<-attr(mt, "intercept")
     Y <- model.extract(m, "response")

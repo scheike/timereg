@@ -54,7 +54,7 @@
 #' # see also prop.excess function
 #' 
 #' @export
-pe.sasieni<-function (formula = formula(data),data = sys.parent(), 
+pe.sasieni<-function (formula = formula(data),data = parent.frame(), 
 id=NULL,start.time=0,max.time=NULL,offsets=0,Nit=50,detail=0,n.sim=500)
 {
   call <- match.call()
@@ -65,7 +65,7 @@ id=NULL,start.time=0,max.time=NULL,offsets=0,Nit=50,detail=0,n.sim=500)
     terms(formula ) else terms(formula, data = data)
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
-  m <- eval(m, sys.parent())
+  m <- eval(m, parent.frame())
   mt <- attr(m, "terms")
   intercept <- attr(mt, "intercept")
   Y <- model.extract(m, "response")

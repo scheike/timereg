@@ -4,9 +4,17 @@
 \alias{wald.test}
 \title{Makes wald test}
 \usage{
-wald.test(object = NULL, coef = NULL, Sigma = NULL, vcov = NULL,
-  contrast, coef.null = NULL, null = NULL, print.coef = TRUE,
-  alpha = 0.05)
+wald.test(
+  object = NULL,
+  coef = NULL,
+  Sigma = NULL,
+  vcov = NULL,
+  contrast,
+  coef.null = NULL,
+  null = NULL,
+  print.coef = TRUE,
+  alpha = 0.05
+)
 }
 \arguments{
 \item{object}{timereg object}

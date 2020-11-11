@@ -118,7 +118,7 @@
 #' }
 #' 
 #' @export
-dynreg<-function(formula,data=sys.parent(),aalenmod,
+dynreg<-function(formula,data=parent.frame(),aalenmod,
 bandwidth=0.5,id=NULL,bhat=NULL,start.time=0,
 max.time=NULL,n.sim=500,meansub=1,weighted.test=0,resample=0)
 {
@@ -135,7 +135,7 @@ max.time=NULL,n.sim=500,meansub=1,weighted.test=0,resample=0)
   else              terms(formula, special, data=data)
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
-  m <- eval(m, sys.parent())
+  m <- eval(m, parent.frame())
   mt <- attr(m, "terms")
   intercept<-attr(mt, "intercept")
   Y <- model.extract(m, "response")
@@ -492,7 +492,7 @@ coef.dynreg<- function(object,...,digits=3) {
 }
 
 #' @export
-aalen.des<-function(formula=formula(data),data=sys.parent(),model="aalen")
+aalen.des<-function(formula=formula(data),data=parent.frame(),model="aalen")
 {
   call <- match.call(); 
   m <- match.call(expand.dots=FALSE); 
@@ -501,7 +501,7 @@ aalen.des<-function(formula=formula(data),data=sys.parent(),model="aalen")
   Terms <- if(missing(data)) terms(formula,special) else terms(formula, special, data=data)
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
-  m <- eval(m, sys.parent())
+  m <- eval(m, parent.frame())
   mt <- attr(m, "terms")
   intercept<-attr(mt, "intercept")
   Y <- model.extract(m,"response")

@@ -176,7 +176,7 @@ prop<-function(x) x
 #' par(mfrow=c(2,3))
 #' plot(out)
 #' 
-cox.aalen<-function(formula=formula(data),data=sys.parent(),
+cox.aalen<-function(formula=formula(data),data=parent.frame(),
 beta=NULL,Nit=20,detail=0,start.time=0,max.time=NULL, id=NULL, 
 clusters=NULL, n.sim=500, residuals=0,robust=1,
 weighted.test=0,covariance=0,resample.iid=1,weights=NULL,
@@ -203,7 +203,7 @@ max.timepoint.sim=100,basesim=0,offsets=NULL,strata=NULL,propodds=0,caseweight=N
   else  terms(formula, special, data=data)
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
-  m <- eval(m, sys.parent())
+  m <- eval(m, parent.frame())
   m <- na.omit(m)
   mt <- attr(m, "terms")
   intercept<-attr(mt, "intercept")

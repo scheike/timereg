@@ -105,7 +105,7 @@
 #' summary(out2)
 #' 
 #' @export
-prop.odds<-function(formula,data=sys.parent(),beta=NULL,
+prop.odds<-function(formula,data=parent.frame(),beta=NULL,
 Nit=20,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
 profile=1,sym=0,baselinevar=1,clusters=NULL,max.clust=1000,weights=NULL)
 { ## {{{ 
@@ -118,7 +118,7 @@ profile=profile,sym=sym,cens.model="po",clusters=clusters,max.clust=max.clust,ba
 return(out); 
 } ## }}} 
 
-prop.odds.gam<-function(formula,data=sys.parent(),beta=NULL,
+prop.odds.gam<-function(formula,data=parent.frame(),beta=NULL,
 Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
 profile=1,sym=0,baselinevar=1,clusters=NULL,max.clust=1000)
 { ## {{{ 
@@ -135,7 +135,7 @@ Terms <- if(missing(data)) terms(formula)
            else              terms(formula, data=data)
 m$formula <- Terms
 m[[1]] <- as.name("model.frame")
-m <- eval(m, sys.parent())
+m <- eval(m, parent.frame())
 mt <- attr(m, "terms")
 intercept<-attr(mt, "intercept")
 Y <- model.extract(m, "response")

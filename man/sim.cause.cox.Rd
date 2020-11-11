@@ -4,8 +4,7 @@
 \alias{sim.cause.cox}
 \title{Simulation of cause specific from Cox models.}
 \usage{
-\method{sim}{cause.cox}(coxs, n, data = NULL, cens = NULL,
-  rrc = NULL, ...)
+\method{sim}{cause.cox}(coxs, n, data = NULL, cens = NULL, rrc = NULL, ...)
 }
 \arguments{
 \item{coxs}{list of cox models.}

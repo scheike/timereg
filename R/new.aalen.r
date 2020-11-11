@@ -125,7 +125,7 @@
 #' 
 ##' @export
 aalen<-function (formula = formula(data),
-     data = sys.parent(), start.time = 0, max.time = NULL, 
+     data = parent.frame(), start.time = 0, max.time = NULL, 
      robust=1, id=NULL, clusters=NULL, residuals = 0, n.sim = 1000,  
      weighted.test= 0,covariance=0,resample.iid=0,
      deltaweight=1,silent=1,weights=NULL,max.clust=1000,
@@ -150,7 +150,7 @@ aalen<-function (formula = formula(data),
   }
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
-  m <- eval(m, sys.parent())
+  m <- eval(m, parent.frame())
   mt <- attr(m, "terms")
   intercept <- attr(mt, "intercept")
   Y <- model.extract(m, "response")

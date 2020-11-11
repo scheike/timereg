@@ -1,5 +1,5 @@
 des.aalen<-function (formula = formula(data),
-data = sys.parent(), start.time = 0, max.time = NULL, 
+data = parent.frame(), start.time = 0, max.time = NULL, 
 id=NULL, clusters=NULL, deltaweight=1,approx="dt")
 {
   m <- match.call(expand.dots = FALSE)
@@ -11,7 +11,7 @@ id=NULL, clusters=NULL, deltaweight=1,approx="dt")
   else terms(formula, special, data = data)
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
-  m <- eval(m, sys.parent())
+  m <- eval(m, parent.frame())
   mt <- attr(m, "terms")
   intercept <- attr(mt, "intercept")
   Y <- model.extract(m, "response")

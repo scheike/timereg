@@ -90,11 +90,11 @@
 #' testing of time-varying effects} \item{conv}{information on convergence for
 #' time points used for estimation.}
 #' @author Thomas Scheike
-#' @references Andersen (2013), Decomposition of number of years lost according
+#' @references 
+#' Andersen (2013), Decomposition of number of years lost according
 #' to causes of death, Statistics in Medicine, 5278-5285.
 #' 
-#' Scheike, and Cortese (2015), Regression Modelling of Cause Specific Years
-#' Lost,
+#' Scheike, and Cortese (2015), Regression Modelling of Cause Specific Years Lost,
 #' 
 #' Scheike, Cortese and Holmboe (2015), Regression Modelling of Restricted
 #' Residual Mean with Delayed Entry,
@@ -145,7 +145,7 @@
 #' summary(out)
 #' 
 #' @export
-res.mean<-function(formula,data=sys.parent(),cause=1,restricted=NULL,times=NULL,Nit=50,
+res.mean<-function(formula,data=parent.frame(),cause=1,restricted=NULL,times=NULL,Nit=50,
 clusters=NULL,gamma=0,n.sim=0,weighted=0,model="additive",detail=0,interval=0.01,resample.iid=1,
 cens.model="KM",cens.formula=NULL,time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,estimator=1,cens.weights=NULL,
 conservative=1,weights=NULL){
@@ -184,7 +184,7 @@ conservative=1,weights=NULL){
   }
   m$formula <- Terms
   m[[1]] <- as.name("model.frame")
-  m <- eval(m, sys.parent())
+  m <- eval(m, parent.frame())
   mt <- attr(m, "terms")
   intercept <- attr(mt, "intercept")
   Y <- model.extract(m, "response")

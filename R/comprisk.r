@@ -245,7 +245,7 @@
 #' 
 #' 
 ##' @export
-comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=NULL,est=NULL,
+comp.risk<-function(formula,data=parent.frame(),cause,times=NULL,Nit=50,clusters=NULL,est=NULL,
 		    fix.gamma=0,gamma=0,n.sim=0,weighted=0,model="fg",detail=0,interval=0.01,resample.iid=1,
                     cens.model="KM",cens.formula=NULL,time.pow=NULL,time.pow.test=NULL,silent=1,conv=1e-6,
                     weights=NULL,max.clust=1000,n.times=50,first.time.p=0.05,estimator=1,
@@ -295,7 +295,7 @@ comp.risk<-function(formula,data=sys.parent(),cause,times=NULL,Nit=50,clusters=N
     }
 
     m[[1]] <- as.name("model.frame")
-    m <- eval(m, sys.parent())
+    m <- eval(m, parent.frame())
     if (NROW(m) == 0) stop("No (non-missing) observations")
     mt <- attr(m, "terms")
     intercept <- attr(mt, "intercept")

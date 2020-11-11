@@ -7,8 +7,15 @@
 \alias{addCums}
 \title{Simulation of Piecewise constant hazard model (Cox).}
 \usage{
-rchaz(cumhazard, rr, n = NULL, entry = NULL, cum.hazard = TRUE,
-  cause = 1, extend = FALSE)
+rchaz(
+  cumhazard,
+  rr,
+  n = NULL,
+  entry = NULL,
+  cum.hazard = TRUE,
+  cause = 1,
+  extend = FALSE
+)
 }
 \arguments{
 \item{cumhazard}{cumulative hazard, or piece-constant rates for periods defined by first column of input.}

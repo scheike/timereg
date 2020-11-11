@@ -4,11 +4,26 @@
 \alias{timecox}
 \title{Fit Cox model with partly timevarying effects.}
 \usage{
-timecox(formula = formula(data), data, weights, subset, na.action,
-  start.time = 0, max.time = NULL, id = NULL, clusters = NULL,
-  n.sim = 1000, residuals = 0, robust = 1, Nit = 20,
-  bandwidth = 0.5, method = "basic", weighted.test = 0, degree = 1,
-  covariance = 0)
+timecox(
+  formula = formula(data),
+  data,
+  weights,
+  subset,
+  na.action,
+  start.time = 0,
+  max.time = NULL,
+  id = NULL,
+  clusters = NULL,
+  n.sim = 1000,
+  residuals = 0,
+  robust = 1,
+  Nit = 20,
+  bandwidth = 0.5,
+  method = "basic",
+  weighted.test = 0,
+  degree = 1,
+  covariance = 0
+)
 }
 \arguments{
 \item{formula}{a formula object with the response on the left of a '~'

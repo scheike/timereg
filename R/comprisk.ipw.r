@@ -1,4 +1,4 @@
-comprisk.ipw <- function(compriskformula,glmformula,data=sys.parent(),cause=1,
+comprisk.ipw <- function(compriskformula,glmformula,data=parent.frame(),cause=1,
 			 max.clust=NULL,ipw.se=FALSE,...)
 {
  ## {{{ 

@@ -63,7 +63,7 @@
 #' summary(fit.mg)
 #' 
 #' @export
-cum.residuals<-function(object,data=sys.parent(),modelmatrix=0,cum.resid=1,n.sim=500,
+cum.residuals<-function(object,data=parent.frame(),modelmatrix=0,cum.resid=1,n.sim=500,
 	weighted.test=0,max.point.func=50,weights=NULL)
 { ## {{{
 ## {{{ setting up

@@ -124,7 +124,7 @@
 #' ###plot(out,score=1) 
 #' 
 #' @export
-prop.odds.subdist<-function(formula,data=sys.parent(),cause=1,beta=NULL,
+prop.odds.subdist<-function(formula,data=parent.frame(),cause=1,beta=NULL,
 Nit=10,detail=0,start.time=0,max.time=NULL,id=NULL,n.sim=500,weighted.test=0,
 profile=1,sym=0,cens.model="KM",cens.formula=NULL,
 clusters=NULL,max.clust=1000,baselinevar=1,weights=NULL,
@@ -162,7 +162,7 @@ cens.weights=NULL)
     if (substr(as.character(m$formula)[2],1,4)=="Surv") stop("Must call with Event(time,cause) \n"); 
 
     m[[1]] <- as.name("model.frame")
-    m <- eval(m, sys.parent())
+    m <- eval(m, parent.frame())
     if (NROW(m) == 0) stop("No (non-missing) observations")
     mt <- attr(m, "terms")
     intercept <- attr(mt, "intercept")
@@ -490,7 +490,7 @@ return(list(pred=pred,time=btimes))
 }  ## }}}
 
 #' @export
-prop.odds.subdist.ipw <- function(compriskformula,glmformula,data=sys.parent(),cause=1,
+prop.odds.subdist.ipw <- function(compriskformula,glmformula,data=parent.frame(),cause=1,
 			 max.clust=NULL,ipw.se=FALSE,...)
 { ## {{{ 
   ggl <- glm(glmformula,family='binomial',data=data)

@@ -132,7 +132,7 @@
 #' summary(fit)
 #' 
 ##' @export
-two.stage<-function(margsurv,data=sys.parent(),
+two.stage<-function(margsurv,data=parent.frame(),
 Nit=60,detail=0,start.time=0,max.time=NULL,id=NULL,clusters=NULL,
 robust=1,theta=NULL,theta.des=NULL,var.link=0,step=0.5,notaylor=0,se.clusters=NULL)
 { ## {{{

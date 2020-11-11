@@ -39,7 +39,7 @@
 #' 
 #' 
 ##' @export
-cox.ipw <- function(survformula,glmformula,d=sys.parent(),max.clust=NULL,ipw.se=FALSE,tie.seed=100)
+cox.ipw <- function(survformula,glmformula,d=parent.frame(),max.clust=NULL,ipw.se=FALSE,tie.seed=100)
 { ## {{{ 
   ggl <- glm(glmformula,family='binomial',data=d)
   mat <-  model.matrix(glmformula,data=d);
