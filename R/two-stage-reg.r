@@ -356,7 +356,7 @@ if (class(margsurv)!="coxph") { ## {{{
    theta.iid  <- matrix(nparout[[43]],antsecluster,ptheta); 
    theta.iid <- theta.iid %*% SthetaI
 
-  DUbeta <- matrix(nparout[[45]],ptheta,1);  
+###  DUbeta <- matrix(nparout[[45]],pz,ptheta);  
 ###  if (is.null(call.secluster) & is.null(max.clust)) rownames(theta.iid) <- unique(cluster.call) else rownames(theta.iid) <- unique(se.clusters)
 
    ud <- list(cum = cumint, var.cum = vcum, robvar.cum = Rvcu, 
@@ -383,7 +383,7 @@ if (class(margsurv)!="coxph") { ## {{{
   attr(ud,"var.link")<-var.link
   attr(ud,"beta.fixed")<-beta.fixed
   attr(ud,"marg.model")<-class(margsurv)
-  attr(ud,"DUbeta")<-DUbeta
+###  attr(ud,"DUbeta")<-DUbeta
 
   return(ud) 
   ## }}} 
