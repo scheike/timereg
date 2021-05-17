@@ -727,7 +727,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),ZXAIn);
 
   if (timing==2) { // {{{
   c1=clock();
-  printf ("\telapsed CPU time: variance terms 4 %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+  Rprintf ("\telapsed CPU time: variance terms 4 %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
   c0=clock();
   } // }}}
 
@@ -824,7 +824,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),ZXAIn);
 
   if (timing==2) { // {{{
   c1=clock();
-  printf ("\telapsed CPU time: before freeing %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+  Rprintf ("\telapsed CPU time: before freeing %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
   c0=clock();
   } // }}}
   PutRNGstate();  /* to use R random normals */
@@ -864,7 +864,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),ZXAIn);
   
   if (timing==2) { // {{{
   c1=clock();
-  printf ("\telapsed CPU time: after freeing %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+  Rprintf ("\telapsed CPU time: after freeing %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
   c0=clock();
   } // }}}
 }

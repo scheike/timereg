@@ -478,7 +478,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),M1M2n);
 
   if (timing==1) { // {{{
   c1=clock();
-  printf ("\telapsed CPU time:  going through times %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+  Rprintf ("\telapsed CPU time:  going through times %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
   c0=clock();
   } // }}}
 
