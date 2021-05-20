@@ -75,9 +75,11 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
 	    }
 	  Mv(Z,gam,pghat); 
 
+//	  print_mat(X); print_mat(Z); 
+
 	  vec_zeros(S1); mat_zeros(S2); S0=0; 
 	  for (j=0;j<count;j++)
-	    {dummy=exp(VE(pghat,j)); S0=S0+dummy*weights[j]; 
+	    {dummy=exp(VE(pghat,j))*ME(X,j,0); S0=S0+dummy*weights[j]; 
 	      extract_row(X,j,xi); 
 	      scl_vec_mult(weights[j]*dummy,xi,rowX); replace_row(WX,j,rowX); 
 	      extract_row(Z,j,zi); 
@@ -120,6 +122,7 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
 
 	    scl_mat_mult(1/S0,XWZAI,XWZAI); 
 	    mat_subtr(XWZAI,dC,dC); 
+//	    printf(" %lf \n",S0); print_vec(tmpv1); print_vec(AIXWdN); 
 	  }
 	  mat_add(Ct,dC,Ct); C[s]=mat_copy(Ct,C[s]); 
 
@@ -168,7 +171,7 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
 
   l=0; 
   for (s=1;s<*Nalltimes;s++) {
-//    time=alltimes[s]; vec_zeros(dN);dtime=time-alltimes[s-1]; 
+    time=alltimes[s]; dtime=time-alltimes[s-1]; 
 //    mat_zeros(X); mat_zeros(Z); mat_zeros(WX); mat_zeros(WZ); 
     stat=0;  
     for (c=0,count=0;((c<*nx) && (count!=*antpers));c++) 
