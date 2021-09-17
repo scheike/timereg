@@ -13,7 +13,7 @@ event.split(
   name.start = "start",
   cens.code = 0,
   order.id = TRUE,
-  time.group = TRUE
+  time.group = FALSE
 )
 }
 \arguments{

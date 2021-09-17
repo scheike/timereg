@@ -9,13 +9,11 @@
 #' @param time time variable.
 #' @param status status variable.
 #' @param cuts cuts variable or numeric cut (only one value)
-#' @param name.start name of start variable in data, start can also be numeric
-#' "0"
 #' @param name.id name of id variable.
+#' @param name.start name of start variable in data, start can also be numeric "0"
 #' @param cens.code code for the censoring.
 #' @param order.id order data after id and start.
-#' @param time.group make variable "before"."cut" that keeps track of wether
-#' start,stop is before (1) or after cut (0).
+#' @param time.group make variable "before"."cut" that keeps track of wether start,stop is before (1) or after cut (0).
 #' @author Thomas Scheike
 #' @keywords survival
 #' @examples

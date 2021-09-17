@@ -199,8 +199,7 @@ summary(out)
 Andersen (2013), Decomposition of number of years lost according
 to causes of death, Statistics in Medicine, 5278-5285.
 
-Scheike, and Cortese (2015), Regression Modelling of Cause Specific Years
-Lost,
+Scheike, and Cortese (2015), Regression Modelling of Cause Specific Years Lost,
 
 Scheike, Cortese and Holmboe (2015), Regression Modelling of Restricted
 Residual Mean with Delayed Entry,
