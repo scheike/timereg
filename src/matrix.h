@@ -20,7 +20,6 @@
 #endif
 
 
-
 #define ME(matrix,row,col) (((matrix)->entries)[(col) * ((matrix)->nr) + (row)])
 #define ME3(matrix3,dim1,row,col) (((matrix3)->entries)[(dim1)*(((matrix3)->nr)*((matrix3)->nc))+(col)*((matrix3)->nr)+(row)])
 #define VE(vector,index) (((vector)->entries)[(index)])
@@ -72,43 +71,41 @@ int length_vector(vector *v);
 
 void print_a_matrix(matrix *M);
 
-extern void F77_SUB(dpotri)(const char* uplo, const int* n,
-			    double* a, const int* lda, int* info);
-
-extern void F77_SUB(dpotrf)(const char* uplo, const int* n,
-			    double* a, const int* lda, int* info);
-
-extern void F77_SUB(dgemm)(const char *transa, const char *transb, const int *m, \
-			   const int *n, const int *k, const double *alpha,\
-			   const double *a, const int *lda,\
-			   const double *b, const int *ldb,\
-			   const double *beta, double *c, const int *ldc);
-
-extern void F77_SUB(dgemv)(const char *trans, const int *m, const int *n,
-			   const double *alpha, const double *a, const int *lda,
-			   const double *x, const int *incx, const double *beta,
-			   double *y, const int *incy);
-
-extern void F77_SUB(dgetrf)(const int* m, const int* n, double* a, const int* lda,
-			    int* ipiv, int* info);
-
-extern void F77_SUB(dgetri)(const int* n, double* a, const int* lda,
-                 int* ipiv, double* work, const int* lwork, int* info);
-
-extern void F77_SUB(dqrdc2)(double *x, int *ldx, int *n, int *p,
-			    double *tol, int *rank,
-			    double *qraux, int *pivot, double *work);
-
-extern void F77_SUB(dtrco)(double*, int*, int*, double*, double*, int*);
-
-extern void F77_SUB(dgecon)(const char* norm, const int* n,
-			    const double* a, const int* lda,
-			    const double* anorm, double* rcond,
-			    double* work, int* iwork, int* info);
-
-extern double F77_NAME(dlange)(const char* norm, const int* m, const int* n,
-			       const double* a, const int* lda, double* work);
-
+//extern void F77_SUB(dpotri)(const char* uplo, const int* n, double* a, const int* lda, int* info);
+//
+//extern void F77_SUB(dpotrf)(const char* uplo, const int* n, double* a, const int* lda, int* info);
+//
+//extern void F77_SUB(dgemm)(const char *transa, const char *transb, const int *m, \
+//			   const int *n, const int *k, const double *alpha,\
+//			   const double *a, const int *lda,\
+//			   const double *b, const int *ldb,\
+//			   const double *beta, double *c, const int *ldc);
+//
+//extern void F77_SUB(dgemv)(const char *trans, const int *m, const int *n,
+//			   const double *alpha, const double *a, const int *lda,
+//			   const double *x, const int *incx, const double *beta,
+//			   double *y, const int *incy);
+//
+//extern void F77_SUB(dgetrf)(const int* m, const int* n, double* a, const int* lda,
+//			    int* ipiv, int* info);
+//
+//extern void F77_SUB(dgetri)(const int* n, double* a, const int* lda,
+//                 int* ipiv, double* work, const int* lwork, int* info);
+//
+//extern void F77_SUB(dqrdc2)(double *x, int *ldx, int *n, int *p,
+//			    double *tol, int *rank,
+//			    double *qraux, int *pivot, double *work);
+//
+//extern void F77_SUB(dtrco)(double*, int*, int*, double*, double*, int*);
+//
+//extern void F77_SUB(dgecon)(const char* norm, const int* n,
+//			    const double* a, const int* lda,
+//			    const double* anorm, double* rcond,
+//			    double* work, int* iwork, int* info);
+//
+//extern double F77_NAME(dlange)(const char* norm, const int* m, const int* n,
+//			       const double* a, const int* lda, double* work);
+//
 
 void MtM(matrix *M, matrix *A);
 
