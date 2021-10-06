@@ -1,3 +1,6 @@
+
+#define USE_FC_LEN_T
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -11,6 +14,12 @@
 #include <R_ext/Random.h>
 #include <R.h>
 #include <Rinternals.h>
+
+#ifndef FCONE
+#define FCONE
+#endif
+
+
 
 #define ME(matrix,row,col) (((matrix)->entries)[(col) * ((matrix)->nr) + (row)])
 #define ME3(matrix3,dim1,row,col) (((matrix3)->entries)[(dim1)*(((matrix3)->nr)*((matrix3)->nc))+(col)*((matrix3)->nr)+(row)])

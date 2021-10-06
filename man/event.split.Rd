@@ -27,15 +27,13 @@ event.split(
 
 \item{name.id}{name of id variable.}
 
-\item{name.start}{name of start variable in data, start can also be numeric
-"0"}
+\item{name.start}{name of start variable in data, start can also be numeric "0"}
 
 \item{cens.code}{code for the censoring.}
 
 \item{order.id}{order data after id and start.}
 
-\item{time.group}{make variable "before"."cut" that keeps track of wether
-start,stop is before (1) or after cut (0).}
+\item{time.group}{make variable "before"."cut" that keeps track of wether start,stop is before (1) or after cut (0).}
 }
 \description{
 contstructs start stop formulation of event time data after a variable in

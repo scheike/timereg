@@ -261,7 +261,7 @@ void MtM(matrix *M, matrix *A){
   if(M != A){
     // the results of 1.0 * t(M) %*% M + 0.0 * c is stored in c
     F77_CALL(dgemm)(&transa, &transb, &m, &n, &k, &alpha, M->entries, &lda,
-		    M->entries, &ldb, &beta, A->entries, &ldc);
+		    M->entries, &ldb, &beta, A->entries, &ldc FCONE FCONE);
   } else {
     // if M and A occupy the same memory, store the results in a
     // temporary matrix. 
@@ -269,7 +269,7 @@ void MtM(matrix *M, matrix *A){
     malloc_mat(nrow_matrix(A),ncol_matrix(A),temp);
 
     F77_CALL(dgemm)(&transa, &transb, &m, &n, &k, &alpha, M->entries, &lda,
-		    M->entries, &ldb, &beta, temp->entries, &ldc);
+		    M->entries, &ldb, &beta, temp->entries, &ldc FCONE FCONE);
 
     // Copy these results into A, then remove the temporary matrix
     mat_copy(temp,A);
@@ -337,7 +337,7 @@ void choleskyunsafe(matrix *A, matrix *AI){ // {{{
     // First find the Cholesky factorization of A,
     // stored as an upper triangular matrix
     char uplo1 = 'U'; // lower version 
-    F77_CALL(dpotrf)(&uplo1, &n, AI->entries, &n, &info); 
+    F77_CALL(dpotrf)(&uplo1, &n, AI->entries, &n, &info FCONE FCONE); 
 
     // Lastly turn the vector a into the matrix AI
     // Take only the lower triangular portion, since this 
@@ -418,7 +418,7 @@ void invertSPDunsafe(matrix *A, matrix *AI){
 //  dqrdc(x,ldx,n,p, qraux,jpvt,work,job)
 //  F77_CALL(dqrdc)(AI->entries, &n, &n, &n, &rank, qraux, pivot, work,job);
 //  dqrdc2(x,ldx,n,p,tol,k,qraux,jpvt,work)
-  F77_CALL(dqrdc2)(AI->entries, &n, &n, &n, &tol, &rank, qraux, pivot, work);
+  F77_CALL(dqrdc2)(AI->entries, &n, &n, &n, &tol, &rank, qraux, pivot, work FCONE FCONE);
 
   for(i = 0; i < n; i++){
     for(j = 0; j < i; j++){
@@ -428,7 +428,7 @@ void invertSPDunsafe(matrix *A, matrix *AI){
 
   job = 1; // Indicates that AI is upper triangular
   rcond = 999.0;
-  F77_CALL(dtrco)(AI->entries, &n, &n, &rcond, z, &job);
+  F77_CALL(dtrco)(AI->entries, &n, &n, &rcond, z, &job FCONE FCONE);
     
   if(rcond < tol){
     Rprintf("Error in invertSPD: estimated condition number = %7.7e\n",1/rcond); 
@@ -449,7 +449,7 @@ void invertSPDunsafe(matrix *A, matrix *AI){
 
     // First find the Cholesky factorization of A,
     // stored as an upper triangular matrix
-    F77_CALL(dpotrf)(&uplo, &n, AI->entries, &lda, &info); 
+    F77_CALL(dpotrf)(&uplo, &n, AI->entries, &lda, &info FCONE FCONE); 
 
     if(info < 0){
       Rprintf("Error in invertSPD: arg %d of DPOTRF\n",-info);
@@ -458,7 +458,7 @@ void invertSPDunsafe(matrix *A, matrix *AI){
     } 
        
     // then use this factorization to compute the inverse of A
-    F77_CALL(dpotri)(&uplo, &n, AI->entries, &lda, &info);
+    F77_CALL(dpotri)(&uplo, &n, AI->entries, &lda, &info FCONE FCONE);
 
     if(info != 0){
       Rprintf("Error in invertSPD: DPOTRI returned info = %d \n",info);
@@ -499,7 +499,7 @@ void Mv(matrix *M, vector *v1, vector *v2){
   // Ensure that v1 and v2 do not occupy the same memory. 
   if(v1 != v2){
     F77_CALL(dgemv)(&trans, &nrow, &ncol, &alpha, M->entries, &nrow,
-		    v1->entries, &incx, &beta, v2->entries, &incy);
+		    v1->entries, &incx, &beta, v2->entries, &incy FCONE FCONE);
   } else {
     // if v1 and v2 occupy the same memory, store the results in a
     // temporary vector. 
@@ -507,7 +507,7 @@ void Mv(matrix *M, vector *v1, vector *v2){
     malloc_vec(length_vector(v2),temp);
 
     F77_CALL(dgemv)(&trans, &nrow, &ncol, &alpha, M->entries, &nrow,
-		    v1->entries, &incx, &beta, temp->entries, &incy);
+		    v1->entries, &incx, &beta, temp->entries, &incy FCONE FCONE);
     
     // Copy these results into A, then remove the temporary matrix
     vec_copy(temp,v2);    
@@ -538,7 +538,7 @@ void vM(matrix *M, vector *v1, vector *v2){
   // Ensure that v1 and v2 do not occupy the same memory. 
   if(v1 != v2){
     F77_CALL(dgemv)(&trans, &nrow, &ncol, &alpha, M->entries, &nrow,
-		    v1->entries, &incx, &beta, v2->entries, &incy);
+		    v1->entries, &incx, &beta, v2->entries, &incy FCONE FCONE);
   } else {
     // if v1 and v2 occupy the same memory, store the results in a
     // temporary vector. 
@@ -546,7 +546,7 @@ void vM(matrix *M, vector *v1, vector *v2){
     malloc_vec(length_vector(v2),temp);
 
     F77_CALL(dgemv)(&trans, &nrow, &ncol, &alpha, M->entries, &nrow,
-		    v1->entries, &incx, &beta, temp->entries, &incy);
+		    v1->entries, &incx, &beta, temp->entries, &incy FCONE FCONE);
     
     // Copy these results into A, then remove the temporary matrix
     vec_copy(temp,v2);    
@@ -1042,7 +1042,7 @@ void MtA(matrix *M, matrix *A, matrix *Mout){
   if(Mout != A && Mout != M){
     // the results of 1.0 * t(M) %*% A + 0.0 * Mout is stored in Mout
     F77_CALL(dgemm)(&transa, &transb, &m, &n, &k, &alpha, M->entries,
-		    &lda, A->entries, &ldb, &beta, Mout->entries, &ldc);
+		    &lda, A->entries, &ldb, &beta, Mout->entries, &ldc FCONE FCONE);
   } else {
     // if M and A occupy the same memory, store the results in a
     // temporary matrix. 
@@ -1051,7 +1051,7 @@ void MtA(matrix *M, matrix *A, matrix *Mout){
 
     // the results of 1.0 * t(M) %*% A + 0.0 * Mout is stored in temp
     F77_CALL(dgemm)(&transa, &transb, &m, &n, &k, &alpha, M->entries,
-		    &lda, A->entries, &ldb, &beta, temp->entries, &ldc);
+		    &lda, A->entries, &ldb, &beta, temp->entries, &ldc FCONE FCONE);
     
     // Copy these results into A, then remove the temporary matrix
     mat_copy(temp,Mout);    
@@ -1086,7 +1086,7 @@ void MAt(matrix *M, matrix *A, matrix *Mout){
   if(Mout != A && Mout != M){
     // the results of 1.0 * t(M) %*% A + 0.0 * Mout is stored in Mout
     F77_CALL(dgemm)(&transa, &transb, &m, &n, &k, &alpha, M->entries,
-		    &lda, A->entries, &ldb, &beta, Mout->entries, &ldc);
+		    &lda, A->entries, &ldb, &beta, Mout->entries, &ldc FCONE FCONE);
   } else {
     // if M and A occupy the same memory, store the results in a
     // temporary matrix. 
@@ -1095,7 +1095,7 @@ void MAt(matrix *M, matrix *A, matrix *Mout){
 
     // the results of 1.0 * t(M) %*% A + 0.0 * Mout is stored in temp
     F77_CALL(dgemm)(&transa, &transb, &m, &n, &k, &alpha, M->entries,
-		    &lda, A->entries, &ldb, &beta, temp->entries, &ldc);
+		    &lda, A->entries, &ldb, &beta, temp->entries, &ldc FCONE FCONE);
     
     // Copy these results into Mout, then remove the temporary matrix
     mat_copy(temp,Mout);    
@@ -1189,7 +1189,7 @@ void invertUnsafe(matrix *A, matrix *Ainv){
 
   // First find the LU factorization of A,
   // stored as an upper triangular matrix
-  F77_CALL(dgetrf)(&n, &n, Ainv->entries, &lda, ipiv, &info);
+  F77_CALL(dgetrf)(&n, &n, Ainv->entries, &lda, ipiv, &info FCONE FCONE);
 
   if(info != 0){
     //Avoid printing this error message
@@ -1201,7 +1201,7 @@ void invertUnsafe(matrix *A, matrix *Ainv){
     for(i = 0; i < n; i++){
       iwork[i]= ipiv[i];
     }
-    F77_CALL(dgecon)("O", &n, Ainv->entries, &lda, &anorm, &rcond, dwork, iwork,  &info);
+    F77_CALL(dgecon)("O", &n, Ainv->entries, &lda, &anorm, &rcond, dwork, iwork,  &info FCONE FCONE);
     
     if(info != 0){
       //Avoid printing this error message
@@ -1217,7 +1217,7 @@ void invertUnsafe(matrix *A, matrix *Ainv){
     }
 
     // then use this factorization to compute the inverse of A
-    F77_CALL(dgetri)(&n, Ainv->entries, &lda, ipiv, work, &lwork, &info);
+    F77_CALL(dgetri)(&n, Ainv->entries, &lda, ipiv, work, &lwork, &info FCONE FCONE);
 
     if(info != 0){
       Rprintf("Error in invert: DPOTRI returned info = %d \n",info);
@@ -1269,7 +1269,7 @@ void invertUnsafeS(matrix *A, matrix *Ainv,int silent){
 
   // First find the LU factorization of A,
   // stored as an upper triangular matrix
-  F77_CALL(dgetrf)(&n, &n, Ainv->entries, &lda, ipiv, &info);
+  F77_CALL(dgetrf)(&n, &n, Ainv->entries, &lda, ipiv, &info FCONE FCONE);
 
   if(info != 0){
     //Avoid printing this error message
@@ -1280,7 +1280,7 @@ void invertUnsafeS(matrix *A, matrix *Ainv,int silent){
     for(i = 0; i < n; i++){
       iwork[i]= ipiv[i];
     }
-    F77_CALL(dgecon)("O", &n, Ainv->entries, &lda, &anorm, &rcond, dwork, iwork,  &info);
+    F77_CALL(dgecon)("O", &n, Ainv->entries, &lda, &anorm, &rcond, dwork, iwork,  &info FCONE FCONE);
     
     if(info != 0){
       //Avoid printing this error message
@@ -1298,7 +1298,7 @@ void invertUnsafeS(matrix *A, matrix *Ainv,int silent){
     }
 
     // then use this factorization to compute the inverse of A
-    F77_CALL(dgetri)(&n, Ainv->entries, &lda, ipiv, work, &lwork, &info);
+    F77_CALL(dgetri)(&n, Ainv->entries, &lda, ipiv, work, &lwork, &info FCONE FCONE);
 
     if(info != 0 ){
       mat_zeros(Ainv);
@@ -1341,7 +1341,7 @@ void MxA(matrix *M, matrix *A, matrix *Mout){
     // the results of 1.0 * M %*% A + 0.0 * c is stored in c
     // therfore we do not need to initialise c
     F77_CALL(dgemm)(&transa, &transb, &m, &n, &k, &alpha, M->entries, &lda,
-		    A->entries, &ldb, &beta, Mout->entries, &ldc);
+		    A->entries, &ldb, &beta, Mout->entries, &ldc FCONE FCONE);
   } else {
     // if M and A occupy the same memory, store the results in a
     // temporary matrix. 
@@ -1351,7 +1351,7 @@ void MxA(matrix *M, matrix *A, matrix *Mout){
     // the results of 1.0 * M %*% A + 0.0 * c is stored in c
     // therfore we do not need to initialise c
     F77_CALL(dgemm)(&transa, &transb, &m, &n, &k, &alpha, M->entries, &lda,
-		    A->entries, &ldb, &beta, temp->entries, &ldc);
+		    A->entries, &ldb, &beta, temp->entries, &ldc FCONE FCONE);
     
     // Copy these results into Mout, then remove the temporary matrix
     mat_copy(temp,Mout);    
