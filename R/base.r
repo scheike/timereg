@@ -78,14 +78,14 @@ wald.test <- function(object=NULL,coef=NULL,Sigma=NULL,vcov=NULL,contrast,coef.n
 { ## {{{
 
   coefs <- NULL
-  if (class(object)[1]=="coxph")  {coef <-  matrix(coef(object),ncol=1); Sigma=object$var;}
-  if (class(object)[1]=="phreg")  {coef <-  matrix(c(coef(object)),ncol=1); Sigma=vcov(object);}
-  if (class(object)[1]=="cox.aalen")  {coef <- object$gamma; Sigma=object$var.gamma;}
+  if (inherits(object,"coxph"))  {coef <-  matrix(coef(object),ncol=1); Sigma=object$var;}
+  if (inherits(object,"phreg"))  {coef <-  matrix(c(coef(object)),ncol=1); Sigma=vcov(object);}
+  if (inherits(object,"cox.aalen"))  {coef <- object$gamma; Sigma=object$var.gamma;}
   if (is.null(Sigma)) {
-     if (class(object)[1]=="cor" || class(object)[1]=="twostage") Sigma <- object$var.theta else Sigma <- object$var.gamma;
+     if (inherits(object,c("cor","twostage"))) Sigma <- object$var.theta else Sigma <- object$var.gamma;
   }
   if (!is.null(object)) {
-     if (class(object)[1]=="cor" || class(object)[1]=="twostage") coefs <- object$theta else coefs <- object$gamma;
+     if (inherits(object,c("cor","twostage"))) coefs <- object$theta else coefs <- object$gamma;
   } 
   if (is.null(coefs)) coefs <- coef(object)
   if (!is.null(coef)) coefs <- coef ## else stop("No estimates given \n"); 

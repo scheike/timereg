@@ -4,7 +4,7 @@ residualsTimereg <- function(object,data=data)
 { ## {{{
 ### computes residuals for data based on model given in object 
 
-if (class(object)!="cox.aalen" & class(object)!="aalen") stop("Computes residuals for Aalen or Cox.aalen object") 
+if (!inherits(object,c("cox.aalen","aalen"))) stop("Computes residuals for Aalen or Cox.aalen object") 
 else {
  formula<-attr(object,"Formula");
  beta.fixed <- attr(object,"beta.fixed")
@@ -37,7 +37,7 @@ else {
  cumhazleft <- rep(0,antpers)
  RR <- rep(1,antpers); 
 
-if (class(object)=="cox.aalen")
+if (inherits(object,"cox.aalen"))
 { ## {{{
   RR <- exp(Z %*% object$gamma); 
   cumhaz <- cumhaz0 * RR;
@@ -48,7 +48,7 @@ if (class(object)=="cox.aalen")
   }
 } ## }}}
 
-if (class(object)=="aalen")
+if (inherits(object,"aalen"))
 {#{{{
   if (npar==FALSE) { ## semi-parametric risk model
       ex.haz <- (Z %*% object$gamma) ; 

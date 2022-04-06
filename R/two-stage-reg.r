@@ -139,7 +139,7 @@ robust=1,theta=NULL,theta.des=NULL,var.link=0,step=0.5,notaylor=0,se.clusters=NU
 ## {{{ seting up design and variables
 rate.sim <- 1; secluster <- NULL
 
-if (class(margsurv)!="coxph") { ## {{{ 
+if (!inherits(margsurv,"coxph")) { ## {{{ 
  formula<-attr(margsurv,"Formula");
  beta.fixed <- attr(margsurv,"beta.fixed")
  if (is.null(beta.fixed)) beta.fixed <- 1; 
@@ -208,7 +208,7 @@ if (class(margsurv)!="coxph") { ## {{{
 ###  if (anyNA(idiclust)) idiclust[is.na(idiclust)] <- 0
 
   ### setting secluster after cluster.index call to deal with characters 
-  if (class(margsurv)=="coxph") {
+  if (inherits(margsurv,"coxph")) {
   if (is.null(se.clusters) & is.null(secluster) ) secluster <- clusters;
   antsecluster <- length(unique(secluster))
   if (is.numeric(secluster)) secluster <-  sindex.prodlim(unique(secluster),secluster)-1 else  {
@@ -239,7 +239,7 @@ if (class(margsurv)!="coxph") { ## {{{
   } ## }}}
 
   if (update==1) 
-  if (class(margsurv)=="aalen" || class(margsurv)=="cox.aalen")  { ## {{{
+  if (inherits(margsurv,c("aalen","cox.aalen")))  { ## {{{
      if ((attr(margsurv,"residuals")!=2) || (lefttrunk==1)) { 
          resi <- residualsTimereg(margsurv,data=data) 
          residuals <- resi$residuals; 
@@ -248,10 +248,10 @@ if (class(margsurv)!="coxph") { ## {{{
 	 RR <- resi$RR
      } else { residuals <- margsurv$residuals$dM; 
               cumhaz <- status-residuals; 
-	      if (class(margsurv)=="cox.aalen") RR  <- exp( Z %*% margsurv$gamma)
+	      if (inherits(margsurv,"cox.aalen")) RR  <- exp( Z %*% margsurv$gamma)
      }
   }
-  else if (class(margsurv)=="coxph") {
+  else if (inherits(margsurv,"coxph")) {
        notaylor <- 1
        residuals <- residuals(margsurv)
        cumhaz <- status-residuals
@@ -295,7 +295,7 @@ if (class(margsurv)!="coxph") { ## {{{
        time.group <- as.integer(factor(qqc, labels = 1:(nrow(Biid)-1)))
        maxtimesim <- nrow(Biid); 
     } 
-    if (class(margsurv)=="cox.aalen")  { 
+    if (inherits(margsurv,"cox.aalen"))  { 
        times <- margsurv$time.sim.resolution 
        Ntimes <-length(times)
     }

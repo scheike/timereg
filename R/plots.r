@@ -68,7 +68,7 @@ ylab ="Cumulative coefficients",ylim=NULL,...)
 plotScore<-function (object,specific.comps=FALSE,main=NULL,mains=TRUE,xlab="Time",
 		     ylab="Cumulative MG-residuals",ylim=NULL,...) 
 { ## {{{ 
-if (class(object)=="cox.aalen") {
+if (inherits(object,"cox.aalen")) {
             obsProc<-object$test.procProp; 
             simProc<-object$sim.test.procProp; }
 else {      obsProc<-object$test.procBeqC; 

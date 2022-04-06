@@ -60,12 +60,10 @@
 #' @export
 restricted.residual.mean <- function(out,x=0,tau=10,iid=0)
 { ## {{{ 
-  if ((class(out)!='cox.aalen') 
-      & (class(out)!='aalen')
-      & (class(out)!='survfit')  )
+  if ((!inherits(out,c('cox.aalen',"aalen","survfit")))) 
       stop ("Must be output from cox.aalen or aalen function\n") 
 
-if (class(out)=="survfit") { ## {{{ 
+if (inherits(out,"survfit")) { ## {{{ 
    fit.table  <-  as.matrix(summary(out, rmean=tau)$table)
 if (ncol(fit.table)==1) fit.table <- t(fit.table)
    ee  <-  fit.table[,"*rmean"]                     
@@ -75,7 +73,7 @@ if (ncol(fit.table)==1) fit.table <- t(fit.table)
    timetau <- NULL
 } ## }}}
 
-if (class(out)=="cox.aalen") { ## {{{ 
+if (inherits(out,"cox.aalen")) { ## {{{ 
 time <- out$cum[,1]
 cumhaz <- out$cum[,2]
 beta <- out$gamma
@@ -108,7 +106,7 @@ if (iid==1) {
 } else { variid <- se <- NULL }
 } ## }}}
 
-if (class(out)=="aalen")  ## {{{ 
+if (inherits(out,"aalen"))  ## {{{ 
 {
 time <- out$cum[,1]
 cumhaz <- out$cum[,-1]

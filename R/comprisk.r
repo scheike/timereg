@@ -105,9 +105,7 @@
 #' @param admin.cens censoring times for the administrative censoring
 #' @param conservative set to 0 to compute correct variances based on censoring
 #' weights, default is conservative estimates that are much quicker.
-#' @param monotone monotone=0, uses estimating equations \deqn{ (D_\beta P_1)
-#' w(t) ( Y(t)/G_c(t) - P_1(t,X)) and } montone 1 uses \deqn{ w(t) (
-#' Y(t)/G_c(t) - P_1(t,X)) and }
+#' @param monotone monotone=0, uses estimating equations \deqn{ (D_\beta P_1) w(t) ( Y(t)/G_c(t) - P_1(t,X))} montone=1 uses \deqn{ w(t) X ( Y(t)/G_c(t) - P_1(t,X)) }
 #' @param step step size for Fisher-Scoring algorithm.
 #' @return returns an object of type 'comprisk'. With the following arguments:
 #' \item{cum}{cumulative timevarying regression coefficient estimates are
@@ -301,7 +299,7 @@ comp.risk<-function(formula,data=parent.frame(),cause,times=NULL,Nit=50,clusters
     intercept <- attr(mt, "intercept")
     event.history <- model.extract(m, "response")
 
-  if (class(event.history)!="Event"){
+  if (!inherits(event.history,"Event")){
        stop("Since timereg version 1.8.6.: The left hand side of the formula must be specified as 
        Event(time, event) or with non default censoring codes Event(time, event, cens.code=0).")
   }

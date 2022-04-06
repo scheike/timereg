@@ -318,7 +318,7 @@ sim.cox <- function(cox,n,data=NULL,cens=NULL,rrc=NULL,entry=NULL,...)
 	des <- 	read.fit(cox,n,data=data,...)
 	Z <- des$Z; cumhazard <- des$cum; rr <- des$rr; 
 
-	if (class(cox)!="phreg") {
+	if (!inherits(cox,"phreg")) {
 		if (cumhazard[1,2]>0) cumhazard <- rbind(c(0,0),cumhazard)
 		ptt <- rchaz(cumhazard,rr,entry=entry) 
 		ptt <- cbind(ptt,Z)
@@ -876,7 +876,7 @@ sim.cif <- function(cif,n,data=NULL,Z=NULL,drawZ=TRUE,cens=NULL,rrc=NULL,cumstar
 {# {{{
 ## also extracts coefficients and baseline from coxph, cox.aalen, phreg
 ## and uses them assuming that the model is cloglog unless otherwise
-if (class(cif)[1]!="defined")  {
+if (!inherits(cif,"defined"))  {
 des <- 	read.fit(cif,n,data=data,Z=Z,drawZ=drawZ,...)
 Z <- des$Z; cumhaz <- des$cum; rr <- des$rr; 
 id <- des$id
@@ -892,7 +892,7 @@ model <- cif$model
 id <- 1:nrow(Z)
 }
 
-if (class(cif)[1]!="phreg") {
+if (!inherits(cif,"phreg")) {
 if (model=="logistic2" | model=="logistic") ptt <- simsubdist(cumhaz,rr,type="logistic",...) else ptt <- simsubdist(cumhaz,rr,type="cloglog",...)
     ptt <- cbind(ptt,Z)
 } else { ### phreg class# {{{
@@ -951,7 +951,7 @@ if (!is.list(cifs)) stop("Cif models in list form\n");
   tau <- tail(cifs[[1]]$cum[,1],1)
   sim1 <- sim.cif(cifs[[1]],n,data=data,Z=Z)
   Z <- sim1[,attr(sim1,"znames")]
-  if (class(cifs[[2]])!="defined")  {
+  if (!inherits(cifs[[2]],"defined"))  {
       sim2p <- read.fit(cifs[[2]],1,data=data,Z=NULL)
       Z2 <- data[attr(sim1,"id"),names(sim2p$Z)]
       sim2 <- sim.cif(cifs[[2]],n,data=data,Z=Z2,drawZ=FALSE)
@@ -1006,7 +1006,7 @@ if (!is.list(cifs)) stop("Cif models in list form\n");
   tau <- tail(cifs[[1]]$cum[,1],1)
   sim1 <- sim.cif(cifs[[1]],n,data=data,Z=Z)
   Z <- sim1[,attr(sim1,"znames")]
-  if (class(cifs[[2]])[1]!="defined")  {
+  if (!inherits(cifs[[2]],"defined"))  {
       sim2p <- read.fit(cifs[[2]],1,data=data,Z=NULL)
       Z2 <- data[attr(sim1,"id"),names(sim2p$Z)]
       sim2 <- sim.cif(cifs[[2]],n,data=data,Z=Z2,drawZ=FALSE)
@@ -1061,15 +1061,15 @@ if (!is.list(cifs)) stop("Cif models in list form\n");
 ## extracts maximum time of all cumulatives
 maxtimes <- rep(0,length(cifs))
   for (i in 1:length(cifs)) { 
-     if (class(cifs[[i]][1])=="coxph") {
+     if (inherits(cifs[[i]],"coxph")) {
 	     stop("Use phreg of mets instead\n"); 
-     } else  if (class(cifs[[i]])[1]=="crr") {
+     } else  if (inherits(cifs[[i]],"crr")) {
 	cifs[[i]]$cum <- rbind(c(0,0),cbind(cifs[[i]]$uftime,cumsum(cifs[[i]]$bfitj)))
         maxtimes[i] <- max(cifs[[i]]$uftime)
-     } else if (class(cifs[[i]])[1]=="phreg") {
+     } else if (inherits(cifs[[i]],"phreg")) {
 	cifs[[i]]$cumhaz <- cifs[[i]]$cumhaz
         maxtimes[i] <- max(cifs[[i]]$cumhaz[,1])
-     }  else if (class(cifs[[i]])[1]=="defined") {
+     }  else if (inherits(cifs[[i]],"defined")) {
 	cifs[[i]]$cumhaz <- cifs[[i]]$cumhaz
         maxtimes[i] <- max(cifs[[i]]$cumhaz[,1])
      } else {
@@ -1113,7 +1113,7 @@ maxtimes <- rep(0,length(cifs))
 read.fit <- function(cox,n,data=NULL,Z=NULL,drawZ=TRUE,fixZ=FALSE,id=NULL)
 {# {{{
 
-if (class(cox)[1]=="coxph")
+if (inherits(cox,"coxph"))
 {# {{{
    base <- basehaz(cox,centered=FALSE)[,c(2,1)] 
    mt <- model.frame(cox)
@@ -1138,7 +1138,7 @@ if (class(cox)[1]=="coxph")
   colnames(Z) <- nn
   model <- "fg"
 }# }}}
-if (class(cox)[1]=="cox.aalen")
+if (inherits(cox,"cox.aalen"))
 {# {{{
    formula <- attr(cox, "Formula")
 ###   Z1 <- na.omit(model.matrix(cox,data=data))
@@ -1158,7 +1158,7 @@ if (class(cox)[1]=="cox.aalen")
    model <- "fg"
    if (cox$prop.odds==TRUE) model <- "logistic"
 }# }}}
-if (class(cox)[1]=="phreg")
+if (inherits(cox,"phreg"))
 {# {{{
    p <- length(cox$coef)
    if (is.null(Z)) {
@@ -1186,7 +1186,7 @@ if (class(cox)[1]=="phreg")
    model <-c(class(cox),is.null(cox$propodds))
    ## if (cox$prop.odds==TRUE) cox$model <- "logistic"
 }# }}}
-if (class(cox)[1]=="crr")
+if (inherits(cox,"crr"))
 {# {{{
    p <- length(cox$coef)
    if (is.null(Z)) stop("must give covariates for crr simulations\n");
@@ -1202,7 +1202,7 @@ if (class(cox)[1]=="crr")
    Z <- Z[xid,,drop=FALSE]
    model <- "fg"
 }# }}}
-if (class(cox)[1]=="comprisk")
+if (inherits(cox,"comprisk"))
 {# {{{
    p <- length(cox$gamma)
    formula <- attr(cox, "Formula")
@@ -1228,7 +1228,7 @@ if (class(cox)[1]=="comprisk")
 }# }}}
 
 out <- list(Z=Z,cum=cumhazard,rr=rr,id=xid,model=model)
-if (class(cox)[1]=="phreg")
+if (inherits(cox,"phreg"))
 	if (cox$nstrata>1) out <- c(out,list(strataid=stratid,strataname=stratname))
 return(out)
 

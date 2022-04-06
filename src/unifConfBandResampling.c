@@ -45,8 +45,7 @@ void confBandBasePredict (double *delta, int *nObs, int *nt, int *n,
     // Matrix multiplication:
     // pt := delta %*% g
     
-    F77_CALL(dgemv)(&trans, &nRowDelta, n, &alpha, 
-                    delta, &nRowDelta, g, &incx, &beta, pt, &incy);
+    F77_CALL(dgemv)(&trans, &nRowDelta, n, &alpha, delta, &nRowDelta, g, &incx, &beta, pt, &incy FCONE FCONE);
     
     for(k = 0; k < *nObs; k++){
       pt1 = -1.0e99; // initially set to -INF

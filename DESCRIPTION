@@ -1,7 +1,7 @@
 Package: timereg
 Title: Flexible Regression Models for Survival Data
-Version: 2.0.1
-Date: 2021-10-06
+Version: 2.0.2
+Date: 2022-04-10
 Author: Thomas Scheike with contributions from Torben Martinussen, Jeremy
     Silver and Klaus Holst
 Maintainer: Thomas Scheike <ts@biostat.ku.dk>

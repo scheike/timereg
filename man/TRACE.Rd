@@ -20,8 +20,7 @@ This data frame contains the following columns:
 \item{id}{a numeric vector. Patient code.
 }
 \item{status}{
-a numeric vector code. Survival status. 9: dead from myocardial
-infarction, 0: alive, 7: dead from other causes. 
+a numeric vector code. Survival status. 9: dead from myocardial infarction, 0: alive, 7,8: dead from other causes. 
 }
 \item{time}{
 a numeric vector. Survival time in years.

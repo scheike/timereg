@@ -68,13 +68,13 @@ cum.residuals<-function(object,data=parent.frame(),modelmatrix=0,cum.resid=1,n.s
 { ## {{{
 ## {{{ setting up
   start.design<-1; silent <- 1; offsets <- NULL; 
-  if (!(class(object)!="aalen" | class(object)!="timecox" | class(object)!="cox.aalen" ))
+  if (!inherits(object,c("aalen","timecox","cox.aalen" )))
     stop ("Must be output from aalen() timecox() or cox.aalen() functions\n") 
-  if (class(object)=="timecox") if (object$method!="basic") 
+  if (inherits(object,"timecox")) if (object$method!="basic") 
     stop("Residuals available only for method=basic\n")
-  if (class(object)=="timecox") if (is.null(object$gamma)==FALSE) 
+  if (inherits(object,"timecox")) if (is.null(object$gamma)==FALSE) 
     stop("Residuals available only for timecox model with no const terms\n")
-  if (class(object)=="aalen") if (is.null(object$gamma)==FALSE) 
+  if (inherits(object,"aalen")) if (is.null(object$gamma)==FALSE) 
     stop("Residuals available only for Aalen model with no const terms\n")
   if (is.null(object$residuals$dM)==TRUE) stop("Residuals not computed, add option residuals=1\n");
   if (sum(modelmatrix)==0 && cum.resid==0) 
@@ -82,7 +82,7 @@ cum.residuals<-function(object,data=parent.frame(),modelmatrix=0,cum.resid=1,n.s
   stratum <- attr(object,"stratum"); 
   rate.sim <- 1; 
   weights1 <- NULL
-  if (class(object)=="cox.aalen") {
+  if (inherits(object,"cox.aalen")) {
     dcum<-apply(as.matrix(object$cum[,-1]),2,diff); 
     beta<-object$gamma; 
     coxaalen<-1; 
@@ -100,7 +100,7 @@ cum.residuals<-function(object,data=parent.frame(),modelmatrix=0,cum.resid=1,n.s
   clust<-unique(cluster); 
   antclust<-length(clust); 
 
-  if (class(object)=="cox.aalen") 
+  if (inherits(object,"cox.aalen"))
   ldata<-aalen.des(formula,data,model="cox.aalen") else ldata<-aalen.des(formula,data) 
   X<-ldata$X; covar<-X; px<-ldata$px; 
 
@@ -606,7 +606,7 @@ cum.residuals<-function(object,data=parent.frame(),modelmatrix=0,cum.resid=1,n.s
 #' 
 "summary.cum.residuals" <- function (object,digits=3,...) 
 {## {{{
-  if (!inherits(object, 'cum.residuals')) stop ("Must be an cum.residuals object")
+  if (!inherits(object,'cum.residuals')) stop ("Must be an cum.residuals object")
 
   # We print information about object:  
   cat("Test for cumulative MG-residuals \n\n")
