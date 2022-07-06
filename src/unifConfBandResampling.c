@@ -1,17 +1,23 @@
 //#include <stdio.h>
 #include <stdlib.h>     /* declares malloc() */
 #include <math.h>
+#define USE_FC_LEN_T
 #include <R_ext/BLAS.h>
 #include "matrix.h"
+
+#ifndef FCONE
+#define FCONE
+#endif
+
 
 /* DGEMV - perform one of the matrix-vector operations */
 /* y := alpha*A*x + beta*y, or y := alpha*A'*x + beta*y,  */
 
-extern void F77_SUB(dgemv)(
-                const char *trans, const int *m, const int *n,
-		const double *alpha, const double *a, const int *lda,
-		const double *x, const int *incx, const double *beta,
-		double *y, const int *incy);
+//extern void F77_SUB(dgemv)(
+//                const char *trans, const int *m, const int *n,
+//		const double *alpha, const double *a, const int *lda,
+//		const double *x, const int *incx, const double *beta,
+//		double *y, const int *incy);
 
 void confBandBasePredict (double *delta, int *nObs, int *nt, int *n,
 			  double *se, double *mpt, int *nSims){    
@@ -45,7 +51,7 @@ void confBandBasePredict (double *delta, int *nObs, int *nt, int *n,
     // Matrix multiplication:
     // pt := delta %*% g
     
-    F77_CALL(dgemv)(&trans, &nRowDelta, n, &alpha, delta, &nRowDelta, g, &incx, &beta, pt, &incy FCONE FCONE);
+    F77_CALL(dgemv)(&trans, &nRowDelta, n, &alpha, delta, &nRowDelta, g, &incx, &beta, pt, &incy FCONE );
     
     for(k = 0; k < *nObs; k++){
       pt1 = -1.0e99; // initially set to -INF

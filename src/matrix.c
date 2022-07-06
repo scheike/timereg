@@ -64,8 +64,8 @@ void print_a_matrix(matrix *M){
 /* or A = L*L**T computed by DPOTRF */
 //extern void F77_SUB(dpotri)(const char* uplo, const int* n, double* a, const int* lda, int* info);
 //
-///* DPOTRF - compute the Cholesky factorization of a real */
-///* symmetric positive definite matrix A */
+/* DPOTRF - compute the Cholesky factorization of a real */
+/* symmetric positive definite matrix A */
 //extern void F77_SUB(dpotrf)(const char* uplo, const int* n, double* a, const int* lda, int* info);
 //
 //extern void F77_SUB(dgemm)(const char *transa, const char *transb, const int *m,
@@ -74,8 +74,8 @@ void print_a_matrix(matrix *M){
 //		const double *b, const int *ldb,
 //		const double *beta, double *c, const int *ldc);
 //
-///* DGEMV - perform one of the matrix-vector operations */
-///* y := alpha*A*x + beta*y, or y := alpha*A'*x + beta*y,  */
+/* DGEMV - perform one of the matrix-vector operations */
+/* y := alpha*A*x + beta*y, or y := alpha*A'*x + beta*y,  */
 //
 //extern void F77_SUB(dgemv)(const char *trans, const int *m, const int *n,
 //		const double *alpha, const double *a, const int *lda,
@@ -83,13 +83,13 @@ void print_a_matrix(matrix *M){
 //		double *y, const int *incy);
 //
 //
-///* DGETRF - compute an LU factorization of a general M-by-N */
-///* matrix A using partial pivoting with row interchanges */
+/* DGETRF - compute an LU factorization of a general M-by-N */
+/* matrix A using partial pivoting with row interchanges */
 //extern void F77_SUB(dgetrf)(const int* m, const int* n, double* a, const int* lda, int* ipiv, int* info);
 //
 //
-///* DGETRI - compute the inverse of a matrix using the LU */
-///* factorization computed by DGETRF */
+/* DGETRI - compute the inverse of a matrix using the LU */
+/* factorization computed by DGETRF */
 //extern void F77_SUB(dgetri)(const int* n, double* a, const int* lda, int* ipiv, double* work, const int* lwork, int* info);
 
 
@@ -267,6 +267,8 @@ void MtM(matrix *M, matrix *A){
     malloc_mat(nrow_matrix(A),ncol_matrix(A),temp);
 
     F77_CALL(dgemm)(&transa, &transb, &m, &n, &k, &alpha, M->entries, &lda, M->entries, &ldb, &beta, temp->entries, &ldc FCONE FCONE);
+//F77_CALL(dgemm)("N", "T", &nrx, &ncy, &ncx, &one, x, &nrx, y, &nry, &zero, z, &nrx FCONE FCONE);
+
 
     // Copy these results into A, then remove the temporary matrix
     mat_copy(temp,A);
