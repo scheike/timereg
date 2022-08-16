@@ -130,9 +130,7 @@ calculated using the KM, cox or aalen models.}
 \item{conservative}{set to 0 to compute correct variances based on censoring
 weights, default is conservative estimates that are much quicker.}
 
-\item{monotone}{monotone=0, uses estimating equations \deqn{ (D_\beta P_1)
-w(t) ( Y(t)/G_c(t) - P_1(t,X)) and } montone 1 uses \deqn{ w(t) (
-Y(t)/G_c(t) - P_1(t,X)) and }}
+\item{monotone}{monotone=0, uses estimating equations \deqn{ (D_\beta P_1) w(t) ( Y(t)/G_c(t) - P_1(t,X))} montone=1 uses \deqn{ w(t) X ( Y(t)/G_c(t) - P_1(t,X)) }}
 
 \item{step}{step size for Fisher-Scoring algorithm.}
 }

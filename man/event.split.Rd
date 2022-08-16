@@ -61,6 +61,20 @@ dd <- d
 for  (cuts in seq(2,3,by=0.3)) dd <- event.split(dd,cuts=cuts)
 dd
 
+###########################################################################
+### same but for situation with multiple events along the time-axis
+###########################################################################
+d <- data.frame(event1=1:5+runif(5)*0.5,start=1:5,time=2*1:5,
+		status=rbinom(5,1,0.5),x=1:5,start0=0)
+d$event2 <- d$event1+0.2
+d$event2[4:5] <- NA 
+d
+
+d0 <- event.split(d,cuts="event1",name.start="start",time="time",status="status")
+d0
+###
+d00 <- event.split(d0,cuts="event2",name.start="start",time="time",status="status")
+d00
 
 }
 \author{

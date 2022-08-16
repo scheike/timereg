@@ -3,6 +3,7 @@
 \name{sim.cox}
 \alias{sim.cox}
 \alias{read.fit}
+\alias{sim.base}
 \title{Simulation of output from Cox model.}
 \usage{
 \method{sim}{cox}(cox, n, data = NULL, cens = NULL, rrc = NULL, entry = NULL, ...)

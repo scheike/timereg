@@ -310,7 +310,7 @@ cause.pchazard.sim<-function(cumhaz1,cumhaz2,rr1,rr2,cens=NULL,rrc=NULL,...)
 #' }
 #' 
 #' @export
-#' @aliases sim.cox read.fit 
+#' @aliases sim.cox read.fit  sim.base
 sim.cox <- function(cox,n,data=NULL,cens=NULL,rrc=NULL,entry=NULL,...)
 {# {{{
 	### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
@@ -361,6 +361,53 @@ sim.cox <- function(cox,n,data=NULL,cens=NULL,rrc=NULL,entry=NULL,...)
 	attr(ptt,"id") <- des$id
 	return(ptt)
 }# }}}
+
+#' @export
+sim.base <- function(cumhaz,n,data=NULL,strata=NULL,cens=NULL,entry=NULL,...)
+{# {{{
+	### cumh=cbind(breaks,rates), first rate is 0 if cumh=FALSE
+	### cumh=cbind(breaks,cumhazard) if cumh=TRUE
+	if (!is.null(strata)) {
+		us <- unique(strata)
+		nus <- length(us)
+		if (length(n)!=nus) warning("n must be given for each strata as vector \n")
+		if (length(n)!=nus) n <- rep(round(n/nus),nus)
+	}
+
+	nt <- 0
+	if (is.null(strata))  {
+		if (cumhaz[1,2]>0) cumhaz <- rbind(c(0,0),cumhaz)
+		ptt <- rchaz(cumhaz,n=n,entry=entry) 
+		nt <- n
+	} else {
+		ptt <- c()
+		nstrata <- length(unique(strata)) 
+			for (i in seq_along(unique(strata))) {
+				j <- unique(strata)[i]
+				cumhazardj <- rbind(c(0,0),cumhaz[strata==j,])
+				if (!is.null(entry)) entry <- entry[strata==j]
+				ns <- n[i]
+				nt <- nt+ns
+				pttj <- cbind(rchaz(cumhazardj,n=ns,entry=entry),j)
+				colnames(pttj)[5] <- "strata"
+				ptt  <-  rbind(ptt,pttj)
+			}
+	} 
+
+	if (!is.null(cens))  {
+		if (is.matrix(cens)) {
+			pct <- rchaz(cens,n=nt,entry=entry)$time
+		}
+		else {
+				pct<- rexp(nt)/(cens) 
+	             }
+		ptt$time <- pmin(ptt$time,pct)
+		ptt$status <- ifelse(ptt$time<pct,ptt$status,0)
+	} 
+
+	return(ptt)
+}# }}}
+
 
 #' Simulation of cause specific from Cox models.
 #' 
