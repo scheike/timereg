@@ -189,7 +189,7 @@ for (s=1;s<*Ntimes;s++){
 
 //   for (k=1;k<*p+1;k++) Rprintf(" %lf ",cu[k*(*Ntimes)+s]);Rprintf(" \n"); 
 
-    if (((*robust==1) || (*retur>=1)) && (invertible==1))  // {{{
+    if (((*robust==1) || (*retur>=1)) )  // {{{
     {
       vec_zeros(VdB); mat_zeros(Vcov);
 
@@ -215,6 +215,7 @@ for (s=1;s<*Ntimes;s++){
 
 	   vec_subtr(cumhatA[i],cumA[i],difX);
 	   if (*sim==1) replace_row(cumAt[i],s,difX);
+
 	   vec_star(difX,difX,vtmp); vec_add(vtmp,VdB,VdB);
 
 	   if (*resample==1) {
