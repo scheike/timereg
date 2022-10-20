@@ -1,20 +1,20 @@
 //#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <R.h>
 #include "matrix.h"
 
-void comptest(times,Ntimes,px,cu,vcu,vcudif,antsim,test,testOBS,Ut,
-	      simUt,W4t,weighted,antpers)
-     double *times,*cu,*vcu,*vcudif,*test,*testOBS,*Ut,*simUt;
-     int    *px,*Ntimes,*antsim,*weighted,*antpers;
-     matrix  **W4t;
+void comptest(double *times,int *Ntimes,int *px,double *cu,double *vcu,double *vcudif,int *antsim,double *test,double *testOBS,double *Ut, double *simUt,matrix **W4t,int *weighted,int *antpers)
+//     double *times,*cu,*vcu,*vcudif,*test,*testOBS,*Ut,*simUt;
+//     int    *px,*Ntimes,*antsim,*weighted,*antpers;
+//     matrix  **W4t;
 {
   matrix *Delta,*tmpM1;
   vector *tmpv1,*rowX,*xi,*difX,*ssrow,*VdB;
   int i,k,l,s,c;
-  double xij,vardif,tau,time,dtime,random,fabs(),sqrt();
-  double norm_rand();
-  void GetRNGstate(),PutRNGstate();
+  double xij,vardif,tau,time,dtime,random;
+//  double norm_rand();
+//  void GetRNGstate(),PutRNGstate();
 
   /* float gasdev(),expdev(),ran1(); */ 
 
@@ -207,10 +207,10 @@ matrix  *W4t[];
   matrix *Delta,*tmpM1;
   vector *tmpv1,*rowX,*xi,*difX,*ssrow,*VdB;
   int i,k,l,s,c,u,t;
-  double xij,vardif,tau,time,dtime,random,fabs(),sqrt();
+  double xij,vardif,tau,time,dtime,random;
   double ixij,mu,ms,mt,tu,ts,tt,uhat,dmus,dmts,icxij; 
-  double norm_rand();
-  void GetRNGstate(),PutRNGstate();
+//  double norm_rand();
+//  void GetRNGstate(),PutRNGstate();
   /* float gasdev(),expdev(),ran1(); */
 
   malloc_vec(*px,tmpv1);

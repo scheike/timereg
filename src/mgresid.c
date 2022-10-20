@@ -1,29 +1,29 @@
 //#include <stdio.h>
 #include <math.h>
+#include <R.h>
 #include "matrix.h"
 #include"R_ext/Random.h"
 
-void mgresid(designX,nx,px,antpers,start,stop,status,id,
-mgtimes,nmgt,dmgresid,sim,xval,ant,
-univarproc,timeproc,simunivarproc,simtimeproc,
-unitest,unitestOBS,
-timetest,timetestOBS,
-unitimetest,unitimetestOBS,
-modelmatrix,model,pm,cummgt,dNit,robvarcum,
-testOBS,test,simUt,Ut,cumresid,maxval,startdesign,
-coxaalen,dcum,beta,designG,pg,Ogammaiid,
-clusters,antclust,robvarcumz,simcumz,
-inXZ,inXorZ,iptot,entry,stratum,silent,weights,offsets,ratesim,weightsmg,
-varweighted) 
-double *designG,*dcum,*beta,*designX,*start,*stop,*mgtimes,
-	*dmgresid,*xval,*univarproc,*timeproc,*simunivarproc,
-	*simtimeproc,*unitest,*unitestOBS, *timetest,*timetestOBS,
-	*unitimetest,*unitimetestOBS,*modelmatrix,*Ogammaiid,
-	*cummgt,*robvarcum,*testOBS,*test,*simUt,*Ut,
-	*robvarcumz,*simcumz,*weights,*offsets,*weightsmg,*dNit;
-int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
-    *status,*id,*model,*pm,*cumresid,*maxval,*startdesign,*clusters,*antclust,
-    *inXZ,*inXorZ,*iptot,*entry,*stratum,*silent,*ratesim,*varweighted; 
+void mgresid(double *designX,int *nx,int *px,int *antpers,double *start,double *stop,int *status,int *id,
+double *mgtimes,int *nmgt,double *dmgresid,int *sim,double *xval,int *ant,
+double *univarproc,double *timeproc,double *simunivarproc,double *simtimeproc,
+double *unitest,double *unitestOBS,
+double *timetest,double *timetestOBS,
+double *unitimetest,double *unitimetestOBS,
+double *modelmatrix,int *model,int *pm,double *cummgt,double *dNit,double *robvarcum,
+double *testOBS,double *test,double *simUt,double *Ut,double *cumresid,int *maxval,int *startdesign,
+int *coxaalen,double *dcum,double *beta,double *designG,int *pg,double *Ogammaiid,
+int *clusters,int *antclust,double *robvarcumz,double *simcumz,
+int *inXZ,int *inXorZ,int *iptot,int *entry,int *stratum,int *silent,double *weights,double *offsets,int *ratesim,double *weightsmg, double *varweighted) 
+//double *designG,*dcum,*beta,*designX,*start,*stop,*mgtimes,
+//	*dmgresid,*xval,*univarproc,*timeproc,*simunivarproc,
+//	*simtimeproc,*unitest,*unitestOBS, *timetest,*timetestOBS,
+//	*unitimetest,*unitimetestOBS,*modelmatrix,*Ogammaiid,
+//	*cummgt,*robvarcum,*testOBS,*test,*simUt,*Ut,
+//	*robvarcumz,*simcumz,*weights,*offsets,*weightsmg,*dNit;
+//int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
+//    *status,*id,*model,*pm,*cumresid,*maxval,*startdesign,*clusters,*antclust,
+//    *inXZ,*inXorZ,*iptot,*entry,*stratum,*silent,*ratesim,*varweighted; 
 { // {{{
 // {{{ // memory allocation
   matrix *Delta,*tmpM1,*X,*cummat,*modelMGT[*antclust],*modMGz,*modMGzosdt;
@@ -39,9 +39,9 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
   int ci=0,pmax,m,i,j,k,l,s,c=0,s1=0,count,pers=0;
   int ptot,weighted,*cluster=calloc(*antpers,sizeof(int));
   double lamti=1,time,RR=1,vardiv;
-  double random,fabs(),sqrt(),xij,dtime,norm_rand();
-  void smoothB(),comptest(); 
-  void GetRNGstate(),PutRNGstate();
+  double random,xij,dtime;
+//  void smoothB(),comptest(); 
+//  void GetRNGstate(),PutRNGstate();
 
   weighted=*varweighted; ptot=*px+*pg; ptot=*iptot; 
 
@@ -182,7 +182,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
               if ((j<*px) & (k<*px)) ME(A,j,k)+=entry[ci]*weights[ci]*VE(xi,k)*VE(xi,j)*RR; 
 //              if ((j<*pg) & (k<*px)) ME(ZX,j,k)+=entry[ci]*VE(zi,j)*VE(xi,k)*RR; 
               if ((j<*px) & (k<*pm)) ME(cumX,k,j)+=entry[ci]*weights[ci]*VE(xi,j)*VE(vtmp,k)*RR; 
-	      if ((*coxaalen==1)) {
+	      if (*coxaalen==1) {
                if ((j<*pg)&(k<*px)) ME(XPZ,k,j)+=lamti*entry[ci]*weights[ci]*VE(zi,j)*VE(xi,k);
                if ((j<*pm)&(k<*pg)) ME(cumZP,j,k)+=lamti*entry[ci]*weights[ci]*VE(vtmp,j)*VE(zi,k);
 	      }
@@ -488,7 +488,7 @@ int *pg,*coxaalen,*nx,*px,*antpers,*nmgt,*sim,*ant,
 	  for(j=0;j<pmax;j++) for(k=0;k<pmax;k++)  {
               if ((j<*px)&(k<*px)) ME(A,j,k)+=entry[ci]*weights[ci]*VE(xi,k)*VE(xi,j)*RR; 
               if ((j<*px)&(k<*pm)) ME(cumX1,k,j)+=entry[ci]*weights[ci]*VE(xi,j)*VE(vtmp1,k)*RR; 
-	      if ((*coxaalen==1)) {
+	      if (*coxaalen==1) {
                if ((j<*pg)&(k<*px)) ME(XPZ,k,j)+=lamti*entry[ci]*weights[ci]*VE(zi,j)*VE(xi,k);
                if ((j<*pm)&(k<*pg)) ME(cumZP1,j,k)+=lamti*entry[ci]*weights[ci]*VE(vtmp1,j)*VE(zi,k);
 	      }

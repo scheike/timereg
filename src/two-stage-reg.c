@@ -3,15 +3,15 @@
 #include "matrix.h"
                  
 /* ====================================================== */
-void twostagereg(times,Ntimes,designX,nx,px,designG,ng,pg,
-antpers,start,stop, Nit,
-detail, id,status, ratesim, robust, clusters,
-antclust,betafixed, theta, vartheta,thetascore, inverse,
-clustsize,desthetaI, ptheta,SthetaI,step,idiclust,notaylor,gamiid,biid,semi,cumhaz,
-cumhazleft,lefttrunk,rr,maxtimesim,timegroup,secluster,antsecluster,thetiid,timereso,DUbeta)
-double *designX,*designG,*times,*start,*stop,*theta,*vartheta,*thetascore,*desthetaI,*SthetaI,*step,*gamiid,*biid,*cumhaz,*cumhazleft,*rr,*thetiid,*timereso,*DUbeta;
-int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
-*clusters,*antclust,*betafixed,*inverse,*clustsize,*ptheta,*idiclust,*notaylor,*semi,*lefttrunk,*maxtimesim,*timegroup,*antsecluster,*secluster;
+void twostagereg(double *times,int *Ntimes,double *designX,int *nx,int *px,double *designG,int *ng,int *pg,
+int *antpers,double *start,double *stop, int *Nit,
+int *detail, int *id,int *status, int *ratesim, int *robust, int *clusters,
+int *antclust,int *betafixed, double *theta, double *vartheta,double *thetascore, int *inverse,
+int *clustsize,double *desthetaI, int *ptheta,double *SthetaI,double *step,int *idiclust,int *notaylor,double *gamiid,double *biid,int *semi,double *cumhaz,
+double *cumhazleft,int *lefttrunk,double *rr,int *maxtimesim,int *timegroup,int *secluster,int *antsecluster,double *thetiid,double *timereso,double *DUbeta)
+//double *designX,*designG,*times,*start,*stop,*theta,*vartheta,*thetascore,*desthetaI,*SthetaI,*step,*gamiid,*biid,*cumhaz,*cumhazleft,*rr,*thetiid,*timereso,*DUbeta;
+//int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
+//*clusters,*antclust,*betafixed,*inverse,*clustsize,*ptheta,*idiclust,*notaylor,*semi,*lefttrunk,*maxtimesim,*timegroup,*antsecluster,*secluster;
 {
 // {{{ defining variables
   matrix *ldesG0,*cdesX2,*Ftilde,*Gtilde;

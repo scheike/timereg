@@ -1,11 +1,9 @@
 //#include <stdio.h>
 #include <math.h>
+#include <R.h>
 #include "matrix.h"
                  
-void OSbreslow(times,Ntimes,designX,nx,p,antpers,start,stop,nb,bhat,cu,vcu,it,b,degree,schoen,sim,antsim,test,rani,testOBS,rvcu,cumlam,nullresid,status,id,sim2,Ut,simUt,weighted,robust)
-double *designX,*times,*start,*stop,*cu,*vcu,*bhat,*b,*schoen,*test,*testOBS,*rvcu,*cumlam,*Ut,*simUt; 
-int
-*nx,*p,*antpers,*Ntimes,*nb,*it,*degree,*rani,*sim,*antsim,*nullresid,*status,*id,*sim2,*weighted,*robust;
+void OSbreslow(double *times,int *Ntimes,double *designX,int *nx,int *p,int *antpers,double *start,double *stop,int *nb,double *bhat,double *cu,double *vcu,int *it,double *b,int *degree,double *schoen,int *sim,int *antsim,double *test,int *rani,double *testOBS,double *rvcu,double *cumlam,int *nullresid,int *status,int *id,int *sim2,double *Ut,double *simUt,int *weighted,int *robust)
 {
   matrix *ldesignX,*A,*AI,*AIX,*cdesignX,*XmavX,*cXmavX,*Aav;
   vector *diag,*dB,*dN,*VdB,*AIXdN,*AIXlamt,*ta,*bhatt,*pbhat,*plamt,*avx,*lrisk;
@@ -15,10 +13,9 @@ int
   int supsup=0,itt,i,j,k,s,c,count,pers=0,
       *imin=calloc(1,sizeof(int)), *coef=calloc(1,sizeof(int)),*ps=calloc(1,sizeof(int));
   double time2,rr,time=0,time1,dummy,dtime,S0,lam0t,sdBt,tau,random;
-  double *Basei=calloc(*antpers,sizeof(double)),rvarbase,
-	 *vcudif=calloc((*Ntimes)*(*p+2),sizeof(double));
-  double norm_rand();
-  void GetRNGstate(),PutRNGstate();
+  double *Basei=calloc(*antpers,sizeof(double)),rvarbase, *vcudif=calloc((*Ntimes)*(*p+2),sizeof(double));
+//  double norm_rand();
+//  void GetRNGstate(),PutRNGstate();
 
 
   if (*sim==1) {
@@ -203,7 +200,7 @@ int
 
     smoothB(cu,Ntimes,ps,bhat,nb,b,degree,coef);
 
-  } /* itterations løkke */ 
+  } /* itterations lokke */ 
   for (i=2;i<(*p)+2;i++) {
     VE(Btau,i-2)=cu[i*(*Ntimes)+(*Ntimes-1)];
   }
@@ -259,7 +256,7 @@ int
       for (i=2;i<=*p+1;i++){ 
 	VE(bhatt,i-2)=cu[i*(*Ntimes)+(*Ntimes-1)];
       }
-      for (s=1;s<*Ntimes-1;s++){ /* Beregning af obs teststørrelser */ 
+      for (s=1;s<*Ntimes-1;s++){ /* Beregning af obs teststorrelser */ 
 	time=times[s]; 
 	dtime=time-times[s-1]; 
 	for (i=2;i<=*p+1;i++) {
@@ -317,7 +314,7 @@ int
 	  } 
 	} /* supsup==1 */ 
 
-      } /*s=1..Ntimes Beregning af obs teststørrelser */ 
+      } /*s=1..Ntimes Beregning af obs teststorrelser */ 
 
 
       Rprintf(" Simulations start N= %ld \n",(long int) *antsim); 
@@ -422,13 +419,10 @@ int
   free(vcudif); free(Basei); 
 }
 
-void semibreslow(times,Ntimes,designX, nx,px,designG,
-ng,pg,antpers, start,stop,nb, bhat,cu,vcu, rvcu,gamma,Vgamma,
-robVgamma,b,degree, it,sim,antsim, test,rani,testOBS, status,id,schoen,
-simUt,Ut,weighted,robust)
-double *designX,*times,*start,*stop,*cu,*vcu,*bhat,*b,*designG,*gamma,*Vgamma,*test,*testOBS,*rvcu,*robVgamma,*schoen,*simUt,*Ut;
-int *nx,*px,*antpers,*Ntimes,*nb,*ng,*pg,*it,*degree,*sim,*antsim,
-*rani,*status,*id,*weighted,*robust;
+void semibreslow(double *times,int *Ntimes,double *designX,int * nx,int *px,double *designG,
+int *ng,int *pg,int *antpers,double * start,double *stop,int *nb,double * bhat,double *cu,double *vcu,double *rvcu,double *gamma,double *Vgamma,
+double *robVgamma,double *b,int *degree,int * it,int *sim,int *antsim,double * test,int *rani,double *testOBS,int * status,int *id,double *schoen,
+double *simUt,double *Ut,int *weighted,int *robust)
 {
   matrix *ldesignX, *A,*AI,*cdesignX,*ldesignG,*cdesignG;
   matrix *XmavX,*ZmavZ,*E2x,*E2z,*E2xz,*XX;
@@ -667,7 +661,7 @@ int *nx,*px,*antpers,*Ntimes,*nb,*ng,*pg,*it,*degree,*sim,*antsim,
       } 
     }
     smoothB(cu,Ntimes,ps,bhat,nb,b,degree,coef);
-  } /*itt løkke */ 
+  } /*itt lokke */ 
 
   /* ==================ROBUST terms ================================= */ 
   if (*robust==1){

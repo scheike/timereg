@@ -2,12 +2,12 @@
 #include <math.h>
 #include "matrix.h"
                  
-void dynadd(times,y,Ntimes,designX,nx,px,designA,na,pa,ahat,bhat,bhatny,nxval,antpers,
-start,stop,cu0,cuf,cuMS,vcu0,vcuf,robvcu,w,mw,rani,sim,antsim,cumBit,test,
-testOBS,status,Ut,simUt,b,cumly,retur,id,smoothXX,weighted,vculy,clusters,antclust)
-double *bhatny,*bhat,*ahat,*designX,*designA,*times,*y,*start,*stop,*cu0,*cuf,*cuMS,
-*vcu0,*vcuf,*w,*robvcu,*cumBit,*test,*testOBS,*Ut,*simUt,*b,*cumly,*vculy;
-int *sim,*antsim,*retur,*nxval,*nx,*px,*na,*pa,*antpers,*Ntimes,*mw,*rani,*status,*id,*smoothXX,*weighted,*clusters,*antclust;
+void dynadd(double *times,double *y,int *Ntimes,double *designX,int *nx,int *px,double *designA,int *na,int *pa,double *ahat,double *bhat,double *bhatny,int *nxval,int *antpers,
+double *start,double *stop,double *cu0,double *cuf,double *cuMS,double *vcu0,double *vcuf,double *robvcu,double *w,int *mw,int *rani,int *sim,int *antsim,double *cumBit,double *test,
+double *testOBS,int *status,double *Ut,double *simUt,double *b,double *cumly,int *retur,int *id,int *smoothXX,int *weighted,double *vculy,int *clusters,int *antclust)
+//double *bhatny,*bhat,*ahat,*designX,*designA,*times,*y,*start,*stop,*cu0,*cuf,*cuMS,
+//*vcu0,*vcuf,*w,*robvcu,*cumBit,*test,*testOBS,*Ut,*simUt,*b,*cumly,*vculy;
+//int *sim,*antsim,*retur,*nxval,*nx,*px,*na,*pa,*antpers,*Ntimes,*mw,*rani,*status,*id,*smoothXX,*weighted,*clusters,*antclust;
 {
   matrix *ldesignX,*ldesignA,*cdesignX,*cdesignA,*Aa,*AaI,*A,*AI; 
   matrix *XbXa,*XWX;   
@@ -177,18 +177,17 @@ free(coef); free(ps); free(degree); free(imin);
 }
 
 
-void semidynadd(times,y,Ntimes,designX,nx,px,designG,ng,pg,designA,na,pa,
-ahat,naval,bhat,nxval,antpers,start,stop,cu0,cu,cums,robvcu,robvcue,
-gamma,gamma2,gamLY,gamKOR,gameffi,gameffims,
-Vgamma,Vkorgam,Vgamef,robvargam,robvargame,w,mw,rani,sim,antsim,
-mgresid,test,testOBS,Ut,simUt,b,id,status,weighted,vargamLY,clusters,antclust,resample,
-gammaiid,Biid)
-double *b,*bhat,*ahat,*designX,*designA,*designG,*times,*y,*start,*stop,*cu,*w,
-*gamLY,*gamKOR,*gamma,*gamma2,*gameffi,*gameffims,
-*Vgamma,*Vkorgam,*Vgamef,*robvargam,*robvargame,*vargamLY,
-*cums,*cu0,*robvcu,*robvcue,*Ut,*simUt,*test,*testOBS,*mgresid,*gammaiid,*Biid; 
-int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
-*sim,*antsim,*rani,*id,*status,*weighted,*clusters,*antclust,*resample;
+void semidynadd(double *times,double *y,int *Ntimes,double *designX,int *nx,int *px,double *designG,int *ng,int *pg,double *designA,int *na,int *pa,
+double *ahat,int *naval,double *bhat,int *nxval,int *antpers,double *start,double *stop,double *cu0,double *cu,double *cums,double *robvcu,double *robvcue,
+double *gamma,double *gamma2,double *gamLY,double *gamKOR,double *gameffi,double *gameffims,
+double *Vgamma,double *Vkorgam,double *Vgamef,double *robvargam,double *robvargame,double *w,int *mw,int *rani,int *sim,int *antsim,
+double *mgresid,double *test,double *testOBS,double *Ut,double *simUt,double *b,int *id,int *status,int *weighted,double *vargamLY,int *clusters,int *antclust,int *resample,double *gammaiid,double *Biid)
+//double *b,*bhat,*ahat,*designX,*designA,*designG,*times,*y,*start,*stop,*cu,*w,
+//*gamLY,*gamKOR,*gamma,*gamma2,*gameffi,*gameffims,
+//*Vgamma,*Vkorgam,*Vgamef,*robvargam,*robvargame,*vargamLY,
+//*cums,*cu0,*robvcu,*robvcue,*Ut,*simUt,*test,*testOBS,*mgresid,*gammaiid,*Biid; 
+//int *naval,*nxval,*nx,*px,*na,*pa,*ng,*pg,*antpers,*Ntimes,*mw,
+//*sim,*antsim,*rani,*id,*status,*weighted,*clusters,*antclust,*resample;
 {
   matrix *ldesignX,*ldesignA,*cdesignX,*ldesignG,*cdesignG,*A,*AI;
   matrix *dC,*Cg,*VarG,*dVarG,*VarGly,*dVarGly,*CI,*Vargam,*dCdt,*CGam,*dCGam,*Cgdt;

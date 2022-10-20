@@ -1,15 +1,15 @@
 #include <stdlib.h>
 //#include <stdio.h>
 #include <math.h>
+#include <R.h>
 #include "matrix.h"
 
-void robaalenC(times,Ntimes,designX,nx,p,antpers,start,stop,cu,vcu,
-	      robvcu,sim,antsim,retur,cumAit,test,rani,testOBS,status,
-	      Ut,simUt,id,weighted,robust,covariance,covs,resample,
-	      Biid,clusters,antclust,loglike,silent) 
-double *designX,*times,*start,*stop,*cu,*vcu,*robvcu,*cumAit,*test,*testOBS,*Ut,*simUt,*covs,*Biid,*loglike; 
-int *nx,*p,*antpers,*Ntimes,*sim,*retur,*rani,*antsim,*status,*id,*covariance,
-    *weighted,*robust,*resample,*clusters,*antclust,*silent;
+void robaalenC(double *times,int *Ntimes,double *designX,int *nx,int *p,int *antpers,double *start,double *stop,double *cu,double *vcu,
+	      double *robvcu,int *sim,int *antsim,int *retur,double *cumAit,double *test,int *rani,double *testOBS,int *status,
+	      double *Ut,double *simUt,int *id,int *weighted,int *robust,int *covariance,double *covs,int *resample,
+	      double *Biid,int *clusters,int *antclust,double *loglike,int *silent) 
+//double *designX,*times,*start,*stop,*cu,*vcu,*robvcu,*cumAit,*test,*testOBS,*Ut,*simUt,*covs,*Biid,*loglike; 
+//int *nx,*p,*antpers,*Ntimes,*sim,*retur,*rani,*antsim,*status,*id,*covariance, *weighted,*robust,*resample,*clusters,*antclust,*silent;
 { // {{{
   matrix *ldesignX, *QR, *R, *A, *AI, *Vcov;
   matrix *cumAt[*antclust];
@@ -17,7 +17,6 @@ int *nx,*p,*antpers,*Ntimes,*sim,*retur,*rani,*antsim,*status,*id,*covariance,
   vector *cumhatA[*antclust],*cumA[*antclust],*cum;
   int ci,i,j,k,l,s,c,count,pers=0,*cluster=calloc(*antpers,sizeof(int));
   double time,ahati,*vcudif=calloc((*Ntimes)*(*p+1),sizeof(double));
-  double fabs(),sqrt();
   
 
   if (*robust==1) {

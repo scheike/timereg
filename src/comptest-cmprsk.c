@@ -1,22 +1,23 @@
 //#include <stdio.h>
 #include <math.h>
+#include <R.h>
 #include "matrix.h"
 
 
-void comptestfunc(times,Ntimes,px,cu,vcu,vcudif,antsim,test,testOBS,Ut,simUt,W4t,weighted,antpers,gamma,line,timepow)
-double *times,*cu,*vcu,*vcudif,*test,*testOBS,*Ut,*simUt,*gamma,*timepow;
-int *px,*Ntimes,*antsim,*weighted,*antpers,*line;
-matrix **W4t;
+void comptestfunc(double *times,int *Ntimes,int *px,double *cu,double *vcu,double *vcudif,int *antsim,double *test,double *testOBS,double *Ut,double *simUt,matrix **W4t,int *weighted,int *antpers,double *gamma,int *line,double *timepow)
+//double *times,*cu,*vcu,*vcudif,*test,*testOBS,*Ut,*simUt,*gamma,*timepow;
+//int *px,*Ntimes,*antsim,*weighted,*antpers,*line;
+//matrix **W4t;
 {
   matrix *Delta,*tmpM1;
   vector *gammavt,*tmpv1t,*tmpv1,*rowX,*xi,*difX,*ssrow,*VdB,
     *gammai[*antpers],*gammav; 
   /*float gasdev(),expdev(),ran1(); 
    */
-  double norm_rand(); 
-  void GetRNGstate(),PutRNGstate();  
+//  double norm_rand(); 
+//  void GetRNGstate(),PutRNGstate();  
   int i,k,l,s,c;
-  double xij,vardif,tau,time,dtime,random,fabs(),sqrt(),stime,mtime;// unused var:x
+  double xij,vardif,tau,time,dtime,random,stime,mtime;// unused var:x
   double *cumweight=calloc(*px,sizeof(double));
 
   malloc_vecs(*px,&tmpv1t,&tmpv1,&rowX,&xi,&difX,&ssrow,&VdB,&gammavt,&gammav,NULL); 

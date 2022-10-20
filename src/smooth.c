@@ -12,9 +12,9 @@ double dtukey(x,b) double x,b;
   return((-3.141592/b*b)*(sin(3.141592 *(x/b))/2)*(fabs(x/b) < 1));
 }
 
-void smoothB(designX,nx,p,bhat,nb,b,degree,coef)
-double *designX,*bhat,*b;
-int *coef,*nx,*p,*degree,*nb;
+void smoothB(double *designX,int *nx,int *p,double *bhat,int *nb,double *b,int *degree,int *coef)
+//double *designX,*bhat,*b;
+//int *coef,*nx,*p,*degree,*nb;
 { // {{{ 
   matrix *mat1,*mat2,*II,*I;
   vector *XWy,*Y,*RES,*sY;
@@ -81,9 +81,9 @@ int *coef,*nx,*p,*degree,*nb;
 } // }}}
 
 
-void localTimeReg(designX,nx,p,times,response,bhat,nb,b,lin,dens)
-double *designX,*bhat,*b,*times,*response,*dens;
-int *nx,*p,*nb,*lin;
+void localTimeReg(double *designX,int *nx,int *p,double *times,double *response,double *bhat,int *nb,double *b,int *lin,double *dens)
+//double *designX,*bhat,*b,*times,*response,*dens;
+//int *nx,*p,*nb,*lin;
 {
   matrix *X,*AI,*A;
   vector *res,*Y,*XY;

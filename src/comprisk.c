@@ -2,17 +2,17 @@
 #include <math.h>
 #include "matrix.h"
 	 
-void itfit(times,Ntimes,x,censcode,cause,KMc,z,n,px,Nit,betaS,
-score,hess,est,var,sim,antsim,rani,test,testOBS,Ut,simUt,weighted,
-gamma,vargamma,semi,zsem,pg,trans,gamma2,CA,line,detail,biid,gamiid,resample,
-timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,estimator,fixgamma,stratum,ordertime,
-conservative,ssf,KMtimes,gamscore,Dscore,monotone)
-double *times,*betaS,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
-*Ut,*simUt,*gamma,*zsem,*gamma2,*biid,*gamiid,*vargamma,*timepow,
-	*timepowtest,*convc,*weights,*entry,*trunkp,*ssf,*KMtimes,*gamscore,*Dscore;
-int *n,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
-*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,
-	*fixgamma,*stratum,*ordertime,*conservative,*monotone;
+void itfit(double *times,int *Ntimes,double *x,int *censcode,int *cause,double *KMc,double *z,int *n,int *px,int *Nit,double *betaS,
+double *score,double *hess,double *est,double *var,int *sim,int *antsim,int *rani,double *test,double *testOBS,double *Ut,double *simUt,int *weighted,
+double *gamma,double *vargamma,int *semi,double *zsem,int *pg,int *trans,double *gamma2,int *CA,int *line,int *detail,double *biid,double *gamiid,int *resample,
+double *timepow,int *clusters,int *antclust,double *timepowtest,int *silent,double *convc,double *weights,double *entry,double *trunkp,int *estimator,int *fixgamma,int *stratum,int *ordertime,
+int *conservative,double *ssf,double *KMtimes,double *gamscore,double *Dscore,int *monotone)
+//double *times,*betaS,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
+//*Ut,*simUt,*gamma,*zsem,*gamma2,*biid,*gamiid,*vargamma,*timepow,
+//	*timepowtest,*convc,*weights,*entry,*trunkp,*ssf,*KMtimes,*gamscore,*Dscore;
+//int *n,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
+//*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,
+//	*fixgamma,*stratum,*ordertime,*conservative,*monotone;
 { // {{
   // {{{ allocation and reading of data from R
   matrix *wX,*X,*cX,*A,*AI,*cumAt[*antclust],*VAR,*Z,*censX;
@@ -24,7 +24,7 @@ int *n,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
 	 *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
 	 *cifentry=calloc((*n),sizeof(double)),
 	 *cumentry=calloc((*n)*(*px+1),sizeof(double));
-  float gasdev(),expdev(),ran1();
+//  float gasdev(),expdev(),ran1();
   ps=(*px); 
     // }}}
 
@@ -295,20 +295,20 @@ free(vcudif); free(cumentry); free(cifentry);
 } // }}}
 
 
-void itfitsemi(times,Ntimes,x,censcode,cause,
-	       KMc,z,antpers,px,Nit,
-	       score,hess,est,var,sim,
-	       antsim,rani,test,testOBS,Ut,
-	       simUt,weighted,gamma,vargamma,semi,
-	       zsem,pg,trans,gamma2,CA,
-	       line,detail,biid,gamiid,resample,
-	       timepow,clusters,antclust,timepowtest,silent,convc,weights,entry,trunkp,
-	       estimator,fixgamma,stratum,ordertime,conservative,ssf,KMtimes,
-	       gamscore,Dscore,monotone)
-double *times,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,*Ut,*simUt,*gamma,*zsem,
-       *vargamma,*gamma2,*biid,*gamiid,*timepow,*timepowtest,*entry,*trunkp,*convc,*weights,*ssf,*KMtimes,*gamscore,*Dscore;
-int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,*monotone,
-*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum,*ordertime,*conservative;
+void itfitsemi(double *times,int *Ntimes,double *x,int *censcode,int *cause,
+	       double *KMc,double *z,int *antpers,int *px,int *Nit,
+	       double *score,double *hess,double *est,double *var,int *sim,
+	       int *antsim,int *rani,double *test,double *testOBS,double *Ut,
+	       double *simUt,int *weighted,double *gamma,double *vargamma,int *semi,
+	       double *zsem,int *pg,int *trans,double *gamma2,int *CA,
+	       int *line,int *detail,double *biid,double *gamiid,int *resample,
+	       double *timepow,int *clusters,int *antclust,double *timepowtest,int *silent,double *convc,double *weights,double *entry,double *trunkp,
+	       int *estimator,int *fixgamma,int *stratum,int *ordertime,int *conservative,double *ssf,double *KMtimes,
+	       double *gamscore,double *Dscore,int *monotone)
+//double *times,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,*Ut,*simUt,*gamma,*zsem,
+//       *vargamma,*gamma2,*biid,*gamiid,*timepow,*timepowtest,*entry,*trunkp,*convc,*weights,*ssf,*KMtimes,*gamscore,*Dscore;
+//int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,*monotone,
+//*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum,*ordertime,*conservative;
 { // {{{
   // {{{ allocation and reading of data from R
   matrix *ldesignX,*A,*AI,*cdesignX,*ldesignG,*cdesignG,*censX,*censZ;
@@ -830,7 +830,7 @@ Rprintf("===========================================================\n");
 //	 score for gamma part of model 
 if (itt==(*Nit-1))  for (k=0;k<*pg;k++) gamscore[k]= VE(dgam,k); 
 
-} /*itt løkke */  // }}}
+} /*itt lokke */  // }}}
 	
 //head_matrix(cdesignX); head_matrix(wX); 
 
@@ -897,7 +897,7 @@ free(vcudif); free(inc); free(weightt); free(cifentry); free(cumentry);
 
 double mypow(double x,double p)
 {
-  double val,log(),exp(); 
+  double val; 
   val=exp(log(x)*p); 
   return(val); 
 }

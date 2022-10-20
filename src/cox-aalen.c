@@ -1,18 +1,19 @@
 #include <stdio.h>
 #include <math.h>
+#include <R.h>
 #include "matrix.h"
 #include <time.h>
 #include <sys/types.h>
                  
-void score(times,Ntimes,designX,nx,px,designG,ng,pg,antpers,start,stop,
-betaS,Nit,cu,vcu,w,mw,loglike,Iinv,Vbeta,detail,offs,mof,sim,antsim,
-Rvcu,RVbeta,
-test,testOBS,Ut,simUt,Uit,XligZ,aalen,nb,id,status,wscore,dNit,ratesim,score,dhatMit,gammaiid,dmgiid,
-retur,robust,covariance,Vcovs,addresamp,addproc,
-resample,gamiid,biid,clusters,antclust,vscore,betafixed,weights,entry,exactderiv,
-timegroup,maxtimepoint,stratum,silent,caseweight)
-double *designX,*designG,*times,*betaS,*start,*stop,*cu,*w,*loglike,*Vbeta,*RVbeta,*vcu,*offs,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*aalen,*score,*dhatMit,*gammaiid,*dmgiid,*Vcovs,*addproc,*gamiid,*biid,*vscore,*weights,*dNit,*sim,*caseweight,*silent;
-int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*XligZ,*nb,*id,*status,*wscore,*ratesim,*retur,*robust,*addresamp,*resample,*clusters,*antclust,*betafixed,*entry,*exactderiv,*timegroup,*maxtimepoint,*stratum;
+void score(double *times,int *Ntimes,double *designX,int *nx,int *px,double *designG,int *ng,int *pg,int *antpers,double *start,double *stop,
+double *betaS,int *Nit,double *cu,double *vcu,double *w,int *mw,double *loglike,double *Iinv,double *Vbeta,int *detail,double *offs,int *mof,int *sim,int *antsim,
+double *Rvcu,double *RVbeta,
+double *test,double *testOBS,double *Ut,double *simUt,double *Uit,int *XligZ,double *aalen,int *nb,int *id,int *status,int *wscore,double *dNit,int *ratesim,double *score,double *dhatMit,double *gammaiid,double *dmgiid,
+int *retur,int *robust,int *covariance,double *Vcovs,int *addresamp,double *addproc,
+int *resample,double *gamiid,double *biid,int *clusters,int *antclust,double *vscore,int *betafixed,double *weights,int *entry,int *exactderiv,
+int *timegroup,int *maxtimepoint,int *stratum,double *silent,double *caseweight)
+//double *designX,*designG,*times,*betaS,*start,*stop,*cu,*w,*loglike,*Vbeta,*RVbeta,*vcu,*offs,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*aalen,*score,*dhatMit,*gammaiid,*dmgiid,*Vcovs,*addproc,*gamiid,*biid,*vscore,*weights,*dNit,*sim,*caseweight,*silent;
+//int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*XligZ,*nb,*id,*status,*wscore,*ratesim,*retur,*robust,*addresamp,*resample,*clusters,*antclust,*betafixed,*entry,*exactderiv,*timegroup,*maxtimepoint,*stratum;
 { 
   int timing=0; 
   double basesim=0,basestart=0; 
@@ -60,8 +61,8 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*X
          *timesg=calloc((*maxtimepoint),sizeof(double)),
          *powi=calloc(*Ntimes,sizeof(double)) ; 
 //         *caseweight=calloc(*Ntimes,sizeof(double)); 
-  double norm_rand();
-  void GetRNGstate(),PutRNGstate();
+//  double norm_rand();
+//  void GetRNGstate(),PutRNGstate();
 
   int stratpers=0,antstrat=stratum[1]; 
   double *S0strata=calloc(antstrat,sizeof(double)); 
@@ -961,7 +962,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*X
     tau=times[*Ntimes-1]-times[0];
     for (i=1;i<=*px;i++) VE(rowX,i-1)=cug[i*(*maxtimepoint)+(*maxtimepoint-1)];
 
-    for (s=1;s<*maxtimepoint;s++)  // {{{ /* Beregning af OBS teststørrelser */
+    for (s=1;s<*maxtimepoint;s++)  // {{{ /* Beregning af OBS teststorrelser */
     {
       time=timesg[s]-times[0];  //  FIX 
 
@@ -993,7 +994,7 @@ int*covariance,*nx,*px,*ng,*pg,*antpers,*Ntimes,*mw,*Nit,*detail,*mof,*antsim,*X
 	else {vec_zeros(rowZ); replace_row(Utt,s,rowZ);}
       }
       for (k=1;k<=*pg;k++) Ut[k*(*maxtimepoint)+s]=ME(Utt,s,k-1);
-    }  // }}} *s=1..maxtimepoint Beregning af obs teststørrelser 
+    }  // }}} *s=1..maxtimepoint Beregning af obs teststorrelser 
 
   if (*detail==2)  Rprintf("Simulations start N= %ld \n",(long int) *antsim);
 

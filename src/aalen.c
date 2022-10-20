@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <math.h>
+#include <R.h>
 #include "matrix.h"
 #include <time.h>
 #include <sys/types.h>
-
 
 void D2lapsf(double y, double x, double z, double *zz) 
 { 
@@ -19,10 +19,7 @@ zz[5]= y* (y+1)* (y+2)* (-pow(x,y))* pow(x+z,(-y-3));
 } 
 
 
-
-void aalen(times,Ntimes,designX,nx,p,antpers,start,stop,cu,vcu,status)
-double *designX,*times,*start,*stop,*cu,*vcu;
-int *nx,*p,*antpers,*Ntimes,*status;
+void aalen(double *times,int *Ntimes,double *designX,int *nx,int *p,int *antpers,double *start,double *stop,double *cu,double *vcu,int *status)
 { // {{{
   matrix *ldesignX, *A, *AI;
   vector *dB, *VdB, *tmpv, *xi;
@@ -71,14 +68,11 @@ int *nx,*p,*antpers,*Ntimes,*status;
   free_mat(A); free_mat(AI); free_vec(xi); free_vec(tmpv);
 } // }}}
 
-void robaalen(times,Ntimes,designX,nx,p,antpers,start,stop,cu,vcu,
-	      robvcu,sim,antsim,retur,cumAit,test,testOBS,status,
-	      Ut,simUt,id,weighted,robust,covariance,covs,resample,
-	      Biid,clusters,antclust,silent,weights,entry,mof,offsets,strata,
-	      caseweight,icase) 
-double *designX,*times,*start,*stop,*cu,*vcu,*robvcu,*cumAit,*test,*testOBS,*Ut,*simUt,*covs,*Biid,*weights,*offsets,*caseweight; 
-int *nx,*p,*antpers,*Ntimes,*sim,*retur,*antsim,*status,*id,*covariance,
-    *weighted,*robust,*resample,*clusters,*antclust,*silent,*entry,*mof,*strata,*icase;
+void robaalen(double *times,int *Ntimes,double *designX,int *nx,int *p,int *antpers,double *start,double *stop,double *cu,double *vcu,
+	      double *robvcu,int *sim,int *antsim,int *retur,double *cumAit,double *test,double *testOBS,int *status,
+	      double *Ut,double *simUt,int *id,int *weighted,int *robust,int *covariance,double *covs,int *resample,
+	      double *Biid,int *clusters,int *antclust,int *silent,double *weights,int *entry,int *mof,double *offsets,int *strata,
+	      double *caseweight,int *icase) 
 { // {{{
  // {{{ setting up variables and allocating
   matrix *ldesignX,*wX,*A,*AI,*Vcov;
@@ -89,7 +83,6 @@ int *nx,*p,*antpers,*Ntimes,*sim,*retur,*antsim,*status,*id,*covariance,
       *cluster=calloc(*antpers,sizeof(int)), *idd=calloc(*antpers,sizeof(int));
 //  int *int0=calloc(*antpers,sizeof(int));
   double time,ahati,*vcudif=calloc((*Ntimes)*(*p+1),sizeof(double));
-  double fabs(),sqrt();
 
   if (*robust==1) {
     for (i=0;i<*antclust;i++) { malloc_vec(*p,cumhatA[i]); malloc_vec(*p,cumA[i]); 
@@ -257,10 +250,8 @@ for (s=1;s<*Ntimes;s++){
   free(cluster);  free(idd); free(vcudif); 
 } // }}}
 
-void semiaalen(alltimes,Nalltimes,Ntimes,designX,nx,px,designG,ng,pg,antpers,start,stop,nb,bhat,cu,vcu,Robvcu,gamma,Vgamma,RobVgamma,sim,antsim,test,testOBS,robust,status,Ut,simUt,id,weighted,cumAit,retur,covariance,covs,resample,gammaiid,Biid,clusters,antclust,intZHZ,intZHdN,deltaweight,silent,weights,entry,fixedgamma,mof,offsets,gamma2,Vgamma2,
-		caseweight,icase)
-double *designX,*alltimes,*start,*stop,*cu,*vcu,*bhat,*designG,*gamma,*Vgamma,*RobVgamma,*Robvcu,*test,*testOBS,*Ut,*simUt,*cumAit,*covs,*Biid,*gammaiid,*intZHZ,*intZHdN,*weights,*offsets,*gamma2,*Vgamma2,*caseweight; 
-int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status,*id,*weighted,*retur,*covariance,*resample,*clusters,*antclust,*deltaweight,*silent,*entry,*fixedgamma,*mof,*icase;
+void semiaalen(double *alltimes,int *Nalltimes,int *Ntimes,double *designX,int *nx,int *px,double *designG,int *ng,int *pg,int *antpers,double *start,double *stop,int *nb,double *bhat,double *cu,double *vcu,double *Robvcu,double *gamma,double *Vgamma,double *RobVgamma,int *sim,int *antsim,double *test,double *testOBS,int *robust,int *status,double *Ut,double *simUt,int *id,int *weighted,double *cumAit,int *retur,int *covariance,double *covs,int *resample,double *gammaiid,double *Biid,int *clusters,int *antclust,double *intZHZ,double *intZHdN,int *deltaweight,int *silent,double *weights,int *entry,int *fixedgamma,int *mof,double *offsets,double *gamma2,double *Vgamma2,
+		double *caseweight,int *icase)
 { // {{{
 // {{{ setting up variables and allocating
   matrix *Vcov,*X,*WX,*A,*AI,*AIXW,*Z,*WZ;
@@ -279,7 +270,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*nb,*ng,*pg,*sim,*antsim,*robust,*status
       *idd=calloc(*antpers,sizeof(int)),
       *ls=calloc(*Ntimes,sizeof(int)),
       detail=1; 
-  double time,dtime,fabs(),sqrt(),ahati,ghati,hati;
+  double time,dtime,ahati,ghati,hati;
   double *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
 	 *times=calloc(*Ntimes,sizeof(double)),
          *cumoff=calloc((*Nalltimes)*(*px+1),sizeof(double)); 
@@ -406,6 +397,8 @@ malloc_mat(*pg,(*px)*(*Ntimes),M1M2n);
 
 	  // }}}
 
+//	  print_mat(A); 
+
 	  invertS(A,AI,silent[0]);
 	  if (ME(AI,0,0)==0.0 && *silent==0){ 
 	      Rprintf(" X'X not invertible at time %lf \n",time);
@@ -415,7 +408,7 @@ malloc_mat(*pg,(*px)*(*Ntimes),M1M2n);
 	  scl_mat_mult(dtime,dCGam,dCGam);
 	  if (*deltaweight==0) {scl_mat_mult(dtime,dCGam,dCGam); }
 	  mat_add(CGam,dCGam,CGam);
-	  //      print_mat(CGam); 
+//	        print_mat(CGam); 
 
 	  if (stat==1) {
 		  extract_row(WX,pers,tmpv1); Mv(AI,tmpv1,AIXWdN);

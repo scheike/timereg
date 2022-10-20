@@ -2,17 +2,17 @@
 #include <math.h>
 #include "matrix.h"
 	 
-void resmean(times,Ntimes,x,delta,cause,KMc,z,n,px,Nit,betaS,
-score,hess,est,var,sim,antsim,rani,test,testOBS,Ut,simUt,weighted,
-gamma,vargamma,semi,zsem,pg,trans,gamma2,CA,line,detail,biid,gamiid,resample,
-timepow,clusters,antclust,timepowtest,silent,convc,tau,estimator,causeS,weights,
-KMtimes,ordertime,conservative,censcode)
-double *times,*betaS,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
-       *Ut,*simUt,*gamma,*zsem,*gamma2,*biid,*gamiid,*vargamma,*timepow,
-       *weights,*KMtimes,*timepowtest,*convc,*tau;
-int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
-    *semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,
-    *estimator,*causeS,*ordertime,*conservative,*censcode;
+void resmean(double *times,int *Ntimes,double *x,int *delta,int *cause,double *KMc,double *z,int *n,int *px,int *Nit,double *betaS,
+double *score,double *hess,double *est,double *var,int *sim,int *antsim,int *rani,double *test,double *testOBS,double *Ut,double *simUt,int *weighted,
+double *gamma,double *vargamma,int *semi,double *zsem,int *pg,int *trans,double *gamma2,int *CA,int *line,int *detail,double *biid,double *gamiid,int *resample,
+double *timepow,int *clusters,int *antclust,double *timepowtest,int *silent,double *convc,double *tau,int *estimator,int *causeS,double *weights,
+double *KMtimes,int *ordertime,int *conservative,int *censcode)
+//double *times,*betaS,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
+//       *Ut,*simUt,*gamma,*zsem,*gamma2,*biid,*gamiid,*vargamma,*timepow,
+//       *weights,*KMtimes,*timepowtest,*convc,*tau;
+//int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
+//    *semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,
+//    *estimator,*causeS,*ordertime,*conservative,*censcode;
 { // {{{
   // {{{ allocation and reading of data from R
   matrix *X,*cX,*A,*AI,*cumAt[*antclust],*VAR,*Z,*censX;
@@ -21,8 +21,8 @@ int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
   vector *cumhatA[*antclust],*cumA[*antclust],*bet1,*gam,*dp,*dp1,*dp2; 
   int osilent,convt,ps,sing,c,i,j,k,l,s,it,convproblems=0,clusterj,nrisk; 
   double skm,rit,time,sumscore,totrisk,*vcudif=calloc((*Ntimes)*(*px+1),sizeof(double));
-  float gasdev(),expdev(),ran1();
-  void resmeansemi();
+//  float gasdev(),expdev(),ran1();
+//  void resmeansemi();
   ps=(*px); 
 
 //  printf(" %d %d %d %d %d %d \n",*px,*semi,*Ntimes,*trans,*antclust,*n); 
@@ -248,22 +248,21 @@ if (convt==1 ) {
 free(vcudif); 
 } // }}}
 
-void resmeansemi(times,Ntimes,x,delta,cause,
-	       KMc,z,antpers,px,Nit,
-	       score,hess,est,var,sim,
-	       antsim,rani,test,testOBS,Ut,
-	       simUt,weighted,gamma,vargamma,semi,
-	       zsem,pg,trans,gamma2,CA,
-	       line,detail,biid,gamiid,resample,
-	       timepow,clusters,antclust,timepowtest,silent,convc,tau,estimator,causeS,
-               weights,KMtimes)
-double *times,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
-*Ut,*simUt,*gamma,*zsem,*vargamma,*gamma2,*biid,*gamiid,*timepow,*timepowtest,
-               *weights,*KMtimes,
-	*convc,*tau;
-int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
-*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*causeS;
-{ 
+//double *times,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
+//*Ut,*simUt,*gamma,*zsem,*vargamma,*gamma2,*biid,*gamiid,*timepow,*timepowtest,
+//               *weights,*KMtimes,
+//	*convc,*tau;
+//int *antpers,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
+//*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*causeS;
+
+void resmeansemi(double *times,int  *Ntimes,double *x,int *delta,int *cause,
+	       double *KMc,double *z,int *antpers,int *px,int *Nit,
+	       double *score,double *hess,double *est,double *var,int *sim,
+	       int *antsim,int *rani,double *test,double *testOBS,double *Ut,
+	       double *simUt,int *weighted,double *gamma,double *vargamma,int *semi,
+	       double *zsem,int *pg,int *trans,double *gamma2,int *CA,
+	       int *line,int *detail,double *biid,double *gamiid,int *resample,
+	       double *timepow,int *clusters,int *antclust,double *timepowtest,int *silent,double *convc,double *tau,int *estimator,int *causeS, double *weights,double *KMtimes) { 
   // {{{ allocation and reading of data from R
   matrix *ldesignX,*A,*AI,*cdesignX,*ldesignG,*cdesignG;
   matrix *S,*dCGam,*CGam,*ICGam,*VarKorG,*dC,*XZ,*ZZ,*ZZI,*XZAI; 

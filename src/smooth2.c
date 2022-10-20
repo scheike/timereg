@@ -2,9 +2,9 @@
 #include <math.h>
 #include "matrix.h"
 
-void smooth2B(designX,nx,p,bhat,nb,b,degree,coef)
-double *designX,*bhat,*b;
-int *coef,*nx,*p,*degree,*nb;
+void smooth2B(double *designX,int *nx,int *p,double *bhat,int *nb,double *b,int *degree,int *coef)
+//double *designX,*bhat,*b;
+//int *coef,*nx,*p,*degree,*nb;
 {
   matrix *mat1,*mat2,*I,*XWy,*Y,*sm1,*sm2,*sY,*RES;
   matrix *sm1sm2t; // not in original

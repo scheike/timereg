@@ -110,9 +110,7 @@ void bubble_sort(double *val,int *list,int n)
 }
 
 
-void Cpred(cum,nx,px,xval,nxval,pred,tminus)
-double *cum,*xval,*pred;
-int *nxval,*nx,*px,*tminus; 
+void Cpred(double *cum,int *nx,int *px,double *xval,int *nxval,double *pred,int *tminus)
 { // {{{
 int j,s,c;
 double timex,sc1,sc2,smax,smin; 

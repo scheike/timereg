@@ -1,16 +1,17 @@
 #include <stdio.h>
 #include <math.h>
+#include <R.h>
 #include "matrix.h"
 #include <time.h>
 #include <sys/types.h>
                  
-void posubdist2(times,Ntimes,designX,nx,px,antpers,start,stop,betaS,Nit,cu,vcu,Iinv,
-Vbeta,detail,sim,antsim,rani,Rvcu,RVbeta,test,testOBS,Ut,simUt,Uit,id,status,
-weighted,ratesim,score,dhatMit,dhatMitiid,retur,loglike,profile,sym,
-KMtimes,KMti,etime,causeS,ipers,baselinevar,clusters,antclust,ccode,biid,gamiid,wweights)
-double *designX,*times,*betaS,*start,*stop,*cu,*Vbeta,*RVbeta,*vcu,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*score,*dhatMit,*dhatMitiid,*loglike,
-       *KMtimes,*KMti,*etime,*biid,*gamiid,*wweights;
-int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weighted,*ratesim,*retur,*profile,*sym,*causeS,*ipers,*baselinevar,*clusters,*antclust,*ccode; 
+void posubdist2(double *times,int *Ntimes,double *designX,int *nx,int *px,int *antpers,double *start,double *stop,double *betaS,int *Nit,double *cu,double *vcu,double *Iinv,
+double *Vbeta,int *detail,int *sim,int *antsim,int *rani,double *Rvcu,double *RVbeta,double *test,double *testOBS,double *Ut,double *simUt,double *Uit,int *id,int *status,
+int *weighted,int *ratesim,double *score,double *dhatMit,double *dhatMitiid,int *retur,double *loglike,int *profile,int *sym,
+double *KMtimes,double *KMti,double *etime,int *causeS,int *ipers,int *baselinevar,int *clusters,int *antclust,int *ccode,double *biid,double *gamiid,double *wweights)
+//double *designX,*times,*betaS,*start,*stop,*cu,*Vbeta,*RVbeta,*vcu,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*score,*dhatMit,*dhatMitiid,*loglike,
+//       *KMtimes,*KMti,*etime,*biid,*gamiid,*wweights;
+//int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weighted,*ratesim,*retur,*profile,*sym,*causeS,*ipers,*baselinevar,*clusters,*antclust,*ccode; 
 {
 // {{{  setting up
   matrix *ldesignX,*WX,*ldesignG,*CtVUCt,*A,*AI;
@@ -32,8 +33,8 @@ int *nx,*px,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,*weight
   int *pg=calloc(1,sizeof(int)),c,robust=1,pers=0,ci,i,j,k,l,s,it;
   double weights,risks,RR,S0star,time,alpha,ll;
   double S0,tau,random,scale,sumscore;
-  double norm_rand();
-  void GetRNGstate(),PutRNGstate();
+//  double norm_rand();
+//  void GetRNGstate(),PutRNGstate();
 
   pg[0]=1; 
 

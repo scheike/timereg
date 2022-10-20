@@ -1,6 +1,7 @@
 //#include <stdio.h>
 #include <stdlib.h>     /* declares malloc() */
 #include <math.h>
+#include <R.h>
 #define USE_FC_LEN_T
 #include <R_ext/BLAS.h>
 #include "matrix.h"
@@ -38,8 +39,8 @@ void confBandBasePredict (double *delta, int *nObs, int *nt, int *n,
   double beta = 0.0;
   int incx = 1;
   int incy = 1;
-  double norm_rand(); 
-  void GetRNGstate(),PutRNGstate();  
+//  double norm_rand(); 
+//  void GetRNGstate(),PutRNGstate();  
 
   GetRNGstate();
 

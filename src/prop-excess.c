@@ -16,6 +16,7 @@ gcc -shared -Wl -o  addmult.so addmult.o -L/coll/local/lib -lm meschach.a
 
 //#include <stdio.h>
 #include <math.h>
+#include <R.h>
 #include "matrix.h"
 //#include"R_ext/Random.h"
 /*#include <S.h>*/
@@ -23,15 +24,11 @@ gcc -shared -Wl -o  addmult.so addmult.o -L/coll/local/lib -lm meschach.a
 
 /* #########################################################*/
 
+//  int *n,*p,*q,*k,*rani,*k1, *antsim ;
 
-void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
-             excess,phi,stid,beta,n,p,q,k,tol,alpha,Psiinp,
-             CoVarPsiinp,VarPsiinp,rani,testinp,testinpHW,testinpCM,testinpGOFCM,
-             Scoreinp,antsim,k1)
-   double *time,*status,*Xinp,*Zinp,*Xtilinp,*Uinp,*dUinp,*optinp,
-          *excess,*phi,*stid,*beta,*tol,*alpha,*Psiinp,*CoVarPsiinp,
-          *VarPsiinp,*testinp,*testinpHW,*testinpCM,*testinpGOFCM,*Scoreinp;
-   int *n,*p,*q,*k,*rani,*k1, *antsim ;
+void addmult(double *time,double *status,double *Xinp,double *Xtilinp,double *Zinp,double *Uinp,double *dUinp,double *optinp,
+             double *excess,double *phi,double *stid,double *beta,int *n,int *p,int *q,int *k,double *tol,double *alpha,double *Psiinp,
+             double *CoVarPsiinp,double *VarPsiinp,int *rani,double *testinp,double *testinpHW,double *testinpCM,double *testinpGOFCM, double *Scoreinp,int *antsim,int *k1)
 { 
   int i,j,l,l1,l2,it,init_it,nummer;
   double alpha_tmp,y[*n], y1[*n], y2[*n],tmp1_sc,del,del_old,betaZ[*n],tau,b,beta_tmp[*q],random,testOBSGOFCM,dum1;
@@ -62,8 +59,8 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
   matrix *M1M2,*M2, *M1,*M1tmp1,*M1tmp2, *C1M1M2,*dC1M1M2,*tC1M1M2 ,*C1M1, *C1M1tC1,
     *VarPsi,*VarPsi1,*VarPsi2,*VarPsi_out;
   matrix *W1,*W2t[*n],*Ut[*n],*Ui[*k],*Utm[*n],*dU_dbeta_i[*k],*dW2,*Delta,*Delta1,*tmpM1,*Delta2,*tmpM2;
-  double norm_rand();
-  void GetRNGstate(),PutRNGstate();
+//  double norm_rand();
+//  void GetRNGstate(),PutRNGstate();
   
 
   malloc_vecs((*p+1),&vtmp1,&vtmp3,&testOBS,&testtmp,&testOBSHW,&testOBSCM,
@@ -156,7 +153,7 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
     mat_zeros(dU_dbeta); mat_zeros(dU_dbeta1); 
     mat_zeros(Ufunk); mat_zeros(opt); vec_zeros(Ufunkdim1);
     
-    for (i=0;i<*k;++i){  /* Start gennemløb tau_1 til tau_k */
+    for (i=0;i<*k;++i){  /* Start gennemlob tau_1 til tau_k */
    
 
       for (j=0;j<*n;++j){
@@ -217,7 +214,7 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
       scl_mat_mult(b,Ubeta_tilv,Ubeta_tilv);
 
       if (i<1){mat_copy(Ubeta_tilv,Ui[i]);}
-      if (i>0){mat_add(Ubeta_tilv,Ui[i-1],Ui[i]);} /* Ui[i] er værd. af scoren til tid tau_i*/
+      if (i>0){mat_add(Ubeta_tilv,Ui[i-1],Ui[i]);} /* Ui[i] er vard. af scoren til tid tau_i*/
 
       for (l=0;l<*q;++l){ 
 	Uinp[l]+=ME(Ubeta_tilv,l,0);}
@@ -326,7 +323,7 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
       /** Slut beregning af ene komponent i robust varians***/
            
     }
-    /* Slut gennemløb tau_1 til tau_k */
+    /* Slut gennemlob tau_1 til tau_k */
     /** Slut beregning af U, dU og [U] **/
 
 
@@ -369,7 +366,7 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
     }
 
 
-    scl_mat_mult(*alpha,dU_dbeta_I,dU_dbeta_I); /* alpha er skridtlængden */
+    scl_mat_mult(*alpha,dU_dbeta_I,dU_dbeta_I); /* alpha er skridtlangden */
     /* i Newton-iterationen   */   
     mat_copy(opt,M1tmp1);
     MxA(dU_dbeta_I,M1tmp1,M1tmp2);
@@ -434,7 +431,7 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
   }
 
 
-  for (i=0;i<*k;++i){  /* Start gennemløb tau_1 til tau_k */
+  for (i=0;i<*k;++i){  /* Start gennemlob tau_1 til tau_k */
 
     /*** Initialiseringer  ****/
 
@@ -581,7 +578,7 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
     mat_transp(C1,tC1);
 
     MxA(DdN_Xt,tXt_Xt_I,dM2m);mat_transp(dM2m,tdM2m);
-    MxA(tdM2m,dM2m,dM2); /* tilvækst i [M_2] */
+    MxA(tdM2m,dM2m,dM2); /* tilvakst i [M_2] */
     scl_mat_mult(b,dM2,dM2);
     mat_add(M2,dM2,M2);     /* [M_2](tau_i) */
 
@@ -591,7 +588,7 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
 
 
     MxA(tmpI,dM2m,dM1M2tmp);  
-    MxA(dU_dbeta_I,dM1M2tmp,dM1M2);  /* tilvækst i [M_1,M_2] */   
+    MxA(dU_dbeta_I,dM1M2tmp,dM1M2);  /* tilvakst i [M_1,M_2] */   
     scl_mat_mult(b,dM1M2,dM1M2);
     mat_add(M1M2,dM1M2,M1M2);  /*[M_1,M_2](tau_i) */
     MxA(C1,M1M2,C1M1M2);  /* C1(tau_i)[M_1,M_2](tau_i) */
@@ -653,7 +650,7 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
 
   }
 
-  /* Slut gennemløb tau_1 til tau_k */
+  /* Slut gennemlob tau_1 til tau_k */
      
  
   /* Beregning af robust varians af beta */
@@ -677,7 +674,7 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
   /* Slut beregning af robust varians af beta */
 
 
-  /* Beregning af obs. teststørrelse */
+  /* Beregning af obs. teststorrelse */
 
   for (l=0;l<*p+1;++l){VE(testOBS,l)=0;VE(testOBSHW,l)=0;VE(testOBSCM,l)=0;
     for (i=0;i<*k1;++i){
@@ -730,12 +727,12 @@ void addmult(time,status,Xinp,Xtilinp,Zinp,Uinp,dUinp,optinp,
 	  Scoreinp[(j*(*q)+l1)*(*k)+l]=(j<1) ? ME(Ui[l],l1,0):ME(Delta2,l,l1);
 	}}}
 
-    /*Ui[i] er værd. af scoren til tid tau_i*/ 
+    /*Ui[i] er vard. af scoren til tid tau_i*/ 
 
     for (l=0;l<*p+1;++l){ME(testOBS1,j,l)=0;ME(testHW,j,l)=0;ME(testCM,j,l)=0;
       for (i=0;i<*k1;++i){
 	VE(testtmp,l)=fabs(ME(Delta,i,l))/sqrt(ME(VarPsi_out,l*(*p+1+1),i));
-	/* testtmp: Simulations baseret konf.bånd */
+	/* testtmp: Simulations baseret konf.band */
 	VE(testtmp1,l)=fabs(ME(Delta,i,l))*sqrt(ME(VarPsi_out,l*(*p+1+1),*k1-1))/
 	  (ME(VarPsi_out,l*(*p+1+1),i)+ME(VarPsi_out,l*(*p+1+1),*k1-1));
 	/* testtmp1: Simulering af Hall-Wellner band */

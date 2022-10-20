@@ -1,16 +1,17 @@
 //#include <stdio.h>
 #include <math.h>
+#include <R.h>
 #include "matrix.h"
                  
 /* ====================================================== */
-void Gtranssurv(times,Ntimes,designX,nx,px,designG,ng,pg,antpers,start,stop,
-betaS,Nit,cu,vcu,loglike,Iinv,Vbeta,detail,sim,antsim,
-rani,Rvcu,RVbeta,test,testOBS,Ut,simUt,Uit,id,status,wscore,
-score,dhatMit,dhatMitiid,retur,exppar,sym,mlestart,stratum)
-double *designX,*designG,*times,*betaS,*start,*stop,*cu,*loglike,*Vbeta,*RVbeta,
-*vcu,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*score,*dhatMit,*dhatMitiid;
-int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,
-*wscore,*retur,*exppar,*sym,*mlestart,*stratum;
+void Gtranssurv(double *times,int *Ntimes,double *designX,int *nx,int *px,double *designG,int *ng,int *pg,int *antpers,double *start,double *stop,
+double *betaS,int *Nit,double *cu,double *vcu,double *loglike,double *Iinv,double *Vbeta,int *detail,int *sim,int *antsim,
+int *rani,double *Rvcu,double *RVbeta,double *test,double *testOBS,double *Ut,double *simUt,double *Uit,int *id,int *status,double *score,
+int *wscore,double *dhatMit,double *dhatMitiid,int *retur,int *exppar,int *sym,int *mlestart,int *stratum)
+//double *designX,*designG,*times,*betaS,*start,*stop,*cu,*loglike,*Vbeta,*RVbeta,
+//*vcu,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*score,*dhatMit,*dhatMitiid;
+//int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,
+//*wscore,*retur,*exppar,*sym,*mlestart,*stratum;
 {
 // {{{
   matrix *ldesignX,*cdesG,*ldesignG,*cdesX,*cdesX2,*cdesX3,*cdesX4,*CtVUCt,*A,*AI;
@@ -31,8 +32,8 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
   int *ipers=calloc(*Ntimes,sizeof(int)); 
   double time=0,dummy,ll; 
   double tau,dhati,hati=0,random,sumscore; 
-  double norm_rand(); 
-  void GetRNGstate(),PutRNGstate();  
+//  double norm_rand(); 
+//  void GetRNGstate(),PutRNGstate();  
 
   for(j=0;j<*Ntimes;j++) {
     malloc_mat(*px,*px,Ft[j]); malloc_mat(*pg,*px,ZcX2AIs[j]); malloc_mat(*pg,*px,gt[j]);
@@ -526,7 +527,7 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
       VE(rowX,i-1)=cu[i*(*Ntimes)+(*Ntimes-1)];
     }
 
-    /* Beregning af OBS teststørrelser */
+    /* Beregning af OBS teststorrelser */
     for (s=1;s<*Ntimes;s++) { 
       time=times[s]-times[0]; 
 
@@ -561,7 +562,8 @@ int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status
       for (k=1;k<=*pg;k++){
 	Ut[k*(*Ntimes)+s]=ME(Utt,s,k-1);
       }
-    } /*s=1..Ntimes Beregning af obs teststørrelser */
+    } /*s=1..Ntimes Beregning af obs teststorrelser */
+    
 
     for (k=1;k<*antsim;k++) {
       mat_zeros(Delta); 

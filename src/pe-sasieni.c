@@ -1,11 +1,12 @@
 //#include <stdio.h>
 #include <math.h>
+#include <R.h>
 #include "matrix.h"
 #include"R_ext/Random.h"
 
-void pes(alltimes,Nalltimes,Ntimes,designX,nx,px,designG,ng,pg,antpers,start,stop,cu,vcu,gamma,Vgamma,status,Ut,intZHZ,intZHdN,mof,offset,mw,weight,Nit,detail,rani,nsim,test)
-double *designX,*alltimes,*start,*stop,*cu,*vcu,*designG,*gamma,*Vgamma,*Ut,*intZHZ,*intZHdN,*offset,*weight,*test;
-int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*rani,*nsim;
+void pes(double *alltimes,int *Nalltimes,int *Ntimes,double *designX,int *nx,int *px,double *designG,int *ng,int *pg,int *antpers,double *start,double *stop,double *cu,double *vcu,double *gamma,double *Vgamma,int *status,double *Ut,double *intZHZ,double *intZHdN,int *mof,double *offset,int *mw,double *weight,int *Nit,int *detail,int *rani,int *nsim,double *test)
+//double *designX,*alltimes,*start,*stop,*cu,*vcu,*designG,*gamma,*Vgamma,*Ut,*intZHZ,*intZHdN,*offset,*weight,*test;
+//int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*rani,*nsim;
 {
   matrix *S2,*S2I,*Vcov,*X,*WX,*A,*AI,*AIXW,*Z,*WZ;
   matrix *dCGam,*CGam,*Ct,*ICGam,*VarKorG,*dC,*XWZ,*ZWZ,*XWZAI; 
@@ -17,12 +18,12 @@ int *detail,*nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*mof,*mw,*Nit,*r
   vector *S1,*korG,*pghat,*rowZ,*gam,*dgam,*ZHdN,*VZHdN,*IZHdN,*zi,*offsets;
   int it,i,j,k,l,c,s,count,pers=0,pmax;
   int stat, *ls=calloc(*Ntimes,sizeof(int)); 
-  double S0,sumscore,time=0,dummy,dtime,random,fabs(),sqrt();
+  double S0,sumscore,time=0,dummy,dtime,random;
   double *weights=calloc(*antpers,sizeof(double)),
          *times=calloc(*Ntimes,sizeof(double)),
 	 *cumoff=calloc((*Nalltimes)*(*px+1),sizeof(double));
-  double norm_rand(); 
-  void GetRNGstate(),PutRNGstate();  
+//  double norm_rand(); 
+//  void GetRNGstate(),PutRNGstate();  
 
   malloc_mats(*antpers,*px,&X,&WX,NULL);
   malloc_mats(*antpers,*pg,&Z,&WZ,NULL); 

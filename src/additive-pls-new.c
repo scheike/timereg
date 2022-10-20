@@ -13,7 +13,7 @@ int *nx,*px,*antpers,*Nalltimes,*Ntimes,*ng,*pg,*status,*weighted,*deltaweight,*
     *IZHdN,*zi;
   int ci=0,i,j,k,l,c,s,count,pers=0,pmax,*ipers=calloc(*Ntimes,sizeof(int)); 
   int stat,*ls=calloc(*Ntimes,sizeof(int)),pls; 
-  double time,dtime,fabs(),sqrt();
+  double time,dtime;
 
   if (*semipls==0) px[0]=px[0]+1; 
   malloc_mats(*antpers,*px,&X,&WX,NULL);

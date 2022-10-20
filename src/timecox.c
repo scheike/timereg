@@ -2,15 +2,15 @@
 #include <math.h>
 #include "matrix.h"
                  
-void OStimecox(times,Ntimes,designX,nx,p,antpers,
-		start,stop,nb,bhat,cu,vcu,
-		it,b,degree,id,status,sim,
-		antsim,cumAit,test,rani,testOBS,Ut,
-		simUt,robvcu,retur,weighted,cumAiid,robust,
-		covariance,covs)
-double *designX,*times,*start,*stop,*cu,*vcu,*bhat,*b,
-*cumAit,*test,*testOBS,*Ut,*simUt,*robvcu,*cumAiid,*covs;
-int *nx,*p,*antpers,*Ntimes,*nb,*it,*degree,*id,*status,*sim,*antsim,*rani,*retur,*weighted,*robust,*covariance;
+void OStimecox(double *times,int *Ntimes,double *designX,int *nx,int *p,int *antpers,
+		double *start,double *stop,int *nb,double *bhat,double *cu,double *vcu,
+		int *it,double *b,int *degree,int *id,int *status,int *sim,
+		int *antsim,double *cumAit,double *test,int *rani,double *testOBS,double *Ut,
+		double *simUt,double *robvcu,int *retur,int *weighted,double *cumAiid,int *robust,
+		int *covariance,double *covs)
+//double *designX,*times,*start,*stop,*cu,*vcu,*bhat,*b,
+//*cumAit,*test,*testOBS,*Ut,*simUt,*robvcu,*cumAiid,*covs;
+//int *nx,*p,*antpers,*Ntimes,*nb,*it,*degree,*id,*status,*sim,*antsim,*rani,*retur,*weighted,*robust,*covariance;
 { // {{{ 
   matrix *Vcov,*ldesignX,*A,*AI,*cdesignX;
   matrix *cumAt[*antpers];
@@ -141,7 +141,7 @@ int *nx,*p,*antpers,*Ntimes,*nb,*it,*degree,*id,*status,*sim,*antsim,*rani,*retu
 
       smoothB(cu,Ntimes,ps,bhat,nb,b,degree,coef); 
 
-    } /* itterations løkke */ 
+    } /* itterations lokke */ 
     cu[0]=times[0]; vcu[0]=times[0];
 
   if (*sim==1) {
@@ -160,13 +160,13 @@ int *nx,*p,*antpers,*Ntimes,*nb,*it,*degree,*id,*status,*sim,*antsim,*rani,*retu
 } // }}}
 
 
-void OSsemicox(times,Ntimes,designX,nx,px,designG,ng,pg,
-antpers,start,stop,nb,bhat,cu,vcu,gamma,Vgamma,b,degree,it,
-RobVgamma,robvcu,sim,antsim,retur,cumAit,test,rani,testOBS,status,Ut,simUt,id,weighted,robust,covariance,covs)
-double *designX,*times,*start,*stop,*cu,*vcu,*bhat,*b,*designG,
-*gamma,*Vgamma,*RobVgamma,*cumAit,*test,*testOBS,*Ut,*simUt,*robvcu,*covs; 
-int
-*nx,*px,*antpers,*Ntimes,*nb,*ng,*pg,*it,*degree,*id,*status,*sim,*antsim,*retur,*rani,*weighted,*robust,*covariance;
+void OSsemicox(double *times,int *Ntimes,double *designX,int *nx,int *px,double *designG,int *ng,int *pg,
+int *antpers,double *start,double *stop,int *nb,double *bhat,double *cu,double *vcu,double *gamma,double *Vgamma,double *b,int *degree,int *it,
+double *RobVgamma,double *robvcu,int *sim,int *antsim,int *retur,double *cumAit,double *test,int *rani,double *testOBS,int *status,double *Ut,double *simUt,int *id,int *weighted,int *robust,int *covariance,double *covs)
+//double *designX,*times,*start,*stop,*cu,*vcu,*bhat,*b,*designG,
+//*gamma,*Vgamma,*RobVgamma,*cumAit,*test,*testOBS,*Ut,*simUt,*robvcu,*covs; 
+//int
+//*nx,*px,*antpers,*Ntimes,*nb,*ng,*pg,*it,*degree,*id,*status,*sim,*antsim,*retur,*rani,*weighted,*robust,*covariance;
 { // {{{
   matrix *ldesignX,*A,*AI,*cdesignX,*ldesignG,*cdesignG;
   matrix *S,*dCGam,*CGam,*ICGam,*VarKorG,*dC,*XZ,*ZZ,*ZZI,*XZAI; 
@@ -304,7 +304,7 @@ int
 
 	} /* s=1,...Ntimes */
       smoothB(cu,Ntimes,ps,bhat,nb,b,degree,coef); 
-    } /*itt løkke */ 
+    } /*itt lokke */ 
 
   invertS(Vargam,dVargam,silent); 
 
