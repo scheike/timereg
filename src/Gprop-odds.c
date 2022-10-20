@@ -6,8 +6,9 @@
 /* ====================================================== */
 void Gtranssurv(double *times,int *Ntimes,double *designX,int *nx,int *px,double *designG,int *ng,int *pg,int *antpers,double *start,double *stop,
 double *betaS,int *Nit,double *cu,double *vcu,double *loglike,double *Iinv,double *Vbeta,int *detail,int *sim,int *antsim,
-int *rani,double *Rvcu,double *RVbeta,double *test,double *testOBS,double *Ut,double *simUt,double *Uit,int *id,int *status,double *score,
-int *wscore,double *dhatMit,double *dhatMitiid,int *retur,int *exppar,int *sym,int *mlestart,int *stratum)
+int *rani,double *Rvcu,double *RVbeta,double *test,double *testOBS,double *Ut,double *simUt,double *Uit,int *id,int *status,
+int *wscore,double *score,double *dhatMit,double *dhatMitiid,
+int *retur,int *exppar,int *sym,int *mlestart,int *stratum)
 //double *designX,*designG,*times,*betaS,*start,*stop,*cu,*loglike,*Vbeta,*RVbeta,
 //*vcu,*Rvcu,*Iinv,*test,*testOBS,*Ut,*simUt,*Uit,*score,*dhatMit,*dhatMitiid;
 //int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*sim,*antsim,*rani,*id,*status,
