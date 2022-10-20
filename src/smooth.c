@@ -2,12 +2,12 @@
 #include <math.h>
 #include "matrix.h"
 
-double tukey(x,b) double x,b;
+double tukey(double x,double b)
 {
   return((1/b)*((cos(3.141592 *(x/b))+ 1)/2) * (fabs(x/b) < 1)); 
 }
 
-double dtukey(x,b) double x,b;
+double dtukey(double x,double b)
 {
   return((-3.141592/b*b)*(sin(3.141592 *(x/b))/2)*(fabs(x/b) < 1));
 }
@@ -88,7 +88,7 @@ void localTimeReg(double *designX,int *nx,int *p,double *times,double *response,
   matrix *X,*AI,*A;
   vector *res,*Y,*XY;
   int c,j,k,s,silent=1;
-  double band,tukey(),dtukey(),x,w,delta; 
+  double band,x,w,delta; 
   j=(*lin+1)*(*p);  
   malloc_mat(*nx,j,X);
   malloc_mat(j,j,A);

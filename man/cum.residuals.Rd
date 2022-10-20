@@ -80,7 +80,7 @@ summary(fit.mg)
 # cumulative residuals vs. covariates Lin, Wei, Ying style 
 fit.mg<-cum.residuals(fit,data=sTRACE,cum.resid=1,n.sim=100)
 
-par(mfrow=c(2,4))
+par(mfrow=c(1,1))
 plot(fit.mg,score=2)
 summary(fit.mg)
 

@@ -210,7 +210,7 @@ double *mgresid,double *test,double *testOBS,double *Ut,double *simUt,double *b,
   double time,dtime,zpers,risk,YoneN,dif,dif2,ctime;
   double *C=calloc((*pg)*(*pg),sizeof(double));
   double *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double));
-  void comptest(); 
+//  void comptest(); 
   ctime=0;  
  
   malloc_mats(*antpers,*px,&ldesignX,&cdesignX,NULL);
