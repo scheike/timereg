@@ -20,7 +20,7 @@ void smoothB(double *designX,int *nx,int *p,double *bhat,int *nb,double *b,int *
   vector *XWy,*Y,*RES,*sY;
   int count,j,k,s,d;
   int silent=1;
-  double tukey(),x,w,band;
+  double x,w,band;
   matrix *sm1,*sm2;
 
   malloc_mat(*nx,(*degree)+1,mat1);

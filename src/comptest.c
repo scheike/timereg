@@ -199,9 +199,9 @@ void comptest(double *times,int *Ntimes,int *px,double *cu,double *vcu,double *v
 }
 
 
-void comptestM(times,Ntimes,px,cu,vcu,vcudif,antsim,test,testOBS,Ut,simUt,W4t,weighted,antpers,cu0,argmax)
-double *times,*cu,*vcu,*vcudif,*test,*testOBS,*Ut,*simUt,*cu0,*argmax;
-int    *px,*Ntimes,*antsim,*weighted,*antpers;
+void comptestM(double *times,int *Ntimes,int *px,double *cu,double *vcu,double *vcudif,int *antsim,double *test,double *testOBS,double *Ut,double *simUt,matrix *W4t,int *weighted,int *antpers,double *cu0,double *argmax)
+//double *times,*cu,*vcu,*vcudif,*test,*testOBS,*Ut,*simUt,*cu0,*argmax;
+//int    *px,*Ntimes,*antsim,*weighted,*antpers;
 matrix  *W4t[];
 {
   matrix *Delta,*tmpM1;
