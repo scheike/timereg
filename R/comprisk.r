@@ -167,14 +167,6 @@
 #' par(mfrow=c(2,2))
 #' plot(out,multiple=0,uniform=1,col=1:3,lty=1,se=1)
 #' 
-#' add<-comp.risk(Event(time,cause)~platelet+age+tcell,data=bmt,
-#' 	       cause=1,resample.iid=0,n.sim=0,cens.model="cox",
-#' 	       cens.formula=~factor(platelet),model="additive")
-#' 
-#' out<-predict(add,ndata,se=0,uniform=0)
-#' par(mfrow=c(2,2))
-#' plot(out,multiple=0,se=0,uniform=0,col=1:3,lty=1)
-#' 
 #' ## fits additive model with some constant effects 
 #' add.sem<-comp.risk(Event(time,cause)~
 #' const(platelet)+const(age)+const(tcell),data=bmt,
@@ -400,26 +392,29 @@ comp.risk<-function(formula,data=parent.frame(),cause,times=NULL,Nit=50,clusters
 		if (!is.null(trunc.p)) Gcx <- Gcx/Gcxe; 
                 Gctimes<-Cpred(Gfit,times)[,2]; ## }}}
             } else if (cens.model=="cox") { ## {{{
-                if (!is.null(cens.formula)) { 
-		      XZ <- model.matrix(cens.formula,data=data); 
-                      if (sum(XZ[,1])==nrow(XZ)) XZ <- as.matrix(XZ[,-1])
-                } else {
-                       if (npar==TRUE) XZ<-X[,-1] else XZ <-cbind(X,Z)[,-1];
-                }
-		if (left==1) ud.cens<-coxph(Surv(entrytime,eventtime,delta==cens.code)~XZ)                
-		else ud.cens<-coxph(Surv(eventtime,delta==cens.code)~XZ)                
-		baseout <- basehaz(ud.cens,centered=FALSE); 
-		baseout <- cbind(baseout$time,baseout$hazard)
-		Gcx<-Cpred(baseout,eventtime,strict=TRUE)[,2];
-		Gcxe<-Cpred(baseout,entrytime,strict=TRUE)[,2];
-		Gcxe[Gcxe==0] <- 1
-		RR<-exp(as.matrix(XZ) %*% coef(ud.cens))
-		Gcx<-exp(-Gcx*RR)
-		Gcxe<-exp(-Gcxe*RR)
-		Gfit<-rbind(c(0,1),cbind(eventtime,Gcx)); 
-		### only conditional on L if trunc given 
-		if (!is.null(trunc.p)) Gcx <- Gcx/Gcxe; 
-		Gctimes<-Cpred(Gfit,times,strict=TRUE)[,2]; 
+                     stop("Disabbled \n"); 
+###                if (!is.null(cens.formula)) { 
+###			data$eventtime__ <- eventtime
+###			data$entrytime__ <- entrytime 
+###			data$delta__C <- delta==cens.code
+###		if (left==1) 
+###                formC <- update.formula(cens.formula,Surv(entrytime__,eventtime__,delta__C)~.)
+###	         else formC <- update.formula(cens.formula,Surv(eventtime__,delta__C)~.)
+###                } else {
+###                }
+###		ud.cens<-coxph(formC,data=data)                
+###		baseout <- basehaz(ud.cens,centered=FALSE); 
+###		baseout <- cbind(baseout$time,baseout$hazard)
+###		Gcx<-Cpred(baseout,eventtime,strict=TRUE)[,2];
+###		Gcxe<-Cpred(baseout,entrytime,strict=TRUE)[,2];
+###		Gcxe[Gcxe==0] <- 1
+###		RR<-exp(as.matrix(XZ) %*% coef(ud.cens))
+###		Gcx<-exp(-Gcx*RR)
+###		Gcxe<-exp(-Gcxe*RR)
+###		Gfit<-rbind(c(0,1),cbind(eventtime,Gcx)); 
+###		### only conditional on L if trunc given 
+###		if (!is.null(trunc.p)) Gcx <- Gcx/Gcxe; 
+###		Gctimes<-Cpred(Gfit,times,strict=TRUE)[,2]; 
                 ## }}}
             } else if (cens.model=="aalen") {  ## {{{
                 if (!is.null(cens.formula)) { 

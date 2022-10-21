@@ -233,14 +233,6 @@ out<-predict(add,ndata,uniform=1,n.sim=100)
 par(mfrow=c(2,2))
 plot(out,multiple=0,uniform=1,col=1:3,lty=1,se=1)
 
-add<-comp.risk(Event(time,cause)~platelet+age+tcell,data=bmt,
-	       cause=1,resample.iid=0,n.sim=0,cens.model="cox",
-	       cens.formula=~factor(platelet),model="additive")
-
-out<-predict(add,ndata,se=0,uniform=0)
-par(mfrow=c(2,2))
-plot(out,multiple=0,se=0,uniform=0,col=1:3,lty=1)
-
 ## fits additive model with some constant effects 
 add.sem<-comp.risk(Event(time,cause)~
 const(platelet)+const(age)+const(tcell),data=bmt,

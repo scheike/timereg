@@ -2,11 +2,25 @@
 #include <math.h>
 #include "matrix.h"
 	 
-void itfit(double *times,int *Ntimes,double *x,int *censcode,int *cause,double *KMc,double *z,int *n,int *px,int *Nit,double *betaS,
-double *score,double *hess,double *est,double *var,int *sim,int *antsim,int *rani,double *test,double *testOBS,double *Ut,double *simUt,int *weighted,
-double *gamma,double *vargamma,int *semi,double *zsem,int *pg,int *trans,double *gamma2,int *CA,int *line,int *detail,double *biid,double *gamiid,int *resample,
-double *timepow,int *clusters,int *antclust,double *timepowtest,int *silent,double *convc,double *weights,double *entry,double *trunkp,int *estimator,int *fixgamma,int *stratum,int *ordertime,
-int *conservative,double *ssf,double *KMtimes,double *gamscore,double *Dscore,int *monotone)
+void itfit(double *times,int *Ntimes,double *x,
+		int *censcode,int *cause,double *KMc,
+		double *z,int *n,int *px,
+		int *Nit,double *betaS, double *score,
+		double *hess,double *est,double *var,
+		int *sim,int *antsim,int *rani,
+		double *test,double *testOBS,double *Ut,
+		double *simUt,int *weighted, double *gamma,
+		double *vargamma,int *semi,double *zsem,
+		int *pg,int *trans,double *gamma2,
+		int *CA,int *line,int *detail,
+		double *biid,double *gamiid,int *resample,
+                double *timepow,int *clusters,int *antclust,
+		double *timepowtest,int *silent,double *convc,
+		double *weights,double *entry,double *trunkp,
+		int *estimator,int *fixgamma,int *stratum,
+		int *ordertime, int *conservative,double *ssf,
+		double *KMtimes,double *gamscore,double *Dscore,
+		int *monotone)
 //double *times,*betaS,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
 //*Ut,*simUt,*gamma,*zsem,*gamma2,*biid,*gamiid,*vargamma,*timepow,
 //	*timepowtest,*convc,*weights,*entry,*trunkp,*ssf,*KMtimes,*gamscore,*Dscore;

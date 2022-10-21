@@ -11,10 +11,10 @@ double *unitest,double *unitestOBS,
 double *timetest,double *timetestOBS,
 double *unitimetest,double *unitimetestOBS,
 double *modelmatrix,int *model,int *pm,double *cummgt,double *dNit,double *robvarcum,
-double *testOBS,double *test,double *simUt,double *Ut,double *cumresid,int *maxval,int *startdesign,
+double *testOBS,double *test,double *simUt,double *Ut,int *cumresid,int *maxval,int *startdesign,
 int *coxaalen,double *dcum,double *beta,double *designG,int *pg,double *Ogammaiid,
 int *clusters,int *antclust,double *robvarcumz,double *simcumz,
-int *inXZ,int *inXorZ,int *iptot,int *entry,int *stratum,int *silent,double *weights,double *offsets,int *ratesim,double *weightsmg, double *varweighted) 
+int *inXZ,int *inXorZ,int *iptot,int *entry,int *stratum,int *silent,double *weights,double *offsets,int *ratesim,double *weightsmg, int *varweighted) 
 //double *designG,*dcum,*beta,*designX,*start,*stop,*mgtimes,
 //	*dmgresid,*xval,*univarproc,*timeproc,*simunivarproc,
 //	*simtimeproc,*unitest,*unitestOBS, *timetest,*timetestOBS,
