@@ -258,8 +258,12 @@ if (!inherits(margsurv,"coxph")) { ## {{{
        cumhazleft <- rep(0,antpers)
        RR<- exp(margsurv$linear.predictors-sum(margsurv$means*coef(margsurv)))
         if ((lefttrunk==1)) { 
-           baseout <- basehaz(margsurv,centered=FALSE); 
-           cum <- cbind(baseout$time,baseout$hazard)
+###           baseout <- basehaz(margsurv,centered=FALSE); 
+             sfit <- survfit(margsurv, se.fit=FALSE)   
+             zcoef <- ifelse(is.na(coef(margsurv)), 0, coef(margsurv))
+             offset <- sum(margsurv$means * zcoef)
+             chaz <- sfit$cumhaz * exp(-offset)
+             cum <- cbind(sfit$time,chaz)  
 	   cum <- Cpred(cum,start)[,2]
 	   cumhazleft <- cum * RR 
 	}

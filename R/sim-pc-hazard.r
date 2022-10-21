@@ -1162,7 +1162,12 @@ read.fit <- function(cox,n,data=NULL,Z=NULL,drawZ=TRUE,fixZ=FALSE,id=NULL)
 
 if (inherits(cox,"coxph"))
 {# {{{
-   base <- basehaz(cox,centered=FALSE)[,c(2,1)] 
+   ## basehaz(cox,centered=FALSE)[,c(2,1)] 
+   sfit <- survfit(cox, se.fit=FALSE)   
+   zcoef <- ifelse(is.na(coef(cox)), 0, coef(cox))
+   offset <- sum(cox$means * zcoef)
+   chaz <- sfit$cumhaz * exp(-offset)
+   base <- cbind(sfit$time,chaz)  
    mt <- model.frame(cox)
    Y <- model.extract(mt, "response")
    if (!inherits(Y, "Surv")) 

@@ -1019,8 +1019,14 @@ prep.comp.risk <- function(data,times=NULL,entrytime=NULL,
 	   } else Lw <- 1
 ###
 	cens.model <- coxph(Surv(entrytime,data[,time],data[,cause]==0)~+X) 
-        baseout <- basehaz(cens.model,centered=FALSE); 
-	baseout <- cbind(baseout$time,baseout$hazard)
+###        baseout <- basehaz(cens.model,centered=FALSE); 
+###	baseout <- cbind(baseout$time,baseout$hazard)
+        sfit <- survfit(cens.model, se.fit=FALSE)   
+        zcoef <- ifelse(is.na(coef(cens.model)), 0, coef(cens.model))
+        offset <- sum(cens.model$means * zcoef)
+        chaz <- sfit$cumhaz * exp(-offset)
+        baseout <- cbind(sfit$time,chaz)  
+
 	Gfit<-Cpred(baseout,pmin(mtt,data[,time]),strict=TRUE)[,2];
 	RR<-exp(as.matrix(X) %*% coef(cens.model))
 	Gfit<-exp(-Gfit*RR)
