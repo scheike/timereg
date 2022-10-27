@@ -216,19 +216,13 @@ pval.testBeqC.is1<- pval.testBeqC.is2<-NULL;
 if (method=="basic") 
 {
 semiout<-.C("OSsemicox",
-as.double(times),as.integer(Ntimes),
-as.double(designX),
-as.integer(nx),as.integer(px),as.double(designG),
-as.integer(ng),as.integer(pg),as.integer(fdata$antpers),
-as.double(fdata$start),as.double(fdata$stop),as.integer(nb),
-as.double(bhat),as.double(cum),as.double(Vcum),
-as.double(gamma),as.double(Vargam),as.double(band),
-as.integer(degree), as.integer(it), as.double(RobVargam), 
-as.double(rvcu), as.integer(sim), as.integer(antsim), 
-as.integer(retur), as.double(cumAi), as.double(test), 
-as.integer(rani), as.double(testOBS), as.integer(status), 
-as.double(Ut), as.double(simUt), as.integer(id),
-as.integer(weighted.test),as.integer(robust),
+as.double(times),as.integer(Ntimes), as.double(designX), as.integer(nx),as.integer(px),
+as.double(designG), as.integer(ng),as.integer(pg),as.integer(fdata$antpers), as.double(fdata$start),
+as.double(fdata$stop),as.integer(nb), as.double(bhat),as.double(cum),as.double(Vcum),
+as.double(gamma),as.double(Vargam),as.double(band), as.integer(degree), as.integer(it), 
+as.double(RobVargam), as.double(rvcu), as.integer(sim), as.integer(antsim), as.integer(retur), 
+as.double(cumAi), as.double(test), as.integer(rani), as.double(testOBS), as.integer(status), 
+as.double(Ut), as.double(simUt), as.integer(id), as.integer(weighted.test),as.integer(robust),
 as.integer(covariance),as.double(covs),PACKAGE="timereg");
 
 if (covariance==1)  {
@@ -289,18 +283,13 @@ schoen<-0; cum<-Vcum<-rvcu<-matrix(0,Ntimes,px+2);
 cumAi<-NULL; 
 
 semiout<-.C("semibreslow",
-as.double(times),as.integer(Ntimes),
-as.double(designX),
-as.integer(nx),as.integer(px),as.double(designG),
-as.integer(ng),as.integer(pg),as.integer(fdata$antpers),
-as.double(fdata$start),as.double(fdata$stop),as.integer(nb),
-as.double(bhat),as.double(cum), as.double(Vcum), 
-as.double(rvcu),as.double(gamma),as.double(Vargam),
-as.double(RobVargam),as.double(band),as.integer(degree),
-as.integer(it),as.integer(sim),as.integer(antsim),
-as.double(test),as.integer(rani),as.double(testOBS),
-as.integer(status),as.integer(id),as.double(schoen),
-as.double(simUt),as.double(Ut),PACKAGE="timereg")  
+as.double(times),as.integer(Ntimes), as.double(designX), as.integer(nx),as.integer(px),
+as.double(designG), as.integer(ng),as.integer(pg),as.integer(fdata$antpers), as.double(fdata$start),
+as.double(fdata$stop),as.integer(nb), as.double(bhat),as.double(cum), as.double(Vcum), 
+as.double(rvcu), as.double(gamma),as.double(Vargam), as.double(RobVargam),as.double(band),
+as.integer(degree), as.integer(it),as.integer(sim),as.integer(antsim), as.double(test),
+as.integer(rani), as.double(testOBS), as.integer(status),as.integer(id),as.double(schoen), 
+as.double(simUt), as.double(Ut),as.integer(weighted.test),as.integer(robust),PACKAGE="timereg")  
 
 bhat<-matrix(semiout[[13]],nb,px+2);
 cum <-matrix(semiout[[14]],Ntimes,px+2);

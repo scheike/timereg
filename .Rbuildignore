@@ -1,5 +1,6 @@
 .git
 .gitignore
+.github
 \.gitignore$
 README.org
 src/makeCmedgoption
