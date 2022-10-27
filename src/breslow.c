@@ -14,8 +14,7 @@ void OSbreslow(double *times,int *Ntimes,double *designX,int *nx,int *p,int *ant
       *imin=calloc(1,sizeof(int)), *coef=calloc(1,sizeof(int)),*ps=calloc(1,sizeof(int));
   double time2,rr,time=0,time1,dummy,dtime,S0,lam0t,sdBt,tau,random;
   double *Basei=calloc(*antpers,sizeof(double)),rvarbase, *vcudif=calloc((*Ntimes)*(*p+2),sizeof(double));
-//  double norm_rand();
-//  void GetRNGstate(),PutRNGstate();
+//  double norm_rand(); void GetRNGstate(),PutRNGstate();
 
 
   if (*sim==1) {
