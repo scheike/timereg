@@ -494,7 +494,7 @@ int *weighted,int *ratesim,double *score,double *dhatMit,double *dhatMitiid,int 
     tau=times[*Ntimes-1]-times[0];
     for (i=1;i<=*pg;i++) VE(rowZ,i-1)=cu[i*(*Ntimes)+(*Ntimes-1)];
 
-    /* Beregning af OBS teststørrelser */
+    /* Beregning af OBS teststorrelser */
     for (s=1;s<*Ntimes;s++) { time=times[s]-times[0]; 
 
       for (i=1;i<=*pg;i++) {
@@ -516,7 +516,7 @@ int *weighted,int *ratesim,double *score,double *dhatMit,double *dhatMitiid,int 
 	else {vec_zeros(rowX); replace_row(Utt,s,rowX);}
       }
       for (k=1;k<=*px;k++) Ut[k*(*Ntimes)+s]=ME(Utt,s,k-1);
-    } /*s=1..Ntimes Beregning af obs teststørrelser */
+    } /*s=1..Ntimes Beregning af obs teststorrelser */
 
 
     for (k=1;k<=*antsim;k++) {

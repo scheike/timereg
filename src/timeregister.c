@@ -29,8 +29,16 @@ extern void robaalen(void *, void *, void *, void *, void *, void *, void *, voi
 extern void robaalenC(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
 extern void score(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
 extern void semiaalen(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void semibreslow(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void semidynadd(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
+extern void semibreslow(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, 
+			void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, 
+			void *, void *, void *, void *, void *, void *, void *, void *, void *, void *,
+			void *,void *, void *, void *);
+extern void semidynadd(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, 
+		       void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, 
+		       void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, 
+		       void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, 
+		       void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, 
+		       void *, void *, void *, void *, void *);
 extern void sindex(void *, void *, void *, void *, void *, void *);
 extern void smooth2B(void *, void *, void *, void *, void *, void *, void *, void *);
 extern void smoothB(void *, void *, void *, void *, void *, void *, void *, void *);
@@ -63,7 +71,7 @@ static const R_CMethodDef CEntries[] = {
     {"robaalenC",           (DL_FUNC) &robaalenC,           32},
     {"score",               (DL_FUNC) &score,               65},
     {"semiaalen",           (DL_FUNC) &semiaalen,           52},
-    {"semibreslow",         (DL_FUNC) &semibreslow,         32},
+    {"semibreslow",         (DL_FUNC) &semibreslow,         34},
     {"semidynadd",          (DL_FUNC) &semidynadd,          55},
     {"sindex",              (DL_FUNC) &sindex,               6},
     {"smooth2B",            (DL_FUNC) &smooth2B,             8},

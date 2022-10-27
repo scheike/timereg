@@ -419,10 +419,13 @@ void OSbreslow(double *times,int *Ntimes,double *designX,int *nx,int *p,int *ant
   free(vcudif); free(Basei); 
 }
 
-void semibreslow(double *times,int *Ntimes,double *designX,int * nx,int *px,double *designG,
-int *ng,int *pg,int *antpers,double * start,double *stop,int *nb,double * bhat,double *cu,double *vcu,double *rvcu,double *gamma,double *Vgamma,
-double *robVgamma,double *b,int *degree,int * it,int *sim,int *antsim,double * test,int *rani,double *testOBS,int * status,int *id,double *schoen,
-double *simUt,double *Ut,int *weighted,int *robust)
+void semibreslow(double *times,int *Ntimes,double *designX,int *nx,int *px,
+		double *designG, int *ng,int *pg,int *antpers,double *start,
+		double *stop,int *nb,double *bhat,double *cu,double *vcu,
+		double *rvcu,double *gamma,double *Vgamma,double *robVgamma,double *b,
+		int *degree,int *it,int *sim,int *antsim,double *test,
+		int *rani,double *testOBS,int *status,int *id,double *schoen,
+                double *simUt,double *Ut,int *weighted,int *robust)
 {
   matrix *ldesignX, *A,*AI,*cdesignX,*ldesignG,*cdesignG;
   matrix *XmavX,*ZmavZ,*E2x,*E2z,*E2xz,*XX;

@@ -21,12 +21,6 @@ void itfit(double *times,int *Ntimes,double *x,
 		int *ordertime, int *conservative,double *ssf,
 		double *KMtimes,double *gamscore,double *Dscore,
 		int *monotone)
-//double *times,*betaS,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
-//*Ut,*simUt,*gamma,*zsem,*gamma2,*biid,*gamiid,*vargamma,*timepow,
-//	*timepowtest,*convc,*weights,*entry,*trunkp,*ssf,*KMtimes,*gamscore,*Dscore;
-//int *n,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,
-//*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,
-//	*fixgamma,*stratum,*ordertime,*conservative,*monotone;
 { // {{
   // {{{ allocation and reading of data from R
   matrix *wX,*X,*cX,*A,*AI,*cumAt[*antclust],*VAR,*Z,*censX;
@@ -319,10 +313,6 @@ void itfitsemi(double *times,int *Ntimes,double *x,int *censcode,int *cause,
 	       double *timepow,int *clusters,int *antclust,double *timepowtest,int *silent,double *convc,double *weights,double *entry,double *trunkp,
 	       int *estimator,int *fixgamma,int *stratum,int *ordertime,int *conservative,double *ssf,double *KMtimes,
 	       double *gamscore,double *Dscore,int *monotone)
-//double *times,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,*Ut,*simUt,*gamma,*zsem,
-//       *vargamma,*gamma2,*biid,*gamiid,*timepow,*timepowtest,*entry,*trunkp,*convc,*weights,*ssf,*KMtimes,*gamscore,*Dscore;
-//int *antpers,*px,*Ntimes,*Nit,*cause,*censcode,*sim,*antsim,*rani,*weighted,*monotone,
-//*semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,*estimator,*fixgamma,*stratum,*ordertime,*conservative;
 { // {{{
   // {{{ allocation and reading of data from R
   matrix *ldesignX,*A,*AI,*cdesignX,*ldesignG,*cdesignG,*censX,*censZ;
@@ -343,20 +333,17 @@ void itfitsemi(double *times,int *Ntimes,double *x,int *censcode,int *cause,
       *nx= calloc(1,sizeof(int)),
       *px1= calloc(1,sizeof(int));
   int left=0,clusterj,fixedcov,osilent,*strict=calloc(2,sizeof(int)),*indexleft=calloc((*antpers),sizeof(int));
-  double svarp=1,varp=0.5,nrisk,time,dummy,dtime,phattrunc,bhattrunc=0,lrr,lrrt;
+  double varp=0.5,nrisk,time,dummy,dtime,phattrunc,bhattrunc=0,lrr,lrrt;
   double *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
 	 *inc=calloc((*Ntimes)*(*px+1),sizeof(double)),
 	 *weightt=calloc((*Ntimes),sizeof(double)),
 	 *cifentry=calloc((*antpers),sizeof(double)),
 	 *cumentry=calloc((*antpers)*(*px+1),sizeof(double));
   osilent=silent[0]; silent[0]=0; strict[0]=1; 
-  // float gasdev(),expdev(),ran1();
-//  robust[0]=1; 
+  // float gasdev(),expdev(),ran1(); robust[0]=1; 
   fixedcov=1; n[0]=antpers[0]; nx[0]=antpers[0];
   double step=ssf[0]; 
 
-//if (*trans==1) for (j=0;j<*pg;j++) if (fabs(timepow[j]-1)>0.0001) {timem=1;break;}
-//if (*trans==2) for (j=0;j<*pg;j++) if (fabs(timepow[j])>0.0001) {timem=1;break;}
 
   for (j=0;j<*antclust;j++) { 
     malloc_mat(*Ntimes,*px,W3t[j]);
@@ -675,7 +662,7 @@ malloc_vec((*px)+(*pg),qs);
    } // }}}
 
    if (*estimator==4) {
-      if (varp>0.01 && itt>2) svarp=1/pow(varp,0.5); else svarp=1/pow(0.01,0.5); 
+//      if (varp>0.01 && itt>2) svarp=1/pow(varp,0.5); else svarp=1/pow(0.01,0.5); 
    }
 
    if (*estimator==1) scl_vec_mult(pow(weights[j],0.5)*(time>entry[j]),dpx,dpx); 

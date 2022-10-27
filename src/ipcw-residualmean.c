@@ -467,7 +467,7 @@ void resmeansemi(double *times,int  *Ntimes,double *x,int *delta,int *cause,
 	Rprintf("Gamma parameters \n"); print_vec(gam); 
 	Rprintf("Change in Gamma \n"); print_vec(dgam); }
 
-    } /*itt løkke */ 
+    } /*itt lokke */ 
 
   /* ROBUST VARIANCES   */ 
   if (*robust==1) 
