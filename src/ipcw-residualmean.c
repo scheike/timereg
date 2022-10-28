@@ -7,12 +7,6 @@ double *score,double *hess,double *est,double *var,int *sim,int *antsim,int *ran
 double *gamma,double *vargamma,int *semi,double *zsem,int *pg,int *trans,double *gamma2,int *CA,int *line,int *detail,double *biid,double *gamiid,int *resample,
 double *timepow,int *clusters,int *antclust,double *timepowtest,int *silent,double *convc,double *tau,int *estimator,int *causeS,double *weights,
 double *KMtimes,int *ordertime,int *conservative,int *censcode)
-//double *times,*betaS,*x,*KMc,*z,*score,*hess,*est,*var,*test,*testOBS,
-//       *Ut,*simUt,*gamma,*zsem,*gamma2,*biid,*gamiid,*vargamma,*timepow,
-//       *weights,*KMtimes,*timepowtest,*convc,*tau;
-//int *n,*px,*Ntimes,*Nit,*cause,*delta,*sim,*antsim,*rani,*weighted,
-//    *semi,*pg,*trans,*CA,*line,*detail,*resample,*clusters,*antclust,*silent,
-//    *estimator,*causeS,*ordertime,*conservative,*censcode;
 { // {{{
   // {{{ allocation and reading of data from R
   matrix *X,*cX,*A,*AI,*cumAt[*antclust],*VAR,*Z,*censX;
@@ -21,12 +15,10 @@ double *KMtimes,int *ordertime,int *conservative,int *censcode)
   vector *cumhatA[*antclust],*cumA[*antclust],*bet1,*gam,*dp,*dp1,*dp2; 
   int osilent,convt,ps,sing,c,i,j,k,l,s,it,convproblems=0,clusterj,nrisk; 
   double skm,rit,time,sumscore,totrisk,*vcudif=calloc((*Ntimes)*(*px+1),sizeof(double));
-//  float gasdev(),expdev(),ran1();
-//  void resmeansemi();
+//  float gasdev(),expdev(),ran1(); void resmeansemi();
   ps=(*px); 
 
-//  printf(" %d %d %d %d %d %d \n",*px,*semi,*Ntimes,*trans,*antclust,*n); 
-//  printf(" %d \n",ps); 
+//  printf(" %d %d %d %d %d %d \n",*px,*semi,*Ntimes,*trans,*antclust,*n); printf(" %d \n",ps); 
 
   if (*semi==0) { 
     osilent=silent[0]; silent[0]=0; 
@@ -116,17 +108,9 @@ for (s=0;s<*Ntimes;s++)
       } // }}}
 
 
-//    if (it==*Nit-1) {
-////	if (KMc[j]<0.00001) vec_zeros(dp); else scl_vec_mult(1/KMc[j],dp,dp); 
-//	scl_vec_mult(VE(Y,j),dp,dp); vec_add(dp,qs,qs); 
-//    }
 
     } // }}}
 
-//    head_matrix(cX); 
-//    printf("================ %lf \n",vec_sum(Y)); 
-//    printf("================ %lf \n",vec_sum(risk)); 
-//    printf("================ %lf \n",vec_sum(pbhat)); 
     
     totrisk=vec_sum(risk); 
     MtA(cX,cX,A); 
@@ -181,10 +165,10 @@ if (convt==1 ) {
       extract_row(cX,i,dp); 
       scl_vec_mult(VE(Y,i),dp,dp); 
       vec_add(dp,cumA[j],cumA[j]); 
-      if ((*conservative==0)) { // {{{ censoring terms for variance 
+      if (*conservative==0) { // {{{ censoring terms for variance 
  	k=ordertime[i]; nrisk=(*n)-i; clusterj=clusters[k]; 
 //	printf(" %d %d %lf %lf %lf %d \n",i,k,nrisk,time,x[k],cause[k]); 
-	if (cause[k]==(*censcode)) { 
+	if (cause[k]==*censcode) { 
            for(l=0;l<ps;l++) VE(cumA[clusterj],l)+=VE(censXv,l)/nrisk; 
            for (j=i;j<*n;j++) {
              clusterj=clusters[ordertime[j]]; 	

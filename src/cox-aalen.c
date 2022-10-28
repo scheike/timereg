@@ -673,7 +673,7 @@ int *timegroup,int *maxtimepoint,int *stratum,double *silent,double *caseweight)
      if (basesim>=0)  replace_row(W3t[j],timegroup[s],W3[j]);  
     } 
 
-    if ((*ratesim==0))  // {{{  compute resampling counting process LWY style version
+    if (*ratesim==0)  // {{{  compute resampling counting process LWY style version
     {
       cin=cluster[pers]; 
       extract_row(WX,pers,rowX);  // RR*xi
@@ -786,7 +786,7 @@ int *timegroup,int *maxtimepoint,int *stratum,double *silent,double *caseweight)
 //}
 
 
-  if ((*robust==1)) // {{{ robust variances 
+  if (*robust==1) // {{{ robust variances 
   {
       for (s=1;s<*maxtimepoint;s++) 
       {

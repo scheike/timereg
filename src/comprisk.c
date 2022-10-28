@@ -27,7 +27,7 @@ void itfit(double *times,int *Ntimes,double *x,
   vector *VdB,*risk,*SCORE,*W,*Y,*Gc,*CAUSE,*bhat,*pbhat,*beta,*xi,*censXv,
          *rr,*rowX,*difbeta,*qs,*bhatub,*betaub,*dcovs,*pcovs,*zi,*rowZ,*zgam,*vcumentry; 
   vector *cumhatA[*antclust],*cumA[*antclust],*bet1,*gam,*dp,*dp1,*dp2; 
-  int left=0,clusterj,osilent,convt=1,ps,sing,c,i,j,k,l,s,it,convproblems=0; 
+  int clusterj,osilent,convt=1,ps,sing,c,i,j,k,l,s,it,convproblems=0; 
   double step,prede,varp=0.5,nrisk,time,sumscore,totrisk, 
 	 *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
 	 *cifentry=calloc((*n),sizeof(double)),
@@ -57,7 +57,7 @@ void itfit(double *times,int *Ntimes,double *x,
 
     for (c=0;c<*n;c++) {
 	  VE(Gc,c)=KMc[c]; 
-	 if (trunkp[c]<1) left=1; 
+//	 if (trunkp[c]<1) left=1; 
 	 cifentry[c]=0; 
          VE(CAUSE,c)=cause[c]; 
          for(j=0;j<*px;j++)  ME(X,c,j)=z[j*(*n)+c]; 
@@ -239,7 +239,7 @@ if (convt==1 ) { // {{{ iid decomp
       j=clusters[i]; 
       if (*monotone==0) for(l=0;l<ps;l++) VE(cumA[j],l)+=VE(Y,i)*ME(cX,i,l); 
       if (*monotone==1) for(l=0;l<ps;l++) VE(cumA[j],l)+=VE(Y,i)*ME(wX,i,l); 
-    if ((*conservative==0)) { // {{{ censoring terms for variance 
+    if (*conservative==0) { // {{{ censoring terms for variance 
 	k=ordertime[i]; nrisk=(*n)-i; clusterj=clusters[k]; 
 //	printf(" %d %d %lf %lf %lf %d \n",i,k,nrisk,time,x[k],cause[k]); 
 	if (cause[k]==(*censcode)) { 

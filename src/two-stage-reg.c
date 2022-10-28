@@ -9,9 +9,6 @@ int *detail, int *id,int *status, int *ratesim, int *robust, int *clusters,
 int *antclust,int *betafixed, double *theta, double *vartheta,double *thetascore, int *inverse,
 int *clustsize,double *desthetaI, int *ptheta,double *SthetaI,double *step,int *idiclust,int *notaylor,double *gamiid,double *biid,int *semi,double *cumhaz,
 double *cumhazleft,int *lefttrunk,double *rr,int *maxtimesim,int *timegroup,int *secluster,int *antsecluster,double *thetiid,double *timereso,double *DUbeta)
-//double *designX,*designG,*times,*start,*stop,*theta,*vartheta,*thetascore,*desthetaI,*SthetaI,*step,*gamiid,*biid,*cumhaz,*cumhazleft,*rr,*thetiid,*timereso,*DUbeta;
-//int *nx,*px,*ng,*pg,*antpers,*Ntimes,*Nit,*detail,*id,*status,*ratesim,*robust,
-//*clusters,*antclust,*betafixed,*inverse,*clustsize,*ptheta,*idiclust,*notaylor,*semi,*lefttrunk,*maxtimesim,*timegroup,*antsecluster,*secluster;
 {
 // {{{ defining variables
   matrix *ldesG0,*cdesX2,*Ftilde,*Gtilde;
@@ -46,7 +43,7 @@ double *cumhazleft,int *lefttrunk,double *rr,int *maxtimesim,int *timegroup,int 
 
   for (j=0;j<*antsecluster;j++) { 
 	   insecluster[j]=0; 
-      if ((*notaylor==0)) {
+      if (*notaylor==0) {
 	malloc_vec(*pg,gammaiid[j]); 
 	malloc_mat(*maxtimesim,*px,Biid[j]);
        }
