@@ -104,7 +104,7 @@ for constant proportional odds under the model based on resampling.}
 }
 \description{
 Fits a semiparametric proportional odds model: \deqn{ logit(1-S_Z(t)) =
-log(G(t)) + \beta^T Z } where G(t) is increasing but otherwise unspecified.
+log(G(t)) + \beta^T Z }{} where G(t) is increasing but otherwise unspecified.
 Model is fitted by maximising the modified partial likelihood.  A
 goodness-of-fit test by considering the score functions is also computed by
 resampling methods.

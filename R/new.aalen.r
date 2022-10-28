@@ -384,6 +384,7 @@ vcov.aalen <- function(object,robust=0, ...) {
 #' @param ... unused arguments - for S3 compatibility
 #' @author Thomas Scheike
 #' @keywords survival
+##' @export
 "print.aalen" <- function (x,...) 
 { ## {{{
 summary.aalen(x,...)
@@ -403,7 +404,6 @@ summary.aalen(x,...)
 ###
 ###  cat("  Call: \n"); dput(attr(object, "Call")); cat("\n"); 
 } ## }}}
-
 
 
 #' Prints summary statistics

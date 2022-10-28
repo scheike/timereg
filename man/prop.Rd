@@ -16,7 +16,7 @@ the Cox-Aalen model
 }
 \details{
 \deqn{ \lambda_{i}(t) = Y_i(t) ( X_{i}^T(t) \alpha(t) ) \exp(Z_{i}^T(t)
-\beta ) } for this model prop specified the covariates to be included in
+\beta ) }{} for this model prop specified the covariates to be included in
 \eqn{Z_{i}(t)}
 }
 \author{

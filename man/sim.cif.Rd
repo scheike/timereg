@@ -54,7 +54,7 @@ data(TRACE)
 #' cif <-  prop.odds.subdist(Event(time,status)~vf+chf+wmi,data=TRACE,cause=9)
 cif <-  comp.risk(Event(time,status)~const(vf)+const(chf)+const(wmi),
                   data=TRACE,cause=9,model="logistic2")
-sim1 <- sim.cif(cif,500,data=TRACE)
+sim1 <- sim.cif(cif,100,data=TRACE)
 #' cc <-  prop.odds.subdist(Event(time,status)~vf+chf+wmi,data=sim1,cause=1)
 cc <-  comp.risk(Event(time,status)~const(vf)+const(chf)+const(wmi),
                   data=sim1,cause=1,model="logistic2")
@@ -68,7 +68,7 @@ lines(cc$cum)
 #################################################################
 cif <-  comp.risk(Event(time,status)~const(vf)+const(chf)+const(wmi),
                   data=TRACE,cause=9)
-sim1 <- sim.cif(cif,500,data=TRACE)
+sim1 <- sim.cif(cif,100,data=TRACE)
 #' cc <-  crr 
 cc <-  comp.risk(Event(time,status)~const(vf)+const(chf)+const(wmi),
                   data=sim1,cause=1)
@@ -99,7 +99,7 @@ plot(cifs[[1]]$cum,type="l")
 lines(cifs[[2]]$cum,col=2)
 legend("topleft",c("cause1","cause2"),lty=1,col=1:2)
 
- n <- 500
+ n <- 100
  sim1 <- sim.cif(cifs[[1]],n,data=bmt)
  Z <- sim1[,c("tcell","age")]
  sim2 <- sim.cif(cifs[[2]],n,data=bmt,Z=Z,drawZ=FALSE)
@@ -124,7 +124,7 @@ legend("topleft",c("cause1","cause2"),lty=1,col=1:2)
  lines(cifs[[2]]$cum,col=2,lty=2)
 
 #  Everyhing wrapped in call assuming covariates work in the same way for two models
-dd <- sim.cifs(list(cif1,cif2),2000,data=bmt)
+dd <- sim.cifs(list(cif1,cif2),100,data=bmt)
 scif1 <-  comp.risk(Event(time,cause)~const(tcell)+const(age),
                   data=dd,cause=1,model="logistic2")
 scif2 <-  comp.risk(Event(time,cause)~const(tcell)+const(age),
@@ -141,7 +141,8 @@ lines(cifs[[2]]$cum,col=2,lty=2)
 #(if needed) to make constraints satisfied F1+F2 <=1
 # see doubleFG of mets package for paramtrization
 # and drawns as "if not cause1" then distribute according to cause 2
-# dd <- sim.cifsRestrict(list(cif1,cif2),2000,data=bmt)
+# dd <- sim.cifsRestrict(list(cif1,cif2),200,data=bmt)
+
 # faster with mets package 
 # dd <- sim.cifs(list(cif1,cif2),1000,data=bmt)
 # scif1 <-  cifreg(Event(time,cause)~tcell+age,data=dd,cause=1)

@@ -5,18 +5,17 @@
 #' mean of the observed responses given covariates is a linear time-varying
 #' regression model :
 #' 
-#' \deqn{ E( Z_{ij} | X_{ij}(t) ) = \beta^T(t) X_{ij}^1(t) + \gamma^T
-#' X_{ij}^2(t) } where \eqn{Z_{ij}} is the j'th measurement at time t for the
+#' \deqn{ E( Z_{ij} | X_{ij}(t) ) = \beta^T(t) X_{ij}^1(t) + \gamma^T X_{ij}^2(t) } 
+#' where \eqn{Z_{ij}} is the j'th measurement at time t for the
 #' i'th subject with covariates \eqn{X_{ij}^1} and \eqn{X_{ij}^2}. Resampling
 #' is used for computing p-values for tests of timevarying effects.
-#' 
+#
 #' The data for a subject is presented as multiple rows or 'observations', each
 #' of which applies to an interval of observation (start, stop].  For counting
 #' process data with the )start,stop] notation is used the 'id' variable is
 #' needed to identify the records for each subject. The program assumes that
 #' there are no ties, and if such are present random noise is added to break
 #' the ties.
-#' 
 #' @param formula a formula object with the response on the left of a '~'
 #' operator, and the independent terms on the right as regressors.
 #' @param data a data.frame with the variables.
@@ -40,9 +39,9 @@
 #' @return returns an object of type "dynreg". With the following arguments:
 #' \item{cum}{the cumulative regression coefficients. This is the efficient
 #' estimator based on an initial smoother obtained by local linear regression :
-#' \deqn{ \hat B(t) = \int_0^t \tilde \beta(s) ds+ \hspace{4 cm}}{} \deqn{
-#' }{}\deqn{\int_0^t X^{-} (Diag(z) -Diag( X^T(s) \tilde \beta(s)) ) dp(ds
-#' \times dz), }{} where \eqn{\tilde \beta(t)} is an initial estimate either
+#' \deqn{ \hat B(t) = \int_0^t \tilde \beta(s) ds+ \hspace{4 cm}} 
+#'  \deqn{\int_0^t X^{-} (Diag(z) -Diag( X^T(s) \tilde \beta(s)) ) dp(ds \times dz), } 
+#' where \eqn{\tilde \beta(t)} is an initial estimate either
 #' provided or computed by local linear regression. To plot this estimate use
 #' type="eff.smooth" in the plot() command. } 
 #' \item{var.cum}{the martingale based pointwise variance estimates.} 
@@ -58,14 +57,12 @@
 #' \item{cum.ms}{estimate of cumulative regression coefficients based on
 #' initial smoother (but robust to this estimator).  \deqn{ \hat B_{ms}(t) =
 #' \int_0^t X^{-} (Diag(z)-f(s)) dp(ds \times dz), } where \eqn{f} is chosen as
-#' the matrix \deqn{ f(s) = Diag( X^T(s) \tilde \beta(s)) ( I - X_\alpha(s)
-#' X_\alpha^-(s) ), } where \eqn{X_{\alpha}} is the design for the sampling
+#' the matrix \deqn{ f(s) = Diag( X^T(s) \tilde \beta(s)) ( I - X_\alpha(s) X_\alpha^-(s) ), }
+#' where \eqn{X_{\alpha}} is the design for the sampling
 #' intensities.
-#' 
 #' This is also an efficient estimator when the initial estimator is consistent
 #' for \eqn{\beta(t)} and then asymptotically equivalent to cum, but small
 #' sample properties appear inferior. Its variance is estimated by var.cum.
-#' 
 #' To plot this estimate use type="ms.mpp" in the plot() command. }
 #' \item{cum.ly}{estimator where local averages are subtracted. Special case of
 #' cum.ms. To plot this estimate use type="ly.mpp" in plot.  }
@@ -120,8 +117,8 @@
 #' summary(outS)
 #' }
 #' 
-#' @export
-dynreg<-function(formula,data=parent.frame(),aalenmod,
+##' @export
+dynreg<-function(formula=formula(data),data=parent.frame(),aalenmod,
 bandwidth=0.5,id=NULL,bhat=NULL,start.time=0,
 max.time=NULL,n.sim=500,meansub=1,weighted.test=0,resample=0)
 {
@@ -301,7 +298,6 @@ nameestimate<-function(mat,names)
 #' risk model or the test-processes for the hypothesis of constant effects with
 #' re-sampled processes under the null.
 #' 
-#' 
 #' @param x the output from the "dynreg" function.
 #' @param type the estimator plotted. Choices "eff.smooth", "ms.mpp", "0.mpp"
 #' and "ly.mpp". See the dynreg function for more on this.
@@ -349,7 +345,7 @@ nameestimate<-function(mat,names)
 #' plot(out,score=TRUE)
 #' }
 #' 
-#' @export
+##' @export
 plot.dynreg<-function(x,type="eff.smooth",pointwise.ci=1,hw.ci=0,
 sim.ci=0,robust=0,specific.comps=FALSE,level=0.05,start.time=0,stop.time=0,
 add.to.plot=FALSE,mains=TRUE,xlab="Time",ylab ="Cumulative coefficients",score=FALSE,...)
@@ -434,7 +430,7 @@ add.to.plot=FALSE,mains=TRUE,xlab="Time",ylab ="Cumulative coefficients",score=F
 
 }
 
-#' @export
+##' @export
 "print.dynreg" <-
 function (x,...) 
 {
@@ -459,7 +455,7 @@ if (is.null(dynreg.object$gamma0)==TRUE) semi<-FALSE else semi<-TRUE
 }
 
 
-#' @export
+##' @export
 "summary.dynreg" <- function(object,digits = 3,...) 
 {
   dynreg.object <- object; rm(object);
@@ -489,12 +485,12 @@ if (is.null(dynreg.object$gamma0)==TRUE) semi<-FALSE else semi<-TRUE
 }
 
 
-#' @export
+##' @export
 coef.dynreg<- function(object,...,digits=3) {
    coefBase(object,digits=digits)
 }
 
-#' @export
+##' @export
 aalen.des<-function(formula=formula(data),data=parent.frame(),model="aalen")
 {
   call <- match.call(); 

@@ -116,14 +116,14 @@ for constant proportional odds under the model based on resampling.}
 }
 \description{
 Fits a semiparametric proportional odds model: \deqn{ logit(F_1(t;X,Z)) =
-log( A(t)) + \beta^T Z } where A(t) is increasing but otherwise unspecified.
+log( A(t)) + \beta^T Z }{} where A(t) is increasing but otherwise unspecified.
 Model is fitted by maximising the modified partial likelihood.  A
 goodness-of-fit test by considering the score functions is also computed by
 resampling methods.
 }
 \details{
 An alternative way of writing the model : \deqn{ F_1(t;X,Z) = \frac{ \exp(
-\beta^T Z )}{ (A(t)) + \exp( \beta^T Z) } } such that \eqn{\beta} is the
+\beta^T Z )}{ (A(t)) + \exp( \beta^T Z) } }{} such that \eqn{\beta} is the
 log-odds-ratio of cause 1 before time t, and \eqn{A(t)} is the odds-ratio.
 
 The modelling formula uses the standard survival modelling given in the

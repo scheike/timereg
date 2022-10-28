@@ -167,8 +167,7 @@ Fits an Cox-Aalen survival model.  Time dependent variables and counting
 process data (multiple events per subject) are possible.
 }
 \details{
-\deqn{ \lambda_{i}(t) = Y_i(t) ( X_{i}^T(t) \alpha(t) ) \exp(Z_{i}^T \beta )
-}
+\deqn{ \lambda_{i}(t) = Y_i(t) ( X_{i}^T(t) \alpha(t) ) \exp(Z_{i}^T \beta ) }{}
 
 The model thus contains the Cox's regression model as special case.
 

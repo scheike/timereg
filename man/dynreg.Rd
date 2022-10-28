@@ -5,7 +5,7 @@
 \title{Fit time-varying regression model}
 \usage{
 dynreg(
-  formula,
+  formula = formula(data),
   data = parent.frame(),
   aalenmod,
   bandwidth = 0.5,
@@ -56,30 +56,30 @@ test-processes used for testing time-varying effects.}
 returns an object of type "dynreg". With the following arguments:
 \item{cum}{the cumulative regression coefficients. This is the efficient
 estimator based on an initial smoother obtained by local linear regression :
-\deqn{ \hat B(t) = \int_0^t \tilde \beta(s) ds+ \hspace{4 cm}}{} \deqn{
-}{}\deqn{\int_0^t X^{-} (Diag(z) -Diag( X^T(s) \tilde \beta(s)) ) dp(ds
-\times dz), }{} where \eqn{\tilde \beta(t)} is an initial estimate either
+\deqn{ \hat B(t) = \int_0^t \tilde \beta(s) ds+ \hspace{4 cm}} 
+ \deqn{\int_0^t X^{-} (Diag(z) -Diag( X^T(s) \tilde \beta(s)) ) dp(ds \times dz), } 
+where \eqn{\tilde \beta(t)} is an initial estimate either
 provided or computed by local linear regression. To plot this estimate use
-type="eff.smooth" in the plot() command. } \item{var.cum}{the martingale
-based pointwise variance estimates.} \item{robvar.cum}{robust pointwise
-variances estimates.} \item{gamma}{estimate of semi-parametric components of
-model.} \item{var.gamma}{variance for gamma.} \item{robvar.gamma}{robust
-variance for gamma.} \item{cum0}{simple estimate of cumulative regression
+type="eff.smooth" in the plot() command. } 
+\item{var.cum}{the martingale based pointwise variance estimates.} 
+\item{robvar.cum}{robust pointwise variances estimates.} 
+\item{gamma}{estimate of semi-parametric components of model.} 
+\item{var.gamma}{variance for gamma.} 
+\item{robvar.gamma}{robust variance for gamma.} 
+\item{cum0}{simple estimate of cumulative regression
 coefficients that does not use use an initial smoothing based estimate
 \deqn{ \hat B_0(t) = \int_0^t X^{-} Diag(z) dp(ds \times dz). } To plot this
-estimate use type="0.mpp" in the plot() command. } \item{var.cum0}{the
-martingale based pointwise variance estimates of cum0.}
+estimate use type="0.mpp" in the plot() command. } 
+\item{var.cum0}{the martingale based pointwise variance estimates of cum0.}
 \item{cum.ms}{estimate of cumulative regression coefficients based on
 initial smoother (but robust to this estimator).  \deqn{ \hat B_{ms}(t) =
 \int_0^t X^{-} (Diag(z)-f(s)) dp(ds \times dz), } where \eqn{f} is chosen as
-the matrix \deqn{ f(s) = Diag( X^T(s) \tilde \beta(s)) ( I - X_\alpha(s)
-X_\alpha^-(s) ), } where \eqn{X_{\alpha}} is the design for the sampling
+the matrix \deqn{ f(s) = Diag( X^T(s) \tilde \beta(s)) ( I - X_\alpha(s) X_\alpha^-(s) ), }
+where \eqn{X_{\alpha}} is the design for the sampling
 intensities.
-
 This is also an efficient estimator when the initial estimator is consistent
 for \eqn{\beta(t)} and then asymptotically equivalent to cum, but small
 sample properties appear inferior. Its variance is estimated by var.cum.
-
 To plot this estimate use type="ms.mpp" in the plot() command. }
 \item{cum.ly}{estimator where local averages are subtracted. Special case of
 cum.ms. To plot this estimate use type="ly.mpp" in plot.  }
@@ -102,9 +102,10 @@ observed cumulative and estimate under null of constant effect.}
 \item{pval.testBeqC.is}{p-value based on resampling.}
 \item{sim.testBeqC.is}{resampled supremum values.}
 \item{conf.band}{resampling based constant to construct robust 95\% uniform
-confidence bands.} \item{test.procBeqC}{observed test-process of difference
-between observed cumulative process and estimate under null of constant
-effect.} \item{sim.test.procBeqC}{list of 50 random realizations of
+confidence bands.} 
+\item{test.procBeqC}{observed test-process of difference
+between observed cumulative process and estimate under null of constant effect.} 
+\item{sim.test.procBeqC}{list of 50 random realizations of
 test-processes under null based on resampling.}
 \item{covariance}{covariances for nonparametric terms of model.}
 }
@@ -115,11 +116,10 @@ mean of the observed responses given covariates is a linear time-varying
 regression model :
 }
 \details{
-\deqn{ E( Z_{ij} | X_{ij}(t) ) = \beta^T(t) X_{ij}^1(t) + \gamma^T
-X_{ij}^2(t) } where \eqn{Z_{ij}} is the j'th measurement at time t for the
+\deqn{ E( Z_{ij} | X_{ij}(t) ) = \beta^T(t) X_{ij}^1(t) + \gamma^T X_{ij}^2(t) } 
+where \eqn{Z_{ij}} is the j'th measurement at time t for the
 i'th subject with covariates \eqn{X_{ij}^1} and \eqn{X_{ij}^2}. Resampling
 is used for computing p-values for tests of timevarying effects.
-
 The data for a subject is presented as multiple rows or 'observations', each
 of which applies to an interval of observation (start, stop].  For counting
 process data with the )start,stop] notation is used the 'id' variable is

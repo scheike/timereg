@@ -130,7 +130,7 @@ calculated using the KM, cox or aalen models.}
 \item{conservative}{set to 0 to compute correct variances based on censoring
 weights, default is conservative estimates that are much quicker.}
 
-\item{monotone}{monotone=0, uses estimating equations \deqn{ (D_\beta P_1) w(t) ( Y(t)/G_c(t) - P_1(t,X))} montone=1 uses \deqn{ w(t) X ( Y(t)/G_c(t) - P_1(t,X)) }}
+\item{monotone}{monotone=0, uses estimating equations \deqn{ (D_\beta P_1) w(t) ( Y(t)/G_c(t) - P_1(t,X))}{} montone=1 uses \deqn{ w(t) X ( Y(t)/G_c(t) - P_1(t,X)) }{}}
 
 \item{step}{step size for Fisher-Scoring algorithm.}
 }
@@ -160,34 +160,34 @@ time points used for estimation.}
 }
 \description{
 Fits a semiparametric model for the cause-specific quantities : \deqn{ P(T <
-t, cause=1 | x,z) = P_1(t,x,z) = h( g(t,x,z) ) } for a known link-function
+t, cause=1 | x,z) = P_1(t,x,z) = h( g(t,x,z) ) }{} for a known link-function
 \eqn{h()} and known prediction-function \eqn{g(t,x,z)} for the probability
 of dying from cause 1 in a situation with competing causes of death.
 }
 \details{
 We consider the following models : 1) the additive model where
 \eqn{h(x)=1-\exp(-x)} and \deqn{ g(t,x,z) = x^T A(t) + (diag(t^p) z)^T \beta
-} 2) the proportional setting that includes the Fine & Gray (FG) "prop"
+}{} 2) the proportional setting that includes the Fine & Gray (FG) "prop"
 model and some extensions where \eqn{h(x)=1-\exp(-\exp(x))} and \deqn{
-g(t,x,z) = (x^T A(t) + (diag(t^p) z)^T \beta) } The FG model is obtained
+g(t,x,z) = (x^T A(t) + (diag(t^p) z)^T \beta) }{} The FG model is obtained
 when \eqn{x=1}, but the baseline is parametrized as \eqn{\exp(A(t))}.
 
 The "fg" model is a different parametrization that contains the FG model,
 where \eqn{h(x)=1-\exp(-x)} and \deqn{ g(t,x,z) = (x^T A(t)) \exp((diag(t^p)
-z)^T \beta) } The FG model is obtained when \eqn{x=1}.
+z)^T \beta) }{} The FG model is obtained when \eqn{x=1}.
 
 3) a "logistic" model where \eqn{h(x)=\exp(x)/( 1+\exp(x))} and \deqn{
-g(t,x,z) = x^T A(t) + (diag(t^p) z)^T \beta }
+g(t,x,z) = x^T A(t) + (diag(t^p) z)^T \beta}{} 
 
 The "logistic2" is \deqn{ P_1(t,x,z) = x^T A(t) exp((diag(t^p) z)^T \beta)/
-(1+ x^T A(t) exp((diag(t^p) z)^T \beta)) } The simple logistic model with
+(1+ x^T A(t) exp((diag(t^p) z)^T \beta)) }{} The simple logistic model with
 just a baseline can also be fitted by an alternative procedure that has
 better small sample properties see prop.odds.subist().
 
 4) the relative cumulative incidence function "rcif" model where
-\eqn{h(x)=\exp(x)} and \deqn{ g(t,x,z) = x^T A(t) + (diag(t^p) z)^T \beta }
+\eqn{h(x)=\exp(x)} and \deqn{ g(t,x,z) = x^T A(t) + (diag(t^p) z)^T \beta }{}
 
-The "rcif2" \deqn{ P_1(t,x,z) = (x^T A(t)) \exp((diag(t^p) z)^T \beta) }
+The "rcif2" \deqn{ P_1(t,x,z) = (x^T A(t)) \exp((diag(t^p) z)^T \beta) }{}
 
 Where p by default is 1 for the additive model and 0 for the other models.
 In general p may be powers of the same length as z.

@@ -96,10 +96,10 @@ recurrent.marginal.mean <- function(recurrent,death)
 #' 
 #' Fitting two Cox models for death and recurent events these are
 #' combined to prducte the estimator 
-#' \deqn{ \int_0^t  S(u|x=0) dR(u|x=0) } the mean number of recurrent events, here
-#' \deqn{ S(u|x=0) }  is the probability of survival, and 
-#' \deqn{ dR(u|x=0) }  is the probability of an event among survivors. 
-#' For now the estimator is based on the two-baselines so \deqn{x=0}, but covariates
+#' \deqn{ \int_0^t  S(u|x=0) dR(u|x=0) }{} the mean number of recurrent events, here
+#' \deqn{ S(u|x=0) }{}  is the probability of survival, and 
+#' \deqn{ dR(u|x=0) }{}  is the probability of an event among survivors. 
+#' For now the estimator is based on the two-baselines so \deqn{x=0}{}, but covariates
 #' can be rescaled to look at different x's and extensions possible. 
 #' 
 #' IID versions along the lines of Ghosh & Lin (2000) variance. See also mets package for 

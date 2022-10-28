@@ -6,14 +6,14 @@
 #' 
 #' The model specifikatin allows a regression structure on the variance of the
 #' random effects, such it is allowed to depend on covariates fixed within
-#' clusters \deqn{ \theta_{k} = Q_{k}^T \nu }. This is particularly useful to
+#' clusters \deqn{ \theta_{k} = Q_{k}^T \nu }{}. This is particularly useful to
 #' model jointly different groups and to compare their variances.
 #' 
 #' Fits an Cox-Aalen survival model.  Time dependent variables and counting
 #' process data (multiple events per subject) are not possible !
 #' 
 #' The marginal baselines are on the Cox-Aalen form \deqn{ \lambda_{ki}(t) =
-#' Y_{ki}(t) ( X_{ki}^T(t) \alpha(t) ) \exp(Z_{ki}^T \beta ) }
+#' Y_{ki}(t) ( X_{ki}^T(t) \alpha(t) ) \exp(Z_{ki}^T \beta ) }{}
 #' 
 #' The model thus contains the Cox's regression model and the additive hazards
 #' model as special cases. (see cox.aalen function for more on this).

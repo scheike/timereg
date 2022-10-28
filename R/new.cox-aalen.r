@@ -5,7 +5,7 @@
 #' the Cox-Aalen model
 #' 
 #' \deqn{ \lambda_{i}(t) = Y_i(t) ( X_{i}^T(t) \alpha(t) ) \exp(Z_{i}^T(t)
-#' \beta ) } for this model prop specified the covariates to be included in
+#' \beta ) }{} for this model prop specified the covariates to be included in
 #' \eqn{Z_{i}(t)}
 #' @param x variable
 #' 
@@ -20,8 +20,7 @@ prop<-function(x) x
 #' Fits an Cox-Aalen survival model.  Time dependent variables and counting
 #' process data (multiple events per subject) are possible.
 #' 
-#' \deqn{ \lambda_{i}(t) = Y_i(t) ( X_{i}^T(t) \alpha(t) ) \exp(Z_{i}^T \beta )
-#' }
+#' \deqn{ \lambda_{i}(t) = Y_i(t) ( X_{i}^T(t) \alpha(t) ) \exp(Z_{i}^T \beta ) }{}
 #' 
 #' The model thus contains the Cox's regression model as special case.
 #' 
