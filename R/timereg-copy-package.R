@@ -13,8 +13,10 @@
 #' BMT 1:yes, 0:no.} \item{age}{a numeric vector code. Age of patient, scaled
 #' and centered ((age-35)/15).} }
 #' @references NN
+#' @name bmt
+#' @docType data
 #' @source Simulated data
-#' @keywords datasets
+#' @keywords package 
 #' @examples
 #' 
 #' data(bmt)
@@ -45,7 +47,9 @@ NULL
 #' rational, organisation and selected characteristics of the participants.
 #' Am. J. Epidemiology 126, 310--318.
 #' @source MACS Public Use Data Set Release PO4 (1984-1991). See reference.
-#' @keywords datasets
+#' @name cd4 
+#' @docType data
+#' @keywords package 
 #' @examples
 #' 
 #' data(cd4)
@@ -80,8 +84,10 @@ NULL
 #' @references Schlichting, P., Christensen, E., Andersen, P., Fauerholds, L.,
 #' Juhl, E., Poulsen, H. and Tygstrup, N. (1983), The Copenhagen Study Group
 #' for Liver Diseases, Hepatology 3, 889--895
+#' @name  csl
+#' @docType data
+#' @keywords package 
 #' @source P.K. Andersen
-#' @keywords datasets
 #' @examples
 #' 
 #' data(csl)
@@ -110,7 +116,9 @@ NULL
 #' numeric vector code. 1: younger than 20, 2: older than 20.} }
 #' @source Huster W.J. and Brookmeyer, R. and Self. S. (1989) MOdelling paired
 #' survival data with covariates, Biometrics 45, 145-56.
-#' @keywords datasets
+#' @name  diabetes
+#' @docType data
+#' @keywords package 
 #' @examples
 #' 
 #' data(diabetes)
@@ -140,7 +148,9 @@ NULL
 #' Table A.2 in Andersen et al. (1993).  } }
 #' @source Andersen, P.K., Borgan O, Gill R.D., Keiding N. (1993),
 #' \emph{Statistical Models Based on Counting Processes}, Springer-Verlag.
-#' @keywords datasets
+#' @name  mela.pop 
+#' @docType data
+#' @keywords package 
 #' @examples
 #' 
 #' data(mela.pop)
@@ -172,7 +182,9 @@ NULL
 #' Drzewiecki, K.T., Ladefoged, C., and Christensen, H.E. (1980), Biopsy and
 #' prognosis for cutaneous malignant melanoma in clinical stage I. Scand. J.
 #' Plast. Reconstru. Surg. 14, 141-144.
-#' @keywords datasets
+#' @name  melanoma 
+#' @docType data
+#' @keywords package 
 #' @examples
 #' 
 #' data(melanoma)
@@ -213,7 +225,9 @@ NULL
 #' Melchior, T., Joen, T. and P. K. Andersen (1997), Does in-hospital
 #' ventricular fibrillation affect prognosis after myocardial infarction?,
 #' European Heart Journal 18, 919--924.
-#' @keywords datasets
+#' @name  TRACE
+#' @docType data
+#' @keywords package 
 #' @examples
 #' 
 #' data(TRACE)
