@@ -333,7 +333,7 @@ void itfitsemi(double *times,int *Ntimes,double *x,int *censcode,int *cause,
       *nx= calloc(1,sizeof(int)),
       *px1= calloc(1,sizeof(int));
   int left=0,clusterj,fixedcov,osilent,*strict=calloc(2,sizeof(int)),*indexleft=calloc((*antpers),sizeof(int));
-  double varp=0.5,nrisk,time,dummy,dtime,phattrunc,bhattrunc=0,lrr,lrrt;
+  double nrisk,time,dummy,dtime,phattrunc,bhattrunc=0,lrr,lrrt;
   double *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
 	 *inc=calloc((*Ntimes)*(*px+1),sizeof(double)),
 	 *weightt=calloc((*Ntimes),sizeof(double)),
@@ -427,7 +427,7 @@ malloc_vec((*px)+(*pg),qs);
     if (*trans==1) { // {{{  model="additive"
       for (l=0;l<*pg;l++) lrr=lrr+VE(gam,l)*VE(zi,l)*pow(time,timepow[l]); 
       VE(plamt,j)=1-exp(-VE(pbhat,j)-lrr); 
-      varp=VE(plamt,j)*(1-VE(plamt,j)); 
+//      varp=VE(plamt,j)*(1-VE(plamt,j)); 
       if ((trunkp[j]<1)) { 
          for(i=1;i<=*px;i++) VE(truncbhatt,i-1)=cumentry[i*(*antpers)+j];
          for (l=0;l<*pg;l++) lrrt=lrrt+VE(gam,l)*VE(zi,l)*pow(entry[j],timepow[l]); 
@@ -480,7 +480,7 @@ malloc_vec((*px)+(*pg),qs);
       }
       VE(rr,j)=exp(lrr);  
       VE(plamt,j)=1-exp(-VE(pbhat,j)*VE(rr,j)); 
-      varp=VE(plamt,j)*(1-VE(plamt,j)); 
+//      varp=VE(plamt,j)*(1-VE(plamt,j)); 
       scl_vec_mult((1-VE(plamt,j))*VE(rr,j),xi,dpx); 
       scl_vec_mult((1-VE(plamt,j))*VE(pbhat,j)*VE(rr,j),zi,dpz); 
       if ((entry[j]>0)) {  // {{{ 
@@ -510,7 +510,7 @@ malloc_vec((*px)+(*pg),qs);
       }
       VE(rr,j)=exp(lrr);  
       VE(plamt,j)=exp(VE(pbhat,j)+lrr)/(1+exp(VE(pbhat,j)+lrr)); 
-      varp=VE(plamt,j)*(1-VE(plamt,j)); 
+//      varp=VE(plamt,j)*(1-VE(plamt,j)); 
          dummy=VE(plamt,j)/(1+exp(VE(pbhat,j)+lrr)); 
          scl_vec_mult(dummy,xi,dpx); 
          scl_vec_mult(dummy,zi,dpz); 
@@ -540,7 +540,7 @@ malloc_vec((*px)+(*pg),qs);
       }
       VE(rr,j)=exp(lrr);  
       VE(plamt,j)=VE(pbhat,j)*exp(lrr)/(1+VE(pbhat,j)*exp(lrr)); 
-      varp=VE(plamt,j)*(1-VE(plamt,j)); 
+//      varp=VE(plamt,j)*(1-VE(plamt,j)); 
       dummy=exp(lrr)/pow(1+VE(pbhat,j)*exp(lrr),2); 
       scl_vec_mult(dummy,xi,dpx); 
       scl_vec_mult(VE(pbhat,j)*dummy,zi,dpz); 
@@ -570,7 +570,7 @@ malloc_vec((*px)+(*pg),qs);
       }
       VE(rr,j)=lrr;  
       VE(plamt,j)=exp(VE(pbhat,j)+lrr); 
-      varp=VE(plamt,j)*(1-VE(plamt,j)); 
+//      varp=VE(plamt,j)*(1-VE(plamt,j)); 
       scl_vec_mult(VE(plamt,j),xi,dpx); 
       scl_vec_mult(VE(plamt,j),zi,dpz); 
       if ((trunkp[j]<1)) { /*{{{*/
@@ -596,7 +596,7 @@ malloc_vec((*px)+(*pg),qs);
       }
       VE(rr,j)=lrr;  
       VE(plamt,j)=VE(pbhat,j)*exp(lrr); 
-      varp=VE(plamt,j)*(1-VE(plamt,j)); 
+//      varp=VE(plamt,j)*(1-VE(plamt,j)); 
       scl_vec_mult(exp(lrr),xi,dpx); 
       scl_vec_mult(VE(plamt,j),zi,dpz); 
       if ((trunkp[j]<1)) { /*{{{*/
@@ -622,7 +622,7 @@ malloc_vec((*px)+(*pg),qs);
       }
       VE(rr,j)=lrr;  
       VE(plamt,j)=VE(pbhat,j)*exp(exp(lrr)); 
-      varp=VE(plamt,j)*(1-VE(plamt,j)); 
+//      varp=VE(plamt,j)*(1-VE(plamt,j)); 
       scl_vec_mult(exp(exp(lrr)),xi,xi); 
       scl_vec_mult(VE(plamt,j)*exp(lrr),zi,zi); 
       if ((trunkp[j]<1)) { 

@@ -14,7 +14,7 @@ double *KMtimes,int *ordertime,int *conservative,int *censcode)
     *rr,*rowX,*difbeta,*qs,*bhatub,*betaub,*dcovs,*pcovs,*zi,*rowZ,*zgam; 
   vector *cumhatA[*antclust],*cumA[*antclust],*bet1,*gam,*dp,*dp1,*dp2; 
   int osilent,convt,ps,sing,c,i,j,k,l,s,it,convproblems=0,clusterj,nrisk; 
-  double skm,rit,time,sumscore,totrisk,*vcudif=calloc((*Ntimes)*(*px+1),sizeof(double));
+  double skm,rit=1,time,sumscore,totrisk,*vcudif=calloc((*Ntimes)*(*px+1),sizeof(double));
 //  float gasdev(),expdev(),ran1(); void resmeansemi();
   ps=(*px); 
 
@@ -260,7 +260,7 @@ void resmeansemi(double *times,int  *Ntimes,double *x,int *delta,int *cause,
   int sing,itt,i,j,k,l,s,c,pmax,totrisk,convproblems=0,fixedcov,osilent, 
       *n= calloc(1,sizeof(int)), *nx= calloc(1,sizeof(int)),
       *robust= calloc(1,sizeof(int));
-  double lrr,skm,rit,dtau,time,dummy,dtime;
+  double lrr,skm,rit=1,dtau,time,dummy,dtime;
   double *vcudif=calloc((*Ntimes)*(*px+1),sizeof(double)),
 	 *inc=calloc((*Ntimes)*(*px+1),sizeof(double));
   osilent=silent[0]; silent[0]=0; 

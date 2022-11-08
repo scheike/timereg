@@ -7,25 +7,24 @@ void OSbreslow(double *times,int *Ntimes,double *designX,int *nx,int *p,int *ant
 {
   matrix *ldesignX,*A,*AI,*AIX,*cdesignX,*XmavX,*cXmavX,*Aav;
   vector *diag,*dB,*dN,*VdB,*AIXdN,*AIXlamt,*ta,*bhatt,*pbhat,*plamt,*avx,*lrisk;
-  vector *ssrow2,*ssrow,*vtmp,*xi,*rowX,*cumi[*antpers],*difX,*cumBLi[*antpers],*Btau,*Base[*antpers],*score; 
-  matrix *cumBL[*antpers],*cumB[*antpers],*BLsubbetaLam[*antpers];
-  matrix *Delta2,*Delta,*tmpM1,*tmpM2,*varBL;
+  vector *ssrow2,*ssrow,*vtmp,*xi,*rowX,*difX,*Btau,*score; 
+//  matrix *Delta2,*Delta,*tmpM1,*tmpM2,*varBL;
   int supsup=0,itt,i,j,k,s,c,count,pers=0,
       *imin=calloc(1,sizeof(int)), *coef=calloc(1,sizeof(int)),*ps=calloc(1,sizeof(int));
   double time2,rr,time=0,time1,dummy,dtime,S0,lam0t,sdBt,tau,random;
   double *Basei=calloc(*antpers,sizeof(double)),rvarbase, *vcudif=calloc((*Ntimes)*(*p+2),sizeof(double));
 //  double norm_rand(); void GetRNGstate(),PutRNGstate();
+  matrix *Delta,*Delta2,*tmpM1,*tmpM2; 
+  matrix *varBL,*cumBL[*antpers],*cumB[*antpers],*BLsubbetaLam[*antpers];
+  vector *cumi[*antpers],*cumBLi[*antpers],*Base[*antpers]; 
 
-
-  if (*sim==1) {
+//  if (*sim==1) { }; 
     malloc_mat(*Ntimes,*p,Delta); 
     malloc_mat(*Ntimes,*p,Delta2); 
     malloc_mat(*Ntimes,*p,tmpM1); 
     malloc_mat(*Ntimes,*p,tmpM2);
-  }; 
 
-  if (*robust==1)
-  {
+//  if (*robust==1) { }
     malloc_mat(*Ntimes,*p,varBL); 
     for (j=0;j<*antpers;j++) {
       malloc_mat(*Ntimes,(*p)+1,cumB[j]); 
@@ -36,7 +35,6 @@ void OSbreslow(double *times,int *Ntimes,double *designX,int *nx,int *p,int *ant
       malloc_vec(*Ntimes,Base[j]); 
       Basei[j]=0.0; 
     }
-  }
 
   malloc_mat(*antpers,*p,ldesignX);
   malloc_mat(*antpers,*p,cdesignX);
@@ -390,13 +388,13 @@ void OSbreslow(double *times,int *Ntimes,double *designX,int *nx,int *p,int *ant
     PutRNGstate();  /* to use R random normals */
   } /* sim==1 */
 
-  if (*sim==1) {
+//  if (*sim==1) { }
     free_mat(Delta);
     free_mat(Delta2);
     free_mat(tmpM1);
     free_mat(tmpM2);
-  }
-  if (*robust==1) {
+
+//  if (*robust==1) { }
     free_mat(varBL);
     for (j=0;j<*antpers;j++) { 
       free_mat(cumB[j]);
@@ -406,7 +404,6 @@ void OSbreslow(double *times,int *Ntimes,double *designX,int *nx,int *p,int *ant
       free_vec(cumBLi[j]);
       free_mat(BLsubbetaLam[j]);
     } 
-  }
 
   free_vec(diag); free_vec(dB); free_vec(dN); free_vec(VdB); free_vec(AIXdN); free_vec(AIXlamt); 
   free_vec(ta); free_vec(bhatt); free_vec(pbhat); free_vec(plamt); free_vec(avx); free_vec(lrisk); 
@@ -430,30 +427,31 @@ void semibreslow(double *times,int *Ntimes,double *designX,int *nx,int *px,
   matrix *XmavX,*ZmavZ,*E2x,*E2z,*E2xz,*XX;
   matrix *S,*dCGam,*CGam,*ICGam,*VarKorG,*dC,*XZ,*ZZ,*ZZI,*XZAI; 
   matrix *Ct,*C[*Ntimes],*Acorb[*Ntimes],*ZXAI,*tmpM4; 
-  matrix *RobVargam,*tmpM3,*cumB[*antpers]; 
-  matrix *W3t[*antpers],*W4t[*antpers],*AIxit[*antpers];
+  matrix *RobVargam,*tmpM3;
+//  matrix *W3t[*antpers],*W4t[*antpers],*AIxit[*antpers];
   vector *dB,*dN,*VdB,*AIXdN,*AIXlamt,*ta,*bhatt,*pbhat,*plamt;
   vector *difX,*korG,*pghat,*gam,*dgam,*ZGdN,*IZGdN,*ZGlamt,*IZGlamt;
   vector *zi,*z1,*lrisk,*avx,*avz,*rowG,*xi,*rowX,*rowZ,*tmpv2;
-  vector *cumi[*antpers],*W2[*antpers],*W3[*antpers];
-  vector *Base[*antpers]; 
   int itt,i,j,k,s,c,count,pers=0,pmax,
         *imin=calloc(1,sizeof(int)), *coef=calloc(1,sizeof(int)),*ps=calloc(1,sizeof(int));
   double time,dummy,dtime,lam0t,S0,
 	 *Basei=calloc((*antpers),sizeof(double)),
          *vcudif=calloc((*Ntimes)*(*px+2),sizeof(double)),dum2,rvarbase; 
+  vector *cumi[*antpers],*W2[*antpers],*W3[*antpers],*Base[*antpers]; 
+  matrix *W3t[*antpers],*W4t[*antpers],*AIxit[*antpers],*cumB[*antpers]; 
 
-  if (*robust==1){
+//  if (*robust==1){ }
     for (j=0;j<*antpers;j++) {
       malloc_mat(*Ntimes,*px,cumB[j]); 
       malloc_vec(*px,cumi[j]);
       malloc_mat(*Ntimes,*px,W3t[j]);
+      malloc_mat(*Ntimes,*px+1,W4t[j]);
+      malloc_mat(*Ntimes,*px,AIxit[j]); 
       malloc_vec(*Ntimes,Base[j]); 
       Basei[j]=0.0; 
-      malloc_mat(*Ntimes,*px+1,W4t[j]); malloc_vec(*pg,W2[j]); malloc_vec(*px,W3[j]);
-      malloc_mat(*Ntimes,*px,AIxit[j]); 
+      malloc_vec(*pg,W2[j]); 
+      malloc_vec(*px,W3[j]);
     }
-  }
 
   malloc_mat(*antpers,*px,XmavX);
   malloc_mat(*antpers,*px,ldesignX);
@@ -823,7 +821,9 @@ void semibreslow(double *times,int *Ntimes,double *designX,int *nx,int *px,
     free_mat(Acorb[j]);
     free_mat(C[j]);
   }
-  if (*robust==1){
+
+//  if (*robust==1){ }
+//
     for (j=0;j<*antpers;j++) {
       free_vec(Base[j]);
       free_vec(cumi[j]);
@@ -834,7 +834,6 @@ void semibreslow(double *times,int *Ntimes,double *designX,int *nx,int *px,
       free_mat(W4t[j]);
       free_mat(AIxit[j]);
     }
-  }
   free(vcudif); free(Basei); 
   free(coef); free(ps); free(imin);
 }

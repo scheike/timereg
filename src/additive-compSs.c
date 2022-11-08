@@ -70,7 +70,7 @@ void compSs(double *alltimes,int *Nalltimes,int *Ntimes,double *designX,int *nx,
 
       MtA(XWZAI,XWZ,tmpM2); mat_subtr(ZWZ,tmpM2,dCGam); 
       scl_mat_mult(dtime,dCGam,dCGam); 
-      if (*deltaweight==0) scl_mat_mult(dtime,dCGam,dCGam); 
+      if (*deltaweight==0) { scl_mat_mult(dtime,dCGam,dCGam);  }
       mat_add(CGam,dCGam,CGam); 
 
       if (stat==1) {
@@ -79,7 +79,7 @@ void compSs(double *alltimes,int *Nalltimes,int *Ntimes,double *designX,int *nx,
    //	extract_row(Z,pers,zi); 
 	vM(XWZ,AIXWdN,tmpv2);
 	vec_subtr(zi,tmpv2,ZHdN);
-	if (*deltaweight==0) scl_vec_mult(dtime,ZHdN,ZHdN); 
+	if (*deltaweight==0) { scl_vec_mult(dtime,ZHdN,ZHdN);  }
 	vec_add(ZHdN,IZHdN,IZHdN); 
       }
 
@@ -203,7 +203,7 @@ void compSsrev(double *alltimes,int *Nalltimes,int *Ntimes,double *designX,int *
 
       MtA(XWZAI,XWZ,tmpM2); mat_subtr(ZWZ,tmpM2,dCGam); 
       scl_mat_mult(dtime,dCGam,dCGam); 
-      if (*deltaweight==0) scl_mat_mult(dtime,dCGam,dCGam); 
+      if (*deltaweight==0) { scl_mat_mult(dtime,dCGam,dCGam); }
       mat_add(CGam,dCGam,CGam); 
 
       if (stat==1) {
@@ -212,7 +212,7 @@ void compSsrev(double *alltimes,int *Nalltimes,int *Ntimes,double *designX,int *
    //	extract_row(Z,pers,zi); 
 	vM(XWZ,AIXWdN,tmpv2);
 	vec_subtr(zi,tmpv2,ZHdN);
-	if (*deltaweight==0) scl_vec_mult(dtime,ZHdN,ZHdN); 
+	if (*deltaweight==0) { scl_vec_mult(dtime,ZHdN,ZHdN); }
 	vec_add(ZHdN,IZHdN,IZHdN); 
       }
 
@@ -333,7 +333,7 @@ void compSsforward(double *alltimes,int *Nalltimes,int *Ntimes,double *designX,i
 
       MtA(XWZAI,XWZ,tmpM2); mat_subtr(ZWZ,tmpM2,dCGam); 
       scl_mat_mult(dtime,dCGam,dCGam); 
-      if (*deltaweight==0) scl_mat_mult(dtime,dCGam,dCGam); 
+      if (*deltaweight==0) { scl_mat_mult(dtime,dCGam,dCGam);  }
       mat_add(CGam,dCGam,CGam); 
 
       if (stat==1) {
@@ -342,7 +342,7 @@ void compSsforward(double *alltimes,int *Nalltimes,int *Ntimes,double *designX,i
    //	extract_row(Z,pers,zi); 
 	vM(XWZ,AIXWdN,tmpv2);
 	vec_subtr(zi,tmpv2,ZHdN);
-	if (*deltaweight==0) scl_vec_mult(dtime,ZHdN,ZHdN); 
+	if (*deltaweight==0)  { scl_vec_mult(dtime,ZHdN,ZHdN);  }
 	vec_add(ZHdN,IZHdN,IZHdN); 
       }
 
