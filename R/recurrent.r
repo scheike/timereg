@@ -19,27 +19,27 @@
 #' @keywords survival
 #' @examples
 #' \donttest{
-#' ### get some data using mets simulaitons 
-#' library(mets)
-#' data(base1cumhaz)
-#' data(base4cumhaz)
-#' data(drcumhaz)
-#' dr <- drcumhaz
-#' base1 <- base1cumhaz
-#' base4 <- base4cumhaz
-#' rr <- simRecurrent(100,base1,death.cumhaz=dr)
-#' rr$x <- rnorm(nrow(rr)) 
-#' rr$strata <- floor((rr$id-0.01)/50)
-#' drename(rr) <- start+stop~entry+time
-#' 
-#' ar <- aalen(Surv(start,stop,status)~+1+cluster(id),data=rr,resample.iid=1
-#'                                                      ,max.clust=NULL)
-#' ad <- aalen(Surv(start,stop,death)~+1+cluster(id),data=rr,resample.iid=1,
-#'                                                      ,max.clust=NULL)
-#' mm <- recurrent.marginal.mean(ar,ad)
-#' with(mm,plot(times,mu,type="s"))
-#' with(mm,lines(times,mu+1.96*se.mu,type="s",lty=2))
-#' with(mm,lines(times,mu-1.96*se.mu,type="s",lty=2))
+#' ### get some data using mets simulaitons, and avoid dependency, see mets
+#' # library(mets)
+#' # data(base1cumhaz)
+#' # data(base4cumhaz)
+#' # data(drcumhaz)
+#' # dr <- drcumhaz
+#' # base1 <- base1cumhaz
+#' # base4 <- base4cumhaz
+#' # rr <- simRecurrent(100,base1,death.cumhaz=dr)
+#' # rr$x <- rnorm(nrow(rr)) 
+#' # rr$strata <- floor((rr$id-0.01)/50)
+#' # drename(rr) <- start+stop~entry+time
+#' # 
+#' # ar <- aalen(Surv(start,stop,status)~+1+cluster(id),data=rr,resample.iid=1
+#' #                                                      ,max.clust=NULL)
+#' # ad <- aalen(Surv(start,stop,death)~+1+cluster(id),data=rr,resample.iid=1,
+#' #                                                      ,max.clust=NULL)
+#' # mm <- recurrent.marginal.mean(ar,ad)
+#' # with(mm,plot(times,mu,type="s"))
+#' # with(mm,lines(times,mu+1.96*se.mu,type="s",lty=2))
+#' # with(mm,lines(times,mu-1.96*se.mu,type="s",lty=2))
 #' }
 ##' @export
 recurrent.marginal.mean <- function(recurrent,death) 
