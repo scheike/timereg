@@ -17,18 +17,18 @@
 
 
 void free_mat(matrix *M){
-  Free(M->entries);
-  Free(M);
+  R_Free(M->entries);
+  R_Free(M);
 }
 
 void free_mat3(matrix3 *M){
-  Free(M->entries);
-  Free(M);
+  R_Free(M->entries);
+  R_Free(M);
 }
 
 void free_vec(vector *V){
-  Free(V->entries);
-  Free(V);
+  R_Free(V->entries);
+  R_Free(V);
 }
 
 int nrow_matrix(matrix *M){
