@@ -146,7 +146,7 @@ where \eqn{\Delta(\tau)}{} is the at-risk indicator given data and requires a
 IPCW model.
 
 Since timereg version 1.8.4. the response must be specified with the
-\code{\link{Event}} function instead of the \code{\link{Surv}} function and
+\code{\link{Event}} function instead of the \code{\link[survival]{Surv}} function and
 the arguments.
 }
 \examples{

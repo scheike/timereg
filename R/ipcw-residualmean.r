@@ -15,7 +15,7 @@
 #' IPCW model.
 #' 
 #' Since timereg version 1.8.4. the response must be specified with the
-#' \code{\link{Event}} function instead of the \code{\link{Surv}} function and
+#' \code{\link{Event}} function instead of the \code{\link[survival]{Surv}} function and
 #' the arguments.
 #' 
 #' @param formula a formula object, with the response on the left of a '~'

@@ -1,6 +1,6 @@
 citHeader("To cite timereg in publications use:")
 
-citEntry(entry = "book",
+bibentry(bibtype = "book",
   title        = "Dynamic Regression models for survival data",
   author       = personList(as.person("Thomas H. Scheike"),
                    as.person("Torben Martinussen")),
@@ -13,7 +13,7 @@ citEntry(entry = "book",
         "Springer, New-York")
 )
 
-citEntry(entry = "Article",
+bibentry(bibtype = "Article",
   title        = "Analyzing Competing Risk Data Using the {R} {timereg} Package",
   author       = personList(as.person("Thomas H. Scheike"),
                    as.person("Mei-Jie Zhang")),

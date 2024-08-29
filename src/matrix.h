@@ -25,9 +25,9 @@
 #define oops(s) {error((s));}
 #define max(a,b) ( ((a) > (b)) ? (a) : (b) )
 #define min(a,b) ( ((a) > (b)) ? (b) : (a) )
-#define malloc_mat(NR, NC, M) { (M) = Calloc(1,matrix); ((M)->nr) = (NR); ((M)->nc) = (NC); ((M)->entries) = Calloc(((NR)*(NC)) , double);}
-#define malloc_mat3(DIM,NR, NC, M3) {(M3) = Calloc(1,matrix); ((M3)->dim)=(DIM); ((M3)->nr) = (NR); ((M3)->nc) = (NC); ((M3)->entries) = Calloc(((DIM)*(NR)*(NC)) , double);}
-#define malloc_vec(L, V) { (V) = Calloc(1,vector); ((V)->length) = (L); ((V)->entries) = Calloc((L), double);}
+#define malloc_mat(NR, NC, M) { (M) = R_Calloc(1,matrix); ((M)->nr) = (NR); ((M)->nc) = (NC); ((M)->entries) = R_Calloc(((NR)*(NC)) , double);}
+#define malloc_mat3(DIM,NR, NC, M3) {(M3) = R_Calloc(1,matrix); ((M3)->dim)=(DIM); ((M3)->nr) = (NR); ((M3)->nc) = (NC); ((M3)->entries) = R_Calloc(((DIM)*(NR)*(NC)) , double);}
+#define malloc_vec(L, V) { (V) = R_Calloc(1,vector); ((V)->length) = (L); ((V)->entries) = R_Calloc((L), double);}
 
 typedef struct{
   int dim;
