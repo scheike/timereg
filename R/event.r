@@ -36,14 +36,12 @@ Event <- function(time,time2=TRUE,cause=NULL,cens.code=0,...) {
         colnames(out) <- c("entry","exit","cause")
     tmp <- (out[,1]>out[,2]) 
     if (any(tmp)) warning("entry time later than exit time\n")
-###    if (any(tmp) & !is.na(tmp)) warning("entry time later than exit time\n")
     tmp <- (out[,2]<=0) 
-    if (any(tmp)) warning("exit times must be >0\n")
-###    if (any(tmp) & !is.na(tmp)) warning("exit times must be >0\n")
+###    if (any(tmp)) warning("exit times must be >0\n")
     } else {
         colnames(out) <- c("exit","cause")
-    tmp <- (out[,1]<=0) 
-    if (any(tmp)) warning("exit times must be >0\n")
+###    tmp <- (out[,1]<=0) 
+###    if (any(tmp)) warning("exit times must be >0\n")
 ###    if (any(tmp) & !is.na(tmp)) warning("exit times must be >0\n")
     }
     class(out) <- "Event"

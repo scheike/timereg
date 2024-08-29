@@ -348,7 +348,6 @@ return(ud);
 
 pval<-function(simt,Otest)
 {
-simt<-sort(simt);
 p<-sum(Otest<simt)/length(simt);
 return(p)
 }
