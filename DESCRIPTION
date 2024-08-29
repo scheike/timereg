@@ -4,7 +4,7 @@ Version: 2.0.6
 Date: 2024-08-29
 Authors@R: c( person("Thomas", "Scheike", email="ts@biostat.ku.dk", role=c("aut", "cre")),
              person("Torben Martinussen", role=c("aut")), person("Jeremy Silver", role=c("aut")),
-             person("Klaus H. Holst", role=c("aut")))
+             person("Klaus K. Holst", role=c("aut")))
 Author: Thomas Scheike [aut, cre], Torben Martinussen  [aut], Jeremy Silver [aut], Klaus K. Holst [aut] 
 Maintainer: Thomas Scheike <ts@biostat.ku.dk>
 Description: Programs for Martinussen and Scheike (2006), `Dynamic Regression
