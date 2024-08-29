@@ -33,7 +33,7 @@
 #' In general p may be powers of the same length as z.
 #' 
 #' Since timereg version 1.8.4. the response must be specified with the
-#' \code{\link{Event}} function instead of the \code{\link{Surv}} function and
+#' \code{\link{Event}} function instead of the \code{\link[survival]{Surv}} function and
 #' the arguments. For example, if the old code was
 #' 
 #' comp.risk(Surv(time,cause>0)~x1+x2,data=mydata,cause=mydata$cause,causeS=1)
