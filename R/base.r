@@ -34,7 +34,6 @@ coefcox <- function(object, digits=3, d2logl=0,ci=1,alpha=0.05) { ## {{{
 } ## }}}
 
 
-
 #' Makes wald test
 #' 
 #' Makes wald test, either by contrast matrix or testing components to 0. Can
