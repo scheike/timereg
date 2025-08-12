@@ -1,7 +1,7 @@
 Package: timereg
 Title: Flexible Regression Models for Survival Data
-Version: 2.0.6
-Date: 2024-08-29
+Version: 2.0.7
+Date: 2025-08-12
 Authors@R: c( person("Thomas", "Scheike", role=c("aut", "cre"),email="ts@biostat.ku.dk"),
              person("Torben","Martinussen", role=c("aut")), 
 	     person("Jeremy", "Silver", role=c("ctb")),

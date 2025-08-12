@@ -6,8 +6,8 @@
 #include <sys/types.h>
                  
 void score(double *times,int *Ntimes,double *designX,int *nx,int *px,double *designG,int *ng,int *pg,int *antpers,double *start,double *stop,
-double *betaS,int *Nit,double *cu,double *vcu,double *w,int *mw,double *loglike,double *Iinv,double *Vbeta,int *detail,double *offs,int *mof,int *sim,int *antsim,
-double *Rvcu,double *RVbeta,
+double *betaS,int *Nit,double *cu,double *vcu,double *w,int *mw,double *loglike,double *Iinv,double *Vbeta,int *detail,double *offs,int *mof,
+double *sim,int *antsim,double *Rvcu,double *RVbeta,
 double *test,double *testOBS,double *Ut,double *simUt,double *Uit,int *XligZ,double *aalen,int *nb,int *id,int *status,int *wscore,double *dNit,int *ratesim,double *score,double *dhatMit,double *gammaiid,double *dmgiid,
 int *retur,int *robust,int *covariance,double *Vcovs,int *addresamp,double *addproc,
 int *resample,double *gamiid,double *biid,int *clusters,int *antclust,double *vscore,int *betafixed,double *weights,int *entry,int *exactderiv,
@@ -29,6 +29,7 @@ int *timegroup,int *maxtimepoint,int *stratum,double *silent,double *caseweight)
 //  printf(" basesim %lf %d \n",basesim,*antsim);
 // basesim=0 no simulations but variance, basesim=1 (simul and variance), basesim=-1 (no simulations no variance) 
   
+
   if (*detail==2) Rprintf("Memory allocation starting %d %d %d  \n",*antpers,*antclust,*maxtimepoint); 
 // {{{ setting up memory 
   matrix *X,*Z,*WX,*WZ,*cdesX,*cdesX2,*cdesX3,*CtVUCt,*A,*AI;
@@ -1006,9 +1007,11 @@ int *timegroup,int *maxtimepoint,int *stratum,double *silent,double *caseweight)
      for (i=0;i<*antclust;i++)  // {{{ 
      {
 	random=norm_rand();
+
 	if (basesim>0) {
 	    scl_mat_mult(random,W4t[i],tmpM1); mat_add(tmpM1,Delta,Delta);
 	}
+
 //        if ((mjump==0 && *ratesim==0) || (*ratesim==1)) {
 //	   random=norm_rand();
 	   scl_mat_mult(random,Uti[i],tmpM2); 
