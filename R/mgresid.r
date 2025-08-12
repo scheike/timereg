@@ -103,6 +103,7 @@ cum.residuals<-function(object,data=parent.frame(),modelmatrix=0,cum.resid=1,n.s
   if (inherits(object,"cox.aalen"))
   ldata<-aalen.des(formula,data,model="cox.aalen") else ldata<-aalen.des(formula,data) 
   X<-ldata$X; covar<-X; px<-ldata$px; 
+  if (length(ldata$covnamesX)==ncol(covar)) colnames(covar) <- ldata$covnamesX
 
   time<-attr(object,"start"); 
   time2<-attr(object,"stop"); 
@@ -344,7 +345,6 @@ cum.residuals<-function(object,data=parent.frame(),modelmatrix=0,cum.resid=1,n.s
 	dput(attr(object, "Call"))
 	cat("\n")
 } ## }}}
-
 
 
 #' Plots cumulative residuals
