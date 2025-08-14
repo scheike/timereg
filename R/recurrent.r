@@ -117,12 +117,10 @@ recurrent.marginal.mean <- function(recurrent,death)
 #' \donttest{
 #' ### do not test because iid slow  and uses data from mets
 #' library(mets)
-#' data(base1cumhaz)
-#' data(base4cumhaz)
-#' data(drcumhaz)
-#' dr <- drcumhaz
-#' base1 <- base1cumhaz
-#' base4 <- base4cumhaz
+#' data(CPH_HPN_CRBSI)
+#' dr <- CPH_HPN_CRBSI$terminal
+#' base1 <- CPH_HPN_CRBSI$crbsi 
+#' base4 <- CPH_HPN_CRBSI$mechanical
 #' rr <- simRecurrent(100,base1,death.cumhaz=dr)
 #' rr$x <- rnorm(nrow(rr)) 
 #' rr$strata <- floor((rr$id-0.01)/50)
