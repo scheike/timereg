@@ -116,24 +116,27 @@ recurrent.marginal.mean <- function(recurrent,death)
 #' @examples
 #' \donttest{
 #' ### do not test because iid slow  and uses data from mets
-#' library(mets)
-#' data(CPH_HPN_CRBSI)
-#' dr <- CPH_HPN_CRBSI$terminal
-#' base1 <- CPH_HPN_CRBSI$crbsi 
-#' base4 <- CPH_HPN_CRBSI$mechanical
-#' rr <- simRecurrent(100,base1,death.cumhaz=dr)
-#' rr$x <- rnorm(nrow(rr)) 
-#' rr$strata <- floor((rr$id-0.01)/50)
-#' drename(rr) <- start+stop~entry+time
-#'
-#' ar <- cox.aalen(Surv(start,stop,status)~+1+prop(x)+cluster(id),data=rr,
-#'                    resample.iid=1,,max.clust=NULL,max.timepoint.sim=NULL)
-#' ad <- cox.aalen(Surv(start,stop,death)~+1+prop(x)+cluster(id),data=rr,
-#'                    resample.iid=1,,max.clust=NULL,max.timepoint.sim=NULL)
+#' run <- 0
+#' if (run==1) { 
+#'  library(mets)
+#'  data(CPH_HPN_CRBSI)
+#'  dr <- CPH_HPN_CRBSI$terminal
+#'  base1 <- CPH_HPN_CRBSI$crbsi 
+#'  base4 <- CPH_HPN_CRBSI$mechanical
+#'  rr <- simRecurrent(100,base1,death.cumhaz=dr)
+#'  rr$x <- rnorm(nrow(rr)) 
+#'  rr$strata <- floor((rr$id-0.01)/50)
+#'  drename(rr) <- start+stop~entry+time
+#'  
+#'  ar <- cox.aalen(Surv(start,stop,status)~+1+prop(x)+cluster(id),data=rr,
+#'                     resample.iid=1,,max.clust=NULL,max.timepoint.sim=NULL)
+#'  ad <- cox.aalen(Surv(start,stop,death)~+1+prop(x)+cluster(id),data=rr,
+#'                     resample.iid=1,,max.clust=NULL,max.timepoint.sim=NULL)
 #' mm <- recurrent.marginal.coxmean(ar,ad)
 #' with(mm,plot(times,mu,type="s"))
 #' with(mm,lines(times,mu+1.96*se.mu,type="s",lty=2))
 #' with(mm,lines(times,mu-1.96*se.mu,type="s",lty=2))
+#' }
 #' }
 ##' @export
 recurrent.marginal.coxmean <- function(recurrent,death) 
